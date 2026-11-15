@@ -1,14 +1,12 @@
-/* 모임 맨 위 '오늘의 팬페이지' 구역(2026-11-14 대표 22:56 "1개를 밀어주는 걸", 2026-11-15 보석 18:43 "배너 width 가 좁음"·"제목 필요", 대표 20:50 "오른쪽이 잘림").
-   제목(구역 제목 18/700) → 16 → 배너. 그림 비율 5:2 하나로 390(358×143)·768+ 를 처리한다. 1024 미만은 1위 한 장이며 768+ 는 폭 상한 920(높이 368)이고 제목과 같은 왼쪽 선에서 시작한다.
-   1024+ 는 1위와 다음 장을 같은 폭 두 칸(사이 `--space-4` 16)으로 나란히 놓아 줄 전체 폭을 채운다(1440: 672×269 두 장). 그림 파일·크롭은 그대로. 반경 16, 테두리·그림자 없음. */
-.section { margin-bottom: var(--fan-section-gap); }
-.row { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); margin-top: var(--space-4); }
-.link { display: block; width: 100%; max-width: 920px; aspect-ratio: 5 / 2; overflow: hidden; border-radius: var(--radius-card); }
+/* 모임 맨 위 '오늘의 팬페이지' 구역(2026-11-14 대표 22:56 "1개를 밀어주는 걸", 2026-11-15 보석 18:43 "배너 width 가 좁음"·"제목 필요", 대표 20:50 "오른쪽이 잘림", 보석 23:4x "이미지 하나를 양옆으로 쭉 늘려서").
+   제목(구역 제목 18/700) → 16 → 배너 한 장. 그림 비율 5:2 하나로 390(358×143)·768+ 를 처리한다. 1024 미만은 그림이 칸을 꽉 채우고 768+ 는 폭 상한 920(높이 368)이며 제목과 같은 왼쪽 선에서 시작한다.
+   1024+ 는 칸이 줄 전체 폭(1440: 1360)이고 높이 360 고정. 그림(900×360, 원본 5:2 그대로 — 늘이거나 자르지 않는다)은 가운데에 두고 남는 양옆은 그림 가장자리 색(`--promo-left`·`--promo-right`, 칸 가운데에서 갈린다)으로 채운다. 반경 16·초점 테두리·클릭 영역은 채움을 포함한 칸 전체. 테두리·그림자·그라데이션 없음. */
+.section { display: grid; gap: var(--space-4); margin-bottom: var(--fan-section-gap); }
+.link { position: relative; display: block; width: 100%; max-width: 920px; aspect-ratio: 5 / 2; overflow: hidden; border-radius: var(--radius-card); }
 .link:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: 2px; }
 .link img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.link[data-side="second"] { display: none; }
 @media (min-width: 64rem) {
-  .row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .link { max-width: none; }
-  .link[data-side="second"] { display: block; }
+  .link { display: flex; justify-content: center; max-width: none; height: 360px; aspect-ratio: auto; background-color: var(--promo-right); }
+  .link::before { content: ""; position: absolute; inset: 0 50% 0 0; background-color: var(--promo-left); }
+  .link img { position: relative; flex: none; width: auto; aspect-ratio: 5 / 2; }
 }

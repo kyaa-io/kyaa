@@ -1,0 +1,30 @@
+{
+  "changha": {
+    "left": "#feeee3",
+    "right": "#feeee1"
+  },
+  "elina": {
+    "left": "#f9c0d6",
+    "right": "#f9c1d6"
+  },
+  "hiroro": {
+    "left": "#fdd3ca",
+    "right": "#fdd3ca"
+  },
+  "mmnoo-s": {
+    "left": "#fdf3f9",
+    "right": "#fdf3f9"
+  },
+  "nchive": {
+    "left": "#e9d1f2",
+    "right": "#e9d2f3"
+  },
+  "wena": {
+    "left": "#fda8c7",
+    "right": "#fda8c7"
+  },
+  "yuna": {
+    "left": "#fed6e3",
+    "right": "#fed7e4"
+  }
+}

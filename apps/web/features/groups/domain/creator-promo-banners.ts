@@ -1,7 +1,14 @@
-/** 모임 맨 위 크리에이터 홍보 배너(대표·보석 2026-11-14 22:08). 그림 한 장이 한 칸이다. 이름은 그림 안 레터링이라 화면에는 글자를 따로 그리지 않고 `alt`에만 쓴다. */
-export type CreatorPromoBanner = { slug: string; nameKo: string; nameEn: string; image: string };
+import edges from "./creator-promo-banner-edges.json";
 
-const promo = (slug: string, nameKo: string, nameEn: string): CreatorPromoBanner => ({ slug, nameKo, nameEn, image: `/images/groups/promo/${slug}-20261114.webp` });
+/** 모임 맨 위 크리에이터 홍보 배너(대표·보석 2026-11-14 22:08). 그림 한 장이 한 칸이다. 이름은 그림 안 레터링이라 화면에는 글자를 따로 그리지 않고 `alt`에만 쓴다.
+ * `leftColor`·`rightColor`: PC 에서 그림 양옆 남는 자리를 채우는 색(그림 맨 왼쪽·오른쪽 가장자리 색, `scripts/promo-banner-edge-colors.mjs` 로 계산해 `creator-promo-banner-edges.json` 에 있다). */
+export type CreatorPromoBanner = { slug: string; nameKo: string; nameEn: string; image: string; leftColor: string; rightColor: string };
+
+const promo = (slug: string, nameKo: string, nameEn: string): CreatorPromoBanner => {
+  const edge = (edges as Record<string, { left: string; right: string } | undefined>)[slug];
+  if (!edge) throw new Error(`promo banner edge colors missing: ${slug} (node scripts/promo-banner-edge-colors.mjs)`);
+  return { slug, nameKo, nameEn, image: `/images/groups/promo/${slug}-20261114.webp`, leftColor: edge.left, rightColor: edge.right };
+};
 
 /** 배너가 있는 크리에이터 7명. 활동 순위가 없을 때는 이 순서의 첫 장을 건다. */
 export const creatorPromoBanners: readonly CreatorPromoBanner[] = [
@@ -23,9 +30,4 @@ function rankCreatorPromoBanners(activeSlugs: readonly string[]): readonly Creat
 /** 모임 맨 위에 걸 배너 1장(대표 2026-11-14 22:56 "1개를 밀어주는 걸"): 이번 주 활동 순 1위 가운데 배너가 있는 첫 크리에이터. 없으면 고정 순서의 첫 장. */
 export function pickCreatorPromoBanner(activeSlugs: readonly string[] = []): CreatorPromoBanner {
   return rankCreatorPromoBanners(activeSlugs)[0]!;
-}
-
-/** PC(1024 이상)에서 나란히 걸 두 번째 배너(FB-N24): 활동 순 바로 다음 장. 1위와 겹치지 않는다. */
-export function pickNextCreatorPromoBanner(activeSlugs: readonly string[] = []): CreatorPromoBanner {
-  return rankCreatorPromoBanners(activeSlugs)[1]!;
 }
