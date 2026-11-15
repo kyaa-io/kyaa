@@ -33,10 +33,11 @@ if(service==='iam'){
  out({});
 }
 if(service==='sqs'){
- if(op==='create-queue'){s.queue=s.queue??{};out('https://sqs.ap-northeast-2.amazonaws.com/'+account+'/'+val('--queue-name'));}
- if(op==='get-queue-url'){if(!s.queue)fail('(AWS.SimpleQueueService.NonExistentQueue)');out('https://sqs.ap-northeast-2.amazonaws.com/'+account+'/q');}
- if(op==='set-queue-attributes'){s.queue=JSON.parse(file('--attributes'));out({});}
- if(op==='get-queue-attributes')out(s.queue);
+ s.queues=s.queues??{};const url=name=>'https://sqs.ap-northeast-2.amazonaws.com/'+account+'/'+name,named=()=>val('--queue-url').split('/').pop();
+ if(op==='create-queue'){s.queues[val('--queue-name')]=s.queues[val('--queue-name')]??{};out(url(val('--queue-name')));}
+ if(op==='get-queue-url'){if(!s.queues[val('--queue-name')])fail('(AWS.SimpleQueueService.NonExistentQueue)');out(url(val('--queue-name')));}
+ if(op==='set-queue-attributes'){s.queues[named()]=JSON.parse(file('--attributes'));out({});}
+ if(op==='get-queue-attributes')out(s.queues[named()]);
 }
 if(service==='lambda'){
  if(op==='get-function'){if(!s.fn)fail('(ResourceNotFoundException)');out({});}
@@ -128,7 +129,7 @@ describe("SES feedback deployment contract", () => {
     const ws = workspace();
     const result = run(ws, ["prod", "--dry-run"], "prod");
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain("validated ses feedback deployment: environment=prod profile=sallylab-test account=996702758024 configuration_set=byus-notification-prod topic=byus-ses-feedback-prod function=byus-ses-feedback-prod role=byus-ses-feedback-worker-prod-lambda dlq=byus-ses-feedback-prod-dlq");
+    expect(result.stdout).toContain("validated ses feedback deployment: environment=prod profile=sallylab-test account=996702758024 configuration_set=byus-notification-prod topic=byus-ses-feedback-prod function=byus-ses-feedback-prod role=byus-ses-feedback-worker-prod-lambda sns_dlq=byus-ses-feedback-prod-sns-dlq failed=byus-ses-feedback-prod-failed");
     expect(result.writes).toEqual([]);
   });
 
@@ -137,7 +138,7 @@ describe("SES feedback deployment contract", () => {
     const result = run(ws, ["prod", "--check"], "prod");
     expect(result.status, result.stderr).toBe(0);
     expect(result.writes).toEqual([]);
-    for (const line of ["change create sqs-queue byus-ses-feedback-prod-dlq", "change create iam-role byus-ses-feedback-worker-prod-lambda", "change create lambda byus-ses-feedback-prod", "change create sns-topic byus-ses-feedback-prod", "change create ses-configuration-set byus-notification-prod", "change create ses-event-destination byus-ses-feedback-sns", "change cloudwatch-alarm byus-ses-prod-complaint-rate"])
+    for (const line of ["change create sqs-queue byus-ses-feedback-prod-sns-dlq", "change create sqs-queue byus-ses-feedback-prod-failed", "change create iam-role byus-ses-feedback-worker-prod-lambda", "change create lambda byus-ses-feedback-prod", "change create sns-topic byus-ses-feedback-prod", "change create ses-configuration-set byus-notification-prod", "change create ses-event-destination byus-ses-feedback-sns", "change cloudwatch-alarm byus-ses-prod-complaint-rate"])
       expect(result.stdout).toContain(line);
   });
 
@@ -155,9 +156,15 @@ describe("SES feedback deployment contract", () => {
     expect(JSON.parse(state.topic.Policy).Statement).toEqual([{ Sid: "AllowSesConfigurationSetPublish", Effect: "Allow", Principal: { Service: "ses.amazonaws.com" }, Action: "sns:Publish", Resource: "arn:aws:sns:ap-northeast-2:996702758024:byus-ses-feedback-prod", Condition: { StringEquals: { "AWS:SourceAccount": "996702758024", "AWS:SourceArn": "arn:aws:ses:ap-northeast-2:996702758024:configuration-set/byus-notification-prod" } } }]);
     expect(state.configSet.destinations["byus-ses-feedback-sns"]).toEqual({ Enabled: true, MatchingEventTypes: ["BOUNCE", "COMPLAINT", "DELIVERY", "DELIVERY_DELAY", "REJECT", "SEND"], SnsDestination: { TopicArn: "arn:aws:sns:ap-northeast-2:996702758024:byus-ses-feedback-prod" } });
     expect(state.fn).toMatchObject({ Runtime: "nodejs24.x", Handler: "index.handler", Timeout: 30, Environment: { Variables: { SES_FEEDBACK_ENVIRONMENT: "prod", SES_FEEDBACK_SECRET_ID: "byus/notification/prod", SES_FEEDBACK_TOPIC_ARN: "arn:aws:sns:ap-northeast-2:996702758024:byus-ses-feedback-prod" } } });
-    expect(state.async).toEqual({ MaximumRetryAttempts: 2, MaximumEventAgeInSeconds: 21600, DestinationConfig: { OnFailure: { Destination: "arn:aws:sqs:ap-northeast-2:996702758024:byus-ses-feedback-prod-dlq" } } });
-    expect(JSON.parse(state.subscription.redrive)).toEqual({ deadLetterTargetArn: "arn:aws:sqs:ap-northeast-2:996702758024:byus-ses-feedback-prod-dlq" });
-    expect(JSON.parse(state.queue.Policy).Statement[0]).toMatchObject({ Principal: { Service: "sns.amazonaws.com" }, Action: "sqs:SendMessage", Condition: { ArnEquals: { "aws:SourceArn": "arn:aws:sns:ap-northeast-2:996702758024:byus-ses-feedback-prod" } } });
+    // Lambda async failures (handed over, every attempt threw or aged out) -> "failed".
+    expect(state.async).toEqual({ MaximumRetryAttempts: 2, MaximumEventAgeInSeconds: 21600, DestinationConfig: { OnFailure: { Destination: "arn:aws:sqs:ap-northeast-2:996702758024:byus-ses-feedback-prod-failed" } } });
+    // SNS could not hand the message to Lambda -> "sns-dlq".
+    expect(JSON.parse(state.subscription.redrive)).toEqual({ deadLetterTargetArn: "arn:aws:sqs:ap-northeast-2:996702758024:byus-ses-feedback-prod-sns-dlq" });
+    for (const name of ["byus-ses-feedback-prod-sns-dlq", "byus-ses-feedback-prod-failed"])
+      expect(state.queues[name]).toMatchObject({ MessageRetentionPeriod: "1209600", SqsManagedSseEnabled: "true" });
+    expect(state.queues["byus-ses-feedback-prod-failed"]).not.toHaveProperty("Policy");
+    expect(state.policies["byus-ses-feedback-worker-prod-lambda-failed-send"]).toEqual({ Version: "2012-10-17", Statement: [{ Effect: "Allow", Action: "sqs:SendMessage", Resource: "arn:aws:sqs:ap-northeast-2:996702758024:byus-ses-feedback-prod-failed" }] });
+    expect(JSON.parse(state.queues["byus-ses-feedback-prod-sns-dlq"].Policy).Statement[0]).toMatchObject({ Principal: { Service: "sns.amazonaws.com" }, Action: "sqs:SendMessage", Resource: "arn:aws:sqs:ap-northeast-2:996702758024:byus-ses-feedback-prod-sns-dlq", Condition: { ArnEquals: { "aws:SourceArn": "arn:aws:sns:ap-northeast-2:996702758024:byus-ses-feedback-prod" } } });
     expect(state.policies["byus-ses-feedback-worker-prod-lambda-secret-read"].Statement[0].Resource).toBe("arn:aws:secretsmanager:ap-northeast-2:996702758024:secret:byus/notification/prod-*");
     expect(state.permissions).toEqual(["AllowSnsSesFeedback-prod"]);
     const permission = applied.calls.find(call => call.op === "add-permission")!.args;
@@ -165,11 +172,12 @@ describe("SES feedback deployment contract", () => {
     expect(permission[permission.indexOf("--source-arn") + 1]).toBe("arn:aws:sns:ap-northeast-2:996702758024:byus-ses-feedback-prod");
 
     const alarms = applied.calls.filter(call => call.op === "put-metric-alarm").map(call => call.args);
-    expect(alarms).toHaveLength(4);
+    expect(alarms).toHaveLength(5);
     const metric = (name: string) => alarms.find(args => args.includes(name))!;
     expect(metric("Reputation.BounceRate")).toEqual(expect.arrayContaining(["AWS/SES", "0.02", "ignore"]));
     expect(metric("Reputation.ComplaintRate")).toEqual(expect.arrayContaining(["AWS/SES", "0.001", "ignore"]));
-    expect(metric("ApproximateNumberOfMessagesVisible")).toEqual(expect.arrayContaining(["AWS/SQS", "Name=QueueName,Value=byus-ses-feedback-prod-dlq"]));
+    for (const queue of ["byus-ses-feedback-prod-sns-dlq", "byus-ses-feedback-prod-failed"])
+      expect(alarms.find(args => args.includes(`Name=QueueName,Value=${queue}`))).toEqual(expect.arrayContaining(["AWS/SQS", "ApproximateNumberOfMessagesVisible", "1"]));
     expect(metric("Errors")).toEqual(expect.arrayContaining(["AWS/Lambda", "Name=FunctionName,Value=byus-ses-feedback-prod"]));
     for (const args of alarms) expect(args[args.indexOf("--alarm-actions") + 1]).toBe("arn:aws:sns:ap-northeast-2:996702758024:byus-prod-platform-AlarmTopic-fixture");
 

@@ -90,6 +90,32 @@ describe("SES feedback handler", () => {
     await expect(handler({ Records: [record(events.complaint)] })).rejects.toThrow("SES_FEEDBACK_DB_FAILED");
   });
 
+  // SNS invokes Lambda asynchronously; Lambda runs a failing event 3 times in
+  // total (2 retries) and then sends an invocation record whose requestPayload
+  // is this same SNS event to the on-failure queue. The handler must reject on
+  // every attempt so nothing is acknowledged, and a later replay of that
+  // payload must record the same SNS message id once the database is back.
+  it("never acknowledges a bounce or complaint while the database keeps failing, and records it on replay", async () => {
+    const { rpc, handler } = setup({ error: { message: "connection reset" } });
+    for (const event of [{ Records: [record(events.bounce)] }, { Records: [record(events.complaint, { MessageId: "sns-2" })] }]) {
+      for (let attempt = 1; attempt <= 3; attempt++) await expect(handler(event)).rejects.toThrow("SES_FEEDBACK_DB_FAILED");
+    }
+    expect(rpc).toHaveBeenCalledTimes(6);
+    expect(new Set(rpc.mock.calls.map(([, args]) => args.p_event.sns_message_id))).toEqual(new Set(["sns-1", "sns-2"]));
+    expect(console.info).not.toHaveBeenCalled();
+    rpc.mockResolvedValue({ error: null });
+    const parked = { requestContext: { condition: "RetriesExhausted", approximateInvokeCount: 3 }, requestPayload: { Records: [record(events.bounce)] } };
+    await expect(handler(parked.requestPayload)).resolves.toEqual({ recorded: 1, skipped: 0 });
+    expect(rpc).toHaveBeenLastCalledWith("record_ses_email_event", { p_event: expect.objectContaining({ sns_message_id: "sns-1", event_type: "bounce", bounce_type: "Permanent" }) });
+  });
+
+  it("does not record a later record in the same invocation after an earlier one fails", async () => {
+    const { rpc, handler } = setup();
+    rpc.mockResolvedValueOnce({ error: { message: "timeout" } });
+    await expect(handler({ Records: [record(events.bounce), record(events.complaint, { MessageId: "sns-2" })] })).rejects.toThrow("SES_FEEDBACK_DB_FAILED");
+    expect(rpc).toHaveBeenCalledOnce();
+  });
+
   it("refuses another topic before touching the database", async () => {
     const { rpc, loadSecret, handler } = setup();
     await expect(handler({ Records: [record(events.bounce, { TopicArn: "arn:aws:sns:ap-northeast-2:996702758024:other" })] })).rejects.toThrow("SES_FEEDBACK_TOPIC_MISMATCH");
