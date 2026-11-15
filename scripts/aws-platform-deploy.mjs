@@ -2,6 +2,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { reportFailedStackEvents } from './aws-release-stack-failure.mjs';
 
@@ -66,7 +67,8 @@ export async function loadTemplate(kind) {
 /** Configuration files contain identifiers and secret key names, never credential values. */
 export function validateConfig(config, template) {
   object(config, 'config');
-  onlyKeys(config, ['kind', 'environment', 'region', 'accountId', 'profile', 'stackName', 'parameters', 'runtimeEnvironment', 'runtimeSecretKeys', 'cloudFormationRoleArn'], 'config');
+  onlyKeys(config, ['kind', 'environment', 'region', 'accountId', 'profile', 'stackName', 'parameters', 'runtimeEnvironment', 'runtimeSecretKeys', 'cloudFormationRoleArn', 'templateBucket'], 'config');
+  if (config.templateBucket !== undefined && (typeof config.templateBucket !== 'string' || !/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/.test(config.templateBucket))) fail('templateBucket must be a DNS-safe S3 bucket name without dots');
   if (!KINDS.includes(config.kind)) fail('Explicit kind is required');
   if (!ENVIRONMENTS.includes(config.environment)) fail('Explicit environment dev|staging|prod is required');
   const expectedRegion = config.kind === 'edge-security' ? 'us-east-1' : 'ap-northeast-2';
@@ -195,6 +197,7 @@ export function renderTemplate(config, source) {
 export function deploymentCommand(config, templatePath, parametersPath) {
   return ['cloudformation', 'deploy', ...(config.profile === 'oidc' ? [] : ['--profile', config.profile]), '--region', config.region, '--stack-name', config.stackName,
     ...(config.cloudFormationRoleArn ? ['--role-arn', config.cloudFormationRoleArn] : []),
+    ...(config.templateBucket ? ['--s3-bucket', config.templateBucket, '--s3-prefix', `releases/${config.environment}/templates/${config.stackName}`] : []),
     '--template-file', templatePath, '--parameter-overrides', `file://${parametersPath}`, '--capabilities', 'CAPABILITY_IAM',
     '--no-fail-on-empty-changeset', '--tags', `Project=ByUs`, `Environment=${config.environment}`, `PlatformKind=${config.kind}`];
 }
@@ -229,24 +232,32 @@ export function verifyCertificateCoverage(domains, certificate) {
   if (missing.length) fail(`CloudFront certificate does not cover aliases: ${missing.join(', ')}`);
 }
 
-async function validateAws(config, parameters, templatePath) {
-  verifyIdentity(config, aws(config, ['sts', 'get-caller-identity', '--output', 'json']));
-  aws(config, ['cloudformation', 'validate-template', '--template-body', `file://${templatePath}`, '--output', 'json']);
+export async function validateAws(config, parameters, templatePath, runAws = aws) {
+  verifyIdentity(config, runAws(config, ['sts', 'get-caller-identity', '--output', 'json']));
+  const body = await readFile(templatePath);
+  let templateArgument = ['--template-body', `file://${templatePath}`];
+  if (body.length > 51200) {
+    if (!config.templateBucket) fail('Large templates require templateBucket');
+    const key = `releases/${config.environment}/templates/${config.stackName}/${createHash('sha256').update(body).digest('hex')}.json`;
+    runAws(config, ['s3api', 'put-object', '--bucket', config.templateBucket, '--key', key, '--body', templatePath, '--expected-bucket-owner', config.accountId, '--output', 'json']);
+    templateArgument = ['--template-url', `https://${config.templateBucket}.s3.${config.region}.amazonaws.com/${key}`];
+  }
+  runAws(config, ['cloudformation', 'validate-template', ...templateArgument, '--output', 'json']);
   if (config.kind === 'environment') {
-    const certificate = aws({ ...config, region: 'us-east-1' }, ['acm', 'describe-certificate', '--certificate-arn', parameters.CloudFrontCertificateArn, '--output', 'json']).Certificate;
+    const certificate = runAws({ ...config, region: 'us-east-1' }, ['acm', 'describe-certificate', '--certificate-arn', parameters.CloudFrontCertificateArn, '--output', 'json']).Certificate;
     verifyCertificateCoverage(webDomains(parameters), certificate);
-    const network = aws(config, ['cloudformation', 'describe-stacks', '--stack-name', parameters.NetworkStackName, '--output', 'json']).Stacks?.[0];
+    const network = runAws(config, ['cloudformation', 'describe-stacks', '--stack-name', parameters.NetworkStackName, '--output', 'json']).Stacks?.[0];
     const outputs = Object.fromEntries((network?.Outputs ?? []).map(({ OutputKey, OutputValue }) => [OutputKey, OutputValue]));
     if (outputs.NetworkTier !== (config.environment === 'prod' ? 'prod' : 'nonprod')) fail('Existing network stack has the wrong tier');
     const networkParameters = Object.fromEntries((network?.Parameters ?? []).map(({ ParameterKey, ParameterValue }) => [ParameterKey, ParameterValue]));
     for (const key of ['ProductionAccountId', 'NonproductionAccountId']) if (networkParameters[key] !== parameters[key]) fail(`Existing network ${key} differs`);
     for (const key of ['RuntimeConfigSecretArn', ...(parameters.EnablePostgrest === 'true' ? ['PostgrestSecretArn'] : [])]) {
-      const secret = aws(config, ['secretsmanager', 'describe-secret', '--secret-id', parameters[key], '--output', 'json']);
+      const secret = runAws(config, ['secretsmanager', 'describe-secret', '--secret-id', parameters[key], '--output', 'json']);
       if (secret.DeletedDate) fail(`${key} is scheduled for deletion`);
     }
     for (const key of ['WebImageUri', ...(parameters.EnablePostgrest === 'true' ? ['PostgrestImageUri'] : [])]) {
       const [repository, digest] = parameters[key].split('.amazonaws.com/')[1].split('@');
-      aws(config, ['ecr', 'describe-images', '--repository-name', repository, '--image-ids', `imageDigest=${digest}`, '--output', 'json']);
+      runAws(config, ['ecr', 'describe-images', '--repository-name', repository, '--image-ids', `imageDigest=${digest}`, '--output', 'json']);
     }
   }
 }
@@ -294,7 +305,8 @@ export async function main(argv = process.argv.slice(2)) {
   const templatePath = join(out, `${config.kind}.json`);
   const parametersPath = join(out, 'parameters.json');
   const templateBody = `${JSON.stringify(template)}\n`;
-  if (Buffer.byteLength(templateBody) > 51200) fail('Rendered template exceeds the CloudFormation inline limit');
+  if (Buffer.byteLength(templateBody) > 1048576) fail('Rendered template exceeds the CloudFormation S3 limit');
+  if (Buffer.byteLength(templateBody) > 51200 && !config.templateBucket) fail('Large templates require templateBucket');
   await writeFile(templatePath, templateBody, { mode: 0o600 });
   await writeFile(parametersPath, `${JSON.stringify(Object.entries(values).map(([ParameterKey, ParameterValue]) => ({ ParameterKey, ParameterValue })), null, 2)}\n`, { mode: 0o600 });
   if (flags['--cfn-lint']) {
