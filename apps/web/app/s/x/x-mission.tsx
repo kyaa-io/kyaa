@@ -14,8 +14,8 @@ import { fanLoginHref } from '@/components/login-href';
 import { recordClientProductEvent, pageViewIdempotencyKey } from '@/features/analytics/client/product-event-client';
 import { isXBrowser, missionAttribution } from './mission-context';
 import styles from './x-mission.module.css';
-/** 단계 아이콘: 기존 3D 애셋(확성기 = 이벤트, 문 = 로그인, 분홍 하트 = 좋아요) */
-const stepArt = ['/images/my/shortcuts/reports.webp', '/images/my/shortcuts/logout.webp', '/images/dukjil-duo/glyph-heart-160.webp'] as const;
+/** 단계 아이콘: 기존 3D 애셋(확성기 = 이벤트, 문 = 로그인). 좋아요 단계는 애셋 대신 좋아요 버튼과 같은 별 아이콘(대표 11/15 17:02: 좋아요는 별, 하트는 찐팬 하트) */
+const stepArt = ['/images/my/shortcuts/reports.webp', '/images/my/shortcuts/logout.webp'] as const;
 export const missionSlug = 'x-mission-1113';
 const countSchema = z.object({ likeCount: z.number().int().nonnegative() });
 const statusSchema = z.object({ reaction: reactionResultSchema.nullable() });
@@ -163,7 +163,7 @@ function MissionForOwner({ locale, auth, mission }: { locale: 'ko' | 'en'; auth:
      </div>
      <div className={styles.progress} aria-hidden="true">{[0, 1, 2].map(index => <span key={index} data-done={index < doneSteps ? '' : undefined} />)}</div>
      <ol className={styles.steps}>{t.steps.map((step, index) => { const done = index < doneSteps; return <li data-row="mission-step" key={step} data-done={done ? '' : undefined} aria-current={!completed && index === doneSteps ? 'step' : undefined}>
-      <img className={styles.stepArt} src={stepArt[index]} alt="" width={48} height={48} loading="lazy" decoding="async" />
+      {index < stepArt.length ? <img className={styles.stepArt} src={stepArt[index]} alt="" width={48} height={48} loading="lazy" decoding="async" /> : <span className={`${styles.stepArt} ${styles.stepStar}`} aria-hidden="true"><Star size={32} strokeWidth={1.5} /></span>}
       <span className={styles.stepText}><FanDisplay role="caption" className={styles.stepNo}>0{index + 1}</FanDisplay><FanDisplay role="strong">{step}</FanDisplay></span>
       {done ? <Check className={styles.check} size={20} strokeWidth={1.5} aria-hidden="true" /> : <span className={styles.todo} aria-hidden="true" />}
      </li>; })}</ol>

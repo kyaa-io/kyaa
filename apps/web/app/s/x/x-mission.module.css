@@ -43,6 +43,8 @@
 .steps li { display: grid; grid-template-columns: var(--space-10) minmax(0, 1fr) var(--space-6); align-items: center; gap: var(--space-3); min-height: calc(var(--space-12) + var(--space-2)); padding-block: var(--space-1); }
 .steps li + li { border-top: 1px solid var(--color-line); }
 .stepArt { width: var(--space-10); height: var(--space-10); object-fit: contain; }
+.stepStar { display: grid; place-items: center; color: var(--color-accent); }
+.stepStar svg { fill: currentColor; }
 .steps li:not([data-done]):not([aria-current]) .stepArt { opacity: .45; }
 .stepText { display: grid; gap: var(--space-1); min-width: 0; word-break: keep-all; }
 .stepNo { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
