@@ -93,8 +93,9 @@
   /* 게시판은 행끼리 세로로 맞는다. 긴 이름만 줄임표로 줄고 수와 시간 열은 움직이지 않는다. */
   .row[data-density="board"] .meta { gap: var(--space-3); }
   .row[data-density="board"] .meta > *::before { content: none; }
-  .row[data-density="board"] .authorCell { max-width: 132px; justify-content: flex-end; }
-  .source { max-width: 132px; }
+  /* 팬페이지·작성자도 고정 폭 열이다. 줄마다 같은 x에서 시작하고 긴 이름만 줄임표로 줄어든다. */
+  .source { flex: none; width: 132px; text-align: left; }
+  .authorCell { flex: none; width: 132px; justify-content: flex-start; text-align: left; }
   .row[data-density="board"] .time { flex: none; width: 52px; }
   .row[data-density="board"] .number { display: block; flex: none; width: 64px; text-align: right; }
 }

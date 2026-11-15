@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FanPostRow } from "./fan-post-row";
 
-vi.mock("next/link", () => ({ default: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => <a href={href} className={className}>{children}</a> }));
+vi.mock("next/link", () => ({ default: ({ href, children, className, title }: { href: string; children: React.ReactNode; className?: string; title?: string }) => <a href={href} className={className} title={title}>{children}</a> }));
 afterEach(cleanup);
 const row = (props: Partial<React.ComponentProps<typeof FanPostRow>>) => render(<FanPostRow href="/p" locale="ko" title="글" {...props} />).container;
 
@@ -45,5 +45,12 @@ describe("post row info line alignment", () => {
   });
   it("keeps the info line right-aligned in the one-line layout from 768px", () => {
     expect(wide).toMatch(/\.meta \{ justify-content: flex-end; text-align: right;/);
+  });
+  it("gives the page and author names fixed 132px columns that start at the same x on every row, with the full name in a tooltip", () => {
+    expect(wide).toMatch(/\.source \{ flex: none; width: 132px;/);
+    expect(wide).toMatch(/\.authorCell \{ flex: none; width: 132px; justify-content: flex-start;/);
+    row({ source: { label: "아주 긴 팬페이지 이름", href: "/x" }, author: "긴작성자이름" });
+    expect(screen.getByText("아주 긴 팬페이지 이름")).toHaveAttribute("title", "아주 긴 팬페이지 이름");
+    expect(screen.getByText("긴작성자이름")).toHaveAttribute("title", "긴작성자이름");
   });
 });
