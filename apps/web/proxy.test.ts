@@ -322,6 +322,14 @@ describe("storage upload CSP outside AWS hosting", () => {
     expect(response.headers.get("Content-Security-Policy")).toContain("https://byus-dev-private.s3.ap-northeast-2.amazonaws.com/mobile-media/");
     expect(response.headers.get("Content-Security-Policy")).not.toContain("https://*.s3");
   });
+  it.each([["cognito", false], ["privy", true]] as const)("opens the Privy sign-in origins only in privy mode (AUTH_PROVIDER=%s)", (authProvider, opened) => {
+    vi.stubEnv("HOSTING_PROVIDER", "");
+    vi.stubEnv("AWS_STORAGE_ENABLED", "true");
+    vi.stubEnv("AUTH_PROVIDER", authProvider);
+    const csp = proxy(new NextRequest("http://localhost:3000/benefits?locale=ko")).headers.get("Content-Security-Policy") ?? "";
+    expect(csp.includes("https://auth.privy.io")).toBe(opened);
+    expect(csp.includes("wss://relay.walletconnect.com")).toBe(opened);
+  });
   it("keeps storage origins closed when storage is disabled", () => {
     vi.stubEnv("HOSTING_PROVIDER", "");
     vi.stubEnv("AWS_STORAGE_ENABLED", "false");

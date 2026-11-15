@@ -2,9 +2,10 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 
-// The first-login Google photo import used Privy's Google OAuth access token. Cognito sign-in (PRIVY-EXIT-0005) does
-// not hand that token to the browser, so the import is off; the session readiness hooks stay for their callers.
-const SessionAvatarContext = createContext({
+// The first-login Google photo import uses Privy's Google OAuth access token. Cognito sign-in (PRIVY-EXIT-0005) does
+// not hand that token to the browser, so the import is off there; privy mode provides it from
+// features/auth/client/privy-avatar-session-bridge.tsx. The session readiness hooks stay for their callers.
+export const SessionAvatarContext = createContext({
   markReady: (_ownerId: string) => {},
   reset: () => {},
 });

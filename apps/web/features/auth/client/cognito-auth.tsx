@@ -1,6 +1,7 @@
 "use client";
 import { usePrivy as useFallbackAuth, type ByUsAuth, type ByUsAuthUser } from "./auth-fallback";
 import { openLoginPage } from "./open-login-page";
+import { usePrivyBridge } from "./privy-bridge";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
@@ -52,15 +53,16 @@ export type { ByUsAuth, ByUsAuthUser } from "./auth-fallback";
 /**
  * The app's one auth hook. It reads kyaa's own server session only (Cognito sign-in, PRIVY-EXIT-0005): user.id is the
  * member's identity key (did:privy:… for members from before the move, kyaa:<uuid> after), the same value the server
- * resolves from the Bearer token. Without CognitoAuthProvider (isolated tests only) it returns the fallback state.
+ * resolves from the Bearer token. In privy mode (AUTH_PROVIDER=privy) it reads the Privy bridge instead. With neither
+ * (isolated tests only) it returns the fallback state.
  */
 export function useByUsAuth(): ByUsAuth{
-  const fallback=useFallbackAuth(),cognito=useCognitoAuth();
+  const fallback=useFallbackAuth(),cognito=useCognitoAuth(),privy=usePrivyBridge();
   const {logout:cognitoLogout,session,loading,getAccessToken}=cognito;
   const logout=useCallback(async()=>{const destination=await cognitoLogout();if(destination)window.location.assign(destination);},[cognitoLogout]);
   const authenticated=session?.authenticated===true && session.walletLinked===true && typeof session.userId==="string";
   const userId=authenticated?session!.userId!:null;
   const user=useMemo<ByUsAuthUser|null>(()=>userId?{id:userId,linkedAccounts:[]}:null,[userId]);
   const auth=useMemo<ByUsAuth>(()=>({ready:!loading,authenticated,user,getAccessToken,logout,login:openLoginPage}),[authenticated,getAccessToken,loading,logout,user]);
-  return cognito.enabled?auth:fallback;
+  return cognito.enabled?auth:privy?privy.auth:fallback;
 }

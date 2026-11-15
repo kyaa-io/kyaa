@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { isPrivatePath, isRehearsalPath } from "./seo/metadata";
 import { isInstagramManagementPath, requestLocale } from "./components/locale-path";
 import { isAppLocale } from "./i18n/locales";
-import { adsenseEnabled, awsStorageContentSecurityPolicy } from "./security-headers";
+import { adsenseEnabled, awsStorageContentSecurityPolicy, privySignInEnabled } from "./security-headers";
 import { isAwsHosting } from "./server/config/hosting";
 import { releaseSha } from "./server/config/release-sha";
 import { readGa4MeasurementId } from "./features/analytics/domain/ga4-id";
@@ -97,6 +97,7 @@ export function proxy(request: NextRequest): NextResponse {
         adsense,
         bucket: process.env.S3_PRIVATE_BUCKET, region: process.env.AWS_REGION,
         stage: request.nextUrl.pathname === "/admin/wave-stage",
+        privy: privySignInEnabled(process.env),
       }));
     }
     // Lets a screenshot check confirm which deployment served the page; same value /api/health/live already shows.

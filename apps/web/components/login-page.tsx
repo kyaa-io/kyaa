@@ -8,6 +8,8 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
 
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { usePrivyBridge } from "@/features/auth/client/privy-bridge";
+import { getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import Image, { getImageProps } from "next/image";
 import Link from "./fan-ui/hover-prefetch-link";
 import type { Route } from "next";
@@ -155,6 +157,9 @@ export function LoginPage({
   const searchParams = useSearchParams();
   const { ready, authenticated, getAccessToken, logout, user } = useByUsAuth();
   const privyUserId = user?.id;
+  // Privy mode only (AUTH_PROVIDER=privy): Google and Apple start in Privy and return here with privy_oauth_* parameters.
+  const privy = usePrivyBridge();
+  const oauthGuard = getOAuthStartGuard();
   const byUsSession = useByUsSession();
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
@@ -207,6 +212,10 @@ export function LoginPage({
       ? locale === "ko" ? "계정을 확인하지 못했어요. 다시 로그인해 주세요." : translate(locale, localizedMessages.m944ca3336d23, "We couldn't verify your account. Please sign in again.")
       : null);
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
+  const oauthReturnPending = privy !== null && ["privy_oauth_code", "privy_oauth_state", "privy_oauth_provider"].some((key) => searchParams.has(key));
+  const privyLoginErrorMessage = appleLoginEnabled
+    ? locale === "ko" ? "로그인을 완료하지 못했어요. Google 또는 Apple 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.mc426e8d8a8f2, "We couldn't complete sign-in. Check your Google or Apple account, then try again.")
+    : locale === "ko" ? "로그인을 완료하지 못했어요. Google 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.m2c842480d657, "We couldn't complete sign-in. Check your Google account, then try again.");
 
   const startOAuthLogin = useCallback((provider: "google" | "apple" | "kakao") => {
     if (provider === "google") {
@@ -231,6 +240,22 @@ export function LoginPage({
         return;
       }
     }
+    if (privy) {
+      if (provider === "kakao" || oauthGuard.getSnapshot() !== "idle") return;
+      setError(null);
+      setOauthStarting(true);
+      const measurement = signupFunnelTracker.beginLogin(provider, "provider", toContentLocale(locale));
+      loginMeasurementRef.current = measurement;
+      void oauthGuard.start(() => privy.startOAuth(provider), SDK_OPERATION_TIMEOUT_MS)
+        ?.catch((caught) => {
+          reportRecoveryFailure("login.oauth", caught);
+          signupFunnelTracker.result(measurement, "failed", "oauth", caught instanceof RequestTimeoutError ? "timeout" : "provider_error");
+          if (!mountedRef.current) return;
+          setOauthStarting(false);
+          setError(privyLoginErrorMessage);
+        });
+      return;
+    }
     if (oauthStarting) return;
     setError(null);
     setOauthStarting(true);
@@ -238,7 +263,18 @@ export function LoginPage({
     // 돌아온 첫 화면에서 세션 확인 전에 공개 값을 그리지 않게 표시를 남긴다. 로그인을 그만두면 다음 확인 때 지워진다.
     rememberSession(true);
     window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
-  }, [iosInstagram, locale, oauthStarting, restartOAuthPath, returnTo]);
+  }, [iosInstagram, locale, oauthGuard, oauthStarting, privy, privyLoginErrorMessage, restartOAuthPath, returnTo]);
+
+  useEffect(() => privy?.subscribeOAuth({
+    // The OAuth result can arrive on the return page before Privy reports `authenticated`.
+    onComplete: (userId) => { void synchronizeSession(userId); },
+    onError: () => {
+      const measurement = loginMeasurementRef.current ?? signupFunnelTracker.pendingLogin();
+      if (measurement?.trigger === "provider" && !measurement.failed && !measurement.succeeded) signupFunnelTracker.result(measurement, "failed", "oauth", "provider_error");
+      setOauthStarting(false);
+      setError(privyLoginErrorMessage);
+    },
+  }), [privy, privyLoginErrorMessage, synchronizeSession]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -293,14 +329,14 @@ export function LoginPage({
   useEffect(() => {
     // Privy calls onComplete before finally replacing the OAuth URL. Navigating
     // inside that callback lets Next's later history restore cancel the move.
-    if (!ready || !authenticated || !privyUserId
+    if (oauthReturnPending || !ready || !authenticated || !privyUserId
       || byUsSession.ownerId !== privyUserId || byUsSession.error || !byUsSession.destination
       || byUsSession.recoveryPath !== restartOAuthPath) return;
     const navigationKey = `${privyUserId}|${byUsSession.generation}|${byUsSession.destination}`;
     if (navigatedTransitionRef.current === navigationKey) return;
     navigatedTransitionRef.current = navigationKey;
     router.replace(byUsSession.destination as Route);
-  }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, byUsSession.recoveryPath, privyUserId, ready, restartOAuthPath, router]);
+  }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, byUsSession.recoveryPath, oauthReturnPending, privyUserId, ready, restartOAuthPath, router]);
 
   useEffect(() => {
     if (!(authenticated ? (byUsSession.error ?? error) : loginError)) return;
@@ -567,7 +603,7 @@ export function LoginPage({
           <ArrowRight />
         </button>
         {browserHandoffNotice}
-        {cognitoKakaoEnabled && <button className={styles.googleButton} type="button"
+        {cognitoKakaoEnabled && !privy && <button className={styles.googleButton} type="button"
           disabled={!ready || authenticated || oauthStarting}
           aria-busy={authenticated || oauthStarting}
           onClick={() => startOAuthLogin("kakao")}>
@@ -586,7 +622,7 @@ export function LoginPage({
             <ArrowRight />
           </button>
         )}
-        <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />
+        {!privy && <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />}
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
     </div>
   );

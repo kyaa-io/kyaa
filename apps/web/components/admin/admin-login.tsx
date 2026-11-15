@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "../fan-ui/hover-prefetch-link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { usePrivyBridge } from "@/features/auth/client/privy-bridge";
 import { GoogleMark } from "../icons";
 import styles from "./admin.module.css";
 import { useAdminSession } from "./use-admin-session";
@@ -20,7 +21,10 @@ export function adminReturnPath(search: string): string {
 }
 
 export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAccessState }) {
+  // Privy mode (AUTH_PROVIDER=privy): Privy's Google sign-in window; Cognito mode: the Cognito Hosted UI.
+  const privy = usePrivyBridge();
   const startGoogle = () => {
+    if (privy) return privy.openGoogleLogin();
     const returnTo = `/admin/login?${new URLSearchParams({ returnTo: adminReturnPath(window.location.search) })}`;
     window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider: "google", returnTo, locale: "ko" })}`, window.location.origin).href);
   };

@@ -77,7 +77,7 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const locale = parseAppLocale(requestHeaders.get("x-byus-locale"));
   const rewardedExchange = rewardedExchangeDecision(process.env);
-  const { ga4MeasurementId } = publicRuntimeConfig();
+  const { authProvider, privyAppId, appleLoginEnabled, testAccountLoginEnabled, ga4MeasurementId } = publicRuntimeConfig();
   return (
     <html lang={locale}>
       {/* AdSense site ownership: the snippet in the server HTML head of every page, on kyaa.io only (proxy decides x-byus-adsense). */}
@@ -87,7 +87,7 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
-        <AuthRoot>
+        <AuthRoot authProvider={authProvider} privyAppId={privyAppId} appleLoginEnabled={appleLoginEnabled} testAccountLoginEnabled={testAccountLoginEnabled}>
           <DeferredRootClients slot="before" />
           {isAwsHosting() && <AwsPerformanceTelemetry />}
           <Suspense fallback={null}>

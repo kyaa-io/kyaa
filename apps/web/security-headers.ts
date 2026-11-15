@@ -32,8 +32,28 @@ const contentSecurityPolicy = [
   "media-src 'self' blob:",
 ].join("; ");
 
+// Privy sign-in (AUTH_PROVIDER=privy, PRIVY-RESTORE-1115): Privy's auth frame and the embedded wallet's connections, the
+// 57c922b24 list. Cognito mode never opens them. Same default as publicRuntimeConfig: anything but "cognito" is Privy.
+const privyFrameSources = ["https://auth.privy.io", "https://verify.walletconnect.com", "https://verify.walletconnect.org"];
+const privyConnectSources = [
+  "https://auth.privy.io",
+  "wss://relay.walletconnect.com",
+  "wss://relay.walletconnect.org",
+  "wss://www.walletlink.org",
+  "https://*.rpc.privy.systems",
+  "https://explorer-api.walletconnect.com",
+];
+export function privySignInEnabled(source: Record<string, string | undefined> = process.env): boolean {
+  return source.AUTH_PROVIDER !== "cognito";
+}
+export function withPrivySignIn(policy: string): string {
+  return policy
+    .replace("frame-src ", `child-src ${privyFrameSources.join(" ")}; frame-src ${privyFrameSources.join(" ")} `)
+    .replace("connect-src 'self'", `connect-src 'self' ${privyConnectSources.join(" ")}`);
+}
+
 export const responseSecurityHeaders: ResponseHeader[] = [
-  { key: "Content-Security-Policy", value: contentSecurityPolicy },
+  { key: "Content-Security-Policy", value: privySignInEnabled() ? withPrivySignIn(contentSecurityPolicy) : contentSecurityPolicy },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -56,8 +76,8 @@ export const ADSENSE_ORIGIN = "https://kyaa.io";
 /** The viewer's origin as the proxy sees it; the snippet and its CSP origins open only for https://kyaa.io. */
 export function adsenseEnabled(viewerOrigin: string): boolean { return viewerOrigin === ADSENSE_ORIGIN; }
 
-export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean }): string {
-  let policy = contentSecurityPolicy;
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean; privy?: boolean }): string {
+  let policy = config.privy ? withPrivySignIn(contentSecurityPolicy) : contentSecurityPolicy;
   // adsbygoogle.js and what it calls back to (Google's AdSense code snippet requirements).
   if (config.adsense) {
     policy = policy

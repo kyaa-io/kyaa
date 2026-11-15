@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { awsStorageContentSecurityPolicy, responseSecurityHeaders } from "./security-headers";
+import { awsStorageContentSecurityPolicy, privySignInEnabled, responseSecurityHeaders, withPrivySignIn } from "./security-headers";
 import { unstable_getResponseFromNextConfig } from "next/experimental/testing/server";
 import nextConfig from "./next.config";
 
@@ -78,13 +78,25 @@ describe("response security headers", () => {
     }
   });
 
-  it("opens no third-party auth origin: sign-in is a top-level Cognito navigation", () => {
-    const csp = header("Content-Security-Policy");
+  it("opens no third-party auth origin in Cognito mode: sign-in is a top-level Cognito navigation", () => {
+    const csp = awsStorageContentSecurityPolicy({});
 
-    for (const origin of ["privy", "walletconnect", "walletlink"]) expect(csp).not.toContain(origin);
+    for (const origin of ["privy", "walletconnect", "walletlink", "child-src"]) expect(csp).not.toContain(origin);
     expect(csp).toContain("connect-src 'self' https://*.tiktokcdn.com");
     expect(csp).not.toContain("frame-src *");
     expect(csp).not.toContain("connect-src *");
+    expect(privySignInEnabled({ AUTH_PROVIDER: "cognito" })).toBe(false);
+  });
+
+  it("opens exactly the 57c922b24 Privy origins in privy mode (PRIVY-RESTORE-1115)", () => {
+    const csp = awsStorageContentSecurityPolicy({ privy: true });
+    expect(csp).toContain("child-src https://auth.privy.io https://verify.walletconnect.com https://verify.walletconnect.org;");
+    expect(csp).toContain("frame-src https://auth.privy.io https://verify.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com https://www.youtube.com https://www.tiktok.com;");
+    expect(csp).toContain("connect-src 'self' https://auth.privy.io wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://explorer-api.walletconnect.com https://*.tiktokcdn.com");
+    expect(withPrivySignIn(awsStorageContentSecurityPolicy({}))).toBe(csp);
+    expect(privySignInEnabled({ AUTH_PROVIDER: "privy" })).toBe(true);
+    expect(privySignInEnabled({})).toBe(true);
+    expect(header("Content-Security-Policy")).toBe(privySignInEnabled() ? csp : awsStorageContentSecurityPolicy({}));
   });
 
   it("opens no origin for the retired Supabase Storage hosts", () => {
