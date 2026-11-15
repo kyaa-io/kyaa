@@ -23,6 +23,7 @@ import { levelLabel, type PassportLocale } from "../domain/passport-read-model";
 import { sanitizeLiveReturnTo } from "@/features/quiz/domain/live-return-context";
 import { StampPress } from "@/features/dukjil/ui/stamp-press";
 import { PassportStampCanvas, VerificationSealArtwork } from "./passport-stamp-artwork";
+import { PassportXShare } from "./passport-x-share";
 import styles from "./passport-issuance-dialog.module.css";
 
 type CeremonyIssuance = IssuanceAggregate & { firstStamp: NonNullable<IssuanceAggregate["firstStamp"]> };
@@ -354,6 +355,7 @@ export function PassportIssuanceCeremony({
                     {liveReturnTo ? <Link className={fanActionClassName("neutral", { fullWidth: true, className: styles.openPassport })} href={passportHref}>
                       <span>{t.open}</span><ArrowRight aria-hidden="true" />
                     </Link> : null}
+                    <PassportXShare creator={issuance.celebrity} locale={locale} fullWidth />
                   </div>
                   <p className={styles.revisitHint}><Link href={withLocale("/my", locale)}>{t.openMy}</Link></p>
                 </div>
