@@ -46,4 +46,9 @@ export const proofsSource = {
   pfBoard: { ko: "인증했어요", en: "Verified" },
   pfBoardEmpty: { ko: "아직 올라온 인증이 없어요", en: "No verifications posted yet" },
   pfMore: { ko: "더 보기", en: "Load more" },
+  pfTabSubmit: { ko: "인증하기", en: "Submit proof" },
+  pfStatTotal: { ko: "누적 인증", en: "Verified" },
+  pfStatMonth: { ko: "이번 달 인증 팬", en: "Fans this month" },
+  pfMethods: { ko: "인증 방법", en: "Ways to verify" },
+  pfMine: { ko: "내 인증", en: "My proofs" },
 } as const;

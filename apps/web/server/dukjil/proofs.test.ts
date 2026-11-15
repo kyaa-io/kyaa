@@ -257,3 +257,28 @@ describe("proof post body", () => {
     expect(proofPostBody("ja")).toBe("認証しました"); expect(proofPostBody("xx")).toBe("인증했어요"); expect(proofPostBody(null)).toBe("인증했어요");
   });
 });
+
+describe("proof tab summary", () => {
+  const request = () => new Request("https://fixture.test/api/pages/kyaa-wave/proofs/summary");
+  it("returns only counts and open proof kinds, cached like the anonymous board", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue({ approvedCount: 8, monthFanCount: 3, proofTypes: ["membership", "receipt"], appUserId: owner });
+    const res = await h.summary(request(), "kyaa-wave");
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ approvedCount: 8, monthFanCount: 3, proofTypes: ["membership", "receipt"] });
+    expect(res.headers.get("cache-control")).toBe("public, max-age=60");
+    const [name, args] = vi.mocked(deps.rpc).mock.calls[0] as [string, Record<string, unknown>];
+    expect(name).toBe("read_proof_summary");
+    expect(args.p_celebrity).toBe(creator);
+    expect(String(args.p_month_start)).toMatch(/^\d{4}-\d{2}-\d{2}T15:00:00\.000Z$/);
+    expect(deps.authorize).not.toHaveBeenCalled();
+  });
+  it("answers an empty page with zeros and an unknown page with 404", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue({ approvedCount: 0, monthFanCount: 0, proofTypes: [] });
+    expect(await (await h.summary(request(), creator)).json()).toEqual({ approvedCount: 0, monthFanCount: 0, proofTypes: [] });
+    expect((await h.summary(request(), "nobody")).status).toBe(404);
+  });
+  it("fails closed when the database answer has an unknown shape", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue({ approvedCount: "8", monthFanCount: 3, proofTypes: ["membership"] });
+    expect((await h.summary(request(), "kyaa-wave")).status).toBe(503);
+  });
+});

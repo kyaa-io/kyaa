@@ -1,6 +1,6 @@
 "use client";
 import { JjinfanChallengeEntry } from "@/features/rankings/ui/jjinfan-challenge-entry";
-import { PublicProofsTab } from "@/features/passport-proofs/ui/proofs-screen";
+import { PublicProofsTab } from "@/features/passport-proofs/ui/proofs-tab";
 import { fanStageNextText } from "@/features/rewards/ui/fan-stage-next";
 import {PopularPosts} from '@/features/groups/ui/popular-posts';
 import {fanStories,proofTab} from '@/features/groups/ui/home-copy';

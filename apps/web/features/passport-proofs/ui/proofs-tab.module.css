@@ -1,0 +1,45 @@
+/* FB-N21 덕후인증 탭: 보상 판(강조 판, 화면당 1) → 인증 방법·내 인증(1024+ 2열) → 공개 사진 피드. */
+.tab { display: grid; gap: var(--fan-section-gap); min-width: 0; }
+/* FanSectionHeader owns the 16 below the title. */
+.block { display: grid; min-width: 0; align-content: start; }
+
+.reward { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-6); padding: var(--space-5); border: 1px solid var(--color-accent-line); border-radius: var(--radius-card); background: var(--color-accent-soft); }
+.rewardIcon { display: inline-flex; align-items: center; gap: var(--space-2); }
+.rewardPlus { position: relative; top: -0.07em; }
+.stats { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); margin: 0; }
+.stat { display: flex; align-items: baseline; gap: var(--space-2); }
+.statValue { margin: 0; font-variant-numeric: tabular-nums; }
+.rewardAction { flex: 1 1 100%; }
+@media (width >= 48rem) {
+  .reward { padding: var(--space-6); }
+  .rewardAction { flex: 0 0 auto; margin-inline-start: auto; }
+}
+
+.pair { display: grid; gap: var(--fan-section-gap); min-width: 0; }
+@media (width >= 64rem) {
+  .pair { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--col-gap); }
+  .pair[data-single] { grid-template-columns: minmax(0, 1fr); }
+}
+
+.method { display: flex; align-items: center; gap: var(--space-3); min-height: calc(var(--min-target) + var(--space-3)); padding: 0 var(--space-4); border-bottom: 1px solid var(--color-line-subtle); color: var(--color-ink); text-decoration: none; }
+.method:focus-visible { outline: 3px solid var(--color-focus); outline-offset: -3px; }
+@media (hover: hover) and (pointer: fine) { .method:hover { background: var(--color-accent-soft); } }
+.methodName { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+
+.mine { display: grid; gap: var(--space-2); justify-items: start; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-line-subtle); }
+.mineHead { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: calc(var(--space-8)); }
+.mineHead .methodName { flex: 0 1 auto; }
+.mineTag { margin-inline-start: auto; }
+.mineNote { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-1) var(--space-3); width: 100%; }
+.reason { flex: 1 1 12rem; min-width: 0; margin: 0; color: var(--color-error); overflow-wrap: anywhere; }
+.reason span { color: var(--color-muted); }
+
+.feed { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-3); margin: 0; padding: 0; list-style: none; }
+@media (width >= 48rem) { .feed { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (width >= 80rem) { .feed { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.tile { display: grid; gap: var(--space-2); min-width: 0; align-content: start; justify-items: start; }
+.frameLink { display: block; width: 100%; border-radius: var(--radius-card); }
+.frameLink:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 2px; }
+.frame { display: block; width: 100%; aspect-ratio: 3 / 4; border-radius: var(--radius-card); background: var(--color-accent-soft); }
+.photo { display: block; width: 100%; height: 100%; object-fit: contain; }
+.tileMeta { display: flex; align-items: center; gap: var(--space-2); width: 100%; min-height: var(--min-target); }

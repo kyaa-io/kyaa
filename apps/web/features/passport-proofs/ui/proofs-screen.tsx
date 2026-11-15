@@ -4,9 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ImagePlus } from "lucide-react";
 
-import { DukjilProvider, useDukjil } from "@/features/dukjil/ui/dukjil-provider";
-import { FanNumber } from "@/components/fan-ui/fan-number";
-import { POINT_COIN_SRC, EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanLockedRows } from "@/components/fan-ui/fan-locked-value";
 import { GuestLoginAction } from "@/features/my/ui/guest-login";
@@ -20,11 +18,11 @@ import { listMyProofs, listProofBoard, listProofMissions, ProofRequestError, res
 import { proofsText, type ProofsCopyKey } from "./proofs-copy";
 import styles from "./proofs.module.css";
 
-const TYPE_KEY: Record<ProofType, ProofsCopyKey> = {
+export const PROOF_TYPE_KEY: Record<ProofType, ProofsCopyKey> = {
   membership: "pfTypeMembership", purchase: "pfTypePurchase", receipt: "pfTypeReceipt", ticket: "pfTypeTicket",
   donation: "pfTypeDonation", funding: "pfTypeFunding", kyaa_payment: "pfTypeKyaaPayment", sns_post: "pfTypeSns",
 };
-const STATUS_KEY: Record<MyProofItem["status"], ProofsCopyKey> = {
+export const PROOF_STATUS_KEY: Record<MyProofItem["status"], ProofsCopyKey> = {
   pending: "pfStatusPending", in_review: "pfStatusPending", approved: "pfStatusApproved",
   changes_requested: "pfStatusChanges", rejected: "pfStatusRejected",
 };
@@ -41,7 +39,7 @@ export function JjinfanTitle({ locale, rank }: { locale: AppLocale; rank: number
 }
 
 export function ProofStatusBadge({ locale, status }: { locale: AppLocale; status: MyProofItem["status"] }) {
-  return <span className={styles.status} data-status={status}>{proofsText(locale, STATUS_KEY[status])}</span>;
+  return <span className={styles.status} data-status={status}>{proofsText(locale, PROOF_STATUS_KEY[status])}</span>;
 }
 
 export function ProofHistory({ locale, items, onResubmit }: { locale: AppLocale; items: MyProofItem[]; onResubmit: (item: MyProofItem) => void }) {
@@ -51,7 +49,7 @@ export function ProofHistory({ locale, items, onResubmit }: { locale: AppLocale;
       {items.map((item) => (
         <li key={item.submissionId} className={styles.historyRow}>
           <div className={styles.rowHead}>
-            <strong className={styles.rowTitle}>{proofsText(locale, TYPE_KEY[item.proofType])}</strong>
+            <strong className={styles.rowTitle}>{proofsText(locale, PROOF_TYPE_KEY[item.proofType])}</strong>
             <ProofStatusBadge locale={locale} status={item.status} />
           </div>
           {item.reason ? <p className={styles.reason}><span>{proofsText(locale, "pfReason")}</span> {item.reason}</p> : null}
@@ -62,17 +60,17 @@ export function ProofHistory({ locale, items, onResubmit }: { locale: AppLocale;
   );
 }
 
-export function ProofBoardList({ locale, items, onChanged, photoFeed = false }: { locale: AppLocale; items: ProofBoardItem[]; onChanged?: () => void; photoFeed?: boolean }) {
+export function ProofBoardList({ locale, items, onChanged }: { locale: AppLocale; items: ProofBoardItem[]; onChanged?: () => void }) {
   // After a block succeeds the card goes away at once (by post id, no author id); the re-fetch then drops the author's other posts.
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
-  const shown = items.filter((item) => !hidden.has(item.postId) && (!photoFeed || Boolean(item.imageUrl)));
+  const shown = items.filter((item) => !hidden.has(item.postId));
   if (!shown.length) return <p className={styles.state}>{proofsText(locale, "pfBoardEmpty")}</p>;
   return (
-    <ul className={photoFeed ? styles.photoFeed : styles.list}>
+    <ul className={styles.list}>
       {shown.map((item) => (
         <li key={item.postId} className={styles.historyRow}>
           <div className={styles.rowHead}>
-            <strong className={styles.rowTitle}>{proofsText(locale, TYPE_KEY[item.proofType])}</strong>
+            <strong className={styles.rowTitle}>{proofsText(locale, PROOF_TYPE_KEY[item.proofType])}</strong>
             {item.jjinfanRank ? <JjinfanTitle locale={locale} rank={item.jjinfanRank} /> : null}
             <ContentActions targetType="fan_post" targetId={item.postId} locale={locale} onChanged={() => { setHidden((current) => new Set(current).add(item.postId)); onChanged?.(); }} />
           </div>
@@ -81,14 +79,14 @@ export function ProofBoardList({ locale, items, onChanged, photoFeed = false }: 
             <img className={styles.boardImage} src={item.imageUrl} alt="" loading="lazy" />
           ) : null}
           {item.awardedPoints != null ? <EarnBadge variant="inline" locale={locale} points={item.awardedPoints} /> : null}
-          {!photoFeed ? <p className={styles.body}>{item.body}</p> : null}
+          <p className={styles.body}>{item.body}</p>
         </li>
       ))}
     </ul>
   );
 }
 
-function useResource<T>(load: () => Promise<T>, deps: unknown[]) {
+export function useProofResource<T>(load: () => Promise<T>, deps: unknown[]) {
   const [state, setState] = useState<Resource<T>>({ status: "loading" });
   const [tick, setTick] = useState(0);
   useEffect(() => {
@@ -105,29 +103,6 @@ function Failure({ locale, retry }: { locale: AppLocale; retry: () => void }) {
   return <p className={styles.state} role="alert">{proofsText(locale, "pfError")}<FanAction variant="text" onClick={retry}>{proofsText(locale, "pfRetry")}</FanAction></p>;
 }
 
-export function PublicProofsTab({ locale, slug }: { locale: AppLocale; slug: string }) {
-  return <DukjilProvider slug={slug} locale={locale}><PublicProofsFeed locale={locale} slug={slug} /></DukjilProvider>;
-}
-
-function PublicProofsFeed({ locale, slug }: { locale: AppLocale; slug: string }) {
-  const dukjil = useDukjil();
-  const points = dukjil?.status === "on" ? dukjil.catalog?.rules.proof?.points : undefined;
-  const auth = useByUsAuth();
-  const board = useResource(async () => {
-    const token = auth.ready && auth.authenticated ? await auth.getAccessToken() : null;
-    return listProofBoard(slug, undefined, token);
-  }, [slug, auth.ready, auth.authenticated]);
-  return <section data-block="proof-feed" className={styles.panel}>
-    <div className={styles.feedActions}>
-    {typeof points === "number" ? <FanNumber value={points} unit="P" locale={locale} size="xl" icon={<span className={styles.rewardIcon}><img src={POINT_COIN_SRC} width={32} height={32} alt="" /><span className={styles.rewardPlus}>+</span></span>} /> : null}
-    <FanAction href={`/c/${slug}/proofs?locale=${locale}`} variant="neutral">{locale === "ko" ? "인증하기" : "Submit proof"}</FanAction>
-    </div>
-    {board.state.status === "loading" ? <p role="status">{proofsText(locale, "pfLoading")}</p> : null}
-    {board.state.status === "error" ? <Failure locale={locale} retry={board.retry} /> : null}
-    {board.state.status === "ready" ? <ProofBoardList locale={locale} items={board.state.data.items} onChanged={board.retry} photoFeed /> : null}
-  </section>;
-}
-
 type Props = { locale: AppLocale; slug: string };
 
 export function ProofsScreen({ locale, slug }: Props) {
@@ -137,12 +112,12 @@ export function ProofsScreen({ locale, slug }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [auth.ready, auth.authenticated],
   );
-  const history = useResource(() => (auth.ready ? listMyProofs(getToken, slug) : new Promise<never>(() => {})), [slug, auth.ready, getToken]);
-  const board = useResource(async () => {
+  const history = useProofResource(() => (auth.ready ? listMyProofs(getToken, slug) : new Promise<never>(() => {})), [slug, auth.ready, getToken]);
+  const board = useProofResource(async () => {
     const token = auth.ready && auth.authenticated ? await auth.getAccessToken().catch(() => null) : null;
     return listProofBoard(slug, undefined, token);
   }, [slug, auth.ready, auth.authenticated]);
-  const missions = useResource(() => (auth.ready ? listProofMissions(getToken, slug) : new Promise<never>(() => {})), [slug, auth.ready, getToken]);
+  const missions = useProofResource(() => (auth.ready ? listProofMissions(getToken, slug) : new Promise<never>(() => {})), [slug, auth.ready, getToken]);
   // The passport 07 card links here with ?type=sns_post; an unknown value falls back to the first listed type.
   const linkedType = proofTypeSchema.safeParse(useSearchParams()?.get("type")).data ?? null;
   const [chosenType, setChosenType] = useState<ProofType | null>(linkedType);
@@ -213,7 +188,7 @@ export function ProofsScreen({ locale, slug }: Props) {
           {types.map((type) => (
             <label key={type} className={styles.chip} data-selected={proofType === type}>
               <input type="radio" name="proofType" value={type} checked={proofType === type} onChange={() => setChosenType(type)} />
-              {proofsText(locale, TYPE_KEY[type])}
+              {proofsText(locale, PROOF_TYPE_KEY[type])}
             </label>
           ))}
         </fieldset>

@@ -1,5 +1,5 @@
 import {
-  proofCommandResultSchema, myProofsSchema, proofBoardSchema, proofMissionListSchema,
+  proofCommandResultSchema, myProofsSchema, proofBoardSchema, proofMissionListSchema, proofSummarySchema,
   type ProofType,
 } from "@/features/passport/domain/proof-types";
 import { z } from "zod";
@@ -87,6 +87,11 @@ export async function listProofBoard(pageIdOrSlug: string, before?: string, toke
   const response = await fetch(`/api/pages/${encodeURIComponent(pageIdOrSlug)}/posts?${query}`,
     token ? { cache: "no-store", headers: { Authorization: `Bearer ${token}` } } : undefined);
   return proofBoardSchema.parse(await ensureOk(response));
+}
+
+/** Page counts and the proof kinds open now. The same for every viewer, so no token is sent. */
+export async function readProofSummary(pageIdOrSlug: string) {
+  return proofSummarySchema.parse(await ensureOk(await fetch(`/api/pages/${encodeURIComponent(pageIdOrSlug)}/proofs/summary`)));
 }
 
 export async function listProofMissions(getToken: TokenGetter, creator: string) {

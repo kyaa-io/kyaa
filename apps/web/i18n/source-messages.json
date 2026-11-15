@@ -16397,6 +16397,36 @@
     "source": "features/passport-proofs/ui/proofs-copy",
     "id": "features/passport-proofs/ui/proofs-copy:pfBoardEmpty"
   },
+  "pfTabSubmit": {
+    "en": "Submit proof",
+    "ko": "인증하기",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfTabSubmit"
+  },
+  "pfStatTotal": {
+    "en": "Verified",
+    "ko": "누적 인증",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfStatTotal"
+  },
+  "pfStatMonth": {
+    "en": "Fans this month",
+    "ko": "이번 달 인증 팬",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfStatMonth"
+  },
+  "pfMethods": {
+    "en": "Ways to verify",
+    "ko": "인증 방법",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfMethods"
+  },
+  "pfMine": {
+    "en": "My proofs",
+    "ko": "내 인증",
+    "source": "features/passport-proofs/ui/proofs-copy",
+    "id": "features/passport-proofs/ui/proofs-copy:pfMine"
+  },
   "pfMore": {
     "en": "Load more",
     "ko": "더 보기",

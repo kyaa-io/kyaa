@@ -552,5 +552,65 @@ export const messages = {
     "pt": "Ver mais",
     "fr": "Voir plus",
     "ru": "Ещё"
+  },
+  "pfTabSubmit": {
+    "ja": "認証する",
+    "zh-Hans": "去认证",
+    "zh-Hant": "去認證",
+    "es": "Enviar comprobante",
+    "id": "Kirim bukti",
+    "vi": "Gửi bằng chứng",
+    "th": "ส่งหลักฐาน",
+    "pt": "Enviar comprovante",
+    "fr": "Envoyer une preuve",
+    "ru": "Отправить подтверждение"
+  },
+  "pfStatTotal": {
+    "ja": "累計認証",
+    "zh-Hans": "累计认证",
+    "zh-Hant": "累計認證",
+    "es": "Verificados",
+    "id": "Terverifikasi",
+    "vi": "Đã xác thực",
+    "th": "ยืนยันแล้ว",
+    "pt": "Verificados",
+    "fr": "Vérifiés",
+    "ru": "Подтверждено"
+  },
+  "pfStatMonth": {
+    "ja": "今月の認証ファン",
+    "zh-Hans": "本月认证粉丝",
+    "zh-Hant": "本月認證粉絲",
+    "es": "Fans este mes",
+    "id": "Fan bulan ini",
+    "vi": "Fan tháng này",
+    "th": "แฟนเดือนนี้",
+    "pt": "Fãs neste mês",
+    "fr": "Fans ce mois-ci",
+    "ru": "Фанаты за месяц"
+  },
+  "pfMethods": {
+    "ja": "認証方法",
+    "zh-Hans": "认证方式",
+    "zh-Hant": "認證方式",
+    "es": "Formas de verificar",
+    "id": "Cara verifikasi",
+    "vi": "Cách xác thực",
+    "th": "วิธียืนยัน",
+    "pt": "Formas de verificar",
+    "fr": "Façons de vérifier",
+    "ru": "Способы подтверждения"
+  },
+  "pfMine": {
+    "ja": "自分の認証",
+    "zh-Hans": "我的认证",
+    "zh-Hant": "我的認證",
+    "es": "Mis comprobantes",
+    "id": "Bukti saya",
+    "vi": "Bằng chứng của tôi",
+    "th": "หลักฐานของฉัน",
+    "pt": "Meus comprovantes",
+    "fr": "Mes preuves",
+    "ru": "Мои подтверждения"
   }
 } satisfies Record<string, TranslatedMessage>;
