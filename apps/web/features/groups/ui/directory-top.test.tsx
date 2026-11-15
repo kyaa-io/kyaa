@@ -27,10 +27,11 @@ const banner = (strip: boolean, id = "11111111-1111-4111-8111-111111111111"): Ho
 beforeEach(() => { state.authenticated = false; state.joined = []; state.joinedFails = false; state.joinedLoading = false; state.posts = []; state.postsFail = false; state.postsLoading = false; });
 afterEach(cleanup);
 
-it("my artists: one row with the add circle and no visible heading or labels; a guest gets the sign-in button on the same row", () => {
+it("my artists: a titled card with one row holding the add circle and no other labels; a guest gets the sign-in button on the same row", () => {
   const { container } = render(<MyArtists locale="ko" loginPath="/pages/groups" />);
-  expect(screen.queryByRole("heading")).toBeNull();
-  expect(container.textContent).not.toContain("내 아티스트");
+  expect(screen.getByRole("heading", { level: 2, name: "내 아티스트" })).toBeInTheDocument();
+  expect(container.querySelector("[data-fan-surface-card]")).toBe(screen.getByRole("region", { name: "내 아티스트" }));
+  expect(container.textContent).toBe("내 아티스트로그인");
   expect(container.textContent).not.toContain("모임 찾기");
   expect(screen.getByRole("region", { name: "내 아티스트" })).toContainElement(screen.getByRole("link", { name: "로그인" }));
   expect(screen.getByRole("link", { name: "모임 찾기" }).getAttribute("href")).toBe("#directory-explore");

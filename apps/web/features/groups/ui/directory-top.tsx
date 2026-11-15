@@ -17,6 +17,7 @@ import { Plus } from "@/components/fan-ui/fan-icons";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanSurface } from "@/components/fan-ui/fan-surface";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanPostRow } from "@/components/fan-ui/fan-post-row";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -78,8 +79,8 @@ function focusDirectorySearch() {
   input?.focus({ preventScroll: true });
 }
 
-/** 오늘의 팬페이지 아래 한 줄(보석 2026-11-14 12:1x "내 아티스트·모임 찾기 글자 없이 세로 폭을 줄이기"): `+`(모임 찾기 → 검색 칸)와 가입한 페이지의 원형 사진만.
- * 비로그인은 같은 줄 끝에 로그인 버튼. 이름은 화면에 쓰지 않고 링크 이름(aria-label)·툴팁으로 둔다. */
+/** 오늘의 팬페이지 아래 카드(보석 2026-11-15 18:45 "카드로 묶고 제목 필요", 11-14 12:1x "글자 없이 세로 폭을 줄이기"를 대체): 제목 '내 아티스트' 아래 한 줄에 `+`(모임 찾기 → 검색 칸)와 가입한 페이지의 원형 사진.
+ * 비로그인은 같은 줄 끝에 로그인 버튼. 사진 이름은 화면에 쓰지 않고 링크 이름(aria-label)·툴팁으로 둔다. */
 export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath: string }) {
   const c = directoryTopCopy(locale);
   const drag = useHorizontalDrag<HTMLUListElement>("rail");
@@ -88,7 +89,9 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
   const guest = session.ready && !session.authenticated;
   const items = joined.data?.items ?? [];
   const waiting = !session.ready || (session.authenticated && joined.loading && !joined.data);
-  return <section className={styles.row} aria-label={c.myArtists} data-directory-block="my-artists">
+  return <FanSurface className={styles.card} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
+    <FanHeading id="directory-my-artists">{c.myArtists}</FanHeading>
+    <div className={styles.row}>
     <ul className={styles.rail} {...drag}>
       <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups} title={c.findGroups}><FanIcon icon={Plus} size={20} /></a></li>
       {waiting ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={AVATAR} height={AVATAR} /></li>)
@@ -99,7 +102,8 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
         </li>)}
     </ul>
     {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
-  </section>;
+    </div>
+  </FanSurface>;
 }
 
 /** The page's picture, or the default avatar asset: never an empty white ring. */
