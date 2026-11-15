@@ -177,6 +177,14 @@ describe("FanPageHeader", () => {
     expect(screen.getByRole("link", { name: "youtube" })).toHaveAttribute("data-outbound-kind", "social");
     expect(screen.queryByText(/브랜드 ·/)).toBeNull();
   });
+  it("draws the kind tag and badge on other pages but not on a fan page (대표 11/15 23:42)", () => {
+    const { rerender } = render(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" badge={<span data-testid="badge">배지</span>} />);
+    expect(document.querySelector("[data-fan-tag]")).toBeNull();
+    expect(screen.queryByTestId("badge")).toBeNull();
+    rerender(<FanPageHeader image={{ src: "/a.png" }} name="런뮤직" kind="brand" locale="ko" badge={<span data-testid="badge">배지</span>} />);
+    expect(screen.getByText("브랜드")).toHaveAttribute("data-fan-tag", "neutral");
+    expect(screen.getByTestId("badge")).toBeInTheDocument();
+  });
   it("puts the SNS row after the introduction and before the stats line, and draws no SNS row without links", () => {
     const { rerender } = render(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" description="소개 원문" links={[{ kind: "youtube", href: "https://y.test" }]} stats={<div data-testid="stats">팬 1</div>} />);
     const order = (node: Element, other: Element) => node.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING;

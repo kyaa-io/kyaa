@@ -37,7 +37,7 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
 
 /**
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
- * 이름 줄: 이름 + 유형 태그 + 배지, 그 뒤(768+는 같은 줄, 390은 다음 줄) 별 버튼·내 등급. 소개는 원문 2줄 + 더 보기, 그 아래 SNS 아이콘 줄(있을 때만), 그 아래 접속 한 줄.
+ * 이름 줄: 이름 + 유형 태그 + 배지(팬페이지는 둘 다 그리지 않는다, 대표 11/15 23:42), 그 뒤(768+는 같은 줄, 390은 다음 줄) 별 버튼·내 등급. 소개는 원문 2줄 + 더 보기, 그 아래 SNS 아이콘 줄(있을 때만), 그 아래 접속 한 줄.
  */
 export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, links = [], utility, menu, stats, tabs, frameId }: Readonly<{
   image: FanPageImage;
@@ -72,8 +72,8 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
       <div className={styles.headline}>
         <div className={styles.titleRow}>
           <h1 className={styles.name}>{name}</h1>
-          <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>
-          {badge}
+          {kind === "fan" ? null : <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}
+          {kind === "fan" ? null : badge}
         </div>
         {actions ? <div className={styles.actions}>
           {star && <FanStarAction {...star} className={styles.star} />}
