@@ -3,6 +3,19 @@
 -- BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE=$PWD/supabase/tests/dukjil/dukjil_policy100_before.sql
 -- BYUS_CLEAN_DB_UPGRADE_AFTER_FILE=$PWD/supabase/tests/dukjil/dukjil_policy100.sql
 -- bash scripts/verify-clean-migration-chain.sh
+create temp table policy100_before_repeat as select * from public.dukjil_policy_versions;
+\ir ../../migrations/20261227180001_proof_uniform_100_policy.sql
+do $$ begin
+ assert not exists (
+   (select * from public.dukjil_policy_versions except select * from policy100_before_repeat)
+   union all
+   (select * from policy100_before_repeat except select * from public.dukjil_policy_versions)
+ );
+ assert (select count(*) from public.dukjil_policy_versions p
+   join public.policy100_test_original o on p.rules = o.rules #- '{actions,proof,firstPoints}'
+   and p.mission_book=o.mission_book where p.status='draft') = 1;
+ raise notice 'POLICY100 PASS: exactly one matching draft; repeat creates no rows';
+end $$;
 begin;
 update public.group_wallet_release set enabled=true, write_fenced=false, legacy_writers_verified=true, migration_evidence_sha256=repeat('b',64), rewards_start_on=current_date;
 update public.reward_policy_activation set policy_version=3 where singleton;
