@@ -19,7 +19,18 @@ describe("post row thumbnail", () => {
     const c = row({ pageImage: <span data-testid="page-image" /> });
     expect(c.querySelector('[data-testid="page-image"]')).not.toBeNull();
     expect(c.querySelector("svg")).toBeNull();
-    expect(c.querySelector("[data-page-image]")).not.toBeNull();
+    expect(c.querySelector('[data-thumb="page"]')).not.toBeNull();
+  });
+  it("puts the kyaa logo on a notice and the writer's picture on a post without a photo, ringed for the page's artist", () => {
+    const notice = row({ notice: true, avatar: "/images/avatars/star-pink.webp", pageImage: <span data-testid="page-image" /> });
+    expect(notice.querySelector("img")?.getAttribute("src")).toBe("/kyaa-app-icon-192.png");
+    expect(notice.querySelector('[data-testid="page-image"]')).toBeNull();
+    const fan = row({ avatar: "/images/avatars/heart-pink.webp", pageImage: <span data-testid="page-image" /> });
+    expect(fan.querySelector("img")?.getAttribute("src")).toBe("/images/avatars/heart-pink.webp");
+    expect(fan.querySelector("[data-artist-avatar]")).toBeNull();
+    expect(row({ avatar: "/images/avatars/heart-pink.webp", avatarArtist: true }).querySelector('[data-thumb="avatar"] img[data-artist-avatar]')).not.toBeNull();
+    const photo = row({ thumbnail: "/api/content-assets/a?size=thumbnail", avatar: "/images/avatars/heart-pink.webp" });
+    expect(photo.querySelector("img")?.getAttribute("src")).toBe("/api/content-assets/a?size=thumbnail");
   });
   it("falls back to the page image when the photo cannot be loaded (for example a 503)", () => {
     const c = row({ thumbnail: "/api/content-assets/a?size=thumbnail", pageImage: <span data-testid="page-image" /> });

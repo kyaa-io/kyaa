@@ -51,6 +51,26 @@ describe("popular posts route", () => {
   });
 });
 
+describe("popular posts writer pictures", () => {
+  const fanId = "a9600000-0000-4000-8000-000000000001", groupId = "a9600000-0000-4000-8000-000000000002";
+  const row = (source: "fan" | "group", id: string) => ({ source, id, pageRef: "p", pageName: "p", title: "글", nickname: "팬", createdAt: "2026-11-09T00:00:00Z", likeCount: 1, commentCount: 0, viewCount: null, asset: null });
+  const list = { hasMore: false, items: [row("fan", fanId), row("group", groupId)] };
+  it("adds each writer's picture to its row from one read, and leaves a row without an answer as it is", async () => {
+    const rpc = vi.fn(async (name: string) => name === "public_post_author_avatars" ? { [`fan:${fanId}`]: "/images/avatars/heart-pink.webp" } : list);
+    const body = await (await createGetPublicPopularPosts({ rpc, authorize: vi.fn() } as never, { groupsEnabled: true })(new Request("http://x/api/public/popular-posts"))).json();
+    expect(rpc).toHaveBeenCalledWith("public_post_author_avatars", { p_fan_post_ids: [fanId], p_group_post_ids: [groupId] });
+    expect(body.items.map((item: { avatarUrl?: string }) => item.avatarUrl)).toEqual(["/images/avatars/heart-pink.webp", undefined]);
+  });
+  it("still answers, without pictures, when they cannot be read or are not public avatar addresses", async () => {
+    for (const answer of [() => { throw new Error("missing"); }, () => ({ [`fan:${fanId}`]: "https://elsewhere/x.png" })]) {
+      const rpc = vi.fn(async (name: string) => name === "public_post_author_avatars" ? answer() : list);
+      const response = await createGetPublicPopularPosts({ rpc, authorize: vi.fn() } as never, { groupsEnabled: true })(new Request("http://x/api/public/popular-posts"));
+      expect(response.status).toBe(200);
+      expect((await response.json()).items.every((item: { avatarUrl?: string }) => item.avatarUrl === undefined)).toBe(true);
+    }
+  });
+});
+
 describe("popular posts page pictures", () => {
   const row = (source: "fan" | "group", pageRef: string) => ({ source, id: "a9600000-0000-4000-8000-000000000001", pageRef, pageName: pageRef, title: "글", nickname: "팬", createdAt: "2026-11-09T00:00:00Z", likeCount: 1, commentCount: 0, viewCount: null, asset: null });
   it("adds each page's picture to its rows, once per page, and leaves rows of pages without one as they are", async () => {

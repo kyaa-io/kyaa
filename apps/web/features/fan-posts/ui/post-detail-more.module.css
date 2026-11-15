@@ -15,7 +15,8 @@
 .row:active { background: var(--color-accent-soft); }
 .thumb { display: flex; align-items: center; justify-content: center; width: var(--space-16); aspect-ratio: 4 / 3; overflow: hidden; border-radius: var(--radius-small); outline: 1px solid var(--color-line); outline-offset: -1px; background: var(--color-accent-soft); }
 .thumb > img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.thumb[data-page-image] > * { flex: none; }
+/* 사진이 없는 글은 글쓴이 프로필 사진을 칸 가운데에 둥글게 둔다. */
+.thumb > img.avatar { flex: none; width: var(--space-8); height: var(--space-8); border-radius: 50%; }
 .text { display: flex; flex-direction: column; gap: var(--space-1); min-width: 0; }
 .title { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
 .meta { display: flex; align-items: center; gap: var(--space-3); font-variant-numeric: tabular-nums; }

@@ -62,7 +62,7 @@ export function GroupPostArticle({ pageId, post, locale, member, authenticated, 
     </Menu.Popup></Menu.Positioner></Menu.Portal>
   </Menu.Root> : undefined;
   return <article className={`${styles.boardDetail} ${detailStyles.readColumn}`}>
-    <PostDetailHeader as="h2" tag={post.category === "notice" ? <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag> : undefined} title={post.title} author={post.nickname} avatarUrl={post.avatarUrl} authorBadge={post.artist ? <GroupArtistMark locale={locale} /> : post.operator ? <GroupOperatorMark locale={locale} /> : undefined} createdAt={post.createdAt} edited={Boolean(post.editedAt)} viewCount={post.viewCount} likeCount={likes} commentCount={post.commentCount ?? 0} locale={locale} menu={menu} />
+    <PostDetailHeader as="h2" tag={post.category === "notice" ? <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag> : undefined} title={post.title} author={post.nickname} avatarUrl={post.avatarUrl} avatarArtist={post.artist} authorBadge={post.artist ? <GroupArtistMark locale={locale} /> : post.operator ? <GroupOperatorMark locale={locale} /> : undefined} createdAt={post.createdAt} edited={Boolean(post.editedAt)} viewCount={post.viewCount} likeCount={likes} commentCount={post.commentCount ?? 0} locale={locale} menu={menu} />
     <div style={{ paddingTop: 16 }} data-post-body="">
       {document ? <RichBody document={document} locale={locale} renderAttachment={renderAttachment} /> : <p className={styles.boardDetailBody} style={{ padding: 0 }}>{post.body}</p>}
     </div>

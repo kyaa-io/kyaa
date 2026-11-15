@@ -63,11 +63,12 @@ it("offers a retry when the list cannot be read, and no banner on a brand page",
   expect(screen.queryByTestId("banner")).toBeNull();
 });
 
-it("shows a public post's first photo and the page image otherwise", () => {
-  state.answer = () => ({ status: "ready", data: [post("photo", { assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4ca", width: 640, height: 480 }] }), post("members", { visibility: "members", assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4cb", width: 640, height: 480 }] })] });
-  const { container } = render(<PostDetailMore slug="elina" postId="current" locale="ko" pageImage={<i data-testid="page" />} />);
-  expect(container.querySelector("img")?.getAttribute("src")).toBe("/api/content-assets/bba239f6-6c6b-4a36-87bf-b325dfe5d4ca?size=thumbnail");
-  expect(screen.getAllByTestId("page")).toHaveLength(1);
+it("shows a public post's first photo and the writer's picture otherwise, ringed for the page's artist", () => {
+  state.answer = () => ({ status: "ready", data: [post("photo", { assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4ca", width: 640, height: 480 }] }), post("members", { visibility: "members", artist: true, assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4cb", width: 640, height: 480 }] })] });
+  const { container } = render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
+  const images = [...container.querySelectorAll("img")];
+  expect(images.map(image => image.getAttribute("src"))).toEqual(["/api/content-assets/bba239f6-6c6b-4a36-87bf-b325dfe5d4ca?size=thumbnail", "/images/avatars/star-pink.webp"]);
+  expect(images.map(image => image.hasAttribute("data-artist-avatar"))).toEqual([false, true]);
 });
 
 it("reads both answers into fan posts: the ranking as it is, the feed without its other kinds", () => {

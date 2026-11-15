@@ -27,17 +27,18 @@ it('keeps fixture detail and replies attached to the original cheer IDs on both 
  }
 });
 
-it('draws a public post photo, a post icon for the rest, never a broken-image mark, and marks notices',async()=>{
+it('draws the kyaa logo on a notice, a public post photo, the writer picture for the rest, never a broken-image mark',async()=>{
  const response=legacyVisualFixture(new URL('http://localhost/api/celebrities/elina/feed'),'GET','ko','creator')!;
  const {items}=feedPageSchema.parse(await response.json());
- const posts=items.filter(item=>item.kind==='cheer').slice(0,4).map(item=>({...item,kind:'fan_post',body:item.body||'제목',visibility:'public',commentCount:0,likeCount:0,author:{nickname:'팬'},createdAt:'2026-11-05T00:00:00Z'})) as any[];
+ const posts=items.filter(item=>item.kind==='cheer').slice(0,4).map(item=>({...item,kind:'fan_post',body:item.body||'제목',visibility:'public',commentCount:0,likeCount:0,author:{nickname:'팬',avatarUrl:'/images/avatars/heart-pink.webp'},artist:false,createdAt:'2026-11-05T00:00:00Z'})) as any[];
  const notice=items.find(item=>item.kind==='notice')!;
  const shaped=[notice,{...posts[0],assets:[{id:'asset-1',width:300,height:200}],video:null},{...posts[1],assets:[{id:'asset-2',width:300,height:200}],visibility:'members',video:null},{...posts[2],assets:[],video:{}},{...posts[3],assets:[],video:null}];
  const {container}=render(<CompactFeed items={shaped as never} slug='elina' locale='ko' returnTo='/elina?tab=board' onChanged={()=>{}}/>);
  const images=[...container.querySelectorAll('img')].map(node=>node.getAttribute('src'));
- expect(images).toEqual(['/api/content-assets/asset-1?size=thumbnail']);
+ expect(images).toEqual(['/kyaa-app-icon-192.png','/api/content-assets/asset-1?size=thumbnail','/images/avatars/heart-pink.webp','/images/avatars/heart-pink.webp','/images/avatars/heart-pink.webp']);
  expect(container.querySelector('.lucide-image-off')).toBeNull();
- expect(container.querySelectorAll('.lucide-file-text').length).toBe(4);
+ expect(container.querySelectorAll('.lucide-file-text').length).toBe(0);
+ expect(container.querySelector('[data-artist-avatar]')).toBeNull();
  expect(container.textContent).not.toMatch(/사진 없음|No photo/);
  const row=screen.getByRole('link',{name:/처음 오셨다면/}).closest('[data-fan-post-row]')!;
  expect(row).toHaveAttribute('data-notice');expect(row).toHaveTextContent('공지');
