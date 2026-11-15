@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-import { deriveEmailUnsubscribeKey as deriveWorkerKey, signEmailUnsubscribeToken } from "../../../worker/src/email-unsubscribe";
+import { deriveEmailUnsubscribeKey as deriveWorkerKey, emailUnsubscribeDestinationBinding, signEmailUnsubscribeToken } from "../../../worker/src/email-unsubscribe";
 import { createEmailUnsubscribeGetHandler, createEmailUnsubscribePostHandler, type EmailUnsubscribeRouteDependencies } from "./email-unsubscribe-route";
 import { applyEmailUnsubscribe, preferenceForMailKind, resolveEmailUnsubscribeTarget, unsubscribeEndsRequiredNotices } from "./email-unsubscribe";
 import { deriveEmailUnsubscribeKey, verifyEmailUnsubscribeToken } from "./email-unsubscribe-token";
@@ -11,7 +11,9 @@ const otherKey = deriveWorkerKey("q".repeat(48));
 const mine = "7b1f4f0e-2c1d-4a3b-9c5d-1e2f3a4b5c6d";
 const theirs = "9d2e5a61-3f4b-4c7d-8e9f-0a1b2c3d4e5f";
 const issued = new Date("2026-11-15T00:00:00Z");
-const token = (id = mine, templateKey = "benefit_won", now = issued) => signEmailUnsubscribeToken(key, { notificationId: id, templateKey, now });
+const address = "fan@example.com";
+const token = (id = mine, templateKey = "benefit_won", now = issued) => signEmailUnsubscribeToken(key, { notificationId: id, templateKey, destination: address, now });
+const binding = emailUnsubscribeDestinationBinding(mine, address);
 
 function resign(payload: object, signingKey: Buffer = key) {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
@@ -21,7 +23,21 @@ function resign(payload: object, signingKey: Buffer = key) {
 
 describe("link verification", () => {
   it("accepts a link the worker signed", () => {
-    expect(verifyEmailUnsubscribeToken(key, token(), issued)).toMatchObject({ ok: true, notificationId: mine, templateKey: "benefit_won" });
+    expect(verifyEmailUnsubscribeToken(key, token(), issued)).toMatchObject({ ok: true, notificationId: mine, templateKey: "benefit_won", destinationBinding: binding });
+  });
+  it("still accepts a link sent before the address binding, until it expires", () => {
+    const old = resign({ n: mine, k: "benefit_won", e: Math.floor(issued.getTime() / 1000) + 86400 });
+    expect(verifyEmailUnsubscribeToken(key, old, issued)).toMatchObject({ ok: true, notificationId: mine, destinationBinding: null });
+    expect(verifyEmailUnsubscribeToken(key, old, new Date(issued.getTime() + 2 * 86400_000))).toEqual({ ok: false, reason: "expired" });
+  });
+  it("rejects a link whose address binding was edited or dropped", () => {
+    const [v, payload, signature] = token().split(".");
+    const claims = JSON.parse(Buffer.from(payload!, "base64url").toString("utf8")) as Record<string, unknown>;
+    const edit = (next: Record<string, unknown>) => `${v}.${Buffer.from(JSON.stringify(next)).toString("base64url")}.${signature}`;
+    expect(verifyEmailUnsubscribeToken(key, edit({ ...claims, d: emailUnsubscribeDestinationBinding(mine, "new@example.com") }), issued)).toEqual({ ok: false, reason: "invalid" });
+    const { d: _dropped, ...withoutBinding } = claims;
+    expect(verifyEmailUnsubscribeToken(key, edit(withoutBinding), issued)).toEqual({ ok: false, reason: "invalid" });
+    expect(verifyEmailUnsubscribeToken(key, resign({ ...claims, d: "not-hex" }), issued).ok).toBe(false);
   });
   it("rejects a link signed with another key", () => {
     expect(verifyEmailUnsubscribeToken(otherKey, token(), issued)).toEqual({ ok: false, reason: "invalid" });
@@ -74,7 +90,7 @@ describe("which switch a mail belongs to", () => {
     expect(unsubscribeEndsRequiredNotices("email", null)).toBe(true);
   });
   it("resolves a link into its target", () => {
-    expect(resolveEmailUnsubscribeTarget(key, token(mine, "survey_reminder"), issued)).toEqual({ state: "ok", notificationId: mine, templateKey: "survey_reminder", preference: "survey_reminders" });
+    expect(resolveEmailUnsubscribeTarget(key, token(mine, "survey_reminder"), issued)).toEqual({ state: "ok", notificationId: mine, templateKey: "survey_reminder", destinationBinding: binding, preference: "survey_reminders" });
     expect(resolveEmailUnsubscribeTarget(null, token(), issued)).toEqual({ state: "invalid" });
     expect(resolveEmailUnsubscribeTarget(key, null, issued)).toEqual({ state: "invalid" });
   });
@@ -94,7 +110,7 @@ describe("one-click POST (mail client)", () => {
     const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}`, { "List-Unsubscribe": "One-Click" }));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true, scope: "preference", enabled: false });
-    expect(client.rpc).toHaveBeenCalledExactlyOnceWith("apply_email_unsubscribe", { p_notification_id: mine, p_template_key: "benefit_won", p_scope: "preference", p_preference: "benefit_notifications", p_enabled: false });
+    expect(client.rpc).toHaveBeenCalledExactlyOnceWith("apply_email_unsubscribe", { p_notification_id: mine, p_template_key: "benefit_won", p_scope: "preference", p_preference: "benefit_notifications", p_enabled: false, p_destination_binding: binding });
   });
   it("turns off all mail when the kind has no setting of its own", async () => {
     const client = clientReturning();
@@ -106,8 +122,8 @@ describe("one-click POST (mail client)", () => {
     const client = clientReturning();
     const run = (t: string) => handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${t}`, { "List-Unsubscribe": "One-Click" }));
     expect((await run(`${token().slice(0, -3)}abc`)).status).toBe(400);
-    expect((await run(signEmailUnsubscribeToken(otherKey, { notificationId: mine, templateKey: "benefit_won", now: issued }))).status).toBe(400);
-    expect((await run(signEmailUnsubscribeToken(key, { notificationId: mine, templateKey: "benefit_won", now: new Date("2026-01-01T00:00:00Z") }))).status).toBe(410);
+    expect((await run(signEmailUnsubscribeToken(otherKey, { notificationId: mine, templateKey: "benefit_won", destination: address, now: issued }))).status).toBe(400);
+    expect((await run(signEmailUnsubscribeToken(key, { notificationId: mine, templateKey: "benefit_won", destination: address, now: new Date("2026-01-01T00:00:00Z") }))).status).toBe(410);
     expect((await run("")).status).toBe(400);
     expect(client.rpc).not.toHaveBeenCalled();
   });
@@ -116,6 +132,17 @@ describe("one-click POST (mail client)", () => {
     expect((await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}`, { scope: "email" }))).status).toBe(400);
     expect((await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}`, { scope: "everything", enabled: "false" }))).status).toBe(400);
     expect(client.rpc).not.toHaveBeenCalled();
+  });
+  it("answers like an expired link when the mail address changed since the mail was sent", async () => {
+    const response = await handler(clientReturning({ code: "55000" }))(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}`, { "List-Unsubscribe": "One-Click" }));
+    expect(response.status).toBe(410);
+    expect(await response.json()).toEqual({ error: { code: "EXPIRED" } });
+  });
+  it("lets the database check a link sent before the address binding", async () => {
+    const client = clientReturning();
+    const old = resign({ n: mine, k: "benefit_won", e: 9_999_999_999 });
+    expect((await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${old}`, { "List-Unsubscribe": "One-Click" }))).status).toBe(200);
+    expect(client.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_notification_id: mine, p_destination_binding: null }));
   });
   it("answers 404 when the notification no longer matches and 503 when the database fails", async () => {
     const url = `https://kyaa.io/api/email/unsubscribe?t=${token()}`;
@@ -144,6 +171,11 @@ describe("page form POST", () => {
     expect(response.headers.get("location")).toContain("done=on-preference");
     expect(client.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_scope: "preference", p_enabled: true, p_preference: "benefit_notifications" }));
   });
+  it("shows the expired page when the mail address changed", async () => {
+    const response = await handler(clientReturning({ code: "55000" }))(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}&locale=ko`, { scope: "email", enabled: "false" }));
+    expect(response.status).toBe(303);
+    expect(response.headers.get("location")).toBe(`/email/unsubscribe?t=${encodeURIComponent(token())}&locale=ko&done=expired`);
+  });
   it("sends a bad link back to the page without touching anything", async () => {
     const client = clientReturning();
     const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token().slice(0, -2)}xx`, { scope: "email", enabled: "false" }));
@@ -169,7 +201,7 @@ describe("GET", () => {
 describe("rpc wrapper", () => {
   it("does not call the database for a setting the kind lacks", async () => {
     const client = clientReturning();
-    expect(await applyEmailUnsubscribe(client, { state: "ok", notificationId: mine, templateKey: "level_up", preference: null }, { scope: "preference", enabled: false })).toBe("not_found");
+    expect(await applyEmailUnsubscribe(client, { state: "ok", notificationId: mine, templateKey: "level_up", destinationBinding: binding, preference: null }, { scope: "preference", enabled: false })).toBe("not_found");
     expect(client.rpc).not.toHaveBeenCalled();
   });
 });
