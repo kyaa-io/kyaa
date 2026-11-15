@@ -23,6 +23,6 @@ describe("Telegram SNS ingest stale source", () => {
     { sns_platform: undefined }, { sns_platform: "youtube" }, { sns_last_success_at: undefined }, { creator_name: null },
     { actor_email: "private@example.test" }, { kind: "member_joined" },
   ])("rejects invalid or misplaced source context %j", async (change) => {
-    await expect(claim([{ ...alert, ...change }])).rejects.toThrow("TELEGRAM_ALERT_INVALID_BATCH");
+    await expect(claim([{ ...alert, ...change }])).resolves.toMatchObject({ alerts: [], invalidPositions: [1] });
   });
 });

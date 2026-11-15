@@ -37,7 +37,7 @@ describe("Telegram YouTube live starts", () => {
     { actor_email: "private@example.test" }, { kind: "member_joined" },
   ])("rejects invalid or misplaced broadcast context %j", async (change) => {
     const rpc = vi.fn().mockResolvedValue({ data: { batch_id: batchId, alerts: [{ ...alert, ...change }] }, error: null });
-    await expect(new SupabaseTelegramAlertQueue({ rpc }).claim(env.telegram.chatId!)).rejects.toThrow("TELEGRAM_ALERT_INVALID_BATCH");
+    await expect(new SupabaseTelegramAlertQueue({ rpc }).claim(env.telegram.chatId!)).resolves.toMatchObject({ alerts: [], invalidPositions: [1] });
   });
 
   it("refreshes existing shared discovery at the fixed site URL without sending credentials", async () => {
@@ -54,7 +54,7 @@ describe("Telegram YouTube live starts", () => {
     const refreshLiveStarts = vi.fn().mockRejectedValue(new Error("website unavailable"));
     const queue = {
       claim: vi.fn().mockResolvedValue({ batchId, alerts: [alert] }), begin: vi.fn().mockResolvedValue(true),
-      finish: vi.fn().mockResolvedValue(undefined),
+      finish: vi.fn().mockResolvedValue(undefined), rejectRows: vi.fn().mockResolvedValue(true),
     };
     const sender = { sendText: vi.fn().mockResolvedValue(42n) };
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -69,7 +69,7 @@ describe("Telegram YouTube live starts", () => {
   it("keeps an uncertain send terminal under the existing delivery policy", async () => {
     const queue = {
       claim: vi.fn().mockResolvedValueOnce({ batchId, alerts: [alert] }).mockResolvedValue(null),
-      begin: vi.fn().mockResolvedValue(true), finish: vi.fn().mockResolvedValue(undefined),
+      begin: vi.fn().mockResolvedValue(true), finish: vi.fn().mockResolvedValue(undefined), rejectRows: vi.fn().mockResolvedValue(true),
     };
     const sender = { sendText: vi.fn().mockRejectedValue(new TelegramSendError("unknown")) };
     await new TelegramAlertWorker(queue, sender, env.telegram.chatId!).runOnce();

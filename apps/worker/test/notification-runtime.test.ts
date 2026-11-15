@@ -121,6 +121,19 @@ it("processes RUNMUSIC even with email disabled and isolates its failure", async
 });
 
 
+it("logs a fixed reason code for a failed queue but never free-text error messages", async () => {
+ const log = vi.spyOn(console, "info").mockImplementation(() => {});
+ try {
+  const env = parseNotificationEnv(source);
+  state.telegram.mockRejectedValueOnce(new Error("TELEGRAM_ALERT_INVALID_BATCH"));
+  state.cs.mockRejectedValueOnce(new Error("row 7: private body text"));
+  await expect(runNotificationWorkerOnce(env)).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
+  const summary = JSON.parse(log.mock.calls[0]![0] as string);
+  expect(summary.queues.telegramAlerts).toEqual({ status: "rejected", code: "TELEGRAM_ALERT_INVALID_BATCH" });
+  expect(summary.queues.telegramCs).toEqual({ status: "rejected" });
+ } finally { log.mockRestore(); }
+});
+
 it("reports disabled Telegram modes and failed queue names without logging secrets or provider errors", async () => {
  const log = vi.spyOn(console, "info").mockImplementation(() => {});
  try {
