@@ -33,16 +33,31 @@ export function validateNote(note) {
   return note;
 }
 
-export function readNotes(base, head) {
+const NOTE_FILE = /^release-notes\/[a-z0-9-]+\.json$/;
+// Notes for a feature that production keeps switched off. They stay in the repository and leave the production room's queue
+// until their hold is removed; the first production release after that removal sends them. DEV notices ignore holds.
+export const NOTICE_HOLDS_PATH = 'scripts/deployment-notice-holds.json';
+
+function readNoteEntries(base, head) {
   if (!SHA.test(base) || !SHA.test(head)) throw new Error('INVALID_COMMIT');
   git('merge-base', '--is-ancestor', base, head);
   const entries = git('diff', '--name-status', '--no-renames', base, head, '--', 'release-notes/*.json').split('\n').filter(Boolean);
   if (entries.some(line => !line.startsWith('A\t'))) throw new Error('RELEASE_NOTES_ARE_IMMUTABLE');
   const notes = entries.map(line => {
     const file = line.slice(2);
-    if (!/^release-notes\/[a-z0-9-]+\.json$/.test(file)) throw new Error('INVALID_NOTE_FILENAME');
-    return validateNote(JSON.parse(git('show', `${head}:${file}`)));
+    if (!NOTE_FILE.test(file)) throw new Error('INVALID_NOTE_FILENAME');
+    return { file, note: validateNote(JSON.parse(git('show', `${head}:${file}`))) };
   });
+  validateImages(head, notes.map(entry => entry.note));
+  const changedFiles = git('diff', '--name-only', base, head).split('\n');
+  const runtimeChanged = changedFiles.some(file =>
+    /^(apps\/|sites\/kyaa-wave\/|scripts\/|supabase\/migrations\/|contracts\/src\/|\.github\/workflows\/|package(?:-lock)?\.json$|vercel\.json$)/.test(file) &&
+    !/(?:\.(?:test|spec)\.|\.md$|(?:^|\/)(?:tests?|e2e|__tests__)\/)/.test(file));
+  if (!notes.length && runtimeChanged) throw new Error('RELEASE_NOTE_REQUIRED');
+  return notes;
+}
+
+function validateImages(head, notes) {
   for (const path of new Set(notes.flatMap(note => note.images ?? []))) {
     const size = Number(git('cat-file', '-s', `${head}:${path}`));
     if (size > 5_000_000) throw new Error('RELEASE_IMAGE_TOO_LARGE');
@@ -51,12 +66,39 @@ export function readNotes(base, head) {
     const width = png.readUInt32BE(16), height = png.readUInt32BE(20);
     if (!width || !height || width + height > 10000 || Math.max(width / height, height / width) > 20) throw new Error('INVALID_RELEASE_IMAGE_DIMENSIONS');
   }
-  const changedFiles = git('diff', '--name-only', base, head).split('\n');
-  const runtimeChanged = changedFiles.some(file =>
-    /^(apps\/|sites\/kyaa-wave\/|scripts\/|supabase\/migrations\/|contracts\/src\/|\.github\/workflows\/|package(?:-lock)?\.json$|vercel\.json$)/.test(file) &&
-    !/(?:\.(?:test|spec)\.|\.md$|(?:^|\/)(?:tests?|e2e|__tests__)\/)/.test(file));
-  if (!notes.length && runtimeChanged) throw new Error('RELEASE_NOTE_REQUIRED');
-  return notes;
+}
+
+export function readNotes(base, head) {
+  return readNoteEntries(base, head).map(entry => entry.note);
+}
+
+/** Held note files at a commit: `{ "<hold>": ["release-notes/<file>.json", ...] }`. A commit without the file holds nothing. */
+export function heldNoteFiles(sha) {
+  if (!SHA.test(sha)) throw new Error('INVALID_COMMIT');
+  if (!git('ls-tree', '--name-only', sha, '--', NOTICE_HOLDS_PATH)) return new Set();
+  const holds = JSON.parse(git('show', `${sha}:${NOTICE_HOLDS_PATH}`));
+  if (!holds || typeof holds !== 'object' || Array.isArray(holds)) throw new Error('INVALID_NOTICE_HOLDS');
+  const files = new Set();
+  for (const [name, list] of Object.entries(holds)) {
+    if (!/^[a-z0-9-]+$/.test(name) || !Array.isArray(list) || !list.length) throw new Error('INVALID_NOTICE_HOLDS');
+    for (const file of list) {
+      if (typeof file !== 'string' || !NOTE_FILE.test(file) || files.has(file)) throw new Error('INVALID_NOTICE_HOLDS');
+      if (!git('ls-tree', '--name-only', sha, '--', file)) throw new Error(`HELD_NOTE_NOT_FOUND: ${file}`);
+      files.add(file);
+    }
+  }
+  return files;
+}
+
+/** Production room notes: new notes minus those still held, plus held notes whose hold was removed in this range. */
+export function productionNotes(base, head) {
+  const added = readNoteEntries(base, head);
+  const heldAtHead = heldNoteFiles(head);
+  const addedFiles = new Set(added.map(entry => entry.file));
+  const released = [...heldNoteFiles(base)].filter(file => !heldAtHead.has(file) && !addedFiles.has(file))
+    .map(file => validateNote(JSON.parse(git('show', `${head}:${file}`))));
+  validateImages(head, released);
+  return [...released, ...added.filter(entry => !heldAtHead.has(entry.file)).map(entry => entry.note)];
 }
 
 export function noticeImages(notes) {
@@ -193,7 +235,7 @@ export function createGithubClient({ token, fetcher = fetch }) {
   };
 }
 
-export async function notifyDeployment({ event, github, send, notes = readNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), fetcher = fetch, assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
+export async function notifyDeployment({ event, github, send, notes = productionNotes, assertOnMain = sha => git('merge-base', '--is-ancestor', sha, 'origin/main'), fetcher = fetch, assertOnWave = sha => git('merge-base', '--is-ancestor', sha, `origin/${WAVE_BRANCH}`), runUrl }) {
   if (event.repository?.id !== REPOSITORY_ID || !REPOSITORY_PATHS.includes(event.repository.full_name)) return { skipped: 'not_production_success' };
   if (!eligibleNoticeDeployment(event.deployment, event.deployment_status)) {
     if (['AWS production', 'AWS wave production'].includes(event.deployment?.environment)) throw new Error('UNTRUSTED_AWS_DEPLOYMENT');
@@ -292,6 +334,8 @@ export async function notifyDeployment({ event, github, send, notes = readNotes,
 async function main() {
   if (process.argv[2] === 'check') {
     const notes = checkNotes(process.argv[3], process.argv[4], process.env.GITHUB_EVENT_NAME === 'pull_request');
+    const held = heldNoteFiles(process.argv[4]);
+    if (held.size) console.log(`Held from the production room until released in ${NOTICE_HOLDS_PATH}: ${[...held].join(', ')}`);
     // Send splits large releases into batches; validate with the same batching so a promotion with more than ten images is not rejected.
     console.log(notes.length ? noticeBatches(notes, new Date().toISOString()).map(batch => batch.text).join('\n\n---\n\n') : 'No runtime changes requiring a notice');
     return;
