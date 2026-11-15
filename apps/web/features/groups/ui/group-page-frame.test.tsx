@@ -21,6 +21,7 @@ vi.mock("./use-linked-fanpage", () => ({ useLinkedFanpage: () => ({ data: undefi
 vi.mock("./use-group-preload", () => ({ usePreloadGroupResource: () => state.preload }));
 vi.mock("./use-group-presence", async importOriginal => ({ ...await importOriginal<typeof import("./use-group-presence")>(), useOwnGroupPresence: () => ({ error: false, retry: vi.fn() }) }));
 vi.mock("./group-presence", () => ({ GroupPresence: ({ memberCount }: { memberCount?: number }) => <div>{memberCount}</div> }));
+vi.mock("./proof-tab-label", () => ({ ProofTabLabel: ({ label }: { label: string }) => label }));
 vi.mock("./group-page-menu", () => ({ GroupPageMenu: () => null }));
 vi.mock("./group-shell", () => ({ GroupShell: ({ children }: { children: ReactNode }) => <main>{children}</main> }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: state.authenticated ? { id: "viewer" } : undefined }) }));
@@ -129,11 +130,13 @@ it.each(["page", "owner", "locale"])("does not retain another %s's header on err
   expect(tabNav()).toBeInTheDocument();
 });
 
-it("places the proof tab immediately after the board on a fanpage route", () => {
+it("places the proof tab immediately after the board on a fanpage route and leaves out 팬·랭킹", () => {
+  Object.assign(state, { data: { ...detail, page: { ...detail.page, kind: "fan", celebrityId: "c", slug: "mina", name: "Mina" } } });
   render(<GroupPageProvider slug="mina" locale="ko" celebrity={{ slug: "mina", locale: "ko", name: "Mina", summary: "", image: { url: "/mina.webp", alt: "Mina", position: "center" }, roles: ["idol"], themes: [], socialLinks: [], displayOrder: 0, fanCount: 0 }}><GroupPageHead /></GroupPageProvider>);
   const links = [...document.querySelectorAll("nav[data-fan-tabs]")].at(-1)!.querySelectorAll("a");
-  expect([...links].slice(0, 3).map(link => link.textContent)).toEqual(["홈", "게시판", "인증"]);
+  expect([...links].slice(0, 3).map(link => link.textContent)).toEqual(["홈", "게시판", "덕후인증"]);
   expect(links[2].getAttribute("href")).toContain("tab=proofs");
+  expect([...links].map(link => link.textContent)).not.toContain("팬·랭킹");
 });
 
 const fanDetail = (extra: object) => ({ ...detail, page: { ...detail.page, kind: "fan" as const, celebrityId: "c", slug: "elina", name: "엘리나", ...extra } });

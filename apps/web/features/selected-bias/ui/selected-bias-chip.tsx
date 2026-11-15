@@ -47,8 +47,8 @@ function HeartsValue({ locale, hearts }: { locale: AppLocale; hearts: number }) 
   return <FanNumber value={hearts} locale={locale} pulseOnChange className={styles.heartsValue} icon={<Heart size={16} strokeWidth={1.75} className={styles.heart} />} />;
 }
 
-/** The favorite's 팬·랭킹 tab, where hearts are counted per fan. */
-const fansHref = (slug: string, locale: AppLocale) => `/${encodeURIComponent(slug)}?tab=fans&locale=${locale}` as Route;
+/** The favorite's fan list (`?tab=members`), where hearts are counted per fan. */
+const fansHref = (slug: string, locale: AppLocale) => `/${encodeURIComponent(slug)}?tab=members&locale=${locale}` as Route;
 
 /** The header state's three cells (feedback C1): tier · favorite · ♥hearts. Hearts are the ones collected in the selected favorite's community;
  * without a favorite it asks to choose and draws no hearts. A missing count reads as 0. */

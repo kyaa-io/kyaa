@@ -98,16 +98,16 @@ export const messages = {
     "ru": "Заполните {0} ячеек активностью фаната, кроме ячейки подтверждения."
   },
   "dkgJjStep3Title": {
-    "ja": "真のファンのスタンプ",
-    "zh-Hans": "铁杆粉丝印章",
-    "zh-Hant": "鐵桿粉絲印章",
-    "es": "Sello de verdadero fan",
-    "id": "Stempel fan sejati",
-    "vi": "Con dấu fan thực thụ",
-    "th": "ตราประทับแฟนตัวจริง",
-    "pt": "Carimbo de fã de verdade",
-    "fr": "Tampon de vrai fan",
-    "ru": "Штамп настоящего фаната"
+    "ja": "オタク認証スタンプ",
+    "zh-Hans": "粉丝认证印章",
+    "zh-Hant": "粉絲認證印章",
+    "es": "Sello de prueba fan",
+    "id": "Stempel bukti fan",
+    "vi": "Con dấu xác minh fan",
+    "th": "ตราประทับยืนยันแฟน",
+    "pt": "Carimbo de prova de fã",
+    "fr": "Tampon de preuve fan",
+    "ru": "Штамп фан-подтверждения"
   },
   "dkgJjStep3Desc": {
     "ja": "購入の証明で最後のマスを埋めます。",
@@ -398,16 +398,16 @@ export const messages = {
     "ru": "Отзыв о мероприятии"
   },
   "dkgActProof": {
-    "ja": "真のファンのスタンプ認証",
-    "zh-Hans": "铁杆粉丝印章认证",
-    "zh-Hant": "鐵桿粉絲印章認證",
-    "es": "Comprobante del sello de verdadero fan",
-    "id": "Bukti stempel fan sejati",
-    "vi": "Xác minh con dấu fan thực thụ",
-    "th": "ยืนยันตราประทับแฟนตัวจริง",
-    "pt": "Comprovação do carimbo de fã de verdade",
-    "fr": "Preuve du tampon de vrai fan",
-    "ru": "Подтверждение штампа настоящего фаната"
+    "ja": "オタク認証",
+    "zh-Hans": "粉丝认证",
+    "zh-Hant": "粉絲認證",
+    "es": "Prueba fan",
+    "id": "Bukti fan",
+    "vi": "Xác minh fan",
+    "th": "ยืนยันแฟน",
+    "pt": "Prova de fã",
+    "fr": "Preuve fan",
+    "ru": "Фан-подтверждение"
   },
   "dkgDkMetaTitle": {
     "ja": "ファン活動のしかた",

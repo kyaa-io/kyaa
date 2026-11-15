@@ -15600,8 +15600,8 @@
     "id": "features/dukjil/ui/dukjil-copy:dukjilTileInvite"
   },
   "dukjilTileProof": {
-    "en": "Verify",
-    "ko": "인증",
+    "en": "Fan proof",
+    "ko": "덕후인증",
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:dukjilTileProof"
   },
@@ -15671,6 +15671,12 @@
     "source": "features/dukjil/ui/dukjil-copy",
     "id": "features/dukjil/ui/dukjil-copy:missionSlotSteady"
   },
+  "missionSlotProof": {
+    "en": "Fan proof stamp",
+    "ko": "덕후인증 도장",
+    "source": "features/dukjil/ui/dukjil-copy",
+    "id": "features/dukjil/ui/dukjil-copy:missionSlotProof"
+  },
   "missionRetry": {
     "en": "Retry",
     "ko": "다시 시도",
@@ -15732,8 +15738,8 @@
     "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep2Desc"
   },
   "dkgJjStep3Title": {
-    "en": "True-fan stamp",
-    "ko": "찐팬 스탬프",
+    "en": "Fan proof stamp",
+    "ko": "덕후인증 도장",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgJjStep3Title"
   },
@@ -15882,8 +15888,8 @@
     "id": "features/dukjil-guide/ui/guide-copy:dkgActEventReview"
   },
   "dkgActProof": {
-    "en": "True-fan stamp proof",
-    "ko": "찐팬 스탬프 인증",
+    "en": "Fan proof",
+    "ko": "덕후인증",
     "source": "features/dukjil-guide/ui/guide-copy",
     "id": "features/dukjil-guide/ui/guide-copy:dkgActProof"
   },

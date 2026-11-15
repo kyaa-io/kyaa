@@ -22,7 +22,7 @@ export const dukjilSource = {
   dukjilTileComment: { ko: "댓글", en: "Comment" },
   dukjilTileShare: { ko: "공유", en: "Share" },
   dukjilTileInvite: { ko: "친구 추천", en: "Invite friends" },
-  dukjilTileProof: { ko: "인증", en: "Verify" },
+  dukjilTileProof: { ko: "덕후인증", en: "Fan proof" },
   dukjilReview: { ko: "입국 심사", en: "Entry review" },
   missionBookTitle: { ko: "덕질 기록", en: "Mission book" },
   missionPage: { ko: "{0}쪽", en: "Page {0}" },
@@ -34,6 +34,7 @@ export const dukjilSource = {
   missionClaimFailed: { ko: "하트를 받지 못했어요", en: "Couldn't claim the heart" },
   missionSlotSubscription: { ko: "SNS 올리기", en: "SNS post" },
   missionSlotSteady: { ko: "꾸준 출석", en: "Steady check-in" },
+  missionSlotProof: { ko: "덕후인증 도장", en: "Fan proof stamp" },
   missionRetry: { ko: "다시 시도", en: "Retry" },
   roomJjinfan: { ko: "찐팬", en: "True fan" },
 } as const;

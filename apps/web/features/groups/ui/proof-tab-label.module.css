@@ -1,0 +1,3 @@
+/* 탭 글자 위쪽 바깥(탭 줄 위 여유 4px 안)에 배지를 둬 글자를 덮지 않는다. */
+.host { display: inline-flex; }
+.host [data-earn-badge="corner"] { top: -16px; right: -26px; }

@@ -81,7 +81,7 @@ it("sends each header cell to its own place: tier guide, favorite menu, the favo
   const favorite = screen.getByRole("button");
   expect(favorite).toHaveAttribute("data-cell", "favorite");
   expect(favorite.getAttribute("aria-label")).toMatch(/^내 최애 엘리나, 등급 실버.*눌러서 바꾸기$/);
-  expect(screen.getByRole("link", { name: "엘리나에서 모은 하트 3개" })).toHaveAttribute("href", "/elina?tab=fans&locale=ko");
+  expect(screen.getByRole("link", { name: "엘리나에서 모은 하트 3개" })).toHaveAttribute("href", "/elina?tab=members&locale=ko");
 });
 it("draws no hearts number when the summary carried none (its hearts read failed)", () => {
   ready(creator("elina", "엘리나", true));

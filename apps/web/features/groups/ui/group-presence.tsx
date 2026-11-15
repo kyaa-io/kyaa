@@ -2,6 +2,8 @@
 import { fanUiText } from '@/components/fan-ui/fan-ui-copy';
 import { RollingNumber } from '@/components/fan-ui/rolling-number';
 import { FanSkeleton, FanSkeletonStatus } from '@/components/fan-ui/fan-skeleton';
+import Link from '@/components/fan-ui/hover-prefetch-link';
+import type { Route } from 'next';
 import { Radio } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
 import { useGroupPresence } from './use-group-presence';
@@ -15,14 +17,20 @@ import styles from './group-presence.module.css';
 export function GroupPresence({pageId,locale,member=false,mode="compact",memberCount,challengeSlug}:{pageId:string|null;locale:AppLocale;member?:boolean;mode?:"hidden"|"compact";memberCount?:number;/** 찐팬 100 챌린지 항목을 읽을 팬페이지(VISUAL-K ②). */challengeSlug?:string}){
  const r=useGroupPresence(pageId,true,member),t=groupsCopy(locale),c=presenceCopy(locale);
  // 팬페이지면 연결 계정 닉네임 대신 그 페이지의 표시 이름(예: 엘리나)을 쓴다(11/13 감독).
- const pageName=useOptionalGroupPage()?.celebrity?.name;
+ const group=useOptionalGroupPage(),pageName=group?.celebrity?.name;
+ // 팬페이지는 '팬·랭킹' 탭이 없다. 머리의 '팬 N'이 팬 목록(?tab=members)으로 들어가는 입구다.
+ let membersHref:Route|undefined;
+ if(challengeSlug&&group)membersHref=group.hrefFor('members');
  if(mode==='hidden')return null;
  const count=(value:number)=>value.toLocaleString(locale);
  const metric=(key:'fanCount'|'presenceNow'|'presenceToday',value:number)=>{
   const [before,after]=fanUiText(locale,key,['\u0001']).split('\u0001');
   return <>{before}<RollingNumber value={value} format={count} initialFromZero emphasized />{after}</>;
  };
- const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:<span className={`${styles.item} ${styles.fanCount}`} data-fan-count=''>{metric('fanCount',memberCount)}</span>;
+ const fanClass=`${styles.item} ${styles.fanCount}`;
+ const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:membersHref&&group
+  ?<Link className={`${fanClass} ${styles.fanLink}`} href={membersHref} scroll={false} aria-current={group.activeTab==='members'?'page':undefined} onNavigate={()=>group.selectTab('members')} onPointerEnter={()=>group.preloadTab('members')} data-fan-count=''>{metric('fanCount',memberCount)}</Link>
+  :<span className={fanClass} data-fan-count=''>{metric('fanCount',memberCount)}</span>;
  if(!r.data)return <section className={styles.line} aria-label={t.groups} aria-busy={r.error?undefined:true}>{fans}{r.error
   ?<span className={styles.error} role='status'><span className={styles.errorText}>{presenceUnavailableCopy[locale]}</span><button type='button' className={styles.retry} onClick={r.retry}>{t.retry}</button></span>
   :<><span className={styles.item}><FanSkeleton width={72} height={16}/></span><FanSkeletonStatus locale={locale}/></>}</section>;

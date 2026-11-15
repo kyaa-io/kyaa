@@ -23,14 +23,17 @@ import { pageHeadCopy } from "./page-head-copy";
 import { ReactionAction } from "@/features/reaction/ui/reaction-action";
 import { GroupShell } from "./group-shell";
 import { groupTabItems } from "./group-tab-links";
+import { proofTab } from "./home-copy";
+import { ProofTabLabel } from "./proof-tab-label";
 import { SourceStatePanel } from "./source-state-panel";
 import styles from "./groups.module.css";
 
 function useTabs(): FanTabItem[] {
   const g = useGroupPage();
   const hideMembers = g.routeSlug !== null && g.error;
-  const items = groupTabItems(g.locale, !hideMembers);
-  if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: g.locale === "ko" ? "인증" : "Proofs" });
+  // 팬페이지는 '팬·랭킹' 탭을 두지 않는다. 팬 목록(?tab=members)은 머리의 '팬 N'에서 들어간다.
+  const items = groupTabItems(g.locale, !hideMembers && g.kind !== "fan");
+  if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: <ProofTabLabel label={proofTab[g.locale]} locale={g.locale} /> });
   return items.map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
 }
 

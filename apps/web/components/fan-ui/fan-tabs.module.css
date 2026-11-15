@@ -5,6 +5,8 @@
 
 .underline { gap: 0; border-bottom: 1px solid var(--color-line); }
 /* 옆으로 넘긴 탭이 더 있다는 표시. 칸이 반 토막으로 잘려 끝처럼 보이지 않게 오른쪽 끝을 흐린다. */
+/* 탭 글자 위로 걸치는 모서리 배지(덕후인증 +100)가 줄 위쪽에서 잘리지 않게 위쪽 여유 4px를 두고, 같은 만큼 위 간격을 줄여 높이·자리는 그대로 둔다. */
+.underline:has([data-earn-badge="corner"]) { margin-top: -4px; padding-top: 4px; }
 .underline[data-more="true"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
 .underline .tab {
   display: flex;
