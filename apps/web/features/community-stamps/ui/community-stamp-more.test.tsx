@@ -48,7 +48,9 @@ it("MY record shows one chip per page, opens on the page with the newest stamp, 
   expect(within(chips).getByRole("button", { name: /아렴/ })).toHaveAttribute("aria-pressed", "true");
   const cards = within(earned()).getAllByRole("listitem");
   expect(cards.map(card => card.querySelector("strong")?.textContent)).toEqual(["좋아요", "퀴즈"]);
-  expect(cards[0]!.querySelector("time")).toHaveTextContent("26. 10. 02.");
+  // The ICU build decides the exact short form ("26. 10. 02." on one Node, "26/10/02" on another), so compare with the same formatter.
+  expect(cards[0]!.querySelector("time")).toHaveAttribute("datetime", "2026-10-02T00:00:00.000Z");
+  expect(cards[0]!.querySelector("time")).toHaveTextContent(new Intl.DateTimeFormat("ko", { timeZone: "Asia/Seoul", year: "2-digit", month: "2-digit", day: "2-digit" }).format(new Date("2026-10-02T00:00:00.000Z")));
 });
 
 it("MY record shows no page chips before the first stamp", () => {
