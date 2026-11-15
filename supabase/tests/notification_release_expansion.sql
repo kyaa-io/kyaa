@@ -63,6 +63,8 @@ begin
     perform alert_safety_test.assert(exists(select 1 from public.claim_email_notification_deliveries_safely('new-kind-test',100,120) q where q.notification_id=n),'new kind claimed: '||k);
   end loop;
   perform public.mobile_register_owned_installation(owner_id,extensions.gen_random_uuid(),'ios','synthetic-token','authorized','1','en',0,extensions.gen_random_uuid());
+  -- Earlier test files in the same database may switch Kakao back on; check the disabled state explicitly.
+  perform public.configure_fan_notification_delivery('kakao','disabled');
   perform alert_safety_test.assert((public.get_owned_notification_connections(owner_id)->>'kakaoEnabled')::boolean=false,'Kakao control hides UI');
   n:=alert_safety_test.notification(owner_id);
   perform alert_safety_test.assert(not exists(select 1 from public.external_notification_delivery_outbox where notification_id=n and channel='kakao'),'disabled Kakao creates no delivery');
