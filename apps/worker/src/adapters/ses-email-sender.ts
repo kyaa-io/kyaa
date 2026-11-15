@@ -1,6 +1,6 @@
 import { assertEmailTemplateEnabled, renderNotificationEmail } from "../email-template.js";
 import { emailInlineAssets } from "../email-inline-assets.js";
-import { emailUnsubscribeHeaders, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../email-unsubscribe.js";
+import { deriveEmailUnsubscribeKey, emailUnsubscribeHeaders, emailUnsubscribeKeyTag, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../email-unsubscribe.js";
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import {
   ExternalNotificationError,
@@ -16,8 +16,9 @@ export interface SesEmailSenderConfig {
   region: string;
   fromEmail: string;
   trustedOrigin?: string;
-  /** Signs the unsubscribe link in every mail. Required: a member mail without it is refused. */
-  unsubscribeKey: string;
+  /** Secret the unsubscribe link key is derived from. Without it mail still goes out, just without the link. */
+  unsubscribeSecret?: string | undefined;
+  logError?: (message: string) => void;
   /** Origin that serves the unsubscribe page; dev workers use https://dev.kyaa.io. */
   unsubscribeOrigin?: string;
   now?: () => Date;
@@ -106,6 +107,7 @@ export class SesEmailSender implements ExternalNotificationSender {
   private readonly client: SesV2SendClient;
   private readonly origin: string;
   private readonly unsubscribeOrigin: string;
+  private readonly unsubscribeKey: Buffer | null;
 
   constructor(private readonly config: SesEmailSenderConfig) {
     if (!config.region.trim() || !isEmail(config.fromEmail)) {
@@ -113,8 +115,13 @@ export class SesEmailSender implements ExternalNotificationSender {
     }
     this.origin = trustedOrigin(config.trustedOrigin ?? DEFAULT_TRUSTED_ORIGIN);
     this.unsubscribeOrigin = trustedOrigin(config.unsubscribeOrigin ?? this.origin);
-    if (!/^[a-f0-9]{64}$/i.test(config.unsubscribeKey)) {
-      throw new ExternalNotificationError("EMAIL_INVALID_CONFIG", false);
+    const logError = config.logError ?? ((message: string) => console.error(message));
+    try {
+      this.unsubscribeKey = deriveEmailUnsubscribeKey(config.unsubscribeSecret);
+      console.info(`email unsubscribe key tag=${emailUnsubscribeKeyTag(this.unsubscribeKey)}`);
+    } catch {
+      this.unsubscribeKey = null;
+      logError("EMAIL_UNSUBSCRIBE_UNAVAILABLE: no signing secret; member mail is sent without the unsubscribe link");
     }
     this.client =
       config.client ??
@@ -150,17 +157,25 @@ export class SesEmailSender implements ExternalNotificationSender {
       storageOrigin: this.config.storageOrigin,
       fetcher: this.config.fetcher,
     });
-    const unsubscribe = emailUnsubscribeLinks(
-      this.unsubscribeOrigin,
-      signEmailUnsubscribeToken(this.config.unsubscribeKey, {
-        notificationId: job.notificationId,
-        templateKey: job.templateKey,
-        ...(this.config.now ? { now: this.config.now() } : {}),
-      }),
-      job.locale,
-    );
+    let unsubscribe: ReturnType<typeof emailUnsubscribeLinks> | null = null;
+    if (this.unsubscribeKey) {
+      try {
+        unsubscribe = emailUnsubscribeLinks(
+          this.unsubscribeOrigin,
+          signEmailUnsubscribeToken(this.unsubscribeKey, {
+            notificationId: job.notificationId,
+            templateKey: job.templateKey,
+            ...(this.config.now ? { now: this.config.now() } : {}),
+          }),
+          job.locale,
+        );
+      } catch {
+        // A failure to sign must never hold back a win or pick-up notice.
+        (this.config.logError ?? ((message: string) => console.error(message)))("EMAIL_UNSUBSCRIBE_SIGN_FAILED: sending without the unsubscribe link");
+      }
+    }
     const email = renderNotificationEmail({
-      unsubscribeUrl: unsubscribe.pageUrl,
+      ...(unsubscribe ? { unsubscribeUrl: unsubscribe.pageUrl } : {}),
       title: job.payload.title, detail: job.payload.detail, deepLink,
       locale: job.locale, templateKey: job.templateKey,
       inlineAssets: { logoContentId: "byus-logo", ...(assets.posterContentId ? { posterContentId: assets.posterContentId } : {}) },
@@ -178,7 +193,7 @@ export class SesEmailSender implements ExternalNotificationSender {
           ReplyToAddresses: ["support@kyaa.io"],
           Content: {
             Simple: {
-              Headers: emailUnsubscribeHeaders(unsubscribe),
+              ...(unsubscribe ? { Headers: emailUnsubscribeHeaders(unsubscribe) } : {}),
               Attachments: assets.attachments,
               Subject: { Data: email.subject, Charset: "UTF-8" },
               Body: {

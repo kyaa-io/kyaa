@@ -1,11 +1,12 @@
 import { SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { describe, expect, it, vi } from "vitest";
 import { SesEmailSender, type SesV2SendClient } from "../src/adapters/ses-email-sender.js";
-import { emailUnsubscribeHeaders, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../src/email-unsubscribe.js";
+import { deriveEmailUnsubscribeKey, emailUnsubscribeHeaders, emailUnsubscribeKeyTag, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../src/email-unsubscribe.js";
 import { renderNotificationEmail } from "../src/email-template.js";
 import type { ExternalNotificationJob } from "../src/external-notification-domain.js";
 
-const key = "ab".repeat(32);
+const secret = "s".repeat(48);
+const key = deriveEmailUnsubscribeKey(secret);
 const notificationId = "7b1f4f0e-2c1d-4a3b-9c5d-1e2f3a4b5c6d";
 const job: ExternalNotificationJob = {
   id: "delivery", notificationId, planId: "plan", channel: "email", sequence: 1,
@@ -30,11 +31,18 @@ describe("signed mail unsubscribe links", () => {
   it("is stable for the same input and changes with the key", () => {
     const input = { notificationId, templateKey: "benefit_won", now: new Date("2026-11-15T00:00:00Z") };
     expect(signEmailUnsubscribeToken(key, input)).toBe(signEmailUnsubscribeToken(key, input));
-    expect(signEmailUnsubscribeToken("cd".repeat(32), input)).not.toBe(signEmailUnsubscribeToken(key, input));
+    expect(signEmailUnsubscribeToken(deriveEmailUnsubscribeKey("t".repeat(48)), input)).not.toBe(signEmailUnsubscribeToken(key, input));
   });
 
-  it("refuses a malformed key", () => {
-    expect(() => signEmailUnsubscribeToken("short", { notificationId, templateKey: "benefit_won" })).toThrow("EMAIL_UNSUBSCRIBE_KEY_INVALID");
+  it("derives a 32-byte key from the secret with a fixed HKDF vector", () => {
+    expect(key.length).toBe(32);
+    expect(key.toString("hex")).toBe(deriveEmailUnsubscribeKey(secret).toString("hex"));
+    expect(emailUnsubscribeKeyTag(key)).toMatch(/^[0-9a-f]{8}$/);
+    expect(emailUnsubscribeKeyTag(key)).not.toBe(emailUnsubscribeKeyTag(deriveEmailUnsubscribeKey("t".repeat(48))));
+  });
+  it("refuses a missing or short secret", () => {
+    expect(() => deriveEmailUnsubscribeKey(undefined)).toThrow("EMAIL_UNSUBSCRIBE_SECRET_MISSING");
+    expect(() => deriveEmailUnsubscribeKey("short")).toThrow("EMAIL_UNSUBSCRIBE_SECRET_MISSING");
   });
 
   it("builds the page link, the one-click link and both RFC 8058 headers", () => {
@@ -69,7 +77,7 @@ describe("SES sender unsubscribe headers", () => {
   function setup(extra: Partial<ConstructorParameters<typeof SesEmailSender>[0]> = {}) {
     const send = vi.fn<SesV2SendClient["send"]>().mockResolvedValue({ MessageId: "id" });
     const sender = new SesEmailSender({
-      region: "ap-northeast-2", fromEmail: "notifications@kyaa.io", unsubscribeKey: key,
+      region: "ap-northeast-2", fromEmail: "notifications@kyaa.io", unsubscribeSecret: secret,
       now: () => new Date("2026-11-15T00:00:00Z"), client: { send },
       fetcher: vi.fn().mockResolvedValue(new Response(new Uint8Array([255, 216, 255, 224]), { headers: { "content-type": "image/jpeg" } })),
       ...extra,
@@ -97,8 +105,25 @@ describe("SES sender unsubscribe headers", () => {
     expect(header.startsWith("<https://dev.kyaa.io/api/email/unsubscribe?t=")).toBe(true);
   });
 
-  it("will not start without a valid key", () => {
-    expect(() => setup({ unsubscribeKey: "" })).toThrow();
+  it("still sends the mail, without the link, when there is no secret, and logs the error", async () => {
+    const logError = vi.fn();
+    const { send, sender } = setup({ unsubscribeSecret: undefined, logError });
+    await expect(sender.send(job)).resolves.toEqual({ providerMessageId: "id" });
+    const simple = (send.mock.calls[0]![0] as SendEmailCommand).input.Content!.Simple!;
+    expect(simple.Headers).toBeUndefined();
+    expect(simple.Body!.Html!.Data).not.toContain("이 메일 그만 받기");
+    expect(logError).toHaveBeenCalledWith(expect.stringContaining("EMAIL_UNSUBSCRIBE_UNAVAILABLE"));
+  });
+
+  it("still sends when signing fails at send time", async () => {
+    const logError = vi.fn();
+    const { send, sender } = setup({ logError, now: () => { throw new Error("clock"); } });
+    await expect(sender.send(job)).resolves.toEqual({ providerMessageId: "id" });
+    expect((send.mock.calls[0]![0] as SendEmailCommand).input.Content!.Simple!.Headers).toBeUndefined();
+    expect(logError).toHaveBeenCalledWith(expect.stringContaining("EMAIL_UNSUBSCRIBE_SIGN_FAILED"));
+  });
+
+  it("will not start with an insecure link origin", () => {
     expect(() => setup({ unsubscribeOrigin: "http://kyaa.io" })).toThrow();
   });
 });

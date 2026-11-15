@@ -7,6 +7,7 @@ import { FocusFlowFrame } from "@/components/fan-shell/focus-flow-frame";
 import { resolveLegalLocale } from "@/components/legal-content";
 import legalStyles from "@/components/legal-page.module.css";
 import { loadServerEnv } from "@/server/config/env";
+import { emailUnsubscribeKey } from "@/server/notification/email-unsubscribe-dependencies";
 import { resolveEmailUnsubscribeTarget, unsubscribeEndsRequiredNotices, type EmailUnsubscribeScope } from "@/server/notification/email-unsubscribe";
 import { emailUnsubscribeCopy } from "./content";
 import styles from "./page.module.css";
@@ -23,8 +24,8 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   return { title: `${emailUnsubscribeCopy[locale === "ko" ? "ko" : "en"].title} | kyaa`, robots: { index: false, follow: false } };
 }
 
-function keyOrUndefined(): string | undefined {
-  try { return loadServerEnv().EMAIL_UNSUBSCRIBE_KEY; } catch { return undefined; }
+function linkKey(): Buffer | null {
+  try { return emailUnsubscribeKey(loadServerEnv()); } catch { return null; }
 }
 
 export default async function EmailUnsubscribePage({ searchParams }: PageProps) {
@@ -33,7 +34,7 @@ export default async function EmailUnsubscribePage({ searchParams }: PageProps) 
   const copy = emailUnsubscribeCopy[locale === "ko" ? "ko" : "en"];
   const token = first(params.t);
   const done = first(params.done) ?? "";
-  const target = resolveEmailUnsubscribeTarget(keyOrUndefined(), token);
+  const target = resolveEmailUnsubscribeTarget(linkKey(), token);
   const usable = target.state === "ok" && done !== "invalid" && done !== "expired";
   const action = `/api/email/unsubscribe?t=${encodeURIComponent(token ?? "")}&locale=${locale}`;
 

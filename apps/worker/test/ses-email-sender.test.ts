@@ -24,7 +24,7 @@ const job: ExternalNotificationJob = {
   leaseExpiresAt: "2099-01-01T00:00:00Z",
 };
 
-const unsubscribeKey = "c".repeat(64);
+const unsubscribeSecret = "s".repeat(48);
 
 function mockSend() {
   return vi.fn<SesV2SendClient["send"]>();
@@ -34,7 +34,7 @@ function sender(send: SesV2SendClient["send"], trustedOrigin?: string, fromEmail
   return new SesEmailSender({
     region: "ap-northeast-2",
     fromEmail,
-    unsubscribeKey,
+    unsubscribeSecret,
     ...(trustedOrigin ? { trustedOrigin } : {}),
     client: { send },
     fetcher: vi.fn().mockResolvedValue(new Response(new Uint8Array([255,216,255,224]), {headers:{"content-type":"image/jpeg"}})),
@@ -205,7 +205,7 @@ describe("SES email sender", () => {
 
 it.each(["live_24h", "live_cancelled"])("blocks excluded %s before fetching assets or calling SES",async(templateKey)=>{
  const send=mockSend();const fetcher=vi.fn();
- const client=new SesEmailSender({region:"ap-northeast-2",fromEmail:"notifications@byus.kr",unsubscribeKey,client:{send},fetcher});
+ const client=new SesEmailSender({region:"ap-northeast-2",fromEmail:"notifications@byus.kr",unsubscribeSecret,client:{send},fetcher});
  await expect(client.send({...job,templateKey})).rejects.toMatchObject({retryable:false});
  expect(send).not.toHaveBeenCalled();expect(fetcher).not.toHaveBeenCalled();
 });

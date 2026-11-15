@@ -1,5 +1,5 @@
 // 문구는 설정 화면(features/profile/ui/settings-screen.tsx)의 기존 문구를 그대로 쓴다.
-// 설정에 없는 말(그만 받기·다시 받기·필수 안내 경고)만 새 문구이며 감독 확정 대기다(EMAIL-UNSUB-1115 결과 참고).
+// 설정에 없는 말(그만 받기·다시 받기·필수 안내 경고)은 EMAIL-UNSUB-1115 감독 확정(2026-11-15) 문구다.
 export const emailUnsubscribeCopy = {
   ko: {
     title: "이 메일 그만 받기",
@@ -14,7 +14,6 @@ export const emailUnsubscribeCopy = {
     emailLabel: "Email 수신",
     stop: "그만 받기",
     resume: "다시 받기",
-    // 문구 확정 대기(A/B): 당첨·수령·취소·문의 안내를 끄기 전에 한 줄로 알린다.
     requiredWarning: "당첨·수령·취소·문의 안내 메일도 함께 멈춰요.",
     saved: "변경 사항을 저장했어요.",
     failed: "저장하지 못했어요. 다시 시도해 주세요.",

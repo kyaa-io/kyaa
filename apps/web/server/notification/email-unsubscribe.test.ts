@@ -1,20 +1,21 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
-import { signEmailUnsubscribeToken } from "../../../worker/src/email-unsubscribe";
+import { deriveEmailUnsubscribeKey as deriveWorkerKey, signEmailUnsubscribeToken } from "../../../worker/src/email-unsubscribe";
 import { createEmailUnsubscribeGetHandler, createEmailUnsubscribePostHandler, type EmailUnsubscribeRouteDependencies } from "./email-unsubscribe-route";
 import { applyEmailUnsubscribe, preferenceForMailKind, resolveEmailUnsubscribeTarget, unsubscribeEndsRequiredNotices } from "./email-unsubscribe";
-import { verifyEmailUnsubscribeToken } from "./email-unsubscribe-token";
+import { deriveEmailUnsubscribeKey, verifyEmailUnsubscribeToken } from "./email-unsubscribe-token";
 
-const key = "ab".repeat(32);
-const otherKey = "cd".repeat(32);
+const secret = "p".repeat(48);
+const key = deriveWorkerKey(secret);
+const otherKey = deriveWorkerKey("q".repeat(48));
 const mine = "7b1f4f0e-2c1d-4a3b-9c5d-1e2f3a4b5c6d";
 const theirs = "9d2e5a61-3f4b-4c7d-8e9f-0a1b2c3d4e5f";
 const issued = new Date("2026-11-15T00:00:00Z");
 const token = (id = mine, templateKey = "benefit_won", now = issued) => signEmailUnsubscribeToken(key, { notificationId: id, templateKey, now });
 
-function resign(payload: object, signingKey = key) {
+function resign(payload: object, signingKey: Buffer = key) {
   const body = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const signature = createHmac("sha256", Buffer.from(signingKey, "hex")).update(`email-unsubscribe:v1.${body}`).digest("base64url");
+  const signature = createHmac("sha256", signingKey).update(`email-unsubscribe:v1.${body}`).digest("base64url");
   return `v1.${body}.${signature}`;
 }
 
@@ -47,8 +48,13 @@ describe("link verification", () => {
     expect(verifyEmailUnsubscribeToken(key, token(), new Date(issued.getTime() + 89 * 86400_000)).ok).toBe(true);
     expect(verifyEmailUnsubscribeToken(key, token(), new Date(issued.getTime() + 91 * 86400_000))).toEqual({ ok: false, reason: "expired" });
   });
-  it("does not verify with a malformed key", () => {
-    expect(verifyEmailUnsubscribeToken("nope", token(), issued)).toEqual({ ok: false, reason: "invalid" });
+  it("derives the same key as the worker, and none from a missing or short secret", () => {
+    expect(deriveEmailUnsubscribeKey(secret)!.toString("hex")).toBe(key.toString("hex"));
+    expect(deriveEmailUnsubscribeKey(undefined)).toBeNull();
+    expect(deriveEmailUnsubscribeKey("short")).toBeNull();
+  });
+  it("does not resolve a link without a key", () => {
+    expect(resolveEmailUnsubscribeTarget(null, token(), issued)).toEqual({ state: "invalid" });
   });
 });
 
@@ -69,7 +75,7 @@ describe("which switch a mail belongs to", () => {
   });
   it("resolves a link into its target", () => {
     expect(resolveEmailUnsubscribeTarget(key, token(mine, "survey_reminder"), issued)).toEqual({ state: "ok", notificationId: mine, templateKey: "survey_reminder", preference: "survey_reminders" });
-    expect(resolveEmailUnsubscribeTarget(undefined, token(), issued)).toEqual({ state: "invalid" });
+    expect(resolveEmailUnsubscribeTarget(null, token(), issued)).toEqual({ state: "invalid" });
     expect(resolveEmailUnsubscribeTarget(key, null, issued)).toEqual({ state: "invalid" });
   });
 });
@@ -79,7 +85,7 @@ function clientReturning(error: { code?: string } | null = null) {
 }
 const post = (url: string, body: Record<string, string>) => new Request(url, { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(body) });
 function handler(client: ReturnType<typeof clientReturning> | null, overrides: Partial<EmailUnsubscribeRouteDependencies> = {}) {
-  return createEmailUnsubscribePostHandler(() => ({ keyHex: key, client, now: () => issued, ...overrides }));
+  return createEmailUnsubscribePostHandler(() => ({ key, client, now: () => issued, ...overrides }));
 }
 
 describe("one-click POST (mail client)", () => {

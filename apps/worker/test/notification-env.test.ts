@@ -13,14 +13,12 @@ const valid = {
 };
 describe("notification worker secrets", () => {
   it.each(["notifications@byus.kr", "notifications@kyaa.io"])("allows approved SES sender %s without Kakao", (SES_FROM_EMAIL) => {
-    const ses = {...valid, NOTIFICATION_EXTERNAL_MODE:"ses_email",NOTIFICATION_WORKER_BATCH_SIZE:"2", NOTIFICATION_EMAIL_BATCH_SIZE:"40", SES_REGION:"ap-northeast-2", SES_FROM_EMAIL, EMAIL_UNSUBSCRIBE_KEY:"c".repeat(64)};
+    const ses = {...valid, NOTIFICATION_EXTERNAL_MODE:"ses_email",NOTIFICATION_WORKER_BATCH_SIZE:"2", NOTIFICATION_EMAIL_BATCH_SIZE:"40", SES_REGION:"ap-northeast-2", SES_FROM_EMAIL};
     expect(parseNotificationEnv(ses)).toMatchObject({NOTIFICATION_EXTERNAL_MODE:"ses_email",NOTIFICATION_WORKER_BATCH_SIZE:2,NOTIFICATION_EMAIL_BATCH_SIZE:40,SES_FROM_EMAIL});
     expect(() => parseNotificationEnv({...ses, NOTIFICATION_WORKER_BATCH_SIZE:"25"})).toThrow();
     expect(() => parseNotificationEnv({...ses, NOTIFICATION_EMAIL_BATCH_SIZE:"41"})).toThrow();
     expect(() => parseNotificationEnv({...ses, SES_FROM_EMAIL:undefined})).toThrow();
     expect(() => parseNotificationEnv({...ses, SES_REGION:"us-east-1"})).toThrow();
-    expect(() => parseNotificationEnv({...ses, EMAIL_UNSUBSCRIBE_KEY:undefined})).toThrow(/unsubscribe link key/);
-    expect(() => parseNotificationEnv({...ses, EMAIL_UNSUBSCRIBE_KEY:"short"})).toThrow();
   });
   it("rejects unrelated SES senders and requires the same validated setting for business inquiries", () => {
     expect(() => parseNotificationEnv({...valid, NOTIFICATION_EXTERNAL_MODE:"ses_email", NOTIFICATION_WORKER_BATCH_SIZE:"2", SES_REGION:"ap-northeast-2", SES_FROM_EMAIL:"notifications@example.com"})).toThrow();

@@ -41,9 +41,9 @@ export type EmailUnsubscribeTarget =
   | { state: "ok"; notificationId: string; templateKey: string; preference: EmailPreference | null }
   | { state: "invalid" | "expired" };
 
-export function resolveEmailUnsubscribeTarget(keyHex: string | undefined, token: string | null | undefined, now: Date = new Date()): EmailUnsubscribeTarget {
-  if (!keyHex || !token) return { state: "invalid" };
-  const verified = verifyEmailUnsubscribeToken(keyHex, token, now);
+export function resolveEmailUnsubscribeTarget(key: Buffer | null | undefined, token: string | null | undefined, now: Date = new Date()): EmailUnsubscribeTarget {
+  if (!key || !token) return { state: "invalid" };
+  const verified = verifyEmailUnsubscribeToken(key, token, now);
   if (!verified.ok) return { state: verified.reason };
   return { state: "ok", notificationId: verified.notificationId, templateKey: verified.templateKey, preference: preferenceForMailKind(verified.templateKey) };
 }

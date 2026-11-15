@@ -1,7 +1,7 @@
 import { applyEmailUnsubscribe, resolveEmailUnsubscribeTarget, type EmailUnsubscribeRpcClient, type EmailUnsubscribeScope } from "./email-unsubscribe";
 
 export interface EmailUnsubscribeRouteDependencies {
-  keyHex: string | undefined;
+  key: Buffer | null;
   client: EmailUnsubscribeRpcClient | null;
   now?: () => Date;
 }
@@ -45,7 +45,7 @@ export function createEmailUnsubscribePostHandler(dependencies: () => EmailUnsub
       : Response.json({ error: { code: code.toUpperCase() } }, { status, headers: noStore });
     let deps: EmailUnsubscribeRouteDependencies;
     try { deps = dependencies(); } catch { return fail("failed", 503); }
-    const target = resolveEmailUnsubscribeTarget(deps.keyHex, new URL(request.url).searchParams.get("t"), deps.now?.());
+    const target = resolveEmailUnsubscribeTarget(deps.key, new URL(request.url).searchParams.get("t"), deps.now?.());
     if (target.state !== "ok") return fail(target.state, target.state === "expired" ? 410 : 400);
     if (!deps.client) return fail("failed", 503);
 

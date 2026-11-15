@@ -33,14 +33,14 @@ it("keeps all external providers dormant by default",async()=>{
  expect(state.certifications).toHaveBeenCalledExactlyOnceWith(parseNotificationEnv(source));
 });
 it("keeps push at two while wiring a 40-item, 300-second SES batch",async()=>{
- const env=parseNotificationEnv({...source,NOTIFICATION_EXTERNAL_MODE:"ses_email",NOTIFICATION_WORKER_BATCH_SIZE:"2",NOTIFICATION_EMAIL_BATCH_SIZE:"40",SES_REGION:"ap-northeast-2",SES_FROM_EMAIL:"notifications@byus.kr",EMAIL_UNSUBSCRIBE_KEY:"c".repeat(64)});
+ const env=parseNotificationEnv({...source,NOTIFICATION_EXTERNAL_MODE:"ses_email",NOTIFICATION_WORKER_BATCH_SIZE:"2",NOTIFICATION_EMAIL_BATCH_SIZE:"40",SES_REGION:"ap-northeast-2",SES_FROM_EMAIL:"notifications@byus.kr"});
  const remainingTimeInMillis=()=>250_000;
  expect(await runNotificationWorkerOnce(env,remainingTimeInMillis)).toBe(3);
  expect(state.queue).toHaveBeenCalledWith(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,"dev",true,env);
  expect(state.push).toHaveBeenCalledWith(expect.anything(),expect.anything(),{
   workerId:"runtime-test",batchSize:2,leaseSeconds:120,
  });
- expect(state.ses).toHaveBeenCalledExactlyOnceWith({region:"ap-northeast-2",fromEmail:"notifications@byus.kr",unsubscribeKey:"c".repeat(64),unsubscribeOrigin:"https://dev.kyaa.io",storageOrigin:"https://example.supabase.co"});
+ expect(state.ses).toHaveBeenCalledExactlyOnceWith({region:"ap-northeast-2",fromEmail:"notifications@byus.kr",unsubscribeSecret:env.POSTGREST_SERVICE_TOKEN,unsubscribeOrigin:"https://dev.kyaa.io",storageOrigin:"https://example.supabase.co"});
  expect(state.http).not.toHaveBeenCalled();expect(state.external).toHaveBeenCalledWith(undefined,expect.anything(),{
   workerId:"runtime-test:external",batchSize:40,leaseSeconds:300,remainingTimeInMillis,
  });
@@ -168,7 +168,7 @@ it("resolves legacy credentials lazily and isolates fan-only SES failure while p
  let finishPush!: (value: number) => void;
  state.pushRun.mockReturnValueOnce(new Promise<number>(resolve => { finishPush = resolve; }));
  state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
- const env = parseNotificationEnv({ ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", EMAIL_UNSUBSCRIBE_KEY: "c".repeat(64), SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" });
+ const env = parseNotificationEnv({ ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" });
  const task = runNotificationWorkerOnce(env);
  expect(state.sesClient).not.toHaveBeenCalled();
  expect(state.commands).toHaveBeenCalledOnce();
@@ -183,7 +183,7 @@ it("resolves legacy credentials lazily and isolates fan-only SES failure while p
 it("shares one preflight client across both email paths before either can claim", async () => {
  const client = { send: vi.fn() };
  state.sesClient.mockResolvedValueOnce(client);
- const env = parseNotificationEnv({ ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", BUSINESS_INQUIRY_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", EMAIL_UNSUBSCRIBE_KEY: "c".repeat(64), SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" });
+ const env = parseNotificationEnv({ ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", BUSINESS_INQUIRY_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" });
  await runNotificationWorkerOnce(env);
  expect(state.sesClient).toHaveBeenCalledExactlyOnceWith(env.SES_ROLE_ARN);
  expect(state.ses).toHaveBeenCalledWith(expect.objectContaining({ client }));
