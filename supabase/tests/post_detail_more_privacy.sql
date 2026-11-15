@@ -24,8 +24,8 @@ begin
   insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)
     values(creator,'ko','관련 글 시험','소개','사진');
   insert into public.fan_posts(id,celebrity_id,app_user_id,body,visibility,idempotency_key,create_request_hash,created_at,updated_at) values
-    (public_post,creator,author,'public related post','public',extensions.gen_random_uuid(),'public',now()-interval '2 hours',now()-interval '2 hours'),
-    (members_post,creator,author,'members related post','members',extensions.gen_random_uuid(),'members',now()-interval '1 hour',now()-interval '1 hour');
+    (public_post,creator,author,'public related post','public',extensions.gen_random_uuid(),'public',greatest(now()-interval '2 hours',(date_trunc('week',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')+interval '1 second'),greatest(now()-interval '2 hours',(date_trunc('week',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')+interval '1 second')),
+    (members_post,creator,author,'members related post','members',extensions.gen_random_uuid(),'members',greatest(now()-interval '1 hour',(date_trunc('week',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')+interval '2 seconds'),greatest(now()-interval '1 hour',(date_trunc('week',now() at time zone 'Asia/Seoul') at time zone 'Asia/Seoul')+interval '2 seconds'));
   -- The passport row only has to satisfy the member check; its issuing chain is not under test.
   set local session_replication_role = replica;
   insert into public.fan_passports(id,app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id,issued_at)
