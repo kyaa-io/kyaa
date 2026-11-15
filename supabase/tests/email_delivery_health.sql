@@ -31,15 +31,22 @@ begin
   return v_delivery;
 end $$;
 
--- SES configuration-set event as the SNS-subscribed Lambda will pass it.
+-- SES event in the shape the SES feedback Lambda passes it (apps/worker/src/ses-feedback.ts toSesFeedbackPayload,
+-- input contract of 20261228090200). p_extra uses the SES event's detail objects; events happen in call order.
 create function pg_temp.ev(p_sns text, p_type text, p_message text, p_delivery uuid, p_extra jsonb default '{}') returns jsonb
 language sql as $$
-  select public.record_ses_email_event(jsonb_build_object('snsMessageId', p_sns, 'message',
-    jsonb_build_object('eventType', p_type, 'mail', jsonb_strip_nulls(jsonb_build_object(
-      'timestamp', '2026-11-15T12:00:00.000Z', 'messageId', p_message,
-      'destination', jsonb_build_array('someone@example.invalid'),
-      'tags', case when p_delivery is null then null else jsonb_build_object('delivery_id', jsonb_build_array(p_delivery::text), 'env', jsonb_build_array('dev')) end)))
-    || p_extra))
+  select public.record_ses_email_event(jsonb_build_object(
+    'sns_message_id', p_sns,
+    'event_type', case p_type when 'DeliveryDelay' then 'delivery_delay' else lower(p_type) end,
+    'ses_message_id', p_message,
+    'delivery_id', p_delivery::text,
+    'occurred_at', to_char(clock_timestamp() at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'),
+    'recipients', coalesce(
+      (select jsonb_agg(r->'emailAddress') from jsonb_array_elements(coalesce(p_extra#>'{bounce,bouncedRecipients}', p_extra#>'{complaint,complainedRecipients}')) r),
+      p_extra#>'{delivery,recipients}', '["someone@example.invalid"]'),
+    'bounce_type', p_extra#>>'{bounce,bounceType}', 'bounce_sub_type', p_extra#>>'{bounce,bounceSubType}',
+    'complaint_feedback_type', p_extra#>>'{complaint,complaintFeedbackType}', 'complaint_sub_type', null,
+    'delay_type', null, 'reject_reason', null))
 $$;
 create function pg_temp.bounce(p_type text, p_sub text) returns jsonb language sql as $$
   select jsonb_build_object('bounce', jsonb_build_object('bounceType', p_type, 'bounceSubType', p_sub, 'timestamp', '2026-11-15T12:00:05.000Z',
