@@ -88,6 +88,19 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     }
   });
 
+  it("omits the first-proof bonus when the active policy has none", async () => {
+    const policy = rawPolicy();
+    delete (policy.rules.actions.proof as { firstPoints?: number }).firstPoints;
+    policy.rules.actions.proof.points = 100;
+    const model = buildGuideModel(await fetchCatalog(policy));
+    for (const Content of [DukjilGuideContent, JjinfanGuideContent]) {
+      const html = renderToStaticMarkup(<Content locale="ko" model={model} />);
+      expect(html).toContain("100P");
+      expect(html).not.toContain("처음 ");
+      expect(html).not.toContain("520P");
+    }
+  });
+
   it("states the exact Korean figures", async () => {
     const model = buildGuideModel(await fetchCatalog(rawPolicy()));
     const html = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
