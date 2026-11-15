@@ -325,6 +325,8 @@ revoke all on function public.email_destination_fingerprint(text),
   public.fan_web_notification_path_before_email_delivery(uuid,uuid)
   from public, anon, authenticated, service_role;
 grant execute on function public.record_ses_email_event(jsonb) to service_role;
+-- New functions get PUBLIC execute and, on Supabase-style databases, default grants to anon/authenticated/service_role; start the wrappers closed.
+revoke all on function public.fan_web_notification_kind(text), public.fan_web_notification_path(uuid,uuid) from public, anon, authenticated, service_role;
 -- The wrappers take over the grants their callers relied on.
 do $$
 declare g record;
