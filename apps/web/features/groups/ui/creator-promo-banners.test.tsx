@@ -18,7 +18,7 @@ it("picks the first of this week's hot pages that has a banner, else the first f
   expect(pickCreatorPromoBanner(["someone-else"]).slug).toBe("changha");
 });
 
-it("is one picture-only link to that fan page with the current locale, named by alt only, with no pager", () => {
+it("is a titled section with one picture-only link to that fan page with the current locale, named by alt only, with no pager", () => {
   const { container } = render(<CreatorPromoBanners locale="ko" order={["mmnoo-s", "elina"]} />);
   const link = screen.getByRole("link");
   expect(screen.getAllByRole("link")).toHaveLength(1);
@@ -26,7 +26,15 @@ it("is one picture-only link to that fan page with the current locale, named by 
   expect(link.querySelector("img")).toHaveAttribute("alt", "민주");
   expect(link.textContent).toBe("");
   expect(screen.queryByRole("button")).toBeNull();
-  expect(container.querySelectorAll("li,h1,h2,h3,p")).toHaveLength(0);
+  expect(screen.getByRole("heading", { level: 2, name: "오늘의 팬페이지" })).toBeInTheDocument();
+  expect(container.querySelectorAll("li,h1,h3,p")).toHaveLength(0);
+  expect(link.querySelector("source")).toBeNull();
+  expect(link).not.toHaveAttribute("data-wide");
+});
+
+it("titles the section in the current language", () => {
+  render(<CreatorPromoBanners locale="en" order={["nchive"]} />);
+  expect(screen.getByRole("heading", { level: 2, name: "Fan page of the day" })).toBeInTheDocument();
 });
 
 it("uses the English name for other locales and keeps the locale in the link", () => {
