@@ -16,4 +16,12 @@ export const dukjilGuideDetailSource = {
   dkgJjCloseTitle: { ko: "덕질 기록 {0}칸으로 받는 찐팬 스탬프", en: "The true-fan stamp comes from {0} mission book slots" },
   dkgDkCloseTitle: { ko: "덕질 {0}가지로 포인트를 모아요", en: "Earn points from {0} fan activities" },
   dkgProofFirstThen: { ko: "첫 인증 {0}P, 이후 {1}P", en: "{0}P for your first proof, then {1}P" },
+  dkgMbTitle: { ko: "덕질미션북", en: "Fan mission book" },
+  dkgMbLead: { ko: "팬페이지에서 덕질할 때마다 미션북 칸에 도장이 찍혀요. {0}칸을 다 채우면 찐팬 하트 {1}개를 받아요.", en: "Each fan activity on a fan page stamps a slot in your mission book. Fill all {0} slots to get {1} true-fan heart." },
+  dkgMbBookTitle: { ko: "미션북 {0}칸", en: "{0} mission book slots" },
+  dkgMbBookLead: { ko: "{0}번 칸은 덕후인증으로 채워요.", en: "Slot {0} is filled with a fan proof." },
+  dkgMbRewardTitle: { ko: "모으면 받는 것", en: "What you collect" },
+  dkgMbHeart: { ko: "찐팬 하트 {0}개", en: "{0} true-fan heart" },
+  dkgMbHeartDesc: { ko: "{0}칸을 다 채우고 받기를 누르면 쌓여요. 하트가 1개 이상이면 찐팬이에요.", en: "Fill all {0} slots and claim the page to add it. With 1 heart or more, you're a true fan." },
+  dkgMbTicket: { ko: "응모권 1장", en: "1 raffle ticket" },
 } as const;
