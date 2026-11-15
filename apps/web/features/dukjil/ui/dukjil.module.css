@@ -4,6 +4,8 @@
 /* 2026-11-08 13:25: the row, not the points, is what is pressed. No pill, border or shadow: the coin and the number only. */
 .inline{min-height:20px;padding:0;background:none;color:inherit;font-size:var(--fan-metadata-size);line-height:20px;font-weight:var(--fan-item-title-weight)}
 .inline>img{display:block;flex:none}
+/* 포인트·보상 표시 원칙(사용자 11/14): 세로로 반복되는 행에서는 아이콘이 고정 폭 칸의 왼쪽 끝에 놓여 세로선이 같다. 76은 +1,000P(74)가 들어가는 폭. */
+.slot{inline-size:76px;justify-content:flex-start}
 .small{min-height:16px;gap:calc(var(--space-1) / 2);font-size:var(--fan-calendar-meta-size);line-height:16px}
 .balance{gap:var(--space-1)}
 .balance>img{display:block;flex:none}

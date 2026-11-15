@@ -27,6 +27,8 @@ export type EarnBadgeProps = {
   today?: boolean;
   /** `inline`: the small form inside the 7-day cells. */
   size?: "sm";
+  /** `inline`: a fixed-width slot (76) with the coin at its left edge, so the coins of a vertical list share one x whatever the number (+2P … +1,000P). */
+  slot?: boolean;
   className?: string;
 };
 
@@ -34,8 +36,8 @@ export type EarnBadgeProps = {
 export const POINT_COIN_SRC = REWARD_ICON_SRC.point;
 
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
-export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, remainingPer = "day", today = false, size, className = "" }: EarnBadgeProps) {
-  const cls = `${styles.badge} ${styles[variant]} ${size === "sm" ? styles.small : ""} ${className}`;
+export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, remainingPer = "day", today = false, size, slot = false, className = "" }: EarnBadgeProps) {
+  const cls = `${styles.badge} ${styles[variant]} ${size === "sm" ? styles.small : ""} ${slot ? styles.slot : ""} ${className}`;
   // S4 규칙 3: 오늘 받은 포인트가 0이면 배지를 그리지 않는다.
   if (variant === "inline" && today && (points ?? 0) <= 0) return null;
   if (variant === "done") {
