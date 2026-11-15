@@ -139,6 +139,15 @@ it("places the proof tab immediately after the board on a fanpage route and leav
   expect([...links].map(link => link.textContent)).not.toContain("팬·랭킹");
 });
 
+it.each([["hobby", "ko", "인증", "팬·랭킹"], ["brand", "en", "Proofs", "Fans & ranking"]] as const)("keeps the plain proof tab and the members tab with no badge on a %s page", (kind, locale, proof, members) => {
+  Object.assign(state, { data: { ...detail, page: { ...detail.page, kind, celebrityId: "c", slug: "mina", name: "Mina" } } });
+  render(<GroupPageProvider slug="mina" locale={locale} celebrity={{ slug: "mina", locale, name: "Mina", summary: "", image: { url: "/mina.webp", alt: "Mina", position: "center" }, roles: [kind === "brand" ? "brand" : "idol"], themes: [], socialLinks: [], displayOrder: 0, fanCount: 0 }}><GroupPageHead /></GroupPageProvider>);
+  const labels = [...[...document.querySelectorAll("nav[data-fan-tabs]")].at(-1)!.querySelectorAll("a")].map(link => link.textContent);
+  expect(labels).toContain(proof);
+  expect(labels).toContain(members);
+  expect(labels).not.toContain(locale === "ko" ? "덕후인증" : "Fan proof");
+});
+
 const fanDetail = (extra: object) => ({ ...detail, page: { ...detail.page, kind: "fan" as const, celebrityId: "c", slug: "elina", name: "엘리나", ...extra } });
 
 it("shows the like count as the fan page's 팬 N and the member count on every other page", () => {

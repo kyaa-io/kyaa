@@ -312,7 +312,7 @@ describe("approved fanpage", () => {
     render(<CelebrityFanPage celebrity={runmusic} locale="ko" upcomingLive={null} />);
 
     const menu = screen.getByRole("navigation", { name: "런뮤직 팬페이지 메뉴" });
-    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "덕후인증", "팬 인증", "이벤트", "팬 리더보드"]);
+    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "인증", "팬 인증", "이벤트", "팬 리더보드"]);
     expect(within(menu).getByRole("link", { name: "홈" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByText(runmusic.summary)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "공식 웹사이트, 새 창" })).toHaveAttribute("href", runmusic.websiteUrl);

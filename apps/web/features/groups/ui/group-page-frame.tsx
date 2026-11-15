@@ -31,9 +31,9 @@ import styles from "./groups.module.css";
 function useTabs(): FanTabItem[] {
   const g = useGroupPage();
   const hideMembers = g.routeSlug !== null && g.error;
-  // 팬페이지는 '팬·랭킹' 탭을 두지 않는다. 팬 목록(?tab=members)은 머리의 '팬 N'에서 들어간다.
+  // 팬페이지만 '덕후인증' + 포인트 배지를 쓰고 '팬·랭킹' 탭을 두지 않는다. 취미·브랜드 모임은 '인증'과 '팬·랭킹' 그대로다. 팬 목록(?tab=members)은 머리의 '팬 N'에서 들어간다.
   const items = groupTabItems(g.locale, !hideMembers && g.kind !== "fan");
-  if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: <ProofTabLabel label={proofTab[g.locale]} locale={g.locale} /> });
+  if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: g.kind === "fan" ? <ProofTabLabel label={proofTab[g.locale]} locale={g.locale} /> : g.locale === "ko" ? "인증" : "Proofs" });
   return items.map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
 }
 
