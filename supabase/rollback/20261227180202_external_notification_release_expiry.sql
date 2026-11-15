@@ -94,4 +94,83 @@ returns boolean language sql immutable set search_path='' as $$
       'EMAIL_NOT_ELIGIBLE','CURRENT_STATE_INELIGIBLE','SUBSCRIPTION_OWNER_CHANGED',
       'KAKAO_NOT_ELIGIBLE','KAKAO_STATE_CHANGED','PUSH_SUBSCRIPTION_GONE'),false);
 $$;
+create or replace function public.fan_notification_is_released(p_notification_id uuid,p_channel text)
+returns boolean language sql stable security definer set search_path='' as $$
+  select exists(select 1 from public.fan_notification_delivery_control c
+    join public.fan_notifications n on n.id=p_notification_id
+    where c.channel=p_channel and n.created_at>c.activated_at
+      and (c.mode='enabled' or (c.mode='test' and n.app_user_id=any(c.test_user_ids)))
+      and (c.allowed_kinds is null or n.kind::text=any(c.allowed_kinds)
+        or (p_channel='email' and n.kind='benefit_won' and exists(
+          select 1 from public.benefit_draw_email_releases release
+          join public.benefit_draw_winners winner on winner.draw_id=release.draw_id
+          where winner.app_user_id=n.app_user_id and winner.benefit_id=n.benefit_id
+            and n.source_key='benefit_won:'||winner.id::text||':1'))))
+$$;
+create or replace function public.mobile_enqueue_notification() returns trigger language plpgsql security definer set search_path='' as $$ begin
+ insert into public.mobile_push_delivery_outbox(notification_id,installation_row_id,installation_version,link_version,account_version,available_at)
+ select new.id,i.id,i.installation_version,i.link_version,u.mobile_account_version,greatest(new.scheduled_for,pg_catalog.clock_timestamp()) from public.mobile_installations i join public.app_users u on u.id=i.app_user_id and u.status='active' join public.mobile_app_settings s on s.app_user_id=i.app_user_id and s.push_enabled
+ where i.app_user_id=new.app_user_id and i.disabled_at is null and i.permission in('authorized','provisional') and public.mobile_notification_topic_enabled(new.app_user_id,new.kind::text)
+ on conflict do nothing; return new; end $$;
+create or replace function public.mobile_claim_push_deliveries(p_worker_id text,p_batch_size integer,p_lease_seconds integer) returns jsonb language plpgsql security definer set search_path='' as $$
+declare result jsonb; begin
+ if length(trim(p_worker_id)) not between 3 and 120 or p_batch_size not between 1 and 100 or p_lease_seconds not between 30 and 900 then raise exception 'MOBILE_PUSH_CLAIM_INVALID' using errcode='22023'; end if;
+ with due as(select o.id from public.mobile_push_delivery_outbox o where o.attempt_count<8 and o.available_at<=pg_catalog.clock_timestamp() and (o.status in('pending','failed') or(o.status='processing' and o.lease_expires_at<=pg_catalog.clock_timestamp())) order by o.available_at,o.id for update skip locked limit p_batch_size), claimed as(update public.mobile_push_delivery_outbox o set status='processing',attempt_count=o.attempt_count+1,lease_owner=p_worker_id,lease_expires_at=pg_catalog.clock_timestamp()+pg_catalog.make_interval(secs=>p_lease_seconds),last_error_code=null from due where o.id=due.id returning o.*)
+ select coalesce(jsonb_agg(jsonb_build_object('deliveryId',id,'notificationId',notification_id,'attemptCount',attempt_count,'leaseExpiresAt',lease_expires_at) order by available_at,id),'[]'::jsonb) into result from claimed; return result; end $$;
+create or replace function public.mobile_prepare_push_delivery(p_delivery_id uuid, p_worker_id text)
+returns jsonb language plpgsql security definer set search_path = '' as $$
+begin
+  if public.artist_activity_mobile_delivery_refused(p_delivery_id, p_worker_id) then return null; end if;
+  return public.mobile_prepare_push_delivery_before_artist_activity(p_delivery_id, p_worker_id);
+end $$;
+drop table public.mobile_push_control;
+-- Keep closed history closed; restore the former allowlist safely.
+update public.fan_notification_delivery_control set allowed_kinds=array_remove(array_remove(allowed_kinds,'recipient_information_required'),'benefit_available') where allowed_kinds is not null;
+alter table public.fan_notification_delivery_control drop column benefit_email_activated_at;
+alter table public.fan_notification_delivery_control drop constraint fan_delivery_allowed_kinds_valid;
+alter table public.fan_notification_delivery_control add constraint fan_delivery_allowed_kinds_valid
+  check(allowed_kinds is null or (
+    array_ndims(allowed_kinds)=1 and cardinality(allowed_kinds) between 1 and 6
+    and array_position(allowed_kinds,null) is null
+    and allowed_kinds <@ array['live_reserved','live_24h','live_10m','live_changed','live_cancelled','runmusic_result']::text[]
+  ));
+create or replace function public.create_external_notification_plan_before_fan_web(
+  p_notification_id uuid,p_now timestamptz default pg_catalog.now()
+)
+returns uuid language plpgsql security definer set search_path='' as $$
+declare n public.fan_notifications%rowtype; locale text; primary_channel public.fan_notification_channels%rowtype;
+  fallback_channel uuid; plan_id uuid; notification_payload jsonb;
+begin
+  select id into plan_id from public.notification_delivery_plans where notification_id=p_notification_id;
+  if found then return plan_id; end if;
+  select notification.* into n from public.fan_notifications notification
+    join public.app_users u on u.id=notification.app_user_id and u.status='active'
+    where notification.id=p_notification_id;
+  if not found then return null; end if;
+  select case when coalesce(preferred_locale,'ko')='ko' then 'ko' else 'en' end
+    into strict locale from public.app_users where id=n.app_user_id;
+  notification_payload:=public.build_external_notification_payload(n.id,locale);
+  select c.* into primary_channel from public.fan_notification_channels c
+    where c.app_user_id=n.app_user_id and c.status='eligible' and c.verified_at is not null
+      and c.consented_at is not null and c.consent_revoked_at is null
+      and ((c.kind='email' and n.kind::text not in('live_24h','live_cancelled'))
+        or (c.kind='kakao' and n.kind::text<>'runmusic_result' and public.kakao_channel_supports_notification(c.id,n.kind::text,notification_payload,locale)))
+    order by case c.kind when 'kakao' then 1 else 2 end,c.priority,c.id limit 1;
+  if not found then return null; end if;
+  if primary_channel.kind='kakao' and n.kind::text not in('live_24h','live_cancelled') then
+    select id into fallback_channel from public.fan_notification_channels
+      where app_user_id=n.app_user_id and kind='email' and status='eligible' and verified_at is not null
+        and consented_at is not null and consent_revoked_at is null limit 1;
+  end if;
+  insert into public.notification_delivery_plans(notification_id,primary_channel_id,fallback_channel_id,email_locale,created_at,updated_at)
+    values(n.id,primary_channel.id,fallback_channel,locale,p_now,p_now)
+    on conflict(notification_id) do nothing returning id into plan_id;
+  if not found then
+    select id into plan_id from public.notification_delivery_plans where notification_id=n.id;
+    return plan_id;
+  end if;
+  insert into public.external_notification_delivery_outbox(plan_id,notification_id,channel_id,channel,sequence,template_key,locale,available_at)
+    values(plan_id,n.id,primary_channel.id,primary_channel.kind,1,n.kind::text,locale,greatest(n.scheduled_for,p_now));
+  return plan_id;
+end $$;
 commit;

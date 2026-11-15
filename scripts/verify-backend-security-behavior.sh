@@ -13,6 +13,7 @@ psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/live_alert_delivery_safe
 bash "$root_dir/scripts/verify-email-send-concurrency.sh"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/live_alert_cutover.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/raffle_email_release.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/notification_release_expansion.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/home_banners.sql"
 bash "$root_dir/scripts/verify-home-banner-concurrency.sh"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/recurring_live_schedules.sql"
@@ -91,3 +92,6 @@ bash "$root_dir/scripts/verify-cognito-email-rotation-concurrency.sh"
 
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/legacy_email_password_attempt_limit.sql"
 bash "$root_dir/scripts/verify-legacy-email-attempt-concurrency.sh"
+
+# Last: this disposable upgrade probe restores/reapplies release policy and closes synthetic queues.
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/notification_release_expansion_upgrade.sql"

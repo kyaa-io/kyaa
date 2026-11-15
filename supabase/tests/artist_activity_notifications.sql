@@ -1,6 +1,8 @@
 -- 261107-2 E6 acceptance checks for 20261216031000_artist_activity_notifications (applied). One transaction, rolled back.
 -- usage: psql -X -v ON_ERROR_STOP=1 -d byus -f supabase/tests/artist_activity_notifications.sql
 begin;
+-- Exercise the opt-in app relaunch behavior.
+update public.mobile_push_control set enabled=true;
 do $$
 declare
   page uuid; artist uuid; fan uuid; outsider uuid; post uuid; cm uuid; n integer; c integer; path text; day0 date; t0 timestamptz;
