@@ -1,7 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "@/features/auth/domain/auth-errors";
-import { TRANSLATION_FAILURE_HOLD_MS, resetTranslationFailureHold } from "@/server/content-translation/lease";
 import { contentFailure, createContentHandlers, type ContentDependencies } from "./routes";
 
 const id = "10000000-0000-4000-8000-000000000001", owner = "20000000-0000-4000-8000-000000000001";
@@ -17,7 +16,6 @@ function request(method = "POST", body?: unknown, url = "https://byus.test/api/p
   return new Request(url, { method, headers: { ...(authenticated ? { authorization: "Bearer token" } : {}), "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
 }
 describe("fan content trust boundary", () => {
-  beforeEach(() => resetTranslationFailureHold());
   it("validates period ranking and uses the verified viewer",async()=>{
     const d=dependencies(),h=createContentHandlers(d);d.rpc.mockResolvedValue({items:[post]});
     expect((await h.periodRanking(request("GET",undefined,"https://byus.test/api?period=week&locale=en"),"artist")).status).toBe(200);
@@ -199,8 +197,7 @@ describe("fan content trust boundary", () => {
       expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(503);
       expect(names(d)).not.toContain("save_content_translation_slots_leased");
       d.translateTexts.mockResolvedValueOnce([{ translatedText: "Title" }, { translatedText: "Body" }]);
-      vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(Date.now() + TRANSLATION_FAILURE_HOLD_MS + 1);
-      try { expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(200); } finally { vi.useRealTimers(); }
+      expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(200);
       expect(names(d).filter(name => name === "save_content_translation_slots_leased")).toHaveLength(1);
       expect((await createContentHandlers(d).translate(request("POST", body))).status).toBe(200);
       expect(d.translateTexts).toHaveBeenCalledTimes(2);
@@ -228,44 +225,6 @@ describe("fan content trust boundary", () => {
       const empty = dependencies(); wire(empty, { fan_web_content_target: { ...source, body: "  " } });
       expect((await createContentHandlers(empty).translate(request("POST", body))).status).toBe(400);
       expect(empty.translateTexts).not.toHaveBeenCalled();
-    });
-    it("a provider 503 for ten different users on one key reserves and calls the provider once; another source is not held; after the hold one request tries again", async () => {
-      const failing = { ...body, targetId: "10000000-0000-4000-8000-0000000000f1" }, otherSource = { ...body, targetId: "10000000-0000-4000-8000-0000000000f2" };
-      const users = Array.from({ length: 10 }, (_, i) => `20000000-0000-4000-8000-0000000000${i + 10}`);
-      let holder: string | null = null, saved: Record<string, string> | null = null, providerUp = false;
-      const d = dependencies();
-      d.authorize.mockImplementation(async (header: string | null) => ({ appUserId: users[Number(header?.replace("Bearer u", ""))] }));
-      d.rpc.mockImplementation(async (name: string, args?: Record<string, unknown>) => {
-        if (name === "fan_web_content_target") return source;
-        if (name === "claim_content_translation_lease") { if (holder) return { status: "busy" }; holder = claimed.token; return claimed; }
-        if (name === "release_content_translation_lease") { holder = null; return null; }
-        if (name === "save_content_translation_slots_leased") { saved = args!.p_slots as Record<string, string>; holder = null; return null; }
-        if (name === "read_content_translation_slots") return saved && args!.p_target_id === failing.targetId ? { ...stored(saved), targetId: failing.targetId } : saved && args!.p_target_id === otherSource.targetId ? { ...stored(saved), targetId: otherSource.targetId } : null;
-        return null;
-      });
-      d.translateTexts.mockImplementation(async () => {
-        await new Promise(resolve => setTimeout(resolve, 20));
-        if (!providerUp) throw new Error("TRANSLATION_UNAVAILABLE");
-        return [{ translatedText: "Title" }, { translatedText: "Body" }];
-      });
-      const h = createContentHandlers(d), count = (name: string) => names(d).filter(n => n === name).length;
-      const ask = (i: number, target: typeof body) => h.translate(new Request("https://byus.test/api", { method: "POST", headers: { authorization: `Bearer u${i}`, "content-type": "application/json" }, body: JSON.stringify(target) }));
-      const first = await Promise.all(users.map((_, i) => ask(i, failing)));
-      expect(first.map(r => r.status)).toEqual(Array(10).fill(503));
-      expect(d.translateTexts).toHaveBeenCalledTimes(1); expect(count("reserve_content_translation_request")).toBe(1);
-      // Inside the hold a new request makes no claim, quota record or provider call.
-      const claims = count("claim_content_translation_lease");
-      expect((await ask(3, failing)).status).toBe(503);
-      expect(count("claim_content_translation_lease")).toBe(claims); expect(d.translateTexts).toHaveBeenCalledTimes(1);
-      // A different source is not held (the provider is still down, so it fails by itself, with its own call).
-      expect((await ask(4, otherSource)).status).toBe(503); expect(d.translateTexts).toHaveBeenCalledTimes(2);
-      // After the hold the provider is tried again by one of ten waiting users; the rest read the stored row.
-      providerUp = true; vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(Date.now() + TRANSLATION_FAILURE_HOLD_MS + 1);
-      try {
-        const later = await Promise.all(users.map((_, i) => ask(i, failing)));
-        expect(later.map(r => r.status)).toEqual(Array(10).fill(200));
-      } finally { vi.useRealTimers(); }
-      expect(d.translateTexts).toHaveBeenCalledTimes(3); expect(count("reserve_content_translation_request")).toBe(3);
     });
     it("R8 overlapping misses on one key reserve and call the provider once; the second answer is the stored row", async () => {
       const d = dependencies(); let holder: string | null = null, stored_: Record<string, string> | null = null;

@@ -1,6 +1,7 @@
 "use client";
 
-import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { useCreateWallet, useUser } from "@/features/auth/client/privy-backend";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { rememberSession } from "@/features/auth/client/session-hint";
 import { purgeVideoBlobs } from "@/features/content-safety/ui/video-blob-cache";
 import type { Route } from "next";
@@ -12,7 +13,7 @@ import { appendLoginContext, sanitizeAuthIntentId, sanitizeEntity, sanitizeInten
 import { withLocalePath } from "./locale-path";
 import { toContentLocale } from "../i18n/locales";
 import { signupFunnelTracker } from "../features/analytics/client/signup-funnel-tracker";
-import { signupStageSchema, type SignupReason } from "../features/analytics/domain/signup-funnel-event";
+import { signupStageSchema, type SignupReason, type WalletDiagnostic } from "../features/analytics/domain/signup-funnel-event";
 import { RequestTimeoutError, reportRecoveryFailure, withOperationDeadline, withRequestDeadline } from "../features/reliability/client/request-deadline";
 import { getSessionStorage } from "../features/reliability/client/session-storage";
 
@@ -21,6 +22,7 @@ export const APPLE_REAUTHENTICATION_REQUIRED = "APPLE_REAUTHENTICATION_REQUIRED"
 export const SESSION_SYNCHRONIZATION_TIMEOUT = "SESSION_SYNCHRONIZATION_TIMEOUT";
 export const SESSION_SYNCHRONIZATION_FAILED = "SESSION_SYNCHRONIZATION_FAILED";
 const SDK_OPERATION_TIMEOUT_MS = 30_000;
+const WALLET_RECONCILIATION_TIMEOUT_MS = 5_000;
 // A sign-in SDK that is only slow (its user, wallet or token arrives after the deadline) is waited for again
 // instead of ending the sign-in: the exchange resumes by itself, and only a real failure shows the retry link.
 export const SDK_WAIT_ROUNDS = 4;
@@ -78,7 +80,9 @@ function normalizedInput(input: SessionTransitionInput): Omit<ActiveTransition, 
 
 export function ByUsSessionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { ready: sdkReady, authenticated, user, getAccessToken } = useByUsAuth();
+  const { ready: sdkReady, authenticated, user, getAccessToken } = usePrivy();
+  const { createWallet } = useCreateWallet();
+  const { refreshUser } = useUser();
   const markAvatarSessionReady = useAvatarSessionReady();
   const resetAvatarSession = useAvatarSessionReset();
   const [snapshot, setSnapshot] = useState<ByUsSessionSnapshot>(DEFAULT_SESSION);
@@ -90,6 +94,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
   const [reauthenticationProviders, setReauthenticationProviders] = useState<Array<"google" | "apple">>([]);
   const activeRef = useRef<ActiveTransition | null>(null);
   const synchronizationRef = useRef<{ ownerId: string; generation: number; promise: Promise<void> } | null>(null);
+  const walletCreationsRef = useRef(new Map<string, Promise<unknown>>());
   const generationRef = useRef(0);
   const previousSdkOwnerRef = useRef<string | null>(null);
   const requestControllerRef = useRef<AbortController | null>(null);
@@ -139,10 +144,60 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
     const measurement = signupFunnelTracker.resumeLogin(toContentLocale(locale));
     let promise!: Promise<void>;
     promise = (async () => {
-      let stage = "login.token";
+      let stage = "login.user";
+      let walletDiagnostic: WalletDiagnostic | undefined;
       let requestController: AbortController | null = null;
+      let diagnosticClockValid = true;
+      const diagnosticNow = () => {
+        try { const now = performance.now(); if (Number.isFinite(now)) return now; } catch { /* optional diagnostic */ }
+        diagnosticClockValid = false; return 0;
+      };
+      const elapsed = (start: number, cap: number) => Math.min(cap, Math.max(0, Math.round(diagnosticNow() - start))) || 0;
       try {
-        // The server resolved the member and its wallet at sign-in (PRIVY-EXIT-0005); the session sync only confirms it.
+        // Always refresh: the SDK callback may precede React's authenticated snapshot.
+        const currentUser = await withOperationDeadline(refreshUser(), SDK_OPERATION_TIMEOUT_MS);
+        assertCurrent(ownerId, generation);
+        if (currentUser.id !== ownerId) throw new StaleLoginIdentityError();
+        const hasEmbeddedWallet = (candidate: typeof currentUser) => candidate.linkedAccounts.some((account) =>
+          account.type === "wallet" && account.chainType === "ethereum" && account.connectorType === "embedded" && account.walletClientType === "privy",
+        );
+        if (!hasEmbeddedWallet(currentUser)) {
+          stage = "login.wallet";
+          const waitStarted = diagnosticNow();
+          try {
+            let walletCreation = walletCreationsRef.current.get(ownerId);
+            if (!walletCreation) {
+              const underlying = Promise.resolve(createWallet({ createAdditional: false }));
+              walletCreation = underlying;
+              walletCreationsRef.current.set(ownerId, underlying);
+              void underlying.finally(() => {
+                if (walletCreationsRef.current.get(ownerId) === underlying) walletCreationsRef.current.delete(ownerId);
+              }).catch(() => undefined);
+            }
+            await withOperationDeadline(walletCreation, SDK_OPERATION_TIMEOUT_MS);
+            walletDiagnostic = { walletWaitOutcome: "succeeded", walletWaitMs: elapsed(waitStarted, 120_000), walletReconciliation: "not_needed", walletReconciliationMs: 0 };
+          } catch (walletError) {
+            walletDiagnostic = { walletWaitOutcome: walletError instanceof RequestTimeoutError ? "timeout" : "error", walletWaitMs: elapsed(waitStarted, 120_000), walletReconciliation: "not_needed", walletReconciliationMs: 0 };
+            if (!(walletError instanceof RequestTimeoutError)) throw walletError;
+            assertCurrent(ownerId, generation);
+            const reconciliationStarted = diagnosticNow();
+            let reconciliation: WalletDiagnostic["walletReconciliation"];
+            try {
+              const reconciledUser = await withOperationDeadline(refreshUser(), WALLET_RECONCILIATION_TIMEOUT_MS);
+              assertCurrent(ownerId, generation);
+              if (reconciledUser.id !== ownerId) throw new StaleLoginIdentityError();
+              reconciliation = hasEmbeddedWallet(reconciledUser) ? "wallet_found" : "wallet_missing";
+            } catch (reconciliationError) {
+              assertCurrent(ownerId, generation);
+              if (reconciliationError instanceof StaleLoginIdentityError) throw reconciliationError;
+              reconciliation = reconciliationError instanceof RequestTimeoutError ? "timeout" : "error";
+            }
+            walletDiagnostic = { ...walletDiagnostic, walletReconciliation: reconciliation, walletReconciliationMs: elapsed(reconciliationStarted, 30_000) };
+            if (reconciliation !== "wallet_found") throw walletError;
+          }
+          assertCurrent(ownerId, generation);
+        }
+        stage = "login.token";
         const token = await withOperationDeadline(getAccessToken(), SDK_OPERATION_TIMEOUT_MS);
         assertCurrent(ownerId, generation);
         if (!token) throw new Error("Missing Privy access token");
@@ -172,7 +227,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
         }
         assertCurrent(ownerId, generation);
         sdkWaitsRef.current = 0;
-        signupFunnelTracker.result(measurement, "succeeded", "session", "none");
+        signupFunnelTracker.result(measurement, "succeeded", "session", "none", diagnosticClockValid ? walletDiagnostic : undefined);
         markAvatarSessionReady(ownerId);
         const returnPathname = new URL(returnTo, "https://byus.local").pathname;
         const storedIntent = readAuthIntent(getSessionStorage(), authIntent);
@@ -197,7 +252,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
           : caught instanceof Error && caught.message === VERIFIED_EMAIL_REQUIRED ? "verified_email_required"
             : caught instanceof Error && caught.message === APPLE_REAUTHENTICATION_REQUIRED ? "reauthentication_required" : "session_error";
         const observedStage = signupStageSchema.safeParse(stage.replace(/^login\./, ""));
-        signupFunnelTracker.result(measurement, "failed", observedStage.success ? observedStage.data : "session", reason);
+        signupFunnelTracker.result(measurement, "failed", observedStage.success ? observedStage.data : "session", reason, diagnosticClockValid ? walletDiagnostic : undefined);
         if (caught instanceof RequestTimeoutError && stage !== "login.session" && sdkWaitsRef.current < SDK_WAIT_ROUNDS - 1) {
           sdkWaitsRef.current += 1;
           setTimeout(() => resumeRef.current(generation), 0);
@@ -216,7 +271,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
     })();
     synchronizationRef.current = { ownerId, generation, promise };
     return promise;
-  }, [assertCurrent, getAccessToken, invalidateIfCurrent, markAvatarSessionReady, router]);
+  }, [assertCurrent, createWallet, getAccessToken, invalidateIfCurrent, markAvatarSessionReady, refreshUser, router]);
 
   const beginTransition = useCallback((input: SessionTransitionInput) => {
     const normalized = normalizedInput(input);

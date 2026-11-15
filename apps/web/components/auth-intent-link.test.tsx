@@ -13,7 +13,7 @@ const push = vi.fn();
 let ready = true;
 let authenticated = false;
 const session = { ready: true, pending: false, ownerId: null as string | null, generation: 0 };
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready, authenticated }),
 }));
 vi.mock("./byus-session-provider", () => ({ useByUsSession: () => session }));

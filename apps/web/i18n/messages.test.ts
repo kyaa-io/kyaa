@@ -33,7 +33,6 @@ import { waveNavigationCopy } from "./catalogs/features__fanpage__wave-navigatio
 import { wavePrivacyCopy } from "./catalogs/features__fanpage__wave-privacy";
 import { waveProgramsCopy } from "./catalogs/features__fanpage__wave-programs";
 import { liveSuggestionsCopy } from "./catalogs/features__live-submissions__ui";
-import { rankingsSource } from "../features/rankings/ui/rankings-source";
 import { publicLiveDashboardCopy } from "./catalogs/features__public-live-dashboard";
 
 const fanWebCatalogs = new Set([
@@ -74,8 +73,6 @@ const fanWebCatalogs = new Set([
   "features__fan_posts__feed.ts", "features__fanpage__navigation.ts",
   "features__benefit__ui__raffle-discovery.ts", "features__gifts__ui__gift-copy.ts", "features__fanpage__brand.ts", "features__fanpage__ui__leaderboard-activities.ts",
   "app__account-deletion__page.ts",
-  // `messages` 대신 함수로 문구를 내는 카탈로그(로케일 행 또는 로케일별 객체).
-  "components__email-login.ts", "signup-raffle.ts", "signup-raffle-longform.ts",
 ]);
 
 describe("localized messages", () => {
@@ -130,14 +127,9 @@ describe("localized messages", () => {
     const community = legalDocuments.terms.en.sections.find(section => section.heading === "5. Prohibited Conduct");
     expect(community?.paragraphs).toHaveLength(2);
     const sources: Record<string, { en: string }> = {
-      ...rankingsSource,
       ...sourceMessages,
       communitySafetyPolicy: { en: community!.paragraphs![0]! },
       communitySafetyReporting: { en: community!.paragraphs![1]! },
-      // components/onchain/onchain-public-page.tsx의 en 원문(직접 지은 키라 source-messages.json에 없다).
-      onchainUpdating: { en: "Updating" },
-      // features/quiz/ui/quiz-result-screen.tsx의 en 원문(같은 이유).
-      quizLearnMore: { en: "Learn more" },
     };
     const expectedLocales = APP_LOCALES.filter(locale => locale !== "ko" && locale !== "en");
     const placeholders = (text: string) => (text.match(/\{(?:\d+|[A-Za-z]\w*)\}/g) ?? []).sort();

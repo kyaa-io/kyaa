@@ -1,4 +1,4 @@
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import type { AppLocale } from "@/i18n/locales";

@@ -1,10 +1,9 @@
 "use client";
-import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
 import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
 import Image from "next/image";
 import type { Route } from "next";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
@@ -115,7 +114,7 @@ export function PassportBookBody({ passportId, celebrity, tier, stageKey, tierNa
         <h3>{myHomeText(locale, "passportRecord", [celebrity.name])}</h3>
         <p className={styles.tier}>
           <Image unoptimized src={`/images/passport/tiers/ink-v1/${stageKey ?? `${tier.toLowerCase()}-1`}.webp`} width={32} height={32} alt="" aria-hidden="true" />
-          <strong>{tierName}</strong><TierGuideInfo locale={locale}/>
+          <strong>{tierName}</strong>
         </p>
         <div className={styles.progress}>
           {book.status === "ready" && filled !== null ? <FanCellGauge icon={GAUGE_ICON.ink} text={myHomeText(locale, "stampProgress", [filled, total])} label={myHomeText(locale, "stampProgressFull", [filled, total])} cells={total} filled={filled} /> : book.status === "loading" ? <FanSkeleton width="100%" height={52} /> : null}

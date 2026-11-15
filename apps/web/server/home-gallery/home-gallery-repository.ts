@@ -3,12 +3,9 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createClient } from "@/server/data/client";
 import { createCreatorAvatarReader, type CreatorAvatarReader } from "./creator-avatars";
-import { diversifyShorts } from "@/features/home/domain/home-gallery-order";
 import { homeGalleryPageSchema, homeShortsPageSchema, homeShortsSchema, type HomeGalleryPage, type HomeShort } from "@/features/home/domain/home-gallery";
 
 type Db = Pick<SupabaseClient, "rpc">;
-const SHORTS_READ = 12;
-const SHORTS_POOL = 60;
 export class HomeGalleryRepositoryError extends Error {}
 
 /** Opaque offset cursor; the SQL read merges two sources newest first, so it pages by position. */
@@ -33,21 +30,6 @@ export class HomeGalleryRepository {
     return { items: page.items, nextCursor: page.hasMore ? encodeHomeGalleryCursor(offset + page.items.length) : null };
   }
 
-  /**
-   * The newest `pages` × 24 photos in one list, for the home block that picks the most varied 12 from them (the newest 24 alone can be
-   * one or two creators). The pages are read in parallel by offset; `nextCursor` continues after the last page read.
-   */
-  async listPublishedPool(locale: "ko" | "en", input: { pages: number }): Promise<HomeGalleryPage> {
-    const pages = await Promise.all(Array.from({ length: input.pages }, async (_, index) => {
-      const { data, error } = await this.db.rpc("read_public_home_gallery_photos", { p_locale: locale, p_offset: index * 24, p_limit: 24 });
-      if (error) throw new HomeGalleryRepositoryError(error.message);
-      return homeGalleryPageSchema.parse(data);
-    }));
-    const seen = new Set<string>();
-    const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
-    return { items, nextCursor: pages.at(-1)?.hasMore ? encodeHomeGalleryCursor(input.pages * 24) : null };
-  }
-
   /** The creator's own profile photo, so a short's caption shows the real avatar. A creator without one keeps the default icon. */
   private async withAvatars(locale: "ko" | "en", items: HomeShort[]): Promise<HomeShort[]> {
     if (!items.length || !this.creatorAvatars) return items;
@@ -63,49 +45,17 @@ export class HomeGalleryRepository {
     return items.map(item => covers[item.href] ? { ...item, thumbnail: covers[item.href] } : item);
   }
 
-  /**
-   * The newest SHORTS_POOL short-form videos, creators taking turns (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"). Paging is by position in
-   * this diversified list, so the offset the shorts page and the rail send means the same on every read.
-   */
-  private async shortsPool(locale: "ko" | "en", diversify = true): Promise<HomeShort[]> {
-    const pages = await Promise.all(Array.from({ length: SHORTS_POOL / SHORTS_READ }, async (_, index) => {
-      const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: index * SHORTS_READ, p_limit: SHORTS_READ });
-      if (error) throw new HomeGalleryRepositoryError(error.message);
-      return homeShortsPageSchema.parse(data);
-    }));
-    const seen = new Set<string>();
-    const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
-    return diversify ? diversifyShorts(items) : items;
-  }
-
-  /** A single stable catalog lets sorting and creator chips operate on the same public videos. */
-  async listShortsCatalog(locale: "ko" | "en") {
-    const items = await this.shortsPool(locale, false);
-    for (let offset = SHORTS_POOL; offset < 10000; offset += SHORTS_READ) {
-      const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: offset, p_limit: SHORTS_READ });
-      if (error) throw new HomeGalleryRepositoryError(error.message);
-      const page = homeShortsPageSchema.parse(data);
-      items.push(...page.items);
-      if (!page.hasMore) break;
-    }
-    const popularity = await Promise.all(items.map(async (item) => {
-      const { data, error } = await this.db.rpc("read_shortform_participation", { p_video_id: item.videoId, p_app_user_id: null });
-      if (error) throw new HomeGalleryRepositoryError(error.message);
-      return [item.videoId, data === null ? 0 : z.object({ likeCount: z.number().int().nonnegative() }).parse(data).likeCount] as const;
-    }));
-    const likes = Object.fromEntries(popularity);
-    return { items: await this.withAvatars(locale, await this.withThumbnails(items)), likes };
-  }
-
   async listShorts(locale: "ko" | "en", input: { limit: number }): Promise<readonly HomeShort[]> {
-    const items = (await this.shortsPool(locale)).slice(0, input.limit);
-    return this.withAvatars(locale, await this.withThumbnails(items));
+    const { data, error } = await this.db.rpc("read_public_home_shortform", { p_locale: locale, p_limit: input.limit });
+    if (error) throw new HomeGalleryRepositoryError(error.message);
+    return this.withAvatars(locale, await this.withThumbnails(homeShortsSchema.parse(data)));
   }
 
   async listShortsPage(locale: "ko" | "en", input: { offset: number; limit: number }) {
-    const pool = await this.shortsPool(locale);
-    const items = pool.slice(input.offset, input.offset + input.limit);
-    return { items: await this.withAvatars(locale, await this.withThumbnails(items)), hasMore: input.offset + input.limit < pool.length };
+    const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: input.offset, p_limit: input.limit });
+    if (error) throw new HomeGalleryRepositoryError(error.message);
+    const page = homeShortsPageSchema.parse(data);
+    return { ...page, items: await this.withAvatars(locale, await this.withThumbnails(page.items)) };
   }
 }
 

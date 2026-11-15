@@ -2,7 +2,6 @@ import {render,screen,within,cleanup} from '@testing-library/react';
 import {afterEach,expect,it,vi} from 'vitest';
 import type {ReactNode} from 'react';
 vi.mock('./participation-controls',()=>({ParticipationAdmin:({children}:{children:(role:string)=>ReactNode})=><>{children('viewer')}</>}));
-vi.mock('./group-leader-passes',()=>({GroupLeaderPasses:()=>null}));
 import {GroupAdminOverview} from './group-admin-overview';
 afterEach(cleanup);
 it('connects the five review cards and audit navigation to existing routes',()=>{

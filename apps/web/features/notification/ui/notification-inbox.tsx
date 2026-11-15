@@ -1,5 +1,5 @@
 "use client";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -29,7 +29,7 @@ const chipIcon: Record<Exclude<NotificationChip, "all">, LucideIcon> = { favorit
 
 /** 1줄 `주체·행동·대상`. 주체 템플릿이 없으면 서버 제목(한국어는 습니다체로 끝만 맞춤). 대상은 target.label 하나만 쓴다. */
 export function notificationSentence(item: NotificationItem, locale: AppLocale) {
-  const said = actorSentence(locale, item.kind, item.actor?.nickname, targetLabel(item), item.count);
+  const said = actorSentence(locale, item.kind, item.actor?.nickname, targetLabel(item));
   if (said) return { text: locale === "ko" ? attachHonorific(said) : said, translated: false };
   const title = item.eventReview ? eventReviewText(locale, item.eventReview).title : item.title;
   return { text: locale === "ko" ? attachHonorific(formalKo(title)) : title, translated: locale !== "ko" && locale !== "en" && !item.eventReview };

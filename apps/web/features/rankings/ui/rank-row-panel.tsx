@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 
 import type { AppLocale } from "@/i18n/locales";
 import type { HomeCreatorRankingRow, HomeFanRankingRow } from "../domain/types";
-import { FOLLOWER_PLATFORMS, formatFollowerCount, type FollowerPlatform } from "../domain/platform-followers";
 import { RankUnit, type RankUnitKind } from "./rank-unit";
 import { rankingsText } from "./rankings-copy";
 import styles from "./rank-row-panel.module.css";
@@ -19,7 +18,7 @@ type PanelBase = {
   /** Hearts (or points) to the first place; 0 when tied, null on the first row (no cell). */
   gap?: number | null;
   /** Totals the list puts first (label and an already formatted value). A cell is passed only when its value exists; none passed, none drawn. */
-  extra?: readonly { key: string; label: string; value: string; unit?: RankUnitKind; size?: 16 | 20; icon?: ReactNode }[];
+  extra?: readonly { key: string; label: string; value: string; unit?: RankUnitKind; icon?: ReactNode }[];
   /** What the list counts: the gain and gap cells carry that unit's asset in front of the number. */
   unit?: RankUnitKind;
 };
@@ -32,16 +31,8 @@ export type RankRowPanelProps = PanelBase & (
 const isCount = (value: number | null | undefined): value is number => typeof value === "number" && Number.isFinite(value) && value !== 0;
 const signed = (locale: AppLocale, value: number) => `${value < 0 ? "−" : "+"}${Math.abs(value).toLocaleString(locale)}`;
 
-/** The platform's own logo file (the one the other screens use) and its name for the screen reader. The logo is the label: no word beside the number. */
-const PLATFORM_MARK: Record<FollowerPlatform, { file: string; name: (locale: AppLocale) => string }> = {
-  instagram: { file: "instagram.svg", name: () => "Instagram" },
-  tiktok: { file: "tiktok.svg", name: () => "TikTok" },
-  youtube: { file: "youtube.svg", name: () => "YouTube" },
-  chzzk: { file: "chzzk.png", name: (locale) => (locale === "ko" ? "치지직" : "CHZZK") },
-};
-
-function Stat({ label, value, unit, size, icon }: { label: string; value: string; unit?: RankUnitKind; size?: 16 | 20; icon?: ReactNode }) {
-  return <div className={styles.stat}><dt className={styles.label}>{label}</dt><dd className={styles.value} title={value}>{icon ?? (unit ? <RankUnit unit={unit} size={size} /> : null)}<span>{value}</span></dd></div>;
+function Stat({ label, value, unit, icon }: { label: string; value: string; unit?: RankUnitKind; icon?: ReactNode }) {
+  return <div className={styles.stat}><dt className={styles.label}>{label}</dt><dd className={styles.value} title={value}>{icon ?? (unit ? <RankUnit unit={unit} /> : null)}<span>{value}</span></dd></div>;
 }
 
 export function RankRowPanel(props: RankRowPanelProps) {
@@ -52,22 +43,15 @@ export function RankRowPanel(props: RankRowPanelProps) {
   if (isCount(row.dayGain)) cells.push(<Stat key="today" label={rankingsText(locale, "rkPanelToday")} value={signed(locale, row.dayGain)} unit={props.unit} />);
   if (isCount(row.weekGain) && days > 0) cells.push(<Stat key="recent" label={rankingsText(locale, "rkPanelRecent", [days])} value={signed(locale, row.weekGain)} unit={props.unit} />);
   if (typeof props.gap === "number") cells.push(<Stat key="gap" label={rankingsText(locale, "rkPanelGap")} value={props.gap.toLocaleString(locale)} unit={props.unit} />);
-  // On the likes list the creator's 찐팬 cell is the hearts total the list passes in (extra); the 찐팬 head count would repeat the label.
-  if (props.kind === "creator" && isCount(props.row.fans) && props.unit !== "likes") cells.push(<Stat key="fans" label={rankingsText(locale, "rkPanelJjinfan")} value={rankingsText(locale, "rkPanelFanCount", [props.row.fans.toLocaleString(locale)])} />);
+  if (props.kind === "creator" && isCount(props.row.fans)) cells.push(<Stat key="fans" label={rankingsText(locale, "rkPanelJjinfan")} value={rankingsText(locale, "rkPanelFanCount", [props.row.fans.toLocaleString(locale)])} />);
   if (props.kind === "fan" && props.row.favorite) cells.push(<Stat key="favorite" label={rankingsText(locale, "rkPanelFavorite")} value={props.row.favorite.name} />);
 
-  const stats = [...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} unit={cell.unit} size={cell.size} icon={cell.icon} />), ...cells.slice(0, 3)];
-  // Creator rows only: the platforms' follower counts on a line of their own under the cells (A1, 안 A). A platform with no confirmed count is not in the list; a confirmed 0 is drawn as 0.
-  const platforms = props.kind === "creator" ? [...(props.row.platforms ?? [])].filter((item) => item.platform in PLATFORM_MARK).sort((a, b) => FOLLOWER_PLATFORMS.indexOf(a.platform) - FOLLOWER_PLATFORMS.indexOf(b.platform)) : [];
-  if (!stats.length && !platforms.length) return null;
+  const stats = [...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} unit={cell.unit} icon={cell.icon} />), ...cells.slice(0, 3)];
+  if (!stats.length) return null;
   return <div id={id} className={styles.panel} data-rank-panel={props.kind}>
     <div className={styles.clip}>
       <div className={styles.body}>
         {stats.length ? <dl className={styles.stats}>{stats}</dl> : null}
-        {platforms.length ? <ul className={styles.platforms} data-rank-platforms>{platforms.map((item) => {
-          const mark = PLATFORM_MARK[item.platform];
-          return <li key={item.platform} className={styles.value} data-row="rank-platform" data-platform={item.platform}><img src={`/images/guest-home/${mark.file}`} alt={mark.name(locale)} width={16} height={16} /><span>{formatFollowerCount(item.count, item.digits, item.text)}</span></li>;
-        })}</ul> : null}
       </div>
     </div>
   </div>;

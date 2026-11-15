@@ -11,6 +11,7 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () => state.auth, useGroupResource: () => state.wallet, GROUP_WALLET_CHANGED_EVENT: "wallet-changed" }));
 vi.mock("@/features/selected-bias/ui/use-selected-bias", () => ({ useSelectedBias: () => state.bias }));
+vi.mock("@/features/selected-bias/ui/selected-bias-chip", () => ({ SelectedBiasChip: () => <a href="/login">최애 고르기</a> }));
 vi.mock("@/features/rewards/ui/fan-tier-badge", () => ({ FanTierBadge: () => <span data-testid="tier" /> }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/benefits", useSearchParams: () => new URLSearchParams("locale=ko") }));
 import { FanHeaderStatus } from "./fan-header-status";
@@ -44,24 +45,12 @@ describe("header capsule", () => {
     expect(state.bias.retry).toHaveBeenCalledOnce();
   });
 
-  it("signed out shows only the small login link — no join chip, no retained member data", () => {
+  it("keeps the guest login entry and never exposes retained member data", () => {
     const view = render(<FanHeaderStatus locale="ko" />);
     state.auth = { ...state.auth, authenticated: false, ownerKey: "guest:1" };
     view.rerender(<FanHeaderStatus locale="ko" />);
-    expect(screen.getByRole("link", { name: "로그인" })).toHaveAttribute("href", expect.stringContaining("/login"));
-    expect(screen.queryByText("모임에 가입해보세요")).not.toBeInTheDocument();
-    expect(document.querySelector("img")).toBeNull();
+    expect(screen.getByRole("link", { name: "최애 고르기" })).toHaveAttribute("href", "/login");
     expect(screen.queryByText(/1,260|Current favorite/)).not.toBeInTheDocument();
-  });
-
-  it("signed in without a favorite keeps the compact capsule with points only — no illustration, no join prompt", () => {
-    state.bias = { status: "empty", selected: null, unverified: null, options: [], select: vi.fn(), retry: vi.fn() };
-    render(<FanHeaderStatus locale="ko" />);
-    expect(chip()).toHaveAttribute("href", "/my?locale=ko");
-    expect(chip()).toHaveTextContent("1,260");
-    expect(screen.queryByText("모임에 가입해보세요")).not.toBeInTheDocument();
-    expect(chip().querySelector('img[src*="join-community"]')).toBeNull();
-    expect(screen.queryByTestId("tier")).toBeNull();
   });
 
   it.each([401, 403])("hides retained member data after a %i wallet response", status => {

@@ -1,0 +1,1 @@
+export function useSelectedBias(){const option={slug:'synthetic-creator',name:'예시 크리에이터',image:'/images/groups/nchive-group.webp',passportId:'10000000-0000-4000-8000-000000000001',tier:'Gold',stage:null,hearts:13};return {status:'ready',options:[option],selected:option,unverified:null,select:()=>{},retry:()=>{}};}

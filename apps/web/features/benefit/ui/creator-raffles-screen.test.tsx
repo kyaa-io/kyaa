@@ -11,7 +11,7 @@ let ownerId = "owner-a";
 const getAccessToken = vi.fn(async () => "token");
 const routerPush = vi.fn();
 
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({
     ready: true,
     authenticated,

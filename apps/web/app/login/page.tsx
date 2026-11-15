@@ -1,10 +1,11 @@
+import { readPrivyCustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
 import { parseAppLocale } from "@/i18n/locales";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { nativeReauthenticationReturn } from "../../server/auth/apple-notifications/native-reauthentication-route";
-import { readCognitoKakaoLoginPolicy } from "@/server/config/public-runtime-config";
 import { LoginPage } from "../../components/login-page";
+import { readPublicPrivyTestAccountPolicy } from "../../components/privy-test-account-policy";
 import { readPublicPrivyAppleLoginPolicy } from "../../components/privy-apple-login-policy";
 import { FanRouteLoading } from "../../components/fan-ui/fan-route-loading";
 
@@ -20,8 +21,9 @@ export default async function LoginRoute({
   return (
     <Suspense fallback={<FanRouteLoading locale={locale} />}>
       <LoginPage
+        {...readPrivyCustomOAuthPolicy()}
         appleLoginEnabled={readPublicPrivyAppleLoginPolicy()}
-        cognitoKakaoEnabled={readCognitoKakaoLoginPolicy()}
+        testAccountLoginEnabled={readPublicPrivyTestAccountPolicy()}
       />
     </Suspense>
   );

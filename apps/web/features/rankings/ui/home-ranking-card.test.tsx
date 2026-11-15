@@ -19,7 +19,6 @@ const fans = (rows = [fanRow(1, { nickname: "별빛", delta: 2, favorite: { slug
 const creatorRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, slug: `c${rank}`, name: `크리에이터${rank}`, imageUrl: null, score: 900 - rank, hearts: 900 - rank, fans: 200 - rank, challenge: false, delta: null, weekGain: null, ...extra });
 const creators = (extra: Record<string, unknown> = {}) => ({ state: "ready", metric: "hearts", day: "2026-11-08", computedAt: null, comparable: true, weekGainDays: 7,
   rows: [creatorRow(1, { slug: "elina", name: "엘리나", score: 40, hearts: 40, fans: 3, challenge: true, weekGain: 12 }), creatorRow(2, { weekGain: 0 }), creatorRow(3)], ...extra });
-const visibleRows = () => vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(() => ({ top: 0, bottom: 48, left: 0, right: 300, width: 300, height: 48, x: 0, y: 0, toJSON: () => ({}) }));
 
 afterEach(() => { window.localStorage.clear(); vi.unstubAllGlobals(); vi.useRealTimers(); clearResources(); auth.value = { ...auth.value, authenticated: false, user: null }; });
 
@@ -49,17 +48,15 @@ it("is the shared ranking board under one heading: ten heart rows per group, no 
   for (const [url] of fetcher.mock.calls) expect(String(url)).toMatch(/metric=(points|likes).*limit=10/);
 });
 
-it("signed out: ten rows per group, an opened row's picture and name lead to sign-in, and no sign-in button under the list", async () => {
+it("signed out: ten rows per group, rows open in place with a sign-in action, one sign-in button", async () => {
   stub(fans(Array.from({ length: 10 }, (_, i) => fanRow(i + 1))), creators({ rows: Array.from({ length: 10 }, (_, i) => creatorRow(i + 1)) }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("팬1");
   expect(container.querySelectorAll("[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("[data-row='creator-rank']")).toHaveLength(10);
-  expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(0);
-  expect(screen.queryByRole("link", { name: "팬1, 로그인하고 프로필 보기" })).toBeNull();
-  fireEvent.click(container.querySelector("[data-column='fans'] li[data-row='fan-rank'] > button")!);
+  expect(container.querySelectorAll("[data-column='fans'] a[href*='/login']:not(li a)")).toHaveLength(1);
+  fireEvent.click(container.querySelector("li[data-row='fan-rank'] > button")!);
   expect(screen.getAllByRole("link", { name: "팬1, 로그인하고 프로필 보기" })[0]!.getAttribute("href")).toContain("/login");
-  expect(container.querySelector("[data-rank-panel] a, [data-rank-panel] button")).toBeNull();
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
@@ -84,9 +81,8 @@ it("passes the original signed profile reference without replacing its stored ra
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const ref = { kind: "home_ranking", day: "2026-11-08", computedAt: "2026-11-08T00:00:00Z", metric: "hearts", rank: 7, signature: "a".repeat(64) };
   stub(fans([fanRow(1, { profileRef: ref })]));
-  const view = render(<HomeRankingCard locale="ko" />);
-  await screen.findAllByText("팬1");
-  fireEvent.click(view.container.querySelector("li[data-row='fan-rank'] > button")!);
+  render(<HomeRankingCard locale="ko" />);
+  fireEvent.click(await screen.findByRole("button", { name: /팬1/ }));
   fireEvent.click(await screen.findByRole("button", { name: "팬1, 프로필 보기" }));
   expect(await screen.findByTestId("ranking-profile")).toHaveTextContent(JSON.stringify(ref));
   fireEvent.click(screen.getByRole("button", { name: "close profile" }));
@@ -118,7 +114,6 @@ it.each(APP_LOCALES)("renders the home contract in %s", async locale => {
 });
 
 it("moves only changed rows on refresh and respects reduced motion", async () => {
-  const rect = visibleRows();
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetTop");
@@ -134,21 +129,18 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
       vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
       const view = render(<HomeRankingCard locale="ko" />);
       await screen.findByText("가");
-      animate.mockClear(); // the entrance (own test below)
+      animate.mockClear(); // a first visit rings places 1-3 (own test below)
       answer = fans([fanRow(1, { nickname: "나" }), fanRow(2, { nickname: "가" }), fanRow(3, { nickname: "다" })]);
       clock += 11 * 60 * 1000;
       document.dispatchEvent(new Event("visibilitychange"));
       await waitFor(() => expect(view.container.querySelector("ol > li")!.textContent).toContain("나"));
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("px)"))).toHaveLength(reduced ? 0 : 2);
-      // The full colour ring holds for 3s after a 250ms entrance and fades over 850ms; no rotation, including reduced motion.
-      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(0);
-      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes('"duration":4100'))).toHaveLength(2);
-      const ringDelays = animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":4100') && JSON.stringify(call).includes("opacity")).map(call => (call as unknown as [unknown, { delay?: number }])[1].delay ?? 0);
-      expect(ringDelays).toEqual([0, 90]);
+      // The two rows whose value changed ring once (rotating arc + ring fade, 600ms); reduced motion: the whole ring for 300ms, nothing rotates.
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(reduced ? 0 : 2);
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes(reduced ? '"duration":300' : '"duration":600'))).toHaveLength(2);
       view.unmount();
     }
   } finally {
-    rect.mockRestore();
     now.mockRestore();
     if (original) Object.defineProperty(HTMLElement.prototype, "offsetTop", original);
     delete (Element.prototype as Partial<Element>).animate;
@@ -169,7 +161,6 @@ it("does not claim hidden ranks or draw login rows for short/empty answers", asy
 });
 
 it("rings only the rows whose value changed between two answers of one visit", async () => {
-  const rect = visibleRows();
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
@@ -185,10 +176,9 @@ it("rings only the rows whose value changed between two answers of one visit", a
     answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나", hearts: 99, score: 99 })]);
     clock += 11 * 60 * 1000;
     document.dispatchEvent(new Event("visibilitychange"));
-    await waitFor(() => expect(animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":4100') && JSON.stringify(call).includes("opacity"))).toHaveLength(1));
+    await waitFor(() => expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(1));
     view.unmount();
   } finally {
-    rect.mockRestore();
     now.mockRestore();
     delete (Element.prototype as Partial<Element>).animate;
   }
@@ -217,74 +207,49 @@ it("a period change is not a value change: no ring (and no move) when the tabs s
   }
 });
 
-it("first look: rows come in top first (90ms apart), a period switch does not replay it, and nothing rings — not even after the shared places (1,2,2,2) became 1,2,3,4", async () => {
-  const rect = visibleRows();
+it("rings places 1-3 once on a first visit, and afterwards only the rows that differ from what the visitor last saw", async () => {
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
-  const calls = (part: string) => animate.mock.calls.filter(call => JSON.stringify(call).includes(part));
-  const rings = () => calls('"duration":4100').length;
+  const rotations = () => animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate")).length;
   try {
     vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
-    // The memory a visitor kept from before 11/13 04:34 (v2, shared places): it must not read as movement.
-    window.localStorage.setItem("kyaa:rank-seen2:fans:points:all", JSON.stringify({ v: { "n:가": 50, "n:나": 20, "n:다": 20, "n:라": 20 }, r: { "n:가": 1, "n:나": 2, "n:다": 2, "n:라": 2 } }));
-    const body = fans([fanRow(1, { nickname: "가", points: 50 }), fanRow(2, { nickname: "나", points: 20 }), fanRow(3, { nickname: "다", points: 20 }), fanRow(4, { nickname: "라", points: 20 })]);
-    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? body : { ...creators(), rows: [] })));
-    const { container } = render(<HomeRankingCard locale="ko" />);
+    const body = (second: number) => fans([fanRow(1, { nickname: "가", points: 50, hearts: 5 }), fanRow(2, { nickname: "나", points: second, hearts: 5 }), fanRow(3, { nickname: "다", points: 30, hearts: 5 }), fanRow(4, { nickname: "라", points: 20, hearts: 5 })]);
+    const rowsOnly = () => ({ ...creators(), rows: [] });
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? body(40) : rowsOnly())));
+    const first = render(<HomeRankingCard locale="ko" />);
     await screen.findByText("가");
-    expect(rings()).toBe(0);
-    expect(container.querySelector("li[data-row='fan-rank'] [data-delta-cell]")).toBeNull();
-    const entrance = calls("translateY(8px)").map(call => (call as unknown as [unknown, { delay?: number; duration: number }])[1]);
-    expect(entrance.map(timing => timing.delay)).toEqual([0, 90, 180, 270]);
-    expect(entrance.every(timing => timing.duration === 200)).toBe(true);
-    animate.mockClear();
-    for (const name of ["오늘", "누적"]) {
-      fireEvent.click(screen.getAllByRole("button", { name }).find((b) => b.closest("nav"))!);
-      await waitFor(() => expect(screen.getAllByText("가").length).toBeGreaterThan(0));
-    }
-    expect(calls("translateY(8px)")).toHaveLength(0);
-    expect(rings()).toBe(0);
-  } finally {
-    rect.mockRestore();
-    delete (Element.prototype as Partial<Element>).animate;
-  }
-});
-
-it("reduced motion: the rows are drawn at once, no entrance", async () => {
-  const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
-  Element.prototype.animate = animate;
-  try {
-    vi.stubGlobal("matchMedia", () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
-    stub(fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나" })]));
+    expect(rotations()).toBe(3);
+    first.unmount();
+    // The same values again: nothing rings.
+    clearResources(); animate.mockClear();
+    const again = render(<HomeRankingCard locale="ko" />);
+    await screen.findByText("가");
+    expect(rotations()).toBe(0);
+    again.unmount();
+    // One value moved since the last visit: only that row rings.
+    clearResources(); animate.mockClear();
+    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? body(45) : rowsOnly())));
     render(<HomeRankingCard locale="ko" />);
     await screen.findByText("가");
-    expect(animate).not.toHaveBeenCalled();
+    expect(rotations()).toBe(1);
   } finally {
     delete (Element.prototype as Partial<Element>).animate;
   }
 });
 
-it("shows points as the coin asset and likes as the flat heart, never the letter P or the word", async () => {
+it("shows points as the coin asset and likes as the heart asset, never the letter P or the word", async () => {
   stub(fans([fanRow(1, { nickname: "가", points: 7480 })]), creators({ rows: [creatorRow(1, { slug: "elina", name: "엘리나", likes: 105 })] }));
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("가");
   const main = (kind: string) => container.querySelector(`li[data-row='${kind}-rank'] [data-metric]`) as HTMLElement;
   expect(main("fan").querySelector("img[src='/images/economy/point-coin.webp']")).not.toBeNull();
   expect(main("fan").textContent).toBe("7,480");
-  expect(main("creator").querySelector("[data-unit='likes'][data-icon='heart']")).not.toBeNull();
-  expect(main("creator").querySelector("[data-icon='thumbs-up'], img")).toBeNull();
+  expect(main("creator").querySelector("[data-icon='heart']")).not.toBeNull();
   expect(main("creator").textContent).toBe("105");
 });
 
-it("a zero value is told in the muted colour, a real count is not", async () => {
-  stub(fans([fanRow(1, { nickname: "가", points: 3 })]), creators({ rows: [creatorRow(1, { slug: "a", name: "에이", likes: 2 }), creatorRow(2, { slug: "b", name: "비", likes: 0 })] }));
-  const { container } = render(<HomeRankingCard locale="ko" />);
-  await screen.findByText("에이");
-  const zero = [...container.querySelectorAll("li[data-row='creator-rank'] [data-metric]")].map((node) => node.hasAttribute("data-zero"));
-  expect(zero).toEqual([false, true]);
-});
-
 it("shows ▲▼ for a row that moved since the visitor last looked, and nothing for a row they had not seen", async () => {
-  window.localStorage.setItem("kyaa:rank-seen3:fans:points:all", JSON.stringify({ v: { "n:가": 50, "n:나": 40 }, r: { "n:가": 2, "n:나": 1 } }));
+  window.localStorage.setItem("kyaa:rank-seen2:fans:points:all", JSON.stringify({ v: { "n:가": 50, "n:나": 40 }, r: { "n:가": 2, "n:나": 1 } }));
   const answer = fans([fanRow(1, { nickname: "가", points: 50 }), fanRow(2, { nickname: "나", points: 40 }), fanRow(3, { nickname: "다", points: 30 })]);
   vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : { ...creators(), rows: [] })));
   const { container } = render(<HomeRankingCard locale="ko" />);

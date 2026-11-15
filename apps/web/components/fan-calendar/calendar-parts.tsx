@@ -1,4 +1,4 @@
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";

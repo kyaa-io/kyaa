@@ -30,7 +30,7 @@ const toast = vi.hoisted(() => ({ show: vi.fn() }));
 vi.mock("./mission-reward-toast", () => ({ showMissionRewardToast: toast.show }));
 vi.mock("@/components/editor/lazy-rich-editor", () => ({ LazyRichEditor: ({ label, onChange }: { label: string; onChange: (value: unknown) => void }) => <textarea aria-label={label} onChange={event => onChange({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: event.target.value }] }] })} /> }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: state.replace }), useSearchParams: () => new URLSearchParams(state.returnTo ? { returnTo: state.returnTo } : {}) }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: true, authenticated: state.authenticated, user: { id: "viewer" }, getAccessToken: state.getAccessToken }),
 }));
 vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({
@@ -375,7 +375,7 @@ describe("fan post UI navigation and context", () => {
     fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button",{name:"Delete"}));
 
-    await waitFor(() => expect(state.replace).toHaveBeenCalledWith("/c/artist?tab=board&locale=en"));
+    await waitFor(() => expect(state.replace).toHaveBeenCalledWith("/community?creator=artist&tab=posts&locale=en"));
     expect(state.request).toHaveBeenCalledWith(`/api/posts/${state.post.id}`, "DELETE");
   });
 
@@ -514,7 +514,7 @@ it("offers a private introduction with required text and an optional photo", asy
 
 it("preserves media-only community context through post details and guest login", () => {
   state.authenticated = false;
-  state.returnTo = "/c/artist?tab=board&locale=en&media=1";
+  state.returnTo = "/community?creator=artist&tab=posts&locale=en&media=1";
   render(<FanPostDetail postId={String(state.post.id)} locale="en" />);
   expect(screen.getByRole("link", { name: "Back" })).toHaveAttribute("href", state.returnTo);
   const login = screen.getAllByRole("link").find(link => link.getAttribute("href")?.startsWith("/login?"));

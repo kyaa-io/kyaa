@@ -3,26 +3,23 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminLogin } from "./admin-login";
 
-const assign = vi.fn();
+const login = vi.fn();
+
+vi.mock("@privy-io/react-auth", () => ({
+  useLogin: () => ({ login }),
+}));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "unauthenticated" }) }));
 
 describe("AdminLogin", () => {
-  beforeEach(() => {
-    assign.mockClear();
-    window.history.replaceState({}, "", "/admin/login?returnTo=%2Fadmin%2Fusers");
-    vi.stubGlobal("location", { ...window.location, assign, origin: window.location.origin, pathname: "/admin/login", search: "?returnTo=%2Fadmin%2Fusers" });
-  });
+  beforeEach(() => login.mockClear());
 
-  it("starts Google through Cognito and returns to the admin page, without claiming access", () => {
+  it("uses the real Google-only Privy login and does not claim access", () => {
     render(<AdminLogin />);
     fireEvent.click(screen.getByRole("button", { name: "Google로 관리자 로그인" }));
 
-    const destination = new URL(String(assign.mock.calls[0]?.[0]));
-    expect(destination.pathname).toBe("/api/auth/cognito/start");
-    expect(destination.searchParams.get("provider")).toBe("google");
-    expect(destination.searchParams.get("returnTo")).toBe("/admin/login?returnTo=%2Fadmin%2Fusers");
+    expect(login).toHaveBeenCalledWith({ loginMethods: ["google"] });
     expect(screen.getByText("로그인 후 서버에서 관리자 권한을 확인합니다.")).toBeInTheDocument();
     expect(screen.queryByText("관리자 로그인 완료")).not.toBeInTheDocument();
   });

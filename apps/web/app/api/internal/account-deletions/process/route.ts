@@ -1,7 +1,4 @@
 import { cronOwnerResponse } from "@/server/cron/owner";
-import { cognitoCleanupConfig } from "@/server/auth/cognito/config";
-import { retryRemoteRevocations } from "@/server/auth/cognito/browser-session";
-import { loadServerEnv } from "@/server/config/env";
 import { timingSafeEqual } from "node:crypto";
 import { createAccountDeletionDependencies } from "@/server/profile/account-deletion-dependencies";
 import { processAccountDeletion, processContentAssetCleanup, processMobileMediaCleanup } from "@/server/profile/account-deletion";
@@ -16,7 +13,7 @@ export async function GET(request: Request) {
   const headers = { "cache-control": "no-store" };
   if (!secret || secret.length < 32 || authorization.length !== expected.length || !timingSafeEqual(authorization, expected))
     return Response.json({ error: { code: "UNAUTHORIZED" } }, { status: 401, headers });
-  const [cleanup, revocations] = await Promise.allSettled([(async () => {
+  try {
     const deps = createAccountDeletionDependencies();
     const removedAssets = await processContentAssetCleanup(deps);
     const removedMedia = await processMobileMediaCleanup(deps);
@@ -26,13 +23,6 @@ export async function GET(request: Request) {
       if (result === "idle") break;
       if (result === "completed") completed++; else pending++;
     }
-    return { completed, pending, removedAssets, removedMedia };
-  })(), (async () => {
-    // Keep draining after a switch back to Privy; installations without a pool have no Cognito queue.
-    if (!loadServerEnv().COGNITO_USER_POOL_ID) return { attempted: 0, pending: 0 };
-    return retryRemoteRevocations(cognitoCleanupConfig());
-  })()]);
-  if (cleanup.status === "rejected" || revocations.status === "rejected")
-    return Response.json({ error: { code: "ACCOUNT_CLEANUP_UNAVAILABLE" } }, { status: 503, headers });
-  return Response.json({ ...cleanup.value, cognitoRevocations: revocations.value }, { headers });
+    return Response.json({ completed, pending, removedAssets, removedMedia }, { headers });
+  } catch { return Response.json({ error: { code: "ACCOUNT_CLEANUP_UNAVAILABLE" } }, { status: 503, headers }); }
 }

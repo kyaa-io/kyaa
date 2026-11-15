@@ -2,8 +2,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { LockKeyhole } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-updates";
-import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanPageHeader, FanPageHeaderSkeleton } from "@/components/fan-ui/fan-page-header";
 import { FanTabs, type FanTabItem } from "@/components/fan-ui/fan-tabs";
@@ -49,10 +47,6 @@ export function GroupPageHead() {
   const g = { ...live, page: live.page ?? retained?.page, celebrity: live.celebrity ?? retained?.celebrity, kind: live.kind ?? retained?.kind,
     star: live.star ?? (retained?.star ? { ...retained.star, href: undefined, onClick: undefined } : undefined) };
   const t = groupsCopy(g.locale);
-  // '좋아요 남기기'가 성공하면 서버 값으로 '팬 N'을 다시 읽는다(가짜 +1 없음). 돌아왔을 때의 다시 읽기는 기존 규칙을 따른다.
-  const auth = useByUsAuth();
-  const { refresh } = live;
-  useEffect(() => auth.ready && auth.authenticated ? subscribeFanActivityUpdates(auth.user?.id, (reason) => { if (reason === "mutation") refresh(); }, "reactions") : undefined, [auth.ready, auth.authenticated, auth.user?.id, refresh]);
   const items = useTabs();
   const name = g.celebrity?.name ?? g.page?.name;
   // 소개 번역은 원문과 따로 보이고 원문 보기가 있다(F11). 훅은 머리 골격으로 일찍 돌아가기 전에 부른다.
@@ -60,8 +54,7 @@ export function GroupPageHead() {
   const summaryTexts = useMemo(() => [summaryText], [summaryText]);
   const { observeElement, ...summaryTranslation } = useAutomaticTranslation({ texts: summaryTexts, locale: g.locale, enabled: Boolean(g.celebrity) });
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
-  // 팬페이지의 '팬 N'은 홈 랭킹 크리에이터 누적 하트와 같은 값(좋아요 남긴 사람 수). 그 밖의 페이지는 가입자 수.
-  const memberCount = g.page?.kind === "fan" && g.page.likeCount !== undefined ? g.page.likeCount : g.page?.memberCount;
+  const memberCount = g.page?.memberCount;
   const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
@@ -77,7 +70,7 @@ export function GroupPageHead() {
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
     star={g.star}
     badge={<GroupArtistBadge locale={g.locale} />}
-    links={[...(g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url })) ?? []), ...(g.page?.externalLinks ?? []).map((room) => ({ kind: room.kind, href: room.url }))]}
+    links={g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url }))}
     utility={g.kind === "fan" && g.celebrity ? <>{g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : null}
       {/* 페이지 좋아요(옛 히어로의 '좋아요 남기기'): 누르면 이 페이지의 좋아요 수가 오르고 홈 크리에이터 랭킹(좋아요 순)에 반영된다. */}
       <ReactionAction slug={g.celebrity.slug} locale={g.locale} variant="header" showRewardDialog={g.celebrity.slug !== "gggi"} /></> : undefined}
@@ -107,7 +100,7 @@ function GroupPageBody({ children }: { children: ReactNode }) {
   const g = useGroupPage();
   const t = groupsCopy(g.locale);
   let panel: ReactNode = <><GroupPageJoin />{children}</>;
-  if (g.routePageId && g.error) panel = <div className={styles.status} role="alert">{g.failure && [403, 404].includes(g.failure.status) ? <><LockKeyhole size={32} aria-hidden="true" /><FanHeading>{pageUnavailable[g.locale]}</FanHeading><FanAction href={`/pages/groups?locale=${g.locale}`}>{t.explore}</FanAction></> : <><p>{t.error}</p><FanAction onClick={g.refresh}>{t.retry}</FanAction></>}</div>;
+  if (g.routePageId && g.error) panel = <div className={styles.status} role="alert">{g.failure && [403, 404].includes(g.failure.status) ? <><LockKeyhole size={32} aria-hidden="true" /><FanHeading>{pageUnavailable[g.locale]}</FanHeading><FanAction href={`/pages/groups?locale=${g.locale}`}>{t.explore}</FanAction></> : <p>{t.error}</p>}<FanAction onClick={g.refresh}>{t.retry}</FanAction></div>;
   else if (g.routePageId && g.page?.kind === "fan" && g.celebrityFailed) panel = <div className={styles.status} role="alert"><p>{t.error}</p><FanAction onClick={g.retryCelebrity}>{t.retry}</FanAction></div>;
   return <><GroupPageHead />{panel}</>;
 }

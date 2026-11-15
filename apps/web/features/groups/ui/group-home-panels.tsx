@@ -1,6 +1,6 @@
 "use client";
 import type {Route} from 'next';
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from 'next/link';
 import {ArrowRight,Play} from 'lucide-react';
 import {useState} from 'react';
 import {FanAction} from '@/components/fan-ui/fan-action';

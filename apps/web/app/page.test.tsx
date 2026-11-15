@@ -20,10 +20,7 @@ vi.mock("../server/content/home-banner-repository", () => ({ createHomeBannerRep
 
 vi.mock("../server/home-notice/home-notice-repository", () => ({ createHomeNoticeRepository: () => ({ listPublished: repositories.homeNotices }) }));
 
-vi.mock("../server/home-gallery/home-gallery-repository", () => ({ createHomeGalleryRepository: () => ({ listPublishedPool: repositories.homeGallery, listShorts: repositories.homeShorts }) }));
-
-const requestCookies = vi.hoisted(() => new Map<string, string>());
-vi.mock("next/headers", () => ({ cookies: async () => ({ get: (name: string) => requestCookies.has(name) ? { name, value: requestCookies.get(name) } : undefined }) }));
+vi.mock("../server/home-gallery/home-gallery-repository", () => ({ createHomeGalleryRepository: () => ({ listPublished: repositories.homeGallery, listShorts: repositories.homeShorts }) }));
 
 vi.mock("../server/raffle/raffle-dependencies", () => ({ createRaffleDependencies: () => ({ list: repositories.raffles }) }));
 
@@ -31,7 +28,6 @@ import HomePage from "./page";
 
 describe("Home server content isolation", () => {
   beforeEach(() => {
-    vi.unstubAllEnvs();
     repositories.homeBanners.mockReset().mockResolvedValue([]);
     repositories.raffles.mockReset().mockResolvedValue({ raffles: [] });
     repositories.guidePhotos.mockReset().mockResolvedValue(undefined);
@@ -40,35 +36,12 @@ describe("Home server content isolation", () => {
     repositories.homeNotices.mockReset().mockResolvedValue({ items: [], nextCursor: null });
     repositories.homeGallery.mockReset().mockResolvedValue({ items: [], nextCursor: null });
     repositories.homeShorts.mockReset().mockResolvedValue([]);
-    requestCookies.clear();
   });
 
   const props = (result: { props: { children: Array<{ props: Record<string, unknown> }> } }) => result.props.children[1].props as {
     queries: Record<"celebrities" | "homeBanners" | "homeSlots" | "elinaRaffles" | "homeNotices" | "homeGallery" | "homeShorts", Promise<{ status: string; value?: unknown }>>;
     [key: string]: unknown;
   };
-
-  it("keeps the first-steps banner until this browser finished the three steps", async () => {
-    expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(true);
-    requestCookies.set("kyaa_first_steps", "other");
-    expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(true);
-    requestCookies.set("kyaa_first_steps", "done");
-    expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(false);
-  });
-
-  it("passes the raffle opt-in to the home and drops the duplicate CMS raffle banner", async () => {
-    const cms = { id: "cms-raffle", href: "/s/raffle?utm_source=home" };
-    const other = { id: "other", href: "/events" };
-    repositories.homeBanners.mockResolvedValue([cms, other]);
-    vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "false");
-    const off = props(await HomePage({ searchParams: Promise.resolve({}) }));
-    expect(off.signupRaffle).toBe(false);
-    expect(await off.queries.homeBanners).toEqual({ status: "fulfilled", value: [other] });
-    vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "true");
-    const on = props(await HomePage({ searchParams: Promise.resolve({}) }));
-    expect(on.signupRaffle).toBe(true);
-    expect(await on.queries.homeBanners).toEqual({ status: "fulfilled", value: [other] });
-  });
 
   it("streams current raffle metadata and settles to rejected when its read fails", async () => {
     const raffles = [{ title: "Current prize", entryClosesAt: "2026-10-07T09:00:00Z" }];
@@ -124,7 +97,7 @@ describe("Home server content isolation", () => {
     const page = { items: [{ id: "p1" }], nextCursor: null };
     repositories.homeGallery.mockResolvedValue(page);
     const result = await HomePage({ searchParams: Promise.resolve({ locale: "ko" }) });
-    expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { pages: 3 });
+    expect(repositories.homeGallery).toHaveBeenCalledWith("ko", { limit: 24 });
     expect(await props(result).queries.homeGallery).toEqual({ status: "fulfilled", value: page });
     expect(repositories.homeGallery).toHaveBeenCalledTimes(1);
     repositories.homeGallery.mockRejectedValue(new Error("gallery unavailable"));

@@ -1,8 +1,8 @@
 import type { ComponentProps, ReactNode } from "react";
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 
 import styles from "./fan-navigation.module.css";
-import { IntentRoutePrefetch } from "./intent-route-prefetch";
+import { IdleRoutePrefetch } from "./idle-route-prefetch";
 
 type LinkHref = ComponentProps<typeof Link>["href"];
 
@@ -48,7 +48,7 @@ export function FanPrimaryNavigation({
           )}
           aria-current={item.isCurrent ? "page" : undefined}
           href={item.href}
-          // The main tabs are dynamic pages with no loading boundary: the default prefetch reads nothing ahead. They are read whole when a pointer, touch or focus reaches the tab.
+          // The main tabs are dynamic pages with no loading boundary: the default prefetch reads nothing ahead. They are read whole once the first load is idle.
           prefetch={false}
         >
           {item.icon}
@@ -56,7 +56,7 @@ export function FanPrimaryNavigation({
           {item.badge}
         </Link>
       ))}
-      <IntentRoutePrefetch hrefs={items.flatMap((item) => !item.isCurrent && typeof item.href === "string" ? [item.href] : [])} />
+      <IdleRoutePrefetch hrefs={items.flatMap((item) => !item.isCurrent && typeof item.href === "string" ? [item.href] : [])} />
     </nav>
   );
 }

@@ -2,16 +2,11 @@
 export { FanAction, fanActionClassName, type FanActionVariant } from "./fan-action";
 export { FanDialog, FanSheet, useFanWide, type FanDialogProps, type FanSheetProps, type FanDialogPrimary, type FanDialogSecondary } from "./fan-dialog";
 export { FanMenu, type FanMenuProps, type FanMenuItemProps, type FanMenuRadioItem } from "./fan-menu";
-export { FanSelectMenu, type FanSelectMenuProps } from "./fan-select-menu";
 export { FanTooltip, useFanFinePointer, type FanTooltipProps } from "./fan-tooltip";
 export { FanHelpTip } from "./fan-help-tip";
 export { FanCollapsible, FanCollapsibleTrigger, FanDisclosure, type FanCollapsibleProps, type FanCollapsibleTriggerProps } from "./fan-collapsible";
 export { FanCellGauge, type FanCellGaugeProps } from "./fan-cell-gauge";
 export { FanNumber, FanGauge, type FanNumberProps, type FanGaugeProps } from "./fan-number";
-export { FanDisplay, type FanDisplayProps, type FanDisplayRole } from "./fan-display";
-export { FanPrintTicket, FanPrintGiftCard, FanPrintPassport, FanPrintChanceCard, FanPrintDesk, type FanPrintTicketProps, type FanPrintGiftCardProps, type FanPrintPassportProps, type FanPrintChanceCardProps, type FanPrintChanceRow, type FanPrintStampName } from "./fan-print";
-export { FanPrintReveal } from "./fan-print-reveal";
-export { FanActivityStamp, fanActivityStampSrc, type FanActivityStampKind } from "./fan-activity-stamp";
 export { FanToastProvider, useFanToast, showFanToast, closeFanToast, type FanToastOptions, type FanToastTone } from "./fan-toast";
 export { FanTabs, type FanTabItem } from "./fan-tabs";
 export { FanCount } from "./fan-count-chip";

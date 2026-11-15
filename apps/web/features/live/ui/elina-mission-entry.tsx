@@ -5,7 +5,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__live__ui__elina-mission-entry";
 import { additionalLocales } from "@/i18n/messages";
 import Image from "next/image";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import type { ContentLocale } from "@/server/content/content-domain";
 import { elinaLiveSlug } from "../domain/elina-event";
@@ -23,27 +23,27 @@ const copy = {
   ko: {
     eyebrow: "지금 참여할 덕질",
     title: "엘리나와 뱅크시 한 작품",
-    
+    invitation: "마음에 드는 작품을 고르고, 그림 속 디테일도 찾아봐요.",
     count: "투표 1개 · 퀴즈 1개",
     action: "덕질 시작하기",
-    
+    hint: "작품을 고르고 스탬프를 남겨요.",
   },
   en: {
     eyebrow: "MISSIONS OPEN NOW",
     title: "Elina and Banksy, one artwork",
-    
+    invitation: "Pick your favorite artwork, then look for a detail in the picture.",
     count: "1 vote · 1 quiz",
     action: "Start missions",
-    
+    hint: "Complete a mission to record a Stamp.",
   },
 
   ...additionalLocales((translationLocale) => ({
     eyebrow: localizedMessages.m5267357f1419[translationLocale],
     title: localizedMessages.m111c5c262aee[translationLocale],
-    
+    invitation: localizedMessages.mf8ae3329afeb[translationLocale],
     count: localizedMessages.m8e242988ecf7[translationLocale],
     action: localizedMessages.m62844ba86ce4[translationLocale],
-    
+    hint: localizedMessages.mc7e1a60b9ffd[translationLocale],
   }))
 } as const;
 
@@ -78,8 +78,10 @@ export function ElinaMissionEntry({ celebritySlug, locale }: { celebritySlug: st
     <div className={styles.copy}>
       <p className={styles.eyebrow}>{text.eyebrow}</p>
       <h2 id={titleId}>{text.title}</h2>
+      <p className={styles.invitation}>{text.invitation}</p>
       <p className={styles.count}>{text.count}</p>
       <Link className={styles.action} href={`/live/${elinaLiveSlug}/missions?locale=${locale}`}>{text.action}</Link>
+      <p className={styles.hint}>{text.hint}</p>
     </div>
     <div className={styles.artworks} aria-hidden="true">
       {ARTWORKS.map((src) => <div className={styles.artwork} key={src}>

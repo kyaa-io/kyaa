@@ -12,9 +12,7 @@ import styles from "./rich-text.module.css";
 export type RichAttachmentRenderer = (attachment: RichAttachment) => ReactNode;
 
 /** Draws a sanitized document through React. There is no HTML string on this path. */
-/** `textHidden`: only the media blocks stay visible. A translated post shows its translation above them, so the media keep one mounted node
- *  (no reload or flash) while the reader switches between the translation and the original. */
-export function RichBody({ document, locale, renderAttachment, textHidden = false }: { document: RichDocument; locale: AppLocale; renderAttachment: RichAttachmentRenderer; textHidden?: boolean }) {
+export function RichBody({ document, locale, renderAttachment }: { document: RichDocument; locale: AppLocale; renderAttachment: RichAttachmentRenderer }) {
   // `stableTree` turns the renderer's per-call wrappers into plain tags, so a later render (a re-read hands over a new document object and
   // a new renderer) keeps every photo and video node mounted. The memo only saves the work of building the same tree again.
   const tree = useMemo(() => stableTree(renderToReactElement({
@@ -30,5 +28,5 @@ export function RichBody({ document, locale, renderAttachment, textHidden = fals
       },
     },
   })), [document, locale, renderAttachment]);
-  return <div className={styles.body} data-rich-body="" data-text-hidden={textHidden || undefined}>{tree}</div>;
+  return <div className={styles.body} data-rich-body="">{tree}</div>;
 }

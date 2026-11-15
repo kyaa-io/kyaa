@@ -9,7 +9,7 @@ import { ArrowRight, Heart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useRef, useState } from "react";
 
@@ -59,6 +59,7 @@ function SharedPassportLandingInner({ token, creator, locale, activity, authenti
       <div className={styles.creatorPortrait}><Image src={creator.image.url} alt={creator.image.alt} width={112} height={112} sizes="112px" unoptimized={bypassImageOptimization(creator.image.url)} /></div>
       <p className={styles.creatorName}>{creator.name}</p>
       <h1 id="shared-passport-title">{c.title}</h1>
+      <p className={styles.landingBody}>{c.body}</p>
       {activity ? <section className={styles.activityCard} aria-label={locale === "ko" ? "팬 패스포트" : "Fan Passport"}>
         <FanTierBadge tier={activity.tier} locale={locale} size={64} adjacentLabel={false}/>
         <dl><div><dt>{t.issued}</dt><dd><time dateTime={activity.issuedAt}>{new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(new Date(activity.issuedAt))}</time></dd></div>

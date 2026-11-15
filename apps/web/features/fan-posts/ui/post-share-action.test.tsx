@@ -24,12 +24,6 @@ it("shows only the available share policy amount", () => {
   expect(view.container.querySelector("[data-earn-badge]")).toBeNull();
 });
 
-it("does not advertise post share points on a notice (아티스트 소식)", () => {
-  h.state = { status: "on", authenticated: true, hasPassport: true, catalog: { rules: { share: { points: 10 } } }, today: { policyActive: true, actions: { share: { remaining: 2, stamped: false } } } };
-  const { container } = render(<PostShareAction title="소식" locale="ko" contentType="notice" url="/c/elina/notices/walk" />);
-  expect(container.querySelector("[data-earn-badge]")).toBeNull();
-});
-
 it("does not advertise a reward without a known eligible status", () => {
   const { container } = render(<PostShareAction title="글" locale="ko" contentType="post" />);
   expect(container.querySelector("[data-earn-badge]")).toBeNull();

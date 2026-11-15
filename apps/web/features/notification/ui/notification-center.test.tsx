@@ -11,7 +11,7 @@ const { authState, getAccessToken, enablePushNotifications, push } = vi.hoisted(
   ),
   push: vi.fn(),
 }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ...authState, getAccessToken }),
 }));
 let locale = "ko";

@@ -3,7 +3,6 @@ import { z } from "zod";
 export const notificationKindSchema = z.enum([
   "runmusic_result",
   "group_raffle_won",
-  "group_raffle_result",
   "group_event_reviewed",
   "group_notice",
   "live_24h",
@@ -50,8 +49,6 @@ export const notificationItemSchema = z.object({
   actor: z.object({ profileId: z.uuid().nullable(), nickname: z.string().min(1), avatarUrl: z.string().nullable() }).nullable().optional(),
   target: z.object({ type: notificationTargetTypeSchema, id: z.uuid(), label: z.string().nullable() }).nullable().optional(),
   thumbnailUrl: z.string().nullable().optional(),
-  /** official_post: how many posts of one artist this notification folds together (2 hours); absent for a single post. */
-  count: z.number().int().min(2).optional(),
 });
 export const notificationCollectionSchema = z.object({
   notifications: z.array(notificationItemSchema),

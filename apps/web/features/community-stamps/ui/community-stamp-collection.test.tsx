@@ -4,7 +4,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { AVAILABLE_COMMUNITY_STAMPS, COMMUNITY_STAMPS } from "../domain/community-stamps";
 import { CommunityStampCollection } from "./community-stamp-collection";
 
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "owner" } }) }));
 
 beforeEach(() => {
   HTMLDialogElement.prototype.showModal = vi.fn();
@@ -139,15 +139,4 @@ it("keeps the registration state readable by assistive tech when the record row 
 it.each([["ko", "받으러 가기"], ["en", "Go earn it"]] as const)("sends the unearned share stamp on the MY record to the passport sharing page in %s", (locale, label) => {
   render(<CommunityStampCollection locale={locale} resource={{ state: { status: "ready", data: { stamps: [], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
   expect(screen.getAllByRole("link", { name: label }).map(link => link.getAttribute("href"))).toContain(`/passports?locale=${locale}`);
-});
-
-it.each(APP_LOCALES)("groups actual artist stamps in an accessible disclosure in %s", (locale) => {
-  const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "queued" as const, txHash: null, tokenId: null } };
-  render(<CommunityStampCollection locale={locale} creatorNames={{ elina: "Elina", yuna: "Yuna" }} resource={{ state: { status: "ready", data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
-  const trigger = screen.getByRole("button", { name: /Elina.*1/ });
-  expect(trigger).toHaveAttribute("aria-expanded", "false");
-  fireEvent.click(trigger);
-  expect(trigger).toHaveAttribute("aria-expanded", "true");
-  expect(screen.getByRole("button", { name: new RegExp(COMMUNITY_STAMPS.first_comment[locale]) })).toBeVisible();
-  expect(screen.queryByRole("button", { name: /Yuna/ })).not.toBeInTheDocument();
 });

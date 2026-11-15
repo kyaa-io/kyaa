@@ -1,6 +1,5 @@
 "use client";
 
-import { FanSelectMenu } from "@/components/fan-ui/fan-select-menu";
 import { Download, Search } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import type { AdminLocale } from "../../../components/admin/operations-shell";
@@ -123,7 +122,14 @@ export function PerformanceTable<Row>({
             placeholder={ko ? "이름 또는 수치 검색" : "Search names or values"}
           />
         </label>
-        <FanSelectMenu label={ko ? "정렬" : "Sort"} value={sortKey} onValueChange={updateSort} options={columns.map((column) => ({ value: column.key, label: column.label }))} />
+        <label className={styles.sortField}>
+          <span>{ko ? "정렬" : "Sort"}</span>
+          <select value={sortKey} onChange={(event) => updateSort(event.target.value)}>
+            {columns.map((column) => (
+              <option key={column.key} value={column.key}>{column.label}</option>
+            ))}
+          </select>
+        </label>
         <button
           className={styles.sortDirection}
           type="button"

@@ -1,19 +1,6 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
-  "mdd29ff7d7bcd": {
-    "ja": "このPassportにつながる推しのページで、お知らせやファン活動を確認できます。",
-    "zh-Hans": "前往此 Passport 关联的创作者页面，查看动态和粉丝活动。",
-    "zh-Hant": "前往此 Passport 關聯的創作者頁面，查看動態和粉絲活動。",
-    "es": "Visita la página de este creador para ver novedades y momentos conectados con el Passport.",
-    "id": "Kunjungi halaman kreator ini untuk melihat kabar dan momen yang terhubung ke Passport.",
-    "vi": "Truy cập trang nhà sáng tạo để xem tin mới và khoảnh khắc gắn với Passport.",
-    "th": "ไปที่หน้าของครีเอเตอร์คนนี้เพื่อดูข่าวสารและช่วงเวลาของแฟนที่เชื่อมโยงกับ Passport",
-    "pt": "Visite a página deste criador para ver novidades e momentos de fãs ligados ao Passport.",
-    "fr": "Visitez la page de ce créateur pour découvrir les actualités et les moments de fans liés au Passport.",
-    ru: "Посетите страницу этого автора, чтобы узнать об обновлениях и моментах из жизни фанатов, связанных с Passport."
-
-  },
   "md4ae0dc90050": {
     "ja": "あなたをここへ導いた推しに会いましょう。",
     "zh-Hans": "去看看让您来到这里的喜爱艺人。",
@@ -25,6 +12,19 @@ export const messages = {
     "pt": "Conheça o favorito que trouxe você até aqui.",
     "fr": "Découvrez le favori qui vous a conduit jusqu’ici.",
     ru: "Познакомьтесь с любимым персонажем, который привёл вас сюда."
+
+  },
+  "mdd29ff7d7bcd": {
+    "ja": "このPassportにつながる推しのページで、お知らせやファン活動を確認できます。",
+    "zh-Hans": "前往此 Passport 关联的创作者页面，查看动态和粉丝活动。",
+    "zh-Hant": "前往此 Passport 關聯的創作者頁面，查看動態和粉絲活動。",
+    "es": "Visita la página de este creador para ver novedades y momentos conectados con el Passport.",
+    "id": "Kunjungi halaman kreator ini untuk melihat kabar dan momen yang terhubung ke Passport.",
+    "vi": "Truy cập trang nhà sáng tạo để xem tin mới và khoảnh khắc gắn với Passport.",
+    "th": "ไปที่หน้าของครีเอเตอร์คนนี้เพื่อดูข่าวสารและช่วงเวลาของแฟนที่เชื่อมโยงกับ Passport",
+    "pt": "Visite a página deste criador para ver novidades e momentos de fãs ligados ao Passport.",
+    "fr": "Visitez la page de ce créateur pour découvrir les actualités et les moments de fans liés au Passport.",
+    ru: "Посетите страницу этого автора, чтобы узнать об обновлениях и моментах из жизни фанатов, связанных с Passport."
 
   },
   "md34e8e8c5c09": {

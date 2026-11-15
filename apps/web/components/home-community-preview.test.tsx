@@ -8,7 +8,7 @@ const auth = vi.hoisted(() => ({ ready: true, authenticated: false, user: { id: 
 const session = vi.hoisted(() => ({ ready: true, ownerId: "owner-a", generation: 0 }));
 // B6: which author names open a profile is asked separately; these tests are about the rows.
 vi.mock("@/features/group-social/profile-window", () => ({ ProfileAuthor: ({ children }: { children: unknown }) => children }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
 const uuid = (n: number) => `11111111-1111-4111-8111-${String(n).padStart(12, "0")}`;
 const post = (n: number, title: string, extra: Record<string, unknown> = {}) => ({ source: "fan", id: uuid(n), pageRef: "elina", pageName: "엘리나", title, nickname: "팬", createdAt: "2026-10-19T01:00:00Z", likeCount: 0, commentCount: 0, viewCount: null, asset: null, ...extra });
@@ -29,7 +29,7 @@ it("reads the popular board once as a guest and renders dense rows with the orig
   const { container } = render(<HomeCommunityPreview locale="ko" />);
   await screen.findByText("팬 인기 글");
   expect(screen.getByLabelText("댓글 5")).toHaveAttribute("aria-label", "댓글 5");
-  expect(screen.getByRole("link", { name: "엘리나" })).toHaveAttribute("href", "/c/elina?tab=board&locale=ko");
+  expect(screen.getByRole("link", { name: "엘리나" })).toHaveAttribute("href", "/community?creator=elina&tab=posts&locale=ko");
   expect(screen.getByRole("link", { name: "취미 모임" })).toHaveAttribute("href", "/pages/groups/22222222-2222-4222-8222-222222222222?locale=ko&tab=board");
   expect(screen.getByRole("link", { name: "팬 인기 글" }).getAttribute("href")).toMatch(new RegExp(`^/c/elina/community/${uuid(1)}\\?locale=ko&returnTo=`));
   expect(screen.getByRole("link", { name: "모임 글" })).toHaveAttribute("href", `/pages/groups/22222222-2222-4222-8222-222222222222?locale=ko&tab=board&post=${uuid(2)}`);
@@ -46,7 +46,7 @@ it("offers a retry and then a general community route when nothing is public", a
   render(<HomeCommunityPreview locale="en" />);
   fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
   await waitFor(() => expect(screen.queryByRole("button")).not.toBeInTheDocument());
-  expect(screen.getByRole("link", { name: "Fan board" })).toHaveAttribute("href", "/pages/groups?locale=en");
+  expect(screen.getByRole("link", { name: "Fan board" })).toHaveAttribute("href", "/community?locale=en");
 });
 
 it("rejects a malformed payload instead of showing it", async () => {

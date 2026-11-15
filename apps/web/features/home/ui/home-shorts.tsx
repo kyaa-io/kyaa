@@ -13,10 +13,7 @@ import { MediaThumbnail } from "@/features/media/ui/media-thumbnail";
 import { homeShortsPageSchema, type HomeShort } from "@/features/home/domain/home-gallery";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
-import { FanScrollRow } from "@/components/fan-ui/fan-scroll-row";
-import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { ShortsEngagement } from "./shorts-engagement";
-import { ShortsPlayer } from "./shorts-player";
 import styles from "./home-shorts.module.css";
 
 const navigation: Record<AppLocale, [string, string, string]> = {
@@ -27,26 +24,13 @@ const navigation: Record<AppLocale, [string, string, string]> = {
 
 // TikTok covers are signed links that expire within a day, so the covers of the creators' TikTok notices are kept as site images.
 const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
+const shortPlayer = (item: HomeShort) => item.platform === "tiktok" ? `https://www.tiktok.com/embed/${item.videoId}` : `https://www.youtube.com/embed/${item.videoId}?rel=0`;
 
 const PAGE_SIZE = 12;
 
-/** The creator's fan page from a short (PM 11/13): picture, name and `모임 ›` as one link, apart from the play button. Every short comes from a registered creator, so the page exists. */
-function CreatorGroupLink({ item, locale, className, source = false }: { item: HomeShort; locale: AppLocale; className: string; source?: boolean }) {
-  const group = fanUiText(locale, "kindGroup");
-  return <FanAction variant="text" className={className} href={creatorHomeHref(item.creator.slug, locale)} ariaLabel={`${item.creator.name} ${group}`}>
-    <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={24} />
-    <FanText role="meta" className={styles.creatorName}>{source ? `${item.creator.name} · ${item.platform === "tiktok" ? "TikTok" : "YouTube"}` : item.creator.name}</FanText>
-    <FanText role="label" className={styles.creatorGo}>{group}<span aria-hidden="true">›</span></FanText>
-  </FanAction>;
-}
-
 export function HomeShorts({ items: firstItems, locale, layout = "rail", initialVideo, offset = 0, hasMore: firstHasMore = false }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number; hasMore?: boolean }) {
-  // The grid loads the next page when its end scrolls into view and the rail when its right end comes near, so the rail always runs to the
-  // container's edge; the viewer then steps through everything loaded. A short whose cover cannot be shown is left out (never a bare URL).
-  const [loaded, setItems] = useState(firstItems);
-  const [uncovered, setUncovered] = useState<ReadonlySet<string>>(new Set());
-  const items = loaded.filter(item => !uncovered.has(item.id));
-  const hideUncovered = useCallback((id: string) => setUncovered(current => current.has(id) ? current : new Set(current).add(id)), []);
+  // The grid loads the next page when its end scrolls into view; the viewer then steps through everything loaded.
+  const [items, setItems] = useState(firstItems);
   const [hasMore, setHasMore] = useState(firstHasMore);
   const [failed, setFailed] = useState(false);
   const loading = useRef(false);
@@ -56,13 +40,13 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     loading.current = true;
     setFailed(false);
     try {
-      const response = await fetch(`/api/public/home-shorts?locale=${toContentLocale(locale)}&offset=${offset + loaded.length}`);
+      const response = await fetch(`/api/public/home-shorts?locale=${toContentLocale(locale)}&offset=${offset + items.length}`);
       if (!response.ok) throw new Error();
       const page = homeShortsPageSchema.parse(await response.json());
       setItems(current => { const seen = new Set(current.map(item => item.id)); return [...current, ...page.items.filter(item => !seen.has(item.id))]; });
       setHasMore(page.hasMore && page.items.length > 0);
     } catch { setFailed(true); } finally { loading.current = false; }
-  }, [loaded.length, locale, offset]);
+  }, [items.length, locale, offset]);
   useEffect(() => {
     const node = tail.current;
     if (!node || layout !== "grid" || !hasMore || failed) return;
@@ -72,7 +56,6 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
   }, [layout, hasMore, failed, loadMore]);
   const [index, setIndex] = useState<number | null>(() => { const i = items.findIndex(item => item.videoId === initialVideo); return i < 0 ? null : i; });
   const [more, setMore] = useState(false);
-  const [endedId, setEndedId] = useState<string | null>(null);
   const startY = useRef<number | null>(null);
   const wheelAt = useRef(0);
   const selected = index === null ? null : items[index];
@@ -90,41 +73,33 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     onTouchStart: (e: React.TouchEvent) => { startY.current = e.touches[0]?.clientY ?? null; },
     onTouchEnd: (e: React.TouchEvent) => { if (startY.current !== null) { const difference = startY.current - (e.changedTouches[0]?.clientY ?? startY.current); if (Math.abs(difference) >= 45) move(difference > 0 ? 1 : -1); } startY.current = null; },
   };
-  // The /shorts grid: the card button plays (cover and title); the creator line under it is its own link to the fan page. The home rail keeps its compact caption.
-  const grid = layout === "grid";
-  const cards = items.map((item, i) => <li key={item.id} className={styles.item} data-row="short">
+  return <>
+    <ul className={layout === "rail" ? styles.rail : styles.grid}>
+      {(layout === "rail" ? items.slice(0, 6) : items).map((item, i) => <li key={item.id} className={styles.item} data-row="short">
         <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(i)}>
-          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop onMissing={() => hideUncovered(item.id)} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
-          {grid ? <span className={`${styles.title} ${styles.gridTitle}`}>{item.title}</span> : <span className={styles.caption}>
+          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
+          <span className={styles.caption}>
             <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
             <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {item.platform === "tiktok" ? "TikTok" : "YouTube"}</FanText></span>
-          </span>}
+          </span>
         </FanAction>
-        {grid && <CreatorGroupLink item={item} locale={locale} className={styles.creatorLink} source />}
-      </li>);
-  const nearEnd = useCallback(() => { if (hasMore && !failed) void loadMore(); }, [hasMore, failed, loadMore]);
-  return <>
-    {layout === "rail" ? <FanScrollRow className={styles.rail} locale={locale} onNearEnd={nearEnd}>{cards}</FanScrollRow> : <ul className={styles.grid}>{cards}</ul>}
-    {layout === "rail" && hasMore && failed ? <FanAction variant="text" type="button" className={styles.retry} onClick={() => void loadMore()}>{participationCopy(locale).retry}</FanAction> : null}
+      </li>)}
+    </ul>
     {layout === "grid" && hasMore && (failed ? <FanAction variant="text" type="button" className={styles.retry} onClick={() => void loadMore()}>{participationCopy(locale).retry}</FanAction> : <div ref={tail} className={styles.tail} aria-hidden="true" />)}
     <FanDialog className={styles.viewer} open={!!selected} onOpenChange={open => { if (!open) { setIndex(null); setMore(false); } }} title={selected?.title ?? ""} closeLabel={fanUiText(locale, "close")}>
       {selected && <div className={styles.player} data-outbound-placement="shorts-player" onWheel={e => { if (Math.abs(e.deltaY) > 20 && Date.now() - wheelAt.current > 600) { wheelAt.current = Date.now(); move(e.deltaY > 0 ? 1 : -1); } }}>
         <div className={styles.stage}>
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
-          <ShortsPlayer key={selected.videoId} item={selected} locale={locale} onEnded={() => setEndedId(selected.videoId)} />
+          <iframe key={selected.videoId} src={shortPlayer(selected)} title={selected.title} allow="encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
           <div className={styles.swipeZone} {...swipe} aria-hidden="true" />
         </div>
-        {/* After the short ends, the same line lights up as the way on to the creator's page; nothing covers the video. */}
-        <div className={styles.viewerCreator} data-ended={endedId === selected.videoId || undefined}><CreatorGroupLink item={selected} locale={locale} className={styles.viewerCreatorLink} /></div>
-        <div className={styles.bottomBar} {...swipe}>
         <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset + Math.floor((index ?? 0) / PAGE_SIZE) * PAGE_SIZE} />
-        <div className={styles.controls}>
+        <div className={styles.controls} {...swipe}>
           <FanAction variant="text" type="button" onClick={() => move(-1)} disabled={index === 0} ariaLabel={navigation[locale][0]}><FanIcon icon={ChevronUp} /></FanAction>
           <FanAction variant="text" type="button" onClick={() => move(1)} disabled={index === items.length - 1} ariaLabel={navigation[locale][1]}><FanIcon icon={ChevronDown} /></FanAction>
           <span>{(index ?? 0) + 1} / {items.length}</span>
           <FanAction variant="text" type="button" ariaLabel={navigation[locale][2]} aria-expanded={more} onClick={() => setMore(value => !value)}><FanIcon icon={MoreHorizontal} /></FanAction>
           {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{selected.platform === "tiktok" ? "TikTok" : "YouTube"} ↗</a>}
-        </div>
         </div>
       </div>}
     </FanDialog>

@@ -3,7 +3,7 @@
 import { Menu } from "@base-ui/react/menu";
 import { Check } from "lucide-react";
 import type { Route } from "next";
-import Link from "./hover-prefetch-link";
+import Link from "next/link";
 import type { ReactElement, ReactNode } from "react";
 import styles from "./fan-menu.module.css";
 
@@ -62,9 +62,9 @@ function FanMenuItem({ icon, onSelect, href, destructive, disabled, trailing, ch
 
 export type FanMenuRadioItem = Readonly<{ value: string; label: ReactNode; leading?: ReactNode; description?: ReactNode; disabled?: boolean }>;
 
-function FanMenuRadio({ value, onValueChange, items, label, closeOnSelect = false }: Readonly<{ value: string; onValueChange: (value: string) => void; items: readonly FanMenuRadioItem[]; label?: string; /** 고르면 메뉴를 닫는다(정렬·필터 드롭다운). */ closeOnSelect?: boolean }>) {
+function FanMenuRadio({ value, onValueChange, items, label }: Readonly<{ value: string; onValueChange: (value: string) => void; items: readonly FanMenuRadioItem[]; label?: string }>) {
   return <Menu.RadioGroup value={value} onValueChange={(next: unknown) => onValueChange(String(next))} aria-label={label} className={styles.group}>
-    {items.map((item) => <Menu.RadioItem key={item.value} value={item.value} disabled={item.disabled} className={styles.item} data-radio="" closeOnClick={closeOnSelect}>
+    {items.map((item) => <Menu.RadioItem key={item.value} value={item.value} disabled={item.disabled} className={styles.item} data-radio="">
       {item.leading ? <span className={styles.leading} aria-hidden="true">{item.leading}</span> : null}
       <span className={styles.text}>
         <span className={styles.label}>{item.label}</span>

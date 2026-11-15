@@ -1,4 +1,5 @@
 "use client";
+import type { Route } from "next";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ChevronDown, ChevronUp, Heart } from "@/components/fan-ui/fan-icons";
@@ -68,33 +69,25 @@ export function useLiveRanking<T extends { computedAt: string | null }>(url: str
 }
 export type Live<T extends { computedAt: string | null }> = ReturnType<typeof useLiveRanking<T & { fetchedAt?: string }>>;
 
-/** First look at a list: the rows come in one after another from place 1 (opacity and 8px rise, 200ms, 90ms apart, at most 9 steps), places of the two columns together.
- * A ▲▼ the row carries pops in right after its row. Nothing else moves on entry: the pink ring is kept for a value that changes while the visitor watches (사용자 11/13 09:0x). */
-const ENTER_MS = 200;
-const ENTER_EASE = "cubic-bezier(.2, 0, 0, 1)";
-const MOVE_MS = 450;
-const MARK_MS = 500;
-const ROLL_MS = 850;
-const ROLL_EASE = "cubic-bezier(0.33, 1, 0.68, 1)";
-const ROW_STAGGER_MS = 90;
-const rowDelay = (index: number) => Math.min(index, 9) * ROW_STAGGER_MS;
+const MOVE_MS = 240;
 const reducedMotion = () => typeof window !== "undefined" && typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const inView = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return document.visibilityState === "visible" && box.height > 0 && Math.min(box.bottom, window.innerHeight) - Math.max(box.top, 0) >= Math.min(box.height * 0.6, window.innerHeight); };
-const RING_IN_MS = 250;
-const RING_HOLD_MS = 3000;
-const RING_OUT_MS = 850;
-const RING_MS = RING_IN_MS + RING_HOLD_MS + RING_OUT_MS;
-/** The full pink ring remains readable throughout the hold, then fades without moving the row.
- * Reduced motion uses the same colour-only emphasis; no element rotates. */
+const inView = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return box.height === 0 || (box.bottom > 0 && box.top < window.innerHeight); };
+const RING_MS = 600;
+/** The pink ring runs once around the row's border (a rotating arc seen through a 2px ring mask: transform and opacity only, 600ms). Reduced motion: the whole ring shows for 300ms and goes. */
 function ringPulse(node: HTMLElement, delay = 0) {
   const ring = node.querySelector<HTMLElement>("[data-pulse]");
-  if (!ring || typeof ring.animate !== "function") return;
-  const envelope = [{ opacity: 0, easing: "ease-out" }, { opacity: 1, offset: RING_IN_MS / RING_MS }, { opacity: 1, offset: (RING_IN_MS + RING_HOLD_MS) / RING_MS, easing: "ease-in" }, { opacity: 0 }];
-  ring.dataset.still = "";
-  ring.animate(envelope, { duration: RING_MS, easing: "linear", delay }).onfinish = () => { delete ring.dataset.still; };
+  const sweep = ring?.firstElementChild as HTMLElement | null | undefined;
+  if (!ring || !sweep || typeof ring.animate !== "function") return;
+  if (reducedMotion()) {
+    ring.dataset.still = "";
+    ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.3 }, { opacity: 1, offset: 0.7 }, { opacity: 0 }], { duration: 300, delay }).onfinish = () => { delete ring.dataset.still; };
+    return;
+  }
+  ring.animate([{ opacity: 0 }, { opacity: 1, offset: 0.12 }, { opacity: 1, offset: 0.8 }, { opacity: 0 }], { duration: RING_MS, easing: "linear", delay });
+  sweep.animate([{ transform: "rotate(0deg)" }, { transform: "rotate(360deg)" }], { duration: RING_MS, easing: "cubic-bezier(.4, 0, .2, 1)", delay });
 }
-/** v3: places became 1, 2, 3 … with no shared place (11/13 04:34); a v2 memory holds shared places (1, 2, 2, 2) and would read every tied row as moved. */
-const SEEN_PREFIX = "kyaa:rank-seen3:";
+const RING_STAGGER_MS = 70;
+const SEEN_PREFIX = "kyaa:rank-seen2:";
 /** What the visitor last saw in one list and period: each row's value and rank, by row key. */
 type Seen = { values: Map<string, number>; ranks: Map<string, number> };
 function readSeen(memory: string): Seen | null {
@@ -111,74 +104,33 @@ function saveSeen(memory: string, seen: Seen) {
 }
 /** A row whose rank changed between two answers of the same metric slides from its old place (transform only, 240ms) and its movement mark fades in (160ms) from
  * the same frame; only rows on screen move. Nothing moves on the first answer, on a row whose place did not change, or under reduced motion. Tops are read on every commit,
- * so opening a row's panel never counts as a move. A metric change remounts the rows.
- * `entryRef` is the panel's own flag: the first answer the panel draws plays the entrance (rows on screen at once, the others when they reach the screen); a period switch does not. */
-function useRowMotion(order: readonly string[], values: readonly number[], ranks: readonly number[], memory: string, entryRef?: { current: boolean }) {
+ * so opening a row's panel never counts as a move. A metric change remounts the rows. */
+function useRowMotion(order: readonly string[], values: readonly number[], ranks: readonly number[], memory: string) {
   const nodes = useRef(new Map<string, HTMLElement>());
   const seen = useRef<Map<string, number> | null>(null);
-  const seenRanks = useRef<Map<string, number> | null>(null);
-  const emphasized = useRef(new Map<string, string>());
   // Where each row stood when the visitor last looked, read once: a row that moved since then shows its ▲▼ for this visit.
   const [lastVisit] = useState(() => typeof window === "undefined" ? null : readSeen(memory));
-  // The ring runs only for a later answer of the same visit (the minute re-read): the rows whose value or place changed since the previous answer, or that came in.
-  // The first answer rings nothing; what moved since the last visit is told by its ▲▼. A row not on screen waits until it is, then rings once.
+  // The ring runs once on a row whose value differs from what the visitor last saw (localStorage, per list and period), and on a row that came in; on a first visit, only on places 1-3.
+  // Later answers (the ten-minute re-read) ring the rows whose value changed since the previous answer. A row not on screen waits until it is, then rings once.
   useLayoutEffect(() => {
     const now = new Map(order.map((key, i) => [key, values[i]!]));
-    const before = seen.current;
-    const beforeRanks = seenRanks.current;
+    const before = seen.current ?? lastVisit?.values ?? null;
     seen.current = now;
-    seenRanks.current = new Map(order.map((key, i) => [key, ranks[i]!]));
     if (!now.size) return;
-    saveSeen(memory, { values: now, ranks: seenRanks.current });
-    if (!before || !beforeRanks) return;
-    const due = order.flatMap((key, i) => {
-      if (before.get(key) === values[i] && beforeRanks.get(key) === ranks[i]) return [];
-      const signature = `${values[i]}|${ranks[i]}`;
-      if (emphasized.current.get(key) === signature) return [];
-      emphasized.current.set(key, signature);
-      return [[key, i] as const];
-    });
-    due.forEach(([key, i]) => {
+    saveSeen(memory, { values: now, ranks: new Map(order.map((key, i) => [key, ranks[i]!])) });
+    const due = order.filter((key, i) => before ? before.get(key) !== values[i] : i < 3);
+    due.forEach((key, i) => {
       const node = nodes.current.get(key);
       if (!node) return;
-      if (inView(node)) { ringPulse(node, rowDelay(i)); return; }
+      if (inView(node)) { ringPulse(node, i * RING_STAGGER_MS); return; }
       if (typeof IntersectionObserver !== "function") return;
-      const cleanup = () => { watch.disconnect(); pending.current.delete(cleanup); document.removeEventListener("visibilitychange", show); };
-      const show = () => { if (!inView(node)) return; cleanup(); ringPulse(node); };
-      const watch = new IntersectionObserver(show, { threshold: 0.6 });
+      const watch = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting)) { watch.disconnect(); ringPulse(node); } }, { threshold: 0.6 });
       watch.observe(node);
-      pending.current.add(cleanup);
-      document.addEventListener("visibilitychange", show);
+      watchers.current.add(watch);
     });
   });
-  const pending = useRef(new Set<() => void>());
-  useEffect(() => () => { for (const cleanup of pending.current) cleanup(); }, []);
-  useLayoutEffect(() => {
-    if (!entryRef || entryRef.current || !order.length) return;
-    entryRef.current = true;
-    if (reducedMotion()) return;
-    const rows = order.map((key) => nodes.current.get(key)).filter((node): node is HTMLElement => !!node && typeof node.animate === "function");
-    // Rows that reach the screen together come in together, top first; the step restarts for each group, so a row scrolled to later does not wait for its place number.
-    const enter = (group: HTMLElement[]) => group.forEach((node, step) => {
-      const delay = Math.min(step, 9) * ROW_STAGGER_MS;
-      node.animate([{ opacity: 0, transform: "translateY(8px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: ENTER_MS, easing: ENTER_EASE, delay, fill: "backwards" });
-      node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: MARK_MS, easing: "ease-out", delay: delay + ENTER_MS, fill: "backwards" });
-    });
-    const onScreen = (node: HTMLElement) => { const box = node.getBoundingClientRect(); return box.bottom > 0 && box.top < window.innerHeight; };
-    const later = document.visibilityState === "visible" ? rows.filter((node) => !onScreen(node)) : rows;
-    enter(rows.filter((node) => !later.includes(node)));
-    if (!later.length || typeof IntersectionObserver !== "function") return;
-    const waiting = new Set(later);
-    const watch = new IntersectionObserver((entries) => {
-      const arrived = rows.filter((node) => waiting.has(node) && entries.some((item) => item.target === node && item.isIntersecting));
-      arrived.forEach((node) => { waiting.delete(node); watch.unobserve(node); });
-      enter(arrived);
-      if (!waiting.size) cleanup();
-    });
-    const cleanup = () => { watch.disconnect(); pending.current.delete(cleanup); };
-    later.forEach((node) => watch.observe(node));
-    pending.current.add(cleanup);
-  });
+  const watchers = useRef(new Set<IntersectionObserver>());
+  useEffect(() => () => { for (const watch of watchers.current) watch.disconnect(); }, []);
   const tops = useRef(new Map<string, number>());
   const sorted = useRef(order.join("\n"));
   useLayoutEffect(() => {
@@ -193,16 +145,9 @@ function useRowMotion(order: readonly string[], values: readonly number[], ranks
     for (const [key, top] of after) {
       const was = before.get(key);
       const node = nodes.current.get(key);
-      if (was === undefined || was === top || !node || typeof node.animate !== "function") continue;
-      const cleanup = () => { watch?.disconnect(); pending.current.delete(cleanup); document.removeEventListener("visibilitychange", show); };
-      const show = () => {
-        if (!inView(node)) return;
-        cleanup();
-        node.animate([{ transform: `translateY(${was - top}px)` }, { transform: "translateY(0)" }], { duration: MOVE_MS, easing: "cubic-bezier(.2, 0, 0, 1)" });
-        node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)" }], { duration: MARK_MS, easing: "ease-out", fill: "backwards" });
-      };
-      const watch = inView(node) || typeof IntersectionObserver !== "function" ? null : new IntersectionObserver(show, { threshold: 0.6 });
-      if (watch) { watch.observe(node); pending.current.add(cleanup); document.addEventListener("visibilitychange", show); } else show();
+      if (was === undefined || was === top || !node || typeof node.animate !== "function" || !inView(node)) continue;
+      node.animate([{ transform: `translateY(${was - top}px)` }, { transform: "translateY(0)" }], { duration: MOVE_MS, easing: "cubic-bezier(.2, 0, 0, 1)" });
+      node.querySelector<HTMLElement>("[data-delta-cell]")?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: "backwards" });
     }
   });
   const place = (key: string) => (node: HTMLElement | null) => { if (node) nodes.current.set(key, node); else nodes.current.delete(key); };
@@ -255,8 +200,8 @@ export function MetricLine({ locale, computedAt, stale = false, period = "all", 
 
 /** The rank number (rolls like a calendar page when a later answer changes it) and, right after it, the movement triangle. Numbers first: the medal artwork is not here yet, so 1-3 read as numbers too (data-medal keeps the place for it).
  * The cell is one 28px column: the number right-aligned in its box, the triangle's slot after it (empty when the row did not move), so numbers line up whether or not a mark follows. */
-function Rank({ rank, mark, delay }: { rank: number; mark?: ReactNode; delay: number }) {
-  return <span className={styles.rankCell}><span className={styles.rank} data-medal={rank <= 3 ? rank : undefined}><RollingNumber value={rank} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} /></span>{mark}</span>;
+function Rank({ rank, mark }: { rank: number; mark?: ReactNode }) {
+  return <span className={styles.rankCell}><span className={styles.rank} data-medal={rank <= 3 ? rank : undefined}><RollingNumber value={rank} /></span>{mark}</span>;
 }
 
 /** Rows at the live height while the first answer is read; only while a request is running. */
@@ -287,16 +232,16 @@ const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(lo
 
 const unitMark = (metric: RankingMetric) => metric === "points" ? <RankUnit unit="points" /> : metric === "fans" ? null : <RankUnit unit={metric === "likes" ? "likes" : "hearts"} />;
 
-/** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. A zero is told, in the muted colour (GPT review 11/13: an inked 0 on most rows read as noise). Rolls like an odometer only when a later answer changes it (real values, never an invented increase); from 10,000 it is short (12.3K), the full number stays in the label. */
-function Main({ locale, metric, value, delay }: { locale: AppLocale; metric: RankingMetric; value: number; delay: number }) {
+/** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. Rolls like an odometer only when a later answer changes it (real values, never an invented increase); from 10,000 it is short (12.3K), the full number stays in the label. */
+function Main({ locale, metric, value }: { locale: AppLocale; metric: RankingMetric; value: number }) {
   const n = value.toLocaleString(locale);
   const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
   const template = metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : "\u0000";
   const [before, after] = template.split("\u0000");
-  return <span className={styles.main} aria-label={label} title={n} data-metric={metric} data-zero={value === 0 || undefined}>
+  return <span className={styles.main} aria-label={label} title={n} data-metric={metric}>
     <span aria-hidden="true" className={styles.mainInner}>
       {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
-      <RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} />{after?.trim() ? <span>{after.trim()}</span> : null}
+      <RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} />{after?.trim() ? <span>{after.trim()}</span> : null}
     </span>
   </span>;
 }
@@ -312,7 +257,7 @@ function rowDelta(locale: AppLocale, delta: number | null, comparable: boolean) 
 }
 
 /** The built-day movement when the answer has one; otherwise the places gained or lost since the visitor last looked at this list. */
-const visitDelta = (locale: AppLocale, delta: number | null, comparable: boolean, moved: number) => comparable && delta !== null ? rowDelta(locale, delta, true) : rowDelta(locale, moved, true);
+const visitDelta = (locale: AppLocale, delta: number | null, comparable: boolean, moved: number) => comparable && delta ? rowDelta(locale, delta, true) : rowDelta(locale, moved, true);
 
 /** The way to first place, computed from the list itself: null on the first row (nothing to reach); 0 when tied. It opens with the row, never in the line. */
 const gapToFirst = (first: boolean, value: number, top: number) => first ? null : Math.max(0, top - value);
@@ -343,19 +288,16 @@ const LiveMark = ({ locale, name }: { locale: AppLocale; name: string }) => <spa
 
 
 const fanValue = (row: HomeFanRankingRow, metric: RankingMetric) => metric === "points" ? row.points ?? row.score : row.hearts ?? row.score;
-/** Places in list order, 1, 2, 3 … with no shared place (대표 11/13 04:34: "1, 2, 2, 2" read as broken). The server already orders equal scores (who reached the score first, then id); the list keeps that order. */
-export const listPlaces = (count: number): number[] => Array.from({ length: count }, (_, index) => index + 1);
 const fanKey = (row: HomeFanRankingRow, index: number, rows: readonly HomeFanRankingRow[]) =>
   rows.findIndex((other) => other.nickname === row.nickname) === index ? `n:${row.nickname}` : `r:${row.rank}`;
 
 /** Fans: nickname, movement and the metric's value on one line; the row opens a panel. `fill` keeps the block at that many rows with placeholders. */
-export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false, period = "all", entryRef }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string; period?: HomeRankingPeriod; entryRef?: { current: boolean } }) {
+export function FanRows({ locale, ranking, metric, show, fill, scope, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeFanRanking; guest?: boolean; metric: HomeFanMetric; show?: number; fill?: number; scope: string; period?: HomeRankingPeriod }) {
   const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
-  const ranks = listPlaces(shown.length);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
-  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), ranks, `fans:${metric}:${period}`, entryRef);
+  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), shown.map((row) => row.rank), `fans:${metric}:${period}`);
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
@@ -364,12 +306,11 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
     const id = `rank-${scope}-fans-${row.rank}`;
     const open = openKey === keys[i];
     const value = fanValue(row, metric);
-    const displayRank = ranks[i]!;
     const ref = row.profileRef;
     return <li key={keys[i]} ref={place(keys[i]!)} id={id} className={styles.item} data-row="fan-rank" data-kind="fans" data-tint={((accentFirst && i === 0) || row.isMe || open) || undefined} data-me={row.isMe || undefined} aria-current={row.isMe || undefined}>
-      <RowToggle label={`${rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])} ${row.nickname}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} />
+      <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.nickname}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(keys[i]!)} />
       <RowFace open={open} me={row.isMe} kind="fans">
-        <Rank rank={displayRank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, displayRank))} />
+        <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(keys[i]!, row.rank))} />
         <NameTarget
           active={open}
           label={`${row.nickname}, ${rankingsText(locale, guest ? "rkLoginProfile" : "rkViewProfile")}`}
@@ -380,7 +321,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
             <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span></span>
           </span>
         </NameTarget>
-        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowFace>
       <Pulse />
       {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "points" ? "points" : "hearts"} extra={fanStats(locale, row, metric)} /> : null}
@@ -392,31 +333,21 @@ const creatorValue = (row: HomeCreatorRankingRow, metric: RankingMetric) => metr
 /** A stat the opened row adds (대표 11/11 01:55): only a real, non-zero count; zero and a missing value leave the cell out. */
 const statCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined, unit: RankUnitKind) =>
   typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale), unit }] : [];
-/** Every fan row's totals, first in the opened row (사용자 11/12 12:35): the grade (the badge the app uses for it and its name in the viewer's language), then — on the points list — entry tickets,
- * check-in days, posts and hearts. A total the answer does not have, or that is zero, leaves its cell out. */
-const countCell = (locale: AppLocale, key: string, label: string, value: number | null | undefined) =>
-  typeof value === "number" && value > 0 ? [{ key, label, value: value.toLocaleString(locale) }] : [];
+/** Every fan row: the grade (the badge the app uses for it and its name in the viewer's language; a row with no grade leaves the cell out). Fans by points: then hearts and entry tickets held. */
 const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetric) => [
   ...(row.tier ? [{ key: "tier", label: rankingsText(locale, "rkPanelTier"), value: levelLabel(locale, row.tier), icon: <FanTierBadge tier={row.tier} locale={locale} size={16} /> }] : []),
-  ...(metric === "points" ? [
-    ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets, "tickets"),
-    ...countCell(locale, "attendance", rankingsText(locale, "rkPanelAttendance"), row.attendanceDays),
-    ...countCell(locale, "posts", rankingsText(locale, "rkPanelPosts"), row.posts),
-    ...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"),
-  ] : []),
+  ...(metric === "points" ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts"), ...statCell(locale, "tickets", rankingsText(locale, "rkPanelTickets"), row.tickets, "tickets")] : []),
 ];
 
-/** Creators by likes (대표 11/13 08:50 "찐팬 ♥ 5 · SNS"): the 찐팬 hearts first, with the heart asset, then all-time likes when the list counts a period.
- * No SNS follower count is stored anywhere (20261222140000), so no SNS cell is drawn; a made-up number never is. */
+/** Creators by likes: hearts (찐팬 is a built-in cell), and all-time likes when the list counts a period. No SNS follower count is stored, so none is shown. */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
-  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelJjinfan"), row.hearts, "hearts").map((cell) => ({ ...cell, size: 20 as const })), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
+  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "likes"), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
 
 /** Creators: name, movement (and LIVE and the 찐팬 100 challenge tag where they apply) and the metric's value on one line; the row opens a panel whose action goes to the page. */
-export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all", entryRef }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod; entryRef?: { current: boolean } }) {
+export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all" }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod }) {
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
-  const ranks = listPlaces(shown.length);
-  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`, entryRef);
+  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), shown.map((row) => row.rank), `creators:${metric}:${period}`);
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
@@ -424,11 +355,10 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
     const id = `rank-${scope}-creators-${row.rank}`;
     const open = openKey === row.slug;
     const value = creatorValue(row, metric);
-    const displayRank = ranks[i]!;
     return <li key={row.slug} ref={place(row.slug)} id={id} className={styles.item} data-row="creator-rank" data-kind="creators" data-tint={((accentFirst && i === 0) || open) || undefined}>
-      <RowToggle label={`${rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
+      <RowToggle label={`${rankingsText(locale, "rkRank", [row.rank.toLocaleString(locale)])} ${row.name}`} panelId={`${id}-panel`} open={open} onToggle={() => toggle(row.slug)} />
       <RowFace open={open} kind="creators">
-        <Rank rank={displayRank} delay={rowDelay(i)} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, displayRank))} />
+        <Rank rank={row.rank} mark={visitDelta(locale, row.delta, ranking.comparable, movedSince(row.slug, row.rank))} />
         <NameTarget active={open} label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={creatorHomeHref(row.slug, locale)}>
           <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
           <span className={styles.body}>
@@ -437,7 +367,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
               {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
           </span>
         </NameTarget>
-        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} /></span>
       </RowFace>
       <Pulse />
       {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}
@@ -453,19 +383,21 @@ export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking
   const me = ranking.me;
   if (!me) return null;
   const value = metric === "points" ? me.points ?? me.score : me.hearts ?? me.score;
-  const listed = ranking.rows.findIndex(row => row.isMe);
-  const displayRank = listed >= 0 ? listed + 1 : me.rank;
   const first = ranking.rows[0];
   const gap = first ? fanValue(first, metric) - value : 0;
   return <p className={styles.me} role="status"><span className={styles.meLabel}>{rankingsText(locale, "rkMyRank")}</span>
     <>
-      <strong className={styles.meRank}>{rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])}</strong>
+      <strong className={styles.meRank}>{rankingsText(locale, "rkRank", [me.rank.toLocaleString(locale)])}</strong>
       <span className={styles.meValue}>
         {metric === "points"
           ? <span className={styles.meHearts} aria-label={rankingsText(locale, "rkPointsLabel", [value.toLocaleString(locale)])}><RankUnit unit="points" /><span aria-hidden="true">{short(locale, value)}</span></span>
           : <span className={styles.meHearts} aria-label={rankingsText(locale, "rkHearts", [value.toLocaleString(locale)])}>{heartIcon(16)}<span aria-hidden="true">{short(locale, value)}</span></span>}
         <span className={styles.dot} aria-hidden="true">·</span>
-        <span className={styles.meGap}>{displayRank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>
+        <span className={styles.meGap}>{me.rank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>
       </span>
     </></p>;
+}
+/** Signed out: the one primary action of the screen, in the bottom bar. */
+export function FootLink({ href, children }: { href: Route; children: ReactNode }) {
+  return <FanAction variant="primary" fullWidth href={href} className={styles.login}>{children}</FanAction>;
 }

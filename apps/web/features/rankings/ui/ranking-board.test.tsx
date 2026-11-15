@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 
 const auth = vi.hoisted(() => ({ value: { ready: true, authenticated: true, user: { id: "me" } as null | { id: string }, getAccessToken: async () => "t" } }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth.value }));
@@ -27,7 +27,6 @@ function stub(rowsFor: (kind: string, limit: number) => number = (_, limit) => l
 const inRow = async (name: string) => (await screen.findAllByText(name)).find((n) => n.closest("li"))!;
 const urls = (fetcher: ReturnType<typeof stub>) => fetcher.mock.calls.map(([input]) => String(input));
 
-beforeEach(() => window.localStorage.clear());
 afterEach(() => { vi.unstubAllGlobals(); clearResources(); auth.value = { ...auth.value, authenticated: true, user: { id: "me" } }; });
 
 function stubRows(fans: unknown[], creators: unknown[], me: unknown = null) {
@@ -38,15 +37,6 @@ function stubRows(fans: unknown[], creators: unknown[], me: unknown = null) {
   vi.stubGlobal("fetch", fetcher);
   return fetcher;
 }
-
-it("numbers equal scores 1, 2, 3 in the server's order, never a shared place", async () => {
-  stubRows([fanRow(1, { score: 9000, points: 9000 }), fanRow(2, { score: 7218, points: 7218 }), fanRow(3, { score: 7218, points: 7218, isMe: true }), fanRow(4, { score: 500, points: 500 })], [], { rank: 3, score: 7218, points: 7218, hearts: 0, inTop: true, delta: null });
-  const { container } = render(<RankingBoard locale="ko" />);
-  await screen.findByText("하트팬4");
-  expect([...container.querySelectorAll("li[data-row='fan-rank'] [class*='rankCell'] > [class*='rank']")].map(node => node.textContent)).toEqual(["1", "2", "3", "4"]);
-  expect(container.querySelector("p[role='status'] strong")).toHaveTextContent("3위");
-  window.localStorage.clear();
-});
 
 it("reads both lists with ten heart rows each, one under the other: no tabs, no metric choice, no period chips, no podium", async () => {
   const fetcher = stub();
@@ -102,8 +92,7 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
   expect(row("이등").textContent).not.toContain("오늘");
-  expect(row("일등").querySelector("[data-metric] [data-unit='likes'][data-icon='heart']")).not.toBeNull();
-  expect(row("일등").querySelector("[data-metric] img")).toBeNull();
+  expect(row("일등").querySelector("[data-metric] [data-icon='heart']")).not.toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
@@ -153,14 +142,19 @@ it("a signed-in fan row opens the profile window; a signed-out one leads to sign
   expect(decodeURIComponent(login.getAttribute("href")!)).toContain("/?locale=ko");
 });
 
-it("signed out: the rows the API gives, no placeholders, and no sign-in button under the lists (사용자 11/14 PifBetter 01:44)", async () => {
+it("signed out: the rows the API gives, no placeholders, and one way to sign in back to the home page", async () => {
   auth.value = { ...auth.value, authenticated: false, user: null };
   stub((_, limit) => Math.min(limit, 5));
   const { container } = render(<RankingBoard locale="ko" />);
   await screen.findByText("하트팬1");
   expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(5);
-  expect(screen.queryByRole("link", { name: "로그인하고 내 순위 보기" })).toBeNull();
-  expect(container.querySelector("[data-ranking-foot]")).toBeNull();
+  const logins = screen.getAllByRole("link", { name: "로그인하고 내 순위 보기" });
+  // One under the 찐팬 list; the 크리에이터 tab has its own on a phone (hidden from 1024px, where the pair has one).
+  expect(logins).toHaveLength(2);
+  expect(container.querySelectorAll("[data-column='fans'] [data-ranking-foot]")).toHaveLength(1);
+  expect(container.querySelectorAll("[data-column='creators'] [data-ranking-foot]")).toHaveLength(1);
+  expect(logins[0]!.getAttribute("href")).toContain("/login");
+  expect(decodeURIComponent(logins[0]!.getAttribute("href")!)).toContain("/?locale=ko");
   expect(container.querySelector("[data-placeholder]")).toBeNull();
 });
 
@@ -171,7 +165,10 @@ it("a short list keeps its place with rank numbers and empty rings only, and a f
   const placeholders = [...container.querySelectorAll("[data-column='fans'] li[data-placeholder]")];
   expect(placeholders.map((n) => n.textContent)).toEqual(["4", "5", "6", "7", "8", "9", "10"]);
   expect(container.querySelector("[data-column='fans'] [data-loading]")).toBeNull();
-  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
+  const highlight = container.querySelector("[data-column='fans'] [data-rank-highlight]")!;
+  expect(highlight.getAttribute("data-rank-highlight")).toBe("rise");
+  expect(highlight.textContent).toContain("오늘 가장 많이 오름");
+  expect(highlight.textContent).toContain("하트팬1");
 });
 
 it("while the first answer is read it shows loading rows and an empty frame, never placeholders or a highlight", async () => {
@@ -179,7 +176,7 @@ it("while the first answer is read it shows loading rows and an empty frame, nev
   const { container } = render(<RankingBoard locale="ko" />);
   expect(container.querySelectorAll("[data-column='fans'] li[data-row='fan-rank-loading']")).toHaveLength(10);
   expect(container.querySelector("[data-column='fans'] [data-placeholder]")).toBeNull();
-  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
+  expect(container.querySelector("[data-column='fans'] [data-rank-highlight='loading']")).not.toBeNull();
 });
 
 it("an error draws no highlight and offers a retry that reads again", async () => {
@@ -255,7 +252,7 @@ it("period pills: 누적 is the default; 오늘 and 7일 read the period list, d
   const pill = (name: string) => screen.getByRole("button", { name });
   expect(["오늘", "7일", "누적"].map((n) => pill(n).getAttribute("aria-pressed"))).toEqual(["false", "false", "true"]);
   expect(urls(fetcher).some((u) => u.includes("period="))).toBe(false);
-  expect(container.querySelector("[data-rank-highlight]")).toBeNull();
+  expect(container.querySelector("[data-rank-highlight]")).not.toBeNull();
   fireEvent.click(pill("오늘"));
   await waitFor(() => expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=10&period=day"));
   expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=likes&locale=ko&limit=10&period=day");
@@ -334,8 +331,6 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   const fanPanel = fan.querySelector("[data-rank-panel]")!.textContent!;
   expect(fanPanel).toContain("하트12");
   expect(fanPanel).toContain("응모권3");
-  // 대표 11/14 02:11: only the creator's 찐팬 heart grows (20); the fan row's heart keeps 16.
-  expect(fan.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "16");
   const empty = view.container.querySelector("li[data-row='fan-rank']:has([title='빈팬'])") as HTMLElement;
   fireEvent.click(empty.querySelector("button")!);
   expect(empty.querySelector("[data-rank-panel]")!.textContent).not.toMatch(/하트|응모권/);
@@ -343,23 +338,7 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   expect(creator.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "좋아요 50");
   fireEvent.click(creator.querySelector("button")!);
   const creatorPanel = creator.querySelector("[data-rank-panel]")!.textContent!;
-  // 대표 11/13 08:50: "찐팬 ♥ 77" with the heart asset; the head count and a second heart cell are not repeated.
-  expect(creatorPanel).toContain("찐팬77");
-  expect(creatorPanel).not.toContain("9명");
-  expect(creatorPanel).not.toContain("하트");
-  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "20");
-  expect(creator.querySelector("[data-metric] [data-unit]")).toHaveAttribute("data-unit", "likes");
+  expect(creatorPanel).toContain("찐팬9명");
+  expect(creatorPanel).toContain("하트77");
   expect(creatorPanel).not.toMatch(/팔로워/);
-});
-
-it("signed out, an opened creator row's picture and name still lead to the fan page, and the link does not close the row", async () => {
-  auth.value = { ...auth.value, authenticated: false, user: null };
-  stub();
-  const view = render(<RankingBoard locale="ko" />);
-  await inRow("엘리나");
-  fireEvent.click(view.container.querySelector("li[data-row='creator-rank'] > button")!);
-  const link = screen.getByRole("link", { name: "엘리나, 팬페이지 가기" });
-  expect(link).toHaveAttribute("href", "/elina?locale=ko");
-  fireEvent.click(link);
-  expect(view.container.querySelectorAll("[data-rank-panel]")).toHaveLength(1);
 });

@@ -7,7 +7,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const query = z.object({ area: z.enum(["home", "fanpage", "dukjil"]), locale: z.enum(APP_LOCALES).default("ko") }).strict();
+const query = z.object({ area: z.enum(["home", "fanpage"]), locale: z.enum(APP_LOCALES).default("ko") }).strict();
 
 /** Published slot banners of one area, one per slot. Public and cached like the other published content; an admin save clears the cache. */
 export async function GET(request: Request): Promise<Response> {

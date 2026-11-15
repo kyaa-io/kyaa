@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { TRANSLATION_FAILURE_HOLD_MS, TRANSLATION_WAIT_MS, withTranslationLease, type LeaseClock } from "./lease";
+import { TRANSLATION_WAIT_MS, withTranslationLease, type LeaseClock } from "./lease";
 
 const token = "b0000000-0000-4000-8000-000000000001";
 function clock() {
@@ -96,37 +96,5 @@ describe("translation lease", () => {
         else { await expect(run).rejects.toThrow("TRANSLATION_UNAVAILABLE"); expect(work).not.toHaveBeenCalled(); expect(wrapped).toHaveBeenLastCalledWith("release_content_translation_lease", { p_lease_token: token }); }
       }
     });
-  });
-});
-
-describe("translation failure hold", () => {
-  const hold = (store = new Map<string, { until: number; message: string }>()) => ({ key: "k", store, applies: (e: unknown) => e instanceof Error && e.message === "TRANSLATION_UNAVAILABLE" });
-  it("answers repeated requests with the same failure and no claim or work for the hold time, then lets one retry", async () => {
-    const c = clock(), h = hold(), rpc = vi.fn().mockResolvedValue(claimed);
-    const fail = vi.fn().mockRejectedValue(new Error("TRANSLATION_UNAVAILABLE")), ok = vi.fn().mockResolvedValue("stored");
-    await expect(withTranslationLease(rpc, {}, async () => null, fail, c.clock, h)).rejects.toThrow("TRANSLATION_UNAVAILABLE");
-    const claimsBefore = rpc.mock.calls.filter(call => call[0] === "claim_content_translation_lease").length;
-    await expect(withTranslationLease(rpc, {}, async () => null, ok, c.clock, h)).rejects.toThrow("TRANSLATION_UNAVAILABLE");
-    expect(ok).not.toHaveBeenCalled(); expect(rpc.mock.calls.filter(call => call[0] === "claim_content_translation_lease")).toHaveLength(claimsBefore);
-    await c.clock.sleep(TRANSLATION_FAILURE_HOLD_MS);
-    expect(await withTranslationLease(rpc, {}, async () => null, ok, c.clock, h)).toEqual({ value: "stored", cached: false });
-    expect(h.store.size).toBe(0);
-  });
-  it("a waiter that is polling when the holder fails stops with the failure instead of taking over", async () => {
-    const c = clock(), h = hold(); let holder = true;
-    const rpc = vi.fn(async (name: string) => name === "claim_content_translation_lease" ? (holder ? busy : claimed) : null), work = vi.fn();
-    const waiter = withTranslationLease(rpc, {}, async () => null, work, { now: c.clock.now, async sleep(ms) { await c.clock.sleep(ms); if (c.sleeps.length === 2) { h.store.set("k", { until: c.clock.now() + 5_000, message: "TRANSLATION_UNAVAILABLE" }); holder = false; } } }, h);
-    await expect(waiter).rejects.toThrow("TRANSLATION_UNAVAILABLE"); expect(work).not.toHaveBeenCalled();
-  });
-  it("does not hold failures the predicate refuses (quota, access, source change)", async () => {
-    const c = clock(), h = hold(), rpc = vi.fn().mockResolvedValue(claimed);
-    await expect(withTranslationLease(rpc, {}, async () => null, async () => { throw new Error("TRANSLATION_RATE_LIMITED"); }, c.clock, h)).rejects.toThrow("TRANSLATION_RATE_LIMITED");
-    expect(h.store.size).toBe(0);
-    expect(await withTranslationLease(rpc, {}, async () => null, async () => "stored", c.clock, h)).toEqual({ value: "stored", cached: false });
-  });
-  it("a different key is not held", async () => {
-    const c = clock(), store = new Map(), rpc = vi.fn().mockResolvedValue(claimed);
-    await expect(withTranslationLease(rpc, {}, async () => null, async () => { throw new Error("TRANSLATION_UNAVAILABLE"); }, c.clock, { ...hold(store), key: "a" })).rejects.toThrow();
-    expect(await withTranslationLease(rpc, {}, async () => null, async () => "x", c.clock, { ...hold(store), key: "b" })).toEqual({ value: "x", cached: false });
   });
 });

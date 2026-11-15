@@ -7,15 +7,15 @@ vi.mock("./shorts-engagement", () => ({ ShortsEngagement: ({ videoId }: { videoI
 const items = Array.from({ length: 8 }, (_, i) => ({ id: `id${i}`, videoId: `video${i}`, title: `영상 ${i}`, href: `https://youtube.com/watch?v=video${i}`, creator: { slug: "a", name: "A" } })) as HomeShort[];
 
 describe("shorts viewer", () => {
-  it("shows every loaded card in the scroll row and navigates all videos and unmounts the previous player", () => {
+  it("shows six home cards but navigates all videos and unmounts the previous player", () => {
     render(<HomeShorts items={items} locale="ko" />);
-    expect(screen.getAllByRole("listitem")).toHaveLength(8);
+    expect(screen.getAllByRole("listitem")).toHaveLength(6);
     fireEvent.click(screen.getByRole("button", { name: "영상 5" }));
     const dialog = screen.getByRole("dialog");
     const previous = within(dialog).getByTitle("영상 5");
     fireEvent.keyDown(window, { key: "ArrowDown" });
     expect(previous.isConnected).toBe(false);
-    expect(within(dialog).getByTitle("영상 6")).toHaveAttribute("src", "https://www.youtube.com/embed/video6?rel=0&enablejsapi=1&autoplay=0");
+    expect(within(dialog).getByTitle("영상 6")).toHaveAttribute("src", "https://www.youtube.com/embed/video6?rel=0");
     expect(within(dialog).getByTestId("engagement")).toHaveTextContent("video6");
     const zone = dialog.querySelector('[aria-hidden="true"]')?.parentElement;
     fireEvent.click(within(dialog).getByRole("button", { name: "다음 영상" }));
@@ -36,18 +36,9 @@ describe("shorts viewer", () => {
     expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain("/images/media/tiktok/7690854938997558549.jpg");
     fireEvent.click(screen.getByRole("button", { name: "안녕히 계세여~" }));
     const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByTitle("안녕히 계세여~").getAttribute("src")).toBe("https://www.tiktok.com/player/v1/7690854938997558549?autoplay=0");
+    expect(within(dialog).getByTitle("안녕히 계세여~").getAttribute("src")).toBe("https://www.tiktok.com/embed/7690854938997558549");
     fireEvent.click(within(dialog).getByRole("button", { name: "더 보기" }));
     expect(within(dialog).getByRole("link", { name: "TikTok ↗" })).toHaveAttribute("href", tiktok.href);
-  });
-  it("keeps the chosen sound state when moving to another TikTok short", () => {
-    const clips = ["7690854938997558549", "7690854938997558550"].map((videoId, i) => ({ id: `t${i}`, platform: "tiktok", videoId, title: `TikTok ${i}`, href: `https://www.tiktok.com/video/${videoId}`, creator: { slug: "a", name: "A" } })) as HomeShort[];
-    render(<HomeShorts items={clips} locale="ko" layout="grid" initialVideo={clips[0]!.videoId} />);
-    const dialog = screen.getByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "소리 켜기" }));
-    expect(sessionStorage.getItem("kyaa:shorts-muted")).toBe("false");
-    fireEvent.click(within(dialog).getByRole("button", { name: "다음 영상" }));
-    expect(within(dialog).getByRole("button", { name: "음소거" })).toHaveAttribute("aria-pressed", "true");
   });
   it("opens a shared video and changes it by a touch gesture outside the iframe", () => {
     render(<HomeShorts items={items} locale="ko" layout="grid" initialVideo="video1" />);
@@ -99,33 +90,5 @@ describe("shorts scroll loading", () => {
     await waitFor(() => expect(screen.getAllByRole("listitem")).toHaveLength(10));
     expect(fetcher).toHaveBeenCalledTimes(2);
     expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
-  });
-});
-
-describe("shorts → fan page (PM 11/13)", () => {
-  const clips = [{ id: "e1", videoId: "videoE", title: "엘리나 영상", href: "https://youtube.com/watch?v=videoE", creator: { slug: "elina", name: "엘리나" } }] as HomeShort[];
-  it("the /shorts card keeps play on its own button and puts the creator and 모임 on a separate link to the fan page", () => {
-    render(<HomeShorts items={clips} locale="ko" layout="grid" />);
-    const item = screen.getByRole("listitem");
-    const link = within(item).getByRole("link", { name: "엘리나 모임" });
-    expect(link).toHaveAttribute("href", "/elina?locale=ko");
-    expect(link).toHaveTextContent("엘리나 · YouTube");
-    expect(within(item).getByRole("button", { name: "엘리나 영상" }).querySelector("a")).toBeNull();
-  });
-  it("the home rail keeps its compact caption without the extra link", () => {
-    render(<HomeShorts items={clips} locale="ko" />);
-    expect(screen.queryByRole("link", { name: "엘리나 모임" })).toBeNull();
-  });
-  it("the viewer shows the creator's way to the fan page under the video and lights it when a TikTok short ends", () => {
-    const tiktok = [{ id: "t9", platform: "tiktok", videoId: "7690854938997558549", title: "틱톡", href: "https://www.tiktok.com/video/7690854938997558549", creator: { slug: "elina", name: "엘리나" } }] as HomeShort[];
-    render(<HomeShorts items={tiktok} locale="ko" layout="grid" initialVideo="7690854938997558549" />);
-    const dialog = screen.getByRole("dialog");
-    const link = within(dialog).getByRole("link", { name: "엘리나 모임" });
-    expect(link).toHaveAttribute("href", "/elina?locale=ko");
-    const line = link.parentElement!;
-    expect(line).not.toHaveAttribute("data-ended");
-    const frame = within(dialog).getByTitle("틱톡") as HTMLIFrameElement;
-    act(() => { window.dispatchEvent(new MessageEvent("message", { origin: "https://www.tiktok.com", source: frame.contentWindow, data: { "x-tiktok-player": true, type: "onStateChange", value: 0 } })); });
-    expect(line).toHaveAttribute("data-ended");
   });
 });

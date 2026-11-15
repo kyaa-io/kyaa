@@ -1,8 +1,7 @@
 "use client";
-import { visiblePostViews } from "@/components/fan-ui/post-view-count";
-import { FileText, Heart, MessageCircle, Star } from "lucide-react";
+import { FileText, MessageCircle } from "lucide-react";
 import type { Route } from "next";
-import Link from "./hover-prefetch-link";
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
 import { EditedMark } from "@/features/fan-posts/ui/edited-mark";
@@ -38,13 +37,11 @@ export type FanPostRowProps = Readonly<{
   edited?: boolean;
   views?: number | null;
   likes?: number | null;
-  /** 그 페이지의 아티스트가 이 글에 좋아요나 댓글을 남겼으면 아티스트 이름. 제목 옆에 금색 별을 둔다. */
-  reactedBy?: string;
   density?: "home" | "board";
 }>;
 
-/** 게시판 목록 한 줄. 댓글·좋아요 수는 제목 옆(0이면 뺌). 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 페이지 이미지를, 그것도 없으면 글 아이콘 칸을 둔다. */
-export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board" }: FanPostRowProps) {
+/** 게시판 목록 한 줄. 값이 없는 열은 빼고 `—`를 쓰지 않는다. 사진이 없거나 깨지면 페이지 이미지를, 그것도 없으면 글 아이콘 칸을 둔다. */
+export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, density = "board" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
   const timeLabel = time === undefined ? "" : fanPostTimeLabel(time);
@@ -56,16 +53,15 @@ export function FanPostRow({ href, locale, title, thumbnail, pageImage, notice =
     <div className={styles.head}>
       {notice && <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag>}
       <Link href={href as Route} className={styles.title}>{title}</Link>
-      {reactedBy && <span className={styles.reacted} role="img" aria-label={fanUiText(locale, "artistReacted", [reactedBy])} data-artist-reacted><Star size={16} aria-hidden="true" /></span>}
-      {commentCount !== undefined && commentCount > 0 && <span className={styles.count} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}><MessageCircle size={13} fill="currentColor" aria-hidden="true" />{count(commentCount)}</span>}
-      {typeof likes === "number" && likes > 0 && <span className={styles.count} data-count="likes" aria-label={fanUiText(locale, "likesLabel", [count(likes)])}><Heart size={13} fill="currentColor" aria-hidden="true" />{count(likes)}</span>}
+      {commentCount !== undefined && commentCount > 0 && <span className={styles.comments} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}><MessageCircle size={13} fill="currentColor" aria-hidden="true" />{count(commentCount)}</span>}
     </div>
     <div className={styles.meta}>
       {source && <Link href={source.href as Route} className={styles.source}>{source.label}</Link>}
       {author && <span className={styles.authorCell}><span className={styles.author}>{author}</span>{authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}</span>}
       {timeLabel && <time className={styles.time} dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
       {timeLabel && edited && <EditedMark locale={locale} />}
-      {density === "board" && (typeof views === "number" && visiblePostViews(views, likes) !== undefined ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
+      {density === "board" && (typeof views === "number" ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
+      {density === "board" && (typeof likes === "number" ? <span className={styles.number}>{fanUiText(locale, "likesLabel", [count(likes)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
     </div>
   </div>;
 }

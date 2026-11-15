@@ -19,9 +19,7 @@ function wheelDigits(from: number, to: number, direction: 1 | -1) {
   return Array.from({ length: steps + 1 }, (_, index) => (first + index) % 10);
 }
 
-type Timing = { duration?: number; easing?: string; delay?: number };
-
-function Wheel({ from, to, direction, roll, place, duration = ROLL_MS, easing = EASE_OUT, delay = 0 }: { from: number; to: number; direction: 1 | -1; roll: number; place: number } & Timing) {
+function Wheel({ from, to, direction, roll, place }: { from: number; to: number; direction: 1 | -1; roll: number; place: number }) {
   const strip = useRef<HTMLSpanElement>(null);
   const digits = wheelDigits(from, to, direction);
   const travel = ((digits.length - 1) / digits.length) * 100;
@@ -30,9 +28,9 @@ function Wheel({ from, to, direction, roll, place, duration = ROLL_MS, easing = 
     if (!node || typeof node.animate !== "function" || reducedMotion()) return;
     const resting = direction > 0 ? `translateY(-${travel}%)` : "translateY(0)";
     const start = direction > 0 ? "translateY(0)" : `translateY(-${travel}%)`;
-    const animation = node.animate([{ transform: start }, { transform: resting }], { duration, delay: delay + place * PLACE_STAGGER_MS, easing, fill: "backwards" });
+    const animation = node.animate([{ transform: start }, { transform: resting }], { duration: ROLL_MS, delay: place * PLACE_STAGGER_MS, easing: EASE_OUT, fill: "backwards" });
     return () => animation.cancel();
-  }, [roll, direction, travel, place, duration, easing, delay]);
+  }, [roll, direction, travel, place]);
   return <span className={styles.wheel} aria-hidden="true">
     <span ref={strip} className={styles.strip} style={{ transform: direction > 0 ? `translateY(-${travel}%)` : undefined }}>
       {digits.map((digit, index) => <span key={index} className={styles.cell}>{digit}</span>)}
@@ -43,23 +41,22 @@ function Wheel({ from, to, direction, roll, place, duration = ROLL_MS, easing = 
 type Roll = { from: string; direction: 1 | -1; id: number };
 
 /** A number whose changed places roll like an odometer: up when the value grows, down when it shrinks.
- * The first render and reduced-motion show the value at once. Screen readers get the final text only.
- * `duration`, `easing` and `delay` (ms, before the first place starts) let a list slow the roll and stagger its rows; the default is 600ms. */
-export function RollingNumber({ value, format = defaultFormat, className, duration, easing, delay, initialFromZero = false, emphasized = false }: { value: number; format?: (value: number) => string; className?: string; initialFromZero?: boolean; emphasized?: boolean } & Timing) {
-  const [state, setState] = useState<{ value: number; roll: Roll | null }>(() => ({ value, roll: initialFromZero && value > 0 ? { from: format(0), direction: 1, id: 1 } : null }));
+ * The first render and reduced-motion show the value at once. Screen readers get the final text only. */
+export function RollingNumber({ value, format = defaultFormat, className }: { value: number; format?: (value: number) => string; className?: string }) {
+  const [state, setState] = useState<{ value: number; roll: Roll | null }>({ value, roll: null });
   if (state.value !== value) {
     setState({ value, roll: { from: format(state.value), direction: value > state.value ? 1 : -1, id: (state.roll?.id ?? 0) + 1 } });
   }
   const text = format(value);
   const chars = [...text];
   const before = state.roll ? [...state.roll.from] : [];
-  return <span className={[styles.number, emphasized ? styles.emphasized : "", className ?? ""].filter(Boolean).join(" ")} aria-label={text} role="img">
+  return <span className={[styles.number, className ?? ""].filter(Boolean).join(" ")} aria-label={text} role="img">
     {chars.map((char, index) => {
       const place = chars.length - 1 - index;
-      const old = before[before.length - 1 - place] ?? (state.roll?.id === 1 && initialFromZero ? "0" : undefined);
+      const old = before[before.length - 1 - place];
       const roll = state.roll;
       if (roll && isDigit(char) && isDigit(old) && old !== char) {
-        return <Wheel key={`${place}:wheel`} from={Number(old)} to={Number(char)} direction={roll.direction} roll={roll.id} place={place} duration={duration} easing={easing} delay={delay} />;
+        return <Wheel key={`${place}:wheel`} from={Number(old)} to={Number(char)} direction={roll.direction} roll={roll.id} place={place} />;
       }
       return <span key={`${place}:still`} className={styles.still} aria-hidden="true">{char}</span>;
     })}

@@ -16,26 +16,6 @@ describe("RollingNumber", () => {
     expect(animate).not.toHaveBeenCalled();
   });
 
-  it("can roll from zero on first display without repeating on an unchanged render", () => {
-    (HTMLElement.prototype as { animate?: unknown }).animate = animate;
-    const { rerender } = render(<RollingNumber value={25} initialFromZero />);
-    expect(screen.getByRole("img", { name: "25" })).toBeInTheDocument();
-    expect(animate).toHaveBeenCalledTimes(2);
-    rerender(<RollingNumber value={25} initialFromZero />);
-    expect(animate).toHaveBeenCalledTimes(2);
-    rerender(<RollingNumber value={26} initialFromZero />);
-    expect(animate).toHaveBeenCalledTimes(3);
-  });
-
-  it("keeps the initial zero roll still under reduced motion", () => {
-    (HTMLElement.prototype as { animate?: unknown }).animate = animate;
-    vi.stubGlobal("matchMedia", () => ({ matches: true }));
-    render(<RollingNumber value={25} initialFromZero />);
-    expect(animate).not.toHaveBeenCalled();
-    expect(screen.getByRole("img", { name: "25" })).toBeInTheDocument();
-    vi.unstubAllGlobals();
-  });
-
   it("rolls only the changed places, up when the value grows", () => {
     (HTMLElement.prototype as { animate?: unknown }).animate = animate;
     const { container, rerender } = render(<RollingNumber value={17} />);
@@ -48,14 +28,6 @@ describe("RollingNumber", () => {
     expect(options.duration).toBeGreaterThanOrEqual(400);
     expect(options.duration).toBeLessThanOrEqual(700);
     expect(container.textContent).toContain("78");
-  });
-
-  it("a list can slow the roll and delay it: duration, easing and the row's delay come through", () => {
-    (HTMLElement.prototype as { animate?: unknown }).animate = animate;
-    const { rerender } = render(<RollingNumber value={17} duration={850} easing="ease-out" delay={180} />);
-    rerender(<RollingNumber value={18} duration={850} easing="ease-out" delay={180} />);
-    const [, options] = animate.mock.calls[0]!;
-    expect(options).toMatchObject({ duration: 850, easing: "ease-out", delay: 180 });
   });
 
   it("rolls down when the value shrinks and passes through the carry", () => {

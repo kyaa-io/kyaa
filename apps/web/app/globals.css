@@ -15,8 +15,6 @@
   /* Approved shortform viewer colors, unchanged from dd737 (2026-11-10). */
   --color-home-caption: rgb(0 0 0 / 60%);
   --color-home-hero-shade: rgb(0 0 0 / 88%);
-  /* 첫 걸음 홈 배너(390) 글자 받침: 검정 대신 여권 색을 섞은 짙은 와인(GPT 2차 검토 Top3). */
-  --color-first-steps-shade: color-mix(in srgb, var(--color-accent-ink) 30%, var(--color-home-hero-shade));
   --color-shortform-canvas: #111;
   --color-shortform-control: #333;
   --color-shortform-meta: #ddd;
@@ -39,9 +37,6 @@
   --color-reaction-like: var(--color-accent);
   --color-reaction-like-soft: #e05a97;
   --color-reaction-comment: oklch(56% 0.09 230);
-  /* 아티스트 반응 별(게시판 11/13 김재영 "황금 별"): 금색 면 + 갈색 선. 게시판 행의 별 한 곳에만 쓴다. 선은 흰 바탕 위 8:1. */
-  --color-artist-reaction: #ffc83d;
-  --color-artist-reaction-ink: var(--color-warning);
   /* Rank movement triangle (대표 11/11 19:0x): up in the accent, down in the same muted blue as the comment reaction. Shape + colour only; the places gained are in the label. */
   --color-rank-up: var(--color-accent);
   --color-rank-down: var(--color-reaction-comment);
@@ -203,10 +198,6 @@ body {
   overflow-x: clip;
   background: var(--color-canvas);
 }
-
-/* 방문 통계 동의 바가 떠 있는 동안 페이지 끝에 바 높이만큼 자리를 둔다(바: 탭바 위 8px, 64rem부터 아래 24px). 닫으면 원래대로. */
-:root[data-consent-bar] body { padding-bottom: calc(var(--consent-bar-height, 0px) + var(--space-4)); }
-@media (width >= 64rem) { :root[data-consent-bar] body { padding-bottom: calc(var(--consent-bar-height, 0px) + var(--space-10)); } }
 
 /* 모달·창·안내처럼 body 아래에 바로 그리는 요소도 앱 글꼴을 쓴다. */
 body {

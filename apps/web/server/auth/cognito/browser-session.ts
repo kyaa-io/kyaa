@@ -1,8 +1,6 @@
 import "server-only";
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
-import { decodeJwt } from "jose";
 import { z } from "zod";
-import { AuthError } from "../../../features/auth/domain/auth-errors";
 import { preferredLocaleSchema } from "../../../features/profile/domain/preferred-locale";
 import { identityDatabase, type IdentityRpc } from "./identity-repository";
 import type { CognitoConfig } from "./config";
@@ -10,8 +8,6 @@ import { createCognitoVerifier, cognitoDenied } from "./verifier";
 
 export const SESSION_COOKIE = "__Host-kyaa-cognito";
 export const FLOW_COOKIE = "__Host-kyaa-cognito-flow";
-// Bounded by the Cognito refresh token validity (30 days, infrastructure/aws/platform/environment.json).
-export const SESSION_LIFETIME_MS = 30 * 86400_000;
 export const opaque = () => randomBytes(32).toString("base64url");
 export const digest = (value: string) => createHash("sha256").update(value).digest("hex");
 export const challenge = (value: string) => createHash("sha256").update(value).digest("base64url");
@@ -51,50 +47,14 @@ export async function revokeSession(key: string, config: CognitoConfig, db = ide
   const encrypted = await rpc(db, "read_cognito_browser_session", { p_token_hash: digest(key) });
   if (typeof encrypted !== "string") return;
   const session = sessionSchema.parse(unseal(encrypted, config.cookieSecret));
-  // Access tokens stay signature-valid until expiry; record their family first so a Bearer issued before logout gets 401.
-  const claims = decodeJwt(session.accessToken);
-  const tokenIds = [...new Set([claims.origin_jti, claims.jti].filter((value): value is string => typeof value === "string" && value.length > 0))];
-  if (tokenIds.length === 0) throw new Error("Token revocation unavailable");
-  await rpc(db, "logout_cognito_browser_session", {
-    p_token_hash: digest(key), p_token_ids: tokenIds, p_client_id: config.clientId,
-    p_encrypted_refresh_token: seal(session.refreshToken, config.cookieSecret),
-    p_expires_at: new Date(Math.max(session.sessionExpiresAt, Date.now() + 86_400_000)).toISOString(),
-  });
+  const response = await fetch(new URL("/oauth2/revoke", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: config.clientId, token: session.refreshToken }), cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000) });
+  if (!response.ok) throw new Error("Token revocation unavailable");
+  await rpc(db, "delete_cognito_browser_session", { p_token_hash: digest(key) });
 }
-// Run after the logout response, or through the authenticated retry endpoint. Never log credentials.
-export async function retryRemoteRevocations(config: CognitoConfig, db = identityDatabase()) {
-  const rows = z.array(z.object({ token_hash: z.string(), encrypted_refresh_token: z.string() })).parse(
-    await rpc(db, "pending_cognito_remote_revocations", { p_client_id: config.clientId }));
-  let pending = 0;
-  for (const row of rows) {
-    let error: string | null = null;
-    try {
-      const token = z.string().min(1).max(16_384).parse(unseal(row.encrypted_refresh_token, config.cookieSecret));
-      const response = await fetch(new URL("/oauth2/revoke", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ client_id: config.clientId, token }), cache: "no-store", redirect: "error", signal: AbortSignal.timeout(5000) });
-      if (!response.ok) error = `http_${response.status}`;
-    } catch { error = "unavailable"; }
-    await rpc(db, "finish_cognito_remote_revocation", { p_token_hash: row.token_hash, p_error: error });
-    if (error) pending++;
-  }
-  return { attempted: rows.length, pending };
-}
-
-export class CognitoTokenUnavailable extends Error {
-  constructor() { super("Authentication unavailable"); }
-}
-
 export async function tokenRequest(config: CognitoConfig, parameters: URLSearchParams, fetcher = fetch) {
-  let response: Response;
-  try { response = await fetcher(new URL("/oauth2/token", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: parameters, redirect: "error", cache: "no-store", signal: AbortSignal.timeout(10_000) }); }
-  catch { throw new CognitoTokenUnavailable(); }
-  if (!response.ok) {
-    // Only an explicit invalid grant proves this credential cannot be retried.
-    const body = await response.json().catch(() => null);
-    if (response.status === 400 && body?.error === "invalid_grant") throw cognitoDenied();
-    throw new CognitoTokenUnavailable();
-  }
-  try { return z.object({ access_token: z.string().max(16_384), id_token: z.string().max(16_384), refresh_token: z.string().max(16_384).optional(), expires_in: z.number().int().positive().max(86400) }).parse(await response.json()); }
-  catch { throw new CognitoTokenUnavailable(); }
+  const response = await fetcher(new URL("/oauth2/token", config.domain), { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: parameters, redirect: "error", cache: "no-store", signal: AbortSignal.timeout(10_000) });
+  if (!response.ok) throw cognitoDenied();
+  return z.object({ access_token: z.string().max(16_384), id_token: z.string().max(16_384), refresh_token: z.string().max(16_384).optional(), expires_in: z.number().int().positive().max(86400) }).parse(await response.json());
 }
 export async function readSession(request: Request, config: CognitoConfig, db = identityDatabase()): Promise<{ key: string; session: BrowserSession }> {
   const key = readCookie(request, SESSION_COOKIE);
@@ -104,10 +64,7 @@ export async function readSession(request: Request, config: CognitoConfig, db = 
   const session = sessionSchema.parse(unseal(encrypted, config.cookieSecret));
   if (session.sessionExpiresAt <= Date.now()) throw cognitoDenied();
   if (session.expiresAt <= Date.now() + 60_000) {
-    const tokens = await tokenRequest(config, new URLSearchParams({ grant_type: "refresh_token", client_id: config.clientId, refresh_token: session.refreshToken })).catch(async error => {
-      if (error instanceof AuthError && error.status === 401) await revokeSession(key, config, db);
-      throw error;
-    });
+    const tokens = await tokenRequest(config, new URLSearchParams({ grant_type: "refresh_token", client_id: config.clientId, refresh_token: session.refreshToken }));
     const verify = createCognitoVerifier(config);
     const [access, id] = await Promise.all([verify(tokens.access_token), verify(tokens.id_token, "id")]);
     if (access.subject !== session.subject || id.subject !== session.subject) throw cognitoDenied();

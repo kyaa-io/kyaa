@@ -7,11 +7,12 @@ import { GroupImage } from "./group-image";
  * 새 글 점은 응답에 마지막 방문 뒤 새 글 정보가 없어 그리지 않는다.
  */
 import type { Route } from "next";
-import { FanSelectMenu } from "@/components/fan-ui/fan-select-menu";
+import { FanMenu } from "@/components/fan-ui/fan-menu";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { useRef, useState, useSyncExternalStore, type PointerEvent, type MouseEvent, type DragEvent } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/icons";
+import { ChevronDown } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Plus } from "@/components/fan-ui/fan-icons";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
@@ -38,7 +39,6 @@ const noSubscribe = () => () => {};
 const DEFAULT_AVATAR = "/images/avatars/star-pink.webp";
 const ROWS = 5;
 const SLOTS = 3;
-const AVATAR = 48;
 
 function useHorizontalDrag<T extends HTMLElement>(mode: "rail" | "banner", onSwipe?: (step: number) => void) {
   const drag = useRef<{ x: number; y: number; left: number; moved: boolean } | null>(null);
@@ -78,8 +78,8 @@ function focusDirectorySearch() {
   input?.focus({ preventScroll: true });
 }
 
-/** 오늘의 팬페이지 아래 한 줄(보석 2026-11-14 12:1x "내 아티스트·모임 찾기 글자 없이 세로 폭을 줄이기"): `+`(모임 찾기 → 검색 칸)와 가입한 페이지의 원형 사진만.
- * 비로그인은 같은 줄 끝에 로그인 버튼. 이름은 화면에 쓰지 않고 링크 이름(aria-label)·툴팁으로 둔다. */
+/** 첫 칸 `+`는 로그인 여부와 관계없이 모임 찾기. 가입한 모임이 없으면 흐린 원 세 개가 같은 자리를 채운다.
+ * 비로그인의 로그인 버튼은 제목 줄에 둔다: 원 네 개(+ 포함)가 390·360에서도 잘리지 않고 한 줄에 들어가야 한다. */
 export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath: string }) {
   const c = directoryTopCopy(locale);
   const drag = useHorizontalDrag<HTMLUListElement>("rail");
@@ -88,17 +88,23 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
   const guest = session.ready && !session.authenticated;
   const items = joined.data?.items ?? [];
   const waiting = !session.ready || (session.authenticated && joined.loading && !joined.data);
-  return <section className={styles.row} aria-label={c.myArtists} data-directory-block="my-artists">
-    <ul className={styles.rail} {...drag}>
-      <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups} title={c.findGroups}><FanIcon icon={Plus} size={20} /></a></li>
-      {waiting ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={AVATAR} height={AVATAR} /></li>)
+  const ghost = !waiting && (guest || joined.error || items.length === 0);
+  return <section className={styles.card} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
+    <div className={styles.cardHead}>
+      <FanHeading id="directory-my-artists" as="h2">{c.myArtists}</FanHeading>
+      {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
+    </div>
+    <ul className={styles.rail} data-ghost={ghost || undefined} {...drag}>
+      <li className={styles.slot} data-row="artist-add"><a className={styles.add} href="#directory-explore" onClick={(event) => { event.preventDefault(); focusDirectorySearch(); }} aria-label={c.findGroups}><FanIcon icon={Plus} size={24} /></a><span className={styles.slotName} aria-hidden={ghost ? undefined : true}>{ghost ? c.findGroups : null}</span></li>
+      {waiting ? Array.from({ length: SLOTS + 1 }, (_, i) => <li key={i} className={styles.slot} data-row="artist-loading" aria-hidden="true"><FanSkeleton shape="circle" width={64} height={64} /><FanSkeleton width={48} height={12} /></li>)
+        : ghost ? Array.from({ length: SLOTS }, (_, i) => <li key={i} className={styles.slot} data-row="artist-ghost" aria-hidden="true"><img className={styles.ghost} src={DEFAULT_AVATAR} alt="" width={64} height={64} /><span className={styles.ghostName} /></li>)
         : items.map((page) => <li key={page.id} className={styles.slot} data-row="artist">
-          <Link className={styles.artist} href={groupHref(page, locale) as Route} aria-label={page.name} title={page.name}>
-            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={AVATAR} photos={undefined} /> : <GroupImage locale={locale} className={styles.ghost} src={page.imageUrl ?? DEFAULT_AVATAR} alt="" width={AVATAR} height={AVATAR} />}
+          <Link className={styles.artist} href={groupHref(page, locale) as Route}>
+            {page.slug ? <CreatorAvatar slug={page.slug} src={page.imageUrl} size={64} photos={undefined} /> : <GroupImage locale={locale} className={styles.ghost} src={page.imageUrl ?? DEFAULT_AVATAR} alt="" width={64} height={64} />}
+            <span className={styles.slotName}>{page.name}</span>
           </Link>
         </li>)}
     </ul>
-    {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
   </section>;
 }
 
@@ -120,8 +126,7 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   const [page, setPage] = useState(0);
   const mobile = useSyncExternalStore((notify) => { const media = window.matchMedia("(max-width: 767px)"); media.addEventListener("change", notify); return () => media.removeEventListener("change", notify); }, () => window.matchMedia("(max-width: 767px)").matches, () => false);
   const [sort, setSort] = useState<"likes" | "comments" | "views" | "latest">("likes");
-  const [period, setPeriod] = useState<"today" | "week" | "month">("week");
-  const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=1&sort=${sort}&period=${period}`;
+  const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=1&sort=${sort}`;
   const auth = useByUsAuth(), signedIn = auth.ready && auth.authenticated;
   const hinted = useSyncExternalStore(noSubscribe, mayHaveSession, () => false);
   const publicAllowed = auth.ready ? !auth.authenticated : !hinted;
@@ -131,15 +136,19 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   const total = ready ? state.data.items.length : 0;
   const items = ready ? state.data.items.slice(mobile ? page * ROWS : 0, mobile ? (page + 1) * ROWS : open ? 10 : ROWS) : [];
   return <section className={styles.hot} aria-labelledby="directory-hot-posts" data-directory-block="hot-posts">
-    <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading><div className={styles.hotFilters}>
-      <FanSelectMenu label={c.periodLabel} value={period} align="end" onValueChange={value => { if (value === "today" || value === "week" || value === "month") { setPeriod(value); setOpen(false); setPage(0); } }} options={(["today", "week", "month"] as const).map(value => ({ value, label: c.period[value] }))} />
-      <FanSelectMenu label={c.hotTitle} accessibleName={c.hotSort[sort]} value={sort} align="end" onValueChange={value => { if (value === "likes" || value === "comments" || value === "views" || value === "latest") { setSort(value); setOpen(false); setPage(0); } }} options={(["likes", "comments", "views", "latest"] as const).map(value => ({ value, label: c.hotSort[value] }))} /></div></div>
+    <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading>
+      <FanMenu label={c.hotTitle} trigger={<FanIconButton className={styles.hotSort} aria-label={c.hotSort[sort]}>{c.hotSort[sort]}<FanIcon icon={ChevronDown} size={16} /></FanIconButton>}>
+        <FanMenu.Radio value={sort} onValueChange={value => { if (value === "likes" || value === "comments" || value === "views" || value === "latest") { setSort(value); setOpen(false); setPage(0); } }} items={(["likes", "comments", "views", "latest"] as const).map(value => ({ value, label: c.hotSort[value] }))} />
+      </FanMenu></div>
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)
         : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.postItem} data-row="hot-post">
           <FanPostRow locale={locale} href={postHref(post, locale)} title={firstLine(post.title)} thumbnail={post.asset ? post.source === "group" ? `/api/groups/media/${post.asset.id}?variant=thumbnail` : `/api/content-assets/${post.asset.id}?size=thumbnail` : null} pageImage={<PostAvatar post={post} />} commentCount={post.commentCount}
             source={{ label: post.pageName, href: pageHref(post, locale) }} author={post.nickname} time={post.createdAt} views={post.viewCount} likes={post.likeCount} />
-        </li>)}{total === 0 ? <li data-row="hot-empty"><FanState kind="empty" title={c.hotEmpty} /></li> : null}</>}</ul>}
+        </li>)}{Array.from({ length: Math.max(0, (!mobile && open ? 2 * ROWS : ROWS) - items.length) }, (_, i) => {
+          const note = total === 0 && i === 0;
+          return <li key={`p${i}`} className={styles.post} data-row="hot-placeholder" aria-hidden={note ? undefined : true}><img className={styles.ghostSmall} src={DEFAULT_AVATAR} alt="" width={32} height={32} /><span className={styles.placeholderText}>{note ? c.hotEmpty : "—"}</span></li>;
+        })}</>}</ul>}
     {state.status === "error" ? null : <div className={styles.more}>{mobile ? <nav aria-label={c.hotTitle}><FanIconButton aria-label={paginationCopy(locale).previous} disabled={page === 0} onClick={() => setPage(0)}><ChevronLeft /></FanIconButton><span aria-current="page">{page + 1} / {Math.max(1, Math.ceil(total / ROWS))}</span><FanIconButton aria-label={paginationCopy(locale).next} disabled={(page + 1) * ROWS >= total} onClick={() => setPage(1)}><ChevronRight /></FanIconButton></nav> : <FanAction variant="neutral" disabled={total <= ROWS} aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? c.collapse : c.expand}</FanAction>}</div>}
   </section>;
 }

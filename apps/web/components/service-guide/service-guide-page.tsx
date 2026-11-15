@@ -1,5 +1,5 @@
 import type { Route } from "next";
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { ArrowRight, BookOpenCheck, CircleHelp, Mail } from "lucide-react";
 
 import { FanAppFrame, FanContentContainer, type FanLocale } from "../fan-shell/fan-app-shell";

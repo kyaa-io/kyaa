@@ -3,10 +3,10 @@ import { z } from "zod";
 import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const bannerLocaleSchema = z.enum(["ko", "en"]);
-export const bannerSlotSchema = z.enum(["home_below_board", "home_between_events", "home_mid", "fanpage_below_gallery", "fanpage_second", "dukjil_mid"]);
+export const bannerSlotSchema = z.enum(["home_below_board", "home_between_events", "fanpage_below_gallery", "fanpage_second"]);
 export type BannerSlot = z.infer<typeof bannerSlotSchema>;
-export type BannerSlotArea = "home" | "fanpage" | "dukjil";
-export const bannerSlotsByArea: Record<BannerSlotArea, readonly BannerSlot[]> = { home: ["home_below_board", "home_between_events", "home_mid"], fanpage: ["fanpage_below_gallery", "fanpage_second"], dukjil: ["dukjil_mid"] };
+export type BannerSlotArea = "home" | "fanpage";
+export const bannerSlotsByArea: Record<BannerSlotArea, readonly BannerSlot[]> = { home: ["home_below_board", "home_between_events"], fanpage: ["fanpage_below_gallery", "fanpage_second"] };
 export const bannerPlacementSchema = z.enum(["home", "groups", "both", ...bannerSlotSchema.options]);
 export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live", "guide", "ad"]);
 const bannerMetadata = { placement: bannerPlacementSchema.optional(), category: bannerCategorySchema.optional() };

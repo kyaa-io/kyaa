@@ -1,6 +1,5 @@
 import type { ComponentProps, ReactNode } from "react";
-import { act, fireEvent, render, screen } from "@testing-library/react";
-import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 import { GroupPageHead, GroupPageFrame } from "./group-page-frame";
 import { GroupPageProvider } from "./group-page-context";
@@ -10,7 +9,7 @@ const state = vi.hoisted(() => ({
   data: undefined as ComponentProps<typeof GroupPageFrame>["initialDetail"],
   query: "locale=ko&tab=board", error: false, loading: false,
   failure: undefined as { status: number } | undefined,
-  ownerKey: "guest", retry: vi.fn(), preload: vi.fn(), authenticated: false,
+  ownerKey: "guest", retry: vi.fn(), preload: vi.fn(),
 }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(state.query), usePathname: () => "/mina", useRouter: () => ({ replace: vi.fn(), push: vi.fn() }) }));
 vi.mock("next/link", () => ({ default: ({ prefetch, onNavigate: _onNavigate, scroll: _scroll, ...props }: any) => <a {...props} data-prefetch={prefetch === undefined ? "default" : String(prefetch)} /> }));
@@ -23,7 +22,7 @@ vi.mock("./use-group-presence", async importOriginal => ({ ...await importOrigin
 vi.mock("./group-presence", () => ({ GroupPresence: ({ memberCount }: { memberCount?: number }) => <div>{memberCount}</div> }));
 vi.mock("./group-page-menu", () => ({ GroupPageMenu: () => null }));
 vi.mock("./group-shell", () => ({ GroupShell: ({ children }: { children: ReactNode }) => <main>{children}</main> }));
-vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: state.authenticated ? { id: "viewer" } : undefined }) }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: false }) }));
 vi.mock("@/components/fan-ui/use-owned-fan-resource", () => ({ useOwnedFanResource: () => ({ state: { status: "loading" }, retry: vi.fn() }) }));
 vi.mock("@/features/content-safety/ui/use-automatic-translation", () => ({ TranslationControl: () => null, useAutomaticTranslation: ({ texts }: { texts: readonly string[] }) => ({ observeElement: () => {}, texts }) }));
 
@@ -34,36 +33,14 @@ const detail: NonNullable<ComponentProps<typeof GroupPageFrame>["initialDetail"]
 const tree = (props: Partial<ComponentProps<typeof GroupPageFrame>> = {}) => <GroupPageFrame pageId="page-id" locale="ko" {...props}><div>panel content</div></GroupPageFrame>;
 const tabNav = () => document.querySelector("nav[data-fan-tabs]")!;
 beforeEach(() => {
-  Object.assign(state, { data: detail, query: "locale=ko&tab=board", error: false, loading: false, failure: undefined, ownerKey: "guest", retry: vi.fn(), preload: vi.fn(), authenticated: false });
+  Object.assign(state, { data: detail, query: "locale=ko&tab=board", error: false, loading: false, failure: undefined, ownerKey: "guest", retry: vi.fn(), preload: vi.fn() });
 });
 
-it("leaves prefetch to the shared Link for all five tabs: off until a pointer reaches one, then the default", () => {
+it("uses default Link prefetch for all five tabs", () => {
   render(tree());
   const links = Array.from(tabNav().querySelectorAll("a"));
   expect(links).toHaveLength(5);
-  for (const link of links) expect(link).toHaveAttribute("data-prefetch", "false");
-  fireEvent.mouseEnter(links[1]!);
-  expect(links[1]).toHaveAttribute("data-prefetch", "null");
-  expect(links[2]).toHaveAttribute("data-prefetch", "false");
-});
-
-it("puts the room links in the header icon row, one icon per link, after any creator links", () => {
-  Object.assign(state, { data: { ...detail, page: { ...detail.page, externalLinks: [
-    { kind: "kakao-openchat", url: "https://open.kakao.com/o/abc" },
-    { kind: "kakao-openchat", url: "https://open.kakao.com/o/def" },
-    { kind: "discord", url: "https://discord.gg/abc" },
-  ] } } });
-  render(tree());
-  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("a[data-platform]"));
-  expect(links.map(link => link.dataset.platform)).toEqual(["kakao-openchat", "kakao-openchat", "discord"]);
-  expect(links.map(link => link.getAttribute("href"))).toEqual(["https://open.kakao.com/o/abc", "https://open.kakao.com/o/def", "https://discord.gg/abc"]);
-  for (const link of links) { expect(link).toHaveAttribute("rel", "noopener noreferrer"); expect(link).toHaveAttribute("target", "_blank"); }
-  expect(links[0]!.querySelector("img")).toHaveAttribute("src", "/images/guest-home/kakao-openchat.svg");
-});
-
-it("draws no icon row for a page without room links", () => {
-  render(tree());
-  expect(document.querySelector("a[data-platform]")).toBeNull();
+  for (const link of links) expect(link).toHaveAttribute("data-prefetch", "default");
 });
 
 it.each([500, 403, 404])("keeps the same header and nav after a detail-fetch %s while switching to rooms", status => {
@@ -78,14 +55,8 @@ it.each([500, 403, 404])("keeps the same header and nav after a detail-fetch %s 
   expect(nav.querySelector('[aria-current="page"]')).toHaveAttribute("href", "/pages/groups/page-id?locale=ko&tab=rooms");
   expect(screen.getByRole("alert")).toHaveTextContent(status === 500 ? groupsCopy("ko").error : pageUnavailable.ko);
   expect(screen.queryByText("panel content")).not.toBeInTheDocument();
-  // An unavailable page (403/404) offers exploration instead of a permanent retry; only other failures retry.
-  if (status === 500) {
-    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
-    expect(state.retry).toHaveBeenCalledOnce();
-  } else {
-    expect(screen.queryByRole("button", { name: "다시 시도" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "페이지 둘러보기" })).toHaveAttribute("href", "/pages/groups?locale=ko");
-  }
+  fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+  expect(state.retry).toHaveBeenCalledOnce();
   Object.assign(state, { data: detail, error: false, failure: undefined });
   view.rerender(tree());
   expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -134,31 +105,4 @@ it("places the proof tab immediately after the board on a fanpage route", () => 
   const links = [...document.querySelectorAll("nav[data-fan-tabs]")].at(-1)!.querySelectorAll("a");
   expect([...links].slice(0, 3).map(link => link.textContent)).toEqual(["홈", "게시판", "인증"]);
   expect(links[2].getAttribute("href")).toContain("tab=proofs");
-});
-
-const fanDetail = (extra: object) => ({ ...detail, page: { ...detail.page, kind: "fan" as const, celebrityId: "c", slug: "elina", name: "엘리나", ...extra } });
-
-it("shows the like count as the fan page's 팬 N and the member count on every other page", () => {
-  Object.assign(state, { data: fanDetail({ memberCount: 146, likeCount: 107 }) });
-  const fan = render(tree());
-  expect(fan.container).toHaveTextContent("107");
-  expect(fan.container).not.toHaveTextContent("146");
-  fan.unmount();
-  Object.assign(state, { data: { ...detail, page: { ...detail.page, memberCount: 13, likeCount: 5 } } });
-  const hobby = render(tree());
-  expect(hobby.container).toHaveTextContent("13");
-  expect(hobby.container).not.toHaveTextContent("5");
-  hobby.unmount();
-  Object.assign(state, { data: fanDetail({ memberCount: 146 }) });
-  expect(render(tree()).container).toHaveTextContent("146");
-});
-
-it("re-reads the page after this viewer's own like succeeds, and not for another viewer's or on a plain focus", () => {
-  Object.assign(state, { data: fanDetail({ memberCount: 146, likeCount: 107 }), authenticated: true });
-  render(tree());
-  act(() => notifyFanActivityUpdated("someone-else"));
-  act(() => { window.dispatchEvent(new Event("focus")); });
-  expect(state.retry).not.toHaveBeenCalled();
-  act(() => notifyFanActivityUpdated("viewer"));
-  expect(state.retry).toHaveBeenCalledTimes(1);
 });

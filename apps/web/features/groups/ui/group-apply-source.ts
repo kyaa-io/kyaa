@@ -1,5 +1,7 @@
 // ko/en live here; the other locales are in i18n/catalogs/features__groups__ui__group-apply-copy.ts.
 export const groupApplySource = {
+  hobbyDescription: { ko: "취미: 러닝, 사진처럼 같은 취미를 즐기는 사람들이 모이는 페이지", en: "Hobby: people who share a hobby, like running or photography" },
+  brandDescription: { ko: "브랜드: 소식과 행사를 브랜드가 직접 올리는 페이지", en: "Brand: a brand posts its own news and events" },
   fanPageApply: { ko: "팬페이지 개설 신청", en: "Request a fan page" },
   hobbyBrandPageApply: { ko: "취미·브랜드 페이지 개설 신청", en: "Request a hobby or brand page" },
   existingPageQuestion: { ko: "기존에 운영하던 페이지가 있나요?", en: "Do you already run a page?" },
@@ -23,13 +25,4 @@ export const groupApplySource = {
   pageExistsNote: { ko: "이미 열린 팬페이지예요.", en: "This fan page is already open." },
   roleFilter: { ko: "활동 분야", en: "Category" },
   nameSuggestions: { ko: "이름 후보", en: "Name suggestions" },
-  roomLink: { ko: "방 링크", en: "Room link" },
-  roomLinkAdd: { ko: "링크 추가", en: "Add link" },
-  roomLinkInvalid: { ko: "지원하지 않는 주소예요", en: "This link isn’t supported" },
-  openGroup: { ko: "모임 열기", en: "Open group" },
-  passInvalid: { ko: "사용할 수 없는 링크예요", en: "This link can’t be used" },
-  groupIntro: { ko: "소개", en: "Introduction" },
-  optional: { ko: "선택", en: "Optional" },
-  preview: { ko: "미리보기", en: "Preview" },
-  changePhoto: { ko: "사진 올리기", en: "Add photo" },
 } as const;

@@ -1,7 +1,7 @@
 import { messages as localizedMessages } from "@/i18n/catalogs/components__fan-participation-guide__fan-participation-guide";
 import { translate } from "@/i18n/messages";
 import Image from "next/image";
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, BadgeCheck, BookOpen, CalendarDays, MessageCircle } from "lucide-react";
 import type { FanLocale } from "../fan-shell/fan-app-shell";
@@ -74,7 +74,7 @@ export function FanParticipationGuide({ locale, creator, images }: { locale: Fan
       <FocusFlowHeader locale={locale} mainId={`${creator}-guide-main`} innerClassName={styles.headerInner}>
         <nav className={styles.navigation} aria-label={locale === "ko" ? "주요 메뉴" : translate(locale, localizedMessages.m22d7fc27022b, "Primary navigation")}>
           <Link href={`/?locale=${locale}` as Route}>HOME</Link>
-          <Link href={`/pages/groups?locale=${locale}` as Route}>{communityCopy(locale).title}</Link>
+          <Link href={`/community?locale=${locale}` as Route}>{communityCopy(locale).title}</Link>
           <Link href={`/celebrities?locale=${locale}` as Route}>{locale === "ko" ? "최애" : translate(locale, localizedMessages.mbe39b4e99415, "Favorites")}</Link>
           <Link href={href.my as Route}>MY</Link>
         </nav>

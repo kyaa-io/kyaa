@@ -1,8 +1,8 @@
 "use client";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
-import { AbsoluteTime, RelativeTime } from "@/components/relative-time";
+import { RelativeTime } from "@/components/relative-time";
 import { useEffect, useId, useRef, useState } from "react";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { Menu } from "@base-ui/react/menu";
 import { generateText, type JSONContent } from "@tiptap/core";
@@ -16,7 +16,7 @@ import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
 import { noticeExtensions } from "@/components/notice/tiptap-extensions";
 import { ContentActions, ContentTranslation } from "@/features/content-safety/ui/content-actions";
-import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
+import { TranslatedText, TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { useContentMutation } from "@/features/content-safety/ui/use-content-mutation";
@@ -32,7 +32,7 @@ import styles from "@/features/content-safety/ui/content.module.css";
 import feedStyles from "./fan-post-feed.module.css";
 
 type Props = { item: FeedItem; slug: string; creatorName?: string; locale: AppLocale; returnTo: string; onChanged: () => void; officialPostLabel?: string };
-const dateLabel = (date: string, locale: AppLocale, timeZone = "Asia/Seoul") => new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", ...(date.length > 10 ? { timeStyle: "short" as const } : {}), timeZone }).format(new Date(date));
+const dateLabel = (date: string, locale: AppLocale) => new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "medium", ...(date.length > 10 ? { timeStyle: "short" as const } : {}), timeZone: "Asia/Seoul" }).format(new Date(date));
 
 export function FeedItemCard(props: Props) {
   const { item, slug, locale, creatorName, returnTo, onChanged, officialPostLabel } = props;
@@ -42,7 +42,7 @@ export function FeedItemCard(props: Props) {
   if (item.kind === "chzzk") {
     const href = `/c/${slug}/updates/chzzk/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}` as Route;
     return <article className={feedStyles.card} data-feed-kind="chzzk">
-      <header className={styles.meta}><span className={feedStyles.officialMark}><BadgeCheck size={20} aria-hidden="true" /></span><strong>{creatorName ?? feed.official}</strong><span>CHZZK</span><AbsoluteTime value={item.date} locale={locale} format={dateLabel} /></header>
+      <header className={styles.meta}><span className={feedStyles.officialMark}><BadgeCheck size={20} aria-hidden="true" /></span><strong>{creatorName ?? feed.official}</strong><span>CHZZK</span><time dateTime={item.date}>{dateLabel(item.date, locale)}</time></header>
       {item.text && <p translate="no" className={`${styles.body} ${feedStyles.excerpt}`}><LinkifiedText text={item.text} locale={locale} official /></p>}
       {item.images[0] && <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={item.images[0].url} alt="" loading="lazy" referrerPolicy="no-referrer" /></Link>}
       <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link></div>
@@ -57,11 +57,11 @@ export function FeedItemCard(props: Props) {
       <span className={feedStyles.officialMark}><BadgeCheck size={20} aria-hidden="true" /></span>
       <strong>{item.postType === "artist_post" ? creatorName ?? feed.official : "kyaa"}</strong>
       <span className={feedStyles.officialLabel}>{item.postType === "artist_post" ? officialPostLabel ?? copy.artistPost : copy.notice}</span>
-      <AbsoluteTime value={item.publishedAt} locale={locale} format={dateLabel} />
+      <time dateTime={item.publishedAt}>{dateLabel(item.publishedAt, locale)}</time>
       {item.visibility === "members" && <span className={styles.badge}>{copy.members}</span>}
       <ContentActions targetType="notice" targetId={item.id} locale={locale} canBlock={false} onChanged={onChanged} />
     </header>
-    <Link className={feedStyles.title} href={href}>{item.title}</Link>
+    <Link className={feedStyles.title} href={href}><TranslatedText text={item.title} locale={locale} controls={false} /></Link>
     {text && <FeedExcerpt text={text} locale={locale} />}
     {media && (media.asset ? <div className={feedStyles.media}><ContentAssetImage asset={media.asset} locale={locale} alt={media.title} href={href} /></div> : media.image ? <Link href={href} className={feedStyles.media} aria-label={feed.readPost}><img src={media.image} alt={media.title} loading="lazy" /></Link> : null)}
     <div className={styles.actions}><Link href={href} className={styles.button}>{feed.readPost}</Link><Link href={`${href}#comments` as Route} className={styles.button}><ReactionIcon kind="comment" />{copy.comments} <ReactionCount value={item.commentCount} locale={locale} /></Link></div>

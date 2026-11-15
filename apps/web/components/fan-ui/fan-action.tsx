@@ -1,7 +1,7 @@
 "use client";
 
 import type { Route } from "next";
-import Link from "./hover-prefetch-link";
+import Link from "next/link";
 import {
   useId,
   type ButtonHTMLAttributes,

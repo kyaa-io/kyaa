@@ -7,7 +7,7 @@ const auth = vi.hoisted(() => ({
   user: { id: "did:privy:fan-one" },
   getAccessToken: vi.fn(async () => "token"),
 }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => auth }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => auth }));
 // 261107-2 D12: the share proof tile leads the list and its rows join the history; their own behaviour is tested in share-proof-panel.test.tsx.
 vi.mock("@/features/share-proof/ui/share-proof-panel", () => ({
   ShareProofTile: () => <a href="?share=1" data-share-proof-tile="">share proof</a>,
@@ -323,12 +323,12 @@ it('maps the owned passed quiz to its matching public quiz only',async()=>{
  render(<CertificationPanel slug='kara' locale='ko'/>);const card=await screen.findByRole('link',{name:/팬 인증 퀴즈/});await waitFor(()=>expect(card.querySelector('[data-status="approved"]')).toHaveTextContent('인증 완료'));expect(screen.getByRole('link',{name:/다른 인증/}).querySelector('[data-status="approved"]')).toBeNull();
 });
 it('remembers the list on a quiz click and restores focus to that card link when it returns',async()=>{
- auth.ready=true;auth.authenticated=false;sessionStorage.clear();window.history.replaceState({},'','/c/kara?tab=certifications&locale=ko');
+ auth.ready=true;auth.authenticated=false;sessionStorage.clear();window.history.replaceState({},'','/community?creator=kara&tab=certifications&locale=ko');
  const quiz={id,kind:'quiz',category:'팬 인증',title:'Official Fan 인증 퀴즈',description:'',status:'available',reward:null,actionHref:'/c/kara/verify?locale=ko'};
  vi.spyOn(globalThis,'fetch').mockImplementation(async()=>Response.json({certifications:[quiz]}));
  const view=render(<CertificationPanel slug='kara' locale='ko'/>);const card=await screen.findByRole('link',{name:/팬 인증 퀴즈/});
  expect(card).not.toHaveFocus();card.addEventListener('click',e=>e.preventDefault());fireEvent.click(card);
- expect(JSON.parse(sessionStorage.getItem('byus:quiz-close-return')!)).toMatchObject({slug:'kara',href:'/c/kara?tab=certifications&locale=ko',itemId:id});
+ expect(JSON.parse(sessionStorage.getItem('byus:quiz-close-return')!)).toMatchObject({slug:'kara',href:'/community?creator=kara&tab=certifications&locale=ko',itemId:id});
  rememberQuizFocusReturn(sessionStorage,'kara',id);
  view.unmount();render(<CertificationPanel slug='kara' locale='ko'/>);
  await waitFor(()=>expect(screen.getByRole('link',{name:/팬 인증 퀴즈/})).toHaveFocus());

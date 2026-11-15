@@ -1,7 +1,7 @@
 "use client";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { Archive, ExternalLink, Plus, Save, Search } from "lucide-react";
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminAccessState } from "./admin-access-state";
@@ -9,8 +9,6 @@ import { AdminOperationsShell, type AdminLocale } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
 import { NoticeManager } from "./notice-manager";
 import { ImageRoleEditor } from "./image-role-editor";
-import { PlatformFollowersEditor, type AdminPlatformFollower } from "./platform-followers-editor";
-import type { FollowerPlatform } from "@/features/rankings/domain/platform-followers";
 import { CREATOR_ROLES, creatorRoleLabel, type CreatorRole } from "@/features/creator/domain/creator-role";
 import { isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import styles from "./admin.module.css";
@@ -114,7 +112,7 @@ function isDraftValid(draft: CelebrityDraft): boolean {
         theme.nameEn.trim().length <= 100,
     );
   const socialLinksValid =
-    draft.socialLinks.length <= 4 &&
+    draft.socialLinks.length <= 3 &&
     draft.socialLinks.every((link) => {
       try {
         return new URL(link.url).protocol === "https:";
@@ -182,14 +180,12 @@ function CelebrityCms({
   const { getAccessToken } = usePrivy(),
     canEdit = role !== "viewer";
   const [items, setItems] = useState<Celebrity[]>([]),
-    [followers, setFollowers] = useState<AdminPlatformFollower[]>([]),
     [selected, setSelected] = useState<string | null>(null),
     [draft, setDraft] = useState(blank),
     [lang, setLang] = useState<AdminLocale>("ko"),
     [query, setQuery] = useState(""),
     [publicationFilter, setPublicationFilter] =
       useState<PublicationFilter>("all"),
-    [followersUnavailable, setFollowersUnavailable] = useState(false),
     [state, setState] = useState<"loading" | "ready" | "error" | "saving">(
       "loading",
     ),
@@ -219,9 +215,7 @@ function CelebrityCms({
   const load = useCallback(async () => {
     setState("loading");
     try {
-      const p = (await request("GET")) as { items: Celebrity[]; platformFollowers: AdminPlatformFollower[] | null; followersUnavailable?: boolean };
-      setFollowers(p.platformFollowers ?? []);
-      setFollowersUnavailable(p.followersUnavailable === true);
+      const p = (await request("GET")) as { items: Celebrity[] };
       // A record saved without localizations returns null; one bad row must not break the whole list.
       setItems(p.items.map((x) => ({ ...x, localizations: { ko: x.localizations?.ko ?? blank.localizations.ko, en: x.localizations?.en ?? blank.localizations.en } })));
       setState("ready");
@@ -281,12 +275,6 @@ function CelebrityCms({
       setMessage(e instanceof Error ? e.message : "Error");
     }
   }
-  // The follower counts save on their own and answer with the creator's counts; the rest of the list keeps its rows.
-  const saveFollowers = async (celebrityId: string, followerItems: { platform: FollowerPlatform; text: string }[]) => {
-    const result = (await request("POST", { action: "save_platform_followers", celebrityId, items: followerItems })) as { platformFollowers: AdminPlatformFollower[] };
-    setFollowers((all) => [...all.filter((row) => row.celebrityId !== celebrityId), ...result.platformFollowers]);
-    return result.platformFollowers;
-  };
   const updateLoc = (key: keyof Loc, value: string) =>
     setDraft((d) => ({
       ...d,
@@ -706,8 +694,8 @@ function CelebrityCms({
               </h3>
               <small className={localStyles.fieldHelp}>
                 {locale === "ko"
-                  ? `HTTPS 채널을 최대 4개까지 등록할 수 있습니다. (${draft.socialLinks.length}/4)`
-                  : `Add up to 4 HTTPS channels. (${draft.socialLinks.length}/4)`}
+                  ? `HTTPS 채널을 최대 3개까지 등록할 수 있습니다. (${draft.socialLinks.length}/3)`
+                  : `Add up to 3 HTTPS channels. (${draft.socialLinks.length}/3)`}
               </small>
               {(["youtube", "tiktok", "instagram", "chzzk"] as const).map(
                 (platform, position) => (
@@ -716,7 +704,7 @@ function CelebrityCms({
                     <input
                       type="url"
                       disabled={
-                        draft.socialLinks.length >= 4 &&
+                        draft.socialLinks.length >= 3 &&
                         !draft.socialLinks.some((x) => x.platform === platform)
                       }
                       value={
@@ -861,17 +849,6 @@ function CelebrityCms({
               )}
             </div>
           </form>
-          {current && !current.archivedAt ? (
-            <PlatformFollowersEditor
-              key={current.id}
-              celebrityId={current.id}
-              rows={followers.filter((row) => row.celebrityId === current.id)}
-              unavailable={followersUnavailable}
-              locale={locale}
-              canEdit={canEdit}
-              save={saveFollowers}
-            />
-          ) : null}
           {current ? (
             <ImageRoleEditor
               key={current.id}

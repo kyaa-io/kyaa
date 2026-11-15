@@ -98,31 +98,14 @@ describe("PassportMissionBook", () => {
     fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
     const disabled = screen.getByRole("button", { name: "하트 받기" }) as HTMLButtonElement;
     expect(disabled.disabled).toBe(true);
-    expect(container.textContent).not.toContain("9칸을 모두 채우면 하트를 받아요");
+    expect(container.querySelector(`#${disabled.getAttribute("aria-describedby")}`)?.textContent).toBe("9칸을 모두 채우면 하트를 받아요");
   });
-  it("keeps the descriptions off the cards and opens them in a sheet with the way to the mission; later pages invent nothing", () => {
-    state.resource = { loading: false, error: false, data: data([page({ slots: slots(2), filled: 2, claimable: false }), page({ pageNo: 2, slots: slots(0).map(slot => ({ ...slot, kind: null })), filled: 0, claimable: false })]), retry: vi.fn() };
+  it("says what to do in each slot of the first page and nothing invented on later pages", () => {
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false }), page({ pageNo: 2, slots: slots(0).map(slot => ({ ...slot, kind: null })), filled: 0, claimable: false })]), retry: vi.fn() };
     const { container } = render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
-    expect(container.querySelectorAll("[data-slot-task]")).toHaveLength(0);
-    expect(screen.queryByText("팬게시판에 글을 올려요")).toBeNull();
-    expect(screen.queryByText("며칠 연속으로 출석해요")).toBeNull();
-    expect(screen.queryByRole("button", { name: /자세히/ })).toBeNull();
-    // 안 찍은 칸: 설명, 이동 버튼.
-    fireEvent.click(screen.getByRole("button", { name: "글쓰기" }));
-    const post = screen.getByRole("dialog", { name: "글쓰기" });
-    expect(post.textContent).toContain("팬게시판에 글을 올려요");
-    expect(post.querySelector("a")?.textContent).toBe("미션 하러 가기");
-    expect(post.querySelector("a")?.getAttribute("href")).toBe("/elina?tab=board&source=fans&compose=1&locale=ko");
-    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
-    // 입국 심사: 예전 '자세히'의 긴 설명.
-    fireEvent.click(screen.getByRole("button", { name: "입국 심사" }));
-    expect(screen.getByRole("dialog", { name: "입국 심사" }).textContent).toContain("크리에이터에 관한 문제를 풀면 팬 인증이 끝나요");
-    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
-    // 이미 찍은 칸: 설명만, 이동 버튼 없음.
-    fireEvent.click(screen.getByRole("button", { name: "출석" }));
-    expect(screen.getByRole("dialog", { name: "출석" }).textContent).toContain("오늘 출석해요");
-    expect(screen.getByRole("dialog", { name: "출석" }).querySelector("a")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
+    expect(screen.getByText("팬게시판에 글을 올려요")).toBeTruthy();
+    expect(screen.getByText("문제를 풀면 팬 인증이 돼요")).toBeTruthy();
+    expect(screen.getByText("며칠 연속으로 출석해요")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "다음 쪽" }));
     expect(container.querySelectorAll("[data-current] [data-slot-task]")).toHaveLength(0);
     expect(screen.getAllByRole("checkbox")).toHaveLength(9);
@@ -220,25 +203,22 @@ describe("PassportMissionBook", () => {
     const ghosts = container.querySelectorAll<HTMLImageElement>('[data-state="empty"] img');
     expect(ghosts.length).toBeGreaterThan(0);
     ghosts.forEach(image => expect(image.getAttribute("src")).toMatch(/^\/images\/stamps\/ghost-v1\/[a-z-]+\.webp$/));
-    fireEvent.click(screen.getByRole("button", { name: "글쓰기" }));
-    expect(screen.getByRole("link", { name: "미션 하러 가기" }).getAttribute("href")).toBe("/elina?tab=board&source=fans&compose=1&locale=ko");
-    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
-    fireEvent.click(screen.getByRole("button", { name: "친구 추천" }));
-    expect(screen.getByRole("link", { name: "미션 하러 가기" }).getAttribute("href")).toBe("/my/invitations?locale=ko");
+    expect(screen.getByRole("link", { name: /글쓰기/ }).getAttribute("href")).toBe("/elina?tab=board&source=fans&compose=1&locale=ko");
+    expect(screen.getByRole("link", { name: /친구 추천/ }).getAttribute("href")).toBe("/my/invitations?locale=ko");
+    expect(screen.getByRole("button", { name: "자세히 입국 심사 설명 보기" })).toBeTruthy();
   });
   it("keeps 07 and 09 unlinked when the creator takes no proof of that kind (ENTRY-STAMP-1321)", () => {
     const mission = (proofType: string) => ({ missionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", proofType, platform: null, submittable: true, unavailableReason: null, closesAt: "2099-12-31T14:59:00Z" });
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(0), filled: 0, claimable: false })]), retry: vi.fn() };
     state.proofs = { items: [] };
-    const opened = (view: ReturnType<typeof render>, kind: string) => { fireEvent.click(view.container.querySelector<HTMLElement>(`[data-kind="${kind}"] button`)!); const link = screen.getByRole("dialog").querySelector("a"); fireEvent.click(screen.getByRole("button", { name: "닫기" })); return link; };
     const none = render(<PassportMissionBook passportId="p" creatorSlug="wena" locale="ko" />);
-    expect(opened(none, "subscription")).toBeNull();
-    expect(opened(none, "proof")).toBeNull();
+    expect(none.container.querySelector('[data-kind="subscription"] a')).toBeNull();
+    expect(none.container.querySelector('[data-kind="proof"] a')).toBeNull();
     none.unmount();
     state.proofs = { items: [mission("sns_post"), mission("membership")] };
     const some = render(<PassportMissionBook passportId="p" creatorSlug="wena" locale="ko" />);
-    expect(opened(some, "subscription")?.getAttribute("href")).toBe("/c/wena/proofs?type=sns_post&locale=ko");
-    expect(opened(some, "proof")?.getAttribute("href")).toBe("/c/wena/proofs?locale=ko");
+    expect(some.container.querySelector('[data-kind="subscription"] a')?.getAttribute("href")).toBe("/c/wena/proofs?type=sns_post&locale=ko");
+    expect(some.container.querySelector('[data-kind="proof"] a')?.getAttribute("href")).toBe("/c/wena/proofs?locale=ko");
   });
   it("shows the onboarding once, with up to three open missions that link to their place", () => {
     localStorage.removeItem("kyaa:passport:mission-onboarding:v1");

@@ -10,7 +10,7 @@ describe("shared creator photography", () => {
     const src = "/images/guest-home/changha-card.jpg";
     for (const presentation of ["portrait", "avatar", "passport"] as const) {
       expect(resolveCreatorImage({ slug: "changha", src, presentation, position: "center 32%" })).toMatchObject({
-        src: "/images/celebrities/changha/profile-autumn-sharp-20261113.webp", crop: { fit: "cover", position: "50% 50%", scale: 1 },
+        src: "/images/celebrities/changha/gggi-20261030.jpg", crop: { fit: "cover", position: "50% 28%", scale: 1.5 },
       });
     }
     expect(resolveCreatorHeroImage("changha", { url: src, position: "center 32%" })).toMatchObject({
@@ -111,5 +111,3 @@ describe("shared creator photography", () => {
     expect(resolveCreatorHeroImage(slug, { url: src, position: "center", photos: { landscape: null, portrait: null } })).toMatchObject({ src, mobileSrc: src });
   });
 });
-
-it("keeps the ifew card at its natural scale", () => { expect(resolveCreatorImage({slug:"ifewknow",src:"/images/celebrities/ifewknow/hero-studio.jpg",presentation:"portrait"}).crop.scale).toBe(1); });

@@ -10,7 +10,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 import type { Route } from "next";
 import Image from "next/image";
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 
 import type { FanLocale } from "./fan-app-shell";
 import { FanContentContainer } from "./fan-content-container";
@@ -198,7 +198,7 @@ function FanSiteFooterFull({ locale }: { locale: FanLocale }) {
           <section>
             <h2>{t.explore}</h2>
             <Link href={fanHref("/", locale)}>HOME</Link>
-            <Link href={fanHref(groupsEnabled ? "/pages/groups" : "/pages/groups", locale)}>{groupsEnabled ? groupsCopy(locale).groups : communityCopy(locale).title}</Link>
+            <Link href={fanHref(groupsEnabled ? "/pages/groups" : "/community", locale)}>{groupsEnabled ? groupsCopy(locale).groups : communityCopy(locale).title}</Link>
             <Link href={fanHref(groupsEnabled ? "/benefits" : "/celebrities", locale)}>{groupsEnabled ? groupBenefitsCopy(locale).title : t.favorites}</Link>
           </section>
           <section>

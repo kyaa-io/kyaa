@@ -47,12 +47,12 @@ describe("response security headers", () => {
 
   it("allows app scripts on the connection landing while OAuth documents remain script-free", async () => {
     const landing = await unstable_getResponseFromNextConfig({ url: "https://byus.kr/connect/instagram", nextConfig });
-    expect(landing.headers.get("content-security-policy")).toContain("script-src 'self'");
+    expect(landing.headers.get("content-security-policy")).toContain("https://auth.privy.io");
     expect(landing.headers.get("content-security-policy")).not.toContain("default-src 'none'");
     for (const route of ["start", "callback", "confirm", "deletion-status"]) {
       const document = await unstable_getResponseFromNextConfig({ url: `https://byus.kr/connect/instagram/${route}`, nextConfig });
       expect(document.headers.get("content-security-policy")).toContain("default-src 'none'");
-      expect(document.headers.get("content-security-policy")).not.toContain("script-src 'self'");
+      expect(document.headers.get("content-security-policy")).not.toContain("https://auth.privy.io");
     }
   });
   it("denies framing and constrains executable content", () => {
@@ -78,11 +78,12 @@ describe("response security headers", () => {
     }
   });
 
-  it("opens no third-party auth origin: sign-in is a top-level Cognito navigation", () => {
+  it("allows only the Privy integration origins required by the active login flow", () => {
     const csp = header("Content-Security-Policy");
 
-    for (const origin of ["privy", "walletconnect", "walletlink"]) expect(csp).not.toContain(origin);
-    expect(csp).toContain("connect-src 'self' https://*.tiktokcdn.com");
+    expect(csp).toContain("frame-src https://auth.privy.io");
+    expect(csp).toContain("connect-src 'self' https://auth.privy.io");
+    expect(csp).toContain("https://*.rpc.privy.systems");
     expect(csp).not.toContain("frame-src *");
     expect(csp).not.toContain("connect-src *");
   });
@@ -199,18 +200,4 @@ it("opens the GA4 origins only where a GA4 stream is configured", () => {
   expect(directive(on, "connect-src")).toContain("https://byus-dev-private.s3.ap-northeast-2.amazonaws.com/mobile-media/");
   expect(directive(on, "frame-src")).not.toContain("googletagmanager");
   expect(awsStorageContentSecurityPolicy({ ga4: true, rewardedAds: true })).toContain("https://securepubads.g.doubleclick.net");
-});
-
-describe("inline event-handler attributes", () => {
-  it("never run, in the base policy and in every runtime variant", () => {
-    const variants = [
-      header("Content-Security-Policy"),
-      awsStorageContentSecurityPolicy({}),
-      awsStorageContentSecurityPolicy({ adsense: true, ga4: true, rewardedAds: true, stage: true, bucket: "byus-dev-private", region: "ap-northeast-2" }),
-    ];
-    for (const policy of variants) {
-      expect(policy.split("; ")).toContain("script-src-attr 'none'");
-      expect(policy.split("; ").filter(part => part.startsWith("script-src-attr"))).toHaveLength(1);
-    }
-  });
 });

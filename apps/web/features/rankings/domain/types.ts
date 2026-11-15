@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { platformFollowerSchema } from "./platform-followers";
 
 export const RANKING_PERIODS = ["week", "month", "all"] as const;
 export type RankingPeriod = (typeof RANKING_PERIODS)[number];
@@ -127,9 +126,7 @@ export const homeFanRankingSchema = z.object({
   /** score is the metric's value; hearts and points name the values (both values independent of the sort metric; points null only when that day has no points build). */
   rows: z.array(platformFanRankingRowSchema.extend({ delta, favorite, fans: count.optional(), isNew: z.boolean().optional(), weekGain: z.number().int().nullable().optional(), dayGain, profileRef: homeFanProfileRefSchema.optional(), hearts: count.optional(), points: count.nullable().optional(),
     /** points list only: tickets held now and points earned all time (the row's points are the period's). */
-    tickets: count.optional(), totalPoints: count.optional(),
-    /** points list only: the fan's check-in dates counted once each, and public posts still visible (read live). */
-    attendanceDays: count.optional(), posts: count.optional() })).max(HOME_RANKING_LIMIT),
+    tickets: count.optional(), totalPoints: count.optional() })).max(HOME_RANKING_LIMIT),
   me: z.object({ rank: z.number().int().min(1), score: count, inTop: z.boolean(), hearts: count.optional(), points: count.nullable().optional(), delta: delta.optional() }).nullable(),
 });
 export type HomeFanRanking = z.infer<typeof homeFanRankingSchema>;
@@ -157,8 +154,6 @@ export const homeCreatorRankingRowSchema = z.object({
   /** likes list only: page likes in the period and all time. */
   likes: count.optional(),
   totalLikes: count.optional(),
-  /** Follower counts the platforms show, confirmed ones only, in a fixed platform order (public: count, rounding and the platform's wording). Absent from an older server. */
-  platforms: z.array(platformFollowerSchema).max(12).optional(),
 });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,

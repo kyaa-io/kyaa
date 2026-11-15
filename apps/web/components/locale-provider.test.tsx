@@ -4,15 +4,16 @@ import { useEffect, type ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { DocumentLocale } from "./document-locale";
 import { LocaleProvider, usePageLocale } from "./locale-provider";
-import { AuthRoot } from "@/features/auth/client/auth-root";
+import { ByUsPrivyProvider } from "./privy-provider";
 import { PublicContentState } from "./public-content-state";
 
-const state = vi.hoisted(() => ({ query: 'locale=en', pathname: '/', mounts: 0 }));
+const state = vi.hoisted(() => ({ query: 'locale=en', pathname: '/', mounts: 0, header: '' }));
 vi.mock('next/navigation', () => ({ usePathname: () => state.pathname, useSearchParams: () => new URLSearchParams(state.query) }));
 vi.mock('./avatar-session-bridge', () => ({ AvatarSessionBridge: ({children}: {children: ReactNode}) => children }));
 vi.mock('./byus-session-provider', () => ({ ByUsSessionProvider: ({children}: {children: ReactNode}) => children }));
-vi.mock('@/features/auth/client/cognito-auth', () => ({ CognitoAuthProvider: function TestProvider({children}: {children: ReactNode}) {
+vi.mock('@privy-io/react-auth', () => ({ PrivyProvider: function TestProvider({children, config}: {children: ReactNode; config: {appearance: {landingHeader: string}}}) {
   useEffect(() => { state.mounts += 1; }, []);
+  state.header = config.appearance.landingHeader;
   return children;
 } }));
 
@@ -34,17 +35,20 @@ describe('document and authentication locale', () => {
     expect(html).toContain("Loading today");
     expect(html).not.toContain('불러오고');
   });
-  it('updates document and loading copy without remounting authentication', () => {
+  it('updates document, loading, and custom SDK copy without remounting authentication', () => {
     state.query = 'locale=en'; state.pathname = '/'; state.mounts = 0;
-    const Tree = () => <LocaleProvider initialLocale="en"><AuthRoot><DocumentLocale /><PublicContentState state="loading" scope="home" /></AuthRoot></LocaleProvider>;
+    const Tree = () => <LocaleProvider initialLocale="en"><ByUsPrivyProvider appId="test"><DocumentLocale /><PublicContentState state="loading" scope="home" /></ByUsPrivyProvider></LocaleProvider>;
     const view = render(<Tree />);
+    expect(state.header).toBe('Get started with kyaa');
     expect(document.documentElement.lang).toBe('en');
     state.query = 'locale=ko';
     view.rerender(<Tree />);
+    expect(state.header).toBe('kyaa 시작하기');
     expect(document.documentElement.lang).toBe('ko');
     expect(screen.getByRole('heading').textContent).toContain('불러오고');
     state.query = 'locale=en';
     view.rerender(<Tree />);
+    expect(state.header).toBe('Get started with kyaa');
     expect(state.mounts).toBe(1);
   });
   it('uses the callback cookie on client navigation and lets an explicit query win', () => {

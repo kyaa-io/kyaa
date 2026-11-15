@@ -1,7 +1,7 @@
 "use client";
 
 import { ProfileAuthor } from "@/features/group-social/profile-window";
-import Link from "./fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { paginationCopy } from "@/i18n/catalogs/common__pagination";
@@ -56,6 +56,6 @@ export function HomeCommunityPreview({ locale, celebrities = [] }: { locale: App
       <button type="button" disabled={pending || state.status !== "ready" || !state.data.hasMore || page >= 1000} onClick={() => setPage(value => value + 1)} aria-label={pagination.next}><ChevronRight aria-hidden="true" /></button>
     </nav>}
     {state.status === "error" && <div className={styles.status}><FanAction variant="text" onClick={retry}>{copy.retry}</FanAction></div>}
-    {state.status === "ready" && state.data.items.length === 0 && <Link className={styles.emptyAction} href={`/pages/groups?locale=${locale}`}>{feed.fanBoard}<span aria-hidden="true"> →</span></Link>}
+    {state.status === "ready" && state.data.items.length === 0 && <Link className={styles.emptyAction} href={`/community?locale=${locale}`}>{feed.fanBoard}<span aria-hidden="true"> →</span></Link>}
   </section>;
 }

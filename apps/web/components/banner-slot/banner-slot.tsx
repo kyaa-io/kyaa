@@ -1,5 +1,5 @@
 "use client";
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { useState } from "react";
@@ -10,7 +10,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { useBannerSlots } from "./banner-slot-source";
 import styles from "./banner-slot.module.css";
 
-const areaOf = (slot: BannerSlotKey) => slot.startsWith("home_") ? "home" as const : slot.startsWith("dukjil_") ? "dukjil" as const : "fanpage" as const;
+const areaOf = (slot: BannerSlotKey) => slot.startsWith("home_") ? "home" as const : "fanpage" as const;
 
 /**
  * A managed banner slot. Nothing is drawn while it loads, when it is empty or when it fails: no box and no space,

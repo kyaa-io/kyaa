@@ -5,7 +5,7 @@ const { getAccessToken, roleState } = vi.hoisted(() => ({
   getAccessToken: vi.fn(async () => "token"),
   roleState: { current: "viewer" },
 }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: true, authenticated: true, user: { id: "admin" }, getAccessToken }),
 }));
 vi.mock("next/navigation", () => ({

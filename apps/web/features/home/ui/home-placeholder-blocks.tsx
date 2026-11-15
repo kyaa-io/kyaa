@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { FanHeading, FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import Image from "next/image";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import { homeGalleryCopy, type HomeGalleryPhoto, type HomeShort } from "@/features/home/domain/home-gallery";
@@ -83,7 +83,7 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
     </> : <div className={styles.photos} data-home-measure="photos" data-home-state={typeof photos === "string" ? photos : "empty"}>{Array.from({ length: 8 }, (_, i) => <span key={i} className={styles.tile} data-row="photo-placeholder" aria-hidden={i > 0 || list === null || undefined}>{i === 0 && list ? <span className={styles.note}>{v[4]}</span> : null}</span>)}</div>}
     {shortList?.length === 0 ? null : <div className={styles.shelf} data-home-measure="shorts">
       <div className={styles.shortHead}><FanHeading as="h3">{v[2]}</FanHeading>{shortList?.length ? <FanSectionLink href={`/shorts?locale=${locale}`}>{homeGalleryCopy[locale].viewAll}</FanSectionLink> : null}</div>
-      {shortList?.length ? <HomeShorts items={shortList} locale={locale} hasMore={shortList.length >= 12} /> : <div data-home-state={typeof shorts === "string" ? shorts : undefined} />}
+      {shortList?.length ? <HomeShorts items={shortList} locale={locale} /> : <div data-home-state={typeof shorts === "string" ? shorts : undefined} />}
     </div>}
   </section>;
 }

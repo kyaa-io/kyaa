@@ -1,5 +1,10 @@
 // Words of the 덕질 (Stan) tab renewal (261107-2 U4·U5); ko/en live here, the other locales in i18n/catalogs/features__dukjil__ui__dukjil-stan-source.ts.
 export const dukjilStanSource = {
+  stanMissionsSection: { ko: "덕질 미션", en: "Missions" },
+  stanGateTitle: { ko: "로그인하고 덕질 시작하기", en: "Sign in to start" },
+  stanGetTicket: { ko: "응모권 +1장", en: "+1 ticket" },
+  stanGetHeart: { ko: "하트 +1개", en: "+1 heart" },
+  stanHeld: { ko: "보유 {0}", en: "{0} held" },
   missionsGroupMore: { ko: "그 밖의 덕질", en: "More missions" },
   missionsGroupProof: { ko: "인증", en: "Certifications" },
   missionsGroupLeft: { ko: "{0}개 남음", en: "{0} left" },
@@ -38,16 +43,6 @@ export const dukjilStanSource = {
   stanRuleTicket: { ko: "{0}P마다 응모권 1장", en: "1 ticket per {0}P" },
   stanRuleHeart: { ko: "스탬프 {0}개마다 하트 1개", en: "1 heart per {0} stamps" },
   stanClaimReady: { ko: "받기 가능", en: "Ready to claim" },
-  // 대표 11/13 09:39: 덕질 has two sections, 럭키드로우 and 덕질 미션, each headed by a one-line swap (my balance → what I get).
-  stanMissionsSection: { ko: "덕질 미션", en: "Missions" },
-  // 사용자 11/13 11:2x: signed out, 덕질 is one login gate over the blurred page.
-  stanGateTitle: { ko: "로그인하고 덕질 시작하기", en: "Sign in to start" },
-  stanGetTicket: { ko: "응모권 +1장", en: "+1 ticket" },
-  stanGetHeart: { ko: "하트 +1개", en: "+1 heart" },
-  stanHeld: { ko: "보유 {0}", en: "{0} held" },
-  // 대표 11/13 20:36: −100P read as a loss; the converter labels its two amounts instead of signing them (Uniswap 매도/매수, Wise 송금액/수령액).
-  stanSpend: { ko: "사용", en: "You use" },
-  stanGain: { ko: "획득", en: "You get" },
   // E4·E5 (feedback E): the favorite's lucky draws, the cheer card and the six linked wallet cells.
   luckyOpensAt: { ko: "{0} 응모 시작", en: "Entries open {0}" },
   luckyClosesAt: { ko: "마감 {0}", en: "Closes {0}" },

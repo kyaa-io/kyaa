@@ -18,8 +18,6 @@ import timeStyles from "@/features/live/ui/live-time-indicator.module.css";
 
 import type { HomeBanner } from "../features/home/domain/home-banner";
 import { ManagedHomeBanner } from "./home-entry-cards/managed-home-banner";
-import { FIRST_STEPS_BANNER_ID } from "../features/home/domain/first-steps-home-banner";
-import { FirstStepsHomeBanner } from "../features/onboarding/ui/first-steps-home-banner";
 
 const AUTOPLAY_INTERVAL_MS = 6_000;
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -135,11 +133,7 @@ export function LiveHeroCarousel({
   elina,
   elinaRaffles,
   elinaGuide,
-  renderBanner,
-  compact = false,
 }: {
-  renderBanner?: (banner: HomeBanner) => ReactNode;
-  compact?: boolean;
   elinaGuide?: ReactNode;
   elinaRaffles?: RaffleList["raffles"];
   elina?: PublishedCelebrity;
@@ -299,7 +293,6 @@ export function LiveHeroCarousel({
       data-reduced-motion={reducedMotion ? "true" : "false"}
       data-shine-paused={autoplayPaused ? "true" : "false"}
       data-has-controls={hasControls ? "true" : "false"}
-      data-compact={compact || undefined}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocusCapture={() => setFocusWithin(true)}
@@ -319,7 +312,7 @@ export function LiveHeroCarousel({
               aria-hidden={index !== activeIndex} aria-roledescription="slide"
               aria-label={t.position(index + 1, total)} inert={index !== activeIndex}
               data-active={index === activeIndex ? "true" : "false"}>
-              {banner ? renderBanner ? renderBanner(banner) : banner.id === FIRST_STEPS_BANNER_ID ? <FirstStepsHomeBanner banner={banner} locale={locale} priority={index === 0} /> : <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
+              {banner ? <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
                 : elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} hero priority={index === 0} />}
             </article>
           ))}

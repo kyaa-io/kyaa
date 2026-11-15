@@ -16,10 +16,10 @@ import { CreatorRoleFilterControl, CreatorRolesText } from "./fan-ui/creator-rol
 import { CreatorAvatar } from "./fan-ui/creator-avatar";
 import { availableCreatorRoles, creatorRoleFilterLabel, matchesCreatorRole, type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 import { orderCreatorsForDiscovery } from "../server/content/creator-discovery";
-import Link from "./fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { useMemo, useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { FanAppFrame, FanContentContainer } from "./fan-shell/fan-app-shell";
 import type { ContentLocale, PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
 import { FanStageTooltip } from "../features/rewards/ui/fan-stage-tooltip";
@@ -27,7 +27,6 @@ import { passportDirectoryResponseSchema, type PassportDirectory } from "../feat
 import { fanUtilityCanvasClassName } from "./fan-ui/fan-surface";
 import { discoveryCopy } from "@/i18n/catalogs/features__fan_posts__discovery";
 import { FanAction } from "./fan-ui/fan-action";
-import { FanSelectMenu } from "./fan-ui/fan-select-menu";
 import { Plus } from "lucide-react";
 import { FanHeading } from "./fan-ui/fan-heading";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
@@ -208,7 +207,7 @@ export function CelebrityDirectory({ celebrities, locale, initialQuery = "", ini
         ) : <>
           <form className={styles.controls} role="search" onSubmit={(event) => event.preventDefault()}>
             <label className={styles.searchField} htmlFor="celebrity-search"><span className={styles.srOnly}>{t.search}</span><span className={styles.inputControl}><input id="celebrity-search" type="search" value={query} onChange={(event) => changeQuery(event.target.value)} placeholder={t.searchPlaceholder} /></span></label>
-            <FanSelectMenu label={t.sort} value={sort} onValueChange={(value) => changeSort(value as SortOrder)} options={[{ value: "published", label: t.defaultSort }, { value: "name-asc", label: t.nameSort }, { value: "live-first", label: t.liveSort }]} align="end" />
+            <label className={styles.sortField} htmlFor="celebrity-sort"><span className={styles.srOnly}>{t.sort}</span><span className={styles.selectControl}><select id="celebrity-sort" value={sort} onChange={(event) => changeSort(event.target.value as SortOrder)}><option value="published">{t.defaultSort}</option><option value="name-asc">{t.nameSort}</option><option value="live-first">{t.liveSort}</option></select><ChevronDown aria-hidden="true" /></span></label>
           </form>
           <CreatorRoleFilterControl roles={availableCreatorRoles(celebrities)} value={role} onChange={changeRole} locale={locale} controls="directory-results" compact />
           <div id="directory-results">

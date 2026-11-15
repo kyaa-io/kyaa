@@ -1,3 +1,4 @@
+import {HomeRankingCard} from '@/features/rankings/ui/home-ranking-card';
 import {createRoot} from 'react-dom/client';
 import {GroupBenefitsScreen} from '@/features/groups/ui/group-benefits-screen';
 import {CapsuleScreen} from '@/features/group-capsule/capsule-screen';
@@ -23,8 +24,11 @@ window.fetch=async(input,init)=>{
  requests.push({url:path+url.search,method});
  if(state==='loading'&&(path.includes('/benefits')||path==='/api/me/wallet'||path==='/api/groups/capsules'||path.endsWith(`/raffles/${id}`)))return new Promise(resolve=>waiting.push(resolve));
  if(state==='error'&&(path.startsWith('/api/groups')||path==='/api/me/wallet'))return Response.json({error:{code:'SYNTHETIC_FAILURE'}},{status:503});
+ if(path.includes('/roadmap'))return Response.json({passportId:id,celebrityId:second,hearts:13,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:i<6?'filled':'empty',stampId:null,clearedAt:null})),filled:6,claimable:false,claimed:false,locked:false,lockedReason:null}]});
+ if(path==='/api/me/dukjil/today')return Response.json({kstDate:'2026-11-13',policyActive:true,totalPoints:0,actions:{},attendance:null,hasPassport:true});
+ if(path==='/api/dukjil/catalog')return Response.json({version:1,rules:{checkin:{points:2},post:{points:20},comment:{points:3},share:{points:10}},missionBook:null});
+ if(path.startsWith('/api/rankings/')) {return Response.json({state:'ready',metric:url.searchParams.get('metric'),day:'2026-11-13',computedAt:'2026-11-13T09:00:00Z',comparable:true,weekGainDays:7,me:null,rows:Array.from({length:10},(_,i)=>({rank:i+1,score:900-i,hearts:120-i,points:900-i,nickname:`예시 팬${i+1}`,characterId:'star-pink',tier:'Gold',isMe:false,delta:1,favorite:null,slug:`sample-${i}`,name:`예시 크리에이터${i+1}`,imageUrl:null,fans:37,challenge:false,weekGain:12,dayGain:3}))});}
  if(path==='/api/me/wallet')return Response.json({...wallet(),...(state==='insufficient'?{tickets:0}:{})});
- if(path==='/api/raffles/recent')return Response.json({items:[1,2,3].map(n=>({raffle:{...raffle,id:`10000000-0000-4000-8000-00000000000${n}`,benefitId:`10000000-0000-4000-8000-00000000000${n}`,title:`지난 럭키드로우 선물 ${n}`,status:'closed',entryClosesAt:'2026-10-31T00:00:00Z',resultsPublishedAt:'2026-11-01T00:00:00Z'},creator:{slug:'synthetic-creator',name:'합성 크리에이터',image:null}}))});
  if(path==='/api/groups/benefits'){
   const kind=url.searchParams.get('kind'),cursor=url.searchParams.get('cursor');
   const itemId=cursor?second:id,base={id:itemId,pageId:id,pageName:'합성 모임 · Synthetic group',title:cursor?'두 번째 · Second page':name,description:'합성 설명 · Synthetic original description',imageUrl:'/images/groups/nchive-goods-concept.png',href:`/pages/groups/${id}/${kind}/${itemId}`};
@@ -42,7 +46,7 @@ window.fetch=async(input,init)=>{
   const body=JSON.parse(String(init?.body)),old=receipts.get(body.requestKey);if(old)return Response.json(old);
   tickets-=body.count;const result={requestKey:body.requestKey,campaignId:id,count:body.count,tickets,results:Array.from({length:body.count},(_,i)=>({index:i+1,prizeId:i===0?second:null,name:i===0?'합성 경품 · Synthetic prize':null,imageUrl:i===0?'/images/groups/nchive-goods-concept.png':null}))};receipts.set(body.requestKey,result);return Response.json(result);
  }
- if(path==='/api/dukjil/catalog')return Response.json({version:1,rules:{checkin:{points:10}},missionBook:q.has('book')?{pages:[{slots:['quiz','checkin','post','comment','share','invite','subscription','steady_checkin','proof'].map((action,i)=>({slot:i+1,action}))}]}:null});
+ if(path==='/api/dukjil/catalog')return Response.json({version:1,rules:{checkin:{points:10}},missionBook:null});
  if(path==='/api/groups'&&url.searchParams.get('mine')==='joined')return Response.json({items:state==='empty'?[]:[{id,kind:'fan',celebrityId:second,slug:'synthetic-creator',name:'합성 크리에이터 · Synthetic creator',description:'합성 소개',imageUrl:'/images/groups/nchive-group.webp',question:null,memberCount:1}],nextCursor:null});
  if(path==='/api/me/attendance')return Response.json({kstDate:'2026-11-01',items:[{celebrityId:second,attendedToday:false,streak:1,nextBonusIn:4,hasPassport:true}]});
  if(path==='/api/rankings/creators')return Response.json({period:'week',periodStart:'2026-10-26',computedAt:'2026-11-01T01:00:00.000Z',rows:state==='empty'?[]:[{rank:1,slug:'synthetic-creator',name:'합성 크리에이터 · Synthetic creator',imageUrl:'/images/groups/nchive-group.webp',score:120,jjinfanCount:37,myHearts:12}]});
@@ -54,5 +58,5 @@ window.fetch=async(input,init)=>{
 };
 Object.assign(window,{benefitsHarness:{requests,locales:APP_LOCALES,transition,setState:(next:string)=>{state=next;},sessionSnapshot}});
 const path=location.pathname;
-const content=path.startsWith('/my/capsules')?<CapsuleScreen locale={locale} pageId={q.get('pageId')??undefined}/>:path.includes('/raffles/')?<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>:path==='/benefits'?<GroupBenefitsScreen locale={locale}/>:<FanAppFrame locale={locale} groupsEnabled={q.get('gate')!=='off'}><main><h1>Synthetic legacy detail route</h1></main></FanAppFrame>;
+const content=q.has('ranking')?<FanAppFrame locale={locale} groupsEnabled><main style={{padding:16}}><HomeRankingCard locale={locale}/></main></FanAppFrame>:path.startsWith('/my/capsules')?<CapsuleScreen locale={locale} pageId={q.get('pageId')??undefined}/>:path.includes('/raffles/')?<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>:path==='/benefits'?<GroupBenefitsScreen locale={locale}/>:<FanAppFrame locale={locale} groupsEnabled={q.get('gate')!=='off'}><main><h1>Synthetic legacy detail route</h1></main></FanAppFrame>;
 createRoot(document.getElementById('root')!).render(<LocaleProvider initialLocale={locale}><GroupsReleaseProvider enabled={q.get('gate')!=='off'}>{content}</GroupsReleaseProvider></LocaleProvider>);

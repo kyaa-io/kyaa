@@ -20,9 +20,7 @@ it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&searc
  const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})];
  order.slice(1).forEach((node,i)=>expect(order[i]!.compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
- // The type and role filters only exist while no search is typed; a search swaps them for the artists/posts tabs.
- if(query.includes('search=')){expect(screen.queryByRole('button',{name:/^활동 분야/})).toBeNull();expect(screen.getByText('게시글')).toBeInTheDocument();}
- else expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
+ expect(screen.getByRole('button',{name:/^활동 분야/})).toBeInTheDocument();
 });
 it('draws the h1 with FanHeading so the one page-title size (26/800) applies',()=>{
  render(<GroupDirectory locale='ko'/>);
@@ -86,8 +84,8 @@ it('offers two illustrated application banners with their existing destinations'
  expect(within(area).getByRole('link',{name:'팬페이지 개설 신청'})).toBe(rows[0]);expect(within(area).getByRole('link',{name:'취미·브랜드 페이지 개설 신청'})).toBe(rows[1]);
  expect(rows[0]).toHaveAttribute('href','/pages/groups/apply?locale=ko&kind=fan');
  expect(rows[1]).toHaveAttribute('href','/pages/groups/apply?locale=ko');
- expect(area.textContent).toContain('팬페이지 개설 신청');
- expect(area.textContent).not.toContain('신청해요');
+ expect(area.textContent).toContain('좋아하는 크리에이터의 팬페이지를 신청해요');
+ expect(area.textContent).toContain('함께할 취미나 브랜드 페이지를 신청해요');
  expect(within(area).queryByRole('heading')).toBeNull();
  expect(screen.queryByRole('button',{name:/^자세히/})).toBeNull();
  expect(screen.queryByText(/만들고 싶나요/)).toBeNull();
@@ -98,15 +96,4 @@ it('keeps the guest side area and its login paths',()=>{
  state.authenticated=false;render(<GroupDirectory locale='ko'/>);
  expect(screen.queryByRole('heading',{level:2,name:'내 페이지'})).toBeNull();
  expect(screen.getByRole('link',{name:'출석체크'}).getAttribute('href')).toContain('/login');
-});
-it.each(['all','fan'])('uses discovery only for the default %s list',type=>{
- history.replaceState(null,'',`/pages/groups?type=${type}`);const view=render(<GroupDirectory locale='ko'/>);
- expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=discovery'))).toBe(true);view.unmount();state.urls.length=0;
- history.replaceState(null,'',`/pages/groups?type=${type}&sort=popular`);render(<GroupDirectory locale='ko'/>);
- expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=popular'))).toBe(true);
- expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=discovery'))).toBe(false);
-});
-it('preserves a direct non-default order instead of forcing discovery',()=>{
- history.replaceState(null,'','/pages/groups?sort=today');render(<GroupDirectory locale='ko'/>);
- expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=today'))).toBe(true);
 });

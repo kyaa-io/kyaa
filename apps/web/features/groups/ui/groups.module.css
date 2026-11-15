@@ -92,10 +92,9 @@
 @media(max-width:767px){.page{padding-top:16px}.identity,.tabs{margin-bottom:16px}.status{padding-block:16px}.toolbar{margin-bottom:12px}}
 
 /* Canonical asmGM / koi97 discovery composition. */
-/* 제목은 읽기 프로그램용으로만 남긴다(보석 2026-11-14 "팬페이지와 모임 찾기 큰 제목 없애기"). 맨 위는 오늘의 팬페이지. */
-.discoveryIntro{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.discoveryIntro+*{margin-top:var(--space-2)}.discoveryIntro p{color:var(--color-muted);font-size:16px}
+.discoveryIntro{display:grid;gap:12px;margin:8px 0 32px}.discoveryIntro p{color:var(--color-muted);font-size:16px}
 .discoveryLayout{margin-top:40px}.discoveryHeading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}.discoveryHeading h2{margin:0}.discoveryAside{border-inline-start:1px solid var(--color-line-subtle);padding-inline-start:32px;display:grid;gap:32px;min-width:0}.discoveryAside h2,.discoveryAside h3{font-size:16px;line-height:1.4;margin:0 0 8px;font-weight:var(--fan-item-title-weight)}.discoveryAside p{font-size:var(--fan-metadata-size);color:var(--color-muted);line-height:1.55}.discoveryAside section{display:grid;gap:12px;min-width:0}.discoveryAttendance a{width:100%}
-@media(max-width:1023px){.discoveryAside{border-inline-start:0;border-top:1px solid var(--color-line-subtle);padding:24px 0 0;gap:32px}.discoveryIntro+*{margin-top:0}.discoveryLayout{margin-top:24px}.discoveryAttendance{grid-template-columns:minmax(0,1fr) auto;align-items:center}.discoveryAttendance a{width:auto}}
+@media(max-width:1023px){.discoveryAside{border-inline-start:0;border-top:1px solid var(--color-line-subtle);padding:24px 0 0;gap:32px}.discoveryIntro{margin-top:0;gap:4px;margin-bottom:16px}.discoveryLayout{margin-top:24px}.discoveryAttendance{grid-template-columns:minmax(0,1fr) auto;align-items:center}.discoveryAttendance a{width:auto}}
 
 /* Canonical HQQqP application panel and context rail. */
 .applicationBreadcrumb{display:flex;align-items:baseline;gap:8px;padding-bottom:24px;margin-bottom:24px;border-bottom:1px solid var(--color-line-subtle)}.applicationBreadcrumb strong{font-size:18px}.applicationBreadcrumb span{font-size:var(--fan-metadata-size);color:var(--color-muted)}.applicationLayout{display:grid;grid-template-columns:minmax(0,1fr) 288px;gap:32px;align-items:start}.applicationLayout>div{min-width:0}.applicationPanel{width:min(100%,760px);margin-inline:auto;border:1px solid var(--color-line);border-radius:20px;padding:28px;display:grid;gap:24px}.applicationPanel>header{display:grid;gap:12px}.applicationPanel .form{max-width:none;gap:20px}.applicationTypes{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.applicationTypes>strong{font-size:14px;margin-inline-end:8px}.applicationTypes>.chip{position:relative;min-width:68px;cursor:pointer}.applicationTypes>.chip:has(input:checked){background:var(--color-accent-soft);border-color:var(--color-accent);color:var(--color-accent-ink)}.applicationTypes>.chip:has(input:focus-visible){outline:3px solid var(--color-ink);outline-offset:3px}.applicationIdentity{display:grid;grid-template-columns:96px minmax(0,1fr);gap:20px;align-items:start}.applicationPhoto .imageUpload{display:flex;flex-direction:column;gap:8px;align-items:start}.applicationPhoto .imageThumb,.applicationPhoto .imageUpload>.imageThumb{width:96px;height:96px;border-radius:16px}.applicationPhoto .imageActions{gap:8px}.applicationPhoto .imagePicker{padding-inline:12px}.applicationFooter{display:flex;justify-content:space-between;align-items:center;gap:16px;border-top:1px solid var(--color-line-subtle);padding-top:16px}.applicationFooter>p{font-size:var(--fan-metadata-size);color:var(--color-muted);flex:1}.applicationFooter .actions{flex-wrap:nowrap;flex-shrink:0}.applicationFooter .actions>a,.applicationFooter .actions>button{min-width:0;max-width:100%;white-space:normal;text-align:center}.applicationFooter .actions>button{padding-inline:24px}.applicationAside{padding:24px;display:grid;gap:32px}.applicationAside section{display:grid;gap:12px;min-width:0}.applicationAside section+section{border-top:1px solid var(--color-line);padding-top:24px}.applicationAside h2{display:flex;gap:8px;align-items:center;font-size:16px;margin:0 0 8px}.applicationAside h2 svg{flex-shrink:0;color:var(--color-muted)}.applicationAside a{justify-content:flex-start;text-align:start}.applicationAside .avatar{width:36px;height:36px}
@@ -292,7 +291,7 @@
 .eventSummary{padding-inline:0}
 }
 
-@media(max-width:600px){.toolbar:has(>.boardWrite)>.boardWrite{order:1;margin-inline-start:auto}.toolbar:has(>.boardWrite)>.search,.toolbar:has(>.boardWrite)>.boardSort{order:2}.toolbar:has(>.boardWrite)>.filters{min-width:0;flex:0 1 auto}}
+@media(max-width:600px){.toolbar:has(>.boardWrite)>.boardWrite{order:1;margin-inline-start:auto}.toolbar:has(>.boardWrite)>.search,.toolbar:has(>.boardWrite)>.select{order:2}.toolbar:has(>.boardWrite)>.filters{min-width:0;flex:0 1 auto}}
 /* UI-R10 F06/F03: single-flow compose form uses the 720 reading column; photo above name at phone width. */
 .applicationPanel{width:min(100%,720px)}
 @media(max-width:767px){.applicationIdentity{grid-template-columns:minmax(0,1fr);gap:12px}.applicationPhoto{min-width:0}}
@@ -313,16 +312,9 @@
 
 .creatorPostLayout:not(:has(>aside)),.boardOnlyLayout{grid-template-columns:minmax(0,1fr)}
 
-/* 게시판 목록 띠 R3: 목록 920(2026-11-13 PM 점검 "PC 목록이 좁은 가운데 열에 갇힘"). */
-.creatorPostLayout:not(:has(>aside)),.boardOnlyLayout { width:100%; max-width:var(--band-list); margin-inline:auto; }
-/* 글 상세(2026-11-11 사용자 "게시판 좌우 여백이 어색함. 다른 글 추천", 2026-11-12 14:24 "옆으로 채워져야"): PC는 본문 열이 프로필·탭 줄의 왼쪽 선에서 시작하고 다른 글·배너 레일 360/384(R4)가 오른쪽 끝선까지 닿는다. 좌우 빈 공간 없음, 간격 R5. 1024 미만은 위 규칙대로 한 열(레일은 본문 아래). */
-@media (width >= 64rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,1fr) var(--rail-md);column-gap:var(--col-gap)}}
-@media (width >= 80rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,1fr) var(--rail-wide)}}
+.creatorPostLayout:not(:has(>aside)),.boardOnlyLayout { width:100%; max-width:720px; margin-inline:auto; }
+/* 글 상세(2026-11-11 사용자 "게시판 좌우 여백이 어색함. 다른 글 추천"): PC는 본문 ≤720(R3) + 다른 글·배너 레일 360/384(R4), 간격 R5, 둘을 가운데에 둔다. 1024 미만은 위 규칙대로 한 열(레일은 본문 아래). */
+@media (width >= 64rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,var(--band-read)) var(--rail-md);justify-content:center;column-gap:var(--col-gap)}}
+@media (width >= 80rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,var(--band-read)) var(--rail-wide)}}
 
 @media(width < 64rem){.discoveryAttendance [data-fan-action]{width:44px;height:44px;min-height:44px;padding:0}.discoveryAside .discoveryAttendance{bottom:calc(var(--space-16) + var(--space-4) + var(--space-14) + env(safe-area-inset-bottom))}}
-
-/* Keep the check-in action visible at the start of the fan page, including wide screens. */
-.creatorHomeMain>.creatorShortcuts{display:grid;order:-1}
-@media(min-width:1024px){.creatorHomeMain>.creatorShortcuts a{flex-direction:row;justify-content:center;align-items:center;min-height:var(--min-target)}.creatorHomeMain>.creatorShortcuts .shortcutStamp{width:24px;height:24px}.creatorHomeMain>.creatorShortcuts a>span:first-child{height:24px}}
-
-.creatorShortcuts>span:first-child{min-width:0}.creatorShortcuts>span:first-child>a{width:100%;height:100%}

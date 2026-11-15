@@ -13,7 +13,6 @@ import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { isPrivateNoticeImage } from "@/server/notice/notice-domain";
 import { BodyLink } from "@/features/content-safety/ui/linkified-text";
 import { linkifyDocument } from "@/features/content-safety/domain/linkify";
-import { RichIsland, stableTree } from "@/components/editor/stable-tree";
 import styles from "./notice-detail.module.css";
 
 type SharedNoticeTranslation = { title: string; document: TiptapDocument; translation: Omit<ReturnType<typeof useAutomaticTranslation>, "observeElement">; observeElement: ReturnType<typeof useAutomaticTranslation>["observeElement"] };
@@ -27,17 +26,16 @@ export function NoticeBody(props: { document: TiptapDocument; locale: AppLocale;
 
 /** Title and body follow one translation state: one request, one 번역/원문 toggle. The source document and title are never mutated. */
 export function NoticeTranslation({ title, document, locale, children }: { title: string; document: TiptapDocument; locale: AppLocale; children: ReactNode }) {
-  // The title is never translated: it is shown as written. Only the body takes part in the translation.
-  const texts = useMemo(() => collectNoticeTexts(document, locale), [document, locale]);
+  const texts = useMemo(() => collectNoticeTexts(document, locale, title), [document, locale, title]);
   const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale });
   const translatedDocument = useMemo(() => applyNoticeTranslation(document, texts, translation.showing ? translation.texts : null), [document, texts, translation.showing, translation.texts]);
-  return <SharedTranslation.Provider value={{ title, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
+  const shownTitle = translation.showing ? translation.texts[texts.indexOf(title)] ?? title : title;
+  return <SharedTranslation.Provider value={{ title: shownTitle, document: translatedDocument, translation, observeElement }}>{children}</SharedTranslation.Provider>;
 }
 
-export function NoticeTitle({ locale, className }: { locale: AppLocale; className?: string }) {
+export function NoticeTitle({ locale }: { locale: AppLocale }) {
   const shared = useContext(SharedTranslation);
-  return shared ? <h1 className={className} lang={shared.translation.showing ? locale : undefined}>{shared.title}</h1> : null;
-
+  return shared ? <h1 lang={shared.translation.showing ? locale : undefined}>{shared.title}</h1> : null;
 }
 
 export function NoticeTranslationControl({ locale }: { locale: AppLocale }) {
@@ -45,8 +43,9 @@ export function NoticeTranslationControl({ locale }: { locale: AppLocale }) {
   return shared ? <TranslationControl locale={locale} translation={shared.translation} /> : null;
 }
 
-function collectNoticeTexts(document: TiptapDocument, locale: AppLocale) {
+function collectNoticeTexts(document: TiptapDocument, locale: AppLocale, title?: string) {
   const result: string[] = [];
+  if (title && shouldOfferTranslation(title, locale)) result.push(title);
   const collect = (node: JSONContent) => {
     if (node.type === "text" && node.text && !node.marks?.some(mark => mark.type === "code") && shouldOfferTranslation(node.text, locale) && !result.includes(node.text)) result.push(node.text);
     node.content?.forEach(collect);
@@ -75,26 +74,25 @@ function TranslatedNoticeBody({ document, locale }: { document: TiptapDocument; 
   </div>;
 }
 
-/** `BodyLink` receives the renderer's children, so it stays a component and its children are flattened. */
-const KEPT = [BodyLink];
 function RenderedNoticeBody({ document, locale, adminPreview = false, operatorChannelId }: { document: TiptapDocument; locale: AppLocale; adminPreview?: boolean; operatorChannelId?: string }) {
   const newWindowLabel = locale === "ko" ? "새 창" : translate(locale, localizedMessages.m78f7fe6d9b7c, "opens in a new window");
-  // `stableTree`: the renderer's wrappers become plain tags, so a later render (a translation switch, a reaction, a re-read) keeps every
-  // image node mounted and changes only the text that differs.
-  const tree = useMemo(() => stableTree(renderToReactElement({
-    content: linkifyDocument(document as JSONContent),
-    extensions: noticeExtensions,
-    options: {
-      nodeMapping: {
-        image: ({ node }) => isPrivateNoticeImage(node.attrs.src)
-          ? <RichIsland><ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview={adminPreview} operatorChannelId={operatorChannelId} /></RichIsland>
-          : node.attrs.src.startsWith("/api/public/notice-media/") ? <RichIsland><ContentAssetImage noticeMedia adminPreview={adminPreview} asset={{ id: node.attrs.src.slice("/api/public/notice-media/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} /></RichIsland>
-          : <img src={node.attrs.src} alt={node.attrs.alt || ""} width={node.attrs.width || undefined} height={node.attrs.height || undefined} loading="lazy" />,
-      },
-      markMapping: {
-        link: ({ mark, children }) => <BodyLink official href={mark.attrs.href} newWindowLabel={newWindowLabel}>{children}</BodyLink>,
-      },
-    },
-  }), KEPT), [document, locale, adminPreview, operatorChannelId, newWindowLabel]);
-  return <div className={styles.body}>{tree}</div>;
+  return (
+    <div className={styles.body}>
+      {renderToReactElement({
+        content: linkifyDocument(document as JSONContent),
+        extensions: noticeExtensions,
+        options: {
+          nodeMapping: {
+            image: ({ node }) => isPrivateNoticeImage(node.attrs.src)
+              ? <ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview={adminPreview} operatorChannelId={operatorChannelId} />
+              : node.attrs.src.startsWith("/api/public/notice-media/") ? <ContentAssetImage noticeMedia adminPreview={adminPreview} asset={{ id: node.attrs.src.slice("/api/public/notice-media/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} />
+              : <img src={node.attrs.src} alt={node.attrs.alt || ""} width={node.attrs.width || undefined} height={node.attrs.height || undefined} loading="lazy" />,
+          },
+          markMapping: {
+            link: ({ mark, children }) => <BodyLink official href={mark.attrs.href} newWindowLabel={newWindowLabel}>{children}</BodyLink>,
+          },
+        },
+      })}
+    </div>
+  );
 }

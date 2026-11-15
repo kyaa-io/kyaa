@@ -1,4 +1,5 @@
 "use client";
+import signupStyles from "@/features/home/ui/signup-event-banner.module.css";
 
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import type { AppLocale } from "@/i18n/locales";
@@ -17,8 +18,6 @@ import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 import { Suspense, use, type ReactNode } from "react";
 import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
-import { firstStepsHomeBanner } from "../features/home/domain/first-steps-home-banner";
-import { signupRaffleHomeBanner } from "../features/home/domain/signup-raffle-home-banner";
 import { useRouter } from "next/navigation";
 import { FanAppFrame } from "./fan-shell/fan-app-shell";
 import { LiveHeroCarousel } from "./live-hero-carousel";
@@ -31,10 +30,7 @@ import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
-import { HomeHeartDonation } from "@/features/rankings/ui/home-heart-donation";
-import { HomeBelowRankingSlot } from "@/components/banner-slot/home-below-ranking-slot";
-import type { HeartDonationEvent } from "@/features/rankings/domain/heart-donation";
-import type { HomeTopBanner } from "@/server/config/heart-donation-event";
+import { HomeJjinfanStrip } from "@/features/rankings/ui/home-jjinfan-strip";
 import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
@@ -73,14 +69,14 @@ function ContentLoadError({ locale }: { locale: AppLocale }) {
   return <div className={styles.personalizationState} role="alert"><strong>{copy[locale].retryTitle}</strong><span>{copy[locale].retryHelp}</span><FanAction onClick={() => router.refresh()}>{copy[locale].retry}</FanAction></div>;
 }
 
-type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; homeSlots?: BannerSlotMap; celebrities: readonly PublishedCelebrity[]; locale: AppLocale; contentErrors?: HomeContentErrors; /** 홈배너1(랭킹 바로 위): 찐팬 하트 후원 줄 또는 찐팬 100 배너 줄(서버 플래그, 운영 기본 꺼짐). */ jjinfanGauge?: boolean; /** 후원 이벤트 설정(함께하는 크리에이터·후원처). */ heartDonation?: HeartDonationEvent; /** 홈배너1(랭킹 바로 위) 내용: 후원 게이지 줄(기본) 또는 찐팬 100 배너 줄. */ homeTop?: HomeTopBanner };
+type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; homeSlots?: BannerSlotMap; celebrities: readonly PublishedCelebrity[]; locale: AppLocale; contentErrors?: HomeContentErrors; /** 찐팬 100 줄(서버 플래그, 운영 기본 꺼짐). */ jjinfanGauge?: boolean };
 
 export function GuestHome(props: GuestHomeProps) {
-  return <HomeLayout locale={props.locale} jjinfanGauge={props.jjinfanGauge} heartDonation={props.heartDonation} homeTop={props.homeTop} hero={<HomeHero {...props} />} midBanner={<HomeMidBanner banner={props.homeSlots?.home_mid} locale={props.locale} />} thinBanner={<HomeThinBanner banner={props.homeSlots?.home_below_board} locale={props.locale} />} notices={<HomeNoticesPlaceholder locale={props.locale} />} gallery={<HomeGalleryPlaceholder locale={props.locale} />} />;
+  return <HomeLayout locale={props.locale} jjinfanGauge={props.jjinfanGauge} hero={<HomeHero {...props} />} thinBanner={<HomeThinBanner banner={props.homeSlots?.home_below_board} locale={props.locale} />} notices={<HomeNoticesPlaceholder locale={props.locale} />} gallery={<HomeGalleryPlaceholder locale={props.locale} />} />;
 }
 
-/** 7차 홈(plan-ux-r8): 브랜드 줄·메인 배너 → 홈배너1(찐팬 하트 후원 줄, 찐팬 100 시작 뒤엔 찐팬 100 배너 줄) → 랭킹 → 홈배너2(등록 전엔 없음) → 얇은 배너 → 공지·갤러리. 한 열이고 옆 패널이 없다(다가오는 LIVE 블록은 2026-11-09 사용자 결정으로 뺐다). */
-function HomeLayout({ locale, jjinfanGauge = false, heartDonation, homeTop = "donation", hero, midBanner, thinBanner, notices, gallery }: { locale: AppLocale; jjinfanGauge?: boolean; heartDonation?: HeartDonationEvent; homeTop?: HomeTopBanner; hero: ReactNode; midBanner: ReactNode; thinBanner: ReactNode; notices: ReactNode; gallery: ReactNode }) {
+/** 7차 홈(plan-ux-r8): 브랜드 줄·메인 배너 → 찐팬 100 줄(진행 중일 때만) → 랭킹 → 얇은 배너 → 공지·갤러리. 한 열이고 옆 패널이 없다(다가오는 LIVE 블록은 2026-11-09 사용자 결정으로 뺐다). */
+function HomeLayout({ locale, jjinfanGauge = false, hero, thinBanner, notices, gallery }: { locale: AppLocale; jjinfanGauge?: boolean; hero: ReactNode; thinBanner: ReactNode; notices: ReactNode; gallery: ReactNode }) {
   return (
     <FanAppFrame
       locale={locale}
@@ -90,9 +86,8 @@ function HomeLayout({ locale, jjinfanGauge = false, heartDonation, homeTop = "do
       <div className={styles.shell}>
         <main id="main-content" className={styles.main}>
           {hero}
-          {jjinfanGauge ? <div className={styles.jjinfanStrip} data-banner-slot="home_top">{homeTop === "jjinfan100" ? <HomeBelowRankingSlot locale={locale} /> : <HomeHeartDonation locale={locale} event={heartDonation} />}</div> : null}
+          {jjinfanGauge ? <div className={styles.jjinfanStrip}><HomeJjinfanStrip locale={locale} /></div> : null}
           <div id="home-ranking" className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
-          {midBanner}
           {thinBanner}
           <ObservedLiveStrip locale={locale} />
           {notices}
@@ -115,18 +110,12 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
 
 </>);
 }
-type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "jjinfanGauge" | "heartDonation" | "homeTop"> & { queries: HomeQueries; /** 신규 가입 래플 배너를 첫 슬라이드로 둔다(서버 플래그가 켜진 환경만). */ signupRaffle?: boolean; /** 온보딩 첫 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘긴다. */ firstSteps?: boolean };
-
-/** 코드로 둔 홈 배너: 신규 가입 래플(플래그 켜짐) → 첫 걸음(아직 안 마친 브라우저) → GGGI → 덕질하는 법. 대기 화면과 완성 화면이 같은 순서라 첫 그림이 바뀌지 않는다. */
-function pinnedHomeBanners(locale: AppLocale, firstSteps: boolean, signupRaffle: boolean) {
-  return [...(signupRaffle ? [signupRaffleHomeBanner(locale)] : []), ...(firstSteps ? [firstStepsHomeBanner(locale)] : []), gggiHomeBanner(locale), missionbookHomeBanner(locale)];
-}
+type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "jjinfanGauge"> & { queries: HomeQueries };
 
 export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
   const fallbackProps = { ...props, celebrities: [] };
-  return <HomeLayout locale={props.locale} jjinfanGauge={props.jjinfanGauge} heartDonation={props.heartDonation} homeTop={props.homeTop}
-    hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={pinnedHomeBanners(props.locale, props.firstSteps ?? false, props.signupRaffle ?? false)} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
-    midBanner={<Suspense fallback={null}><StreamHomeMidBanner {...props} queries={queries} /></Suspense>}
+  return <HomeLayout locale={props.locale} jjinfanGauge={props.jjinfanGauge}
+    hero={<Suspense fallback={<HomeHero {...fallbackProps} homeBanners={[gggiHomeBanner(props.locale), missionbookHomeBanner(props.locale)]} elinaGuide={null} />}><StreamHomeHero {...props} queries={queries} /></Suspense>}
     thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
     notices={<Suspense fallback={<HomeNoticesPlaceholder locale={props.locale} />}><StreamHomeNotices {...props} queries={queries} /></Suspense>}
     gallery={<Suspense fallback={<HomeGalleryPlaceholder locale={props.locale} />}><StreamHomeGallery {...props} queries={queries} /></Suspense>} />;
@@ -134,15 +123,10 @@ export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
 
 /** The strip is read on the server with the page, so it arrives in the page and never pushes the LIVE list down afterwards. */
 function HomeThinBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
+  if (process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_KYAA_SIGNUP_EVENT_LOCAL === "1") {
+    return <FanAction href="/s/raffle" variant="neutral" fullWidth className={signupStyles.banner}>KYAA 래플 · US$400 · 17명 · 11월 30일 마감</FanAction>;
+  }
   return banner ? <ThinBanner banner={banner} locale={locale} /> : null;
-}
-/** 홈배너2: 랭킹 바로 아래(위 16px). 등록·공개된 배너가 없거나 읽기에 실패하면 구역도 간격도 그리지 않는다. */
-function HomeMidBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
-  return banner ? <div className={styles.midBanner}><ThinBanner banner={banner} locale={locale} size="mid" /></div> : null;
-}
-function StreamHomeMidBanner({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
-  const result = use(queries.homeSlots);
-  return <HomeMidBanner banner={result.status === "fulfilled" ? result.value.home_mid : undefined} locale={locale} />;
 }
 function StreamHomeThinBanner({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const result = use(queries.homeSlots);
@@ -168,16 +152,16 @@ function StreamHomeGallery({ queries, locale }: Pick<StreamingHomeProps, "querie
 const HOME_GALLERY_PHOTOS = 12;
 function StreamHomeGalleryContent({ queries, locale, photos }: Pick<StreamingHomeProps, "queries" | "locale"> & { photos: Awaited<HomeQueries["homeGallery"]> }) {
   const shorts = use(queries.homeShorts);
-  // The read brings the newest 72; the block shows the 12 most varied (one per post, creators in turn).
+  // The read brings up to 24; the block shows the 12 most varied (one per post, creators in turn).
   const varied = photos.status === "fulfilled" ? diversifyGalleryPhotos(photos.value.items) : [];
   return <HomeGallery locale={locale} photos={photos.status === "fulfilled" ? varied.slice(0, HOME_GALLERY_PHOTOS) : "error"} hasMore={photos.status === "fulfilled" && (photos.value.nextCursor !== null || varied.length > HOME_GALLERY_PHOTOS)}
     shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;
 }
 
-function StreamHomeHero({ queries, firstSteps = false, signupRaffle = false, ...props }: Pick<StreamingHomeProps, "queries" | "locale" | "firstSteps" | "signupRaffle">) {
+function StreamHomeHero({ queries, ...props }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const result = use(queries.homeBanners);
   return <HomeHero {...props} celebrities={[]}
-    homeBanners={[...pinnedHomeBanners(props.locale, firstSteps, signupRaffle), ...(result.status === "fulfilled" ? result.value : [])]}
+    homeBanners={[gggiHomeBanner(props.locale), missionbookHomeBanner(props.locale), ...(result.status === "fulfilled" ? result.value : [])]}
     contentErrors={{ homeBanners: result.status === "rejected" }}
     elinaGuide={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamElinaGuide queries={queries} locale={props.locale} hero /></Suspense>} />;
 }

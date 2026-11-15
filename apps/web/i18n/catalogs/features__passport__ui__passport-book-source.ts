@@ -1,6 +1,30 @@
 import type { TranslatedMessage } from "../messages";
 
 export const messages = {
+  "entryReviewTask": {
+    "ja": "クイズに合格するとファン認証されます",
+    "zh-Hans": "通过测验即完成粉丝认证",
+    "zh-Hant": "通過測驗即完成粉絲認證",
+    "es": "Supera el cuestionario para verificarte como fan",
+    "id": "Lulus kuis untuk verifikasi sebagai penggemar",
+    "vi": "Vượt qua câu đố để xác minh là fan",
+    "th": "ผ่านแบบทดสอบเพื่อยืนยันว่าเป็นแฟน",
+    "pt": "Passe no quiz para se verificar como fã",
+    "fr": "Réussissez le quiz pour être vérifié comme fan",
+    "ru": "Пройдите викторину, чтобы подтвердить, что вы фанат"
+  },
+  "entryReviewHelpLabel": {
+    "ja": "入国審査の説明を見る",
+    "zh-Hans": "查看入境审查说明",
+    "zh-Hant": "查看入境審查說明",
+    "es": "Sobre la revisión de entrada",
+    "id": "Tentang pemeriksaan masuk",
+    "vi": "Giới thiệu về kiểm tra nhập cảnh",
+    "th": "เกี่ยวกับการตรวจเข้าเมือง",
+    "pt": "Sobre a revisão de entrada",
+    "fr": "À propos du contrôle d’entrée",
+    "ru": "О проверке при входе"
+  },
   "entryReviewHelp": {
     "ja": "クリエイターに関する問題を解くとファン認証が完了します。合格するとパスポートを受け取り、このファンページですぐに投稿やコメント、フリートークルームへの参加ができます。",
     "zh-Hans": "回答有关创作者的问题即可完成粉丝认证。通过后将获得护照，并可立即在此粉丝页发帖、评论和进入自由交流室。",
@@ -12,18 +36,6 @@ export const messages = {
     "pt": "Responda perguntas sobre o criador para se verificar como fã. Ao passar, você recebe um Passaporte e já pode publicar, comentar e entrar na sala aberta desta página de fãs.",
     "fr": "Répondez à des questions sur le créateur pour être vérifié comme fan. Une fois réussi, vous recevez un passeport et pouvez publier, commenter et rejoindre le salon libre de cette page de fans.",
     "ru": "Ответьте на вопросы об авторе, чтобы подтвердить, что вы фанат. После этого вы получите паспорт и сразу сможете писать посты и комментарии и заходить в открытый чат этой фан-страницы."
-  },
-  "missionGo": {
-    "ja": "ミッションへ",
-    "zh-Hans": "去完成任务",
-    "zh-Hant": "前往任務",
-    "es": "Ir a la misión",
-    "id": "Buka misi",
-    "vi": "Đến nhiệm vụ",
-    "th": "ไปที่ภารกิจ",
-    "pt": "Ir para a missão",
-    "fr": "Aller à la mission",
-    "ru": "Перейти к заданию"
   },
   "helpClose": {
     "ja": "閉じる",

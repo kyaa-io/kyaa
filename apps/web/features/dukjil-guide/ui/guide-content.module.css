@@ -84,13 +84,12 @@
 }
 
 .facts li {
-  display: grid;
+  display: flex;
   min-width: 0;
-  align-content: start;
-  justify-items: center;
-  gap: var(--space-1);
-  padding: var(--space-4) var(--space-2);
-  text-align: center;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-2);
+  padding: var(--space-4) var(--space-3);
 }
 
 .facts li + li {

@@ -9,7 +9,7 @@ import { LuckyDrawPreviewProvider } from "@/features/benefit/ui/lucky-draw-previ
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { DocumentLocale } from "../components/document-locale";
 import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progress";
-import { AuthRoot } from "@/features/auth/client/auth-root";
+import { PrivyRoot } from "@/features/auth/client/privy-root";
 import { publicRuntimeConfig } from "../server/config/public-runtime-config";
 import { isAwsHosting } from "../server/config/hosting";
 import { AcquisitionSessionTracker } from "../features/analytics/client/acquisition-session-tracker";
@@ -77,7 +77,7 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const locale = parseAppLocale(requestHeaders.get("x-byus-locale"));
   const rewardedExchange = rewardedExchangeDecision(process.env);
-  const { ga4MeasurementId } = publicRuntimeConfig();
+  const { authProvider, privyAppId, testAccountLoginEnabled, appleLoginEnabled, ga4MeasurementId } = publicRuntimeConfig();
   return (
     <html lang={locale}>
       {/* AdSense site ownership: the snippet in the server HTML head of every page, on kyaa.io only (proxy decides x-byus-adsense). */}
@@ -87,7 +87,12 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
-        <AuthRoot>
+        <PrivyRoot
+          appId={privyAppId}
+          authProvider={authProvider}
+          appleLoginEnabled={appleLoginEnabled}
+          testAccountLoginEnabled={testAccountLoginEnabled}
+        >
           <DeferredRootClients slot="before" />
           {isAwsHosting() && <AwsPerformanceTelemetry />}
           <Suspense fallback={null}>
@@ -103,7 +108,7 @@ export default async function RootLayout({
           <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
           <FanToastProvider />
           <DeferredRootClients slot="after" />
-        </AuthRoot>
+        </PrivyRoot>
         </LuckyDrawPreviewProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>

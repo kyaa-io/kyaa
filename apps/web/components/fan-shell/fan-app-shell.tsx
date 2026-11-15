@@ -10,23 +10,21 @@ import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navig
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupHeaderAccount } from "@/features/groups/ui/group-header-account";
 import { FanHeaderStatus } from "./fan-header-status";
+import { SelectedBiasChip } from "@/features/selected-bias/ui/selected-bias-chip";
 import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { HeaderNotificationLink } from "@/features/notification/ui/header-notification-link";
 import { groupsCopy } from "@/features/groups/ui/copy";
-import { walletCopy } from "@/features/group-wallet/ui/copy";
-import { fanLoginHref } from "@/components/login-href";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 
 
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "next";
-import Link from "../fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { Bell, BookOpen, Heart, Home, UsersRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { PencilHeaderIcon } from "./pencil-header-icon";
-import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeader } from "./fan-header";
 import { FanLanguageSwitch } from "./fan-language-switch";
 import {
@@ -99,7 +97,7 @@ export function fanNavigationItems(
   ];
   return [
     { id: "home", href: `/${query}` as Route, label: "HOME", isCurrent: current === "home" },
-    { id: "community", href: `/pages/groups${query}` as Route, label: communityCopy(locale).title, isCurrent: current === "community" },
+    { id: "community", href: `/community${query}` as Route, label: communityCopy(locale).title, isCurrent: current === "community" },
     {
       id: "favorites",
       href: `${groupsEnabled ? "/pages/groups" : "/celebrities"}${query}` as Route,
@@ -136,16 +134,14 @@ export function GroupHeaderActions({ locale, languageHref, notificationsLabel, a
   locale: FanLocale; languageHref: string; notificationsLabel: string; actions?: ReactNode; actionsAreIdentity?: boolean;
 }) {
   const owner = useGroupRequest().ownerKey, guest = owner.startsWith("guest:");
-  const pathname = usePathname() || "/", query = useSearchParams()?.toString();
   // Until sign-in is known (server HTML and the first client frames) the slot is held empty, not drawn as a blank capsule that then
-  // turns into the login action or fills with values. Signed out the slot is the one small 로그인 action on every width (user 11/13
-  // "여기도 화면 이상하다": the illustrated 모임 가입 chip read as an ad in the header); joining a group is led by the home first-steps banner.
+  // turns into the guest chip or fills with values.
   const status = owner.startsWith("pending:") ? <span className={styles.statusPending} data-header-status-pending="" aria-hidden="true" />
-    : guest ? <FanAction variant="text" size="sm" className={styles.guestLogin} href={fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`)}>{walletCopy(locale).login}</FanAction>
+    : guest ? <SelectedBiasChip locale={locale} />
     : <FanHeaderStatus locale={locale} />;
   return <>
     {status}
-    <span className={styles.headerLanguage} data-signed-in={guest || pathname === "/" ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
+    <span className={styles.headerLanguage} data-signed-in={guest ? undefined : ""}><FanLanguageSwitch locale={locale} href={languageHref} compact /></span>
     <HeaderNotificationLink locale={locale} label={notificationsLabel} className={styles.utilityLink} />
     <HeaderDmLink locale={locale} className={styles.utilityLink} />
     <div className={styles.groupDesktopAccount}><GroupHeaderAccount locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} languageHref={languageHref} /></div>

@@ -4,7 +4,6 @@ import { authorizeAdmin, type AdminRole } from "../../features/auth/domain/admin
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { bearerToken, requireActiveMatchingUser, type AdminSessionRepository } from "../admin/admin-session-gate";
 import { authenticatePrivyAccessToken, type PrivyAccessVerifier } from "../auth/authenticate-privy";
-import { FAN_SESSION_BEARER } from "../auth/fan-session-cookie";
 
 export interface ChannelOperatorRepository extends AdminSessionRepository {
   listActiveChannelIds(appUserId: string): Promise<string[]>;
@@ -38,10 +37,7 @@ export async function authorizeChannelSession(input: {
   verifier: PrivyAccessVerifier;
   repository: ChannelOperatorRepository;
 }): Promise<ChannelSession> {
-  const token = bearerToken(input.authorization);
-  // Operator access always needs a live Privy token; the fan session cookie is for fan routes only.
-  if (token === FAN_SESSION_BEARER) throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
-  const identity = await authenticatePrivyAccessToken(token, input.verifier);
+  const identity = await authenticatePrivyAccessToken(bearerToken(input.authorization), input.verifier);
   const user = requireActiveMatchingUser(
     await input.repository.findUserByPrivyId(identity.privyUserId),
     identity.verifiedEmail,

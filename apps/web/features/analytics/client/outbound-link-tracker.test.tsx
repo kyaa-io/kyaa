@@ -37,8 +37,8 @@ describe("global outbound tracking", () => {
     stop.pop()!();
     expect(anchor.getAttribute("href")).toBe("https://changed.example/path");
     expect(dynamic.getAttribute("href")).toBe("https://other.example/?utm_source=partner");
-    start("/pages/groups");
-    expect(anchor.href).toContain("utm_campaign=groups");
+    start("/community");
+    expect(anchor.href).toContain("utm_campaign=community");
     expect(anchor.href).not.toContain("utm_campaign=runmusic");
   });
   it("skips opt-out, downloads, canceled actions and admin pages", async () => {

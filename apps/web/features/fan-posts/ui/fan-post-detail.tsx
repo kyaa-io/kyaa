@@ -1,9 +1,7 @@
 "use client";
 import { ProfileAuthor } from "@/features/group-social/profile-window";
-import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
-
+import { EarnBadgeCorner, EarnMinLength } from "@/features/dukjil/ui/earn-badge";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
-import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import { fanLoginHref } from "@/components/login-href";
 import { boardCopy } from "@/features/groups/ui/board-copy";
 import { PostDetailSkeleton } from "./post-detail-header";
@@ -14,7 +12,7 @@ import {z} from 'zod';
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import {CheerReplies} from './cheer-replies';
 import { ArrowLeft } from "lucide-react";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import { memo, useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -51,13 +49,12 @@ import commentStyles from "./post-comments.module.css";
 const parsePost = (value: unknown) => postSchema.parse((value as { post?: unknown })?.post);
 const parseComments = (value: unknown) => commentPageSchema.parse(value);
 
-/** `creatorName`: 그 팬페이지 표시 이름. 아티스트 댓글의 이름 자리에 연결 계정 닉네임 대신 쓴다(11/13 감독). */
-export function FanPostDetail(props: { postId: string; locale: AppLocale; presentation?: "board";expectedSlug?:string;creatorName?:string }) {
+export function FanPostDetail(props: { postId: string; locale: AppLocale; presentation?: "board";expectedSlug?:string }) {
   const auth = usePrivy(), query = useSearchParams();
   if(query.get('source')==='cheer')return <CheerDetail key={`${props.postId}:${auth.authenticated}:${auth.user?.id}`} postId={props.postId} locale={props.locale} expectedSlug={props.expectedSlug}/>;
   return <DetailForOwner key={`${props.postId}:${props.locale}:${auth.authenticated}:${auth.user?.id}`} {...props} />;
 }
-function DetailForOwner({ postId, locale, presentation: requestedPresentation, expectedSlug, creatorName }: { postId: string; locale: AppLocale; presentation?: "board"; expectedSlug?: string; creatorName?: string }) {
+function DetailForOwner({ postId, locale, presentation: requestedPresentation }: { postId: string; locale: AppLocale; presentation?: "board" }) {
   const online = useNetworkOnline();
   const copy = contentCopy(locale), auth = usePrivy(), mutation = useContentMutation(locale), fieldId = useId(), router = useRouter(), searchParams = useSearchParams();
   const [cursor, setCursor] = useState<string | null>(null), [replyTarget, setReplyTarget] = useState<{ id: string; nickname: string; body: string } | null>(null);
@@ -125,7 +122,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation, e
   async function remove(id: string) { if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/post-comments/${id}`, "DELETE")) refresh(); }
   if (post.state.status === "loading") return <><FanSkeletonStatus locale={locale} /><PostDetailSkeleton /></>;
   if (post.state.status !== "ready") return <p role="status" className={styles.status}>{copy.unavailable}<button className={styles.button} onClick={post.retry}>{copy.retry}</button></p>;
-  const data = post.state.data, artistName = creatorName && expectedSlug === data.celebritySlug ? creatorName : undefined, presentation = requestedPresentation ?? (data.bodyDoc ? "board" as const : undefined), requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
+  const data = post.state.data, presentation = requestedPresentation ?? (data.bodyDoc ? "board" as const : undefined), requestedReturn = searchParams.get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
   const communityHref = (requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : hubHref(data.celebritySlug, locale)) as Route;
   const returnTo = `/c/${data.celebritySlug}/community/${postId}?locale=${locale}&returnTo=${encodeURIComponent(communityHref)}`;
   const loginHref = fanLoginHref(locale, returnTo);
@@ -142,8 +139,8 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation, e
       {!replyTarget && mutationError}
       {comments.state.status === "ready" ? <>
         {comments.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={comments.retry}>{copy.retry}</button></p>}
-        {!comments.state.data.items.length ? null : <ul className={`${commentStyles.list} ${detailStyles.commentList}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined} data-artist={comment.artist ? "" : undefined}>
-          <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong><ProfileAuthor contentRef={{ kind: "fan_post_comment", id: comment.id }} nickname={comment.author.nickname} avatarUrl={comment.author.avatarUrl}>{comment.artist && artistName ? artistName : comment.author.nickname}</ProfileAuthor></strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{isEdited(comment) && <EditedMark className={detailStyles.editedMark} locale={locale} />}{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
+        {!comments.state.data.items.length ? null : <ul className={`${commentStyles.list} ${detailStyles.commentList}`}>{threadComments(comments.state.data.items).map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
+          <div className={detailStyles.commentMeta}><img src={comment.author.avatarUrl} alt="" width={32} height={32} /><strong><ProfileAuthor contentRef={{ kind: "fan_post_comment", id: comment.id }} nickname={comment.author.nickname} avatarUrl={comment.author.avatarUrl}>{comment.author.nickname}</ProfileAuthor></strong>{comment.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={comment.createdAt} locale={locale} />{isEdited(comment) && <EditedMark className={detailStyles.editedMark} locale={locale} />}{!comment.isOwner && <ContentActions targetType="fan_post_comment" targetId={comment.id} locale={locale} onChanged={refresh} />}</div>
           <ContentTranslation sourceText={comment.body} targetType="fan_post_comment" targetId={comment.id} sourceRevision={comment.revision} locale={locale}><p className={styles.body}>{comment.body}</p></ContentTranslation>
           <div className={detailStyles.commentActions}>{auth.authenticated ? <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} /> : auth.ready && <CommentLike commentId={comment.id} locale={locale} reactions={comment.reactions ?? []} loginHref={loginHref} />}{auth.ready && !comment.parentId && (auth.authenticated ? <FanAction variant="text" disabled={mutation.busy} onClick={event => { replyTrigger.current = event.currentTarget; openReply({ id: comment.id, nickname: comment.author.nickname, body: comment.body }); }}>{copy.reply}</FanAction> : <Link className={detailStyles.commentAction} href={loginHref}>{copy.reply}</Link>)}{comment.isOwner && <FanAction variant="text" disabled={mutation.busy} onClick={() => void remove(comment.id)}>{copy.delete}</FanAction>}</div>
           {replyTarget?.id === comment.id && <div className={commentStyles.inlineReply}>{composer}</div>}
@@ -181,13 +178,12 @@ export const CommentComposer = memo(function CommentComposer({ showRewards = tru
     <div className={detailStyles.commentTools}>
       <span className={detailStyles.commentCounter}>{draft.length.toLocaleString(locale)} / 1,000</span>
       {replyTarget && <FanAction type="button" variant="text" disabled={busy} onClick={onCancel}>{copy.cancel}</FanAction>}
-      {(() => { const send = <FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>; return showRewards ? <EarnBadgeCorner action="comment" locale={locale}>{send}</EarnBadgeCorner> : send; })()}
-
+      {showRewards && <EarnMinLength action="comment" locale={locale} />}{(() => { const send = <FanAction type="submit" variant="neutral" size="sm" ariaBusy={busy} loading={busy} disabled={!gated && !draft.trim()}>{rc.post}</FanAction>; return showRewards ? <EarnBadgeCorner action="comment" locale={locale}>{send}</EarnBadgeCorner> : send; })()}
     </div>
   </fieldset></form>;
 });
 
-const parseCheerDetail=(value:unknown)=>z.object({source:z.literal('cheer'),id:z.uuid(),celebritySlug:z.string().min(1),body:z.string().min(1).max(1000),clapCount:z.number().int().nonnegative(),viewerClapped:z.boolean()}).strict().parse(value);
+const parseCheerDetail=(value:unknown)=>z.object({source:z.literal('cheer'),id:z.uuid(),celebritySlug:z.string().min(1),body:z.string().min(1).max(1000)}).strict().parse(value);
 function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocale;expectedSlug?:string}){
  const copy=contentCopy(locale),query=useSearchParams(),resource=useCommunityResource(`/api/cheers/${postId}?locale=${toContentLocale(locale)}`,parseCheerDetail);
  if(resource.state.status==='loading')return <section className={`${styles.section} ${styles.postDetail}`} aria-busy='true'><FanSkeletonStatus locale={locale}/><FanSkeleton width='60%' height={28}/><FanSkeleton shape='block' height={96}/></section>;
@@ -199,16 +195,7 @@ function CheerDetail({postId,locale,expectedSlug}:{postId:string;locale:AppLocal
  return <section className={`${styles.section} ${styles.postDetail} ${boardStyles.detail}`} data-cheer-detail-id={data.id}>
  <FanAction href={back} variant='text' leadingIcon={<ArrowLeft/>}>{copy.back}</FanAction>
  <FanHeading as='h1' variant='personal-page'>{data.body.split('\n')[0]}</FanHeading>
- {resource.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></p>}
  <article className={boardStyles.article}><ContentTranslation sourceText={data.body} targetType='cheer' targetId={data.id} locale={locale}><p className={styles.body}>{data.body}</p></ContentTranslation></article>
- <CheerLike key={`${data.id}:${data.viewerClapped}:${data.clapCount}`} id={data.id} count={data.clapCount} selected={data.viewerClapped} locale={locale} returnTo={returnTo} onChanged={resource.retry}/>
  <CheerReplies detail cheerId={data.id} slug={data.celebritySlug} locale={locale} returnTo={returnTo} onChanged={resource.retry}/>
  </section>;
-}
-
-function CheerLike({id,count,selected,locale,returnTo,onChanged}:{id:string;count:number;selected:boolean;locale:AppLocale;returnTo:string;onChanged:()=>void}) {
- const auth=usePrivy(), mutation=useContentMutation(locale),copy=contentCopy(locale);
- const [liked,setLiked]=useState(selected);
- async function toggle(){ if(await mutation.request(`/api/cheers/${id}/clap`,"PUT",{selected:!liked})){setLiked(!liked);onChanged();} }
- return <div>{auth.ready&&!auth.authenticated?<FanAction href={fanLoginHref(locale,returnTo)} variant="neutral">{copy.like}</FanAction>:<FanAction variant="neutral" disabled={!auth.ready||mutation.busy} aria-pressed={liked} leadingIcon={<ReactionIcon kind="like" size={20} pressed={liked}/>} onClick={()=>void toggle()}>{copy.like} <ReactionCount value={count+(Number(liked)-Number(selected))} locale={locale}/></FanAction>}{mutation.error&&<p role="alert">{mutation.error}</p>}</div>;
 }

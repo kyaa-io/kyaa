@@ -5,7 +5,7 @@ import { FeedItemCard } from "@/features/fan-posts/ui/feed-item-card";
 vi.mock("@base-ui/react/menu", () => ({ Menu: {} }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: () => null }));
 vi.mock("@/features/fan-posts/ui/post-card", () => ({ PostCard: () => null }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: false, user: null, getAccessToken: async () => null }) }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: false, user: null, getAccessToken: async () => null }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: null, generation: 0 }) }));
 const items = Array.from({ length: 5 }, (_, index) => ({ id: String(index + 1), text: index === 0 ? "<script>alert(1)</script>\n방송 일정" : `소식 ${index}`, date: `2026-09-${String(15-index).padStart(2,"0")}`, images: index === 0 ? [{ url: "https://nng-phinf.pstatic.net/schedule.jpg" }] : [] }));
 const notice = {slug:"important",title:"중요 공지",pinned:true,kind:"standard",publishedAt:"2026-08-01"};
@@ -34,7 +34,7 @@ describe("creator news", () => {
       ? { notices: [{ ...notice, slug: "artist-news", title: "아티스트의 새 소식", postType: "artist_post" }], nextCursor: null }
       : { notices: [{ ...notice, postType: "notice" }], nextCursor: "page-two" }))));
     render(<CreatorNews slug="elina" locale="ko" initialFilter="artist_post" />);
-    await screen.findByRole("button", { name: "더 보기" });
+    await screen.findByText("더 보기를 눌러 이 분류의 소식을 확인해 보세요.");
     expect(screen.queryByText("아직 공개된 소식이 없어요.")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "더 보기" }));
     expect(await screen.findByText("아티스트의 새 소식")).toBeInTheDocument();

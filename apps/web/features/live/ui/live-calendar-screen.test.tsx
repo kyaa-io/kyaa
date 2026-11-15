@@ -8,7 +8,7 @@ const { scheduleMonth } = vi.hoisted(() => ({ scheduleMonth: vi.fn((..._args: un
 vi.mock("@/features/schedules/ui/use-schedule-month", () => ({ useScheduleMonth: (...args: unknown[]) => scheduleMonth(...args) }));
 
 const auth = vi.hoisted(() => ({ authenticated: false, getAccessToken: vi.fn() }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: true, authenticated: auth.authenticated, getAccessToken: auth.getAccessToken }),
 }));
 

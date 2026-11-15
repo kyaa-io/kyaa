@@ -14,7 +14,7 @@ const analytics = vi.hoisted(() => ({
   pageViewIdempotencyKey: vi.fn<(eventName: string, routeKey: string, ownerId: string | null) => Promise<string>>(async () => "page:creator_page_view:11111111-1111-4111-8111-111111111111"),
   recordProductEventV1: vi.fn<typeof import("../features/analytics/client/product-event-client").recordProductEventV1>(async () => true),
 }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated, getAccessToken, user: authenticated && ownerId ? { id: ownerId } : null }) }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated, getAccessToken, user: authenticated && ownerId ? { id: ownerId } : null }) }));
 vi.mock("./byus-session-provider", () => ({ useByUsSession: () => session }));
 vi.mock("@/features/analytics/client/product-event-client", () => analytics);
 vi.mock("next/navigation", () => ({
@@ -738,17 +738,5 @@ describe("Wave brand program entry", () => {
   it("preserves the Wave board without a program list", () => {
     render(<CelebrityFanPage celebrity={{ ...runmusic, slug: "kyaa-wave-fanpage", name: "Kyaa Wave" }} locale="ko" upcomingLive={null} initialTab="board" />);
     expect(screen.queryByRole("link", { name: "Kyaa Wave Quiz" })).toBeNull();
-  });
-});
-
-describe("찐팬 100 direct link", () => {
-  it("opens the invite only when the server says the challenge is on", async () => {
-    queryString = "challenge=jjinfan100&locale=ko";
-    onTestFinished(() => { queryString = "tab=home&locale=ko"; });
-    const yuna = { ...kara, slug: "yuna", name: "유나" };
-    const view = render(<CelebrityFanPage celebrity={yuna} locale="ko" upcomingLive={null} jjinfanChallengeEnabled />);
-    expect(await screen.findByRole("dialog")).toHaveTextContent("동참");
-    view.rerender(<CelebrityFanPage celebrity={yuna} locale="ko" upcomingLive={null} />);
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
   });
 });

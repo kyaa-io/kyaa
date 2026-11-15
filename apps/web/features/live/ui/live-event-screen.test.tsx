@@ -18,7 +18,7 @@ const analytics = vi.hoisted(() => ({
   recordProductEventV1: vi.fn(async () => true),
 }));
 
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ ready: authReady, authenticated, getAccessToken, user: authenticated && userAvailable ? { id: userId } : null }),
 }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => session }));
@@ -233,7 +233,10 @@ describe("LiveEventScreen", () => {
       const mission = screen.getByRole("link", { name: "LIVE 덕질 보기" });
       expect(mission).toHaveAttribute("href", "/live/kara-nualeaf/missions?locale=ko");
       expect(screen.queryByText("현재 참여 가능한 덕질이 없어요.")).not.toBeInTheDocument();
-      expect(screen.queryByText("덕질 목록에서 참여 가능 여부를 확인해 주세요.")).not.toBeInTheDocument();
+      if (available === null) {
+        expect(screen.getByText("덕질 목록에서 참여 가능 여부를 확인해 주세요.")).toBeVisible();
+        expect(mission).toHaveAccessibleDescription("덕질 목록에서 참여 가능 여부를 확인해 주세요.");
+      }
     }
   });
 
@@ -302,7 +305,7 @@ describe("LiveEventScreen", () => {
     render(<LiveEventScreen slug="ifew-100-days-tiktok-20260912" locale="en" />);
     const input = await screen.findByRole("textbox", { name: "Enter attendance code" });
     expect(screen.getByRole("heading", { name: "Attendance code" })).toBeVisible();
-    expect(screen.queryByText(/attendance code shared during the LIVE/)).not.toBeInTheDocument();
+    expect(screen.getByText(/attendance code shared during the LIVE/)).toBeVisible();
     fireEvent.change(input, { target: { value: "NOPE" } });
     fireEvent.click(screen.getByRole("button", { name: "Verify attendance" }));
 
@@ -512,7 +515,7 @@ describe("LiveEventScreen", () => {
     const link = await screen.findByRole("link", { name: "로그인하기" });
     expect(link.getAttribute("href")).toContain("intent=reserve");
     expect(link.getAttribute("href")).toContain(encodeURIComponent("/live/kara-nualeaf?locale=ko"));
-    expect(screen.queryByText("LIVE를 예약하려면 먼저 로그인해 주세요.")).not.toBeInTheDocument();
+    expect(link).toHaveAccessibleDescription("LIVE를 예약하려면 먼저 로그인해 주세요.");
     expect(link.closest("[data-live-primary-action-slot]")).not.toBeNull();
   });
 
@@ -1123,7 +1126,7 @@ describe("LiveEventScreen", () => {
     expect(watch).toHaveAccessibleName(
       "LIVE 보러가기: KARA × NUALEAF LIVE, 새 창",
     );
-    expect(screen.queryByText("외부 LIVE가 새 창에서 열려요.")).not.toBeInTheDocument();
+    expect(watch).toHaveAccessibleDescription("외부 LIVE가 새 창에서 열려요.");
     expect(watch.closest("[data-live-primary-action-slot]")).not.toBeNull();
     fireEvent.click(watch);
     await waitFor(() => expect(JSON.parse(sessionStorage.getItem("byus:live-return") ?? "{}").route).toBe("/live/kara-nualeaf?locale=ko#fan-code"));

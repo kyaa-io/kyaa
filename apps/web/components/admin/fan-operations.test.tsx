@@ -12,7 +12,7 @@ const { getAccessToken, roleState, searchParamsState } = vi.hoisted(() => ({
   roleState: { current: "viewer" },
   searchParamsState: { current: "" },
 }));
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ getAccessToken }),
 }));
 vi.mock("next/navigation", () => ({

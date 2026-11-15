@@ -8,7 +8,7 @@ const back = vi.fn();
 const explorerBaseUrl = "https://sepolia-explorer.giwa.io";
 const maskedHash = (value: string) => `${value.slice(0, 8)}…${value.slice(-6)}`;
 let locale = "ko";
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "did:privy:fan" }, getAccessToken }) }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready: true, authenticated: true, user: { id: "did:privy:fan" }, getAccessToken }) }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/passports", useRouter: () => ({ push, back }), useSearchParams: () => new URLSearchParams(`locale=${locale}`) }));
 
 const celebrity = { slug: "kara", name: "KARA", image: { url: "/images/guest-home/kara-card.jpg", alt: "KARA", position: "center" } };
@@ -253,9 +253,9 @@ describe("passport fan screens", () => {
     expect(await screen.findByRole("button", { name: "첫 좋아요" })).toBeInTheDocument();
     expect(screen.getByLabelText("첫 좋아요를 남긴 날")).toBeInTheDocument();
     expect(screen.queryByText("기록을 등록하고 있어요")).not.toBeInTheDocument();
-    expect(await screen.findByRole("link", { name: /^1\s*스탬프$/ })).toHaveAttribute("href", "#mission-book");
     fireEvent.click(screen.getByRole("button", { name: "첫 좋아요" }));
     expect(screen.getByText("기록을 등록하고 있어요")).toBeInTheDocument();
+    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("1");
     expect(screen.queryByRole("link", { name: /첫 좋아요 등록 기록/ })).not.toBeInTheDocument();
   });
 
@@ -298,7 +298,7 @@ describe("passport fan screens", () => {
     fireEvent.keyDown(dialog, { key: "Escape" });
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
     await waitFor(() => expect(trigger).toHaveFocus());
-    expect(await screen.findByRole("link", { name: /^1\s*스탬프$/ })).toHaveAttribute("href", "#mission-book");
+    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("1");
   });
 
   it("refreshes a pending First Reaction on return and keeps the displayed history while reading", async () => {
@@ -332,9 +332,7 @@ describe("passport fan screens", () => {
     await act(async () => { finish(Response.json({ passport: { ...detail, firstReaction: { ...detail.firstReaction, mintStatus: "minted", txHash: tx } } })); });
     expect(await within(history).findByText("기록 등록이 완료됐어요")).toBeInTheDocument();
     expect(within(history).getByRole("link")).toHaveAttribute("href", `${explorerBaseUrl}/tx/${tx}`);
-    fireEvent.keyDown(history, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
-    expect(await screen.findByRole("link", { name: /^1\s*스탬프$/ })).toHaveAttribute("href", "#mission-book");
+    expect(screen.getByText("스탬프").previousSibling).toHaveTextContent("1");
   });
 
   it("preserves an archived LIVE title without exposing a dead detail link", async () => {

@@ -1,6 +1,6 @@
 "use client";
 import type { Route } from "next";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { buildGuideModel } from "@/features/dukjil-guide/domain/guide-model";

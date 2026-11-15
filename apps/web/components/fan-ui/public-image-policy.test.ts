@@ -1,4 +1,3 @@
-import { creatorImageSizes } from "./creator-image-config";
 import { describe, expect, it } from "vitest";
 import { bypassImageOptimization, creatorCropScale, homeHeroSizes, publicImageRemotePatterns } from "./public-image-policy";
 
@@ -27,10 +26,7 @@ describe("public image delivery boundary", () => {
   it("accounts for existing crop magnification without multiplying by device DPR", () => {
     expect(creatorCropScale("xin")).toBe(1.6);
     expect(creatorCropScale("park-myungho")).toBe(2.3);
-    // Approved natural-scale portrait; DPR must not restore the retired 2.45 crop.
-    expect(creatorCropScale("ifewknow")).toBe(1);
-    expect(creatorImageSizes("100px", creatorCropScale("ifewknow"))).toBe("100px");
-    expect(creatorImageSizes("100px", creatorCropScale("xin"))).toBe("160px");
+    expect(creatorCropScale("ifewknow")).toBe(2.45);
     expect(creatorCropScale("jenny-jeong")).toBe(1);
     expect(homeHeroSizes()).toContain("572px");
   });

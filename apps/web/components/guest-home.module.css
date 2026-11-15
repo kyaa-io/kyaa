@@ -34,11 +34,9 @@
 .main { min-width: 0; }
 .heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
 .contentSection { margin-top: var(--fan-section-gap); }
-/* 대표 2026-11-11: 배너와 랭킹 사이 빈 띠 자리에 찐팬 하트 후원 줄(항상 있음, 그 크리에이터 챌린지가 없으면 0/100). 위아래 16px. */
+/* 대표 2026-11-11: 배너와 랭킹 사이 빈 띠 자리에 찐팬 100 줄(항상 있음, 챌린지가 없으면 0/100). 위아래 16px. */
 .jjinfanStrip { margin-top: var(--space-4); }
 .jjinfanStrip + .contentSection { margin-top: var(--space-4); }
-/* 홈배너2(home_mid): 랭킹 카드 바로 아래, 위 16px. 얇은 배너·다음 구역과의 간격은 그쪽이 가진다. */
-.midBanner { margin-top: var(--space-4); }
 .brandTitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }
 .brandSlogan { color:var(--muted); font-size:var(--fan-metadata-size); font-weight:var(--fan-body-weight); line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
 .heroCarousel { position: relative; color: var(--color-surface); }
@@ -406,11 +404,3 @@
   .carouselCounter { position: absolute; z-index: var(--z-home-live); top: 12px; right: 12px; display: block; pointer-events: none; padding:var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-home-caption); color: var(--color-surface); font-size:var(--fan-badge-size); font-variant-numeric: tabular-nums; }
 }
 
-
-/* 11/12 D-C: the challenge shares hero controls in a shorter slot. */
-.heroCarousel[data-compact] .heroViewport { height: 160px; aspect-ratio: auto; border-radius: var(--radius-card); background:var(--color-soft); }
-@media (width >= 48rem) { .heroCarousel[data-compact] .heroViewport { height: 240px; } }
-@media (width < 48rem) { .heroCarousel[data-compact] .carouselCounter { top:auto; bottom:var(--space-3); } }
-
-.heroCarousel[data-compact] .heroTrack { gap:var(--space-1); }
-.heroCarousel[data-compact] .heroCard { background:var(--color-soft); }

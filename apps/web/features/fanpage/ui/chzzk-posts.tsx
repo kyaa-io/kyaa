@@ -7,7 +7,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage
 import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import Image from "next/image";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import type { Route } from "next";
 import { ArrowRight, ArrowUpRight, Pin } from "lucide-react";
@@ -19,6 +19,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 import { CHZZK_COMMUNITY_URL, chzzkFeedSchema, type ChzzkPost } from "../domain/chzzk-posts";
 import { creatorNewsItems, newsNoticesSchema, type NewsNotice } from "../domain/creator-news";
 import styles from "./chzzk-posts.module.css";
+import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { useNewsSource } from "./use-news-source";
 import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
@@ -26,6 +27,9 @@ const parsePosts = (body: unknown) => chzzkFeedSchema.parse(body);
 const parseNotices = (body: unknown) => { const page = newsNoticesSchema.parse(body); return {items:page.notices,nextCursor:page.nextCursor}; };
 const postKey = (post: ChzzkPost) => post.id;
 const noticeKey = (notice: NewsNotice) => notice.slug;
+const categoryMoreCopy = { ja: "もっと見るを押して、このカテゴリの情報を確認してください。", "zh-Hans": "点击加载更多，查看此分类的动态。", "zh-Hant": "點擊載入更多，查看此分類的動態。", es: "Carga más para ver las novedades de esta categoría.", id: "Muat lebih banyak untuk melihat pembaruan dalam kategori ini.", vi: "Tải thêm để xem tin mới trong danh mục này.", th: "โหลดเพิ่มเติมเพื่อดูข่าวสารในหมวดหมู่นี้", pt: "Carregue mais para ver novidades nesta categoria.", fr: "Chargez plus de contenus pour consulter cette catégorie.",
+  ru: "Загрузите дополнительные файлы, чтобы проверить наличие обновлений в этой категории."
+ } as const;
 
 export type NewsFilter = "all" | "notice" | "artist_post" | "chzzk";
 
@@ -64,7 +68,7 @@ export function CreatorNews({ slug, locale, full = false, initialFilter = "all",
                 : <span className={styles.notice}>{item.pinned && <Pin size={12} aria-hidden="true" />}{item.notice.postType === "artist_post" ? postLabel : item.notice.kind === "welcome" ? (locale === "ko" ? "이용 안내" : translate(locale, localizedMessages.m1160110e13ea, "Start here")) : contentLabels.notice}{item.notice.visibility === "members" ? ` · ${contentLabels.members}` : ""}</span>}
               <time dateTime={item.date}>{item.date.slice(0, 10).replaceAll("-", ".")}</time>
             </span>
-            <span className={styles.title} translate="no">{item.title}</span>
+            {item.source === "chzzk" ? <span className={styles.title} translate="no">{item.title}</span> : <TranslatedText text={item.title} locale={locale} className={styles.title} controls={false} />}
           </span>
           {item.source === "chzzk" && item.post.images[0] && <NewsThumbnail key={item.post.images[0].url} url={item.post.images[0].url} />}
           <ArrowRight className={styles.rowArrow} size={16} aria-hidden="true" />
@@ -74,7 +78,7 @@ export function CreatorNews({ slug, locale, full = false, initialFilter = "all",
     </ul>}
     {!items.length && loading && <FanSkeletonRows rows={4} variant="post" ariaLabel={locale === "ko" ? "소식을 불러오고 있어요." : translate(locale, localizedMessages.m761de726ce49, "Loading updates.")} />}
     {failed && <div className={styles.feedback}><span role="status">{items.length ? (locale === "ko" ? "일부 소식을 불러오지 못했어요." : translate(locale, localizedMessages.me4b4e8ab66f1, "Some updates couldn't be loaded.")) : (locale === "ko" ? "소식을 불러오지 못했어요." : translate(locale, localizedMessages.m410455f09dcc, "Couldn't load updates."))}</span><button onClick={() => { sources.forEach((source) => { if (source.state.status === "error") source.retry(); }); }}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m158760d5a4ca, "Retry")}</button></div>}
-    {!items.length && !loading && !failed && !hasMore && <p className={styles.feedback}>{filter === "notice" ? (locale === "ko" ? "아직 공개된 공지가 없어요." : translate(locale, localizedMessages.m25d5632ac746, "No public notices yet.")) : filter === "chzzk" ? (locale === "ko" ? "아직 공개된 치지직 소식이 없어요." : translate(locale, localizedMessages.mfacc92ea1b06, "No public CHZZK updates yet.")) : (locale === "ko" ? "아직 공개된 소식이 없어요." : translate(locale, localizedMessages.m7850d3d1cee2, "No public updates yet."))}</p>}
+    {!items.length && !loading && !failed && <p className={styles.feedback}>{hasMore ? (locale === "ko" ? "더 보기를 눌러 이 분류의 소식을 확인해 보세요." : locale === "en" ? "Load more to check for updates in this category." : categoryMoreCopy[locale]) : filter === "notice" ? (locale === "ko" ? "아직 공개된 공지가 없어요." : translate(locale, localizedMessages.m25d5632ac746, "No public notices yet.")) : filter === "chzzk" ? (locale === "ko" ? "아직 공개된 치지직 소식이 없어요." : translate(locale, localizedMessages.mfacc92ea1b06, "No public CHZZK updates yet.")) : (locale === "ko" ? "아직 공개된 소식이 없어요." : translate(locale, localizedMessages.m7850d3d1cee2, "No public updates yet."))}</p>}
     {(full || !items.length) && hasMore && <div className={styles.pagination}>
       <button type="button" disabled={sources.some(source => source.state.moreLoading)} onClick={() => sources.forEach(source => { if (source.state.nextCursor && (!sources.some(item => item.state.moreError) || source.state.moreError)) source.loadMore(); })}>{sources.some(source => source.state.moreLoading) ? (locale === "ko" ? "불러오는 중…" : translate(locale, localizedMessages.m9b11aaea717a, "Loading…")) : (locale === "ko" ? "더 보기" : translate(locale, localizedMessages.m4f5d625cf937, "Load more"))}</button>
       {sources.some(source => source.state.moreError) && <p role="status">{locale === "ko" ? "다음 소식을 불러오지 못했어요. 더 보기를 눌러 다시 시도해 주세요." : translate(locale, localizedMessages.m857e081a72b4, "Couldn't load more updates. Select Load more to retry.")}</p>}

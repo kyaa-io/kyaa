@@ -1,10 +1,9 @@
 "use client";
-import { usePrivy as useFallbackAuth, type ByUsAuth, type ByUsAuthUser } from "./auth-fallback";
-import { openLoginPage } from "./open-login-page";
+import { usePrivy, useSubscribeToJwtAuthWithFlag } from "@/features/auth/client/privy-backend";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 
-interface Session { authenticated: boolean; walletLinked: boolean; userId?: string; accessToken: string; expiresAt: number }
+interface Session { authenticated: boolean; walletLinked: boolean; accessToken: string; walletToken?: string; expiresAt: number; enrollment?: { mode: "new" | "recovery" | "blocked"; provider?: "google" | "apple" } }
 interface CognitoAuth { enabled: boolean; loading: boolean; session: Session | null; refresh(): Promise<Session | null>; logout(): Promise<string|null>; getAccessToken(): Promise<string | null> }
 const Context=createContext<CognitoAuth>({enabled:false,loading:false,session:null,refresh:async()=>null,logout:async()=>null,getAccessToken:async()=>null});
 export const useCognitoAuth=()=>useContext(Context);
@@ -43,24 +42,21 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
     const value=await response.json();
     return typeof value.logoutUrl==="string"?value.logoutUrl:null;
   },[]);
+  const getExternalJwt=useCallback(async()=>{
+    const value=current.current && current.current.expiresAt>Date.now()+30_000?current.current:await refresh();
+    return value?.walletLinked?value.walletToken:undefined;
+  },[refresh]);
+  // Never start JWT wallet authentication before the server confirms the existing DID/address mapping.
+  useSubscribeToJwtAuthWithFlag({enabled:session?.walletLinked===true,isAuthenticated:session?.authenticated===true,isLoading:loading,getExternalJwt});
   const value=useMemo(()=>({enabled:true,loading,session,refresh,logout,getAccessToken}),[loading,session,refresh,logout,getAccessToken]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 
-export type { ByUsAuth, ByUsAuthUser } from "./auth-fallback";
-
-/**
- * The app's one auth hook. It reads kyaa's own server session only (Cognito sign-in, PRIVY-EXIT-0005): user.id is the
- * member's identity key (did:privy:… for members from before the move, kyaa:<uuid> after), the same value the server
- * resolves from the Bearer token. Without CognitoAuthProvider (isolated tests only) it returns the fallback state.
- */
-export function useByUsAuth(): ByUsAuth{
-  const fallback=useFallbackAuth(),cognito=useCognitoAuth();
-  const {logout:cognitoLogout,session,loading,getAccessToken}=cognito;
-  const logout=useCallback(async()=>{const destination=await cognitoLogout();if(destination)window.location.assign(destination);},[cognitoLogout]);
-  const authenticated=session?.authenticated===true && session.walletLinked===true && typeof session.userId==="string";
-  const userId=authenticated?session!.userId!:null;
-  const user=useMemo<ByUsAuthUser|null>(()=>userId?{id:userId,linkedAccounts:[]}:null,[userId]);
-  const auth=useMemo<ByUsAuth>(()=>({ready:!loading,authenticated,user,getAccessToken,logout,login:openLoginPage}),[authenticated,getAccessToken,loading,logout,user]);
-  return cognito.enabled?auth:fallback;
+/** Keeps existing UI and Bearer call sites while Cognito becomes the primary API credential. */
+export function useByUsAuth(): ReturnType<typeof usePrivy>{
+  const privy=usePrivy(),cognito=useCognitoAuth();
+  const logout=useCallback(async()=>{const destination=await cognito.logout();await privy.logout();if(destination)window.location.assign(destination);},[cognito,privy]);
+  if(!cognito.enabled)return privy;
+  const authenticated=cognito.session?.walletLinked===true && privy.authenticated;
+  return {...privy,ready:privy.ready&&!cognito.loading,authenticated,user:authenticated?privy.user:null,getAccessToken:cognito.getAccessToken,logout};
 }

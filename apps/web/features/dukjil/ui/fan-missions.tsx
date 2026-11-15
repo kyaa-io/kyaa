@@ -1,5 +1,5 @@
 "use client";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useId, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
@@ -34,7 +34,7 @@ const LEGACY_KEYS: readonly MissionKey[] = ["checkin", "post", "comment"];
 export type GroupMissionLinks = { write: string; comment: string };
 
 /** One row per fan activity: what to do, the points, today's count against the daily limit, a stamp when done. Pressing a row goes to where that activity happens. `all` lists every catalog activity with an all-clear row on top (the 덕질 tab); without it a page shows its main activities. */
-export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage, preview, loginReturn }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string; /** Show only this many rows first; the rest open with `전체 보기 ›` on the title line (팬페이지 390, PM 11/13: no long column of seven rows). */ preview?: number; /** Where a signed-out press comes back to after the login; the row's own address when absent. */ loginReturn?: string }) {
+export function FanMissions({ locale, slug, title, titleSuffix, passportHref, proofHref, footer, onAttendance, group, all = false, noPage, preview }: { locale: AppLocale; slug: string; title: string; titleSuffix?: ReactNode; passportHref: string; proofHref: string; footer?: ReactNode; onAttendance: (trigger: HTMLElement) => void; group?: GroupMissionLinks; all?: boolean; /** Where the activity rows go while the viewer has no page to do them on. */ noPage?: string; /** Show only this many rows first; the rest open with `전체 보기 ›` on the title line (팬페이지 390, PM 11/13: no long column of seven rows). */ preview?: number }) {
   const state = useDukjil();
   const anywhere = useAttendedAnywhereToday(!group && state?.authenticated === true);
   const headingId = useId();
@@ -88,23 +88,20 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
     <FanMissionList id={id} className={styles.cards}>
       {list.map(({ mission, points, count, limit, remaining, done, period }, index) => {
         const finished = !guest && done;
-        // B3 · D4 (대표 11/14 02:01): the count sits right after the activity's name and the bar fills the line below, on a page's 팬 활동 card and on the 덕질 tab alike.
-        const countCell = (className: string, shown: number, max: number) => <span className={className} data-mission-count=""><span className={styles.countCheck} aria-hidden="true">{done && <Check size={12} />}</span><span className={styles.countValue}>{shown.toLocaleString(locale)}/{max.toLocaleString(locale)}</span></span>;
-        const nameCount = !guest && !group && !pending && count !== undefined && limit !== null ? countCell(styles.nameCount, count, limit) : null;
         const progress = !guest && !group && (pending || count === undefined ? (on || pending) && !state?.todayFailure && <span className={styles.progress} aria-hidden="true"><FanSkeleton width="100%" height={6} /></span>
           : limit !== null && (
             <span className={styles.progress}>
               <span className={styles.bar} role="progressbar" aria-label={mission.label} aria-valuemin={0} aria-valuemax={limit} aria-valuenow={Math.min(count, limit)}><i style={{ "--mission-fill": Math.min(1, count / limit) } as CSSProperties} data-done={done} /></span>
-              {!nameCount && countCell(styles.count, count, limit)}
+              <span className={styles.count} data-mission-count=""><span className={styles.countCheck} aria-hidden="true">{done && <Check size={12} />}</span><span className={styles.countValue}>{count.toLocaleString(locale)}/{limit.toLocaleString(locale)}</span></span>
             </span>
           ));
-        const href = guest ? fanLoginHref(locale, loginReturn ?? mission.href) : mission.href;
+        const href = guest ? fanLoginHref(locale, mission.href) : mission.href;
         const onClick = !guest && mission.key === "checkin" ? (event: MouseEvent<HTMLAnchorElement>) => { if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); onAttendance(event.currentTarget); } : undefined;
         // D1 · F3: every row is the shared FanMissionRow (circle art · title · progress at the title's x · one fixed trailing column).
         // The trailing column holds the done tag or the reward.
         return <FanMissionRow mobileExtra={all && !group && on && index >= 6} key={mission.key} dataMission={mission.key} done={finished} href={href} onClick={onClick}
           art={<MissionArt src={`/images/stamps/ink-v1/${mission.art}.webp`} />}
-          title={nameCount ? <>{mission.label}{nameCount}</> : mission.label}
+          title={mission.label}
           detail={progress || undefined}
           trailing={finished ? <MissionDoneStamp label={dukjilText(locale, "missionDoneShort")} />
             : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
@@ -131,7 +128,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
   </div>;
   const folded = all && !group && on;
   return (
-    <section className={`${styles.section} ${all ? styles.full : styles.compact} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
+    <section className={`${styles.section} ${all ? styles.full : ""} ${inkStyles.palette}`} aria-labelledby={headingId} data-fan-missions>
       <div className={styles.head}>
         <div className={styles.headingGroup}><h2 id={headingId}>{title}</h2>{titleSuffix}</div>
         {!folded && on && today && !guest && (

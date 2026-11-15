@@ -1,5 +1,5 @@
 "use client";
-import Link from "../../../components/fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { ArrowRight } from "lucide-react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";

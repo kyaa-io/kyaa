@@ -1,13 +1,10 @@
 import { z } from "zod";
-import { externalRoomLinksRead } from "./external-room-link";
 
 export const groupKindSchema = z.enum(["fan", "hobby", "brand"]);
 export const groupPageSchema = z.object({
   id: z.string().uuid(), kind: groupKindSchema, celebrityId: z.string().uuid().nullable(),
   slug: z.string().nullable(), anonymous:z.boolean().optional(), name: z.string(), description: z.string(),
   imageUrl: z.string().nullable(), question: z.string().nullable(), memberCount: z.number().int().nonnegative(),
-  // 팬페이지(kind=fan)에만: '좋아요 남기기'를 누른 활성 계정 수. 홈 크리에이터 랭킹의 누적 좋아요와 같은 값이다.
-  likeCount: z.number().int().nonnegative().optional(),
   lastSeenAt: z.iso.datetime({offset:true}).nullable().optional(),
   isNew: z.boolean().optional(), challenge: z.boolean().optional(), fanCount: z.number().int().nonnegative().optional(),
   // Only with ?fields=facts (groupApiQuery({ fields: "facts" })). Absent on older servers and without the parameter.
@@ -15,7 +12,6 @@ export const groupPageSchema = z.object({
   newPostCount: z.number().int().nonnegative().nullable().optional(),
   liveNow: z.boolean().nullable().optional(),
   lastActiveAt: z.iso.datetime({offset:true}).nullable().optional(),
-  externalLinks: externalRoomLinksRead,
 });
 export const groupListSchema = z.object({ items: z.array(groupPageSchema), totalCount: z.number().int().nonnegative().optional(), nextCursor: z.union([z.string().uuid(),z.string().regex(/^[A-Za-z0-9_-]{1,512}$/)]).nullable() });
 export const groupDetailSchema = z.object({ page: groupPageSchema, membership: z.object({ role: z.enum(["owner", "manager", "member"]), joinedAt: z.string() }).nullable(), bookmarked: z.boolean() });

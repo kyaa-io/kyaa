@@ -5,7 +5,7 @@ import { signupFunnelTracker } from "./signup-funnel-tracker";
 
 let ready = false;
 let authenticated = false;
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready, authenticated }) }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ ready, authenticated }) }));
 
 describe("guide tracking preserves existing navigation", () => {
   afterEach(() => vi.restoreAllMocks());

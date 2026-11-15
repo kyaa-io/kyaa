@@ -104,10 +104,6 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     const otherBuilt = ensured.built === false && !ensured.busy && !ensured.waiting && !ensured.failed && head.builtDay !== today;
     return ensured.built === true || otherBuilt ? deps.rpc(name, args) : raw;
   };
-  const platformFollowers = async (slugs: unknown[]): Promise<Record<string, unknown>> => {
-    try { return obj(await deps.rpc("read_celebrity_platform_followers", { p_slugs: slugs.filter((slug): slug is string => typeof slug === "string") })); }
-    catch { return {}; }
-  };
   const locale = (request: Request) => z.string().regex(/^[A-Za-z-]{2,12}$/).parse(one(request, "locale") ?? "ko");
   const celebrity = async (idOrSlug: string) => {
     if (UUID.test(idOrSlug)) return idOrSlug;
@@ -208,9 +204,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
             ...(metric === "likes" ? { likes: r.likes, totalLikes: r.totalLikes } : {}) };
         });
-        // Platform follower counts (20261227150001) are read on their own, so the three ranking functions stay as they are. A failed read leaves the rows without them.
-        const platforms = rows.length ? await platformFollowers(rows.map((row) => row.slug)) : {};
-        return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows: rows.map((row) => ({ ...row, ...(platforms[String(row.slug)] ? { platforms: platforms[String(row.slug)] } : {}) })) }), { headers: listHeaders(request, member) });
+        return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows }), { headers: listHeaders(request, member) });
       }
       // points (20261222140000): points earned in the period, any period. hearts (default) is the older list; a period list asked without points is by hearts.
       const asked = z.enum(HOME_FAN_METRICS).parse(one(request, "metric") ?? "hearts");
@@ -227,7 +221,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         const r = obj(row);
         return { rank: r.rank, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, isNew: r.isNew === true, nickname: r.nickname, characterId: r.characterId, tier: r.tier ?? null,
           isMe: appUserId !== null && r.isMe === true, delta: r.delta ?? null, favorite: favoriteIn(r.favorite, lang), weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
-          ...(metric === "points" ? { tickets: r.tickets, totalPoints: r.totalPoints, attendanceDays: r.attendanceDays, posts: r.posts } : {}),
+          ...(metric === "points" ? { tickets: r.tickets, totalPoints: r.totalPoints } : {}),
           ...(appUserId ? { profileRef: signHomeProfileRef(checked(homeFanProfileLocatorSchema, r.profileRef), appUserId, deps.profileRefSecret) } : {}) };
       });
       const body = checked(homeFanRankingSchema, {

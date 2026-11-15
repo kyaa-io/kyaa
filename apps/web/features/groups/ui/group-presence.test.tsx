@@ -5,8 +5,6 @@ import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 import {AuthError} from '@/features/auth/domain/auth-errors';
 import {createGroupHandler} from '@/server/groups/routes';
 import {GroupPresence} from './group-presence';
-const frame=vi.hoisted(()=>({value:null as null|{celebrity?:{name:string}}}));
-vi.mock('./group-page-context',()=>({useOptionalGroupPage:()=>frame.value}));
 import {useGroupPresence} from './use-group-presence';
 import { resetAuthReadyDeadlineForTest } from '@/features/auth/client/public-read-auth';
 vi.mock('server-only',()=>({}));
@@ -31,20 +29,20 @@ beforeEach(()=>{
 afterEach(()=>{cleanup();vi.useRealTimers();vi.unstubAllGlobals();});
 it('connects the actual client request and handler; polls both counts and artist state',async()=>{
  render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();
- expect(screen.getByRole('img',{name:'7'})).toBeVisible();expect(screen.getByRole('img',{name:'12'})).toBeVisible();expect(screen.getByText('지금 접속 중')).toBeVisible();
+ expect(screen.getByText('지금 접속 7')).toBeVisible();expect(screen.getByText('오늘 방문 12')).toBeVisible();expect(screen.getByText('지금 접속 중')).toBeVisible();
  expect(rpc).toHaveBeenCalledWith('groups_content_dispatch',expect.objectContaining({p_operation:'heartbeat',p_actor:session.ownerId,p_page_id:pageId}));
- response={onlineCount:2,todayCount:13,artists:[]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.getByRole('img',{name:'2'})).toBeVisible();expect(screen.queryByText('Artist')).toBeNull();
+ response={onlineCount:2,todayCount:13,artists:[]};await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.getByText('지금 접속 2')).toBeVisible();expect(screen.queryByText('Artist')).toBeNull();
 });
 it('removes stale numbers offline and refreshes immediately on reconnect',async()=>{
  render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();
- online=false;act(()=>window.dispatchEvent(new Event('offline')));expect(screen.queryByRole('img',{name:'7'})).toBeNull();expect(screen.getByRole('status')).toBeVisible();
+ online=false;act(()=>window.dispatchEvent(new Event('offline')));expect(screen.queryByText('지금 접속 7')).toBeNull();expect(screen.getByRole('status')).toBeVisible();
  const before=rpc.mock.calls.length;await act(()=>vi.advanceTimersByTimeAsync(60000));expect(rpc).toHaveBeenCalledTimes(before);
- online=true;response={onlineCount:1,todayCount:1,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getAllByRole('img',{name:'1'})).toHaveLength(2);
+ online=true;response={onlineCount:1,todayCount:1,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getByText('지금 접속 1')).toBeVisible();expect(screen.getByText('오늘 방문 1')).toBeVisible();
 });
 it('stops hidden-tab heartbeats, refreshes on return and does not delete another tab on unmount',async()=>{
  const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();
  visible=false;act(()=>document.dispatchEvent(new Event('visibilitychange')));const before=rpc.mock.calls.length;
- await act(()=>vi.advanceTimersByTimeAsync(120000));expect(rpc).toHaveBeenCalledTimes(before);expect(screen.queryByRole('img',{name:'7'})).toBeNull();
+ await act(()=>vi.advanceTimersByTimeAsync(120000));expect(rpc).toHaveBeenCalledTimes(before);expect(screen.queryByText('지금 접속 7')).toBeNull();
  visible=true;act(()=>document.dispatchEvent(new Event('visibilitychange')));await flush();expect(rpc.mock.calls.length).toBeGreaterThan(before);
  view.unmount();const final=rpc.mock.calls.length;await act(()=>vi.advanceTimersByTimeAsync(120000));expect(rpc).toHaveBeenCalledTimes(final);expect(vi.mocked(fetch).mock.calls.every(([,init])=>init?.method!=='DELETE')).toBe(true);
 });
@@ -56,8 +54,8 @@ it('only a member records a visit; a denied heartbeat stops until membership cha
  deny=true;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(beats()).toBe(1);await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(beats()).toBe(1);
 });
 it('does not retain successful numbers after read failure or account change',async()=>{
- const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();fail=true;await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByRole('img',{name:'7'})).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.getByRole('button',{name:'다시 시도'})).toBeTruthy();
- fail=false;session.ownerId='40000000-0000-4000-8000-000000000001';session.generation++;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);expect(screen.queryByRole('img',{name:'7'})).toBeNull();await flush();expect(rpc).toHaveBeenLastCalledWith('groups_content_dispatch',expect.objectContaining({p_actor:session.ownerId}));
+ const view=render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();fail=true;await act(()=>vi.advanceTimersByTimeAsync(30000));await flush();expect(screen.queryByText('지금 접속 7')).toBeNull();expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.getByRole('button',{name:'다시 시도'})).toBeTruthy();
+ fail=false;session.ownerId='40000000-0000-4000-8000-000000000001';session.generation++;view.rerender(<GroupPresence pageId={pageId} locale='ko' member/>);expect(screen.queryByText('지금 접속 7')).toBeNull();await flush();expect(rpc).toHaveBeenLastCalledWith('groups_content_dispatch',expect.objectContaining({p_actor:session.ownerId}));
 });
 
 it('refreshes the read-only sidebar without creating extra heartbeats',async()=>{
@@ -70,7 +68,7 @@ it('discards in-flight pre-disconnect responses after reconnect',async()=>{
  rpc.mockImplementationOnce(()=>new Promise(resolve=>{resolveOld=resolve;}));
  render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();
  online=false;act(()=>window.dispatchEvent(new Event('offline')));
- online=true;response={onlineCount:3,todayCount:15,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getByRole('img',{name:'3'})).toBeVisible();
+ online=true;response={onlineCount:3,todayCount:15,artists:[]};act(()=>window.dispatchEvent(new Event('online')));await flush();expect(screen.getByText('지금 접속 3')).toBeVisible();
  await act(async()=>resolveOld({onlineCount:999,todayCount:999,artists:[]}));await flush();expect(screen.queryByText(/999/)).toBeNull();
 });
 it('does not present malformed API data or auth-pending values as real counts',async()=>{
@@ -82,7 +80,7 @@ it('does not present malformed API data or auth-pending values as real counts',a
 it('retries a transient read once without a second heartbeat',async()=>{
  const handlerFetch=vi.mocked(fetch);let reads=0;const original=handlerFetch.getMockImplementation()!;
  handlerFetch.mockImplementation(async(url,init)=>{if(init?.method!=='PUT'&&reads++===0)return Response.json({error:{code:'TEMPORARY'}},{status:503});return original(url,init);});
- render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(screen.getByRole('img',{name:'7'})).toBeVisible();expect(reads).toBe(2);expect(handlerFetch.mock.calls.filter(([,init])=>init?.method==='PUT')).toHaveLength(1);
+ render(<GroupPresence pageId={pageId} locale='ko' member/>);await flush();expect(screen.getByText('지금 접속 7')).toBeVisible();expect(reads).toBe(2);expect(handlerFetch.mock.calls.filter(([,init])=>init?.method==='PUT')).toHaveLength(1);
 });
 it('does not retry the unconfigured local transport or show fabricated counts',async()=>{
  const handlerFetch=vi.mocked(fetch);handlerFetch.mockResolvedValue(Response.json({error:{code:'LOCAL_PRESENCE_TRANSPORT_UNAVAILABLE'}},{status:503}));
@@ -91,7 +89,7 @@ it('does not retry the unconfigured local transport or show fabricated counts',a
 });
 it('stops the immediate retry after two failed reads and does not retain counts',async()=>{
  auth.authenticated=false;const handlerFetch=vi.mocked(fetch);handlerFetch.mockResolvedValue(Response.json({error:{code:'TEMPORARY'}},{status:503}));
- render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(handlerFetch).toHaveBeenCalledTimes(2);expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.queryByText('0')).toBeNull();expect(screen.queryByRole('img',{name:'7'})).toBeNull();
+ render(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(handlerFetch).toHaveBeenCalledTimes(2);expect(screen.getByRole('status')).toHaveTextContent('접속 현황을 불러오지 못했어요.');expect(screen.queryByText('0')).toBeNull();expect(screen.queryByText('지금 접속 7')).toBeNull();
 });
 it('compact mode shows one artist cell only when an artist is online or visited, and never grows per artist',async()=>{
  const base={profileId:'30000000-0000-4000-8000-000000000001',nickname:'Artist',online:true,visitedToday:true};
@@ -107,18 +105,10 @@ it('compact mode shows one artist cell only when an artist is online or visited,
  expect(screen.queryByText('Artist')).toBeNull();view.unmount();
 });
 
-it('pulses the online artist dot three times after the number roll and stops it under reduced motion (11/13)',()=>{
- const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
- expect(css).toMatch(/\.liveDot::after \{[^}]*animation: presencePulse 1\.6s var\(--motion-easing\) \.6s 3;/);
- expect(css).not.toMatch(/infinite/);
- expect(css).toMatch(/@keyframes presencePulse \{[^}]*transform: scale\(1\);[^}]*\}[^}]*transform: scale\(2\.6\); \}/);
- expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.liveDot::after \{ animation: none; \} \}/);
-});
-
-it('sets the fan count as a pink pill that blinks three times after the number roll, then stops (11/13 대표)',async()=>{
+it('sets the fan count as a pink pill that blinks three times after it appears, then stops (11/13 대표)',async()=>{
  const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact' memberCount={27}/>);await flush();
  const fans=view.container.querySelector('[data-fan-count]')!;
- expect(fans.querySelector('[aria-label="27"]')).not.toBeNull();expect(fans.textContent!.startsWith('팬')).toBe(true);expect(fans.className).toMatch(/fanCount/);expect(view.container.querySelector('section')!.firstElementChild).toBe(fans);
+ expect(fans).toHaveTextContent('팬 27');expect(fans.className).toMatch(/fanCount/);expect(view.container.querySelector('section')!.firstElementChild).toBe(fans);
  const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
  expect(css).toMatch(/\.item\.fanCount \{[^}]*background: var\(--color-accent-soft\);[^}]*color: var\(--color-accent-ink\)/);
  expect(css).toMatch(/\.fanCount::before \{[^}]*animation: fanCountBlink \.6s var\(--motion-easing\) \.6s 3;/);
@@ -127,25 +117,10 @@ it('sets the fan count as a pink pill that blinks three times after the number r
  view.unmount();
 });
 
-it('names the online artist by the fan page name, not the linked account nickname (11/13)',async()=>{
- response={onlineCount:0,todayCount:0,artists:[{profileId:'30000000-0000-4000-8000-000000000001',nickname:'팬0106',online:true,visitedToday:true}]};
- frame.value={celebrity:{name:'엘리나'}};
- const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact'/>);await flush();
- expect(screen.getByText('엘리나').parentElement).toHaveAttribute('data-online','true');
- expect(screen.queryByText('팬0106')).toBeNull();
- view.unmount();frame.value=null;
-});
-
-it('puts the online artist right after the fan count as a pill',async()=>{
- response={onlineCount:2,todayCount:3,artists:[{profileId:'30000000-0000-4000-8000-000000000001',nickname:'엘리나',online:true,visitedToday:true}]};
- const view=render(<GroupPresence pageId={pageId} locale='ko' mode='compact' memberCount={25}/>);await flush();
- const artist=screen.getByText('엘리나').parentElement!;
- expect(artist).toHaveAttribute('data-online','true');
- expect(artist).toHaveAttribute('role','status');
- expect(artist.querySelector('svg')).toBeNull();
- expect(artist.previousElementSibling!.querySelector('[aria-label="25"]')).not.toBeNull();
- expect(artist.nextElementSibling).toHaveTextContent('지금 접속');
- view.unmount();
+it('blinks the online artist icon and stops it under reduced motion',()=>{
+ const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
+ expect(css).toMatch(/\.artist\[data-online="true"\] svg \{ animation: presenceBlink/);
+ expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\) \{ \.artist\[data-online="true"\] svg \{ animation: none; \} \}/);
 });
 
 it('hangs the separator dots in the gap and clips them at the left edge so a wrapped line never starts with one',()=>{

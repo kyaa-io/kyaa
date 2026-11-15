@@ -1,5 +1,4 @@
 "use client";
-import { JjinfanChallengeEntry } from "@/features/rankings/ui/jjinfan-challenge-entry";
 import { PublicProofsTab } from "@/features/passport-proofs/ui/proofs-screen";
 import { fanStageNextText } from "@/features/rewards/ui/fan-stage-next";
 import {PopularPosts} from '@/features/groups/ui/popular-posts';
@@ -28,7 +27,7 @@ import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image from "next/image";
-import Link from "./fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
@@ -93,7 +92,7 @@ const socialLabels = {
 } as const;
 const parseSummary = (body: unknown) => mySummarySchema.parse((body as { summary: unknown }).summary);
 
-type CelebrityFanPageProps = { celebrity: PublishedCelebrity; locale: AppLocale; upcomingLive: PublishedCelebrityLive | null; initialCheerEvent?: CheerEvent | null; initialTab?: CelebrityFanTab; calendarMonth?: string; initialBoardSection?: BoardSection; initialBoardSource?: BoardFeedSource; initialNewsFilter?: NewsFilter; initialMediaFilter?: "photos" | "videos" | "replays"; instagramEnabled?: boolean; groupsEnabled?: boolean; onVideoSelect?:(media:CreatorMediaSelection)=>void;boardEvent?:CreatorBoardEvent;homeSchedule?:{label:string;note:string};jjinfanChallengeEnabled?:boolean };
+type CelebrityFanPageProps = { celebrity: PublishedCelebrity; locale: AppLocale; upcomingLive: PublishedCelebrityLive | null; initialCheerEvent?: CheerEvent | null; initialTab?: CelebrityFanTab; calendarMonth?: string; initialBoardSection?: BoardSection; initialBoardSource?: BoardFeedSource; initialNewsFilter?: NewsFilter; initialMediaFilter?: "photos" | "videos" | "replays"; instagramEnabled?: boolean; groupsEnabled?: boolean; onVideoSelect?:(media:CreatorMediaSelection)=>void;boardEvent?:CreatorBoardEvent;homeSchedule?:{label:string;note:string} };
 
 /** 모임 기능이 켜진 페이지의 머리·접속 띠·탭은 `(page)/layout.tsx`의 프레임이 그린다. 라우트 밖에서 쓰이면 스스로 프레임을 두른다. wave와 기능이 꺼진 경로는 옛 히어로 그대로다. */
 export function CelebrityFanPage(props: CelebrityFanPageProps) {
@@ -102,7 +101,7 @@ export function CelebrityFanPage(props: CelebrityFanPageProps) {
   return <CelebrityFanPageBody {...props} />;
 }
 
-function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEvent, initialTab = "home", calendarMonth, initialBoardSection, initialBoardSource, initialNewsFilter = "all", initialMediaFilter, groupsEnabled = false, onVideoSelect,boardEvent,homeSchedule,jjinfanChallengeEnabled = false }: CelebrityFanPageProps) {
+function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEvent, initialTab = "home", calendarMonth, initialBoardSection, initialBoardSource, initialNewsFilter = "all", initialMediaFilter, groupsEnabled = false, onVideoSelect,boardEvent,homeSchedule }: CelebrityFanPageProps) {
   const auth = usePrivy();
   const router = useRouter();
   const query = useSearchParams();
@@ -193,8 +192,6 @@ function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEve
         <div className={styles.scrim} aria-hidden="true" />
         <div className={styles.heroContent}><p className={styles.eyebrow}>KYAA FAN PAGE</p><CreatorFanIdentity slug={celebrity.slug} name={celebrity.name} locale={locale} /><CreatorRolesText roles={celebrity.roles} locale={locale} />{hasProfileSummary && <p><TranslatedText text={celebrity.summary} locale={locale} /></p>}{celebrity.ticketUrl && <div className={styles.heroTicketAction} data-outbound-kind="ticket"><FanAction href={celebrity.ticketUrl} external variant="primary" fullWidth ariaLabel={`${fanPageBrandCopy[locale].ticket}, ${locale === "ko" ? "새 창" : translate(locale, localizedMessages.me1f5c62bd1d6, "new window")}`} trailingIcon={<ArrowUpRight />}>{fanPageBrandCopy[locale].ticket}</FanAction></div>}{isWave && <><p>{waveMissionsCopy(locale).description}</p><FanAction href={`/${WAVE_FANPAGE_SLUG}?locale=${locale}#wave-missions`} variant="primary" trailingIcon={<ArrowRight />}>{waveMissionsCopy(locale).title}</FanAction></>}<div className={styles.socials}>{isBrand && !isWave && celebrity.websiteUrl && <a href={celebrity.websiteUrl} target="_blank" rel="noopener noreferrer" aria-label={`${fanPageBrandCopy[locale].officialWebsite}, ${locale === "ko" ? "새 창" : translate(locale, localizedMessages.me1f5c62bd1d6, "new window")}`} data-outbound-kind="website"><Globe2 aria-hidden="true" /><span>{fanPageBrandCopy[locale].website}</span></a>}{celebrity.socialLinks.map((social) => { const socialLabel = socialLabels[locale][social.platform]; return <a key={social.platform} href={social.url} target="_blank" rel="noopener noreferrer" aria-label={`${socialLabel}, ${locale === "ko" ? "새 창" : translate(locale, localizedMessages.me1f5c62bd1d6, "new window")}`} data-platform={social.platform} data-outbound-kind="social"><Image src={social.platform === "chzzk" ? "/images/guest-home/chzzk.png" : `/images/guest-home/${social.platform}.svg`} alt="" width={20} height={20} /><span>{socialLabel}</span></a>; })}</div>{identity ? <div className={styles.artistCommunity}>{community}</div> : community}</div>
       </section>}
-      {/* 찐팬 100 공개 전에는 ?challenge=jjinfan100 직접 주소로도 안내 창을 열지 않는다. 판정은 서버 진입점이 jjinfanGaugeEnabled()로 한 번 한다. */}
-      {jjinfanChallengeEnabled && <JjinfanChallengeEntry slug={celebrity.slug} locale={locale} ready={sessionReady && (!authenticated || my.state.status === "ready")} verified={Boolean(passport)} />}
       <ElinaAttendanceEntry celebritySlug={celebrity.slug} locale={locale} />
       {!groupsEnabled || isWave ? isWave ? <WaveNavigation locale={locale} active={waveFriends ? "friends" : tab === "home" ? "home" : tab === "events" ? "entries" : tab === "board" ? boardSection === "feed" ? "introductions" : boardSection : undefined} /> : <nav id="celebrity-content" ref={tabsRef} className={styles.tabs} aria-label={locale === "ko" ? `${celebrity.name} 팬페이지 메뉴` : translate(locale, localizedMessages.m0f2000ce3e28, "{0} fan page menu", [celebrity.name])}>{FAN_PAGE_TABS.map((value) => <Link key={value} href={tabHref(value) as Route} aria-current={tab === value ? "page" : undefined}>{value === "events" && raffles.available.length > 0 ? <span className={styles.availableRaffleTab}>{navigation.main[value]}{" "}<span>{raffles.available.length}</span></span> : (value === "proofs" ? (locale === "ko" ? "인증" : "Proofs") : navigation.main[value])}</Link>)}</nav> : null}
       {eventProps && <CheerEventModal key={`${eventProps.event.campaignId}:${celebrity.slug}`} {...eventProps} enabled={tab !== "events"} />}

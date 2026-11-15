@@ -7,12 +7,14 @@ import { messages as localizedMessages } from "@/i18n/catalogs/components__login
 import { additionalLocales, translate } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
 
-import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { useLogin, useLoginWithOAuth } from "@/features/auth/client/privy-backend";
+import { useCognitoAuth } from "@/features/auth/client/cognito-auth";
+import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Image, { getImageProps } from "next/image";
-import Link from "./fan-ui/hover-prefetch-link";
+import Link from "next/link";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, type MouseEvent } from "react";
 import { withLocalePath } from "./locale-path";
 import { X } from "lucide-react";
 import { AppleMark, ArrowRight, GoogleMark } from "./icons";
@@ -35,11 +37,13 @@ import {
   withOperationDeadline,
   withRequestDeadline,
 } from "../features/reliability/client/request-deadline";
+import { getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/analytics/client/signup-funnel-tracker";
-import { customSocialContinue } from "@/i18n/catalogs/components__custom-social-auth";
+import { CustomOAuthEmailLink } from "./custom-oauth-email-link";
+import { isEnabledRegionalSocialAccount, isEnabledCustomOAuthProvider, REGIONAL_SOCIAL_PROVIDERS, REGIONAL_SOCIAL_PROVIDER_IDS, type CustomOAuthProvider } from "./privy-custom-oauth-policy";
+import { customSocialContinue, customSocialCopy } from "@/i18n/catalogs/components__custom-social-auth";
 import { isIosInstagram, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
-import { EmailLoginForm } from "./email-login-form";
 
 const loginBackground = {
   desktop: "/images/login/spectrum-light.webp",
@@ -51,8 +55,12 @@ const passportPreview = "/images/passport/passport-open-book.svg";
 type LoginPageProps = {
   presentation?: "standalone" | "overlay";
   appleLoginEnabled?: boolean;
-  /** Kakao Login through the Cognito pool's OIDC provider (COGNITO_KAKAO_ENABLED). */
-  cognitoKakaoEnabled?: boolean;
+  kakaoLoginEnabled?: boolean;
+  wechatLoginEnabled?: boolean;
+  lineLoginEnabled?: boolean;
+  facebookLoginEnabled?: boolean;
+  naverLoginEnabled?: boolean;
+  testAccountLoginEnabled?: boolean;
 };
 
 const LOGIN_READINESS_TIMEOUT = "LOGIN_READINESS_TIMEOUT";
@@ -137,31 +145,31 @@ function useMobileLoginPresentation() {
   return mobile;
 }
 
-/** Reasons the server refused a Cognito sign-in (server/auth/cognito/kyaa-identity.ts). No session was created. */
-function blockedSignInMessage(locale: AppLocale, reason: string | null): string | null {
-  if (reason === "email_in_use") return locale === "ko" ? "이 이메일을 쓰는 kyaa 계정이 이미 있어요. 처음 가입할 때 쓴 방법으로 로그인해 주세요." : translate(locale, localizedMessages.mkyaaEmailInUse, "A kyaa account already uses this email. Sign in with the method you used when you joined.");
-  if (reason === "inactive") return locale === "ko" ? "이용이 중지된 계정이에요." : translate(locale, localizedMessages.mkyaaAccountInactive, "This account is no longer active.");
-  if (reason === "callback_failed") return locale === "ko" ? "로그인을 마치지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.mkyaaCallbackFailed, "We couldn't finish signing you in. Please try again.");
-  if (reason === "ambiguous" || reason === "wallet_missing" || reason === "provider_required") return locale === "ko" ? "계정을 확인하지 못했어요. 이용 안내의 문의하기로 kyaa 운영팀에 알려 주세요." : translate(locale, localizedMessages.mkyaaAccountReview, "We couldn't verify your account. Let us know through support.");
-  return null;
-}
-
 export function LoginPage({
   presentation = "standalone",
   appleLoginEnabled = false,
-  cognitoKakaoEnabled = false,
+  kakaoLoginEnabled = false,
+  wechatLoginEnabled = false,
+  lineLoginEnabled = false,
+  facebookLoginEnabled = false,
+  naverLoginEnabled = false,
+  testAccountLoginEnabled = false,
 }: LoginPageProps) {
   const router = useRouter();
+  const cognitoAuth = useCognitoAuth();
   const searchParams = useSearchParams();
-  const { ready, authenticated, getAccessToken, logout, user } = useByUsAuth();
+  const { ready, authenticated, getAccessToken, logout, user } = usePrivy();
   const privyUserId = user?.id;
   const byUsSession = useByUsSession();
+  const [otherMethodsOpen, setOtherMethodsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
   const iosInstagram = useSyncExternalStore(subscribeToBrowserPolicy, getIosInstagramSnapshot, getServerBrowserHandoffSnapshot);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
-  // Set while the browser leaves for Cognito; a second tap must not start another authorization.
-  const [oauthStarting, setOauthStarting] = useState(false);
+  const oauthGuard = getOAuthStartGuard();
+  const oauthState = useSyncExternalStore(oauthGuard.subscribe, oauthGuard.getSnapshot, oauthGuard.getServerSnapshot);
+  const oauthStarting = oauthState === "starting";
+  const oauthRestartRequired = oauthState === "restart-required";
   const [reauthenticationStarting, setReauthenticationStarting] = useState(false);
   const [reauthenticationFailed, setReauthenticationFailed] = useState(false);
   const [readinessAttempt, setReadinessAttempt] = useState(0);
@@ -174,6 +182,8 @@ export function LoginPage({
   const loginMeasurementRef = useRef<LoginMeasurementAttempt | null>(null);
   // Identity lives only in component memory; it is never sent to anonymous analytics.
   const loginMeasurementOwnerRef = useRef<string | null>(null);
+  const providerMeasurementRef = useRef<LoginMeasurementAttempt | null>(null);
+  const providerCallbackClosedRef = useRef(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const errorRef = useRef<HTMLParagraphElement>(null);
   const sessionErrorRef = useRef<HTMLDivElement>(null);
@@ -198,17 +208,58 @@ export function LoginPage({
     if (!accepted) return;
     // A rejected early callback must not suppress the later authenticated snapshot.
     attemptedTransitionRef.current = attemptKey;
+    providerMeasurementRef.current = null;
+    providerCallbackClosedRef.current = true;
     loginMeasurementOwnerRef.current = expectedUserId;
     activeIdentityRef.current = expectedUserId;
     identityGenerationRef.current += 1;
     setError(null);
   }, [authIntent, byUsSession, entity, intent, locale, privyUserId, returnTo]);
-  const loginError = (iosInstagram && !ready && !oauthStarting && error === LOGIN_READINESS_TIMEOUT ? null : error) ?? blockedSignInMessage(locale, searchParams.get("authError")) ?? (searchParams.get("reauth") === "failed"
+  const loginErrorMessage = testAccountLoginEnabled
+    ? locale === "ko" ? "로그인을 완료하지 못했어요. 계정 정보와 인증 코드를 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.m3fa6fe428a6a, "We couldn't complete sign-in. Check your account and verification code, then try again.")
+    : appleLoginEnabled
+      ? locale === "ko" ? "로그인을 완료하지 못했어요. Google 또는 Apple 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.mc426e8d8a8f2, "We couldn't complete sign-in. Check your Google or Apple account, then try again.")
+      : locale === "ko" ? "로그인을 완료하지 못했어요. Google 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.m2c842480d657, "We couldn't complete sign-in. Check your Google account, then try again.");
+  const loginCallbacks = {
+    onComplete: ({ user: completedUser }: { user: { id: string } }) => {
+      // Cognito synchronization waits for the authenticated adapter snapshot below.
+      if (!cognitoAuth.enabled) return synchronizeSession(completedUser.id);
+    },
+    onError: () => {
+      if (providerCallbackClosedRef.current) return;
+      let measurement = providerMeasurementRef.current;
+      if (!measurement && !providerCallbackClosedRef.current && !loginMeasurementRef.current) {
+        const pending = signupFunnelTracker.pendingLogin();
+        // A fresh document can receive the provider's failure before any session synchronization.
+        if (pending?.trigger === "provider" && !pending.failed && !pending.succeeded) {
+          measurement = pending;
+          loginMeasurementRef.current = pending;
+        }
+      }
+      // A late SDK callback cannot turn a session retry or reauthentication into an OAuth failure.
+      if (!providerCallbackClosedRef.current && measurement && measurement === loginMeasurementRef.current) {
+        signupFunnelTracker.result(measurement, "failed", "oauth", "provider_error");
+      }
+      providerMeasurementRef.current = null;
+      providerCallbackClosedRef.current = true;
+      setError(loginErrorMessage);
+    },
+  };
+  const { login } = useLogin({
+    ...loginCallbacks,
+  });
+  const { initOAuth, loading: oauthLoading } = useLoginWithOAuth(loginCallbacks);
+
+  const oauthReturnPending = ["privy_oauth_code", "privy_oauth_state", "privy_oauth_provider"]
+    .some((key) => searchParams.has(key));
+  const loginError = oauthRestartRequired
+    ? locale === "ko" ? "로그인 연결이 오래 걸리고 있어요. 로그인 화면을 새로 열어 다시 시도해 주세요." : translate(locale, localizedMessages.m62059f56445b, "Sign-in is taking longer than expected. Reopen the sign-in page to try again.")
+    : (iosInstagram && !ready && !oauthReturnPending && !oauthStarting && error === LOGIN_READINESS_TIMEOUT ? null : error) ?? (searchParams.get("reauth") === "failed"
       ? locale === "ko" ? "계정을 확인하지 못했어요. 다시 로그인해 주세요." : translate(locale, localizedMessages.m944ca3336d23, "We couldn't verify your account. Please sign in again.")
       : null);
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
 
-  const startOAuthLogin = useCallback((provider: "google" | "apple" | "kakao") => {
+  const startOAuthLogin = useCallback((provider: "google" | "apple" | CustomOAuthProvider) => {
     if (provider === "google") {
       const loginUrl = new URL(restartOAuthPath, window.location.origin).href;
       const plan = planGoogleLogin(navigator.userAgent, loginUrl);
@@ -231,14 +282,32 @@ export function LoginPage({
         return;
       }
     }
-    if (oauthStarting) return;
+    if (cognitoAuth.enabled) {
+      if (provider !== "google" && provider !== "apple") return;
+      // 돌아온 첫 화면에서 세션 확인 전에 공개 값을 그리지 않게 표시를 남긴다. 로그인을 그만두면 다음 확인 때 지워진다.
+      rememberSession(true);
+      window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
+      return;
+    }
+    if (oauthGuard.getSnapshot() !== "idle") return;
     setError(null);
-    setOauthStarting(true);
-    loginMeasurementRef.current = signupFunnelTracker.beginLogin(provider, "provider", toContentLocale(locale));
-    // 돌아온 첫 화면에서 세션 확인 전에 공개 값을 그리지 않게 표시를 남긴다. 로그인을 그만두면 다음 확인 때 지워진다.
-    rememberSession(true);
-    window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
-  }, [iosInstagram, locale, oauthStarting, restartOAuthPath, returnTo]);
+    const measurement = signupFunnelTracker.beginLogin(provider === "google" || provider === "apple" ? provider : REGIONAL_SOCIAL_PROVIDERS[provider].analytics, "provider", toContentLocale(locale));
+    loginMeasurementRef.current = measurement;
+    providerMeasurementRef.current = measurement;
+    providerCallbackClosedRef.current = false;
+    void oauthGuard.start(() => initOAuth({ provider }), SDK_OPERATION_TIMEOUT_MS)
+      ?.catch((caught) => {
+        reportRecoveryFailure("login.oauth", caught);
+        signupFunnelTracker.result(measurement, "failed", "oauth", caught instanceof RequestTimeoutError ? "timeout" : "provider_error");
+        if (providerMeasurementRef.current === measurement) providerMeasurementRef.current = null;
+        if (mountedRef.current) setError(loginErrorMessage);
+      });
+  }, [cognitoAuth.enabled, returnTo, initOAuth, locale, loginErrorMessage, oauthGuard, restartOAuthPath, iosInstagram]);
+
+  const startOtherOAuthLogin = useCallback((event: MouseEvent<HTMLButtonElement>) => {
+    const provider = event.currentTarget.dataset.provider;
+    if (provider && isEnabledCustomOAuthProvider(provider, { lineLoginEnabled, facebookLoginEnabled, naverLoginEnabled })) startOAuthLogin(provider);
+  }, [facebookLoginEnabled, lineLoginEnabled, naverLoginEnabled, startOAuthLogin]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -255,6 +324,8 @@ export function LoginPage({
       signupFunnelTracker.forgetLoginAttempt();
       loginMeasurementRef.current = null;
       loginMeasurementOwnerRef.current = null;
+      providerMeasurementRef.current = null;
+      providerCallbackClosedRef.current = true;
     }
     attemptedTransitionRef.current = null;
     navigatedTransitionRef.current = null;
@@ -293,27 +364,31 @@ export function LoginPage({
   useEffect(() => {
     // Privy calls onComplete before finally replacing the OAuth URL. Navigating
     // inside that callback lets Next's later history restore cancel the move.
-    if (!ready || !authenticated || !privyUserId
+    if (oauthReturnPending || !ready || !authenticated || !privyUserId
       || byUsSession.ownerId !== privyUserId || byUsSession.error || !byUsSession.destination
       || byUsSession.recoveryPath !== restartOAuthPath) return;
     const navigationKey = `${privyUserId}|${byUsSession.generation}|${byUsSession.destination}`;
     if (navigatedTransitionRef.current === navigationKey) return;
     navigatedTransitionRef.current = navigationKey;
     router.replace(byUsSession.destination as Route);
-  }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, byUsSession.recoveryPath, privyUserId, ready, restartOAuthPath, router]);
+  }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, byUsSession.recoveryPath, oauthReturnPending, privyUserId, ready, restartOAuthPath, router]);
 
   useEffect(() => {
     if (!(authenticated ? (byUsSession.error ?? error) : loginError)) return;
     if (authenticated) {
+      if (!cognitoAuth.enabled && byUsSession.error === VERIFIED_EMAIL_REQUIRED
+        && user?.linkedAccounts?.some((account) => isEnabledRegionalSocialAccount(account.type, { kakaoLoginEnabled, wechatLoginEnabled, lineLoginEnabled, facebookLoginEnabled, naverLoginEnabled }))) return;
       sessionErrorRef.current?.focus();
       return;
     }
     errorRef.current?.focus();
-  }, [authenticated, byUsSession.error, error, loginError]);
+  }, [authenticated, byUsSession.error, cognitoAuth.enabled, error, facebookLoginEnabled, kakaoLoginEnabled, lineLoginEnabled, loginError, naverLoginEnabled, user?.linkedAccounts, wechatLoginEnabled]);
 
   const retrySessionSynchronization = useCallback(() => {
     setError(null);
     loginMeasurementRef.current = signupFunnelTracker.beginLogin(loginMeasurementRef.current?.provider ?? "unknown", "retry", toContentLocale(locale));
+    providerMeasurementRef.current = null;
+    providerCallbackClosedRef.current = true;
     if (byUsSession.ownerId === null) {
       attemptedTransitionRef.current = null;
       navigatedTransitionRef.current = null;
@@ -336,6 +411,7 @@ export function LoginPage({
       identityGenerationRef.current += 1;
       loginMeasurementRef.current = null;
       loginMeasurementOwnerRef.current = null;
+      providerMeasurementRef.current = null;
       signupFunnelTracker.forgetLoginAttempt();
       setError(null);
     } catch {
@@ -352,11 +428,12 @@ export function LoginPage({
     const generation = identityGenerationRef.current;
     const measurement = signupFunnelTracker.beginLogin(provider, "reauth", toContentLocale(locale));
     loginMeasurementRef.current = measurement;
+    providerMeasurementRef.current = null;
     try {
       if (!expectedUserId) throw new StaleLoginIdentityError();
       const token = await withOperationDeadline(getAccessToken(), SDK_OPERATION_TIMEOUT_MS);
       assertCurrentIdentity(expectedUserId, generation);
-      if (!token) throw new Error("Missing session");
+      if (!token) throw new Error("Missing Privy session");
       const { response, body } = await withRequestDeadline(async (signal) => {
         const response = await fetch("/api/auth/apple/reauth/start", {
           method: "POST", cache: "no-store", signal,
@@ -387,9 +464,9 @@ export function LoginPage({
 
   const sessionStateError = byUsSession.error ?? error;
   const reauthenticationProviders = byUsSession.reauthenticationProviders;
-  // Only in the iOS Instagram app the Google hand-off needs no session check, so a slow check must not replace the
-  // sign-in buttons. A started sign-in keeps the usual neutral screen.
-  const waitingForSdk = !ready && !authenticated && iosInstagram && !oauthStarting;
+  // Only in the iOS Instagram app the Google hand-off needs no SDK, so a slow SDK must not replace the sign-in buttons.
+  // A returning OAuth redirect or a started OAuth keeps the usual neutral screen.
+  const waitingForSdk = !ready && !authenticated && iosInstagram && !oauthReturnPending && !oauthStarting;
   const showsSessionState = (!ready && !waitingForSdk) || authenticated || [
     VERIFIED_EMAIL_REQUIRED,
     APPLE_REAUTHENTICATION_REQUIRED,
@@ -397,6 +474,12 @@ export function LoginPage({
     SESSION_SYNCHRONIZATION_TIMEOUT,
     SESSION_SYNCHRONIZATION_FAILED,
   ].includes(sessionStateError ?? "");
+  const customPolicy = { kakaoLoginEnabled, wechatLoginEnabled, lineLoginEnabled, facebookLoginEnabled, naverLoginEnabled };
+  const otherProviders = REGIONAL_SOCIAL_PROVIDER_IDS.filter((provider) => REGIONAL_SOCIAL_PROVIDERS[provider].secondary && isEnabledCustomOAuthProvider(provider, customPolicy));
+  const customCopy = customSocialCopy(locale);
+  const customEmailRequired = !cognitoAuth.enabled && authenticated && Boolean(privyUserId)
+    && sessionStateError === VERIFIED_EMAIL_REQUIRED
+    && user?.linkedAccounts?.some((account) => isEnabledRegionalSocialAccount(account.type, customPolicy));
   const sessionCopy = loginSessionCopy({
     locale,
     ready,
@@ -449,7 +532,7 @@ export function LoginPage({
         ref={sessionStateError ? sessionErrorRef : undefined}
         tabIndex={sessionStateError ? -1 : undefined}
       >
-        <FanState
+        {customEmailRequired && privyUserId ? <CustomOAuthEmailLink key={privyUserId} locale={locale} userId={privyUserId} onComplete={retrySessionSynchronization} onCancel={() => void restartLogin()} /> : <FanState
           kind={sessionStateError ? "error" : "loading"}
           title={sessionCopy.title}
           description={sessionStateError === APPLE_REAUTHENTICATION_REQUIRED && reauthenticationProviders.length === 0
@@ -487,7 +570,7 @@ export function LoginPage({
                   : locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m29ac680649cc, "Try again")}
             </FanAction>
           ) : undefined}
-        />
+        />}
       </div>
       {browserHandoffNotice}
     </div>
@@ -558,8 +641,8 @@ export function LoginPage({
         <button
           className={styles.googleButton}
           type="button"
-          disabled={authenticated || (!ready && !waitingForSdk) || oauthStarting}
-          aria-busy={authenticated || oauthStarting}
+          disabled={authenticated || (!ready && !waitingForSdk) || oauthLoading || oauthStarting || oauthRestartRequired}
+          aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
           onClick={() => startOAuthLogin("google")}
         >
           <GoogleMark />
@@ -567,18 +650,24 @@ export function LoginPage({
           <ArrowRight />
         </button>
         {browserHandoffNotice}
-        {cognitoKakaoEnabled && <button className={styles.googleButton} type="button"
-          disabled={!ready || authenticated || oauthStarting}
-          aria-busy={authenticated || oauthStarting}
-          onClick={() => startOAuthLogin("kakao")}>
+        {!cognitoAuth.enabled && kakaoLoginEnabled && <button className={styles.googleButton} type="button"
+          disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+          aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
+          onClick={() => startOAuthLogin("custom:kakao")}>
           <span>{customSocialContinue("custom:kakao", locale)}</span><ArrowRight />
+        </button>}
+        {!cognitoAuth.enabled && wechatLoginEnabled && <button className={styles.googleButton} type="button"
+          disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+          aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
+          onClick={() => startOAuthLogin("custom:wechat")}>
+          <span>{customSocialContinue("custom:wechat", locale)}</span><ArrowRight />
         </button>}
         {appleLoginEnabled && (
           <button
             className={styles.appleButton}
             type="button"
-            disabled={!ready || authenticated || oauthStarting}
-            aria-busy={authenticated || oauthStarting}
+            disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+            aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
             onClick={() => startOAuthLogin("apple")}
           >
             <AppleMark />
@@ -586,8 +675,48 @@ export function LoginPage({
             <ArrowRight />
           </button>
         )}
-        <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />
+        {!cognitoAuth.enabled && otherProviders.length > 0 && <div className={styles.otherMethods}>
+          <button className={styles.emailButton} type="button" aria-expanded={otherMethodsOpen}
+            aria-controls="regional-login-methods" onClick={() => setOtherMethodsOpen((open) => !open)}>
+            {customCopy.otherMethods}
+          </button>
+          <div id="regional-login-methods" className={styles.otherMethodButtons} hidden={!otherMethodsOpen}>
+            {otherProviders.map((provider) => <button key={provider} className={styles.googleButton} type="button"
+              disabled={!ready || authenticated || oauthLoading || oauthStarting || oauthRestartRequired}
+              aria-busy={!oauthRestartRequired && (authenticated || oauthLoading || oauthStarting)}
+              data-provider={provider} onClick={startOtherOAuthLogin}>
+              <span>{customSocialContinue(provider, locale)}</span><ArrowRight />
+            </button>)}
+          </div>
+        </div>}
+        {testAccountLoginEnabled && (
+          <div className={styles.testAccountGroup} role="group" aria-label={locale === "ko" ? "개발 환경 Test Account 로그인" : translate(locale, localizedMessages.m8b0d27e1a222, "Development Test Account sign-in")}>
+            <span className={styles.divider}>{locale === "ko" ? "개발 환경 Test Account" : translate(locale, localizedMessages.mdf939f60c96f, "Development Test Account")}</span>
+            <button
+              className={styles.emailButton}
+              type="button"
+              disabled={!ready || authenticated || oauthStarting || oauthRestartRequired}
+              onClick={() => {
+                setError(null);
+                loginMeasurementRef.current = signupFunnelTracker.beginLogin("test", "provider", toContentLocale(locale));
+                providerMeasurementRef.current = loginMeasurementRef.current;
+                providerCallbackClosedRef.current = false;
+                login({ loginMethods: ["email"] });
+              }}
+            >
+              <span>{locale === "ko" ? "Test Account 이메일로 계속하기" : translate(locale, localizedMessages.m8401ba06776d, "Continue with Test Account email")}</span><ArrowRight />
+            </button>
+            <p>{locale === "ko" ? "Privy 대시보드에 등록된 Test Account 이메일과 OTP만 사용할 수 있어요." : translate(locale, localizedMessages.m689bb697eba6, "Use only a Test Account email and verification code registered in the Privy dashboard.")}</p>
+          </div>
+        )}
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
+        {oauthRestartRequired && (
+          // A native navigation replaces the document and its pending SDK work.
+          // A Next Link/router transition would retain the old OAuth request.
+          <a className={`${styles.emailButton} ${styles.restartLink}`} href={restartOAuthPath}>
+            {locale === "ko" ? "로그인 다시 시작" : translate(locale, localizedMessages.mcd64f8604d89, "Restart sign-in")}
+          </a>
+        )}
     </div>
   );
 

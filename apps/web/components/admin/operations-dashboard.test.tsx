@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AdminAnalytics, AdminOverview } from "./operations-dashboard";
 
 const getAccessToken = vi.fn(async () => "admin-token");
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => ({ getAccessToken }),
 }));
 vi.mock("next/navigation", () => ({

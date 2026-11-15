@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { AuthorizedCelebrityManager } from "./celebrity-manager";
 
 const getAccessToken = vi.hoisted(() => vi.fn().mockResolvedValue("local-token"));
-vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ getAccessToken }) }));
+vi.mock("@privy-io/react-auth", () => ({ usePrivy: () => ({ getAccessToken }) }));
 vi.mock("./use-admin-session", () => ({ useAdminSession: () => ({ status: "authorized", admin: { role: "admin" } }) }));
 vi.mock("./operations-shell", () => ({ AdminOperationsShell: ({ children }: { children: ReactNode }) => <main>{children}</main> }));
 vi.mock("./notice-manager", () => ({ NoticeManager: () => null }));
@@ -15,14 +15,6 @@ const celebrity = {
   localizations: { ko: { name: "직군 검증", summary: "소개", imageAlt: "직군 검증" }, en: { name: "Role proof", summary: "Profile", imageAlt: "Role proof" } }, themes: [], socialLinks: [],
 };
 afterEach(() => vi.unstubAllGlobals());
-
-it("keeps the creator list usable when follower counts cannot load", async () => {
-  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [celebrity], platformFollowers: null, followersUnavailable: true }) }));
-  render(<AuthorizedCelebrityManager environment="Development" />);
-  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
-  expect(screen.getAllByText("불러오지 못했습니다.").some((message) => message.closest("form")?.getAttribute("aria-label") === "플랫폼별 팔로워")).toBe(true);
-  expect(screen.queryByRole("button", { name: "팔로워 저장" })).not.toBeInTheDocument();
-});
 
 it("shows registration failure separately from publication and retries the same creator", async () => {
   const item = { ...celebrity, status: "published", onchainRegistration: {

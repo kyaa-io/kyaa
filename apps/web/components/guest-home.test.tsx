@@ -11,7 +11,6 @@ import { renderToString } from "react-dom/server";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatPassportTier, GuestHome, StreamingGuestHome } from "./guest-home";
-import { SIGNUP_RAFFLE_BANNER_ID } from "../features/home/domain/signup-raffle-home-banner";
 import { notifyFanActivityUpdated } from "./fan-ui/fan-activity-updates";
 import { formatHeroLiveTitle, formatLiveCountdown } from "./live-hero-carousel";
 
@@ -35,7 +34,7 @@ vi.mock("@/features/rankings/ui/use-ranking-resource", async () => {
   return { ...actual, useRankingResource: (url: string, parse: (value: unknown) => unknown) => url.startsWith("/api/rankings/creators") ? actual.useRankingResource(url, parse) : challenges };
 });
 
-vi.mock("@/features/auth/client/auth-fallback", () => ({
+vi.mock("@privy-io/react-auth", () => ({
   usePrivy: () => privy,
 }));
 
@@ -87,43 +86,12 @@ describe("canonical 03 guest home", () => {
     expect(screen.getAllByTestId("home-ranking")).toHaveLength(1);
   });
 
-  it("shows the heart donation strip as 홈배너1 right above the ranking only when the server flag is on, with nothing under the ranking", () => {
+  it("shows the 찐팬 100 strip only when the server flag is on", () => {
     const off = render(<GuestHome {...defaultProps} />);
-    expect(off.container.querySelector("[data-home-heart-donation]")).toBeNull();
-    expect(off.container.querySelector('[data-banner-slot="home_top"]')).toBeNull();
+    expect(off.container.querySelector("[data-home-jjinfan-strip]")).toBeNull();
     off.unmount();
     const on = render(<GuestHome {...defaultProps} jjinfanGauge />);
-    const top = on.container.querySelector('[data-banner-slot="home_top"]')!;
-    const ranking = on.container.querySelector("#home-ranking")!;
-    expect(top.querySelector("[data-home-heart-donation]")).not.toBeNull();
-    expect(top.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
-    expect(top.compareDocumentPosition(ranking) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(on.container.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
-    expect(top.textContent).not.toContain("찐팬 100");
-  });
-  it("puts the 찐팬 100 banner row in 홈배너1 instead of the donation strip when the setting says jjinfan100", () => {
-    const { container } = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" />);
-    const top = container.querySelector('[data-banner-slot="home_top"]')!;
-    const slot = top.querySelector('[data-banner-slot="home-below-ranking"]')!;
-    expect(slot.textContent).toContain("찐팬 100 챌린지");
-    expect(slot.querySelector("a")).toHaveAttribute("href", "/yuna?locale=ko&challenge=jjinfan100");
-    expect(container.querySelector("[data-home-heart-donation]")).toBeNull();
-    expect(top.compareDocumentPosition(container.querySelector("#home-ranking")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(container.querySelectorAll('[data-banner-slot="home-below-ranking"]')).toHaveLength(1);
-  });
-  it("draws 홈배너2 right under the ranking from the home_mid slot, before the thin banner, and nothing when the slot is empty", () => {
-    const mid = { ...bannerFixture, id: "55555555-5555-4555-8555-555555555555", title: "광고", category: "ad" as const, placement: "home_mid" as const };
-    const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
-    const first = render(<GuestHome {...defaultProps} homeSlots={{ home_mid: mid, home_below_board: thin }} />);
-    const midStrip = first.container.querySelector('[data-banner-size="mid"]')!;
-    const thinStrip = first.container.querySelector('[data-banner-size="thin"]')!;
-    expect(midStrip).toHaveAttribute("data-banner-id", mid.id);
-    expect(screen.getByTestId("home-ranking").compareDocumentPosition(midStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(midStrip.compareDocumentPosition(thinStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    first.unmount();
-    const second = render(<GuestHome {...defaultProps} />);
-    expect(second.container.querySelector('[data-banner-size="mid"]')).toBeNull();
-    expect(second.container.querySelector("[class*=midBanner]")).toBeNull();
+    expect(on.container.querySelector("[data-home-jjinfan-strip]")).not.toBeNull();
   });
   it("draws the thin banner from the slot read with the page, before the notices, and nothing when the slot is empty", () => {
     const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
@@ -218,7 +186,7 @@ describe("canonical 03 guest home", () => {
     fireEvent.click(screen.getByRole("button", { name: "다음 배너" }));
     const hero = screen.getByRole("region", { name: "홈 배너" });
     expect(within(hero).getByRole("heading", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).toBeInTheDocument();
-    expect(within(hero).queryByText("팬 인증하고 응모권을 받아 원하는 선물에 응모하세요.")).not.toBeInTheDocument();
+    expect(within(hero).getByText("팬 인증하고 응모권을 받아 원하는 선물에 응모하세요.")).toBeInTheDocument();
     expect(within(hero).getByText("뱅크시 전시 티켓 · 60명 추첨")).toBeInTheDocument();
     expect(within(hero).getByText(/응모 마감/)).toBeInTheDocument();
     expect(within(hero).getByText("2026.10.07 18:00 (KST)")).toHaveAttribute("datetime", "2026-10-07T09:00:00+00:00");
@@ -260,7 +228,7 @@ describe("canonical 03 guest home", () => {
     );
     expect(within(primary).getByRole("link", { name: "커뮤니티" })).toHaveAttribute(
       "href",
-      "/pages/groups?locale=ko",
+      "/community?locale=ko",
     );
 
     const mobile = screen.getByRole("navigation", { name: "모바일 주요 메뉴" });
@@ -392,23 +360,6 @@ describe("streamed Home sections", () => {
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); home.pending.elinaRaffles.resolve({ raffles: elinaRaffles }); });
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
-  });
-
-  it("puts the signup raffle banner first in the waiting and the finished carousel, and keeps the old order when it is off", async () => {
-    const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
-    const raffle = SIGNUP_RAFFLE_BANNER_ID;
-    const home = pendingHome();
-    let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle firstSteps />); });
-    expect(ids(view).slice(0, 3)).toEqual([raffle, expect.any(String), "8bf2f180-cb32-4f00-93e2-e84b570ad450"]);
-    await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
-    expect(ids(view)[0]).toBe(raffle);
-    expect(ids(view).filter(id => id === raffle)).toHaveLength(1);
-    view.unmount();
-    const off = pendingHome();
-    await act(async () => { view = render(<StreamingGuestHome {...off} locale="ko" />); });
-    expect(ids(view)).not.toContain(raffle);
-    expect(ids(view).slice(0, 2)).toEqual(["8bf2f180-cb32-4f00-93e2-e84b570ad450", "247861a1-27b0-4e0a-9039-b5f8f7bc1c48"]);
   });
 
   it("renders ready home sections before gallery data, then reserves photo geometry while Shorts is pending", async () => {
