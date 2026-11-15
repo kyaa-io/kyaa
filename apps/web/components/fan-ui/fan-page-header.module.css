@@ -4,7 +4,7 @@
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
   grid-template-areas: "image headline" "description description" "stats stats";
-  align-items: center;
+  align-items: start;
   column-gap: var(--space-4);
   row-gap: var(--space-3);
   min-width: 0;
@@ -89,7 +89,9 @@
     row-gap: var(--space-2);
   }
   .image { width: 128px; height: 128px; }
+  /* 이름 줄 상자(31.2)가 같은 줄의 44px 버튼·SNS 아이콘과 가운데 맞춰지므로, 그 차이의 절반만큼 올려 이름 상자 윗선을 사진 윗선에 둔다. */
   .headline { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-3); row-gap: var(--space-1); padding-right: var(--menu-space, 0); }
+  .headline:has(.links, .actions > *) { margin-top: calc((var(--fan-h1-size) * var(--fan-heading-leading) - var(--min-target)) / 2); }
   .titleRow { flex: 0 1 auto; padding-right: 0; }
   .name { display: block; text-overflow: ellipsis; white-space: nowrap; }
   .stats { align-self: start; }

@@ -266,16 +266,16 @@ export const messages = {
     "ru": "Пригласить друзей"
   },
   "dukjilTileProof": {
-    "ja": "認証",
-    "zh-Hans": "认证",
-    "zh-Hant": "認證",
-    "es": "Verificar",
-    "id": "Verifikasi",
-    "vi": "Xác minh",
-    "th": "ยืนยัน",
-    "pt": "Verificar",
-    "fr": "Vérifier",
-    "ru": "Подтвердить"
+    "ja": "オタク認証",
+    "zh-Hans": "粉丝认证",
+    "zh-Hant": "粉絲認證",
+    "es": "Prueba fan",
+    "id": "Bukti fan",
+    "vi": "Xác minh fan",
+    "th": "ยืนยันแฟน",
+    "pt": "Prova de fã",
+    "fr": "Preuve fan",
+    "ru": "Фан-подтверждение"
   },
   "dukjilReview": {
     "ja": "入国審査",
@@ -408,6 +408,18 @@ export const messages = {
     "pt": "Presença constante",
     "fr": "Présence régulière",
     "ru": "Постоянные отметки"
+  },
+  "missionSlotProof": {
+    "ja": "オタク認証スタンプ",
+    "zh-Hans": "粉丝认证印章",
+    "zh-Hant": "粉絲認證印章",
+    "es": "Sello de prueba fan",
+    "id": "Stempel bukti fan",
+    "vi": "Con dấu xác minh fan",
+    "th": "ตราประทับยืนยันแฟน",
+    "pt": "Carimbo de prova de fã",
+    "fr": "Tampon de preuve fan",
+    "ru": "Штамп фан-подтверждения"
   },
   "missionRetry": {
     "ja": "再試行",

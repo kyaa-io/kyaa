@@ -273,7 +273,7 @@ export function StanCheer({ locale, bias, guest, hearts }: { locale: AppLocale; 
         {rank.row ? <div><dt>{rankingsText(locale, "rkCumulativeFans")} · {rankingsText(locale, "rkCumulativeHearts")}</dt><dd className={styles.community}>{rank.row.score.toLocaleString(locale)} · {heartIcon}{rank.row.hearts.toLocaleString(locale)}</dd></div> : null}
       </dl>
       {/* H1: without a favorite the pick row above is the one way to choose; the button stays for the fan ranking and the guest login. */}
-      {guest || slug ? <FanAction variant="secondary" size="sm" fullWidth className={styles.action} href={guest ? `/pages/groups?locale=${locale}` : `/${encodeURIComponent(slug!)}?tab=fans&locale=${locale}`}>{guest ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction> : null}
+      {guest || slug ? <FanAction variant="secondary" size="sm" fullWidth className={styles.action} href={guest ? `/pages/groups?locale=${locale}` : `/${encodeURIComponent(slug!)}?tab=members&locale=${locale}`}>{guest ? t(locale, "heartPick") : t(locale, "cheerFanRanking")}</FanAction> : null}
     </div>
   </section>;
 }

@@ -64,7 +64,7 @@ export function DuoProfile({ locale, bias, guest }: Props) {
       <div className={styles.avatar}>{image && !guest ? <img src={image} alt="" width={96} height={96} style={{ "--duo-avatar-position": selected.imagePosition } as CSSProperties} /> : !guest ? <Plus size={24} strokeWidth={1.5} aria-hidden="true" /> : null}</div>
       <div className={styles.identityText}>{bias.status === "loading" ? <FanSkeleton width={240} height={31} /> : favorite ? <FanHeading variant="personal-page">{favorite.name}</FanHeading> : bias.options.length ? <FavoritePickMenu locale={locale} bias={bias} className={styles.pick}>{pick}</FavoritePickMenu> : <Link className={styles.pick} href={`/pages/groups?locale=${locale}` as Route}>{pick}</Link>}
         {favorite && <><p className={styles.sub}>{grade}{grade && " · "}{rank.loading ? <FanSkeleton width={120} height={16} /> : dukjilText(locale, rank.row ? "cheerRank" : "cheerRankOut", rank.row ? [rank.row.rank] : undefined)}</p>
-          <Link className={styles.fanCount} href={`/${encodeURIComponent(favorite.slug)}?tab=fans&locale=${locale}` as Route}>{fans.data ? rankingsText(locale, "rkJjinfanCount", [fans.data.fanCount.toLocaleString(locale)]) + (locale === "ko" ? "명" : "") : fans.error ? groupsCopy(locale).error : <FanSkeleton width={80} height={23} />}</Link></>}
+          <Link className={styles.fanCount} href={`/${encodeURIComponent(favorite.slug)}?tab=members&locale=${locale}` as Route}>{fans.data ? rankingsText(locale, "rkJjinfanCount", [fans.data.fanCount.toLocaleString(locale)]) + (locale === "ko" ? "명" : "") : fans.error ? groupsCopy(locale).error : <FanSkeleton width={80} height={23} />}</Link></>}
       </div>
     </div>
   </section>;

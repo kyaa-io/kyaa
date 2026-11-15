@@ -22,7 +22,7 @@ test("H2-2: 홈 → 모임 3탭 → 패스포트 이동을 반복해도 훅 순�
       warnings.push(`run ${run} ${page.url()}\n${args.map((a) => (typeof a === "string" ? a : JSON.stringify(a))).join("\n")}`);
     });
     await page.goto("/?locale=ko", { waitUntil: "domcontentloaded" }); await page.waitForTimeout(2500);
-    for (const tab of [/팬·랭킹/, /^비밀방$/, /^게시판$/]) {
+    for (const tab of [/덕후인증/, /^비밀방$/, /^게시판$/]) {
       await page.goto(`/pages/groups/${GROUP}?locale=ko`, { waitUntil: "domcontentloaded" }); await page.waitForTimeout(2500);
       const el = page.locator("main button, main a, main [role=tab]").filter({ hasText: tab }).first();
       if (await el.count()) { await el.click().catch(() => undefined); await page.waitForTimeout(1500); }

@@ -1,4 +1,4 @@
-import {act,cleanup,render,renderHook,screen} from '@testing-library/react';
+import {act,cleanup,render,renderHook,screen,within} from '@testing-library/react';
 import {readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
@@ -152,4 +152,16 @@ it('hangs the separator dots in the gap and clips them at the left edge so a wra
  const css=readFileSync(join(__dirname,'group-presence.module.css'),'utf8');
  expect(css).toMatch(/\.line\[data-wrap\] \{[^}]*overflow-x: clip[^}]*column-gap: var\(--presence-gap\)/);
  expect(css).toMatch(/\.line\[data-wrap\] > \* \+ \*::before \{ position: absolute; inset-inline-start: calc\(-1 \* var\(--presence-gap\)\)/);
+});
+it('opens the fan list from the fan page head and marks it while the list is open; other pages keep a plain count',async()=>{
+ const hrefFor=vi.fn(()=>'/elina?locale=ko&tab=members'),selectTab=vi.fn(),preloadTab=vi.fn();
+ frame.value={celebrity:{name:'엘리나'},hrefFor,activeTab:'home',selectTab,preloadTab} as never;
+ const view=render(<GroupPresence pageId={pageId} locale='ko' member memberCount={27} challengeSlug='elina'/>);await flush();
+ const link=document.querySelector<HTMLAnchorElement>('a[data-fan-count]')!;
+ expect(link).toHaveAttribute('href','/elina?locale=ko&tab=members');expect(link).not.toHaveAttribute('aria-current');expect(within(link).getByRole('img',{name:'27'})).toBeVisible();expect(hrefFor).toHaveBeenCalledWith('members');
+ frame.value={celebrity:{name:'엘리나'},hrefFor,activeTab:'members',selectTab,preloadTab} as never;view.rerender(<GroupPresence pageId={pageId} locale='ko' member memberCount={27} challengeSlug='elina'/>);
+ expect(document.querySelector('a[data-fan-count]')).toHaveAttribute('aria-current','page');view.unmount();
+ render(<GroupPresence pageId={pageId} locale='ko' member memberCount={27}/>);await flush();
+ expect(document.querySelector('a[data-fan-count]')).toBeNull();expect(within(document.querySelector<HTMLElement>('span[data-fan-count]')!).getByRole('img',{name:'27'})).toBeVisible();
+ frame.value=null;
 });

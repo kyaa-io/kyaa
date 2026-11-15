@@ -296,7 +296,7 @@ describe("approved fanpage", () => {
   it("shows the five fan-page destinations before ranking eligibility without trusting social followers", async () => {
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={upcomingLive} />);
     const menu = screen.getByRole("navigation", { name: "KARA 팬페이지 메뉴" });
-    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "인증", "팬 인증", "이벤트", "팬 리더보드"]);
+    expect(within(menu).getAllByRole("link").map((link) => link.textContent)).toEqual(["홈", "게시판", "덕후인증", "팬 인증", "이벤트", "팬 리더보드"]);
     expect(within(menu).getByRole("link", { name: "홈" })).toHaveAttribute("aria-current", "page");
     expect(within(menu).getByRole("link", { name: "이벤트" })).toHaveAttribute("href", "/kara?tab=events&locale=ko#celebrity-content");
     expect(menu).toHaveAttribute("id", "celebrity-content");

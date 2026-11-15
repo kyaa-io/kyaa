@@ -43,16 +43,16 @@ export const messages = {
     "ru": "Другие миссии"
   },
   "missionsGroupProof": {
-    "ja": "認証",
-    "zh-Hans": "认证",
-    "zh-Hant": "認證",
-    "es": "Verificaciones",
-    "id": "Verifikasi",
-    "vi": "Xác minh",
-    "th": "การยืนยัน",
-    "pt": "Verificações",
-    "fr": "Vérifications",
-    "ru": "Подтверждения"
+    "ja": "オタク認証",
+    "zh-Hans": "粉丝认证",
+    "zh-Hant": "粉絲認證",
+    "es": "Prueba fan",
+    "id": "Bukti fan",
+    "vi": "Xác minh fan",
+    "th": "ยืนยันแฟน",
+    "pt": "Prova de fã",
+    "fr": "Preuve fan",
+    "ru": "Фан-подтверждение"
   },
   "missionsGroupLeft": {
     "ja": "残り{0}件",

@@ -46,7 +46,7 @@ function PublicRanking({ pageId, locale, slug }: Readonly<{ pageId: string; loca
   </div>;
 }
 
-/** 가입하지 않은 사람이 보는 팬·랭킹 탭. 구성원 API는 부르지 않는다. */
+/** 가입하지 않은 사람이 보는 팬 목록 화면(?tab=members). 구성원 API는 부르지 않는다. */
 export function GroupPublicPeople({ mode, pageId, slug, locale, authenticated, onJoin, joinPending = false, joinLabel }: Readonly<{ mode: GroupPeopleMode; pageId: string; slug?: string | null; locale: AppLocale; authenticated: boolean; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }>) {
   const t = groupMembersCopy(locale);
   const returnTo = slug ? `/${encodeURIComponent(slug)}?locale=${locale}&tab=members` : `/pages/groups/${pageId}?tab=members&locale=${locale}`;
