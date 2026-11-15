@@ -5,6 +5,8 @@ export const followEventPath = '/follow';
 export const followMission: LikeMissionConfig = {
  slug: followEventSlug, path: followEventPath, attributionKey: followEventSlug,
  progress: 'like',
+ /** X 팔로우 = 확성기, 리포스트 = 말풍선(로그인 문 그림은 이 이벤트 단계와 맞지 않는다) */
+ stepArt: ['/images/my/shortcuts/reports.webp', '/images/my/shortcuts/friends.webp'],
  copy: {
   ko: { title: 'X 오픈 이벤트', subtitle: 'X Opening Event', how: '참여 방법', once: '1인 1회', stamped: '도장 쾅! 이벤트 참여 완료', event: 'KYAA × X 오픈 이벤트', steps: ['X에서 @kyaa_app 팔로우', '이벤트 글 리포스트', '로그인하고 좋아요 누르기'], login: '로그인', like: '좋아요', done: '참여 완료', count: '좋아요', error: '이벤트를 불러오지 못했어요. 다시 시도해 주세요.', retry: '다시 시도', saveError: '좋아요를 저장하지 못했어요. 다시 시도해 주세요.' },
   en: { title: 'X Opening Event', subtitle: 'X 오픈 이벤트', how: 'How to join', once: 'Once per account', stamped: 'Stamped! You’re in the event', event: 'KYAA × X Opening Event', steps: ['Follow @kyaa_app on X', 'Repost the event post', 'Sign in and tap Like'], login: 'Sign in', like: 'Like', done: 'Entry complete', count: 'Likes', error: 'Couldn’t load the event. Please try again.', retry: 'Try again', saveError: 'Couldn’t save your like. Please try again.' },

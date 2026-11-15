@@ -15,7 +15,7 @@ import { recordClientProductEvent, pageViewIdempotencyKey } from '@/features/ana
 import { isXBrowser, missionAttribution } from './mission-context';
 import styles from './x-mission.module.css';
 /** 단계 아이콘: 기존 3D 애셋(확성기 = 이벤트, 문 = 로그인). 좋아요 단계는 애셋 대신 좋아요 버튼과 같은 별 아이콘(대표 11/15 17:02: 좋아요는 별, 하트는 찐팬 하트) */
-const stepArt = ['/images/my/shortcuts/reports.webp', '/images/my/shortcuts/logout.webp'] as const;
+const loginStepArt = ['/images/my/shortcuts/reports.webp', '/images/my/shortcuts/logout.webp'] as const;
 export const missionSlug = 'x-mission-1113';
 const countSchema = z.object({ likeCount: z.number().int().nonnegative() });
 const statusSchema = z.object({ reaction: reactionResultSchema.nullable() });
@@ -29,6 +29,8 @@ export type LikeMissionConfig = {
  progress: 'login' | 'like';
  /** KoL 유입 기록의 중복 방지 키 앞부분 */
  attributionKey: string;
+ /** 앞 두 단계 그림(셋째 좋아요 단계는 별). 없으면 확성기·문(접속·로그인) */
+ stepArt?: readonly [string, string];
 };
 export const xLikeMission: LikeMissionConfig = {
  slug: missionSlug, path: '/s/x', attributionKey: 'x-mission',
@@ -44,6 +46,7 @@ export function XMission({ locale, mission = xLikeMission }: { locale: 'ko' | 'e
 }
 function MissionForOwner({ locale, auth, mission }: { locale: 'ko' | 'en'; auth: ReturnType<typeof useByUsAuth>; mission: LikeMissionConfig }) {
  const t = mission.copy[locale];
+ const stepArt = mission.stepArt ?? loginStepArt;
  const { slug, attributionKey } = mission;
  const userId = auth.user?.id;
  const [locationContext, setLocationContext] = useState({ search:'', hash:'' });
@@ -170,7 +173,7 @@ function MissionForOwner({ locale, auth, mission }: { locale: 'ko' | 'en'; auth:
      {error && <FanText as="p" role="body" aria-live="assertive">{error === 'load' ? t.error : t.saveError}</FanText>}
      <div className={styles.cta}>{error === 'load' ? <FanAction onClick={() => setRetry(value => value + 1)} fullWidth>{t.retry}</FanAction> : !authenticated ? <FanAction href={loginHref} onClick={beginLogin} variant={primary} fullWidth>{t.login}</FanAction> : <FanAction onClick={like} variant={primary} fullWidth disabled={!ready || !loaded || completed || pending} loading={pending} leadingIcon={<Star className={celebrate ? styles.pop : undefined} size={20} strokeWidth={1.5} fill={completed ? 'currentColor' : 'none'} />}>{completed ? t.done : t.like}</FanAction>}</div>
      <div className={styles.result} role="status" aria-live="polite" data-celebrate={celebrate ? '' : undefined}>
-      {count !== undefined && <FanDisplay role="caption" as="p" className={styles.count}><Star size={16} strokeWidth={1.5} aria-hidden="true" />{t.count} · {new Intl.NumberFormat(locale).format(count)}</FanDisplay>}
+      {count ? <FanDisplay role="caption" as="p" className={styles.count}><Star size={16} strokeWidth={1.5} aria-hidden="true" />{t.count} · {new Intl.NumberFormat(locale).format(count)}</FanDisplay> : null}
      </div>
     </section>
    </div>

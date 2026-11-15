@@ -40,3 +40,10 @@ it('sends guests to /login and back to /follow', async () => {
  expect(url.pathname).toBe('/login');
  expect(url.searchParams.get('returnTo')).toBe('/follow?utm_source=x&locale=ko');
 });
+it('hides a zero like count and draws the X follow and repost steps with their own art', async () => {
+ const { container } = render(<XMission locale="ko" mission={followMission} />);
+ await waitFor(() => expect(screen.getByRole('button', { name: '좋아요' })).not.toBeDisabled());
+ expect(screen.getByRole('status').textContent).toBe('');
+ const art = [...container.querySelectorAll('[data-row="mission-step"] img')].map(img => img.getAttribute('src'));
+ expect(art).toEqual(['/images/my/shortcuts/reports.webp', '/images/my/shortcuts/friends.webp']);
+});
