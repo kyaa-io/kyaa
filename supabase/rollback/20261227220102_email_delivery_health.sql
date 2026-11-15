@@ -1,4 +1,4 @@
--- Rollback of 20261227220002_email_delivery_health.sql. Then 20261227220001 (no-op: enum values stay).
+-- Rollback of 20261227220102_email_delivery_health.sql. Then 20261227220101 (no-op: enum values stay).
 -- Order: remove notice rows before narrowing source_shape, restore wrappers, then drop the new objects.
 -- SES feedback history (email_delivery_events) and channel health are dropped with the feature.
 begin;

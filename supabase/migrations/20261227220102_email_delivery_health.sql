@@ -7,7 +7,7 @@
 -- Input of record_ses_email_event: {"snsMessageId": "<SNS MessageId>", "message": <parsed SES event>}.
 -- Site notice (kind email_delivery_blocked, site only, once per member per 30 days) stays off until
 -- the inbox can render it (EMAIL-BOUNCE-UI): email_delivery_health_control.notice_enabled.
--- Rollback: supabase/rollback/20261227220002_email_delivery_health.sql
+-- Rollback: supabase/rollback/20261227220102_email_delivery_health.sql
 begin;
 set local lock_timeout = '5s';
 
