@@ -119,6 +119,15 @@ returns boolean language sql immutable set search_path='' as $$
       'EMAIL_CHANNEL_NOT_RELEASED','EMAIL_ACTIVATION_NOT_RELEASED','EMAIL_KIND_NOT_RELEASED','KAKAO_CHANNEL_NOT_RELEASED','KAKAO_ACTIVATION_NOT_RELEASED','KAKAO_KIND_NOT_RELEASED','EMAIL_NOT_ELIGIBLE','CURRENT_STATE_INELIGIBLE','SUBSCRIPTION_OWNER_CHANGED',
       'KAKAO_NOT_ELIGIBLE','KAKAO_STATE_CHANGED','PUSH_SUBSCRIPTION_GONE'),false);
 $$;
+-- Kakao can be resumed through the existing operations release control.
+select public.configure_fan_notification_delivery('kakao','disabled');
+update public.external_notification_delivery_outbox d set status='failed',available_at='infinity',
+ last_error_code='KAKAO_CHANNEL_NOT_RELEASED',lease_owner=null,lease_expires_at=null,updated_at=pg_catalog.now()
+ where d.channel='kakao' and (d.status in('pending','failed') or (d.status='processing' and d.lease_expires_at<=pg_catalog.now()))
+ and d.available_at<>'infinity'::timestamptz
+ and not exists(select 1 from public.kakao_notification_attempts a where a.delivery_id=d.id
+   and (a.status<>'prepared' or a.sending_at is not null or a.lease_expires_at>pg_catalog.now()));
+
 -- Deployment is transactional: serialize against claims and close held historical work first.
 lock table public.fan_notification_delivery_control in exclusive mode;
   -- Only unstarted or expired leases may be closed; uncertain sends stay untouched.
@@ -228,7 +237,7 @@ begin
     where c.app_user_id=n.app_user_id and c.status='eligible' and c.verified_at is not null
       and c.consented_at is not null and c.consent_revoked_at is null
       and ((c.kind='email' and n.kind::text not in('live_24h','live_cancelled'))
-        or (c.kind='kakao' and n.kind::text not in('runmusic_result','benefit_available','recipient_information_required') and public.kakao_channel_supports_notification(c.id,n.kind::text,notification_payload,locale)))
+        or (c.kind='kakao' and exists(select 1 from public.fan_notification_delivery_control control where control.channel='kakao' and control.mode<>'disabled') and n.kind::text not in('runmusic_result','benefit_available','recipient_information_required') and public.kakao_channel_supports_notification(c.id,n.kind::text,notification_payload,locale)))
     order by case c.kind when 'kakao' then 1 else 2 end,c.priority,c.id limit 1;
   if not found then return null; end if;
   if primary_channel.kind='kakao' and n.kind::text not in('live_24h','live_cancelled') then
@@ -247,4 +256,18 @@ begin
     values(plan_id,n.id,primary_channel.id,primary_channel.kind,1,n.kind::text,locale,greatest(n.scheduled_for,p_now));
   return plan_id;
 end $$;
+create or replace function public.get_owned_notification_connections(p_app_user_id uuid)
+returns jsonb language sql stable security definer set search_path='' as $$
+  select jsonb_build_object(
+    'kakaoEnabled',exists(select 1 from public.fan_notification_delivery_control where channel='kakao' and mode<>'disabled'),
+    'accounts',coalesce((select jsonb_agg(jsonb_build_object(
+      'provider',a.provider,'status',a.status,'connectedAt',a.connected_at,'disconnectedAt',a.disconnected_at
+    ) order by a.provider) from public.fan_connected_accounts a where a.app_user_id=p_app_user_id),'[]'::jsonb),
+    'channels',coalesce((select jsonb_agg(jsonb_build_object(
+      'id',c.id,'kind',c.kind,'status',c.status,
+      'consented',c.consented_at is not null and c.consent_revoked_at is null,
+      'destinationLabel',c.destination_label,'verifiedAt',c.verified_at
+    ) order by c.priority,c.kind,c.id) from public.fan_notification_channels c where c.app_user_id=p_app_user_id),'[]'::jsonb)
+  )
+$$;
 commit;

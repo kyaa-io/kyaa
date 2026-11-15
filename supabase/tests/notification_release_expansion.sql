@@ -63,7 +63,9 @@ begin
     perform alert_safety_test.assert(exists(select 1 from public.claim_email_notification_deliveries_safely('new-kind-test',100,120) q where q.notification_id=n),'new kind claimed: '||k);
   end loop;
   perform public.mobile_register_owned_installation(owner_id,extensions.gen_random_uuid(),'ios','synthetic-token','authorized','1','en',0,extensions.gen_random_uuid());
+  perform alert_safety_test.assert((public.get_owned_notification_connections(owner_id)->>'kakaoEnabled')::boolean=false,'Kakao control hides UI');
   n:=alert_safety_test.notification(owner_id);
+  perform alert_safety_test.assert(not exists(select 1 from public.external_notification_delivery_outbox where notification_id=n and channel='kakao'),'disabled Kakao creates no delivery');
   perform alert_safety_test.assert(not exists(select 1 from public.mobile_push_delivery_outbox where notification_id=n),'disabled app does not enqueue');
   begin perform public.mobile_claim_push_deliveries('disabled-test',10,120); raise exception 'disabled claim succeeded';
   exception when others then if sqlerrm<>'MOBILE_PUSH_DISABLED' then raise; end if; end;

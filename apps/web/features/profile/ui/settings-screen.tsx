@@ -1061,7 +1061,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
     { section: "profile" as const, icon: <Pencil />, label: t.profile, value: settings.nickname },
     { section: "language" as const, icon: <Globe2 />, label: t.language, value: preferredLanguage },
     { section: "notifications" as const, icon: <Bell />, label: t.notifications, value: "" },
-    { section: "channels" as const, icon: <Bell />, label: t.connections, value: connections.channels.filter((channel) => channel.consented).map((channel) => channel.kind === "email" ? t.emailChannel : t.kakaoChannel).join(" · ") },
+    { section: "channels" as const, icon: <Bell />, label: t.connections, value: connections.channels.filter((channel) => channel.consented && (channel.kind !== "kakao" || connections.kakaoEnabled)).map((channel) => channel.kind === "email" ? t.emailChannel : t.kakaoChannel).join(" · ") },
     { section: "account" as const, icon: <WalletCards />, label: t.account, value: settings.wallet?.maskedAddress ?? t.noWallet },
     { section: "installation" as const, icon: <Smartphone />, label: t.install, value: installValue },
     { section: "blocked" as const, icon: <ShieldBan />, label: blockedLabel, value: "" },
@@ -1398,7 +1398,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
           </div>
           <div className={styles.channelControls}>
             {connections.accounts.some((account) => account.provider === "google" && account.status === "connected") && <p>{t.googleReadOnly}</p>}
-            {(() => {
+            {connections.kakaoEnabled && (() => {
               const connected = connections.accounts.some((account) => account.provider === "kakao" && account.status === "connected");
               return (
                 <button type="button" disabled={connectionAction !== null} aria-busy={connectionAction?.startsWith("kakao") ?? false} onClick={() => void toggleKakao(connected)}>
@@ -1427,12 +1427,12 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
                           : t.kakaoEnrollmentCanceling}
               </p>
             )}
-            {connections.channels.map((channel) => <label key={channel.id}><span><strong>{channel.kind === "email" ? t.emailChannel : t.kakaoChannel}</strong><small>{channel.destinationLabel}{channel.status === "needs_verification" ? ` · ${t.needsEnrollment}` : ""}</small></span><input type="checkbox" role="switch" aria-label={channel.kind === "email" ? t.emailChannel : t.kakaoChannel} aria-describedby={connectionAction ? "connection-save-status" : undefined} checked={channel.consented} disabled={connectionAction !== null || channel.status !== "eligible"} onChange={(event) => void updateChannel(channel.id, event.target.checked)} /></label>)}
-            {phoneSmsEnabled && <PhoneSmsEnrollment key={ownerId} locale={locale} disabled={connectionAction !== null} getAccessToken={getAccessToken}
+            {connections.channels.filter((channel) => channel.kind !== "kakao" || connections.kakaoEnabled).map((channel) => <label key={channel.id}><span><strong>{channel.kind === "email" ? t.emailChannel : t.kakaoChannel}</strong><small>{channel.destinationLabel}{channel.status === "needs_verification" ? ` · ${t.needsEnrollment}` : ""}</small></span><input type="checkbox" role="switch" aria-label={channel.kind === "email" ? t.emailChannel : t.kakaoChannel} aria-describedby={connectionAction ? "connection-save-status" : undefined} checked={channel.consented} disabled={connectionAction !== null || channel.status !== "eligible"} onChange={(event) => void updateChannel(channel.id, event.target.checked)} /></label>)}
+            {connections.kakaoEnabled && phoneSmsEnabled && <PhoneSmsEnrollment key={ownerId} locale={locale} disabled={connectionAction !== null} getAccessToken={getAccessToken}
               acquire={() => { if (connectionPendingRef.current) return false; connectionPendingRef.current = true; setConnectionAction("phone-sms"); return true; }}
               release={() => { if (ownerRef.current !== ownerId) return; connectionPendingRef.current = false; setConnectionAction(null); }}
               onRegistered={(channel) => { setConnections((current) => current ? { ...current, channels: [...current.channels.filter((item) => item.kind !== "kakao"), channel] } : current); setKakaoEnrollmentConsent(false); setKakaoEnrollment((current) => ({ ...current, pending: null })); }} />}
-            {kakaoEnrollment.enabled && (!phoneSmsEnabled || kakaoEnrollment.pending) && <div className={styles.kakaoEnrollment}>
+            {connections.kakaoEnabled && kakaoEnrollment.enabled && (!phoneSmsEnabled || kakaoEnrollment.pending) && <div className={styles.kakaoEnrollment}>
               <strong>{t.kakaoEnrollmentTitle}</strong>
               {kakaoEnrollment.pending ? <>
                 <p><span>{t.kakaoEnrollmentPending}</span><strong>{kakaoEnrollment.pending.destinationLabel}</strong></p>

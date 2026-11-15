@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "카카오 알림톡 발송을 중단하고, 설정 화면에서 카카오 알림 등록·수신 설정을 숨겼어요.",
+    "첨부 화면은 예시 계정으로 확인한 로컬 검증 화면이에요."
+  ],
+  "path": "/settings",
+  "images": ["release-notes/images/2026-11-15-kakao-disabled-390.png", "release-notes/images/2026-11-15-kakao-disabled-1440.png"]
+}

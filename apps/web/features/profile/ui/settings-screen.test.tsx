@@ -58,6 +58,7 @@ let preferences: {
   browserSubscription: "unsubscribed",
 };
 const connections = {
+  kakaoEnabled: true,
   accounts: [
     { provider: "google", status: "connected", connectedAt: "2026-09-03T00:00:00.000Z", disconnectedAt: null },
     { provider: "kakao", status: "connected", connectedAt: "2026-09-03T00:00:00.000Z", disconnectedAt: null },
@@ -209,6 +210,17 @@ describe("FAN-020 settings", () => {
     expect(screen.getByRole("heading", { name: "설정" })).toBeInTheDocument();
   });
 
+  it("hides Kakao registration and consent when its delivery control is disabled", async () => {
+    const original = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (input, init) => String(input) === "/api/me/notification-channels"
+      ? Response.json({connections:{...connections,kakaoEnabled:false},kakaoEnrollment:{enabled:true,pending:null},phoneSmsEnrollment:{enabled:true}})
+      : original(input, init));
+    renderSettings("channels");
+    expect(await screen.findByRole("switch", {name:"Email 수신"})).toBeInTheDocument();
+    expect(screen.queryByRole("switch", {name:"Kakao 수신"})).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", {name:/Kakao|카카오|인증번호/})).not.toBeInTheDocument();
+  });
+
   it("separates read-only connections from consented delivery channels", async () => {
     renderSettings("channels");
     expect(await screen.findByText("Google · 로그인에서 확인됨 (읽기 전용)")).toBeInTheDocument();
@@ -253,7 +265,7 @@ describe("FAN-020 settings", () => {
       const url = String(input);
       if (url === "/api/me/settings") return Response.json({ settings });
       if (url === "/api/notifications/preferences") return Response.json({ preferences });
-      if (url === "/api/me/notification-channels") return Response.json({ connections: { accounts: [], channels: [] }, phoneSmsEnrollment: { enabled: true }, kakaoEnrollment: { enabled: true, pending: null } });
+      if (url === "/api/me/notification-channels") return Response.json({ connections: { kakaoEnabled: true, accounts: [], channels: [] }, phoneSmsEnrollment: { enabled: true }, kakaoEnrollment: { enabled: true, pending: null } });
       if (url.endsWith("/phone/request")) return new Promise<Response>((resolve) => { finish = resolve; });
       throw new Error("Unexpected local route");
     });
@@ -302,7 +314,7 @@ describe("FAN-020 settings", () => {
       const url = String(input);
       if (url === "/api/me/settings") return Response.json({ settings });
       if (url === "/api/notifications/preferences") return Response.json({ preferences });
-      if (url === "/api/me/notification-channels") return Response.json({ connections: flow === "connection" ? { accounts: [], channels: [] } : connections, kakaoEnrollment: { enabled: true, pending: null } });
+      if (url === "/api/me/notification-channels") return Response.json({ connections: flow === "connection" ? { kakaoEnabled: true, accounts: [], channels: [] } : connections, kakaoEnrollment: { enabled: true, pending: null } });
       if (url === endpoint) return Response.json({ error: "UNAVAILABLE" }, { status: 503 });
       throw new Error(`Unexpected URL ${url}`);
     });

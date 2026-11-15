@@ -2783,3 +2783,7 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 | 실제 화면 근거 | 로컬 예시 데이터로 실제 컴포넌트를 렌더한 390·1440 브라우저 캡처: `release-notes/images/2026-11-13-leader-l6-{create,entry,result}-{390,1440}.png`. 운영 화면·실제 DB 검증을 뜻하지 않는다. 측정과 상태별 판정은 작업 QA 기록에서 따로 확인한다. |
 
 새 이미지 자산·크롭은 없다. 기존 상품 이미지가 있는 경우의 표시 방식은 변경하지 않는다. 글로벌 byus/UI 지침 경로가 이 환경에 없어 저장소의 현재 계약을 적용했으며, 기존 폼의 승인 경품 선택·수령 방식 네이티브 선택기는 이번 기능 확장의 공통 부품 전환 범위에 포함하지 않았다.
+
+### 2026-11-15 카카오 알림톡 중단
+
+`/settings?section=channels`는 `fan_notification_delivery_control`의 카카오 `mode`가 `disabled`이면 카카오 연결·수신 동의·전화번호 등록 영역을 표시하지 않는다. 기존 화면 코드는 보존하며 같은 발송 설정을 다시 켜면 노출할 수 있다. 이메일 영역과 기존 글꼴·간격·반경·색상·공통 컴포넌트는 그대로 사용한다.

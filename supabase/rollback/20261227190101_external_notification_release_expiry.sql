@@ -173,4 +173,17 @@ begin
     values(plan_id,n.id,primary_channel.id,primary_channel.kind,1,n.kind::text,locale,greatest(n.scheduled_for,p_now));
   return plan_id;
 end $$;
+create or replace function public.get_owned_notification_connections(p_app_user_id uuid)
+returns jsonb language sql stable security definer set search_path='' as $$
+  select jsonb_build_object(
+    'accounts',coalesce((select jsonb_agg(jsonb_build_object(
+      'provider',a.provider,'status',a.status,'connectedAt',a.connected_at,'disconnectedAt',a.disconnected_at
+    ) order by a.provider) from public.fan_connected_accounts a where a.app_user_id=p_app_user_id),'[]'::jsonb),
+    'channels',coalesce((select jsonb_agg(jsonb_build_object(
+      'id',c.id,'kind',c.kind,'status',c.status,
+      'consented',c.consented_at is not null and c.consent_revoked_at is null,
+      'destinationLabel',c.destination_label,'verifiedAt',c.verified_at
+    ) order by c.priority,c.kind,c.id) from public.fan_notification_channels c where c.app_user_id=p_app_user_id),'[]'::jsonb)
+  )
+$$;
 commit;
