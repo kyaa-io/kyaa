@@ -193,22 +193,24 @@ section.pWallet{position:relative;box-sizing:border-box}
 .missionsSection > :is([data-mission-strip],[data-stan-passport-book],[data-fan-missions],[data-missions-pending]){margin-block-start:calc(var(--fan-section-gap) - var(--space-3))}
 
 
-/* 페이지 틀 (사용자 11/13 13:37): 본문은 헤더와 같은 셸 폭(FanContentContainer: 최대 1440, 좌우 16/32/40)을 그대로 쓴다 — 이 모듈은 폭·좌우 여백을 정하지 않는다.
+/* 페이지 틀 (사용자 11/13 13:37, 대표 11/15 17:34): 본문은 헤더와 같은 셸 폭(FanContentContainer: 최대 1440, 좌우 16/32/40)을 그대로 쓴다 — 이 모듈은 폭·좌우 여백을 정하지 않는다.
    간격은 두 값뿐: 구역 사이 --fan-section-gap(32, 768+ 48), 구역 안(제목→블록, 블록→블록) --space-3(12). 구역을 가르는 선은 없다.
-   1280+ 는 두 열(열 584 이상 — 1024~1279 는 열이 468 이라 카드들이 깨져 한 열): 럭키드로우 + 내역 | 덕질 미션. 내역은 왼쪽 열의 둘째 행에 놓이고, 덕질 미션이 두 행을 차지한다(행 높이는 왼쪽 열이 정한다). */
+   본문은 한 열이다: 럭키드로우 → 덕질배너1(있으면) → 덕질 미션 → 내역이 위에서 아래로 쌓인다(DOM 순서 그대로).
+   1280+ 는 오른쪽에 세로 배너 칸(--rail-md 360, 간격 --col-gap)을 두고 본문은 그 나머지다(1440에서 968, 1280에서 808). 세로 배너(덕질배너2)가 없으면 칸을 그리지 않고 본문은 같은 폭으로 가운데에 놓인다(카드 폭이 배너 유무로 달라지지 않는다).
+   1279 이하는 칸 없이 한 열 전체 폭이다. */
 .page{gap:var(--fan-section-gap);padding-top:var(--space-6);padding-bottom:var(--space-12)}
 .main{display:flex;flex-direction:column;gap:var(--fan-section-gap);min-width:0}
 @media (width >= 48rem){.page{padding-top:var(--space-8)}}
-@media (width >= 80rem){
- .main{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto 1fr;column-gap:var(--col-gap);row-gap:var(--fan-section-gap);align-items:start}
- .main > .pLucky{grid-column:1;grid-row:1}
- .main > .pMissions{grid-column:2;grid-row:1 / span 2}
- .main > .pHistory{grid-column:1;grid-row:2}
- /* 덕질배너1(대표 11/14 22:25): 왼쪽 열에서 럭키드로우와 내역 사이. 배너가 있을 때만 행이 하나 늘고, 없으면 위 값 그대로다. */
- .main[data-dukjil-banner]{grid-template-rows:auto auto 1fr}
- .main[data-dukjil-banner] > .pBanner{grid-column:1;grid-row:2}
- .main[data-dukjil-banner] > .pMissions{grid-row:1 / span 3}
- .main[data-dukjil-banner] > .pHistory{grid-row:3}
-}
 /* 덕질배너1: 럭키드로우 구역과 덕질 미션 구역 사이(구역 간격은 .main의 gap). */
 .pBanner{min-width:0}
+/* 덕질배너2(대표 11/15 17:34): 1280+ 본문 오른쪽 세로 배너 칸 360×600. 1280 미만에서는 그리지 않는다(그림도 받지 않는다). 배너가 없으면 본문을 같은 폭으로 가운데에 둔다. */
+.pSide{display:none;min-width:0}
+@media (width >= 80rem){
+ .main{width:100%;max-width:calc(100% - var(--rail-md) - var(--col-gap));margin-inline:auto}
+ .page[data-dukjil-side]{grid-template-columns:minmax(0,1fr) var(--rail-md);grid-template-areas:"alert alert" "main side";column-gap:var(--col-gap)}
+ .page[data-dukjil-side]:not(:has(> .alertList)){grid-template-areas:"main side"}
+ .page[data-dukjil-side] > .main{width:auto;max-width:none;margin-inline:0}
+ .pSide{display:block;grid-area:side;align-self:start;position:sticky;top:calc(var(--fan-header-height) + var(--space-6))}
+}
+/* 화면이 낮으면(760 미만) 배너가 잘리지 않게 고정하지 않는다. */
+@media (width >= 80rem) and (height < 47.5rem){.pSide{position:static}}

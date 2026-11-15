@@ -9,6 +9,7 @@ vi.mock('next/headers',()=>({cookies:async()=>({has:()=>false})}));
 afterEach(()=>{vi.unstubAllEnvs();slots.listSlots.mockReset();});
 it('selects the actual group benefits screen under the release gate',async()=>{
  vi.stubEnv('KYAA_GROUPS_ENABLED','true');
+ slots.listSlots.mockResolvedValueOnce({});
  const result=await BenefitsPage({searchParams:Promise.resolve({locale:'ja'})});
  expect(result.type.name).toBe('GroupBenefitsScreen');
  expect(result.props.locale).toBe('ja');
@@ -24,11 +25,13 @@ it('retains the legacy screen and validated creator filter with the gate off',as
 });
 it('reads the 덕질배너1 slot with the page and treats a failed read as an empty slot',async()=>{
  vi.stubEnv('KYAA_GROUPS_ENABLED','true');
- slots.listSlots.mockResolvedValueOnce({dukjil_mid:{id:'banner-1'}});
+ slots.listSlots.mockResolvedValueOnce({dukjil_mid:{id:'banner-1'},dukjil_side:{id:'banner-2'}});
  const filled=await BenefitsPage({searchParams:Promise.resolve({locale:'en'})});
  expect(slots.listSlots).toHaveBeenCalledWith('en','dukjil');
  expect(filled.props.banner).toEqual({id:'banner-1'});
+ expect(filled.props.sideBanner).toEqual({id:'banner-2'});
  slots.listSlots.mockRejectedValueOnce(new Error('down'));
  const failed=await BenefitsPage({searchParams:Promise.resolve({locale:'ko'})});
  expect(failed.props.banner).toBeUndefined();
+ expect(failed.props.sideBanner).toBeUndefined();
 });

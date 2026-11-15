@@ -6,8 +6,10 @@
 .link img { object-fit: cover; object-position: center; }
 .tag { position: absolute; bottom: var(--space-2); left: var(--space-2); }
 @media (min-width: 64rem) { .link { aspect-ratio: 2720 / 240; } }
-/* 중간 배너(홈배너2·덕질배너1): 찐팬100 줄과 같은 칸 — 390 358×160(716×320 원본), 768+ 1360×240(2720×480 원본), 모서리 16. 위 간격은 놓는 쪽이 정한다. 1280+ 반폭 열(data-split)은 폰 폭이라 390 비율·원본으로 돌아온다. */
+/* 중간 배너(홈배너2·덕질배너1): 찐팬100 줄과 같은 칸 — 390 358×160(716×320 원본), 768+ 1360×240(2720×480 원본), 모서리 16. 위 간격은 놓는 쪽이 정한다. */
 .stripMid { margin-top: 0; }
 .stripMid .link { aspect-ratio: 716 / 320; border-radius: var(--radius-card); }
 @media (min-width: 48rem) { .stripMid .link { aspect-ratio: 2720 / 480; } }
-@media (min-width: 80rem) { .stripMid[data-split] .link { aspect-ratio: 716 / 320; } }
+/* 세로 배너(덕질배너2): 덕질 탭 PC 오른쪽 칸 360×600(3:5, 원본 720×1200), 모서리 16. 그림 한 장이 통째로 링크. */
+.stripSide { margin-top: 0; }
+.stripSide .link { aspect-ratio: 3 / 5; border-radius: var(--radius-card); }

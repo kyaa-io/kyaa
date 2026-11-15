@@ -12,12 +12,12 @@ begin
  perform set_config('byus.banner_slot.viewer',viewer::text,true);perform set_config('byus.banner_slot.viewer_allow',viewer_allow::text,true);
 end $$;
 -- Earlier published slot banners on this database would change the answers below.
-update public.home_banners set publication_status='draft' where placement in('home_below_board','home_between_events','home_mid','fanpage_below_gallery','fanpage_second','dukjil_mid');
+update public.home_banners set publication_status='draft' where placement in('home_below_board','home_between_events','home_mid','fanpage_below_gallery','fanpage_second','dukjil_mid','dukjil_side');
 set local role service_role;
 do $$
 declare actor uuid:=current_setting('byus.banner_slot.actor')::uuid;allow_id uuid:=current_setting('byus.banner_slot.allow')::uuid;asset uuid:=current_setting('byus.banner_slot.asset')::uuid;
  viewer uuid:=current_setting('byus.banner_slot.viewer')::uuid;viewer_allow uuid:=current_setting('byus.banner_slot.viewer_allow')::uuid;
- loc jsonb;first_id uuid;second_id uuid;fan_id uuid;mid_id uuid;dukjil_id uuid;caught boolean;result jsonb;
+ loc jsonb;first_id uuid;second_id uuid;fan_id uuid;mid_id uuid;dukjil_id uuid;side_id uuid;caught boolean;result jsonb;
 begin
  loc:=jsonb_build_object('title','찐팬100 챌린지','description','','ctaLabel','응원하기','href','/elina?locale=ko','alt','찐팬100 챌린지','desktopAssetId',asset,'mobileAssetId',null);
  loc:=jsonb_build_object('ko',loc,'en',loc||'{"title":"Fan 100","ctaLabel":"Cheer","alt":"Fan 100"}');
@@ -58,6 +58,14 @@ begin
  if result<>jsonb_build_object('dukjil_mid',result->'dukjil_mid') or result->'dukjil_mid'->>'id'<>dukjil_id::text then raise exception 'dukjil area wrong: %',result;end if;
  if public.read_published_slot_banners('ko','fanpage') ? 'dukjil_mid' or public.read_published_slot_banners('ko','fanpage') ? 'home_mid' then raise exception 'Mid slot leaked into fanpage';end if;
  if exists(select 1 from jsonb_array_elements(public.read_published_home_banners('ko')||public.read_published_discovery_banners('ko'))x where x->>'id' in(mid_id::text,dukjil_id::text))then raise exception 'Mid slot banner reached a slider';end if;
+ -- Side slot (20261227180001): dukjil_side answers with dukjil_mid in the dukjil area only, and the sliders never show it.
+ side_id:=(public.save_admin_managed_banner(actor,allow_id,gen_random_uuid(),null,0,'announcement',null,loc,'dukjil_side','ad')->>'id')::uuid;
+ if public.read_published_slot_banners('ko','dukjil') ? 'dukjil_side' then raise exception 'Draft side banner shown';end if;
+ perform public.set_admin_home_banner_publication(actor,allow_id,gen_random_uuid(),side_id,1,'published');
+ result:=public.read_published_slot_banners('ko','dukjil');
+ if result<>jsonb_build_object('dukjil_mid',result->'dukjil_mid','dukjil_side',result->'dukjil_side') or result->'dukjil_mid'->>'id'<>dukjil_id::text or result->'dukjil_side'->>'id'<>side_id::text or result->'dukjil_side'->>'category'<>'ad' then raise exception 'dukjil side wrong: %',result;end if;
+ if public.read_published_slot_banners('ko','home') ? 'dukjil_side' or public.read_published_slot_banners('ko','fanpage') ? 'dukjil_side' then raise exception 'Side slot leaked into another area';end if;
+ if exists(select 1 from jsonb_array_elements(public.read_published_home_banners('ko')||public.read_published_discovery_banners('ko'))x where x->>'id'=side_id::text)then raise exception 'Side slot banner reached a slider';end if;
  raise notice 'PASS banner slots';
 end $$;
 reset role;

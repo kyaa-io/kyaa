@@ -21,7 +21,7 @@ const auth=vi.hoisted(()=>({ready:true,authenticated:true,user:{id:'owner-a'},ge
 const session=vi.hoisted(()=>({ready:true,ownerId:'owner-a',generation:0}));
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>auth}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>session}));
-vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:any)=><div>{children}</div>,FanContentContainer:({children}:any)=><main>{children}</main>}));
+vi.mock('@/components/fan-shell/fan-app-shell',()=>({FanAppFrame:({children}:any)=><div>{children}</div>,FanContentContainer:({children,id,'data-dukjil-side':side}:any)=><main id={id} data-dukjil-side={side}>{children}</main>}));
 const id='10000000-0000-4000-8000-000000000001',second='10000000-0000-4000-8000-000000000002';
 const wallet={sequence:1,points:137,tickets:7,policyVersion:'group-wallet-v1',pointCost:100,writeFenced:false,attendance:{date:'2026-11-01',checkedIn:true,streak:1,nextBonusIn:6}};
 const raffle={id,pageId:id,pageName:'Actual page',title:'First raffle',description:'Original description',imageUrl:null,href:`/pages/groups/${id}/raffles/${id}`,status:'open',closesAt:'2100-12-31T00:00:00Z'};
@@ -135,13 +135,32 @@ it('대표 11/14 22:25 덕질배너1: the banner sits between the lucky draw and
  expect(lucky.compareDocumentPosition(slot)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
  expect(slot.compareDocumentPosition(missions)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
  expect(slot.querySelector('a')).toHaveAttribute('href','/guide/dukjil?locale=ko');
- expect(slot.querySelector('[data-banner-size="mid"]')).toHaveAttribute('data-split','true');
+ expect(slot.querySelector('[data-banner-size="mid"]')).not.toHaveAttribute('data-split');
  expect(v.container.querySelector('[data-dukjil-banner]')).not.toBeNull();
  v.unmount();
  const none=render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('글쓰기');
  expect(none.container.querySelector('[data-dukjil-banner-slot]')).toBeNull();
  expect(none.container.querySelector('[data-dukjil-banner]')).toBeNull();
+});
+it('대표 11/15 17:34 덕질배너2: the vertical banner is its own column after the body, flags the page, and without one nothing is drawn',async()=>{
+ duoData(); const asset={id:uid(910),url:'/dukjil-side.webp',width:720,height:1200,mimeType:'image/webp',revision:1};
+ const side={id:uid(911),kind:'announcement' as const,celebrityId:null,placement:'dukjil_side' as const,category:'event' as const,title:'덕후인증 +100P',description:'',ctaLabel:'보기',href:'/guide/dukjil',alt:'덕후인증 +100P',desktopImage:asset,mobileImage:null};
+ const v=render(<GroupBenefitsScreen locale='ko' sideBanner={side}/>);
+ await screen.findByText('글쓰기');
+ const slot=v.container.querySelector('[data-dukjil-side-slot]')!,main=v.container.querySelector('#benefits-main')!,body=v.container.querySelector('[data-lucky-section]')!.parentElement!;
+ expect(main).toHaveAttribute('data-dukjil-side','');
+ expect(slot.parentElement).toBe(main);
+ expect(body.compareDocumentPosition(slot)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+ expect(slot.querySelector('[data-banner-size="side"]')).not.toBeNull();
+ expect(slot.querySelector('a')).toHaveAttribute('href','/guide/dukjil?locale=ko');
+ expect(slot.querySelector('img')).toHaveAttribute('src','/dukjil-side.webp');
+ expect(v.container.querySelector('[data-dukjil-banner-slot]')).toBeNull();
+ v.unmount();
+ const none=render(<GroupBenefitsScreen locale='ko'/>);
+ await screen.findByText('글쓰기');
+ expect(none.container.querySelector('[data-dukjil-side-slot]')).toBeNull();
+ expect(none.container.querySelector('#benefits-main')).not.toHaveAttribute('data-dukjil-side');
 });
 it('DUO: while the draw rests the card says so with one disabled enter button and no allowance',async()=>{
  duoData();render(<GroupBenefitsScreen locale='ko'/>);

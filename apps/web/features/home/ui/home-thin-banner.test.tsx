@@ -27,14 +27,19 @@ it("marks an advertisement and opens an outside link in a new tab as sponsored",
   expect(link).toHaveTextContent("광고");
 });
 
-it("draws the mid size with the phone artwork under 768 and the wide artwork from 768, and the phone artwork again in a split column", () => {
+it("draws the mid size with the phone artwork under 768 and the wide artwork from 768", () => {
   const mid = { desktopImage: asset(2720, 480), mobileImage: asset(716, 320) };
   const plain = render(<ThinBanner banner={banner(mid)} locale="ko" size="mid" />);
   expect(plain.container.querySelector("[data-home-thin-banner]")).toHaveAttribute("data-banner-size", "mid");
   expect(plain.container.querySelector("source")).toHaveAttribute("media", "(min-width: 48rem)");
   expect(plain.container.querySelector("img")).toHaveAttribute("width", "716");
-  plain.unmount();
-  const split = render(<ThinBanner banner={banner(mid)} locale="ko" size="mid" split />);
-  expect(split.container.querySelector("source")).toHaveAttribute("media", "(min-width: 48rem) and (max-width: 79.99rem)");
-  expect(split.container.querySelector("[data-home-thin-banner]")).toHaveAttribute("data-split", "true");
+});
+
+it("draws the side size as one picture of the PC artwork, with no phone artwork and no source switch", () => {
+  const { container } = render(<ThinBanner banner={banner({ desktopImage: asset(720, 1200), mobileImage: asset(716, 320) })} locale="ko" size="side" />);
+  expect(container.querySelector("[data-home-thin-banner]")).toHaveAttribute("data-banner-size", "side");
+  expect(container.querySelector("source")).toBeNull();
+  expect(container.querySelector("img")).toHaveAttribute("width", "720");
+  expect(container.querySelector("img")).toHaveAttribute("height", "1200");
+  expect(screen.getByRole("link").getAttribute("href")).toBe("/events?locale=ko");
 });
