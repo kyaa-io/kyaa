@@ -27,10 +27,11 @@ describe("page head presence line (U1, N18)", () => {
 });
 
 describe("page head (U1)", () => {
-  it("draws no introduction line without source text, and puts the social icons in the name block", () => {
+  it("draws no introduction line without source text, and puts the social icons at the end of the fan-count line, not in the name block (대표 11/15 17:29)", () => {
     const { container } = render(<FanPageHeader image={{ src: null, alt: "" }} name="Hiroro" kind="fan" locale="ko" links={[{ kind: "tiktok", href: "https://www.tiktok.com/@x" }]} />);
     expect(container.querySelector("p")).toBeNull();
     const link = screen.getByRole("link", { name: "tiktok" });
-    expect(link.closest("[class*='headline']")).not.toBeNull();
+    expect(link.closest("[class*='headline']")).toBeNull();
+    expect(link.closest("[class*='stats']")).not.toBeNull();
   });
 });

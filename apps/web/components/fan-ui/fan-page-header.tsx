@@ -63,7 +63,9 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
   frameId?: string;
 }>) {
   const plainName = typeof name === "string" ? name : "";
-  const actions = Boolean(star || utility || links.length > 0);
+  const actions = Boolean(star || utility);
+  // SNS 로고는 맨 위 행동 줄이 아니라 '팬 N · 접속' 줄 끝에 둔다(대표 11/15 17:29).
+  const linkNav = links.length > 0 ? <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind="social"><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav> : null;
   return <header className={styles.header} data-fan-page-header={kind} data-frame-id={frameId}>
     <div className={styles.identity}>
       <FanPageImageSlot image={image} name={plainName} locale={locale} size={{ mobile: 96, desktop: 128 }} className={styles.image} priority />
@@ -76,12 +78,11 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
         {actions ? <div className={styles.actions}>
           {star && <FanStarAction {...star} className={styles.star} />}
           {utility}
-          {links.length > 0 && <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind="social"><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav>}
         </div> : null}
         {menu ? <div className={styles.menu}>{menu}</div> : null}
       </div>
       {description ? <Description labels={descriptionLabels} action={descriptionAction}>{description}</Description> : null}
-      {stats ? <div className={styles.stats}>{stats}</div> : null}
+      {stats || linkNav ? <div className={styles.stats}>{stats}{linkNav}</div> : null}
     </div>
     {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
   </header>;
