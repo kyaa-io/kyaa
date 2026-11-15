@@ -1,3 +1,4 @@
+import { kakaoRegistrationDisabledResponse } from "@/server/notification/kakao-delivery-control";
 import { createClient } from "@/server/data/client";
 import { createPrivyNodeAccessVerifier } from "@/server/auth/privy-node-verifier";
 import { loadServerEnv } from "@/server/config/env";
@@ -8,6 +9,9 @@ import { SupabaseKakaoConnectionRepository } from "@/server/notification/kakao-c
 
 export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
+  const disabled = await kakaoRegistrationDisabledResponse();
+  if (disabled) return disabled;
+
   try {
     const env = loadServerEnv();
     if (!env.KAKAO_ALIMTALK_ENROLLMENT_ENABLED || env.KAKAO_OAUTH_MODE !== "provider" || !env.KAKAO_CLIENT_ID || !env.KAKAO_CLIENT_SECRET || !env.KAKAO_REDIRECT_URI) throw new Error("not configured");

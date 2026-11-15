@@ -3,7 +3,7 @@ do $$ begin if current_database()<>'byus_clean' or inet_server_addr() is not nul
 begin;
 select public.configure_fan_notification_delivery('email','disabled');
 select public.configure_fan_notification_delivery('kakao','disabled');
-create temporary table cutover_history as select id,md5(to_jsonb(d)::text) hash from public.external_notification_delivery_outbox d;
+create temporary table cutover_history as select id,md5(to_jsonb(d)::text) hash from public.external_notification_delivery_outbox d where status not in ('pending','failed','processing') or created_at>now()-interval '24 hours';
 select alert_safety_test.assert((select count(*)=0 from public.claim_email_notification_deliveries_safely('cutover-disabled',2,120)),'disabled cutover must not claim historical pending');
 select alert_safety_test.assert((select count(*)=0 from public.claim_kakao_notification_deliveries('cutover-disabled',2,120)),'disabled Kakao must not claim');
 -- clock_timestamp models notifications created by a later request transaction.
@@ -30,7 +30,10 @@ begin
   perform alert_safety_test.assert(not public.fan_notification_is_released(equal_n,ch),'exact cutoff excluded');
   other_n:=alert_safety_test.fresh_notification(outsider);
   perform alert_safety_test.assert(not public.fan_notification_is_released(other_n,ch),'test excludes other users');
+  -- Queue a Kakao fixture while enabled, then exercise the existing test-only claim gate.
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='enabled',test_user_ids='{}' where channel=ch; end if;
   new_n:=alert_safety_test.fresh_notification(o);
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='test',test_user_ids=array[o] where channel=ch; end if;
   perform alert_safety_test.assert(public.fan_notification_is_released(new_n,ch),'test allows fresh approved user');
   if ch='email' then
    select to_jsonb(q) into j from public.claim_email_notification_deliveries_safely('cutover-test',100,120) q where notification_id=new_n;
@@ -61,7 +64,10 @@ begin
   else
    perform alert_safety_test.assert(not public.begin_kakao_notification_send((j->>'id')::uuid,(j->>'attempt_token')::uuid,j->>'template_id',repeat('a',64)),'reactivated old Kakao begin denied');
   end if;
+  -- Queue a Kakao fixture while enabled, then exercise the existing test-only claim gate.
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='enabled',test_user_ids='{}' where channel=ch; end if;
   new_n:=alert_safety_test.fresh_notification(o);
+  if ch='kakao' then update public.fan_notification_delivery_control set mode='test',test_user_ids=array[o] where channel=ch; end if;
   if ch='email' then
    select to_jsonb(q) into j from public.claim_email_notification_deliveries_safely('cutover-new',100,120) q where notification_id=new_n;
    perform alert_safety_test.assert(j is not null,'fresh Email claimed after reactivation');
@@ -172,5 +178,31 @@ do $$ begin
  begin update public.fan_notification_delivery_control set mode='enabled';raise exception 'runtime mutated control';exception when insufficient_privilege then null;end;
 end $$;
 reset role;
+-- Synthetic fixtures also work on an otherwise empty replay database.
+do $$ declare ch text; reason text; n uuid; fresh uuid; code text; begin
+ foreach ch in array array['email','kakao'] loop
+  foreach reason in array array['CHANNEL','ACTIVATION','KIND'] loop
+   perform public.configure_fan_notification_delivery(ch,'enabled');
+   update public.fan_notification_delivery_control set allowed_kinds=null where channel=ch;
+   n:=alert_safety_test.fresh_notification(alert_safety_test.owner(case when ch='email' then 'en' else 'ko' end,ch='kakao'));
+   fresh:=alert_safety_test.fresh_notification(alert_safety_test.owner(case when ch='email' then 'en' else 'ko' end,ch='kakao'));
+   update public.external_notification_delivery_outbox set created_at=now()-interval '24 hours' where notification_id=n;
+   if reason='CHANNEL' then
+    perform public.configure_fan_notification_delivery(ch,'disabled');
+   elsif reason='ACTIVATION' then
+    update public.fan_notification_delivery_control set activated_at=clock_timestamp() where channel=ch;
+   else
+    update public.fan_notification_delivery_control set allowed_kinds=array['live_reserved'] where channel=ch;
+   end if;
+   if ch='email' then perform public.claim_email_notification_deliveries_safely('expiry-test',100,120);
+   else perform public.claim_kakao_notification_deliveries('expiry-test',2,120); end if;
+   code:=upper(ch)||'_'||reason||'_NOT_RELEASED';
+   perform alert_safety_test.assert(exists(select 1 from public.external_notification_delivery_outbox where notification_id=n and status='failed' and available_at='infinity' and last_error_code=code and lease_owner is null),code);
+   perform alert_safety_test.assert(exists(select 1 from public.external_notification_delivery_outbox where notification_id=fresh and status='pending'),'fresh held delivery preserved');
+   perform alert_safety_test.assert(not public.telegram_delivery_needs_attention('failed','infinity',code),'expiry does not alert operators');
+  end loop;
+ end loop;
+end $$;
+
 rollback;
 select 'LIVE delivery disabled/cutover/test/restart/ACK/preservation/ACL PASS' as result;

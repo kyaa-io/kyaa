@@ -1,8 +1,12 @@
+import { kakaoRegistrationDisabledResponse } from "@/server/notification/kakao-delivery-control";
 import { createPhoneSmsDependencies } from "@/server/notification/phone-sms-enrollment-dependencies";
 import { createPhoneSmsHandler } from "@/server/notification/phone-sms-enrollment-route";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export async function POST(request: Request) {
+  const disabled = await kakaoRegistrationDisabledResponse();
+  if (disabled) return disabled;
+
   return createPhoneSmsHandler("verify", createPhoneSmsDependencies())(request);
 }

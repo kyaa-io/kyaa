@@ -1,4 +1,6 @@
 begin;
+-- Exercise the opt-in app relaunch behavior.
+update public.mobile_push_control set enabled=true;
 do $$
 declare a uuid:='92300000-0000-4000-8000-000000000001'; b uuid:='92300000-0000-4000-8000-000000000002'; c uuid:='92300000-0000-4000-8000-000000000003'; creator uuid:='92300000-0000-4000-8000-000000000010'; quiz uuid:='92300000-0000-4000-8000-000000000011'; target uuid; attempt uuid; pass uuid; job uuid; passport uuid; conversation uuid; message_id uuid; result jsonb; settings jsonb; friend uuid; post_id uuid; comment_id uuid; n uuid; n2 uuid; d uuid; old_count integer; begin
  insert into public.app_users(id,privy_user_id,verified_email) values(a,'did:privy:social-notification-a','social-notification-a@example.test'),(b,'did:privy:social-notification-b','social-notification-b@example.test'),(c,'did:privy:social-notification-c','social-notification-c@example.test');

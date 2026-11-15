@@ -1,5 +1,7 @@
 \ir mobile_notification_inbox.sql
 begin;
+-- Exercise the opt-in app relaunch behavior.
+update public.mobile_push_control set enabled=true;
 do $$
 declare owner uuid:='92500000-0000-4000-8000-000000000001'; viewer uuid:='92500000-0000-4000-8000-000000000002'; creator uuid:='92500000-0000-4000-8000-000000000010'; quiz uuid:='92500000-0000-4000-8000-000000000011'; attempt uuid:='92500000-0000-4000-8000-000000000012'; pass uuid:='92500000-0000-4000-8000-000000000013'; job uuid:='92500000-0000-4000-8000-000000000014'; passport uuid:='92500000-0000-4000-8000-000000000015'; post_public uuid:='92500000-0000-4000-8000-000000000016'; post_members uuid:='92500000-0000-4000-8000-000000000017'; activity1 uuid:='92500000-0000-4000-8000-000000000018';activity2 uuid:='92500000-0000-4000-8000-000000000019'; brand uuid:='92500000-0000-4000-8000-000000000021'; live uuid:='92500000-0000-4000-8000-000000000022'; reservation uuid:='92500000-0000-4000-8000-000000000023'; live_stamp uuid:='92500000-0000-4000-8000-000000000024'; live_activity uuid:='92500000-0000-4000-8000-000000000025'; stamp_job uuid:='92500000-0000-4000-8000-000000000026'; result jsonb; admin_id uuid:=extensions.gen_random_uuid(); inquiry uuid:=extensions.gen_random_uuid(); reply uuid:=extensions.gen_random_uuid();
  event_id uuid:=extensions.gen_random_uuid(); context_id uuid:=extensions.gen_random_uuid(); policy_id uuid:=extensions.gen_random_uuid(); session_id uuid:=extensions.gen_random_uuid(); n uuid; d uuid; cs uuid; count_before integer; source_id uuid:=extensions.gen_random_uuid();

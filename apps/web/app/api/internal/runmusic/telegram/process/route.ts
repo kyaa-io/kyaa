@@ -18,7 +18,9 @@ export async function GET(request: Request) {
     const deps = createFanpageDependencies(), started = Date.now();
     let handled = 0;
     while (handled < 3 && Date.now() - started < 30_000) {
-      if (await processRunmusicTelegram(deps.rpc) !== "handled") break;
+      const result = await processRunmusicTelegram(deps.rpc);
+      if (result === "disabled") return Response.json({ error: { code: "RUNMUSIC_TELEGRAM_DISABLED" }, retryable: false }, { status: 503, headers: { ...headers, "retry-after": "3600" } });
+      if (result !== "handled") break;
       handled++;
     }
     return Response.json({ handled }, { headers });

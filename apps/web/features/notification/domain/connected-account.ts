@@ -17,6 +17,7 @@ export const notificationChannelSchema = z.object({
 });
 
 export const notificationConnectionsSchema = z.object({
+  kakaoEnabled: z.boolean().optional(),
   accounts: z.array(connectedAccountSchema),
   channels: z.array(notificationChannelSchema),
 });
