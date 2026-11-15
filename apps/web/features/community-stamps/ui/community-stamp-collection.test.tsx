@@ -141,13 +141,12 @@ it.each([["ko", "받으러 가기"], ["en", "Go earn it"]] as const)("sends the 
   expect(screen.getAllByRole("link", { name: label }).map(link => link.getAttribute("href"))).toContain(`/passports?locale=${locale}`);
 });
 
-it.each(APP_LOCALES)("groups actual artist stamps in an accessible disclosure in %s", (locale) => {
+it.each(APP_LOCALES)("shows the chosen page chip and its earned stamp as a card in %s", (locale) => {
   const stamp = { id: "11111111-1111-4111-8111-111111111111", kind: "first_comment" as const, celebritySlug: "elina", issuedAt: "2026-10-09T00:00:00.000Z", mint: { status: "queued" as const, txHash: null, tokenId: null } };
   render(<CommunityStampCollection locale={locale} creatorNames={{ elina: "Elina", yuna: "Yuna" }} resource={{ state: { status: "ready", data: { stamps: [stamp], today: "2026-10-09" } }, retry: vi.fn(), replaceData: vi.fn(), refreshFailed: false }} />);
   const trigger = screen.getByRole("button", { name: /Elina.*1/ });
-  expect(trigger).toHaveAttribute("aria-expanded", "false");
-  fireEvent.click(trigger);
-  expect(trigger).toHaveAttribute("aria-expanded", "true");
-  expect(screen.getByRole("button", { name: new RegExp(COMMUNITY_STAMPS.first_comment[locale]) })).toBeVisible();
+  expect(trigger).toHaveAttribute("aria-pressed", "true");
+  fireEvent.click(screen.getByRole("button", { name: new RegExp(COMMUNITY_STAMPS.first_comment[locale]) }));
+  expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
   expect(screen.queryByRole("button", { name: /Yuna/ })).not.toBeInTheDocument();
 });
