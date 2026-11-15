@@ -14,10 +14,15 @@ export function deriveEmailUnsubscribeKey(secret: string | undefined): Buffer | 
 export function emailUnsubscribeKeyTag(key: Buffer): string {
   return createHash("sha256").update(key).digest("hex").slice(0, 8);
 }
-const payloadSchema = z.object({ n: z.uuid(), k: z.string().regex(/^[a-z0-9:_-]{3,160}$/), e: z.number().int().positive() }).strict();
+// `d` binds the link to the address the mail went to (see the worker's emailUnsubscribeDestinationBinding).
+// Links sent before it existed have no `d`; they keep working until they expire, checked in the database
+// against the address recorded for that send.
+const payloadSchema = z.object({
+  n: z.uuid(), k: z.string().regex(/^[a-z0-9:_-]{3,160}$/), d: z.string().regex(/^[0-9a-f]{64}$/).optional(), e: z.number().int().positive(),
+}).strict();
 
 export type EmailUnsubscribeTokenResult =
-  | { ok: true; notificationId: string; templateKey: string; expiresAt: number }
+  | { ok: true; notificationId: string; templateKey: string; destinationBinding: string | null; expiresAt: number }
   | { ok: false; reason: "invalid" | "expired" };
 
 export function verifyEmailUnsubscribeToken(key: Buffer, token: string, now: Date = new Date()): EmailUnsubscribeTokenResult {
@@ -34,5 +39,5 @@ export function verifyEmailUnsubscribeToken(key: Buffer, token: string, now: Dat
     return { ok: false, reason: "invalid" };
   }
   if (claims.e * 1000 <= now.getTime()) return { ok: false, reason: "expired" };
-  return { ok: true, notificationId: claims.n, templateKey: claims.k, expiresAt: claims.e };
+  return { ok: true, notificationId: claims.n, templateKey: claims.k, destinationBinding: claims.d ?? null, expiresAt: claims.e };
 }

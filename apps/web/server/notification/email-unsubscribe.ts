@@ -38,21 +38,24 @@ export function unsubscribeEndsRequiredNotices(scope: EmailUnsubscribeScope, pre
 }
 
 export type EmailUnsubscribeTarget =
-  | { state: "ok"; notificationId: string; templateKey: string; preference: EmailPreference | null }
+  | { state: "ok"; notificationId: string; templateKey: string; destinationBinding: string | null; preference: EmailPreference | null }
   | { state: "invalid" | "expired" };
 
 export function resolveEmailUnsubscribeTarget(key: Buffer | null | undefined, token: string | null | undefined, now: Date = new Date()): EmailUnsubscribeTarget {
   if (!key || !token) return { state: "invalid" };
   const verified = verifyEmailUnsubscribeToken(key, token, now);
   if (!verified.ok) return { state: verified.reason };
-  return { state: "ok", notificationId: verified.notificationId, templateKey: verified.templateKey, preference: preferenceForMailKind(verified.templateKey) };
+  return {
+    state: "ok", notificationId: verified.notificationId, templateKey: verified.templateKey,
+    destinationBinding: verified.destinationBinding, preference: preferenceForMailKind(verified.templateKey),
+  };
 }
 
 export interface EmailUnsubscribeRpcClient {
   rpc(name: "apply_email_unsubscribe", args: Record<string, unknown>): PromiseLike<{ data: unknown; error: { code?: string } | null }>;
 }
 
-export type EmailUnsubscribeOutcome = "done" | "not_found" | "unavailable";
+export type EmailUnsubscribeOutcome = "done" | "not_found" | "expired" | "unavailable";
 
 export async function applyEmailUnsubscribe(
   client: EmailUnsubscribeRpcClient,
@@ -66,7 +69,10 @@ export async function applyEmailUnsubscribe(
     p_scope: change.scope,
     p_preference: change.scope === "preference" ? target.preference : null,
     p_enabled: change.enabled,
+    p_destination_binding: target.destinationBinding,
   });
   if (!error) return "done";
-  return error.code === "P0002" ? "not_found" : "unavailable";
+  if (error.code === "P0002") return "not_found";
+  // 55000: the member's mail address changed after this mail was sent. Answered like an expired link.
+  return error.code === "55000" ? "expired" : "unavailable";
 }

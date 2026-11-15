@@ -55,6 +55,7 @@ export function createEmailUnsubscribePostHandler(dependencies: () => EmailUnsub
     try { outcome = await applyEmailUnsubscribe(deps.client, target, { scope, enabled }); } catch { outcome = "unavailable" as const; }
     if (outcome === "unavailable") return fail("failed", 503);
     if (outcome === "not_found") return fail("invalid", 404);
+    if (outcome === "expired") return fail("expired", 410);
     return fromPage
       ? redirect(pageLocation(request, { done: `${enabled ? "on" : "off"}-${scope}` }))
       : Response.json({ ok: true, scope, enabled }, { headers: noStore });

@@ -10,7 +10,7 @@ vi.mock("@/server/notification/email-unsubscribe-dependencies", () => ({
 import { GET, POST } from "./route";
 
 const notificationId = "7b1f4f0e-2c1d-4a3b-9c5d-1e2f3a4b5c6d";
-const token = () => signEmailUnsubscribeToken(key, { notificationId, templateKey: "survey_reminder" });
+const token = () => signEmailUnsubscribeToken(key, { notificationId, templateKey: "survey_reminder", destination: "fan@example.com" });
 afterEach(() => vi.resetAllMocks());
 beforeEach(() => mocks.key.mockReturnValue(key));
 

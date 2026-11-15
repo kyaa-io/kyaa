@@ -187,6 +187,7 @@ export class SesEmailSender implements ExternalNotificationSender {
           signEmailUnsubscribeToken(this.unsubscribeKey, {
             notificationId: job.notificationId,
             templateKey: job.templateKey,
+            destination: job.destination,
             ...(this.config.now ? { now: this.config.now() } : {}),
           }),
           job.locale,

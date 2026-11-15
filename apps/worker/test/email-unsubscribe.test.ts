@@ -1,7 +1,8 @@
+import { createHash } from "node:crypto";
 import { SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { describe, expect, it, vi } from "vitest";
 import { SesEmailSender, type SesV2SendClient } from "../src/adapters/ses-email-sender.js";
-import { deriveEmailUnsubscribeKey, emailUnsubscribeHeaders, emailUnsubscribeKeyTag, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../src/email-unsubscribe.js";
+import { deriveEmailUnsubscribeKey, emailUnsubscribeDestinationBinding, emailUnsubscribeHeaders, emailUnsubscribeKeyTag, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../src/email-unsubscribe.js";
 import { renderNotificationEmail } from "../src/email-template.js";
 import type { ExternalNotificationJob } from "../src/external-notification-domain.js";
 
@@ -17,19 +18,33 @@ const job: ExternalNotificationJob = {
 
 function decode(token: string) {
   const [version, payload] = token.split(".");
-  return { version, claims: JSON.parse(Buffer.from(payload!, "base64url").toString("utf8")) as { n: string; k: string; e: number } };
+  return { version, claims: JSON.parse(Buffer.from(payload!, "base64url").toString("utf8")) as { n: string; k: string; d: string; e: number } };
 }
 
 describe("signed mail unsubscribe links", () => {
-  it("binds the link to one notification, its kind and an expiry", () => {
+  it("binds the link to one notification, its kind, the send address and an expiry", () => {
     const now = new Date("2026-11-15T00:00:00Z");
-    const { version, claims } = decode(signEmailUnsubscribeToken(key, { notificationId, templateKey: "benefit_won", now }));
+    const { version, claims } = decode(signEmailUnsubscribeToken(key, { notificationId, templateKey: "benefit_won", destination: "fan@example.com", now }));
     expect(version).toBe("v1");
-    expect(claims).toEqual({ n: notificationId, k: "benefit_won", e: Math.floor(now.getTime() / 1000) + 90 * 86400 });
+    expect(claims).toEqual({ n: notificationId, k: "benefit_won", d: emailUnsubscribeDestinationBinding(notificationId, "fan@example.com"), e: Math.floor(now.getTime() / 1000) + 90 * 86400 });
+  });
+
+  it("binds the address without putting it, or its plain fingerprint, in the link", () => {
+    const fingerprint = createHash("sha256").update("fan@example.com").digest("hex");
+    // Same vector as public.email_unsubscribe_destination_binding in supabase/tests/email_unsubscribe.sql.
+    expect(emailUnsubscribeDestinationBinding(notificationId, "Fan@Example.com ")).toBe(
+      createHash("sha256").update(`email-unsubscribe-destination:v1:${notificationId}:${fingerprint}`).digest("hex"),
+    );
+    const token = signEmailUnsubscribeToken(key, { notificationId, templateKey: "benefit_won", destination: "fan@example.com" });
+    const text = Buffer.from(token.split(".")[1]!, "base64url").toString("utf8");
+    expect(text).not.toContain("fan@");
+    expect(text).not.toContain(fingerprint);
+    expect(emailUnsubscribeDestinationBinding(notificationId, "other@example.com")).not.toBe(emailUnsubscribeDestinationBinding(notificationId, "fan@example.com"));
+    expect(emailUnsubscribeDestinationBinding("9d2e5a61-3f4b-4c7d-8e9f-0a1b2c3d4e5f", "fan@example.com")).not.toBe(emailUnsubscribeDestinationBinding(notificationId, "fan@example.com"));
   });
 
   it("is stable for the same input and changes with the key", () => {
-    const input = { notificationId, templateKey: "benefit_won", now: new Date("2026-11-15T00:00:00Z") };
+    const input = { notificationId, templateKey: "benefit_won", destination: "fan@example.com", now: new Date("2026-11-15T00:00:00Z") };
     expect(signEmailUnsubscribeToken(key, input)).toBe(signEmailUnsubscribeToken(key, input));
     expect(signEmailUnsubscribeToken(deriveEmailUnsubscribeKey("t".repeat(48)), input)).not.toBe(signEmailUnsubscribeToken(key, input));
   });
@@ -85,14 +100,14 @@ describe("SES sender unsubscribe headers", () => {
     return { send, sender };
   }
 
-  it("signs this mail's own notification id and kind into the header and the footer", async () => {
+  it("signs this mail's own notification id, kind and address into the header and the footer", async () => {
     const { send, sender } = setup();
     await sender.send(job);
     const command = send.mock.calls[0]![0] as SendEmailCommand;
     const simple = command.input.Content!.Simple!;
     const header = simple.Headers!.find((h) => h.Name === "List-Unsubscribe")!.Value!;
     const token = new URL(header.slice(1, -1)).searchParams.get("t")!;
-    expect(decode(token).claims).toMatchObject({ n: notificationId, k: "benefit_won" });
+    expect(decode(token).claims).toMatchObject({ n: notificationId, k: "benefit_won", d: emailUnsubscribeDestinationBinding(notificationId, "fan@example.com") });
     expect(simple.Headers!.find((h) => h.Name === "List-Unsubscribe-Post")!.Value).toBe("List-Unsubscribe=One-Click");
     expect(simple.Body!.Html!.Data).toContain(`/email/unsubscribe?t=${encodeURIComponent(token)}&amp;locale=ko`);
     expect(simple.Body!.Text!.Data).toContain("이 메일 그만 받기");

@@ -25,13 +25,29 @@ function base64url(value: Buffer | string): string {
   return Buffer.from(value).toString("base64url");
 }
 
+/**
+ * Ties a link to the address the mail went to without putting the address (or its plain hash) in the link.
+ * The address part is public.email_destination_fingerprint (sha256 of the trimmed, lower-cased address), the value
+ * fan_notification_channels.destination_fingerprint holds; the database recomputes this in
+ * public.email_unsubscribe_destination_binding and refuses the link once the member's mail address has changed.
+ */
+export function emailUnsubscribeDestinationBinding(notificationId: string, destination: string): string {
+  const fingerprint = createHash("sha256").update(destination.trim().toLowerCase()).digest("hex");
+  return createHash("sha256").update(`email-unsubscribe-destination:v1:${notificationId.toLowerCase()}:${fingerprint}`).digest("hex");
+}
+
 export function signEmailUnsubscribeToken(
   key: Buffer,
-  input: { notificationId: string; templateKey: string; now?: Date; ttlSeconds?: number },
+  input: { notificationId: string; templateKey: string; destination: string; now?: Date; ttlSeconds?: number },
 ): string {
   const issued = Math.floor((input.now ?? new Date()).getTime() / 1000);
   const payload = base64url(
-    JSON.stringify({ n: input.notificationId, k: input.templateKey, e: issued + (input.ttlSeconds ?? EMAIL_UNSUBSCRIBE_TOKEN_TTL_SECONDS) }),
+    JSON.stringify({
+      n: input.notificationId,
+      k: input.templateKey,
+      d: emailUnsubscribeDestinationBinding(input.notificationId, input.destination),
+      e: issued + (input.ttlSeconds ?? EMAIL_UNSUBSCRIBE_TOKEN_TTL_SECONDS),
+    }),
   );
   const signature = createHmac("sha256", key).update(`${CONTEXT}.${payload}`).digest();
   return `v1.${payload}.${base64url(signature)}`;
