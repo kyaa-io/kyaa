@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "X 오픈 이벤트 화면(/follow, /s/x)의 '좋아요 누르기' 단계 그림을 하트에서 별로 바꿨어요. 팬페이지 좋아요 버튼과 같은 별이에요. 문구는 그대로예요.",
+    "이 캡처는 내 컴퓨터에서 연 화면이에요."
+  ],
+  "path": "/follow",
+  "images": ["release-notes/images/2026-11-15-follow-like-star.png"]
+}
