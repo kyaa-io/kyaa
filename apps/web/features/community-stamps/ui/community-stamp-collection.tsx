@@ -140,7 +140,7 @@ function OwnerCollection({ locale, creator, resource, creatorNames }: { locale: 
           return <FanDisclosure key={slug || "kyaa"} label={name} meta={String(artistStamps.length)}>
             <ul className={styles.artistStampRows}>{artistStamps.map(stamp => <li key={stamp.id} data-row>
               <FanAction variant="text" onClick={() => setSelected({ stamp, from: "history" })}>
-                <CommunityStampArtwork kind={stamp.kind} locale={locale} size={48} decorative/>
+                <CommunityStampArtwork kind={stamp.kind} locale={locale} size={40} decorative/>
                 <span>{communityStampLabel(stamp.kind, locale)}</span>
                 <time dateTime={stamp.issuedAt}>{stampDate(stamp.issuedAt)}</time>
               </FanAction>
