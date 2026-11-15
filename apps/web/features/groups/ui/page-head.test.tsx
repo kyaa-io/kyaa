@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -33,5 +34,14 @@ describe("page head (U1)", () => {
     const link = screen.getByRole("link", { name: "tiktok" });
     expect(link.closest("[class*='headline']")).toBeNull();
     expect(link.closest("[class*='stats']")).not.toBeNull();
+  });
+
+  it("keeps 더 보기·번역 보기 at the end of the introduction's last line, one text line tall, so the fan line does not move (대표 11/15 17:42)", () => {
+    render(<FanPageHeader image={{ src: null, alt: "" }} name="이퓨" kind="fan" locale="ko" description="소개" descriptionAction={<button type="button" data-translation-control="">번역 보기</button>} />);
+    const button = screen.getByRole("button", { name: "번역 보기" });
+    expect(button.parentElement?.parentElement?.querySelector(":scope > p")?.textContent).toBe("소개");
+    const css = readFileSync("components/fan-ui/fan-page-header.module.css", "utf8");
+    expect(css).toContain(".description { grid-area: description; display: flex; align-items: flex-end;");
+    expect(css).toContain("height: calc(var(--fan-description-size) * 1.5)");
   });
 });
