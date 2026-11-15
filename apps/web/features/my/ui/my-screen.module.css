@@ -363,11 +363,11 @@
 @media(min-width:768px){.main.groupsMain{padding-bottom:0}}
 
 /* groups MY: 프로필 → 알림 → 패스포트·지갑 → 최애 → 바로가기. 각 구역은 자기 모듈(my-passport-card, my-wallet-card, my-favorites, my-shortcuts)이 그린다. */
-.main.groupsMain{padding-top:32px;padding-bottom:48px}
-.pencilMy{display:flex;flex-direction:column;gap:var(--space-8);color:var(--color-ink)}
+.main.groupsMain{padding-top:var(--space-4);padding-bottom:48px}
+.pencilMy{display:flex;flex-direction:column;gap:var(--space-6);color:var(--color-ink)}
 .pencilMy h1,.pencilMy h2,.pencilMy h3,.pencilMy p{margin:0}
 .pencilMy a:focus-visible,.pencilMy button:focus-visible{outline:3px solid var(--color-ink);outline-offset:3px}
-.pencilProfile{display:flex;align-items:center;gap:16px;padding-bottom:var(--space-4)}
+.pencilProfile{display:flex;align-items:center;gap:16px}
 .pencilProfile>a{flex:none;width:56px;height:56px}
 .pencilProfileCopy{flex:1;min-width:0;display:grid;gap:4px}
 .pencilProfileCopy h1{overflow-wrap:anywhere}
@@ -379,8 +379,8 @@
 @media(max-width:1023px){.homeRow{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:767px){
 .main.groupsMain{padding-top:16px;padding-bottom:16px}
-.pencilMy{gap:var(--space-6)}
-.pencilProfile{gap:12px;padding-bottom:0}
+.pencilMy{gap:var(--space-5)}
+.pencilProfile{gap:12px}
 .pencilProfile>a,.pencilProfile>a>*{width:48px!important;height:48px!important}
 .guestAvatar,.guestAvatar>*{width:48px!important;height:48px!important}
 .guestProfile{flex-wrap:wrap;row-gap:var(--space-1)}

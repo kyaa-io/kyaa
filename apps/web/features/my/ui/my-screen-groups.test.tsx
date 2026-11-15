@@ -76,8 +76,13 @@ it('shows points, stamps and tier in one read-only row between the profile and t
   expect(value('등급')).toBe('실버 1');
   expect(within(stats).queryByText('하트')).toBeNull();
   expect(within(stats).queryByText('응모권')).toBeNull();
-  expect(within(stats).queryByRole('button')).toBeNull();
   expect(within(stats).queryByRole('link')).toBeNull();
+  // 등급 칸만 눌린다: 이름 옆 (i)와 같은 등급 안내 팝업을 연다.
+  const tier = within(stats).getByRole('button', { name: '실버 1' });
+  expect(within(stats).getAllByRole('button')).toHaveLength(1);
+  expect(screen.queryByRole('dialog', { name: '등급 체계를 알아볼까요?' })).toBeNull();
+  fireEvent.click(tier);
+  expect(screen.getByRole('dialog', { name: '등급 체계를 알아볼까요?' })).toBeInTheDocument();
 });
 
 it('orders the screen profile, notice, passport, shortcuts and shows stamps in one place', () => {
