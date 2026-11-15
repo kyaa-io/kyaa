@@ -22,7 +22,7 @@ type Item = DukjilAttendanceList["items"][number] | undefined;
 /** `연속 {0}일`의 숫자만 크게 보이도록 번역 문구를 숫자 앞뒤로 나눈다(언어마다 숫자 위치가 다르다). */
 function StreakFigure({ locale, streak }: { locale: AppLocale; streak: number }) {
   const [before, after] = dukjilText(locale, "dukjilStreak", ["\u0001"]).split("\u0001");
-  return <small className={styles.streak}><FanActivityStamp kind="streak" />{before}<FanNumber value={streak} size="lg" locale={locale} />{after}</small>;
+  return <small className={styles.streak}><FanActivityStamp kind="streak" size="sm" />{before}<FanNumber value={streak} size="lg" locale={locale} />{after}</small>;
 }
 
 /** 내 페이지 출석 현황: 아바타, 이름과 상태, 출석 행동을 한 행에 둔다. */

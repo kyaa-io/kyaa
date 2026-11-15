@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "내 페이지 출석 현황의 한 줄 높이를 줄여, 스크롤하지 않고 보이는 페이지 수를 늘렸어요.",
+    "MY 맨 위의 여백을 줄여 패스포트 표지와 첫 쪽이 첫 화면에 들어오게 했어요.",
+    "MY의 '등급' 칸을 누르면 이름 옆 (i)와 같은 등급 안내 창이 열려요.",
+    "첨부 화면은 로컬 시험 계정으로 연 화면이고, 출석 현황 줄은 예시 페이지예요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-15-my-compact-1440.png",
+    "release-notes/images/2026-11-15-my-compact-390.png",
+    "release-notes/images/2026-11-15-my-attendance-1440.png",
+    "release-notes/images/2026-11-15-my-attendance-390.png"
+  ]
+}

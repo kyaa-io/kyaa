@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSurface } from "@/components/fan-ui/fan-surface";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -9,6 +10,7 @@ import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
+import { TierGuideDialog } from "@/features/rewards/ui/tier-guide-info";
 import { walletSchema } from "@/server/group-wallet/domain";
 import type { AppLocale } from "@/i18n/locales";
 import type { MySummary } from "../domain/my-summary";
@@ -38,9 +40,10 @@ function StampValue({ locale, passport, fallback }: { locale: AppLocale; passpor
   return <FanNumber size="lg" value={book.page.filled} countUp locale={locale} unit={`/${book.page.slots.length}`} />;
 }
 
-function Cell({ icon, label, children }: { icon: ReactNode; label: string; children: ReactNode }) {
+/** `onOpen`이 있으면 값 자리의 버튼이 칸 전체를 눌리게 한다(::after로 칸을 덮는다). */
+function Cell({ icon, label, children, onOpen }: { icon: ReactNode; label: string; children: ReactNode; onOpen?: () => void }) {
   return <div className={styles.cell}>
-    <dd className={styles.value}>{children}</dd>
+    <dd className={styles.value}>{onOpen ? <FanAction variant="text" className={styles.press} onClick={onOpen}>{children}</FanAction> : children}</dd>
     <dt className={styles.label}><span className={styles.icon} aria-hidden="true">{icon}</span><FanText role="meta" className={styles.name}>{label}</FanText></dt>
   </div>;
 }
@@ -55,14 +58,15 @@ export function MyStats({ locale, passport, stamps }: { locale: AppLocale; passp
     window.addEventListener(GROUP_WALLET_CHANGED_EVENT, retry);
     return () => window.removeEventListener(GROUP_WALLET_CHANGED_EVENT, retry);
   }, [retry]);
+  const [guideOpen, setGuideOpen] = useState(false);
   const points: Slot = wallet.data ? wallet.data.points : wallet.error ? "missing" : "loading";
-  return <FanSurface as="div"><dl className={styles.row} data-block="my-stats">
+  return <><FanSurface as="div"><dl className={styles.row} data-block="my-stats">
     <Cell label={walletCopy(locale).points} icon={<RewardIcon kind="point" size={16} />}><Value locale={locale} slot={points} /></Cell>
     <Cell label={myHomeText(locale, "stampsLabel")} icon={<RewardIcon kind="stamp" size={16} />}><StampValue locale={locale} passport={passport} fallback={stamps} /></Cell>
-    <Cell label={myHomeText(locale, "tierLabel")} icon={passport && passport !== "loading" ? <FanTierBadge tier={passport.tier} stageKey={passport.stageProgress?.current.key} locale={locale} size={16} /> : <span className={styles.emptyTier} />}>
+    <Cell label={myHomeText(locale, "tierLabel")} onOpen={passport === "loading" ? undefined : () => setGuideOpen(true)} icon={passport && passport !== "loading" ? <FanTierBadge tier={passport.tier} stageKey={passport.stageProgress?.current.key} locale={locale} size={16} /> : <span className={styles.emptyTier} />}>
       {passport === "loading" ? <FanSkeleton width={56} height={24} />
         : passport ? <FanText role="item">{passportTierName(locale, passport)}</FanText>
         : <FanText role="item" className={styles.muted}>{myHomeText(locale, "tierNone")}</FanText>}
     </Cell>
-  </dl></FanSurface>;
+  </dl></FanSurface><TierGuideDialog locale={locale} open={guideOpen} onOpenChange={setGuideOpen} /></>;
 }
