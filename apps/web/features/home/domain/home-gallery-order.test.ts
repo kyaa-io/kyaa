@@ -32,6 +32,26 @@ describe("diversifyGalleryPhotos", () => {
   });
 });
 
+describe("diversifyGalleryPhotos featured creators", () => {
+  const wina = [photo("w1:0", "wina"), photo("w2:0", "wina"), photo("w3:0", "wina")];
+  const featuredOld = [photo("y1:0", "yuna"), photo("e1:0", "elina"), photo("c1:0", "changha"), photo("c2:0", "changha")];
+  it("opens with changha, elina, yuna newest photos even when wina is far newer", () => {
+    const out = diversifyGalleryPhotos([...wina, ...featuredOld]);
+    expect(ids(out).slice(0, 3)).toEqual(["c1:0", "e1:0", "y1:0"]);
+    expect(out[3]?.creator?.slug).toBe("wina");
+  });
+  it("skips a featured creator without photos and keeps every photo once", () => {
+    const list = [...wina, photo("y1:0", "yuna"), photo("c1:0", "changha"), photo("c2:0", "changha")];
+    const out = diversifyGalleryPhotos(list);
+    expect(ids(out).slice(0, 2)).toEqual(["c1:0", "y1:0"]);
+    expect(ids(out).sort()).toEqual(ids(list).sort());
+  });
+  it("does not repeat the last featured creator right after the featured row", () => {
+    const out = diversifyGalleryPhotos([photo("y1:0", "yuna"), photo("y2:0", "yuna"), photo("w1:0", "wina"), photo("e1:0", "elina")]);
+    expect(out.map(item => item.creator?.slug)).toEqual(["elina", "yuna", "wina", "yuna"]);
+  });
+});
+
 describe("diversifyShorts", () => {
   const short = (id: string, slug: string) => ({ id, creator: { slug } });
   it("takes creators in turn, newest first inside one creator, and never repeats a creator back to back while another has shorts", () => {
