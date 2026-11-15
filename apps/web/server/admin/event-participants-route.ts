@@ -1,7 +1,7 @@
 import "server-only";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { z } from "zod";
-import { eventParticipantEvents, eventParticipantPageSize, eventParticipantsSchema, type EventParticipantEvent } from "../../features/admin/event-participants";
+import { eventParticipantEvents, eventParticipantPageSize, eventParticipantSlugPattern, eventParticipantsSchema, eventParticipantWindowEvents, type EventParticipantEvent } from "../../features/admin/event-participants";
 import type { FanpageDependencies } from "../fanpage/routes";
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
@@ -19,15 +19,22 @@ export function createEventParticipantsHandler(deps: Pick<FanpageDependencies, "
       const event = params.get("event") as EventParticipantEvent | null;
       const limit = integer(params.get("limit"), 100);
       const asOf = optional(params.get("asOf"), instant), afterAt = optional(params.get("afterAt"), instant), afterId = optional(params.get("afterId"), z.uuid());
-      if ([...params.keys()].some(key => !["event", "limit", "asOf", "afterAt", "afterId"].includes(key)) || !event
+      const slug = optional(params.get("slug"), z.string().regex(eventParticipantSlugPattern)), from = optional(params.get("from"), instant), to = optional(params.get("to"), instant);
+      const windowed = event !== null && (eventParticipantWindowEvents as readonly string[]).includes(event);
+      if ([...params.keys()].some(key => !["event", "limit", "asOf", "afterAt", "afterId", "slug", "from", "to"].includes(key)) || !event
         || !eventParticipantEvents.includes(event) || !(limit >= 1 && limit <= eventParticipantPageSize)
-        || !asOf || !afterAt || !afterId || (afterAt.value === null) !== (afterId.value === null) || (afterAt.value !== null && asOf.value === null)) {
+        || !asOf || !afterAt || !afterId || (afterAt.value === null) !== (afterId.value === null) || (afterAt.value !== null && asOf.value === null)
+        || !slug || !from || !to
+        || (windowed ? slug.value === null || from.value === null || to.value === null || Date.parse(from.value) >= Date.parse(to.value)
+          : slug.value !== null || from.value !== null || to.value !== null)) {
         return failure("INVALID_REQUEST", 400);
       }
+      // The window arguments are sent only for windowed events, so fixed events keep working before the database is upgraded.
       const result = eventParticipantsSchema.parse(await deps.rpc("list_admin_event_participants", {
         p_actor_app_user_id: actor.appUserId,
         p_actor_admin_allowlist_id: actor.allowlistId,
         p_event: event, p_as_of: asOf.value, p_after_at: afterAt.value, p_after_id: afterId.value, p_limit: limit,
+        ...(windowed ? { p_slug: slug.value, p_from: from.value, p_to: to.value } : {}),
       }));
       return Response.json(result, { headers });
     } catch (error) {

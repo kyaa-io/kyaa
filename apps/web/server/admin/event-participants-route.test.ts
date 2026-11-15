@@ -38,6 +38,25 @@ describe("admin event participants read", () => {
     expect((await handler(request(query))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();
   });
+  it("passes the page and window only for windowed events", async () => {
+    const from = "2026-11-17T00:00:00+09:00", to = "2026-11-18T00:00:00+09:00";
+    deps.rpc.mockResolvedValue({ ...page, rows: [{ ...row, status: "issued" }] });
+    const response = await handler(request(`event=passport-issued&slug=elina&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`));
+    expect(response.status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("list_admin_event_participants", expect.objectContaining({ p_event: "passport-issued", p_slug: "elina", p_from: from, p_to: to }));
+    await handler(request("event=x-mission"));
+    expect(Object.keys(deps.rpc.mock.calls[1][1])).not.toContain("p_slug");
+  });
+  it.each([
+    "event=page-like", "event=page-like&slug=elina",
+    `event=page-like&slug=Elina&from=${encodeURIComponent("2026-11-17T00:00:00+09:00")}&to=${encodeURIComponent("2026-11-18T00:00:00+09:00")}`,
+    `event=page-like&slug=elina&from=${encodeURIComponent("2026-11-18T00:00:00+09:00")}&to=${encodeURIComponent("2026-11-18T00:00:00+09:00")}`,
+    `event=page-like&slug=elina&from=yesterday&to=${encodeURIComponent("2026-11-18T00:00:00+09:00")}`,
+    "event=x-mission&slug=elina",
+  ])("rejects an incomplete or mixed window %s", async query => {
+    expect((await handler(request(query))).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
+  });
   it("first read sends no instant or cursor and passes the database instant back", async () => {
     await handler(request());
     expect(deps.rpc).toHaveBeenCalledWith("list_admin_event_participants", expect.objectContaining({ p_as_of: null, p_after_at: null, p_after_id: null, p_limit: 100 }));
