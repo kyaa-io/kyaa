@@ -11,6 +11,7 @@ import type { AppLocale } from "@/i18n/locales";
 import type { TiptapDocument } from "@/server/notice/notice-domain";
 import { NoticeCard, formatHomeNoticeDate } from "./notice-card";
 import { FanActivityGuide } from "./fan-activity-guide";
+import { HomeNoticeParticipation } from "./home-notice-participation";
 import styles from "./home-notice-pages.module.css";
 
 export const homeNoticePageCopy: Record<AppLocale, { title: string; empty: string; more: string; recent: string; others: string }> = {
@@ -57,6 +58,7 @@ export function HomeNoticeDetailScreen({ locale, notice, others }: { locale: App
       <FanHeading as="h1">{notice.title}</FanHeading>
       {notice.slug === "service-guide" ? <FanActivityGuide locale={locale} /> : <NoticeBody document={notice.body} locale={locale} />}
     </article>
+    <HomeNoticeParticipation slug={notice.slug} title={notice.title} locale={locale} />
     {others.length > 0 && <div className={styles.related} data-block="notice-related"><NoticeCard locale={locale} items={others} headingId="notice-others-heading" title={copy.others} headAction={{ href: `/notices?locale=${locale}`, label: copy.recent }} /></div>}
   </div>;
 }
