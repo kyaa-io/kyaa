@@ -2,6 +2,7 @@ import { createWorkerClient } from "./data-client.js";
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import type { NotificationWorkerEnv } from "./notification-env.js";
 import { inquiryEmailLabels, renderBusinessInquiryEmail } from "./business-inquiry-email.js";
+import { sesFeedbackFields, type SesFeedbackConfig } from "./adapters/ses-email-sender.js";
 
 export interface BusinessInquiry {
   id: string; attempt_token: string; locale: "ko" | "en";
@@ -73,7 +74,7 @@ export class SesInquirySender implements InquirySender {
   constructor(private readonly client: SesClient = new SESv2Client({
     region: "ap-northeast-2", maxAttempts: 1,
     requestHandler: { connectionTimeout: 2000, requestTimeout: 8000, throwOnRequestTimeout: true },
-  }), private readonly fromEmail = "notifications@byus.kr") {
+  }), private readonly fromEmail = "notifications@byus.kr", private readonly feedback?: SesFeedbackConfig) {
     if (!["notifications@byus.kr", "notifications@kyaa.io"].includes(fromEmail)) throw new InquirySendError("rejected");
   }
   async send(job: BusinessInquiry) {
@@ -81,6 +82,7 @@ export class SesInquirySender implements InquirySender {
     const inquiryType = job.inquiry_type ?? "fanmeeting";
     if (!Object.hasOwn(inquiryEmailLabels, inquiryType)) throw new InquirySendError("rejected");
     const email = renderBusinessInquiryEmail(job);
+    const feedbackFields = sesFeedbackFields(this.feedback);
     let result: { MessageId?: string };
     try {
       result = await this.client.send(new SendEmailCommand({
@@ -89,6 +91,7 @@ export class SesInquirySender implements InquirySender {
           ? { ToAddresses: ["biz@kyaa.io"], CcAddresses: ["biz@sallylab.io", "jongho@sallylab.io", "jaeyeong@sallylab.io"] }
           : { ToAddresses: ["biz@sallylab.io"], CcAddresses: ["jongho@sallylab.io", "jaeyeong@sallylab.io"] },
         ReplyToAddresses: [job.email],
+        ...feedbackFields,
         Content: { Simple: {
           Subject: { Data: email.subject, Charset: "UTF-8" },
           Body: {
@@ -108,11 +111,11 @@ export class SesInquirySender implements InquirySender {
     return result.MessageId;
   }
 }
-export async function runBusinessInquiryOnce(env: NotificationWorkerEnv, client?: SesClient) {
+export async function runBusinessInquiryOnce(env: NotificationWorkerEnv, client?: SesClient, feedback?: SesFeedbackConfig) {
   const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5000) }) },
   });
-  const sender = env.BUSINESS_INQUIRY_MODE === "ses_email" ? new SesInquirySender(client, env.SES_FROM_EMAIL!) : null;
+  const sender = env.BUSINESS_INQUIRY_MODE === "ses_email" ? new SesInquirySender(client, env.SES_FROM_EMAIL!, feedback) : null;
   return new BusinessInquiryWorker(new SupabaseInquiryQueue(db), sender).runOnce();
 }

@@ -4,8 +4,8 @@ import type { NotificationWorkerEnv } from "./notification-env.js";
 import { NotificationWorker } from "./notification-worker.js";
 import { SupabaseExternalNotificationQueue } from "./adapters/supabase-external-notification-queue.js";
 import { NotificationTestSinkSender } from "./adapters/notification-test-sink.js";
-import { SesEmailSender, type SesV2SendClient } from "./adapters/ses-email-sender.js";
-import { resolveSesEmailClient } from "./ses-account.js";
+import { SesEmailSender, type SesFeedbackConfig, type SesV2SendClient } from "./adapters/ses-email-sender.js";
+import { isLegacySesClient, resolveSesEmailClient } from "./ses-account.js";
 import { EmailSender } from "./adapters/email-sender.js";
 import { KakaoSender } from "./adapters/kakao-sender.js";
 import { ExternalNotificationWorker } from "./external-notification-worker.js";
@@ -20,6 +20,13 @@ import { SolapiClient } from "./solapi/index.js";
 import { runTelegramAlertWorkerOnce, runTelegramCsWorkerOnce } from "./telegram-alert-worker.js";
 import { runTelegramCommandWorkerOnce } from "./telegram-command-worker.js";
 import { runTelegramCertificationWorkerOnce } from "./telegram-certification-worker.js";
+
+// The configuration set exists only in the primary account. Legacy bridge
+// sends must keep the request unchanged or SES rejects them.
+export function sesFeedbackFor(env: NotificationWorkerEnv, client: SesV2SendClient | undefined): SesFeedbackConfig | undefined {
+  if (env.NOTIFICATION_EMAIL_CONFIGURATION_SET === undefined || isLegacySesClient(client)) return undefined;
+  return { configurationSetName: env.NOTIFICATION_EMAIL_CONFIGURATION_SET, environment: env.NOTIFICATION_EXTERNAL_ENVIRONMENT };
+}
 
 async function runFanNotificationsOnce(
   env: NotificationWorkerEnv,
@@ -47,7 +54,8 @@ async function runFanNotificationsOnce(
   const client = env.NOTIFICATION_EXTERNAL_MODE === "ses_email" ? await getSesClient() : undefined;
   const queue=SupabaseExternalNotificationQueue.create(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env.NOTIFICATION_EXTERNAL_ENVIRONMENT,env.NOTIFICATION_EXTERNAL_MODE==="ses_email",env);
   const sink=new NotificationTestSinkSender(queue);
-  const ses=env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?new SesEmailSender({region:env.SES_REGION!,fromEmail:env.SES_FROM_EMAIL!,unsubscribeSecret:env.POSTGREST_SERVICE_TOKEN,unsubscribeOrigin:env.NOTIFICATION_EXTERNAL_ENVIRONMENT==="prod"?"https://kyaa.io":"https://dev.kyaa.io",...(client?{client}:{}),...(env.SUPABASE_URL?{storageOrigin:new URL(env.SUPABASE_URL).origin}:{})}):null;
+  const feedback=sesFeedbackFor(env,client);
+  const ses=env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?new SesEmailSender({region:env.SES_REGION!,fromEmail:env.SES_FROM_EMAIL!,unsubscribeSecret:env.POSTGREST_SERVICE_TOKEN,unsubscribeOrigin:env.NOTIFICATION_EXTERNAL_ENVIRONMENT==="prod"?"https://kyaa.io":"https://dev.kyaa.io",...(client?{client}:{}),...(feedback?{feedback}:{}),...(env.SUPABASE_URL?{storageOrigin:new URL(env.SUPABASE_URL).origin}:{})}):null;
   const senders=env.NOTIFICATION_EXTERNAL_MODE==="test_sink"?{email:sink,kakao:sink}:ses?{email:ses,kakao:ses}:{email:new EmailSender({url:env.EMAIL_PROVIDER_URL!,token:env.EMAIL_PROVIDER_TOKEN!}),kakao:new KakaoSender({url:env.KAKAO_PROVIDER_URL!,token:env.KAKAO_PROVIDER_TOKEN!})};
   const external=await new ExternalNotificationWorker(queue,senders,{workerId:`${env.NOTIFICATION_WORKER_ID}:external`,batchSize:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?env.NOTIFICATION_EMAIL_BATCH_SIZE:env.NOTIFICATION_WORKER_BATCH_SIZE,leaseSeconds:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?300:env.NOTIFICATION_WORKER_LEASE_SECONDS,...(remainingTimeInMillis ? { remainingTimeInMillis } : {})}).runOnce();
   return push+external;
@@ -75,7 +83,7 @@ export async function runNotificationWorkerOnce(
   const results = await Promise.allSettled([
     runFanNotificationsOnce(env, remainingTimeInMillis, getSesClient),
     env.BUSINESS_INQUIRY_MODE === "ses_email"
-      ? getSesClient().then((client) => runBusinessInquiryOnce(env, client))
+      ? getSesClient().then((client) => runBusinessInquiryOnce(env, client, sesFeedbackFor(env, client)))
       : runBusinessInquiryOnce(env),
     runRaffleRecipientRemindersOnce(env),
     runRunmusicDueOnce(env),
@@ -85,7 +93,7 @@ export async function runNotificationWorkerOnce(
     runTelegramCsWorkerOnce(env),
     runTelegramCommandWorkerOnce(env),
     runTelegramCertificationWorkerOnce(env),
-    env.GROUP_INVITATION_EMAIL_MODE === "ses_email" ? getSesClient().then(client=>runGroupInvitationEmailOnce(env,client)) : runGroupInvitationEmailOnce(env),
+    env.GROUP_INVITATION_EMAIL_MODE === "ses_email" ? getSesClient().then(client=>runGroupInvitationEmailOnce(env,client,sesFeedbackFor(env,client))) : runGroupInvitationEmailOnce(env),
   ]);
   const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "groupRaffles", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications", "groupInvitationEmail"];
   const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";

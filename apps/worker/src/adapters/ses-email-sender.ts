@@ -25,6 +25,28 @@ export interface SesEmailSenderConfig {
   client?: SesV2SendClient;
   storageOrigin?: string;
   fetcher?: typeof fetch;
+  // Set only for primary-account sends; SES then publishes delivery events.
+  feedback?: SesFeedbackConfig;
+}
+
+export interface SesFeedbackConfig {
+  configurationSetName: string;
+  environment: "dev" | "staging" | "prod";
+}
+
+// MessageTag names and values allow only ASCII letters, digits, "_" and "-",
+// up to 256 characters (SES API v2 MessageTag reference).
+const MESSAGE_TAG_VALUE = /^[A-Za-z0-9_-]{1,256}$/;
+
+export function sesFeedbackFields(feedback: SesFeedbackConfig | undefined, deliveryId?: string) {
+  if (!feedback) return {};
+  const tags = [
+    ...(deliveryId === undefined ? [] : [{ Name: "delivery_id", Value: deliveryId }]),
+    { Name: "env", Value: feedback.environment },
+  ];
+  if (!tags.every(tag => MESSAGE_TAG_VALUE.test(tag.Value)))
+    throw new ExternalNotificationError("EMAIL_INVALID_CONFIG", false);
+  return { ConfigurationSetName: feedback.configurationSetName, EmailTags: tags };
 }
 
 const DEFAULT_TRUSTED_ORIGIN = "https://kyaa.io";
@@ -182,6 +204,7 @@ export class SesEmailSender implements ExternalNotificationSender {
       ...(context ? { context: { ...context, imageUrl: undefined } } : {}),
     });
 
+    const feedbackFields = sesFeedbackFields(this.config.feedback, job.id);
     let response: { MessageId?: string };
     try {
       // SES v2 SendEmail has no idempotency token. The queue lease limits concurrent
@@ -191,6 +214,7 @@ export class SesEmailSender implements ExternalNotificationSender {
           FromEmailAddress: this.config.fromEmail,
           Destination: { ToAddresses: [job.destination] },
           ReplyToAddresses: ["support@kyaa.io"],
+          ...feedbackFields,
           Content: {
             Simple: {
               ...(unsubscribe ? { Headers: emailUnsubscribeHeaders(unsubscribe) } : {}),

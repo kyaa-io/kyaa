@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from "vitest";
-const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),groupRaffles:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),cs:vi.fn(),commands:vi.fn(),certifications:vi.fn()}));
+const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),groupRaffles:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),cs:vi.fn(),commands:vi.fn(),certifications:vi.fn(),legacy:vi.fn()}));
 vi.mock("../src/adapters/supabase-notification-queue.js",()=>({SupabaseNotificationQueue:{create:()=>({})}}));
 vi.mock("../src/adapters/web-push-sender.js",()=>({WebPushSender:class {}}));
 vi.mock("../src/notification-worker.js",()=>({NotificationWorker:class {constructor(...args:unknown[]){state.push(...args);}async runOnce(){return state.pushRun();}}}));
@@ -19,7 +19,7 @@ vi.mock("../src/solapi/index.js",()=>({SolapiClient:class {constructor(config:un
 vi.mock("../src/telegram-alert-worker.js",()=>({runTelegramAlertWorkerOnce:state.telegram,runTelegramCsWorkerOnce:state.cs}));
 vi.mock("../src/telegram-command-worker.js",()=>({runTelegramCommandWorkerOnce:state.commands}));
 vi.mock("../src/telegram-certification-worker.js",()=>({runTelegramCertificationWorkerOnce:state.certifications}));
-vi.mock("../src/ses-account.js",()=>({LEGACY_SES_ROLE_ARN:"arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge",resolveSesEmailClient:state.sesClient}));
+vi.mock("../src/ses-account.js",()=>({LEGACY_SES_ROLE_ARN:"arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge",resolveSesEmailClient:state.sesClient,isLegacySesClient:state.legacy}));
 import {runNotificationWorkerOnce} from "../src/notification-runtime.js";
 import {parseNotificationEnv} from "../src/notification-env.js";
 const source={NOTIFICATION_WORKER_ID:"runtime-test",SUPABASE_URL:"https://example.supabase.co",SUPABASE_SERVICE_ROLE_KEY:"s".repeat(48),WEB_PUSH_VAPID_SUBJECT:"mailto:ops@byus.kr",WEB_PUSH_VAPID_PUBLIC_KEY:"a".repeat(88),WEB_PUSH_VAPID_PRIVATE_KEY:"b".repeat(43)};
@@ -187,12 +187,29 @@ it("shares one preflight client across both email paths before either can claim"
  await runNotificationWorkerOnce(env);
  expect(state.sesClient).toHaveBeenCalledExactlyOnceWith(env.SES_ROLE_ARN);
  expect(state.ses).toHaveBeenCalledWith(expect.objectContaining({ client }));
- expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client);
+ expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client, undefined);
  state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
  state.queue.mockClear(); state.inquiry.mockClear();
  await expect(runNotificationWorkerOnce(env)).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
  expect(state.queue).not.toHaveBeenCalled(); expect(state.inquiry).not.toHaveBeenCalled();
  expect(state.commands).toHaveBeenCalledTimes(2);
+});
+
+it("attaches the configuration set only to primary-account sends", async () => {
+ const client = { send: vi.fn() };
+ const base = { ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", BUSINESS_INQUIRY_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" };
+ const env = parseNotificationEnv({ ...base, NOTIFICATION_EMAIL_CONFIGURATION_SET: "byus-notification-prod" });
+ const feedback = { configurationSetName: "byus-notification-prod", environment: "prod" };
+ state.sesClient.mockResolvedValueOnce(client); state.legacy.mockReturnValue(false);
+ await runNotificationWorkerOnce(env);
+ expect(state.ses).toHaveBeenCalledWith(expect.objectContaining({ client, feedback }));
+ expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client, feedback);
+ state.ses.mockClear(); state.inquiry.mockClear();
+ state.sesClient.mockResolvedValueOnce(client); state.legacy.mockReturnValue(true);
+ await runNotificationWorkerOnce(env);
+ expect(state.ses.mock.calls[0]![0]).not.toHaveProperty("feedback");
+ expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client, undefined);
+ expect(() => parseNotificationEnv({ ...base, NOTIFICATION_EMAIL_CONFIGURATION_SET: "byus-notification-dev" })).toThrow(/configuration set must match/);
 });
 
 it("keeps all existing queues advancing when the independent CS branch fails", async()=>{

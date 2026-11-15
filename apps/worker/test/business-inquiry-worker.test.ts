@@ -66,6 +66,17 @@ describe("SES inquiry envelope", () => {
     expect(input.Content.Simple.Body.Text.Data).toContain(label);
     expect(input.Content.Simple.Body.Html.Data).toContain(label);
   });
+  it("adds only the configuration set and env tag when feedback is configured", async () => {
+    const send = vi.fn().mockResolvedValue({ MessageId: "ses-id" });
+    await new SesInquirySender({ send }, "notifications@kyaa.io").send(job);
+    expect(send.mock.calls[0]![0].input).not.toHaveProperty("ConfigurationSetName");
+    expect(send.mock.calls[0]![0].input).not.toHaveProperty("EmailTags");
+    send.mockClear();
+    await new SesInquirySender({ send }, "notifications@kyaa.io", { configurationSetName: "byus-notification-prod", environment: "prod" }).send(job);
+    const input = send.mock.calls[0]![0].input;
+    expect(input.ConfigurationSetName).toBe("byus-notification-prod");
+    expect(input.EmailTags).toEqual([{ Name: "env", Value: "prod" }]);
+  });
   it("uses the kyaa sender without changing internal recipients or the inquiry Reply-To", async () => {
     const send = vi.fn().mockResolvedValue({ MessageId: "ses-id" });
     await new SesInquirySender({ send }, "notifications@kyaa.io").send(job);

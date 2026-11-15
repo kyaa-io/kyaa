@@ -16,7 +16,7 @@ vi.mock("@aws-sdk/client-sesv2", () => ({
 vi.mock("@aws-sdk/credential-providers", () => ({ fromTemporaryCredentials: mocks.provider }));
 
 import { GetAccountCommand, GetEmailIdentityCommand } from "@aws-sdk/client-sesv2";
-import { LEGACY_SES_ROLE_ARN, resolveSesEmailClient } from "../src/ses-account.js";
+import { LEGACY_SES_ROLE_ARN, isLegacySesClient, resolveSesEmailClient } from "../src/ses-account.js";
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -55,6 +55,7 @@ it("selects the primary only after production, sending and domain readiness chec
   expect(mocks.provider).not.toHaveBeenCalled();
   expect(mocks.credentials).not.toHaveBeenCalled();
   expectSelection("primary", "primary_ready");
+  expect(isLegacySesClient(mocks.clients[0] as never)).toBe(false);
 });
 
 it.each([
@@ -75,6 +76,8 @@ it.each([
   expect(mocks.constructor).toHaveBeenNthCalledWith(1, { region: "ap-northeast-2", maxAttempts: 1, requestHandler: { connectionTimeout: 2000, requestTimeout: 8000, throwOnRequestTimeout: true } });
   expect(mocks.constructor).toHaveBeenNthCalledWith(2, { region: "ap-northeast-2", maxAttempts: 1, requestHandler: { connectionTimeout: 2000, requestTimeout: 8000, throwOnRequestTimeout: true }, credentials: mocks.credentials });
   expectSelection("legacy", "primary_not_ready");
+  expect(isLegacySesClient(result)).toBe(true);
+  expect(isLegacySesClient(undefined)).toBe(false);
 });
 
 it.each(["account", "identity"])("uses legacy on %s check error without exposing provider details", async (stage) => {

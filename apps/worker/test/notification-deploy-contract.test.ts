@@ -135,7 +135,7 @@ describe("notification AWS deployment contract", () => {
 
 it("grants production SES only to the current kyaa sender and keeps disabled alarms separate", () => {
  const policy = JSON.parse(readFileSync(resolve(root, "infrastructure/aws/worker/ses-email-send-policy.json"), "utf8"));
- expect(policy.Statement).toEqual([{ Effect: "Allow", Action: "ses:SendEmail", Resource: "arn:aws:ses:ap-northeast-2:996702758024:identity/kyaa.io", Condition: { StringEquals: { "ses:FromAddress": "notifications@kyaa.io" } } }]);
+ expect(policy.Statement).toEqual([{ Effect: "Allow", Action: "ses:SendEmail", Resource: ["arn:aws:ses:ap-northeast-2:996702758024:identity/kyaa.io", "arn:aws:ses:ap-northeast-2:996702758024:configuration-set/byus-notification-prod"], Condition: { StringEquals: { "ses:FromAddress": "notifications@kyaa.io" } } }]);
  const result = nativeDeploy("deploy-aws-notification-worker.sh", "prod", { dryRun: false });
  expect(result.status).toBe(0);
  const alarmCalls = result.calls.filter(call => call.args.includes("ByUs/Notifications"));

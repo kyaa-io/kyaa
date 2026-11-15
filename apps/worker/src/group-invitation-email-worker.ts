@@ -3,6 +3,7 @@ import {SESv2Client,SendEmailCommand} from '@aws-sdk/client-sesv2';
 import {z} from 'zod';
 import {createWorkerClient} from './data-client.js';
 import type {NotificationWorkerEnv} from './notification-env.js';
+import {sesFeedbackFields,type SesFeedbackConfig} from './adapters/ses-email-sender.js';
 const jobSchema=z.object({id:z.uuid(),invitationId:z.uuid(),pageId:z.uuid(),attemptToken:z.uuid(),email:z.email().max(254),tokenEncrypted:z.string().max(512),tokenHash:z.string().regex(/^[a-f0-9]{64}$/),origin:z.enum(['https://dev.kyaa.io','https://kyaa.io']),locale:z.enum(['ko','en']),pageName:z.string().max(100)}).strict();
 export type GroupInvitationJob=z.infer<typeof jobSchema>;
 export type GroupInvitationOutcome='sent'|'throttled'|'rejected'|'unknown';
@@ -47,11 +48,11 @@ export class GroupInvitationEmailQueue implements GroupInvitationQueue{
 }
 type SesClient={send(command:SendEmailCommand):Promise<{MessageId?:string}>};
 export class SesGroupInvitationSender implements GroupInvitationSender{
- constructor(private readonly keyHex:string,private readonly environment:'dev'|'prod',private readonly client:SesClient=new SESv2Client({region:'ap-northeast-2',maxAttempts:1,requestHandler:{connectionTimeout:2000,requestTimeout:8000,throwOnRequestTimeout:true}}),private readonly fromEmail='notifications@kyaa.io'){}
+ constructor(private readonly keyHex:string,private readonly environment:'dev'|'prod',private readonly client:SesClient=new SESv2Client({region:'ap-northeast-2',maxAttempts:1,requestHandler:{connectionTimeout:2000,requestTimeout:8000,throwOnRequestTimeout:true}}),private readonly fromEmail='notifications@kyaa.io',private readonly feedback?:SesFeedbackConfig){}
  async send(job:GroupInvitationJob){
   if(job.origin!==(this.environment==='dev'?'https://dev.kyaa.io':'https://kyaa.io')||!['notifications@kyaa.io','notifications@byus.kr'].includes(this.fromEmail))throw new GroupInvitationSendError('rejected');
-  const body=renderGroupInvitationEmail(job,readGroupInvitationToken(job,this.keyHex));let response:{MessageId?:string};
-  try{response=await this.client.send(new SendEmailCommand({FromEmailAddress:this.fromEmail,Destination:{ToAddresses:[job.email]},Content:{Simple:{Subject:{Data:body.subject,Charset:'UTF-8'},Body:{Text:{Data:body.text,Charset:'UTF-8'},Html:{Data:body.html,Charset:'UTF-8'}}}}}));}
+  const body=renderGroupInvitationEmail(job,readGroupInvitationToken(job,this.keyHex));const feedbackFields=sesFeedbackFields(this.feedback);let response:{MessageId?:string};
+  try{response=await this.client.send(new SendEmailCommand({FromEmailAddress:this.fromEmail,Destination:{ToAddresses:[job.email]},...feedbackFields,Content:{Simple:{Subject:{Data:body.subject,Charset:'UTF-8'},Body:{Text:{Data:body.text,Charset:'UTF-8'},Html:{Data:body.html,Charset:'UTF-8'}}}}}));}
   catch(error){const name=error&&typeof error==='object'&&'name'in error?String(error.name):'';
    if(['TooManyRequestsException','ThrottlingException','Throttling'].includes(name))throw new GroupInvitationSendError('throttled');
    if(['AccessDeniedException','AccountSuspendedException','BadRequestException','MailFromDomainNotVerifiedException','MessageRejected','NotFoundException'].includes(name))throw new GroupInvitationSendError('rejected');
@@ -60,7 +61,7 @@ export class SesGroupInvitationSender implements GroupInvitationSender{
   if(typeof response.MessageId!=='string'||!response.MessageId.trim()||response.MessageId.length>200)throw new GroupInvitationSendError('unknown');return response.MessageId;
  }
 }
-export async function runGroupInvitationEmailOnce(env:NotificationWorkerEnv,client?:SesClient){
+export async function runGroupInvitationEmailOnce(env:NotificationWorkerEnv,client?:SesClient,feedback?:SesFeedbackConfig){
  if(env.GROUP_INVITATION_EMAIL_MODE==='disabled')return 0;
  const environment=env.NOTIFICATION_EXTERNAL_ENVIRONMENT;if(environment!=='dev'&&environment!=='prod')throw new Error('GROUP_INVITATION_ENVIRONMENT_INVALID');
  const db=createWorkerClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{fetch:(input,init)=>fetch(input,{...init,signal:AbortSignal.timeout(5000)})}}),queue=new GroupInvitationEmailQueue(db,environment);
@@ -69,6 +70,6 @@ export async function runGroupInvitationEmailOnce(env:NotificationWorkerEnv,clie
   const body=renderGroupInvitationEmail(job,readGroupInvitationToken(job,env.GROUP_INVITATION_TOKEN_KEY!));
   const result=await queue.call('record_group_invitation_email_test_sink',{p_id:job.id,p_token:job.attemptToken,p_payload_hash:createHash('sha256').update(body.text).digest('hex')});
   if(typeof result!=='string')throw new GroupInvitationSendError('unknown');return result;
- }}:new SesGroupInvitationSender(env.GROUP_INVITATION_TOKEN_KEY!,environment,client,env.SES_FROM_EMAIL!);
+ }}:new SesGroupInvitationSender(env.GROUP_INVITATION_TOKEN_KEY!,environment,client,env.SES_FROM_EMAIL!,feedback);
  return new GroupInvitationEmailWorker(queue,sender).runOnce();
 }

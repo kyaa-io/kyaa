@@ -29,6 +29,17 @@ await build({
   legalComments: "none",
 });
 await build({
+  entryPoints: [resolve(root, "src/ses-feedback-lambda-entry.ts")],
+  outfile: resolve(output, "ses-feedback-index.cjs"),
+  bundle: true,
+  platform: "node",
+  target: "node24",
+  format: "cjs",
+  sourcemap: true,
+  minify: false,
+  legalComments: "none",
+});
+await build({
   entryPoints: [resolve(root, "src/creator-registration-lambda-entry.ts")],
   outfile: resolve(output, "creator-registration-index.cjs"),
   bundle: true,

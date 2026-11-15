@@ -92,6 +92,34 @@ describe("SES email sender", () => {
     });
   });
 
+  it("keeps the request unchanged without feedback and tags only the delivery id and env with it", async () => {
+    const send = mockSend().mockResolvedValue({ MessageId: "message" });
+    await sender(send).send(job);
+    const plain = send.mock.calls[0]![0].input;
+    expect(Object.keys(plain)).toEqual(["FromEmailAddress", "Destination", "ReplyToAddresses", "Content"]);
+    const tagged = mockSend().mockResolvedValue({ MessageId: "message" });
+    await new SesEmailSender({
+      region: "ap-northeast-2", fromEmail: "notifications@kyaa.io", client: { send: tagged },
+      feedback: { configurationSetName: "byus-notification-prod", environment: "prod" },
+      fetcher: vi.fn().mockResolvedValue(new Response(new Uint8Array([255,216,255,224]), {headers:{"content-type":"image/jpeg"}})),
+    }).send({ ...job, id: "8d4f1c2e-1b7a-4c3d-9e8f-0a1b2c3d4e5f" });
+    const input = tagged.mock.calls[0]![0].input;
+    expect(input.ConfigurationSetName).toBe("byus-notification-prod");
+    expect(input.EmailTags).toEqual([{ Name: "delivery_id", Value: "8d4f1c2e-1b7a-4c3d-9e8f-0a1b2c3d4e5f" }, { Name: "env", Value: "prod" }]);
+    expect(JSON.stringify(input.EmailTags)).not.toMatch(/fan@example\.com|live_reserved|notification/);
+    expect({ ...input, ConfigurationSetName: undefined, EmailTags: undefined, FromEmailAddress: plain.FromEmailAddress }).toEqual(plain);
+  });
+
+  it("rejects a delivery id that SES tags cannot carry before calling SES", async () => {
+    const send = mockSend();
+    await expect(new SesEmailSender({
+      region: "ap-northeast-2", fromEmail: "notifications@kyaa.io", client: { send },
+      feedback: { configurationSetName: "byus-notification-prod", environment: "prod" },
+      fetcher: vi.fn().mockResolvedValue(new Response(new Uint8Array([255,216,255,224]), {headers:{"content-type":"image/jpeg"}})),
+    }).send({ ...job, id: "bad id/with space" })).rejects.toMatchObject({ code: "EMAIL_INVALID_CONFIG", retryable: false });
+    expect(send).not.toHaveBeenCalled();
+  });
+
   it.each(["https://byus.kr/my?tab=live", "https://kyaa.io/my?tab=live"])("accepts canonical absolute deep link %s", async (deepLink) => {
     const send = mockSend().mockResolvedValue({ MessageId: "message" });
     await sender(send).send({ ...job, payload: { ...job.payload, deepLink } });

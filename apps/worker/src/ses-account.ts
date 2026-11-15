@@ -4,6 +4,13 @@ import type { SesV2SendClient } from "./adapters/ses-email-sender.js";
 
 export const LEGACY_SES_ROLE_ARN = "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge";
 
+// The legacy bridge account has no configuration set, so callers attach one
+// only to clients that send from this (primary) account.
+const legacyClients = new WeakSet<object>();
+export function isLegacySesClient(client: SesV2SendClient | undefined): boolean {
+  return client !== undefined && legacyClients.has(client);
+}
+
 export async function resolveSesEmailClient(roleArn?: string): Promise<SesV2SendClient | undefined> {
   if (roleArn === undefined) return undefined;
   if (roleArn !== LEGACY_SES_ROLE_ARN) throw new Error("SES_BRIDGE_ROLE_INVALID");
@@ -45,5 +52,6 @@ export async function resolveSesEmailClient(roleArn?: string): Promise<SesV2Send
     throw new Error("SES_BRIDGE_CREDENTIALS_UNAVAILABLE");
   }
   console.info(JSON.stringify({ event: "ses_account_selected", account: "legacy", reason }));
+  legacyClients.add(legacy);
   return legacy;
 }
