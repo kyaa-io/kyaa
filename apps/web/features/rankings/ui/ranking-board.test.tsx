@@ -102,7 +102,7 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
   expect(row("이등").textContent).not.toContain("오늘");
-  expect(row("일등").querySelector("[data-metric] [data-unit='likes'][data-icon='heart']")).not.toBeNull();
+  expect(row("일등").querySelector("[data-metric] [data-unit='likes'][data-icon='star']")).not.toBeNull();
   expect(row("일등").querySelector("[data-metric] img")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).toContain("1위까지12,245");
@@ -322,7 +322,7 @@ it("draws no gauge bar on any row, and no way-to-first text in the line", async 
   expect(container.querySelector("li[data-row='fan-rank'] [class*='gap']")).toBeNull();
 });
 
-it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and hearts; zero stays out and no follower count is made up", async () => {
+it("opens a fan row with 찐팬하트 and entry tickets, a creator row with 찐팬하트 and 찐팬 count under a star like count; zero stays out and no follower count is made up", async () => {
   stubRows(
     [fanRow(1, { points: 900, score: 900, hearts: 12, tickets: 3, totalPoints: 900 }), fanRow(2, { nickname: "빈팬", points: 400, score: 400, hearts: 0, tickets: 0, totalPoints: 400 })],
     [creatorRow(1, { name: "좋아요일등", likes: 50, score: 50, hearts: 77, fans: 9, totalLikes: 50 })],
@@ -332,7 +332,7 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   const fan = view.container.querySelector("li[data-row='fan-rank']:has([title='하트팬1'])") as HTMLElement;
   fireEvent.click(fan.querySelector("button")!);
   const fanPanel = fan.querySelector("[data-rank-panel]")!.textContent!;
-  expect(fanPanel).toContain("하트12");
+  expect(fanPanel).toContain("찐팬하트12");
   expect(fanPanel).toContain("응모권3");
   // 대표 11/14 02:11: only the creator's 찐팬 heart grows (20); the fan row's heart keeps 16.
   expect(fan.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "16");
@@ -343,12 +343,14 @@ it("opens a fan row with hearts and entry tickets, a creator row with 찐팬 and
   expect(creator.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "좋아요 50");
   fireEvent.click(creator.querySelector("button")!);
   const creatorPanel = creator.querySelector("[data-rank-panel]")!.textContent!;
-  // 대표 11/13 08:50: "찐팬 ♥ 77" with the heart asset; the head count and a second heart cell are not repeated.
-  expect(creatorPanel).toContain("찐팬77");
-  expect(creatorPanel).not.toContain("9명");
-  expect(creatorPanel).not.toContain("하트");
+  // 대표 11/15 16:47: "찐팬하트 ♥ 77 · 찐팬 9명"; the page likes are a star, never a heart.
+  expect(creatorPanel).toContain("찐팬하트77");
+  expect(creatorPanel).toContain("찐팬9명");
+  expect(creatorPanel.match(/하트/g)).toHaveLength(1);
   expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "20");
   expect(creator.querySelector("[data-metric] [data-unit]")).toHaveAttribute("data-unit", "likes");
+  expect(creator.querySelector("[data-metric] [data-unit='likes']")).toHaveAttribute("data-icon", "star");
+  expect(creator.querySelector("[data-metric] [data-unit='likes']")).toHaveAttribute("fill", "none");
   expect(creatorPanel).not.toMatch(/팔로워/);
 });
 
