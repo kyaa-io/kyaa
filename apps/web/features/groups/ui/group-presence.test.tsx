@@ -79,6 +79,11 @@ it('does not present malformed API data or auth-pending values as real counts',a
  auth.ready=true;rpc.mockResolvedValue({onlineCount:-1,todayCount:12,artists:[]});view.rerender(<GroupPresence pageId={pageId} locale='ko'/>);await flush();expect(screen.getByRole('status')).toBeVisible();expect(screen.queryByText('-1')).toBeNull();
 });
 
+it('draws the loading bar without a divider so a lone middle dot never floats beside the fan count (대표 11/15 23:42)',async()=>{
+ resetAuthReadyDeadlineForTest();auth.ready=false;const {container}=render(<GroupPresence pageId={pageId} locale='ko' memberCount={1}/>);await flush();
+ const bar=container.querySelector('section [class*="pending"]') as HTMLElement;
+ expect(bar).not.toBeNull();expect(bar.className).not.toMatch(/item/);
+});
 it('retries a transient read once without a second heartbeat',async()=>{
  const handlerFetch=vi.mocked(fetch);let reads=0;const original=handlerFetch.getMockImplementation()!;
  handlerFetch.mockImplementation(async(url,init)=>{if(init?.method!=='PUT'&&reads++===0)return Response.json({error:{code:'TEMPORARY'}},{status:503});return original(url,init);});
