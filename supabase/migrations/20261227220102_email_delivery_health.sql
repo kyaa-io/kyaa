@@ -114,7 +114,7 @@ begin
     where c.app_user_id=n.app_user_id and c.status='eligible' and c.verified_at is not null
       and c.consented_at is not null and c.consent_revoked_at is null
       and ((c.kind='email' and n.kind::text not in('live_24h','live_cancelled') and not public.email_channel_delivery_blocked(c.id,p_now))
-        or (c.kind='kakao' and exists(select 1 from public.fan_notification_delivery_control control where control.channel='kakao' and control.mode<>'disabled') and n.kind::text not in('runmusic_result','benefit_available','recipient_information_required') and public.kakao_channel_supports_notification(c.id,n.kind::text,notification_payload,locale)))
+        or (c.kind='kakao' and exists(select 1 from public.fan_notification_delivery_control control where control.channel='kakao' and control.mode='enabled') and n.kind::text not in('runmusic_result','benefit_available','recipient_information_required') and public.kakao_channel_supports_notification(c.id,n.kind::text,notification_payload,locale)))
     order by case c.kind when 'kakao' then 1 else 2 end,c.priority,c.id limit 1;
   if not found then return null; end if;
   if primary_channel.kind='kakao' and n.kind::text not in('live_24h','live_cancelled') then
