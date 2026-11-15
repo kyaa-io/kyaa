@@ -184,7 +184,8 @@ it('offers 홈배너2 and 덕질배너1 as placements and saves the chosen slot'
  const select=screen.getByRole('combobox',{name:'노출 위치'});
  expect(within(select).getByRole('option',{name:/홈배너2 · 랭킹 아래 \(모바일 716 x 320, PC 2720 x 480\)/})).toBeInTheDocument();
  expect(within(select).getByRole('option',{name:/덕질배너1 · 덕질 탭 가운데/})).toBeInTheDocument();
- expect(within(select).getAllByRole('option')).toHaveLength(9);
+ expect(within(select).getByRole('option',{name:/덕질배너2 · 덕질 탭 PC 오른쪽 세로 \(720 x 1200\)/})).toBeInTheDocument();
+ expect(within(select).getAllByRole('option')).toHaveLength(10);
  fireEvent.change(select,{target:{value:'dukjil_mid'}});
  fireEvent.click(screen.getByRole('button',{name:'초안 저장'}));
  await waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));

@@ -78,6 +78,7 @@ const placementOptions: readonly (readonly [NonNullable<Draft["placement"]>, str
   ["home_mid", "홈배너2 · 랭킹 아래 (모바일 716 x 320, PC 2720 x 480)", "Home banner 2 · below the ranking (mobile 716 x 320, PC 2720 x 480)"],
   ["fanpage_below_gallery", "팬페이지 슬롯 · 갤러리 아래", "Fan page slot · below the gallery"], ["fanpage_second", "팬페이지 슬롯 · 팬들의 이야기 아래", "Fan page slot · below fan stories"],
   ["dukjil_mid", "덕질배너1 · 덕질 탭 가운데 (같은 크기)", "Dukjil banner 1 · middle of the Dukjil tab (same size)"],
+  ["dukjil_side", "덕질배너2 · 덕질 탭 PC 오른쪽 세로 (720 x 1200)", "Dukjil banner 2 · right side of the Dukjil tab on PC, vertical (720 x 1200)"],
 ];
 function placementLabel(value: NonNullable<Draft["placement"]>, locale: string) { const row = placementOptions.find(([key]) => key === value); return row ? (locale === "ko" ? row[1] : row[2]) : value; }
 

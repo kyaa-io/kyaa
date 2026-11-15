@@ -50,9 +50,11 @@ it('validates placement and category independently from existing banner kinds',(
  expect(homeBannerSchema.safeParse({...bannerFixture,category:'unknown'}).success).toBe(false);
 });
 
-it('accepts the two mid slots as placements and keeps them in their own areas',()=>{
- for(const placement of ['home_mid','dukjil_mid'])expect(homeBannerSchema.safeParse({...bannerFixture,placement}).success).toBe(true);
+it('accepts the mid slots and the side slot as placements and keeps them in their own areas',()=>{
+ for(const placement of ['home_mid','dukjil_mid','dukjil_side'])expect(homeBannerSchema.safeParse({...bannerFixture,placement}).success).toBe(true);
  expect(bannerSlotsByArea.home).toContain('home_mid');
- expect(bannerSlotsByArea.dukjil).toEqual(['dukjil_mid']);
+ expect(bannerSlotsByArea.dukjil).toEqual(['dukjil_mid','dukjil_side']);
  expect(bannerSlotsByArea.fanpage).not.toContain('dukjil_mid');
+ expect(bannerSlotsByArea.fanpage).not.toContain('dukjil_side');
+ expect(bannerSlotsByArea.home).not.toContain('dukjil_side');
 });
