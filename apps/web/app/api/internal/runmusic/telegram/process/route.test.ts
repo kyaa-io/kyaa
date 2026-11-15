@@ -38,6 +38,13 @@ describe("Runmusic delivery cron", () => {
     expect(await (await GET(request(`Bearer ${"s".repeat(32)}`))).json()).toEqual({ handled: 0 });
     expect(processDelivery).toHaveBeenCalledTimes(1);
   });
+  it("reports disabled without retrying the processor", async () => {
+    vi.stubEnv("CRON_SECRET", "s".repeat(32)); processDelivery.mockResolvedValue("disabled");
+    const response = await GET(request(`Bearer ${"s".repeat(32)}`));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({error:{code:"RUNMUSIC_TELEGRAM_DISABLED"},retryable:false});
+    expect(processDelivery).toHaveBeenCalledOnce();
+  });
   it("does not reveal provider or database errors", async () => {
     vi.stubEnv("CRON_SECRET", "s".repeat(32)); processDelivery.mockRejectedValue(new Error("private-provider-token"));
     const response = await GET(request(`Bearer ${"s".repeat(32)}`));
