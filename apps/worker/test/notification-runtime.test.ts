@@ -40,7 +40,7 @@ it("keeps push at two while wiring a 40-item, 300-second SES batch",async()=>{
  expect(state.push).toHaveBeenCalledWith(expect.anything(),expect.anything(),{
   workerId:"runtime-test",batchSize:2,leaseSeconds:120,
  });
- expect(state.ses).toHaveBeenCalledExactlyOnceWith({region:"ap-northeast-2",fromEmail:"notifications@byus.kr",storageOrigin:"https://example.supabase.co"});
+ expect(state.ses).toHaveBeenCalledExactlyOnceWith({region:"ap-northeast-2",fromEmail:"notifications@byus.kr",unsubscribeSecret:env.POSTGREST_SERVICE_TOKEN,unsubscribeOrigin:"https://dev.kyaa.io",storageOrigin:"https://example.supabase.co"});
  expect(state.http).not.toHaveBeenCalled();expect(state.external).toHaveBeenCalledWith(undefined,expect.anything(),{
   workerId:"runtime-test:external",batchSize:40,leaseSeconds:300,remainingTimeInMillis,
  });

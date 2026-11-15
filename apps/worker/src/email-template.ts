@@ -76,6 +76,7 @@ export interface NotificationEmailInput {
   templateKey: string;
   context?: NotificationEmailContext | undefined;
   inlineAssets?: NotificationEmailInlineAssets | undefined;
+  unsubscribeUrl?: string | undefined;
 }
 
 export interface RenderedNotificationEmail {
@@ -331,6 +332,7 @@ export function renderNotificationEmail(
   const settings = escapeHtml(copy.settings);
   const lang = input.locale === "ko" ? "ko" : "en";
   const settingsUrl = `${SETTINGS_URL}?locale=${lang}`;
+  const unsubscribeLabel = input.locale === "ko" ? "이 메일 그만 받기" : "Stop receiving these emails";
 
   const poster = posterSource
     ? `<img src="${escapeHtml(posterSource)}" alt="${escapedEventTitle}" width="600" crossorigin="anonymous" style="display:block;width:100%;max-width:600px;height:auto;border:0;line-height:100%;outline:none;text-decoration:none;"><div class="email-poster-tail" style="height:216px;background-color:#100913;background-image:linear-gradient(#09070d,#23102d);font-size:0;line-height:0;">&nbsp;</div>`
@@ -427,7 +429,7 @@ export function renderNotificationEmail(
             <tr>
               <td style="padding:16px 24px 20px;border-top:1px solid #eeeeee;font-family:Pretendard,'Apple SD Gothic Neo','Malgun Gothic',Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#666666;text-align:center;">
                 <div style="font-weight:400;">Kyaa. Every Fan Moment Counts.</div>
-                <div style="padding-top:7px;"><a href="${settingsUrl}" style="color:#666666;text-decoration:underline;">${settings}</a></div>
+                <div style="padding-top:7px;"><a href="${settingsUrl}" style="color:#666666;text-decoration:underline;">${settings}</a>${input.unsubscribeUrl ? ` · <a href="${escapeHtml(input.unsubscribeUrl)}" style="color:#666666;text-decoration:underline;">${unsubscribeLabel}</a>` : ""}</div>
               </td>
             </tr>
           </table>
@@ -443,6 +445,7 @@ export function renderNotificationEmail(
   if (startsAt) textParts.push(startsAt);
   if (cardValue) textParts.push(`${copy.valueLabel}: ${cardValue}`);
   textParts.push("", `${copy.cta}: ${input.deepLink}`, "", `${copy.settings}: ${settingsUrl}`);
+  if (input.unsubscribeUrl) textParts.push(`${unsubscribeLabel}: ${input.unsubscribeUrl}`);
 
   return { subject: copy.subject, html, text: textParts.join("\n") };
 }
