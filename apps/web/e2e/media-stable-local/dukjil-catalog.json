@@ -29,8 +29,7 @@
    "pointCap": {
     "max": 2,
     "per": "creator_month"
-   },
-   "firstPoints": 500
+   }
   },
   "share": {
    "points": 10,
