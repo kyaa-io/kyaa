@@ -1,5 +1,6 @@
 import { assertEmailTemplateEnabled, renderNotificationEmail } from "../email-template.js";
 import { emailInlineAssets } from "../email-inline-assets.js";
+import { emailUnsubscribeHeaders, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../email-unsubscribe.js";
 import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
 import {
   ExternalNotificationError,
@@ -15,6 +16,11 @@ export interface SesEmailSenderConfig {
   region: string;
   fromEmail: string;
   trustedOrigin?: string;
+  /** Signs the unsubscribe link in every mail. Required: a member mail without it is refused. */
+  unsubscribeKey: string;
+  /** Origin that serves the unsubscribe page; dev workers use https://dev.kyaa.io. */
+  unsubscribeOrigin?: string;
+  now?: () => Date;
   client?: SesV2SendClient;
   storageOrigin?: string;
   fetcher?: typeof fetch;
@@ -99,12 +105,17 @@ function isRetryableAwsError(error: unknown): boolean {
 export class SesEmailSender implements ExternalNotificationSender {
   private readonly client: SesV2SendClient;
   private readonly origin: string;
+  private readonly unsubscribeOrigin: string;
 
   constructor(private readonly config: SesEmailSenderConfig) {
     if (!config.region.trim() || !isEmail(config.fromEmail)) {
       throw new ExternalNotificationError("EMAIL_INVALID_CONFIG", false);
     }
     this.origin = trustedOrigin(config.trustedOrigin ?? DEFAULT_TRUSTED_ORIGIN);
+    this.unsubscribeOrigin = trustedOrigin(config.unsubscribeOrigin ?? this.origin);
+    if (!/^[a-f0-9]{64}$/i.test(config.unsubscribeKey)) {
+      throw new ExternalNotificationError("EMAIL_INVALID_CONFIG", false);
+    }
     this.client =
       config.client ??
       new SESv2Client({
@@ -139,7 +150,17 @@ export class SesEmailSender implements ExternalNotificationSender {
       storageOrigin: this.config.storageOrigin,
       fetcher: this.config.fetcher,
     });
+    const unsubscribe = emailUnsubscribeLinks(
+      this.unsubscribeOrigin,
+      signEmailUnsubscribeToken(this.config.unsubscribeKey, {
+        notificationId: job.notificationId,
+        templateKey: job.templateKey,
+        ...(this.config.now ? { now: this.config.now() } : {}),
+      }),
+      job.locale,
+    );
     const email = renderNotificationEmail({
+      unsubscribeUrl: unsubscribe.pageUrl,
       title: job.payload.title, detail: job.payload.detail, deepLink,
       locale: job.locale, templateKey: job.templateKey,
       inlineAssets: { logoContentId: "byus-logo", ...(assets.posterContentId ? { posterContentId: assets.posterContentId } : {}) },
@@ -157,6 +178,7 @@ export class SesEmailSender implements ExternalNotificationSender {
           ReplyToAddresses: ["support@kyaa.io"],
           Content: {
             Simple: {
+              Headers: emailUnsubscribeHeaders(unsubscribe),
               Attachments: assets.attachments,
               Subject: { Data: email.subject, Charset: "UTF-8" },
               Body: {

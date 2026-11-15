@@ -242,3 +242,13 @@ extra paths or nondefault ports are rejected; Telegram's production-only send
 guard remains in addition to this binding. Email poster downloads accept only
 canonical kyaa origins' `/public-assets/cms-assets/` namespace, with existing
 MIME, size, magic-byte and no-redirect checks.
+
+## Mail unsubscribe link key
+
+Every member notification mail carries a `List-Unsubscribe` / `List-Unsubscribe-Post`
+header and a footer link signed with `EMAIL_UNSUBSCRIBE_KEY` (64 hex characters). The
+worker refuses to start in `NOTIFICATION_EXTERNAL_MODE=ses_email` without it, and the web
+app needs the **same value** to verify the links (`apps/web` env `EMAIL_UNSUBSCRIBE_KEY`);
+set it in both before deploying either. Links expire after 90 days. Dev workers link to
+`https://dev.kyaa.io`, prod to `https://kyaa.io`. Group invitation and business inquiry
+mail are not member notifications and are unchanged.

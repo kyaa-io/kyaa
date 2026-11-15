@@ -219,6 +219,39 @@ describe("FAN-020 settings", () => {
     await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/me/notification-channels", expect.objectContaining({ method: "PATCH" })));
   });
 
+  it("lets a member turn the email channel back on after switching it off", async () => {
+    const defaultFetch = vi.mocked(fetch).getMockImplementation()!;
+    const turnedOff = { ...connections.channels[0], status: "disabled", consented: false };
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      const url = String(input);
+      if (url === "/api/me/notification-channels" && init?.method === "PATCH")
+        return Promise.resolve(Response.json({ channel: { ...connections.channels[0], status: "eligible", consented: true } }));
+      if (url === "/api/me/notification-channels")
+        return Promise.resolve(Response.json({ connections: { ...connections, channels: [turnedOff, connections.channels[1]] } }));
+      return defaultFetch(input, init);
+    });
+    renderSettings("channels");
+    const emailSwitch = await screen.findByRole("switch", { name: "Email 수신" });
+    expect(emailSwitch).not.toBeChecked();
+    expect(emailSwitch).toBeEnabled();
+    fireEvent.click(emailSwitch);
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/me/notification-channels", expect.objectContaining({
+      method: "PATCH", body: JSON.stringify({ channelId: connections.channels[0].id, consented: true, consentVersion: "phase5-v1" }),
+    })));
+    await waitFor(() => expect(screen.getByRole("switch", { name: "Email 수신" })).toBeChecked());
+  });
+
+  it("keeps a channel that is closed for another reason locked", async () => {
+    const defaultFetch = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation((input, init) => {
+      if (String(input) === "/api/me/notification-channels" && !init?.method)
+        return Promise.resolve(Response.json({ connections: { ...connections, channels: [{ ...connections.channels[0], status: "disabled", consented: true }, connections.channels[1]] } }));
+      return defaultFetch(input, init);
+    });
+    renderSettings("channels");
+    expect(await screen.findByRole("switch", { name: "Email 수신" })).toBeDisabled();
+  });
+
   it("does not infer browser push status from delivery channel consent in the index", async () => {
     preferences.browserSubscription = "subscribed";
     const defaultFetch = vi.mocked(fetch).getMockImplementation()!;

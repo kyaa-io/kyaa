@@ -1,0 +1,35 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-3);
+  padding-block: var(--space-5);
+  border-top: 1px solid var(--color-line);
+}
+
+.row:last-child {
+  border-bottom: 1px solid var(--color-line);
+}
+
+.row form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+@media (min-width: 48rem) {
+  .page {
+    gap: var(--space-8);
+  }
+}
