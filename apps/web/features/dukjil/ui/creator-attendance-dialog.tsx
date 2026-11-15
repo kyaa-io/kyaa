@@ -112,8 +112,8 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
             </ol>
             {points !== undefined && (
               <dl className={styles.checkinRewards}>
-                <div><dt>{dukjilText(locale, "checkinRewardDaily")}</dt><dd><EarnBadge variant="inline" locale={locale} points={points} /></dd></div>
-                {numbers.every !== undefined && Boolean(bonus) && <div><dt>{dukjilText(locale, "checkinRewardBonus", [numbers.every])}</dt><dd><EarnBadge variant="inline" locale={locale} points={checkinDayPoints(numbers, numbers.every)} /></dd></div>}
+                <div><dt>{dukjilText(locale, "checkinRewardDaily")}</dt><dd><EarnBadge variant="inline" locale={locale} points={points} slot /></dd></div>
+                {numbers.every !== undefined && Boolean(bonus) && <div><dt>{dukjilText(locale, "checkinRewardBonus", [numbers.every])}</dt><dd><EarnBadge variant="inline" locale={locale} points={checkinDayPoints(numbers, numbers.every)} slot /></dd></div>}
               </dl>
             )}
           </div>

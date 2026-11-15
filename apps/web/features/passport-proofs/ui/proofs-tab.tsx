@@ -80,7 +80,7 @@ export function ProofMethods({ locale, slug, types, pointsOf }: { locale: AppLoc
               <Link className={styles.method} href={submitHref(slug, locale, type) as Route} data-proof-method={type}>
                 <FanIcon icon={TYPE_ICON[type]} size={20} />
                 <FanText role="item" className={styles.methodName}>{proofsText(locale, PROOF_TYPE_KEY[type])}</FanText>
-                {typeof points === "number" && points > 0 ? <EarnBadge variant="inline" locale={locale} points={points} /> : null}
+                {typeof points === "number" && points > 0 ? <EarnBadge variant="inline" locale={locale} points={points} slot /> : null}
               </Link>
             </li>
           );
