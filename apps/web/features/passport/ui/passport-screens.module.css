@@ -29,6 +29,7 @@
 .heading h1 {
   margin: 0;
 }
+.headingRow { display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); min-height:44px; }
 .heading h1 {
   font-size: 24px;
   font-weight: 800;

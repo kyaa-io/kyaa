@@ -53,6 +53,7 @@ import { GuestMissionBook, PassportMissionBook, StackedStampPages } from "./pass
 import Image from "next/image";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { GuestLoginAction } from "@/features/my/ui/guest-login";
+import { PassportXShare } from "./passport-x-share";
 import styles from "./passport-screens.module.css";
 
 
@@ -186,7 +187,7 @@ function StateMessage({ locale, kind, retry, returnTo, detail = true }: { locale
   return <section className={styles.state} aria-labelledby="state-title" role={kind === "network" ? "alert" : "status"}><CircleHelp aria-hidden="true" /><h1 id="state-title">{missing ? c.notFound : c.loadError}</h1><p>{missing ? c.notFoundBody : c.loadErrorBody}</p>{kind === "network" ? <button className={styles.primaryButton} type="button" onClick={retry}><RotateCcw aria-hidden="true" />{c.retry}</button> : <Link className={styles.secondaryButton} href={withLocale("/passports", locale)}>{c.backPassport}</Link>}</section>;
 }
 
-function PageHeading({ title, back }: { title: string; back?: React.ReactNode }) { return <div className={styles.heading}>{back}<div><h1>{title}</h1></div></div>; }
+function PageHeading({ title, back, action }: { title: string; back?: React.ReactNode; action?: React.ReactNode }) { return <div className={styles.heading}>{back}<div className={action ? styles.headingRow : undefined}><h1>{title}</h1>{action}</div></div>; }
 
 function DigitalStatus({ status, txHash, locale }: { status: string; txHash: string | null | undefined; locale: AppLocale }) { const complete = status === "minted" && !!txHash; return <span className={styles.digitalStatus} data-complete={complete}><span aria-hidden="true">{complete ? <Check /> : <Sparkles />}</span>{issuanceText(status, txHash, locale)}</span>; }
 
@@ -383,7 +384,7 @@ function PassportDetailView({ passport, locale, explorerBaseUrl }: { passport: P
   const longFanName = Array.from(new Intl.Segmenter(locale, { granularity: "grapheme" }).segment(fanName)).length > 16;
   const avatarLabel = locale === "ko" ? `${nickname} 프로필 아바타` : translate(locale, localizedMessages.m4a446a5d94ae, "{0} profile avatar", [nickname]);
   const creatorLinkLabel = locale === "ko" ? `${passport.celebrity.name} 최애 페이지 보기` : translate(locale, localizedMessages.m6c1e7c1ea0c2, "View {0} creator page", [passport.celebrity.name]);
-  return <DukjilProvider slug={passport.celebrity.slug} locale={locale} hasPassport><PageHeading title={c.passports} />
+  return <DukjilProvider slug={passport.celebrity.slug} locale={locale} hasPassport><PageHeading title={c.passports} action={<PassportXShare creator={passport.celebrity} locale={locale} size="sm" />} />
     <PassportSwitcher currentId={passport.id} locale={locale} />
     <PassportBook label={`${passport.celebrity.name} Fan Passport`} fanName={fanName} longFanName={longFanName} starName={passport.celebrity.name} issuedOn={passportDate(passport.issuedAt, locale)} fanId={passport.id}
       star={<Link className={styles.creatorLink} href={withLocale(creatorHomeHref(passport.celebrity.slug), locale)} aria-label={creatorLinkLabel}><span>{passport.celebrity.name}</span><ExternalLink aria-hidden="true" /></Link>}

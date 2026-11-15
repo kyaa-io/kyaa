@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "패스포트 화면과 패스포트 발급 완료 화면에 'X에 공유' 버튼이 생겼어요. 누르면 X 글쓰기 창이 열리고 내 패스포트 링크와 @kyaa_app이 미리 들어가요.",
+    "X에 올린 링크의 미리보기 그림이 그 패스포트의 카드로 바뀌었어요. 크리에이터 사진, 이름, 발급일, 등급이 보여요.",
+    "아래 화면은 로컬 시험 데이터로 찍은 것이며 운영 화면이 아니에요."
+  ],
+  "path": "/passports",
+  "images": [
+    "release-notes/images/2026-11-16-passport-x-share-390.png",
+    "release-notes/images/2026-11-16-passport-x-share-card.png"
+  ]
+}

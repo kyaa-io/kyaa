@@ -5,7 +5,8 @@ vi.mock("@/server/community-stamps/shared-passport", () => ({ readSharedPassport
 import { APP_LOCALES } from "@/i18n/locales";
 import { generateMetadata } from "./page";
 
-const preview = async (locale?: string) => generateMetadata({ searchParams: Promise.resolve(locale ? { locale } : {}) });
+const token = "a".repeat(32);
+const preview = async (locale?: string, linkToken = token) => generateMetadata({ params: Promise.resolve({ token: linkToken }), searchParams: Promise.resolve(locale ? { locale } : {}) });
 
 describe("shared Passport link preview", () => {
   it("follows the link's language in title, description and picture", async () => {
@@ -18,8 +19,13 @@ describe("shared Passport link preview", () => {
       const images = (meta.openGraph as { images: { url: string }[] }).images;
       expect(new URL(images[0]!.url).searchParams.get("locale")).toBe(locale);
       expect(new URL(images[0]!.url).pathname).toBe("/share/passport.png");
+      expect(new URL(images[0]!.url).searchParams.get("token")).toBe(token);
     }
     expect(JSON.stringify(ko)).not.toContain("A favorite worth sharing");
+  });
+  it("asks for the headline picture when the address is not a share token", async () => {
+    const images = ((await preview("ko", "not-a-token")).openGraph as { images: { url: string }[] }).images;
+    expect(new URL(images[0]!.url).searchParams.has("token")).toBe(false);
   });
   it("has a distinct title in every language and stays out of search", async () => {
     const titles = new Set<string>();

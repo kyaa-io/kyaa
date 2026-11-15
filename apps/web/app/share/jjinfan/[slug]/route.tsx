@@ -3,6 +3,7 @@ import { parseAppLocale, toContentLocale } from "@/i18n/locales";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { readSharedJjinfanChallenge } from "@/server/rankings/jjinfan-share";
 import { publicFile } from "@/server/rankings/public-file";
+import { creatorPhotoDataUri as photo } from "@/server/rankings/creator-photo";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 
@@ -10,23 +11,6 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const WORDMARK = "public/images/guest-home/kyaa-wordmark-transparent.png";
-/** The creator photo as a data URI for Satori (PNG and JPEG only). A stored path is read from public/ like the fonts; a stored absolute URL is the
- * public asset host. The request's Host is never used. Anything else, or a failed read: null, and the card draws the initial instead. */
-async function photo(src: string | undefined) {
-  if (!src) return null;
-  try {
-    if (src.startsWith("/") && !src.startsWith("//")) {
-      const type = /\.png$/i.test(src) ? "image/png" : /\.jpe?g$/i.test(src) ? "image/jpeg" : null;
-      if (!type || src.includes("..")) return null;
-      return `data:${type};base64,${base64(await publicFile(`public${src}` as `public/${string}`))}`;
-    }
-    const res = await fetch(src, { signal: AbortSignal.timeout(3000) });
-    const type = res.headers.get("content-type")?.split(";")[0] ?? "";
-    if (!res.ok || !["image/png", "image/jpeg"].includes(type)) return null;
-    return `data:${type};base64,${Buffer.from(await res.arrayBuffer()).toString("base64")}`;
-  } catch { return null; }
-}
-
 const base64 = (bytes: ArrayBuffer) => Buffer.from(bytes).toString("base64");
 
 /**
