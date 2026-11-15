@@ -25,14 +25,14 @@ export type MissionCopy = { title: string; subtitle: string; how: string; once: 
 /** 좋아요 한 번 = 참여 한 건인 이벤트 화면. slug는 이벤트용 페이지(celebrities) 행, path는 이 화면 주소(로그인 뒤 돌아올 곳). */
 export type LikeMissionConfig = {
  slug: string; path: string; copy: Record<'ko' | 'en', MissionCopy>;
- /** 끝낸 단계 수. X에서 하는 단계는 이 화면이 확인할 수 없다 */
- doneSteps: (state: { authenticated: boolean; completed: boolean }) => number;
+ /** 끝낸 단계 표시. 'login': 접속·로그인을 이 화면이 확인한다. 'like': 앞 단계는 X에서 하므로 확인할 수 없어 좋아요 전에는 체크하지 않는다(서버 화면에서 넘기므로 값으로 둔다) */
+ progress: 'login' | 'like';
  /** KoL 유입 기록의 중복 방지 키 앞부분 */
  attributionKey: string;
 };
 export const xLikeMission: LikeMissionConfig = {
  slug: missionSlug, path: '/s/x', attributionKey: 'x-mission',
- doneSteps: ({ authenticated, completed }) => completed ? 3 : authenticated ? 2 : 1,
+ progress: 'login',
  copy: {
   ko: { title: '좋아요 미션', subtitle: 'Like Mission', how: '참여 방법', once: '1인 1회', stamped: '도장 쾅! 좋아요 미션 완료', event: 'KYAA × X 좋아요 미션', steps: ['이벤트 페이지 접속', 'Google로 로그인', '좋아요 누르기'], login: 'Google로 로그인', like: '좋아요', done: '미션 완료', count: '좋아요', error: '이벤트를 불러오지 못했어요. 다시 시도해 주세요.', retry: '다시 시도', saveError: '좋아요를 저장하지 못했어요. 다시 시도해 주세요.' },
   en: { title: 'Like Mission', subtitle: '좋아요 미션', how: 'How to join', once: 'Once per account', stamped: 'Stamped! Mission complete', event: 'KYAA × X Like Mission', steps: ['Visit this event page', 'Sign in with Google', 'Like this page'], login: 'Continue with Google', like: 'Like', done: 'Mission complete', count: 'Likes', error: 'Couldn’t load the event. Please try again.', retry: 'Try again', saveError: 'Couldn’t save your like. Please try again.' },
@@ -112,7 +112,7 @@ function MissionForOwner({ locale, auth, mission }: { locale: 'ko' | 'en'; auth:
   if (target) window.location.assign(target);
  }
  const loginHref = fanLoginHref(locale, returnTo);
- const doneSteps = mission.doneSteps({ authenticated, completed });
+ const doneSteps = completed ? 3 : mission.progress === 'like' ? 0 : authenticated ? 2 : 1;
  const [nickname, setNickname] = useState<string | null>(null);
  useEffect(() => {
   if (!ready || !authenticated) return;
