@@ -10,6 +10,7 @@ import { FanDisplay } from '@/components/fan-ui/fan-display';
 import { FanContentContainer } from '@/components/fan-shell/fan-content-container';
 import { Heart, Check } from '@/components/fan-ui/fan-icons';
 import { externalBrowserUrl } from '@/components/login-browser-policy';
+import { fanLoginHref } from '@/components/login-href';
 import { recordClientProductEvent, pageViewIdempotencyKey } from '@/features/analytics/client/product-event-client';
 import { isXBrowser, missionAttribution } from './mission-context';
 import styles from './x-mission.module.css';
@@ -19,19 +20,32 @@ export const missionSlug = 'x-mission-1113';
 const countSchema = z.object({ likeCount: z.number().int().nonnegative() });
 const statusSchema = z.object({ reaction: reactionResultSchema.nullable() });
 const profileSchema = z.object({ profile: z.object({ nickname: z.string().nullable() }) });
-/** 서버가 완료 시각을 주지 않으므로, 이 기기에서 처음 완료한 날을 기억한다. 없으면 오늘 날짜 */
-const stampDateKey = (userId: string) => `${missionSlug}:stamped:${userId}`;
 const stampArt = '/images/stamps/ink-v1/first-like.webp';
-const copy = {
- ko: { title: '좋아요 미션', subtitle: 'Like Mission', how: '참여 방법', once: '1인 1회', stamped: '도장 쾅! 좋아요 미션 완료', event: 'KYAA × X 좋아요 미션', steps: ['이벤트 페이지 접속', 'Google로 로그인', '좋아요 누르기'], login: 'Google로 로그인', like: '좋아요', done: '미션 완료', count: '좋아요', error: '이벤트를 불러오지 못했어요. 다시 시도해 주세요.', retry: '다시 시도', saveError: '좋아요를 저장하지 못했어요. 다시 시도해 주세요.' },
- en: { title: 'Like Mission', subtitle: '좋아요 미션', how: 'How to join', once: 'Once per account', stamped: 'Stamped! Mission complete', event: 'KYAA × X Like Mission', steps: ['Visit this event page', 'Sign in with Google', 'Like this page'], login: 'Continue with Google', like: 'Like', done: 'Mission complete', count: 'Likes', error: 'Couldn’t load the event. Please try again.', retry: 'Try again', saveError: 'Couldn’t save your like. Please try again.' },
+export type MissionCopy = { title: string; subtitle: string; how: string; once: string; stamped: string; event: string; steps: readonly [string, string, string]; login: string; like: string; done: string; count: string; error: string; retry: string; saveError: string };
+/** 좋아요 한 번 = 참여 한 건인 이벤트 화면. slug는 이벤트용 페이지(celebrities) 행, path는 이 화면 주소(로그인 뒤 돌아올 곳). */
+export type LikeMissionConfig = {
+ slug: string; path: string; copy: Record<'ko' | 'en', MissionCopy>;
+ /** 끝낸 단계 표시. 'login': 접속·로그인을 이 화면이 확인한다. 'like': 앞 단계는 X에서 하므로 확인할 수 없어 좋아요 전에는 체크하지 않는다(서버 화면에서 넘기므로 값으로 둔다) */
+ progress: 'login' | 'like';
+ /** KoL 유입 기록의 중복 방지 키 앞부분 */
+ attributionKey: string;
 };
-export function XMission({ locale }: { locale: 'ko' | 'en' }) {
+export const xLikeMission: LikeMissionConfig = {
+ slug: missionSlug, path: '/s/x', attributionKey: 'x-mission',
+ progress: 'login',
+ copy: {
+  ko: { title: '좋아요 미션', subtitle: 'Like Mission', how: '참여 방법', once: '1인 1회', stamped: '도장 쾅! 좋아요 미션 완료', event: 'KYAA × X 좋아요 미션', steps: ['이벤트 페이지 접속', 'Google로 로그인', '좋아요 누르기'], login: 'Google로 로그인', like: '좋아요', done: '미션 완료', count: '좋아요', error: '이벤트를 불러오지 못했어요. 다시 시도해 주세요.', retry: '다시 시도', saveError: '좋아요를 저장하지 못했어요. 다시 시도해 주세요.' },
+  en: { title: 'Like Mission', subtitle: '좋아요 미션', how: 'How to join', once: 'Once per account', stamped: 'Stamped! Mission complete', event: 'KYAA × X Like Mission', steps: ['Visit this event page', 'Sign in with Google', 'Like this page'], login: 'Continue with Google', like: 'Like', done: 'Mission complete', count: 'Likes', error: 'Couldn’t load the event. Please try again.', retry: 'Try again', saveError: 'Couldn’t save your like. Please try again.' },
+ },
+};
+export function XMission({ locale, mission = xLikeMission }: { locale: 'ko' | 'en'; mission?: LikeMissionConfig }) {
  const auth = useByUsAuth();
- return <MissionForOwner key={`${auth.ready}:${auth.authenticated}:${auth.user?.id ?? 'guest'}`} locale={locale} auth={auth} />;
+ return <MissionForOwner key={`${mission.slug}:${auth.ready}:${auth.authenticated}:${auth.user?.id ?? 'guest'}`} locale={locale} auth={auth} mission={mission} />;
 }
-function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnType<typeof useByUsAuth> }) {
- const t = copy[locale];
+function MissionForOwner({ locale, auth, mission }: { locale: 'ko' | 'en'; auth: ReturnType<typeof useByUsAuth>; mission: LikeMissionConfig }) {
+ const t = mission.copy[locale];
+ const { slug, attributionKey } = mission;
+ const userId = auth.user?.id;
  const [locationContext, setLocationContext] = useState({ search:'', hash:'' });
  useEffect(() => { setLocationContext({ search:window.location.search, hash:window.location.hash }); }, []);
  const languageHref = (value: 'ko' | 'en') => { const query = new URLSearchParams(locationContext.search); query.set('locale', value); return `?${query}${locationContext.hash}`; };
@@ -46,13 +60,13 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
   setLoaded(false); setError(undefined);
   void (async () => {
    try {
-    const response = await fetch(`/api/celebrities/${missionSlug}/fans?locale=${locale}`, { cache: 'no-store', signal: controller.signal });
+    const response = await fetch(`/api/celebrities/${slug}/fans?locale=${locale}`, { cache: 'no-store', signal: controller.signal });
     if (!response.ok) throw new Error('count');
     const value = countSchema.parse(await response.json());
     let done = false;
     if (ready && authenticated) {
      const token = await getAccessToken(); if (!token) throw new Error('session');
-     const response = await fetch(`/api/celebrities/${missionSlug}/reactions`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: controller.signal });
+     const response = await fetch(`/api/celebrities/${slug}/reactions`, { headers: { authorization: `Bearer ${token}` }, cache: 'no-store', signal: controller.signal });
      if (!response.ok) throw new Error('status');
      done = statusSchema.parse(await response.json()).reaction !== null;
     }
@@ -60,21 +74,21 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
    } catch { if (!controller.signal.aborted) setError('load'); }
   })();
   return () => controller.abort();
- }, [authenticated, getAccessToken, locale, ready, retry]);
+ }, [authenticated, getAccessToken, locale, ready, retry, slug]);
  const recordAttribution = useCallback(async () => {
   const properties = missionAttribution(window.location.search);
-  if (!properties || !authenticated || !auth.user?.id) return;
+  if (!properties || !authenticated || !userId) return;
   const token = await getAccessToken(); if (!token) return;
-  const idempotencyKey = await pageViewIdempotencyKey('creator_page_view', `x-mission-${properties.kol}`, auth.user.id);
+  const idempotencyKey = await pageViewIdempotencyKey('creator_page_view', `${attributionKey}-${properties.kol}`, userId);
   await recordClientProductEvent({ eventName:'creator_page_view', source:'x_mission.identified', idempotencyKey, celebrityId:null, liveEventId:null, missionId:null, benefitId:null, properties }, token);
- }, [authenticated, auth.user?.id, getAccessToken]);
+ }, [attributionKey, authenticated, userId, getAccessToken]);
  useEffect(() => { if (ready && authenticated) void recordAttribution().catch(() => {}); }, [ready, authenticated, recordAttribution]);
  async function like() {
   if (!loaded || pending || completed || !authenticated) return;
   setPending(true); setError(undefined);
   try {
    const token = await getAccessToken(); if (!token) throw new Error('session');
-   const response = await fetch(`/api/celebrities/${missionSlug}/reactions`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, cache: 'no-store' });
+   const response = await fetch(`/api/celebrities/${slug}/reactions`, { method: 'POST', headers: { authorization: `Bearer ${token}` }, cache: 'no-store' });
    if (!response.ok) throw new Error('like');
    reactionResultSchema.parse(await response.json());
    void recordAttribution().catch(() => {});
@@ -84,10 +98,11 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
   finally { setPending(false); }
  }
  const primary = 'primary' as const;
- const returnTo = typeof window === 'undefined' ? `/s/x?locale=${locale}` : `/s/x${window.location.search}${window.location.hash}`;
+ const returnTo = typeof window === 'undefined' ? `${mission.path}?locale=${locale}` : `${mission.path}${window.location.search}${window.location.hash}`;
+ // 운영 로그인(Privy)은 /login 한 곳에서 시작한다. 로그인 뒤 이 화면으로 돌아오고, 유입 시각(x_started)을 붙인다
  function beginLogin(event: MouseEvent<HTMLAnchorElement>) {
   const target = new URL(returnTo, window.location.origin); target.searchParams.set('x_started', new Date().toISOString());
-  event.currentTarget.href = `/api/auth/cognito/start?${new URLSearchParams({ provider:'google', returnTo:target.pathname + target.search + target.hash, locale })}`;
+  event.currentTarget.href = fanLoginHref(locale, target.pathname + target.search + target.hash);
  }
  function openBrowser() {
   setBrowserNotice(true);
@@ -96,8 +111,8 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
   const target = externalBrowserUrl(navigator.userAgent, window.location.href);
   if (target) window.location.assign(target);
  }
- const loginHref = `/api/auth/cognito/start?${new URLSearchParams({ provider: 'google', returnTo, locale })}`;
- const doneSteps = completed ? 3 : authenticated ? 2 : 1;
+ const loginHref = fanLoginHref(locale, returnTo);
+ const doneSteps = completed ? 3 : mission.progress === 'like' ? 0 : authenticated ? 2 : 1;
  const [nickname, setNickname] = useState<string | null>(null);
  useEffect(() => {
   if (!ready || !authenticated) return;
@@ -110,14 +125,15 @@ function MissionForOwner({ locale, auth }: { locale: 'ko' | 'en'; auth: ReturnTy
   })().catch(() => {});
   return () => controller.abort();
  }, [ready, authenticated, getAccessToken]);
- const userId = auth.user?.id;
  const [stampedAt, setStampedAt] = useState<string>();
  useEffect(() => {
   if (!completed || !userId) return;
+  // 서버가 완료 시각을 주지 않으므로, 이 기기에서 처음 완료한 날을 기억한다. 없으면 오늘 날짜
+  const key = `${slug}:stamped:${userId}`;
   let saved: string | null = null;
-  try { saved = localStorage.getItem(stampDateKey(userId)); if (!saved) { saved = new Date().toISOString(); localStorage.setItem(stampDateKey(userId), saved); } } catch { saved = new Date().toISOString(); }
+  try { saved = localStorage.getItem(key); if (!saved) { saved = new Date().toISOString(); localStorage.setItem(key, saved); } } catch { saved = new Date().toISOString(); }
   setStampedAt(saved);
- }, [completed, userId]);
+ }, [completed, userId, slug]);
  const stampDate = new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(stampedAt ? new Date(stampedAt) : new Date());
  // 방금 완료한 때만: 도장 카드가 있는 맨 위로 올린다
  useEffect(() => { if (celebrate && completed) window.scrollTo?.({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }, [celebrate, completed]);

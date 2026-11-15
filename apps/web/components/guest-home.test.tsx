@@ -12,6 +12,8 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatPassportTier, GuestHome, StreamingGuestHome } from "./guest-home";
 import { SIGNUP_RAFFLE_BANNER_ID } from "../features/home/domain/signup-raffle-home-banner";
+import { FIRST_STEPS_BANNER_ID } from "../features/home/domain/first-steps-home-banner";
+const missionbook = "247861a1-27b0-4e0a-9039-b5f8f7bc1c48", xEvent = "fc1bd251-f675-4e69-82b0-26a8a73be41f", gggi = "8bf2f180-cb32-4f00-93e2-e84b570ad450";
 import { notifyFanActivityUpdated } from "./fan-ui/fan-activity-updates";
 import { formatHeroLiveTitle, formatLiveCountdown } from "./live-hero-carousel";
 
@@ -381,12 +383,12 @@ describe("streamed Home sections", () => {
     return { pending, queries };
   }
 
-  it("shows the real GGGI banner immediately and releases each section without waiting for optional queries", async () => {
+  it("shows the pinned banners immediately and releases each section without waiting for optional queries", async () => {
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
-    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("GGGI");
-    expect([...view.container.querySelectorAll("[data-managed-home-banner]")].slice(0, 2).map(el => el.getAttribute("data-managed-home-banner"))).toEqual(["8bf2f180-cb32-4f00-93e2-e84b570ad450", "247861a1-27b0-4e0a-9039-b5f8f7bc1c48"]);
+    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질하는 법");
+    expect([...view.container.querySelectorAll("[data-managed-home-banner]")].slice(0, 3).map(el => el.getAttribute("data-managed-home-banner"))).toEqual([missionbook, xEvent, gggi]);
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.homeSlots.resolve({}); });
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
@@ -394,21 +396,21 @@ describe("streamed Home sections", () => {
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
   });
 
-  it("puts the signup raffle banner first in the waiting and the finished carousel, and keeps the old order when it is off", async () => {
+  it("orders pinned banners missionbook → signup raffle → X event → first steps → GGGI → CMS, in the waiting and the finished carousel", async () => {
     const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
     const raffle = SIGNUP_RAFFLE_BANNER_ID;
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle firstSteps />); });
-    expect(ids(view).slice(0, 3)).toEqual([raffle, expect.any(String), "8bf2f180-cb32-4f00-93e2-e84b570ad450"]);
+    expect(ids(view)).toEqual([missionbook, raffle, xEvent, FIRST_STEPS_BANNER_ID, gggi]);
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
-    expect(ids(view)[0]).toBe(raffle);
-    expect(ids(view).filter(id => id === raffle)).toHaveLength(1);
+    expect(ids(view)).toEqual([missionbook, raffle, xEvent, FIRST_STEPS_BANNER_ID, gggi, bannerFixture.id]);
+    expect(ids(view).filter(id => id === raffle || id === xEvent)).toHaveLength(2);
     view.unmount();
     const off = pendingHome();
     await act(async () => { view = render(<StreamingGuestHome {...off} locale="ko" />); });
     expect(ids(view)).not.toContain(raffle);
-    expect(ids(view).slice(0, 2)).toEqual(["8bf2f180-cb32-4f00-93e2-e84b570ad450", "247861a1-27b0-4e0a-9039-b5f8f7bc1c48"]);
+    expect(ids(view)).toEqual([missionbook, xEvent, gggi]);
   });
 
   it("renders ready home sections before gallery data, then reserves photo geometry while Shorts is pending", async () => {
@@ -467,7 +469,8 @@ describe("streamed Home sections", () => {
       home.pending.homeSlots.resolve({});
       if (failed !== "elinaRaffles") home.pending.elinaRaffles.resolve({ raffles: elinaRaffles });
     });
-    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("GGGI");
+    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질하는 법");
+    expect(view.container.querySelector(`[data-managed-home-banner="${gggi}"]`)).toHaveTextContent("GGGI");
     if (failed === "elinaRaffles") expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true })).not.toBeInTheDocument();
     expect(screen.getAllByRole("alert", { hidden: true }).length).toBeGreaterThan(0);
   });

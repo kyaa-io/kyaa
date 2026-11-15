@@ -31,13 +31,18 @@ it('restores a previously completed mission', async () => {
  expect(await screen.findByText('Mina')).toBeTruthy();
  expect(screen.getByRole('button', {name:'미션 완료'})).toBeDisabled();
 });
-it('uses Google OAuth with the same localized returnTo for guests', async () => {
+it('sends guests to the shared /login page (Privy) with the same localized returnTo, never the old Cognito start', async () => {
  window.history.replaceState({}, '', '/s/x?locale=en&utm_source=x');
  auth.authenticated = false; render(<XMission locale="en" />);
  const link = await screen.findByRole('link', {name:'Continue with Google'});
  const url = new URL(link.getAttribute('href')!, 'https://kyaa.io');
- expect(url.searchParams.get('provider')).toBe('google');
+ expect(url.pathname).toBe('/login');
  expect(url.searchParams.get('returnTo')).toBe('/s/x?locale=en&utm_source=x');
+ fireEvent.click(link);
+ const clicked = new URL(link.getAttribute('href')!, 'https://kyaa.io');
+ expect(clicked.pathname).toBe('/login');
+ const back = new URL(clicked.searchParams.get('returnTo')!, 'https://kyaa.io');
+ expect(back.pathname).toBe('/s/x'); expect(back.searchParams.get('utm_source')).toBe('x'); expect(back.searchParams.get('x_started')).toBeTruthy();
 });
 it('does not invent completion or count when the event data is unavailable', async () => {
  vi.stubGlobal('fetch', vi.fn(async () => new Response(null, {status:404})));
