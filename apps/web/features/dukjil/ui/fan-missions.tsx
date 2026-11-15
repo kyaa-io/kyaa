@@ -123,7 +123,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
   const [expanded, setExpanded] = useState(false);
   const unfoldedRows = [...todayRows, ...moreRows];
   const folds = <div className={styles.unfolded} data-expanded={expanded} data-nudge={nudge ? "" : undefined}>
-    <div className={styles.unfoldedGrid}>
+    <div className={styles.unfoldedGrid} data-mission-grid="">
       {rowList(unfoldedRows)}
       {state?.catalog?.rules.proof && <CertificationGrid variant="rows" locale={locale} slug={noPage ? "" : slug} guest={guest} fallbackHref={guest ? `/benefits?locale=${locale}` : proof} mobileVisible={Math.max(0, 6 - unfoldedRows.length)} />}
     </div>
