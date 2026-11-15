@@ -41,9 +41,9 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     })),
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", async () => {
       const banners = await bannerRepository.list(toContentLocale(locale));
-      // The raffle banner is pinned first by the home itself; the CMS copy would show it twice.
+      // The raffle and X event banners are pinned by the home itself; a CMS copy would show them twice.
       const mission = xMissionHomeBanner(locale);
-      return [mission, ...banners.filter(banner => banner.id !== SIGNUP_RAFFLE_BANNER_ID && banner.id !== mission.id && !["/s/raffle", "/s/x"].includes(banner.href.split("?")[0]))];
+      return banners.filter(banner => banner.id !== SIGNUP_RAFFLE_BANNER_ID && banner.id !== mission.id && !["/s/raffle", "/s/x", "/follow"].includes(banner.href.split("?")[0]));
     })),
     homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", async () => {
       const slots = await bannerRepository.listSlots(toContentLocale(locale), "home");

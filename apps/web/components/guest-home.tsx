@@ -17,6 +17,7 @@ import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 import { Suspense, use, type ReactNode } from "react";
 import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
+import { xMissionHomeBanner } from "../features/home/domain/x-mission-home-banner";
 import { firstStepsHomeBanner } from "../features/home/domain/first-steps-home-banner";
 import { signupRaffleHomeBanner } from "../features/home/domain/signup-raffle-home-banner";
 import { useRouter } from "next/navigation";
@@ -117,9 +118,9 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
 }
 type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "jjinfanGauge" | "heartDonation" | "homeTop"> & { queries: HomeQueries; /** 신규 가입 래플 배너를 첫 슬라이드로 둔다(서버 플래그가 켜진 환경만). */ signupRaffle?: boolean; /** 온보딩 첫 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘긴다. */ firstSteps?: boolean };
 
-/** 코드로 둔 홈 배너: 신규 가입 래플(플래그 켜짐) → 첫 걸음(아직 안 마친 브라우저) → GGGI → 덕질하는 법. 대기 화면과 완성 화면이 같은 순서라 첫 그림이 바뀌지 않는다. */
+/** 코드로 둔 홈 배너(대표 11/15 16:22 "덕질미션북을 가장 먼저"): 덕질하는 법 → 신규 가입 래플(플래그 켜짐) → X 이벤트 → 첫 걸음(아직 안 마친 브라우저) → GGGI. CMS 배너는 그 뒤. 대기 화면과 완성 화면이 같은 순서라 첫 그림이 바뀌지 않는다. */
 function pinnedHomeBanners(locale: AppLocale, firstSteps: boolean, signupRaffle: boolean) {
-  return [...(signupRaffle ? [signupRaffleHomeBanner(locale)] : []), ...(firstSteps ? [firstStepsHomeBanner(locale)] : []), gggiHomeBanner(locale), missionbookHomeBanner(locale)];
+  return [missionbookHomeBanner(locale), ...(signupRaffle ? [signupRaffleHomeBanner(locale)] : []), xMissionHomeBanner(locale), ...(firstSteps ? [firstStepsHomeBanner(locale)] : []), gggiHomeBanner(locale)];
 }
 
 export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
