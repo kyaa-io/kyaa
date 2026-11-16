@@ -1,6 +1,8 @@
+export const isXBrowser = (userAgent: string) => /\bTwitter(?:Android| for iPhone| for iPad|\/|\b)|\bX\/\d/i.test(userAgent);
+
 // Match known app markers only; ordinary mobile browsers keep their normal login flow.
 export function requiresGoogleBrowserHandoff(userAgent: string): boolean {
-  return /Instagram|Barcelona|KAKAOTALK|\bFBAN\/|\bFBAV\/|\bLine\//i.test(userAgent);
+  return /Instagram|Barcelona|KAKAOTALK|\bFBAN\/|\bFBAV\/|\bLine\//i.test(userAgent) || isXBrowser(userAgent);
 }
 
 export function isIosInstagram(userAgent: string): boolean {

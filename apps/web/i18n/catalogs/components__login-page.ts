@@ -62,6 +62,18 @@ export const messages = {
     ru: "Чтобы продолжить работу с Google , выберите «Открыть в браузере» в меню приложения. Или скопируйте ссылку для входа и откройте ее в Safari или Chrome."
 
   },
+  "mbrowserHandoffApple": {
+    "ja": "アプリのメニューで「ブラウザで開く」を選んで Google ログインを続けるか、下の「Apple で続ける」を押してください。またはログインリンクをコピーし、Safari や Chrome で開いてください。",
+    "zh-Hans": "请在应用菜单中选择“在浏览器中打开”以继续 Google 登录，或点击下方的“使用 Apple 继续”。也可以复制登录链接并在 Safari 或 Chrome 中打开。",
+    "zh-Hant": "請在應用程式選單中選擇「在瀏覽器中開啟」以繼續 Google 登入，或點選下方的「使用 Apple 繼續」。也可以複製登入連結並在 Safari 或 Chrome 中開啟。",
+    "es": "Elige «Abrir en el navegador» en el menú de la app para continuar con Google, o toca «Continuar con Apple» más abajo. O copia el enlace de inicio de sesión y ábrelo en Safari o Chrome.",
+    "id": "Pilih “Buka di browser” dari menu aplikasi untuk melanjutkan dengan Google, atau ketuk “Lanjutkan dengan Apple” di bawah. Atau salin tautan masuk dan buka di Safari atau Chrome.",
+    "vi": "Chọn “Mở trong trình duyệt” trong menu ứng dụng để tiếp tục với Google, hoặc nhấn “Tiếp tục với Apple” bên dưới. Hoặc sao chép liên kết đăng nhập và mở bằng Safari hoặc Chrome.",
+    "th": "เลือก “เปิดในเบราว์เซอร์” จากเมนูแอปเพื่อเข้าสู่ระบบด้วย Google ต่อ หรือแตะ “ดำเนินการต่อด้วย Apple” ด้านล่าง หรือคัดลอกลิงก์เข้าสู่ระบบแล้วเปิดใน Safari หรือ Chrome",
+    "pt": "Escolha “Abrir no navegador” no menu do app para continuar com o Google, ou toque em “Continuar com Apple” abaixo. Ou copie o link de acesso e abra no Safari ou Chrome.",
+    "fr": "Choisissez « Ouvrir dans le navigateur » dans le menu de l’application pour continuer avec Google, ou touchez « Continuer avec Apple » ci-dessous. Ou copiez le lien de connexion et ouvrez-le dans Safari ou Chrome.",
+    "ru": "Выберите «Открыть в браузере» в меню приложения, чтобы продолжить с Google, или нажмите «Продолжить с Apple» ниже. Или скопируйте ссылку для входа и откройте ее в Safari или Chrome."
+  },
   "mbrowserCopy": {
     "ja": "ログインリンクをコピー",
     "zh-Hans": "复制登录链接",
