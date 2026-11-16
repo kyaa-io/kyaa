@@ -34,7 +34,7 @@ function finalFunctions(): Map<string, Fn> {
 }
 
 describe("require_content_editor callers", () => {
-  it("stay volatile: it takes SELECT ... FOR UPDATE, which PostgREST read-only transactions reject", () => {
+  it("stay volatile: it takes SELECT ... FOR SHARE/FOR UPDATE, which PostgREST read-only transactions reject", () => {
     const offenders = [...finalFunctions()]
       .filter(([, fn]) => fn.locksActor && fn.volatility !== "volatile")
       .map(([name, fn]) => `${name} (${fn.volatility})`);
