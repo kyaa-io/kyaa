@@ -57,12 +57,13 @@ export async function uploadProofImage(getToken: TokenGetter, missionId: string,
 
 export async function submitProof(getToken: TokenGetter, input: {
   creator: string; proofType: ProofType; uploadId: string; uploadIds?: string[]; publishConsent: boolean;
-  amountVisible: boolean | null; imagePhash: string[]; note?: string; locale?: string;
+  amountVisible: boolean | null; imagePhash: string[]; note?: string; locale?: string; requestKey?: string;
 }) {
+  const { requestKey = crypto.randomUUID(), ...rest } = input;
   const response = await authedFetch(getToken, "/api/me/proofs", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ requestKey: crypto.randomUUID(), ...input }),
+    body: JSON.stringify({ requestKey, ...rest }),
   });
   return proofCommandResultSchema.parse(await ensureOk(response));
 }
@@ -97,4 +98,15 @@ export async function readProofSummary(pageIdOrSlug: string) {
 export async function listProofMissions(getToken: TokenGetter, creator: string) {
   const response = await authedFetch(getToken, `/api/me/proofs/missions?creator=${encodeURIComponent(creator)}`, { cache: "no-store" });
   return proofMissionListSchema.parse(await ensureOk(response)).items;
+}
+
+/**
+ * One submit attempt: the request key and the uploads made for it. When the response is lost the member presses again, and the same
+ * key plus the same uploads let the server hand back the first submission instead of storing a second one.
+ */
+export type ProofAttempt = { signature: string; requestKey: string; uploadIds: string[]; imagePhash: string[] | null };
+
+/** A failure that proves the server did not store the submission (a known 4xx) ends the attempt; anything else may have been stored. */
+export function attemptSurvives(error: unknown) {
+  return !(error instanceof ProofRequestError) || error.status >= 500;
 }

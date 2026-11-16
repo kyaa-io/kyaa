@@ -14,7 +14,7 @@ import { PROOF_NOTE_MAX, SNS_POST_PROOF, SUBMITTABLE_PROOF_TYPES, proofTypeSchem
 import type { AppLocale } from "@/i18n/locales";
 import { ProofImageMask } from "./proof-image-mask";
 import { maskAndEncode, PROOF_MAX_IMAGES, type MaskRect } from "./proof-image";
-import { listMyProofs, listProofBoard, listProofMissions, ProofRequestError, resubmitProof, submitProof, uploadProofImage, type ProofFailure, type TokenGetter } from "./proof-api";
+import { listMyProofs, listProofBoard, listProofMissions, attemptSurvives, ProofRequestError, resubmitProof, submitProof, uploadProofImage, type ProofAttempt, type ProofFailure, type TokenGetter } from "./proof-api";
 import { proofsText, type ProofsCopyKey } from "./proofs-copy";
 import styles from "./proofs.module.css";
 
@@ -132,6 +132,7 @@ export function ProofsScreen({ locale, slug }: Props) {
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<ProofFailure | null>(null);
   const counter = useRef(0);
+  const attempt = useRef<ProofAttempt | null>(null);
   const urls = useRef<string[]>([]);
   useEffect(() => () => urls.current.forEach((url) => URL.revokeObjectURL(url)), []);
 
@@ -161,17 +162,30 @@ export function ProofsScreen({ locale, slug }: Props) {
     setBusy(true);
     setFailure(null);
     try {
-      const encoded = await Promise.all(picked.map((item) => maskAndEncode(item.file, item.masks)));
-      const uploadIds = [];
-      for (const item of encoded) uploadIds.push(await uploadProofImage(getToken, mission.missionId, item.blob));
-      const uploadId = uploadIds[0];
-      const imagePhash = encoded.map((item) => item.phash);
       const trimmed = note.trim() ? note.trim().slice(0, PROOF_NOTE_MAX) : undefined;
-      if (resubmitting) await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId, uploadIds, imagePhash, note: trimmed, locale });
-      else await submitProof(getToken, { creator: slug, proofType, uploadId, uploadIds, publishConsent: publishable && publish, amountVisible: publishable && publish ? amountVisible : null, imagePhash, note: trimmed, locale });
+      const consent = publishable && publish;
+      const signature = JSON.stringify([mission.missionId, proofType, trimmed ?? null, consent, consent ? amountVisible : null, picked.map((item) => [item.id, item.masks])]);
+      if (resubmitting) {
+        const encoded = await Promise.all(picked.map((item) => maskAndEncode(item.file, item.masks)));
+        const uploadIds = [];
+        for (const item of encoded) uploadIds.push(await uploadProofImage(getToken, mission.missionId, item.blob));
+        await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId: uploadIds[0], uploadIds, imagePhash: encoded.map((item) => item.phash), note: trimmed, locale });
+      } else {
+        // Same pictures and fields as the last try: keep its request key and uploads so a stored-but-unanswered submit is not sent twice.
+        if (attempt.current?.signature !== signature) attempt.current = { signature, requestKey: crypto.randomUUID(), uploadIds: [], imagePhash: null };
+        const current = attempt.current;
+        if (!current.imagePhash) {
+          const encoded = await Promise.all(picked.map((item) => maskAndEncode(item.file, item.masks)));
+          for (const item of encoded.slice(current.uploadIds.length)) current.uploadIds.push(await uploadProofImage(getToken, mission.missionId, item.blob));
+          current.imagePhash = encoded.map((item) => item.phash);
+        }
+        await submitProof(getToken, { creator: slug, proofType, uploadId: current.uploadIds[0], uploadIds: current.uploadIds, publishConsent: consent, amountVisible: consent ? amountVisible : null, imagePhash: current.imagePhash, note: trimmed, locale, requestKey: current.requestKey });
+        attempt.current = null;
+      }
       setPicked([]); setNote(""); setPrivacy(false); setCovered(false); setResubmitting(null);
       history.retry();
     } catch (error) {
+      if (!attemptSurvives(error)) attempt.current = null;
       setFailure(error instanceof ProofRequestError ? error.kind : "generic");
     } finally {
       setBusy(false);
