@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+export LC_ALL=C
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PG_PORT="${BYUS_CLEAN_DB_PORT:-55432}"
@@ -89,7 +90,7 @@ done
 
 initdb -D "$DATA_DIR" --no-locale -E UTF8 >/dev/null
 mkdir -p "$SOCKET_DIR"
-pg_ctl -D "$DATA_DIR" -o "-p $PG_PORT -k $SOCKET_DIR" -l "$WORK_DIR/postgres.log" start >/dev/null || {
+pg_ctl -D "$DATA_DIR" -o "-p $PG_PORT -k $SOCKET_DIR -c listen_addresses=''" -l "$WORK_DIR/postgres.log" start >/dev/null || {
   status=$?
   echo "pg_ctl start failed (port $PG_PORT, exit $status); the temporary server log follows because the cleanup removes it:" >&2
   cat "$WORK_DIR/postgres.log" >&2 || true
