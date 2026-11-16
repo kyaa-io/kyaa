@@ -63,7 +63,14 @@ export function proofRequestHash(fields: Record<string, unknown>) {
 const boardQuerySchema = z.object({
   category: z.literal("proof"),
   limit: z.coerce.number().int().min(1).max(PROOF_BOARD_MAX),
-  before: z.iso.datetime({ offset: true }).nullable(),
+  // Legacy: a bare timestamp. Current: "<createdAt>|<postId>" so posts that share a timestamp are neither skipped nor repeated.
+  before: z.string().nullable().transform((value, ctx) => {
+    if (value === null) return { at: null, id: null };
+    const [at = "", id, ...rest] = value.split("|");
+    const ok = z.iso.datetime({ offset: true }).safeParse(at).success && rest.length === 0 && (id === undefined || UUID.test(id));
+    if (!ok) { ctx.addIssue({ code: "custom", message: "before" }); return z.NEVER; }
+    return { at, id: id ?? null };
+  }),
 });
 
 type Json = Record<string, unknown>;
@@ -149,7 +156,7 @@ export function createProofHandlers(deps: ProofDependencies) {
       if (authorization) {
         try { viewer = (await deps.authorize(authorization)).appUserId; } catch (error) { if (!(error instanceof AuthError)) throw error; }
       }
-      const raw = await deps.rpc("read_proof_board", { p_celebrity: celebrity, p_limit: query.limit, p_before: query.before, p_viewer: viewer });
+      const raw = await deps.rpc("read_proof_board", { p_celebrity: celebrity, p_limit: query.limit, p_before: query.before.at, p_before_id: query.before.id, p_viewer: viewer });
       const rows = Array.isArray(raw) ? raw : [];
       const items = rows.map((row) => {
         const r = obj(row);
@@ -161,7 +168,8 @@ export function createProofHandlers(deps: ProofDependencies) {
           awardedPoints: r.awardedPoints ?? null,
         };
       });
-      const nextBefore = rows.length >= query.limit ? (items[items.length - 1]?.createdAt as string | undefined) ?? null : null;
+      const last = items[items.length - 1];
+      const nextBefore = rows.length >= query.limit && last && typeof last.createdAt === "string" && typeof last.postId === "string" ? `${last.createdAt}|${last.postId}` : null;
       return Response.json(checked(proofBoardSchema, { items, nextBefore }), { headers: authorization ? privateHeaders : { ...publicHeaders, vary: "Authorization" } });
     }),
     // Public counts for the proof tab: no author, image or text. Same for every viewer, so it is cached like the anonymous board.

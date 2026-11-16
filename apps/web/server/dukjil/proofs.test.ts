@@ -152,7 +152,7 @@ describe("public proof board", () => {
     for (const secret of [owner, sub, "authorId", "submissionId", "publishConsent", "imagePhash", "uploadId", "objectPath", "imageObjectPath", "owner-secret", "certification-proofs", "token=", "/storage/"]) expect(text).not.toContain(secret);
     expect(JSON.parse(text)).toEqual({ items: [{ postId: post, body: "인증했어요", createdAt: row.createdAt, proofType: "purchase", amountVisible: true, imageUrl, jjinfanRank: 7, awardedPoints: null }], nextBefore: null });
     expect(res.headers.get("cache-control")).toContain("public");
-    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: null, p_viewer: null });
+    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: null, p_before_id: null, p_viewer: null });
     expect(res.headers.get("vary")).toBe("Authorization");
   });
   it("returns the historical award without substituting today's policy", async () => {
@@ -162,14 +162,32 @@ describe("public proof board", () => {
   it("only asks the database for the consented board and pages with nextBefore", async () => {
     vi.mocked(deps.rpc).mockResolvedValue([row, { ...row, postId: sub, createdAt: "2026-11-05T00:00:00Z" }]);
     const res = await h.board(url("category=proof&limit=2"), creator);
-    expect((await res.json()).nextBefore).toBe("2026-11-05T00:00:00Z");
-    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 2, p_before: null, p_viewer: null });
+    expect((await res.json()).nextBefore).toBe(`2026-11-05T00:00:00Z|${sub}`);
+    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 2, p_before: null, p_before_id: null, p_viewer: null });
+  });
+  it("hands the last post's time and id to the next request as one cursor, keeping microseconds", async () => {
+    const at = "2026-11-05T01:02:03.123456+00:00";
+    vi.mocked(deps.rpc).mockResolvedValue([row, { ...row, postId: sub, createdAt: at }]);
+    const cursor = (await (await h.board(url("category=proof&limit=2"), creator)).json()).nextBefore as string;
+    expect(cursor).toBe(`${at}|${sub}`);
+    vi.mocked(deps.rpc).mockClear(); vi.mocked(deps.rpc).mockResolvedValue([]);
+    const res = await h.board(url(`category=proof&limit=2&before=${encodeURIComponent(cursor)}`), creator);
+    expect(res.status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 2, p_before: at, p_before_id: sub, p_viewer: null });
+  });
+  it("still accepts a legacy time-only cursor and rejects a malformed one", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue([]);
+    expect((await h.board(url("category=proof&before=2026-11-05T00:00:00Z"), creator)).status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: "2026-11-05T00:00:00Z", p_before_id: null, p_viewer: null });
+    vi.mocked(deps.rpc).mockClear();
+    for (const bad of ["2026-11-05T00:00:00Z|nope", "nope|" + sub, `2026-11-05T00:00:00Z|${sub}|x`]) expect((await h.board(url(`category=proof&before=${encodeURIComponent(bad)}`), creator)).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
   });
   it("passes the verified session user as the viewer and answers privately", async () => {
     vi.mocked(deps.rpc).mockResolvedValue([row]);
     const res = await h.board(new Request("https://fixture.test/api/pages/kyaa-wave/posts?category=proof", { headers: { authorization: "Bearer x" } }), "kyaa-wave");
     expect(res.status).toBe(200);
-    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: null, p_viewer: owner });
+    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: null, p_before_id: null, p_viewer: owner });
     expect(res.headers.get("cache-control")).toBe("private, no-store");
     expect(await res.text()).not.toContain("authorId");
   });
@@ -178,7 +196,7 @@ describe("public proof board", () => {
     vi.mocked(deps.rpc).mockResolvedValue([row]);
     const res = await h.board(new Request(`https://fixture.test/api/pages/kyaa-wave/posts?category=proof&viewer=${sub}`, { headers: { authorization: "Bearer bad" } }), "kyaa-wave");
     expect(res.status).toBe(200);
-    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: null, p_viewer: null });
+    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board", { p_celebrity: creator, p_limit: 20, p_before: null, p_before_id: null, p_viewer: null });
   });
   it("rejects other categories and a limit over 50", async () => {
     expect((await h.board(url("category=general"), "kyaa-wave")).status).toBe(400);
