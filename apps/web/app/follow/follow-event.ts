@@ -10,7 +10,9 @@ export type FollowEventCopy = {
  xTitle: string;
  /** 03: kyaa 로그인 + 좋아요(서버 기록으로 확인) */
  likeTitle: string;
- login: string; like: string; count: string; stamped: string; done: string; post: string; postText: string;
+ login: string; like: string; count: string;
+ /** 좋아요 뒤 03 카드: 작은 머리말 · 큰 완료 문구 · 체크 읽기 이름 */
+ stampedLead: string; done: string; likeDone: string; post: string; postText: string;
  error: string; retry: string; saveError: string;
 };
 
@@ -25,8 +27,8 @@ export const followEvent: FollowEventConfig = {
  slug: followEventSlug, path: followEventPath, attributionKey: followEventSlug,
  gleam: { href: 'https://gleam.io/yAet3/kyaa-x-opening-event', title: 'KYAA × X Opening Event' },
  copy: {
-  ko: { title: 'X 오픈 이벤트', subtitle: 'X Opening Event', how: '참여 방법', once: '1인 1회', event: 'KYAA × X 오픈 이벤트', xTitle: 'X에서 팔로우·리포스트', likeTitle: '로그인하고 좋아요', login: '로그인', like: '좋아요', count: '좋아요', stamped: '도장 쾅! 이벤트 참여 완료', done: '좋아요 완료', post: 'X에 올리기', postText: 'KYAA × X 오픈 이벤트 참여 완료', error: '이벤트를 불러오지 못했어요. 다시 시도해 주세요.', retry: '다시 시도', saveError: '좋아요를 저장하지 못했어요. 다시 시도해 주세요.' },
-  en: { title: 'X Opening Event', subtitle: 'X 오픈 이벤트', how: 'How to join', once: 'Once per account', event: 'KYAA × X Opening Event', xTitle: 'Follow and repost on X', likeTitle: 'Sign in and tap Like', login: 'Sign in', like: 'Like', count: 'Likes', stamped: 'Stamped! You’re in the event', done: 'Like done', post: 'Post on X', postText: 'I joined the KYAA × X Opening Event', error: 'Couldn’t load the event. Please try again.', retry: 'Try again', saveError: 'Couldn’t save your like. Please try again.' },
+  ko: { title: 'X 오픈 이벤트', subtitle: 'X Opening Event', how: '참여 방법', once: '1인 1회', event: 'KYAA × X 오픈 이벤트', xTitle: 'X에서 팔로우·리포스트', likeTitle: '로그인하고 좋아요', login: '로그인', like: '좋아요', count: '좋아요', stampedLead: '도장 쾅!', done: '참여 완료', likeDone: '좋아요 완료', post: 'X에 올리기', postText: 'KYAA × X 오픈 이벤트 참여 완료', error: '이벤트를 불러오지 못했어요. 다시 시도해 주세요.', retry: '다시 시도', saveError: '좋아요를 저장하지 못했어요. 다시 시도해 주세요.' },
+  en: { title: 'X Opening Event', subtitle: 'X 오픈 이벤트', how: 'How to join', once: 'Once per account', event: 'KYAA × X Opening Event', xTitle: 'Follow and repost on X', likeTitle: 'Sign in and tap Like', login: 'Sign in', like: 'Like', count: 'Likes', stampedLead: 'Stamped!', done: 'You’re in', likeDone: 'Like done', post: 'Post on X', postText: 'I joined the KYAA × X Opening Event', error: 'Couldn’t load the event. Please try again.', retry: 'Try again', saveError: 'Couldn’t save your like. Please try again.' },
  },
 };
 

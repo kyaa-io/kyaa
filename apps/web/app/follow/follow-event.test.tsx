@@ -23,7 +23,9 @@ it('records the opening event like on its own event page and stamps the like car
  expect(screen.getByText('X에서 팔로우·리포스트')).toBeTruthy();
  const button = screen.getByRole('button', { name: '좋아요' });
  await waitFor(() => expect(button).not.toBeDisabled()); fireEvent.click(button);
- await screen.findByRole('heading', { name: '도장 쾅! 이벤트 참여 완료' });
+ await screen.findByRole('heading', { name: '참여 완료' });
+ expect(screen.getByText('03 · 도장 쾅!')).toBeTruthy();
+ expect(screen.getByRole('img', { name: '좋아요 완료' })).toBeTruthy();
  const urls = vi.mocked(fetch).mock.calls.map(([url]) => String(url)).filter(url => url.startsWith('/api/celebrities/'));
  expect(urls.every(url => url.startsWith(`/api/celebrities/${followEventSlug}/`))).toBe(true);
  expect(container.querySelector('[data-mission="like"]')!.hasAttribute('data-done')).toBe(true);
@@ -64,7 +66,7 @@ it('hides a zero like count, shows a real one before the like, then swaps it for
  render(<FollowMission locale="en" event={followEvent} />);
  expect(await screen.findByText('Likes · 2')).toBeTruthy();
  fireEvent.click(screen.getByRole('button', { name: 'Like' }));
- await screen.findByRole('heading', { name: 'Stamped! You’re in the event' });
+ await screen.findByRole('heading', { name: 'You’re in' });
  expect(screen.queryByText(/Likes ·/)).toBeNull();
  expect(screen.getByRole('img', { name: 'Like done' })).toBeTruthy();
 });

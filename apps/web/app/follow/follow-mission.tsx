@@ -61,18 +61,23 @@ function FollowMissionForOwner({ locale, auth, event }: { locale: 'ko' | 'en'; a
        <GleamWidget href={event.gleam.href} title={event.gleam.title} />
       </li>
       <li className={styles.card} data-row="mission-card" data-mission="like" data-done={m.completed ? '' : undefined} data-celebrate={m.celebrate ? '' : undefined}>
-       <div className={styles.cardHead}>
-        {m.completed
-         ? <img className={`${styles.art} ${styles.stamp}`} src={stampArt} alt="" width={512} height={512} decoding="async" />
-         : <span className={`${styles.art} ${styles.star}`} aria-hidden="true"><Star size={28} strokeWidth={1.5} /></span>}
-        <span className={styles.cardTitle}>
-         <FanDisplay role="caption" className={styles.no}>03</FanDisplay>
-         {m.completed
-          ? <><FanHeading as="h3"><FanDisplay role="strong" className={styles.stamped}>{t.stamped}</FanDisplay></FanHeading><span className={styles.facts} data-block="follow-stamp">{m.nickname ? <FanDisplay role="caption" dir="auto">{m.nickname}</FanDisplay> : null}<FanDisplay role="caption">{m.stampDate}</FanDisplay></span></>
-          : <><FanDisplay role="strong">{t.likeTitle}</FanDisplay>{m.count ? <FanDisplay role="caption" className={xs.muted}>{t.count} · {new Intl.NumberFormat(locale).format(m.count)}</FanDisplay> : null}</>}
-        </span>
-        {m.completed ? <span className={styles.check} role="img" aria-label={t.done}><Check size={20} strokeWidth={1.5} /></span> : <span className={styles.todo} aria-hidden="true" />}
-       </div>
+       {m.completed
+        ? <div className={styles.done} data-block="follow-stamp">
+          <span className={styles.seal}>
+           <img className={styles.stamp} src={stampArt} alt="" width={512} height={512} decoding="async" />
+           <span className={styles.check} role="img" aria-label={t.likeDone}><Check size={24} strokeWidth={1.5} /></span>
+          </span>
+          <span className={styles.doneText}>
+           <FanDisplay role="caption" className={styles.no}>03 · {t.stampedLead}</FanDisplay>
+           <FanHeading as="h3"><FanDisplay role="title">{t.done}</FanDisplay></FanHeading>
+           <span className={styles.facts}>{m.nickname ? <FanDisplay role="caption" dir="auto">{m.nickname}</FanDisplay> : null}<FanDisplay role="caption">{m.stampDate}</FanDisplay></span>
+          </span>
+         </div>
+        : <div className={styles.cardHead}>
+          <span className={`${styles.art} ${styles.star}`} aria-hidden="true"><Star size={28} strokeWidth={1.5} /></span>
+          <span className={styles.cardTitle}><FanDisplay role="caption" className={styles.no}>03</FanDisplay><FanDisplay role="strong">{t.likeTitle}</FanDisplay>{m.count ? <FanDisplay role="caption" className={xs.muted}>{t.count} · {new Intl.NumberFormat(locale).format(m.count)}</FanDisplay> : null}</span>
+          <span className={styles.todo} aria-hidden="true" />
+         </div>}
        {m.error && <FanText as="p" role="body" aria-live="assertive">{m.error === 'load' ? t.error : t.saveError}</FanText>}
        <div className={styles.cta} data-outbound-kind="social" data-outbound-placement="content">{action}</div>
       </li>
