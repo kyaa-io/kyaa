@@ -52,3 +52,32 @@ test('neutral receipts without a valid summary replacement stay uncertain',()=>{
 test('workflow exposes only summary recovery under main/prod shared lock',async()=>{const{readFileSync}=await import('node:fs');const{load}=await import('js-yaml');const w=load(readFileSync('.github/workflows/deployment-notices.yml','utf8')),j=w.jobs['summary-recovery'];assert.equal(w.jobs['partial-recovery'],undefined);assert.ok(!w.on.workflow_dispatch.inputs.operation.options.includes('resume-partial'));assert.match(j.if,/refs\/heads\/main/);assert.match(j.if,/inputs.environment == 'prod'/);assert.equal(j.concurrency.group,'telegram-production-notices');assert.equal(j.permissions.actions,'read');assert.equal(j.steps.at(-1).env.NOTICE_PLAN_HASH,'${{ inputs.plan_hash }}');});
 test('direct summary sender sends exact text to fixed room and never retries network uncertainty',async()=>{const {sendSummaryTelegram}=await import('./send-deployment-summary.mjs');let count=0;const text=summaryText(summaryManifest);const result=await sendSummaryTelegram({text},'123:unit_test',async(url,init)=>{count++;assert.equal(init.redirect,'error');assert.deepEqual(JSON.parse(init.body),{chat_id:-5187701508,text,link_preview_options:{is_disabled:true}});return Response.json({ok:true,result:{chat:{id:-5187701508},message_id:123,text}});});assert.equal(result.messageId,123);assert.equal(count,1);count=0;await assert.rejects(sendSummaryTelegram({text},'123:unit_test',async()=>{count++;throw new Error('network');}),/UNCERTAIN/);assert.equal(count,1);await assert.rejects(sendSummaryTelegram({text},'',async()=>{throw new Error('must not send');}),/SECRET_REQUIRED/);});
 test('only explicit Telegram rejection is retryable; ambiguous replies and wrong room remain blocked',async()=>{const {sendSummaryTelegram}=await import('./send-deployment-summary.mjs');for(const [status,body,retry] of [[429,{ok:false,error_code:429},true],[500,{ok:false,error_code:500},false],[200,{ok:true,result:{chat:{id:1},message_id:123,text:'test'}},false]]){await assert.rejects(sendSummaryTelegram({text:'test'},'123:unit_test',async()=>Response.json(body,{status})),error=>Boolean(error.definitelyNotSent)===retry);}});
+test('1116 pinned manifest and plan use only fake GitHub reads',async()=>{
+ const {loadSummaryManifest,main}=await import('./send-deployment-summary.mjs');
+ const {readFileSync}=await import('node:fs');
+ const manifest=loadSummaryManifest('deployment-notice-summary-1116.json');
+ assert.throws(()=>loadSummaryManifest('../deployment-notice-summary-1116.json'),/UNKNOWN/);
+ assert.equal(manifest.originalBatchHashes.length,22);
+ assert.equal(manifest.notes.length,183);
+ assert.equal(summaryText(manifest).split('\n').length,10);
+ assert.match(summaryText(manifest),/외 175건/);
+ const source=JSON.parse(readFileSync(new URL('./fixtures/deployment-notice-summary-1116-source.json',import.meta.url)));
+ validateSource(source,manifest);
+ assert.throws(()=>validateSource({...source,head_sha:manifest.baseSha},manifest),/INVALID_SOURCE/);
+ const saved={...process.env},logs=[],log=console.log;
+ try{
+  process.env.NOTICE_SUMMARY_MANIFEST='deployment-notice-summary-1116.json';
+  process.env.NOTICE_DEPLOYMENT_ID=String(manifest.targetDeploymentId);
+  process.env.NOTICE_OPERATION='plan-summary';
+  console.log=value=>logs.push(JSON.parse(value));
+  await main({github:async(path,init)=>{
+   assert.equal(init,undefined);
+   if(path===`/check-runs/${source.id}`)return source;
+   if(path===`/deployments/${manifest.targetDeploymentId}`)return {id:manifest.targetDeploymentId,sha:manifest.headSha};
+   if(path===`/deployments/${manifest.targetDeploymentId}/statuses?per_page=100`)return [{}];
+   throw Error('Unexpected fake GitHub read: '+path);
+  },verifyDeployment:async()=>{},verifySources:()=>{}});
+  assert.equal(logs.length,1);assert.equal(logs[0].planHash,hash(manifest));
+  log('1116 local fake plan hash: '+logs[0].planHash);
+ }finally{console.log=log;for(const key of Object.keys(process.env))if(!(key in saved))delete process.env[key];Object.assign(process.env,saved);}
+});

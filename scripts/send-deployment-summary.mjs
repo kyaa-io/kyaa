@@ -4,11 +4,21 @@ import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { CHECK_NAME, createGithubClient, verifyAwsNotice } from './deployment-notices.mjs';
 export const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-export const summaryManifest = JSON.parse(readFileSync(new URL('./deployment-notice-summary-1113.json', import.meta.url)));
+const manifestHashes = {
+  "deployment-notice-summary-1113.json": "25831c5f084a72adf8e5741b022b9645b02fc71671ea59cd0fc4b43e36eb5013",
+  "deployment-notice-summary-1116.json": "39738ff43f4925d87b20d0a1a5726fa1ff9cff78a06d2aaf7736f76af7470eec"
+};
+export function loadSummaryManifest(name = 'deployment-notice-summary-1113.json') {
+ if(!Object.hasOwn(manifestHashes,name))throw new Error('UNKNOWN_SUMMARY_MANIFEST');
+ const manifest=JSON.parse(readFileSync(new URL('./'+name,import.meta.url)));
+ if(hash(manifest)!==manifestHashes[name])throw new Error('SUMMARY_MANIFEST_CHANGED');
+ return manifest;
+}
+export const summaryManifest = loadSummaryManifest();
 export function summaryText(manifest) {
  const paths=manifest.highlights.map(h=>h.path);
  if(new Set(paths).size!==paths.length||paths.some(p=>!manifest.notes.some(n=>n.path===p)))throw new Error('INVALID_SUMMARY_SOURCES');
- const text=['[운영] 11/11~11/13 변경 안내',...manifest.highlights.map(h=>'• '+h.text),`외 ${manifest.notes.length-paths.length}건의 변경도 반영됐어요. (변경 안내 파일 기준)`].join('\n');
+ const text=[manifest.sourceReceiptId===132654457213?'[운영] 11/13~11/16 변경 안내':'[운영] 11/11~11/13 변경 안내',...manifest.highlights.map(h=>'• '+h.text),`외 ${manifest.notes.length-paths.length}건의 변경도 반영됐어요. (변경 안내 파일 기준)`].join('\n');
  if(text.split('\n').length>10||text.length>3900)throw new Error('SUMMARY_TOO_LONG');
  return text;
 }
@@ -20,8 +30,9 @@ export function verifySummarySources(manifest, repository = process.cwd()) {
  for(const n of manifest.notes){if(createHash('sha256').update(git('show',`${manifest.headSha}:${n.path}`)).digest('hex')!==n.sha256)throw new Error('SUMMARY_NOTE_CHANGED');}
 }
 export function validateSource(source, manifest) {
- if(source.id!==manifest.sourceReceiptId||source.name!==CHECK_NAME||source.app?.slug!=='github-actions'||source.external_id!==String(manifest.sourceDeploymentId)||source.head_sha!==manifest.baseSha)throw new Error('INVALID_SOURCE_RECEIPT');
+ if(source.id!==manifest.sourceReceiptId||source.name!==CHECK_NAME||source.app?.slug!=='github-actions'||source.external_id!==String(manifest.sourceDeploymentId)||source.head_sha!==(manifest.sourceReceiptId===132654457213?'3c389145e632858ce6037007e163fa1dda81bd98':manifest.baseSha))throw new Error('INVALID_SOURCE_RECEIPT');
  const prior=JSON.parse(source.output.summary);
+ if(manifest.sourceReceiptId===132654457213&&prior.base!==manifest.baseSha)throw new Error('SOURCE_BASE_CHANGED');
  if(source.status==='completed'&&source.conclusion==='neutral'&&prior.replacedBySummary?.planHash===hash(manifest))return prior;
  if(source.status!=='completed'||source.conclusion!=='action_required'||hash(source.output.summary)!==manifest.sourceReceiptHash)throw new Error('SOURCE_RECEIPT_CHANGED');
  if(prior.delivered.length!==manifest.confirmedBatches||prior.batchCount!==manifest.originalBatchHashes.length||prior.batchCount-prior.delivered.length!==manifest.suppressedBatches)throw new Error('PARTIAL_COUNTS_CHANGED');
@@ -81,19 +92,18 @@ export async function sendSummaryTelegram(body, token, fetcher=fetch) {
  if(result.result?.chat?.id!==-5187701508||result.result.text!==body.text||!Number.isSafeInteger(result.result.message_id)||result.result.message_id<=0)throw new Error('SUMMARY_DELIVERY_UNCERTAIN');
  return {chatId:-5187701508,messageId:result.result.message_id};
 }
-async function main(){
- const manifest=summaryManifest;
+export async function main({github=createGithubClient({token:process.env.GITHUB_TOKEN}),verifyDeployment=verifyAwsNotice,verifySources=verifySummarySources}={}){
+ const manifest=loadSummaryManifest(process.env.NOTICE_SUMMARY_MANIFEST);
  if(Number(process.env.NOTICE_DEPLOYMENT_ID)!==manifest.targetDeploymentId)throw new Error('SUMMARY_TARGET_MISMATCH');
- verifySummarySources(manifest);
- const github=createGithubClient({token:process.env.GITHUB_TOKEN});
+ verifySources(manifest);
  const target=await github(`/deployments/${manifest.targetDeploymentId}`),[status]=await github(`/deployments/${manifest.targetDeploymentId}/statuses?per_page=100`);
  if(target.sha!==manifest.headSha)throw new Error('SUMMARY_TARGET_MISMATCH');
- await verifyAwsNotice(target,status,github);
+ await verifyDeployment(target,status,github);
  validateSource(await github(`/check-runs/${manifest.sourceReceiptId}`),manifest);
  console.log(JSON.stringify({planHash:hash(manifest),text:summaryText(manifest),suppressedBatches:manifest.suppressedBatches}));
  if(process.env.NOTICE_OPERATION==='plan-summary')return;
  if(process.env.NOTICE_OPERATION!=='send-summary')throw new Error('INVALID_OPERATION');
  if(!/^[0-9]+:[A-Za-z0-9_-]+$/.test(process.env.TELEGRAM_BUG_REPORT_BOT_TOKEN??''))throw new Error('SUMMARY_BOT_SECRET_REQUIRED');
- console.log(JSON.stringify(await sendSummary({github,target,expectedHash:process.env.NOTICE_PLAN_HASH,send:body=>sendSummaryTelegram(body,process.env.TELEGRAM_BUG_REPORT_BOT_TOKEN)})));
+ console.log(JSON.stringify(await sendSummary({github,target,manifest,expectedHash:process.env.NOTICE_PLAN_HASH,send:body=>sendSummaryTelegram(body,process.env.TELEGRAM_BUG_REPORT_BOT_TOKEN)})));
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main().catch(e=>{console.error(e.message);process.exitCode=1;});

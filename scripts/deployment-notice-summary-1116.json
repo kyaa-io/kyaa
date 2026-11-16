@@ -1,0 +1,803 @@
+{
+  "sourceReceiptId": 132654457213,
+  "sourceDeploymentId": 7796630685,
+  "targetDeploymentId": 7814872136,
+  "baseSha": "57c922b24a2d74028a038b28466560fd667be108",
+  "headSha": "f37b0ac12239e33e2bf90b082a2f3a42a48e77e4",
+  "sourceReceiptHash": "615c491c1f481313db589e078ef26b372bd956fbefc3d2195c79b0e59d4efb2d",
+  "originalBatchHashes": [
+    "a0c16ca4114af954d63df2b5655554f1ce3af3f754911acc11ceb82ebb336c57",
+    "a984caa02512bbe29cb0e141b893ca8fbcfa7fc5a0f30fcd6de04fbb967bdb37",
+    "7a558463000102a1250ba7e68c7b88664488b68775d2290f7cc16c25e6511333",
+    "a83b6677f7df42913a44748cd11ed1587c5fd4689178a72feeb2f89de73b1524",
+    "14bc061ed27264ddf6e4c4b0f637ae6891bb65120088d6cf1eaf7bcf725ca987",
+    "46194deea14ecbf26cd98df58dd836e140d461ad9a7f10dab6187c5375cd0f7d",
+    "ec1d9c19ca873248c761ed8ac58de4956c7d647d3fe0051cadb9616d67419451",
+    "95111ac5c63d487553b26109328d1d91b096766cb40c7541c2d1665db8be18f5",
+    "3d67377ba9a14371e4161fb1501a6916bdcbf22535896c3f13642498385d2e03",
+    "613769a07fb1939c97e0db00b30fbaa9b3e03ae61153cc763ac2b0894829edac",
+    "81e6fdd507d540ef1e0aaa3aea85d8c0887c89df7988c88ba921d9845d695182",
+    "817f53d018945a7f1c7475d07beefdc33e0303699b2d6bb89419761269b7d61f",
+    "1462d0269ff2147d0871eb4344798b5a5894a864da8988bbca6375fcb09839d3",
+    "6f3d7d77f296053c61d2effa177f02805250b839ebf9d4d7945c5df34b8c74fe",
+    "2e2b60d882908dbeff4211f19b1d49b371e5c843cc2c0fd0d83570a903084cf0",
+    "c063e29d8e5305587ed58a6d22b9bb50e90bc060b7828f4a943db59ac875246f",
+    "540a0379356e66eee5330a582e91b8d6cb9022aae57b1394c9852cc5ab9bfae2",
+    "eeeab0744df2099d910e8f1896ab623bdd7c3ad1467aa7ab6fb3590490e6d8a9",
+    "a9a1247a20f2a6010e18be1703607749edbed08c97b35d4e4e960032d61ce7e3",
+    "08cb852d92758e1200a10eb62fc8f5c8a3e209884c8fc9d9160cd6b8c9277b39",
+    "1f0679236e83d71ebe22b7779d90995a8fbaa73470c4a652a1de089adbba09da",
+    "10cbae0b09020fdf81acba62712205f9c06799294d9475cbe2314af97eb2c7c6"
+  ],
+  "confirmedBatches": 12,
+  "suppressedBatches": 10,
+  "decision": "확정 12묶음 보존, 남은 10묶음 재전송 없이 요약 1건 대체 준비. 사용자 승인 후 감독 실행.",
+  "notes": [
+    {
+      "path": "release-notes/2026-11-11-deploy-cache-nonblocking.json",
+      "sha256": "d1d0e0e36447486795d346d8c9e55194b8f41f018ce3018ad45928c7732ce263"
+    },
+    {
+      "path": "release-notes/2026-11-11-dev-notice-offpath.json",
+      "sha256": "c834131806d852a81938a62914b60edd44b47e7d9743f614499efadbb3beaddf"
+    },
+    {
+      "path": "release-notes/2026-11-11-dukjil-stamp-compact.json",
+      "sha256": "9150585dcfc73834b201d5fd13d45dc183d05d5a3d7073fc5d320f08c8c34a54"
+    },
+    {
+      "path": "release-notes/2026-11-11-heart-donation-banner.json",
+      "sha256": "5d8b57026d16c3780c6be51bf83875d71717ae6aef3eda983fa364b69345e1c1"
+    },
+    {
+      "path": "release-notes/2026-11-11-rank-detail-align.json",
+      "sha256": "117ce933d747642a084324094f7054cbc4bd3ee952c5685ecdda2c9f1ddc142e"
+    },
+    {
+      "path": "release-notes/2026-11-11-translation-cache.json",
+      "sha256": "f77094e69a1108e1539b3a015e2570f70369cf4726c8604924bf5ce613464f98"
+    },
+    {
+      "path": "release-notes/2026-11-11-wallet-ad-lock-expiry.json",
+      "sha256": "6d74907c726d83e48f0083859370e12b584c8bc7212ab330138f28c3d2a270b9"
+    },
+    {
+      "path": "release-notes/2026-11-12-blocked-users-hot-period.json",
+      "sha256": "a378af3857406413c1455390770930eb13fd75d485237c86ba70273ba8bdfc2a"
+    },
+    {
+      "path": "release-notes/2026-11-12-board-notice-pin-all.json",
+      "sha256": "c41ec18963c018b861fa7cb630dd953a863ea5fb015df9002e2b9db28c306ecf"
+    },
+    {
+      "path": "release-notes/2026-11-12-cognito-callback-diagnostics.json",
+      "sha256": "e0dbd0dd2a515d9cd23f65bd9013fd552dc768bc141ad9eac3bbd50a44975a11"
+    },
+    {
+      "path": "release-notes/2026-11-12-cognito-local-logout.json",
+      "sha256": "a09fc03a31f688c43bd495ea26e50844d5a6bab20d628aaea741e1fd6e86e742"
+    },
+    {
+      "path": "release-notes/2026-11-12-cognito-refresh-retry.json",
+      "sha256": "d829a8f43df746f362a1c19f69aa497abb0b0aa9722199265f3b46cf0a5d1ccf"
+    },
+    {
+      "path": "release-notes/2026-11-12-cognito-revocation-maintenance.json",
+      "sha256": "0b5310c21d12fc66be0a579939cbc0e551d6bbc7c11095a21cd30a9177a290e3"
+    },
+    {
+      "path": "release-notes/2026-11-12-cognito-session-storage-permission.json",
+      "sha256": "1f0a6f40245400ca0e7db0ec197e9e4d6a74ca8f5f4b659d8f0e97a6c600daa2"
+    },
+    {
+      "path": "release-notes/2026-11-12-community-redirect.json",
+      "sha256": "5309e659933a15f8e284082fa555091ac008c4f39d0882baaa6d8ae34cea041c"
+    },
+    {
+      "path": "release-notes/2026-11-12-email-login.json",
+      "sha256": "298482bfcb7dbc60d449b9012bedeff163e5827257e2168e640132ec5ed83f3a"
+    },
+    {
+      "path": "release-notes/2026-11-12-email-refresh-concurrency.json",
+      "sha256": "374aa9e2d296f1c5b6d2c03acf4ea72bd745f8e01d601f87cddb898afa74558a"
+    },
+    {
+      "path": "release-notes/2026-11-12-email-refresh-profile-retry.json",
+      "sha256": "2b625cf0c98c14efd2928ec65c5b88d31b0767ca186861a7da1fb30c9d9f408f"
+    },
+    {
+      "path": "release-notes/2026-11-12-fan-profile-numbers.json",
+      "sha256": "77fdf609936503721c5c6fdd49d50e588fd1da1f363f8a4014480684ca9707ce"
+    },
+    {
+      "path": "release-notes/2026-11-12-fewer-background-requests.json",
+      "sha256": "dff07ff3062b8fc7d7e952d174a790d215438d0a8d087a03ff9f8dfa1f6beab4"
+    },
+    {
+      "path": "release-notes/2026-11-12-gallery-shorts-scroll.json",
+      "sha256": "6793a68d1095682f658c7f3c24fbad4a1f9a50281117565514b0b9e0b70ffeb4"
+    },
+    {
+      "path": "release-notes/2026-11-12-header-menu-signout.json",
+      "sha256": "c8c40315ef687a43ce4722b11f5c07f40526cb4bc979355c9069177b840770fe"
+    },
+    {
+      "path": "release-notes/2026-11-12-jjinfan-banner.json",
+      "sha256": "f176757ee67e181c6cbf838387024987370ff02bc4155aff48b2f3df802c4fc2"
+    },
+    {
+      "path": "release-notes/2026-11-12-lucky-draw-hierarchy.json",
+      "sha256": "2fd5f03580518d78d2404d9766c1c476d3f8c0dff092082ede3705f1e57abeb9"
+    },
+    {
+      "path": "release-notes/2026-11-12-media-no-flash-notice-points.json",
+      "sha256": "34e278f57314364c6878b341dad2953552cd83908ff3c8100e63b988c1104ff6"
+    },
+    {
+      "path": "release-notes/2026-11-12-no-helper-copy.json",
+      "sha256": "9bbde051eab54deb22c2744f630c4a61b845adecfb0f285ebe880f5b900d448f"
+    },
+    {
+      "path": "release-notes/2026-11-12-no-pick-placeholder.json",
+      "sha256": "20efe159137b5cb311156728cec0ec8f40c4954fc2f388f816d2aaf3a3732230"
+    },
+    {
+      "path": "release-notes/2026-11-12-privy-exit-cognito-login.json",
+      "sha256": "f6ab4986e7eeff5d460c9c189e1d61827b0738cab4199fadc9bc40a2a673e690"
+    },
+    {
+      "path": "release-notes/2026-11-12-privy-offpath.json",
+      "sha256": "906cab4f6fa68995f49de1aa56bbf9a280275382430c97ab1c7d279467e79125"
+    },
+    {
+      "path": "release-notes/2026-11-12-rank-change-hold.json",
+      "sha256": "86dfb05d9d67ffe8faa860e440cbd89bf85a324430252876a7451ccd6729f32f"
+    },
+    {
+      "path": "release-notes/2026-11-12-rank-motion-longer.json",
+      "sha256": "bf2bc96c4c9c6663df86a4c5fc1522959638b33ee5fc23db48f403a1a7f50585"
+    },
+    {
+      "path": "release-notes/2026-11-12-rank-row-totals.json",
+      "sha256": "db97192165b92cdd3e4e226afc5d3e2cadce377352f95e16396a681e0742121f"
+    },
+    {
+      "path": "release-notes/2026-11-12-report-board.json",
+      "sha256": "4c3db7dfd9312c151f5368724eef7fdcf183ef7580b76fa34b1937a6349b2cc0"
+    },
+    {
+      "path": "release-notes/2026-11-12-report1112-b2.json",
+      "sha256": "0ba9d20e112844cdaeebf4e17694986e8b46a2de85757436ca96407d17a38a79"
+    },
+    {
+      "path": "release-notes/2026-11-12-report1112-b6.json",
+      "sha256": "32534b14561c6e9c62926db4462dc3c4052c3dd8139fb86182f8d3ce3467a7e1"
+    },
+    {
+      "path": "release-notes/2026-11-12-report1112-b8.json",
+      "sha256": "3d264ab64021407a09f562de0b92f308a245a72fd5dc5633b12e59d02d65c379"
+    },
+    {
+      "path": "release-notes/2026-11-12-root-script-dependencies.json",
+      "sha256": "cfe0db76ebc904ab0a27c389a0a89d9eef09d354749b6f4abba5225463512f0a"
+    },
+    {
+      "path": "release-notes/2026-11-12-select-menu-component.json",
+      "sha256": "2a34a2b9391c624ede769dc3df4761e07483736ddf345e2beac962e613d89298"
+    },
+    {
+      "path": "release-notes/2026-11-12-short-comment-points.json",
+      "sha256": "78ace9277e1cbb5a22233b8497e6b99c905d612847ef630592ab88f69643d401"
+    },
+    {
+      "path": "release-notes/2026-11-12-shorts-viewer-sound.json",
+      "sha256": "f1f687bdf7e398000f954c7bf0dd432d34061d66f76faf2ee1b1de72faaf7932"
+    },
+    {
+      "path": "release-notes/2026-11-12-tier-guide.json",
+      "sha256": "8ba1d17135dffdef0f0f9276b07c35c63e71c15d36653e69471d34f82ad6a67d"
+    },
+    {
+      "path": "release-notes/2026-11-12-train3-contract-fix.json",
+      "sha256": "20669129b9e2767738f7d9f93e88f9fd4e7a1ac6876aecb54da89ac60ae99415"
+    },
+    {
+      "path": "release-notes/2026-11-12-translation-toggle-media.json",
+      "sha256": "da3f97f03faa8eaf56b4a7802a94cc1d7b00da517065a6cfe6ac0684271b0ed4"
+    },
+    {
+      "path": "release-notes/2026-11-12-translation-toggle-top.json",
+      "sha256": "23219bd2631f216a9fed2fa9dd93e59bfe7afbe23dd7ddff3cd854f72a06209a"
+    },
+    {
+      "path": "release-notes/2026-11-12-visitor-timezone.json",
+      "sha256": "a50b5fa80eef901102ebaedb0371f4012343597de6c2e2dae98d841d27378996"
+    },
+    {
+      "path": "release-notes/2026-11-13-artist-new-post-notify.json",
+      "sha256": "bd4eae34acd657d89659c7ef2850b5641db6d980f73b72c8aaecf600a19e3ef1"
+    },
+    {
+      "path": "release-notes/2026-11-13-benefits-login-gate.json",
+      "sha256": "d7fa4e0aa21e030e6079ef1880958cb3473c748bab1b8154e7012b5a844f0dbb"
+    },
+    {
+      "path": "release-notes/2026-11-13-benefits-sections.json",
+      "sha256": "3502d01396cd5333495755dd1a8abe722a07f9dc367e9c83da0797809bc23429"
+    },
+    {
+      "path": "release-notes/2026-11-13-board-artist-reaction.json",
+      "sha256": "08b1128899d12ed71ff2d273cb7a78f46e5141c736040da302dc3aa83f55d2d2"
+    },
+    {
+      "path": "release-notes/2026-11-13-browse-pm-polish.json",
+      "sha256": "d5600cd1729a790adc915f347060d2d9eaed47007aa83c25ad7cd13bc6292484"
+    },
+    {
+      "path": "release-notes/2026-11-13-browse-sort.json",
+      "sha256": "22ef12dab323729c0f1469065b6856c0a5a4f918197bed72ef2cdd2ceb8484e7"
+    },
+    {
+      "path": "release-notes/2026-11-13-bug-recheck-fanpage-home.json",
+      "sha256": "82537c1c9a179f8e5f1d3decf9abc0d98637827cccdcb32064ac8e85127de9a8"
+    },
+    {
+      "path": "release-notes/2026-11-13-ceo-0435.json",
+      "sha256": "8aaab24a12503d9bdc5f2ddcabaad267760542194bdb216e32ee8a8cc1b6cef5"
+    },
+    {
+      "path": "release-notes/2026-11-13-ceo-1717-post-badge-fan-count.json",
+      "sha256": "269676b073d71387c7edb3d9b0e75008b931a018961751c4ee38ae17e36ccab5"
+    },
+    {
+      "path": "release-notes/2026-11-13-changha-autumn.json",
+      "sha256": "9f050ae7e3c027cb1002ef325bd37f6693e422321052bffdb9528927641aaf37"
+    },
+    {
+      "path": "release-notes/2026-11-13-changha-sharp.json",
+      "sha256": "425f075491017ac0c1901a25320689affee00e3976e1eb73cec6fc3132fed24d"
+    },
+    {
+      "path": "release-notes/2026-11-13-deploy-flow-candidate.json",
+      "sha256": "48fd6c78828f80f9651a5ff822b2b92edd6317eb6c6cb286fe7dd39cfbce34de"
+    },
+    {
+      "path": "release-notes/2026-11-13-deploy-flow-recovery.json",
+      "sha256": "7682ef192b01501c47c7620dd1082d4ca7411e7138588cb9947fe2d3d09b840d"
+    },
+    {
+      "path": "release-notes/2026-11-13-deploy-flow-success-only.json",
+      "sha256": "ab2b6a3e5c504f8243b9084a50d40601082df63cb05d11ca19fff41409db00d4"
+    },
+    {
+      "path": "release-notes/2026-11-13-deploy-flow.json",
+      "sha256": "8662239867cd66051c315de0812ad142fed47672744e3e04bd5553ca82b906eb"
+    },
+    {
+      "path": "release-notes/2026-11-13-dm-photo.json",
+      "sha256": "37d31c9ebe8be356bf92f25102b506fe61b0b31640336fd2e4a5a87e322c5d06"
+    },
+    {
+      "path": "release-notes/2026-11-13-dukjil-exchange.json",
+      "sha256": "70a6cbc60e8638149ea9b88e830431029e463e78504747a0d9fc218009103035"
+    },
+    {
+      "path": "release-notes/2026-11-13-dukjil-history-ticket-asset.json",
+      "sha256": "10dc1f86d2558ff27c542636c268ccd432110ef6cc31e0761051f4d387923f08"
+    },
+    {
+      "path": "release-notes/2026-11-13-dukjil-page-frame.json",
+      "sha256": "05fd6309426805b0c0bd42ed47064909910d7832ebee0825d2b250021696a749"
+    },
+    {
+      "path": "release-notes/2026-11-13-dukjil-passport-points.json",
+      "sha256": "be09ef6e5ba2b08b79df7d45401beee16ddb1e8a8bbeaf19d822a4106bd23506"
+    },
+    {
+      "path": "release-notes/2026-11-13-exchange-box-design.json",
+      "sha256": "4e82d94dac777b1a0c9020712d3b96516347048e11975a9f6ac7a43d4e887771"
+    },
+    {
+      "path": "release-notes/2026-11-13-first-steps.json",
+      "sha256": "bea4b10a544725b798007c172416b49cf14e2e211cd5da8356fc6523069bf752"
+    },
+    {
+      "path": "release-notes/2026-11-13-gggi-banner-autumn.json",
+      "sha256": "ee2a35b09a297136af5b790a31469798bfb535981a67e86da23ba4326d02e748"
+    },
+    {
+      "path": "release-notes/2026-11-13-header-login.json",
+      "sha256": "f5e64ae2ef5fce62b2a48bce8ce07c3a6ecbcfa180c6daa0a319ec66f1737b6c"
+    },
+    {
+      "path": "release-notes/2026-11-13-heart-guide.json",
+      "sha256": "b822af55ce14ae3580863cc525f90340f7607ae32982369b0db6d54bc2f4dcdd"
+    },
+    {
+      "path": "release-notes/2026-11-13-home-raffle-banner-main.json",
+      "sha256": "f17a7e6a9bf7c267de46f30357ea9760c2ed5671dfb1bf6ab158a5dad5159b47"
+    },
+    {
+      "path": "release-notes/2026-11-13-hot-list.json",
+      "sha256": "affc634124ff4857465ad2c93687867707d90c6803cec8c93398272a5b748285"
+    },
+    {
+      "path": "release-notes/2026-11-13-leader-l6-raffles.json",
+      "sha256": "ab1d55746e68f63b68c02cdf0c6b5fc0ae9b4f788be92c76043b4d0931e5f1eb"
+    },
+    {
+      "path": "release-notes/2026-11-13-leader-open-room-links.json",
+      "sha256": "20dfea3d44c9ab91bb936e4838b1dc432307fc123fbd945d0981214ba38cdf59"
+    },
+    {
+      "path": "release-notes/2026-11-13-legacy-email-password-attempt-limit.json",
+      "sha256": "8330c54ed079da08484dffd4374abb028d4350b620d604239a7a9b9ffbaec0f2"
+    },
+    {
+      "path": "release-notes/2026-11-13-mobile-photocard-security.json",
+      "sha256": "2a44cb3a393ef730d672cc0f7659f63b7c331b35e30242d9b3caea795a44d9e6"
+    },
+    {
+      "path": "release-notes/2026-11-13-my-artist-stamps.json",
+      "sha256": "485b05ef498e2cf56505c4a2bdeebf6ff153ea34453669d157f7ab4922a84da2"
+    },
+    {
+      "path": "release-notes/2026-11-13-my-events.json",
+      "sha256": "8b7654cc9496da0a84fef6a928a86ab7b58416888c115dad8eac6bb91ba05a67"
+    },
+    {
+      "path": "release-notes/2026-11-13-notice-summary-replacement.json",
+      "sha256": "32f3cd11b8b27a4830034bb4170bbda50d764d0274b14c168b26889bde7f6d80"
+    },
+    {
+      "path": "release-notes/2026-11-13-official-import-security.json",
+      "sha256": "22b62625164a62b7fb3f6b7a9a922660c293e2c7645c2b46ed7d2a7c3d6bdd55"
+    },
+    {
+      "path": "release-notes/2026-11-13-partial-notice-recovery.json",
+      "sha256": "b4f151ddb73ac68de03f9d69869c9fc934d58a106a6033165cef8b2876dc214c"
+    },
+    {
+      "path": "release-notes/2026-11-13-pc-scroll-compact.json",
+      "sha256": "37e437bebc27d6929be63d83368c66d5a69251984ffb8389897ca9a4d7e27a0a"
+    },
+    {
+      "path": "release-notes/2026-11-13-pm-a.json",
+      "sha256": "b45e729a39d7d015f284e9b4f3668fbd8c761cf7120195a84bf964246e703e99"
+    },
+    {
+      "path": "release-notes/2026-11-13-pm-fanpage-paths.json",
+      "sha256": "154190fd680d6a2383241bca70472f75e5aa21176285cf13dc9f5edb31fe982f"
+    },
+    {
+      "path": "release-notes/2026-11-13-presence-notification-split.json",
+      "sha256": "06227be0879fa04261d60f9b01331ce6695e510bd1d22018189d6ab542fab177"
+    },
+    {
+      "path": "release-notes/2026-11-13-prod-main-port.json",
+      "sha256": "5196222eadd5f5b9798f1ab61240ceab72fc4c85608dbdcb7f1a0dee65d5019a"
+    },
+    {
+      "path": "release-notes/2026-11-13-raffle-result-capsule.json",
+      "sha256": "f082ce1cbde3496beddd57ae75816c89804eafec5b17e7a35f32b4490466b16e"
+    },
+    {
+      "path": "release-notes/2026-11-13-ranking-entry-likes.json",
+      "sha256": "a0ca9c3a09272e6706d6dddd497212f29f8846a8fb192d31efe7babd04c2b91c"
+    },
+    {
+      "path": "release-notes/2026-11-13-ranking-recheck.json",
+      "sha256": "2b8b39ef1f725c3bd0081e9e672090fafd48e80d9aba0c1a9fe77d4022f895a3"
+    },
+    {
+      "path": "release-notes/2026-11-13-release-ci-retry.json",
+      "sha256": "021d2515de423f20d8b113b57e030b811ddaab08c6964484d3cf346a478c816a"
+    },
+    {
+      "path": "release-notes/2026-11-13-repo-cleanup.json",
+      "sha256": "cbee0f008caa4c00ff6733b5f54fcba3d7e59fb210643026e0aba222607c63f6"
+    },
+    {
+      "path": "release-notes/2026-11-13-s2-s8-search-language.json",
+      "sha256": "7fb5cbc52724233eb5032f07ff99e6d85295e9abddffd6839956930c89134294"
+    },
+    {
+      "path": "release-notes/2026-11-13-security-inline-handler-block.json",
+      "sha256": "604b6effb825b91b508b67c2f2eca96135d2b3773412aedca3b293174d531aa6"
+    },
+    {
+      "path": "release-notes/2026-11-13-shorts-controls-row.json",
+      "sha256": "11e3d3d68bf013a9db0699b26b93230748e86912a37fe91ca6fb653aafd80164"
+    },
+    {
+      "path": "release-notes/2026-11-13-shorts-filters.json",
+      "sha256": "7844a10a8a8414531de8aa7417bebe7227c8f0c9a428a3764f3ef9982eadc261"
+    },
+    {
+      "path": "release-notes/2026-11-13-sns-image-storage.json",
+      "sha256": "319d4afed2d395a191566a4b3cde0390ae85d521a9c2ed712b8cf7447b739a59"
+    },
+    {
+      "path": "release-notes/2026-11-13-sns-notification-source-order.json",
+      "sha256": "6ee77337d0554212a4893cf1e551b5d1691198f85be46cba12c076245ea23c6b"
+    },
+    {
+      "path": "release-notes/2026-11-13-streak-emphasis.json",
+      "sha256": "1729b767ae8da5fac2755e2bfa0e61e965579aa6e549974a337eb07620009a69"
+    },
+    {
+      "path": "release-notes/2026-11-13-unified-search.json",
+      "sha256": "fe587d992fc6b06f1ee7cff4c2296751e6ac70d65fd099b4e655da33b6e5aab1"
+    },
+    {
+      "path": "release-notes/2026-11-13-x-mission-banner-v2.json",
+      "sha256": "9c29dbd2cb3d2334726674457741ae11a3e56c3412de429f87366e8678122953"
+    },
+    {
+      "path": "release-notes/2026-11-13-x-mission-banner.json",
+      "sha256": "60e1e288aa858b49a8b31efd2d3f645311f9036e89d91c576a737f8bf6d96585"
+    },
+    {
+      "path": "release-notes/2026-11-14-admin-event-participants.json",
+      "sha256": "a75718e5f4c0f30c5c5cec342e6f75ff8b2a81692ff5d4446f47360b75d9319e"
+    },
+    {
+      "path": "release-notes/2026-11-14-admin-followers-partial-read.json",
+      "sha256": "13b922bb199e785870139d1b5281a36c8c4bb37548fded2cef94bc817b17071f"
+    },
+    {
+      "path": "release-notes/2026-11-14-admin-platform-followers-volatile.json",
+      "sha256": "580da56062bdbd4d168cee76cf40890e342eb919df016a7c885768f96df7e164"
+    },
+    {
+      "path": "release-notes/2026-11-14-admin-read-only-check.json",
+      "sha256": "d121f835ff496878b858e18f5e54463e6937c6fefaee0d08fc0378a2b847e047"
+    },
+    {
+      "path": "release-notes/2026-11-14-banner-slots-mid.json",
+      "sha256": "8cf57e6044c8710127fd907f79ad524518e3ef70838206889d9bc197d6404c36"
+    },
+    {
+      "path": "release-notes/2026-11-14-creator-platform-followers.json",
+      "sha256": "32686ed87072d20834f8f0ee5fad25d74f91fa54ad1929461ee29638ffef137d"
+    },
+    {
+      "path": "release-notes/2026-11-14-creator-rank-detail.json",
+      "sha256": "89ec59a72969196300fdc3769dad7b3c32b9918bf3f97a0106b64f80ead70b01"
+    },
+    {
+      "path": "release-notes/2026-11-14-creator-rank-fans-zero.json",
+      "sha256": "dc8281695ab9de318441b8dee72409778868f22dc107164af7d27de1cc7d7d00"
+    },
+    {
+      "path": "release-notes/2026-11-14-dukjil-banner-1.json",
+      "sha256": "48c97fef1c1a2c9c322296a513d192c15c1af985be79e9fd2f31b7b432300cb1"
+    },
+    {
+      "path": "release-notes/2026-11-14-dukjil-favorite-avatar.json",
+      "sha256": "96002e182c542563d59fa34f9679f92f5bee57b4855249d6d252c1f2b65642b8"
+    },
+    {
+      "path": "release-notes/2026-11-14-dukjil-guest-open.json",
+      "sha256": "14fd01624bc5a641c41e1dffb16b55bd47c2ddb4c3e8b7eff807c9e31f5a6565"
+    },
+    {
+      "path": "release-notes/2026-11-14-dukjil-section-hierarchy.json",
+      "sha256": "2aeeaa2470e63258b2f37f4d056d9e23c9d1e55325c8e665514922ab8afe0ef1"
+    },
+    {
+      "path": "release-notes/2026-11-14-event-attribution-private-browsers.json",
+      "sha256": "a6384c17823bde1b9c4463f8881d132bb615b259d84cddf119c893e1d8535de7"
+    },
+    {
+      "path": "release-notes/2026-11-14-fan-list-heart-size.json",
+      "sha256": "ac109ea2d41a8dd6efd494eba0aa3af7cbc406a552cbf298391d6021352396f0"
+    },
+    {
+      "path": "release-notes/2026-11-14-fanpage-fan-count-likes.json",
+      "sha256": "6e3e07178f1dca003e1a9bc8a36740fd237a4ccf1ff51843d1687d03f92120aa"
+    },
+    {
+      "path": "release-notes/2026-11-14-feedback-b1.json",
+      "sha256": "d1bb12f4e0f3ba414ae8466bebe1176309a416522eecebfb673720d4f6b61443"
+    },
+    {
+      "path": "release-notes/2026-11-14-groups-creator-promo-banners.json",
+      "sha256": "3d8365ddd55a73cdc53d839e7b62866bb706d94bf254bd80b3ae284554d6bbee"
+    },
+    {
+      "path": "release-notes/2026-11-14-home-banner-2.json",
+      "sha256": "2aa6410150924bd82246ccd6e12a287a54867530c19b7d07158b4f4c6629c5f7"
+    },
+    {
+      "path": "release-notes/2026-11-14-home-top-banner.json",
+      "sha256": "2cc5b355a671fe2610bc140472f7fafe43cdeb1616455d79aed35f58fceaa486"
+    },
+    {
+      "path": "release-notes/2026-11-14-jjinfan-banner-left.json",
+      "sha256": "6a9431453ad4061bb3615851f0097d03f57b7880ab382ce65f7520e78a3dfe80"
+    },
+    {
+      "path": "release-notes/2026-11-14-list-align-fix.json",
+      "sha256": "1c13f9b8e82b357321bc6645b206ac35099f4658a5cc7a641ee394df93fbf20c"
+    },
+    {
+      "path": "release-notes/2026-11-14-lucky-card-bigger-machine.json",
+      "sha256": "446b2aab6b395ac77f968cf1d8a4b8d75e9c4639e2eee461e404a61e468dbaae"
+    },
+    {
+      "path": "release-notes/2026-11-14-luckydraw-card.json",
+      "sha256": "d4307b085485374c6e629348a59cbd911b96a292a5ec6d82680efcc4005aa4bc"
+    },
+    {
+      "path": "release-notes/2026-11-14-mission-points-slot.json",
+      "sha256": "10a6bf4f621bc5c83e5615d64c491fb702c879395ac91a931fff6a1a06d7c0ec"
+    },
+    {
+      "path": "release-notes/2026-11-14-my-stat-row.json",
+      "sha256": "c34fb4000bd8a4ac0b13ec1c8a32fa17b63f76854587e3dd662533877c37485e"
+    },
+    {
+      "path": "release-notes/2026-11-14-my-stats.json",
+      "sha256": "80cd8b88d3c5f503a8e5bc4c7b792b9a425251294aa1fae1830bb56f9e80e8b4"
+    },
+    {
+      "path": "release-notes/2026-11-14-post-list-info-left.json",
+      "sha256": "1beeb7a7f8cf307c03625098d464b7bf8366591909380b959913455c4021f055"
+    },
+    {
+      "path": "release-notes/2026-11-14-proofs-reward-fan-hearts.json",
+      "sha256": "75a1648a9614651a70179b8fc59f548cc21a69dde9517870018176faaefae03c"
+    },
+    {
+      "path": "release-notes/2026-11-14-revert-night-feedback.json",
+      "sha256": "84c5426749f6f1c1dccbefc629ee58c092828b5fa999c580d678d1ff17f548bd"
+    },
+    {
+      "path": "release-notes/2026-11-14-today-fanpage.json",
+      "sha256": "ae6a6db71f9f5e7371bab8c2540ecf4bc0d144ec107be641298b98bdad799b87"
+    },
+    {
+      "path": "release-notes/2026-11-14-today-title-gap.json",
+      "sha256": "020f74f78fd29f8f12c0a23553b9b297e89204d28973a3d15033d3096079fe99"
+    },
+    {
+      "path": "release-notes/2026-11-14-wallet-disabled-button.json",
+      "sha256": "2f29f54fe44e375dd8b44f14f95dac81ee1c6c4af616607383b7ea1a80b7a3c6"
+    },
+    {
+      "path": "release-notes/2026-11-14-wallet-remove-bar.json",
+      "sha256": "934c31f9e2ab0cb63ebd60976fb34d85c854b5b926bcea6cd562a233898ab7f3"
+    },
+    {
+      "path": "release-notes/2026-11-14-youtube-followers.json",
+      "sha256": "e8e52dc6d7c9060e8aa83523645559b41df36d51ddd5e72b839e35f9e780c38d"
+    },
+    {
+      "path": "release-notes/2026-11-15-admin-event-participants-presets.json",
+      "sha256": "33f432dff38cf63fd1fe5326b354695cad86e3c73f3c99a264e3151965179105"
+    },
+    {
+      "path": "release-notes/2026-11-15-board-thumbnails.json",
+      "sha256": "b15feef97cd2fd984596217d85a5efd1bbf861191ae09700721733315de4946d"
+    },
+    {
+      "path": "release-notes/2026-11-15-creator-ranking-stars-sns.json",
+      "sha256": "df7a7eb5355579488af107f167d0fb6276d574ad3b0539cec5133890b1f15f6e"
+    },
+    {
+      "path": "release-notes/2026-11-15-dukjil-tab-pc-layout.json",
+      "sha256": "6b9ff7e9b77ccc9c1e84f120abfd3343cb8822b42f28d19e7ec01623c493bce4"
+    },
+    {
+      "path": "release-notes/2026-11-15-email-bounce-record.json",
+      "sha256": "21a26446d5b1b52391cb1e83c14d3bc434b69a6d54c8721a65d5f6dfb36758e6"
+    },
+    {
+      "path": "release-notes/2026-11-15-email-bounce-worker.json",
+      "sha256": "6ad072627d4814d0a5b8667c10dc19621e47f47e8eeebf452d2524b1f30ea938"
+    },
+    {
+      "path": "release-notes/2026-11-15-email-delivery-priority.json",
+      "sha256": "8e103344968b2d0840ba720bdb9b23d40a0c9c8b0f82937645076554739a41ca"
+    },
+    {
+      "path": "release-notes/2026-11-15-email-only-notifications.json",
+      "sha256": "f492f9b6b8e85e3aa9cd89493e45eb8f7f6d934741c9a3ccacabd3bc64188c56"
+    },
+    {
+      "path": "release-notes/2026-11-15-email-unsubscribe.json",
+      "sha256": "df5b2d3a4c1c528823e033576b3e5c43e75ec5dd907a9c5bbee7a06ea0a9bd24"
+    },
+    {
+      "path": "release-notes/2026-11-15-fanpage-head-proof-tab.json",
+      "sha256": "7a8c3985797fd98b2dfe97e2b011088fe3422509cb5cf5fb9be4ea165ba68938"
+    },
+    {
+      "path": "release-notes/2026-11-15-fanpage-head-sns-row.json",
+      "sha256": "702ed0025a1cfcd384b15e01557ce5c85de44f999ca44db75b7e5329efe3baa2"
+    },
+    {
+      "path": "release-notes/2026-11-15-follow-like-star.json",
+      "sha256": "de68d7480e3907acbe9d5211969de74e935c9eb6d5ec3b82651eeb10bf9542a9"
+    },
+    {
+      "path": "release-notes/2026-11-15-gallery-order-featured.json",
+      "sha256": "f8c8bdb323bdfb2b690610845c5dd24d3a3c5690ee832be83fe8906e7b056105"
+    },
+    {
+      "path": "release-notes/2026-11-15-group-preload-race.json",
+      "sha256": "0a0a9fd910e91936774f13ec4c90454540c0317af569e9be3320d44dc11c95ab"
+    },
+    {
+      "path": "release-notes/2026-11-15-groups-banner-single-wide.json",
+      "sha256": "1d4b127e03bfc24147501edab228e4e61edf63fc0114d2e316815bb23b6b7649"
+    },
+    {
+      "path": "release-notes/2026-11-15-groups-banner-two-up.json",
+      "sha256": "3a9b029fe97619d796fe510758a3b46e235ab25652826a25535c196e7b3edf3c"
+    },
+    {
+      "path": "release-notes/2026-11-15-groups-promo-banner-center.json",
+      "sha256": "7d85885d16c3398f19ed4a9ae7df237e6711b1e7bd602e57d4081c8d71b2783a"
+    },
+    {
+      "path": "release-notes/2026-11-15-groups-promo-order-stable.json",
+      "sha256": "836b928ef04a68d435de7a8365ad50a897dc4f67d0b1d8391c8a55d987022929"
+    },
+    {
+      "path": "release-notes/2026-11-15-groups-top-title-card.json",
+      "sha256": "5a98c4779486a5bd702428f2179a1c5a85bd0f41439b23ec0069f58da97e76c0"
+    },
+    {
+      "path": "release-notes/2026-11-15-hot-posts-columns.json",
+      "sha256": "b0ef5c0e1a76416a480fce1ab1905cfb885b6fe8f6b85146c17effbdb8bd0036"
+    },
+    {
+      "path": "release-notes/2026-11-15-i18n-baseline.json",
+      "sha256": "1c10a6ad02d4e4aec6505dfecf8ea42150d408a0910c4e6a1644941fe5d3acb8"
+    },
+    {
+      "path": "release-notes/2026-11-15-kakao-email-fallback.json",
+      "sha256": "c0897f50107beffe4d88bdf56fec791703c524434f16ecb80f79dc7afa624005"
+    },
+    {
+      "path": "release-notes/2026-11-15-kakao-notifications-disabled.json",
+      "sha256": "390d709d159a0b34da69c9fd32c27909428974ece0caa8fcdbbddfe072cbdb96"
+    },
+    {
+      "path": "release-notes/2026-11-15-login-recovery.json",
+      "sha256": "0b2f19e9363faed881105685bf4408b91941c1bb9bfddc995faa72a27620fea0"
+    },
+    {
+      "path": "release-notes/2026-11-15-mission-book-sheet.json",
+      "sha256": "1a236e67008616335d090b6aa04c8e7ea6e28d49c8dc556dc074b2da1babdca2"
+    },
+    {
+      "path": "release-notes/2026-11-15-my-attendance-compact.json",
+      "sha256": "e88235aa3b215d3639f4a3c1515e2e1e49a4ccaecf24079904e1b616b269ebc2"
+    },
+    {
+      "path": "release-notes/2026-11-15-my-stamp-record-chips.json",
+      "sha256": "1143fdcd547152c49ab12bbd58add13dcb341b7e996b4e636541ddbd3e433ca2"
+    },
+    {
+      "path": "release-notes/2026-11-15-my-stamp-record-compact.json",
+      "sha256": "bbb2c588b1ec7906ce91544f6b44f89c7e18976e853449a22f56a85dd2ba4c91"
+    },
+    {
+      "path": "release-notes/2026-11-15-my-stats-gifts-layout.json",
+      "sha256": "8558ea4df1459c9dc9e3145cf913eef0e4449ac6668ac4193bbd90681904827f"
+    },
+    {
+      "path": "release-notes/2026-11-15-notice-participation.json",
+      "sha256": "b8cc5a7fde2dff91a174eb70728e9d7894829392e20469978485765530efa322"
+    },
+    {
+      "path": "release-notes/2026-11-15-notification-outbox-expiry.json",
+      "sha256": "c44264f4867a9053f62e9ac682854b471ebd518cac383b62dc4443bc01c00c37"
+    },
+    {
+      "path": "release-notes/2026-11-15-page-like-star.json",
+      "sha256": "e15620cfbd5662abe01b12f9b5a9232d67086af0b9bc1abc80efe67212bcff36"
+    },
+    {
+      "path": "release-notes/2026-11-15-privy-login-restore.json",
+      "sha256": "7338d24ef69f19899fdaf4b67efc68bc9a2abbab559ccd58a8bc11987112a9eb"
+    },
+    {
+      "path": "release-notes/2026-11-15-proof-tab-overhaul.json",
+      "sha256": "5f9ee9973e27f8dd6fae359a9b37ce345baf6473df1310ec6224acfdf30ceeae"
+    },
+    {
+      "path": "release-notes/2026-11-15-proof-uniform-100p.json",
+      "sha256": "52a04c1c0ddbc571b1610a6d8a1c3ec4ab1fc0c4a32b44cde9bfd08b6060a0d2"
+    },
+    {
+      "path": "release-notes/2026-11-15-release-sha-header.json",
+      "sha256": "457e5e44bef699659316ba1ecf3df857bc5a40aef4b2428f26e4fe29332edd1e"
+    },
+    {
+      "path": "release-notes/2026-11-15-telegram-alert-stuck-row.json",
+      "sha256": "73309387ffd9dcd0af3be54c04438cc8f8e90a3978edc9b993aedaa5e88ca0cf"
+    },
+    {
+      "path": "release-notes/2026-11-15-translation-failure-hold.json",
+      "sha256": "73f104b23fe473a3ee370861ff2563e474a2817c5e7ec127c2552654772e04bb"
+    },
+    {
+      "path": "release-notes/2026-11-15-unreleased-feature-hold.json",
+      "sha256": "80b85091ee25b1c541714f7faf7a622f083a14a7fcee1922a7092c7caf681c90"
+    },
+    {
+      "path": "release-notes/2026-11-15-wallet-history-compat.json",
+      "sha256": "6e30b8d2601945a7fe739c66493827f10ffe30e1442970c1a6822c9660418a1d"
+    },
+    {
+      "path": "release-notes/2026-11-15-x-opening-follow.json",
+      "sha256": "ecc15fa8acf24a3880c43b0c8058f64cd5fc48a164f61a21ac4b2b7b03ab9ce4"
+    },
+    {
+      "path": "release-notes/2026-11-16-email-bounce-fix.json",
+      "sha256": "35a9afaab7c968856798fb9cf5eb94c3aa71ddc25ec028955f6e2c7a6cddb1ea"
+    },
+    {
+      "path": "release-notes/2026-11-16-email-unsubscribe-address-bind.json",
+      "sha256": "3b3d3a3c139b4115056226a49596814082878823bb89155a2317788681889c27"
+    },
+    {
+      "path": "release-notes/2026-11-16-follow-polish.json",
+      "sha256": "30e1aba71e006c744c6b48f8c0f490ffa46f5a814134d4c1e3b86df34bc2e20f"
+    },
+    {
+      "path": "release-notes/2026-11-16-missionbook-guide.json",
+      "sha256": "cae1f817204e04d39f5712f9093f13e2ba80ed2b59835e09d256bf1dcee4ae51"
+    },
+    {
+      "path": "release-notes/2026-11-16-passport-x-share.json",
+      "sha256": "85cd8e6af7a15017e42dddeb632355e76ec9bfd515071729e5cc063aa6363468"
+    },
+    {
+      "path": "release-notes/2026-11-16-point-icon-slot.json",
+      "sha256": "210c720545bd01483b7572c79f91b5dac3a1ef84b51c77d72680edfab5288691"
+    },
+    {
+      "path": "release-notes/2026-11-16-sns-deploy-template.json",
+      "sha256": "296d7b86faa70a83b683f0b865c7f1b87c7c89d3662000c5b1658865499eaa44"
+    }
+  ],
+  "highlights": [
+    {
+      "path": "release-notes/2026-11-11-dukjil-stamp-compact.json",
+      "text": "덕질 화면의 내 지갑이 모바일에서도 응모권 칸과 하트 칸이 나란히 놓이고, 그 아래에 포인트·스탬프 게이지와 교환·받기 버튼이 붙어 한 화면에 들어와요. 응모권·하트 칸 바탕은 연한 분홍으로 바뀌었어요."
+    },
+    {
+      "path": "release-notes/2026-11-11-rank-detail-align.json",
+      "text": "랭킹에서 행을 펼치면 1위까지·최애·등급·하트·응모권이 행의 닉네임이 시작하는 왼쪽 선에 맞춰 보여요. 이전에는 닉네임보다 조금 오른쪽에서 시작했어요."
+    },
+    {
+      "path": "release-notes/2026-11-11-translation-cache.json",
+      "text": "자동 번역이 한 번 번역된 글은 다른 사람이 볼 때도 다시 기다리지 않고 바로 보여요. 이미 내 언어로 쓰인 글이나 이모지·숫자만 있는 글은 번역하지 않고 그대로 보여요. 번역이 안 될 때는 원문이 그대로 보여요."
+    },
+    {
+      "path": "release-notes/2026-11-11-wallet-ad-lock-expiry.json",
+      "text": "광고 시청 후 교환을 기다리는 동안 광고 인증의 유효 시간이 지나면 교환되지 않도록 고쳤어요."
+    },
+    {
+      "path": "release-notes/2026-11-12-blocked-users-hot-period.json",
+      "text": "차단 목록에서 차단을 해제하면 해당 사용자가 목록에서 바로 사라져요."
+    },
+    {
+      "path": "release-notes/2026-11-12-board-notice-pin-all.json",
+      "text": "팬페이지 게시판에서 kyaa 공지는 정렬과 관계없이 모두 맨 위에 고정돼요."
+    },
+    {
+      "path": "release-notes/2026-11-12-cognito-callback-diagnostics.json",
+      "text": "로그인이 중단된 구간을 계정 정보 없이 기록해 로그인 오류의 원인을 확인할 수 있게 했어요."
+    },
+    {
+      "path": "release-notes/2026-11-11-dev-notice-offpath.json",
+      "text": "개발 환경의 배포 안내를 별도로 처리해, 안내 대기로 다음 배포가 늦어지는 시간을 줄였어요."
+    }
+  ]
+}
