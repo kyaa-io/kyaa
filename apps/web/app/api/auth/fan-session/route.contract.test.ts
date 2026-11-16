@@ -16,6 +16,7 @@ const UID = "11111111-1111-4111-8111-111111111111";
 const req = (method: string, headers: Record<string, string>) => new Request("https://kyaa.io/api/auth/fan-session", { method, headers });
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   state.resolveFanSession.mockResolvedValue({
     privyUserId: "did:privy:user-1", sessionId: "s1", tokenIssuedAt: Date.now(), apple: null, google: null,
     identity: { privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", providerAccounts: [], googleLinked: true },
@@ -48,4 +49,25 @@ it("clears the cookie on DELETE and for a member who is no longer active", async
   const refused = await POST(req("POST", { origin: "https://kyaa.io", authorization: "Bearer privy-jwt" }));
   expect(refused.status).toBe(403);
   expect(refused.headers.get("set-cookie")).toContain("Max-Age=0");
+});
+
+const issue = () => POST(req("POST", { origin: "https://kyaa.io", authorization: "Bearer privy-jwt" }));
+it("FAN_SESSION_ISSUE=off answers {session:false} and clears the cookie without asking Privy or the database", async () => {
+  vi.stubEnv("FAN_SESSION_ISSUE", "off");
+  const response = await issue();
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ session: false });
+  expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
+  const renewal = await POST(req("POST", { origin: "https://kyaa.io", authorization: "Bearer kyaa-session", cookie: "__Host-kyaa-fan-session=copied" }));
+  expect(await renewal.json()).toEqual({ session: false });
+  expect(renewal.headers.get("set-cookie")).toContain("Max-Age=0");
+  expect(state.resolveFanSession).not.toHaveBeenCalled();
+  expect(state.findUserByPrivyId).not.toHaveBeenCalled();
+});
+
+it("FAN_SESSION_ISSUE=on and an unset value both issue; only the exact string off disables", async () => {
+  for (const value of ["on", undefined, "OFF", ""]) {
+    if (value === undefined) vi.unstubAllEnvs(); else vi.stubEnv("FAN_SESSION_ISSUE", value);
+    expect((await (await issue()).json()).session).toBe(true);
+  }
 });

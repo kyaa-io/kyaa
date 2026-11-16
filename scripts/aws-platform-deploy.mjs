@@ -21,7 +21,7 @@ const REWARDED_SESSION_ENV = ['KYAA_REWARDED_AD_SESSION_TTL_SECONDS', 'KYAA_REWA
 const PUBLIC_RUNTIME_ENV = new Set([
   ...REWARDED_SESSION_ENV,
   'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED', 'KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE', 'KYAA_REWARDED_AD_UNIT', 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED',
-  'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY', 'GA4_MEASUREMENT_ID',
+  'FAN_SESSION_ISSUE', 'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY', 'GA4_MEASUREMENT_ID',
   'GIWA_CHAIN_ID', 'GIWA_RPC_URL', 'GIWA_EXPLORER_URL', 'BYUS_PASSPORT_CONTRACT_ADDRESS',
   'BYUS_STAMP_CONTRACT_ADDRESS', 'BYUS_RELAYER_ADDRESS', 'KAKAO_OAUTH_MODE', 'KAKAO_CLIENT_ID',
   'KAKAO_REDIRECT_URI', 'KAKAO_ALIMTALK_ENROLLMENT_ENABLED', 'PHONE_SMS_ENROLLMENT_MODE',
@@ -143,6 +143,7 @@ export function validateConfig(config, template) {
     for (const [key, value] of Object.entries(config.runtimeEnvironment ?? {})) {
       const permittedAwsSetting = ['AWS_REGION', 'AWS_STORAGE_ENABLED'].includes(key);
       if (!PUBLIC_RUNTIME_ENV.has(key) || !KEY.test(key) || RESERVED_ENV.includes(key) || (FORBIDDEN_ENV.test(key) && !permittedAwsSetting) || secrets.includes(key)) fail(`Use a Secrets Manager JSON key for ${key}; reserved/credential environment keys cannot be plain values`);
+      if (key === 'FAN_SESSION_ISSUE' && !['on', 'off'].includes(value)) fail('FAN_SESSION_ISSUE must be on or off; omit it for the default (on)');
       if (key === 'KYAA_GROUPS_ENABLED' && !['true', 'false'].includes(value)) fail('KYAA_GROUPS_ENABLED must be true or false');
       if (['KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE'].includes(key) && !['true', 'false'].includes(value)) fail(`${key} must be true or false`);
       if (key === 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED' && !['true', 'false'].includes(value)) fail('KYAA_REWARDED_TICKET_EXCHANGE_ENABLED must be true or false');

@@ -128,3 +128,41 @@ describe("what does not count as a dead cookie", () => {
     expect(f.getPrivyToken).not.toHaveBeenCalled();
   });
 });
+
+describe("FAN_SESSION_ISSUE=off: the server answers {session:false} to every exchange", () => {
+  const refused = () => Response.json({ session: false });
+  it("keeps the client on Privy tokens: no hint is written and a 401 to a Privy request starts no recovery", async () => {
+    vi.resetModules();
+    const f = await import("./fan-session");
+    const api = vi.fn(async () => new Response(null, { status: 401 }));
+    const exchange = vi.fn(async () => refused());
+    const fetcher = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => String(input) === SESSION_URL ? exchange() : api());
+    vi.stubGlobal("fetch", fetcher);
+    const getPrivyToken = vi.fn(async () => "privy-jwt");
+    const stop = f.watchFanSessionLoss(getPrivyToken, pid);
+    await f.renewFanSession(getPrivyToken, pid);
+    expect(exchange).toHaveBeenCalledTimes(1);
+    expect(f.readFanSessionHint()).toBeNull();
+    // privy-root.island.tsx sends the sentinel only while a hint exists, so with no hint every call carries the Privy token.
+    expect((await fetch("/api/music/search", { headers: { authorization: "Bearer privy-jwt" } })).status).toBe(401);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(exchange).toHaveBeenCalledTimes(1);
+    expect(getPrivyToken).toHaveBeenCalledTimes(1);
+    expect(f.readFanSessionHint()).toBeNull();
+    stop();
+  });
+
+  it("drops a hint left from before the switch and does not retry on its own", async () => {
+    vi.resetModules();
+    const f = await import("./fan-session");
+    hint();
+    const exchange = vi.fn(async () => refused());
+    vi.stubGlobal("fetch", vi.fn(async () => exchange()));
+    const getPrivyToken = vi.fn(async () => "privy-jwt");
+    await f.renewFanSession(getPrivyToken, pid);
+    expect(exchange).toHaveBeenCalledTimes(2); // the cookie renewal, then one Privy attempt; both refused
+    expect(f.readFanSessionHint()).toBeNull();
+    await f.renewFanSession(getPrivyToken, pid);
+    expect(exchange).toHaveBeenCalledTimes(3); // the next page entry tries once with Privy, never a loop
+  });
+});
