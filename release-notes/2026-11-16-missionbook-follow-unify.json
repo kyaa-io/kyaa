@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "덕질미션북의 좋아요와 X 오픈 이벤트 참여가 하나로 합쳐졌어요. 두 곳 어디서 눌러도 같은 참여로 한 번만 세요.",
+    "미션북에서 좋아요를 누르면 이벤트 페이지에도 참여 완료로 보이고, 이벤트 페이지에서 참여했다면 미션북 좋아요도 눌린 상태로 보여요. 첨부 화면은 시험 계정으로 확인한 로컬 화면이에요."
+  ],
+  "path": "/guide/dukjil",
+  "images": [
+    "release-notes/images/2026-11-16-missionbook-follow-unify-390.png",
+    "release-notes/images/2026-11-16-missionbook-follow-unify-1440.png"
+  ]
+}

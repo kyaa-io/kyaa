@@ -3,10 +3,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { APP_LOCALES } from "@/i18n/locales";
 
 const state = vi.hoisted(() => ({ status: "ready" as "ready" | "loading" | "error", likeCount: 1, urls: [] as Array<{ url: string; anonymous: unknown }> }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: false, user: null, getAccessToken: async () => null }) }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({
-  useCommunityResource: (url: string, _parse: unknown, _keep: unknown, _invalidate: unknown, anonymous: unknown) => {
-    state.urls.push({ url, anonymous });
-    return { state: state.status === "ready" ? { status: "ready", data: { reaction: null, likeCount: state.likeCount, dislikeCount: null, commentCount: 0 } } : { status: state.status, code: "UNAVAILABLE" }, retry: vi.fn() };
+  useCommunityResource: (url: string | null, _parse: unknown, _keep: unknown, _invalidate: unknown, anonymous: unknown) => {
+    if (url) state.urls.push({ url, anonymous });
+    return { state: state.status === "ready" ? { status: "ready", data: { likeCount: state.likeCount } } : { status: state.status, code: "UNAVAILABLE" }, retry: vi.fn() };
   },
 }));
 import { MissionbookLikeCount, missionbookLikeCopy } from "./missionbook-like-count";
@@ -14,9 +15,9 @@ import { MissionbookLikeCount, missionbookLikeCopy } from "./missionbook-like-co
 afterEach(() => { cleanup(); state.status = "ready"; state.likeCount = 1; state.urls = []; });
 
 describe("MissionbookLikeCount", () => {
-  it("reads the mission book notice anonymously and shows the real likes plus 10", () => {
+  it("reads the X Opening event count anonymously and shows the real event likes plus 10", () => {
     render(<MissionbookLikeCount locale="ko" />);
-    expect(state.urls[0]).toEqual({ url: "/api/notices/dukjil-missionbook/participation", anonymous: true });
+    expect(state.urls[0]).toEqual({ url: "/api/celebrities/x-opening-1116/fans", anonymous: true });
     expect(screen.getByText("좋아요 11명")).toBeInTheDocument();
     expect(document.querySelector("[data-missionbook-likes]")).toHaveAttribute("data-missionbook-likes", "ready");
   });

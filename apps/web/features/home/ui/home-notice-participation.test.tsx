@@ -2,12 +2,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { HomeNoticeParticipation } from "./home-notice-participation";
 
-const state = vi.hoisted(() => ({ authenticated: true, owner: "fixture-a", generation: 1, status: "ready", participation: { reaction: null as "like"|"dislike"|null, likeCount: 2, dislikeCount: null, commentCount: 0 }, retry: vi.fn(), comments: [] as Array<unknown> }));
+const state = vi.hoisted(() => ({ authenticated: true, owner: "fixture-a", generation: 1, status: "ready", participation: { reaction: null as "like"|"dislike"|null, likeCount: 2, dislikeCount: null, commentCount: 0 }, retry: vi.fn(), comments: [] as Array<unknown>, eventCount: 2, eventLiked: false }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: state.authenticated ? { id: state.owner } : null, getAccessToken: async () => "fixture" }), useByUsAuthStatus: () => ({ ready: true }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: state.owner, generation: state.generation }) }));
-vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: (url: string) => ({ state: state.status === "ready" ? { status: "ready", data: url.includes("/participation") ? state.participation : { items: state.comments, nextCursor: null } } : { status: state.status, code: "UNAVAILABLE" }, retry: state.retry }) }));
+vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: (url: string | null) => ({ state: !url ? { status: "loading" } : state.status === "ready" ? { status: "ready", data: url.includes("/participation") ? state.participation : url.includes("/celebrities/x-opening-1116/fans") ? { likeCount: state.eventCount } : url.includes("/celebrities/x-opening-1116/reactions") ? { reaction: state.eventLiked ? { reactionId: "a0000000-0000-4000-8000-000000000001", status: "completed", mintStatus: "queued", blockchainJobId: null, created: false, passportExists: false } : null } : { items: state.comments, nextCursor: null } } : { status: state.status, code: "UNAVAILABLE" }, retry: state.retry }) }));
 const props = { slug: "service-guide", title: "팬 활동을 시작하는 방법", locale: "ko" as const };
-beforeEach(() => { state.authenticated = true; state.owner = "fixture-a"; state.generation = 1; state.status = "ready"; state.participation = { reaction: null, likeCount: 2, dislikeCount: null, commentCount: 0 }; state.comments = []; state.retry.mockClear(); });
+beforeEach(() => { state.authenticated = true; state.owner = "fixture-a"; state.generation = 1; state.status = "ready"; state.participation = { reaction: null, likeCount: 2, dislikeCount: null, commentCount: 0 }; state.comments = []; state.eventCount = 2; state.eventLiked = false; state.retry.mockClear(); });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 it("sends guests to this CMS detail after login and hides dislike counts", () => {
   state.authenticated = false;
@@ -17,7 +17,7 @@ it("sends guests to this CMS detail after login and hides dislike counts", () =>
   expect(screen.getByRole("link", { name: "싫어요" }).textContent).toBe("");
   expect(screen.queryByRole("textbox")).toBeNull();
 });
-it("shows the mission book likes from 10, sends the real choice and brings guests back to the mission book page", async () => {
+it("counts the mission book like as the X Opening event like: shows event likes plus 10, brings guests back to the page, posts once to the event", async () => {
   const mission = { slug: "dukjil-missionbook", title: "덕질미션북", locale: "ko" as const, returnPath: "/guide/dukjil" };
   state.authenticated = false;
   const view = render(<HomeNoticeParticipation {...mission} />);
@@ -25,13 +25,32 @@ it("shows the mission book likes from 10, sends the real choice and brings guest
   expect(new URL(like.getAttribute("href")!, "https://kyaa.test").searchParams.get("returnTo")).toBe("/guide/dukjil?locale=ko");
   view.unmount();
   state.authenticated = true;
-  const fetch = vi.fn(async (_url: string, _init: RequestInit) => Response.json({ reaction: "like", likeCount: 3, dislikeCount: null, commentCount: 0 }));
+  const fetch = vi.fn(async (_url: string, _init: RequestInit) => Response.json({ reactionId: "a0000000-0000-4000-8000-000000000001", status: "completed", mintStatus: "queued", blockchainJobId: null, created: true, passportExists: false }));
   vi.stubGlobal("fetch", fetch);
   render(<HomeNoticeParticipation {...mission} />);
   fireEvent.click(screen.getByRole("button", { name: "좋아요 12" }));
   await waitFor(() => expect(screen.getByRole("button", { name: "좋아요 13" })).toHaveAttribute("aria-pressed", "true"));
+  expect(fetch.mock.calls).toHaveLength(1);
+  expect(fetch.mock.calls[0]![0]).toBe("/api/celebrities/x-opening-1116/reactions");
+  expect(fetch.mock.calls[0]![1].method).toBe("POST");
+  fireEvent.click(screen.getByRole("button", { name: "좋아요 13" }));
+  expect(fetch.mock.calls).toHaveLength(1);
+  expect(screen.getByRole("button", { name: "싫어요" })).toBeDisabled();
+});
+it("shows the mission book like as already pressed when this account joined the event at /follow", () => {
+  state.eventLiked = true; state.eventCount = 5;
+  render(<HomeNoticeParticipation slug="dukjil-missionbook" title="덕질미션북" locale="ko" returnPath="/guide/dukjil" />);
+  expect(screen.getByRole("button", { name: "좋아요 15" })).toHaveAttribute("aria-pressed", "true");
+});
+it("keeps the mission book dislike on the notice", async () => {
+  state.owner = "fixture-dislike";
+  const fetch = vi.fn(async (_url: string, init: RequestInit) => Response.json({ reaction: JSON.parse(String(init.body)).reaction, likeCount: 0, dislikeCount: null, commentCount: 0 }));
+  vi.stubGlobal("fetch", fetch);
+  render(<HomeNoticeParticipation slug="dukjil-missionbook" title="덕질미션북" locale="ko" returnPath="/guide/dukjil" />);
+  fireEvent.click(screen.getByRole("button", { name: "싫어요" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "싫어요" })).toHaveAttribute("aria-pressed", "true"));
   expect(fetch.mock.calls[0]![0]).toBe("/api/notices/dukjil-missionbook/reaction");
-  expect(JSON.parse(String(fetch.mock.calls[0]![1].body))).toEqual({ reaction: "like" });
+  expect(screen.getByRole("button", { name: "좋아요 12" })).toHaveAttribute("aria-pressed", "false");
 });
 it("switches and cancels reactions using the server result", async () => {
   const fetch = vi.fn(async (_url: string, init: RequestInit) => {
