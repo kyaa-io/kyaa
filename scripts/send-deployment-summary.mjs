@@ -2,37 +2,69 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
-import { CHECK_NAME, createGithubClient, verifyAwsNotice } from './deployment-notices.mjs';
+import { CHECK_NAME, REPOSITORY, createGithubClient, verifyAwsNotice } from './deployment-notices.mjs';
 export const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
-export const summaryManifest = JSON.parse(readFileSync(new URL('./deployment-notice-summary-1113.json', import.meta.url)));
+const manifestHashes = {
+  "deployment-notice-summary-1113.json": "25831c5f084a72adf8e5741b022b9645b02fc71671ea59cd0fc4b43e36eb5013",
+  "deployment-notice-summary-1116.json": "54579b4aff5106da322654c256c67caa685e488c4d66468262d7388fafa018f9"
+};
+export function loadSummaryManifest(name = 'deployment-notice-summary-1113.json') {
+ if(!Object.hasOwn(manifestHashes,name))throw new Error('UNKNOWN_SUMMARY_MANIFEST');
+ const manifest=JSON.parse(readFileSync(new URL('./'+name,import.meta.url)));
+ if(hash(manifest)!==manifestHashes[name])throw new Error('SUMMARY_MANIFEST_CHANGED');
+ return manifest;
+}
+export const summaryManifest = loadSummaryManifest();
 export function summaryText(manifest) {
  const paths=manifest.highlights.map(h=>h.path);
  if(new Set(paths).size!==paths.length||paths.some(p=>!manifest.notes.some(n=>n.path===p)))throw new Error('INVALID_SUMMARY_SOURCES');
- const text=['[운영] 11/11~11/13 변경 안내',...manifest.highlights.map(h=>'• '+h.text),`외 ${manifest.notes.length-paths.length}건의 변경도 반영됐어요. (변경 안내 파일 기준)`].join('\n');
+ const text=[manifest.sourceReceiptId===132654457213?'[운영] 11/13~11/16 변경 안내':'[운영] 11/11~11/13 변경 안내',...manifest.highlights.map(h=>'• '+h.text),`외 ${manifest.notes.length-paths.length}건의 변경도 반영됐어요. (변경 안내 파일 기준)`].join('\n');
  if(text.split('\n').length>10||text.length>3900)throw new Error('SUMMARY_TOO_LONG');
  return text;
 }
+const SUMMARY_IMAGE = /^release-notes\/images\/[a-z0-9-]+\.png$/;
+// One message per change: title, each change with its one representative screenshot (or text only), then the remaining count.
+export function summaryMessages(manifest) {
+ if(manifest.delivery!=='per-change')return [{text:summaryText(manifest)}];
+ const paths=manifest.highlights.flatMap(h=>h.paths);
+ if(!manifest.highlights.length||manifest.highlights.some(h=>!Array.isArray(h.paths)||!h.paths.length)||new Set(paths).size!==paths.length||paths.some(p=>!manifest.notes.some(n=>n.path===p)))throw new Error('INVALID_SUMMARY_SOURCES');
+ const messages=[{text:manifest.title},...manifest.highlights.map(h=>h.image?{text:h.text,image:{path:h.image.path,sha256:h.image.sha256}}:{text:h.text}),{text:`외 ${manifest.notes.length-paths.length}건의 변경도 반영됐어요. (변경 안내 파일 기준)`}];
+ for(const m of messages){
+  if(typeof m.text!=='string'||!m.text.trim()||m.text.includes('\n')||Array.from(m.text).length>(m.image?1024:3900))throw new Error('SUMMARY_TOO_LONG');
+  if(m.image&&(!SUMMARY_IMAGE.test(m.image.path)||!/^[a-f0-9]{64}$/.test(m.image.sha256)))throw new Error('INVALID_SUMMARY_IMAGE');
+ }
+ if(messages.length>12)throw new Error('SUMMARY_TOO_LONG');
+ return messages;
+}
+// The approved plan covers every message's text and image bytes, not only the manifest file.
+export const summaryPlanHash = manifest => manifest.delivery==='per-change'?hash({manifest:hash(manifest),messages:summaryMessages(manifest)}):hash(manifest);
 export function verifySummarySources(manifest, repository = process.cwd()) {
  const git=(...args)=>execFileSync('git',args,{encoding:'utf8',cwd:repository});
  git('merge-base','--is-ancestor',manifest.baseSha,manifest.headSha);
  const entries=git('diff','--name-status','--no-renames',manifest.baseSha,manifest.headSha,'--','release-notes/*.json').trim().split('\n');
  if(JSON.stringify(entries)!==JSON.stringify(manifest.notes.map(n=>'A\t'+n.path)))throw new Error('SUMMARY_NOTE_SET_CHANGED');
  for(const n of manifest.notes){if(createHash('sha256').update(git('show',`${manifest.headSha}:${n.path}`)).digest('hex')!==n.sha256)throw new Error('SUMMARY_NOTE_CHANGED');}
+ if(manifest.delivery!=='per-change')return;
+ summaryMessages(manifest);
+ for(const h of manifest.highlights){
+  if(!h.image)continue;
+  if(!h.paths.some(p=>JSON.parse(git('show',`${manifest.headSha}:${p}`)).images?.includes(h.image.path)))throw new Error('SUMMARY_IMAGE_NOT_IN_SOURCE');
+  const png=execFileSync('git',['show',`${manifest.headSha}:${h.image.path}`],{cwd:repository,maxBuffer:5_000_000});
+  if(createHash('sha256').update(png).digest('hex')!==h.image.sha256)throw new Error('SUMMARY_IMAGE_CHANGED');
+ }
 }
 export function validateSource(source, manifest) {
- if(source.id!==manifest.sourceReceiptId||source.name!==CHECK_NAME||source.app?.slug!=='github-actions'||source.external_id!==String(manifest.sourceDeploymentId)||source.head_sha!==manifest.baseSha)throw new Error('INVALID_SOURCE_RECEIPT');
+ if(source.id!==manifest.sourceReceiptId||source.name!==CHECK_NAME||source.app?.slug!=='github-actions'||source.external_id!==String(manifest.sourceDeploymentId)||source.head_sha!==(manifest.sourceReceiptId===132654457213?'3c389145e632858ce6037007e163fa1dda81bd98':manifest.baseSha))throw new Error('INVALID_SOURCE_RECEIPT');
  const prior=JSON.parse(source.output.summary);
- if(source.status==='completed'&&source.conclusion==='neutral'&&prior.replacedBySummary?.planHash===hash(manifest))return prior;
+ if(manifest.sourceReceiptId===132654457213&&prior.base!==manifest.baseSha)throw new Error('SOURCE_BASE_CHANGED');
+ if(source.status==='completed'&&source.conclusion==='neutral'&&prior.replacedBySummary?.planHash===summaryPlanHash(manifest))return prior;
  if(source.status!=='completed'||source.conclusion!=='action_required'||hash(source.output.summary)!==manifest.sourceReceiptHash)throw new Error('SOURCE_RECEIPT_CHANGED');
  if(prior.delivered.length!==manifest.confirmedBatches||prior.batchCount!==manifest.originalBatchHashes.length||prior.batchCount-prior.delivered.length!==manifest.suppressedBatches)throw new Error('PARTIAL_COUNTS_CHANGED');
  prior.delivered.forEach((b,i)=>{if(hash({text:b.text,images:b.images??[]})!==manifest.originalBatchHashes[i]||!validIds(b))throw new Error('CONFIRMED_BATCH_MISMATCH');});
  return prior;
 }
 const validIds = b => Number.isSafeInteger(b.messageId)&&b.messageId>0&&Array.isArray(b.messageIds)&&b.messageIds.includes(b.messageId)&&b.messageIds.every(id=>Number.isSafeInteger(id)&&id>0);
-export async function sendSummary({github,target,manifest=summaryManifest,expectedHash,send}) {
- const planHash=hash(manifest),text=summaryText(manifest);
- if(expectedHash!==planHash||target.id!==manifest.targetDeploymentId||target.sha!==manifest.headSha)throw new Error('SUMMARY_PLAN_MISMATCH');
- const source=await github(`/check-runs/${manifest.sourceReceiptId}`),prior=validateSource(source,manifest);
+async function targetReceipt(github,target){
  const matches=[];
  for(let page=1;;page++){
   const list=await github(`/commits/${target.sha}/check-runs?filter=all&per_page=100&page=${page}`);
@@ -40,7 +72,55 @@ export async function sendSummary({github,target,manifest=summaryManifest,expect
   if(list.check_runs.length<100)break;
  }
  if(matches.length>1)throw new Error('MULTIPLE_NOTICE_RECEIPTS_REQUIRE_REVIEW');
- let receipt=matches[0],state={planHash,replacesSourceReceiptId:source.id,deploymentId:target.id,text};
+ return matches[0];
+}
+const closeSource=(github,source,prior,manifest,planHash,target,receipt,state)=>github(`/check-runs/${source.id}`,{method:'PATCH',body:{status:'completed',conclusion:'neutral',output:{title:'Partially delivered; remaining batches replaced by approved summary',summary:JSON.stringify({...prior,replacedBySummary:{planHash,deploymentId:target.id,receiptId:receipt.id,messageId:state.messageId,chatId:state.chatId,suppressedBatches:manifest.suppressedBatches,decision:manifest.decision}})}}});
+// Per-change summary: same receipt rules as the regular notice batches. Each confirmed message is checkpointed before the next;
+// only a definitive rejection before anything was accepted may be rerun, and confirmed messages are never resent.
+export async function sendSummaryMessages({github,target,manifest,expectedHash,send}) {
+ const planHash=summaryPlanHash(manifest),messages=summaryMessages(manifest);
+ if(manifest.delivery!=='per-change'||expectedHash!==planHash||target.id!==manifest.targetDeploymentId||target.sha!==manifest.headSha)throw new Error('SUMMARY_PLAN_MISMATCH');
+ const source=await github(`/check-runs/${manifest.sourceReceiptId}`),prior=validateSource(source,manifest);
+ let receipt=await targetReceipt(github,target),state;
+ const base={planHash,replacesSourceReceiptId:source.id,deploymentId:target.id,messages};
+ if(receipt){
+  if(receipt.head_sha!==target.sha)throw new Error('INVALID_TARGET_RECEIPT');
+  state=JSON.parse(receipt.output.summary);
+  if(state.planHash!==planHash||JSON.stringify(state.messages)!==JSON.stringify(messages)||state.replacesSourceReceiptId!==source.id||state.deploymentId!==target.id)throw new Error('TARGET_RECEIPT_CONFLICT');
+  if(receipt.status==='completed'&&receipt.conclusion==='success'){
+   if(!validIds(state)||state.chatId!==-5187701508||state.delivered?.length!==messages.length)throw new Error('INVALID_DELIVERY_RECEIPT');
+  }else if(receipt.status!=='completed'||receipt.conclusion!=='failure'||state.definitelyNotSent!==true||state.delivered?.length!==0)throw new Error('SUMMARY_DELIVERY_UNCERTAIN');
+ }
+ if(prior.replacedBySummary&&(!receipt||receipt.conclusion!=='success'||prior.replacedBySummary.receiptId!==receipt.id))throw new Error('REPLACEMENT_RECEIPT_MISMATCH');
+ if(!receipt||receipt.conclusion!=='success'){
+  const claim={name:CHECK_NAME,head_sha:target.sha,external_id:String(target.id),status:'in_progress',output:{title:'Per-change summary reserved; never replay an uncertain POST',summary:JSON.stringify({...base,delivered:[],definitelyNotSent:false})}};
+  receipt=receipt?await github(`/check-runs/${receipt.id}`,{method:'PATCH',body:claim}):await github('/check-runs',{method:'POST',body:claim});
+  const delivered=[];
+  try{
+   for(const [index,message] of messages.entries()){
+    const result=await send({deploymentId:target.id,receiptId:receipt.id,text:message.text,...(message.image?{photo:`https://raw.githubusercontent.com/${REPOSITORY}/${target.sha}/${message.image.path}`}:{})});
+    if(result?.chatId!==-5187701508||!Number.isSafeInteger(result.messageId)||result.messageId<=0)throw new Error('SUMMARY_DELIVERY_UNCERTAIN');
+    delivered.push({index,messageId:result.messageId});
+    // Preserve confirmed message IDs before attempting the next message.
+    if(delivered.length<messages.length)await github(`/check-runs/${receipt.id}`,{method:'PATCH',body:{output:{title:'Per-change summary partially delivered',summary:JSON.stringify({...base,delivered,definitelyNotSent:false})}}});
+   }
+   state={...base,delivered,definitelyNotSent:false,chatId:-5187701508,messageId:delivered[0].messageId,messageIds:delivered.map(d=>d.messageId)};
+   await github(`/check-runs/${receipt.id}`,{method:'PATCH',body:{status:'completed',conclusion:'success',output:{title:'Approved per-change production summary delivered once',summary:JSON.stringify(state)}}});
+  }catch(error){
+   const safeToRetry=error.definitelyNotSent===true&&delivered.length===0;
+   await github(`/check-runs/${receipt.id}`,{method:'PATCH',body:{status:'completed',conclusion:safeToRetry?'failure':'action_required',output:{title:safeToRetry?'Summary definitively not sent':'Summary delivery needs manual inspection',summary:JSON.stringify({...base,delivered,definitelyNotSent:safeToRetry,instruction:safeToRetry?'No message was accepted; rerunning is safe.':'Inspect the room before retrying. Confirmed messages must not be resent.'})}}}).catch(()=>{});
+   throw new Error(safeToRetry?'SUMMARY_REJECTED':'SUMMARY_DELIVERY_UNCERTAIN');
+  }
+ }
+ // Close the old partial receipt only after every replacement message is durably confirmed.
+ if(!prior.replacedBySummary)await closeSource(github,source,prior,manifest,planHash,target,receipt,state);
+ return {messageId:state.messageId,messageIds:state.messageIds,sourceDisposition:'partially_delivered_summary_replaced'};
+}
+export async function sendSummary({github,target,manifest=summaryManifest,expectedHash,send}) {
+ const planHash=hash(manifest),text=summaryText(manifest);
+ if(expectedHash!==planHash||target.id!==manifest.targetDeploymentId||target.sha!==manifest.headSha)throw new Error('SUMMARY_PLAN_MISMATCH');
+ const source=await github(`/check-runs/${manifest.sourceReceiptId}`),prior=validateSource(source,manifest);
+ let receipt=await targetReceipt(github,target),state={planHash,replacesSourceReceiptId:source.id,deploymentId:target.id,text};
  if(receipt){
   if(receipt.head_sha!==target.sha)throw new Error('INVALID_TARGET_RECEIPT');
   state=JSON.parse(receipt.output.summary);
@@ -64,36 +144,39 @@ export async function sendSummary({github,target,manifest=summaryManifest,expect
   await github(`/check-runs/${receipt.id}`,{method:'PATCH',body:{status:'completed',conclusion:'success',output:{title:'Approved production summary delivered once',summary:JSON.stringify(state)}}});
  }
  // Close the old partial receipt only after the replacement is durably confirmed.
- if(!prior.replacedBySummary)await github(`/check-runs/${source.id}`,{method:'PATCH',body:{status:'completed',conclusion:'neutral',output:{title:'Partially delivered; remaining batches replaced by approved summary',summary:JSON.stringify({...prior,replacedBySummary:{planHash,deploymentId:target.id,receiptId:receipt.id,messageId:state.messageId,chatId:state.chatId,suppressedBatches:manifest.suppressedBatches,decision:manifest.decision}})}}});
+ if(!prior.replacedBySummary)await closeSource(github,source,prior,manifest,planHash,target,receipt,state);
  return {messageId:state.messageId,sourceDisposition:'partially_delivered_summary_replaced'};
 }
 export async function sendSummaryTelegram(body, token, fetcher=fetch) {
  if(!/^[0-9]+:[A-Za-z0-9_-]+$/.test(token??''))throw new Error('SUMMARY_BOT_SECRET_REQUIRED');
+ // Same single-photo form as the regular notice endpoint: one request, caption above the screenshot, no fallback send.
+ const photo=body.photo!==undefined;
+ if(photo&&!/^https:\/\/raw\.githubusercontent\.com\/kyaa-io\/kyaa\/[0-9a-f]{40}\/release-notes\/images\/[a-z0-9-]+\.png$/.test(body.photo))throw Object.assign(new Error('SUMMARY_REJECTED'),{definitelyNotSent:true});
  let response,result;
  try {
-  response=await fetcher(`https://api.telegram.org/bot${token}/sendMessage`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({chat_id:-5187701508,text:body.text,link_preview_options:{is_disabled:true}}),redirect:'error',signal:AbortSignal.timeout(75000)});
+  response=await fetcher(`https://api.telegram.org/bot${token}/${photo?'sendPhoto':'sendMessage'}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(photo?{chat_id:-5187701508,photo:body.photo,caption:body.text,show_caption_above_media:true}:{chat_id:-5187701508,text:body.text,link_preview_options:{is_disabled:true}}),redirect:'error',signal:AbortSignal.timeout(75000)});
   result=await response.json();
  }catch{throw new Error('SUMMARY_DELIVERY_UNCERTAIN');}
  if(!response.ok||result.ok!==true){
   const definitelyNotSent=result.ok===false&&[400,401,403,429].includes(response.status)&&result.error_code===response.status;
   throw Object.assign(new Error(definitelyNotSent?'SUMMARY_REJECTED':'SUMMARY_DELIVERY_UNCERTAIN'),{definitelyNotSent});
  }
- if(result.result?.chat?.id!==-5187701508||result.result.text!==body.text||!Number.isSafeInteger(result.result.message_id)||result.result.message_id<=0)throw new Error('SUMMARY_DELIVERY_UNCERTAIN');
+ if(result.result?.chat?.id!==-5187701508||(photo?result.result.caption!==body.text||!Array.isArray(result.result.photo):result.result.text!==body.text)||!Number.isSafeInteger(result.result.message_id)||result.result.message_id<=0)throw new Error('SUMMARY_DELIVERY_UNCERTAIN');
  return {chatId:-5187701508,messageId:result.result.message_id};
 }
-async function main(){
- const manifest=summaryManifest;
+export async function main({github=createGithubClient({token:process.env.GITHUB_TOKEN}),verifyDeployment=verifyAwsNotice,verifySources=verifySummarySources}={}){
+ const manifest=loadSummaryManifest(process.env.NOTICE_SUMMARY_MANIFEST);
  if(Number(process.env.NOTICE_DEPLOYMENT_ID)!==manifest.targetDeploymentId)throw new Error('SUMMARY_TARGET_MISMATCH');
- verifySummarySources(manifest);
- const github=createGithubClient({token:process.env.GITHUB_TOKEN});
+ verifySources(manifest);
  const target=await github(`/deployments/${manifest.targetDeploymentId}`),[status]=await github(`/deployments/${manifest.targetDeploymentId}/statuses?per_page=100`);
  if(target.sha!==manifest.headSha)throw new Error('SUMMARY_TARGET_MISMATCH');
- await verifyAwsNotice(target,status,github);
+ await verifyDeployment(target,status,github);
  validateSource(await github(`/check-runs/${manifest.sourceReceiptId}`),manifest);
- console.log(JSON.stringify({planHash:hash(manifest),text:summaryText(manifest),suppressedBatches:manifest.suppressedBatches}));
+ const perChange=manifest.delivery==='per-change';
+ console.log(JSON.stringify(perChange?{planHash:summaryPlanHash(manifest),messages:summaryMessages(manifest),suppressedBatches:manifest.suppressedBatches}:{planHash:hash(manifest),text:summaryText(manifest),suppressedBatches:manifest.suppressedBatches}));
  if(process.env.NOTICE_OPERATION==='plan-summary')return;
  if(process.env.NOTICE_OPERATION!=='send-summary')throw new Error('INVALID_OPERATION');
  if(!/^[0-9]+:[A-Za-z0-9_-]+$/.test(process.env.TELEGRAM_BUG_REPORT_BOT_TOKEN??''))throw new Error('SUMMARY_BOT_SECRET_REQUIRED');
- console.log(JSON.stringify(await sendSummary({github,target,expectedHash:process.env.NOTICE_PLAN_HASH,send:body=>sendSummaryTelegram(body,process.env.TELEGRAM_BUG_REPORT_BOT_TOKEN)})));
+ console.log(JSON.stringify(await (perChange?sendSummaryMessages:sendSummary)({github,target,manifest,expectedHash:process.env.NOTICE_PLAN_HASH,send:body=>sendSummaryTelegram(body,process.env.TELEGRAM_BUG_REPORT_BOT_TOKEN)})));
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)main().catch(e=>{console.error(e.message);process.exitCode=1;});

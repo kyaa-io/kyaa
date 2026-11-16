@@ -14,6 +14,10 @@ on:
         type: choice
         options: [recover, resolve-receipt, plan-summary, send-summary]
         default: recover
+      summary_manifest:
+        type: choice
+        options: [deployment-notice-summary-1113.json, deployment-notice-summary-1116.json]
+        default: deployment-notice-summary-1113.json
       plan_hash:
         type: string
       outcome:
@@ -298,6 +302,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           NOTICE_DEPLOYMENT_ID: ${{ inputs.deployment_id }}
           NOTICE_OPERATION: ${{ inputs.operation }}
+          NOTICE_SUMMARY_MANIFEST: ${{ inputs.summary_manifest }}
           NOTICE_PLAN_HASH: ${{ inputs.plan_hash }}
           TELEGRAM_BUG_REPORT_BOT_TOKEN: ${{ secrets.TELEGRAM_BUG_REPORT_BOT_TOKEN }}
         run: node scripts/send-deployment-summary.mjs
