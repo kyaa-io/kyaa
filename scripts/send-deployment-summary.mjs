@@ -6,7 +6,7 @@ import { CHECK_NAME, REPOSITORY, createGithubClient, verifyAwsNotice } from './d
 export const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const manifestHashes = {
   "deployment-notice-summary-1113.json": "25831c5f084a72adf8e5741b022b9645b02fc71671ea59cd0fc4b43e36eb5013",
-  "deployment-notice-summary-1116.json": "21543228359364004a17566ab24cd1523609f52a85847e974f515b295918c26c"
+  "deployment-notice-summary-1116.json": "1e0304eeea95f1515fd19101315fc4111528c98ac72417223f74291c5a03b968"
 };
 export function loadSummaryManifest(name = 'deployment-notice-summary-1113.json') {
  if(!Object.hasOwn(manifestHashes,name))throw new Error('UNKNOWN_SUMMARY_MANIFEST');

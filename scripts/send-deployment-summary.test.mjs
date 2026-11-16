@@ -61,7 +61,7 @@ test('1116 pinned manifest and plan use only fake GitHub reads',async()=>{
  assert.equal(manifest.notes.length,183);
  const messages=summaryMessages(manifest);
  assert.equal(messages.length,10);
- assert.match(messages.at(-1).text,/^외 169건/);
+ assert.match(messages.at(-1).text,/^외 168건/);
  const source=JSON.parse(readFileSync(new URL('./fixtures/deployment-notice-summary-1116-source.json',import.meta.url)));
  validateSource(source,manifest);
  assert.throws(()=>validateSource({...source,head_sha:manifest.baseSha},manifest),/INVALID_SOURCE/);
@@ -85,7 +85,7 @@ test('1116 pinned manifest and plan use only fake GitHub reads',async()=>{
 
 // 1116 per-change summary: one message per change, each with its one representative screenshot.
 const perChange=loadSummaryManifest('deployment-notice-summary-1116.json');
-const expectedImages=[null,null,'2026-11-15-groups-banner-single-wide','2026-11-15-fanpage-head-tabs-390-local','2026-11-15-board-thumbnails-390',null,'2026-11-16-passport-x-share-390','2026-11-15-email-unsubscribe-390','2026-11-15-dukjil-tab-pc-layout',null].map(n=>n&&`release-notes/images/${n}.png`);
+const expectedImages=[null,'2026-11-15-follow-like-star','2026-11-15-groups-banner-single-wide','2026-11-15-fanpage-head-tabs-390-local','2026-11-15-board-thumbnails-390',null,'2026-11-16-passport-x-share-390','2026-11-15-email-unsubscribe-390','2026-11-15-dukjil-tab-pc-layout',null].map(n=>n&&`release-notes/images/${n}.png`);
 function perChangeFixture(){const f=fixture({...perChange,confirmedBatches:11,suppressedBatches:25});f.sent.length=0;let next=3000;f.options.expectedHash=summaryPlanHash(f.manifest);f.options.send=async body=>{f.sent.push(body);return {chatId:-5187701508,messageId:next++};};return f;}
 test('1116 per-change messages keep order, captions and one mapped screenshot each',()=>{
  const messages=summaryMessages(perChange);
@@ -93,9 +93,9 @@ test('1116 per-change messages keep order, captions and one mapped screenshot ea
  assert.deepEqual(messages[0],{text:'11/13~11/16 변경 안내'});
  assert.deepEqual(messages.slice(1,-1).map(m=>m.text),perChange.highlights.map(h=>h.text));
  assert.ok(messages.every(m=>!m.text.startsWith('•')&&!m.text.includes('\n')));
- assert.equal(messages.at(-1).text,'외 169건의 변경도 반영됐어요. (변경 안내 파일 기준)');
+ assert.equal(messages.at(-1).text,'외 168건의 변경도 반영됐어요. (변경 안내 파일 기준)');
  assert.deepEqual(messages.map(m=>m.image?.path??null),expectedImages);
- assert.equal(perChange.highlights.flatMap(h=>h.paths).length,14);
+ assert.equal(perChange.highlights.flatMap(h=>h.paths).length,15);
  // 1113 stays one plain message with the unchanged plan hash.
  assert.deepEqual(summaryMessages(summaryManifest),[{text:summaryText(summaryManifest)}]);
  assert.equal(summaryPlanHash(summaryManifest),hash(summaryManifest));

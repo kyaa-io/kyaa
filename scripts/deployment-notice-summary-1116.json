@@ -772,9 +772,14 @@
     {
       "paths": [
         "release-notes/2026-11-15-x-opening-follow.json",
-        "release-notes/2026-11-14-dukjil-banner-1.json"
+        "release-notes/2026-11-14-dukjil-banner-1.json",
+        "release-notes/2026-11-15-follow-like-star.json"
       ],
-      "text": "X 오픈 이벤트 페이지가 생겼어요. 로그인하고 좋아요를 누르면 참여가 끝나고 완료 도장이 남아요. 홈 이벤트 배너에서 바로 갈 수 있고, 덕질 탭에도 등록·공개한 배너를 보여 주는 자리가 생겼어요."
+      "text": "X 오픈 이벤트 페이지가 생겼어요. 로그인하고 좋아요를 누르면 참여가 끝나고 완료 도장이 남아요. 홈 이벤트 배너에서 바로 갈 수 있고, 덕질 탭에도 등록·공개한 배너를 보여 주는 자리가 생겼어요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-follow-like-star.png",
+        "sha256": "dd5fcbc08cf357dd9d7421b11ebf72981d285739cc64c8888ec0b29dd844042b"
+      }
     },
     {
       "paths": [
