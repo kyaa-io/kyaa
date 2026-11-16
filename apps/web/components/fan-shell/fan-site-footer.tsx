@@ -18,8 +18,9 @@ import styles from "./fan-site-footer.module.css";
 import { AnalyticsConsentLink } from "@/features/analytics/client/analytics-consent-link";
 
 const TELEGRAM_CHANNEL_URL = "https://t.me/Kyaa_Official";
-// US headquarters shown as the first business-information line. Set the street address here once it is public.
-const HQ_LINE = "KAYY Inc. · New York, USA";
+// Global headquarters (New York State filing, 2026-11-12). Region only — no street address; the EIN is not shown.
+const HQ_LINE = "KAYY Inc. · Whitestone, Queens, NY, USA";
+const HQ_CORPORATE_NUMBER = "8130900";
 
 // Brand marks from Simple Icons; Instagram reuses our existing local mark.
 const SOCIAL_CHANNELS = [
@@ -67,8 +68,9 @@ const copy = {
     partners: "파트너 협업 제안",
     onchain: "온체인 기록",
     businessInfo: "사업자 정보",
-    headquarters: "본사",
-    operator: "운영사",
+    headquarters: "글로벌 본사",
+    operator: "한국 운영사",
+    corporateNumber: "법인번호(뉴욕주)",
     representative: "대표자",
     registrationNumber: "사업자등록번호",
     businessAddress: "사업장 소재지",
@@ -96,8 +98,9 @@ const copy = {
     partners: "Partnership proposals",
     onchain: "Onchain records",
     businessInfo: "Business information",
-    headquarters: "Headquarters",
-    operator: "Operator",
+    headquarters: "Global HQ",
+    operator: "Korea operator",
+    corporateNumber: "NY DOS ID",
     representative: "Representative",
     registrationNumber: "Business registration number",
     businessAddress: "Registered address",
@@ -129,6 +132,7 @@ const copy = {
     businessInfo: localizedMessages.mf557e073dfa7[translationLocale],
     headquarters: localizedMessages.m46244ebf82a0[translationLocale],
     operator: localizedMessages.m858f418834a6[translationLocale],
+    corporateNumber: localizedMessages.m8431e92781f3[translationLocale],
     representative: localizedMessages.mb0979e47f86e[translationLocale],
     registrationNumber: localizedMessages.m6a7a6594ed5a[translationLocale],
     businessAddress: localizedMessages.m1f45fe0f4807[translationLocale],
@@ -153,16 +157,21 @@ function FanFooterLegalLinks({ locale }: { locale: FanLocale }) {
 function FanFooterBusinessInfo({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   return (
-    <dl aria-label={t.businessInfo}>
-      <div className={styles.businessHeadquarters}><dt>{t.headquarters}</dt><dd lang="en">{HQ_LINE}</dd></div>
-      <div><dt>{t.operator}</dt><dd lang="ko">주식회사 셀리랩</dd></div>
-      <div><dt>{t.representative}</dt><dd lang="ko">김보석</dd></div>
-      <div><dt>{t.registrationNumber}</dt><dd>736-86-03473</dd></div>
-      <div className={styles.businessAddress}>
-        <dt>{t.businessAddress}</dt>
-        <dd lang="ko">서울특별시 강남구 도산대로28길 46, 6층</dd>
-      </div>
-    </dl>
+    <div className={styles.businessGroups} role="group" aria-label={t.businessInfo}>
+      <dl aria-label={t.headquarters}>
+        <div><dt>{t.headquarters}</dt><dd lang="en">{HQ_LINE}</dd></div>
+        <div><dt>{t.corporateNumber}</dt><dd>{HQ_CORPORATE_NUMBER}</dd></div>
+      </dl>
+      <dl aria-label={t.operator}>
+        <div><dt>{t.operator}</dt><dd lang="ko">주식회사 셀리랩</dd></div>
+        <div><dt>{t.representative}</dt><dd lang="ko">김보석</dd></div>
+        <div><dt>{t.registrationNumber}</dt><dd>736-86-03473</dd></div>
+        <div className={styles.businessAddress}>
+          <dt>{t.businessAddress}</dt>
+          <dd lang="ko">서울특별시 강남구 도산대로28길 46, 6층</dd>
+        </div>
+      </dl>
+    </div>
   );
 }
 

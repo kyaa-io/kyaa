@@ -1518,16 +1518,22 @@
     "id": "components/fan-shell/fan-site-footer:copy.businessInfo"
   },
   "m46244ebf82a0": {
-    "en": "Headquarters",
-    "ko": "본사",
+    "en": "Global HQ",
+    "ko": "글로벌 본사",
     "source": "components/fan-shell/fan-site-footer",
     "id": "components/fan-shell/fan-site-footer:copy.headquarters"
   },
   "m858f418834a6": {
-    "en": "Operator",
-    "ko": "운영사",
+    "en": "Korea operator",
+    "ko": "한국 운영사",
     "source": "components/fan-shell/fan-site-footer",
     "id": "components/fan-shell/fan-site-footer:copy.operator"
+  },
+  "m8431e92781f3": {
+    "en": "NY DOS ID",
+    "ko": "법인번호(뉴욕주)",
+    "source": "components/fan-shell/fan-site-footer",
+    "id": "components/fan-shell/fan-site-footer:copy.corporateNumber"
   },
   "mb0979e47f86e": {
     "en": "Representative",
