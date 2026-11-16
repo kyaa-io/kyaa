@@ -221,6 +221,33 @@ describe("FAN-020 settings", () => {
     expect(screen.queryByRole("button", {name:/Kakao|카카오|인증번호/})).not.toBeInTheDocument();
   });
 
+  it("says why mail is stopped in the mail row and shows nothing for a normal channel", async () => {
+    const original = vi.mocked(fetch).getMockImplementation()!;
+    const withState = (deliveryState: string | null) => vi.mocked(fetch).mockImplementation(async (input, init) => String(input) === "/api/me/notification-channels"
+      ? Response.json({ connections: { ...connections, channels: connections.channels.map((channel) => channel.kind === "email" ? { ...channel, deliveryState } : channel) }, kakaoEnrollment: { enabled: false, pending: null }, phoneSmsEnrollment: { enabled: false } })
+      : original(input, init));
+    withState("bounced");
+    const view = renderSettings("channels");
+    expect(await screen.findByText("k***@example.com · 메일이 되돌아와 멈췄어요")).toBeInTheDocument();
+    view.unmount();
+    withState(null);
+    renderSettings("channels");
+    expect(await screen.findByText("k***@example.com")).toBeInTheDocument();
+    expect(screen.queryByText(/멈췄어요/)).not.toBeInTheDocument();
+  });
+
+  it("saves the friends, friend activity and participation switches one at a time", async () => {
+    renderSettings("notifications");
+    await screen.findByRole("heading", { name: "알림", level: 1 });
+    for (const [name, key] of [["친구와 메시지", "socialNotifications"], ["친구 활동", "friendActivityNotifications"], ["스탬프와 참여 마감", "participationNotifications"]] as const) {
+      const toggle = screen.getByRole("switch", { name });
+      expect(toggle).toBeChecked();
+      fireEvent.click(toggle);
+      await waitFor(() => expect(fetch).toHaveBeenCalledWith("/api/notifications/preferences", expect.objectContaining({ method: "PATCH", body: JSON.stringify({ [key]: false }) })));
+      await waitFor(() => expect(screen.getByRole("switch", { name })).toBeEnabled());
+    }
+  });
+
   it("separates read-only connections from consented delivery channels", async () => {
     renderSettings("channels");
     expect(await screen.findByText("Google · 로그인에서 확인됨 (읽기 전용)")).toBeInTheDocument();

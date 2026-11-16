@@ -1,3 +1,4 @@
+import { emailBlockedNoticeText } from "@/features/notification/email-settings-copy";
 import { eventReviewText } from "@/features/notification/event-review-copy";
 import "server-only";
 import { createHash } from "node:crypto";
@@ -48,6 +49,9 @@ export interface NotificationRepository {
     scheduleNotifications?: boolean;
     artistActivityNotifications?: boolean;
     artistOnlineNotifications?: boolean;
+    socialNotifications?: boolean;
+    friendActivityNotifications?: boolean;
+    participationNotifications?: boolean;
   }): Promise<NotificationPreferences>;
   enqueueDue(now: string): Promise<number>;
 }
@@ -104,6 +108,11 @@ export function projectNotificationRow(
   if (kind === "group_raffle_result" || (kind === "group_raffle_won" && typeof one(row.payload)?.prizeName === "string")) {
     const payload = one(row.payload) ?? {};
     return { id: String(row.id), kind, title: kind === "group_raffle_won" ? (locale === "ko" ? "추첨에 당첨됐어요" : "You won the draw") : (locale === "ko" ? "추첨 결과가 나왔어요" : "The draw results are ready"), detail: text(payload.prizeName, locale === "ko" ? "경품" : "Prize"), createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) };
+  }
+  if (kind === "email_delivery_blocked") {
+    const payload = one(row.payload) ?? {};
+    const said = emailBlockedNoticeText(payload.state, typeof payload.destinationLabel === "string" && payload.destinationLabel.trim() ? payload.destinationLabel : null, locale);
+    return { id: String(row.id), kind, title: said.title, detail: said.detail, createdAt: String(row.created_at), readAt: row.read_at == null ? null : String(row.read_at), deepLink: String(row.deep_link) };
   }
   if (kind === "artist_comment" || kind === "artist_online") {
     const said = artistNotificationText(kind, one(row.payload) ?? {}, locale);
@@ -285,7 +294,7 @@ export function createNotificationRepository(
     const [pref, sub] = await Promise.all([
       db
         .from("notification_preferences")
-        .select("live_reminders,survey_reminders,benefit_notifications,reply_notifications,official_post_notifications,schedule_notifications,artist_activity_notifications,artist_online_notifications")
+        .select("live_reminders,survey_reminders,benefit_notifications,reply_notifications,official_post_notifications,schedule_notifications,artist_activity_notifications,artist_online_notifications,social_notifications,friend_activity_notifications,participation_notifications")
         .eq("app_user_id", appUserId)
         .maybeSingle(),
       db
@@ -305,6 +314,9 @@ export function createNotificationRepository(
       scheduleNotifications: pref.data?.schedule_notifications ?? true,
       artistActivityNotifications: pref.data?.artist_activity_notifications ?? true,
       artistOnlineNotifications: pref.data?.artist_online_notifications ?? true,
+      socialNotifications: pref.data?.social_notifications ?? true,
+      friendActivityNotifications: pref.data?.friend_activity_notifications ?? true,
+      participationNotifications: pref.data?.participation_notifications ?? true,
       browserSubscription: (sub.count ?? 0) > 0 ? "subscribed" : "unsubscribed",
     };
   }
@@ -367,6 +379,9 @@ export function createNotificationRepository(
           ...(input.scheduleNotifications === undefined ? {} : { schedule_notifications: input.scheduleNotifications }),
           ...(input.artistActivityNotifications === undefined ? {} : { artist_activity_notifications: input.artistActivityNotifications }),
           ...(input.artistOnlineNotifications === undefined ? {} : { artist_online_notifications: input.artistOnlineNotifications }),
+          ...(input.socialNotifications === undefined ? {} : { social_notifications: input.socialNotifications }),
+          ...(input.friendActivityNotifications === undefined ? {} : { friend_activity_notifications: input.friendActivityNotifications }),
+          ...(input.participationNotifications === undefined ? {} : { participation_notifications: input.participationNotifications }),
         },
       });
       if (error) throw new Error("notification preferences update failed");

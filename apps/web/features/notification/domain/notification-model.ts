@@ -23,7 +23,7 @@ export const notificationKindSchema = z.enum([
   "support_reply", "stamp_issued", "participation_deadline",
   "fan_friend_request", "fan_dm_request", "fan_dm_message", "friend_post", "friend_reaction",
   "content_reply", "official_post", "schedule_reminder", "schedule_changed", "schedule_cancelled", "schedule_suggestion_reviewed", "fanpage_request_reviewed",
-  "artist_comment", "artist_online",
+  "artist_comment", "artist_online", "email_delivery_blocked",
 ]);
 export const artistNotificationKinds = ["artist_comment", "artist_online"] as const;
 export function isArtistNotificationKind(kind: string): kind is (typeof artistNotificationKinds)[number] { return (artistNotificationKinds as readonly string[]).includes(kind); }
@@ -33,7 +33,7 @@ export const safeNotificationPathSchema = z
   .string()
   .regex(
     /^\/(?:connect\/runmusic\/results|my(?:\/requests\?tab=(?:schedules|fanpages)&item=[0-9a-f-]{36}|\/rewards\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\/recipient)?|passports|live\/[a-z0-9]+(?:-[a-z0-9]+)*(?:\/survey)?|live\/calendar\/schedules\/[0-9a-f-]{36}|benefits\/[0-9a-f-]{36}|c\/[a-z0-9]+(?:-[a-z0-9]+)*\/(?:community\/[0-9a-f-]{36}(?:#comment-[0-9a-f-]{36})?|notices\/[a-z0-9]+(?:-[a-z0-9]+)*))$/,
-  ).or(z.string().regex(/^\/open-app\?returnTo=%2F(?:(?:messages|support|activities|stamps)%2F[0-9a-f-]{36}|my%2Fcommunity-stamps|people%2F[0-9a-f-]{36}%2Ffriend-request%3Ffavorite%3D[a-z0-9]+(?:-[a-z0-9]+)*)$/i)).or(z.string().regex(/^\/(?:stamps\/[0-9a-f-]{36})?$/i)).or(groupNotificationPathSchema);
+  ).or(z.string().regex(/^\/open-app\?returnTo=%2F(?:(?:messages|support|activities|stamps)%2F[0-9a-f-]{36}|my%2Fcommunity-stamps|people%2F[0-9a-f-]{36}%2Ffriend-request%3Ffavorite%3D[a-z0-9]+(?:-[a-z0-9]+)*)$/i)).or(z.string().regex(/^\/(?:stamps\/[0-9a-f-]{36}|settings)?$/i)).or(groupNotificationPathSchema);
 
 export const notificationTargetTypeSchema = z.enum(["fan_post", "group_post", "notice", "friendship", "conversation", "group_page", "group_event", "schedule", "celebrity", "live_event", "benefit"]);
 export const notificationItemSchema = z.object({
@@ -66,6 +66,9 @@ export const notificationPreferencesSchema = z.object({
   scheduleNotifications: z.boolean().default(true),
   artistActivityNotifications: z.boolean().default(true),
   artistOnlineNotifications: z.boolean().default(true),
+  socialNotifications: z.boolean().default(true),
+  friendActivityNotifications: z.boolean().default(true),
+  participationNotifications: z.boolean().default(true),
   browserSubscription: z.enum(["subscribed", "unsubscribed"]),
 });
 export type NotificationItem = z.infer<typeof notificationItemSchema>;

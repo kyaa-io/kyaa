@@ -50,10 +50,11 @@ import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { accountDeletionCopy } from "@/i18n/catalogs/features__profile__ui__account-deletion";
 import { parseSettingsSection, type SettingsSection } from "../domain/settings-navigation";
 import { artistNotificationSettingCopy } from "@/features/notification/artist-notification-copy";
+import { emailSettingsCopy } from "@/features/notification/email-settings-copy";
 
 type Locale = AppLocale;
 type PreferenceKey =
-  "liveReminders" | "surveyReminders" | "benefitNotifications" | "replyNotifications" | "officialPostNotifications" | "scheduleNotifications" | "artistActivityNotifications" | "artistOnlineNotifications";
+  "liveReminders" | "surveyReminders" | "benefitNotifications" | "replyNotifications" | "officialPostNotifications" | "scheduleNotifications" | "artistActivityNotifications" | "artistOnlineNotifications" | "socialNotifications" | "friendActivityNotifications" | "participationNotifications";
 interface SettingsSummary {
   nickname: string;
   preferredLocale: "ko" | "en";
@@ -68,6 +69,9 @@ interface Preferences {
   scheduleNotifications: boolean;
   artistActivityNotifications?: boolean;
   artistOnlineNotifications?: boolean;
+  socialNotifications?: boolean;
+  friendActivityNotifications?: boolean;
+  participationNotifications?: boolean;
   browserSubscription: "subscribed" | "unsubscribed";
 }
 interface KakaoEnrollmentState {
@@ -1313,6 +1317,9 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
                 ["scheduleNotifications", personalCopy[locale].scheduleNotifications],
                 ["artistActivityNotifications", artistNotificationSettingCopy[locale].artistActivityNotifications],
                 ["artistOnlineNotifications", artistNotificationSettingCopy[locale].artistOnlineNotifications],
+                ["socialNotifications", emailSettingsCopy(locale).socialNotifications],
+                ["friendActivityNotifications", emailSettingsCopy(locale).friendActivityNotifications],
+                ["participationNotifications", emailSettingsCopy(locale).participationNotifications],
               ] as const
             ).map(([key, label]) => (
               <label key={key}>
@@ -1427,7 +1434,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
                           : t.kakaoEnrollmentCanceling}
               </p>
             )}
-            {connections.channels.filter((channel) => channel.kind !== "kakao" || connections.kakaoEnabled).map((channel) => <label key={channel.id}><span><strong>{channel.kind === "email" ? t.emailChannel : t.kakaoChannel}</strong><small>{channel.destinationLabel}{channel.status === "needs_verification" ? ` · ${t.needsEnrollment}` : ""}</small></span><input type="checkbox" role="switch" aria-label={channel.kind === "email" ? t.emailChannel : t.kakaoChannel} aria-describedby={connectionAction ? "connection-save-status" : undefined} checked={channel.consented} disabled={connectionAction !== null || !(channel.status === "eligible" || (channel.kind === "email" && channel.status === "disabled" && !channel.consented))} onChange={(event) => void updateChannel(channel.id, event.target.checked)} /></label>)}
+            {connections.channels.filter((channel) => channel.kind !== "kakao" || connections.kakaoEnabled).map((channel) => <label key={channel.id}><span><strong>{channel.kind === "email" ? t.emailChannel : t.kakaoChannel}</strong><small>{channel.destinationLabel}{channel.status === "needs_verification" ? ` · ${t.needsEnrollment}` : channel.deliveryState ? ` · ${emailSettingsCopy(locale).blocked[channel.deliveryState]}` : ""}</small></span><input type="checkbox" role="switch" aria-label={channel.kind === "email" ? t.emailChannel : t.kakaoChannel} aria-describedby={connectionAction ? "connection-save-status" : undefined} checked={channel.consented} disabled={connectionAction !== null || !(channel.status === "eligible" || (channel.kind === "email" && channel.status === "disabled" && !channel.consented))} onChange={(event) => void updateChannel(channel.id, event.target.checked)} /></label>)}
             {connections.kakaoEnabled && phoneSmsEnabled && <PhoneSmsEnrollment key={ownerId} locale={locale} disabled={connectionAction !== null} getAccessToken={getAccessToken}
               acquire={() => { if (connectionPendingRef.current) return false; connectionPendingRef.current = true; setConnectionAction("phone-sms"); return true; }}
               release={() => { if (ownerRef.current !== ownerId) return; connectionPendingRef.current = false; setConnectionAction(null); }}

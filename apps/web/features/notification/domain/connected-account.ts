@@ -14,6 +14,8 @@ export const notificationChannelSchema = z.object({
   consented: z.boolean(),
   destinationLabel: z.string().min(1),
   verifiedAt: z.iso.datetime({ offset: true }).nullable(),
+  /** Mail only: why delivery is stopped. Absent or null while mail goes out normally. */
+  deliveryState: z.enum(["soft_paused", "bounced", "complained"]).nullish(),
 });
 
 export const notificationConnectionsSchema = z.object({
