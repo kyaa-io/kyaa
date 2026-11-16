@@ -80,7 +80,7 @@ describe("cookie renewal when the account state cannot be read", () => {
     const { post, repository } = setup(sealed());
     rpc.mockResolvedValue({ data: revoked, error: null });
     const response = await post();
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
     expect(clearsCookie(response)).toBe(true);
     expect(repository.findUserByPrivyId).not.toHaveBeenCalled();
   });

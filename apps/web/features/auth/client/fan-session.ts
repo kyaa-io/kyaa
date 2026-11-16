@@ -11,7 +11,10 @@ export function readFanSessionHint(now = Date.now()): Hint | null {
     return value && typeof value.pid === "string" && typeof value.exp === "number" && typeof value.at === "number" && value.exp > now ? value as Hint : null;
   } catch { return null; }
 }
+/** Counts every change of the hint, so an answer to a request sent before a change can be told from one sent after it. */
+let hintEpoch = 0;
 function writeHint(hint: Hint | null) {
+  hintEpoch += 1;
   try {
     if (hint) localStorage.setItem(HINT_KEY, JSON.stringify(hint));
     else localStorage.removeItem(HINT_KEY);
@@ -74,6 +77,57 @@ export function cancelFanSessionMaintenance(): void {
   generation += 1;
   activePid = null;
   running = null;
+  recovering = null;
+}
+
+/** At most one recovery per minute: a server that keeps refusing a fresh cookie must not turn into a loop of Privy exchanges. */
+export const FAN_SESSION_RECOVERY_COOLDOWN_MS = 60_000;
+let recoveryContext: { getPrivyToken: () => Promise<string | null>; pid: string } | null = null;
+let recovering: Promise<void> | null = null;
+let lastRecoveryAt = -Infinity;
+/** The cookie died under a live tab (signed out on another device, cleared, key replaced): drop the hint and get a new cookie from Privy. */
+function recoverFanSession(triggerEpoch: number): Promise<void> {
+  if (recovering) return recovering;
+  const context = recoveryContext;
+  if (!context || Date.now() - lastRecoveryAt < FAN_SESSION_RECOVERY_COOLDOWN_MS) return Promise.resolve();
+  lastRecoveryAt = Date.now();
+  const ownerGeneration = generation;
+  const operation = (async () => {
+    await running?.catch(() => undefined);
+    // A renewal or sign-out finished meanwhile: the 401 belongs to a cookie that is already replaced or gone.
+    if (generation !== ownerGeneration || activePid !== context.pid || hintEpoch !== triggerEpoch) return;
+    writeHint(null);
+    await renewFanSession(context.getPrivyToken, context.pid);
+  })().catch(() => undefined).finally(() => { if (recovering === operation) recovering = null; });
+  recovering = operation;
+  return operation;
+}
+const isFanSessionRoute = (input: RequestInfo | URL) => {
+  try { return new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, window.location.href).pathname === "/api/auth/fan-session"; } catch { return false; }
+};
+const sentTheSentinel = (input: RequestInfo | URL, init?: RequestInit) => {
+  try { return new Headers(init?.headers ?? (typeof Request !== "undefined" && input instanceof Request ? input.headers : undefined)).get("authorization") === `Bearer ${FAN_SESSION_BEARER}`; } catch { return false; }
+};
+let restoreFetch: (() => void) | null = null;
+/**
+ * The one place that notices a dead cookie. Every protected call goes through fetch, so a 401 to a request that carried the sentinel is seen
+ * here instead of in each screen. The failed request is returned unchanged; later requests use Privy until the new cookie arrives.
+ */
+export function watchFanSessionLoss(getPrivyToken: () => Promise<string | null>, pid: string): () => void {
+  recoveryContext = { getPrivyToken, pid };
+  if (!restoreFetch) {
+    const original = window.fetch;
+    const watched: typeof fetch = async (input, init) => {
+      const epoch = hintEpoch;
+      const sentinel = sentTheSentinel(input, init);
+      const response = await original.call(window, input, init);
+      if (sentinel && response.status === 401 && !isFanSessionRoute(input)) void recoverFanSession(epoch);
+      return response;
+    };
+    window.fetch = watched;
+    restoreFetch = () => { if (window.fetch === watched) window.fetch = original; restoreFetch = null; };
+  }
+  return () => { recoveryContext = null; restoreFetch?.(); };
 }
 
 /** Abort any renewal and wait until it has settled, so no cookie response can arrive after the delete. Both requests are time-limited. */

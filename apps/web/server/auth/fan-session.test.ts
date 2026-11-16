@@ -140,7 +140,7 @@ describe("verifier without a Privy round trip on every request", () => {
       .resolves.toMatchObject({ privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com" });
     const other = sealFanSession(session({ pid: "did:privy:someone-else", iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 3600 }), KEY);
     const { port: port2 } = client(vi.fn(async () => { throw new Error("timeout"); }));
-    await expect(createPrivyNodeAccessVerifier(config, port2, { sessionKey: KEY, readCookieHeader: async () => cookieHeader(other) }).verify("token")).rejects.toThrow("timeout");
+    await expect(createPrivyNodeAccessVerifier(config, port2, { sessionKey: KEY, readCookieHeader: async () => cookieHeader(other) }).verify("token")).rejects.toMatchObject({ code: "PRIVY_UNAVAILABLE", cause: expect.objectContaining({ message: "timeout" }) });
   });
 
   it("accepts the sentinel only with a current cookie, and the fan gate still checks the member", async () => {
@@ -229,7 +229,7 @@ describe("sliding fan session security", () => {
     expect((await route.POST(req(value))).status).toBe(401);
   });
   it("rejects re-exchange of pre-logout Privy proof and accepts later proof", async () => {
-    const { route, resolve } = setup(NOW + 500);
+    const { route, resolve } = setup(NOW + 5000);
     const proof = { privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW,
       identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null };
     resolve.mockResolvedValue(proof);
@@ -237,19 +237,39 @@ describe("sliding fan session security", () => {
     expect((await exchange()).status).toBe(200);
     expect((await route.DELETE(req(fresh(), "DELETE"))).status).toBe(204);
     expect((await exchange()).status).toBe(401);
-    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 500 });
-    expect((await exchange()).status).toBe(401);
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 4000 });
+    expect((await exchange()).status).toBe(401); // an earlier second than the sign-out
     resolve.mockResolvedValue({ ...proof, tokenIssuedAt: undefined });
     expect((await exchange()).status).toBe(401);
-    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 1000 });
-    expect((await exchange()).status).toBe(401); // future proof is invalid
-    const later = setup(NOW + 2000);
-    later.user.sessionsValidAfter = new Date(NOW + 500).toISOString();
-    later.resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 1000 });
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 5000 + 61_000 });
+    expect((await exchange()).status).toBe(401); // beyond the clock tolerance
+    const later = setup(NOW + 8000);
+    later.user.sessionsValidAfter = new Date(NOW + 5000).toISOString();
+    later.resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 6000 });
     expect((await later.route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer new-token" } }))).status).toBe(200);
   });
+  it("lets a person sign straight back in within the second of signing out", async () => {
+    const { route, resolve, user } = setup(NOW + 5500);
+    user.sessionsValidAfter = new Date(NOW + 5500).toISOString();
+    // Privy reports whole seconds, so a token issued at 5.9s reads as 5.0s while the sign-out was recorded at 5.5s.
+    resolve.mockResolvedValue({ privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW + 5000,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null });
+    expect((await route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer relogin" } }))).status).toBe(200);
+    resolve.mockResolvedValue({ privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW + 4000,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null });
+    expect((await route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer older" } }))).status).toBe(401);
+  });
+  it("accepts a Privy token issued up to a minute ahead of this server and stamps the sign-in as now", async () => {
+    const { route, resolve } = setup(NOW);
+    resolve.mockResolvedValue({ privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW + 2000,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null });
+    const response = await route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer ahead" } }));
+    expect(response.status).toBe(200);
+    expect(openFanSession(response.headers.get("set-cookie")!.split(";")[0].split("=")[1], KEY, NOW)).toMatchObject({ sat: NOW });
+    expect(await response.json()).toMatchObject({ authenticatedAt: NOW });
+  });
   it("revokes copied cookies on logout for both renewals and fan requests", async () => {
-    const { route, repository } = setup(NOW);
+    const { route, repository } = setup(NOW + 5000);
     const copied = fresh();
     expect((await route.DELETE(req(copied, "DELETE"))).status).toBe(204);
     expect((await route.POST(req(copied))).status).toBe(401);

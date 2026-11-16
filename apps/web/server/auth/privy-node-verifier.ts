@@ -5,7 +5,8 @@ import { PrivyClient } from "@privy-io/node";
 import { createHash } from "node:crypto";
 import { createPrivyTokenVerifier } from "./privy-jwks";
 import { measurePrivyCall } from "./privy-latency";
-import { FAN_SESSION_BEARER, FanSessionRejectedError, fanSessionKey, openFanSession, readFanSessionCookie, type FanSession } from "./fan-session-cookie";
+import { FAN_SESSION_BEARER, FAN_SESSION_CLOCK_SKEW_MS, FanSessionRejectedError, fanSessionKey, fanSessionProofExpired, openFanSession, readFanSessionCookie, type FanSession } from "./fan-session-cookie";
+import { PrivyUnavailableError, privyFailureIsTransient } from "./privy-unavailable";
 import { isCognitoToken } from "./cognito/verifier";
 import { resolveCognitoAccess } from "./cognito/access";
 import type { KyaaMember } from "./cognito/kyaa-identity";
@@ -302,7 +303,8 @@ export function createPrivyNodeAccessVerifier(
     if (!sessionKey) return null;
     let header: string | null;
     try { header = await readCookieHeader(); } catch { return null; }
-    return openFanSession(readFanSessionCookie(header), sessionKey, now());
+    const session = openFanSession(readFanSessionCookie(header), sessionKey, now());
+    return session && !fanSessionProofExpired(session, now()) ? session : null;
   }
 
   type Resolved = { identity: PrivyIdentityInput; apple: VerifiedProviderAccount | null; google: VerifiedProviderAccount | null };
@@ -337,7 +339,7 @@ export function createPrivyNodeAccessVerifier(
     } catch (error) {
       const session = await cookieSession();
       if (session && session.pid === claims.user_id) return fromSession(session);
-      throw error;
+      throw privyFailureIsTransient(error) ? new PrivyUnavailableError(undefined, { cause: error }) : error;
     }
     if (user.id !== claims.user_id) {
       throw new Error("Privy token subject mismatch");
@@ -382,7 +384,7 @@ export function createPrivyNodeAccessVerifier(
       const resolved = await lookUp(claims);
       if (resolved.identity.fanSession) throw new Error("Fresh Privy identity is required");
       await lifecycle?.assertAccess({ privyUserId: claims.user_id, sessionId: claims.session_id, apple: resolved.apple, google: resolved.google });
-      if (!Number.isSafeInteger(claims.iat) || claims.iat! < 0 || claims.iat! * 1000 > now()) throw new Error("Invalid Privy token issuance time");
+      if (!Number.isSafeInteger(claims.iat) || claims.iat! < 0 || claims.iat! * 1000 > now() + FAN_SESSION_CLOCK_SKEW_MS) throw new Error("Invalid Privy token issuance time");
       return { privyUserId: claims.user_id, sessionId: claims.session_id, tokenIssuedAt: claims.iat! * 1000, ...resolved };
     },
     verify(accessToken) {

@@ -14,6 +14,9 @@ let origin = "";
 let clientJs = "";
 let deletes = 0;
 let resetUser = () => undefined as void;
+let revokeNow = () => undefined as void;
+/** How far from this server's clock Privy reports a proof as issued (negative: earlier). */
+let proofOffset = -1000;
 
 test.beforeAll(async () => {
   // `server-only` throws outside React's server build; the route code is imported as plain Node here.
@@ -37,7 +40,8 @@ test.beforeAll(async () => {
 
   const key = fanSessionKey(process.env.AUTH_COOKIE_SECRET);
   const user = { id: UID, privyUserId: PID, verifiedEmail: "fan@example.com", status: "active" as const, sessionsValidAfter: null as string | null };
-  resetUser = () => { user.sessionsValidAfter = null; };
+  resetUser = () => { user.sessionsValidAfter = null; proofOffset = -1000; };
+  revokeNow = () => { user.sessionsValidAfter = new Date().toISOString(); };
   const repository = { findUserByPrivyId: async () => user };
   const privy = { utils: () => ({ auth: () => ({ verifyAccessToken: async () => ({}) }) }), users: () => ({ _get: async () => ({}) }) };
   const verifierFor = (cookie: string | null) => createPrivyNodeAccessVerifier({ appId: "app-1", appSecret: "secret", appleLoginEnabled: false }, privy, { sessionKey: key, readCookieHeader: async () => cookie });
@@ -61,7 +65,7 @@ test.beforeAll(async () => {
     if (url.pathname === "/api/auth/fan-session") {
       if (req.method === "DELETE") deletes += 1;
       const route = createFanSessionRoute({
-        appOrigin: origin, key, resolve: async () => ({ privyUserId: PID, sessionId: "s1", tokenIssuedAt: Date.now() - 1000,
+        appOrigin: origin, key, resolve: async () => ({ privyUserId: PID, sessionId: "s1", tokenIssuedAt: Date.now() + proofOffset,
           identity: { privyUserId: PID, verifiedEmail: "fan@example.com", providerAccounts: [], googleLinked: false }, apple: null, google: null }),
         verifyCookie: () => verifierFor(headers.get("cookie")).verify("kyaa-session"),
         isPrivileged: async () => false, repository,
@@ -151,6 +155,17 @@ test("a renewal that never answers is aborted after the time limit and keeps the
   await page.evaluate((pid) => (window as any).fs.renewFanSession(async () => null, pid), PID);
   expect(Date.now() - started).toBeGreaterThanOrEqual(9_500);
   expect(await page.evaluate(() => (window as any).signals.map((signal: AbortSignal) => signal.aborted))).toEqual([true]);
+  expect(await hint(page)).not.toBeNull();
+  expect(await sessionCookies(page)).toHaveLength(1);
+});
+
+test("a cookie that died on another device is replaced without a reload", async ({ page }) => {
+  await signedInPage(page);
+  await page.evaluate((pid) => (window as any).fs.watchFanSessionLoss(async () => "privy-token", pid), PID);
+  // Signed out elsewhere: every older session is revoked. This tab's Privy session lives on and signs in again just after the cutoff.
+  revokeNow(); proofOffset = 1000;
+  expect(await protectedStatus(page)).toBe(401);
+  await expect.poll(() => protectedStatus(page), { timeout: 10_000 }).toBe(200);
   expect(await hint(page)).not.toBeNull();
   expect(await sessionCookies(page)).toHaveLength(1);
 });

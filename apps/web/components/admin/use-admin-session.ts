@@ -10,7 +10,9 @@ export type AdminSessionState =
   | { status: "authorized"; admin: { email: string; role: string } };
 
 export function useAdminSession(): AdminSessionState {
-  const { ready, authenticated, getAccessToken, user } = usePrivy();
+  const { ready, authenticated, getAccessToken: legacyGetAccessToken, getPrivyAccessToken, user } = usePrivy();
+  // The admin gate refuses the own-session sentinel, so it always gets a Privy token.
+  const getAccessToken = getPrivyAccessToken ?? legacyGetAccessToken;
   const [verifiedOwner, setVerifiedOwner] = useState<string | null>(null);
   const [state, setState] = useState<AdminSessionState>({ status: "loading" });
 

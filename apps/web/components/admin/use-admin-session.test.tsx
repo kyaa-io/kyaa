@@ -3,17 +3,33 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useAdminSession } from "./use-admin-session";
 
 const getAccessToken = vi.fn();
+const getPrivyAccessToken = vi.fn();
+let sentinelHolder = false;
 let privyState: { ready: boolean; authenticated: boolean; user?: { id: string } } = { ready: true, authenticated: true };
 
 vi.mock("@/features/auth/client/auth-fallback", () => ({
-  usePrivy: () => ({ ...privyState, getAccessToken }),
+  usePrivy: () => ({ ...privyState, getAccessToken, ...(sentinelHolder ? { getPrivyAccessToken } : {}) }),
 }));
 
 describe("useAdminSession", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     privyState = { ready: true, authenticated: true };
+    sentinelHolder = false;
     getAccessToken.mockResolvedValue("privy-access-token");
+    getPrivyAccessToken.mockResolvedValue("privy-access-token");
+  });
+
+  it("never sends the own-session sentinel: a fan promoted to admin with a live cookie enters on the first request", async () => {
+    sentinelHolder = true;
+    getAccessToken.mockResolvedValue("kyaa-session");
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ admin: { email: "biz@sallylab.io", role: "admin" } }), { status: 200, headers: { "content-type": "application/json" } }));
+    const { result } = renderHook(() => useAdminSession());
+    await waitFor(() => expect(result.current.status).toBe("authorized"));
+    expect(fetchMock.mock.calls.map((call) => (call[1] as RequestInit).headers)).toEqual([{ authorization: "Bearer privy-access-token" }, { authorization: "Bearer privy-access-token" }]);
+    expect(getAccessToken).not.toHaveBeenCalled();
   });
 
   it("sends the Privy bearer token and exposes only a validated 200 session", async () => {

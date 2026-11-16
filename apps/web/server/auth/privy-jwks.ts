@@ -1,6 +1,8 @@
 import "server-only";
 import { createLocalJWKSet, jwtVerify, type JSONWebKeySet, type JWTVerifyGetKey } from "jose";
+import { FAN_SESSION_CLOCK_SKEW_MS } from "./fan-session-cookie";
 import { measurePrivyCall } from "./privy-latency";
+import { PrivyUnavailableError } from "./privy-unavailable";
 
 // Privy access tokens are ES256 JWTs. We check them against the app's public keys held in this process, so a signed-in
 // request does not wait on Privy. The key set is fetched once, refreshed hourly, and the last good set is kept when a refresh
@@ -24,12 +26,12 @@ async function refresh(appId: string, state: KeyState, fetcher: Fetcher, now: ()
     const response = await fetcher(`${PRIVY_API}/v1/apps/${encodeURIComponent(appId)}/jwks.json`, {
       cache: "no-store", redirect: "error", signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
-    if (!response.ok) throw new Error("Privy key set unavailable");
+    if (!response.ok) throw new PrivyUnavailableError("Privy key set unavailable");
     const body = await response.json() as JSONWebKeySet;
-    if (!Array.isArray(body?.keys) || body.keys.length === 0) throw new Error("Privy key set is empty");
+    if (!Array.isArray(body?.keys) || body.keys.length === 0) throw new PrivyUnavailableError("Privy key set is empty");
     state.keys = createLocalJWKSet(body);
     state.fetchedAt = now();
-  }).catch((error: unknown) => { if (!state.keys) throw error; })
+  }).catch((error: unknown) => { if (!state.keys) throw error instanceof PrivyUnavailableError ? error : new PrivyUnavailableError("Privy key set unavailable", { cause: error }); })
     .finally(() => { state.inflight = null; });
   return state.inflight;
 }
@@ -55,7 +57,7 @@ export function createPrivyTokenVerifier(appId: string, options: { fetcher?: Fet
   return async function verifyAccessToken(accessToken: string): Promise<PrivyAccessClaims> {
     const { payload } = await jwtVerify(accessToken, resolveKey, { typ: "JWT", algorithms: ["ES256"], issuer: "privy.io", audience: appId });
     if (typeof payload.sub !== "string" || typeof payload.sid !== "string" || typeof payload.aud !== "string") throw new Error("Invalid Privy access token");
-    if (!Number.isSafeInteger(payload.iat) || payload.iat! < 0 || payload.iat! * 1000 > now()) throw new Error("Invalid Privy token issuance time");
+    if (!Number.isSafeInteger(payload.iat) || payload.iat! < 0 || payload.iat! * 1000 > now() + FAN_SESSION_CLOCK_SKEW_MS) throw new Error("Invalid Privy token issuance time");
     return { app_id: payload.aud, user_id: payload.sub, session_id: payload.sid, iat: payload.iat! };
   };
 }

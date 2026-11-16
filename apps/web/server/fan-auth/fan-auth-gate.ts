@@ -7,7 +7,7 @@ import {
 } from "../auth/authenticate-privy";
 import { AppleLifecycleUnavailableError } from "../auth/apple-notifications/apple-lifecycle";
 import { authenticateEmailAccessToken, EMAIL_TOKEN_PREFIX } from "../auth/email/email-auth";
-import { FAN_SESSION_BEARER, FanSessionRejectedError } from "../auth/fan-session-cookie";
+import { FAN_SESSION_BEARER, FanSessionRejectedError, fanSessionRevoked } from "../auth/fan-session-cookie";
 import type { IdentityRepository } from "../repositories/identity-repository";
 
 export type FanAuthRepository = Pick<IdentityRepository, "findUserByPrivyId">;
@@ -89,7 +89,7 @@ export async function authorizeFanRequest(input: {
   }
 
   if (identity.fanSession && (identity.fanSession.appUserId !== user.id ||
-    (user.sessionsValidAfter && identity.fanSession.authenticatedAt <= Date.parse(user.sessionsValidAfter)))) {
+    fanSessionRevoked(identity.fanSession.authenticatedAt, user.sessionsValidAfter))) {
     throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
   }
   return { appUserId: user.id };
