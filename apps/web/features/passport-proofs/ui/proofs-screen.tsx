@@ -162,11 +162,13 @@ export function ProofsScreen({ locale, slug }: Props) {
     setFailure(null);
     try {
       const encoded = await Promise.all(picked.map((item) => maskAndEncode(item.file, item.masks)));
-      const uploadId = await uploadProofImage(getToken, mission.missionId, encoded[0].blob);
+      const uploadIds = [];
+      for (const item of encoded) uploadIds.push(await uploadProofImage(getToken, mission.missionId, item.blob));
+      const uploadId = uploadIds[0];
       const imagePhash = encoded.map((item) => item.phash);
       const trimmed = note.trim() ? note.trim().slice(0, PROOF_NOTE_MAX) : undefined;
-      if (resubmitting) await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId, imagePhash, note: trimmed, locale });
-      else await submitProof(getToken, { creator: slug, proofType, uploadId, publishConsent: publishable && publish, amountVisible: publishable && publish ? amountVisible : null, imagePhash, note: trimmed, locale });
+      if (resubmitting) await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId, uploadIds, imagePhash, note: trimmed, locale });
+      else await submitProof(getToken, { creator: slug, proofType, uploadId, uploadIds, publishConsent: publishable && publish, amountVisible: publishable && publish ? amountVisible : null, imagePhash, note: trimmed, locale });
       setPicked([]); setNote(""); setPrivacy(false); setCovered(false); setResubmitting(null);
       history.retry();
     } catch (error) {

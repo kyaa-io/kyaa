@@ -18,7 +18,26 @@ const valid = { requestKey: key, creator: "kyaa-wave", proofType: "purchase", up
 const dbResult = { id: sub, status: "pending", revision: 0, replayed: false };
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(deps.authorize).mockResolvedValue({ appUserId: owner }); });
 
+it("resubmits every photo using the same atomic media contract", async () => {
+  vi.mocked(deps.rpc).mockResolvedValue(dbResult);
+  const ids = [upload, post];
+  expect((await h.resubmit(send({ expectedRevision: 1, uploadId: upload, uploadIds: ids, imagePhash: ["0123456789abcdef", "abcdef0123456789"] }), sub)).status).toBe(200);
+  expect(deps.rpc).toHaveBeenCalledWith("resubmit_certification_proof_multi", expect.objectContaining({ p_upload_ids: ids, p_expected_revision: 1 }));
+});
+
 describe("submit", () => {
+  it("passes every selected photo to the atomic multi-photo command", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue(dbResult);
+    const ids = [upload, post];
+    expect((await h.submit(send({ ...valid, uploadIds: ids, imagePhash: ["0123456789abcdef", "abcdef0123456789"] }))).status).toBe(200);
+    expect(deps.rpc).toHaveBeenCalledWith("submit_certification_proof_multi", expect.objectContaining({ p_upload_ids: ids }));
+  });
+  it("rejects duplicate photos, more than three photos, and missing photo hashes", async () => {
+    for (const uploadIds of [[upload, upload], [upload, post, sub, key], [upload, post]]) {
+      expect((await h.submit(send({ ...valid, uploadIds }))).status).toBe(400);
+    }
+    expect(deps.rpc).not.toHaveBeenCalled();
+  });
   it("refuses to publish an SNS post on the proof board before reaching the database", async () => {
     expect((await h.submit(send({ ...valid, proofType: "sns_post", publishConsent: true }))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();

@@ -56,7 +56,7 @@ export async function uploadProofImage(getToken: TokenGetter, missionId: string,
 }
 
 export async function submitProof(getToken: TokenGetter, input: {
-  creator: string; proofType: ProofType; uploadId: string; publishConsent: boolean;
+  creator: string; proofType: ProofType; uploadId: string; uploadIds?: string[]; publishConsent: boolean;
   amountVisible: boolean | null; imagePhash: string[]; note?: string; locale?: string;
 }) {
   const response = await authedFetch(getToken, "/api/me/proofs", {
@@ -67,7 +67,7 @@ export async function submitProof(getToken: TokenGetter, input: {
   return proofCommandResultSchema.parse(await ensureOk(response));
 }
 
-export async function resubmitProof(getToken: TokenGetter, submissionId: string, input: { expectedRevision: number; uploadId: string; imagePhash: string[]; note?: string; locale?: string }) {
+export async function resubmitProof(getToken: TokenGetter, submissionId: string, input: { expectedRevision: number; uploadId: string; uploadIds?: string[]; imagePhash: string[]; note?: string; locale?: string }) {
   const response = await authedFetch(getToken, `/api/me/proofs/${encodeURIComponent(submissionId)}/resubmit`, {
     method: "POST",
     headers: { "content-type": "application/json" },
