@@ -56,6 +56,29 @@ describe("canonical fan action domain", () => {
     expect(documents[0]!.attributes).toContainEqual({ trait_type: "Action", value: "COMMUNITY_STAMP_ISSUED" });
   });
 
+  const dukjilKinds = ["post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin",
+    "event_review", "cheer", "proof", "quiz", "steady_checkin", "subscription", "share"];
+  const dukjilSnapshot = (kind: string, keyKind = kind) => ({ ...communitySnapshot(kind),
+    canonicalSourceKey: `dukjil:${keyKind}:quiz:0f0e0d0c-0000-4000-8000-000000000001:0f0e0d0c-0000-4000-8000-000000000002` });
+
+  it.each(dukjilKinds)("issues one dukjil %s Stamp through code 12 with its renewal image", async (kind) => {
+    const documents: MetadataDocument[] = [];
+    const payload = await buildCanonicalActionPayload(job, dukjilSnapshot(kind), { pin: async (document) => {
+      documents.push(document); return "ipfs://dukjil-metadata";
+    } }, new HashChain(), Date.now(), "prod");
+    expect(payload.request.actionCode).toBe(12);
+    expect(payload.intents).toHaveLength(1);
+    expect(payload.intents[0]!.issuanceKey).toBe(h("b"));
+    expect(documents[0]!.attributes).toContainEqual({ trait_type: "Action", value: "COMMUNITY_STAMP_ISSUED" });
+  });
+
+  it("rejects a dukjil key whose kind differs from the Stamp or that names an unlisted kind", () => {
+    for (const snapshot of [dukjilSnapshot("quiz", "post"), dukjilSnapshot("first_clip"), dukjilSnapshot("welcome"),
+      dukjilSnapshot("daily_checkin"), dukjilSnapshot("invite"), dukjilSnapshot("wave_mission"), communitySnapshot("quiz")]) {
+      expect(actionSourceSnapshotV1Schema.safeParse(snapshot).success).toBe(false);
+    }
+  });
+
   it("rejects untrusted community issuance before pinning or signing", async () => {
     const valid = communitySnapshot();
     const first = valid.credentials[0]!;

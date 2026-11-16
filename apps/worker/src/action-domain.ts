@@ -33,6 +33,18 @@ const actionCodeSchema = z.union([
   z.literal(7), z.literal(8), z.literal(9), z.literal(10), z.literal(11), z.literal(12),
 ]);
 const entityTypeSchema = z.enum(["passport", "stamp", "reaction", "collectible", "community_stamp"]);
+// Code 12 kinds: share and first-clip proofs, plus the dukjil policy kinds whose source occurrence is the stamp row itself
+// (canonical key "dukjil:<kind>:<source key>:<user>", checked in the database before enqueue). Same list as the database gate.
+const dukjilCommunityStampKinds = [
+  "post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin", "event_review",
+  "cheer", "proof", "quiz", "steady_checkin", "subscription", "share",
+] as const;
+const dukjilSourceKey = /^dukjil:([a-z_]+):/;
+function communityStampKindAllowed(stampKind: string, canonicalSourceKey: string): boolean {
+  const dukjil = dukjilSourceKey.exec(canonicalSourceKey);
+  if (dukjil) return dukjil[1] === stampKind && (dukjilCommunityStampKinds as readonly string[]).includes(stampKind);
+  return stampKind === "share" || stampKind === "first_clip";
+}
 
 const metadataDescriptorSchema = z.object({
   operationKey: z.string().min(1).max(300),
@@ -102,10 +114,10 @@ export const actionSourceSnapshotV1Schema = z.object({
     if (value.sourceNamespace !== "community_stamps" || value.bindingVersion !== 2
       || value.creatorId.toLowerCase() === zero || value.credentials.length !== 1
       || credential?.kind !== credentialKinds.STAMP || credential.mode !== "MINT"
-      || !parsed?.success || !["share", "first_clip"].includes(parsed.data.stampKind)
+      || !parsed?.success || !communityStampKindAllowed(parsed.data.stampKind, value.canonicalSourceKey)
       || parsed.data.recipient.toLowerCase() !== value.recipient.toLowerCase()
       || parsed.data.issuanceId.toLowerCase() !== credential.issuanceKey?.toLowerCase()) {
-      context.addIssue({ code: "custom", path: ["credentials"], message: "Community issuance requires one binding 2 share or first-clip Stamp with its owner, creator and issuance key" });
+      context.addIssue({ code: "custom", path: ["credentials"], message: "Community issuance requires one binding 2 share, first-clip or dukjil Stamp with its owner, creator and issuance key" });
     }
   }
   if (value.origin === "NATIVE" && value.operationKind === "IMPORT_HISTORICAL") {

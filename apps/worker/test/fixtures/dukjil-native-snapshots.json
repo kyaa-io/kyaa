@@ -1,0 +1,1136 @@
+[
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:220d5aea-ec9b-405c-a54f-e793433b4213",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "cheer",
+      "issuanceId": "0x7a01fbc505218439c375fdd830ba2def2792682ac0b8b89d2debbf7fa84a8fa1",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x7a01fbc505218439c375fdd830ba2def2792682ac0b8b89d2debbf7fa84a8fa1",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.832362+09:00",
+  "canonicalSourceKey": "dukjil:cheer:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xdfcc309de4deb2cbabcd9cafff21266c470162539c8e81af7008058a4d238da9"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:17dd7009-53ab-4c27-9e5d-013662675e1c",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "event_checkin",
+      "issuanceId": "0x3521a89c75b8cf7a59225589091c7574003551404a9c567bcd5ee43599801560",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x3521a89c75b8cf7a59225589091c7574003551404a9c567bcd5ee43599801560",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.828305+09:00",
+  "canonicalSourceKey": "dukjil:event_checkin:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xe0ff610440d9765d5f3f8319f03d5dce3c9f1dc9731a8f3a0eae78e4168f756d"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:ce6df9ae-ea5a-44fa-9483-ef4338c06f78",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "live_attend",
+      "issuanceId": "0x00dabbd3ac76d565c07da93735178a835107489d10a0ee17e92b0649e2355c2a",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x00dabbd3ac76d565c07da93735178a835107489d10a0ee17e92b0649e2355c2a",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.821827+09:00",
+  "canonicalSourceKey": "dukjil:live_attend:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xc11753ab29fad649f07b1b372fa1af8e08abcb2b35e93f59b2f34f337fdb485a"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:0544feff-0e4b-48e3-add8-20117fbd6750",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "steady_checkin",
+      "issuanceId": "0xa807ffab47637a231709181a8b0c4db0eac264a6a828df0cabee1249619fabf2",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xa807ffab47637a231709181a8b0c4db0eac264a6a828df0cabee1249619fabf2",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.836074+09:00",
+  "canonicalSourceKey": "dukjil:steady_checkin:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x513085fc8aae9e0dd12fb123e89265ff03e757611a1878dffc722c4f46003ce3"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:110050c8-d2ee-4cef-bcab-3f8187ab9513",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "comment",
+      "issuanceId": "0xb630a3ce29cd6b979da17654f37b9fecd7b35fa433bbca9fb3cc95fbd2d6455b",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xb630a3ce29cd6b979da17654f37b9fecd7b35fa433bbca9fb3cc95fbd2d6455b",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T10:06:00+09:00",
+  "canonicalSourceKey": "dukjil:comment:backlog:6:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xe37c80a83c3ad60c456674e38a3209ad877bdcaba81b4791d7f50d3a9de097f3"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:f0b44a0f-d268-4bc4-80d0-987157daf2d5",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "subscription",
+      "issuanceId": "0x5826637e1ac188d3362e7ff7ab7ce2026fa7e5c9a159060440b12d321a860a65",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x5826637e1ac188d3362e7ff7ab7ce2026fa7e5c9a159060440b12d321a860a65",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.837681+09:00",
+  "canonicalSourceKey": "dukjil:subscription:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xea518e67aadf8dc723b0fc59d02e2631dc3505d90a62f6332645d4ec23b0a76c"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 10,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:781fa513-9506-4b63-9aec-b831de42dd85",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "daily_checkin",
+      "issuanceId": "0x66c375fc250a2ca73e452a52f99b4ffc7ca67061424e7528ca10ac12d2f53d21",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x66c375fc250a2ca73e452a52f99b4ffc7ca67061424e7528ca10ac12d2f53d21",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.841387+09:00",
+  "canonicalSourceKey": "dukjil:daily_checkin:daily-checkin:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x6a0bc46b25c4f13b2b4ed3ae535272d77d1558c90654e4df23afc6e604c7c4da"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:354b296a-f880-42bf-bd98-5b1ef818a5bc",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "mission",
+      "issuanceId": "0x77842b15feefc1a68ca9cf615afda909069a88d20b6d383e78e59e47e86c7958",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x77842b15feefc1a68ca9cf615afda909069a88d20b6d383e78e59e47e86c7958",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.826676+09:00",
+  "canonicalSourceKey": "dukjil:mission:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x3a513adf56fbd44c6042bc7c82a846ce3d145b27ac7ff56826574df4095076b0"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:c7966e57-3a14-456a-8f6a-81c5bc691e7f",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "proof",
+      "issuanceId": "0xcf4b0622d4b7ddda73085d926abfd824a80b41942c48aac1b08f6502a48c7c35",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xcf4b0622d4b7ddda73085d926abfd824a80b41942c48aac1b08f6502a48c7c35",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.834297+09:00",
+  "canonicalSourceKey": "dukjil:proof:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xb6166a9b61aa8fb4e14510887f1653f9eccb65e3f644d651e8febafa67e0d53f"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:13fb2b5b-5ef3-4a6c-8ead-ddd301bc2cd0",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "quiz",
+      "issuanceId": "0x5cb74ce2856b82dd1cda06abec276f4ab4d8ca91fffbb67fa5c35f255dc270ee",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x5cb74ce2856b82dd1cda06abec276f4ab4d8ca91fffbb67fa5c35f255dc270ee",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T10:01:00+09:00",
+  "canonicalSourceKey": "dukjil:quiz:backlog:1:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xfd6535dd3062f47e75dc6bf49174c4a622929e34a1bcee4755092b2e412fddf9"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:d324f5f4-67a4-4f55-b77f-424fa580b01f",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "event_review",
+      "issuanceId": "0xee469be0062b0397f8b07073434ce8ad10e5ab363b6f43961730f0c34e856cc8",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xee469be0062b0397f8b07073434ce8ad10e5ab363b6f43961730f0c34e856cc8",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.830069+09:00",
+  "canonicalSourceKey": "dukjil:event_review:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xa0592b058e127692f2b990f43d78a3a03bc24e05510cf2ec224e0a6291451d81"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:90bddd0d-641c-4e56-a4a0-a142bf9272ec",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "share",
+      "issuanceId": "0x1a85de3970f11263359d09039e2a2ed5474c4a3546519b80cbaa1c4a606ecc14",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x1a85de3970f11263359d09039e2a2ed5474c4a3546519b80cbaa1c4a606ecc14",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.839224+09:00",
+  "canonicalSourceKey": "dukjil:share:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xe9e1151f1542c01b08f2d992fa7850dfef426ee78b6799e0b8bc72d182321490"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:29448bf9-05d4-4dad-a306-d3edcb5d5342",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "reaction",
+      "issuanceId": "0x096cbfc0b2158acab6be98d19612baf70da2eda30451e3c43b871100b03b5e6a",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x096cbfc0b2158acab6be98d19612baf70da2eda30451e3c43b871100b03b5e6a",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T10:05:00+09:00",
+  "canonicalSourceKey": "dukjil:reaction:backlog:5:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x1ba21ca1183bcca90f7aee76cf6acfca4f6768593dc906dc991e17f05b10c56c"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:5bb23b9d-e266-4c32-bb3d-508f97678b0c",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "reaction",
+      "issuanceId": "0x4fb3201084f9b05120684b7b763d9c9d6a1ad128a0b2daa951c40e6c7bde95ee",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x4fb3201084f9b05120684b7b763d9c9d6a1ad128a0b2daa951c40e6c7bde95ee",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.816009+09:00",
+  "canonicalSourceKey": "dukjil:reaction:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x58d42630dccc4c3700c6cfada9ec975bc25263a04b1ffd4d8141e9fbb8e1754a"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:541a0bb0-423c-4432-a571-039807fc5414",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "quiz",
+      "issuanceId": "0x85736c56ac8c692ea7be18ec8151cb0fdd39752cdd762b928aefc39792c9a22a",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x85736c56ac8c692ea7be18ec8151cb0fdd39752cdd762b928aefc39792c9a22a",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.801321+09:00",
+  "canonicalSourceKey": "dukjil:quiz:quiz:0c510000-0000-4000-8000-000000000001:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x981a5e756f39ccb3c0cb1f4b67e3039684d91acab57dd6a46cb3ed4e669e4145"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc4",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 10,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:30273b58-eaac-4d06-9a77-9c2e93d01e09",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc4",
+      "stampKind": "daily_checkin",
+      "issuanceId": "0xfefd5a7ff4b4f9e357d2d5ed27cc9c4810b42935b530b862a685e634b98e529f",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xfefd5a7ff4b4f9e357d2d5ed27cc9c4810b42935b530b862a685e634b98e529f",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T10:03:00+09:00",
+  "canonicalSourceKey": "dukjil:daily_checkin:daily-checkin:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000004",
+  "evidenceCommitment": "0xee6cb4267c972bb97e83f64bb6ce66190981b40e1854b5aa2a6813fa2261c4ca"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:1e33c356-b528-43e3-bb0a-036019c8ef13",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "comment",
+      "issuanceId": "0xa49e720e71a2faf8ad306921209d0f865cae97552481a6af85502ab19ac2045d",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xa49e720e71a2faf8ad306921209d0f865cae97552481a6af85502ab19ac2045d",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.813454+09:00",
+  "canonicalSourceKey": "dukjil:comment:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xf32a3afd45b7080cef84cebbdafbc7694c2032a55586ad8d12653d5bcfa64cfd"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000002",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc2",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:f82f42e6-9a5f-43d8-89ff-f1a31750015d",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc2",
+      "stampKind": "post",
+      "issuanceId": "0xc24ad28a5ca0c0f4bc7e2adfba7fd2b3e779eebb84144713c27fb9503027e75b",
+      "celebritySlug": "ocs-cel-2"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xc24ad28a5ca0c0f4bc7e2adfba7fd2b3e779eebb84144713c27fb9503027e75b",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.85299+09:00",
+  "canonicalSourceKey": "dukjil:post:post:unregistered:0c500000-0000-4000-8000-000000000002",
+  "evidenceCommitment": "0x8eb22aae7430ed818f65b6c307db3f4cdbbb4975c14bad048da4ba42de8fbc0b"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:8981b1c5-1010-448f-8581-c0eb258bed48",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "post",
+      "issuanceId": "0x3a10eae3db6fe12127b8d7ec546f77efc84bf1353f3539447f28732457303e38",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x3a10eae3db6fe12127b8d7ec546f77efc84bf1353f3539447f28732457303e38",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.81009+09:00",
+  "canonicalSourceKey": "dukjil:post:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xb552525033699de7042fa5f99d84a13f20a8fbc162090c12b20bcde23d29c310"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:724e5f26-c1f7-4ec6-b8e6-232fbf3adbfa",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "steady_checkin",
+      "issuanceId": "0xe9015749585b13ee3a39223b86e06568ad0538b2bbc58428c4c266870f346df1",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xe9015749585b13ee3a39223b86e06568ad0538b2bbc58428c4c266870f346df1",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T10:04:00+09:00",
+  "canonicalSourceKey": "dukjil:steady_checkin:backlog:4:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x4c6f031e445101c8fd94ae81a89657eb7a95434209707a32bd113e471c11d746"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000003",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc3",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:32b7a9fd-b8c0-49d2-818e-ba2b5464dd4e",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc3",
+      "stampKind": "post",
+      "issuanceId": "0xe670da60d8833f375f3f6f33bb1a291eb7386f542650b0b6717838f282658c2f",
+      "celebritySlug": "ocs-cel-3"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xe670da60d8833f375f3f6f33bb1a291eb7386f542650b0b6717838f282658c2f",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T11:00:00+09:00",
+  "canonicalSourceKey": "dukjil:post:backlog:unregistered:0c500000-0000-4000-8000-000000000003",
+  "evidenceCommitment": "0x97a85c471b705b522bc0fb75bd0652fed480c010e10a6cccd42fa5a3351f6cd3"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000003",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc3",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:810b95cd-7edb-45a3-9730-23ce2b9ea77e",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc3",
+      "stampKind": "post",
+      "issuanceId": "0x45087e05046c817be079c0b8f8d4dbbc5e2f38a751201f2755e83656054950d8",
+      "celebritySlug": "ocs-cel-3"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x45087e05046c817be079c0b8f8d4dbbc5e2f38a751201f2755e83656054950d8",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.860034+09:00",
+  "canonicalSourceKey": "dukjil:post:post:forge:0c500000-0000-4000-8000-000000000003",
+  "evidenceCommitment": "0x38be94b20bacd112fcecb8abfb488cb2e61d4085639b0f587ec0f84b0ea948fa"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:a674facb-29a8-4c4e-b9eb-b331cefef99c",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "live_reserve",
+      "issuanceId": "0x487ca1ca917482cb8728fec2c06149bae08e3b0434a43ff95e0fb270341de586",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x487ca1ca917482cb8728fec2c06149bae08e3b0434a43ff95e0fb270341de586",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.818781+09:00",
+  "canonicalSourceKey": "dukjil:live_reserve:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xc5d4f24bed13601baabcbd1653b7f80d0eeae44f2bca5f574cf107a5c6b54aaa"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000002",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc2",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 10,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:30f9243b-bd44-436b-a353-5d4f0b7ea940",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc2",
+      "stampKind": "daily_checkin",
+      "issuanceId": "0x59bb1f1279fdfacbcf4731c2de77102861d19723c735d21e0f18d99105f0336a",
+      "celebritySlug": "ocs-cel-2"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x59bb1f1279fdfacbcf4731c2de77102861d19723c735d21e0f18d99105f0336a",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.85412+09:00",
+  "canonicalSourceKey": "dukjil:daily_checkin:daily-checkin:0c510000-0000-4000-8000-000000000002:2026-11-17:0c500000-0000-4000-8000-000000000002",
+  "evidenceCommitment": "0x654cd221aaeb5ce7efe486c95a9833a28a8a46f6a314eb0bf23f06c37f3ffb05"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:6c241c04-a8dc-463e-b650-601d94e58b5f",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "cheer",
+      "issuanceId": "0x18811775e5838d150dafaa23620a17ab620d12d761bef409945fd31f35c9dcc3",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x18811775e5838d150dafaa23620a17ab620d12d761bef409945fd31f35c9dcc3",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T10:07:00+09:00",
+  "canonicalSourceKey": "dukjil:cheer:backlog:7:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xcb5928ed88390fd39e349aad2ed93b24011928756f343de6f8c83e6bededca82"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:df6e77a7-2b5f-4c05-9916-fe18acff794d",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "survey",
+      "issuanceId": "0xa3ea6fadc23e80aa6393abe3277128d4f0055218148df1b12228167faf5ab43f",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0xa3ea6fadc23e80aa6393abe3277128d4f0055218148df1b12228167faf5ab43f",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-17T02:54:17.824802+09:00",
+  "canonicalSourceKey": "dukjil:survey:0c510000-0000-4000-8000-000000000001:2026-11-17:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0xa23b90a649437c40058914c4f7922fbc80fe6f21016d86cda1c173b786265abe"
+ },
+ {
+  "origin": "NATIVE",
+  "chainId": 91342,
+  "version": 1,
+  "hubProxy": "0x2222222222222222222222222222222222222222",
+  "revision": 1,
+  "creatorId": "0x000000000000000000000000000000000c510000000040008000000000000001",
+  "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+  "schemaUid": "0x4444444444444444444444444444444444444444444444444444444444444444",
+  "actionCode": 12,
+  "campaignId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "credentials": [
+   {
+    "kind": 1,
+    "mode": "MINT",
+    "metadata": {
+     "operationKey": "byus:community-stamp:v1:1d6e2259-5f27-40d6-abf7-a58ac6722a3f",
+     "legacyPayload": {
+      "recipient": "0xccccccccccccccccccccccccccccccccccccccc1",
+      "stampKind": "post",
+      "issuanceId": "0x2b9a87ab755c4aa67f4ecf2a4212014d16ddfe579a0bdadaf1117f12809e5328",
+      "celebritySlug": "ocs-cel-1"
+     },
+     "legacyEntityType": "community_stamp"
+    },
+    "issuanceKey": "0x2b9a87ab755c4aa67f4ecf2a4212014d16ddfe579a0bdadaf1117f12809e5328",
+    "nftContract": "0x5555555555555555555555555555555555555555"
+   }
+  ],
+  "assetBaseUri": "ipfs://bafydukjilnative",
+  "environmentId": "0x1111111111111111111111111111111111111111111111111111111111111111",
+  "operationKind": "RECORD_AND_ISSUE",
+  "policyVersion": 1,
+  "schemaVersion": 1,
+  "bindingVersion": 2,
+  "migrationProof": [],
+  "sourceNamespace": "community_stamps",
+  "migrationBatchId": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "sourceOccurredAt": "2026-11-12T10:02:00+09:00",
+  "canonicalSourceKey": "dukjil:post:backlog:2:0c500000-0000-4000-8000-000000000001",
+  "evidenceCommitment": "0x59096dacdd91943b907f1397b07a34a13d33a47b23f2fd459e7d6691036e18e5"
+ }
+]
