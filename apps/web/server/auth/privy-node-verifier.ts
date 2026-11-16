@@ -307,7 +307,7 @@ export function createPrivyNodeAccessVerifier(
 
   function fromSession(session: FanSession): Resolved {
     return {
-      identity: { privyUserId: session.pid, verifiedEmail: session.em, providerAccounts: session.pa, googleLinked: session.gl },
+      identity: { privyUserId: session.pid, verifiedEmail: session.em, providerAccounts: session.pa, googleLinked: session.gl, fanSession: { appUserId: session.uid, authenticatedAt: session.sat ?? session.iat * 1000 } },
       apple: session.apple, google: session.google,
     };
   }
@@ -378,6 +378,7 @@ export function createPrivyNodeAccessVerifier(
       const claims = await verifyToken(accessToken);
       if (claims.app_id !== appId || !claims.session_id) throw new Error("Privy application mismatch");
       const resolved = await lookUp(claims);
+      if (resolved.identity.fanSession) throw new Error("Fresh Privy identity is required");
       await lifecycle?.assertAccess({ privyUserId: claims.user_id, sessionId: claims.session_id, apple: resolved.apple, google: resolved.google });
       return { privyUserId: claims.user_id, sessionId: claims.session_id, ...resolved };
     },

@@ -29,7 +29,7 @@ function OwnerDeletion({ locale, auth }: { locale: AppLocale; auth: ReturnType<t
     if (confirmation !== "DELETE" || pending.current || !auth.authenticated) return;
     pending.current = true; setBusy(true); setError("");
     try {
-      const token = await auth.getAccessToken();
+      const token = await (auth.getPrivyAccessToken ?? auth.getAccessToken)();
       if (!token || !alive.current) throw new Error("Session unavailable");
       const response = await fetch("/api/me/account", { method: "DELETE", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ confirmation }), cache: "no-store" });
       if (!response.ok) throw new Error("Deletion unavailable");

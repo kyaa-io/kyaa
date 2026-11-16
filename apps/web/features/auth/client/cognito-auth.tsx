@@ -63,6 +63,6 @@ export function useByUsAuth(): ByUsAuth{
   const authenticated=session?.authenticated===true && session.walletLinked===true && typeof session.userId==="string";
   const userId=authenticated?session!.userId!:null;
   const user=useMemo<ByUsAuthUser|null>(()=>userId?{id:userId,linkedAccounts:[]}:null,[userId]);
-  const auth=useMemo<ByUsAuth>(()=>({ready:!loading,authenticated,user,getAccessToken,logout,login:openLoginPage}),[authenticated,getAccessToken,loading,logout,user]);
+  const auth=useMemo<ByUsAuth>(()=>({ready:!loading,authenticated,user,getAccessToken,getPrivyAccessToken:getAccessToken,logout,login:openLoginPage}),[authenticated,getAccessToken,loading,logout,user]);
   return cognito.enabled?auth:privy?privy.auth:fallback;
 }

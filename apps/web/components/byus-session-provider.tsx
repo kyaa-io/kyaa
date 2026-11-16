@@ -80,8 +80,9 @@ function normalizedInput(input: SessionTransitionInput): Omit<ActiveTransition, 
 
 export function ByUsSessionProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { ready: sdkReady, authenticated, user, getAccessToken } = useByUsAuth();
+  const { ready: sdkReady, authenticated, user, getAccessToken: legacyGetAccessToken, getPrivyAccessToken } = useByUsAuth();
   // Privy mode only (AUTH_PROVIDER=privy): the browser confirms the Privy user and its embedded wallet before the token.
+  const getAccessToken = getPrivyAccessToken ?? legacyGetAccessToken;
   const privy = usePrivyBridge();
   const refreshUser = privy?.refreshUser, createWallet = privy?.createWallet;
   const markAvatarSessionReady = useAvatarSessionReady();
@@ -233,6 +234,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
         sdkWaitsRef.current = 0;
         signupFunnelTracker.result(measurement, "succeeded", "session", "none", diagnosticClockValid ? walletDiagnostic : undefined);
         markAvatarSessionReady(ownerId);
+        window.dispatchEvent(new Event("kyaa:login-synchronized"));
         const returnPathname = new URL(returnTo, "https://byus.local").pathname;
         const storedIntent = readAuthIntent(getSessionStorage(), authIntent);
         const continuesFanVerification = storedIntent?.actionType === "START_FAN_VERIFICATION"

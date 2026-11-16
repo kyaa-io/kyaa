@@ -155,9 +155,10 @@ export function LoginPage({
 }: LoginPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { ready, authenticated, getAccessToken, logout, user } = useByUsAuth();
+  const { ready, authenticated, getAccessToken: legacyGetAccessToken, getPrivyAccessToken, logout, user } = useByUsAuth();
   const privyUserId = user?.id;
   // Privy mode only (AUTH_PROVIDER=privy): Google and Apple start in Privy and return here with privy_oauth_* parameters.
+  const getAccessToken = getPrivyAccessToken ?? legacyGetAccessToken;
   const privy = usePrivyBridge();
   const oauthGuard = getOAuthStartGuard();
   const byUsSession = useByUsSession();

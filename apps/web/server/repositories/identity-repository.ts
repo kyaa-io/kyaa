@@ -15,6 +15,7 @@ export interface AppUser {
   privyUserId: string;
   verifiedEmail: string;
   status: AppUserStatus;
+  sessionsValidAfter?: string | null;
 }
 
 export interface AuditContext {

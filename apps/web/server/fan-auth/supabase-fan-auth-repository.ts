@@ -20,7 +20,7 @@ export function createSupabaseFanAuthRepository(
     async findUserByPrivyId(privyUserId): Promise<AppUser | null> {
       const { data, error } = await database
         .from("app_users")
-        .select("id, privy_user_id, verified_email, status")
+        .select("id, privy_user_id, verified_email, status, sessions_valid_after")
         .eq("privy_user_id", privyUserId)
         .maybeSingle();
       if (error) throw new Error("Fan identity lookup failed");
@@ -36,6 +36,7 @@ export function createSupabaseFanAuthRepository(
         privyUserId: data.privy_user_id,
         verifiedEmail: data.verified_email,
         status: data.status,
+        sessionsValidAfter: data.sessions_valid_after,
       };
     },
   };

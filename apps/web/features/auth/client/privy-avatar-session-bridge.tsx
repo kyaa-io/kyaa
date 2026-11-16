@@ -13,7 +13,8 @@ interface PendingGrant {
 }
 
 export function PrivyAvatarSessionBridge({ children }: { children: ReactNode }) {
-  const { ready, authenticated, user, getAccessToken } = usePrivy();
+  const { ready, authenticated, user, getAccessToken: legacyGetAccessToken, getPrivyAccessToken } = usePrivy();
+  const getAccessToken = getPrivyAccessToken ?? legacyGetAccessToken;
   const owner = ready && authenticated ? user?.id ?? null : null;
   const [grant, setGrant] = useState<PendingGrant | null>(null);
   const [synchronizedOwner, setSynchronizedOwner] = useState<string | null>(null);

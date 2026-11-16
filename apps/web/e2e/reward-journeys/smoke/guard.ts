@@ -22,6 +22,7 @@ export async function guardWrites(context: BrowserContext, origin: string): Prom
     if (method === "GET" || method === "HEAD" || method === "OPTIONS") return route.continue();
     const url = new URL(request.url());
     if (url.origin === new URL(origin).origin) {
+      if (method === "POST" && url.pathname === "/api/auth/fan-session") return route.continue();
       if (ALLOWED_SAME_ORIGIN_WRITES.has(url.pathname)) return route.continue();
       guard.blocked.push(`${method} ${url.origin}${url.pathname}`);
       return route.abort("blockedbyclient");

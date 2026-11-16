@@ -2,19 +2,17 @@ import "server-only";
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 import { z } from "zod";
 
-// Our own short session for fans already signed in through Privy. After a Privy token passes, POST /api/auth/fan-session
-// seals who the fan is into an httpOnly cookie. When Privy is slow the browser sends "Bearer kyaa-session" instead of a
-// Privy token, and the verifier reads this cookie. The cookie can only be issued or renewed with a real Privy token, so it
-// never extends itself; the fan gate still checks app_users status on every request (suspension, deletion).
-// Only fan routes accept it: admin and operator gates refuse the sentinel.
+// Sealed fan-only session. Account state and revocation remain checked on every request.
 export const FAN_SESSION_COOKIE = "__Host-kyaa-fan-session";
 export const FAN_SESSION_BEARER = "kyaa-session";
-export const FAN_SESSION_MAX_AGE_SECONDS = 6 * 60 * 60;
+export const FAN_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+export const FAN_SESSION_PROOF_MAX_MS = 90 * 24 * 60 * 60_000;
 const KEY_INFO = "kyaa-fan-session-v1";
 
 const providerAccount = z.object({ subject: z.string().min(1).max(256), email: z.string().max(320).nullable() }).nullable();
 export const fanSessionSchema = z.object({
-  v: z.literal(1),
+  v: z.union([z.literal(1), z.literal(2)]),
+  sat: z.number().int().nonnegative().optional(),
   pid: z.string().min(1).max(128),
   sid: z.string().max(256),
   uid: z.string().uuid(),
@@ -56,15 +54,16 @@ export function openFanSession(value: string | null | undefined, key: Buffer, no
     const parsed = fanSessionSchema.safeParse(JSON.parse(Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString("utf8")));
     if (!parsed.success) return null;
     const nowSeconds = Math.floor(now / 1000);
-    if (parsed.data.exp <= nowSeconds || parsed.data.iat > nowSeconds + 60 || parsed.data.exp - parsed.data.iat > FAN_SESSION_MAX_AGE_SECONDS) return null;
+    if (parsed.data.v === 2 && (parsed.data.sat === undefined || parsed.data.sat > now + 60_000)) return null;
+    if (parsed.data.exp <= nowSeconds || parsed.data.iat > nowSeconds + 60 || parsed.data.exp - parsed.data.iat > (parsed.data.v === 1 ? 6 * 3600 : FAN_SESSION_MAX_AGE_SECONDS) || parsed.data.exp <= parsed.data.iat) return null;
     return parsed.data;
   } catch {
     return null;
   }
 }
 
-export function fanSessionCookieHeader(value: string): string {
-  return `${FAN_SESSION_COOKIE}=${value}; Path=/; Max-Age=${FAN_SESSION_MAX_AGE_SECONDS}; HttpOnly; Secure; SameSite=Strict`;
+export function fanSessionCookieHeader(value: string, maxAge = FAN_SESSION_MAX_AGE_SECONDS): string {
+  return `${FAN_SESSION_COOKIE}=${value}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`;
 }
 
 export function clearFanSessionCookieHeader(): string {

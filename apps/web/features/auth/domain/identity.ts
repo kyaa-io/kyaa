@@ -11,6 +11,7 @@ export interface PrivyIdentityInput {
   providerAccounts: VerifiedIdentityProviderAccount[];
   /** True only when Privy currently reports a verified Google OAuth link. */
   googleLinked?: boolean;
+  fanSession?: { appUserId: string; authenticatedAt: number };
 }
 
 export interface CanonicalPrivyIdentity {
@@ -19,6 +20,7 @@ export interface CanonicalPrivyIdentity {
   providerAccounts: VerifiedIdentityProviderAccount[];
   /** True only when the verified address came from a current Privy Google link. */
   googleLinked?: boolean;
+  fanSession?: { appUserId: string; authenticatedAt: number };
 }
 
 export interface CanonicalWallet {
@@ -61,6 +63,7 @@ export function mapPrivyIdentity(input: PrivyIdentityInput): CanonicalPrivyIdent
     privyUserId,
     verifiedEmail: normalizeEmail(input.verifiedEmail),
     providerAccounts: input.providerAccounts,
+    ...(input.fanSession ? { fanSession: input.fanSession } : {}),
     ...(typeof input.googleLinked === "boolean" ? { googleLinked: input.googleLinked } : {}),
   };
 }

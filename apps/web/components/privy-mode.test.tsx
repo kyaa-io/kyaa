@@ -25,7 +25,7 @@ function makeBridge(): PrivyBridge {
     auth: {
       ready: state.ready, authenticated: state.authenticated,
       user: state.authenticated && state.userId ? { id: state.userId, linkedAccounts: [] } : null,
-      getAccessToken: vi.fn(async () => "privy-token"), logout: vi.fn(async () => {}), login: vi.fn(),
+      getAccessToken: vi.fn(async () => "privy-token"), getPrivyAccessToken: vi.fn(async () => "privy-token"), logout: vi.fn(async () => {}), login: vi.fn(),
     },
     oauthLoading: false,
     startOAuth: vi.fn(async () => {}),
