@@ -31,7 +31,7 @@
   ],
   "confirmedBatches": 12,
   "suppressedBatches": 10,
-  "decision": "확정 12묶음 보존, 남은 10묶음 재전송 없이 요약 1건 대체 준비. 사용자 승인 후 감독 실행.",
+  "decision": "확정 12묶음 보존, 남은 10묶음 재전송 없이 머리말·변경 8건(대표 사진 1장씩)·나머지 건수를 메시지 10건으로 나눠 대체 준비. 사용자 승인 후 감독 실행.",
   "notes": [
     {
       "path": "release-notes/2026-11-11-deploy-cache-nonblocking.json",
@@ -766,38 +766,86 @@
       "sha256": "296d7b86faa70a83b683f0b865c7f1b87c7c89d3662000c5b1658865499eaa44"
     }
   ],
+  "delivery": "per-change",
+  "title": "11/13~11/16 변경 안내",
   "highlights": [
     {
-      "path": "release-notes/2026-11-11-dukjil-stamp-compact.json",
-      "text": "덕질 화면의 내 지갑이 모바일에서도 응모권 칸과 하트 칸이 나란히 놓이고, 그 아래에 포인트·스탬프 게이지와 교환·받기 버튼이 붙어 한 화면에 들어와요. 응모권·하트 칸 바탕은 연한 분홍으로 바뀌었어요."
+      "paths": [
+        "release-notes/2026-11-15-x-opening-follow.json",
+        "release-notes/2026-11-14-dukjil-banner-1.json"
+      ],
+      "text": "X 오픈 이벤트 페이지가 생겼어요. 로그인하고 좋아요를 누르면 참여가 끝나고 완료 도장이 남아요. 홈 이벤트 배너에서 바로 갈 수 있고, 덕질 탭에도 등록·공개한 배너를 보여 주는 자리가 생겼어요."
     },
     {
-      "path": "release-notes/2026-11-11-rank-detail-align.json",
-      "text": "랭킹에서 행을 펼치면 1위까지·최애·등급·하트·응모권이 행의 닉네임이 시작하는 왼쪽 선에 맞춰 보여요. 이전에는 닉네임보다 조금 오른쪽에서 시작했어요."
+      "paths": [
+        "release-notes/2026-11-15-groups-banner-single-wide.json"
+      ],
+      "text": "모임 위쪽 배너를 한 장으로 정리했어요. PC에서도 그림을 늘이거나 자르지 않고 넓게 보여 줘요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-groups-banner-single-wide.png",
+        "sha256": "5899abb5c570696518603f777b6015cd4c8f7042451e6e28ef741bf444bd3aac"
+      }
     },
     {
-      "path": "release-notes/2026-11-11-translation-cache.json",
-      "text": "자동 번역이 한 번 번역된 글은 다른 사람이 볼 때도 다시 기다리지 않고 바로 보여요. 이미 내 언어로 쓰인 글이나 이모지·숫자만 있는 글은 번역하지 않고 그대로 보여요. 번역이 안 될 때는 원문이 그대로 보여요."
+      "paths": [
+        "release-notes/2026-11-15-fanpage-head-sns-row.json",
+        "release-notes/2026-11-15-fanpage-head-proof-tab.json"
+      ],
+      "text": "팬페이지 위쪽의 이름·버튼·SNS 링크를 정리했어요. 팬 목록과 랭킹은 ‘팬 N’을 눌러 열고, 인증 탭 이름은 ‘덕후인증’으로 바꿨어요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-fanpage-head-tabs-390-local.png",
+        "sha256": "6d7cee50334aaf72d884dedd860ff1f8faf48aec342c732befdcbfc862188837"
+      }
     },
     {
-      "path": "release-notes/2026-11-11-wallet-ad-lock-expiry.json",
-      "text": "광고 시청 후 교환을 기다리는 동안 광고 인증의 유효 시간이 지나면 교환되지 않도록 고쳤어요."
+      "paths": [
+        "release-notes/2026-11-15-board-thumbnails.json"
+      ],
+      "text": "게시판에서 사진 없는 팬 글에는 글쓴이 프로필 사진, 공지에는 kyaa 로고가 보여요. 인증 아티스트의 글·댓글 사진에는 분홍 테두리가 생겼어요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-board-thumbnails-390.png",
+        "sha256": "58dcedd6186d54cffe7717b7ddcda8835724581524f5a42247de80ddd0cbe3ee"
+      }
     },
     {
-      "path": "release-notes/2026-11-12-blocked-users-hot-period.json",
-      "text": "차단 목록에서 차단을 해제하면 해당 사용자가 목록에서 바로 사라져요."
+      "paths": [
+        "release-notes/2026-11-16-missionbook-guide.json",
+        "release-notes/2026-11-15-proof-tab-overhaul.json"
+      ],
+      "text": "덕질미션북 안내에서 9칸 미션과 완성 보상·포인트를 차례로 볼 수 있어요. 덕후인증 탭에는 인증 종류·보상·제출 버튼을 모으고, 내가 낸 인증의 심사 상태와 보완·반려 사유도 보여 줘요."
     },
     {
-      "path": "release-notes/2026-11-12-board-notice-pin-all.json",
-      "text": "팬페이지 게시판에서 kyaa 공지는 정렬과 관계없이 모두 맨 위에 고정돼요."
+      "paths": [
+        "release-notes/2026-11-16-passport-x-share.json"
+      ],
+      "text": "패스포트와 발급 완료 화면에 ‘X에 공유’ 버튼이 생겼어요. 내 패스포트 링크와 @kyaa_app이 미리 들어가고, 링크 미리보기에는 내 패스포트 카드가 보여요.",
+      "image": {
+        "path": "release-notes/images/2026-11-16-passport-x-share-390.png",
+        "sha256": "96b94529180e198aa4671661ebbd8e7da633e8e8e240e00696d041b2b7463be7"
+      }
     },
     {
-      "path": "release-notes/2026-11-12-cognito-callback-diagnostics.json",
-      "text": "로그인이 중단된 구간을 계정 정보 없이 기록해 로그인 오류의 원인을 확인할 수 있게 했어요."
+      "paths": [
+        "release-notes/2026-11-15-email-only-notifications.json",
+        "release-notes/2026-11-15-email-delivery-priority.json",
+        "release-notes/2026-11-15-email-unsubscribe.json",
+        "release-notes/2026-11-16-email-unsubscribe-address-bind.json"
+      ],
+      "text": "새 혜택 안내와 수령 정보 요청을 이메일로도 보내고, 당첨·수령 등 필요한 메일을 먼저 보내요. 메일 아래 ‘그만 받기’에서 종류별로 끄거나 다시 받을 수 있어요. 주소를 바꾸면 예전 주소로 받은 링크는 쓸 수 없어요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-email-unsubscribe-390.png",
+        "sha256": "0b82d2a012715eff7b3c3d9fcf8e0d3aa42c23a029d9c6d505727517921c2ca0"
+      }
     },
     {
-      "path": "release-notes/2026-11-11-dev-notice-offpath.json",
-      "text": "개발 환경의 배포 안내를 별도로 처리해, 안내 대기로 다음 배포가 늦어지는 시간을 줄였어요."
+      "paths": [
+        "release-notes/2026-11-15-dukjil-tab-pc-layout.json"
+      ],
+      "text": "PC 덕질 탭의 럭키드로우와 미션을 위아래로 배치했어요. 오른쪽 세로 배너가 등록되면 함께 보이고, 없으면 본문이 가운데에 놓여요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-dukjil-tab-pc-layout.png",
+        "sha256": "10589c6988108dcbd2f2939598200afa70813ab1cbb343fa6e23b1a406e5841f"
+      }
     }
   ]
 }
