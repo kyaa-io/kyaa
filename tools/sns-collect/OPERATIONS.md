@@ -87,4 +87,4 @@ API 실패는 숨김으로 처리하지 않는다. 수동 등록 행은 갱신�
 
 저장은 플랫폼 인자를 받는 `save_collected_platform_followers` 하나로 한다(인스타·틱톡·치지직, enum의 youtube도 받음). 기존 `save_collected_youtube_followers`는 그대로 두었다. 정리하려면 유튜브 경로가 새 함수를 `p_digits=3, p_text=null`로 부르게 바꿔 배포하고, 운영에서 옛 함수 호출이 없는 것을 확인한 뒤 별도 migration으로 옛 함수를 지운다.
 
-mini 설치는 `collect-core.mjs`·`collect.aside.mjs`·`run.py` 세 파일을 함께 복사한다. 운영 반영에는 migration `20261228130000_platform_follower_collector.sql`과 웹 배포가 먼저 필요하다. 치지직은 운영 런타임에 `CHZZK_CLIENT_ID`·`CHZZK_CLIENT_SECRET`이 있어야 하며, 없으면 503으로 끝나 성공 표식을 남기지 않고 다음 실행에서 다시 시도한다.
+mini 설치는 `collect-core.mjs`·`collect.aside.mjs`·`run.py` 세 파일을 함께 복사한다. 운영 반영에는 migration `20261228160000_platform_follower_collector.sql`과 웹 배포가 먼저 필요하다. 치지직은 운영 런타임에 `CHZZK_CLIENT_ID`·`CHZZK_CLIENT_SECRET`이 있어야 하며, 없으면 503으로 끝나 성공 표식을 남기지 않고 다음 실행에서 다시 시도한다.
