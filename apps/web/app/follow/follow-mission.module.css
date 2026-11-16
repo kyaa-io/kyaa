@@ -1,60 +1,50 @@
 /* /follow 미션 카드(X-GLEAM-1116, 사용자 11/16 "덕질하는 법처럼 미션 형태로, 스텝이 눈에 잘 보이게").
- * 번호 + 3D 그림 + 미션 이름 한 줄, 그 아래 할 일(Gleam 위젯 / 좋아요 버튼). 두 카드가 붙어 있어 체크 3개가 캡처 한 장에 든다.
+ * 01·02: 번호 + 3D 그림 + 미션 이름 한 줄, 그 아래 Gleam 위젯. 03: Gleam 참여 줄 모양. 두 카드가 붙어 있어 체크 3개가 캡처 한 장에 든다.
  * 배치만 맡는다. 글자는 FanDisplay/FanHeading, 버튼은 FanAction. 길이는 --space-*·--radius-* 토큰. */
 .missions { display: grid; gap: var(--space-4); min-width: 0; padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
 .head { display: flex; align-items: baseline; gap: var(--space-2); }
 .cards { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
 .card { display: grid; gap: var(--space-4); padding: var(--space-4); border-radius: var(--radius-card); background: var(--color-accent-soft); min-width: 0; }
 
-/* 카드 머리: 그림 56 · 번호+이름 · 끝낸 표시(03만) */
-.cardHead { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
+/* 01·02 카드 머리: 그림 56 · 번호+이름 */
+.cardHead { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr); align-items: center; gap: var(--space-3); }
 .art { position: relative; display: block; width: calc(var(--space-12) + var(--space-2)); aspect-ratio: 1; border-radius: var(--radius-card); background: var(--color-surface); }
 .art img { position: absolute; width: var(--space-10); height: var(--space-10); object-fit: contain; }
 /* 그림 두 개(팔로우·리포스트)는 대각선으로 겹친다 */
 .art img:first-child { top: var(--space-1); left: var(--space-1); }
 .art img:nth-child(2) { right: var(--space-1); bottom: var(--space-1); width: calc(var(--space-8) + var(--space-1)); height: calc(var(--space-8) + var(--space-1)); }
-.star { display: grid; place-items: center; color: var(--color-accent); }
-.star svg { fill: currentColor; }
 .cardTitle { display: grid; gap: var(--space-1); min-width: 0; word-break: keep-all; }
 .no { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
-.todo { width: var(--space-5); height: var(--space-5); border: 1.5px solid var(--color-accent); border-radius: var(--radius-pill); }
 
-/* 좋아요 뒤(사용자 11/16 "크게 완료 표시가 왼쪽에, UI 예쁘게"): 왼쪽에 큰 kyaa 도장 104 + 초록 체크 배지, 오른쪽에 '03 · 도장 쾅!' · 큰 '참여 완료' · 닉네임 | 날짜.
- * 11/13 '도장 찍힌 완료 화면'과 같은 내용을 캡처 한 장(X 카드 + 이 카드)에 담는다 */
-.done { display: grid; grid-template-columns: calc(var(--space-16) + var(--space-10)) minmax(0, 1fr); align-items: center; gap: var(--space-5); }
-.seal { position: relative; display: block; aspect-ratio: 1; border-radius: var(--radius-card); background: var(--color-surface); }
-.stamp { display: block; width: 100%; height: 100%; padding: var(--space-2); object-fit: contain; rotate: -8deg; }
-/* 완료 체크 = --color-success(DESIGN.md 4절 '완료 체크'). Gleam 체크처럼 채운 원이라 캡처에서 셋이 같은 표시로 읽힌다. 테두리는 카드 바탕색이라 도장 위에 떠 보인다 */
-.check { position: absolute; right: calc(var(--space-2) * -1); bottom: calc(var(--space-2) * -1); display: grid; place-items: center; width: var(--space-10); aspect-ratio: 1; border: 3px solid var(--color-accent-soft); border-radius: var(--radius-pill); background: var(--color-success); color: var(--color-surface); }
-.doneText { display: grid; gap: var(--space-1); min-width: 0; justify-items: start; word-break: keep-all; }
-.doneText h3 { text-wrap: balance; }
-/* 닉네임 / 날짜·시간을 두 줄로(390에서 한 줄에 넣으면 날짜가 구분선째 다음 줄로 넘어간다) */
+/* 03 카드 = Gleam 참여 줄 모양(FOLLOW-GLEAM-CARD-1116, 대표 11/16 22:57). 위 카드의 Gleam 위젯과 같은 짜임:
+ * 흰 상자(.entry) → 얇은 머리 줄(.ways, Gleam 'N Ways to Enter' 자리) → 연한 테두리 줄(.row: 네모 아이콘 · 이름 · 오른쪽 버튼).
+ * Gleam 값(줄 둥글기 6·아이콘 44·안 여백 12)에 가장 가까운 토큰: --radius-small 8 · --space-10 40 · --space-3 12 */
+.entry { display: grid; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-card); background: var(--color-surface); min-width: 0; }
+.ways { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-1) var(--space-2); min-height: var(--space-10); padding: var(--space-2) var(--space-3); border-radius: var(--radius-small); background: var(--color-accent-soft); }
+.row { display: grid; grid-template-columns: var(--space-10) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); padding: var(--space-2); border: 1px solid var(--color-line); border-radius: var(--radius-small); }
+.icon { display: grid; place-items: center; width: var(--space-10); aspect-ratio: 1; border-radius: var(--radius-small); background: var(--color-ink); color: var(--color-surface); }
+.icon svg { fill: currentColor; }
+.rowText { display: grid; gap: var(--space-1); min-width: 0; word-break: keep-all; }
+/* 닉네임 / 날짜·시간을 두 줄로(390에서 한 줄에 넣으면 날짜가 다음 줄로 넘어간다) */
 .facts { display: grid; gap: var(--space-1); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+/* 완료 = Gleam과 같은 초록 체크 칸. 색은 --color-success(DESIGN.md 4절 '완료 체크') */
+.check { display: grid; place-items: center; width: var(--space-16); min-height: var(--min-target); border-radius: var(--radius-small); background: var(--color-success); color: var(--color-surface); }
 .cta { display: grid; }
 
-/* 도장 쾅(방금 완료한 때만): 크게 들렸다가 내려앉아 한 번 눌린다. 450ms 한 번. 체크는 뒤따라 한 번 튄다 */
-.card[data-celebrate] .stamp { animation: slam 450ms var(--motion-easing) 150ms both; }
-.card[data-celebrate] .check { animation: pop var(--motion-reward) var(--motion-easing) 450ms both; }
-.card[data-celebrate] .doneText { animation: rise var(--motion-reward) var(--motion-easing) 350ms both; }
-@keyframes slam { 0% { transform: scale(1.8); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); } }
+/* 방금 완료한 때만: 체크 칸이 한 번 튀고 완료 글자가 올라온다 */
+.card[data-celebrate] .check { animation: pop var(--motion-reward) var(--motion-easing) 150ms both; }
+.card[data-celebrate] .rowText { animation: rise var(--motion-reward) var(--motion-easing) both; }
 @keyframes rise { from { transform: translateY(var(--space-2)); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes pop { 0% { transform: scale(.4); } 55% { transform: scale(1.2); } 100% { transform: scale(1); } }
-/* 참여 카드를 첫 화면에(FOLLOW-ONESCREEN-1116, 대표 21:03 '그림 줄이기'·사용자 '한 화면에 참여할 내용이 다 보이게').
- * 휴대폰: 제목 → 03 로그인·좋아요 → 01·02 Gleam 순. 키 비주얼은 참여 카드 아래로 내린다.
- * Gleam iframe은 Gleam이 높이를 정해(약 600) 줄일 수 없으므로, 짧은 03 카드를 위에 두어 390×844 첫 화면에 로그인 버튼과 Gleam 머리가 함께 든다 */
+/* 배치(FOLLOW-ONESCREEN-1116 → FOLLOW-GLEAM-CARD-1116): 휴대폰은 제목 → 01·02 Gleam → 03 → 키 비주얼 순(대표 11/16 22:57 '1,2 다음에 로그인 좋아요로').
+ * Gleam iframe 높이는 Gleam이 정한다 */
 .hero { display: grid; gap: var(--space-4); }
 .panel { display: grid; gap: var(--space-6); align-content: start; min-width: 0; }
 .visual { order: 1; }
-.card[data-mission="like"] { order: -1; }
-/* 휴대폰 압축(보석 21:04 '압축 UI'): 좋아요 전 03 카드는 버튼을 제목 줄 오른쪽에 둬 한 줄로. Gleam의 팔로우·리포스트 줄까지 첫 화면에 올라온다 */
 @media (width < 64rem) {
   .panel { gap: var(--space-4); }
   .missions, .card { gap: var(--space-3); }
   .missions { padding-top: var(--space-3); }
-  .card[data-mission="like"]:not([data-done]) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-  .card[data-mission="like"]:not([data-done]) .cardHead { grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr); }
-  .card[data-mission="like"]:not([data-done]) .todo { display: none; }
-  .card[data-mission="like"]:not([data-done]) > p { grid-column: 1 / -1; }
 }
 
 /* PC: 왼쪽 4 = 제목 위·작은 키 비주얼 아래(대표 21:03 제보 187446), 오른쪽 8 = 카드 두 장 나란히(01·02 | 03). 1440×900 첫 화면에 Gleam 전체와 03 버튼이 든다 */
@@ -66,8 +56,7 @@
   .browser { grid-area: browser; }
   .missions { grid-area: missions; padding-top: 0; border-top: 0; }
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
-  .card[data-mission="like"] { order: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .card[data-celebrate] :is(.stamp, .check, .doneText) { animation: none; }
+  .card[data-celebrate] :is(.check, .rowText) { animation: none; }
 }
