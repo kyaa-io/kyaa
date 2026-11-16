@@ -16,7 +16,7 @@
 .imageItem { display: grid; gap: var(--space-1); min-width: 0; }
 .maskFrame { position: relative; overflow: hidden; border-radius: var(--radius-media); touch-action: none; cursor: crosshair; background: var(--color-surface-focus); }
 .maskImage { display: block; width: 100%; height: auto; max-height: calc(var(--space-8) * 8); object-fit: contain; user-select: none; }
-.maskRect { position: absolute; background: var(--color-ink); }
+.maskRect { position: absolute; left: calc(var(--mask-x) * 100%); top: calc(var(--mask-y) * 100%); width: calc(var(--mask-w) * 100%); height: calc(var(--mask-h) * 100%); background: var(--color-ink); }
 .imageActions { display: flex; align-items: center; justify-content: space-between; }
 .addImage { display: grid; place-items: center; gap: var(--space-2); min-height: calc(var(--space-8) * 3); border: 1px dashed var(--color-line-subtle); border-radius: var(--radius-media); color: var(--color-muted); font-size: var(--fan-description-size); cursor: pointer; text-align: center; }
 .addImage:focus-within { outline: 3px solid var(--color-focus); outline-offset: 2px; }

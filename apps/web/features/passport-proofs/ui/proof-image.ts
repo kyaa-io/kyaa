@@ -20,6 +20,28 @@ export function fitSize(width: number, height: number, maxEdge = PROOF_IMAGE_MAX
   return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
 }
 
+export type Box = { w: number; h: number };
+export type Region = { x: number; y: number; w: number; h: number };
+
+/** Where an object-fit:contain image really sits inside its element box (the rest of the box is empty). Same units as the inputs. */
+export function containRegion(box: Box, natural: Box): Region {
+  if (!(box.w > 0 && box.h > 0 && natural.w > 0 && natural.h > 0)) return { x: 0, y: 0, w: box.w, h: box.h };
+  const scale = Math.min(box.w / natural.w, box.h / natural.h);
+  const w = natural.w * scale, h = natural.h * scale;
+  return { x: (box.w - w) / 2, y: (box.h - h) / 2, w, h };
+}
+
+/** Pointer position inside the element box (px) -> 0..1 position on the image itself; points in the empty margin clamp to the nearest image edge. */
+export function pointOnImage(px: number, py: number, region: Region): { x: number; y: number } {
+  const clamp = (value: number) => Math.min(1, Math.max(0, value));
+  return { x: clamp((px - region.x) / (region.w || 1)), y: clamp((py - region.y) / (region.h || 1)) };
+}
+
+/** Image-normalised rectangle -> element-box fractions (0..1), for drawing the cover over the contained image. */
+export function rectInBox(rect: MaskRect, region: Region, box: Box): MaskRect {
+  return { x: (region.x + rect.x * region.w) / box.w, y: (region.y + rect.y * region.h) / box.h, w: (rect.w * region.w) / box.w, h: (rect.h * region.h) / box.h };
+}
+
 /** Normalised (0..1) rectangle from two pointer positions, in any drag direction. */
 export function rectFromPoints(a: { x: number; y: number }, b: { x: number; y: number }): MaskRect {
   const x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);

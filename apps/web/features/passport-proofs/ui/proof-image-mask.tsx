@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState, type PointerEvent } from "react";
+import { useCallback, useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
 import { X } from "lucide-react";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
 import type { AppLocale } from "@/i18n/locales";
-import { rectFromPoints, type MaskRect } from "./proof-image";
+import { containRegion, pointOnImage, rectFromPoints, rectInBox, type Box, type MaskRect } from "./proof-image";
 import { proofsText } from "./proofs-copy";
 import styles from "./proofs.module.css";
 
@@ -21,10 +21,29 @@ type Props = {
 export function ProofImageMask({ locale, src, masks, onChange, onRemove }: Props) {
   const frame = useRef<HTMLDivElement>(null);
   const [draft, setDraft] = useState<{ start: { x: number; y: number }; now: { x: number; y: number } } | null>(null);
+  const image = useRef<HTMLImageElement>(null);
+  const [layout, setLayout] = useState<{ box: Box; natural: Box } | null>(null);
+  // The picture is drawn with object-fit: contain, so a tall receipt leaves empty bands in the frame. Masks are stored
+  // against the picture itself, which is what maskAndEncode paints on the saved file.
+  const measure = useCallback(() => {
+    const el = frame.current, img = image.current;
+    if (!el || !img || !img.naturalWidth) return;
+    const box = el.getBoundingClientRect();
+    setLayout((prev) => (prev && prev.box.w === box.width && prev.box.h === box.height && prev.natural.w === img.naturalWidth && prev.natural.h === img.naturalHeight
+      ? prev : { box: { w: box.width, h: box.height }, natural: { w: img.naturalWidth, h: img.naturalHeight } }));
+  }, []);
+  useLayoutEffect(() => {
+    measure();
+    if (typeof ResizeObserver === "undefined" || !frame.current) return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(frame.current);
+    return () => observer.disconnect();
+  }, [measure, src]);
+  const region = layout ? containRegion(layout.box, layout.natural) : null;
   const point = (event: PointerEvent) => {
     const box = frame.current!.getBoundingClientRect();
-    const clamp = (value: number) => Math.min(1, Math.max(0, value));
-    return { x: clamp((event.clientX - box.left) / box.width), y: clamp((event.clientY - box.top) / box.height) };
+    const at = region ?? { x: 0, y: 0, w: box.width, h: box.height };
+    return pointOnImage(event.clientX - box.left, event.clientY - box.top, at);
   };
   const finish = () => {
     if (!draft) return;
@@ -47,10 +66,11 @@ export function ProofImageMask({ locale, src, masks, onChange, onRemove }: Props
         onPointerCancel={() => setDraft(null)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- local blob preview */}
-        <img src={src} alt="" className={styles.maskImage} draggable={false} />
-        {shown.map((rect, index) => (
-          <span key={index} className={styles.maskRect} style={{ left: `${rect.x * 100}%`, top: `${rect.y * 100}%`, width: `${rect.w * 100}%`, height: `${rect.h * 100}%` }} />
-        ))}
+        <img ref={image} src={src} alt="" className={styles.maskImage} draggable={false} onLoad={measure} />
+        {shown.map((rect, index) => {
+          const at = layout && region ? rectInBox(rect, region, layout.box) : rect;
+          return <span key={index} className={styles.maskRect} style={{ "--mask-x": at.x, "--mask-y": at.y, "--mask-w": at.w, "--mask-h": at.h } as CSSProperties} />;
+        })}
       </div>
       <div className={styles.imageActions}>
         <FanAction variant="text" disabled={!masks.length} onClick={() => onChange(masks.slice(0, -1))}>{proofsText(locale, "pfMaskUndo")}</FanAction>
