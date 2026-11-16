@@ -37,9 +37,9 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
 
 /**
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
- * 이름 줄: 이름 + 유형 태그 + 배지(팬페이지는 둘 다 그리지 않는다, 대표 11/15 23:42), 그 뒤(768+는 같은 줄, 390은 다음 줄) 별 버튼·내 등급. 소개는 원문 2줄 + 더 보기, 그 아래 SNS 아이콘 줄(있을 때만), 그 아래 접속 한 줄.
+ * 줄 순서(대표 11/16 21:22): 1줄 이름 + 내 팬 등급(유형 태그·배지는 팬페이지가 아닐 때만) / 2줄 SNS 아이콘과 '팬 N · 접속 · 방문' 한 줄 / 3줄 별 버튼·행동 / 맨 아래 소개 2줄 + 더 보기.
  */
-export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, links = [], utility, menu, stats, tabs, frameId }: Readonly<{
+export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, grade, links = [], utility, menu, stats, tabs, frameId }: Readonly<{
   image: FanPageImage;
   name: ReactNode;
   kind: FanPageKind;
@@ -52,8 +52,10 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
   descriptionAction?: ReactNode;
   star?: FanStarActionProps;
   badge?: ReactNode;
+  /** 이름 옆에 두는 로그인 사용자의 내 팬 등급. 비로그인에서는 넘기지 않는다. */
+  grade?: ReactNode;
   links?: readonly FanPageHeaderLink[];
-  /** SNS 앞에 두는 로그인 사용자의 내 값(팬 등급). 비로그인에서는 넘기지 않는다. */
+  /** 별 버튼 옆에 두는 행동(팬페이지 좋아요). */
   utility?: ReactNode;
   menu?: ReactNode;
   /** 접속 한 줄. 값을 읽는 동안에도 같은 높이를 유지한다. */
@@ -64,26 +66,28 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
 }>) {
   const plainName = typeof name === "string" ? name : "";
   const actions = Boolean(star || utility);
-  // SNS 로고는 소개 아래 3번째 줄, '팬 N · 오늘 방문' 줄은 그 아래 4번째 줄(대표 11/15 23:37). SNS가 없으면 3번째 줄을 그리지 않는다.
+  // SNS 로고와 '팬 N · 오늘 방문'은 이름 아래 한 줄(대표 11/16 21:22). SNS가 없으면 접속 값만 그 줄에 둔다.
   const linkNav = links.length > 0 ? <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind="social"><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav> : null;
   return <header className={styles.header} data-fan-page-header={kind} data-frame-id={frameId}>
     <div className={styles.identity}>
       <FanPageImageSlot image={image} name={plainName} locale={locale} size={{ mobile: 96, desktop: 128 }} className={styles.image} priority />
+      <div className={styles.body}>
       <div className={styles.headline}>
         <div className={styles.titleRow}>
           <h1 className={styles.name}>{name}</h1>
           {kind === "fan" ? null : <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}
           {kind === "fan" ? null : badge}
+          {grade}
         </div>
-        {actions ? <div className={styles.actions}>
-          {star && <FanStarAction {...star} className={styles.star} />}
-          {utility}
-        </div> : null}
         {menu ? <div className={styles.menu}>{menu}</div> : null}
       </div>
+      {linkNav || stats ? <div className={styles.meta}>{linkNav}{stats ? <div className={styles.stats}>{stats}</div> : null}</div> : null}
+      {actions ? <div className={styles.actions}>
+        {star && <FanStarAction {...star} className={styles.star} />}
+        {utility}
+      </div> : null}
       {description ? <Description labels={descriptionLabels} action={descriptionAction}>{description}</Description> : null}
-      {linkNav}
-      {stats ? <div className={styles.stats}>{stats}</div> : null}
+      </div>
     </div>
     {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
   </header>;
@@ -94,12 +98,14 @@ export function FanPageHeaderSkeleton({ stats, tabs }: Readonly<{ stats?: ReactN
   return <header className={styles.header} aria-busy="true" data-fan-page-header="loading">
     <div className={styles.identity}>
       <FanSkeleton shape="block" className={styles.image} />
+      <div className={styles.body}>
       <div className={styles.headline}>
         <div className={styles.titleRow}><FanSkeleton className={styles.nameSkeleton} /></div>
-        <div className={styles.actions}><FanSkeleton shape="circle" width={96} height={36} className={styles.star} /></div>
       </div>
+      {stats ? <div className={styles.meta}><div className={styles.stats}>{stats}</div></div> : null}
+      <div className={styles.actions}><FanSkeleton shape="circle" width={96} height={36} className={styles.star} /></div>
       <div className={styles.description}><FanSkeleton className={styles.descriptionSkeleton} /></div>
-      {stats ? <div className={styles.stats}>{stats}</div> : null}
+      </div>
     </div>
     {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
   </header>;
