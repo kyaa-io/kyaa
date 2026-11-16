@@ -20,6 +20,7 @@ const stampArt = '/images/stamps/ink-v1/first-like.webp';
 /**
  * 이벤트 1 화면(사용자 11/16: '덕질하는 법'처럼 번호 붙은 미션 카드). 01·02 X 미션 카드 안에 Gleam 위젯(완료 체크는 Gleam이 띄운다),
  * 03 kyaa 좋아요 카드(서버 기록 = 체크 + 도장). 두 카드가 붙어 있어 체크 3개가 캡처 한 장에 든다. kyaa는 Gleam 완료를 판정하지 않는다.
+ * 배치(FOLLOW-ONESCREEN-1116): 휴대폰은 03 카드를 Gleam 위에, PC는 두 카드를 나란히 둬 첫 화면에 참여 카드가 다 든다(번호는 X 글의 ①②③ 그대로).
  */
 export function FollowMission({ locale, event, below }: { locale: 'ko' | 'en'; event: FollowEventConfig; below?: ReactNode }) {
  const auth = useByUsAuth();
@@ -39,10 +40,10 @@ function FollowMissionForOwner({ locale, auth, event, children }: { locale: 'ko'
     ? <FanAction href={followPostIntent(locale)} external variant={primary} fullWidth>{t.post}</FanAction>
     : <FanAction onClick={m.like} variant={primary} fullWidth disabled={!m.ready || !m.loaded || m.pending} loading={m.pending} leadingIcon={<Star size={20} strokeWidth={1.5} />}>{t.like}</FanAction>;
  return <FanContentContainer as="main" id="x-mission-main" className={xs.column} lang={locale}>
-  <div className={xs.hero}>
+  <div className={styles.hero}>
    <div className={`${xs.keyVisual} ${styles.visual}`}><img src="/images/x-mission/key-visual.webp" alt="" width={1536} height={1024} fetchPriority="high" decoding="async" /></div>
-   <div className={xs.panel}>
-    <div className={xs.topRow}>
+   <div className={styles.panel}>
+    <div className={`${xs.topRow} ${styles.top}`}>
      <header className={xs.title}>
       <FanDisplay role="caption" className={xs.muted}>KYAA × X</FanDisplay>
       <FanHeading as="h1"><FanDisplay role="title" optical>{t.title}</FanDisplay></FanHeading>
@@ -50,7 +51,7 @@ function FollowMissionForOwner({ locale, auth, event, children }: { locale: 'ko'
      </header>
      <nav className={xs.languages} aria-label="Language"><a href={m.languageHref('en')} lang="en" aria-current={locale === 'en' ? 'page' : undefined}>EN</a><a href={m.languageHref('ko')} lang="ko" aria-current={locale === 'ko' ? 'page' : undefined}>한국어</a></nav>
     </div>
-    {m.inX && <div className={xs.browser}><FanAction onClick={m.openBrowser} fullWidth>{locale === 'ko' ? '브라우저로 열기' : 'Open in browser'}</FanAction>{m.browserNotice && <FanText as="p" role="body">{locale === 'ko' ? 'X 메뉴에서 ‘브라우저에서 열기’를 선택해 주세요.' : 'Choose “Open in browser” from the X menu.'}</FanText>}</div>}
+    {m.inX && <div className={`${xs.browser} ${styles.browser}`}><FanAction onClick={m.openBrowser} fullWidth>{locale === 'ko' ? '브라우저로 열기' : 'Open in browser'}</FanAction>{m.browserNotice && <FanText as="p" role="body">{locale === 'ko' ? 'X 메뉴에서 ‘브라우저에서 열기’를 선택해 주세요.' : 'Choose “Open in browser” from the X menu.'}</FanText>}</div>}
     <section className={styles.missions} data-block="follow-missions" aria-labelledby="follow-how">
      <div className={styles.head}><FanHeading as="h2" id="follow-how"><FanDisplay role="heading">{t.how}</FanDisplay></FanHeading><FanDisplay role="caption" className={xs.muted}>{t.once}</FanDisplay></div>
      <ol className={styles.cards}>
