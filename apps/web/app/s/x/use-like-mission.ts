@@ -102,10 +102,12 @@ export function useLikeMission({ locale, auth, slug, path, attributionKey, scrol
   setStampedAt(saved);
  }, [completed, userId, slug]);
  const stampDate = new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' }).format(stampedAt ? new Date(stampedAt) : new Date());
+ // 도장 시각(사용자 11/16 '시간도 있으면'): 이 기기에서 처음 완료한 때의 시:분. 좋아요를 누른 기기에서는 누른 시각과 같다
+ const stampTime = new Intl.DateTimeFormat(locale === 'ko' ? 'ko-KR' : 'en-US', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(stampedAt ? new Date(stampedAt) : new Date());
  // 방금 완료한 때만: 도장 카드가 있는 맨 위로 올린다(도장이 버튼 자리에 찍히는 화면은 끈다)
  useEffect(() => { if (scrollOnComplete && celebrate && completed) window.scrollTo?.({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }, [scrollOnComplete, celebrate, completed]);
  return {
-  ready, authenticated, loaded, completed, celebrate, pending, error, count, nickname, stampDate, inX, browserNotice, loginHref,
+  ready, authenticated, loaded, completed, celebrate, pending, error, count, nickname, stampDate, stampTime, stampedAt, inX, browserNotice, loginHref,
   like, beginLogin, openBrowser, languageHref, retryLoad: () => setRetry(value => value + 1),
  };
 }

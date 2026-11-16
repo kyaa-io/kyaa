@@ -30,6 +30,8 @@ it('records the opening event like on its own event page and stamps the like car
  expect(urls.every(url => url.startsWith(`/api/celebrities/${followEventSlug}/`))).toBe(true);
  expect(container.querySelector('[data-mission="like"]')!.hasAttribute('data-done')).toBe(true);
  expect(screen.getByText('Mina')).toBeTruthy();
+ // 날짜 옆에 시:분(24시간)이 붙는다
+ expect(container.querySelector('[data-block="follow-stamp"] time')!.textContent).toMatch(/\d{4}년 \d{1,2}월 \d{1,2}일 \d{2}:\d{2}$/);
  // 좋아요 뒤 버튼은 캡처를 올릴 X 글쓰기로 바뀐다
  expect(screen.queryByRole('button', { name: '좋아요' })).toBeNull();
  expect(screen.getByRole('link', { name: 'X에 올리기' }).getAttribute('href')).toBe(followPostIntent('ko'));

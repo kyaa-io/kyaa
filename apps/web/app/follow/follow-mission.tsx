@@ -70,7 +70,7 @@ function FollowMissionForOwner({ locale, auth, event }: { locale: 'ko' | 'en'; a
           <span className={styles.doneText}>
            <FanDisplay role="caption" className={styles.no}>03 · {t.stampedLead}</FanDisplay>
            <FanHeading as="h3"><FanDisplay role="title">{t.done}</FanDisplay></FanHeading>
-           <span className={styles.facts}>{m.nickname ? <FanDisplay role="caption" dir="auto">{m.nickname}</FanDisplay> : null}<FanDisplay role="caption">{m.stampDate}</FanDisplay></span>
+           <span className={styles.facts}>{m.nickname ? <FanDisplay role="caption" dir="auto">{m.nickname}</FanDisplay> : null}<FanDisplay role="caption"><time dateTime={m.stampedAt}>{m.stampDate} {m.stampTime}</time></FanDisplay></span>
           </span>
          </div>
         : <div className={styles.cardHead}>
