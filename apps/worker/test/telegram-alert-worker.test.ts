@@ -27,7 +27,7 @@ const csAlerts: TelegramAlertBatch["alerts"] = [
 ];
 const actorId = "8f34398c-0c7a-4de0-8ca8-4c6aa2c2de19";
 const recipientId = "559fe228-ff92-4a85-a3e9-ad83d9e60f8b";
-type DetailedKind = "fan_post_created" | "fan_post_commented" | "fan_post_liked" | "fan_lounge_posted" | "notice_commented" | "daily_checked_in" | "certification_approved";
+type DetailedKind = "fan_post_created" | "fan_post_commented" | "fan_post_liked" | "fan_lounge_posted" | "notice_commented" | "daily_checked_in" | "certification_approved" | "reaction_completed";
 function detailedActivity(kind: DetailedKind, overrides: Record<string, unknown> = {}): TelegramAlertBatch["alerts"][number] {
   return {
     kind,
@@ -298,6 +298,25 @@ describe("renderTelegramAlertMessage", () => {
     expect(message).toContain("대상 내용: 팬 인증 신청");
     expect(message).toContain(`대상 ID: ${recipientId}`);
     expect(message).not.toMatch(/이메일 미등록|활동자 ID:/u);
+  });
+
+  it.each([
+    ["/x-opening-1116", "X 이벤트 참여"],
+    ["/x-mission-1113", "X 이벤트 참여"],
+    ["/elina", "팬 리액션 완료"],
+    ["/x-openings", "팬 리액션 완료"],
+  ])("titles a reaction on %s as %s", (path, title) => {
+    const alert = detailedActivity("reaction_completed", {
+      detail: { ...detailedActivity("reaction_completed").detail, path, result: "팬 리액션 완료" },
+    });
+    expect(renderTelegramAlertMessage([alert])).toContain(`• ${title}\n`);
+  });
+
+  it("keeps other kinds' titles on an X event path", () => {
+    const alert = detailedActivity("daily_checked_in", {
+      detail: { ...detailedActivity("daily_checked_in").detail, path: "/x-opening-1116" },
+    });
+    expect(renderTelegramAlertMessage([alert])).toContain("• 일일 출석 체크\n");
   });
 });
 
