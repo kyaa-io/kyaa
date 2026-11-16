@@ -1,0 +1,8 @@
+/* Gleam 위젯 상자(X-GLEAM-1116). Gleam이 넣는 그림자·가운데 정렬·아래 여백을 걷어 카드 안에 꽉 차게 둔다.
+ * Gleam 규칙은 `html body .e-widget-wrapper` 꼴이라 상자 클래스 하나를 앞에 붙여 이긴다. iframe 최소 폭 320은 Gleam 값 그대로 둔다(390 카드 안 폭 326). */
+.widget { min-width: 0; border-radius: var(--radius-card); overflow: hidden; background: var(--color-surface); }
+.widget :global(.e-widget-wrapper),
+.widget :global(.e-widget-preloader) { max-width: none; margin: 0; border-radius: var(--radius-card); box-shadow: none; }
+.widget :global(iframe.e-embed-frame) { max-width: none; margin: 0; border-radius: var(--radius-card); }
+/* 로더가 돌기 전·막혔을 때 남는 Gleam 링크 */
+.widget > a { display: flex; align-items: center; justify-content: center; min-height: var(--min-target); padding: var(--space-4); color: var(--color-accent-ink); }

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import { publicImageRemotePatterns } from "./components/fan-ui/public-image-policy";
-import { responseSecurityHeaders } from "./security-headers";
+import { gleamWidgetPaths, responseSecurityHeaders, withGleamWidget } from "./security-headers";
 import { htmlLimitedBots } from "./seo/bots";
 
 // 환경 변수로 켜고 끄는 실험 설정은 한 객체로 합쳐 서로 덮어쓰지 않는다. 둘 다 없으면 `experimental`을 두지 않는다(기본 동작).
@@ -54,6 +54,13 @@ const nextConfig: NextConfig = {
           ? { ...header, value: header.value.replace("connect-src 'self'", "connect-src 'self' ws://127.0.0.1:*/source") }
           : header),
       },
+      // The Gleam widget's script and entry frame (X-GLEAM-1116) open only on the event page that shows it.
+      ...[...gleamWidgetPaths].map((source) => ({
+        source,
+        headers: responseSecurityHeaders.map((header) => header.key === "Content-Security-Policy"
+          ? { ...header, value: withGleamWidget(header.value) }
+          : header),
+      })),
       {
         // Checked-in artwork is not cached by CloudFront (default behavior), so every revisit reached the app task.
         source: "/images/:path*",

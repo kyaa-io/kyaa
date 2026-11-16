@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { awsStorageContentSecurityPolicy, privySignInEnabled, responseSecurityHeaders, withPrivySignIn } from "./security-headers";
+import { awsStorageContentSecurityPolicy, privySignInEnabled, responseSecurityHeaders, withGleamWidget, withPrivySignIn } from "./security-headers";
 import { unstable_getResponseFromNextConfig } from "next/experimental/testing/server";
 import nextConfig from "./next.config";
 
@@ -76,6 +76,24 @@ describe("response security headers", () => {
       const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
       expect(response.headers.get("content-security-policy")).toBe(header("Content-Security-Policy"));
     }
+  });
+
+  it("opens the Gleam widget script and entry frame only on the event page that embeds it", async () => {
+    const follow = await unstable_getResponseFromNextConfig({ url: "https://kyaa.io/follow?locale=ko", nextConfig });
+    const policy = follow.headers.get("content-security-policy")!;
+    expect(policy).toBe(withGleamWidget(header("Content-Security-Policy")));
+    expect(policy).toMatch(/script-src [^;]*https:\/\/widget\.gleamjs\.io/);
+    expect(policy).toMatch(/frame-src [^;]*https:\/\/gleam\.io/);
+    expect(policy.match(/script-src /g)).toHaveLength(1);
+    for (const path of ["/", "/follow/other", "/s/x", "/api/follow"]) {
+      const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
+      expect(response.headers.get("content-security-policy")).not.toContain("gleam");
+    }
+    const aws = awsStorageContentSecurityPolicy({ gleam: true, privy: true });
+    expect(aws.split("; ").find((part) => part.startsWith("script-src "))).toContain("https://widget.gleamjs.io");
+    expect(aws.split("; ").find((part) => part.startsWith("frame-src "))).toContain("https://gleam.io");
+    expect(aws.split("; ").find((part) => part.startsWith("connect-src "))).not.toContain("gleam");
+    expect(awsStorageContentSecurityPolicy({ privy: true })).not.toContain("gleam");
   });
 
   it("opens no third-party auth origin in Cognito mode: sign-in is a top-level Cognito navigation", () => {

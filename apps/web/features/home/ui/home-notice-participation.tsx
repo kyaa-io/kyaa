@@ -19,12 +19,14 @@ import { postReactionCopy } from "@/features/fan-posts/ui/post-reaction-copy";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { homeNoticeParticipationSchema, homeNoticeCommentPageSchema, homeNoticeCommentWriteSchema } from "../domain/home-notice-participation";
+import { displayedNoticeLikes } from "../domain/missionbook-likes";
 import detailStyles from "@/features/fan-posts/ui/post-detail.module.css";
 import styles from "./home-notice-participation.module.css";
 
 const parseParticipation = (value: unknown) => homeNoticeParticipationSchema.parse(value);
 const parseComments = (value: unknown) => homeNoticeCommentPageSchema.parse(value);
-type Props = { slug: string; title: string; locale: AppLocale };
+/** `returnPath`: where sign-in comes back to when the block sits outside the notice detail (the mission book page). */
+type Props = { slug: string; title: string; locale: AppLocale; returnPath?: string };
 
 export function HomeNoticeParticipation(props: Props) {
   const auth = useByUsAuth(), session = useByUsSession();
@@ -32,7 +34,7 @@ export function HomeNoticeParticipation(props: Props) {
   return <Participation key={scope} {...props} />;
 }
 
-function Participation({ slug, title, locale }: Props) {
+function Participation({ slug, title, locale, returnPath }: Props) {
   const auth = useByUsAuth(), copy = contentCopy(locale), rc = postReactionCopy(locale), fieldId = useId();
   const base = `/api/notices/${encodeURIComponent(slug)}`;
   const [cursor, setCursor] = useState<string | null>(null);
@@ -43,7 +45,7 @@ function Participation({ slug, title, locale }: Props) {
   const [invalidResponse, setInvalidResponse] = useState(false);
   const draft = useRef("");
   const attempt = useRef<{ body: string; key: string } | null>(null);
-  const returnTo = `/notices/${slug}?locale=${locale}`;
+  const returnTo = `${returnPath ?? `/notices/${slug}`}?locale=${locale}`;
   const loginHref: string = fanLoginHref(locale, returnTo);
   const data = participation.state.status === "ready" ? participation.state.data : null;
   const reaction = optimistic?.base === data ? optimistic.state : data;
@@ -74,7 +76,7 @@ function Participation({ slug, title, locale }: Props) {
   const error = mutation.error || (invalidResponse ? copy.failed : "");
   return <section className={styles.participation} data-home-notice-participation="">
     <div className={styles.actions}>
-      {reaction && <PostReactions {...reaction} locale={locale} busy={mutation.busy || !auth.ready} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void react(choice)} />}
+      {reaction && <PostReactions {...reaction} likeCount={displayedNoticeLikes(slug, reaction.likeCount)} locale={locale} busy={mutation.busy || !auth.ready} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void react(choice)} />}
       <PostShareAction title={title} locale={locale} contentType="notice" />
     </div>
     {participation.state.status === "loading" ? <FanSkeletonRows rows={1} /> : participation.state.status === "error" || participation.refreshFailed ? <p role="status">{copy.failed} <FanAction variant="text" onClick={participation.retry}>{copy.retry}</FanAction></p> : null}

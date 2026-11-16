@@ -5,9 +5,11 @@ import { bannerFixture } from "../../e2e/banner-local/fixture";
 import { homeBannerSchema } from "../../features/home/domain/home-banner";
 import { renderToString } from "react-dom/server";
 import { gggiHomeBanner } from "../../features/home/domain/gggi-home-banner";
+import { missionbookHomeBanner } from "../../features/home/domain/missionbook-home-banner";
 import { ManagedHomeBanner } from "./managed-home-banner";
 
 vi.mock("next/link", () => ({ default: ({ children, ...props }: ComponentProps<"a">) => <a {...props}>{children}</a> }));
+vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { reaction: null, likeCount: 340, dislikeCount: null, commentCount: 0 } }, retry: vi.fn() }) }));
 
 const guide = (overrides: Record<string, unknown> = {}) => homeBannerSchema.parse({ ...bannerFixture, category: "guide", href: "/guide/jjinfan", title: "찐팬 되는 법", ...overrides });
 
@@ -17,6 +19,12 @@ describe("managed home banner", () => {
     expect(container.querySelector("[data-managed-home-banner]")).toHaveAttribute("data-guide-art", "true");
     expect(container.querySelector('[data-home-hero-banner][data-kind="art"]')).not.toBeNull();
     expect(container.querySelector("h2")).toHaveTextContent("찐팬 되는 법");
+  });
+  it("shows the mission book like count (real + 10) between the title and the action, and only on that banner", () => {
+    const { container } = render(<ManagedHomeBanner banner={missionbookHomeBanner("ko")} locale="ko" />);
+    expect(container.querySelector("[data-missionbook]")).not.toBeNull();
+    expect(container.querySelector('[data-missionbook-likes][data-tone="banner"]')).toHaveTextContent("좋아요 350명");
+    expect(render(<ManagedHomeBanner banner={guide()} locale="ko" />).container.querySelector("[data-missionbook-likes]")).toBeNull();
   });
   it("keeps other banners on the live layout", () => {
     const { container } = render(<ManagedHomeBanner banner={guide({ category: "announcement" })} locale="ko" />);

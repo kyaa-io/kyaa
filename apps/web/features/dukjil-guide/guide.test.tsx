@@ -339,6 +339,18 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     expect(ko).toContain("5번 칸은 덕후인증으로 채워요.");
     expect(ko).toContain("missionbook-v2-wide.webp");
     for (const name of ["missionbook-v2-wide", "missionbook-v2-square"]) expect(existsSync(join(process.cwd(), "public/images/guide", `${name}.webp`)), name).toBe(true);
+    // User 11/16: the like count sits in the hero; the notice participation block (likes, dislikes, share, comments) comes after the FAQ, before the closing action.
+    const hero = ko.slice(ko.indexOf('id="dukjil-guide-title"'), ko.indexOf('aria-labelledby="dukjil-book"'));
+    expect(hero).toContain('data-missionbook-likes="loading"');
+    const faq = ko.indexOf('aria-labelledby="dukjil-faq"'), likes = ko.indexOf('id="dukjil-likes"'), closing = ko.lastIndexOf("data-guide-cta=");
+    expect(faq).toBeGreaterThan(-1);
+    expect(likes).toBeGreaterThan(faq);
+    expect(ko.indexOf("data-home-notice-participation", likes)).toBeGreaterThan(likes);
+    expect(closing).toBeGreaterThan(likes);
+    const en = renderToStaticMarkup(<DukjilGuideContent locale="en" model={model} />).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    expect(en).toContain(`Trade ${GROUP_WALLET_POINT_COST}P for 1 raffle ticket. An ad plays when you trade.`);
+    expect(en).toContain("Slot 5 takes a fan proof.");
+    expect(en).toContain("Sign in to start");
     for (const locale of APP_LOCALES) {
       const html = renderToStaticMarkup(<DukjilGuideContent locale={locale} model={model} />);
       expect(html).not.toMatch(/dkg[A-Z]|\{\d\}/);

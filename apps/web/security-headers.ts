@@ -52,6 +52,15 @@ export function withPrivySignIn(policy: string): string {
     .replace("connect-src 'self'", `connect-src 'self' ${privyConnectSources.join(" ")}`);
 }
 
+// Gleam widget (X-GLEAM-1116): the loader and embed.js come from widget.gleamjs.io, the entry form is a gleam.io iframe.
+// Only the event page that shows the widget opens them; every other page keeps the base policy.
+export const gleamWidgetPaths: ReadonlySet<string> = new Set(["/follow"]);
+export function withGleamWidget(policy: string): string {
+  return policy
+    .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://widget.gleamjs.io")
+    .replace("frame-src ", "frame-src https://gleam.io ");
+}
+
 export const responseSecurityHeaders: ResponseHeader[] = [
   { key: "Content-Security-Policy", value: privySignInEnabled() ? withPrivySignIn(contentSecurityPolicy) : contentSecurityPolicy },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -76,8 +85,9 @@ export const ADSENSE_ORIGIN = "https://kyaa.io";
 /** The viewer's origin as the proxy sees it; the snippet and its CSP origins open only for https://kyaa.io. */
 export function adsenseEnabled(viewerOrigin: string): boolean { return viewerOrigin === ADSENSE_ORIGIN; }
 
-export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean; privy?: boolean }): string {
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean; privy?: boolean; gleam?: boolean }): string {
   let policy = config.privy ? withPrivySignIn(contentSecurityPolicy) : contentSecurityPolicy;
+  if (config.gleam) policy = withGleamWidget(policy);
   // adsbygoogle.js and what it calls back to (Google's AdSense code snippet requirements).
   if (config.adsense) {
     policy = policy
