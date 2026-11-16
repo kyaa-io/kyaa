@@ -1,0 +1,41 @@
+/* /follow 미션 카드(X-GLEAM-1116, 사용자 11/16 "덕질하는 법처럼 미션 형태로, 스텝이 눈에 잘 보이게").
+ * 번호 + 3D 그림 + 미션 이름 한 줄, 그 아래 할 일(Gleam 위젯 / 좋아요 버튼). 두 카드가 붙어 있어 체크 3개가 캡처 한 장에 든다.
+ * 배치만 맡는다. 글자는 FanDisplay/FanHeading, 버튼은 FanAction. 길이는 --space-*·--radius-* 토큰. */
+.missions { display: grid; gap: var(--space-4); min-width: 0; padding-top: var(--space-4); border-top: 1px solid var(--color-line); }
+.head { display: flex; align-items: baseline; gap: var(--space-2); }
+.cards { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); }
+.card { display: grid; gap: var(--space-4); padding: var(--space-4); border-radius: var(--radius-card); background: var(--color-accent-soft); min-width: 0; }
+
+/* 카드 머리: 그림 56 · 번호+이름 · 끝낸 표시(03만) */
+.cardHead { display: grid; grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
+.art { position: relative; display: block; width: calc(var(--space-12) + var(--space-2)); aspect-ratio: 1; border-radius: var(--radius-card); background: var(--color-surface); }
+.art img { position: absolute; width: var(--space-10); height: var(--space-10); object-fit: contain; }
+/* 그림 두 개(팔로우·리포스트)는 대각선으로 겹친다 */
+.art img:first-child { top: var(--space-1); left: var(--space-1); }
+.art img:nth-child(2) { right: var(--space-1); bottom: var(--space-1); width: calc(var(--space-8) + var(--space-1)); height: calc(var(--space-8) + var(--space-1)); }
+.star { display: grid; place-items: center; color: var(--color-accent); }
+.star svg { fill: currentColor; }
+.cardTitle { display: grid; gap: var(--space-1); min-width: 0; word-break: keep-all; }
+.no { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
+/* 끝낸 표시: 체크 아이콘 + 잉크색(DESIGN.md 4절) */
+.check { color: var(--color-ink); }
+.todo { width: var(--space-5); height: var(--space-5); border: 1.5px solid var(--color-accent); border-radius: var(--radius-pill); }
+
+/* 좋아요 뒤: 카드 안에 kyaa 도장 · 완료 문구 · 닉네임·날짜(사용자 11/13 '도장 찍힌 완료 화면'을 캡처 한 장에) */
+.stamped { display: grid; grid-template-columns: calc(var(--space-16) + var(--space-4)) minmax(0, 1fr); align-items: center; gap: var(--space-4); padding: var(--space-4); border-radius: var(--radius-card); background: var(--color-surface); }
+.stamp { width: 100%; height: auto; rotate: -8deg; }
+.stampText { display: grid; gap: var(--space-1); min-width: 0; justify-items: start; }
+.stampText h3 { margin: 0; text-wrap: balance; }
+.wordmark { width: var(--space-16); height: auto; }
+.facts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); color: var(--color-muted); word-break: keep-all; }
+.facts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
+.cta { display: grid; }
+
+/* 도장 쾅(방금 완료한 때만): 크게 들렸다가 내려앉아 한 번 눌린다. 450ms 한 번 */
+.card[data-celebrate] .stamp { animation: slam 450ms var(--motion-easing) 200ms both; }
+.card[data-celebrate] .stampText { animation: rise var(--motion-reward) var(--motion-easing) 450ms both; }
+@keyframes slam { 0% { transform: scale(1.8); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes rise { from { transform: translateY(var(--space-2)); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .card[data-celebrate] :is(.stamp, .stampText) { animation: none; }
+}

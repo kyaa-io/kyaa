@@ -330,6 +330,16 @@ describe("storage upload CSP outside AWS hosting", () => {
     expect(csp.includes("https://auth.privy.io")).toBe(opened);
     expect(csp.includes("wss://relay.walletconnect.com")).toBe(opened);
   });
+  it("opens the Gleam widget origins on /follow only", () => {
+    vi.stubEnv("HOSTING_PROVIDER", "");
+    vi.stubEnv("AWS_STORAGE_ENABLED", "true");
+    const follow = proxy(new NextRequest("http://localhost:3000/follow?locale=ko")).headers.get("Content-Security-Policy") ?? "";
+    expect(follow).toMatch(/script-src [^;]*https:\/\/widget\.gleamjs\.io/);
+    expect(follow).toMatch(/frame-src [^;]*https:\/\/gleam\.io/);
+    for (const path of ["/benefits?locale=ko", "/s/x?locale=ko", "/follow/x?locale=ko"]) {
+      expect(proxy(new NextRequest(`http://localhost:3000${path}`)).headers.get("Content-Security-Policy")).not.toContain("gleam");
+    }
+  });
   it("keeps storage origins closed when storage is disabled", () => {
     vi.stubEnv("HOSTING_PROVIDER", "");
     vi.stubEnv("AWS_STORAGE_ENABLED", "false");
