@@ -28,7 +28,7 @@ it("is a tile of the 인증 list with today's share count, opening the proof dia
   render(<ShareProofTile slug="elina" locale="ko" />);
   const tile = screen.getByRole("link", { name: /SNS 공유 인증/ });
   expect(tile).toHaveAttribute("href", "/elina?tab=certifications&locale=ko&share=1");
-  expect(tile).toHaveTextContent("오늘 1/3 · +10P");
+  expect(tile).toHaveTextContent("오늘 1/3+10");
   expect(screen.queryByRole("dialog")).toBeNull();
 });
 
@@ -106,7 +106,7 @@ it("lists own proofs in the dialog and as rows of the 인증 history", () => {
   h.search = "tab=certifications&locale=ko";
   render(<ShareProofHistoryRows slug="elina" locale="ko" classes={{ row: "row", copy: "copy", status: "status" }} empty={<p>없음</p>} />);
   const rows = screen.getAllByRole("link", { name: /SNS 공유 인증/ });
-  expect(rows[0]).toHaveTextContent("+10P");
+  expect(rows[0]).toHaveTextContent("+10");
   expect(rows[1]).toHaveTextContent("운영자 취소");
   expect(rows[2]).toHaveTextContent("확인 중");
   expect(rows[2].querySelector("span:last-child")).toHaveAttribute("data-status", "pending");

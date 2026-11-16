@@ -1,8 +1,14 @@
-/* 버튼 모서리에 걸치는 포인트 뱃지(EarnBadge corner). 값은 DESIGN.md "포인트 뱃지". */
-.badge { position: absolute; top: -8px; right: -8px; z-index: 1; display: inline-flex; align-items: center; gap: 2px; box-sizing: border-box; height: 20px; padding: 0 6px 0 2px; border-radius: 999px; font-size: 12px; line-height: 20px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; pointer-events: none; }
-/* 포인트 코인 배지의 색. 모서리 배지와 줄 안 배지가 같이 쓴다. */
-.badge { background: #ffc83d; color: #4a3500; }
-.badge img { display: block; flex: none; width: 16px; height: 16px; }
+/* 포인트 표시 한 가지 모양(EarnBadge): 노란 알약 · 동전 16 · `+N` 12/800. 값은 DESIGN.md "포인트 뱃지". */
+.pill { display: inline-flex; flex: none; align-items: center; gap: 2px; box-sizing: border-box; height: 20px; padding: 0 6px 0 2px; border-radius: 999px; background: var(--color-coin); color: var(--color-coin-ink); font-size: var(--fan-badge-size); line-height: 20px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill img { display: block; flex: none; width: 16px; height: 16px; }
+/* 작게: 좁은 칸 안. */
+.small { gap: 1px; height: 16px; padding: 0 4px 0 2px; line-height: 16px; }
+.small img { width: 12px; height: 12px; }
+/* 세로로 반복되는 줄: 알약 폭을 60으로 고정하고(+999까지) 동전은 왼쪽 끝, 숫자는 오른쪽 끝. 줄마다 알약의 양 끝과 동전 세로선이 같다. */
+.slot { min-inline-size: 60px; }
+.slot > [data-point-value] { margin-inline-start: auto; }
+/* 버튼 모서리에 걸칠 때의 자리. */
+.badge { position: absolute; top: -8px; right: -8px; z-index: 1; pointer-events: none; }
 .host { position: relative; display: inline-flex; }
 
 /* S4 보조 글자: 배지 밖 `오늘 3번 남음`·`5명까지`. */

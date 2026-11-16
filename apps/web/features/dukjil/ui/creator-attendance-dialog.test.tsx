@@ -86,7 +86,7 @@ it("never prints the legacy fixed wording (10P check-in, 20P weekly bonus) under
   ui(true);
   await screen.findByRole("dialog");
   expect(document.body.textContent).not.toMatch(/출석하고 10P|7일 연속 출석마다 20P|20P 추가/);
-  expect(document.body.textContent).toContain("+12P"); // the catalog's check-in plus its streakBonus, not the fixed legacy line
+  expect(document.body.textContent).toContain("+12"); // the catalog's check-in plus its streakBonus, not the fixed legacy line
 });
 
 it("draws seven stamp places with one daily and one bonus reward row, and the matching claim on the bonus day", async () => {
@@ -96,8 +96,8 @@ it("draws seven stamp places with one daily and one bonus reward row, and the ma
   const days = screen.getAllByRole("listitem");
   expect(days.length).toBe(7);
   expect(days[0].querySelector("img")).toHaveAttribute("src", "/images/stamps/ink-v1/daily-checkin.webp");
-  expect(screen.getByText("매일 출석").parentElement).toHaveTextContent("+2P");
-  expect(screen.getByText("7일째 보너스").parentElement).toHaveTextContent("+12P");
+  expect(screen.getByText("매일 출석").parentElement).toHaveTextContent("+2");
+  expect(screen.getByText("7일째 보너스").parentElement).toHaveTextContent("+12");
   expect(days[6]).toHaveAttribute("data-state", "today");
   expect(days[0]).toHaveAttribute("data-state", "past");
   expect(screen.getByRole("button", { name: /12P/ })).toBeInTheDocument();
@@ -126,7 +126,7 @@ it("shows the server's total once on the bonus day: the celebration and the done
   ui(true);
   fireEvent.click(await screen.findByRole("button", { name: /12P/ }));
   const done = await screen.findByRole("status");
-  expect(done).toHaveTextContent("+12P");
+  expect(done).toHaveTextContent("+12");
   expect(done.textContent).not.toMatch(/22/);
   expect(celebrateStamp).toHaveBeenCalledWith(expect.objectContaining({ points: 12, stamps: 1 }));
 });

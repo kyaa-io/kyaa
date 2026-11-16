@@ -12,6 +12,6 @@ it("사용자 11/13 13:2x: a page's certification rows show its server reward as
   render(<CertificationGrid variant="rows" locale="ko" slug="a" guest={false} fallbackHref="/benefits" />);
   await waitFor(() => expect(screen.getByText("인증 1")).toBeTruthy());
   const rows = [...document.querySelectorAll('[data-certification-grid="items"] a')].map(a => a.textContent);
-  expect(rows[0]).toContain("+30P");
-  expect(rows.slice(1).map(text => /\+(\d+)P/.exec(text ?? "")?.[1])).toEqual(["100", "100"]);
+  expect(rows[0]).toContain("+30");
+  expect(rows.slice(1).map(text => /\+(\d+)/.exec(text ?? "")?.[1])).toEqual(["100", "100"]);
 });

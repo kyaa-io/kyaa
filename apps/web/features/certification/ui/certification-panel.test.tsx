@@ -61,7 +61,7 @@ describe("CertificationPanel", () => {
       });
     render(<CertificationPanel slug="kara" locale="ko" />);
     const mission = await screen.findByRole("link", { name: /콘서트 인증/ });
-    expect(mission).toHaveTextContent("+2점");
+    expect(mission).toHaveTextContent("+2");
     expect(mission).toHaveTextContent("+1 응모권");
     fireEvent.click(screen.getByRole("tab", { name: "내 인증 내역" }));
     expect(
@@ -120,7 +120,7 @@ describe("CertificationPanel", () => {
       name: /Instagram 유료 멤버십 인증/,
     });
     expect(mission).toHaveTextContent("Instagram");
-    expect(mission).toHaveTextContent("+1점");
+    expect(mission).toHaveTextContent("+1");
     expect(mission).not.toHaveTextContent("멤버십 스탬프");
     expect(mission).not.toHaveTextContent("응모권");
 

@@ -14,7 +14,7 @@ import styles from "./dukjil.module.css";
 
 export type EarnBadgeProps = {
   /** `corner`: 버튼 모서리에 걸치는 코인 + `+20`. `EarnBadgeCorner`로 버튼을 감싸서 쓴다. */
-  variant: "icon" | "inline" | "done" | "corner" | "balance";
+  variant: "inline" | "done" | "corner" | "balance";
   locale: AppLocale;
   points?: number;
   stamp?: boolean;
@@ -23,11 +23,11 @@ export type EarnBadgeProps = {
   remaining?: number | null;
   /** The window `remaining` counts in: a monthly cap says "this month", never "today". */
   remainingPer?: "day" | "month";
-  /** `inline`: the value is what was earned today, shown as `오늘 +22P`. */
+  /** `inline`: the value is what was earned today: the word `오늘` in front of the pill. */
   today?: boolean;
-  /** `inline`: the small form inside the 7-day cells. */
+  /** `inline`: the small pill (16 high, coin 12) for tight cells. */
   size?: "sm";
-  /** `inline`: a fixed-width slot (76) with the coin at its left edge, so the coins of a vertical list share one x whatever the number (+2P … +1,000P). */
+  /** `inline`: a fixed-width pill (60, holds +999) with the coin at its left end and the number at its right end, so in a vertical list every pill has the same left and right edge whatever the number. */
   slot?: boolean;
   className?: string;
 };
@@ -37,7 +37,10 @@ export const POINT_COIN_SRC = REWARD_ICON_SRC.point;
 
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
 export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, remainingPer = "day", today = false, size, slot = false, className = "" }: EarnBadgeProps) {
-  const cls = `${styles.badge} ${styles[variant]} ${size === "sm" ? styles.small : ""} ${slot ? styles.slot : ""} ${className}`;
+  const cls = `${styles.badge} ${styles[variant]} ${className}`;
+  // 포인트 표시는 이 알약 하나다(노란 바탕 · 동전 · `+N`). 버튼 모서리에 걸칠 때만 위치(`corner`)가 붙는다.
+  const pill = (coin: number) => <><img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" /><span aria-hidden="true" data-point-value="">+{(points ?? 0).toLocaleString(locale)}</span></>;
+  const pillClass = [cornerStyles.pill, size === "sm" ? cornerStyles.small : "", slot ? cornerStyles.slot : ""].filter(Boolean).join(" ");
   // S4 규칙 3: 오늘 받은 포인트가 0이면 배지를 그리지 않는다.
   if (variant === "inline" && today && (points ?? 0) <= 0) return null;
   if (variant === "done") {
@@ -45,20 +48,19 @@ export function EarnBadge({ variant, locale, points, stamp = false, remaining = 
   }
   const label = points === undefined ? undefined : dukjilText(locale, "dukjilEarnLabel", [points.toLocaleString(locale)]);
   if (variant === "corner") {
-    return <span className={[cornerStyles.badge, className].filter(Boolean).join(" ")} data-earn-badge="corner"><img src={POINT_COIN_SRC} width={16} height={16} alt="" aria-hidden="true" />{points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}</span>}{label && <span className={styles.srOnly}>{label}</span>}</span>;
-  }
-  if (variant === "icon") {
-    return <span className={cls} data-earn-badge="icon"><span aria-hidden="true">P</span>{label && <span className={styles.srOnly}>{label}</span>}</span>;
+    return <span className={[cornerStyles.pill, cornerStyles.badge, className].filter(Boolean).join(" ")} data-earn-badge="corner"><img src={POINT_COIN_SRC} width={16} height={16} alt="" aria-hidden="true" />{points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}</span>}{label && <span className={styles.srOnly}>{label}</span>}</span>;
   }
   if (variant === "balance") {
     return <span className={cls} data-earn-badge="balance"><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" /><span className={styles.balanceValue}>{(points ?? 0).toLocaleString(locale)}</span><span className={styles.balanceUnit}>P</span></span>;
   }
   const coin = size === "sm" ? 12 : 16;
+  // `오늘 +22P` 문구에서 `+` 앞 낱말(오늘·Today)만 알약 앞에 둔다. 숫자는 알약이 말한다.
+  const todayWord = today && points !== undefined ? dukjilText(locale, "missionsTodayEarned", [""]).split("+")[0]!.trim() : "";
   return (
     <span className={cls} data-earn-badge="inline">
-      {points !== undefined && <img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" />}
-      {points !== undefined && <span aria-hidden="true">{today ? dukjilText(locale, "missionsTodayEarned", [points.toLocaleString(locale)]) : `+${points.toLocaleString(locale)}P`}</span>}
-      {stamp && <span aria-hidden="true" className={styles.stampPart}>{points !== undefined && "· "}<Stamp size={12} />{dukjilText(locale, "dukjilStamp")}</span>}
+      {todayWord && <span aria-hidden="true">{todayWord}</span>}
+      {points !== undefined && <span className={pillClass} data-point-pill="">{pill(coin)}</span>}
+      {stamp && <span aria-hidden="true" className={styles.stampPart}><Stamp size={12} />{dukjilText(locale, "dukjilStamp")}</span>}
       {label && <span className={styles.srOnly}>{remaining !== null && remaining > 0 ? `${label}, ${fanUiText(locale, remainingPer === "month" ? "earnRemainingMonth" : "earnRemainingToday", [remaining.toLocaleString(locale)])}` : label}</span>}
     </span>
   );
@@ -78,7 +80,7 @@ export function EarnRemaining({ locale, remaining, limit, per = "day", className
 
 /** Badge fed by the catalog (points, stamp) and the shared `today` read (remaining, done). A signed-in viewer sees nothing until `today` has answered, and a finished action shows the done badge.
  * A signed-out viewer sees the policy points only: the remaining count and `done` are personal values. An inactive catalog draws nothing. */
-export function EarnActionBadge({ action, locale, variant = "inline", stamp = false, className }: { action: DukjilActionKey; locale: AppLocale; variant?: "icon" | "inline" | "corner"; stamp?: boolean; className?: string }) {
+export function EarnActionBadge({ action, locale, variant = "inline", stamp = false, className }: { action: DukjilActionKey; locale: AppLocale; variant?: "inline" | "corner"; stamp?: boolean; className?: string }) {
   const state = useDukjil();
   const item = todayItem(state?.today, action);
   const rule = state?.catalog?.rules[action] as { points?: unknown; stamp?: unknown } | undefined;

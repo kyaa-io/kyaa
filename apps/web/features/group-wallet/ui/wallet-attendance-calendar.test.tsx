@@ -7,10 +7,10 @@ it('aligns the month and shows only recorded stamps including the seventh-day bo
  expect(screen.getAllByRole('listitem')[0]).toHaveStyle({gridColumnStart:5});
  expect(view.container.querySelector('time[aria-current="date"]')).toHaveAttribute('datetime','2026-10-15');
  expect(view.container.querySelectorAll('[data-complete="true"]')).toHaveLength(2);
- expect(screen.getByText('30P')).toBeInTheDocument();
+ expect(screen.getByText('+30')).toBeInTheDocument();
 });
 it('renders February in a leap year without inventing attendance',()=>{
  render(<WalletAttendanceCalendar locale="en" today="2028-02-01" days={[]}/>);
  expect(screen.getAllByRole('listitem')).toHaveLength(29);
- expect(screen.queryByText('10P')).not.toBeInTheDocument();
+ expect(screen.queryByText('+10')).not.toBeInTheDocument();
 });

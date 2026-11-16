@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CalendarDayNumber } from "@/components/fan-calendar/calendar-parts";
 import type { AppLocale } from "@/i18n/locales";
 import { walletCopy } from "./copy";
@@ -13,7 +13,7 @@ export function WalletAttendanceCalendar({locale,today,days}:{locale:AppLocale;t
   <ol className={styles.calendarDays} aria-label={c.attendance}>
    {Array.from({length},(_,index)=>{const date=`${month}-${String(index+1).padStart(2,'0')}`,points=completed.get(date);return <li key={date} style={index===0?{gridColumnStart:offset+1}:undefined} data-complete={Boolean(points)}>
     <CalendarDayNumber date={date} today={today}/>
-    {points&&<span aria-label={`${date} · ${c.attendance} · ${points}P`}><Check aria-hidden="true" size={14}/>{points}P</span>}
+    {points&&<span aria-label={`${date} · ${c.attendance} · ${points}P`}><EarnBadge variant="inline" size="sm" locale={locale} points={points}/></span>}
    </li>;})}
   </ol>
  </div>;

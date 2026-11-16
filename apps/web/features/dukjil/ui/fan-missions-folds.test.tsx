@@ -43,19 +43,19 @@ it("lists today's rows (check-in and the daily-limit activities) first, then the
 
 it("shows S4 numbers in the F3 row: the reward and count use the shared fan activity row", async () => {
   ui();
-  await waitFor(() => expect(document.querySelector('[data-mission="post"]')).toHaveTextContent("+20P"));
+  await waitFor(() => expect(document.querySelector('[data-mission="post"]')).toHaveTextContent("+20"));
   const post = document.querySelector('[data-mission="post"]') as HTMLElement;
-  expect(post).toHaveTextContent("+20P");
+  expect(post).toHaveTextContent("+20");
   expect(post).not.toHaveTextContent("×");
   expect(within(post).getByRole("progressbar", { name: "글쓰기" })).toHaveAttribute("aria-valuenow", "1");
   expect(post).toHaveTextContent("1/3");
   expect(post).not.toHaveTextContent("팬게시판에 글을 올려요");
-  expect(post.querySelector("[data-mission-trailing]")).toHaveTextContent("+20P");
+  expect(post.querySelector("[data-mission-trailing]")).toHaveTextContent("+20");
   expect(post.querySelector('[data-earn-badge="inline"] img')).toHaveAttribute("src", "/images/economy/point-coin.webp");
   expect(document.querySelector('[data-mission="reaction"] [data-mission-trailing]')).toHaveTextContent("완료");
   expect(document.querySelector('[data-mission="reaction"] [data-mission-stamp]')).not.toBeNull();
   expect(document.querySelector('[data-mission="invite"]')).not.toHaveTextContent("5명까지");
-  expect(document.querySelector('[data-mission="invite"] [data-mission-trailing]')).toHaveTextContent("+200P");
+  expect(document.querySelector('[data-mission="invite"] [data-mission-trailing]')).toHaveTextContent("+200");
   expect(document.querySelector('[data-mission="checkin"] [data-mission-trailing] [data-earn-badge="inline"]')).not.toBeNull();
   // No arrow anywhere in a row: the trailing column holds one thing.
   expect(document.querySelectorAll("[data-fan-missions] .lucide-arrow-right")).toHaveLength(0);
@@ -96,7 +96,7 @@ it("shows the six requested kinds to a guest without a page, each leading to the
   const grid = await waitFor(() => { const el = document.querySelector('[data-certification-grid="kinds"]'); expect(el).not.toBeNull(); return el as HTMLElement; });
   const links = [...grid.querySelectorAll("a")];
   // 사용자 11/13 10:4x: each of the six shows the 인증 policy points (catalog rules.proof) as the mission rows' +NP badge.
-  expect(links.map(link => link.textContent)).toEqual(["구매 영수증", "인스타 멤버십", "틱톡 멤버십", "유튜브 구독", "라이브 후원", "팬카페 가입"].map(name => `${name}+100P포인트 100 적립`));
+  expect(links.map(link => link.textContent)).toEqual(["구매 영수증", "인스타 멤버십", "틱톡 멤버십", "유튜브 구독", "라이브 후원", "팬카페 가입"].map(name => `${name}+100포인트 100 적립`));
   links.forEach(link => expect(link.getAttribute("href")).toMatch(/^\/login\?/));
 });
 

@@ -122,7 +122,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
             <p className={styles.checkinDone} role="status">
               <Check size={20} aria-hidden="true" />
               <span>{dukjilText(locale, "dukjilDone")}</span>
-              {earned && <EarnBadge variant="inline" locale={locale} points={earned.points} />}
+              {earned && <EarnBadge variant="inline" locale={locale} points={earned.points} slot />}
             </p>
           ) : noPassport ? (
             <FanAction className={styles.checkinAction} variant="primary" href={reviewHref}>{dukjilText(locale, "dukjilStart")}</FanAction>

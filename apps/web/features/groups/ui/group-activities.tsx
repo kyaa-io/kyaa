@@ -1,5 +1,6 @@
 "use client";
 import {eventApprovalCopy,isEventOpen} from '@/features/group-event-approval/event-approval-status';
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import {SourceStatePanel} from "./source-state-panel";
 import { GroupImage } from "./group-image";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -61,5 +62,5 @@ export function usePaged<T extends {nextCursor:string|null},I extends {id:string
 }
 function GroupMissionsList({pageId,locale}:{pageId:string;locale:AppLocale}){
  const t=groupsCopy(locale),c=activitiesCopy(locale),r=usePaged(`/api/groups/${pageId}/missions`,parseMissions,missionItems);
- return <section className={styles.panel}><h2>{c.missions}</h2>{r.error?<div role='alert'><p>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></div>:r.loading?<FanSkeletonRows rows={3} variant='entity' ariaLabel={t.loading}/>:r.items.length?r.items.map(item=><Link key={item.id} className={styles.card} href={`${item.actionHref}?locale=${locale}` as Route}>{item.imageUrl?<GroupImage locale={locale} className={styles.avatar} width={48} height={48} src={item.imageUrl} alt=''/>:<ListChecks aria-hidden='true'/>}<span className={styles.cardCopy}><strong>{item.title}</strong><span className={styles.meta}>{item.rewardPoints.toLocaleString(locale)} P · {item.status==='available'?t.activities:c[item.status]}</span></span></Link>):<p>{manageText(locale,'missionsEmpty')}</p>}{r.data?.nextCursor&&<FanAction onClick={r.more}>{t.more}</FanAction>}</section>;
+ return <section className={styles.panel}><h2>{c.missions}</h2>{r.error?<div role='alert'><p>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></div>:r.loading?<FanSkeletonRows rows={3} variant='entity' ariaLabel={t.loading}/>:r.items.length?r.items.map(item=><Link key={item.id} className={styles.card} href={`${item.actionHref}?locale=${locale}` as Route}>{item.imageUrl?<GroupImage locale={locale} className={styles.avatar} width={48} height={48} src={item.imageUrl} alt=''/>:<ListChecks aria-hidden='true'/>}<span className={styles.cardCopy}><strong>{item.title}</strong><span className={styles.meta}><EarnBadge variant="inline" locale={locale} points={item.rewardPoints}/> · {item.status==='available'?t.activities:c[item.status]}</span></span></Link>):<p>{manageText(locale,'missionsEmpty')}</p>}{r.data?.nextCursor&&<FanAction onClick={r.more}>{t.more}</FanAction>}</section>;
 }
