@@ -97,11 +97,11 @@ export function createProofHandlers(deps: ProofDependencies) {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
       const body = proofSubmitBodySchema.parse(await boundedJson(request, 4096));
       const celebrity = await creatorId(body.creator);
-      const raw = await deps.rpc("submit_certification_proof", {
-        p_user: appUserId, p_celebrity: celebrity, p_proof_type: body.proofType, p_upload_id: body.uploadId,
+      const raw = await deps.rpc(body.uploadIds ? "submit_certification_proof_multi" : "submit_certification_proof", {
+        p_user: appUserId, p_celebrity: celebrity, p_proof_type: body.proofType, ...(body.uploadIds ? { p_upload_ids: body.uploadIds } : { p_upload_id: body.uploadId }),
         p_publish_consent: body.publishConsent, p_amount_visible: body.amountVisible, p_image_phash: body.imagePhash,
         p_idempotency_key: body.requestKey,
-        p_request_hash: proofRequestHash({ celebrity, proofType: body.proofType, uploadId: body.uploadId, publishConsent: body.publishConsent, amountVisible: body.amountVisible, imagePhash: body.imagePhash, note: body.note ?? null }),
+        p_request_hash: proofRequestHash({ celebrity, proofType: body.proofType, uploadId: body.uploadId, ...(body.uploadIds ? { uploadIds: body.uploadIds } : {}), publishConsent: body.publishConsent, amountVisible: body.amountVisible, imagePhash: body.imagePhash, note: body.note ?? null }),
         p_pii_detected: containsPersonalInfo(body.note), p_post_body: body.publishConsent ? postBody(request, body.note, body.locale) : null,
       });
       return Response.json(command(raw), { headers: privateHeaders });
@@ -110,8 +110,8 @@ export function createProofHandlers(deps: ProofDependencies) {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
       if (!UUID.test(submissionId)) throw new SyntaxError("submission id");
       const body = proofResubmitBodySchema.parse(await boundedJson(request, 4096));
-      const raw = await deps.rpc("resubmit_certification_proof", {
-        p_user: appUserId, p_submission_id: submissionId, p_expected_revision: body.expectedRevision, p_upload_id: body.uploadId,
+      const raw = await deps.rpc(body.uploadIds ? "resubmit_certification_proof_multi" : "resubmit_certification_proof", {
+        p_user: appUserId, p_submission_id: submissionId, p_expected_revision: body.expectedRevision, ...(body.uploadIds ? { p_upload_ids: body.uploadIds } : { p_upload_id: body.uploadId }),
         p_image_phash: body.imagePhash, p_pii_detected: containsPersonalInfo(body.note), p_post_body: postBody(request, body.note, body.locale),
       });
       return Response.json(command(raw), { headers: privateHeaders });
