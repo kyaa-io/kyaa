@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   accountHandle, buildIngestRequest, canonicalPostUrl, collectSource, extractInstagramPost, extractTikTokPost,
-  isLoginWall, profilePostIds, sendIngest, sendCollectedSource,
+  followersEndpoint, isLoginWall, profileFollowerText, profilePostIds, sendIngest, sendCollectedSource,
 } from "./collect-core.mjs";
 
 const igSource = { celebritySlug: "wena", platform: "instagram", accountUrl: "https://www.instagram.com/wena/" };
@@ -141,4 +141,27 @@ test("late profile grids retry once while confirmed empty profiles remain health
   let submitted=0;
   await sendCollectedSource(async()=>{submitted++;return new Response(JSON.stringify({runId:'empty',items:[]}));},'https://dev.kyaa.io/x','s'.repeat(40),empty.request,()=>{});
   assert.equal(submitted,1);
+});
+
+test("follower text: TikTok's exact count, Instagram's own wording, nothing when unreadable", async () => {
+  const tiktokPage = (uniqueId, statsV2) => ({ finalUrl: "https://www.tiktok.com/@chang._.a", followerText: "20.9M",
+    rehydration: JSON.stringify({ __DEFAULT_SCOPE__: { "webapp.user-detail": { userInfo: { user: { uniqueId }, stats: { followerCount: 20900000 }, statsV2 } } } }) });
+  assert.equal(profileFollowerText("tiktok", tiktokPage("chang._.a", { followerCount: "20868849" }), "chang._.a"), "20868849");
+  assert.equal(profileFollowerText("tiktok", tiktokPage("chang._.a", undefined), "chang._.a"), "20.9M");
+  assert.equal(profileFollowerText("tiktok", tiktokPage("someone.else", { followerCount: "5" }), "chang._.a"), null);
+  const ig = followerText => ({ finalUrl: "https://www.instagram.com/wena/", followerText });
+  assert.equal(profileFollowerText("instagram", ig("428.3만"), "wena"), "428.3만");
+  assert.equal(profileFollowerText("instagram", ig("팔로워 5,432명"), "wena"), "5,432");
+  assert.equal(profileFollowerText("instagram", ig("77K followers"), "wena"), "77K");
+  for (const unreadable of [null, "", "팔로워", "ifewknow님이 팔로우합니다"]) assert.equal(profileFollowerText("instagram", ig(unreadable), "wena"), null);
+  assert.equal(profileFollowerText("instagram", { finalUrl: "https://www.instagram.com/other/", followerText: "7.6만" }, "wena"), null);
+  const result = await collectSource({ async read(url) { return { finalUrl: url, hrefs: [], emptyProfile: true, followerText: "7.6만" }; } }, igSource);
+  assert.equal(result.followers, "7.6만");
+  const walled = await collectSource({ read: async () => ({ finalUrl: "https://www.instagram.com/accounts/login/", hrefs: [], followerText: "7.6만" }) }, igSource);
+  assert.equal(walled.followers, null);
+});
+
+test("follower readings go to the sibling internal path", () => {
+  assert.equal(followersEndpoint("https://kyaa.io/api/internal/sns-ingest"), "https://kyaa.io/api/internal/platform-followers");
+  assert.throws(() => followersEndpoint("https://kyaa.io/other"), /SNS_INGEST_ENDPOINT_INVALID/);
 });

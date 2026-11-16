@@ -106,10 +106,39 @@ export function extractTikTokPost(rehydrationText, expected) {
   } };
 }
 
+const FOLLOWER_TEXT = /^\d[\d,]*(?:\.\d+)?\s*[kKmMbB천만억]?$/;
+
+/**
+ * The follower number as the official profile screen shows it, or null when it cannot be read (never 0 by guess).
+ * TikTok page data carries the exact count (`statsV2.followerCount`); Instagram shows only its own wording ("428.3만", "5,432").
+ * `profile.followerText` is the screen's follower element, read in collect.aside.mjs.
+ */
+export function profileFollowerText(platform, profile, handle) {
+  if (platform === "tiktok") {
+    const info = parseJson(profile.rehydration ?? "")?.__DEFAULT_SCOPE__?.["webapp.user-detail"]?.userInfo;
+    if (info && String(info.user?.uniqueId ?? "").toLowerCase() !== handle.toLowerCase()) return null;
+    const exact = info?.statsV2?.followerCount;
+    if (typeof exact === "string" && /^\d{1,13}$/.test(exact)) return exact;
+  } else {
+    const match = /^\/([A-Za-z0-9._]{1,30})\/?$/.exec(new URL(profile.finalUrl).pathname);
+    if (!match || match[1].toLowerCase() !== handle.toLowerCase()) return null;
+  }
+  const text = String(profile.followerText ?? "").trim().replace(/^팔로워\s*/, "").replace(/\s*(?:명|followers?)$/i, "").trim();
+  return FOLLOWER_TEXT.test(text) ? text : null;
+}
+
 export function buildIngestRequest(source, posts, collectorError) {
   return collectorError
     ? { celebritySlug: source.celebritySlug, platform: source.platform, collectorError, posts: [] }
     : { celebritySlug: source.celebritySlug, platform: source.platform, posts };
+}
+
+/** Weekly follower readings go to the sibling internal path with the same key. */
+export function followersEndpoint(ingestEndpoint) {
+  const url = new URL(ingestEndpoint);
+  if (url.pathname !== "/api/internal/sns-ingest") throw new Error("SNS_INGEST_ENDPOINT_INVALID");
+  url.pathname = "/api/internal/platform-followers";
+  return url.href;
 }
 
 export async function sendIngest(fetchImpl, endpoint, secret, body) {
@@ -138,23 +167,24 @@ export async function collectSource(browser, source, options = {}) {
   if (!isLoginWall(source.platform, profile.finalUrl) && !profile.emptyProfile && !profilePostIds(source.platform, profile.hrefs, handle).length) {
     profile = await browser.read(source.accountUrl);
   }
-  if (isLoginWall(source.platform, profile.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [] };
+  if (isLoginWall(source.platform, profile.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [], followers: null };
+  const followers = profileFollowerText(source.platform, profile, handle);
   const ids = profilePostIds(source.platform, profile.hrefs, handle).slice(0, options.limit ?? MAX_POSTS_PER_SOURCE);
-  if (!ids.length) return { request: buildIngestRequest(source, [], profile.emptyProfile === true ? undefined : "STRUCTURE_CHANGED"), unread: [] };
+  if (!ids.length) return { request: buildIngestRequest(source, [], profile.emptyProfile === true ? undefined : "STRUCTURE_CHANGED"), unread: [], followers };
   const posts = []; const unread = [];
   for (const sourceId of ids) {
     let page;
     try { page = await browser.read(canonicalPostUrl(source.platform, handle, sourceId)); }
     catch { unread.push({ sourceId, error: "READ_FAILED" }); continue; }
-    if (isLoginWall(source.platform, page.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [] };
+    if (isLoginWall(source.platform, page.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [], followers };
     const result = source.platform === "tiktok"
       ? extractTikTokPost(page.rehydration, { handle, sourceId })
       : extractInstagramPost(page.scripts, { handle, sourceId });
     if (result.post) posts.push(result.post); else unread.push({ sourceId, error: result.error });
   }
   // Every listed post failing to parse means the page layout changed, not that there is nothing new.
-  if (!posts.length) return { request: buildIngestRequest(source, [], "STRUCTURE_CHANGED"), unread };
-  return { request: buildIngestRequest(source, posts), unread };
+  if (!posts.length) return { request: buildIngestRequest(source, [], "STRUCTURE_CHANGED"), unread, followers };
+  return { request: buildIngestRequest(source, posts), unread, followers };
 }
 
 /** Keep each image request below the gateway deadline while preserving the five-new-post budget. */
