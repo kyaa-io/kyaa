@@ -40,6 +40,17 @@ try:
                     weekly.touch()
                 except Exception as error:
                     log.write('YOUTUBE_COLLECT_' + type(error).__name__ + '\n')
+            shorts = root / ('youtube-shorts-' + target + '.last-success')
+            if not shorts.exists() or datetime.datetime.now(datetime.timezone.utc).timestamp() - shorts.stat().st_mtime >= 6 * 3600:
+                try:
+                    req = urllib.request.Request(
+                        ('https://dev.kyaa.io' if target == 'dev' else 'https://kyaa.io') + '/api/internal/youtube-shorts',
+                        data=b'{}', method='POST', headers={'Authorization': 'Bearer ' + env['SNS_INGEST_SECRET'], 'Content-Type': 'application/json'})
+                    with urllib.request.urlopen(req, timeout=290) as response:
+                        if response.status != 200: raise ValueError('YOUTUBE_SHORTS_FAILED')
+                    shorts.touch()
+                except Exception as error:
+                    log.write('YOUTUBE_SHORTS_' + type(error).__name__ + '\n')
             proc = subprocess.Popen(['node', str(Path(__file__).with_name('collect.aside.mjs'))], env=env,
                                     stdout=log, stderr=log, start_new_session=True)
             try:

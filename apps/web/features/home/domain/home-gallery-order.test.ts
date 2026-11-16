@@ -68,3 +68,8 @@ describe("diversifyShorts", () => {
   });
   it("keeps every short", () => { expect(diversifyShorts([])).toEqual([]); expect(diversifyShorts([short("a", "a"), short("b", "a")])).toHaveLength(2); });
 });
+
+it("alternates platforms while retaining all shorts", () => {
+  const list = [{ id: "a", platform: "tiktok", creator: { slug: "a" } }, { id: "b", platform: "tiktok", creator: { slug: "b" } }, { id: "c", platform: "youtube", creator: { slug: "c" } }];
+  expect(diversifyShorts(list).map(item => item.platform)).toEqual(["tiktok", "youtube", "tiktok"]);
+});

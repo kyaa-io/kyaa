@@ -69,3 +69,9 @@ assertSourceOnlyLocalizations(input, cmsReadbackLocalizations);
 기존 LIVE 제목의 160자 저장 제한은 연속된 원문 발췌로 유지한다. 이미 저장된 생성 문구의 범위와 원문 확보 상태는 `work/source-only-content-20261018/`에 별도로 기록한다. 과거 증거 파일을 덮어쓰지 않는다.
 
 인증·입력·미등록 출처 거절은 서버 로그의 `sns_ingest_rejected`에 코드·HTTP 상태만 기록한다. 요청 본문·URL·인증 헤더·비밀값은 기록하지 않는다. 이 거절 로그는 DB 실행 기록과 별개다.
+
+## YouTube Shorts 자동 수집
+`/api/internal/youtube-shorts`는 공식 채널 API 원문 제목을 그대로 저장한다.
+300자를 넘을 때만 앞에서 연속 발췌한다. 번역·윤문·요약을 저장하지 않는다.
+수집 행만 제목을 갱신하고, 수동 등록 행은 보존한다. 재확인에서 사용할 수 없는 영상은
+삭제 대신 숨긴다. UUSH API 실검증은 dev 키 접근이 가능한 환경에서 완료해야 한다.
