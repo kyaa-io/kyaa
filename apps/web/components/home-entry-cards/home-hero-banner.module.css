@@ -35,7 +35,8 @@
   justify-content: center;
   gap: var(--space-3);
   width: calc(100% - var(--pic-w));
-  padding: var(--space-6) var(--space-4) var(--space-6) clamp(24px, 3vw, 40px);
+  /* 왼쪽 48: 이전 버튼 원(왼쪽 끝에서 6~38)의 오른쪽 끝 뒤로 10 이상 비워 글자가 버튼과 겹치지 않게 한다(2026-11-16 사용자 "글자가 살짝 우측으로"). 종류와 폭이 달라도 시작선은 같다. 모바일은 아래 규칙이 따로 정한다. */
+  padding: var(--space-6) var(--space-4) var(--space-6) var(--space-12);
 }
 .eyebrow { display: flex; align-items: center; min-height: 20px; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); }
 .eyebrow > span { display: inline-flex; align-items: center; gap: var(--space-2); }
