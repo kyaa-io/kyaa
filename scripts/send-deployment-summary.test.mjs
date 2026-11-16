@@ -58,10 +58,10 @@ test('1116 pinned manifest and plan use only fake GitHub reads',async()=>{
  const manifest=loadSummaryManifest('deployment-notice-summary-1116.json');
  assert.throws(()=>loadSummaryManifest('../deployment-notice-summary-1116.json'),/UNKNOWN/);
  assert.equal(manifest.originalBatchHashes.length,22);
- assert.equal(manifest.notes.length,183);
+ assert.equal(manifest.notes.length,190);
  const messages=summaryMessages(manifest);
- assert.equal(messages.length,10);
- assert.match(messages.at(-1).text,/^외 168건/);
+ assert.equal(messages.length,12);
+ assert.match(messages.at(-1).text,/^외 174건/);
  const source=JSON.parse(readFileSync(new URL('./fixtures/deployment-notice-summary-1116-source.json',import.meta.url)));
  validateSource(source,manifest);
  assert.throws(()=>validateSource({...source,head_sha:manifest.baseSha},manifest),/INVALID_SOURCE/);
@@ -85,17 +85,17 @@ test('1116 pinned manifest and plan use only fake GitHub reads',async()=>{
 
 // 1116 per-change summary: one message per change, each with its one representative screenshot.
 const perChange=loadSummaryManifest('deployment-notice-summary-1116.json');
-const expectedImages=[null,'2026-11-15-follow-like-star','2026-11-15-groups-banner-single-wide','2026-11-15-fanpage-head-tabs-390-local','2026-11-15-board-thumbnails-390',null,'2026-11-16-passport-x-share-390','2026-11-15-email-unsubscribe-390','2026-11-15-dukjil-tab-pc-layout',null].map(n=>n&&`release-notes/images/${n}.png`);
+const expectedImages=[null,'2026-11-16-follow-gleam-done-390','2026-11-16-missionbook-comments-390','2026-11-16-sns-followers-weekly','2026-11-16-email-activity-value','2026-11-16-youtube-shorts-1440','2026-11-16-passport-x-share-390','2026-11-15-fanpage-head-tabs-390-local','2026-11-15-board-thumbnails-390','2026-11-15-groups-banner-single-wide','2026-11-15-dukjil-tab-pc-layout',null].map(n=>n&&`release-notes/images/${n}.png`);
 function perChangeFixture(){const f=fixture({...perChange,confirmedBatches:11,suppressedBatches:25});f.sent.length=0;let next=3000;f.options.expectedHash=summaryPlanHash(f.manifest);f.options.send=async body=>{f.sent.push(body);return {chatId:-5187701508,messageId:next++};};return f;}
 test('1116 per-change messages keep order, captions and one mapped screenshot each',()=>{
  const messages=summaryMessages(perChange);
- assert.equal(messages.length,10);
+ assert.equal(messages.length,12);
  assert.deepEqual(messages[0],{text:'11/13~11/16 변경 안내'});
  assert.deepEqual(messages.slice(1,-1).map(m=>m.text),perChange.highlights.map(h=>h.text));
  assert.ok(messages.every(m=>!m.text.startsWith('•')&&!m.text.includes('\n')));
- assert.equal(messages.at(-1).text,'외 168건의 변경도 반영됐어요. (변경 안내 파일 기준)');
+ assert.equal(messages.at(-1).text,'외 174건의 변경도 반영됐어요. (변경 안내 파일 기준)');
  assert.deepEqual(messages.map(m=>m.image?.path??null),expectedImages);
- assert.equal(perChange.highlights.flatMap(h=>h.paths).length,15);
+ assert.equal(perChange.highlights.flatMap(h=>h.paths).length,16);
  // 1113 stays one plain message with the unchanged plan hash.
  assert.deepEqual(summaryMessages(summaryManifest),[{text:summaryText(summaryManifest)}]);
  assert.equal(summaryPlanHash(summaryManifest),hash(summaryManifest));
@@ -125,21 +125,21 @@ test('1116 screenshots must come from the line source notes with pinned bytes in
   assert.throws(()=>verifySummarySources(alter(1,h=>({...h,image:manifest.highlights[2].image})),repository),/SUMMARY_IMAGE_NOT_IN_SOURCE/);
  }finally{rmSync(repository,{recursive:true,force:true});}
 });
-test('per-change summary sends 10 messages in order once, checkpoints each and closes the source last',async()=>{
+test('per-change summary sends 12 messages in order once, checkpoints each and closes the source last',async()=>{
  const f=perChangeFixture(),patches=[],original=f.options.github;
  const result=await sendSummaryMessages({...f.options,github:async(p,i)=>{if(p==='/check-runs/20'&&i)patches.push(JSON.parse(i.body.output.summary).delivered?.length);return original(p,i);}});
- assert.equal(f.sent.length,10);
+ assert.equal(f.sent.length,12);
  assert.deepEqual(f.sent.map(b=>b.text),summaryMessages(f.manifest).map(m=>m.text));
  assert.deepEqual(f.sent.map(b=>b.photo??null),expectedImages.map(p=>p&&`https://raw.githubusercontent.com/kyaa-io/kyaa/${f.target.sha}/${p}`));
- assert.deepEqual(patches,[1,2,3,4,5,6,7,8,9,10]);
+ assert.deepEqual(patches,[1,2,3,4,5,6,7,8,9,10,11,12]);
  const receipt=f.db.get(20),state=JSON.parse(receipt.output.summary);
  assert.equal(receipt.conclusion,'success');
- assert.deepEqual(state.messageIds,Array.from({length:10},(_,i)=>3000+i));
+ assert.deepEqual(state.messageIds,Array.from({length:12},(_,i)=>3000+i));
  assert.equal(state.messageId,3000);assert.equal(state.planHash,summaryPlanHash(f.manifest));
  assert.deepEqual(result.messageIds,state.messageIds);
  const source=f.db.get(10);assert.equal(receiptState(source),'superseded');
  assert.equal(JSON.parse(source.output.summary).replacedBySummary.receiptId,20);
- await sendSummaryMessages(f.options);assert.equal(f.sent.length,10);
+ await sendSummaryMessages(f.options);assert.equal(f.sent.length,12);
 });
 test('per-change failure midway records what went out and never resends it',async()=>{
  const f=perChangeFixture(),send=f.options.send;
@@ -165,7 +165,7 @@ test('per-change rejection before any message may rerun; plan or receipt changes
  const f=perChangeFixture();
  await assert.rejects(sendSummaryMessages({...f.options,send:async()=>{throw Object.assign(new Error('rejected'),{definitelyNotSent:true});}}),/REJECTED/);
  assert.equal(f.db.get(20).conclusion,'failure');
- await sendSummaryMessages(f.options);assert.equal(f.sent.length,10);
+ await sendSummaryMessages(f.options);assert.equal(f.sent.length,12);
  for(const change of ['plan','oldPlanHash','receipt']){
   const g=perChangeFixture();
   if(change==='plan')g.options.expectedHash=hash(g.manifest);

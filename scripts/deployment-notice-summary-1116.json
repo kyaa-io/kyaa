@@ -1,9 +1,9 @@
 {
   "sourceReceiptId": 132654457213,
   "sourceDeploymentId": 7796630685,
-  "targetDeploymentId": 7814872136,
+  "targetDeploymentId": 7818179013,
   "baseSha": "57c922b24a2d74028a038b28466560fd667be108",
-  "headSha": "f37b0ac12239e33e2bf90b082a2f3a42a48e77e4",
+  "headSha": "472b437cd25f9b0a94942d16184f192de687e97b",
   "sourceReceiptHash": "615c491c1f481313db589e078ef26b372bd956fbefc3d2195c79b0e59d4efb2d",
   "originalBatchHashes": [
     "a0c16ca4114af954d63df2b5655554f1ce3af3f754911acc11ceb82ebb336c57",
@@ -31,7 +31,7 @@
   ],
   "confirmedBatches": 12,
   "suppressedBatches": 10,
-  "decision": "확정 12묶음 보존, 남은 10묶음 재전송 없이 머리말·변경 8건(대표 사진 1장씩)·나머지 건수를 메시지 10건으로 나눠 대체 준비. 사용자 승인 후 감독 실행.",
+  "decision": "확정 12묶음 보존, 남은 10묶음 재전송 없이 머리말·변경 10건(대표 사진 1장씩)·나머지 건수를 메시지 12건으로 나눠 대체 준비. 대상은 운영 472b437cd 배포. 사용자 승인 후 감독 실행.",
   "notes": [
     {
       "path": "release-notes/2026-11-11-deploy-cache-nonblocking.json",
@@ -738,12 +738,24 @@
       "sha256": "ecc15fa8acf24a3880c43b0c8058f64cd5fc48a164f61a21ac4b2b7b03ab9ce4"
     },
     {
+      "path": "release-notes/2026-11-16-email-activity-value.json",
+      "sha256": "d27f0abff97bdf287d6dced46a35fa5029f1eff1da36487fe8cb437305082760"
+    },
+    {
       "path": "release-notes/2026-11-16-email-bounce-fix.json",
       "sha256": "35a9afaab7c968856798fb9cf5eb94c3aa71ddc25ec028955f6e2c7a6cddb1ea"
     },
     {
+      "path": "release-notes/2026-11-16-email-settings-ui.json",
+      "sha256": "ff47b82f1037c370b89f5ca38ff2ac71e28054b60bcb94cf8f4e08a46cb02015"
+    },
+    {
       "path": "release-notes/2026-11-16-email-unsubscribe-address-bind.json",
       "sha256": "3b3d3a3c139b4115056226a49596814082878823bb89155a2317788681889c27"
+    },
+    {
+      "path": "release-notes/2026-11-16-follow-gleam-missions.json",
+      "sha256": "f421b3cd32d74cef9bbaf7e24540ba29eaab7a9c700158cc6e87befaaa20eaba"
     },
     {
       "path": "release-notes/2026-11-16-follow-polish.json",
@@ -754,6 +766,10 @@
       "sha256": "cae1f817204e04d39f5712f9093f13e2ba80ed2b59835e09d256bf1dcee4ae51"
     },
     {
+      "path": "release-notes/2026-11-16-missionbook-participation.json",
+      "sha256": "dd94769eb267999f39d36e1da4a3a9754b212b884bfddd6962409114da9c1669"
+    },
+    {
       "path": "release-notes/2026-11-16-passport-x-share.json",
       "sha256": "85cd8e6af7a15017e42dddeb632355e76ec9bfd515071729e5cc063aa6363468"
     },
@@ -762,8 +778,20 @@
       "sha256": "210c720545bd01483b7572c79f91b5dac3a1ef84b51c77d72680edfab5288691"
     },
     {
+      "path": "release-notes/2026-11-16-settings-bottom-space.json",
+      "sha256": "c8c8bbe6db52711d17dcae7083bda69ccb11e6d4a234b83c241113972f351da0"
+    },
+    {
       "path": "release-notes/2026-11-16-sns-deploy-template.json",
       "sha256": "296d7b86faa70a83b683f0b865c7f1b87c7c89d3662000c5b1658865499eaa44"
+    },
+    {
+      "path": "release-notes/2026-11-16-sns-followers-weekly.json",
+      "sha256": "82c2d84459a54f130009ae4a6c8cd2dfa8b6385c583aec8bb5d7e79d78ed4455"
+    },
+    {
+      "path": "release-notes/2026-11-16-youtube-shorts.json",
+      "sha256": "32dba87c5d66044f255d585ee6dd710672c0bc0f1c1c5126da42921260d15e76"
     }
   ],
   "delivery": "per-change",
@@ -773,12 +801,86 @@
       "paths": [
         "release-notes/2026-11-15-x-opening-follow.json",
         "release-notes/2026-11-14-dukjil-banner-1.json",
-        "release-notes/2026-11-15-follow-like-star.json"
+        "release-notes/2026-11-15-follow-like-star.json",
+        "release-notes/2026-11-16-follow-gleam-missions.json"
       ],
-      "text": "X 오픈 이벤트 페이지가 생겼어요. 로그인하고 좋아요를 누르면 참여가 끝나고 완료 도장이 남아요. 홈 이벤트 배너에서 바로 갈 수 있고, 덕질 탭에도 등록·공개한 배너를 보여 주는 자리가 생겼어요.",
+      "text": "X 오픈 이벤트 페이지가 생겼어요. 01·02 카드에서 X 팔로우·리포스트를 하고, 03 카드에서 로그인하고 좋아요를 누르면 kyaa 도장과 닉네임, 참여한 날짜·시간이 남아요. 홈 이벤트 배너에서 바로 갈 수 있고, 덕질 탭에도 등록·공개한 배너를 보여 주는 자리가 생겼어요. 사진은 로컬 예시 화면이에요.",
       "image": {
-        "path": "release-notes/images/2026-11-15-follow-like-star.png",
-        "sha256": "dd5fcbc08cf357dd9d7421b11ebf72981d285739cc64c8888ec0b29dd844042b"
+        "path": "release-notes/images/2026-11-16-follow-gleam-done-390.png",
+        "sha256": "ac622f2da527af4275e35f9d6cedc56e168e86d8d9ddb4027bd725742541b974"
+      }
+    },
+    {
+      "paths": [
+        "release-notes/2026-11-16-missionbook-participation.json"
+      ],
+      "text": "덕질미션북에 좋아요와 댓글이 생겼어요. 홈 첫 배너와 미션북 페이지 위쪽에 좋아요 수가 크게 보이고(화면 숫자는 실제 좋아요 수에 10을 더한 값), 페이지 아래에서 좋아요·싫어요·공유·댓글을 할 수 있어요. 공지사항 목록에도 덕질미션북 안내 글이 생겼어요. 사진은 로컬 예시 화면이에요.",
+      "image": {
+        "path": "release-notes/images/2026-11-16-missionbook-comments-390.png",
+        "sha256": "c931aadbc6ed75df466569be6895c466b38262904a69213a7b78fa76fb43dc24"
+      }
+    },
+    {
+      "paths": [
+        "release-notes/2026-11-16-sns-followers-weekly.json"
+      ],
+      "text": "홈 크리에이터 랭킹을 펼치면 보이는 인스타그램·틱톡·치지직 팔로워 수를 일주일에 한 번 자동으로 가져와요. 유튜브 구독자 수도 같은 주기로 갱신돼요. 읽지 못한 계정은 0으로 바꾸지 않고 이전 수치를 유지해요. 사진은 로컬 예시 화면이에요.",
+      "image": {
+        "path": "release-notes/images/2026-11-16-sns-followers-weekly.png",
+        "sha256": "16269205dc024e7e984cc4b5cc2393ef52bca02a46a156b3c9fe00af29278b87"
+      }
+    },
+    {
+      "paths": [
+        "release-notes/2026-11-15-email-unsubscribe.json",
+        "release-notes/2026-11-16-email-activity-value.json",
+        "release-notes/2026-11-16-email-unsubscribe-address-bind.json"
+      ],
+      "text": "메일의 수신거부를 누르면 활동 소식 메일만 멈추고, 당첨·수령 같은 필수 안내와 사이트 알림은 그대로 받아요. 메일 아래 링크에서 활동 소식 메일과 전체 Email 수신을 따로 고를 수 있고, 주소를 바꾸면 예전 주소로 받은 링크는 쓸 수 없어요. 사진은 로컬 예시 화면이에요.",
+      "image": {
+        "path": "release-notes/images/2026-11-16-email-activity-value.png",
+        "sha256": "ba97228367dbf140e79c613c60bc53cb472c85fe50afdafc9603d9e50f03ca2d"
+      }
+    },
+    {
+      "paths": [
+        "release-notes/2026-11-16-youtube-shorts.json"
+      ],
+      "text": "숏폼에 공식 유튜브 채널의 쇼츠를 가져오는 기능을 추가했어요. 틱톡과 유튜브 영상이 번갈아 보이고, 재생할 수 없게 된 영상은 목록에서 숨겨요. 사진은 예시 제목으로 배치만 확인한 로컬 화면이며 실제 수집 결과가 아니에요.",
+      "image": {
+        "path": "release-notes/images/2026-11-16-youtube-shorts-1440.png",
+        "sha256": "071f559769594ab5b1c5e743d4631ded403abcb9dd54c2337df9c14871cf360d"
+      }
+    },
+    {
+      "paths": [
+        "release-notes/2026-11-16-passport-x-share.json"
+      ],
+      "text": "패스포트와 발급 완료 화면에 ‘X에 공유’ 버튼이 생겼어요. 내 패스포트 링크와 @kyaa_app이 미리 들어가고, 링크 미리보기에는 내 패스포트 카드가 보여요. 사진은 로컬 예시 화면이에요.",
+      "image": {
+        "path": "release-notes/images/2026-11-16-passport-x-share-390.png",
+        "sha256": "96b94529180e198aa4671661ebbd8e7da633e8e8e240e00696d041b2b7463be7"
+      }
+    },
+    {
+      "paths": [
+        "release-notes/2026-11-15-fanpage-head-sns-row.json",
+        "release-notes/2026-11-15-fanpage-head-proof-tab.json"
+      ],
+      "text": "팬페이지 위쪽의 이름·버튼·SNS 링크를 정리했어요. 팬 목록과 랭킹은 ‘팬 N’을 눌러 열고, 인증 탭 이름은 ‘덕후인증’으로 바꿨어요. 사진은 로컬 예시 화면이에요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-fanpage-head-tabs-390-local.png",
+        "sha256": "6d7cee50334aaf72d884dedd860ff1f8faf48aec342c732befdcbfc862188837"
+      }
+    },
+    {
+      "paths": [
+        "release-notes/2026-11-15-board-thumbnails.json"
+      ],
+      "text": "게시판에서 사진 없는 팬 글에는 글쓴이 프로필 사진, 공지에는 kyaa 로고가 보여요. 인증 아티스트의 글·댓글 사진에는 분홍 테두리가 생겼어요. 사진은 로컬 예시 화면이에요.",
+      "image": {
+        "path": "release-notes/images/2026-11-15-board-thumbnails-390.png",
+        "sha256": "58dcedd6186d54cffe7717b7ddcda8835724581524f5a42247de80ddd0cbe3ee"
       }
     },
     {
@@ -793,60 +895,9 @@
     },
     {
       "paths": [
-        "release-notes/2026-11-15-fanpage-head-sns-row.json",
-        "release-notes/2026-11-15-fanpage-head-proof-tab.json"
-      ],
-      "text": "팬페이지 위쪽의 이름·버튼·SNS 링크를 정리했어요. 팬 목록과 랭킹은 ‘팬 N’을 눌러 열고, 인증 탭 이름은 ‘덕후인증’으로 바꿨어요.",
-      "image": {
-        "path": "release-notes/images/2026-11-15-fanpage-head-tabs-390-local.png",
-        "sha256": "6d7cee50334aaf72d884dedd860ff1f8faf48aec342c732befdcbfc862188837"
-      }
-    },
-    {
-      "paths": [
-        "release-notes/2026-11-15-board-thumbnails.json"
-      ],
-      "text": "게시판에서 사진 없는 팬 글에는 글쓴이 프로필 사진, 공지에는 kyaa 로고가 보여요. 인증 아티스트의 글·댓글 사진에는 분홍 테두리가 생겼어요.",
-      "image": {
-        "path": "release-notes/images/2026-11-15-board-thumbnails-390.png",
-        "sha256": "58dcedd6186d54cffe7717b7ddcda8835724581524f5a42247de80ddd0cbe3ee"
-      }
-    },
-    {
-      "paths": [
-        "release-notes/2026-11-16-missionbook-guide.json",
-        "release-notes/2026-11-15-proof-tab-overhaul.json"
-      ],
-      "text": "덕질미션북 안내에서 9칸 미션과 완성 보상·포인트를 차례로 볼 수 있어요. 덕후인증 탭에는 인증 종류·보상·제출 버튼을 모으고, 내가 낸 인증의 심사 상태와 보완·반려 사유도 보여 줘요."
-    },
-    {
-      "paths": [
-        "release-notes/2026-11-16-passport-x-share.json"
-      ],
-      "text": "패스포트와 발급 완료 화면에 ‘X에 공유’ 버튼이 생겼어요. 내 패스포트 링크와 @kyaa_app이 미리 들어가고, 링크 미리보기에는 내 패스포트 카드가 보여요.",
-      "image": {
-        "path": "release-notes/images/2026-11-16-passport-x-share-390.png",
-        "sha256": "96b94529180e198aa4671661ebbd8e7da633e8e8e240e00696d041b2b7463be7"
-      }
-    },
-    {
-      "paths": [
-        "release-notes/2026-11-15-email-only-notifications.json",
-        "release-notes/2026-11-15-email-delivery-priority.json",
-        "release-notes/2026-11-15-email-unsubscribe.json",
-        "release-notes/2026-11-16-email-unsubscribe-address-bind.json"
-      ],
-      "text": "새 혜택 안내와 수령 정보 요청을 이메일로도 보내고, 당첨·수령 등 필요한 메일을 먼저 보내요. 메일 아래 ‘그만 받기’에서 종류별로 끄거나 다시 받을 수 있어요. 주소를 바꾸면 예전 주소로 받은 링크는 쓸 수 없어요.",
-      "image": {
-        "path": "release-notes/images/2026-11-15-email-unsubscribe-390.png",
-        "sha256": "0b82d2a012715eff7b3c3d9fcf8e0d3aa42c23a029d9c6d505727517921c2ca0"
-      }
-    },
-    {
-      "paths": [
         "release-notes/2026-11-15-dukjil-tab-pc-layout.json"
       ],
-      "text": "PC 덕질 탭의 럭키드로우와 미션을 위아래로 배치했어요. 오른쪽 세로 배너가 등록되면 함께 보이고, 없으면 본문이 가운데에 놓여요.",
+      "text": "PC 덕질 탭의 럭키드로우와 미션을 위아래로 배치했어요. 오른쪽 세로 배너가 등록되면 함께 보이고, 없으면 본문이 가운데에 놓여요. 사진은 로컬 예시 화면이에요.",
       "image": {
         "path": "release-notes/images/2026-11-15-dukjil-tab-pc-layout.png",
         "sha256": "10589c6988108dcbd2f2939598200afa70813ab1cbb343fa6e23b1a406e5841f"
