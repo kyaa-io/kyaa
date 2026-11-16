@@ -326,8 +326,8 @@ describe("proof tab (FB-N21)", () => {
   it("photo feed hides prose, shows only the recorded award and never a post without its picture", () => {
     const { container } = render(<ProofPhotoFeed locale="ko" items={[feedItem(), feedItem({ postId: "44444444-4444-4444-8444-444444444444", imageUrl: null, awardedPoints: 99 })]} />);
     expect(screen.queryByText("hidden prose")).toBeNull();
-    expect(screen.getByText("+37P")).toBeTruthy();
-    expect(screen.queryByText("+99P")).toBeNull();
+    expect(screen.getByText("+37")).toBeTruthy();
+    expect(screen.queryByText("+99")).toBeNull();
     expect(container.querySelectorAll("li")).toHaveLength(1);
     expect(container.querySelector("a")?.getAttribute("href")).toContain("/image?t=abc");
   });
@@ -352,8 +352,8 @@ describe("proof tab (FB-N21)", () => {
     render(<ProofMethods locale="ko" slug="mina" types={["sns_post", "membership"]} pointsOf={(type) => (type === "sns_post" ? 31 : 173)} />);
     const links = screen.getAllByRole("link");
     expect(links.map((link) => link.getAttribute("href"))).toEqual(["/c/mina/proofs?locale=ko&type=membership", "/c/mina/proofs?locale=ko&type=sns_post"]);
-    expect(screen.getByText("+173P")).toBeTruthy();
-    expect(screen.getByText("+31P")).toBeTruthy();
+    expect(screen.getByText("+173")).toBeTruthy();
+    expect(screen.getByText("+31")).toBeTruthy();
     expect(screen.queryByText("영수증")).toBeNull();
   });
   it("my rows show state and day, the reason when one was given, and resubmit only for changes_requested", () => {

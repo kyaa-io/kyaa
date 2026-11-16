@@ -188,7 +188,7 @@ describe("EarnBadge S4", () => {
   it("shows the amount only; no ×N in the badge", () => {
     const { container } = render(<EarnBadge variant="inline" locale="ko" points={20} remaining={3} />);
     expect(container.textContent).not.toMatch(/×/);
-    expect(container.querySelector("[aria-hidden='true']:not(img)")!.textContent).toBe("+20P");
+    expect(container.querySelector("[aria-hidden='true']:not(img)")!.textContent).toBe("+20");
   });
 
   it("does not draw a today badge for 0", () => {

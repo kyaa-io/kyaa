@@ -1,5 +1,6 @@
 "use client";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { knownCertificationTitle } from "../domain/certification-title";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { toContentLocale } from "@/i18n/locales";
@@ -313,13 +314,13 @@ export function CertificationPanel({
                   const reviewing = own?.status === "pending";
                   const actionable = item.status === "available" && !reviewing;
                   const stateText = own ? (locale === "ko" && own.status === "approved" ? "인증 완료" : t[own.status]) : item.status === "available" ? (item.kind === "quiz" ? t.startQuiz : t.start) : t[item.status];
-                  const reward = [item.reward?.scorePoints ? `+${item.reward.scorePoints}${locale === "en" ? " " : ""}${t.score}` : "", item.reward?.ticketAmount ? `+${item.reward.ticketAmount} ${t.ticket}` : ""].filter(Boolean).join(" · ");
+                  const scorePoints = item.reward?.scorePoints ?? 0, ticketReward = item.reward?.ticketAmount ? `+${item.reward.ticketAmount} ${t.ticket}` : "";
                   const content = (
                     <>
                       <Image src={certificationStampSrc(item)} alt="" width={32} height={32} />
                       <strong>{knownCertificationTitle(locale, item) ?? <TranslatedText text={item.title} locale={locale} controls={false} />}</strong>
                       <span className={gridStyles.state} data-status={own?.status ?? item.status}>
-                        {stateText}{reward && actionable && own?.status !== "approved" ? <span className={gridStyles.reward}> · {reward}</span> : null}
+                        {stateText}{actionable && own?.status !== "approved" ? <>{scorePoints > 0 && <EarnBadge variant="inline" locale={locale} points={scorePoints} />}{ticketReward && <span className={gridStyles.reward}>{ticketReward}</span>}</> : null}
                       </span>
                     </>
                   );

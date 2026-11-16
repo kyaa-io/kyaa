@@ -15,10 +15,13 @@ it("done badge carries text, not colour only, and no remaining count", () => {
   expect(screen.getByText("오늘 완료")).toBeInTheDocument();
   expect(container.textContent).not.toMatch(/×/);
 });
-it("icon variant hides the glyph from assistive tech but keeps the label", () => {
-  render(<EarnBadge variant="icon" locale="en" points={3} />);
-  expect(screen.getByText("P")).toHaveAttribute("aria-hidden", "true");
-  expect(screen.getByText(/3/)).toBeInTheDocument();
+it("inline variant is the same pill as the corner badge: coin and +points without the P suffix, fixed width in a list", () => {
+  const { container } = render(<><EarnBadge variant="inline" locale="ko" points={2} slot /><EarnBadge variant="inline" locale="ko" points={1200} /></>);
+  const pills = [...container.querySelectorAll('[data-earn-badge="inline"] [data-point-pill]')];
+  expect(pills.map(pill => pill.querySelector("[data-point-value]")!.textContent)).toEqual(["+2", "+1,200"]);
+  expect(pills[0]!.querySelector("img")).toHaveAttribute("src", "/images/economy/point-coin.webp");
+  expect(pills[0]!.className).not.toBe(pills[1]!.className);
+  expect(container.textContent).not.toMatch(/\+\d[\d,]*P/);
 });
 it("corner variant shows the coin and +points without the P suffix or a remaining count", () => {
   const { container } = render(<EarnBadge variant="corner" locale="ko" points={20} remaining={3} />);

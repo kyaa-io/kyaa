@@ -1,5 +1,6 @@
 "use client";
 import { useId, useState, type FormEvent, type ReactNode } from "react";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { recordShareCompleted } from "@/features/analytics/client/share-event";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -21,7 +22,7 @@ import gridStyles from "@/features/certification/ui/certification-grid.module.cs
 import styles from "./share-proof.module.css";
 
 const parseList = (value: unknown) => shareProofListSchema.parse(value);
-const statusText = (c: ReturnType<typeof shareProofCopy>, locale: AppLocale, item: ShareProofItem) => item.status === "pending" ? c.pending : item.status === "rejected" ? c.rejected : item.status === "revoked" ? c.revoked : item.points ? `+${item.points.toLocaleString(locale)}P` : c.noPoints;
+const statusText = (c: ReturnType<typeof shareProofCopy>, locale: AppLocale, item: ShareProofItem) => item.status === "pending" ? c.pending : item.status === "rejected" ? c.rejected : item.status === "revoked" ? c.revoked : item.points ? <EarnBadge variant="inline" locale={locale} points={item.points} /> : c.noPoints;
 
 /** 261107-2 D12: the share mission as a proof in the 인증 list. The tile opens the proof dialog through `share=1` in the address,
  * so the 덕질 mission row and this tile land on the same place. */
@@ -36,12 +37,12 @@ function ShareProofTileInner({ slug, locale }: { slug: string; locale: AppLocale
   const withShare = (on: boolean) => { const next = new URLSearchParams(params?.toString()); if (on) next.set("share", "1"); else next.delete("share"); const query = next.toString(); return `${pathname}${query ? `?${query}` : ""}`; };
   const progress = dukjil?.status === "on" ? missionProgress(dukjil.catalog, dukjil.today, "share") : null;
   const state = progress?.count !== undefined && progress.limit ? c.today(progress.count.toLocaleString(locale), progress.limit.toLocaleString(locale)) : c.start;
-  const reward = progress?.points && !progress.done ? `+${progress.points.toLocaleString(locale)}P` : "";
+  const reward = progress?.points && !progress.done ? progress.points : 0;
   return <>
     <Link href={withShare(true) as Route} scroll={false} className={gridStyles.tile} data-status="available" data-share-proof-tile="">
       <img src="/images/stamps/ink-v1/share.webp" alt="" width={32} height={32} />
       <strong>{c.title}</strong>
-      <span className={gridStyles.state} data-status={progress?.done ? "approved" : "available"}>{state}{reward ? <span className={gridStyles.reward}> · {reward}</span> : null}</span>
+      <span className={gridStyles.state} data-status={progress?.done ? "approved" : "available"}>{state}{reward ? <EarnBadge variant="inline" locale={locale} points={reward} /> : null}</span>
     </Link>
     {open && <ShareProofDialog slug={slug} locale={locale} onClose={() => router.replace(withShare(false) as Route, { scroll: false })} />}
   </>;

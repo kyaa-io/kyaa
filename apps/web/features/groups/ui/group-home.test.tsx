@@ -49,8 +49,8 @@ it('sends a guest to login from every mission row and from the join card',async(
 it('promises only what the server pays on a group: check-in points, no post or comment points, no progress',async()=>{
  h.auth=true;
  const view=home();
- const checkin=await waitFor(()=>{const row=view.container.querySelector('[data-mission=checkin]');if(!row?.textContent?.includes('+2P'))throw new Error('catalog pending');return row;});
- expect(checkin).toHaveTextContent('+2P');
+ const checkin=await waitFor(()=>{const row=view.container.querySelector('[data-mission=checkin]');if(!row?.textContent?.includes('+2'))throw new Error('catalog pending');return row;});
+ expect(checkin).toHaveTextContent('+2');
  for(const key of ['post','comment','proof'])expect(view.container.querySelector(`[data-mission=${key}]`)).not.toHaveTextContent(/\+\d+P/);
  expect(view.container.querySelector('[role=progressbar]')).toBeNull();
  expect(view.container.querySelector('[data-mission=post]')).not.toHaveTextContent('1/3');
@@ -59,7 +59,7 @@ it('promises only what the server pays on a group: check-in points, no post or c
 it('reads today without a creator for a signed-in fan and shows it in the head',async()=>{
  h.auth=true;
  home();
- await screen.findByText('오늘 +22P');
+ await screen.findByText('+22');
  expect(h.urls).toContain('/api/me/dukjil/today');
 });
 

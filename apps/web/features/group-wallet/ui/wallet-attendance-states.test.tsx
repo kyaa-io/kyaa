@@ -27,7 +27,7 @@ it('before the seventh stamp: check-in action and the seventh-day hint',async()=
 });
 it('already done: says completion and the actual points once, offers only the record link',async()=>{
  serve({checkedIn:true,streak:7,nextBonusIn:7,days:[{date:'2026-11-02',points:30}]});render(<WalletScreen locale='ko' attendance/>);
- const status=(await screen.findByText('오늘 출석 완료')).closest('p')!;expect(status).toHaveAttribute('role','status');expect(status).toHaveTextContent('+30P');
+ const status=(await screen.findByText('오늘 출석 완료')).closest('p')!;expect(status).toHaveAttribute('role','status');expect(status).toHaveTextContent('+30');
  expect(screen.getAllByText(/오늘 출석 완료/)).toHaveLength(1);expect(screen.queryByText('완료했어요.')).toBeNull();expect(screen.queryByText(/출석하고 10P 받기/)).toBeNull();
  expect(screen.queryByRole('button',{name:/오늘 출석/})).toBeNull();expect(screen.getByRole('link',{name:'내 출석 기록 보기'})).toHaveAttribute('href',expect.stringContaining('#attendance-record'));
 });
@@ -38,7 +38,7 @@ it('right after the response: completion row carries the refreshed balance, no d
   return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked,streak:checked?7:6,nextBonusIn:checked?7:1,days:checked?[{date:'2026-11-02',points:30}]:[]}});
  }));
  render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'}));
- const status=await screen.findByText('포인트 270 P');expect(status.closest('p')).toHaveTextContent('+30P');expect(screen.queryByText('완료했어요.')).toBeNull();expect(screen.getAllByRole('status')).toHaveLength(1);
+ const status=await screen.findByText('포인트 270 P');expect(status.closest('p')).toHaveTextContent('+30');expect(screen.queryByText('완료했어요.')).toBeNull();expect(screen.getAllByRole('status')).toHaveLength(1);
 });
 it('wallet error shows one alert with retry; guest sees login only',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>new Response('{}',{status:500})));render(<WalletScreen locale='ko' attendance/>);

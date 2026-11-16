@@ -322,10 +322,20 @@
   overflow-wrap: anywhere;
 }
 
+/* 좁은 화면은 값 열이 줄의 오른쪽 끝 열이라 알약과 그 아래 글자를 오른쪽 끝에 맞춘다. 넓은 화면은 가운데 열이라 왼쪽에서 시작한다. */
 .ruleValue {
   display: grid;
   align-content: start;
+  justify-items: end;
   gap: var(--space-1);
+  text-align: end;
+}
+
+@media (min-width: 48rem) {
+  .ruleValue {
+    justify-items: start;
+    text-align: start;
+  }
 }
 
 .ruleValue strong {

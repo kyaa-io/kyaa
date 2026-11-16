@@ -104,7 +104,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
   it("states the exact Korean figures", async () => {
     const model = buildGuideModel(await fetchCatalog(rawPolicy()));
     const html = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
-    expect(ruleBlock(html, "post")).toMatch(/35P[\s\S]*하루 4번/);
+    expect(ruleBlock(html, "post")).toMatch(/\+35\D[\s\S]*하루 4번/);
     expect(ruleBlock(html, "mission")).toContain("55~310P");
     expect(ruleBlock(html, "checkin")).toContain("5일 연속이면 +12P");
     expect(ruleBlock(html, "proof")).toContain("처음 520P");
@@ -114,10 +114,10 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     const before = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={buildGuideModel(await fetchCatalog(rawPolicy()))} />);
     const changed = rawPolicy({ post: { points: 41, pointCap: { per: "user_day", max: 9 }, stamp: { kind: "post" } } });
     const after = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={buildGuideModel(await fetchCatalog(changed))} />);
-    expect(ruleBlock(before, "post")).toContain("35P");
-    expect(ruleBlock(after, "post")).toContain("41P");
+    expect(ruleBlock(before, "post")).toMatch(/\+35\D/);
+    expect(ruleBlock(after, "post")).toMatch(/\+41\D/);
     expect(ruleBlock(after, "post")).toContain("하루 9번");
-    expect(ruleBlock(after, "post")).not.toContain("35P");
+    expect(ruleBlock(after, "post")).not.toMatch(/\+35\D/);
   });
 
   it("marks the stamp step as coming soon only while the active policy has no proof rule", async () => {
@@ -253,7 +253,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     expect(ko.match(/합성 예시/g)).toHaveLength(2);
     expect(ko).toContain("010-0000-0000");
     const benefits = ko.slice(ko.indexOf('id="jjinfan-benefit"'), ko.indexOf('id="jjinfan-faq"')).replace(/<[^>]+>/g, " ");
-    expect(benefits).toContain("120P");
+    expect(benefits).toMatch(/\+120\D/);
     expect(benefits).toContain("처음 520P");
     expect(benefits).toContain("찐팬 n번째");
     const faq = ko.slice(ko.indexOf('id="jjinfan-faq"'));

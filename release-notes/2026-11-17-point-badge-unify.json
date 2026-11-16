@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "포인트를 보여 주는 곳을 덕후인증 탭의 노란 배지(동전과 +숫자) 한 가지 모양으로 맞췄어요. 출석체크 팝업, 팬 활동과 오늘의 덕질 목록, 덕후인증·공유 인증, 덕질 안내의 덕질별 포인트 표가 같은 배지를 써요.",
+    "목록에서는 배지 폭을 같게 해서 동전과 숫자가 줄마다 같은 자리에 오고, 오른쪽 끝도 같아요.",
+    "보유 포인트, 순위, 적립·사용 내역 금액은 받는 포인트가 아니라서 그대로예요.",
+    "첨부 사진은 시험 계정으로 본 로컬 화면이에요. 차례대로 출석체크 팝업(모바일), 출석체크 팝업(PC), 덕질별 포인트 표(PC)예요."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-17-point-badge-attendance-390-local.png",
+    "release-notes/images/2026-11-17-point-badge-attendance-1440-local.png",
+    "release-notes/images/2026-11-17-point-badge-guide-table-1440-local.png"
+  ]
+}

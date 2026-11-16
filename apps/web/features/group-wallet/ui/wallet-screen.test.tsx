@@ -64,7 +64,7 @@ it('renders source balance failure from the real resource and retries the same r
 });
 it('shows only returned attendance points rather than the source example bonus',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,attendance:{...wallet.attendance,checkedIn:true,days:[{date:wallet.attendance.date,points:10}]}})));
- const view=render(<WalletScreen locale='ko' attendance/>);const state=(await screen.findByText('오늘 출석 완료')).closest('p')!;expect(state).toHaveTextContent('10P');expect(state).not.toHaveTextContent('20P');expect(state).not.toHaveTextContent('30P');
+ const view=render(<WalletScreen locale='ko' attendance/>);const state=(await screen.findByText('오늘 출석 완료')).closest('p')!;expect(state).toHaveTextContent('+10');expect(state).not.toHaveTextContent('+20');expect(state).not.toHaveTextContent('+30');
 });
 it('UI021 initial wallet load announces skeleton then shows real balance',async()=>{
  let finish!:(response:Response)=>void;const delayed=new Promise<Response>(resolve=>{finish=resolve;});

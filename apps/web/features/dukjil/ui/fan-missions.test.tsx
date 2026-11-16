@@ -24,7 +24,7 @@ const row = (key: string) => waitFor(() => { const el = rowNow(key); if (!el) th
 
 it("shows today's points as the coin badge, with no stamp icon box beside it (C8)", async () => {
   const { container } = ui();
-  expect(await screen.findByText("오늘 +22P")).toBeInTheDocument();
+  expect(await screen.findByText("+22")).toBeInTheDocument();
   const head = container.querySelector("[data-fan-missions] h2")!.parentElement!;
   expect(head.querySelector("svg.lucide-stamp")).toBeNull();
   expect(head).not.toHaveTextContent(/스탬프/);
@@ -41,7 +41,7 @@ it("draws progress against the daily limit, shows no task sentence, and no bar w
   expect(post.querySelector("[role=progressbar]")).toHaveAttribute("aria-valuemax", "3");
   expect(post).toHaveTextContent("1/3");
   expect(post).not.toHaveTextContent("팬게시판에 글을 올려요");
-  expect(post).toHaveTextContent("+20P");
+  expect(post).toHaveTextContent("+20");
   // S4: 배지에는 금액만. 남은 횟수는 게이지(1/3)가 말한다.
   expect(post).not.toHaveTextContent("×");
   expect(rowNow("invite").querySelector("[role=progressbar]")).toBeNull();
@@ -78,7 +78,7 @@ it("keeps the cards for a guest with public points, no personal values, and a lo
   h.auth = false;
   ui();
   const post = (await row("post"));
-  await waitFor(() => expect(post).toHaveTextContent("+20P"));
+  await waitFor(() => expect(post).toHaveTextContent("+20"));
   expect(post).not.toHaveTextContent("×");
   expect(post.querySelector("[role=progressbar]")).toBeNull();
   expect(post.querySelector("a")!.getAttribute("href")).toContain("/login");
@@ -90,7 +90,7 @@ it("shows the activities without numbers when the policy is off", async () => {
   h.catalog = { version: null, rules: {}, missionBook: null };
   ui();
   await waitFor(() => expect(screen.getAllByRole("listitem").length).toBe(3));
-  expect(document.body.textContent).not.toMatch(/\+\d+P/);
+  expect(document.body.textContent).not.toMatch(/\+\d/);
   expect(screen.queryByRole("group")).toBeNull();
 });
 it("offers a retry when today fails", async () => {
@@ -122,7 +122,7 @@ it.each([false,true])('shows supported reaction once with shared progress and re
  await row('reaction');
  await waitFor(()=>expect(rowNow('reaction')).toHaveTextContent('2/10'));
  const reaction=rowNow('reaction');
- expect(reaction).toHaveTextContent('+1P');
+ expect(reaction).toHaveTextContent('+1');
  expect(reaction.querySelector('[role=progressbar]')).toHaveAttribute('aria-valuenow','2');
  expect(reaction.querySelector('a')).toHaveAttribute('href','/elina?tab=board&source=fans&locale=ko');
  expect(view.container.querySelectorAll('[data-mission="reaction"]')).toHaveLength(1);

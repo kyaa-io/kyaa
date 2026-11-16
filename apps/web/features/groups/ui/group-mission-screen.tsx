@@ -1,6 +1,6 @@
 "use client";
 import {CreatorAttendanceEntry} from "@/features/dukjil/ui/creator-attendance-entry";
-import {EarnBadgeCorner} from "@/features/dukjil/ui/earn-badge";
+import {EarnBadge,EarnBadgeCorner} from "@/features/dukjil/ui/earn-badge";
 import {CheckinCorner} from "@/features/dukjil/ui/checkin-corner";
 import {FanSkeleton,FanSkeletonRows} from "@/components/fan-ui/fan-skeleton";
 import {DukjilProvider} from "@/features/dukjil/ui/dukjil-provider";
@@ -57,7 +57,7 @@ export function GroupMissionScreen({pageId,missionId,locale,view='conditions'}:{
  <p className={overviewStyles.conditionsMission}>{d.mission.title}</p>
  {d.mission.submissionKind==='text'&&d.mission.imageUrl&&<GroupImage locale={locale} src={d.mission.imageUrl} alt='' style={{maxWidth:360,width:'100%',height:'auto',objectFit:'contain'}}/>}
  <h2 className={overviewStyles.conditionsHeading}>{conditionCopy.before}</h2>
- <dl className={overviewStyles.conditionFacts}><div><dt>{conditionCopy.audience}</dt><dd>{conditionCopy.audienceValue}</dd></div><div><dt>{conditionCopy.content}</dt><dd>{d.mission.instructions}</dd></div><div><dt>{conditionCopy.reward}</dt><dd><span>{d.mission.rewardPoints.toLocaleString(locale)} P</span></dd></div><div><dt>{conditionCopy.timing}</dt><dd>{conditionCopy.timingValue}</dd></div></dl>
+ <dl className={overviewStyles.conditionFacts}><div><dt>{conditionCopy.audience}</dt><dd>{conditionCopy.audienceValue}</dd></div><div><dt>{conditionCopy.content}</dt><dd>{d.mission.instructions}</dd></div><div><dt>{conditionCopy.reward}</dt><dd><EarnBadge variant="inline" locale={locale} points={d.mission.rewardPoints}/></dd></div><div><dt>{conditionCopy.timing}</dt><dd>{conditionCopy.timingValue}</dd></div></dl>
  <div className={overviewStyles.conditionsActions}><FanAction className={overviewStyles.conditionSubmit} variant='primary' disabled={!d.canSubmit} onClick={()=>{if(d.canSubmit){setFailed(false);setWriting(true);}}}>{d.submission?.status==='rejected'?submissionCopy.revise:conditionCopy.submit}</FanAction>{d.submission?<FanAction className={overviewStyles.conditionHistory} href={viewHref('submission')}>{submissionCopy.own}</FanAction>:<FanAction className={overviewStyles.conditionHistory} disabled>{submissionCopy.own}</FanAction>}</div>
  </>}{!showSubmission&&d.submission&&d.mission.submissionKind==='survey'&&<>{!d.canSubmit&&<><h1 className={overviewStyles.answeredSurveyTitle}>{d.mission.title}</h1><p className={overviewStyles.conditionsMission} role='status'>{submissionCopy.answered}</p></>}<FanAction href={viewHref('submission')}>{submissionCopy.own}</FanAction></>}{showSubmission&&d.submission&&(d.mission.submissionKind==='survey'?<SourceStatePanel title={c[d.submission.status]} description={d.submission.reason??(d.submission.status==='completed'?`${d.submission.rewardPoints.toLocaleString(locale)} P`:undefined)} feedback={d.submission.status==='completed'?'success':d.submission.status==='rejected'?'danger':'neutral'} role='status' sourceId={d.submission.status==='pending'?'mDaVG':d.submission.status==='rejected'?'L9zSo':'VTA0g'} actions={d.canSubmit&&d.mission.submissionKind!=='survey'?[{label:taskSubmitCopy[locale].mission,onClick:()=>{setFailed(false);setWriting(true);},variant:'primary'}]:[]}>
  {d.submission.imageUrl&&<GroupImage locale={locale} src={d.submission.imageUrl} alt='' width={240} height={160} style={{maxWidth:'100%',objectFit:'contain'}}/>}{d.submission.history.length>1&&<SubmissionHistory items={d.submission.history} locale={locale}/>}
@@ -66,7 +66,7 @@ export function GroupMissionScreen({pageId,missionId,locale,view='conditions'}:{
  <div className={overviewStyles.submissionRow}><h2>{d.mission.title}</h2></div>
  <div className={overviewStyles.submissionRow}><h2>{submissionCopy.body}</h2><p data-current-submission-body>{d.submission.body}</p>{d.submission.imageUrl&&<GroupImage locale={locale} src={d.submission.imageUrl} alt='' width={240} height={160} style={{maxWidth:'100%',objectFit:'contain'}}/>}</div>
  {d.submission.reason&&<div className={overviewStyles.submissionRow}><h2>{c.rejected}</h2><p>{d.submission.reason}</p></div>}
- <div className={overviewStyles.submissionRow}><h2>{submissionCopy.points}</h2><p>{d.submission.status==='completed'?`${d.submission.rewardPoints.toLocaleString(locale)} P`:submissionCopy.pending}</p></div>
+ <div className={overviewStyles.submissionRow}><h2>{submissionCopy.points}</h2><p>{d.submission.status==='completed'?<EarnBadge variant="inline" locale={locale} points={d.submission.rewardPoints}/>:submissionCopy.pending}</p></div>
  {d.submission.status==='rejected'&&d.canSubmit&&<FanAction className={overviewStyles.reviseSubmission} variant='primary' onClick={()=>{setFailed(false);setWriting(true);}}>{submissionCopy.revise}</FanAction>}
  {d.submission.history.length>1&&<SubmissionHistory items={d.submission.history} locale={locale}/>}
  </section>)}

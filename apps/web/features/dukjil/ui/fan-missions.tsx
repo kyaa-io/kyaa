@@ -107,7 +107,7 @@ export function FanMissions({ locale, slug, title, titleSuffix, passportHref, pr
           title={nameCount ? <>{mission.label}{nameCount}</> : mission.label}
           detail={progress || undefined}
           trailing={finished ? <MissionDoneStamp label={dukjilText(locale, "missionDoneShort")} />
-            : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} /> : undefined} />;
+            : on && points ? <EarnBadge variant="inline" className={styles.reward} locale={locale} points={points} remaining={guest ? null : remaining} remainingPer={period} slot /> : undefined} />;
       })}
     </FanMissionList>
   );

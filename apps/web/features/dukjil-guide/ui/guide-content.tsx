@@ -12,6 +12,7 @@ import { PROOF_TYPES } from "@/features/passport/domain/proof-types";
 import { GuideCta, GuideFansLink, GuideProgress } from "./guide-live";
 import { JjinfanChallengeDetail } from "@/features/rankings/ui/jjinfan-detail";
 import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { activityLabel, guideDetailText, guideText, limitText, pointsText } from "./guide-copy";
 import styles from "./guide-content.module.css";
 import { FanSectionHeader } from "@/components/fan-ui/fan-heading";
@@ -36,7 +37,8 @@ function PointsCell({ locale, activity }: { locale: AppLocale; activity: GuideAc
   const streak = activity.streak ? guideText(locale, "dkgStreak", [activity.streak.every, activity.streak.bonus]) : "";
   return (
     <>
-      <strong>{pointsText(locale, activity)}</strong>
+      {/* 한 가지 값이면 앱의 포인트 알약 그대로, 범위·첫 인증만 있는 값은 글자로 둔다. */}
+      {activity.points !== null && activity.pointsMax === null ? <EarnBadge variant="inline" locale={locale} points={activity.points} slot /> : <strong>{pointsText(locale, activity)}</strong>}
       {extra ? <span className={styles.sub}>{extra}</span> : null}
       {streak ? <span className={styles.sub}>{streak}</span> : null}
     </>
