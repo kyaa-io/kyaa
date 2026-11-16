@@ -1,12 +1,12 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import page from "@/server/home-gallery/fixtures/read_public_home_gallery_photos.json";
 import relativePage from "@/server/home-gallery/fixtures/read_public_home_gallery_photos_relative.json";
 import shortsRows from "@/server/home-gallery/fixtures/read_public_home_shorts.json";
 import { homeShortsSchema, type HomeGalleryPhoto } from "@/features/home/domain/home-gallery";
-import { allocateGalleryColumns, homeGalleryLayouts } from "./home-gallery-layout";
+import { allocateGalleryColumns, appendToGalleryColumns, homeGalleryLayouts } from "./home-gallery-layout";
 import { HomeGalleryScreen } from "./home-gallery-page";
 import { HomeGallery } from "./home-placeholder-blocks";
 
@@ -150,7 +150,9 @@ describe("home gallery block", () => {
 });
 
 describe("/gallery", () => {
-  it("lists every photo with its creator, one empty row without data, and a more link", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it("lists every photo with its creator, one empty row without data, and a more button", () => {
+    vi.stubGlobal("fetch", vi.fn(() => new Promise<Response>(() => undefined)));
     const { unmount } = render(<HomeGalleryScreen locale="ko" items={[]} nextCursor={null} />);
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
     unmount();
@@ -159,6 +161,23 @@ describe("/gallery", () => {
     for (const layout of ["mobile", "desktop"]) {
       expect(document.querySelectorAll(`[data-gallery-layout="${layout}"] [data-row="photo"]`)).toHaveLength(photos.length);
     }
-    expect(screen.getByRole("link", { name: /더 보기/ })).toHaveAttribute("href", "/gallery?locale=ko&cursor=abc");
+    expect(screen.getByRole("button", { name: /더 보기/ })).toBeInTheDocument(); // loading itself is covered by home-gallery-list.test.tsx
+  });
+});
+
+describe("appending a later gallery page", () => {
+  const sized = (id: number, width: number, height: number): HomeGalleryPhoto => ({ ...photos[2]!, id: `q${id}`, image: { ...photos[2]!.image, width, height } });
+  it("keeps every photo already placed where it was and keeps the column bottoms within about one photo", () => {
+    for (const layout of Object.values(homeGalleryLayouts)) {
+      let columns = allocateGalleryColumns(Array.from({ length: 24 }, (_, i) => sized(i, 1000, 1000 + (i % 5) * 400)), layout).columns as HomeGalleryPhoto[][];
+      for (let page = 1; page <= 3; page += 1) {
+        const before = columns.map(column => column.map(item => item.id));
+        columns = appendToGalleryColumns(columns, Array.from({ length: 24 }, (_, i) => sized(page * 100 + i, 1000, 1000 + ((i * 3) % 7) * 300)), layout) as HomeGalleryPhoto[][];
+        columns.forEach((column, index) => expect(column.slice(0, before[index]!.length).map(item => item.id)).toEqual(before[index]));
+        expect(columns.flat()).toHaveLength(24 * (page + 1));
+      }
+      const heights = columns.map(column => column.reduce((sum, item) => sum + item.image.height / item.image.width, 0));
+      expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(3);
+    }
   });
 });

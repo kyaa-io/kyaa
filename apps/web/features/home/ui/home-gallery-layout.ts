@@ -90,3 +90,19 @@ export function allocateGalleryColumns(photos: readonly HomeGalleryPhoto[], layo
   const lengths = columns.map(column => columnHeight(column.map(ratio), layout.gap));
   return { columns, placed: photos.length, spread: lengths.length ? Math.max(...lengths) - Math.min(...lengths) : 0 };
 }
+
+/**
+ * Adds a later page under columns that are already on screen: each photo, in order, goes to the shortest column right now, so nothing
+ * above moves and the bottoms stay within about one photo of each other however many pages follow.
+ */
+export function appendToGalleryColumns(columns: readonly (readonly HomeGalleryPhoto[])[], photos: readonly HomeGalleryPhoto[], layout: Layout) {
+  const next = Array.from({ length: layout.columns }, (_, index) => [...(columns[index] ?? [])]);
+  const heights = next.map(column => columnHeight(column.map(ratio), layout.gap));
+  for (const photo of photos) {
+    let target = 0;
+    for (let column = 1; column < next.length; column += 1) if (heights[column]! < heights[target]!) target = column;
+    heights[target] = heights[target]! + ratio(photo) + (next[target]!.length ? layout.gap : 0);
+    next[target]!.push(photo);
+  }
+  return next;
+}

@@ -17,12 +17,12 @@ beforeEach(() => { state.rpc.mockReset(); state.redirect.mockClear(); });
 
 // Real read_public_home_gallery_photos responses (supabase/tests/home_gallery_shorts.sh).
 describe("/gallery page", () => {
-  it("shows the read photos and the next-page link", async () => {
+  it("shows the read photos and the load-more button", async () => {
     state.rpc.mockResolvedValue({ data: page, error: null });
     render(await open({ locale: "ko" }));
     // Two photos in each of the two layouts (mobile 2 columns, desktop 4 columns) that CSS switches between.
     expect(screen.getAllByRole("listitem")).toHaveLength(4);
-    expect(screen.getByRole("link", { name: /더 보기/ })).toHaveAttribute("href", `/gallery?locale=ko&cursor=${encodeURIComponent(encodeHomeGalleryCursor(2))}`);
+    expect(screen.getByRole("button", { name: /더 보기/ })).toBeInTheDocument();
   });
   it("shows the empty row only for a read that found nothing", async () => {
     state.rpc.mockResolvedValue({ data: empty, error: null });
