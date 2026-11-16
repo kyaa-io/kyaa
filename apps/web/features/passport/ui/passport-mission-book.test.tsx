@@ -2,8 +2,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const state = vi.hoisted(() => ({ status: "on" as "on" | "off" | "loading", resource: {} as Record<string, unknown>, proofs: undefined as unknown, request: vi.fn() }));
-vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ useDukjil: () => ({ status: state.status }) }));
+const state = vi.hoisted(() => ({ status: "on" as "on" | "off" | "loading", catalog: undefined as unknown, resource: {} as Record<string, unknown>, proofs: undefined as unknown, request: vi.fn() }));
+vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({ useDukjil: () => ({ status: state.status, catalog: state.catalog }) }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({
   GroupRequestError: class extends Error { status: number; constructor(status: number) { super("x"); this.status = status; } },
   useGroupResource: (url: string | null) => (url?.startsWith("/api/me/proofs/missions") ? { loading: false, error: false, data: state.proofs, retry: vi.fn() } : url ? state.resource : { loading: false, error: false, data: undefined, retry: vi.fn() }),
@@ -25,7 +25,7 @@ const page = (over: Record<string, unknown>) => ({ pageNo: 1, slots: slots(9), f
 const data = (pages: unknown[], hearts = 0) => ({ passportId: "00000000-0000-4000-8000-000000000001", celebrityId: "00000000-0000-4000-8000-000000000002", hearts, pages });
 const ui = (locale: "ko" | "en" | "ru" = "ko") => render(<PassportMissionBook passportId="p1" creatorSlug="c1" locale={locale} />);
 
-beforeEach(() => { state.proofs = undefined; localStorage.setItem("kyaa:passport:mission-onboarding:v1", "1"); state.status = "on"; state.request = vi.fn().mockResolvedValue({ hearts: 1, pageNo: 1, jjinfanConfirmed: false, cheerStampId: null, replayed: false }); });
+beforeEach(() => { state.proofs = undefined; state.catalog = undefined; localStorage.setItem("kyaa:passport:mission-onboarding:v1", "1"); state.status = "on"; state.request = vi.fn().mockResolvedValue({ hearts: 1, pageNo: 1, jjinfanConfirmed: false, cheerStampId: null, replayed: false }); });
 afterEach(cleanup);
 
 describe("PassportMissionBook", () => {
@@ -211,6 +211,24 @@ describe("PassportMissionBook", () => {
   });
   it("exports the slot table for the MY card", () => {
     expect(Object.keys(SLOT)).toEqual(KINDS);
+  });
+  it("shows the mission's stamp at the top of the detail and hangs the points on the corner of the way to the mission", () => {
+    state.catalog = { rules: { post: { points: 20 }, checkin: { points: 2 } } };
+    state.resource = { loading: false, error: false, data: data([page({ slots: slots(2).map(slot => slot.kind === "steady_checkin" ? { ...slot, kind: null } : slot), filled: 2, claimable: false })]), retry: vi.fn() };
+    render(<PassportMissionBook passportId="p" creatorSlug="elina" locale="ko" />);
+    fireEvent.click(screen.getByRole("button", { name: "글쓰기" }));
+    const post = screen.getByRole("dialog", { name: "글쓰기" });
+    expect(post.querySelector("img")?.getAttribute("src")).toBe("/images/stamps/ink-v1/post.webp");
+    expect(post.querySelectorAll("[data-earn-badge]")).toHaveLength(1);
+    const corner = post.querySelector('[data-earn-badge="corner"]');
+    expect(corner?.textContent).toContain("+20");
+    expect(corner?.parentElement?.querySelector("a")?.textContent).toBe("미션 하러 가기");
+    fireEvent.click(screen.getByRole("button", { name: "닫기" }));
+    // 이미 찍은 칸: 그림과 설명만. 버튼이 없으니 포인트 뱃지도 없다.
+    fireEvent.click(screen.getByRole("button", { name: "출석" }));
+    const done = screen.getByRole("dialog", { name: "출석" });
+    expect(done.querySelector("img")?.getAttribute("src")).toBe("/images/stamps/ink-v1/daily-checkin.webp");
+    expect(done.querySelector("[data-earn-badge]")).toBeNull();
   });
   it("sends each open mission to where it can be done, and leaves filled slots still", () => {
     const open = slots(0);

@@ -10,7 +10,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { Dialog } from "@/components/ui/overlay/accessible-overlay";
 import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
-import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import { EarnBadge, EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { StampPress } from "@/features/dukjil/ui/stamp-press";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
@@ -74,7 +74,7 @@ export function missionHref(kind: string | null | undefined, slug: string, passp
 
 const slotDate = (value: string, locale: AppLocale) => new Intl.DateTimeFormat(locale, { calendar: "gregory", timeZone: "Asia/Seoul", month: "numeric", day: "numeric" }).format(new Date(value));
 
-/** `sheet`가 있으면 칸을 누를 때 설명 시트가 열리고, 그 안 버튼이 미션 화면으로 간다. 없으면(비로그인) 칸 전체가 `href` 링크다. */
+/** `sheet`가 있으면 칸을 누를 때 설명 창(좁은 화면 바닥 시트, 1024+ 가운데 모달)이 열리고, 그 안 버튼이 미션 화면으로 간다. 없으면(비로그인) 칸 전체가 `href` 링크다. */
 function Slot({ slot, locale, stampSrc, href, sheet = false }: { slot: PassportRoadmapSlot; locale: AppLocale; stampSrc?: string; href?: string | null; sheet?: boolean }) {
   const dukjil = useDukjil();
   const meta = slot.kind ? SLOT[slot.kind] : undefined;
@@ -102,10 +102,10 @@ function Slot({ slot, locale, stampSrc, href, sheet = false }: { slot: PassportR
       {filled ? <span className={styles.check}><Check aria-hidden="true" size={12} strokeWidth={3} /></span> : null}
       {pressing && <StampPress state="press" size={64} className={styles.pressed} onDone={() => setPressing(false)} />}
     </span>
-    {sheet && meta ? <FanSheetTrigger className={styles.slotLink} trigger={labelNode} title={label} closeLabel={passportBookText(locale, "helpClose")} actionHref={href} actionLabel={passportBookText(locale, "missionGo")}>
+    {sheet && meta ? <FanSheetTrigger className={styles.slotLink} trigger={labelNode} title={label} closeLabel={passportBookText(locale, "helpClose")} actionHref={href} actionLabel={passportBookText(locale, "missionGo")} wrapAction={points !== null ? action => <EarnBadgeCorner locale={locale} points={points}>{action}</EarnBadgeCorner> : undefined}>
       <div className={styles.sheetBody}>
+        <img className={styles.sheetArt} src={`/images/stamps/ink-v1/${meta.art}.webp`} alt="" width={120} height={120} />
         <p className={styles.sheetTask}>{task}</p>
-        {points !== null ? <EarnBadge variant="inline" locale={locale} points={points} /> : null}
       </div>
     </FanSheetTrigger>
       : href ? <Link className={styles.slotLink} href={href as Route}>{labelNode}</Link> : labelNode}
