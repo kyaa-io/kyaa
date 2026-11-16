@@ -11,8 +11,8 @@ const open = (slug: string, locale: string) => HomeNoticeDetailPage({ params: Pr
 beforeEach(() => { state.rpc.mockReset(); state.redirect.mockClear(); });
 
 describe("/notices/[slug]", () => {
-  it("sends the mission book notice row to the mission book page, which carries its likes and comments", async () => {
-    await expect(open("dukjil-missionbook", "en")).rejects.toThrow("NEXT_REDIRECT /guide/dukjil?locale=en");
+  it("sends the mission book notice row to the mission book page, which carries its share and comments", async () => {
+    await expect(open("dukjil-missionbook", "en")).rejects.toThrow("NEXT_REDIRECT /follow?locale=en");
     expect(state.rpc).not.toHaveBeenCalled();
   });
   it("reads every other notice as before", async () => {

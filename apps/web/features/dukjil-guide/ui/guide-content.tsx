@@ -21,7 +21,8 @@ import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import { GuestMissionBook } from "@/features/passport/ui/passport-mission-book";
 import { HomeNoticeParticipation } from "@/features/home/ui/home-notice-participation";
 import { MissionbookLikeCount } from "@/features/home/ui/missionbook-like-count";
-import { MISSIONBOOK_GUIDE_PATH, MISSIONBOOK_NOTICE_SLUG } from "@/features/home/domain/missionbook-likes";
+import { MISSIONBOOK_NOTICE_SLUG } from "@/features/home/domain/missionbook-likes";
+import { followEventPath } from "@/app/follow/follow-event";
 
 // Hearts per claimed mission book page: the claim result in dukjil-types is `hearts: z.literal(1)`, so this mirrors that contract.
 export const HEARTS_PER_PAGE = 1;
@@ -50,17 +51,18 @@ const JJINFAN_HEAD: HeroArt = { src: `${ART}/jjinfan-head.webp`, width: 1672, he
 export const MISSIONBOOK_ART: HeroArt = { src: "/images/guide/missionbook-v2-wide.webp", width: 1536, height: 1024 };
 
 /** Hero: big title, the real condition, the main action and the approved header picture. */
-function GuideHero({ id, title, lead, art, actions, children }: { id: string; title: string; lead?: string; art: HeroArt; actions: ReactNode; children?: ReactNode }) {
+function GuideHero({ id, title, lead, art, actions, children, embedded = false }: { id: string; title: string; lead?: string; art: HeroArt; actions: ReactNode; children?: ReactNode; embedded?: boolean }) {
+  const Heading = embedded ? "h2" : "h1";
   return (
     <section className={styles.hero} aria-labelledby={id}>
       <div className={styles.heroCopy}>
-        <h1 id={id}>{title}</h1>
+        <Heading id={id}>{title}</Heading>
         {lead ? <p className={styles.heroLead}>{lead}</p> : null}
         {children}
         <div className={styles.heroActions}>{actions}</div>
       </div>
       <div className={styles.heroArt}>
-        <Image src={art.src} alt="" width={art.width} height={art.height} priority sizes="(max-width: 1023px) calc(100vw - 32px), 560px" />
+        <Image src={art.src} alt="" width={art.width} height={art.height} priority={!embedded} sizes="(max-width: 1023px) calc(100vw - 32px), 560px" />
       </div>
     </section>
   );
@@ -338,19 +340,21 @@ export function JjinfanGuideContent({ locale, model, challenge = false }: { loca
   );
 }
 
-/** 덕질미션북 (/guide/dukjil): what the book is, the real page of slots, what a full page and the points become, then every activity's points.
- * The like count in the hero and the like button before the closing are the X Opening event like (same as /follow); the dislike/share/comments belong to one 안내 게시판 notice (user 11/16). */
+/** 덕질미션북 (/follow 이벤트 화면 아래, `embedded`): what the book is, the real page of slots, what a full page and the points become, then every activity's points.
+ * The like count in the hero is the X Opening event like count (the like button is the event card above); share and comments at the very bottom belong to one 안내 게시판 notice (user 11/16). */
 export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model: GuideModel }) {
+  const embedded = true;
   const proofSlot = model?.slots.find((slot) => slot.required);
   const title = guideDetailText(locale, "dkgMbTitle");
   return (
     <>
       <GuideHero
         id="dukjil-guide-title"
+        embedded={embedded}
         art={MISSIONBOOK_ART}
         title={title}
         lead={model ? guideDetailText(locale, "dkgMbLead", [model.slots.length, HEARTS_PER_PAGE]) : undefined}
-        actions={<><GuideCta locale={locale} target="mission-book" returnPath={MISSIONBOOK_GUIDE_PATH} /><Link className={styles.secondary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link></>}
+        actions={<><GuideCta locale={locale} target="mission-book" returnPath={followEventPath} /><Link className={styles.secondary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link></>}
       >
         <MissionbookLikeCount locale={locale} />
         <GuideProgress locale={locale} />
@@ -397,14 +401,14 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
         ]} />
       ) : null}
 
-      <div id="dukjil-likes" className={styles.participation}>
-        <HomeNoticeParticipation slug={MISSIONBOOK_NOTICE_SLUG} title={title} locale={locale} returnPath={MISSIONBOOK_GUIDE_PATH} />
-      </div>
-
       <GuideClosing title={model ? guideDetailText(locale, "dkgDkCloseTitle", [model.activities.length]) : guideText(locale, "dkgDkMetaTitle")}>
-        <GuideCta locale={locale} target="mission-book" returnPath={MISSIONBOOK_GUIDE_PATH} />
+        <GuideCta locale={locale} target="mission-book" returnPath={followEventPath} />
         <GuideFansLink locale={locale} />
       </GuideClosing>
+
+      <div id="dukjil-likes" className={styles.participation}>
+        <HomeNoticeParticipation slug={MISSIONBOOK_NOTICE_SLUG} title={title} locale={locale} returnPath={followEventPath} reactions={false} />
+      </div>
     </>
   );
 }

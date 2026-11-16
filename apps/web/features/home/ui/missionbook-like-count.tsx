@@ -6,7 +6,7 @@ import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import type { AppLocale } from "@/i18n/locales";
-import { useMissionbookEventLike } from "./use-missionbook-event-like";
+import { useMissionbookEventLikeCount } from "./use-missionbook-event-like";
 import styles from "./missionbook-like-count.module.css";
 
 /** `{0}` is the number; the words around it stay small. Same word as the like button (post-reaction-copy). */
@@ -31,7 +31,7 @@ export const missionbookLikeCopy: Record<AppLocale, string> = {
  * while loading or after a failed read so the banner copy never jumps.
  */
 export function MissionbookLikeCount({ locale, tone = "page" }: { locale: AppLocale; tone?: "page" | "banner" }) {
-  const { count: value } = useMissionbookEventLike();
+  const value = useMissionbookEventLikeCount();
   const [before, after] = missionbookLikeCopy[locale].split("{0}");
   const format = (count: number) => count.toLocaleString(locale);
   return <p className={styles.count} data-tone={tone} data-missionbook-likes={value === null ? "loading" : "ready"}>

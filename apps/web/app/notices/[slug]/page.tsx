@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { HomeNoticeDetailScreen, homeNoticePageCopy } from "@/features/home/ui/home-notice-pages";
-import { MISSIONBOOK_GUIDE_PATH, MISSIONBOOK_NOTICE_SLUG } from "@/features/home/domain/missionbook-likes";
+import { MISSIONBOOK_NOTICE_SLUG } from "@/features/home/domain/missionbook-likes";
+import { followEventPath } from "@/app/follow/follow-event";
 import { parseAppLocale, toContentLocale } from "@/i18n/locales";
 import { publicMetadata } from "@/seo/metadata";
 import { createPublicHomeNoticeRepository } from "@/server/home-notice/home-notice-dependencies";
@@ -26,8 +27,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function HomeNoticeDetailPage({ params, searchParams }: Props) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const locale = parseAppLocale(query.locale);
-  // The mission book notice carries the likes and comments of /guide/dukjil; its board row opens that page (user 11/16).
-  if (slug === MISSIONBOOK_NOTICE_SLUG) redirect(`${MISSIONBOOK_GUIDE_PATH}?locale=${locale}`);
+  // The mission book notice is shown under the X Opening event on /follow; its board row opens that page (user 11/16).
+  if (slug === MISSIONBOOK_NOTICE_SLUG) redirect(`${followEventPath}?locale=${locale}`);
   const contentLocale = toContentLocale(locale);
   const [notice, recent] = await Promise.all([load(slug, contentLocale), createPublicHomeNoticeRepository().listPublished(contentLocale, { limit: 6 }).catch(() => null)]);
   if (!notice) notFound();

@@ -212,7 +212,7 @@ function FanSiteFooterFull({ locale }: { locale: FanLocale }) {
             <h2>{t.guide}</h2>
             <Link href={fanHref("/guide", locale)}>{t.serviceGuide}</Link>
             <Link href={fanHref("/guide/jjinfan", locale)}>{t.jjinfanGuide}</Link>
-            <Link href={fanHref("/guide/dukjil", locale)}>{t.dukjilGuide}</Link>
+            <Link href={fanHref("/follow", locale)}>{t.dukjilGuide}</Link>
             <Link href={fanHref("/bias/promotion", locale)}>{t.promotionGuide}</Link>
             <Link href={fanHref("/my/inquiries", locale)}>{t.support}</Link>
             <Link href={fanHref("/pages/us-fanmeetings", locale)}>{t.fanmeetings}</Link>

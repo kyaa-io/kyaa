@@ -5,6 +5,7 @@ import { FanHeading } from '@/components/fan-ui/fan-heading';
 import { FanText } from '@/components/fan-ui/fan-text';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import { FanContentContainer } from '@/components/fan-shell/fan-content-container';
+import type { ReactNode } from 'react';
 import { Star, Check } from '@/components/fan-ui/fan-icons';
 import { useLikeMission } from '../s/x/use-like-mission';
 import xs from '../s/x/x-mission.module.css';
@@ -20,12 +21,12 @@ const stampArt = '/images/stamps/ink-v1/first-like.webp';
  * 이벤트 1 화면(사용자 11/16: '덕질하는 법'처럼 번호 붙은 미션 카드). 01·02 X 미션 카드 안에 Gleam 위젯(완료 체크는 Gleam이 띄운다),
  * 03 kyaa 좋아요 카드(서버 기록 = 체크 + 도장). 두 카드가 붙어 있어 체크 3개가 캡처 한 장에 든다. kyaa는 Gleam 완료를 판정하지 않는다.
  */
-export function FollowMission({ locale, event }: { locale: 'ko' | 'en'; event: FollowEventConfig }) {
+export function FollowMission({ locale, event, below }: { locale: 'ko' | 'en'; event: FollowEventConfig; below?: ReactNode }) {
  const auth = useByUsAuth();
- return <FollowMissionForOwner key={`${event.slug}:${auth.ready}:${auth.authenticated}:${auth.user?.id ?? 'guest'}`} locale={locale} auth={auth} event={event} />;
+ return <FollowMissionForOwner key={`${event.slug}:${auth.ready}:${auth.authenticated}:${auth.user?.id ?? 'guest'}`} locale={locale} auth={auth} event={event}>{below}</FollowMissionForOwner>;
 }
 
-function FollowMissionForOwner({ locale, auth, event }: { locale: 'ko' | 'en'; auth: ReturnType<typeof useByUsAuth>; event: FollowEventConfig }) {
+function FollowMissionForOwner({ locale, auth, event, children }: { locale: 'ko' | 'en'; auth: ReturnType<typeof useByUsAuth>; event: FollowEventConfig; children?: ReactNode }) {
  const t = event.copy[locale];
  const m = useLikeMission({ locale, auth, slug: event.slug, path: event.path, attributionKey: event.attributionKey, scrollOnComplete: false });
  // 버튼은 한 번에 하나만 보인다(로그인 → 좋아요 → X에 올리기). 강조 버튼은 화면에 늘 하나
@@ -85,5 +86,6 @@ function FollowMissionForOwner({ locale, auth, event }: { locale: 'ko' | 'en'; a
     </section>
    </div>
   </div>
+  {children}
  </FanContentContainer>;
 }

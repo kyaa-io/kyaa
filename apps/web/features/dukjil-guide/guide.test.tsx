@@ -208,7 +208,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     viewerState.current = { status: "guest" };
     expect(cta("jjinfan")).toContain("로그인하고 시작하기");
     expect(cta("jjinfan")).toContain("returnTo=%2Fguide%2Fjjinfan%3Flocale%3Dko");
-    expect(cta("dukjil")).toContain("returnTo=%2Fguide%2Fdukjil%3Flocale%3Dko");
+    expect(cta("dukjil")).toContain("returnTo=%2Ffollow%3Flocale%3Dko");
     viewerState.current = { status: "member", creator: null, progress: null };
     expect(cta("jjinfan")).toContain('data-guide-cta="mission-book" href="/celebrities?locale=ko"');
     viewerState.current = { status: "member", creator: { slug: "kyaa-star", name: "카야", passportId: id }, progress: { filled: 6, total: 9 } };
@@ -332,21 +332,22 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     viewerState.current = { status: "guest" };
     const model = buildGuideModel(await fetchCatalog(rawPolicy()));
     const ko = renderToStaticMarkup(<DukjilGuideContent locale="ko" model={model} />);
-    expect(ko).toContain("<h1");
+    expect(ko).not.toContain("<h1");
+    expect(ko).toContain("<h2");
     expect(ko).toContain("덕질미션북");
     expect(ko).toContain(`${GROUP_WALLET_POINT_COST}P가 모이면 응모권 1장으로 바꿀 수 있어요. 바꿀 때 광고를 봐요.`);
     expect(ko).toContain("덕질 7가지로 포인트를 모아요");
     expect(ko).toContain("5번 칸은 덕후인증으로 채워요.");
     expect(ko).toContain("missionbook-v2-wide.webp");
     for (const name of ["missionbook-v2-wide", "missionbook-v2-square"]) expect(existsSync(join(process.cwd(), "public/images/guide", `${name}.webp`)), name).toBe(true);
-    // User 11/16: the like count sits in the hero; the notice participation block (likes, dislikes, share, comments) comes after the FAQ, before the closing action.
+    // User 11/16: the like count (the X Opening event likes) sits in the hero; the notice participation block (share, comments; no like/dislike buttons) is the very last block, after the closing action.
     const hero = ko.slice(ko.indexOf('id="dukjil-guide-title"'), ko.indexOf('aria-labelledby="dukjil-book"'));
     expect(hero).toContain('data-missionbook-likes="loading"');
     const faq = ko.indexOf('aria-labelledby="dukjil-faq"'), likes = ko.indexOf('id="dukjil-likes"'), closing = ko.lastIndexOf("data-guide-cta=");
     expect(faq).toBeGreaterThan(-1);
-    expect(likes).toBeGreaterThan(faq);
+    expect(closing).toBeGreaterThan(faq);
+    expect(likes).toBeGreaterThan(closing);
     expect(ko.indexOf("data-home-notice-participation", likes)).toBeGreaterThan(likes);
-    expect(closing).toBeGreaterThan(likes);
     const en = renderToStaticMarkup(<DukjilGuideContent locale="en" model={model} />).replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
     expect(en).toContain(`Trade ${GROUP_WALLET_POINT_COST}P for 1 raffle ticket. An ad plays when you trade.`);
     expect(en).toContain("Slot 5 takes a fan proof.");
@@ -354,7 +355,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     for (const locale of APP_LOCALES) {
       const html = renderToStaticMarkup(<DukjilGuideContent locale={locale} model={model} />);
       expect(html).not.toMatch(/dkg[A-Z]|\{\d\}/);
-      expect(html.match(/<h1/g)).toHaveLength(1);
+      expect(html).not.toContain("<h1");
       expect(html).not.toMatch(/step-[a-z]+\.webp/);
       expect(html).toContain(`${GROUP_WALLET_POINT_COST}P`);
       expect(html.match(/data-guide-cta=/g)).toHaveLength(2);

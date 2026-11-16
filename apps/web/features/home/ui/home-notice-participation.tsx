@@ -19,15 +19,14 @@ import { postReactionCopy } from "@/features/fan-posts/ui/post-reaction-copy";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { homeNoticeParticipationSchema, homeNoticeCommentPageSchema, homeNoticeCommentWriteSchema } from "../domain/home-notice-participation";
-import { MISSIONBOOK_NOTICE_SLUG } from "../domain/missionbook-likes";
-import { useMissionbookEventLike } from "./use-missionbook-event-like";
 import detailStyles from "@/features/fan-posts/ui/post-detail.module.css";
 import styles from "./home-notice-participation.module.css";
 
 const parseParticipation = (value: unknown) => homeNoticeParticipationSchema.parse(value);
 const parseComments = (value: unknown) => homeNoticeCommentPageSchema.parse(value);
-/** `returnPath`: where sign-in comes back to when the block sits outside the notice detail (the mission book page). */
-type Props = { slug: string; title: string; locale: AppLocale; returnPath?: string };
+/** `returnPath`: where sign-in comes back to when the block sits outside the notice detail (the mission book on /follow).
+ * `reactions={false}`: no like/dislike buttons (the mission book's like is the event like above); share and comments stay. */
+type Props = { slug: string; title: string; locale: AppLocale; returnPath?: string; reactions?: boolean };
 
 export function HomeNoticeParticipation(props: Props) {
   const auth = useByUsAuth(), session = useByUsSession();
@@ -35,16 +34,13 @@ export function HomeNoticeParticipation(props: Props) {
   return <Participation key={scope} {...props} />;
 }
 
-function Participation({ slug, title, locale, returnPath }: Props) {
+function Participation({ slug, title, locale, returnPath, reactions = true }: Props) {
   const auth = useByUsAuth(), copy = contentCopy(locale), rc = postReactionCopy(locale), fieldId = useId();
   const base = `/api/notices/${encodeURIComponent(slug)}`;
   const [cursor, setCursor] = useState<string | null>(null);
   const participation = useCommunityResource(`${base}/participation`, parseParticipation, false);
   const comments = useCommunityResource(`${base}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, false);
   const mutation = useContentMutation(locale);
-  // 덕질미션북의 좋아요는 안내 글이 아니라 X 오픈 이벤트 좋아요(1인 1회)다. 싫어요·공유·댓글은 이 안내 글에 그대로 붙는다.
-  const missionbook = slug === MISSIONBOOK_NOTICE_SLUG;
-  const eventLike = useMissionbookEventLike({ enabled: missionbook, own: true });
   const [optimistic, setOptimistic] = useState<{ base: unknown; state: PostReactionState } | null>(null);
   const [invalidResponse, setInvalidResponse] = useState(false);
   const draft = useRef("");
@@ -54,21 +50,10 @@ function Participation({ slug, title, locale, returnPath }: Props) {
   const data = participation.state.status === "ready" ? participation.state.data : null;
   const reaction = optimistic?.base === data ? optimistic.state : data;
   const refresh = () => { participation.retry(); comments.retry(); };
-  const shown: PostReactionState | null = !reaction ? null : !missionbook ? reaction
-    : eventLike.count === null || eventLike.liked === null ? null
-    : { reaction: eventLike.liked ? "like" : reaction.reaction === "dislike" ? "dislike" : null, likeCount: eventLike.count, dislikeCount: null };
 
   async function react(choice: PostReactionChoice) {
     if (!data || !reaction || mutation.busy) return;
     setInvalidResponse(false);
-    if (missionbook && choice === "like") {
-      if (eventLike.liked || !await eventLike.like()) return;
-      if (reaction.reaction === "dislike") {
-        const cleared = homeNoticeParticipationSchema.safeParse(await mutation.request(`${base}/reaction`, "PUT", { reaction: "none" }));
-        if (cleared.success) setOptimistic({ base: data, state: cleared.data });
-      }
-      return;
-    }
     setOptimistic({ base: data, state: applyReaction(reaction, choice) });
     const result = await mutation.request(`${base}/reaction`, "PUT", { reaction: choice });
     const parsed = homeNoticeParticipationSchema.safeParse(result);
@@ -88,10 +73,10 @@ function Participation({ slug, title, locale, returnPath }: Props) {
   async function remove(id: string) {
     if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/home-notice-comments/${id}`, "DELETE")) refresh();
   }
-  const error = mutation.error || (invalidResponse || eventLike.failed ? copy.failed : "");
+  const error = mutation.error || (invalidResponse ? copy.failed : "");
   return <section className={styles.participation} data-home-notice-participation="">
     <div className={styles.actions}>
-      {shown && <PostReactions {...shown} locale={locale} busy={mutation.busy || !auth.ready || eventLike.pending} likeLocked={missionbook} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void react(choice)} />}
+      {reactions && reaction && <PostReactions {...reaction} locale={locale} busy={mutation.busy || !auth.ready} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void react(choice)} />}
       <PostShareAction title={title} locale={locale} contentType="notice" />
     </div>
     {participation.state.status === "loading" ? <FanSkeletonRows rows={1} /> : participation.state.status === "error" || participation.refreshFailed ? <p role="status">{copy.failed} <FanAction variant="text" onClick={participation.retry}>{copy.retry}</FanAction></p> : null}

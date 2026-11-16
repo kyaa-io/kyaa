@@ -106,7 +106,7 @@ describe("FanSiteFooter", () => {
     expect(hrefs.slice(0, 5)).toEqual([
       `/guide?locale=${locale}`,
       `/guide/jjinfan?locale=${locale}`,
-      `/guide/dukjil?locale=${locale}`,
+      `/follow?locale=${locale}`,
       `/bias/promotion?locale=${locale}`,
       `/my/inquiries?locale=${locale}`,
     ]);
@@ -126,7 +126,7 @@ describe("FanSiteFooter", () => {
       const { unmount } = render(<FanSiteFooter locale={locale} />);
       const navigation = screen.getAllByRole("navigation")[0];
       expect(within(navigation).getByRole("link", { name: labels[locale][0] })).toHaveAttribute("href", `/guide/jjinfan?locale=${locale}`);
-      expect(within(navigation).getByRole("link", { name: labels[locale][1] })).toHaveAttribute("href", `/guide/dukjil?locale=${locale}`);
+      expect(within(navigation).getByRole("link", { name: labels[locale][1] })).toHaveAttribute("href", `/follow?locale=${locale}`);
       expect(within(navigation).getByRole("link", { name: labels[locale][2] })).toHaveAttribute("href", `/bias/promotion?locale=${locale}`);
       unmount();
     }
