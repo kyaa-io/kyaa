@@ -236,29 +236,42 @@ export const messages = {
 
   },
   "m46244ebf82a0": {
-    "ja": "本社",
-    "zh-Hans": "总部",
-    "zh-Hant": "總部",
-    "es": "Sede central",
-    "id": "Kantor pusat",
-    "vi": "Trụ sở chính",
-    "th": "สำนักงานใหญ่",
-    "pt": "Sede",
-    "fr": "Siège",
-    ru: "Штаб-квартира"
+    "ja": "グローバル本社",
+    "zh-Hans": "全球总部",
+    "zh-Hant": "全球總部",
+    "es": "Sede global",
+    "id": "Kantor pusat global",
+    "vi": "Trụ sở toàn cầu",
+    "th": "สำนักงานใหญ่ระดับโลก",
+    "pt": "Sede global",
+    "fr": "Siège mondial",
+    ru: "Глобальная штаб-квартира"
 
   },
   "m858f418834a6": {
-    "ja": "運営会社",
-    "zh-Hans": "运营方",
-    "zh-Hant": "營運方",
-    "es": "Operador",
-    "id": "Operator",
-    "vi": "Đơn vị vận hành",
-    "th": "ผู้ดำเนินการ",
-    "pt": "Operadora",
-    "fr": "Exploitant",
-    ru: "Оператор"
+    "ja": "韓国の運営会社",
+    "zh-Hans": "韩国运营方",
+    "zh-Hant": "韓國營運方",
+    "es": "Operador en Corea",
+    "id": "Operator di Korea",
+    "vi": "Đơn vị vận hành tại Hàn Quốc",
+    "th": "ผู้ดำเนินการในเกาหลี",
+    "pt": "Operadora na Coreia",
+    "fr": "Exploitant en Corée",
+    ru: "Оператор в Корее"
+
+  },
+  "m8431e92781f3": {
+    "ja": "ニューヨーク州法人番号",
+    "zh-Hans": "纽约州公司编号",
+    "zh-Hant": "紐約州公司編號",
+    "es": "N.º de sociedad (NY)",
+    "id": "Nomor badan hukum (NY)",
+    "vi": "Số đăng ký công ty (NY)",
+    "th": "เลขนิติบุคคล (นิวยอร์ก)",
+    "pt": "N.º da empresa (NY)",
+    "fr": "N° de société (NY)",
+    ru: "Номер компании (Нью-Йорк)"
 
   },
   "mb0979e47f86e": {

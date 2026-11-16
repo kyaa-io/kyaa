@@ -23,7 +23,10 @@ describe("FanSiteFooter", () => {
     expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(0);
     expect(within(footer).getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
     expect(within(footer).getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
-    expect(footer.querySelector("dl")).toHaveTextContent("736-86-03473");
+    const groups = footer.querySelectorAll("dl");
+    expect(groups).toHaveLength(2);
+    expect(groups[0]).toHaveTextContent("KAYY Inc. · Whitestone, Queens, NY, USA");
+    expect(groups[1]).toHaveTextContent("736-86-03473");
     expect(footer).toHaveTextContent("주식회사 셀리랩");
   });
 
@@ -98,17 +101,37 @@ describe("FanSiteFooter", () => {
     expect(footer.querySelector("dl")).toBeInTheDocument();
   });
 
-  it.each(APP_LOCALES)("lists the US headquarters first and keeps the Korean operator details in %s", (locale) => {
+  it.each(APP_LOCALES)("splits business information into Global HQ and Korea operator groups in %s", (locale) => {
     for (const variant of ["full", "compact"] as const) {
       const { unmount } = render(<FanSiteFooter locale={locale} variant={variant} />);
-      const rows = [...screen.getByRole("contentinfo").querySelectorAll("dl > div")];
-      expect(rows[0].querySelector("dd")).toHaveTextContent("KAYY Inc. · New York, USA");
-      expect(rows[0].querySelector("dd")).toHaveAttribute("lang", "en");
-      expect(rows[0].querySelector("dt")?.textContent).toMatch(/\S/);
-      expect(rows[1].querySelector("dd")).toHaveTextContent("주식회사 셀리랩");
-      expect(rows).toHaveLength(5);
+      const groups = [...screen.getByRole("contentinfo").querySelectorAll("dl")];
+      expect(groups).toHaveLength(2);
+      const [hq, operator] = groups.map((group) => [...group.querySelectorAll(":scope > div")]);
+      expect(hq).toHaveLength(2);
+      expect(hq[0].querySelector("dd")).toHaveTextContent("KAYY Inc. · Whitestone, Queens, NY, USA");
+      expect(hq[0].querySelector("dd")).toHaveAttribute("lang", "en");
+      expect(hq[0].querySelector("dt")?.textContent).toMatch(/\S/);
+      expect(hq[1].querySelector("dd")?.textContent).toBe("8130900");
+      expect(hq[1].querySelector("dt")?.textContent).toMatch(/\S/);
+      expect(operator).toHaveLength(4);
+      expect(operator[0].querySelector("dd")).toHaveTextContent("주식회사 셀리랩");
+      expect(operator[1].querySelector("dd")).toHaveTextContent("김보석");
+      expect(operator[2].querySelector("dd")).toHaveTextContent("736-86-03473");
+      expect(operator[3].querySelector("dd")).toHaveTextContent("서울특별시 강남구 도산대로28길 46, 6층");
+      expect(groups[0].textContent).not.toMatch(/151-17|20th Ave|EIN/);
       unmount();
     }
+  });
+
+  it.each([
+    ["ko", "글로벌 본사", "법인번호(뉴욕주)", "한국 운영사"],
+    ["en", "Global HQ", "NY DOS ID", "Korea operator"],
+  ] as const)("labels the two groups in %s", (locale, hqLabel, numberLabel, operatorLabel) => {
+    render(<FanSiteFooter locale={locale} />);
+    const groups = [...screen.getByRole("contentinfo").querySelectorAll("dl")];
+    expect(groups[0].querySelectorAll("dt")[0]).toHaveTextContent(hqLabel);
+    expect(groups[0].querySelectorAll("dt")[1]).toHaveTextContent(numberLabel);
+    expect(groups[1].querySelectorAll("dt")[0]).toHaveTextContent(operatorLabel);
   });
 
   it.each(APP_LOCALES)("lists the fan guides right under the service guide in %s", (locale) => {
