@@ -66,6 +66,11 @@ try {
         for (const metric of ['entry', 'action', 'bottom']) assert(Math.abs(gift[metric] - peer[metric]) <= 1, `${locale}/${width}: gift ${metric} alignment`);
       }
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${locale}/${width}: no gift overflow`);
+      // 숫자와 단위는 같은 줄: 묶음(`data-num-unit`)은 한 줄 사각형 하나여야 하고, 긴 수(1234567명 당첨)도 갈라지지 않는다.
+      const split = await page.locator('[data-num-unit]').evaluateAll(nodes => nodes.filter(node => node.getClientRects().length > 1).map(node => node.textContent));
+      assert.deepEqual(split, [], `${locale}/${width}: number and unit stay on one line`);
+      assert((await page.locator('[data-num-unit]').count()) >= gifts.length * 2, `${locale}/${width}: number+unit groups are rendered`);
+      assert(await page.locator('[data-num-unit]').filter({ hasText: '1234567' }).count() > 0, `${locale}/${width}: long number is covered`);
       assert.deepEqual(errors, [], `${locale}/${width}: no gift runtime errors`);
       results.push({ locale, width, cards, gifts });
       await context.close();
