@@ -29,7 +29,7 @@ export const homeGalleryPageSchema = z.object({ items: z.array(homeGalleryPhotoS
 export const homeGalleryResponseSchema = z.object({ items: z.array(homeGalleryPhotoSchema).max(24), nextCursor: z.string().min(1).nullable() }).strict();
 export type HomeGalleryPage = Readonly<{ items: readonly HomeGalleryPhoto[]; nextCursor: string | null }>;
 
-/** Public short-form videos from registered creators: YouTube shorts, and TikTok videos the creator posted as source-only notices. */
+/** Public short-form videos from registered creators: YouTube shorts, and TikTok videos and Instagram reels the creator posted as source-only notices. */
 const youtubeShortSchema = z.object({
   id: z.uuid(),
   platform: z.literal("youtube").default("youtube"),
@@ -45,7 +45,13 @@ const tiktokShortSchema = youtubeShortSchema.extend({
   videoId: z.string().regex(/^[0-9]{15,25}$/),
   href: z.string().regex(/^https:\/\/www\.tiktok\.com\/@[A-Za-z0-9._]{1,64}\/video\/[0-9]{15,25}$/),
 }).strict().refine(short => short.href.endsWith(`/video/${short.videoId}`));
-export const homeShortSchema = z.union([youtubeShortSchema, tiktokShortSchema]);
+// An Instagram reel has no in-app player: the card opens the original post (`href`).
+const instagramShortSchema = youtubeShortSchema.extend({
+  platform: z.literal("instagram"),
+  videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
+  href: z.string().regex(/^https:\/\/www\.instagram\.com\/[A-Za-z0-9._]{1,30}\/(?:p|reel)\/[A-Za-z0-9_-]{11}\/$/),
+}).strict().refine(short => short.href.split("/")[5] === short.videoId);
+export const homeShortSchema = z.union([youtubeShortSchema, tiktokShortSchema, instagramShortSchema]);
 export type HomeShort = z.infer<typeof homeShortSchema>;
 export const homeShortsSchema = z.array(homeShortSchema).max(12);
 export const homeShortsPageSchema = z.object({ items: homeShortsSchema, hasMore: z.boolean() }).strict();

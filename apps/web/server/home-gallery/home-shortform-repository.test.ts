@@ -39,6 +39,27 @@ describe("home shortform", () => {
     const mismatched = [{ ...sql[0], href: "https://www.tiktok.com/@fixture.one/video/7000000000000000002" }];
     await expect(new HomeGalleryRepository({ rpc: vi.fn().mockResolvedValue({ data: { items: mismatched, hasMore: false }, error: null }) } as never).listShorts("ko", { limit: 6 })).rejects.toThrow();
   });
+  it("mixes Instagram reels into the shorts and leaves out a reel that has no stored cover (real read_public_home_shortform_page shape, 20261229000000)", async () => {
+    const reel = (index: number, slug: string, code: string) => ({ id: `30000000-0000-4000-8000-${String(index).padStart(12, "0")}`, platform: "instagram", videoId: code, title: `릴스 원문 ${index}`, creator: { slug, name: slug }, href: `https://www.instagram.com/${slug}/p/${code}/` });
+    const covered = reel(1, "a", "AbCdEfGhIjK"), bare = reel(2, "b", "LmNoPqRsTuV");
+    const list = [covered, bare, video(3, "c", "U8YzMfHLFQM")];
+    const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000009?variant=thumbnail";
+    const rpc = vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number }) => {
+      if (name === "read_public_video_thumbnails") return { data: { [covered.href]: thumbnail }, error: null };
+      const offset = args.p_offset ?? 0, limit = args.p_limit ?? 12;
+      return { data: { items: list.slice(offset, offset + limit), hasMore: false }, error: null };
+    });
+    const shown = await new HomeGalleryRepository({ rpc } as never).listShorts("ko", { limit: 12 });
+    expect(shown.map(item => item.videoId).sort()).toEqual(["AbCdEfGhIjK", "U8YzMfHLFQM"]);
+    expect(shown.find(item => item.platform === "instagram")).toMatchObject({ title: "릴스 원문 1", href: covered.href, thumbnail });
+    const page = await new HomeGalleryRepository({ rpc } as never).listShortsPage("ko", { offset: 0, limit: 12 });
+    expect(page).toMatchObject({ hasMore: false });
+    expect(page.items).toHaveLength(2);
+  });
+  it("keeps a YouTube or TikTok short without a stored cover (their platform cover is the fallback)", async () => {
+    const rpc = pageRpc([video(1, "a", "U8YzMfHLFQM")]);
+    expect(await new HomeGalleryRepository({ rpc } as never).listShorts("ko", { limit: 6 })).toHaveLength(1);
+  });
   it("lets creators take turns even when one creator posted the newest forty (사용자 2026-11-12)", async () => {
     const list = [...Array.from({ length: 40 }, (_, i) => video(i, "elina")), ...["yuna", "changha", "hiroro", "minju"].flatMap((slug, s) => [0, 1, 2].map(n => video(100 + s * 3 + n, slug)))];
     const repo = new HomeGalleryRepository({ rpc: pageRpc(list) } as never);

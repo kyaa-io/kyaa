@@ -73,3 +73,30 @@ it("alternates platforms while retaining all shorts", () => {
   const list = [{ id: "a", platform: "tiktok", creator: { slug: "a" } }, { id: "b", platform: "tiktok", creator: { slug: "b" } }, { id: "c", platform: "youtube", creator: { slug: "c" } }];
   expect(diversifyShorts(list).map(item => item.platform)).toEqual(["tiktok", "youtube", "tiktok"]);
 });
+
+describe("diversifyShorts with Instagram reels, YouTube Shorts and TikTok", () => {
+  const short = (id: string, platform: string, slug: string) => ({ id, platform, creator: { slug } });
+  // Newest first, as the read answers: TikTok has been posted most, so the newest six are all TikTok.
+  const newest = [
+    short("t1", "tiktok", "a"), short("t2", "tiktok", "b"), short("t3", "tiktok", "c"), short("t4", "tiktok", "a"), short("t5", "tiktok", "b"), short("t6", "tiktok", "c"),
+    short("i1", "instagram", "a"), short("i2", "instagram", "b"), short("y1", "youtube", "c"), short("y2", "youtube", "a"),
+  ];
+  it("shows all three platforms near the top even when TikTok is the newest run", () => {
+    const top = diversifyShorts(newest).slice(0, 6);
+    expect(new Set(top.map(item => item.platform))).toEqual(new Set(["tiktok", "instagram", "youtube"]));
+  });
+  it("never repeats a creator back to back while another creator is left, and keeps every short", () => {
+    const out = diversifyShorts(newest);
+    expect(out).toHaveLength(newest.length);
+    expect(new Set(out.map(item => item.id)).size).toBe(newest.length);
+    out.slice(1).forEach((item, i) => {
+      const left = out.slice(i + 1).some(other => other.creator.slug !== out[i]!.creator.slug);
+      if (left) expect(item.creator.slug).not.toBe(out[i]!.creator.slug);
+    });
+  });
+  it("alternates platforms across the first rows and does not hold back a creator's older short behind other platforms for good", () => {
+    const out = diversifyShorts(newest);
+    out.slice(1, 6).forEach((item, i) => expect(item.platform).not.toBe(out[i]!.platform));
+    expect(out.map(item => item.id).indexOf("t4")).toBeLessThan(out.map(item => item.id).indexOf("y2"));
+  });
+});

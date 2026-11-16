@@ -129,3 +129,40 @@ describe("shorts → fan page (PM 11/13)", () => {
     expect(line).toHaveAttribute("data-ended");
   });
 });
+
+describe("Instagram reels in the shorts", () => {
+  const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000009?variant=thumbnail";
+  const reel = (id: string, withCover = true) => ({ id, platform: "instagram", videoId: "AbCdEfGhIjK", title: "릴스 원문 캡션 #reels", href: "https://www.instagram.com/fixture.one/p/AbCdEfGhIjK/", creator: { slug: "a", name: "A" }, ...(withCover ? { thumbnail } : {}) }) as HomeShort;
+  it("is a link to the original post that the shared outbound rule decorates, with the stored cover and the Instagram name", () => {
+    const { container } = render(<HomeShorts items={[reel("i1")]} locale="ko" />);
+    const link = screen.getByRole("link", { name: "릴스 원문 캡션 #reels" });
+    expect(link).toHaveAttribute("href", "https://www.instagram.com/fixture.one/p/AbCdEfGhIjK/");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link.getAttribute("rel")).toContain("noopener");
+    expect(link.closest("li")).toHaveAttribute("data-outbound-kind", "external");
+    expect(link).toHaveTextContent("A · Instagram");
+    expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain(thumbnail);
+    fireEvent.click(link);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+  it("is left out when no cover can be shown, never drawn as an empty pink tile or a bare URL", async () => {
+    const { container } = render(<HomeShorts items={[reel("i1", false), items[0]!]} locale="ko" />);
+    await waitFor(() => expect(screen.getAllByRole("listitem")).toHaveLength(1));
+    expect(screen.queryByRole("link", { name: "릴스 원문 캡션 #reels" })).toBeNull();
+    expect(container.textContent).not.toContain("instagram.com");
+  });
+  it("is skipped by the viewer's previous and next steps, which count only the playable videos", () => {
+    render(<HomeShorts items={[items[0]!, reel("i1"), items[1]!]} locale="ko" />);
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    fireEvent.click(screen.getByRole("button", { name: "영상 0" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("1 / 2")).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: "다음 영상" }));
+    expect(within(dialog).getByTitle("영상 1")).toBeInTheDocument();
+    expect(within(dialog).getByText("2 / 2")).toBeInTheDocument();
+  });
+  it("labels the creator line of the /shorts grid with Instagram", () => {
+    render(<HomeShorts items={[reel("i1")]} locale="ko" layout="grid" />);
+    expect(screen.getByRole("link", { name: "A 모임" })).toHaveTextContent("A · Instagram");
+  });
+});
