@@ -1517,6 +1517,12 @@
     "source": "components/fan-shell/fan-site-footer",
     "id": "components/fan-shell/fan-site-footer:copy.businessInfo"
   },
+  "m46244ebf82a0": {
+    "en": "Headquarters",
+    "ko": "본사",
+    "source": "components/fan-shell/fan-site-footer",
+    "id": "components/fan-shell/fan-site-footer:copy.headquarters"
+  },
   "m858f418834a6": {
     "en": "Operator",
     "ko": "운영사",
