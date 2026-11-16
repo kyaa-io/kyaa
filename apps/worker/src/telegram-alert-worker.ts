@@ -351,7 +351,11 @@ function kstTimestamp(value: string): string {
     .toISOString().slice(0, 19).replace("T", " ") + " KST";
 }
 
+// X 이벤트용 크리에이터(x-mission-*, x-opening-*)의 slug는 상세 path("/<slug>")에 그대로 실려 온다.
+const xEventPath = /^\/x-(?:mission|opening)-[^/#?]+$/u;
+
 function detailLabel(alert: TelegramAlertSnapshot): string {
+  if (alert.kind === "reaction_completed" && alert.detail && xEventPath.test(alert.detail.path)) return "X 이벤트 참여";
   if (!alert.detail?.is_reply) return activityLabels[alert.kind as ActivityKind]?.[0] ?? ({
     member_joined: "신규 회원 가입",
     fan_joined: "팬 가입",
