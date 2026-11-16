@@ -15,7 +15,6 @@
 .rows { display:grid; min-width:0; }
 .rows > * { padding-inline: var(--space-4); }
 .rows > :last-child { border-bottom: 0; }
-@media (max-width:767px) { .rows > :nth-child(n+6) { display:none; } }
 .infoAside.infoAside { padding:0; }
 .mobileOnly { display:grid; gap:var(--space-2); }
 .mobileOnly a[class] { margin-top:0; }
