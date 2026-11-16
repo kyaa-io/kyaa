@@ -60,7 +60,8 @@ export function createFanSessionRoute(deps: FanSessionRouteDependencies) {
           const resolved = await deps.resolve(token);
           mapPrivyIdentity(resolved.identity);
           if (resolved.identity.fanSession) return reply(401);
-          payload = { v: 2, sat: now(), pid: resolved.privyUserId, sid: resolved.sessionId,
+          if (!Number.isSafeInteger(resolved.tokenIssuedAt) || resolved.tokenIssuedAt < 0 || resolved.tokenIssuedAt > now()) return reply(401);
+          payload = { v: 2, sat: resolved.tokenIssuedAt, pid: resolved.privyUserId, sid: resolved.sessionId,
             em: resolved.identity.verifiedEmail, pa: resolved.identity.providerAccounts,
             gl: resolved.identity.googleLinked === true, apple: resolved.apple, google: resolved.google };
         } catch { return reply(401); }

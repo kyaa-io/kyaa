@@ -17,7 +17,7 @@ const req = (method: string, headers: Record<string, string>) => new Request("ht
 beforeEach(() => {
   vi.clearAllMocks();
   state.resolveFanSession.mockResolvedValue({
-    privyUserId: "did:privy:user-1", sessionId: "s1", apple: null, google: null,
+    privyUserId: "did:privy:user-1", sessionId: "s1", tokenIssuedAt: Date.now(), apple: null, google: null,
     identity: { privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", providerAccounts: [], googleLinked: true },
   });
   state.findUserByPrivyId.mockResolvedValue({ id: UID, privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", status: "active" });

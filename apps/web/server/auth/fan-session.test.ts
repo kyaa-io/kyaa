@@ -56,7 +56,7 @@ describe("fan session cookie", () => {
 
 describe("POST/DELETE /api/auth/fan-session", () => {
   const resolved = {
-    privyUserId: "did:privy:user-1", sessionId: "privy-session-1",
+    privyUserId: "did:privy:user-1", sessionId: "privy-session-1", tokenIssuedAt: NOW,
     identity: { privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", providerAccounts: [], googleLinked: true },
     apple: null, google: { subject: "google-sub", email: "fan@example.com" },
   };
@@ -227,6 +227,26 @@ describe("sliding fan session security", () => {
     const value = session(); const { route } = setup();
     expect(openFanSession(sealFanSession(value, KEY), KEY, NOW)).not.toBeNull();
     expect((await route.POST(req(value))).status).toBe(401);
+  });
+  it("rejects re-exchange of pre-logout Privy proof and accepts later proof", async () => {
+    const { route, resolve } = setup(NOW + 500);
+    const proof = { privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null };
+    resolve.mockResolvedValue(proof);
+    const exchange = () => route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer same-token" } }));
+    expect((await exchange()).status).toBe(200);
+    expect((await route.DELETE(req(fresh(), "DELETE"))).status).toBe(204);
+    expect((await exchange()).status).toBe(401);
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 500 });
+    expect((await exchange()).status).toBe(401);
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: undefined });
+    expect((await exchange()).status).toBe(401);
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 1000 });
+    expect((await exchange()).status).toBe(401); // future proof is invalid
+    const later = setup(NOW + 2000);
+    later.user.sessionsValidAfter = new Date(NOW + 500).toISOString();
+    later.resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 1000 });
+    expect((await later.route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer new-token" } }))).status).toBe(200);
   });
   it("revokes copied cookies on logout for both renewals and fan requests", async () => {
     const { route, repository } = setup(NOW);

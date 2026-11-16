@@ -11,7 +11,7 @@ const REFRESH_AFTER_MS = 60 * 60_000;
 const UNKNOWN_KID_COOLDOWN_MS = 60_000;
 const FETCH_TIMEOUT_MS = 2_000;
 
-export interface PrivyAccessClaims { app_id: string; user_id: string; session_id: string }
+export interface PrivyAccessClaims { app_id: string; user_id: string; session_id: string; iat: number }
 
 type Fetcher = (url: string, init: RequestInit) => Promise<Response>;
 interface KeyState { keys: JWTVerifyGetKey | null; fetchedAt: number; lastAttempt: number; inflight: Promise<void> | null }
@@ -55,6 +55,7 @@ export function createPrivyTokenVerifier(appId: string, options: { fetcher?: Fet
   return async function verifyAccessToken(accessToken: string): Promise<PrivyAccessClaims> {
     const { payload } = await jwtVerify(accessToken, resolveKey, { typ: "JWT", algorithms: ["ES256"], issuer: "privy.io", audience: appId });
     if (typeof payload.sub !== "string" || typeof payload.sid !== "string" || typeof payload.aud !== "string") throw new Error("Invalid Privy access token");
-    return { app_id: payload.aud, user_id: payload.sub, session_id: payload.sid };
+    if (!Number.isSafeInteger(payload.iat) || payload.iat! < 0 || payload.iat! * 1000 > now()) throw new Error("Invalid Privy token issuance time");
+    return { app_id: payload.aud, user_id: payload.sub, session_id: payload.sid, iat: payload.iat! };
   };
 }

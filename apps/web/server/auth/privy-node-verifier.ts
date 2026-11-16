@@ -25,6 +25,7 @@ interface PrivyTokenClaims {
   app_id: string;
   user_id: string;
   session_id?: string;
+  iat?: number;
 }
 
 interface PrivyLinkedAccountShape {
@@ -271,6 +272,7 @@ async function defaultCookieHeader(): Promise<string | null> {
 
 /** What POST /api/auth/fan-session seals into the cookie: a real Privy token's owner, never the cookie itself. */
 export interface ResolvedFanSession {
+  tokenIssuedAt: number;
   privyUserId: string;
   sessionId: string;
   identity: PrivyIdentityInput;
@@ -380,7 +382,8 @@ export function createPrivyNodeAccessVerifier(
       const resolved = await lookUp(claims);
       if (resolved.identity.fanSession) throw new Error("Fresh Privy identity is required");
       await lifecycle?.assertAccess({ privyUserId: claims.user_id, sessionId: claims.session_id, apple: resolved.apple, google: resolved.google });
-      return { privyUserId: claims.user_id, sessionId: claims.session_id, ...resolved };
+      if (!Number.isSafeInteger(claims.iat) || claims.iat! < 0 || claims.iat! * 1000 > now()) throw new Error("Invalid Privy token issuance time");
+      return { privyUserId: claims.user_id, sessionId: claims.session_id, tokenIssuedAt: claims.iat! * 1000, ...resolved };
     },
     verify(accessToken) {
       // The sentinel is the same string for everyone; its answer depends on this request's cookie, so it is never shared.
