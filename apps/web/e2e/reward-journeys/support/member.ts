@@ -50,6 +50,13 @@ export class Member {
     return { passportId, creatorId, creatorSlug };
   }
 
+  /** `priorDays` earlier days of attendance on this page (yesterday back), so today's check-in is day priorDays + 1 of the streak. Rows only; no stamp or ledger rows are seeded for the past days. */
+  seedStreak(creatorId: string, priorDays: number, points: number) {
+    exec(`insert into public.group_creator_attendance(app_user_id, celebrity_id, attendance_date, streak, points, request_key, policy_version)
+      select '${this.id}', '${creatorId}', public.dukjil_kst_date() - d, ${priorDays} - d + 1, ${points}, gen_random_uuid(), (select version from public.dukjil_active_policy())
+      from generate_series(1, ${priorDays}) d`);
+  }
+
   /** A fixture balance through the wallet's own posting function (same path the app uses), not through the routes under test. */
   seedPoints(amount: number) { exec(`select public.group_wallet_post('${this.id}', 'fan_point', ${amount}, 'dukjil_action', gen_random_uuid())`); }
 
@@ -81,5 +88,7 @@ export class Member {
   stampCount(kind?: string) { return count(`select count(*) from public.community_stamps where app_user_id = '${this.id}'${kind ? ` and kind = '${kind}'` : ""}`); }
   hearts() { return count(`select coalesce(sum(amount),0) from public.creator_heart_ledger where app_user_id = '${this.id}'`); }
   pointLedgerRows() { return count(`select count(*) from public.mobile_fan_economy_ledger where app_user_id = '${this.id}' and asset = 'fan_point'`); }
+  /** Amounts of the member's point-ledger rows, oldest first. */
+  pointLedgerAmounts(): number[] { return scalar(`select coalesce(string_agg(amount::text, ',' order by created_at, id), '') from public.mobile_fan_economy_ledger where app_user_id = '${this.id}' and asset = 'fan_point'`).split(",").filter(Boolean).map(Number); }
   ticketLedgerRows() { return count(`select count(*) from public.fan_ticket_ledger where app_user_id = '${this.id}'`); }
 }
