@@ -12,6 +12,8 @@ const agents = {
   androidInstagram: "Mozilla/5.0 (Linux; Android 14; SM-S918N Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.102 Mobile Safari/537.36 Instagram 350.0.0.46.108 Android (34/14; 480dpi; 1080x2340; samsung; SM-S918N; dm3q; qcom; ko_KR; 650522985)",
   androidFacebook: "Mozilla/5.0 (Linux; Android 14; SM-S918N Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.102 Mobile Safari/537.36 [FB_IAB/FB4A;FBAV/500.0.0.0.0;]",
   androidKakao: "Mozilla/5.0 (Linux; Android 14; SM-S918N Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.102 Mobile Safari/537.36 KAKAOTALK/11.0.0",
+  iosX: "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Twitter for iPhone",
+  androidX: "Mozilla/5.0 (Linux; Android 14; SM-S918N Build/UP1A.231005.007; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.102 Mobile Safari/537.36 TwitterAndroid",
   androidChrome: "Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
 };
 
@@ -21,6 +23,19 @@ describe("Google browser policy", () => {
   });
   it.each(["", "Mozilla/5.0 (iPhone) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1", "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36", "Mozilla/5.0 Firefox/130.0", "Mozilla/5.0 Edg/130.0"]) ("keeps normal OAuth for %s", (agent) => {
     expect(requiresGoogleBrowserHandoff(agent)).toBe(false);
+  });
+});
+
+describe("X app browser", () => {
+  it.each(["iosX", "androidX"] as const)("requires handoff for %s", (name) => {
+    expect(requiresGoogleBrowserHandoff(agents[name])).toBe(true);
+  });
+  it("hands iOS X to Safari and Android X to the browser by intent", () => {
+    expect(planGoogleLogin(agents.iosX, loginUrl)).toEqual({ kind: "external", url: "x-safari-https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve" });
+    expect(planGoogleLogin(agents.androidX, loginUrl).kind).toBe("external");
+  });
+  it.each(["iosInstagram", "iosKakao", "androidKakao"] as const)("keeps %s handoff", (name) => {
+    expect(requiresGoogleBrowserHandoff(agents[name])).toBe(true);
   });
 });
 

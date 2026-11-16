@@ -396,6 +396,21 @@ describe("login page (Cognito)", () => {
       expect(assign).not.toHaveBeenCalled();
     });
 
+    it("shows the notice in the X app and points to Apple only there", () => {
+      const iosX = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Twitter for iPhone";
+      stubHttps(iosX);
+      const first = render(<LoginPage appleLoginEnabled />);
+      expect(screen.getByRole("status")).toHaveTextContent("‘Apple로 계속하기’를 눌러");
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+      first.unmount();
+      const second = render(<LoginPage />);
+      expect(screen.getByRole("status")).not.toHaveTextContent("Apple");
+      second.unmount();
+      stubHttps(iosInstagram);
+      render(<LoginPage appleLoginEnabled />);
+      expect(screen.getByRole("status")).not.toHaveTextContent("Apple로 계속하기’를 눌러");
+    });
+
     it("never shows the internal timeout code in iOS Instagram after the SDK stays unready for 30 seconds", () => {
       vi.useFakeTimers();
       try {

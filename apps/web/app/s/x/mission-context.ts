@@ -8,4 +8,4 @@ export function missionAttribution(search: string, now = Date.now()) {
  const result = kolPropertiesSchema.safeParse({ source:q.get('utm_source'), medium:q.get('utm_medium'), campaign:q.get('utm_campaign'), kol:q.get('utm_content'), flowStartedAt:validStart });
  return result.success ? result.data : null;
 }
-export const isXBrowser = (ua: string) => /\bTwitter(?:Android| for iPhone| for iPad|\/|\b)|\bX\/\d/i.test(ua);
+export { isXBrowser } from '@/components/login-browser-policy';

@@ -39,7 +39,7 @@ import {
 } from "../features/reliability/client/request-deadline";
 import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/analytics/client/signup-funnel-tracker";
 import { customSocialContinue } from "@/i18n/catalogs/components__custom-social-auth";
-import { isIosInstagram, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
+import { isIosInstagram, isXBrowser, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import styles from "./login-page.module.css";
 import { EmailLoginForm } from "./email-login-form";
 
@@ -64,6 +64,7 @@ const LOGIN_READY_TIMEOUT_MS = 8_000;
 const subscribeToBrowserPolicy = () => () => {};
 const getBrowserHandoffSnapshot = () => requiresGoogleBrowserHandoff(navigator.userAgent);
 const getServerBrowserHandoffSnapshot = () => false;
+const getXBrowserSnapshot = () => isXBrowser(navigator.userAgent);
 const getIosInstagramSnapshot = () => isIosInstagram(navigator.userAgent);
 
 class StaleLoginIdentityError extends Error {
@@ -163,6 +164,7 @@ export function LoginPage({
   const byUsSession = useByUsSession();
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
+  const xBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getXBrowserSnapshot, getServerBrowserHandoffSnapshot);
   const iosInstagram = useSyncExternalStore(subscribeToBrowserPolicy, getIosInstagramSnapshot, getServerBrowserHandoffSnapshot);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
   // Set while the browser leaves for Cognito; a second tap must not start another authorization.
@@ -441,7 +443,9 @@ export function LoginPage({
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
     <div className={styles.browserNotice}>
       <p className={styles.error} role="status">
-        {locale === "ko" ? "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속해 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요." : translate(locale, localizedMessages.mbrowserHandoff, "Choose ‘Open in browser’ in the app menu to continue with Google. Or copy the sign-in link and open it in Safari or Chrome.")}
+        {xBrowser && appleLoginEnabled
+          ? locale === "ko" ? "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속하거나, 아래 ‘Apple로 계속하기’를 눌러 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요." : translate(locale, localizedMessages.mbrowserHandoffApple, "Choose ‘Open in browser’ in the app menu to continue with Google, or tap Continue with Apple below. Or copy the sign-in link and open it in Safari or Chrome.")
+          : locale === "ko" ? "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속해 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요." : translate(locale, localizedMessages.mbrowserHandoff, "Choose ‘Open in browser’ in the app menu to continue with Google. Or copy the sign-in link and open it in Safari or Chrome.")}
       </p>
       <button className={styles.emailButton} type="button" onClick={async () => {
         try {
