@@ -68,3 +68,11 @@ mini 실행 코드는 공유 checkout 대신 `~/.local/share/kyaa-sns-collector/
 ## YouTube 팔로워 주간 수집
 
 기존 `io.kyaa.sns-collect`의 2시간 실행에서 대상 환경별 마지막 성공 시각을 확인하고 7일이 지나면 같은 SNS 전용 키로 내부 YouTube 수집 경로를 호출한다. 서버의 기존 `YOUTUBE_DATA_API_KEY`를 사용하며 Mac에 API 키를 복사하지 않는다. 서버 호출 실패 시 성공 시각을 갱신하지 않아 다음 실행에서 재시도한다. 숨김·응답 실패인 채널은 기존 수치를 유지한다. 기존 mini 실행 파일을 갱신할 때 `run.py`를 함께 복사한다.
+
+## 두 대상 전송과 인스타·틱톡 팔로워 주간 수집 (SNS-FOLLOWERS-1116)
+
+`config.json`의 `targets`(예: `["dev","prod"]`)로 한 번 수집한 결과를 두 대상에 보낸다. `prod`가 들어 있으면 `devVerified:true`가 필요하다. 예전 `target` 하나짜리 설정도 그대로 동작한다. 유튜브 주간 호출은 대상마다 `youtube-followers-<대상>.last-success`로 따로 센다.
+
+인스타·틱톡 팔로워 수는 2시간 실행이 이미 여는 공식 프로필 화면에서 읽는다. 틱톡은 페이지 데이터의 정확한 수, 인스타는 화면 표기('428.3만')를 그대로 보낸다. 대상별 `platform-followers-<대상>.last-success`가 7일 이상 지났을 때만 `POST /api/internal/platform-followers`(같은 SNS 전용 키)로 보내고 성공하면 표식을 갱신한다. 실패하면 표식을 두어 다음 실행에서 다시 보낸다. 못 읽은 계정은 보내지 않는다(0으로 쓰지 않음). 서버는 지금 활성 공식 링크인 계정만 저장하고, 직접 입력한 행과 더 새 값은 덮어쓰지 않는다. 결과는 `runs/<UTC>/followers*.result.json`에 남는다.
+
+mini 설치는 `collect-core.mjs`·`collect.aside.mjs`·`run.py` 세 파일을 함께 복사한다. 운영 반영에는 migration `20261228130000_platform_follower_collector.sql`과 웹 배포가 먼저 필요하다.
