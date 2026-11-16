@@ -46,6 +46,16 @@
 .panel { display: grid; gap: var(--space-6); align-content: start; min-width: 0; }
 .visual { order: 1; }
 .card[data-mission="like"] { order: -1; }
+/* 휴대폰 압축(보석 21:04 '압축 UI'): 좋아요 전 03 카드는 버튼을 제목 줄 오른쪽에 둬 한 줄로. Gleam의 팔로우·리포스트 줄까지 첫 화면에 올라온다 */
+@media (width < 64rem) {
+  .panel { gap: var(--space-4); }
+  .missions, .card { gap: var(--space-3); }
+  .missions { padding-top: var(--space-3); }
+  .card[data-mission="like"]:not([data-done]) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .card[data-mission="like"]:not([data-done]) .cardHead { grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr); }
+  .card[data-mission="like"]:not([data-done]) .todo { display: none; }
+  .card[data-mission="like"]:not([data-done]) > p { grid-column: 1 / -1; }
+}
 
 /* PC: 왼쪽 4 = 제목 위·작은 키 비주얼 아래(대표 21:03 제보 187446), 오른쪽 8 = 카드 두 장 나란히(01·02 | 03). 1440×900 첫 화면에 Gleam 전체와 03 버튼이 든다 */
 @media (width >= 64rem) {
