@@ -210,3 +210,20 @@ it("denies valid email tokens when the central moderation lookup denies the owne
   vi.mocked(authenticateEmailAccessToken).mockResolvedValueOnce({ appUserId: "email-owner", supabaseUserId: "uuid", privyUserId: "did:privy:email-owner" });
   await expect(authorizeFanRequest({ authorization: "Bearer kyaa-email:verified", verifier: verifier(), repository: repository(null) })).rejects.toMatchObject({ status: 403 });
 });
+
+describe("authorizeFanRequest failure classes", () => {
+  it("keeps a reauthentication verdict at 403 and turns an unreadable account state into 503", async () => {
+    const { AppleLifecycleUnavailableError, AppleReauthenticationRequiredError } = await import("../auth/apple-notifications/apple-lifecycle");
+    const run = (error: Error, token = "access-token") => authorizeFanRequest({
+      authorization: `Bearer ${token}`, verifier: { verify: vi.fn().mockRejectedValue(error) }, repository: repository(),
+    }).catch((caught: unknown) => caught);
+    expect(await run(new AppleReauthenticationRequiredError(["google"]))).toMatchObject({ code: "APPLE_REAUTHENTICATION_REQUIRED", status: 403 });
+    expect(await run(new AppleLifecycleUnavailableError())).toBeInstanceOf(FanAuthUnavailableError);
+    expect(await run(new AppleLifecycleUnavailableError(), "kyaa-session")).toBeInstanceOf(FanAuthUnavailableError);
+    // The own-session sentinel has no token to blame, so an unexpected error is ours (503) while a missing cookie is a verdict (401).
+    expect(await run(new Error("boom"), "kyaa-session")).toBeInstanceOf(FanAuthUnavailableError);
+    const { FanSessionRejectedError } = await import("../auth/fan-session-cookie");
+    expect(await run(new FanSessionRejectedError(), "kyaa-session")).toMatchObject({ status: 401 });
+    expect(await run(new Error("boom"))).toMatchObject({ status: 401 });
+  });
+});

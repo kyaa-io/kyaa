@@ -104,7 +104,10 @@ export class AppleLifecycleRepository {
         googleSubjectHash: session.google ? providerSubjectHash("google", session.google.subject) : null,
       },
     });
-    return accessResultSchema.parse(result);
+    const parsed = accessResultSchema.safeParse(result);
+    // An answer in an unknown shape is not a verdict on the account.
+    if (!parsed.success) throw new AppleLifecycleUnavailableError();
+    return parsed.data;
   }
 
   async assertAccess(session: VerifiedPrivySession): Promise<void> {
