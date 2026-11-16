@@ -72,7 +72,7 @@ export async function authorizeFanRequest(input: {
   }
 
   if (identity.fanSession && (identity.fanSession.appUserId !== user.id ||
-    (user.sessionsValidAfter && identity.fanSession.authenticatedAt < Date.parse(user.sessionsValidAfter)))) {
+    (user.sessionsValidAfter && identity.fanSession.authenticatedAt <= Date.parse(user.sessionsValidAfter)))) {
     throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
   }
   return { appUserId: user.id };

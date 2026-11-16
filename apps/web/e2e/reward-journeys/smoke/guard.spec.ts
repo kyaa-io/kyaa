@@ -14,20 +14,22 @@ test("@smoke the read-only guard aborts writes before the network", async ({ pag
   await page.goto(`${ORIGIN}/`);
 
   const outcomes = await page.evaluate(async () => {
-    const send = async (url: string, method: string) => { try { await fetch(url, { method, mode: "no-cors" }); return "sent"; } catch { return "aborted"; } };
+    const send = async (url: string, method: string) => { try { await fetch(url, { method, mode: method === "DELETE" ? "same-origin" : "no-cors" }); return "sent"; } catch { return "aborted"; } };
     return [
       await send("/api/me/dukjil/cheer", "POST"),
       await send("/api/me/wallet/exchange", "POST"),
       await send("/api/events", "POST"),
+      await send("/api/auth/fan-session", "POST"),
+      await send("/api/auth/fan-session", "DELETE"),
       await send("https://auth.privy.io/cdn-cgi/challenge-platform/x", "POST"),
       await send("https://auth.privy.io.evil.invalid/api/v1/sessions", "POST"),
     ];
   });
 
-  // The two business writes, the lookalike host and the non-listed Privy path are aborted; the analytics beacon is the one let through (it then fails on the unresolvable name).
+  // The two business writes, the lookalike host and the non-listed Privy path are aborted; analytics and fan-session POST are let through (it then fails on the unresolvable name).
   expect(outcomes.slice(0, 2)).toEqual(["aborted", "aborted"]);
-  expect(guard.blocked).toEqual([`POST ${ORIGIN}/api/me/dukjil/cheer`, `POST ${ORIGIN}/api/me/wallet/exchange`]);
+  expect(guard.blocked).toEqual([`POST ${ORIGIN}/api/me/dukjil/cheer`, `POST ${ORIGIN}/api/me/wallet/exchange`, `DELETE ${ORIGIN}/api/auth/fan-session`]);
   expect(guard.externalAborted).toEqual(["POST auth.privy.io/cdn-cgi/challenge-platform/x", "POST auth.privy.io.evil.invalid/api/v1/sessions"]);
   const reachedDns = failures.filter((entry) => !entry.includes("net::ERR_BLOCKED_BY_CLIENT"));
-  expect(reachedDns, "only the allowed analytics beacon may get past the guard").toEqual([`POST smoke-guard.invalid/api/events net::ERR_NAME_NOT_RESOLVED`]);
+  expect(reachedDns, "only analytics and fan-session POST may get past the guard").toEqual([`POST smoke-guard.invalid/api/events net::ERR_NAME_NOT_RESOLVED`, `POST smoke-guard.invalid/api/auth/fan-session net::ERR_NAME_NOT_RESOLVED`]);
 });

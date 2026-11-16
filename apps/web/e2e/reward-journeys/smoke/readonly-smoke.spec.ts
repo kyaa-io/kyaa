@@ -3,7 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { guardWrites, type WriteGuard } from "./guard";
 
 // Read-only smoke for a deployed site, run right after a release. No business write is sent: every same-origin request that is not
-// GET/HEAD/OPTIONS is aborted in the browser unless it is the analytics beacon (an analytics write, so this is "no business write", not "zero writes"), and any aborted attempt fails the test.
+// GET/HEAD/OPTIONS is aborted in the browser unless it is analytics or POST fan-session maintenance, and any aborted attempt fails the test.
 // Guest checks always run. Member checks run when SMOKE_STORAGE_STATE points at a test account's browser storage state.
 
 const BASE_URL = (process.env.SMOKE_BASE_URL ?? "").replace(/\/$/, "");

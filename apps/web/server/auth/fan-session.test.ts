@@ -229,7 +229,7 @@ describe("sliding fan session security", () => {
     expect((await route.POST(req(value))).status).toBe(401);
   });
   it("revokes copied cookies on logout for both renewals and fan requests", async () => {
-    const { route, repository } = setup(NOW + 1000);
+    const { route, repository } = setup(NOW);
     const copied = fresh();
     expect((await route.DELETE(req(copied, "DELETE"))).status).toBe(204);
     expect((await route.POST(req(copied))).status).toBe(401);

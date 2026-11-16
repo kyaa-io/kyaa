@@ -68,7 +68,7 @@ export function createFanSessionRoute(deps: FanSessionRouteDependencies) {
       let user;
       try { user = await deps.repository.findUserByPrivyId(payload.pid); } catch { return reply(503); }
       if (!user || user.status !== "active") return reply(403, clearFanSessionCookieHeader());
-      if ((previous && previous.uid !== user.id) || (user.sessionsValidAfter && payload.sat! < Date.parse(user.sessionsValidAfter))) return reply(401, clearFanSessionCookieHeader());
+      if ((previous && previous.uid !== user.id) || (user.sessionsValidAfter && payload.sat! <= Date.parse(user.sessionsValidAfter))) return reply(401, clearFanSessionCookieHeader());
       try {
         if (await deps.isPrivileged(user.id, user.verifiedEmail) || (payload.em !== user.verifiedEmail && payload.em !== null && await deps.isPrivileged(user.id, payload.em))) return new Response(JSON.stringify({ session: false }), { status: 200, headers: headers(clearFanSessionCookieHeader()) });
       } catch { return reply(503); }

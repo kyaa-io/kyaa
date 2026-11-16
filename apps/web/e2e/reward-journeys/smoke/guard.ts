@@ -1,6 +1,6 @@
 import type { BrowserContext } from "@playwright/test";
 
-// Writes a read-only smoke may let through. Same-origin: the analytics beacon only (an analytics write, not a business write).
+// Writes a read-only smoke may let through. Same-origin: analytics and POST fan-session maintenance. Session DELETE and all business writes stay blocked.
 // Third party: exact host AND exact path. Everything else that is not GET/HEAD/OPTIONS is aborted inside the browser by route interception, before any network I/O.
 export const ALLOWED_SAME_ORIGIN_WRITES: ReadonlySet<string> = new Set(["/api/events"]);
 export const ALLOWED_EXTERNAL_WRITES: ReadonlyMap<string, ReadonlySet<string>> = new Map([
