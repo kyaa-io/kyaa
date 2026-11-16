@@ -38,7 +38,18 @@ async function dispatchDev() {
   if (response.status !== 204) throw Error(`DEV_DISPATCH_NOT_CONFIRMED_${response.status}`);
 }
 
-export async function restoreMain(read = github, dispatch = dispatchDev) {
+export async function devHealthRevision(fetcher = fetch) {
+  const response = await fetcher(`https://dev.kyaa.io/api/health/live?_=${Date.now()}`, {
+    redirect: 'error', signal: AbortSignal.timeout(15_000),
+    headers: { 'cache-control': 'no-cache', pragma: 'no-cache' },
+  });
+  if (!response.ok) throw Error(`DEV_HEALTH_HTTP_${response.status}`);
+  const { revision } = await response.json();
+  if (!/^[a-f0-9]{40}$/.test(revision ?? '')) throw Error('INVALID_DEV_HEALTH_REVISION');
+  return revision;
+}
+
+export async function restoreMain(read = github, dispatch = dispatchDev, health = devHealthRevision) {
   const tip = await read('/git/ref/heads/main');
   if (!/^[a-f0-9]{40}$/.test(tip.object?.sha ?? '')) throw Error('INVALID_MAIN_TIP');
   const result = await read(`/actions/workflows/aws-platform.yml/runs?event=push&branch=main&head_sha=${tip.object.sha}&per_page=100`);
@@ -48,7 +59,13 @@ export async function restoreMain(read = github, dispatch = dispatchDev) {
   if (run.head_branch !== 'main' || run.head_sha !== tip.object.sha || run.event !== 'push') throw Error('LATEST_MAIN_RUN_MISMATCH');
   // An existing queued run already follows this hotfix under the same lock.
   if (run.status !== 'completed') return;
+  // A live exact revision match makes this source restoration unnecessary.
+  // Unknown health must preserve recovery, never turn an outage into a skip.
+  try {
+    if (await health() === tip.object.sha) return 'already-current';
+  } catch { /* Preserve the existing restoration path. */ }
   await dispatch();
+  return 'dispatched';
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
