@@ -187,6 +187,24 @@ describe("FAN-020 settings", () => {
     expect(screen.queryByRole("button", { name: "로그아웃" })).not.toBeInTheDocument();
   });
 
+  it("marks the detail heading for a focus ring only after keyboard input", async () => {
+    window.history.replaceState(null, "", "/settings?locale=ko");
+    render(<SettingsScreen locale="ko" initialSection={null} />);
+    const profileRow = await screen.findByRole("button", { name: /프로필Kamilia/ });
+
+    fireEvent.pointerDown(profileRow);
+    fireEvent.click(profileRow);
+    const pointerHeading = screen.getByRole("heading", { name: "프로필", level: 1 });
+    expect(pointerHeading).toHaveFocus();
+    expect(pointerHeading).not.toHaveAttribute("data-keyboard-focus");
+
+    fireEvent.click(screen.getByRole("button", { name: "설정으로 돌아가기" }));
+    const languageRow = await screen.findByRole("button", { name: /언어/ });
+    fireEvent.keyDown(languageRow, { key: "Enter" });
+    fireEvent.click(languageRow);
+    expect(screen.getByRole("heading", { name: "언어", level: 1 })).toHaveAttribute("data-keyboard-focus");
+  });
+
   it("opens one query-driven detail, returns focus, and follows popstate", async () => {
     window.history.replaceState(null, "", "/settings?locale=ko");
     render(<SettingsScreen locale="ko" initialSection={null} />);

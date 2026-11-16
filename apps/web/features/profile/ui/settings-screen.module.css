@@ -415,6 +415,8 @@
   outline-offset: 3px;
 }
 .settingsRows > button:focus-visible { outline-offset: -3px; }
+.detailHeader h1:focus { outline: none; }
+.detailHeader h1[data-keyboard-focus]:focus { outline: 3px solid var(--color-ink); outline-offset: 3px; }
 @media (hover: hover) {
   .valueRow button:hover,
   .header a:hover,

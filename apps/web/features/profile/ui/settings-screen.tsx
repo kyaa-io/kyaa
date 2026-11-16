@@ -398,6 +398,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
   const [section, setSection] = useState<SettingsSection | null>(initialSection);
   const sectionTriggerRef = useRef<SettingsSection | null>(null);
   const detailHeadingRef = useRef<HTMLHeadingElement>(null);
+  const keyboardInputRef = useRef(false);
   const settingsReturnTo = `/settings?locale=${locale}${section ? `&section=${section}` : ""}`;
   const avatarResource = useAvatar();
   const [loggingOut, setLoggingOut] = useState(false);
@@ -464,8 +465,22 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
     requestAnimationFrame(() => document.getElementById(`settings-row-${focusSection}`)?.focus());
   }, [navigateToSection, section]);
 
+  useEffect(() => {
+    const keyboard = () => { keyboardInputRef.current = true; };
+    const pointer = () => { keyboardInputRef.current = false; };
+    window.addEventListener("keydown", keyboard, true);
+    window.addEventListener("pointerdown", pointer, true);
+    return () => {
+      window.removeEventListener("keydown", keyboard, true);
+      window.removeEventListener("pointerdown", pointer, true);
+    };
+  }, []);
+
   useLayoutEffect(() => {
-    if (section && state === "ready" && ready && session.ready) detailHeadingRef.current?.focus();
+    const heading = detailHeadingRef.current;
+    if (!heading || !section || state !== "ready" || !ready || !session.ready) return;
+    heading.toggleAttribute("data-keyboard-focus", keyboardInputRef.current);
+    heading.focus();
   }, [section, state, ready, session.ready]);
 
   useEffect(() => {
