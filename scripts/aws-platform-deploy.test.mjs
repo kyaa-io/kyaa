@@ -444,6 +444,26 @@ test('quiz learning defaults on in dev and production with explicit opt-out', as
  assert.equal(prod.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN, 'false');
 });
 
+test('FAN_SESSION_ISSUE is a public runtime setting that only accepts on or off', async () => {
+  const template = await loadTemplate('environment');
+  const webEnvironment = (rendered) => rendered.Resources.TaskDefinition.Properties.ContainerDefinitions.find((container) => container.Name === 'web').Environment;
+  for (const environment of ['dev', 'prod']) {
+    const absent = config('environment', environment);
+    assert(!webEnvironment(renderTemplate(absent, template)).some((entry) => entry.Name === 'FAN_SESSION_ISSUE'));
+    for (const value of ['on', 'off']) {
+      const source = config('environment', environment); source.runtimeEnvironment.FAN_SESSION_ISSUE = value;
+      assert.doesNotThrow(() => validateConfig(source, template));
+      assert(webEnvironment(renderTemplate(source, template)).some((entry) => entry.Name === 'FAN_SESSION_ISSUE' && entry.Value === value));
+    }
+    for (const value of ['ON', 'OFF', 'true', 'false', '0', 'disabled', ' off']) {
+      const source = config('environment', environment); source.runtimeEnvironment.FAN_SESSION_ISSUE = value;
+      assert.throws(() => validateConfig(source, template), /FAN_SESSION_ISSUE must be on or off/);
+    }
+  }
+  const secret = config(); secret.runtimeEnvironment.FAN_SESSION_ISSUE = 'off'; secret.runtimeSecretKeys = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'PRIVY_APP_SECRET', 'FAN_SESSION_ISSUE'];
+  assert.throws(() => validateConfig(secret, template), /Use a Secrets Manager JSON key/);
+});
+
 test('the provisional dev-only wallet xpub cannot enter production', async () => {
   const t = await loadTemplate('environment');
   const xpub = 'xpub6DXar8jpDrxoTZBrEvgTqsLQeZr2mqmKhW5GWyuPeqVpBdm9TaxRB5sR5fTqXG7oGt7vtNLRJmmqUL9zGRXT6c8URBcmACNKy3tWnL1xXAj';
