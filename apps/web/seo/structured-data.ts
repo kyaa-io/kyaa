@@ -1,4 +1,5 @@
 import { APP_LOCALES } from "@/i18n/locales";
+import { HQ_COUNTRY, HQ_LOCALITY, HQ_NAME, HQ_REGION } from "./global-headquarters";
 import { SITE_URL } from "./metadata";
 
 const ORGANIZATION_ID = `${SITE_URL}/#organization`;
@@ -10,9 +11,11 @@ export type PublicFaq = {
 };
 
 /**
- * Keep the site identity identical on every localized home URL. The legal
- * pages identify Sallylab Inc. as the company that provides kyaa, while these
- * social URLs are the official channels published in the site footer.
+ * Keep the site identity identical on every localized home URL. The
+ * Organization is the Korean operator, Sallylab Inc., which the legal pages
+ * name as the provider of kyaa; its parentOrganization is the global
+ * headquarters KAYY Inc., shown with the same name and region as the site
+ * footer. The social URLs are the official channels published in the footer.
  */
 export function homeStructuredData() {
   return {
@@ -25,6 +28,16 @@ export function homeStructuredData() {
         url: `${SITE_URL}/`,
         email: "support@kyaa.io",
         logo: `${SITE_URL}/kyaa-app-icon-512.png`,
+        parentOrganization: {
+          "@type": "Organization",
+          name: HQ_NAME,
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: HQ_LOCALITY,
+            addressRegion: HQ_REGION,
+            addressCountry: HQ_COUNTRY,
+          },
+        },
         brand: {
           "@type": "Brand",
           name: "kyaa",

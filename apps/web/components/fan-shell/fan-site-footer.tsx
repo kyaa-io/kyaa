@@ -16,10 +16,9 @@ import type { FanLocale } from "./fan-app-shell";
 import { FanContentContainer } from "./fan-content-container";
 import styles from "./fan-site-footer.module.css";
 import { AnalyticsConsentLink } from "@/features/analytics/client/analytics-consent-link";
+import { HQ_LINE } from "@/seo/global-headquarters";
 
 const TELEGRAM_CHANNEL_URL = "https://t.me/Kyaa_Official";
-// Global headquarters (New York State filing, 2026-11-12). Region only — no street address; the EIN is not shown.
-const HQ_LINE = "KAYY Inc. · Whitestone, Queens, NY, USA";
 const HQ_CORPORATE_NUMBER = "8130900";
 
 // Brand marks from Simple Icons; Instagram reuses our existing local mark.
