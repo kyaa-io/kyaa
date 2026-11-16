@@ -25,7 +25,7 @@ export async function collectYouTubeShorts(db: Db, key: string, fetcher: typeof 
   async function get(path: string, params: Record<string, string>) {
     const url = new URL(`https://www.googleapis.com/youtube/v3/${path}`);
     url.search = new URLSearchParams({ ...params, key }).toString();
-    const response = await fetcher(url, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+    const response = await fetcher(url, { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(15000) });
     if (!response.ok) throw new Error("YOUTUBE_API_FAILED");
     return response.json();
   }

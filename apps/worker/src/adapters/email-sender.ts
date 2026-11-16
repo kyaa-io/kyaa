@@ -17,6 +17,7 @@ export class EmailSender implements ExternalNotificationSender {
       method: "POST",
       headers: { authorization: `Bearer ${this.config.token}`, "content-type": "application/json", "idempotency-key": job.id },
       body: JSON.stringify({ to: job.destination, template: job.templateKey, locale: job.locale, ...job.payload, title: email.subject, subject: email.subject, detail: email.text, deepLink: link.href, html: email.html, text: email.text }),
+      redirect: "error",
       signal: AbortSignal.timeout(8000),
     }).catch(() => null);
     if (!response) throw new ExternalNotificationError("EMAIL_NETWORK", true);

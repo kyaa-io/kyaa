@@ -30,7 +30,7 @@ export async function collectYouTubeFollowers(db: Db, key: string, fetcher: type
     const url = new URL("https://www.googleapis.com/youtube/v3/channels");
     url.search = new URLSearchParams({ part: "statistics", [target.kind === "id" ? "id" : "forHandle"]: target.value, key }).toString();
     try {
-      const response = await fetcher(url, { cache: "no-store", signal: AbortSignal.timeout(15000) });
+      const response = await fetcher(url, { cache: "no-store", redirect: "error", signal: AbortSignal.timeout(15000) });
       if (!response.ok) { failed++; continue; }
       const count = parseSubscriberCount(await response.json(), target.kind === "id" ? target.value : undefined);
       if (count === null) { skipped++; continue; }
