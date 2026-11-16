@@ -42,7 +42,7 @@ describe("page head (U1)", () => {
     const button = screen.getByRole("button", { name: "번역 보기" });
     expect(button.parentElement?.parentElement?.querySelector(":scope > p")?.textContent).toBe("소개");
     const css = readFileSync("components/fan-ui/fan-page-header.module.css", "utf8");
-    expect(css).toContain(".description { grid-area: description; display: flex; align-items: flex-end;");
+    expect(css).toContain(".description { grid-column: 1 / -1; display: flex; align-items: flex-end;");
     expect(css).toContain("height: calc(var(--fan-description-size) * 1.5)");
   });
 });

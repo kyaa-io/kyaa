@@ -185,12 +185,15 @@ describe("FanPageHeader", () => {
     expect(screen.getByText("브랜드")).toHaveAttribute("data-fan-tag", "neutral");
     expect(screen.getByTestId("badge")).toBeInTheDocument();
   });
-  it("puts the SNS row after the introduction and before the stats line, and draws no SNS row without links", () => {
-    const { rerender } = render(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" description="소개 원문" links={[{ kind: "youtube", href: "https://y.test" }]} stats={<div data-testid="stats">팬 1</div>} />);
+  it("orders the head as name·grade, SNS with the stats line, actions, and the introduction last (대표 11/16 21:22)", () => {
+    const { rerender } = render(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" description="소개 원문" grade={<a href="/p" data-testid="grade">팬등급</a>} utility={<button type="button">좋아요 남기기</button>} links={[{ kind: "youtube", href: "https://y.test" }]} stats={<div data-testid="stats">팬 1</div>} />);
     const order = (node: Element, other: Element) => node.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING;
     const nav = screen.getByRole("link", { name: "youtube" }).closest("nav") as Element;
-    expect(order(screen.getByText("소개 원문"), nav)).toBeTruthy();
+    expect(screen.getByTestId("grade").parentElement).toBe(screen.getByRole("heading", { name: "엘리나" }).parentElement);
+    expect(nav.parentElement).toBe(screen.getByTestId("stats").parentElement?.parentElement);
     expect(order(nav, screen.getByTestId("stats"))).toBeTruthy();
+    expect(order(screen.getByTestId("stats"), screen.getByRole("button", { name: "좋아요 남기기" }))).toBeTruthy();
+    expect(order(screen.getByRole("button", { name: "좋아요 남기기" }), screen.getByText("소개 원문"))).toBeTruthy();
     rerender(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" description="소개 원문" stats={<div data-testid="stats">팬 1</div>} />);
     expect(document.querySelector("nav")).toBeNull();
   });
