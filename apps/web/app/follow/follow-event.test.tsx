@@ -75,6 +75,7 @@ it('hides a zero like count, shows a real one before the like, then swaps it for
 it('writes the X post with the event handle and the production event link', () => {
  const url = new URL(followPostIntent('en'));
  expect(url.origin + url.pathname).toBe('https://x.com/intent/post');
- expect(url.searchParams.get('text')).toBe('I joined the KYAA × X Opening Event @kyaa_app');
+ expect(url.searchParams.get('text')).toBe('An app that stamps your fan life?\nJust got my kyaa opening stamp ✅ 3/3\nGet yours before Nov 22 @kyaa_app\n#kyaa #FanMoments');
+ expect(new URL(followPostIntent('ko')).searchParams.get('text')!.split('\n')).toEqual(['덕질하면 도장 찍어 주는 앱이 생겼다고?', '방금 kyaa 오픈 도장 쾅 ✅ 3/3', '너도 11/22 전에 찍고 와 @kyaa_app', '#kyaa #덕질도장']);
  expect(url.searchParams.get('url')).toBe('https://kyaa.io/follow');
 });

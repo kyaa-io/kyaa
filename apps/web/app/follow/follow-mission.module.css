@@ -28,8 +28,8 @@
 .check { position: absolute; right: calc(var(--space-2) * -1); bottom: calc(var(--space-2) * -1); display: grid; place-items: center; width: var(--space-10); aspect-ratio: 1; border: 3px solid var(--color-accent-soft); border-radius: var(--radius-pill); background: var(--color-success); color: var(--color-surface); }
 .doneText { display: grid; gap: var(--space-1); min-width: 0; justify-items: start; word-break: keep-all; }
 .doneText h3 { text-wrap: balance; }
-.facts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); color: var(--color-muted); }
-.facts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
+/* 닉네임 / 날짜·시간을 두 줄로(390에서 한 줄에 넣으면 날짜가 구분선째 다음 줄로 넘어간다) */
+.facts { display: grid; gap: var(--space-1); color: var(--color-muted); font-variant-numeric: tabular-nums; }
 .cta { display: grid; }
 
 /* 도장 쾅(방금 완료한 때만): 크게 들렸다가 내려앉아 한 번 눌린다. 450ms 한 번. 체크는 뒤따라 한 번 튄다 */
