@@ -1,11 +1,12 @@
 import "server-only";
+import { AuthError } from "../../features/auth/domain/auth-errors";
 import { mapPrivyIdentity } from "../../features/auth/domain/identity";
 import { EMAIL_TOKEN_PREFIX } from "./email/email-auth";
 import type { FanAuthRepository } from "../fan-auth/fan-auth-gate";
 import type { ResolvedFanSession } from "./privy-node-verifier";
 import {
   clearFanSessionCookieHeader, FAN_SESSION_BEARER, FAN_SESSION_MAX_AGE_SECONDS,
-  FAN_SESSION_PROOF_MAX_MS, fanSessionCookieHeader, sealFanSession,
+  FAN_SESSION_PROOF_MAX_MS, FanSessionRejectedError, fanSessionCookieHeader, sealFanSession,
   openFanSession, readFanSessionCookie, type FanSession,
 } from "./fan-session-cookie";
 
@@ -53,7 +54,11 @@ export function createFanSessionRoute(deps: FanSessionRouteDependencies) {
       if (token === FAN_SESSION_BEARER) {
         if (!previous || previous.v !== 2 || previous.sat === undefined) return reply(401, clearFanSessionCookieHeader());
         if (now() >= previous.sat + FAN_SESSION_PROOF_MAX_MS) return Response.json({ error: { code: "PRIVY_PROOF_REQUIRED" } }, { status: 401, headers: headers() });
-        try { await deps.verifyCookie(); } catch { return reply(401, clearFanSessionCookieHeader()); }
+        try { await deps.verifyCookie(); } catch (error) {
+          // Only a definite verdict ends the session. A failed lookup or unexpected error keeps the cookie for the next attempt.
+          if (error instanceof AuthError || error instanceof FanSessionRejectedError) return reply(401, clearFanSessionCookieHeader());
+          return reply(503);
+        }
         payload = previous;
       } else {
         try {

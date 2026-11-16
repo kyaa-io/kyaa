@@ -5,7 +5,7 @@ import { PrivyClient } from "@privy-io/node";
 import { createHash } from "node:crypto";
 import { createPrivyTokenVerifier } from "./privy-jwks";
 import { measurePrivyCall } from "./privy-latency";
-import { FAN_SESSION_BEARER, fanSessionKey, openFanSession, readFanSessionCookie, type FanSession } from "./fan-session-cookie";
+import { FAN_SESSION_BEARER, FanSessionRejectedError, fanSessionKey, openFanSession, readFanSessionCookie, type FanSession } from "./fan-session-cookie";
 import { isCognitoToken } from "./cognito/verifier";
 import { resolveCognitoAccess } from "./cognito/access";
 import type { KyaaMember } from "./cognito/kyaa-identity";
@@ -350,7 +350,7 @@ export function createPrivyNodeAccessVerifier(
     async verify(accessToken) {
       if (accessToken === FAN_SESSION_BEARER) {
         const session = await cookieSession();
-        if (!session) throw new Error("Fan session is missing or expired");
+        if (!session) throw new FanSessionRejectedError();
         await lifecycle?.assertAccess({ privyUserId: session.pid, sessionId: session.sid, apple: session.apple, google: session.google });
         return fromSession(session).identity;
       }

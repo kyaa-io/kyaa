@@ -2,6 +2,8 @@
 export const FAN_SESSION_BEARER = "kyaa-session";
 const HINT_KEY = "kyaa:fan-session";
 export const RECHECK_AFTER_MS = 24 * 60 * 60_000;
+/** Covers connecting, headers and reading the body. A request that outlives it is aborted, never left running. */
+export const FAN_SESSION_REQUEST_TIMEOUT_MS = 10_000;
 interface Hint { pid: string; exp: number; at: number }
 export function readFanSessionHint(now = Date.now()): Hint | null {
   try {
@@ -18,12 +20,14 @@ function writeHint(hint: Hint | null) {
 }
 let generation = 0;
 let activePid: string | null = null;
-let pendingFetch: Promise<unknown> | null = null;
+let pendingFetch: { operation: Promise<unknown>; abort: () => void } | null = null;
 let running: Promise<void> | null = null;
 async function exchange(token: string, pid: string, ownerGeneration: number, preserveHintOnUnauthorized = false): Promise<boolean> {
   if (generation !== ownerGeneration) return false;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FAN_SESSION_REQUEST_TIMEOUT_MS);
   const operation = (async () => {
-    const response = await fetch("/api/auth/fan-session", { method: "POST", headers: { authorization: `Bearer ${token}` }, cache: "no-store", credentials: "same-origin" });
+    const response = await fetch("/api/auth/fan-session", { method: "POST", headers: { authorization: `Bearer ${token}` }, cache: "no-store", credentials: "same-origin", signal: controller.signal });
     if (generation !== ownerGeneration) return false;
     if (response.ok) {
       const body = await response.json() as { session?: boolean; exp?: number; authenticatedAt?: number };
@@ -35,19 +39,22 @@ async function exchange(token: string, pid: string, ownerGeneration: number, pre
       writeHint(null);
     } else if (response.status === 401 || response.status === 403) {
       const body = await response.json().catch(() => null) as { error?: { code?: string } } | null;
+      // A body that stalled or was aborted says nothing about the verdict, so the hint stays.
+      if (controller.signal.aborted || generation !== ownerGeneration) return false;
       if (body?.error?.code !== "PRIVY_PROOF_REQUIRED" && !(response.status === 401 && preserveHintOnUnauthorized)) writeHint(null);
     }
     return false;
   })();
-  pendingFetch = operation;
-  try { return await operation; } finally { if (pendingFetch === operation) pendingFetch = null; }
+  const entry = { operation, abort: () => controller.abort() };
+  pendingFetch = entry;
+  try { return await operation; } finally { clearTimeout(timer); if (pendingFetch === entry) pendingFetch = null; }
 }
 /** Runs once per page entry. Cookie renewal never waits for Privy. Daily proof refresh runs afterwards. */
 export function renewFanSession(getPrivyToken: () => Promise<string | null>, pid: string): Promise<void> {
   if (activePid !== pid) { cancelFanSessionMaintenance(); activePid = pid; }
   if (running) return running;
   const ownerGeneration = generation;
-  const previousFetch = pendingFetch;
+  const previousFetch = pendingFetch?.operation;
   const operation = (async () => {
     await previousFetch?.catch(() => undefined);
     if (generation !== ownerGeneration) return;
@@ -69,14 +76,19 @@ export function cancelFanSessionMaintenance(): void {
   running = null;
 }
 
-/** Wait for any cookie response before deleting, so an in-flight issue cannot restore a signed-out cookie. */
+/** Abort any renewal and wait until it has settled, so no cookie response can arrive after the delete. Both requests are time-limited. */
 export async function clearFanSession(): Promise<void> {
   const previousHint = readFanSessionHint();
   cancelFanSessionMaintenance();
   writeHint(null);
-  await pendingFetch?.catch(() => undefined);
+  const inflight = pendingFetch;
+  inflight?.abort();
+  await inflight?.operation.catch(() => undefined);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FAN_SESSION_REQUEST_TIMEOUT_MS);
   try {
-    const response = await fetch("/api/auth/fan-session", { method: "DELETE", cache: "no-store", credentials: "same-origin", keepalive: true });
+    const response = await fetch("/api/auth/fan-session", { method: "DELETE", cache: "no-store", credentials: "same-origin", keepalive: true, signal: controller.signal });
     if (!response.ok) throw new Error("Session sign-out failed");
   } catch (error) { writeHint(previousHint); throw error; }
+  finally { clearTimeout(timer); }
 }

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { clearFanSession, FAN_SESSION_BEARER, readFanSessionHint, renewFanSession, RECHECK_AFTER_MS } from "./fan-session";
+import { clearFanSession, FAN_SESSION_BEARER, FAN_SESSION_REQUEST_TIMEOUT_MS, readFanSessionHint, renewFanSession, RECHECK_AFTER_MS } from "./fan-session";
 const pid = "did:privy:fan";
 const hint = (at = Date.now()) => localStorage.setItem("kyaa:fan-session", JSON.stringify({ pid, exp: Date.now() + 3600_000, at }));
 const fetcher = vi.fn();
@@ -60,4 +60,89 @@ it("preserves a valid renewed cookie hint when background Privy proof returns 40
   await renewFanSession(async () => "privy-jwt", pid);
   expect(fetcher.mock.calls.map((call) => call[1].headers.authorization)).toEqual(["Bearer kyaa-session", "Bearer privy-jwt"]);
   expect(readFanSessionHint()?.pid).toBe(pid);
+});
+
+describe("renewal that stops answering", () => {
+  const stall = (signal: AbortSignal) => new Promise<never>((_, reject) => signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError"))));
+  afterEach(() => { vi.useRealTimers(); });
+
+  it("gives up on a POST whose headers never arrive and keeps the hint (a)", async () => {
+    vi.useFakeTimers(); hint();
+    fetcher.mockImplementation((_url: string, init: RequestInit) => stall(init.signal!));
+    const done = renewFanSession(async () => "privy", pid);
+    await vi.advanceTimersByTimeAsync(FAN_SESSION_REQUEST_TIMEOUT_MS + 1);
+    // The first request timed out; the same run then asks Privy for fresh proof, which also times out.
+    await vi.advanceTimersByTimeAsync(FAN_SESSION_REQUEST_TIMEOUT_MS + 1);
+    await done;
+    expect(fetcher.mock.calls.every((call) => call[1].signal.aborted)).toBe(true);
+    expect(readFanSessionHint()?.pid).toBe(pid);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("gives up on a body that stalls after the headers arrived (b)", async () => {
+    vi.useFakeTimers(); hint();
+    fetcher.mockImplementation(async (_url: string, init: RequestInit) => ({ ok: true, status: 200, json: () => stall(init.signal!) }));
+    const done = renewFanSession(async () => null, pid);
+    await vi.advanceTimersByTimeAsync(FAN_SESSION_REQUEST_TIMEOUT_MS + 1);
+    await done;
+    expect(fetcher.mock.calls[0][1].signal.aborted).toBe(true);
+    expect(readFanSessionHint()?.pid).toBe(pid);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("keeps the hint when an error body stalls", async () => {
+    vi.useFakeTimers(); hint();
+    fetcher.mockImplementation(async (_url: string, init: RequestInit) => ({ ok: false, status: 401, json: () => stall(init.signal!) }));
+    const done = renewFanSession(async () => null, pid);
+    await vi.advanceTimersByTimeAsync(FAN_SESSION_REQUEST_TIMEOUT_MS + 1);
+    await done;
+    expect(readFanSessionHint()?.pid).toBe(pid);
+  });
+
+  it("aborts a stuck renewal on sign-out, waits for it to settle, then deletes (c, hint side)", async () => {
+    hint();
+    const order: string[] = [];
+    fetcher.mockImplementation((_url: string, init: RequestInit) => {
+      if (init.method === "DELETE") { order.push("delete"); return Promise.resolve(new Response(null, { status: 204 })); }
+      order.push("post");
+      return stall(init.signal!).catch((error) => { order.push("post-aborted"); throw error; });
+    });
+    const renewal = renewFanSession(async () => "privy", pid);
+    await Promise.resolve();
+    await clearFanSession();
+    await renewal;
+    expect(order).toEqual(["post", "post-aborted", "delete"]);
+    expect(readFanSessionHint()).toBeNull();
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not let a late renewal answer restore the hint after sign-out", async () => {
+    hint();
+    let answer!: () => void;
+    // A fetch that ignores the signal still cannot write the hint: the generation check holds.
+    fetcher.mockImplementation((_url: string, init: RequestInit) => init.method === "DELETE"
+      ? Promise.resolve(new Response(null, { status: 204 }))
+      : new Promise((resolve) => { answer = () => resolve(Response.json({ session: true, exp: Date.now() + 86400_000, authenticatedAt: Date.now() })); init.signal!.addEventListener("abort", () => answer()); }));
+    const renewal = renewFanSession(async () => null, pid);
+    await Promise.resolve();
+    await clearFanSession(); await renewal;
+    expect(readFanSessionHint()).toBeNull();
+  });
+
+  it("does not report sign-out when the delete never answers, and restores the hint for a retry", async () => {
+    vi.useFakeTimers(); hint();
+    fetcher.mockImplementation((_url: string, init: RequestInit) => stall(init.signal!));
+    const result = clearFanSession().then(() => "done", (error: Error) => error.name);
+    await vi.advanceTimersByTimeAsync(FAN_SESSION_REQUEST_TIMEOUT_MS + 1);
+    expect(await result).toBe("AbortError");
+    expect(readFanSessionHint()?.pid).toBe(pid);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("keeps the hint through a 503 from the server (account state unavailable)", async () => {
+    hint(); fetcher.mockResolvedValueOnce(new Response(null, { status: 503 }));
+    await renewFanSession(async () => null, pid);
+    expect(readFanSessionHint()?.pid).toBe(pid);
+    expect(fetcher).toHaveBeenCalledOnce();
+  });
 });

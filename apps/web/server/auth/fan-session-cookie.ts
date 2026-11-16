@@ -5,6 +5,13 @@ import { z } from "zod";
 // Sealed fan-only session. Account state and revocation remain checked on every request.
 export const FAN_SESSION_COOKIE = "__Host-kyaa-fan-session";
 export const FAN_SESSION_BEARER = "kyaa-session";
+/** The cookie is absent, forged or expired. This is a definite rejection, unlike a failed lookup. */
+export class FanSessionRejectedError extends Error {
+  constructor() {
+    super("Fan session is missing or expired");
+    this.name = "FanSessionRejectedError";
+  }
+}
 export const FAN_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 export const FAN_SESSION_PROOF_MAX_MS = 90 * 24 * 60 * 60_000;
 const KEY_INFO = "kyaa-fan-session-v1";
