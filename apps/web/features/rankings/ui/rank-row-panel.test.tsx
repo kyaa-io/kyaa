@@ -137,9 +137,9 @@ describe("펼침 영역의 왼쪽 선", () => {
         { platform: "chzzk", count: 5000 }, { platform: "youtube", count: 200000 }, { platform: "instagram", count: 12000, digits: 2, text: "1.2만" }, { platform: "tiktok", count: 100000 },
       ] })} days={7} locale="ko" gap={4} />);
       expect(platforms()).toEqual([
-        ["instagram", "Instagram", "/images/guest-home/instagram.svg", "1.2만"],
-        ["tiktok", "TikTok", "/images/guest-home/tiktok.svg", "100K"],
-        ["youtube", "YouTube", "/images/guest-home/youtube.svg", "200K"],
+        ["instagram", "인스타그램", "/images/guest-home/instagram.svg", "1.2만"],
+        ["tiktok", "틱톡", "/images/guest-home/tiktok.svg", "100K"],
+        ["youtube", "유튜브", "/images/guest-home/youtube.svg", "200K"],
         ["chzzk", "치지직", "/images/guest-home/chzzk.png", "5K"],
       ]);
       // The platform line sits outside the cell list, so the cells keep their own row.
@@ -149,7 +149,24 @@ describe("펼침 영역의 왼쪽 선", () => {
 
     it("draws a confirmed zero as 0 and leaves an unconfirmed platform out (it is simply not in the list)", () => {
       render(<RankRowPanel id="p" kind="creator" row={creator({ dayGain: 1, platforms: [{ platform: "tiktok", count: 0 }] })} days={7} locale="ko" />);
-      expect(platforms()).toEqual([["tiktok", "TikTok", "/images/guest-home/tiktok.svg", "0"]]);
+      expect(platforms()).toEqual([["tiktok", "틱톡", "/images/guest-home/tiktok.svg", "0"]]);
+    });
+
+    it("a platform with an address is a new-tab link named creator + platform, with the shared outbound marks; one without stays plain text", () => {
+      render(<RankRowPanel id="p" kind="creator" row={creator({ name: "박명호", dayGain: 1, platforms: [
+        { platform: "instagram", count: 1000, url: "https://www.instagram.com/pmh/" }, { platform: "tiktok", count: 2600, url: null }, { platform: "youtube", count: 5 },
+      ] })} days={7} locale="ko" />);
+      const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-rank-platforms] a")];
+      expect(links).toHaveLength(1);
+      expect(links[0]!.getAttribute("href")).toBe("https://www.instagram.com/pmh/");
+      expect(links[0]!.getAttribute("aria-label")).toBe("박명호 인스타그램");
+      expect(links[0]!.target).toBe("_blank");
+      expect(links[0]!.rel).toBe("noopener noreferrer");
+      expect(links[0]!.closest("[data-outbound-kind]")?.getAttribute("data-outbound-kind")).toBe("social");
+      expect(links[0]!.closest("[data-outbound-placement]")?.getAttribute("data-outbound-placement")).toBe("content");
+      expect(links[0]!.querySelector("img")?.getAttribute("alt")).toBe("");
+      expect(platforms().map((row) => row[1])).toEqual(["", "틱톡", "유튜브"]);
+      expect(screen.getByText("2.6K").closest("a")).toBeNull();
     });
 
     it("no platforms: no platform line, the panel is what it was", () => {

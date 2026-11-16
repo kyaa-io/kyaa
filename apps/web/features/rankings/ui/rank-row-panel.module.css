@@ -10,5 +10,13 @@
 .value { display: flex; align-items: center; gap: var(--space-1); overflow: hidden; margin: 0; color: var(--color-accent-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; line-height: var(--fan-heading-leading); white-space: nowrap; }
 .value > span { overflow: hidden; text-overflow: ellipsis; }
 /* 플랫폼별 팔로워(A1, 안 A): 칸 줄 아래 따로 한 줄. 로고가 이름이라 글자 라벨이 없고, 숫자 칸은 값 칸(.value)을 그대로 쓴다. 넘치면 이 줄 안에서만 줄바꿈한다. */
-.platforms { display: flex; flex-wrap: wrap; min-width: 0; margin: var(--space-2) 0 0; padding: 0; gap: var(--space-2); list-style: none; }
+/* 목록 전체를 왼쪽으로 당기는 값은 아래 계정 링크 설명 참고. */
+.platforms { display: flex; flex-wrap: wrap; min-width: 0; margin: var(--space-1) 0 0 calc(var(--space-1) - var(--space-3)); padding: 0; list-style: none; }
+.platforms > li { overflow: visible; }
 .platforms img { display: block; flex: none; }
+/* 계정 링크: 공통 FanAction(text·sm: 보이는 높이 36, 누르는 영역 44). 글자 크기·굵기는 값 칸(.value)을 따르고, 안쪽 여백 8만큼 목록 전체를 왼쪽으로 당겨(12-4) 로고가 칸 줄과 같은 선에서 시작한다.
+   링크 없는 플랫폼(.plain)은 같은 안쪽 여백을 두어 줄이 어긋나지 않는다. */
+.platforms .link { --fan-action-icon-gap: var(--space-1); color: inherit; font: inherit; border-radius: var(--radius-small); }
+/* 공통 text·sm 의 ::after(안쪽 여백 기준 -4)는 테두리 1 때문에 42로 끝나므로 44(--min-target)가 되게 -5로 둔다. */
+.platforms .link::after { inset: -5px 0; }
+.plain { display: flex; align-items: center; gap: var(--space-1); padding: 0 var(--space-2); }

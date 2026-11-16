@@ -10,6 +10,8 @@ export const platformFollowerSchema = z.object({
   count: z.number().int().min(0),
   digits: z.number().int().min(1).max(6).nullable().optional(),
   text: z.string().min(1).max(40).nullable().optional(),
+  /** The creator's own account on that platform (https only); absent or null = the count is drawn without a link. */
+  url: z.string().max(2048).regex(/^https:\/\//).nullable().optional(),
 });
 export type PlatformFollower = z.infer<typeof platformFollowerSchema>;
 

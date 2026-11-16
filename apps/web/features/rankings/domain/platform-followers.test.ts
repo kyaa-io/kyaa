@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatFollowerCount, parseFollowerInput } from "./platform-followers";
+import { formatFollowerCount, parseFollowerInput, platformFollowerSchema } from "./platform-followers";
 
 describe("parseFollowerInput", () => {
   it("empty is unconfirmed, 0 is a confirmed zero", () => {
@@ -44,5 +44,18 @@ describe("formatFollowerCount", () => {
   });
   it("the platform's own wording wins", () => {
     expect(formatFollowerCount(12000, 2, "1.2만")).toBe("1.2만");
+  });
+});
+
+describe("platformFollowerSchema url", () => {
+  const base = { platform: "instagram", count: 1000 };
+  it("takes an https address, null or none", () => {
+    expect(platformFollowerSchema.safeParse({ ...base, url: "https://www.instagram.com/a/" }).success).toBe(true);
+    expect(platformFollowerSchema.safeParse({ ...base, url: null }).success).toBe(true);
+    expect(platformFollowerSchema.safeParse(base).success).toBe(true);
+  });
+  it("refuses anything but https", () => {
+    expect(platformFollowerSchema.safeParse({ ...base, url: "javascript:alert(1)" }).success).toBe(false);
+    expect(platformFollowerSchema.safeParse({ ...base, url: "http://www.instagram.com/a/" }).success).toBe(false);
   });
 });
