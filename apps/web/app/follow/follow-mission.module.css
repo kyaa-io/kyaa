@@ -39,9 +39,24 @@
 @keyframes slam { 0% { transform: scale(1.8); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); } }
 @keyframes rise { from { transform: translateY(var(--space-2)); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes pop { 0% { transform: scale(.4); } 55% { transform: scale(1.2); } 100% { transform: scale(1); } }
-/* PC(7|5): 오른쪽 미션 카드가 키 비주얼보다 길어 왼쪽 아래가 비므로, 키 비주얼이 헤더 아래에 붙어 따라온다 */
+/* 참여 카드를 첫 화면에(FOLLOW-ONESCREEN-1116, 대표 21:03 '그림 줄이기'·사용자 '한 화면에 참여할 내용이 다 보이게').
+ * 휴대폰: 제목 → 03 로그인·좋아요 → 01·02 Gleam 순. 키 비주얼은 참여 카드 아래로 내린다.
+ * Gleam iframe은 Gleam이 높이를 정해(약 600) 줄일 수 없으므로, 짧은 03 카드를 위에 두어 390×844 첫 화면에 로그인 버튼과 Gleam 머리가 함께 든다 */
+.hero { display: grid; gap: var(--space-4); }
+.panel { display: grid; gap: var(--space-6); align-content: start; min-width: 0; }
+.visual { order: 1; }
+.card[data-mission="like"] { order: -1; }
+
+/* PC: 왼쪽 4 = 작은 키 비주얼 + 제목, 오른쪽 8 = 카드 두 장 나란히(01·02 | 03). 1440×900 첫 화면에 Gleam 전체와 03 버튼이 든다 */
 @media (width >= 64rem) {
-  .visual { position: sticky; top: calc(var(--fan-header-height) + var(--space-8)); }
+  .hero { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); grid-template-areas: "visual missions" "top missions" "browser missions"; grid-template-rows: auto auto 1fr; column-gap: var(--space-10); row-gap: var(--space-6); align-items: start; }
+  .panel { display: contents; }
+  .visual { grid-area: visual; order: 0; }
+  .top { grid-area: top; }
+  .browser { grid-area: browser; }
+  .missions { grid-area: missions; padding-top: 0; border-top: 0; }
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .card[data-mission="like"] { order: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .card[data-celebrate] :is(.stamp, .check, .doneText) { animation: none; }
