@@ -35,7 +35,7 @@ export function PassportPreview() { return <PassportCollectionScreen/>; }
 const creator: PublishedCelebrity = { slug: "fixture", locale: "ko", name: "KARA", summary: "", image: { url: "/images/guest-home/kara-card.jpg", alt: "KARA", position: "center" }, roles: ["creator"], themes: [], socialLinks: [], displayOrder: 0, fanCount: 10 };
 const raffles: Raffle[] = ["팬을 위한 선물", "함께한 순간을 간직하는 디지털 기념 선물", "새로운 선물"].map((title, index) => ({
   id: `22222222-2222-4222-8222-${String(index + 1).padStart(12, "0")}`, benefitId: index === 2 ? null : `22222222-2222-4222-8222-${String(index + 1).padStart(12, "0")}`,
-  title, summary: index === 1 ? "팬 활동으로 모은 응모권을 원하는 선물에 사용해 보세요. 함께한 순간을 오래 간직할 수 있어요." : "팬 활동으로 모은 응모권으로 참여하세요.", imageUrl: null, winnerQuantity: index + 1,
+  title, summary: index === 1 ? "팬 활동으로 모은 응모권을 원하는 선물에 사용해 보세요. 함께한 순간을 오래 간직할 수 있어요." : "팬 활동으로 모은 응모권으로 참여하세요.", imageUrl: null, winnerQuantity: index === 1 ? 1234567 : index + 1,
   status: index === 2 ? "preparing" : "open", entryOpensAt: null, entryClosesAt: null, fulfillmentMethod: "digital", perFanTicketLimit: 3,
 }));
 export function RafflePreview({ locale }: { locale: AppLocale }) { return <CreatorRafflesScreen celebrity={creator} locale={locale} raffles={raffles}/>; }

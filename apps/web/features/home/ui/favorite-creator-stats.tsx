@@ -4,6 +4,7 @@ import { creatorRankingSchema, type CreatorRanking } from "@/features/rankings/d
 import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource";
 import { fanProfileText } from "@/features/fan-profile/fan-profile-copy";
 import type { AppLocale } from "@/i18n/locales";
+import { FanNumUnit } from "@/components/fan-ui/fan-num-unit";
 import styles from "./favorite-creator-stats.module.css";
 
 const parse = (value: unknown): CreatorRanking => creatorRankingSchema.parse(value);
@@ -24,7 +25,7 @@ export function FavoriteCreatorStats({ slug, stats, locale, className }: { slug:
   if (!stats) return <p className={[styles.stats, className].filter(Boolean).join(" ")} aria-hidden="true"><span className={styles.placeholder}/></p>;
   const value = stats.get(slug) ?? { jjinfan: 0, hearts: 0 };
   return <p className={[styles.stats, className].filter(Boolean).join(" ")}>
-    <span>{fanProfileText(locale, "favCardJjinfan", [value.jjinfan.toLocaleString(locale)])}</span>
+    <FanNumUnit>{fanProfileText(locale, "favCardJjinfan", [value.jjinfan.toLocaleString(locale)])}</FanNumUnit>
     <span aria-hidden="true">·</span>
     <span className={styles.hearts} aria-label={fanProfileText(locale, "favCardHearts", [value.hearts.toLocaleString(locale)])}><RewardIcon kind="heart" alt="" width={14} height={14}/><span aria-hidden="true">{value.hearts.toLocaleString(locale)}</span></span>
   </p>;
