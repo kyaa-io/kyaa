@@ -20,7 +20,7 @@ let generation = 0;
 let activePid: string | null = null;
 let pendingFetch: Promise<unknown> | null = null;
 let running: Promise<void> | null = null;
-async function exchange(token: string, pid: string, ownerGeneration: number): Promise<boolean> {
+async function exchange(token: string, pid: string, ownerGeneration: number, preserveHintOnUnauthorized = false): Promise<boolean> {
   if (generation !== ownerGeneration) return false;
   const operation = (async () => {
     const response = await fetch("/api/auth/fan-session", { method: "POST", headers: { authorization: `Bearer ${token}` }, cache: "no-store", credentials: "same-origin" });
@@ -35,7 +35,7 @@ async function exchange(token: string, pid: string, ownerGeneration: number): Pr
       writeHint(null);
     } else if (response.status === 401 || response.status === 403) {
       const body = await response.json().catch(() => null) as { error?: { code?: string } } | null;
-      if (body?.error?.code !== "PRIVY_PROOF_REQUIRED") writeHint(null);
+      if (body?.error?.code !== "PRIVY_PROOF_REQUIRED" && !(response.status === 401 && preserveHintOnUnauthorized)) writeHint(null);
     }
     return false;
   })();
@@ -58,7 +58,7 @@ export function renewFanSession(getPrivyToken: () => Promise<string | null>, pid
     }
     if (generation !== ownerGeneration) return;
     const token = await getPrivyToken();
-    if (token && token !== FAN_SESSION_BEARER && !token.startsWith("kyaa-email:")) await exchange(token, pid, ownerGeneration);
+    if (token && token !== FAN_SESSION_BEARER && !token.startsWith("kyaa-email:")) await exchange(token, pid, ownerGeneration, readFanSessionHint()?.pid === pid);
   })().catch(() => undefined).finally(() => { if (running === operation) running = null; });
   running = operation;
   return operation;

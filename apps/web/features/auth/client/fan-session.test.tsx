@@ -52,3 +52,12 @@ it("does not reuse an old owner's pending Privy call after switching accounts", 
   expect(readFanSessionHint()?.pid).toBe("did:privy:new");
   expect(fetcher.mock.calls.map((call) => call[1].headers.authorization)).toEqual(["Bearer new-token"]);
 });
+
+it("preserves a valid renewed cookie hint when background Privy proof returns 401", async () => {
+  hint(Date.now() - RECHECK_AFTER_MS - 1);
+  fetcher.mockResolvedValueOnce(Response.json({ session: true, exp: Date.now() + 30 * 86400_000, authenticatedAt: Date.now() - RECHECK_AFTER_MS - 1 }));
+  fetcher.mockResolvedValueOnce(new Response(null, { status: 401 }));
+  await renewFanSession(async () => "privy-jwt", pid);
+  expect(fetcher.mock.calls.map((call) => call[1].headers.authorization)).toEqual(["Bearer kyaa-session", "Bearer privy-jwt"]);
+  expect(readFanSessionHint()?.pid).toBe(pid);
+});
