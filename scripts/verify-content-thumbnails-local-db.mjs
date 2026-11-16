@@ -3,16 +3,16 @@ import { spawnSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createServer } from 'node:net';
+process.env.LC_ALL = 'C';
 import assert from 'node:assert/strict';
 const root = new URL('../', import.meta.url), dir = mkdtempSync(join(tmpdir(), 'byus-thumbnails-'));
-const port = await new Promise(resolve => { const s = createServer(); s.listen(0, '127.0.0.1', () => { const port = s.address().port; s.close(() => resolve(port)); }); });
+const port = Number(process.env.BYUS_TEMP_DB_PORT ?? 55473);
 function cmd(name, args, input) { const r = spawnSync(name, args, { input, encoding: 'utf8' }); if (r.status) throw new Error(r.stderr || r.stdout); return r.stdout.trim(); }
-function sql(s) { return cmd('psql', [`postgresql://127.0.0.1:${port}/postgres`, '-XAtq', '-v', 'ON_ERROR_STOP=1'], s); }
+function sql(s) { return cmd('psql', [`postgresql:///postgres?host=${encodeURIComponent(join(dir, 'socket'))}&port=${port}`, '-XAtq', '-v', 'ON_ERROR_STOP=1'], s); }
 let started = false;
 try {
   cmd('initdb', ['-D', join(dir, 'data'), '--auth=trust', '--no-locale', '--encoding=UTF8']); mkdirSync(join(dir, 'socket'));
-  cmd('pg_ctl', ['-D', join(dir, 'data'), '-l', join(dir, 'postgres.log'), '-o', `-h 127.0.0.1 -p ${port} -k ${join(dir, 'socket')}`, 'start']); started = true;
+  cmd('pg_ctl', ['-D', join(dir, 'data'), '-l', join(dir, 'postgres.log'), '-o', `-c listen_addresses='' -p ${port} -k ${join(dir, 'socket')}`, 'start']); started = true;
   sql(`create role anon; create role authenticated; create role service_role;
     create schema storage; create table storage.buckets(id text primary key,file_size_limit bigint,allowed_mime_types text[]);
     insert into storage.buckets values('fan-content-assets',8388608,array['image/webp']);

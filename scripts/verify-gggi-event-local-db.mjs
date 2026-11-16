@@ -1,7 +1,7 @@
 // Uses a fresh disposable PostgreSQL cluster and never reads production credentials.
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdtemp, readFile } from 'node:fs/promises';
-import { createServer } from 'node:net';
+process.env.LC_ALL = 'C';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -10,15 +10,8 @@ const cluster = await mkdtemp(join(tmpdir(), 'byus-gggi-event-'));
 const data = join(cluster, 'data');
 const log = join(cluster, 'postgres.log');
 const socket = join(cluster, 'socket');
-const port = await new Promise((resolve, reject) => {
-  const server = createServer();
-  server.once('error', reject);
-  server.listen(0, '127.0.0.1', () => {
-    const address = server.address();
-    server.close(() => resolve(address.port));
-  });
-});
-const postgres = `postgresql://127.0.0.1:${port}/postgres`;
+const port = Number(process.env.BYUS_TEMP_DB_PORT ?? 55473);
+const postgres = `postgresql:///postgres?host=${encodeURIComponent(socket)}&port=${port}`;
 
 function command(name, args, options = {}) {
   const result = spawnSync(name, args, { encoding: 'utf8', ...options });
@@ -55,7 +48,7 @@ let started = false;
 try {
   command('initdb', ['-D', data, '--auth=trust', '--no-locale', '--encoding=UTF8']);
   command('mkdir', ['-p', socket]);
-  command('pg_ctl', ['-D', data, '-l', log, '-o', `-h 127.0.0.1 -p ${port} -k ${socket}`, 'start']);
+  command('pg_ctl', ['-D', data, '-l', log, '-o', `-c listen_addresses='' -p ${port} -k ${socket}`, 'start']);
   started = true;
 
   sql(`
