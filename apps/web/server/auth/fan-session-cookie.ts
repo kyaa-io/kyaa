@@ -2,19 +2,26 @@ import "server-only";
 import { createCipheriv, createDecipheriv, hkdfSync, randomBytes } from "node:crypto";
 import { z } from "zod";
 
-// Our own short session for fans already signed in through Privy. After a Privy token passes, POST /api/auth/fan-session
-// seals who the fan is into an httpOnly cookie. When Privy is slow the browser sends "Bearer kyaa-session" instead of a
-// Privy token, and the verifier reads this cookie. The cookie can only be issued or renewed with a real Privy token, so it
-// never extends itself; the fan gate still checks app_users status on every request (suspension, deletion).
-// Only fan routes accept it: admin and operator gates refuse the sentinel.
+// Sealed fan-only session. Account state and revocation remain checked on every request.
 export const FAN_SESSION_COOKIE = "__Host-kyaa-fan-session";
 export const FAN_SESSION_BEARER = "kyaa-session";
-export const FAN_SESSION_MAX_AGE_SECONDS = 6 * 60 * 60;
+/** The cookie is absent, forged or expired. This is a definite rejection, unlike a failed lookup. */
+export class FanSessionRejectedError extends Error {
+  constructor() {
+    super("Fan session is missing or expired");
+    this.name = "FanSessionRejectedError";
+  }
+}
+export const FAN_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+export const FAN_SESSION_PROOF_MAX_MS = 90 * 24 * 60 * 60_000;
+/** How far ahead of this server a Privy token's issue time or a cookie's `sat` may be before it counts as forged. */
+export const FAN_SESSION_CLOCK_SKEW_MS = 60_000;
 const KEY_INFO = "kyaa-fan-session-v1";
 
 const providerAccount = z.object({ subject: z.string().min(1).max(256), email: z.string().max(320).nullable() }).nullable();
 export const fanSessionSchema = z.object({
-  v: z.literal(1),
+  v: z.union([z.literal(1), z.literal(2)]),
+  sat: z.number().int().nonnegative().optional(),
   pid: z.string().min(1).max(128),
   sid: z.string().max(256),
   uid: z.string().uuid(),
@@ -56,15 +63,37 @@ export function openFanSession(value: string | null | undefined, key: Buffer, no
     const parsed = fanSessionSchema.safeParse(JSON.parse(Buffer.concat([decipher.update(bytes.subarray(28)), decipher.final()]).toString("utf8")));
     if (!parsed.success) return null;
     const nowSeconds = Math.floor(now / 1000);
-    if (parsed.data.exp <= nowSeconds || parsed.data.iat > nowSeconds + 60 || parsed.data.exp - parsed.data.iat > FAN_SESSION_MAX_AGE_SECONDS) return null;
+    if (parsed.data.v === 2 && (parsed.data.sat === undefined || parsed.data.sat > now + FAN_SESSION_CLOCK_SKEW_MS)) return null;
+    if (parsed.data.exp <= nowSeconds || parsed.data.iat > nowSeconds + 60 || parsed.data.exp - parsed.data.iat > (parsed.data.v === 1 ? 6 * 3600 : FAN_SESSION_MAX_AGE_SECONDS) || parsed.data.exp <= parsed.data.iat) return null;
     return parsed.data;
   } catch {
     return null;
   }
 }
 
-export function fanSessionCookieHeader(value: string): string {
-  return `${FAN_SESSION_COOKIE}=${value}; Path=/; Max-Age=${FAN_SESSION_MAX_AGE_SECONDS}; HttpOnly; Secure; SameSite=Strict`;
+/** The last Privy sign-in is older than the 90-day ceiling. The cookie can no longer be renewed or used, however fresh its own `exp`. */
+export function fanSessionProofExpired(session: FanSession, now: number): boolean {
+  return session.v === 2 && session.sat !== undefined && now >= session.sat + FAN_SESSION_PROOF_MAX_MS;
+}
+
+/** The latest expiry (epoch seconds) a cookie issued at `issuedAt` may carry: 30 days, never past the 90-day sign-in ceiling. */
+export function fanSessionExpiry(issuedAt: number, authenticatedAtMs: number): number {
+  return Math.min(issuedAt + FAN_SESSION_MAX_AGE_SECONDS, Math.floor((authenticatedAtMs + FAN_SESSION_PROOF_MAX_MS) / 1000));
+}
+
+/**
+ * Sign-out revokes every session whose sign-in came before it. Privy reports issue time in whole seconds while the cutoff is a
+ * millisecond server time, so both sides are compared in whole seconds: a sign-in in the same second as the sign-out counts as after it,
+ * which lets a person sign straight back in. An unreadable cutoff revokes.
+ */
+export function fanSessionRevoked(authenticatedAtMs: number, sessionsValidAfter: string | null | undefined): boolean {
+  if (!sessionsValidAfter) return false;
+  const cutoff = Date.parse(sessionsValidAfter);
+  return !Number.isFinite(cutoff) || Math.floor(authenticatedAtMs / 1000) < Math.floor(cutoff / 1000);
+}
+
+export function fanSessionCookieHeader(value: string, maxAge = FAN_SESSION_MAX_AGE_SECONDS): string {
+  return `${FAN_SESSION_COOKIE}=${value}; Path=/; Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Strict`;
 }
 
 export function clearFanSessionCookieHeader(): string {

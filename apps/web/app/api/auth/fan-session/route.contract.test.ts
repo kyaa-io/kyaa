@@ -8,6 +8,7 @@ vi.mock("@/server/config/env", () => ({ loadServerEnv: () => ({
 }) }));
 vi.mock("@/server/auth/privy-node-verifier", () => ({ createPrivyNodeAccessVerifier: () => ({ resolveFanSession: state.resolveFanSession }) }));
 vi.mock("@/server/fan-auth/supabase-fan-auth-repository", () => ({ createSupabaseFanAuthRepository: () => ({ findUserByPrivyId: state.findUserByPrivyId }) }));
+vi.mock("@/server/operator/supabase-channel-operator-repository", () => ({ createSupabaseChannelOperatorRepository: () => ({ findActiveAdminByEmail: async () => null, listActiveChannelIds: async () => [] }) }));
 import { fanSessionKey, openFanSession } from "@/server/auth/fan-session-cookie";
 import { DELETE, POST } from "./route";
 
@@ -16,19 +17,19 @@ const req = (method: string, headers: Record<string, string>) => new Request("ht
 beforeEach(() => {
   vi.clearAllMocks();
   state.resolveFanSession.mockResolvedValue({
-    privyUserId: "did:privy:user-1", sessionId: "s1", apple: null, google: null,
+    privyUserId: "did:privy:user-1", sessionId: "s1", tokenIssuedAt: Date.now(), apple: null, google: null,
     identity: { privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", providerAccounts: [], googleLinked: true },
   });
   state.findUserByPrivyId.mockResolvedValue({ id: UID, privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", status: "active" });
 });
 
-it("answers 204 with a sealed cookie the server can open, keyed off AUTH_COOKIE_SECRET", async () => {
+it("answers 200 with a sealed cookie the server can open, keyed off AUTH_COOKIE_SECRET", async () => {
   const response = await POST(req("POST", { origin: "https://kyaa.io", authorization: "Bearer privy-jwt" }));
-  expect(response.status).toBe(204);
+  expect(response.status).toBe(200);
   expect(response.headers.get("cache-control")).toBe("no-store");
   const value = response.headers.get("set-cookie")!.split(";")[0].split("=")[1];
   const key = fanSessionKey(Buffer.alloc(32, 7).toString("base64"))!;
-  expect(openFanSession(value, key)).toMatchObject({ v: 1, pid: "did:privy:user-1", uid: UID, sid: "s1" });
+  expect(openFanSession(value, key)).toMatchObject({ v: 2, pid: "did:privy:user-1", uid: UID, sid: "s1" });
   expect(state.resolveFanSession).toHaveBeenCalledWith("privy-jwt");
 });
 

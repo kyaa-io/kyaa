@@ -14,7 +14,9 @@ export type OperatorChannelsState =
   | { status: "authorized"; kind: "admin" | "operator"; role: string; channels: OperatorChannel[] };
 
 export function useOperatorChannels(): OperatorChannelsState {
-  const { ready, authenticated, getAccessToken, user } = usePrivy();
+  const { ready, authenticated, getAccessToken: legacyGetAccessToken, getPrivyAccessToken, user } = usePrivy();
+  // The operator gate refuses the own-session sentinel, so it always gets a Privy token.
+  const getAccessToken = getPrivyAccessToken ?? legacyGetAccessToken;
   const [owner, setOwner] = useState<string | null>(null);
   const [state, setState] = useState<OperatorChannelsState>({ status: "loading" });
 

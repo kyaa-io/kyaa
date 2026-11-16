@@ -2,7 +2,7 @@
 // Privy sign-in for AUTH_PROVIDER=privy (PRIVY-RESTORE-1115). auth-root.tsx loads this file as its own chunk only in
 // privy mode, so Cognito pages never download Privy. PrivyProvider holds only the island mirrors beside the page
 // (the 57c922b24 island); the page reads Privy through PrivyBridgeContext, which useByUsAuth() turns into ByUsAuth.
-import { useCallback, useMemo, useRef, type ReactNode } from "react";
+import { useCallback, useEffect, useState, useMemo, useRef, type ReactNode } from "react";
 import type { PrivyClientConfig } from "@privy-io/react-auth";
 import { useAppLocale } from "@/components/locale-provider";
 import type { ByUsAuth } from "./auth-fallback";
@@ -13,6 +13,9 @@ import { PrivyMirrors } from "./privy-mirrors";
 import { PrivyAvatarSessionBridge } from "./privy-avatar-session-bridge";
 import { IslandPrivyProvider } from "@/features/auth/client/privy-provider-boundary"; // exact name: the island Vitest project swaps it
 import { PRIVY_APP_ID_REQUIRED, privyProviderConfig } from "./privy-provider-config";
+
+import { clearFanSession, FAN_SESSION_BEARER, readFanSessionHint } from "./fan-session";
+import { FanSessionKeeper } from "./fan-session-keeper";
 
 /** PrivyProvider with the mirrors only. Exported for the island test root. */
 export function PrivyIsland({ appId, config }: { appId: string; config: PrivyClientConfig }) {
@@ -37,7 +40,17 @@ function PrivyBridgeProvider({ children }: { children: ReactNode }) {
   const userId = authenticated ? user?.id ?? null : null;
   const linkedAccounts = user?.linkedAccounts;
   const authUser = useMemo(() => userId ? { id: userId, linkedAccounts: linkedAccounts ?? [] } : null, [linkedAccounts, userId]);
-  const auth = useMemo<ByUsAuth>(() => ({ ready, authenticated, user: authUser, getAccessToken, logout, login: openLoginPage }), [authUser, authenticated, getAccessToken, logout, ready]);
+  const [, setHintRevision] = useState(0);
+  useEffect(() => {
+    const changed = () => setHintRevision((value) => value + 1);
+    window.addEventListener("kyaa:fan-session-changed", changed);
+    window.addEventListener("storage", changed);
+    return () => { window.removeEventListener("kyaa:fan-session-changed", changed); window.removeEventListener("storage", changed); };
+  }, []);
+  const hasSession = Boolean(userId && readFanSessionHint()?.pid === userId);
+  const fanToken = useCallback(async () => userId && readFanSessionHint()?.pid === userId ? FAN_SESSION_BEARER : getAccessToken(), [getAccessToken, userId]);
+  const signOut = useCallback(async () => { await clearFanSession(); await logout(); }, [logout]);
+  const auth = useMemo<ByUsAuth>(() => ({ ready, authenticated, user: authUser, getPrivyAccessToken: getAccessToken, getAccessToken: hasSession ? fanToken : getAccessToken, logout: signOut, login: openLoginPage }), [authUser, authenticated, fanToken, getAccessToken, hasSession, signOut, ready]);
   const value = useMemo<PrivyBridge>(() => ({
     auth,
     oauthLoading,
@@ -47,7 +60,7 @@ function PrivyBridgeProvider({ children }: { children: ReactNode }) {
     refreshUser: () => refreshUser(),
     createWallet: () => Promise.resolve(createWallet({ createAdditional: false })),
   }), [auth, createWallet, initOAuth, login, oauthLoading, refreshUser, subscribeOAuth]);
-  return <PrivyBridgeContext.Provider value={value}>{children}</PrivyBridgeContext.Provider>;
+  return <PrivyBridgeContext.Provider value={value}><FanSessionKeeper ownerId={userId} getPrivyAccessToken={getAccessToken} />{children}</PrivyBridgeContext.Provider>;
 }
 
 export default function PrivyAuthRoot({ appId, appleLoginEnabled, testAccountLoginEnabled, children }: {

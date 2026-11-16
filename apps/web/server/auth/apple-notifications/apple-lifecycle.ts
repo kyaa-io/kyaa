@@ -73,13 +73,23 @@ export class AppleReauthenticationRequiredError extends AuthError {
   }
 }
 
+/** The account state could not be read. This is not a verdict about the account, so callers must not treat it as a revocation. */
+export class AppleLifecycleUnavailableError extends Error {
+  readonly code = "APPLE_LIFECYCLE_UNAVAILABLE";
+  constructor() {
+    super("Apple account state is temporarily unavailable");
+    this.name = "AppleLifecycleUnavailableError";
+  }
+}
+
 export class AppleLifecycleRepository {
   constructor(readonly client: AppleLifecycleRpcClient) {}
 
   async call<T = unknown>(name: string, parameters: Record<string, unknown>): Promise<T> {
-    const result = await this.client.rpc(name, parameters);
+    let result: Awaited<ReturnType<AppleLifecycleRpcClient["rpc"]>>;
     // Database errors may include identity data; do not return their text.
-    if (result.error) throw new Error("Apple account state is temporarily unavailable");
+    try { result = await this.client.rpc(name, parameters); } catch { throw new AppleLifecycleUnavailableError(); }
+    if (result.error) throw new AppleLifecycleUnavailableError();
     return result.data as T;
   }
 
@@ -94,7 +104,10 @@ export class AppleLifecycleRepository {
         googleSubjectHash: session.google ? providerSubjectHash("google", session.google.subject) : null,
       },
     });
-    return accessResultSchema.parse(result);
+    const parsed = accessResultSchema.safeParse(result);
+    // An answer in an unknown shape is not a verdict on the account.
+    if (!parsed.success) throw new AppleLifecycleUnavailableError();
+    return parsed.data;
   }
 
   async assertAccess(session: VerifiedPrivySession): Promise<void> {

@@ -5,7 +5,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ rpc }) }));
 
 import { createPrivyNodeAccessVerifier, createPrivyNodeSessionResolver, createPrivyNodeReauthenticationResolver } from "../privy-node-verifier";
-import { AppleLifecycleRepository, providerSubjectHash, privySessionHash, sha256 } from "./apple-lifecycle";
+import { AppleLifecycleRepository, AppleLifecycleUnavailableError, providerSubjectHash, privySessionHash, sha256 } from "./apple-lifecycle";
 
 const config = { appId: "app-one", appSecret: "server-secret", appleLoginEnabled: true };
 const mixedAccounts: Array<{
@@ -78,6 +78,9 @@ describe("Apple lifecycle across Privy authentication paths", () => {
     expect(rpc).not.toHaveBeenCalled();
     rpc.mockResolvedValue({ data: null, error: { message: "private database detail" } });
     await expect(createPrivyNodeSessionResolver(config, client()).resolve("token", 91342)).rejects.toThrow("temporarily unavailable");
+    await expect(createPrivyNodeSessionResolver(config, client()).resolve("token", 91342)).rejects.toBeInstanceOf(AppleLifecycleUnavailableError);
+    rpc.mockRejectedValue(new Error("socket hang up"));
+    await expect(createPrivyNodeSessionResolver(config, client()).resolve("token", 91342)).rejects.toBeInstanceOf(AppleLifecycleUnavailableError);
   });
 
   it("allows only the raw recovery resolver to obtain proof inputs without granting application access", async () => {

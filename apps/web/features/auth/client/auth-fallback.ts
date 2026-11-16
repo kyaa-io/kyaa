@@ -14,6 +14,7 @@ export interface ByUsAuth {
   authenticated: boolean;
   user: ByUsAuthUser | null;
   getAccessToken(): Promise<string | null>;
+  getPrivyAccessToken(): Promise<string | null>;
   logout(): Promise<void>;
   /** Opens kyaa's login page and returns to the current page afterwards. */
   login(): void;
@@ -26,6 +27,7 @@ const SIGNED_OUT: ByUsAuth = {
   authenticated: false,
   user: null,
   getAccessToken: async () => null,
+  getPrivyAccessToken: async () => null,
   logout: async () => {},
   login: openLoginPage,
 };

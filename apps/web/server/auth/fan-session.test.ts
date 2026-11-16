@@ -56,7 +56,7 @@ describe("fan session cookie", () => {
 
 describe("POST/DELETE /api/auth/fan-session", () => {
   const resolved = {
-    privyUserId: "did:privy:user-1", sessionId: "privy-session-1",
+    privyUserId: "did:privy:user-1", sessionId: "privy-session-1", tokenIssuedAt: NOW,
     identity: { privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", providerAccounts: [], googleLinked: true },
     apple: null, google: { subject: "google-sub", email: "fan@example.com" },
   };
@@ -64,16 +64,17 @@ describe("POST/DELETE /api/auth/fan-session", () => {
   const make = (overrides: Partial<Parameters<typeof createFanSessionRoute>[0]> = {}) => createFanSessionRoute({
     appOrigin: "https://kyaa.io", key: KEY, now: () => NOW,
     resolve: vi.fn(async () => resolved),
+    verifyCookie: vi.fn(async () => undefined), isPrivileged: vi.fn(async () => false), revokeSessions: vi.fn(async () => undefined),
     repository: { findUserByPrivyId: vi.fn(async () => active) },
     ...overrides,
   });
   const request = (method: string, headers: Record<string, string>) => new Request("https://kyaa.io/api/auth/fan-session", { method, headers });
 
-  it("issues an httpOnly, Strict, 6-hour cookie for a real Privy token from our own origin", async () => {
+  it("issues an httpOnly, Strict, 30-day cookie for a real Privy token from our own origin", async () => {
     const response = await make().POST(request("POST", { origin: "https://kyaa.io", authorization: "Bearer privy-jwt" }));
-    expect(response.status).toBe(204);
+    expect(response.status).toBe(200);
     const setCookie = response.headers.get("set-cookie")!;
-    expect(setCookie).toMatch(/^__Host-kyaa-fan-session=[A-Za-z0-9_-]+; Path=\/; Max-Age=21600; HttpOnly; Secure; SameSite=Strict$/);
+    expect(setCookie).toMatch(/^__Host-kyaa-fan-session=[A-Za-z0-9_-]+; Path=\/; Max-Age=2592000; HttpOnly; Secure; SameSite=Strict$/);
     const value = setCookie.split(";")[0].split("=")[1];
     expect(openFanSession(value, KEY, NOW)).toMatchObject({ pid: "did:privy:user-1", sid: "privy-session-1", uid: UID, em: "fan@example.com" });
   });
@@ -90,7 +91,7 @@ describe("POST/DELETE /api/auth/fan-session", () => {
 
   it("accepts the browser's own host when the app is served on a second host", async () => {
     const response = await make().POST(request("POST", { origin: "https://www.kyaa.io", host: "www.kyaa.io", authorization: "Bearer privy-jwt" }));
-    expect(response.status).toBe(204);
+    expect(response.status).toBe(200);
   });
 
   it("clears the cookie instead of issuing one for a suspended, deleted or unknown member", async () => {
@@ -139,7 +140,7 @@ describe("verifier without a Privy round trip on every request", () => {
       .resolves.toMatchObject({ privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com" });
     const other = sealFanSession(session({ pid: "did:privy:someone-else", iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 3600 }), KEY);
     const { port: port2 } = client(vi.fn(async () => { throw new Error("timeout"); }));
-    await expect(createPrivyNodeAccessVerifier(config, port2, { sessionKey: KEY, readCookieHeader: async () => cookieHeader(other) }).verify("token")).rejects.toThrow("timeout");
+    await expect(createPrivyNodeAccessVerifier(config, port2, { sessionKey: KEY, readCookieHeader: async () => cookieHeader(other) }).verify("token")).rejects.toMatchObject({ code: "PRIVY_UNAVAILABLE", cause: expect.objectContaining({ message: "timeout" }) });
   });
 
   it("accepts the sentinel only with a current cookie, and the fan gate still checks the member", async () => {
@@ -185,5 +186,115 @@ describe("privy_latency log", () => {
     await expect(measurePrivyCall("jwks", async () => { t = 100; throw new Error("x"); }, () => t)).rejects.toThrow("x");
     expect(JSON.parse(info.mock.calls[1][0] as string)).toMatchObject({ call: "jwks", ms: 100, outcome: "error" });
     expect(warn).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("sliding fan session security", () => {
+  const DAY = 86400_000;
+  const active = { id: UID, privyUserId: "did:privy:user-1", verifiedEmail: "fan@example.com", status: "active" as const, sessionsValidAfter: null as string | null };
+  const fresh = () => session({ v: 2, sat: NOW, exp: Math.floor(NOW / 1000) + 30 * 86400 });
+  const req = (value: FanSession, method = "POST") => new Request("https://kyaa.io/api/auth/fan-session", { method, headers: { origin: "https://kyaa.io", authorization: "Bearer kyaa-session", cookie: cookieHeader(sealFanSession(value, KEY)) } });
+  function setup(clock = NOW) {
+    const user = { ...active };
+    const resolve = vi.fn(); const verifyCookie = vi.fn(async () => undefined);
+    const isPrivileged = vi.fn(async () => false);
+    const repository = { findUserByPrivyId: vi.fn(async () => user) };
+    const route = createFanSessionRoute({ appOrigin: "https://kyaa.io", key: KEY, now: () => clock, resolve, verifyCookie, isPrivileged, repository,
+      revokeSessions: async (_, timestamp) => { user.sessionsValidAfter = timestamp; },
+    });
+    return { route, resolve, verifyCookie, isPrivileged, user, repository };
+  }
+  it("renews at day 29 to another 30 days without Privy and preserves original proof", async () => {
+    const { route, resolve, verifyCookie } = setup(NOW + 29 * DAY);
+    const response = await route.POST(req(fresh()));
+    expect(response.status).toBe(200);
+    const opened = openFanSession(response.headers.get("set-cookie")!.split(";")[0].split("=")[1], KEY, NOW + 29 * DAY);
+    expect(opened).toMatchObject({ sat: NOW, iat: Math.floor((NOW + 29 * DAY) / 1000), exp: Math.floor((NOW + 59 * DAY) / 1000) });
+    expect(resolve).not.toHaveBeenCalled(); expect(verifyCookie).toHaveBeenCalledOnce();
+    expect(openFanSession(sealFanSession(fresh(), KEY), KEY, NOW + 30 * DAY)).toBeNull();
+  });
+  it("requires fresh proof after 90 days but leaves the still-valid cookie intact", async () => {
+    const clock = NOW + 91 * DAY;
+    const { route } = setup(clock);
+    const value = fresh(); value.iat = Math.floor((clock - DAY) / 1000); value.exp = value.iat + 30 * 86400;
+    const response = await route.POST(req(value));
+    expect(response.status).toBe(401);
+    expect(response.headers.get("set-cookie")).toBeNull();
+    expect(await response.json()).toMatchObject({ error: { code: "PRIVY_PROOF_REQUIRED" } });
+    expect(openFanSession(sealFanSession(value, KEY), KEY, clock)).not.toBeNull();
+  });
+  it("accepts v1 reads but requires a fresh token to renew", async () => {
+    const value = session(); const { route } = setup();
+    expect(openFanSession(sealFanSession(value, KEY), KEY, NOW)).not.toBeNull();
+    expect((await route.POST(req(value))).status).toBe(401);
+  });
+  it("rejects re-exchange of pre-logout Privy proof and accepts later proof", async () => {
+    const { route, resolve } = setup(NOW + 5000);
+    const proof = { privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null };
+    resolve.mockResolvedValue(proof);
+    const exchange = () => route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer same-token" } }));
+    expect((await exchange()).status).toBe(200);
+    expect((await route.DELETE(req(fresh(), "DELETE"))).status).toBe(204);
+    expect((await exchange()).status).toBe(401);
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 4000 });
+    expect((await exchange()).status).toBe(401); // an earlier second than the sign-out
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: undefined });
+    expect((await exchange()).status).toBe(401);
+    resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 5000 + 61_000 });
+    expect((await exchange()).status).toBe(401); // beyond the clock tolerance
+    const later = setup(NOW + 8000);
+    later.user.sessionsValidAfter = new Date(NOW + 5000).toISOString();
+    later.resolve.mockResolvedValue({ ...proof, tokenIssuedAt: NOW + 6000 });
+    expect((await later.route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer new-token" } }))).status).toBe(200);
+  });
+  it("lets a person sign straight back in within the second of signing out", async () => {
+    const { route, resolve, user } = setup(NOW + 5500);
+    user.sessionsValidAfter = new Date(NOW + 5500).toISOString();
+    // Privy reports whole seconds, so a token issued at 5.9s reads as 5.0s while the sign-out was recorded at 5.5s.
+    resolve.mockResolvedValue({ privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW + 5000,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null });
+    expect((await route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer relogin" } }))).status).toBe(200);
+    resolve.mockResolvedValue({ privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW + 4000,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null });
+    expect((await route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer older" } }))).status).toBe(401);
+  });
+  it("accepts a Privy token issued up to a minute ahead of this server and stamps the sign-in as now", async () => {
+    const { route, resolve } = setup(NOW);
+    resolve.mockResolvedValue({ privyUserId: fresh().pid, sessionId: fresh().sid, tokenIssuedAt: NOW + 2000,
+      identity: { privyUserId: fresh().pid, verifiedEmail: fresh().em, providerAccounts: [] }, apple: null, google: null });
+    const response = await route.POST(new Request("https://kyaa.io/api/auth/fan-session", { method: "POST", headers: { origin: "https://kyaa.io", authorization: "Bearer ahead" } }));
+    expect(response.status).toBe(200);
+    expect(openFanSession(response.headers.get("set-cookie")!.split(";")[0].split("=")[1], KEY, NOW)).toMatchObject({ sat: NOW });
+    expect(await response.json()).toMatchObject({ authenticatedAt: NOW });
+  });
+  it("revokes copied cookies on logout for both renewals and fan requests", async () => {
+    const { route, repository } = setup(NOW + 5000);
+    const copied = fresh();
+    expect((await route.DELETE(req(copied, "DELETE"))).status).toBe(204);
+    expect((await route.POST(req(copied))).status).toBe(401);
+    const verifier = { verify: async () => ({ privyUserId: copied.pid, verifiedEmail: copied.em, providerAccounts: copied.pa,
+      fanSession: { appUserId: copied.uid, authenticatedAt: copied.sat! } }) };
+    await expect(authorizeFanRequest({ authorization: "Bearer kyaa-session", verifier, repository })).rejects.toMatchObject({ status: 401 });
+  });
+  it("rejects uid mismatch and revoked proof at both gates", async () => {
+    const value = fresh(); value.uid = "22222222-2222-4222-8222-222222222222";
+    const { route, repository } = setup();
+    expect((await route.POST(req(value))).status).toBe(401);
+    await expect(authorizeFanRequest({ authorization: "Bearer kyaa-session", repository, verifier: { verify: async () => ({ privyUserId: value.pid, verifiedEmail: value.em, providerAccounts: [], fanSession: { appUserId: value.uid, authenticatedAt: NOW } }) } })).rejects.toMatchObject({ status: 401 });
+  });
+  it("clears an existing cookie for privileged accounts and fails closed on privilege lookup errors", async () => {
+    const { route, isPrivileged } = setup();
+    isPrivileged.mockResolvedValueOnce(true);
+    const denied = await route.POST(req(fresh()));
+    expect(await denied.json()).toEqual({ session: false });
+    expect(denied.headers.get("set-cookie")).toContain("Max-Age=0");
+    isPrivileged.mockRejectedValueOnce(new Error("db unavailable"));
+    expect((await route.POST(req(fresh()))).status).toBe(503);
+  });
+  it("keeps the cookie when logout revocation fails, allowing retry", async () => {
+    const route = createFanSessionRoute({ appOrigin: "https://kyaa.io", key: KEY, now: () => NOW, resolve: vi.fn(), verifyCookie: vi.fn(), isPrivileged: vi.fn(), repository: { findUserByPrivyId: vi.fn() }, revokeSessions: async () => { throw new Error("db unavailable"); } });
+    const response = await route.DELETE(req(fresh(), "DELETE"));
+    expect(response.status).toBe(503); expect(response.headers.get("set-cookie")).toBeNull();
   });
 });

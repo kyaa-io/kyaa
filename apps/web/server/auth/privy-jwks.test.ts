@@ -25,7 +25,7 @@ describe("local Privy token check", () => {
     const fetcher = vi.fn().mockResolvedValueOnce(Response.json({ keys: [jwk] })).mockRejectedValue(new Error("privy down"));
     vi.spyOn(console, "info").mockImplementation(() => {});
     const verify = createPrivyTokenVerifier("app-1", { fetcher, now: () => clock });
-    await expect(verify(await sign())).resolves.toEqual({ app_id: "app-1", user_id: "did:privy:user-1", session_id: "s1" });
+    await expect(verify(await sign())).resolves.toEqual({ app_id: "app-1", user_id: "did:privy:user-1", session_id: "s1", iat: expect.any(Number) });
     await verify(await sign());
     expect(fetcher).toHaveBeenCalledTimes(1);
     clock += 2 * 60 * 60_000;

@@ -4,6 +4,8 @@ export type StorageState = { cookies?: { name: string; value: string; domain: st
 
 export function storedCredential(file: string): { token?: string; cookie?: string } {
   const state = JSON.parse(fs.readFileSync(file, "utf8")) as StorageState;
+  const fan = state.cookies?.find((item) => item.name === "__Host-kyaa-fan-session" && item.expires && item.expires > Date.now() / 1000);
+  if (fan) return { token: "kyaa-session", cookie: `${fan.name}=${fan.value}` };
   const email = state.cookies?.find((item) => item.name === "__Host-kyaa-email" && (!item.expires || item.expires > Date.now() / 1000));
   if (email) return { cookie: `${email.name}=${email.value}` };
   for (const origin of state.origins ?? []) for (const item of origin.localStorage ?? []) {

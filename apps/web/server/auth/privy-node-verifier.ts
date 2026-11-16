@@ -5,7 +5,8 @@ import { PrivyClient } from "@privy-io/node";
 import { createHash } from "node:crypto";
 import { createPrivyTokenVerifier } from "./privy-jwks";
 import { measurePrivyCall } from "./privy-latency";
-import { FAN_SESSION_BEARER, fanSessionKey, openFanSession, readFanSessionCookie, type FanSession } from "./fan-session-cookie";
+import { FAN_SESSION_BEARER, FAN_SESSION_CLOCK_SKEW_MS, FanSessionRejectedError, fanSessionKey, fanSessionProofExpired, openFanSession, readFanSessionCookie, type FanSession } from "./fan-session-cookie";
+import { PrivyUnavailableError, privyFailureIsTransient } from "./privy-unavailable";
 import { isCognitoToken } from "./cognito/verifier";
 import { resolveCognitoAccess } from "./cognito/access";
 import type { KyaaMember } from "./cognito/kyaa-identity";
@@ -25,6 +26,7 @@ interface PrivyTokenClaims {
   app_id: string;
   user_id: string;
   session_id?: string;
+  iat?: number;
 }
 
 interface PrivyLinkedAccountShape {
@@ -271,6 +273,7 @@ async function defaultCookieHeader(): Promise<string | null> {
 
 /** What POST /api/auth/fan-session seals into the cookie: a real Privy token's owner, never the cookie itself. */
 export interface ResolvedFanSession {
+  tokenIssuedAt: number;
   privyUserId: string;
   sessionId: string;
   identity: PrivyIdentityInput;
@@ -300,14 +303,15 @@ export function createPrivyNodeAccessVerifier(
     if (!sessionKey) return null;
     let header: string | null;
     try { header = await readCookieHeader(); } catch { return null; }
-    return openFanSession(readFanSessionCookie(header), sessionKey, now());
+    const session = openFanSession(readFanSessionCookie(header), sessionKey, now());
+    return session && !fanSessionProofExpired(session, now()) ? session : null;
   }
 
   type Resolved = { identity: PrivyIdentityInput; apple: VerifiedProviderAccount | null; google: VerifiedProviderAccount | null };
 
   function fromSession(session: FanSession): Resolved {
     return {
-      identity: { privyUserId: session.pid, verifiedEmail: session.em, providerAccounts: session.pa, googleLinked: session.gl },
+      identity: { privyUserId: session.pid, verifiedEmail: session.em, providerAccounts: session.pa, googleLinked: session.gl, fanSession: { appUserId: session.uid, authenticatedAt: session.sat ?? session.iat * 1000 } },
       apple: session.apple, google: session.google,
     };
   }
@@ -335,7 +339,7 @@ export function createPrivyNodeAccessVerifier(
     } catch (error) {
       const session = await cookieSession();
       if (session && session.pid === claims.user_id) return fromSession(session);
-      throw error;
+      throw privyFailureIsTransient(error) ? new PrivyUnavailableError(undefined, { cause: error }) : error;
     }
     if (user.id !== claims.user_id) {
       throw new Error("Privy token subject mismatch");
@@ -348,7 +352,7 @@ export function createPrivyNodeAccessVerifier(
     async verify(accessToken) {
       if (accessToken === FAN_SESSION_BEARER) {
         const session = await cookieSession();
-        if (!session) throw new Error("Fan session is missing or expired");
+        if (!session) throw new FanSessionRejectedError();
         await lifecycle?.assertAccess({ privyUserId: session.pid, sessionId: session.sid, apple: session.apple, google: session.google });
         return fromSession(session).identity;
       }
@@ -378,8 +382,10 @@ export function createPrivyNodeAccessVerifier(
       const claims = await verifyToken(accessToken);
       if (claims.app_id !== appId || !claims.session_id) throw new Error("Privy application mismatch");
       const resolved = await lookUp(claims);
+      if (resolved.identity.fanSession) throw new Error("Fresh Privy identity is required");
       await lifecycle?.assertAccess({ privyUserId: claims.user_id, sessionId: claims.session_id, apple: resolved.apple, google: resolved.google });
-      return { privyUserId: claims.user_id, sessionId: claims.session_id, ...resolved };
+      if (!Number.isSafeInteger(claims.iat) || claims.iat! < 0 || claims.iat! * 1000 > now() + FAN_SESSION_CLOCK_SKEW_MS) throw new Error("Invalid Privy token issuance time");
+      return { privyUserId: claims.user_id, sessionId: claims.session_id, tokenIssuedAt: claims.iat! * 1000, ...resolved };
     },
     verify(accessToken) {
       // The sentinel is the same string for everyone; its answer depends on this request's cookie, so it is never shared.

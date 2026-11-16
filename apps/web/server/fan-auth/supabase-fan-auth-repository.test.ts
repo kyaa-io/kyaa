@@ -24,6 +24,7 @@ describe("Supabase fan auth repository", () => {
       id: "054dbe1b-a924-4957-bdbf-474906737a5e",
       privy_user_id: "did:privy:fan",
       verified_email: "fan@example.com",
+      sessions_valid_after: null,
       status: "active",
     });
     const client = { from: vi.fn((table: string) => table === "app_user_moderation_restrictions" ? queryResult(null) : query) };
@@ -36,10 +37,11 @@ describe("Supabase fan auth repository", () => {
       id: "054dbe1b-a924-4957-bdbf-474906737a5e",
       privyUserId: "did:privy:fan",
       verifiedEmail: "fan@example.com",
+      sessionsValidAfter: null,
       status: "active",
     });
     expect(client.from).toHaveBeenCalledWith("app_users");
-    expect(query.select).toHaveBeenCalledWith("id, privy_user_id, verified_email, status");
+    expect(query.select).toHaveBeenCalledWith("id, privy_user_id, verified_email, status, sessions_valid_after");
     expect(query.eq).toHaveBeenCalledWith("privy_user_id", "did:privy:fan");
   });
 
