@@ -38,19 +38,21 @@ try:
                 followers = root / ('platform-followers-' + t + '.last-success')
                 if week_old(followers):
                     env['SNS_FOLLOWERS_STAMP' + ('_2' if i else '')] = str(followers)
-            for t in targets:
-                weekly = root / ('youtube-followers-' + t + '.last-success')
-                if not week_old(weekly):
-                    continue
-                try:
-                    req = urllib.request.Request(host(t).replace('/api/internal/sns-ingest', '/api/internal/youtube-followers'),
-                        data=b'{}', method='POST', headers={'Authorization': 'Bearer ' + (root / (t + '.secret')).read_text().strip(), 'Content-Type': 'application/json'})
-                    with urllib.request.urlopen(req, timeout=290) as response:
-                        if response.status != 200: raise ValueError('YOUTUBE_COLLECT_FAILED')
-                    weekly.touch()
-                    log.write('YOUTUBE_FOLLOWERS_OK ' + t + '\n')
-                except Exception as error:
-                    log.write('YOUTUBE_COLLECT_' + t + '_' + type(error).__name__ + '\n')
+            # Platforms with an official server-side API (YouTube Data API, CHZZK Open API): the server reads them, this only calls weekly.
+            for name in ('youtube', 'chzzk'):
+                for t in targets:
+                    weekly = root / (name + '-followers-' + t + '.last-success')
+                    if not week_old(weekly):
+                        continue
+                    try:
+                        req = urllib.request.Request(host(t).replace('/api/internal/sns-ingest', '/api/internal/' + name + '-followers'),
+                            data=b'{}', method='POST', headers={'Authorization': 'Bearer ' + (root / (t + '.secret')).read_text().strip(), 'Content-Type': 'application/json'})
+                        with urllib.request.urlopen(req, timeout=290) as response:
+                            if response.status != 200: raise ValueError(name.upper() + '_COLLECT_FAILED')
+                        weekly.touch()
+                        log.write(name.upper() + '_FOLLOWERS_OK ' + t + '\n')
+                    except Exception as error:
+                        log.write(name.upper() + '_COLLECT_' + t + '_' + type(error).__name__ + '\n')
             proc = subprocess.Popen(['node', str(Path(__file__).with_name('collect.aside.mjs'))], env=env,
                                     stdout=log, stderr=log, start_new_session=True)
             try:

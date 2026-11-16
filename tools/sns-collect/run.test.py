@@ -10,7 +10,7 @@ class RunnerTest(unittest.TestCase):
                 p = bin / name; p.write_text(body); p.chmod(0o700)
             for target in ['dev', 'prod']:
                 (root / (target + '.secret')).write_text('private-test-key-' + target)
-                (root / ('youtube-followers-' + target + '.last-success')).touch()  # no network call from the test
+                for name in ['youtube', 'chzzk']: (root / (name + '-followers-' + target + '.last-success')).touch()  # no network call from the test
             env = dict(os.environ, HOME=tmp, PATH=str(bin) + ':' + os.environ['PATH'])
             def run(config, **extra):
                 (root / 'config.json').write_text(json.dumps(config))

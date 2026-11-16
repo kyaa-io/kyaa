@@ -75,4 +75,8 @@ mini 실행 코드는 공유 checkout 대신 `~/.local/share/kyaa-sns-collector/
 
 인스타·틱톡 팔로워 수는 2시간 실행이 이미 여는 공식 프로필 화면에서 읽는다. 틱톡은 페이지 데이터의 정확한 수, 인스타는 화면 표기('428.3만')를 그대로 보낸다. 대상별 `platform-followers-<대상>.last-success`가 7일 이상 지났을 때만 `POST /api/internal/platform-followers`(같은 SNS 전용 키)로 보내고 성공하면 표식을 갱신한다. 실패하면 표식을 두어 다음 실행에서 다시 보낸다. 못 읽은 계정은 보내지 않는다(0으로 쓰지 않음). 서버는 지금 활성 공식 링크인 계정만 저장하고, 직접 입력한 행과 더 새 값은 덮어쓰지 않는다. 결과는 `runs/<UTC>/followers*.result.json`에 남는다.
 
-mini 설치는 `collect-core.mjs`·`collect.aside.mjs`·`run.py` 세 파일을 함께 복사한다. 운영 반영에는 migration `20261228130000_platform_follower_collector.sql`과 웹 배포가 먼저 필요하다.
+치지직은 서버가 공식 Open API(`GET https://openapi.chzzk.naver.com/open/v1/channels?channelIds=`, Client-Id/Client-Secret만 필요, 응답의 `followerCount`, https://chzzk.gitbook.io/chzzk/chzzk-api/channel 2026-11-16 확인)로 읽는다. 라이브 상태에 쓰는 기존 `CHZZK_CLIENT_ID`·`CHZZK_CLIENT_SECRET`을 재사용하고, 수집기는 유튜브처럼 대상별 `chzzk-followers-<대상>.last-success`로 주 1회 `POST /api/internal/chzzk-followers`만 호출한다.
+
+저장은 플랫폼 인자를 받는 `save_collected_platform_followers` 하나로 한다(인스타·틱톡·치지직, enum의 youtube도 받음). 기존 `save_collected_youtube_followers`는 그대로 두었다. 정리하려면 유튜브 경로가 새 함수를 `p_digits=3, p_text=null`로 부르게 바꿔 배포하고, 운영에서 옛 함수 호출이 없는 것을 확인한 뒤 별도 migration으로 옛 함수를 지운다.
+
+mini 설치는 `collect-core.mjs`·`collect.aside.mjs`·`run.py` 세 파일을 함께 복사한다. 운영 반영에는 migration `20261228130000_platform_follower_collector.sql`과 웹 배포가 먼저 필요하다. 치지직은 운영 런타임에 `CHZZK_CLIENT_ID`·`CHZZK_CLIENT_SECRET`이 있어야 하며, 없으면 503으로 끝나 성공 표식을 남기지 않고 다음 실행에서 다시 시도한다.

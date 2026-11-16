@@ -31,9 +31,14 @@ begin
   perform pg_temp.expect(not public.save_collected_platform_followers(artist,'tiktok','https://www.tiktok.com/@other',5,null,null,stamp + interval '8 day'),'other account refused');
   update public.celebrity_social_links set active = false where celebrity_id = artist and platform = 'tiktok';
   perform pg_temp.expect(not public.save_collected_platform_followers(artist,'tiktok',tiktok,5,null,null,stamp + interval '8 day'),'inactive link refused');
+  insert into public.celebrity_social_links(celebrity_id,platform,url,position) values
+    (artist,'chzzk','https://chzzk.naver.com/0a3f97086cb81d3360c69fdf5d020045',2),(artist,'youtube','https://www.youtube.com/@follower.test',3);
+  perform pg_temp.expect(public.save_collected_platform_followers(artist,'chzzk','https://chzzk.naver.com/0a3f97086cb81d3360c69fdf5d020045',1234,null,null,stamp),'chzzk saved');
+  perform pg_temp.expect(public.save_collected_platform_followers(artist,'youtube','https://www.youtube.com/@follower.test',1230000,3::smallint,null,stamp),'youtube accepted');
+  perform pg_temp.expect((select count(*) = 4 from public.celebrity_platform_followers where celebrity_id = artist),'one row per platform');
   begin
-    perform public.save_collected_platform_followers(artist,'youtube','https://www.youtube.com/@x',5,null,null,stamp);
-    raise exception 'FAIL youtube refused';
+    perform public.save_collected_platform_followers(artist,'x','https://x.com/someone',5,null,null,stamp);
+    raise exception 'FAIL unknown platform refused';
   exception when raise_exception then
     if sqlerrm like 'FAIL%' then raise; end if;
   end;
