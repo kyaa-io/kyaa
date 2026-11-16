@@ -68,11 +68,11 @@ const request = (posts: unknown[], extra: Record<string, unknown> = {}) =>
   snsIngestRequestSchema.parse({ celebritySlug: "wena", platform: "instagram", posts, ...extra });
 
 describe("sns ingest service", () => {
-  it("stores a video cover without changing the original body or bypassing image review", async () => {
+  it("publishes a verified video cover without changing the original body", async () => {
     const { deps, notices, rpc } = fakeDatabase();
     const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", { videoThumbnail: { url: "https://scontent.cdninstagram.com/cover.jpg" } })]), "c");
-    expect(result.items[0]).toMatchObject({ status: "held", reason: "PHOTO_REVIEW_REQUIRED" });
-    expect(rpc.mock.calls.some(([name]) => name === "sns_ingest_publish")).toBe(false);
+    expect(result.items[0]).toMatchObject({ status: "published" });
+    expect(rpc.mock.calls.some(([name]) => name === "sns_ingest_publish")).toBe(true);
     expect(deps.fetchImage).toHaveBeenCalledWith(new URL("https://scontent.cdninstagram.com/cover.jpg"));
     expect(deps.upload).toHaveBeenCalledTimes(2);
     expect(rpc).toHaveBeenCalledWith("sns_ingest_register_video_thumbnail", expect.objectContaining({ p_source_host: "scontent.cdninstagram.com" }));
@@ -85,7 +85,7 @@ describe("sns ingest service", () => {
     const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", {
       images: [{ url }, { url }], videoThumbnail: { url },
     })]), "c");
-    expect(result.items[0]).toMatchObject({ status: "held", reason: "PHOTO_REVIEW_REQUIRED" });
+    expect(result.items[0]).toMatchObject({ status: "published" });
     expect(deps.fetchImage).toHaveBeenCalledTimes(1);
     expect(deps.upload).toHaveBeenCalledTimes(2);
     expect(rpc.mock.calls.filter(([name]) => name === "sns_ingest_register_media")).toHaveLength(1);
@@ -169,9 +169,9 @@ describe("sns ingest service", () => {
     expect([...notices.values()]).toEqual(before);
   });
 
-  it("keeps the post private when the stored copy differs from the original", async () => {
+  it.each([{}, { videoThumbnail: { url: "https://scontent.cdninstagram.com/cover.jpg" } }])("keeps changed source private, including videos: %j", async extra => {
     const { deps, notices, rpc } = fakeDatabase({ tamper: body => JSON.parse(JSON.stringify(body).replace("고마워요", "감사합니다")) });
-    const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz")]), "c");
+    const result = await createSnsIngestService(deps).ingest(request([post("DQabc123xyz", extra)]), "c");
     expect(result.items[0]).toMatchObject({ status: "held", reason: "READBACK_MISMATCH" });
     expect([...notices.values()][0]!.status).toBe("draft");
     expect(rpc.mock.calls.some(([name]) => name === "sns_ingest_publish")).toBe(false);

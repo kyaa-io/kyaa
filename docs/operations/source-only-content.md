@@ -44,7 +44,7 @@ assertSourceOnlyLocalizations(input, cmsReadbackLocalizations);
 - 서버가 `buildSourceOnlyLocalizations`로 만들어 초안 저장 → 이미지 저장 → 재조회 결과를 `assertSourceOnlyLocalizations`로 대조하고, 같을 때만 공개한다. 대조·이미지 실패는 비공개 초안으로 남긴다.
 - CMS에 등록된 활성 공식 계정 URL과 게시물 URL의 핸들이 같아야 한다. 게시물 URL은 핸들이 들어간 형태(`instagram.com/<계정>/p/<코드>/`, `tiktok.com/@<계정>/video/<ID>`)만 받는다.
 - slug는 `<platform>-<sha256(sourceId) 앞 16자>`다. 같은 slug의 공개 글은 `duplicate`, 한 번이라도 공개됐거나 관리자가 만든 글은 `blocked`로 두고 바꾸지 않는다. 이 수집 경로가 만든 미공개 초안도 이전 실행에서 생성됐거나 검수자가 수정했으면 제목·본문·미디어를 덮어쓰지 않는다. 같은 실행의 초기 사진 저장만 machine_revision이 일치할 때 허용한다.
-- 사진이나 영상 표지(`videoThumbnail`)가 있는 글은 저장·원문 대조 후 held / PHOTO_REVIEW_REQUIRED 초안으로 남긴다. 사람이 사진별 화면 검수를 마친 뒤 기존 CMS 경로로 공개한다. 글만 있는 게시물은 원문 대조를 통과하면 자동 공개한다.
+- 활성 공식 계정의 영상 표지(`videoThumbnail`)가 있는 글은 저장·원문 대조를 통과하면 기존 공개 함수로 자동 공개한다(2026-11-16 승인). 영상 표지가 없는 사진 글은 held / PHOTO_REVIEW_REQUIRED 초안으로 남기고 사람이 검수한 뒤 기존 CMS 경로로 공개한다. 글만 있는 게시물도 원문 대조를 통과하면 자동 공개한다. 기존 초안은 재수집으로 덮어쓰지 않으며 별도 원문 대조 후 공개한다.
 - 수집 원문(원문 URL·ID·게시 시각·전체 캡션·사진 URL·영상 표지 URL)은 CMS 편집 내용과 별도로 `sns_ingest_source_revisions`에 저장한다. DB가 JSONB 원문의 SHA-256을 계산해 최신 해시와 같으면 `ALREADY_HELD`로 건너뛰고, 다르면 별도 원문 리비전을 추가하고 `SOURCE_UPDATED`로 검수를 기다린다. 바뀐 원문도 검수자의 제목·본문·사진·공지 revision을 덮어쓰지 않는다. 원문이 이전 상태로 돌아온 경우도 새 리비전으로 남긴다.
 - 재수집에서는 기존 초안의 사진과 영상 표지를 다시 다운로드·등록·업로드하지 않는다. 바뀐 원문의 사진 URL도 원문 리비전에만 보관하며 검수 전 자동으로 새 미디어를 만들지 않는다. 중단·실패한 초안도 이 보존 규칙을 따른다. 원문 리비전과 해시는 비공개이고 RPC는 service_role 전용이다. `video_thumbnails`의 영상 표지는 원문 본문과 별도 메타데이터이며 양쪽 S3 객체가 ready이고 공지가 공개된 때만 노출한다.
 - 이미지는 `cdninstagram.com`·`fbcdn.net`·`tiktokcdn*.com`에서만 리디렉션 없이 받아 WebP로 저장하고 `/api/public/notice-media/<id>`로 공개 글일 때만 보인다.
