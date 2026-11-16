@@ -38,7 +38,9 @@ const MEMBER_TABLES = [
 /** Back to an empty reward history for one member. The passport and the account stay. */
 export function resetMember(appUserId: string): void {
   const id = uuid(appUserId);
-  const deletes = MEMBER_TABLES.map((table) => `delete from public.${table} where app_user_id = '${id}';`).join("\n");
+  // The local database copy can lag behind the newest migrations; a table that does not exist yet has no rows to remove.
+  const present = new Set(run(`select relname from pg_class where relnamespace = 'public'::regnamespace and relkind = 'r' and relname in (${MEMBER_TABLES.map((table) => `'${table}'`).join(",")})`).split("\n"));
+  const deletes = MEMBER_TABLES.filter((table) => present.has(table)).map((table) => `delete from public.${table} where app_user_id = '${id}';`).join("\n");
   run(`begin;
 set local session_replication_role = replica;
 update public.passport_page_slots set stamp_id = null, assigned_at = null, cleared_at = null

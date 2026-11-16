@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { scalar } from "./support/db";
 import { assertLocalOnly, BASE_URL } from "./support/env";
 import { Member, newKey } from "./support/member";
@@ -78,7 +78,55 @@ test.describe("@release-gate (b) one action never pays twice", () => {
     expect(member.pointLedgerRows()).toBe(1);
     await context.close();
   });
+
+  test("a response lost in one tab, retried with the same key from another tab or device, pays once (streak bonus day)", async ({ browser }) => {
+    const { creatorId } = member.reset();
+    const catalog = await member.call<{ rules: Record<string, { points: number; streakBonus: number; streakEvery: number }> }>("GET", "/api/dukjil/catalog");
+    const { points: base, streakBonus: bonus, streakEvery: every } = catalog.body.rules.checkin;
+    member.seedStreak(creatorId, every - 1, base);
+    const total = base + bonus;
+    const url = `/api/me/attendance/${creatorSlug}`;
+    const requestKey = newKey();
+    const send = (page: Page) => page.evaluate(async ({ url, requestKey }) => {
+      const token = JSON.parse(localStorage.getItem("privy:token") ?? "null");
+      try {
+        const r = await fetch(url, { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ requestKey }) });
+        return { status: r.status, body: await r.json() };
+      } catch { return { status: 0, body: null }; }
+    }, { url, requestKey });
+    const open = async () => {
+      const context = await browser.newContext({ storageState: member.storageState, baseURL: BASE_URL });
+      const page = await context.newPage();
+      await page.goto("/api/health/live");
+      return { context, page };
+    };
+
+    // Tab A: the server processes the request, the answer never arrives.
+    const a = await open();
+    await a.page.route(`**${url}`, async (route) => { await route.fetch(); await route.abort("connectionreset"); });
+    expect((await send(a.page)).status).toBe(0);
+    expect(member.pointLedgerAmounts()).toEqual([total]);
+
+    // Tabs B and C (other tab, other device: their own browser context) retry the same key at the same time.
+    const b = await open(), c = await open();
+    const retries = await Promise.all([send(b.page), send(c.page)]);
+    for (const retry of retries) {
+      expect(retry.status).toBe(200);
+      // A replay hands back the stored total; the bonus is already inside it.
+      expect(retry.body).toMatchObject({ points: total, streak: every, replayed: true });
+    }
+    // A brand-new key on the same day is a replay of today's attendance, not a second payout.
+    const fresh = await send2(member, url);
+    expect(fresh.body).toMatchObject({ points: total, replayed: true });
+
+    expect(member.pointLedgerAmounts()).toEqual([total]);
+    expect(member.balances().points).toBe(total);
+    expect(member.stampCount("daily_checkin")).toBe(1);
+    await Promise.all([a.context.close(), b.context.close(), c.context.close()]);
+  });
 });
+
+const send2 = (member: Member, url: string) => member.call<Attend>("POST", url, { requestKey: newKey() });
 
 // Run only with a local email browser storage state and a disposable local database.
 test("cookie-only email login: lost attendance response retries with no duplicate credit", async ({ browser }) => {

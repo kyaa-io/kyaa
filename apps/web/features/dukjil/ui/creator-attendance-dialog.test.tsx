@@ -12,7 +12,9 @@ vi.mock("@/features/groups/ui/use-group-resource", () => {
     useGroupResource: (url: string | null) => ({ data: url ? h.today : undefined, failure: h.failure, loading: false, retry: vi.fn() }),
   };
 });
+vi.mock("./stamp-slam", () => ({ celebrateStamp: vi.fn() }));
 import { GroupRequestError } from "@/features/groups/ui/use-group-resource";
+import { celebrateStamp } from "./stamp-slam";
 import { DukjilProvider, resetDukjilCatalogCache } from "./dukjil-provider";
 import { CreatorAttendanceDialog } from "./creator-attendance-dialog";
 
@@ -116,4 +118,15 @@ it("keeps the numbers to what the catalog says on an empty rule", async () => {
   ui(true);
   await screen.findByRole("dialog");
   expect(screen.getAllByRole("listitem")[0].textContent).not.toMatch(/\+/);
+});
+
+it("shows the server's total once on the bonus day: the celebration and the done line both use 12, not 12 + 10", async () => {
+  h.today = today({ attendedToday: false, streak: 6, nextBonusIn: 1 });
+  h.post.mockResolvedValue({ points: 12, streak: 7, bonusPoints: 10, stampId: "3f2b8a52-6c1d-4e7a-9b0a-1d2c3e4f5a6b", attendanceDate: "2026-11-05", replayed: false });
+  ui(true);
+  fireEvent.click(await screen.findByRole("button", { name: /12P/ }));
+  const done = await screen.findByRole("status");
+  expect(done).toHaveTextContent("+12P");
+  expect(done.textContent).not.toMatch(/22/);
+  expect(celebrateStamp).toHaveBeenCalledWith(expect.objectContaining({ points: 12, stamps: 1 }));
 });

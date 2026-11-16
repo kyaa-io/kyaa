@@ -61,7 +61,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
       if (!result.replayed) sendGa4Event("daily_checkin");
       setPressed(true);
       // D3: a stamp the server just issued lands over the whole screen (not on a replay); the dialog then shows it still.
-      if (result.stampId && !result.replayed) void celebrateStamp({ locale, points: result.points + result.bonusPoints, stamps: 1 });
+      if (result.stampId && !result.replayed) void celebrateStamp({ locale, points: result.points, stamps: 1 });
       state!.setAttendance({ attendedToday: true, streak: result.streak, nextBonusIn: null, result });
       state!.refresh();
     } catch (error) {
@@ -122,7 +122,7 @@ export function CreatorAttendanceDialog({ open, onClose, reviewHref, pageName }:
             <p className={styles.checkinDone} role="status">
               <Check size={20} aria-hidden="true" />
               <span>{dukjilText(locale, "dukjilDone")}</span>
-              {earned && <EarnBadge variant="inline" locale={locale} points={earned.points + earned.bonusPoints} />}
+              {earned && <EarnBadge variant="inline" locale={locale} points={earned.points} />}
             </p>
           ) : noPassport ? (
             <FanAction className={styles.checkinAction} variant="primary" href={reviewHref}>{dukjilText(locale, "dukjilStart")}</FanAction>
