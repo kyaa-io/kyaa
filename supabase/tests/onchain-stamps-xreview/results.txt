@@ -1,0 +1,9 @@
+ STARVATION_OK
+ DUKJIL_NATIVE_ONCHAIN_OK
+psql:supabase/tests/dukjil_stamps_dispatch_cap_counterexample.sql:80: NOTICE:  CAP_VIOLATION_REPRODUCED: 501 recovery reservations; only 499 of 1000 remain
+ {"failed": 0, "utcDay": "2026-11-16", "dailyCap": 500, "enqueued": 10, "usedToday": 10, "remainingH2": 10, "manifestHash": "bf4163297bf5f58aa596125a7414789ec6b76c23aac80e1da5d5f13a5715ffda", "skippedCreatorOrRoute": 0}
+ {"failed": 0, "utcDay": "2026-11-16", "dailyCap": 500, "enqueued": 10, "usedToday": 20, "remainingH2": 0, "manifestHash": "bf4163297bf5f58aa596125a7414789ec6b76c23aac80e1da5d5f13a5715ffda", "skippedCreatorOrRoute": 0}
+ {"failed": 0, "utcDay": "2026-11-16", "dailyCap": 500, "enqueued": 0, "usedToday": 20, "remainingH2": 0, "manifestHash": "bf4163297bf5f58aa596125a7414789ec6b76c23aac80e1da5d5f13a5715ffda", "skippedCreatorOrRoute": 0}
+DUKJIL_NATIVE_RACE_OK 1 1 12 12 12 3 3
+NOTICE:  ROLLBACK_STOP_OK
+ {"tierBoundaries": ["Bronze", "Silver", "Gold", "Platinum", "Diamond"], "migrationsApplied": 540, "activePolicyVersion": 2}

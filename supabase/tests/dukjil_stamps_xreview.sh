@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+[[ "$PGHOST" == /* ]] || exit 2
+psql -X -v ON_ERROR_STOP=1 -f supabase/tests/dukjil_stamps_starvation.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/tests/dukjil_stamps_native_onchain.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/tests/dukjil_stamps_dispatch_cap_counterexample.sql
+createdb -T "$PGDATABASE" byus
+PGDATABASE=byus psql -X -v ON_ERROR_STOP=1 -f supabase/tests/onchain-stamps-xreview/sequence.sql
+bash supabase/tests/dukjil_stamps_native_onchain_concurrency.sh
+psql -X -v ON_ERROR_STOP=1 -f supabase/rollback/20261229000000_dukjil_stamps_native_onchain.sql
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $$
+declare s uuid;
+begin
+ s:=public.dukjil_issue_stamp('0c600000-0000-4000-8000-000000000002','0c610000-0000-4000-8000-000000000001','quiz','xreview:rollback',2);
+ if not exists(select 1 from public.community_stamps where id=s and onchain_hold_reason='ROUTE_DISABLED' and fan_action_outbox_id is null and blockchain_job_id is null) then raise exception 'rollback did not hold'; end if;
+ begin
+  perform public.release_held_community_stamps(null,200);
+  raise exception 'release unexpectedly available';
+ exception when others then
+  if sqlerrm <> 'COMMUNITY_STAMP_RELEASE_STOPPED' then raise; end if;
+ end;
+ begin
+  perform public.run_community_stamp_recovery('unused',10);
+  raise exception 'recovery unexpectedly available';
+ exception when others then
+  if sqlerrm <> 'COMMUNITY_STAMP_RECOVERY_STOPPED' then raise; end if;
+ end;
+ raise notice 'ROLLBACK_STOP_OK';
+end $$;
+SQL
