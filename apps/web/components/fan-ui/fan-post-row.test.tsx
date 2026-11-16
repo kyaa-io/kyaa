@@ -54,6 +54,14 @@ describe("post row info line alignment", () => {
     expect(mobile).toMatch(/\.meta \{[^}]*justify-content: flex-start;[^}]*text-align: left;/);
     expect(mobile).not.toMatch(/data-notice\][^{]*\.meta/);
   });
+  it("narrows the four columns only for the compact variant (모임 Hot 목록): 88·112·48·56, gap 8", () => {
+    expect(css).toMatch(/\[data-columns="compact"\] \.source \{ width: 88px; \}/);
+    expect(css).toMatch(/\[data-columns="compact"\] \.authorCell \{ width: 112px; \}/);
+    expect(css).toMatch(/\[data-columns="compact"\] \.time \{ width: 48px; \}/);
+    expect(css).toMatch(/\[data-columns="compact"\] \.number \{ width: 56px; \}/);
+    const { container } = render(<FanPostRow locale="ko" href="/x" title="t" columns="compact" />);
+    expect(container.querySelector("[data-fan-post-row]")).toHaveAttribute("data-columns", "compact");
+  });
   it("keeps the info line right-aligned in the one-line layout from 768px", () => {
     expect(wide).toMatch(/\.meta \{ justify-content: flex-end; text-align: right;/);
   });

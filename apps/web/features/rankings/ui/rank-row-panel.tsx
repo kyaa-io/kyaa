@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { AppLocale } from "@/i18n/locales";
 import type { HomeCreatorRankingRow, HomeFanRankingRow } from "../domain/types";
 import { FOLLOWER_PLATFORMS, formatFollowerCount, type FollowerPlatform } from "../domain/platform-followers";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { RankUnit, type RankUnitKind } from "./rank-unit";
 import { rankingsText } from "./rankings-copy";
 import styles from "./rank-row-panel.module.css";
@@ -34,9 +35,9 @@ const signed = (locale: AppLocale, value: number) => `${value < 0 ? "−" : "+"}
 
 /** The platform's own logo file (the one the other screens use) and its name for the screen reader. The logo is the label: no word beside the number. */
 const PLATFORM_MARK: Record<FollowerPlatform, { file: string; name: (locale: AppLocale) => string }> = {
-  instagram: { file: "instagram.svg", name: () => "Instagram" },
-  tiktok: { file: "tiktok.svg", name: () => "TikTok" },
-  youtube: { file: "youtube.svg", name: () => "YouTube" },
+  instagram: { file: "instagram.svg", name: (locale) => (locale === "ko" ? "인스타그램" : "Instagram") },
+  tiktok: { file: "tiktok.svg", name: (locale) => (locale === "ko" ? "틱톡" : "TikTok") },
+  youtube: { file: "youtube.svg", name: (locale) => (locale === "ko" ? "유튜브" : "YouTube") },
   chzzk: { file: "chzzk.png", name: (locale) => (locale === "ko" ? "치지직" : "CHZZK") },
 };
 
@@ -61,6 +62,7 @@ export function RankRowPanel(props: RankRowPanelProps) {
   const stats = [...(props.extra ?? []).map((cell) => <Stat key={cell.key} label={cell.label} value={cell.value} unit={cell.unit} size={cell.size} icon={cell.icon} />), ...builtIn];
   // Creator rows only: the platforms' follower counts on a line of their own under the cells (A1, 안 A). A platform with no confirmed count is not in the list; a confirmed 0 is drawn as 0.
   const platforms = props.kind === "creator" ? [...(props.row.platforms ?? [])].filter((item) => item.platform in PLATFORM_MARK).sort((a, b) => FOLLOWER_PLATFORMS.indexOf(a.platform) - FOLLOWER_PLATFORMS.indexOf(b.platform)) : [];
+  const creatorName = props.kind === "creator" ? props.row.name : "";
   if (!stats.length && !platforms.length) return null;
   return <div id={id} className={styles.panel} data-rank-panel={props.kind}>
     <div className={styles.clip}>
@@ -68,7 +70,12 @@ export function RankRowPanel(props: RankRowPanelProps) {
         {stats.length ? <dl className={styles.stats}>{stats}</dl> : null}
         {platforms.length ? <ul className={styles.platforms} data-rank-platforms>{platforms.map((item) => {
           const mark = PLATFORM_MARK[item.platform];
-          return <li key={item.platform} className={styles.value} data-row="rank-platform" data-platform={item.platform}><img src={`/images/guest-home/${mark.file}`} alt={mark.name(locale)} width={16} height={16} /><span>{formatFollowerCount(item.count, item.digits, item.text)}</span></li>;
+          const count = formatFollowerCount(item.count, item.digits, item.text);
+          const logo = (alt: string) => <img src={`/images/guest-home/${mark.file}`} alt={alt} width={16} height={16} />;
+          // The creator's own account when the list has an address: a new tab, named "creator + platform" (the outbound UTM and click count come from the shared tracker).
+          return <li key={item.platform} className={styles.value} data-row="rank-platform" data-platform={item.platform} data-outbound-kind="social" data-outbound-placement="content">{item.url
+            ? <FanAction variant="text" size="sm" className={styles.link} href={item.url} external ariaLabel={`${creatorName} ${mark.name(locale)}`} leadingIcon={logo("")}>{count}</FanAction>
+            : <span className={styles.plain}>{logo(mark.name(locale))}<span>{count}</span></span>}</li>;
         })}</ul> : null}
       </div>
     </div>

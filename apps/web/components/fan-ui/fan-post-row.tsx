@@ -45,17 +45,19 @@ export type FanPostRowProps = Readonly<{
   /** 그 페이지의 아티스트가 이 글에 좋아요나 댓글을 남겼으면 아티스트 이름. 제목 옆에 금색 별을 둔다. */
   reactedBy?: string;
   density?: "home" | "board";
+  /** `compact`: 768 이상 열 폭을 줄인다(모임 Hot 목록). */
+  columns?: "default" | "compact";
 }>;
 
 const KYAA_LOGO = "/kyaa-app-icon-192.png";
 /** 게시판 목록 한 줄. 댓글·좋아요 수는 제목 옆(0이면 뺌). 값이 없는 열은 빼고 `—`를 쓰지 않는다. 왼쪽 칸은 첨부 사진 → 공지면 kyaa 로고 → 글쓴이 프로필 사진 → 페이지 이미지 → 글 아이콘 순이다. */
-export function FanPostRow({ href, locale, title, thumbnail, avatar, avatarArtist = false, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board" }: FanPostRowProps) {
+export function FanPostRow({ href, locale, title, thumbnail, avatar, avatarArtist = false, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board", columns = "default" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
   const timeLabel = time === undefined ? "" : fanPostTimeLabel(time);
   const photo = Boolean(thumbnail) && !broken;
   const isoTime = time === undefined ? undefined : time instanceof Date ? time.toISOString() : time;
-  return <div className={styles.row} data-density={density} data-notice={notice || undefined} data-fan-post-row>
+  return <div className={styles.row} data-density={density} data-columns={columns === "compact" ? "compact" : undefined} data-notice={notice || undefined} data-fan-post-row>
     <span className={styles.thumb} data-thumb={photo ? "photo" : notice ? "logo" : avatar ? "avatar" : pageImage ? "page" : "icon"}>{photo
       ? <img src={thumbnail!} alt="" width={56} height={42} loading="lazy" decoding="async" onError={() => setBroken(true)} />
       : notice ? <img className={styles.logo} src={KYAA_LOGO} alt="" width={32} height={32} loading="lazy" decoding="async" />
