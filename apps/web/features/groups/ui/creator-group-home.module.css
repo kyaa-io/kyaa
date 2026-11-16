@@ -31,9 +31,7 @@
 @media (min-width:1024px) { .emptyStories { display:grid; place-items:center; min-height:320px; border:1px solid var(--color-line); border-radius:var(--radius-media); } .emptyStories.emptyStories.emptyStories > * { width:fit-content; margin-inline:auto; } }
 .brandEventFlush.brandEventFlush { padding:0; }
 
-/* 14번: 목록이 사이드보다 짧아도 본문 칸이 사이드 높이까지 늘고, 쪽 번호와 검색은 그 칸 아래 끝에 붙는다. */
+/* 쪽 번호 바로 아래에 검색을 둔다(대표 결정 FB-0029-SEARCH). 본문 칸을 오른쪽 칸 높이까지 늘려 검색을 끝에 붙이지 않고, 간격은 `.stories`의 gap(--space-3)만 쓴다. */
 @media (min-width:1024px) {
-  .main.main { display:flex; flex-direction:column; align-self:stretch; }
-  .stories { display:flex; flex:1 1 auto; flex-direction:column; }
-  .stories > :last-child:not(.emptyStories) { margin-top:auto; }
+  .stories > :last-child:not(.emptyStories) { margin-top:0; }
 }
