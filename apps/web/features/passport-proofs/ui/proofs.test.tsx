@@ -252,6 +252,44 @@ describe("a lost submit response (PROOF-RETRY-1116)", () => {
     expect(seen.submits[1]).toEqual(seen.submits[0]);
     expect(seen.submits[1].uploadIds).toEqual(ups);
   });
+  it("replays a saved two-photo submission after its first response is lost", async () => {
+    const saved = new Map<string, { submissionId: string; uploadIds: string[]; body: string }>();
+    const requests: Array<Record<string, unknown>> = [];
+    let uploads = 0;
+    let replay: Record<string, unknown> | undefined;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/uploads")) return Response.json({ uploadId: ups[uploads++] });
+      if (url.includes("/missions")) return Response.json({ items: [{ missionId: mission, proofType: "receipt", platform: null, submittable: true, unavailableReason: null, closesAt: "2027-01-01T00:00:00Z" }] });
+      if (url.includes("/posts")) return Response.json({ items: [], nextBefore: null });
+      if (url.endsWith("/api/me/proofs") && init?.method === "POST") {
+        const body = JSON.parse(String(init.body));
+        requests.push(body);
+        const previous = saved.get(body.requestKey);
+        if (!previous) {
+          saved.set(body.requestKey, { submissionId: ups[0], uploadIds: body.uploadIds, body: JSON.stringify(body) });
+          throw new TypeError("response lost after save");
+        }
+        expect(JSON.stringify(body)).toBe(previous.body);
+        replay = { submissionId: previous.submissionId, status: "pending", revision: 0, replayed: true };
+        return Response.json(replay);
+      }
+      return Response.json({ items: Array.from(saved.values(), (entry) => item({ submissionId: entry.submissionId })) });
+    }));
+    Object.assign(URL, { createObjectURL: () => "blob:proof", revokeObjectURL: () => {} });
+    authState.authenticated = true;
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    await fill(container);
+    await press();
+    expect(saved.size).toBe(1);
+    await press();
+    await waitFor(() => expect(replay).toMatchObject({ submissionId: ups[0], replayed: true }));
+    expect(requests).toHaveLength(2);
+    expect(requests[1]).toEqual(requests[0]);
+    expect(uploads).toBe(2);
+    expect([...saved.values()]).toMatchObject([{ submissionId: ups[0], uploadIds: ups }]);
+    await waitFor(() => expect(screen.getAllByText("심사 중")).toHaveLength(1));
+  });
   it("starts a new attempt (new key, new uploads) when a field changes after a failure", async () => {
     const seen = setup([() => { throw new TypeError("connection lost"); }, () => Response.json({ submissionId: ups[0], status: "pending", revision: 0 })]);
     const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
