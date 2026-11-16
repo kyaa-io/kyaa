@@ -1,4 +1,5 @@
--- ONCHAIN-STAMPS-IMPL-1117 (20261229000000): dukjil stamps on the native lane, held stamps, backlog recovery manifest.
+-- ONCHAIN-STAMPS-CAPFIX-1117: acceptance test for the recovery dispatch cap (20261229002000). Before that migration this
+-- reproduced 501 recovery reservations on one UTC day (Codex review 11/17).
 -- Disposable clean-chain DB only; everything rolls back.
 do $$ begin if inet_server_addr() is not null then raise exception 'Disposable Unix-socket database required'; end if; end $$;
 begin;
@@ -61,8 +62,11 @@ select pg_temp.mkuser(1), pg_temp.mkuser(2), pg_temp.mkuser(3), pg_temp.mkcel(1,
 create temporary table legacy_before as select count(*) n from public.blockchain_jobs where entity_type = 'community_stamp';
 
 update public.fan_action_producer_routes set enabled=true,enabled_at=now();
+-- Acceptance (ONCHAIN-STAMPS-CAPFIX-1117, 20261229002000): 500 items enqueued on an earlier UTC day plus 1 enqueued today are
+-- admitted on one UTC day. Actual recovery reservations must stop at 500 and the shared budget must keep room for new actions.
 do $$
-declare i integer; h text; r record; admitted integer:=0;
+declare i integer; h text; r record; admitted integer:=0; deferred uuid; v_day date:=(clock_timestamp() at time zone 'UTC')::date;
+  v_recovery integer; v_total integer; v_limit integer; v_new uuid; v_stamp uuid;
 begin
  for i in 1..501 loop
  perform pg_temp.legacy_stamp('0c500000-0000-4000-8000-000000000001','0c510000-0000-4000-8000-000000000001','post','cap:'||i,now()-interval '2 days');
@@ -71,11 +75,35 @@ begin
  perform public.run_community_stamp_recovery(h,500);
  update public.community_stamp_recovery_items set enqueued_day=(now() at time zone 'UTC')::date-1 where outbox_id is not null;
  perform public.run_community_stamp_recovery(h,1);
+ perform pg_temp.assert((select count(*) from public.community_stamp_recovery_items where outbox_id is not null)=501,'501 recovery items enqueued');
  update public.fan_action_outbox set status='PROCESSING',lease_owner='xreview',lease_expires_at=now()+interval '1 hour' where id in(select outbox_id from public.community_stamp_recovery_items);
- for r in select outbox_id from public.community_stamp_recovery_items loop
- if public.admit_fan_action_dispatch(r.outbox_id,'xreview') then admitted:=admitted+1; end if;
+ for r in select i.outbox_id from public.community_stamp_recovery_items i order by i.ordinal loop
+ if public.admit_fan_action_dispatch(r.outbox_id,'xreview') then admitted:=admitted+1; else deferred:=r.outbox_id; end if;
  end loop;
- perform pg_temp.assert(admitted=501,'reproduces dispatch cap violation: 501 recovery reservations');
- raise notice 'CAP_VIOLATION_REPRODUCED: % recovery reservations; only 499 of 1000 remain',admitted;
+ select count(*) into v_recovery from public.fan_action_dispatch_reservations where budget_day=v_day
+   and outbox_id in(select outbox_id from public.community_stamp_recovery_items where outbox_id is not null);
+ perform pg_temp.assert(admitted=500 and v_recovery=500,'recovery reservations capped at 500, got '||admitted||'/'||v_recovery);
+ perform pg_temp.assert(exists(select 1 from public.fan_action_outbox where id=deferred and status='RETRYING' and lease_owner is null
+   and last_error_code='COMMUNITY_STAMP_RECOVERY_DAILY_LIMIT' and next_attempt_at=((v_day+1)::timestamp at time zone 'UTC')),'501st deferred to next UTC day');
+ -- Re-admission of an already reserved recovery job is not counted again and not blocked.
+ select i.outbox_id into r from public.community_stamp_recovery_items i where i.outbox_id<>deferred order by i.ordinal limit 1;
+ perform pg_temp.assert(public.admit_fan_action_dispatch(r.outbox_id,'xreview'),'reserved recovery job re-admitted');
+ -- A recovery job that already holds a signed transaction is admitted without a new reservation.
+ update public.fan_action_outbox set status='PROCESSING',lease_owner='xreview',lease_expires_at=now()+interval '1 hour',
+   payload='{}'::jsonb,action_id='0x'||repeat('b',64),request_hash='0x'||repeat('c',64),occurrence_id='0x'||repeat('d',64),tx_hash='0x'||repeat('a',64),signed_transaction='0xab' where id=deferred;
+ perform pg_temp.assert(public.admit_fan_action_dispatch(deferred,'xreview'),'signed recovery job admitted past the recovery cap');
+ perform pg_temp.assert((select count(*) from public.fan_action_dispatch_reservations where budget_day=v_day
+   and outbox_id in(select outbox_id from public.community_stamp_recovery_items where outbox_id is not null))=500,'no extra recovery reservation');
+ -- New actions still use the shared budget.
+ v_stamp:=public.dukjil_issue_stamp('0c500000-0000-4000-8000-000000000002','0c510000-0000-4000-8000-000000000001','quiz','capfix:new',2);
+ select fan_action_outbox_id into v_new from public.community_stamps where id=v_stamp;
+ perform pg_temp.assert(v_new is not null,'new stamp enqueued');
+ update public.fan_action_outbox set status='PROCESSING',lease_owner='xreview',lease_expires_at=now()+interval '1 hour' where id=v_new;
+ perform pg_temp.assert(public.admit_fan_action_dispatch(v_new,'xreview'),'new action admitted after recovery cap');
+ select daily_job_limit into v_limit from public.mint_dispatch_policy where singleton;
+ select (select count(*) from public.mint_dispatch_budget_reservations where budget_day=v_day)
+   +(select count(*) from public.fan_action_dispatch_reservations where budget_day=v_day) into v_total;
+ perform pg_temp.assert(v_limit-v_total>=499,'shared room for new actions, left '||(v_limit-v_total));
+ raise notice 'RECOVERY_DISPATCH_CAP_OK: recovery reservations %, deferred 1, shared limit %, used %, left for new actions %',v_recovery,v_limit,v_total,v_limit-v_total;
 end $$;
 rollback;

@@ -7,6 +7,8 @@ psql -X -v ON_ERROR_STOP=1 -f supabase/tests/dukjil_stamps_dispatch_cap_countere
 createdb -T "$PGDATABASE" byus
 PGDATABASE=byus psql -X -v ON_ERROR_STOP=1 -f supabase/tests/onchain-stamps-xreview/sequence.sql
 bash supabase/tests/dukjil_stamps_native_onchain_concurrency.sh
+psql -X -v ON_ERROR_STOP=1 -f supabase/rollback/20261229002000_dukjil_recovery_dispatch_cap.sql
+psql -X -v ON_ERROR_STOP=1 -c "do \$\$ begin if position('COMMUNITY_STAMP_RECOVERY_DAILY_LIMIT' in pg_get_functiondef('public.admit_fan_action_dispatch(uuid,text)'::regprocedure))>0 or to_regclass('public.community_stamp_recovery_items_outbox_idx') is not null then raise exception 'cap rollback incomplete'; end if; raise notice 'CAP_ROLLBACK_OK'; end \$\$"
 psql -X -v ON_ERROR_STOP=1 -f supabase/rollback/20261229000000_dukjil_stamps_native_onchain.sql
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
 do $$
