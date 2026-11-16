@@ -25,6 +25,8 @@ export const homeGalleryPhotoSchema = z.object({
 export type HomeGalleryPhoto = z.infer<typeof homeGalleryPhotoSchema>;
 
 export const homeGalleryPageSchema = z.object({ items: z.array(homeGalleryPhotoSchema).max(24), hasMore: z.boolean() }).strict();
+/** GET /api/public/gallery answer: the next 24 photos and the cursor after them (null at the end). */
+export const homeGalleryResponseSchema = z.object({ items: z.array(homeGalleryPhotoSchema).max(24), nextCursor: z.string().min(1).nullable() }).strict();
 export type HomeGalleryPage = Readonly<{ items: readonly HomeGalleryPhoto[]; nextCursor: string | null }>;
 
 /** Public short-form videos from registered creators: YouTube shorts, and TikTok videos the creator posted as source-only notices. */
