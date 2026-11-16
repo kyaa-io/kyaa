@@ -29,7 +29,7 @@ begin
   assert not exists (select 1 from public.notification_preferences where app_user_id = user_b and activity_email_notifications = false), 'other member is untouched';
 
   -- It can be switched back on.
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, true);
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, true, now(), public.email_unsubscribe_destination_binding(note_a, repeat('a', 64)));
   assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = true, 'preference is back on';
 
   -- Turning off all mail closes only the owner's mail channel.
@@ -45,13 +45,13 @@ begin
   assert (select count(*) from public.fan_notification_consent_audits where channel_id = channel_a and not consented) = 1, 'one revoke audit';
 
   -- The same link turns it back on, and the channel is eligible again.
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'email', null, true);
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'email', null, true, now(), public.email_unsubscribe_destination_binding(note_a, repeat('a', 64)));
   select * into c from public.fan_notification_channels where id = channel_a;
   assert c.status = 'eligible' and c.consent_revoked_at is null and c.consented_at is not null, 'owner mail channel is back on';
 
   -- A switch-on never reopens a channel the member did not turn off.
   update public.fan_notification_channels set status = 'disabled' where id = channel_b;
-  perform public.apply_email_unsubscribe(note_b, 'runmusic_result', 'email', null, true);
+  perform public.apply_email_unsubscribe(note_b, 'runmusic_result', 'email', null, true, now(), public.email_unsubscribe_destination_binding(note_b, repeat('b', 64)));
   select * into c from public.fan_notification_channels where id = channel_b;
   assert c.status = 'disabled', 'a channel closed for another reason stays closed';
 
@@ -145,10 +145,14 @@ begin
   assert c.status = 'disabled', 'new-address link works';
   perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'email', null, true, now(), public.email_unsubscribe_destination_binding(note_a, fp_new));
 
-  -- Links sent before the binding (no binding) keep working when no send address is recorded.
+  -- Links sent before the binding with no recorded send address can only switch mail off (UNSUB-BIND-1117).
   perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, false);
-  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = false, 'old link without a recorded send still works';
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, true);
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = false, 'old link without a recorded send can switch off';
+  failed := false;
+  begin perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, true); exception when sqlstate '55000' then failed := true; end;
+  assert failed, 'old link without a recorded send cannot switch on';
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = false, 'refused switch-on changed nothing';
+  update public.notification_preferences set activity_email_notifications = true where app_user_id = user_a;
 
   -- An old link whose recorded send address is still current works; after the address changes it is refused.
   update public.fan_notification_channels set destination_fingerprint = fp_a where id = channel_a;
