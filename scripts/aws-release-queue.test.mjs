@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { REQUIRED_WORKFLOWS } from './aws-release-ci.mjs';
-import { shouldBuild, restoreMain } from './aws-release-queue.mjs';
+import { shouldBuild, restoreMain, devHealthRevision } from './aws-release-queue.mjs';
 import { REPOSITORY, REPOSITORY_ID, WORKFLOW_PATH } from './aws-release.mjs';
 const sha = 'a'.repeat(40), newer = 'b'.repeat(40);
 const env = { GITHUB_EVENT_NAME: 'push', GITHUB_REF: 'refs/heads/main', GITHUB_SHA: sha, GITHUB_RUN_ID: '11' };
@@ -54,7 +54,7 @@ test('restore dispatches dev for completed main and leaves queued runs', async (
       if (path.includes('/git/')) return { object: { sha } };
       if (path.includes('/workflows/')) return { workflow_runs: [{ id: 11 }] };
       return { id: 11, repository: { id: REPOSITORY_ID, full_name: REPOSITORY }, path: WORKFLOW_PATH, head_branch: 'main', head_sha: sha, event: 'push', status };
-    }, async () => calls.push('dev'));
+    }, async () => calls.push('dev'), async () => newer);
     assert.equal(calls.length, status === 'completed' ? 1 : 0);
     if (calls.length) assert.equal(calls[0], 'dev');
   }
@@ -85,4 +85,42 @@ test('default shouldBuild retries transient failures on both main and reservatio
   });
   assert.equal(await shouldBuild(env), true);
   assert.deepEqual([...calls.values()], [2, 2]);
+});
+
+function restoreApi(status = 'completed') {
+  return async path => {
+    if (path.includes('/git/')) return { object: { sha } };
+    if (path.includes('/workflows/')) return { workflow_runs: [{ id: 11 }] };
+    return { id: 11, repository: { id: REPOSITORY_ID, full_name: REPOSITORY }, path: WORKFLOW_PATH, head_branch: 'main', head_sha: sha, event: 'push', status };
+  };
+}
+test('restoration skips only an exact live DEV revision match', async () => {
+  for (const [revision, expected] of [[sha, 0], [newer, 1], [null, 1], [sha.slice(0, 7), 1]]) {
+    let dispatches = 0;
+    await restoreMain(restoreApi(), async () => dispatches++, async () => revision);
+    assert.equal(dispatches, expected, String(revision));
+  }
+});
+test('unavailable DEV health preserves restoration; queued main never probes health', async () => {
+  let dispatches = 0, probes = 0;
+  const health = async () => { probes++; throw Error('503'); };
+  await restoreMain(restoreApi(), async () => dispatches++, health);
+  assert.equal(dispatches, 1);
+  await restoreMain(restoreApi('queued'), async () => dispatches++, health);
+  assert.equal(dispatches, 1);
+  assert.equal(probes, 1);
+});
+test('real health reader rejects 503, malformed JSON, missing and abbreviated revision', async () => {
+  for (const response of [
+    { ok: false, status: 503 },
+    { ok: true, json: async () => { throw Error('bad JSON'); } },
+    { ok: true, json: async () => ({}) },
+    { ok: true, json: async () => ({ revision: sha.slice(0, 7) }) },
+  ]) await assert.rejects(devHealthRevision(async () => response));
+  assert.equal(await devHealthRevision(async (url, options) => {
+    assert.ok(url.startsWith('https://dev.kyaa.io/api/health/live?'));
+    assert.equal(options.redirect, 'error');
+    assert.equal(options.headers['cache-control'], 'no-cache');
+    return { ok: true, json: async () => ({ revision: sha }) };
+  }), sha);
 });
