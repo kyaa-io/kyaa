@@ -73,7 +73,8 @@
 .slot[data-kind] > .slotLabel, .slot[data-kind] > .slotLink { grid-row: 2; }
 .slot[data-kind] > .points { grid-row: 3; }
 .slot[data-kind] > .slotDate { grid-row: 4; }
-.sheetBody { display: grid; justify-items: start; gap: var(--space-3); }
+.sheetBody { display: grid; justify-items: center; gap: var(--space-3); text-align: center; }
+.sheetArt { display: block; width: 120px; height: 120px; }
 .sheetTask { margin: 0; font-size: var(--fan-description-size); line-height: var(--fan-description-leading); overflow-wrap: anywhere; word-break: keep-all; }
 .slotDate { grid-row: 6; }
 .slotDate { color: var(--passport-muted); font-size: var(--passport-micro); font-variant-numeric: tabular-nums; }
