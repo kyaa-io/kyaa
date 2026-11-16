@@ -98,6 +98,19 @@ describe("FanSiteFooter", () => {
     expect(footer.querySelector("dl")).toBeInTheDocument();
   });
 
+  it.each(APP_LOCALES)("lists the US headquarters first and keeps the Korean operator details in %s", (locale) => {
+    for (const variant of ["full", "compact"] as const) {
+      const { unmount } = render(<FanSiteFooter locale={locale} variant={variant} />);
+      const rows = [...screen.getByRole("contentinfo").querySelectorAll("dl > div")];
+      expect(rows[0].querySelector("dd")).toHaveTextContent("KAYY Inc. · New York, USA");
+      expect(rows[0].querySelector("dd")).toHaveAttribute("lang", "en");
+      expect(rows[0].querySelector("dt")?.textContent).toMatch(/\S/);
+      expect(rows[1].querySelector("dd")).toHaveTextContent("주식회사 셀리랩");
+      expect(rows).toHaveLength(5);
+      unmount();
+    }
+  });
+
   it.each(APP_LOCALES)("lists the fan guides right under the service guide in %s", (locale) => {
     render(<FanSiteFooter locale={locale} />);
 

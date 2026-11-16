@@ -235,6 +235,19 @@ export const messages = {
     ru: "Деловая информация"
 
   },
+  "m46244ebf82a0": {
+    "ja": "本社",
+    "zh-Hans": "总部",
+    "zh-Hant": "總部",
+    "es": "Sede central",
+    "id": "Kantor pusat",
+    "vi": "Trụ sở chính",
+    "th": "สำนักงานใหญ่",
+    "pt": "Sede",
+    "fr": "Siège",
+    ru: "Штаб-квартира"
+
+  },
   "m858f418834a6": {
     "ja": "運営会社",
     "zh-Hans": "运营方",

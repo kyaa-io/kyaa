@@ -158,6 +158,7 @@
   overflow-wrap: break-word;
 }
 
+.businessHeadquarters,
 .businessAddress {
   flex-basis: 100%;
 }
@@ -317,6 +318,7 @@
   overflow-wrap: break-word;
 }
 
+.compactBusiness .businessHeadquarters,
 .compactBusiness .businessAddress {
   flex-basis: auto;
 }

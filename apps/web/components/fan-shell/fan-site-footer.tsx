@@ -18,6 +18,8 @@ import styles from "./fan-site-footer.module.css";
 import { AnalyticsConsentLink } from "@/features/analytics/client/analytics-consent-link";
 
 const TELEGRAM_CHANNEL_URL = "https://t.me/Kyaa_Official";
+// US headquarters shown as the first business-information line. Set the street address here once it is public.
+const HQ_LINE = "KAYY Inc. · New York, USA";
 
 // Brand marks from Simple Icons; Instagram reuses our existing local mark.
 const SOCIAL_CHANNELS = [
@@ -65,6 +67,7 @@ const copy = {
     partners: "파트너 협업 제안",
     onchain: "온체인 기록",
     businessInfo: "사업자 정보",
+    headquarters: "본사",
     operator: "운영사",
     representative: "대표자",
     registrationNumber: "사업자등록번호",
@@ -93,6 +96,7 @@ const copy = {
     partners: "Partnership proposals",
     onchain: "Onchain records",
     businessInfo: "Business information",
+    headquarters: "Headquarters",
     operator: "Operator",
     representative: "Representative",
     registrationNumber: "Business registration number",
@@ -123,6 +127,7 @@ const copy = {
     partners: localizedMessages.m5b205e1c6048[translationLocale],
     onchain: localizedMessages.m7607ea6f5002[translationLocale],
     businessInfo: localizedMessages.mf557e073dfa7[translationLocale],
+    headquarters: localizedMessages.m46244ebf82a0[translationLocale],
     operator: localizedMessages.m858f418834a6[translationLocale],
     representative: localizedMessages.mb0979e47f86e[translationLocale],
     registrationNumber: localizedMessages.m6a7a6594ed5a[translationLocale],
@@ -149,6 +154,7 @@ function FanFooterBusinessInfo({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   return (
     <dl aria-label={t.businessInfo}>
+      <div className={styles.businessHeadquarters}><dt>{t.headquarters}</dt><dd lang="en">{HQ_LINE}</dd></div>
       <div><dt>{t.operator}</dt><dd lang="ko">주식회사 셀리랩</dd></div>
       <div><dt>{t.representative}</dt><dd lang="ko">김보석</dd></div>
       <div><dt>{t.registrationNumber}</dt><dd>736-86-03473</dd></div>
