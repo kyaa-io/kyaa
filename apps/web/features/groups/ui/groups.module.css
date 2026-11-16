@@ -183,8 +183,6 @@
 @media(max-width:640px) { .eventLayout > .aside .eventTicket { padding:16px; } .eventLayout > .aside .eventTicket h2 { font-size:20px; line-height:30px; } }
 
 .creatorPagination{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}.creatorPagination button,.creatorPagination span{display:grid;place-items:center;min-width:44px;min-height:44px;border:0;border-radius:10px;background:transparent;font:inherit}.creatorPagination button{cursor:pointer}.creatorPagination span{background:var(--color-accent-soft);color:var(--color-accent-ink);font-weight:var(--fan-item-title-weight)}.creatorPagination button:disabled{display:none}
-/* Pencil Ov8dx shows three mobile preview stories followed by the board link. */
-@media(max-width:1023px){.creatorPagination{display:none}}
 /* Pencil hcwN6 and qRkgP pagination geometry. */
 .creatorPagination{height:68px;padding:12px 0;gap:4px;margin-top:0;box-sizing:border-box}.creatorPagination span{border:1px solid var(--color-accent);border-radius:10px;background:var(--color-accent-soft);color:var(--color-accent-ink)}
 .creatorPagination button:disabled[aria-label]{display:grid;opacity:.35;cursor:default}

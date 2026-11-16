@@ -38,6 +38,7 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
 /**
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
  * 줄 순서(대표 11/16 21:22): 1줄 이름 + 내 팬 등급(유형 태그·배지는 팬페이지가 아닐 때만) / 2줄 SNS 아이콘과 '팬 N · 접속 · 방문' 한 줄 / 3줄 별 버튼·행동 / 맨 아래 소개 2줄 + 더 보기.
+ * 사진 옆 칸에는 사진 높이 안에 드는 줄만 둔다(390: 이름·SNS 줄, 768+: 이름·SNS·행동 줄). 그 아래 줄은 사진 왼쪽 끝에서 시작한다(대표 11/17 00:36).
  */
 export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, grade, links = [], utility, menu, stats, tabs, frameId }: Readonly<{
   image: FanPageImage;
@@ -86,8 +87,8 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
         {star && <FanStarAction {...star} className={styles.star} />}
         {utility}
       </div> : null}
-      {description ? <Description labels={descriptionLabels} action={descriptionAction}>{description}</Description> : null}
       </div>
+      {description ? <Description labels={descriptionLabels} action={descriptionAction}>{description}</Description> : null}
     </div>
     {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
   </header>;
@@ -104,8 +105,8 @@ export function FanPageHeaderSkeleton({ stats, tabs }: Readonly<{ stats?: ReactN
       </div>
       {stats ? <div className={styles.meta}><div className={styles.stats}>{stats}</div></div> : null}
       <div className={styles.actions}><FanSkeleton shape="circle" width={96} height={36} className={styles.star} /></div>
-      <div className={styles.description}><FanSkeleton className={styles.descriptionSkeleton} /></div>
       </div>
+      <div className={styles.description}><FanSkeleton className={styles.descriptionSkeleton} /></div>
     </div>
     {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
   </header>;

@@ -1,5 +1,5 @@
 .header { display: grid; gap: var(--space-4); min-width: 0; margin-bottom: var(--space-6); }
-/* 390: 사진 96 | 이름 줄(내 등급이 넘치면 다음 줄), 그 아래 행동 줄. 그 아래 전폭으로 SNS·접속 한 줄, 맨 아래 소개(대표 11/16 21:22). */
+/* 390: 사진 96 | 이름 줄(내 등급이 넘치면 다음 줄), 그 아래 SNS·접속 줄. 그 아래 전폭으로 행동 줄, 맨 아래 소개. 순서는 대표 11/16 21:22, 사진 아래 줄은 사진 왼쪽 끝에서 시작(대표 11/17 00:36). */
 .identity {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
@@ -38,10 +38,10 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
-.actions { grid-column: 2; grid-row: 2; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
+.actions { grid-column: 1 / -1; grid-row: 3; display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); min-width: 0; }
 .star { flex: none; }
 /* SNS 로고와 '팬 N · 접속 · 방문'은 한 줄. 좁으면 접속 값이 통째로 다음 줄로 내려간다. */
-.meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-1); row-gap: var(--space-2); min-width: 0; }
+.meta { grid-column: 2; grid-row: 2; display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-1); row-gap: var(--space-2); min-width: 0; }
 /* 누름 영역 44px는 그대로, 위아래를 겹쳐 줄 높이(24)를 늘리지 않고, 첫 로고 그림은 글 왼쪽 끝에 맞춘다. 마지막 로고의 오른쪽 여백(12) + 줄 간격(4)이 접속 값까지의 16이다. */
 .links { flex: none; display: flex; flex-wrap: wrap; align-items: center; min-width: 0; margin: calc((24px - var(--min-target)) / 2) 0 calc((24px - var(--min-target)) / 2) calc((20px - var(--min-target)) / 2); }
 .links a { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; }
@@ -88,14 +88,13 @@
 .nameSkeleton { width: 60%; height: 28px; }
 .descriptionSkeleton { width: 80%; height: 21px; }
 
-/* 768+: 사진 128 | 이름·내 등급 / SNS·접속 / 별·좋아요 / 소개, 네 줄을 같은 간격으로 쌓는다(대표 11/16 21:22). 메뉴는 오른쪽 위. */
+/* 768+: 사진 128 | 이름·내 등급 / SNS·접속 / 별·좋아요 세 줄이 사진 높이 안에 들고, 소개는 사진 아래 전폭 줄이다(대표 11/17 00:36). 메뉴는 오른쪽 위. */
 @media (min-width: 48rem) {
   .identity { grid-template-columns: 128px minmax(0, 1fr); grid-template-rows: auto; column-gap: var(--space-5); }
   .image { grid-row: 1; width: 128px; height: 128px; }
-  .body { display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); min-width: 0; }
+  .body { grid-column: 2; grid-row: 1; align-self: center; display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); min-width: 0; }
   .headline { padding-right: var(--menu-space, 0); }
   .titleRow { padding-right: 0; }
   .name { display: block; text-overflow: ellipsis; white-space: nowrap; }
   .meta { flex-wrap: nowrap; }
-  .actions { min-height: var(--min-target); }
 }
