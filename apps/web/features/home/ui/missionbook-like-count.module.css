@@ -1,0 +1,21 @@
+/*
+ * 덕질미션북 좋아요 수 한 줄(사용자 11/16 "배너에 좋아요 수 잘 보이게"). 글자 크기·굵기는 공통 부품이 정한다:
+ * 숫자는 fan-number(배너 xl 24→32, 페이지 lg 24, 800), 단어는 FanText item(16/700).
+ * 줄 높이는 숫자 크기로 미리 잡아 읽기 전·실패 뒤에도 배너 글이 움직이지 않는다.
+ */
+.count { display: flex; align-items: center; min-height: var(--fan-number-size); margin: 0; color: inherit; }
+.line { display: inline-flex; align-items: center; gap: var(--space-2); min-width: 0; }
+.text { white-space: nowrap; }
+.icon { flex: none; }
+
+/* 미션북 페이지 머리: 흰 바탕, 글자 잉크, 아이콘만 강조색. */
+.count[data-tone="page"] { color: var(--color-ink); }
+.count[data-tone="page"] .icon { color: var(--color-accent); }
+
+/* 홈 배너: 글자색은 배너가 정한다(768+ 분홍 바탕 위 흰 글자, 390 사진 위 흰 글자). 숫자 부품의 잉크색을 배너 색으로 바꾼다. */
+.count[data-tone="banner"] .value { color: inherit; }
+@media (width >= 48rem) {
+  .count[data-tone="banner"] { min-height: var(--fan-number-size-wide); }
+}
+
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

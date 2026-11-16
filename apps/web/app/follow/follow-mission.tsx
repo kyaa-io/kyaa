@@ -39,7 +39,7 @@ function FollowMissionForOwner({ locale, auth, event }: { locale: 'ko' | 'en'; a
     : <FanAction onClick={m.like} variant={primary} fullWidth disabled={!m.ready || !m.loaded || m.pending} loading={m.pending} leadingIcon={<Star size={20} strokeWidth={1.5} />}>{t.like}</FanAction>;
  return <FanContentContainer as="main" id="x-mission-main" className={xs.column} lang={locale}>
   <div className={xs.hero}>
-   <div className={xs.keyVisual}><img src="/images/x-mission/key-visual.webp" alt="" width={1536} height={1024} fetchPriority="high" decoding="async" /></div>
+   <div className={`${xs.keyVisual} ${styles.visual}`}><img src="/images/x-mission/key-visual.webp" alt="" width={1536} height={1024} fetchPriority="high" decoding="async" /></div>
    <div className={xs.panel}>
     <div className={xs.topRow}>
      <header className={xs.title}>
@@ -62,18 +62,17 @@ function FollowMissionForOwner({ locale, auth, event }: { locale: 'ko' | 'en'; a
       </li>
       <li className={styles.card} data-row="mission-card" data-mission="like" data-done={m.completed ? '' : undefined} data-celebrate={m.celebrate ? '' : undefined}>
        <div className={styles.cardHead}>
-        <span className={`${styles.art} ${styles.star}`} aria-hidden="true"><Star className={m.celebrate ? xs.pop : undefined} size={28} strokeWidth={1.5} /></span>
-        <span className={styles.cardTitle}><FanDisplay role="caption" className={styles.no}>03</FanDisplay><FanDisplay role="strong">{t.likeTitle}</FanDisplay>{m.count ? <FanDisplay role="caption" className={xs.muted}>{t.count} · {new Intl.NumberFormat(locale).format(m.count)}</FanDisplay> : null}</span>
-        {m.completed ? <Check className={styles.check} size={24} strokeWidth={1.5} role="img" aria-label={t.stamped} /> : <span className={styles.todo} aria-hidden="true" />}
-       </div>
-       {m.completed && <div className={styles.stamped} data-block="follow-stamp">
-        <img className={styles.stamp} src={stampArt} alt="" width={512} height={512} decoding="async" />
-        <span className={styles.stampText}>
-         <img className={styles.wordmark} src="/images/guest-home/kyaa-wordmark.svg" alt="kyaa" width={1164} height={563} />
-         <FanHeading as="h3"><FanDisplay role="strong">{t.stamped}</FanDisplay></FanHeading>
-         <span className={styles.facts}>{m.nickname ? <FanDisplay role="caption" dir="auto">{m.nickname}</FanDisplay> : null}<FanDisplay role="caption">{m.stampDate}</FanDisplay></span>
+        {m.completed
+         ? <img className={`${styles.art} ${styles.stamp}`} src={stampArt} alt="" width={512} height={512} decoding="async" />
+         : <span className={`${styles.art} ${styles.star}`} aria-hidden="true"><Star size={28} strokeWidth={1.5} /></span>}
+        <span className={styles.cardTitle}>
+         <FanDisplay role="caption" className={styles.no}>03</FanDisplay>
+         {m.completed
+          ? <><FanHeading as="h3"><FanDisplay role="strong" className={styles.stamped}>{t.stamped}</FanDisplay></FanHeading><span className={styles.facts} data-block="follow-stamp">{m.nickname ? <FanDisplay role="caption" dir="auto">{m.nickname}</FanDisplay> : null}<FanDisplay role="caption">{m.stampDate}</FanDisplay></span></>
+          : <><FanDisplay role="strong">{t.likeTitle}</FanDisplay>{m.count ? <FanDisplay role="caption" className={xs.muted}>{t.count} · {new Intl.NumberFormat(locale).format(m.count)}</FanDisplay> : null}</>}
         </span>
-       </div>}
+        {m.completed ? <span className={styles.check} role="img" aria-label={t.done}><Check size={20} strokeWidth={1.5} /></span> : <span className={styles.todo} aria-hidden="true" />}
+       </div>
        {m.error && <FanText as="p" role="body" aria-live="assertive">{m.error === 'load' ? t.error : t.saveError}</FanText>}
        <div className={styles.cta} data-outbound-kind="social" data-outbound-placement="content">{action}</div>
       </li>

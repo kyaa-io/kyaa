@@ -17,6 +17,22 @@ it("sends guests to this CMS detail after login and hides dislike counts", () =>
   expect(screen.getByRole("link", { name: "싫어요" }).textContent).toBe("");
   expect(screen.queryByRole("textbox")).toBeNull();
 });
+it("shows the mission book likes from 10, sends the real choice and brings guests back to the mission book page", async () => {
+  const mission = { slug: "dukjil-missionbook", title: "덕질미션북", locale: "ko" as const, returnPath: "/guide/dukjil" };
+  state.authenticated = false;
+  const view = render(<HomeNoticeParticipation {...mission} />);
+  const like = screen.getByRole("link", { name: "좋아요 12" });
+  expect(new URL(like.getAttribute("href")!, "https://kyaa.test").searchParams.get("returnTo")).toBe("/guide/dukjil?locale=ko");
+  view.unmount();
+  state.authenticated = true;
+  const fetch = vi.fn(async (_url: string, _init: RequestInit) => Response.json({ reaction: "like", likeCount: 3, dislikeCount: null, commentCount: 0 }));
+  vi.stubGlobal("fetch", fetch);
+  render(<HomeNoticeParticipation {...mission} />);
+  fireEvent.click(screen.getByRole("button", { name: "좋아요 12" }));
+  await waitFor(() => expect(screen.getByRole("button", { name: "좋아요 13" })).toHaveAttribute("aria-pressed", "true"));
+  expect(fetch.mock.calls[0]![0]).toBe("/api/notices/dukjil-missionbook/reaction");
+  expect(JSON.parse(String(fetch.mock.calls[0]![1].body))).toEqual({ reaction: "like" });
+});
 it("switches and cancels reactions using the server result", async () => {
   const fetch = vi.fn(async (_url: string, init: RequestInit) => {
     const choice = JSON.parse(String(init.body)).reaction;

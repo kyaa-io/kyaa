@@ -19,6 +19,9 @@ import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import { GuestMissionBook } from "@/features/passport/ui/passport-mission-book";
+import { HomeNoticeParticipation } from "@/features/home/ui/home-notice-participation";
+import { MissionbookLikeCount } from "@/features/home/ui/missionbook-like-count";
+import { MISSIONBOOK_GUIDE_PATH, MISSIONBOOK_NOTICE_SLUG } from "@/features/home/domain/missionbook-likes";
 
 // Hearts per claimed mission book page: the claim result in dukjil-types is `hearts: z.literal(1)`, so this mirrors that contract.
 export const HEARTS_PER_PAGE = 1;
@@ -335,18 +338,21 @@ export function JjinfanGuideContent({ locale, model, challenge = false }: { loca
   );
 }
 
-/** 덕질미션북 (/guide/dukjil): what the book is, the real page of slots, what a full page and the points become, then every activity's points. */
+/** 덕질미션북 (/guide/dukjil): what the book is, the real page of slots, what a full page and the points become, then every activity's points.
+ * The like count in the hero and the like/dislike/share/comments block before the closing belong to one 안내 게시판 notice (user 11/16). */
 export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model: GuideModel }) {
   const proofSlot = model?.slots.find((slot) => slot.required);
+  const title = guideDetailText(locale, "dkgMbTitle");
   return (
     <>
       <GuideHero
         id="dukjil-guide-title"
         art={MISSIONBOOK_ART}
-        title={guideDetailText(locale, "dkgMbTitle")}
+        title={title}
         lead={model ? guideDetailText(locale, "dkgMbLead", [model.slots.length, HEARTS_PER_PAGE]) : undefined}
-        actions={<><GuideCta locale={locale} target="mission-book" returnPath="/guide/dukjil" /><Link className={styles.secondary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link></>}
+        actions={<><GuideCta locale={locale} target="mission-book" returnPath={MISSIONBOOK_GUIDE_PATH} /><Link className={styles.secondary} href={localeHref("/guide/jjinfan", locale)}>{guideText(locale, "dkgLinkJjinfan")}</Link></>}
       >
+        <MissionbookLikeCount locale={locale} />
         <GuideProgress locale={locale} />
       </GuideHero>
 
@@ -391,8 +397,12 @@ export function DukjilGuideContent({ locale, model }: { locale: AppLocale; model
         ]} />
       ) : null}
 
+      <div id="dukjil-likes" className={styles.participation}>
+        <HomeNoticeParticipation slug={MISSIONBOOK_NOTICE_SLUG} title={title} locale={locale} returnPath={MISSIONBOOK_GUIDE_PATH} />
+      </div>
+
       <GuideClosing title={model ? guideDetailText(locale, "dkgDkCloseTitle", [model.activities.length]) : guideText(locale, "dkgDkMetaTitle")}>
-        <GuideCta locale={locale} target="mission-book" returnPath="/guide/dukjil" />
+        <GuideCta locale={locale} target="mission-book" returnPath={MISSIONBOOK_GUIDE_PATH} />
         <GuideFansLink locale={locale} />
       </GuideClosing>
     </>

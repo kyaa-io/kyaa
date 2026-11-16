@@ -17,25 +17,27 @@
 .star svg { fill: currentColor; }
 .cardTitle { display: grid; gap: var(--space-1); min-width: 0; word-break: keep-all; }
 .no { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
-/* 끝낸 표시: 체크 아이콘 + 잉크색(DESIGN.md 4절) */
-.check { color: var(--color-ink); }
+/* 끝낸 표시: 완료 체크 = --color-success(DESIGN.md 4절 '완료 체크'). Gleam 체크처럼 채운 원이라 캡처에서 셋이 같은 표시로 읽힌다 */
+.check { display: grid; place-items: center; width: calc(var(--space-6) + var(--space-1)); aspect-ratio: 1; border-radius: var(--radius-pill); background: var(--color-success); color: var(--color-surface); }
 .todo { width: var(--space-5); height: var(--space-5); border: 1.5px solid var(--color-accent); border-radius: var(--radius-pill); }
 
-/* 좋아요 뒤: 카드 안에 kyaa 도장 · 완료 문구 · 닉네임·날짜(사용자 11/13 '도장 찍힌 완료 화면'을 캡처 한 장에) */
-.stamped { display: grid; grid-template-columns: calc(var(--space-16) + var(--space-4)) minmax(0, 1fr); align-items: center; gap: var(--space-4); padding: var(--space-4); border-radius: var(--radius-card); background: var(--color-surface); }
-.stamp { width: 100%; height: auto; rotate: -8deg; }
-.stampText { display: grid; gap: var(--space-1); min-width: 0; justify-items: start; }
-.stampText h3 { margin: 0; text-wrap: balance; }
-.wordmark { width: var(--space-16); height: auto; }
+/* 좋아요 뒤(사용자 11/13 '도장 찍힌 완료 화면'을 캡처 한 장에): 별 자리에 kyaa 도장, 이름 줄이 완료 문구 · 닉네임 | 날짜로 바뀐다.
+ * 390에서 X 카드 + 이 카드 + 버튼이 첫 화면 한 장(헤더·탭바 사이)에 든다 */
+.stamp { padding: var(--space-1); object-fit: contain; rotate: -8deg; }
+.stamped { text-wrap: balance; }
 .facts { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); color: var(--color-muted); word-break: keep-all; }
 .facts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-line); }
 .cta { display: grid; }
 
-/* 도장 쾅(방금 완료한 때만): 크게 들렸다가 내려앉아 한 번 눌린다. 450ms 한 번 */
-.card[data-celebrate] .stamp { animation: slam 450ms var(--motion-easing) 200ms both; }
-.card[data-celebrate] .stampText { animation: rise var(--motion-reward) var(--motion-easing) 450ms both; }
+/* 도장 쾅(방금 완료한 때만): 크게 들렸다가 내려앉아 한 번 눌린다. 450ms 한 번. 체크는 뒤따라 한 번 튄다 */
+.card[data-celebrate] .stamp { animation: slam 450ms var(--motion-easing) 150ms both; }
+.card[data-celebrate] .check { animation: pop var(--motion-reward) var(--motion-easing) 450ms both; }
 @keyframes slam { 0% { transform: scale(1.8); opacity: 0; } 60% { transform: scale(.94); opacity: 1; } 100% { transform: scale(1); } }
-@keyframes rise { from { transform: translateY(var(--space-2)); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes pop { 0% { transform: scale(.4); } 55% { transform: scale(1.2); } 100% { transform: scale(1); } }
+/* PC(7|5): 오른쪽 미션 카드가 키 비주얼보다 길어 왼쪽 아래가 비므로, 키 비주얼이 헤더 아래에 붙어 따라온다 */
+@media (width >= 64rem) {
+  .visual { position: sticky; top: calc(var(--fan-header-height) + var(--space-8)); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .card[data-celebrate] :is(.stamp, .stampText) { animation: none; }
+  .card[data-celebrate] :is(.stamp, .check) { animation: none; }
 }
