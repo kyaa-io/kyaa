@@ -47,9 +47,9 @@
 .visual { order: 1; }
 .card[data-mission="like"] { order: -1; }
 
-/* PC: 왼쪽 4 = 작은 키 비주얼 + 제목, 오른쪽 8 = 카드 두 장 나란히(01·02 | 03). 1440×900 첫 화면에 Gleam 전체와 03 버튼이 든다 */
+/* PC: 왼쪽 4 = 제목 위·작은 키 비주얼 아래(대표 21:03 제보 187446), 오른쪽 8 = 카드 두 장 나란히(01·02 | 03). 1440×900 첫 화면에 Gleam 전체와 03 버튼이 든다 */
 @media (width >= 64rem) {
-  .hero { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); grid-template-areas: "visual missions" "top missions" "browser missions"; grid-template-rows: auto auto 1fr; column-gap: var(--space-10); row-gap: var(--space-6); align-items: start; }
+  .hero { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); grid-template-areas: "top missions" "visual missions" "browser missions"; grid-template-rows: auto auto 1fr; column-gap: var(--space-10); row-gap: var(--space-6); align-items: start; }
   .panel { display: contents; }
   .visual { grid-area: visual; order: 0; }
   .top { grid-area: top; }
