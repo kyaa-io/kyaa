@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "공지 '최애 찾기', '팬이 있는 당신에게', '팬페이지에서 공식 사진과 영상 보기'의 그림을 더 선명한 파일로 바꿨어요. 그림 내용과 구도는 그대로예요.",
+    "첨부 화면은 운영 공지 화면에서 그림만 새 파일로 바꿔 끼워 찍은 것이에요."
+  ],
+  "path": "/notices/creator-intro",
+  "images": [
+    "release-notes/images/2026-11-16-notice-image-upscale-390.png",
+    "release-notes/images/2026-11-16-notice-image-upscale-1440.png"
+  ]
+}
