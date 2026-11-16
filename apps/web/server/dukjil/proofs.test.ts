@@ -65,6 +65,14 @@ describe("submit", () => {
     vi.mocked(deps.rpc).mockResolvedValue({ ...dbResult, replayed: true });
     expect((await (await h.submit(send(valid))).json()).replayed).toBe(true);
   });
+  it("sends the same key and request hash for the same resend, so the database finds the first submission", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue(dbResult);
+    await h.submit(send(valid));
+    await h.submit(send(valid));
+    const [first, second] = vi.mocked(deps.rpc).mock.calls.map((call) => call[1] as Record<string, unknown>);
+    expect(second.p_idempotency_key).toBe(first.p_idempotency_key);
+    expect(second.p_request_hash).toBe(first.p_request_hash);
+  });
   it("blocks personal information in the note: the flag reaches the database and the database error is a 422", async () => {
     vi.mocked(deps.rpc).mockRejectedValue(new Error("PROOF_PII_DETECTED"));
     const res = await h.submit(send({ ...valid, note: "연락은 010-1234-5678 로 주세요" }));

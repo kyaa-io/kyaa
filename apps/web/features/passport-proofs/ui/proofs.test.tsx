@@ -22,6 +22,10 @@ vi.mock("@/features/dukjil/ui/dukjil-provider", () => ({
   DukjilProvider: ({ children }: { children: import("react").ReactNode }) => children,
   useDukjil: () => ({ status: "on", catalog: { rules: { proof: { points: 173 }, subscription: { points: 31 } } } }),
 }));
+vi.mock("./proof-image", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./proof-image")>()),
+  maskAndEncode: async () => ({ blob: new Blob(["webp"]), phash: "0123456789abcdef" }),
+}));
 afterEach(cleanup);
 
 const item = (over: Record<string, unknown>) => ({
@@ -196,6 +200,69 @@ describe("privacy cover step on the submit form (FB-N21)", () => {
     fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["y"], "s.png", { type: "image/png" })] } });
     expect((screen.getByLabelText("개인정보를 모두 가렸어요 (필수)") as HTMLInputElement).checked).toBe(false);
     expect(submit().disabled).toBe(true);
+  });
+});
+
+describe("a lost submit response (PROOF-RETRY-1116)", () => {
+  const mission = "55555555-5555-4555-8555-555555555555";
+  const ups = ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2"];
+  const setup = (submitResponses: Array<() => Response>) => {
+    let uploads = 0;
+    const submits: Array<Record<string, unknown>> = [];
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/uploads")) return Response.json({ uploadId: `aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa${++uploads}` });
+      if (url.includes("/missions")) return Response.json({ items: [{ missionId: mission, proofType: "receipt", platform: null, submittable: true, unavailableReason: null, closesAt: "2027-01-01T00:00:00Z" }] });
+      if (url.includes("/posts")) return Response.json({ items: [], nextBefore: null });
+      if (url.endsWith("/api/me/proofs") && init?.method === "POST") {
+        submits.push(JSON.parse(String(init.body)));
+        return (submitResponses.shift() ?? (() => { throw new Error("no response"); }))();
+      }
+      return Response.json({ items: [] });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    Object.assign(URL, { createObjectURL: () => "blob:proof", revokeObjectURL: () => {} });
+    authState.authenticated = true;
+    return { submits, uploadCount: () => uploads };
+  };
+  const fill = async (container: HTMLElement) => {
+    await screen.findByText("이름·주소·카드번호 등 개인정보를 가려서 올려 주세요");
+    fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["x"], "a.png", { type: "image/png" }), new File(["y"], "b.png", { type: "image/png" })] } });
+    fireEvent.click(screen.getByLabelText("개인정보 처리에 동의합니다 (필수)"));
+    fireEvent.click(screen.getByLabelText("개인정보를 모두 가렸어요 (필수)"));
+  };
+  const press = async () => {
+    const button = screen.getByRole("button", { name: "제출" }) as HTMLButtonElement;
+    await waitFor(() => expect(button.disabled).toBe(false));
+    fireEvent.click(button);
+    await waitFor(() => expect((screen.getByRole("button", { name: /제출/ }) as HTMLButtonElement).textContent).not.toBe(proofsText("ko", "pfSubmitting")));
+  };
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("resends with the same request key and uploads, and does not upload the pictures again", async () => {
+    const seen = setup([() => { throw new TypeError("connection lost"); }, () => Response.json({ submissionId: ups[0], status: "pending", revision: 0, replayed: true })]);
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    await fill(container);
+    await press();
+    await waitFor(() => expect(seen.submits).toHaveLength(1));
+    expect(seen.uploadCount()).toBe(2);
+    await press();
+    await waitFor(() => expect(seen.submits).toHaveLength(2));
+    expect(seen.uploadCount()).toBe(2);
+    expect(seen.submits[1]).toEqual(seen.submits[0]);
+    expect(seen.submits[1].uploadIds).toEqual(ups);
+  });
+  it("starts a new attempt (new key, new uploads) when a field changes after a failure", async () => {
+    const seen = setup([() => { throw new TypeError("connection lost"); }, () => Response.json({ submissionId: ups[0], status: "pending", revision: 0 })]);
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    await fill(container);
+    await press();
+    await waitFor(() => expect(seen.submits).toHaveLength(1));
+    fireEvent.change(screen.getByLabelText("한마디 (선택)"), { target: { value: "바꿈" } });
+    await press();
+    await waitFor(() => expect(seen.submits).toHaveLength(2));
+    expect(seen.submits[1].requestKey).not.toBe(seen.submits[0].requestKey);
+    expect(seen.uploadCount()).toBe(4);
   });
 });
 
