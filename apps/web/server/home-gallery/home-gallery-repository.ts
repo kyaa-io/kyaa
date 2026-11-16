@@ -63,6 +63,11 @@ export class HomeGalleryRepository {
     return items.map(item => covers[item.href] ? { ...item, thumbnail: covers[item.href] } : item);
   }
 
+  /** An Instagram reel is shown only with the cover the site stored for it; one without a cover is left out here so paging counts only what can be drawn. */
+  private async withCoverRule(items: HomeShort[]): Promise<HomeShort[]> {
+    return (await this.withThumbnails(items)).filter(item => item.platform !== "instagram" || item.thumbnail);
+  }
+
   /**
    * The newest SHORTS_POOL short-form videos, creators taking turns (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"). Paging is by position in
    * this diversified list, so the offset the shorts page and the rail send means the same on every read.
@@ -75,7 +80,8 @@ export class HomeGalleryRepository {
     }));
     const seen = new Set<string>();
     const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
-    return diversify ? diversifyShorts(items) : items;
+    const shown = await this.withCoverRule(items);
+    return diversify ? diversifyShorts(shown) : shown;
   }
 
   /** A single stable catalog lets sorting and creator chips operate on the same public videos. */
@@ -85,7 +91,7 @@ export class HomeGalleryRepository {
       const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: offset, p_limit: SHORTS_READ });
       if (error) throw new HomeGalleryRepositoryError(error.message);
       const page = homeShortsPageSchema.parse(data);
-      items.push(...page.items);
+      items.push(...await this.withCoverRule(page.items));
       if (!page.hasMore) break;
     }
     const popularity = await Promise.all(items.map(async (item) => {
@@ -94,18 +100,18 @@ export class HomeGalleryRepository {
       return [item.videoId, data === null ? 0 : z.object({ likeCount: z.number().int().nonnegative() }).parse(data).likeCount] as const;
     }));
     const likes = Object.fromEntries(popularity);
-    return { items: await this.withAvatars(locale, await this.withThumbnails(items)), likes };
+    return { items: await this.withAvatars(locale, items), likes };
   }
 
   async listShorts(locale: "ko" | "en", input: { limit: number }): Promise<readonly HomeShort[]> {
     const items = (await this.shortsPool(locale)).slice(0, input.limit);
-    return this.withAvatars(locale, await this.withThumbnails(items));
+    return this.withAvatars(locale, items);
   }
 
   async listShortsPage(locale: "ko" | "en", input: { offset: number; limit: number }) {
     const pool = await this.shortsPool(locale);
     const items = pool.slice(input.offset, input.offset + input.limit);
-    return { items: await this.withAvatars(locale, await this.withThumbnails(items)), hasMore: input.offset + input.limit < pool.length };
+    return { items: await this.withAvatars(locale, items), hasMore: input.offset + input.limit < pool.length };
   }
 }
 

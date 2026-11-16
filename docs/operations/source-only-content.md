@@ -75,3 +75,9 @@ assertSourceOnlyLocalizations(input, cmsReadbackLocalizations);
 300자를 넘을 때만 앞에서 연속 발췌한다. 번역·윤문·요약을 저장하지 않는다.
 수집 행만 제목을 갱신하고, 수동 등록 행은 보존한다. 재확인에서 사용할 수 없는 영상은
 삭제 대신 숨긴다. UUSH API 실검증은 dev 키 접근이 가능한 환경에서 완료해야 한다.
+
+## Instagram 릴스의 숏폼 노출
+영상 표지(`video_thumbnails`)가 저장된 공개 Instagram 게시물 공지(`instagram-…` slug, 등록된 공식 계정 수집분)는
+`home_shortform`(platform `instagram`)으로 동기화되어 홈·`/shorts`의 숏폼에 섞인다(`20261229000000_home_shortform_instagram.sql`).
+제목은 공지의 원문 캡션 발췌 그대로, 시각은 게시물 원본 시각이다. 앱 안 재생기는 없고 카드가 원 게시물(공통 UTM·클릭 측정 적용)을 연다.
+저장된 표지를 공개할 수 없는 릴스는 서버가 목록에서 뺀다. 사진 글(표지 없음)은 숏폼이 되지 않는다.

@@ -26,7 +26,11 @@ const navigation: Record<AppLocale, [string, string, string]> = {
 };
 
 // TikTok covers are signed links that expire within a day, so the covers of the creators' TikTok notices are kept as site images.
-const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
+// An Instagram reel has no platform cover to fall back on: only the cover the site stored for it shows, and a reel without one is left out like any short without a cover.
+const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : item.platform === "instagram" ? null : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
+const platformName = (item: HomeShort) => item.platform === "tiktok" ? "TikTok" : item.platform === "instagram" ? "Instagram" : "YouTube";
+// Instagram reels open the original post in a new tab; only YouTube and TikTok shorts play in the viewer.
+const playsInViewer = (item: HomeShort) => item.platform !== "instagram";
 
 const PAGE_SIZE = 12;
 
@@ -35,7 +39,7 @@ function CreatorGroupLink({ item, locale, className, source = false }: { item: H
   const group = fanUiText(locale, "kindGroup");
   return <FanAction variant="text" className={className} href={creatorHomeHref(item.creator.slug, locale)} ariaLabel={`${item.creator.name} ${group}`}>
     <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={24} />
-    <FanText role="meta" className={styles.creatorName}>{source ? `${item.creator.name} · ${item.platform === "tiktok" ? "TikTok" : "YouTube"}` : item.creator.name}</FanText>
+    <FanText role="meta" className={styles.creatorName}>{source ? `${item.creator.name} · ${platformName(item)}` : item.creator.name}</FanText>
     <FanText role="label" className={styles.creatorGo}>{group}<span aria-hidden="true">›</span></FanText>
   </FanAction>;
 }
@@ -46,6 +50,7 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
   const [loaded, setItems] = useState(firstItems);
   const [uncovered, setUncovered] = useState<ReadonlySet<string>>(new Set());
   const items = loaded.filter(item => !uncovered.has(item.id));
+  const playable = items.filter(playsInViewer);
   const hideUncovered = useCallback((id: string) => setUncovered(current => current.has(id) ? current : new Set(current).add(id)), []);
   const [hasMore, setHasMore] = useState(firstHasMore);
   const [failed, setFailed] = useState(false);
@@ -70,13 +75,13 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     watch.observe(node);
     return () => watch.disconnect();
   }, [layout, hasMore, failed, loadMore]);
-  const [index, setIndex] = useState<number | null>(() => { const i = items.findIndex(item => item.videoId === initialVideo); return i < 0 ? null : i; });
+  const [index, setIndex] = useState<number | null>(() => { const i = playable.findIndex(item => item.videoId === initialVideo); return i < 0 ? null : i; });
   const [more, setMore] = useState(false);
   const [endedId, setEndedId] = useState<string | null>(null);
   const startY = useRef<number | null>(null);
   const wheelAt = useRef(0);
-  const selected = index === null ? null : items[index];
-  const move = (delta: number) => { setIndex(i => i === null ? null : Math.max(0, Math.min(items.length - 1, i + delta))); setMore(false); };
+  const selected = index === null ? null : playable[index];
+  const move = (delta: number) => { setIndex(i => i === null ? null : Math.max(0, Math.min(playable.length - 1, i + delta))); setMore(false); };
   useEffect(() => {
     if (index === null) return;
     const onKey = (event: KeyboardEvent) => {
@@ -85,23 +90,26 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [index, items.length]);
+  }, [index, playable.length]);
   const swipe = {
     onTouchStart: (e: React.TouchEvent) => { startY.current = e.touches[0]?.clientY ?? null; },
     onTouchEnd: (e: React.TouchEvent) => { if (startY.current !== null) { const difference = startY.current - (e.changedTouches[0]?.clientY ?? startY.current); if (Math.abs(difference) >= 45) move(difference > 0 ? 1 : -1); } startY.current = null; },
   };
   // The /shorts grid: the card button plays (cover and title); the creator line under it is its own link to the fan page. The home rail keeps its compact caption.
   const grid = layout === "grid";
-  const cards = items.map((item, i) => <li key={item.id} className={styles.item} data-row="short">
-        <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(i)}>
-          <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop onMissing={() => hideUncovered(item.id)} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>
-          {grid ? <span className={`${styles.title} ${styles.gridTitle}`}>{item.title}</span> : <span className={styles.caption}>
-            <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
-            <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {item.platform === "tiktok" ? "TikTok" : "YouTube"}</FanText></span>
-          </span>}
-        </FanAction>
+  const cards = items.map(item => {
+    const cover = <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop onMissing={() => hideUncovered(item.id)} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>;
+    const caption = grid ? <span className={`${styles.title} ${styles.gridTitle}`}>{item.title}</span> : <span className={styles.caption}>
+      <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
+      <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {platformName(item)}</FanText></span>
+    </span>;
+    return <li key={item.id} className={styles.item} data-row="short" {...(playsInViewer(item) ? {} : { "data-outbound-kind": "external", "data-outbound-placement": "content" })}>
+        {playsInViewer(item)
+          ? <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(playable.indexOf(item))}>{cover}{caption}</FanAction>
+          : <FanAction variant="text" href={item.href} external className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>}
         {grid && <CreatorGroupLink item={item} locale={locale} className={styles.creatorLink} source />}
-      </li>);
+      </li>;
+  });
   const nearEnd = useCallback(() => { if (hasMore && !failed) void loadMore(); }, [hasMore, failed, loadMore]);
   return <>
     {layout === "rail" ? <FanScrollRow className={styles.rail} locale={locale} onNearEnd={nearEnd}>{cards}</FanScrollRow> : <ul className={styles.grid}>{cards}</ul>}
@@ -117,13 +125,13 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
         {/* After the short ends, the same line lights up as the way on to the creator's page; nothing covers the video. */}
         <div className={styles.viewerCreator} data-ended={endedId === selected.videoId || undefined}><CreatorGroupLink item={selected} locale={locale} className={styles.viewerCreatorLink} /></div>
         <div className={styles.bottomBar} {...swipe}>
-        <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset + Math.floor((index ?? 0) / PAGE_SIZE) * PAGE_SIZE} />
+        <ShortsEngagement key={selected.videoId} videoId={selected.videoId} locale={locale} offset={offset + Math.floor(Math.max(0, items.indexOf(selected)) / PAGE_SIZE) * PAGE_SIZE} />
         <div className={styles.controls}>
           <FanAction variant="text" type="button" onClick={() => move(-1)} disabled={index === 0} ariaLabel={navigation[locale][0]}><FanIcon icon={ChevronUp} /></FanAction>
-          <FanAction variant="text" type="button" onClick={() => move(1)} disabled={index === items.length - 1} ariaLabel={navigation[locale][1]}><FanIcon icon={ChevronDown} /></FanAction>
-          <span>{(index ?? 0) + 1} / {items.length}</span>
+          <FanAction variant="text" type="button" onClick={() => move(1)} disabled={index === playable.length - 1} ariaLabel={navigation[locale][1]}><FanIcon icon={ChevronDown} /></FanAction>
+          <span>{(index ?? 0) + 1} / {playable.length}</span>
           <FanAction variant="text" type="button" ariaLabel={navigation[locale][2]} aria-expanded={more} onClick={() => setMore(value => !value)}><FanIcon icon={MoreHorizontal} /></FanAction>
-          {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{selected.platform === "tiktok" ? "TikTok" : "YouTube"} ↗</a>}
+          {more && <a href={selected.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{platformName(selected)} ↗</a>}
         </div>
         </div>
       </div>}

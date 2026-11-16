@@ -47,15 +47,16 @@ export function roundRobinByKey<T>(list: readonly T[], keyOf: (item: T) => strin
   return result;
 }
 
-/** Home Shorts (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"): creators take turns, newest first inside one creator. */
+/** Home Shorts (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"): creators take turns, newest first inside one creator; YouTube, TikTok and Instagram shorts alternate where the creators allow it (사용자 2026-11-16 "인스타그램 릴스·유튜브 쇼츠도"). */
 export function diversifyShorts<T extends { creator: { slug: string }; platform?: string }>(shorts: readonly T[]): T[] {
   const pending = roundRobinByKey(shorts, short => short.creator.slug);
   const result: T[] = [];
   while (pending.length) {
     const previous = result.at(-1);
     let index = pending.findIndex(item => item.platform !== previous?.platform && item.creator.slug !== previous?.creator.slug);
-    if (index < 0) index = pending.findIndex(item => item.platform !== previous?.platform);
+    // A creator never repeats while another creator is left; a repeated platform is the lesser fault.
     if (index < 0) index = pending.findIndex(item => item.creator.slug !== previous?.creator.slug);
+    if (index < 0) index = pending.findIndex(item => item.platform !== previous?.platform);
     result.push(pending.splice(Math.max(0, index), 1)[0]);
   }
   return result;
