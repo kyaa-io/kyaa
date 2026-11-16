@@ -51,6 +51,7 @@ export interface NotificationRepository {
     artistOnlineNotifications?: boolean;
     socialNotifications?: boolean;
     friendActivityNotifications?: boolean;
+    activityEmailNotifications?: boolean;
     participationNotifications?: boolean;
   }): Promise<NotificationPreferences>;
   enqueueDue(now: string): Promise<number>;
@@ -294,7 +295,7 @@ export function createNotificationRepository(
     const [pref, sub] = await Promise.all([
       db
         .from("notification_preferences")
-        .select("live_reminders,survey_reminders,benefit_notifications,reply_notifications,official_post_notifications,schedule_notifications,artist_activity_notifications,artist_online_notifications,social_notifications,friend_activity_notifications,participation_notifications")
+        .select("activity_email_notifications,live_reminders,survey_reminders,benefit_notifications,reply_notifications,official_post_notifications,schedule_notifications,artist_activity_notifications,artist_online_notifications,social_notifications,friend_activity_notifications,participation_notifications")
         .eq("app_user_id", appUserId)
         .maybeSingle(),
       db
@@ -306,6 +307,7 @@ export function createNotificationRepository(
     if (pref.error || sub.error)
       throw new Error("notification preferences unavailable");
     return {
+      activityEmailNotifications: pref.data?.activity_email_notifications ?? true,
       liveReminders: pref.data?.live_reminders ?? true,
       surveyReminders: pref.data?.survey_reminders ?? true,
       benefitNotifications: pref.data?.benefit_notifications ?? true,
@@ -381,6 +383,7 @@ export function createNotificationRepository(
           ...(input.artistOnlineNotifications === undefined ? {} : { artist_online_notifications: input.artistOnlineNotifications }),
           ...(input.socialNotifications === undefined ? {} : { social_notifications: input.socialNotifications }),
           ...(input.friendActivityNotifications === undefined ? {} : { friend_activity_notifications: input.friendActivityNotifications }),
+          ...(input.activityEmailNotifications === undefined ? {} : { activity_email_notifications: input.activityEmailNotifications }),
           ...(input.participationNotifications === undefined ? {} : { participation_notifications: input.participationNotifications }),
         },
       });

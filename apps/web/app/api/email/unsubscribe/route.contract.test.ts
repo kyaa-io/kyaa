@@ -25,7 +25,7 @@ it("answers a mail client's one-click POST without a login", async () => {
     method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: "List-Unsubscribe=One-Click",
   }));
   expect(response.status).toBe(200);
-  expect(mocks.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_notification_id: notificationId, p_scope: "preference", p_preference: "survey_reminders", p_enabled: false }));
+  expect(mocks.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_notification_id: notificationId, p_scope: "activity", p_preference: null, p_enabled: false }));
 });
 
 it("does not change anything on GET", async () => {

@@ -27,7 +27,7 @@ export function createEmailUnsubscribeGetHandler() {
 }
 
 /**
- * POST with `List-Unsubscribe=One-Click` (RFC 8058) switches off the mail's own kind and answers JSON.
+ * POST with `List-Unsubscribe=One-Click` (RFC 8058) switches off activity emails and answers JSON.
  * POST from the page's form carries `scope` and `enabled`, and answers with a redirect back to the page.
  */
 export function createEmailUnsubscribePostHandler(dependencies: () => EmailUnsubscribeRouteDependencies) {
@@ -37,7 +37,7 @@ export function createEmailUnsubscribePostHandler(dependencies: () => EmailUnsub
     const oneClick = form.get("List-Unsubscribe") === "One-Click";
     const scopeField = form.get("scope");
     const enabledField = form.get("enabled");
-    const fromPage = !oneClick && (scopeField === "preference" || scopeField === "email") && (enabledField === "true" || enabledField === "false");
+    const fromPage = !oneClick && (scopeField === "activity" || scopeField === "email") && (enabledField === "true" || enabledField === "false");
     if (!oneClick && !fromPage) return Response.json({ error: { code: "INVALID_REQUEST" } }, { status: 400, headers: noStore });
 
     const fail = (code: "expired" | "invalid" | "failed", status: number) => fromPage
@@ -49,10 +49,10 @@ export function createEmailUnsubscribePostHandler(dependencies: () => EmailUnsub
     if (target.state !== "ok") return fail(target.state, target.state === "expired" ? 410 : 400);
     if (!deps.client) return fail("failed", 503);
 
-    const scope: EmailUnsubscribeScope = fromPage ? (scopeField as EmailUnsubscribeScope) : target.preference ? "preference" : "email";
+    const scope: EmailUnsubscribeScope = fromPage ? (scopeField as EmailUnsubscribeScope) : "activity";
     const enabled = fromPage ? enabledField === "true" : false;
     let outcome;
-    try { outcome = await applyEmailUnsubscribe(deps.client, target, { scope, enabled }); } catch { outcome = "unavailable" as const; }
+    try { outcome = await applyEmailUnsubscribe(deps.client, target, { scope, enabled, via: oneClick ? "one_click" : "mail_page" }); } catch { outcome = "unavailable" as const; }
     if (outcome === "unavailable") return fail("failed", 503);
     if (outcome === "not_found") return fail("invalid", 404);
     if (outcome === "expired") return fail("expired", 410);

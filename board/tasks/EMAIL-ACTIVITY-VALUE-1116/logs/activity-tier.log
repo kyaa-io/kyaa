@@ -1,0 +1,7 @@
+BEGIN
+psql:/tmp/activity-tier.sql:19: NOTICE:  identifier "email_notification_delivery_is_eligible_before_raffle_recipient_reminder" will be truncated to "email_notification_delivery_is_eligible_before_raffle_recipient"
+psql:/tmp/activity-tier.sql:19: NOTICE:  identifier "email_notification_delivery_is_eligible_before_raffle_recipient_reminder" will be truncated to "email_notification_delivery_is_eligible_before_raffle_recipient"
+psql:/tmp/activity-tier.sql:19: NOTICE:  identifier "email_notification_delivery_is_eligible_before_raffle_recipient_reminder" will be truncated to "email_notification_delivery_is_eligible_before_raffle_recipient"
+psql:/tmp/activity-tier.sql:19: NOTICE:  identifier "email_notification_delivery_is_eligible_before_raffle_recipient_reminder" will be truncated to "email_notification_delivery_is_eligible_before_raffle_recipient"
+DO
+ROLLBACK

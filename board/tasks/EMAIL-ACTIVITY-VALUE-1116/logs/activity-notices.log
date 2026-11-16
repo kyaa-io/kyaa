@@ -1,0 +1,49 @@
+fatal: path 'release-notes/images/after.png' does not exist in '6b038e4a64593eeacd4b8d02713aa8b2583dc34d'
+✔ CLI selects the explicit AWS event without replacing the GitHub webhook event (67.85825ms)
+✔ CLI check batches a release with more than ten images instead of rejecting it (579.14325ms)
+✔ plain Korean message includes exact change, approved link and Korean completion time (11.770417ms)
+✔ real git range requires newly added immutable note files (468.918459ms)
+✔ reserves before sending and records returned message id (1.056166ms)
+✔ screenshots travel with the notice in one send and obey caption and path limits (0.6515ms)
+✔ screenshots must exist as PNGs with Telegram-compatible dimensions at the deployed revision (455.821625ms)
+✔ ignores preview, failure and other repositories without API or send (0.219959ms)
+✔ accepts the same repository through each organization and repository rename phase (0.833083ms)
+✔ resolves the trusted numeric repository again after GET 301 without following Location (13.297042ms)
+✔ rejects reused names and unknown canonical repositories before authenticated mutation (0.558917ms)
+✔ never retries a GitHub mutation with an uncertain result (0.329208ms)
+✔ success receipt prevents repeated deployment events from sending again (0.098625ms)
+✔ current and prior uncertain receipts block automatic attempts (0.135166ms)
+✔ last sent notice is baseline; rejected prior notice stays in accumulated changes (0.4225ms)
+✔ late event after a newer sent notice is skipped (0.070167ms)
+✔ send timeout and receipt-write failure are uncertain; definitive rejection is retryable (0.487833ms)
+✔ a definitive rejection can reuse its receipt without creation-only PATCH fields (0.137417ms)
+✔ a pre-send rejection preserves its specific cause instead of blaming Telegram (0.207334ms)
+✔ redeploying an already announced revision makes no new claim or message (0.058375ms)
+✔ receipt lookup reads later pages instead of sending a duplicate (0.109791ms)
+✔ identical completed delivery receipts never resend and remain a valid baseline (0.226416ms)
+✔ conflicting, uncertain or malformed duplicate receipts still block every send (0.412416ms)
+✔ wave uses its source branch, separate receipt and bootstrap, and the real wave link (0.289542ms)
+✔ wave duplicate and uncertain receipts retain the same no-resend protections (0.074166ms)
+✔ each site ignores the other site receipt when choosing its last sent baseline (0.9265ms)
+✔ legacy and named production environments require the same trusted success environment (0.062166ms)
+✔ named deployments retain legacy and named sent baselines across mixed Preview history (0.537667ms)
+✔ AWS notices require the exact trusted production workflow and the public release SHA (0.429667ms)
+✔ AWS cutover announces only changes after the verified live release and retains delivery receipts (0.360417ms)
+✔ accumulated notices can use one caption per album image without dropping changes (0.256417ms)
+✔ backlog batches preserve every note and image within Telegram limits (1.5915ms)
+✔ partial batch rejection never becomes retryable and preserves delivered message IDs (0.776958ms)
+✔ transport diagnostics retain safe codes without assuming an HTML error is unsent (0.291542ms)
+✔ AWS Wave verifies exact payload, Actions source, and public artifact independently (0.40225ms)
+✔ AWS Wave keeps Vercel and second AWS sent baselines without replay and blocks uncertain receipts (0.544833ms)
+✔ summary-superseded deployment is never resent and must reference a confirmed summary (0.216833ms)
+✔ later automatic notice starts after the delivered summary and same deployment is skipped (0.153916ms)
+✔ held notes skip the production room until their hold is removed, while DEV still reads them (1084.162166ms)
+✔ production notices default to the hold-aware note reader and the repository hold list resolves (93.033541ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2841.301291

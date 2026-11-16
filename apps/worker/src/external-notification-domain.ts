@@ -11,6 +11,7 @@ export interface ExternalNotificationJob {
   locale: "ko" | "en";
   destination: string;
   payload: {
+    priority?: number;
     title: string;
     detail: string;
     deepLink: string;

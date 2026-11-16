@@ -58,6 +58,7 @@ export const notificationCollectionSchema = z.object({
   unreadCount: z.number().int().nonnegative(),
 });
 export const notificationPreferencesSchema = z.object({
+  activityEmailNotifications: z.boolean().optional(),
   liveReminders: z.boolean(),
   surveyReminders: z.boolean(),
   benefitNotifications: z.boolean(),

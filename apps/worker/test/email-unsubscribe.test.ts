@@ -12,7 +12,7 @@ const notificationId = "7b1f4f0e-2c1d-4a3b-9c5d-1e2f3a4b5c6d";
 const job: ExternalNotificationJob = {
   id: "delivery", notificationId, planId: "plan", channel: "email", sequence: 1,
   templateKey: "benefit_won", locale: "ko", destination: "fan@example.com",
-  payload: { title: "당첨", detail: "확인해 주세요", deepLink: "/my" },
+  payload: { priority: 3, title: "당첨", detail: "확인해 주세요", deepLink: "/my" },
   attemptCount: 1, leaseOwner: "worker", leaseExpiresAt: "2099-01-01T00:00:00Z",
 };
 

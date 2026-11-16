@@ -40,10 +40,10 @@ export default async function EmailUnsubscribePage({ searchParams }: PageProps) 
 
   const options: { scope: EmailUnsubscribeScope; name: string }[] = [];
   if (target.state === "ok") {
-    if (target.preference) options.push({ scope: "preference", name: copy.preferenceLabels[target.preference] });
+    options.push({ scope: "activity", name: copy.activityLabel });
     options.push({ scope: "email", name: copy.emailLabel });
   }
-  const stopped = done === "off-preference" || done === "off-email" ? (done === "off-email" ? "email" : "preference") : null;
+  const stopped = done === "off-activity" || done === "off-email" ? (done === "off-email" ? "email" : "activity") : null;
 
   return (
     <FocusFlowFrame locale={locale} mainId="email-unsubscribe-main" showFooter>
@@ -70,7 +70,7 @@ export default async function EmailUnsubscribePage({ searchParams }: PageProps) 
                       <FanText role="item" as="p">{option.name}</FanText>
                       <FanAction type="submit" variant={resume || option.scope === "email" ? "neutral" : "primary"}>{resume ? copy.resume : copy.stop}</FanAction>
                     </form>
-                    {!resume && unsubscribeEndsRequiredNotices(option.scope, option.scope === "preference" ? preference : null)
+                    {!resume && unsubscribeEndsRequiredNotices(option.scope, option.scope === "activity" ? preference : null)
                       ? <FanText role="meta" as="p">{copy.requiredWarning}</FanText> : null}
                   </li>
                 );

@@ -28,6 +28,7 @@ const endpoint = z
   .strict();
 const patch = z
   .object({
+    activityEmailNotifications: z.boolean().optional(),
     liveReminders: z.boolean().optional(),
     surveyReminders: z.boolean().optional(),
     benefitNotifications: z.boolean().optional(),

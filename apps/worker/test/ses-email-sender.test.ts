@@ -18,7 +18,7 @@ const job: ExternalNotificationJob = {
   templateKey: "live_reserved",
   locale: "ko",
   destination: "fan@example.com",
-  payload: { title: "라이브 알림", detail: "곧 라이브가 시작됩니다.", deepLink: "/my" },
+  payload: { priority: 3, title: "라이브 알림", detail: "곧 라이브가 시작됩니다.", deepLink: "/my" },
   attemptCount: 1,
   leaseOwner: "worker",
   leaseExpiresAt: "2099-01-01T00:00:00Z",
@@ -42,6 +42,13 @@ function sender(send: SesV2SendClient["send"], trustedOrigin?: string, fromEmail
 }
 
 describe("SES email sender", () => {
+  it.each([1, 2, 3])("only priority 3 has one-click headers (%s)", async (priority) => {
+    const send = mockSend().mockResolvedValue({ MessageId: "priority" });
+    await sender(send).send({ ...job, payload: { ...job.payload, priority } });
+    const simple = send.mock.calls[0]![0].input.Content!.Simple!;
+    expect(simple.Headers?.some((h) => h.Name === "List-Unsubscribe") ?? false).toBe(priority === 3);
+    expect(simple.Body!.Html!.Data).toContain("/email/unsubscribe?");
+  });
   it("renders published context and resolves a local poster against kyaa", async () => {
     const send=mockSend().mockResolvedValue({MessageId:"html-mail"});
     await sender(send).send({...job,payload:{...job.payload,context:{title:"Artist <LIVE>",imageUrl:"/images/live/poster.jpg",startsAt:"2026-09-20T10:00:00Z"}}});

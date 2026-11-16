@@ -218,7 +218,7 @@ export class SesEmailSender implements ExternalNotificationSender {
           ...feedbackFields,
           Content: {
             Simple: {
-              ...(unsubscribe ? { Headers: emailUnsubscribeHeaders(unsubscribe) } : {}),
+              ...(unsubscribe && job.payload.priority === 3 ? { Headers: emailUnsubscribeHeaders(unsubscribe) } : {}),
               Attachments: assets.attachments,
               Subject: { Data: email.subject, Charset: "UTF-8" },
               Body: {

@@ -1,7 +1,7 @@
 import { verifyEmailUnsubscribeToken } from "./email-unsubscribe-token";
 
 export type EmailPreference = "live_reminders" | "survey_reminders" | "benefit_notifications" | "reply_notifications" | "official_post_notifications" | "schedule_notifications";
-export type EmailUnsubscribeScope = "preference" | "email";
+export type EmailUnsubscribeScope = "activity" | "email";
 
 // The preference a mail kind belongs to: the same switch that decides whether the member gets it.
 const PREFERENCE_BY_KIND: Record<string, EmailPreference> = {
@@ -34,7 +34,7 @@ export function preferenceForMailKind(templateKey: string): EmailPreference | nu
 }
 
 export function unsubscribeEndsRequiredNotices(scope: EmailUnsubscribeScope, preference: EmailPreference | null): boolean {
-  return scope === "email" || (preference !== null && PREFERENCES_WITH_REQUIRED_NOTICES.has(preference));
+  return scope === "email";
 }
 
 export type EmailUnsubscribeTarget =
@@ -60,14 +60,14 @@ export type EmailUnsubscribeOutcome = "done" | "not_found" | "expired" | "unavai
 export async function applyEmailUnsubscribe(
   client: EmailUnsubscribeRpcClient,
   target: Extract<EmailUnsubscribeTarget, { state: "ok" }>,
-  change: { scope: EmailUnsubscribeScope; enabled: boolean },
+  change: { scope: EmailUnsubscribeScope; enabled: boolean; via?: "mail_page" | "one_click" },
 ): Promise<EmailUnsubscribeOutcome> {
-  if (change.scope === "preference" && !target.preference) return "not_found";
   const { error } = await client.rpc("apply_email_unsubscribe", {
     p_notification_id: target.notificationId,
     p_template_key: target.templateKey,
     p_scope: change.scope,
-    p_preference: change.scope === "preference" ? target.preference : null,
+    p_preference: null,
+    p_via: change.via ?? "mail_page",
     p_enabled: change.enabled,
     p_destination_binding: target.destinationBinding,
   });

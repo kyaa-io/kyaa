@@ -1,0 +1,28 @@
+20261220081000_group_wrapper_access_after_edited.sql 0
+20261220100000_home_gallery_relative_url.sql 0
+20261220110000_home_ranking_info.sql 0
+psql:supabase/migrations/20261220110000_home_ranking_info.sql:100: NOTICE:  schema "pg_temp" does not exist, skipping
+psql:supabase/migrations/20261220110000_home_ranking_info.sql:100: NOTICE:  table "home_heart_totals" does not exist, skipping
+psql:supabase/migrations/20261220110000_home_ranking_info.sql:100: NOTICE:  table "home_points" does not exist, skipping
+psql:supabase/migrations/20261220110000_home_ranking_info.sql:100: NOTICE:  table "home_chosen" does not exist, skipping
+psql:supabase/migrations/20261220110000_home_ranking_info.sql:100: NOTICE:  table "home_named_creators" does not exist, skipping
+psql:supabase/migrations/20261220110000_home_ranking_info.sql:100: NOTICE:  table "home_fan_facts" does not exist, skipping
+20261220110001_home_ranking_response_fields.sql 0
+20261220120000_home_gallery_curation.sql 0
+20261220130000_fan_list_sort.sql 0
+20261220140000_home_ranking_day_gain.sql 0
+20261220150000_home_ranking_profile_locator.sql 0
+20261220160000_home_notice_participation.sql 0
+20261220170000_home_ranking_fill.sql 0
+20261220180000_home_shortform.sql 0
+20261220190000_popular_posts_sort.sql 0
+20261220200000_home_shortform_page.sql 0
+20261220210000_shortform_participation.sql 0
+20261220220000_group_directory_new_priority.sql 0
+20261220221000_group_directory_fan_first.sql 0
+20261221000000_group_room_photos.sql 3
+psql:supabase/migrations/20261221000000_group_room_photos.sql:50: ERROR:  function "public.group_room_context(uuid,uuid,jsonb)" does not exist
+LINE 1: source:=pg_get_functiondef('public.group_room_context(uuid,u...
+                                   ^
+QUERY:  source:=pg_get_functiondef('public.group_room_context(uuid,uuid,jsonb)'::regprocedure)
+CONTEXT:  PL/pgSQL function inline_code_block line 20 at assignment

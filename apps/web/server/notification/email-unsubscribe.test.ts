@@ -84,9 +84,9 @@ describe("which switch a mail belongs to", () => {
     expect(preferenceForMailKind("level_up")).toBeNull();
   });
   it("warns when the switch also carries win, pick-up or cancel notices, and always for all mail", () => {
-    expect(unsubscribeEndsRequiredNotices("preference", "benefit_notifications")).toBe(true);
-    expect(unsubscribeEndsRequiredNotices("preference", "live_reminders")).toBe(true);
-    expect(unsubscribeEndsRequiredNotices("preference", "survey_reminders")).toBe(false);
+    expect(unsubscribeEndsRequiredNotices("activity", "benefit_notifications")).toBe(false);
+    expect(unsubscribeEndsRequiredNotices("activity", "live_reminders")).toBe(false);
+    expect(unsubscribeEndsRequiredNotices("activity", "survey_reminders")).toBe(false);
     expect(unsubscribeEndsRequiredNotices("email", null)).toBe(true);
   });
   it("resolves a link into its target", () => {
@@ -109,14 +109,14 @@ describe("one-click POST (mail client)", () => {
     const client = clientReturning();
     const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}`, { "List-Unsubscribe": "One-Click" }));
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ ok: true, scope: "preference", enabled: false });
-    expect(client.rpc).toHaveBeenCalledExactlyOnceWith("apply_email_unsubscribe", { p_notification_id: mine, p_template_key: "benefit_won", p_scope: "preference", p_preference: "benefit_notifications", p_enabled: false, p_destination_binding: binding });
+    expect(await response.json()).toEqual({ ok: true, scope: "activity", enabled: false });
+    expect(client.rpc).toHaveBeenCalledExactlyOnceWith("apply_email_unsubscribe", { p_notification_id: mine, p_template_key: "benefit_won", p_scope: "activity", p_preference: null, p_via: "one_click", p_enabled: false, p_destination_binding: binding });
   });
   it("turns off all mail when the kind has no setting of its own", async () => {
     const client = clientReturning();
     const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token(mine, "level_up")}`, { "List-Unsubscribe": "One-Click" }));
-    expect((await response.json())).toEqual({ ok: true, scope: "email", enabled: false });
-    expect(client.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_scope: "email", p_preference: null }));
+    expect((await response.json())).toEqual({ ok: true, scope: "activity", enabled: false });
+    expect(client.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_scope: "activity", p_preference: null }));
   });
   it("changes nothing for a forged, other-key or expired link", async () => {
     const client = clientReturning();
@@ -167,9 +167,9 @@ describe("page form POST", () => {
   });
   it("turns it back on with the same link", async () => {
     const client = clientReturning();
-    const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}`, { scope: "preference", enabled: "true" }));
-    expect(response.headers.get("location")).toContain("done=on-preference");
-    expect(client.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_scope: "preference", p_enabled: true, p_preference: "benefit_notifications" }));
+    const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}`, { scope: "activity", enabled: "true" }));
+    expect(response.headers.get("location")).toContain("done=on-activity");
+    expect(client.rpc).toHaveBeenCalledWith("apply_email_unsubscribe", expect.objectContaining({ p_scope: "activity", p_enabled: true, p_preference: null, p_via: "mail_page" }));
   });
   it("shows the expired page when the mail address changed", async () => {
     const response = await handler(clientReturning({ code: "55000" }))(post(`https://kyaa.io/api/email/unsubscribe?t=${token()}&locale=ko`, { scope: "email", enabled: "false" }));
@@ -184,9 +184,9 @@ describe("page form POST", () => {
   });
   it("refuses a setting the kind does not have", async () => {
     const client = clientReturning();
-    const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token(mine, "level_up")}`, { scope: "preference", enabled: "false" }));
-    expect(response.headers.get("location")).toContain("done=invalid");
-    expect(client.rpc).not.toHaveBeenCalled();
+    const response = await handler(client)(post(`https://kyaa.io/api/email/unsubscribe?t=${token(mine, "level_up")}`, { scope: "activity", enabled: "false" }));
+    expect(response.headers.get("location")).toContain("done=off-activity");
+    expect(client.rpc).toHaveBeenCalled();
   });
 });
 
@@ -201,7 +201,7 @@ describe("GET", () => {
 describe("rpc wrapper", () => {
   it("does not call the database for a setting the kind lacks", async () => {
     const client = clientReturning();
-    expect(await applyEmailUnsubscribe(client, { state: "ok", notificationId: mine, templateKey: "level_up", destinationBinding: binding, preference: null }, { scope: "preference", enabled: false })).toBe("not_found");
-    expect(client.rpc).not.toHaveBeenCalled();
+    expect(await applyEmailUnsubscribe(client, { state: "ok", notificationId: mine, templateKey: "level_up", destinationBinding: binding, preference: null }, { scope: "activity", enabled: false })).toBe("done");
+    expect(client.rpc).toHaveBeenCalled();
   });
 });

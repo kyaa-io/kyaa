@@ -24,13 +24,13 @@ begin
     (note_b, user_b, 'runmusic_result', 'runmusic_result:unsub-b:' || user_b, now());
 
   -- A kind switch changes only the notification's owner.
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'preference', 'benefit_notifications', false);
-  assert (select benefit_notifications from public.notification_preferences where app_user_id = user_a) = false, 'owner preference is off';
-  assert not exists (select 1 from public.notification_preferences where app_user_id = user_b and benefit_notifications = false), 'other member is untouched';
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, false);
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = false, 'owner preference is off';
+  assert not exists (select 1 from public.notification_preferences where app_user_id = user_b and activity_email_notifications = false), 'other member is untouched';
 
   -- It can be switched back on.
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'preference', 'benefit_notifications', true);
-  assert (select benefit_notifications from public.notification_preferences where app_user_id = user_a) = true, 'preference is back on';
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, true);
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = true, 'preference is back on';
 
   -- Turning off all mail closes only the owner's mail channel.
   result := public.apply_email_unsubscribe(note_a, 'runmusic_result', 'email', null, false);
@@ -70,9 +70,9 @@ begin
   assert failed, 'unknown preference is refused';
 
   -- Only the server role can call it.
-  assert not has_function_privilege('anon', 'public.apply_email_unsubscribe(uuid,text,text,text,boolean,timestamptz,text)', 'execute'), 'anon cannot call';
-  assert not has_function_privilege('authenticated', 'public.apply_email_unsubscribe(uuid,text,text,text,boolean,timestamptz,text)', 'execute'), 'authenticated cannot call';
-  assert has_function_privilege('service_role', 'public.apply_email_unsubscribe(uuid,text,text,text,boolean,timestamptz,text)', 'execute'), 'service_role can call';
+  assert not has_function_privilege('anon', 'public.apply_email_unsubscribe(uuid,text,text,text,boolean,timestamptz,text,text)', 'execute'), 'anon cannot call';
+  assert not has_function_privilege('authenticated', 'public.apply_email_unsubscribe(uuid,text,text,text,boolean,timestamptz,text,text)', 'execute'), 'authenticated cannot call';
+  assert has_function_privilege('service_role', 'public.apply_email_unsubscribe(uuid,text,text,text,boolean,timestamptz,text,text)', 'execute'), 'service_role can call';
   assert not has_function_privilege('service_role', 'public.email_unsubscribe_destination_binding(uuid,text)', 'execute'), 'binding helper is not exposed';
 end $$;
 
@@ -112,9 +112,9 @@ begin
 
   -- Same address: the link works.
   link_a := public.email_unsubscribe_destination_binding(note_a, fp_a);
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'preference', 'benefit_notifications', false, now(), link_a);
-  assert (select benefit_notifications from public.notification_preferences where app_user_id = user_a) = false, 'bound link works for the same address';
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'preference', 'benefit_notifications', true, now(), link_a);
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, false, now(), link_a);
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = false, 'bound link works for the same address';
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, true, now(), link_a);
 
   -- A forged binding changes nothing.
   failed := false;
@@ -131,12 +131,12 @@ begin
   -- Address changes A -> B: the old link changes neither the kind switch nor all mail.
   update public.fan_notification_channels set destination_fingerprint = fp_new where id = channel_a;
   failed := false;
-  begin perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'preference', 'benefit_notifications', false, now(), link_a); exception when sqlstate '55000' then failed := true; end;
+  begin perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, false, now(), link_a); exception when sqlstate '55000' then failed := true; end;
   assert failed, 'old-address link cannot switch a kind';
   failed := false;
   begin perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'email', null, false, now(), link_a); exception when sqlstate '55000' then failed := true; end;
   assert failed, 'old-address link cannot stop all mail';
-  assert (select benefit_notifications from public.notification_preferences where app_user_id = user_a) = true, 'kind switch unchanged';
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = true, 'kind switch unchanged';
   select * into c from public.fan_notification_channels where id = channel_a;
   assert c.status = 'eligible' and c.consent_revoked_at is null, 'mail channel unchanged';
   -- A mail sent to the new address works.
@@ -146,9 +146,9 @@ begin
   perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'email', null, true, now(), public.email_unsubscribe_destination_binding(note_a, fp_new));
 
   -- Links sent before the binding (no binding) keep working when no send address is recorded.
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'preference', 'benefit_notifications', false);
-  assert (select benefit_notifications from public.notification_preferences where app_user_id = user_a) = false, 'old link without a recorded send still works';
-  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'preference', 'benefit_notifications', true);
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, false);
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = false, 'old link without a recorded send still works';
+  perform public.apply_email_unsubscribe(note_a, 'runmusic_result', 'activity', null, true);
 
   -- An old link whose recorded send address is still current works; after the address changes it is refused.
   update public.fan_notification_channels set destination_fingerprint = fp_a where id = channel_a;
@@ -163,9 +163,9 @@ begin
     values (delivery_old, plan_old, note_old, channel_a, 'email', 1, 'runmusic_result', 'sent', now());
   insert into public.email_notification_send_attempts (delivery_id, worker_id, attempt_count, destination_fingerprint, status, provider_message_id, lease_expires_at)
     values (delivery_old, 'test', 1, fp_a, 'accepted', 'msg-bind-old', now());
-  perform public.apply_email_unsubscribe(note_old, 'runmusic_result', 'preference', 'benefit_notifications', false);
-  assert (select benefit_notifications from public.notification_preferences where app_user_id = user_a) = false, 'old link to the current address works';
-  perform public.apply_email_unsubscribe(note_old, 'runmusic_result', 'preference', 'benefit_notifications', true);
+  perform public.apply_email_unsubscribe(note_old, 'runmusic_result', 'activity', null, false);
+  assert (select activity_email_notifications from public.notification_preferences where app_user_id = user_a) = false, 'old link to the current address works';
+  perform public.apply_email_unsubscribe(note_old, 'runmusic_result', 'activity', null, true);
   update public.fan_notification_channels set destination_fingerprint = fp_new where id = channel_a;
   failed := false;
   begin perform public.apply_email_unsubscribe(note_old, 'runmusic_result', 'email', null, false); exception when sqlstate '55000' then failed := true; end;

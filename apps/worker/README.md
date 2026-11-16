@@ -245,8 +245,8 @@ MIME, size, magic-byte and no-redirect checks.
 
 ## Mail unsubscribe link key
 
-Every member notification mail carries a `List-Unsubscribe` / `List-Unsubscribe-Post`
-header and a footer link. The link is signed with a key derived (HKDF-SHA-256, info
+Only priority-3 activity mail carries `List-Unsubscribe` / `List-Unsubscribe-Post`
+headers. The database supplies priority in the claimed payload. Every member notification mail keeps its footer link; one-click changes only activity email delivery. The link is signed with a key derived (HKDF-SHA-256, info
 `kyaa-email-unsubscribe-v1`) from `POSTGREST_SERVICE_TOKEN`; no secret of its own is stored.
 The web app derives the same key from its own `POSTGREST_SERVICE_TOKEN`, so the worker's
 and the web's values **must be identical** for links to verify. Both log
