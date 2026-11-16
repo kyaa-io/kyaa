@@ -5,7 +5,7 @@ import { HomeNoticeParticipation } from "./home-notice-participation";
 const state = vi.hoisted(() => ({ authenticated: true, owner: "fixture-a", generation: 1, status: "ready", participation: { reaction: null as "like"|"dislike"|null, likeCount: 2, dislikeCount: null, commentCount: 0 }, retry: vi.fn(), comments: [] as Array<unknown> }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, authenticated: state.authenticated, user: state.authenticated ? { id: state.owner } : null, getAccessToken: async () => "fixture" }), useByUsAuthStatus: () => ({ ready: true }) }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: state.owner, generation: state.generation }) }));
-vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: (url: string) => ({ state: state.status === "ready" ? { status: "ready", data: url.includes("/participation") ? state.participation : { items: state.comments, nextCursor: null } } : { status: state.status, code: "UNAVAILABLE" }, retry: state.retry }) }));
+vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: (url: string | null) => ({ state: !url ? { status: "loading" } : state.status === "ready" ? { status: "ready", data: url.includes("/participation") ? state.participation : { items: state.comments, nextCursor: null } } : { status: state.status, code: "UNAVAILABLE" }, retry: state.retry }) }));
 const props = { slug: "service-guide", title: "팬 활동을 시작하는 방법", locale: "ko" as const };
 beforeEach(() => { state.authenticated = true; state.owner = "fixture-a"; state.generation = 1; state.status = "ready"; state.participation = { reaction: null, likeCount: 2, dislikeCount: null, commentCount: 0 }; state.comments = []; state.retry.mockClear(); });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks(); });
@@ -17,21 +17,14 @@ it("sends guests to this CMS detail after login and hides dislike counts", () =>
   expect(screen.getByRole("link", { name: "싫어요" }).textContent).toBe("");
   expect(screen.queryByRole("textbox")).toBeNull();
 });
-it("shows the mission book likes from 10, sends the real choice and brings guests back to the mission book page", async () => {
-  const mission = { slug: "dukjil-missionbook", title: "덕질미션북", locale: "ko" as const, returnPath: "/guide/dukjil" };
+it("shows no like or dislike buttons on the mission book (its like is the event like) but keeps share and comments", () => {
   state.authenticated = false;
-  const view = render(<HomeNoticeParticipation {...mission} />);
-  const like = screen.getByRole("link", { name: "좋아요 12" });
-  expect(new URL(like.getAttribute("href")!, "https://kyaa.test").searchParams.get("returnTo")).toBe("/guide/dukjil?locale=ko");
-  view.unmount();
-  state.authenticated = true;
-  const fetch = vi.fn(async (_url: string, _init: RequestInit) => Response.json({ reaction: "like", likeCount: 3, dislikeCount: null, commentCount: 0 }));
-  vi.stubGlobal("fetch", fetch);
-  render(<HomeNoticeParticipation {...mission} />);
-  fireEvent.click(screen.getByRole("button", { name: "좋아요 12" }));
-  await waitFor(() => expect(screen.getByRole("button", { name: "좋아요 13" })).toHaveAttribute("aria-pressed", "true"));
-  expect(fetch.mock.calls[0]![0]).toBe("/api/notices/dukjil-missionbook/reaction");
-  expect(JSON.parse(String(fetch.mock.calls[0]![1].body))).toEqual({ reaction: "like" });
+  render(<HomeNoticeParticipation slug="dukjil-missionbook" title="덕질미션북" locale="ko" returnPath="/follow" reactions={false} />);
+  expect(screen.queryByRole("link", { name: /좋아요/ })).toBeNull();
+  expect(screen.queryByRole("button", { name: /좋아요|싫어요/ })).toBeNull();
+  expect(screen.getByText("공유")).toBeInTheDocument();
+  const login = screen.getByRole("link", { name: "로그인하고 참여하기" });
+  expect(new URL(login.getAttribute("href")!, "https://kyaa.test").searchParams.get("returnTo")).toBe("/follow?locale=ko");
 });
 it("switches and cancels reactions using the server result", async () => {
   const fetch = vi.fn(async (_url: string, init: RequestInit) => {

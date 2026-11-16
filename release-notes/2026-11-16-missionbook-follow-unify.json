@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "덕질미션북 좋아요와 X 오픈 이벤트 참여가 하나로 합쳐졌어요. 덕질미션북은 이제 kyaa.io/follow의 이벤트 카드 아래에서 볼 수 있고, 예전 덕질미션북 주소와 홈 배너·안내 글 링크도 이 화면으로 이어져요.",
+    "미션북의 좋아요·싫어요 버튼은 없어졌어요. 위 이벤트 카드의 좋아요 하나로 참여하고, 공유와 댓글은 화면 맨 아래에 그대로 있어요. 첨부 화면은 시험 계정으로 확인한 로컬 화면이에요."
+  ],
+  "path": "/follow",
+  "images": [
+    "release-notes/images/2026-11-16-missionbook-follow-unify-390.png",
+    "release-notes/images/2026-11-16-missionbook-follow-unify-1440.png"
+  ]
+}

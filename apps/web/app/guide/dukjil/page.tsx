@@ -1,33 +1,11 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { followEventPath } from "@/app/follow/follow-event";
 
-import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
-import { guideText } from "@/features/dukjil-guide/ui/guide-copy";
-import { DukjilGuideContent } from "@/features/dukjil-guide/ui/guide-content";
-import { loadGuideModel } from "@/features/dukjil-guide/server/load-guide-model";
-import styles from "@/features/dukjil-guide/ui/guide-content.module.css";
-import { parseAppLocale } from "@/i18n/locales";
-import { publicMetadata } from "@/seo/metadata";
+type Props = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
-type Props = { searchParams: Promise<{ locale?: string | string[] }> };
-
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const locale = parseAppLocale((await searchParams).locale);
-  return publicMetadata({
-    path: "/guide/dukjil",
-    locale,
-    title: `${guideText(locale, "dkgDkMetaTitle")} | kyaa`,
-    description: guideText(locale, "dkgDkMetaDesc"),
-  });
-}
-
+/** 덕질미션북은 /follow 이벤트 화면 아래로 합쳤다(사용자 11/16). 옛 주소는 locale·utm 같은 쿼리를 그대로 들고 /follow 로 간다. */
 export default async function DukjilGuidePage({ searchParams }: Props) {
-  const locale = parseAppLocale((await searchParams).locale);
-  const model = await loadGuideModel(locale);
-  return (
-    <FanAppFrame locale={locale} currentPath="/guide/dukjil" mainId="dukjil-guide-main">
-      <FanContentContainer as="main" id="dukjil-guide-main" tabIndex={-1} className={styles.page}>
-        <DukjilGuideContent locale={locale} model={model} />
-      </FanContentContainer>
-    </FanAppFrame>
-  );
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) for (const item of [value ?? []].flat()) query.append(key, item);
+  redirect(`${followEventPath}${query.size ? `?${query}` : ""}`);
 }

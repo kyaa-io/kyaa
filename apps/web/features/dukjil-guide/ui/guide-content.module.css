@@ -18,7 +18,7 @@
   gap: var(--space-4);
 }
 
-.hero h1 {
+.hero :is(h1, h2) {
   margin: 0;
   font-size: var(--fan-heading-size-wide);
   font-weight: var(--fan-heading-weight);

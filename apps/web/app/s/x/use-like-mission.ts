@@ -5,6 +5,7 @@ import type { useByUsAuth } from '@/features/auth/client/cognito-auth';
 import { reactionResultSchema } from '@/features/reaction/domain/reaction';
 import { externalBrowserUrl } from '@/components/login-browser-policy';
 import { fanLoginHref } from '@/components/login-href';
+import { notifyFanActivityUpdated } from '@/components/fan-ui/fan-activity-updates';
 import { recordClientProductEvent, pageViewIdempotencyKey } from '@/features/analytics/client/product-event-client';
 import { isXBrowser, missionAttribution } from './mission-context';
 
@@ -62,6 +63,8 @@ export function useLikeMission({ locale, auth, slug, path, attributionKey, scrol
    reactionResultSchema.parse(await response.json());
    void recordAttribution().catch(() => {});
    setCompleted(true); setCelebrate(true);
+   // 같은 화면의 다른 좋아요 수(/follow 아래 덕질미션북 머리)도 다시 읽는다
+   if (userId) notifyFanActivityUpdated(userId, ['community']);
    setRetry(value => value + 1);
   } catch { setError('save'); }
   finally { setPending(false); }
