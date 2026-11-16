@@ -1,0 +1,48 @@
+run_id,step,conclusion,seconds
+43793777408,Set up job,success,1.0
+43793777408,Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262,success,16.0
+43793777408,Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020,success,6.0
+43793777408,Compute the node_modules cache key,success,0.0
+43793777408,Restore locked node_modules,success,10.0
+43793777408,Reinstall when restored node_modules is unusable,success,0.0
+43793777408,Run npm ci --ignore-scripts,skipped,0.0
+43793777408,Save locked node_modules,skipped,0.0
+43793777408,Run npm run security:patch,success,1.0
+43793777408,Run npm run test --workspace @byus/web -- features/support server/support --maxWorkers=3,success,3.0
+43793777408,"Run npx playwright install chromium && (timeout 180 npx playwright install-deps chromium || echo ""::warning::apt mirrors unavailable; using the runner image browser libraries"")",success,22.0
+43793777408,Run bash scripts/ci/setup-postgres-ripgrep.sh,success,1.0
+43793777408,"Local SQL, authority, concurrency and browser flow",success,42.0
+43793777408,Restore the ffmpeg-static binary,success,0.0
+43793777408,Install the approved media runtime for the ordinary build,success,3.0
+43793777408,Restore the typecheck build info of an earlier ordinary build,success,0.0
+43793777408,Build ordinary application,cancelled,807.0
+43793777408,Save the typecheck build info of this ordinary build,skipped,0.0
+43793777408,Ordinary build rejects local test identities,skipped,0.0
+43793777408,Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02,success,2.0
+43793777408,Post Restore the ffmpeg-static binary,skipped,0.0
+43793777408,Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020,skipped,0.0
+43793777408,Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262,success,0.0
+43793777408,Complete job,success,0.0
+43746849538,Set up job,success,1.0
+43746849538,Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262,success,16.0
+43746849538,Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020,success,9.0
+43746849538,Compute the node_modules cache key,success,0.0
+43746849538,Restore locked node_modules,success,15.0
+43746849538,Reinstall when restored node_modules is unusable,success,0.0
+43746849538,Run npm ci --ignore-scripts,skipped,0.0
+43746849538,Save locked node_modules,skipped,0.0
+43746849538,Run npm run security:patch,success,1.0
+43746849538,Run npm run test --workspace @byus/web -- features/support server/support --maxWorkers=3,success,3.0
+43746849538,"Run npx playwright install chromium && (timeout 180 npx playwright install-deps chromium || echo ""::warning::apt mirrors unavailable; using the runner image browser libraries"")",success,35.0
+43746849538,Run bash scripts/ci/setup-postgres-ripgrep.sh,success,0.0
+43746849538,"Local SQL, authority, concurrency and browser flow",success,45.0
+43746849538,Restore the ffmpeg-static binary,skipped,0.0
+43746849538,Install the approved media runtime for the ordinary build,skipped,0.0
+43746849538,Restore the typecheck build info of an earlier ordinary build,skipped,0.0
+43746849538,Build ordinary application,skipped,0.0
+43746849538,Save the typecheck build info of this ordinary build,skipped,0.0
+43746849538,Ordinary build rejects local test identities,skipped,0.0
+43746849538,Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02,success,2.0
+43746849538,Post Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020,success,0.0
+43746849538,Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262,success,0.0
+43746849538,Complete job,success,0.0

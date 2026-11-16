@@ -193,16 +193,17 @@ test('DEV caches are isolated, restored and exported without changing release im
 });
 
 
-test('only the exact repository main push delegates the ordinary build and its exclusive prerequisites', () => {
+test('only the exact repository main and release pushes delegate the ordinary build and its exclusive prerequisites', () => {
  const cs = load(readFileSync('.github/workflows/cs-inquiries.yml','utf8'));
+ assert.equal(cs.jobs['cs-inquiries']['timeout-minutes'], Math.ceil(804 * 1.5 / 60));
  const steps = cs.jobs['cs-inquiries'].steps;
  const names = ['Restore the ffmpeg-static binary','Restore the typecheck build info of an earlier ordinary build','Build ordinary application','Save the typecheck build info of this ordinary build','Ordinary build rejects local test identities'];
  const enabled = (expression, github, hit='false') => Function('github','steps',`return (${expression.replace(/^\$\{\{\s*|\s*\}\}$/g,'').replaceAll('steps.ffmpeg-cache.outputs.cache-hit',"steps['ffmpeg-cache'].outputs['cache-hit']")})`)(github,{'ffmpeg-cache':{outputs:{'cache-hit':hit}}});
  for (const [event_name,ref,repository,delegated] of [
   ['push','refs/heads/main','kyaa-io/kyaa',true], ['pull_request','refs/pull/1/merge','kyaa-io/kyaa',false],
-  ['push','refs/heads/release/production','kyaa-io/kyaa',false], ['workflow_dispatch','refs/heads/main','kyaa-io/kyaa',false],
+  ['push','refs/heads/release/production','kyaa-io/kyaa',true], ['workflow_dispatch','refs/heads/main','kyaa-io/kyaa',false],
   ['schedule','refs/heads/main','kyaa-io/kyaa',false], ['workflow_call','refs/heads/main','kyaa-io/kyaa',false],
-  ['push','refs/heads/main','fork/kyaa',false], ['push','refs/heads/feature','kyaa-io/kyaa',false],
+  ['push','refs/heads/release/production','fork/kyaa',false], ['push','refs/heads/main','fork/kyaa',false], ['push','refs/heads/feature','kyaa-io/kyaa',false],
  ]) {
   const context={event_name,ref,repository};
   for(const name of names) assert.equal(enabled(steps.find(s=>s.name===name).if,context),!delegated,`${event_name} ${ref} ${name}`);
