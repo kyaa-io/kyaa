@@ -17,7 +17,18 @@ describe("public structured data", () => {
       email: "support@kyaa.io",
       logo: "https://kyaa.io/kyaa-app-icon-512.png",
       brand: { "@type": "Brand", name: "kyaa", url: "https://kyaa.io/" },
+      parentOrganization: {
+        "@type": "Organization",
+        name: "KAYY Inc.",
+        address: {
+          "@type": "PostalAddress",
+          addressLocality: "Whitestone, Queens",
+          addressRegion: "NY",
+          addressCountry: "USA",
+        },
+      },
     });
+    expect(JSON.stringify(organization.parentOrganization)).not.toMatch(/postalCode|streetAddress|EIN|taxID/i);
     expect(organization.sameAs).toEqual([
       "https://www.instagram.com/kyaa_app/",
       "https://x.com/kyaa_app",
