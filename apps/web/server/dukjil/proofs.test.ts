@@ -246,7 +246,16 @@ describe("proof board image", () => {
     expect(res.status).toBe(200); expect(await res.text()).toBe("webpbytes");
     expect(res.headers.get("content-type")).toBe("image/webp"); expect(JSON.stringify([...res.headers])).not.toContain("owner-secret");
     expect(stream).toHaveBeenCalledWith("owner-secret/proof.webp");
-    expect(vi.mocked(deps.rpc).mock.calls[0][1]).toMatchObject({ p_celebrity: creator, p_limit: 5, p_before: "2026-11-06T00:00:00.124Z" });
+    expect(deps.rpc).toHaveBeenCalledWith("read_proof_board_image", { p_celebrity: creator, p_post: post });
+  });
+  it("opens all six posts created at the same time by their own ids", async () => {
+    const ids = Array.from({ length: 6 }, (_, i) => `77777777-7777-4777-8777-${String(i).padStart(12, "0")}`);
+    vi.mocked(deps.rpc).mockImplementation(async (name, args) => {
+      expect(name).toBe("read_proof_board_image");
+      const id = (args as { p_post: string }).p_post;
+      return ids.includes(id) ? [{ ...row, postId: id }] : [];
+    });
+    for (const id of ids) expect((await get(row.createdAt, id)).status).toBe(200);
   });
   it("404s when the board no longer lists the post (consent withdrawn, hidden, unapproved) or it has no image", async () => {
     vi.mocked(deps.rpc).mockResolvedValue([]);

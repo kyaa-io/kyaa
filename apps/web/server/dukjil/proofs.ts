@@ -170,14 +170,14 @@ export function createProofHandlers(deps: ProofDependencies) {
       const raw = obj(await deps.rpc("read_proof_summary", { p_celebrity: celebrity, p_month_start: kstMonthStart() }));
       return Response.json(checked(proofSummarySchema, { approvedCount: raw.approvedCount, monthFanCount: raw.monthFanCount, proofTypes: raw.proofTypes }), { headers: publicHeaders });
     }),
-    // Public masked image of one board post. The post is looked up through read_proof_board again (consent, approval, visibility), then the
+    // Public masked image of one board post. The post is looked up directly by id (consent, approval, visibility), then the
     // stored object is streamed; the object path, bucket and signed URLs are never part of any response.
     image: (request: Request, idOrSlug: string, postId: string) => run(async () => {
       if (!UUID.test(postId) || !deps.stream) throw new SyntaxError("post id");
       const at = Date.parse(one(request, "t") ?? "");
       if (Number.isNaN(at)) throw new SyntaxError("t");
       const celebrity = UUID.test(idOrSlug) ? idOrSlug : await creatorId(idOrSlug);
-      const raw = await deps.rpc("read_proof_board", { p_celebrity: celebrity, p_limit: 5, p_before: new Date(at + 1).toISOString(), p_viewer: null });
+      const raw = await deps.rpc("read_proof_board_image", { p_celebrity: celebrity, p_post: postId });
       const row = (Array.isArray(raw) ? raw : []).map(obj).find((r) => r.postId === postId);
       const path = typeof row?.imageObjectPath === "string" ? row.imageObjectPath : null;
       if (!path) return Response.json({ error: { code: "PROOF_NOT_FOUND" } }, { status: 404, headers: publicHeaders });
