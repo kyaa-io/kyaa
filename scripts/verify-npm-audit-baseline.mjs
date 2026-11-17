@@ -1,6 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 
+// The full-tree gate retains audit-level=high; production also enforces moderate baselines.
+const includeDev = process.argv.includes("--include-dev");
 const baselineUrl = new URL("./security-audit-baseline.json", import.meta.url);
 const baseline = JSON.parse(await readFile(baselineUrl, "utf8"));
 const reportArgument = process.argv.find((argument) => argument.startsWith("--report="));
@@ -20,7 +22,7 @@ if (reportArgument) {
 
   const audit = spawnSync(
     "npm",
-    ["audit", "--omit=dev", "--ignore-scripts", "--json"],
+    ["audit", includeDev ? "--include=dev" : "--omit=dev", "--ignore-scripts", "--json"],
     {
       cwd: new URL("..", import.meta.url),
       encoding: "utf8",
@@ -69,7 +71,7 @@ if (counts.high > baseline.maximum.high && (highAdvisories.length === 0 || uncov
 } else if (counts.high > baseline.maximum.high) {
   process.stderr.write(`npm audit: ${counts.high} high findings covered by time-boxed exceptions ${highAdvisories.map((s) => `${s} until ${temporaryHigh.get(s).until}`).join(", ")}\n`);
 }
-if (counts.moderate > baseline.maximum.moderate) {
+if (!includeDev && counts.moderate > baseline.maximum.moderate) {
   failures.push(`moderate vulnerabilities: ${counts.moderate} (baseline ${baseline.maximum.moderate})`);
 }
 
@@ -79,7 +81,7 @@ const allowedVulnerabilities = new Set(baseline.allowedModerateVulnerabilities ?
 const newVulnerabilities = moderateVulnerabilities
   .map(([name]) => name)
   .filter((name) => !allowedVulnerabilities.has(name));
-if (newVulnerabilities.length > 0) {
+if (!includeDev && newVulnerabilities.length > 0) {
   failures.push(`new moderate vulnerability paths: ${newVulnerabilities.sort().join(", ")}`);
 }
 
@@ -91,7 +93,7 @@ const observedAdvisories = moderateVulnerabilities.flatMap(([, vulnerability]) =
 );
 const newAdvisories = [...new Set(observedAdvisories)]
   .filter((source) => !allowedAdvisories.has(source));
-if (newAdvisories.length > 0) {
+if (!includeDev && newAdvisories.length > 0) {
   failures.push(`new moderate advisory IDs: ${newAdvisories.sort((left, right) => left - right).join(", ")}`);
 }
 
