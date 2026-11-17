@@ -12029,6 +12029,12 @@
     "source": "features/reaction/ui/reaction-action",
     "id": "features/reaction/ui/reaction-action:copy.later"
   },
+  "reactionEventLiked": {
+    "en": "Liked",
+    "ko": "좋아요 완료",
+    "source": "features/reaction/ui/reaction-action",
+    "id": "features/reaction/ui/reaction-action:event.liked"
+  },
   "m2e387fe4594c": {
     "en": "You earned your First Like Stamp",
     "ko": "첫 좋아요 스탬프를 받았어요",

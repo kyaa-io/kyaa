@@ -1,0 +1,8 @@
+/* 홈 본문 맨 위(스탬프·패스포트 바로가기보다 위). 카드 면·반경·안쪽은 FanSurface, 글자는 FanHeading·FanText, 버튼은 FanAction이 정한다. */
+.card{display:grid;gap:var(--space-4);order:-2;min-width:0}
+.head{display:grid;gap:var(--space-1);min-width:0}
+.head>h2,.head>p{margin:0}
+.action{min-width:0}
+@media(min-width:768px){
+  .card{grid-template-columns:minmax(0,1fr) minmax(0,var(--rail-narrow));align-items:center;gap:var(--space-6)}
+}

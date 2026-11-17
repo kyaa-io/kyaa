@@ -43,6 +43,7 @@ import {walletCopy} from '@/features/group-wallet/ui/copy';
 import {groupsCopy} from './copy';
 import {groupHomeCopy,fanStories} from './home-copy';
 import {BannerSlot} from '@/components/banner-slot/banner-slot';
+import {EventLikeCard} from '@/features/reaction/ui/event-like-card';
 import styles from './groups.module.css';
 import homeStyles from './creator-group-home.module.css';
 const parse=(v:unknown)=>feedPageSchema.parse(v);
@@ -74,6 +75,7 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
  const writeHref:string=frame&&frame.ready&&!frame.authenticated?fanLoginHref(locale,composeHref):composeHref;
  const filters:FanTabItem[]=(['all','notice','fans'] as const).map(value=>({key:value,label:value==='all'?t.all:value==='notice'?b.notice:b.free,onSelect:()=>{setCursors([]);setFilter(value);}}));
  return <DukjilProvider slug={celebrity.slug} locale={locale}><div className={styles.creatorHomeLayout}><div className={`${styles.creatorHomeMain} ${homeStyles.main}`}>
+  <EventLikeCard slug={celebrity.slug} locale={locale}/>
   {brand&&groupPage&&<GroupBrandHomeEvent pageId={groupPage.id} locale={locale}/>}
   <CreatorMediaPanel onVideoSelect={onVideoSelect} slug={celebrity.slug} locale={locale} channelId={channelId} socialLinks={celebrity.socialLinks} preview/>
   {!brand&&<BannerSlot slot='fanpage_below_gallery' locale={locale}/>}

@@ -182,5 +182,18 @@ export const messages = {
     "fr": "Voir mes Passports",
     ru: "Посмотреть мои паспорта"
 
+  },
+  "reactionEventLiked": {
+    "ja": "いいね済み",
+    "zh-Hans": "已点赞",
+    "zh-Hant": "已按讚",
+    "es": "Te gusta",
+    "id": "Disukai",
+    "vi": "Đã thích",
+    "th": "ถูกใจแล้ว",
+    "pt": "Curtido",
+    "fr": "Aimé",
+    ru: "Лайк поставлен"
+
   }
 } satisfies Record<string, TranslatedMessage>;
