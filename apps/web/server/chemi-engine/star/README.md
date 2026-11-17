@@ -17,5 +17,19 @@ implementation or dependency is shipped. Tests compare all ten bodies and both
 angles within one arcminute and require identical zodiac signs and house numbers.
 Reference regeneration requires external Python pyswisseph, never npm/runtime.
 
-No UI, persistence, API, Placidus, text interpretation or daily score calibration
-is implemented here. Those must not be inferred from the raw chart API.
+Display charts use placidusCusps and placidusHouse. Both are null for unknown times
+and at or beyond the polar circle of date. Never substitute internal whole-sign
+houses in the display. All 40 charts also compare twelve Placidus cusps and ten
+house placements. Eight Swiss samples bracket ASC sign changes at 37.6° and 65° N.
+
+scoreDay scores the strongest hourly contact per transit, aspect and natal target.
+Where 05-0b leaves coefficients unspecified, the launch model weights inner,
+Jupiter/Saturn and outer transits 1/1.2/1.4. Conjunction, sextile, square, trine
+and opposition use 1/.6/-.8/1/-1. Accuracy falls linearly to zero at the orb.
+Approaching and separating samples scale by 1.1 and .9. Matching a planet and
+house in one domain counts once. Reasons rank by magnitude and include the KST
+date of the first subsequent hourly sample outside the orb.
+The launch quintiles use 40 synthetic charts over November 1–30, 2026.
+Supply the applicable versioned monthly distribution when available and persist
+the returned stars and version with the result. For unknown birth times,
+birthMoonSigns accepts the caller-resolved bounds of the local birth date.
