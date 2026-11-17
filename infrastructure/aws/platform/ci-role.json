@@ -246,6 +246,28 @@
                 {
                   "Effect": "Allow",
                   "Action": [
+                    "lambda:GetFunctionConfiguration",
+                    "lambda:GetFunction",
+                    "lambda:UpdateFunctionCode"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:lambda:ap-northeast-2:${AWS::AccountId}:function:byus-mint-worker-${Environment}"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:lambda:ap-northeast-2:${AWS::AccountId}:function:byus-notification-worker-${Environment}"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:lambda:ap-northeast-2:${AWS::AccountId}:function:byus-benefit-maintenance-${Environment}"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:lambda:ap-northeast-2:${AWS::AccountId}:function:byus-creator-registration-worker-${Environment}"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
                     "lambda:GetFunctionConcurrency",
                     "lambda:GetFunctionConfiguration"
                   ],
