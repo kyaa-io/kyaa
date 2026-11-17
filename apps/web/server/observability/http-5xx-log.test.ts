@@ -4,8 +4,12 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import {
+  authKindFrom,
   buildHttp5xxLogLine,
+  buildHttpAuthDeniedLogLine,
+  createAuthDeniedLimiter,
   buildHttpSlowLogLine,
   describeError,
   installHttp5xxLog,
@@ -212,5 +216,99 @@ describe("slow lines on a real http server", () => {
     expect(slow).toMatchObject({ route: "/api/health/live", method: "GET", status: 200, rsc: false });
     expect(slow.durationMs).toBeGreaterThanOrEqual(60);
     expect(lines[0]).not.toMatch(/secret/);
+  });
+});
+
+describe("auth denied line", () => {
+  it("uses the same cookie name as the fan session module", () => {
+    const source = readFileSync(path.join(__dirname, "../auth/fan-session-cookie.ts"), "utf8");
+    expect(source).toContain('FAN_SESSION_COOKIE = "__Host-kyaa-fan-session"');
+    expect(authKindFrom({ cookie: "a=1; __Host-kyaa-fan-session=xyz" })).toBe("fan-session");
+  });
+
+  it("classifies only the kind of credential", () => {
+    expect(authKindFrom({ cookie: "other=1" })).toBe("none");
+    expect(authKindFrom({ authorization: "Bearer abc" })).toBe("bearer");
+    expect(authKindFrom({ authorization: "Basic abc" })).toBe("none");
+    expect(authKindFrom({})).toBe("none");
+  });
+
+  it("carries no token, cookie value, member id or query", () => {
+    const line = buildHttpAuthDeniedLogLine({
+      url: "/api/groups/user-123/wallet?token=secret",
+      method: "get",
+      status: 401,
+      count: 1,
+      headers: { authorization: "Bearer secret", cookie: "__Host-kyaa-fan-session=secret", "x-amzn-trace-id": "Root=1-abc" },
+      matchers: loadRouteMatchers(manifestFile()),
+    });
+    expect(line).toEqual({
+      event: "http_auth_denied", route: "/api/groups/[groupId]/wallet", method: "GET", status: 401, authKind: "fan-session", count: 1, requestId: "Root=1-abc",
+    });
+    expect(JSON.stringify(line)).not.toMatch(/secret|user-123/);
+  });
+});
+
+describe("auth denied limiter", () => {
+  it("allows maxLines per route+status per window and carries suppressed counts into the next window", () => {
+    let t = 0;
+    const admit = createAuthDeniedLimiter({ windowMs: 1000, maxLines: 2, now: () => t });
+    expect([admit("/a", 401), admit("/a", 401), admit("/a", 401), admit("/a", 401)]).toEqual([1, 1, null, null]);
+    expect(admit("/a", 403)).toBe(1);
+    expect(admit("/b", 401)).toBe(1);
+    t = 1000;
+    expect(admit("/a", 401)).toBe(3);
+    expect(admit("/a", 401)).toBe(1);
+    expect(admit("/a", 401)).toBeNull();
+  });
+});
+
+describe("auth denied lines on a real http server", () => {
+  const originalEmit = http.Server.prototype.emit;
+  let server: http.Server | undefined;
+  afterEach(async () => {
+    await new Promise<void>((resolve) => (server ? server.close(() => resolve()) : resolve()));
+    server = undefined;
+    uninstallHttp5xxLogForTest(originalEmit as never);
+  });
+
+  it("logs fast 401 and 403, limits repeats, skips other 4xx, and keeps http_slow and http_5xx", async () => {
+    const lines: string[] = [];
+    installHttp5xxLog({
+      matchers: loadRouteMatchers(manifestFile()),
+      write: (line) => lines.push(line),
+      slowMs: 60,
+      authDeniedLimiter: createAuthDeniedLimiter({ maxLines: 2 }),
+    });
+    server = http.createServer((req, res) => {
+      const delay = req.url?.includes("slow") ? 90 : 0;
+      setTimeout(() => {
+        res.statusCode = req.url?.includes("fail") ? 503 : req.url?.includes("forbid") ? 403 : req.url?.includes("nf") ? 404 : 401;
+        res.end("{}");
+      }, delay);
+    });
+    await new Promise<void>((resolve) => server!.listen(0, "127.0.0.1", resolve));
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    const wallet = `${base}/api/groups/user-123/wallet`;
+    await fetch(`${wallet}?x=secret`, { headers: { cookie: "__Host-kyaa-fan-session=secret" } });
+    await fetch(`${wallet}`, { headers: { authorization: "Bearer secret" } });
+    await fetch(`${wallet}`);
+    await fetch(`${wallet}`);
+    await fetch(`${wallet}?forbid=1`);
+    await fetch(`${wallet}?nf=1`);
+    await fetch(`${base}/api/health/live?slow=1`);
+    await fetch(`${wallet}?fail=1`);
+    for (let i = 0; i < 50 && lines.length < 6; i += 1) await new Promise((r) => setTimeout(r, 10));
+    const parsed = lines.map((line) => JSON.parse(line));
+    expect(parsed.map((l) => [l.event, l.status, l.authKind ?? null])).toEqual([
+      ["http_auth_denied", 401, "fan-session"],
+      ["http_auth_denied", 401, "bearer"],
+      ["http_auth_denied", 403, "none"],
+      ["http_auth_denied", 401, "none"], // health/live 도 401로 응답하는 시험 서버. 다른 route라 별도 제한
+      ["http_slow", 401, undefined],
+      ["http_5xx", 503, undefined],
+    ].map((row) => [row[0], row[1], row[2] ?? null]));
+    expect(parsed[0]).toMatchObject({ route: "/api/groups/[groupId]/wallet", method: "GET", count: 1 });
+    expect(lines.join("\n")).not.toMatch(/secret|user-123/);
   });
 });
