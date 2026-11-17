@@ -20,6 +20,10 @@ const changhaPhotos = {
   calendar: "/images/celebrities/changha/gggi-20261030.jpg",
 };
 
+/** Link-preview (og:image) photo chosen by the creator, when it differs from the page hero.
+ * 11/17: the CEO asked that Changha's shared link show the autumn portrait Changha picked, not the GGGI photo. */
+export const creatorShareImages: Readonly<Record<string, string>> = { changha: changhaPhotos.profile };
+
 function isRegisteredChanghaSource(source: string | null | undefined) {
   return Boolean(source && [
     ...Object.values(changhaPhotos), "/images/celebrities/changha/profile-autumn-20261113.webp", "/images/celebrities/changha/gggi-20261030.jpg", "/images/celebrities/changha/profile-20261021.webp", "/images/celebrities/changha/hero-desktop-20261021.webp", "/images/celebrities/changha/portrait-20261021.webp", "/images/celebrities/changha/calendar-20261021.webp", "/images/guest-home/changha-card.jpg",

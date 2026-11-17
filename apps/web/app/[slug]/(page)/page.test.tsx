@@ -43,6 +43,20 @@ it("does not load private Wave lives or cheers into the server payload", async (
   expect(readPublicCheerEvent).not.toHaveBeenCalled();
 });
 
+describe("creator link preview photo", () => {
+  it("previews Changha's chosen autumn portrait, not the GGGI hero (11/17)", async () => {
+    const { generateMetadata } = await import("./page");
+    const before = mocks.creator;
+    Object.assign(mocks, { creator: { slug: "changha", roles: ["creator"], name: "창하", summary: "소개", image: { url: "/images/celebrities/changha/gggi-20261030.jpg", alt: "창하", photos: [] } } });
+    try {
+      const meta = await generateMetadata({ params: Promise.resolve({ slug: "changha" }), searchParams: Promise.resolve({ locale: "en" }) });
+      const og = JSON.stringify(meta.openGraph);
+      expect(og).toContain("profile-autumn-sharp-20261113.webp");
+      expect(og).not.toContain("gggi-20261030");
+    } finally { Object.assign(mocks, { creator: before }); }
+  });
+});
+
 describe("jjinfan share preview", () => {
   const creator = { slug: "elina", roles: ["creator"], name: "엘리나", summary: "소개", image: { url: "/images/elina.jpg", alt: "엘리나", photos: [] } };
   it("previews the live gauge only for a share link while the challenge is on", async () => {

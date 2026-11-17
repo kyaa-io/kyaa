@@ -8,7 +8,7 @@ import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-v
 import { publicMetadata, shareOrigin } from "@/seo/metadata";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { resolvePhoto } from "@/features/media/domain/public-image";
-import { resolveCreatorHeroImage } from "@/components/fan-ui/creator-image-config";
+import { creatorShareImages, resolveCreatorHeroImage } from "@/components/fan-ui/creator-image-config";
 import { creatorRafflesHref } from "@/features/benefit/domain/raffle-navigation";
 import { sanitizeAuthIntentId } from "@/components/login-intent";
 import { notFound, redirect } from "next/navigation";
@@ -32,7 +32,9 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const otherLocale = toContentLocale(locale) === "en" ? "ko" : "en";
   const translated = await loadSeoCreator(slug, otherLocale);
   const fallbackImage = slug === "changha" ? resolveCreatorHeroImage(slug, celebrity.image)?.src ?? celebrity.image.url : celebrity.image.url;
-  const photo = resolvePhoto(celebrity.image.photos, "creator.hero.desktop", fallbackImage, locale);
+  const heroPhoto = resolvePhoto(celebrity.image.photos, "creator.hero.desktop", fallbackImage, locale);
+  const sharePhoto = creatorShareImages[slug];
+  const photo = sharePhoto ? { ...heroPhoto, src: sharePhoto } : heroPhoto;
   // A shared 찐팬 100 gauge link (C7) previews the live gauge while the challenge is on; otherwise, or if the read fails, the usual photo.
   const challenge = query.share === JJINFAN_SHARE_VALUE ? await readSharedJjinfanChallenge(slug).catch(() => null) : null;
   return publicMetadata({ path: creatorHomeHref(slug), locale, title: challenge ? `${challenge.campaign.title} · ${celebrity.name} | kyaa` : `${celebrity.name} | kyaa`, description: challenge?.campaign.description || celebrity.summary,
