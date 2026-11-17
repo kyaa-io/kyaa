@@ -354,8 +354,32 @@ function kstTimestamp(value: string): string {
 // X 이벤트용 크리에이터(x-mission-*, x-opening-*)의 slug는 상세 path("/<slug>")에 그대로 실려 온다.
 const xEventPath = /^\/x-(?:mission|opening)-[^/#?]+$/u;
 
+// 크리에이터 페이지 좋아요 이벤트 창. apps/web/features/reaction/domain/page-like-event.ts 의 pageLikeEventWindows 와 같은 값이어야 하고,
+// worker 빌드는 web 소스를 가져올 수 없어 복사해 두며 test/telegram-alert-worker.test.ts 가 두 목록이 같은지 대조한다.
+// `to`는 다음 00:00(미포함). passport-issued 창은 대상이 아니다.
+export const pageLikeEventWindows: readonly { readonly slug: string; readonly from: string; readonly to: string }[] = [
+  { slug: "elina", from: "2026-11-17T00:00:00+09:00", to: "2026-11-18T00:00:00+09:00" },
+  { slug: "changha", from: "2026-11-18T00:00:00+09:00", to: "2026-11-19T00:00:00+09:00" },
+  { slug: "yuna", from: "2026-11-19T00:00:00+09:00", to: "2026-11-20T00:00:00+09:00" },
+  { slug: "changha", from: "2026-11-22T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
+];
+const creatorPagePath = /^\/([^/#?]+)$/u;
+
+function pageLikeEventLabel(alert: TelegramAlertSnapshot): string | null {
+  const slug = alert.detail ? creatorPagePath.exec(alert.detail.path)?.[1] : undefined;
+  if (!alert.detail || !slug) return null;
+  const at = Date.parse(alert.occurred_at);
+  if (!pageLikeEventWindows.some((window) => window.slug === slug && Date.parse(window.from) <= at && at < Date.parse(window.to))) return null;
+  const name = cleanPublicName(alert.detail.creator_name ?? alert.creator_name, 48);
+  return `${name || "크리에이터"} 이벤트 참여`;
+}
+
 function detailLabel(alert: TelegramAlertSnapshot): string {
   if (alert.kind === "reaction_completed" && alert.detail && xEventPath.test(alert.detail.path)) return "X 이벤트 참여";
+  if (alert.kind === "reaction_completed") {
+    const eventLabel = pageLikeEventLabel(alert);
+    if (eventLabel) return eventLabel;
+  }
   if (!alert.detail?.is_reply) return activityLabels[alert.kind as ActivityKind]?.[0] ?? ({
     member_joined: "신규 회원 가입",
     fan_joined: "팬 가입",

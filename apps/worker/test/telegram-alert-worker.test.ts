@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { pageLikeEventWindows as webPageLikeEventWindows } from "../../web/features/reaction/domain/page-like-event.ts";
 import {
   TelegramAlertWorker,
   validatedTelegramConfig,
@@ -7,6 +8,7 @@ import {
   runTelegramAlertWorkerOnce,
   runTelegramCsWorkerOnce,
   renderTelegramAlertMessage,
+  pageLikeEventWindows,
   type TelegramAlertBatch,
   type TelegramAlertQueue,
   type TelegramAlertSender,
@@ -310,6 +312,33 @@ describe("renderTelegramAlertMessage", () => {
       detail: { ...detailedActivity("reaction_completed").detail, path, result: "팬 리액션 완료" },
     });
     expect(renderTelegramAlertMessage([alert])).toContain(`• ${title}\n`);
+  });
+
+  it.each([
+    ["/elina", "2026-11-17T01:00:00.000Z", "엘리나", "엘리나 이벤트 참여"],
+    ["/elina", "2026-11-17T14:59:59.000Z", "엘리나", "엘리나 이벤트 참여"],
+    ["/elina", "2026-11-17T15:00:00.000Z", "엘리나", "팬 리액션 완료"],
+    ["/elina", "2026-11-16T14:59:59.000Z", "엘리나", "팬 리액션 완료"],
+    ["/elina", "2026-11-17T01:00:00.000Z", null, "크리에이터 이벤트 참여"],
+    ["/changha", "2026-11-17T01:00:00.000Z", "창하", "팬 리액션 완료"],
+    ["/changha", "2026-11-18T01:00:00.000Z", "창하", "창하 이벤트 참여"],
+    ["/changha", "2026-11-19T01:00:00.000Z", "창하", "팬 리액션 완료"],
+    ["/changha", "2026-11-22T01:00:00.000Z", "창하", "창하 이벤트 참여"],
+    ["/yuna", "2026-11-17T01:00:00.000Z", "유나", "팬 리액션 완료"],
+    ["/x-opening-1116", "2026-11-17T01:00:00.000Z", "엘리나", "X 이벤트 참여"],
+    ["/elina/community", "2026-11-17T01:00:00.000Z", "엘리나", "팬 리액션 완료"],
+  ])("titles a reaction on %s at %s (%s) as %s", (path, occurredAt, creatorName, title) => {
+    const base = detailedActivity("reaction_completed").detail;
+    const alert = detailedActivity("reaction_completed", {
+      occurred_at: occurredAt,
+      detail: { ...base, path, creator_name: creatorName, result: "팬 리액션 완료" },
+    });
+    expect(renderTelegramAlertMessage([alert])).toContain(`• ${title}\n`);
+  });
+
+  it("keeps the worker page-like event windows identical to the web definition", () => {
+    const web = Object.values(webPageLikeEventWindows).map(({ slug, from, to }) => ({ slug, from, to }));
+    expect(pageLikeEventWindows.map(({ slug, from, to }) => ({ slug, from, to }))).toEqual(web);
   });
 
   it("keeps other kinds' titles on an X event path", () => {
