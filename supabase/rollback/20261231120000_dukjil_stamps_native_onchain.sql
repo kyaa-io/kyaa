@@ -1,4 +1,4 @@
--- Rollback (stop) for 20261231100000_dukjil_stamps_native_onchain.sql.
+-- Rollback (stop) for 20261231120000_dukjil_stamps_native_onchain.sql.
 -- Restoring the pre-migration issuer would write new stamps to the retired legacy queue again (the 11/11 backlog), so this
 -- stops the chain side instead: every new dukjil stamp is saved and held (ROUTE_DISABLED), nothing new is enqueued, the
 -- registration trigger no longer releases, and backlog recovery stops. Points, stamps and slots behave as before.

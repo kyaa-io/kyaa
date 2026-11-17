@@ -4,8 +4,8 @@ begin
   if current_database()<>'byus' then raise exception 'PREFLIGHT_DB'; end if;
   if to_regprocedure('public.run_community_stamp_recovery(text,integer)') is null
     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='community_stamps' and column_name='onchain_hold_reason') then
-    raise exception 'PREFLIGHT_MIGRATION_20261231100000_MISSING'; end if;
-  -- 20261231100000 keeps the legacy issuer on a database without the Fan Action lane; production must be on the native one.
+    raise exception 'PREFLIGHT_MIGRATION_20261231120000_MISSING'; end if;
+  -- 20261231120000 keeps the legacy issuer on a database without the Fan Action lane; production must be on the native one.
   if position('community_stamp_enqueue_native' in pg_get_functiondef(
       'public.dukjil_issue_stamp_base(uuid,uuid,public.community_stamp_kind,text,integer)'::regprocedure))=0 then
     raise exception 'PREFLIGHT_DUKJIL_ISSUER_NOT_NATIVE'; end if;

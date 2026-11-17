@@ -7,9 +7,9 @@ set local lock_timeout = '5s';
 -- shared limit as before. A job that already has a signed transaction or today's reservation returns true before this check,
 -- so re-admission and signed-transaction recovery are not counted twice or blocked.
 -- The installed definition is patched at one exact anchor; drift aborts the migration.
--- Where 20261231100000 kept the legacy issuer (a database without the Fan Action lane, DEV on 11/17) no dukjil stamp reaches
+-- Where 20261231120000 kept the legacy issuer (a database without the Fan Action lane, DEV on 11/17) no dukjil stamp reaches
 -- this admission, so the definition is kept with a DUKJIL_NATIVE_LANE_ABSENT notice; a native issuer makes the anchor mandatory.
--- Rollback: supabase/rollback/20261231102000_dukjil_recovery_dispatch_cap.sql
+-- Rollback: supabase/rollback/20261231122000_dukjil_recovery_dispatch_cap.sql
 
 create index community_stamp_recovery_items_outbox_idx on public.community_stamp_recovery_items(outbox_id) where outbox_id is not null;
 

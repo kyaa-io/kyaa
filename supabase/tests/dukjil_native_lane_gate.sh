@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# 20261231100000/101000/102000 on copies of the chain just before them (byus_lane_pre, made by dukjil_native_lane_snapshot.sql):
+# 20261231120000/121000/122000 on copies of the chain just before them (byus_lane_pre, made by dukjil_native_lane_snapshot.sql):
 #   lane_dev  - no Fan Action lane sign (as DEV on 11/17): new objects only, issuer/enqueue/claim/admit unchanged, 4 notices;
 #   lane_prod - lane present but one enqueue anchor drifted (as a production drift): DRIFT, nothing changed.
 set -euo pipefail
 [[ "$PGHOST" == /* ]] || exit 2
 M=supabase/migrations
-FILES=("$M/20261231100000_dukjil_stamps_native_onchain.sql" "$M/20261231101000_dukjil_hold_release_progress.sql" "$M/20261231102000_dukjil_recovery_dispatch_cap.sql")
+FILES=("$M/20261231120000_dukjil_stamps_native_onchain.sql" "$M/20261231121000_dukjil_hold_release_progress.sql" "$M/20261231122000_dukjil_recovery_dispatch_cap.sql")
 DEFS="select md5(pg_get_functiondef('public.enqueue_fan_action_source(text,text,uuid,uuid,uuid,timestamptz,integer,jsonb)'::regprocedure))
   || md5(pg_get_functiondef('public.claim_blockchain_jobs(text,integer,integer,text[])'::regprocedure))
   || md5(pg_get_functiondef('public.dukjil_issue_stamp_base(uuid,uuid,public.community_stamp_kind,text,integer)'::regprocedure))

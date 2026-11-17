@@ -1,4 +1,4 @@
--- BYUS_CLEAN_DB_UPGRADE_AFTER_FILE for 20261231100000: the clean chain has the Fan Action lane, so the issuer must be native.
+-- BYUS_CLEAN_DB_UPGRADE_AFTER_FILE for 20261231120000: the clean chain has the Fan Action lane, so the issuer must be native.
 do $$
 begin
   if position('community_stamp_enqueue_native' in pg_get_functiondef(

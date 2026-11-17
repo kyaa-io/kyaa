@@ -1,6 +1,6 @@
--- Rollback for 20261231102000_dukjil_recovery_dispatch_cap.sql: admit_fan_action_dispatch goes back to the shared limit only
+-- Rollback for 20261231122000_dukjil_recovery_dispatch_cap.sql: admit_fan_action_dispatch goes back to the shared limit only
 -- (definition of 20261013110000_kyaa_credential_cutover.sql). Reservations already made stay. Stop backlog recovery first
--- (supabase/rollback/20261231100000_dukjil_stamps_native_onchain.sql) or recovery jobs can again use more than 500 a day.
+-- (supabase/rollback/20261231120000_dukjil_stamps_native_onchain.sql) or recovery jobs can again use more than 500 a day.
 begin;
 set local lock_timeout = '5s';
 create or replace function public.admit_fan_action_dispatch(p_job_id uuid,p_worker_id text)

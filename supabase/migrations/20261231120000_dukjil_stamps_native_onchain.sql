@@ -20,7 +20,7 @@ set local lock_timeout = '5s';
 -- enqueue_fan_action_source: the DEV database on 11/17) gets the new columns, tables and functions but keeps its issuer,
 -- enqueue and claim definitions, with a DUKJIL_NATIVE_LANE_ABSENT notice. Any one of those signs present (production, a clean
 -- migration chain) makes every anchor mandatory, so a missing anchor still aborts with DRIFT.
--- Rollback: supabase/rollback/20261231100000_dukjil_stamps_native_onchain.sql
+-- Rollback: supabase/rollback/20261231120000_dukjil_stamps_native_onchain.sql
 
 -- 1. Hold state on the stamp row ------------------------------------------------------------------------------------------
 alter table public.community_stamps
