@@ -13,6 +13,45 @@ P="psql -X -q -v ON_ERROR_STOP=1"
 DB=$($P -At -c "select current_database()")
 case "$DB" in byus_clean|byus_chemi*) ;; *) echo "disposable database required (got $DB)"; exit 1;; esac
 fail() { echo "deletion_race failed: $*"; exit 1; }
+# Full DB-only suite: BYUS_CLEAN_DB_SHELL_ASSERTION_FILE may point here.
+# bash deletion_race.sh --suite; no argument runs concurrency checks only.
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ "${1:-}" = "--suite" ] || [ "${CHEMI_DB_SUITE:-0}" = "1" ]; then
+  node "$HERE/../../../scripts/chemi-chain-schema-sql.mjs" --check
+FINGERPRINT=$(cat <<'SQL'
+with f as (
+  select 'fn '||p.oid::regprocedure::text||' '||pg_get_userbyid(p.proowner)||' '||md5(p.prosrc)||' '||coalesce(p.proacl::text,'')||' '||p.prosecdef||' '||coalesce(p.proconfig::text,'') x
+  from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname not in ('pg_catalog','information_schema','pg_toast') and n.nspname not like 'pg_temp%' and p.proname not like 'chemi\_%'
+  union all select 'rel '||c.oid::regclass::text||' '||c.relkind::text||' '||pg_get_userbyid(c.relowner)||' '||coalesce(c.relacl::text,'')||' '||c.relrowsecurity||' '||c.relforcerowsecurity
+  from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname not in ('pg_catalog','information_schema','pg_toast') and c.relname not like 'chemi\_%'
+  union all select 'col '||a.attrelid::regclass::text||'.'||a.attname||' '||format_type(a.atttypid,a.atttypmod)||' '||a.attnotnull||' '||coalesce(pg_get_expr(d.adbin,d.adrelid),'')
+  from pg_attribute a join pg_class c on c.oid=a.attrelid join pg_namespace n on n.oid=c.relnamespace left join pg_attrdef d on d.adrelid=a.attrelid and d.adnum=a.attnum
+  where a.attnum>0 and not a.attisdropped and n.nspname not in ('pg_catalog','information_schema','pg_toast') and c.relname not like 'chemi\_%'
+  union all select 'con '||conrelid::regclass::text||' '||conname||' '||pg_get_constraintdef(oid) from pg_constraint
+  where connamespace not in ('pg_catalog'::regnamespace,'information_schema'::regnamespace) and conrelid<>0 and conrelid::regclass::text not like '%chemi\_%'
+  union all select 'trg '||tgrelid::regclass::text||' '||tgname||' '||tgenabled::text||' '||pg_get_triggerdef(oid) from pg_trigger where not tgisinternal and tgrelid::regclass::text not like '%chemi\_%'
+  union all select 'idx '||indexrelid::regclass::text||' '||pg_get_indexdef(indexrelid) from pg_index where indrelid::regclass::text not like '%chemi\_%' and indrelid::regclass::text not like 'pg\_%'
+  union all select 'pol '||polrelid::regclass::text||' '||polname||' '||coalesce(pg_get_expr(polqual,polrelid),'') from pg_policy
+  union all select 'view '||c.oid::regclass::text||' '||md5(pg_get_viewdef(c.oid)) from pg_class c join pg_namespace n on n.oid=c.relnamespace where c.relkind in ('v','m') and n.nspname not in ('pg_catalog','information_schema')
+  union all select 'defacl '||defaclrole::regrole::text||' '||defaclobjtype::text||' '||coalesce(defaclacl::text,'') from pg_default_acl
+  union all select 'role '||rolname||' '||rolsuper||' '||rolbypassrls from pg_roles where rolname not like 'pg\_%'
+) select md5(string_agg(x, E'\n' order by x)) || ' ' || count(*) from f
+SQL
+)
+if [ -n "${CHEMI_BASE_DB:-}" ]; then
+  before=$(PGDATABASE="$CHEMI_BASE_DB" $P -c "$FINGERPRINT")
+  after=$($P -c "$FINGERPRINT")
+  [ "$before" = "$after" ] || fail "1. objects outside chemi_* changed ($before → $after)"
+  echo "1. non-chemi catalog unchanged ($after)"
+else
+  echo "1. skipped: CHEMI_BASE_DB not set"
+fi
+
+  $P -f "$HERE/schema_additive.sql"
+  for f in m1_closure chain_payload schema_base_fn erase_user; do
+    $P -f "$HERE/$f.sql"
+  done
+fi
 OUT=$(mktemp -d); trap 'rm -rf "$OUT"' EXIT
 
 user() { # id subject
@@ -85,4 +124,4 @@ for i in 1 2 3 4; do
   ! grep -q "deadlock" "$OUT/r$i" "$OUT/e$i" || fail "⑦c.$i deadlock"
   grep -q '"status" *: *"pending"' "$OUT/e$i" || fail "⑦c.$i begin: $(cat "$OUT/e$i")"
 done
-echo "deletion_race ok"
+echo "deletion_race DB-only ok; NOT VERIFIED: web ⑥, real payment ⑦, payment/webhook/manual resolve ⑧–⑩ (W1-PAY); D2 remains pending"
