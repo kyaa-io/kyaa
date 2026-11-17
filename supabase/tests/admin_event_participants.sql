@@ -136,13 +136,13 @@ begin
   exception when sqlstate '42501' then denied := true; end;
   if not denied then raise exception 'a non-admin member read a page-like list'; end if;
 
-  if has_function_privilege('anon','public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz)','execute')
-     or has_function_privilege('authenticated','public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz)','execute')
-     or not has_function_privilege('service_role','public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz)','execute') then
+  if has_function_privilege('anon','public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz,text)','execute')
+     or has_function_privilege('authenticated','public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz,text)','execute')
+     or not has_function_privilege('service_role','public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz,text)','execute') then
     raise exception 'only service_role may execute the list'; end if;
   if to_regprocedure('public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer)') is not null then
     raise exception 'the seven-argument list is still a separate function'; end if;
-  if not exists(select 1 from pg_proc where oid='public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz)'::regprocedure
+  if not exists(select 1 from pg_proc where oid='public.list_admin_event_participants(uuid,uuid,text,timestamptz,timestamptz,uuid,integer,text,timestamptz,timestamptz,text)'::regprocedure
       and prosecdef and proconfig @> array['search_path=""']) then
     raise exception 'list must be security definer with an empty search_path'; end if;
 end $$;
