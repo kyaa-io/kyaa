@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "한국어 메뉴의 Chemi 표기를 케미로 바꿨어요.",
+    "첨부 화면은 케미 탭을 켠 로컬 검증 화면이며 본문은 비어 있어요."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/2026-11-18-chemi-label.png"
+  ]
+}

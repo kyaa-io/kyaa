@@ -1,0 +1,24 @@
+390 케미
+{
+  overflow: false,
+  empty: '',
+  tabs: [
+    { label: 'HOME', width: 78 },
+    { label: '모임', width: 78 },
+    { label: '케미', width: 78 },
+    { label: '덕질', width: 78 },
+    { label: 'MY', width: 78 }
+  ]
+}
+1440 케미
+{
+  overflow: false,
+  empty: '',
+  tabs: [
+    { label: 'HOME', width: 110 },
+    { label: '모임', width: 110 },
+    { label: '케미', width: 110 },
+    { label: '덕질', width: 110 },
+    { label: 'MY', width: 110 }
+  ]
+}

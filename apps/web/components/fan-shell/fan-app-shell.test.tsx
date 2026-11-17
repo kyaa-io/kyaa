@@ -82,6 +82,7 @@ describe("fan app shell navigation", () => {
   it("orders the tabs HOME · 모임 · 케미 · 덕질 · MY when CHEMI_TAB is on", () => {
     expect(fanNavigationItems("ko", "/", true, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
     expect(fanNavigationItems("ko", "/", false, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
+    expect(fanNavigationItems("ko", "/chemi", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "케미", isCurrent: true });
     expect(fanNavigationItems("ja", "/", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "Chemi", href: "/chemi?locale=ja" });
   });
   it("marks only the chemi tab current on /chemi and keeps home out of it", () => {

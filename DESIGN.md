@@ -2803,3 +2803,11 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 ### 2026-11-15 카카오 알림톡 중단
 
 `/settings?section=channels`는 `fan_notification_delivery_control`의 카카오 `mode`가 `enabled`가 아니면 카카오 연결·수신 동의·전화번호 등록 영역을 표시하지 않는다. 기존 화면 코드는 보존하며 같은 발송 설정을 다시 켜면 노출할 수 있다. 이메일 영역과 기존 글꼴·간격·반경·색상·공통 컴포넌트는 그대로 사용한다.
+
+### 케미 탭 추가 예외 — 2026-11-18
+
+사용자 CHEMI-W0 인계 §1-7 및 BRANCH-FIX 요청에 따라 헤더·390 탭바 구성 동결 규칙(위 30행 및 헤더 동결 항목)에 한해 예외를 둔다. CHEMI_TAB=true이면 기존 4개에서 5개로 늘리고 HOME · 모임 · 케미 · 덕질 · MY 순서로 표시한다. 한국어는 케미, 다른 지원 언어는 기존 영어 메뉴 유지 규칙에 따라 Chemi다. 플래그가 꺼지면 기존 4개를 유지한다.
+
+공통 소유자는 fan-app-shell.tsx, fan-app-shell.module.css와 features/chemi/ui/copy.ts다. 하단은 고정 4열 대신 grid-auto-flow:column / grid-auto-columns:minmax(0,1fr)로 균등 분배한다(390px에서 97.5px → 78px). 열 사이 별도 gap 없이 기존 아이콘↔글자 4px, 좌우 padding 4px를 보존한다. 데스크톱은 기존 자동 너비와 탭 사이 16px, 최소 항목 너비 110px를 유지하며 다섯 번째 항목만 추가한다. 1024–1199px의 gap 0·가변 너비 예외도 보존한다. 탭 수 증가 외에 글자 크기·색·터치 영역을 줄이지 않는다.
+
+시안 승인 전 /chemi 본문은 빈 상태 그대로 유지한다. 이번 예외는 탭 진입점 확보이며 본문 디자인 승인을 뜻하지 않는다.
