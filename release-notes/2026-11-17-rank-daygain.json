@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "홈 랭킹에서 점수 옆에 오늘 늘어난 수가 '+7'처럼 작게 보여요.",
+    "순위가 그대로여도 점수가 늘고 있는지 알 수 있어요.",
+    "첨부 화면은 로컬 예시 데이터예요."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-17-rank-daygain-390.png",
+    "release-notes/images/2026-11-17-rank-daygain-1440.png"
+  ]
+}

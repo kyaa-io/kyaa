@@ -346,6 +346,7 @@ export const messages = {
   "rkPanelGap": {"ja": "1位まで", "zh-Hans": "距第1名", "zh-Hant": "距第1名", "es": "Para el n.º 1", "id": "Ke #1", "vi": "Đến #1", "th": "ถึงอันดับ 1", "pt": "Para o 1º", "fr": "Pour le n°1", "ru": "До 1-го места"},
   "rkPanelRank": {"ja": "現在の順位", "zh-Hans": "当前排名", "zh-Hant": "目前排名", "es": "Puesto actual", "id": "Peringkat", "vi": "Hạng hiện tại", "th": "อันดับตอนนี้", "pt": "Posição atual", "fr": "Rang actuel", "ru": "Текущее место"},
   "rkPanelToday": {"ja": "今日", "zh-Hans": "今日", "zh-Hant": "今日", "es": "Hoy", "id": "Hari ini", "vi": "Hôm nay", "th": "วันนี้", "pt": "Hoje", "fr": "Aujourd'hui", "ru": "Сегодня"},
+  "rkTodayGain": {"ja": "今日 {0} 増加", "zh-Hans": "今日增加 {0}", "zh-Hant": "今日增加 {0}", "es": "Hoy +{0}", "id": "Hari ini naik {0}", "vi": "Hôm nay tăng {0}", "th": "วันนี้เพิ่มขึ้น {0}", "pt": "Hoje +{0}", "fr": "+{0} aujourd'hui", "ru": "Сегодня +{0}"},
   "rkPanelJjinfan": {"ja": "ガチ勢", "zh-Hans": "真粉", "zh-Hant": "真粉", "es": "Fans fieles", "id": "Fan sejati", "vi": "Fan ruột", "th": "แฟนตัวจริง", "pt": "Fãs fiéis", "fr": "Vrais fans", "ru": "Преданные фанаты"},
   "rkPanelFavorite": {"ja": "推し", "zh-Hans": "最爱", "zh-Hant": "最愛", "es": "Favorito", "id": "Favorit", "vi": "Yêu thích", "th": "คนโปรด", "pt": "Favorito", "fr": "Favori", "ru": "Любимец"},
   "rkPanelRecent": {"ja": "直近{0}日", "zh-Hans": "最近{0}天", "zh-Hant": "最近{0}天", "es": "Últimos {0} días", "id": "{0} hari terakhir", "vi": "{0} ngày gần đây", "th": "{0} วันที่ผ่านมา", "pt": "Últimos {0} dias", "fr": "{0} derniers jours", "ru": "Последние {0} дн."},

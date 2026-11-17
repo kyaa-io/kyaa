@@ -83,7 +83,7 @@ it("keeps the 찐팬 100 tag on the creator row and counts page likes", async ()
   expect(row.textContent).toContain("찐팬 100 도전 중");
 });
 
-it("a row is one line: movement beside the name, LIVE, the value; today's gain and the way to first place are not drawn on the stars list", async () => {
+it("a row is one line: movement beside the name, LIVE, the value with today's gain (+N) beside it; the way to first place is not drawn on the stars list", async () => {
   stubRows(
     [], [
       creatorRow(1, { name: "일등", likes: 12345, delta: 2, dayGain: 125, liveNow: true }),
@@ -97,7 +97,9 @@ it("a row is one line: movement beside the name, LIVE, the value; today's gain a
   const row = (name: string) => view.container.querySelector(`li[data-row='creator-rank']:has([title='${name}'])`) as HTMLElement;
   expect(within(row("일등")).getByLabelText("2계단 올라감")).toBeInTheDocument();
   expect(within(row("일등")).getByRole("img", { name: "일등 LIVE 중" })).toBeInTheDocument();
-  expect(within(row("일등")).getByLabelText("별점수 12,345").textContent).toContain("1.2만");
+  expect(within(row("일등")).getByLabelText("별점수 12,345, 오늘 125 늘어남").textContent).toContain("1.2만");
+  expect(row("일등").querySelector("[data-day-gain]")?.textContent).toBe("+125");
+  for (const name of ["이등", "삼등", "새얼굴"]) expect(row(name).querySelector("[data-day-gain]")).toBeNull();
   expect(within(row("이등")).getByLabelText("1계단 내려감")).toBeInTheDocument();
   expect([...view.container.querySelectorAll("[data-row]")].map((row) => row.textContent).join(" ")).not.toMatch(/오늘|1위까지|현재 1위|1위와 동점/);
   expect(row("삼등").querySelector("[data-delta-cell]")).toBeNull();
