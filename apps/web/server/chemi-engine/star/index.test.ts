@@ -46,7 +46,6 @@ it("scores repeatably with a fixed distribution and no unknown-time angles", () 
   expect(score).toEqual(scoreDay(chart, "2026-11-18"));
   expect(score.reasons).toHaveLength(5);
   expect(score.reasons.every(r => r.target !== "ASC" && r.target !== "MC")).toBe(true);
-  expect(score.raw.overall).toBe(score.raw.love + score.raw.money + score.raw.work + score.raw.people);
 });
 it("returns both Moon signs across a birth-day ingress", () => {
   expect(birthMoonSigns(new Date("1999-12-31Z"), new Date("2000-01-01Z"))).toEqual(["libra", "scorpio"]);

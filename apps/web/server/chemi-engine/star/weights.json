@@ -1,0 +1,4 @@
+{
+  "aspects": [[0, 1], [60, 0.6], [90, -0.8], [120, 1], [180, -1]],
+  "transits": {"Sun": 1, "Moon": 1, "Mercury": 1, "Venus": 1, "Mars": 1, "Jupiter": 1.2, "Saturn": 1.2, "Uranus": 1.4, "Neptune": 1.4, "Pluto": 1.4}
+}

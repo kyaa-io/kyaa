@@ -53,7 +53,7 @@ export function calculateChart(input: { instant: Date; timeKnown: boolean; latit
         normalize(longitude - start) < normalize(placidusCusps[(i + 1) % 12]! - start)) + 1,
       wholeSignHouse: wholeSignCusps === null ? null : Math.floor(normalize(longitude - wholeSignCusps[0]!) / 30) + 1 };
   });
-  return { zodiacSystem: "tropical" as const, houseSystem: "whole-sign" as const,
+  return { zodiacSystem: "tropical" as const, internalHouseSystem: "whole-sign" as const,
     ascendant, midheaven, wholeSignCusps, placidusCusps, planets };
 }
 
