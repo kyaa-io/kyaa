@@ -1,7 +1,7 @@
 import "server-only";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { z } from "zod";
-import { eventParticipantEvents, eventParticipantPageSize, eventParticipantSlugPattern, eventParticipantsSchema, eventParticipantWindowEvents, type EventParticipantEvent } from "../../features/admin/event-participants";
+import { eventParticipantEvents, eventParticipantPageSize, eventParticipantPresets, eventParticipantSlugPattern, eventParticipantsSchema, eventParticipantWindowEvents, type EventParticipantEvent } from "../../features/admin/event-participants";
 import type { FanpageDependencies } from "../fanpage/routes";
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
@@ -20,11 +20,15 @@ export function createEventParticipantsHandler(deps: Pick<FanpageDependencies, "
       const limit = integer(params.get("limit"), 100);
       const asOf = optional(params.get("asOf"), instant), afterAt = optional(params.get("afterAt"), instant), afterId = optional(params.get("afterId"), z.uuid());
       const slug = optional(params.get("slug"), z.string().regex(eventParticipantSlugPattern)), from = optional(params.get("from"), instant), to = optional(params.get("to"), instant);
+      const campaign = params.get("campaign");
+      // A campaign is one of the known presets and must describe exactly the window being read.
+      const campaignValid = campaign === null || eventParticipantPresets.some(preset => preset.key === campaign && preset.event === event && preset.slug === slug?.value
+        && from?.value != null && to?.value != null && Date.parse(preset.from) === Date.parse(from.value) && Date.parse(preset.to) === Date.parse(to.value));
       const windowed = event !== null && (eventParticipantWindowEvents as readonly string[]).includes(event);
-      if ([...params.keys()].some(key => !["event", "limit", "asOf", "afterAt", "afterId", "slug", "from", "to"].includes(key)) || !event
+      if ([...params.keys()].some(key => !["event", "limit", "asOf", "afterAt", "afterId", "slug", "from", "to", "campaign"].includes(key)) || !event
         || !eventParticipantEvents.includes(event) || !(limit >= 1 && limit <= eventParticipantPageSize)
         || !asOf || !afterAt || !afterId || (afterAt.value === null) !== (afterId.value === null) || (afterAt.value !== null && asOf.value === null)
-        || !slug || !from || !to
+        || !slug || !from || !to || !campaignValid
         || (windowed ? slug.value === null || from.value === null || to.value === null || Date.parse(from.value) >= Date.parse(to.value)
           : slug.value !== null || from.value !== null || to.value !== null)) {
         return failure("INVALID_REQUEST", 400);
@@ -35,6 +39,7 @@ export function createEventParticipantsHandler(deps: Pick<FanpageDependencies, "
         p_actor_admin_allowlist_id: actor.allowlistId,
         p_event: event, p_as_of: asOf.value, p_after_at: afterAt.value, p_after_id: afterId.value, p_limit: limit,
         ...(windowed ? { p_slug: slug.value, p_from: from.value, p_to: to.value } : {}),
+        ...(campaign !== null ? { p_campaign: campaign } : {}),
       }));
       return Response.json(result, { headers });
     } catch (error) {

@@ -57,6 +57,27 @@ describe("admin event participants read", () => {
     expect((await handler(request(query))).status).toBe(400);
     expect(deps.rpc).not.toHaveBeenCalled();
   });
+  it("passes a campaign only when it is a known preset describing exactly this window, and returns its source totals", async () => {
+    const from = "2026-11-17T00:00:00+09:00", to = "2026-11-18T00:00:00+09:00", window = `slug=elina&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+    const tagged = { ...page, rows: [{ ...row, sourceTag: { source: "telegram", content: "cgaa" } }, { ...row, id: "10000000-0000-4000-8000-000000000002", sourceTag: null }], total: 2, sourceTotals: [{ source: "telegram", content: "cgaa", count: 1 }] };
+    deps.rpc.mockResolvedValue(tagged);
+    const response = await handler(request(`event=page-like&${window}&campaign=elina-onboarding-1117`));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(tagged);
+    expect(deps.rpc).toHaveBeenCalledWith("list_admin_event_participants", expect.objectContaining({ p_slug: "elina", p_campaign: "elina-onboarding-1117" }));
+    deps.rpc.mockClear();
+    for (const query of [
+      `event=page-like&${window}&campaign=changha-onboarding-1118`,
+      `event=page-like&${window}&campaign=nope`,
+      `event=passport-issued&${window}&campaign=elina-onboarding-1117`,
+      `event=page-like&slug=changha&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&campaign=elina-onboarding-1117`,
+      `event=page-like&slug=elina&from=${encodeURIComponent(from)}&to=${encodeURIComponent("2026-11-19T00:00:00+09:00")}&campaign=elina-onboarding-1117`,
+      "event=x-mission&campaign=elina-onboarding-1117",
+    ]) expect((await handler(request(query))).status, query).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
+    await handler(request(`event=page-like&${window}`));
+    expect(Object.keys(deps.rpc.mock.calls[0][1])).not.toContain("p_campaign");
+  });
   it("first read sends no instant or cursor and passes the database instant back", async () => {
     await handler(request());
     expect(deps.rpc).toHaveBeenCalledWith("list_admin_event_participants", expect.objectContaining({ p_as_of: null, p_after_at: null, p_after_id: null, p_limit: 100 }));

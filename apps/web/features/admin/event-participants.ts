@@ -11,7 +11,7 @@ export const eventParticipantSlugPattern = /^[a-z0-9][a-z0-9-]{0,63}$/;
 /** What one list reads: a fixed event, or likes / Passports of one page inside [from, to). */
 export type EventParticipantQuery =
   | { event: (typeof eventParticipantFixedEvents)[number] }
-  | { event: EventParticipantWindowEvent; slug: string; from: string; to: string };
+  | { event: EventParticipantWindowEvent; slug: string; from: string; to: string; campaign?: string };
 
 /** $400 event week (2026-11-16 ~ 11-23). Each day runs 00:00 to 23:59 KST; `to` is the next 00:00 (exclusive). */
 export const eventParticipantPresets = [
@@ -31,13 +31,18 @@ export const eventParticipantSchema = z.object({
   signedUpAt: instant,
   participatedAt: instant,
   status: z.enum(["completed", "entered", "issued"]),
+  /** First link tag of this member for the campaign; null = none, absent = the list was read without a campaign. */
+  sourceTag: z.object({ source: z.string().max(24), content: z.string().max(24) }).nullable().optional(),
 });
+export const eventSourceTotalSchema = z.object({ source: z.string().max(24), content: z.string().max(24), count: z.number().int().positive() });
 export const eventParticipantsSchema = z.object({
   asOf: instant,
   total: z.number().int().nonnegative(),
   rows: z.array(eventParticipantSchema),
   next: z.object({ at: instant, id: z.uuid() }).nullable(),
+  sourceTotals: z.array(eventSourceTotalSchema).optional(),
 });
+export type EventSourceTotal = z.infer<typeof eventSourceTotalSchema>;
 export type EventParticipant = z.infer<typeof eventParticipantSchema>;
 export type EventParticipantsPage = z.infer<typeof eventParticipantsSchema>;
 export type EventParticipantCursor = NonNullable<EventParticipantsPage["next"]>;

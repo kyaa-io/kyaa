@@ -11,6 +11,12 @@
 .panel nav button { min-width: var(--min-target); min-height: var(--min-target); }
 .message { padding: var(--space-12) var(--space-4); color: var(--secondary-ink); text-align: center; }
 .skeleton { display: grid; gap: var(--space-4); }
+.sources { display: grid; gap: var(--space-2); margin-bottom: var(--space-6); }
+.sources > :first-child { margin: 0; color: var(--secondary-ink); font-size: var(--fan-metadata-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); }
+.sources ul { display: flex; flex-wrap: wrap; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.sources li { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-2) var(--space-4); border: 1px solid var(--line); border-radius: var(--radius-media); background: var(--soft); font-size: var(--fan-body-size); line-height: var(--fan-body-leading); }
+.sources li > span { color: var(--secondary-ink); overflow-wrap: anywhere; }
+.sources li strong { font-weight: var(--fan-item-title-weight); font-variant-numeric: tabular-nums; }
 .tableScroll { max-width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: var(--radius-media); }
 .tableScroll:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
 .table { width: 100%; min-width: 560px; border-collapse: collapse; table-layout: fixed; text-align: left; }
@@ -18,6 +24,7 @@
 .table thead th:nth-child(1) { width: 34%; }
 .table thead th:nth-child(2), .table thead th:nth-child(3) { width: 24%; }
 .table thead th:nth-child(4) { width: 18%; }
+.table thead th:nth-child(5) { width: 22%; }
 .table tbody :is(th, td) { padding: var(--space-4); border-top: 1px solid var(--line); color: var(--ink); font-size: var(--fan-body-size); font-weight: var(--fan-body-weight); line-height: var(--fan-body-leading); vertical-align: top; overflow-wrap: anywhere; }
 .table tbody th { font-weight: var(--fan-item-title-weight); }
 .table time { font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; }
@@ -34,6 +41,7 @@
   .table tbody th { grid-column: 1; }
   .table tbody .statusCell { grid-column: 2; grid-row: 1; }
   .table tbody td[data-label]:not(.statusCell) { grid-column: 1 / -1; display: flex; gap: var(--space-2); color: var(--secondary-ink); }
+  .table tbody .sourceCell { font-size: var(--fan-metadata-size); line-height: var(--fan-metadata-leading); }
   .table tbody td[data-label]:not(.statusCell)::before { content: attr(data-label); min-width: 56px; font-size: var(--fan-metadata-size); line-height: var(--fan-metadata-leading); }
 }
 .more { display: flex; justify-content: center; margin-top: var(--space-6); }

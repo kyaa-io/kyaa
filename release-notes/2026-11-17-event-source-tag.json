@@ -1,0 +1,6 @@
+{
+  "changes": [
+    "관리자 이벤트 참여자 화면에서 텔레그램·X·KoL 등 태그를 붙인 링크로 들어온 참여자를 출처별로 나눠 볼 수 있어요."
+  ],
+  "path": "/admin/event-participants"
+}

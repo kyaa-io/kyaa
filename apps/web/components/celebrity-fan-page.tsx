@@ -68,6 +68,8 @@ import { CreatorOfficialVideos } from "@/features/fanpage/ui/creator-official-vi
 import { CreatorNews, type NewsFilter } from "@/features/fanpage/ui/chzzk-posts";
 import { chzzkChannelId } from "@/features/fanpage/domain/chzzk-posts";
 import { pageViewIdempotencyKey, recordProductEventV1 } from "@/features/analytics/client/product-event-client";
+import { useEventSourceTag } from "@/features/analytics/client/use-event-source-tag";
+import { withEventSourceReturn } from "@/features/analytics/domain/event-source-tag";
 import type { ContentLocale, PublishedCelebrity, PublishedCelebrityLive } from "@/server/content/content-domain";
 import styles from "@/features/fanpage/ui/fanpage.module.css";
 import { CreatorRolesText } from "./fan-ui/creator-roles";
@@ -174,15 +176,16 @@ function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEve
     })().catch(() => undefined);
     return () => { cancelled = true; };
   }, [ready, requestAuthenticated, getAccessToken, celebrity.slug, auth.user?.id, session.generation, session.ownerId]);
+  useEventSourceTag({ slug: celebrity.slug, ready: sessionReady, authenticated: requestAuthenticated, ownerId: session.ownerId ?? auth.user?.id, getAccessToken });
   const community = sessionReady ? <><ReactionAction slug={celebrity.slug} locale={locale} variant="compact" showRewardDialog={celebrity.slug !== "gggi"} /><FanCommunity slug={celebrity.slug} locale={locale} /></> : null;
   const hero = resolveCreatorHeroImage(celebrity.slug, celebrity.image);
   const verifyLink = <AuthIntentLink className={styles.primaryButton} locale={locale} input={{ sourcePath: `/c/${celebrity.slug}/verify`, sourceQuery: `?locale=${locale}`, actionType: "START_FAN_VERIFICATION", targetType: "celebrity", targetId: celebrity.slug }}>{locale === "ko" ? "퀴즈 풀고 팬 인증하기" : translate(locale, localizedMessages.m58e2f1f8977e, "Verify fandom")}<ArrowRight aria-hidden="true" /></AuthIntentLink>;
   const channelId = chzzkChannelId(celebrity.socialLinks);
   const officialPostLabel = isBrand ? fanPageBrandCopy[locale].officialPost : undefined;
   const boardIntro = isBrand ? fanPageBrandCopy[locale].intro(celebrity.name) : undefined;
-  const loginReturnTo: string = tab === "home" ? `${creatorHomeHref(celebrity.slug)}?locale=${locale}`
+  const loginReturnTo: string = withEventSourceReturn(tab === "home" ? `${creatorHomeHref(celebrity.slug)}?locale=${locale}`
     : tab === "board" ? String(boardHref(celebrity.slug, locale, { section: boardSection, source: boardSource, newsFilter: newsFilter, mediaFilter: mediaFilter }))
-    : String(fanPageHref(celebrity.slug, locale, tab));
+    : String(fanPageHref(celebrity.slug, locale, tab)), query?.toString() ?? "", celebrity.slug);
   const shell = (content: ReactNode) => framePage ? <>{content}</> : <FanAppFrame locale={locale} groupsEnabled={groupsEnabled} currentPath={groupsEnabled&&!isWave?"/pages/groups":undefined} mainId="celebrity-detail-main" actionsAreIdentity={sessionReady && auth.authenticated} actions={sessionReady && auth.authenticated ? <Link className={styles.headerIdentity} href={`/my?locale=${locale}`}>{portrait(36)}<span>{nickname ?? "MY"}</span></Link> : sessionReady ? <Link className={styles.headerLogin} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}` as Route}>{locale === "ko" ? "로그인" : translate(locale, localizedMessages.m4ec129dd4b3e, "Sign in")}</Link> : undefined}>
     <FanContentContainer as="main" id="celebrity-detail-main" className={`${styles.page} ${groupsEnabled ? (isBrand ? groupStyles.page : groupStyles.creatorPage) : ""}`} tabIndex={-1}>{content}</FanContentContainer></FanAppFrame>;
   return shell(<>
