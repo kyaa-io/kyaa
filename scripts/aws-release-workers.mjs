@@ -2,7 +2,7 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdtemp, readFile, rm, mkdir, copyFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 export const workers = { 'mint-worker': 'index.cjs', 'notification-worker': 'notification-index.cjs', 'benefit-maintenance': 'notification-index.cjs', 'creator-registration-worker': 'creator-registration-index.cjs' };
 const digest = bytes => createHash('sha256').update(bytes).digest('base64');
@@ -46,18 +46,47 @@ export async function prepareWorkers(sha, folder, aws, environment = 'prod', dow
   }
   return prepared;
 }
-export async function applyWorkers(prepared, folder, aws) {
+export async function applyWorkers(prepared, folder, aws, appliedPath = join(folder, 'applied.json')) {
+  const applied = { sourceSha: prepared.sourceSha, environment: prepared.environment, runId: prepared.runId, functions: [] };
+  const save = () => writeFile(appliedPath, JSON.stringify(applied), { mode: 0o600 });
+  const inspect = entry => {
+    let current = aws(['lambda', 'get-function-configuration', '--function-name', entry.function]);
+    if (current.LastUpdateStatus === 'InProgress' || current.State === 'Pending') {
+      aws(['lambda', 'wait', 'function-updated-v2', '--function-name', entry.function]);
+      current = aws(['lambda', 'get-function-configuration', '--function-name', entry.function]);
+    }
+    if (envHash(current) !== entry.environmentHash) throw Error('PREPARED_WORKER_CHANGED');
+    if (current.LastUpdateStatus !== 'Successful' || current.State !== 'Active') throw Error('PREPARED_WORKER_STATE');
+    if (current.CodeSha256 === entry.preparedZipHash) return 'complete';
+    if (current.CodeSha256 === entry.codeSha256 && current.RevisionId === entry.revisionId) return 'pending';
+    throw Error('PREPARED_WORKER_CHANGED');
+  };
+  // Check the entire set before issuing any further updates.
   for (const entry of prepared.functions) {
-    const name = entry.function;
-    const zip = join(folder, entry.worker, 'code.zip');
-    if (digest(await readFile(zip)) !== entry.preparedZipHash) throw Error('PREPARED_ZIP_CHANGED');
-    const current = aws(['lambda', 'get-function-configuration', '--function-name', name]);
-    if (current.RevisionId !== entry.revisionId || current.CodeSha256 !== entry.codeSha256 || envHash(current) !== entry.environmentHash) throw Error('PREPARED_WORKER_CHANGED');
-    aws(['lambda', 'update-function-code', '--function-name', name, '--revision-id', entry.revisionId, '--zip-file', `fileb://${zip}`]);
-    aws(['lambda', 'wait', 'function-updated-v2', '--function-name', name]);
-    const after = aws(['lambda', 'get-function-configuration', '--function-name', name]);
-    if (after.CodeSha256 !== entry.preparedZipHash || after.LastUpdateStatus !== 'Successful' || envHash(after) !== entry.environmentHash || after.State !== 'Active') throw Error('WORKER_VERIFY_FAILED');
-    console.log(JSON.stringify({ function: name, sourceSha: prepared.sourceSha, codeSha256: entry.preparedZipHash, verified: true }));
+    if (digest(await readFile(join(folder, entry.worker, 'code.zip'))) !== entry.preparedZipHash) throw Error('PREPARED_ZIP_CHANGED');
+    applied.functions.push({ function: entry.function, targetZipHash: entry.preparedZipHash, result: inspect(entry) });
+  }
+  await save();
+  for (const [index, entry] of prepared.functions.entries()) {
+    const result = applied.functions[index];
+    if (inspect(entry) === 'complete') { result.result = 'complete'; await save(); continue; }
+    result.result = 'updating'; await save();
+    try {
+      try {
+        aws(['lambda', 'update-function-code', '--function-name', entry.function, '--revision-id', entry.revisionId, '--zip-file', `fileb://${join(folder, entry.worker, 'code.zip')}`]);
+      } catch (error) {
+        // A lost response can still mean AWS accepted the update.
+        if (inspect(entry) !== 'complete') throw error;
+      }
+      aws(['lambda', 'wait', 'function-updated-v2', '--function-name', entry.function]);
+      if (inspect(entry) !== 'complete') throw Error('WORKER_VERIFY_FAILED');
+      result.result = 'complete';
+      await save();
+    } catch (error) {
+      result.result = 'uncertain';
+      await save();
+      throw error;
+    }
   }
 }
 export async function updateWorkers(...args) {
@@ -75,10 +104,13 @@ export async function main() {
   const aws = args => { const out = execFileSync('aws', [...args, '--region', 'ap-northeast-2', '--output', 'json', '--no-cli-pager'], { encoding: 'utf8', stdio: ['ignore','pipe','pipe'] }); return out.trim() ? JSON.parse(out) : {}; };
   if (aws(['sts','get-caller-identity']).Account !== '996702758024') throw Error('ACCOUNT_MISMATCH');
   const preparedPath = 'work/aws-release/worker-backups/prepared.json';
-  if (mode === 'apply') {
+  if (mode === 'apply' || Number(process.env.GITHUB_RUN_ATTEMPT ?? 1) > 1) {
     const prepared = JSON.parse(await readFile(preparedPath, 'utf8'));
-    if (prepared.sourceSha !== release.sourceSha || prepared.environment !== environment) throw Error('PREPARED_RELEASE_MISMATCH');
-    await applyWorkers(prepared, prepared.folder, aws);
+    if (prepared.sourceSha !== release.sourceSha || prepared.environment !== environment || prepared.runId !== process.env.GITHUB_RUN_ID) throw Error('PREPARED_RELEASE_MISMATCH');
+    const folder = join(process.cwd(), 'work/aws-release/worker-backups', basename(prepared.folder));
+    const applied = JSON.parse(await readFile('work/aws-release/worker-backups/applied.json', 'utf8'));
+    if (applied.sourceSha !== prepared.sourceSha || applied.runId !== prepared.runId) throw Error('APPLIED_RELEASE_MISMATCH');
+    if (mode === 'apply') await applyWorkers(prepared, folder, aws, 'work/aws-release/worker-backups/applied.json');
     return;
   }
   await rm(preparedPath, { force: true });
@@ -89,7 +121,8 @@ export async function main() {
     execFileSync('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund', '--workspace', '@byus/worker', '--include-workspace-root'], { cwd: folder, stdio: 'pipe' });
     execFileSync(process.execPath, ['apps/worker/scripts/build-lambda.mjs'], { cwd: folder, stdio: 'pipe' });
     const prepared = await prepareWorkers(release.sourceSha, folder, aws, environment);
-    await writeFile(preparedPath, JSON.stringify({ ...prepared, folder }), { mode: 0o600 });
+    await writeFile(preparedPath, JSON.stringify({ ...prepared, folder, runId: process.env.GITHUB_RUN_ID }), { mode: 0o600 });
+    await writeFile('work/aws-release/worker-backups/applied.json', JSON.stringify({ sourceSha: release.sourceSha, runId: process.env.GITHUB_RUN_ID, functions: [] }), { mode: 0o600 });
   } finally { await rm(join(folder, 'node_modules'), { recursive: true, force: true }); }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(() => { console.error('WORKER_RELEASE_FAILED; inspect AWS state before retry'); process.exitCode = 1; });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(() => { console.error('WORKER_RELEASE_FAILED; 수동 확인 필요: inspect AWS state before retry'); process.exitCode = 1; });

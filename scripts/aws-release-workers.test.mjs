@@ -41,7 +41,7 @@ for (const scenario of ['match','difference','denied','revision','disabled','run
    };
    const run=()=>updateWorkers('a'.repeat(40),root,aws,'dev',async()=>scenario==='backup'?Buffer.from('bad'):backup);
    if(['denied','revision','runtime','backup','environment'].includes(scenario)) await assert.rejects(run);
-   else {await run(); assert.equal(hashes.size,4);}
+   else {await run(); assert.equal(hashes.size,scenario==='match'?0:4);}
    if(['denied','runtime','backup'].includes(scenario)) assert.equal(hashes.size,0);
    assert(calls.every(a=>['get-function','get-function-configuration','update-function-code','wait'].includes(a[1])));
   } finally {await rm(root,{recursive:true,force:true});}
@@ -64,7 +64,9 @@ for (const environment of ['dev', 'prod']) {
    t.mock.method(console, 'log', value => output.push(JSON.parse(value)));
    const error = Object.assign(new Error('AWS CLI failed'), { stderr: Buffer.from(`An error occurred (${code}) when calling the GetFunctionConfiguration operation: missing`) });
    const aws = args => { calls.push(args); throw error; };
-   const run = () => updateWorkers('a'.repeat(40), '/unused', aws, environment);
+   const emptyRoot = await mkdtemp(join(tmpdir(), 'worker-empty-'));
+   t.after(() => rm(emptyRoot, { recursive: true, force: true }));
+   const run = () => updateWorkers('a'.repeat(40), emptyRoot, aws, environment);
    if (environment === 'dev' && code === 'ResourceNotFoundException') {
     await run();
     assert.deepEqual(output, Object.keys(workers).map(worker => ({ function: `byus-${worker}-dev`, skipped: 'absent' })));
@@ -120,7 +122,7 @@ for (const scenario of ['third dry run denied', 'revision drift', 'code drift', 
     await applyWorkers(JSON.parse(await readFile(join(root, 'prepared.json'), 'utf8')), root, aws);
    };
    if (scenario === 'third dry run denied') { await assert.rejects(run, /AccessDenied/); assert.deepEqual([web, schedules, updates.length], [0, 0, 0]); }
-   else if (scenario.endsWith('drift')) { await assert.rejects(run, /PREPARED_/); assert.equal(updates.length, 2); }
+   else if (scenario.endsWith('drift')) { await assert.rejects(run, /PREPARED_/); assert.equal(updates.length, 0); }
    else { await run(); assert.equal(updates.length, scenario === 'dev absent' ? 3 : 4); }
   } finally { await rm(root, { recursive: true, force: true }); }
  });
@@ -135,3 +137,46 @@ test('prepare gates web and schedules, apply follows health', async () => {
  assert(prepare > 0 && prepare < web && web < health && health < schedules && schedules < apply);
  assert(!workflow.slice(prepare, web).includes('continue-on-error'));
 });
+for (const scenario of ['partial', 'lost response', 'external']) {
+ test(`resume: ${scenario}`, async () => {
+  const root = await mkdtemp(join(tmpdir(), 'worker-resume-'));
+  try {
+   const entries = [];
+   const states = [];
+   const updates = [];
+   for (let i = 0; i < 3; i++) {
+    await mkdir(join(root, String(i)));
+    await writeFile(join(root, String(i), 'code.zip'), 'target');
+    entries.push({ worker: String(i), function: String(i), preparedZipHash: hash('target'), codeSha256: 'old', revisionId: 'r1', environmentHash: hash('[]') });
+    states.push({ CodeSha256: 'old', RevisionId: 'r1', State: 'Active', LastUpdateStatus: 'Successful' });
+   }
+   let fail = true;
+   const aws = args => {
+    const i = Number(args[args.indexOf('--function-name') + 1]);
+    if (args[1] === 'update-function-code') {
+     updates.push(i);
+     if (i === 1 && fail && scenario !== 'lost response') throw Error('failed');
+     states[i].CodeSha256 = hash('target'); states[i].RevisionId = 'r2';
+     if (i === 1 && fail) throw Error('response lost');
+    }
+    return states[i];
+   };
+   const prepared = { sourceSha: 'a'.repeat(40), functions: entries };
+   if (scenario === 'lost response') await applyWorkers(prepared, root, aws);
+   else {
+    await assert.rejects(applyWorkers(prepared, root, aws), /failed/);
+    fail = false;
+    const count = updates.length;
+    if (scenario === 'external') {
+     states[2].CodeSha256 = 'third-party';
+     await assert.rejects(applyWorkers(prepared, root, aws), /PREPARED_WORKER_CHANGED/);
+     assert.equal(updates.length, count);
+    } else await applyWorkers(prepared, root, aws);
+   }
+   assert.equal(updates.filter(i => i === 0).length, 1);
+   const receipt = JSON.parse(await readFile(join(root, 'applied.json')));
+   assert(receipt.functions.every(entry => entry.targetZipHash === hash('target')));
+   if (scenario !== 'external') assert(receipt.functions.every(entry => entry.result === 'complete'));
+  } finally { await rm(root, { recursive: true, force: true }); }
+ });
+}
