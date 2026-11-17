@@ -23,6 +23,9 @@ UPGRADE_MIGRATION="${BYUS_CLEAN_DB_UPGRADE_MIGRATION:-}"
 UPGRADE_BEFORE_FILE="${BYUS_CLEAN_DB_UPGRADE_BEFORE_FILE:-}"
 UPGRADE_AFTER_FILE="${BYUS_CLEAN_DB_UPGRADE_AFTER_FILE:-}"
 UPGRADE_CHECKED=false
+# A one-time owner script is verified at the chain point it was written for; later migrations then apply on top.
+SHELL_BEFORE_MIGRATION="${BYUS_CLEAN_DB_SHELL_ASSERTION_BEFORE_MIGRATION:-}"
+SHELL_CHECKED=false
 if [[ -n "$UPGRADE_MIGRATION$UPGRADE_BEFORE_FILE$UPGRADE_AFTER_FILE" ]]; then
   if [[ -z "$UPGRADE_MIGRATION" || ! -f "$UPGRADE_BEFORE_FILE" || ! -f "$UPGRADE_AFTER_FILE" ]]; then
     echo "Migration upgrade checks require a migration name and readable before/after SQL files" >&2
@@ -223,6 +226,11 @@ while IFS= read -r migration; do
     psql -X -v ON_ERROR_STOP=1 -h "$SOCKET_DIR" -p "$PG_PORT" -d "$DATABASE" \
       -f "$UPGRADE_BEFORE_FILE" >/dev/null
   fi
+  if [[ -n "$SHELL_BEFORE_MIGRATION" && "$migration_name" == "$SHELL_BEFORE_MIGRATION" ]]; then
+    PGHOST="$SOCKET_DIR" PGPORT="$PG_PORT" PGDATABASE="$DATABASE" \
+      bash "$BYUS_CLEAN_DB_SHELL_ASSERTION_FILE"
+    SHELL_CHECKED=true
+  fi
   echo "Applying $migration_name"
   # pg_cron, pg_net, and supabase_vault are Supabase platform extensions. Their
   # minimal schemas are already present above; all repository SQL is unchanged.
@@ -235,6 +243,10 @@ while IFS= read -r migration; do
   fi
 done < "$WORK_DIR/migration-order"
 
+if [[ -n "$SHELL_BEFORE_MIGRATION" && "$SHELL_CHECKED" != true ]]; then
+  echo "Shell assertion migration target was not found: $SHELL_BEFORE_MIGRATION" >&2
+  exit 1
+fi
 if [[ -n "$UPGRADE_MIGRATION" && "$UPGRADE_CHECKED" != true ]]; then
   echo "Migration upgrade target was not found: $UPGRADE_MIGRATION" >&2
   exit 1
@@ -254,7 +266,7 @@ if [[ -n "${BYUS_CLEAN_DB_ASSERTION_FILE:-}" ]]; then
   psql -X -v ON_ERROR_STOP=1 -h "$SOCKET_DIR" -p "$PG_PORT" -d "$DATABASE" \
     -f "$BYUS_CLEAN_DB_ASSERTION_FILE"
 fi
-if [[ -n "${BYUS_CLEAN_DB_SHELL_ASSERTION_FILE:-}" ]]; then
+if [[ -n "${BYUS_CLEAN_DB_SHELL_ASSERTION_FILE:-}" && -z "$SHELL_BEFORE_MIGRATION" ]]; then
   PGHOST="$SOCKET_DIR" PGPORT="$PG_PORT" PGDATABASE="$DATABASE" \
     bash "$BYUS_CLEAN_DB_SHELL_ASSERTION_FILE"
 fi

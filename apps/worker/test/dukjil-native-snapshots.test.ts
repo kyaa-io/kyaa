@@ -6,7 +6,7 @@ import type { ActionChainPort, ActionReceipt } from "../src/action-ports.js";
 import type { PreparedSubmission } from "../src/domain.js";
 import { KYAA_CREDENTIAL_ASSET_BASE_URI } from "../src/kyaa-credential-assets.js";
 
-// Snapshots written by enqueue_fan_action_source on a disposable clean-chain DB with 20261229000000 applied
+// Snapshots written by enqueue_fan_action_source on a disposable clean-chain DB with 20261231120000 applied
 // (supabase/tests/dukjil_stamps_native_onchain.sql, run with -v export_snapshots=<file>): new, held-then-released and
 // backlog-recovered dukjil stamps. Regenerate with the same command when the SQL shape changes.
 const snapshots = JSON.parse(readFileSync(new URL("./fixtures/dukjil-native-snapshots.json", import.meta.url), "utf8")) as Array<Record<string, unknown>>;
