@@ -43,7 +43,7 @@ export function useNewsSource<T>(url: string | null, parse: (body: unknown) => P
         const readBody = (flight: AbortSignal) => withRequestDeadline(async signal => {
           const token = tokenProvider.current ? await tokenProvider.current() : null;
           throwIfAborted(signal);
-          const response = await fetch(address,{signal,cache:"no-store",credentials:"omit",headers:token ? {Authorization:`Bearer ${token}`} : undefined});
+          const response = await fetch(address,{signal,cache:"no-store",credentials:"same-origin",headers:token ? {Authorization:`Bearer ${token}`} : undefined});
           if (!response.ok) throw Error();
           return response.json() as Promise<unknown>;
         }, { signal: flight });

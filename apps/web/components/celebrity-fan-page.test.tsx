@@ -527,7 +527,7 @@ describe("approved fanpage", () => {
     const view = render(<CelebrityFanPage celebrity={creator} locale="ko" upcomingLive={null} />);
     expect(screen.getByRole("heading", { name: "소식" })).toBeInTheDocument();
     await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(([url, init]) =>
-      String(url) === "/api/celebrities/jenny-jeong/chzzk" && init?.credentials === "omit",
+      String(url) === "/api/celebrities/jenny-jeong/chzzk" && init?.credentials === "same-origin",
     )).toBe(true));
     view.rerender(<CelebrityFanPage celebrity={{ ...creator, slug: "another-creator" }} locale="ko" upcomingLive={null} />);
     expect(screen.getByRole("heading", { name: "소식" })).toBeInTheDocument();

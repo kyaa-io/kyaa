@@ -7,7 +7,7 @@ const reservationSchema = z.object({ assetId: z.uuid(), uploadUrl: z.url(), uplo
 export async function cancelWaveUpload(task: WaveUpload, getToken: () => Promise<string | null>) {
   if (!task.assetId) return;
   const token = await getToken();
-  if (token) await fetch(`/api/me/media/uploads/${task.assetId}`, { method: "DELETE", credentials: "omit", keepalive: true, headers: { Authorization: `Bearer ${token}` } });
+  if (token) await fetch(`/api/me/media/uploads/${task.assetId}`, { method: "DELETE", credentials: "same-origin", keepalive: true, headers: { Authorization: `Bearer ${token}` } });
 }
 export function validWaveFiles(files: File[], existing: WaveUpload[], photoLimit = 30, purpose = "wave_post") {
   const all = [...existing.map(item => item.file), ...files], videos = all.filter(file => file.type.startsWith("video/"));
@@ -18,7 +18,7 @@ export function validWaveFiles(files: File[], existing: WaveUpload[], photoLimit
 export async function uploadWaveMedia(task: WaveUpload, purpose: "fan_post" | "wave_album" | "wave_post" | "group_post" | "group_image" | "dm", getToken: () => Promise<string | null>, signal: AbortSignal, onProgress?: (sent: number) => void): Promise<OwnedMedia> {
   async function request(path: string, method = "GET", body?: unknown) {
     const token = await getToken(); throwIfAborted(signal); if (!token) throw new Error("AUTHENTICATION_REQUIRED");
-    const response = await fetch(path, { method, signal, cache: "no-store", credentials: "omit", headers: { Authorization: `Bearer ${token}`, ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    const response = await fetch(path, { method, signal, cache: "no-store", credentials: "same-origin", headers: { Authorization: `Bearer ${token}`, ...(body === undefined ? {} : { "content-type": "application/json" }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     if (!response.ok) throw new Error("MEDIA_UNAVAILABLE");
     return response.json();
   }

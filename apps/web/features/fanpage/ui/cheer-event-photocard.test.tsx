@@ -14,7 +14,7 @@ afterEach(()=>{cleanup();vi.unstubAllGlobals();vi.restoreAllMocks();});
 it("fetches only the authenticated photocard derivative, prevents dragging and revokes on logout",async()=>{
  const view=render(<PhotocardMedia asset={asset} locale="ko" alt="창하 디지털 포토카드" />);
  const image=await screen.findByRole("img");expect(image).toHaveAttribute("src","blob:private");expect(image).toHaveAttribute("draggable","false");
- expect(fetch).toHaveBeenCalledWith(`/api/photocards/${asset.id}`,expect.objectContaining({cache:"no-store",credentials:"omit",headers:{Authorization:"Bearer token"}}));
+ expect(fetch).toHaveBeenCalledWith(`/api/photocards/${asset.id}`,expect.objectContaining({cache:"no-store",credentials:"same-origin",headers:{Authorization:"Bearer token"}}));
  expect(fireEvent.contextMenu(image)).toBe(false);
  authenticated=false;generation++;view.rerender(<PhotocardMedia asset={asset} locale="ko" alt="창하 디지털 포토카드" />);
  expect(screen.queryByRole("img")).toBeNull();expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:private");
@@ -48,7 +48,7 @@ it("requires a member choice, claims two cards, and opens only the received pair
  fireEvent.click(screen.getByRole("radio",{name:"희 (HEE)"}));expect(claim).toBeEnabled();fireEvent.click(claim);
  const view=await screen.findByRole("button",{name:"포토카드 보기"});expect(view).toHaveFocus();
  const post=fetcher.mock.calls.find(([,init])=>init?.method==="POST");
- expect(post).toEqual([`/api/photocard-collections/${collectionId}/claim`,expect.objectContaining({credentials:"omit",cache:"no-store",body:JSON.stringify({bundleId:options[2].id}),headers:{Authorization:"Bearer token","content-type":"application/json"}})]);
+ expect(post).toEqual([`/api/photocard-collections/${collectionId}/claim`,expect.objectContaining({credentials:"same-origin",cache:"no-store",body:JSON.stringify({bundleId:options[2].id}),headers:{Authorization:"Bearer token","content-type":"application/json"}})]);
  expect(screen.queryByRole("radio")).toBeNull();fireEvent.click(view);
  expect(await screen.findAllByRole("img")).toHaveLength(2);expect(screen.queryByRole("button",{name:/download|다운로드/i})).toBeNull();
  fireEvent.keyDown(document,{key:"Escape"});await waitFor(()=>expect(screen.queryByRole("dialog")).toBeNull());await waitFor(()=>expect(view).toHaveFocus());

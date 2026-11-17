@@ -48,7 +48,7 @@ it("cancels a reserved upload through the owner-authenticated endpoint", async (
   const fetcher = vi.fn().mockResolvedValue(new Response(null,{status:204}));vi.stubGlobal("fetch",fetcher);
   await cancelWaveUpload({key:id,file:image()},async()=>"token");expect(fetcher).not.toHaveBeenCalled();
   await cancelWaveUpload({key:id,assetId:id,file:image()},async()=>"token");
-  expect(fetcher).toHaveBeenCalledWith(`/api/me/media/uploads/${id}`,expect.objectContaining({method:"DELETE",keepalive:true,credentials:"omit",headers:{Authorization:"Bearer token"}}));
+  expect(fetcher).toHaveBeenCalledWith(`/api/me/media/uploads/${id}`,expect.objectContaining({method:"DELETE",keepalive:true,credentials:"same-origin",headers:{Authorization:"Bearer token"}}));
 });
 
 it("sends the signed S3 no-overwrite precondition and accepts an immutable retry conflict", async () => {

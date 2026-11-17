@@ -47,7 +47,7 @@ export function ContentAssetImage({ asset, locale, alt, adminPreview = false, hr
         if (authenticated && !anonymousPreview && !token) throw new Error();
         const query = new URLSearchParams({ ...(adminPreview ? { admin: "1" } : {}), ...(thumbnail && !noticeMedia ? { size: "thumbnail" } : {}) }).toString();
         const url = groupMedia ? `/api/groups/media/${asset.id}?variant=${thumbnail ? "thumbnail" : "original"}` : operatorChannelId ? `/api/operator/channels/${operatorChannelId}/assets/${asset.id}` : `${noticeMedia ? "/api/public/notice-media" : "/api/content-assets"}/${asset.id}${query ? `?${query}` : ""}`;
-        const response = await fetch(url, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+        const response = await fetch(url, { cache: "no-store", credentials: "same-origin", signal: controller.signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
         if (!response.ok) throw new Error();
         const blob = await response.blob(); throwIfAborted(controller.signal);
         const objectUrl = URL.createObjectURL(blob);
