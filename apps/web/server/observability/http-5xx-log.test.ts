@@ -19,6 +19,7 @@ import {
   resolveRouteTemplate,
   uninstallHttp5xxLogForTest,
 } from "./http-5xx-log";
+import { recordAuthDeniedReason } from "./auth-denied-reason";
 
 const manifest = {
   staticRoutes: [{ page: "/api/health/live", regex: "^/api/health/live(?:/)?$" }],
@@ -243,9 +244,15 @@ describe("auth denied line", () => {
       matchers: loadRouteMatchers(manifestFile()),
     });
     expect(line).toEqual({
-      event: "http_auth_denied", route: "/api/groups/[groupId]/wallet", method: "GET", status: 401, authKind: "fan-session", count: 1, requestId: "Root=1-abc",
+      event: "http_auth_denied", route: "/api/groups/[groupId]/wallet", method: "GET", status: 401, authKind: "fan-session", reason: "other", count: 1, requestId: "Root=1-abc",
     });
     expect(JSON.stringify(line)).not.toMatch(/secret|user-123/);
+  });
+
+  it("carries a recorded reason from the fixed list and maps anything else to other", () => {
+    const base = { url: "/api/groups/x/wallet", method: "GET", status: 403 as const, count: 1, headers: {}, matchers: loadRouteMatchers(manifestFile()) };
+    expect(buildHttpAuthDeniedLogLine({ ...base, reason: "account_deleted" }).reason).toBe("account_deleted");
+    expect(buildHttpAuthDeniedLogLine({ ...base, reason: "someone@example.com" as never }).reason).toBe("other");
   });
 });
 
@@ -309,6 +316,24 @@ describe("auth denied lines on a real http server", () => {
       ["http_5xx", 503, undefined],
     ].map((row) => [row[0], row[1], row[2] ?? null]));
     expect(parsed[0]).toMatchObject({ route: "/api/groups/[groupId]/wallet", method: "GET", count: 1 });
+    expect(lines.join("\n")).not.toMatch(/secret|user-123/);
+  });
+  it("puts the reason recorded while handling the request on the line, and other when none was recorded", async () => {
+    const lines: string[] = [];
+    installHttp5xxLog({ matchers: loadRouteMatchers(manifestFile()), write: (line) => lines.push(line), authDeniedLimiter: createAuthDeniedLimiter({ maxLines: 5 }) });
+    server = http.createServer((req, res) => {
+      setTimeout(() => {
+        if (req.url?.includes("reason")) recordAuthDeniedReason("account_deleted");
+        res.statusCode = 403;
+        res.end("{}");
+      }, 0);
+    });
+    await new Promise<void>((resolve) => server!.listen(0, "127.0.0.1", resolve));
+    const base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+    await fetch(`${base}/api/groups/user-123/wallet?reason=1`, { headers: { authorization: "Bearer secret" } });
+    await fetch(`${base}/api/groups/user-123/wallet`, { headers: { authorization: "Bearer secret" } });
+    for (let i = 0; i < 50 && lines.length < 2; i += 1) await new Promise((r) => setTimeout(r, 10));
+    expect(lines.map((line) => JSON.parse(line).reason)).toEqual(["account_deleted", "other"]);
     expect(lines.join("\n")).not.toMatch(/secret|user-123/);
   });
 });

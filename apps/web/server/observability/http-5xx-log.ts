@@ -1,7 +1,7 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import { readFileSync } from "node:fs";
 import http, { type IncomingMessage, type ServerResponse } from "node:http";
 import path from "node:path";
+import { AUTH_DENIED_REASONS, requestStateStore, type AuthDeniedReason, type RequestState } from "./auth-denied-reason";
 
 // 5xx 응답마다 JSON 한 줄을 남겨 ALB 5xx 경보 때 어느 경로가 실패했는지 CloudWatch Logs Insights로 찾게 한다.
 // 라우트 621개에 래퍼를 달지 않고, 서버 한 곳(instrumentation.ts)에서 두 경로를 함께 잡는다.
@@ -26,8 +26,7 @@ export const FAN_SESSION_COOKIE_NAME = "__Host-kyaa-fan-session";
 export type AuthKind = "fan-session" | "bearer" | "none";
 
 type RouteMatcher = { page: string; regex: RegExp };
-type RequestErrorInfo = { name: string; code: string | null; digest: string | null; routePath: string | null };
-type RequestState = { error?: RequestErrorInfo };
+type RequestErrorInfo = NonNullable<RequestState["error"]>;
 
 export type Http5xxLogLine = {
   event: typeof API_5XX_EVENT;
@@ -59,12 +58,14 @@ export type HttpAuthDeniedLogLine = {
   status: 401 | 403;
   /** 요청이 어떤 종류의 인증을 들고 왔는지만. 쿠키·토큰 값과 회원 식별자는 남기지 않는다. */
   authKind: AuthKind;
+  /** 거부한 이유. 고정 목록(AUTH_DENIED_REASONS)만 쓰며, 이유를 기록하지 않은 거부는 `other`. */
+  reason: AuthDeniedReason;
   /** 이 줄까지 같은 route+status 거부 횟수(직전 창에서 제한으로 생략된 횟수 포함). */
   count: number;
   requestId: string | null;
 };
 
-const requestState = new AsyncLocalStorage<RequestState>();
+const requestState = requestStateStore();
 const INSTALLED = Symbol.for("kyaa.http5xxLog.installed");
 const SAFE_TOKEN = /^[A-Za-z0-9_.$-]{1,64}$/;
 const SAFE_REQUEST_ID = /^[A-Za-z0-9=;:._-]{1,200}$/;
@@ -174,6 +175,7 @@ export function buildHttpAuthDeniedLogLine(input: {
   method: string | undefined;
   status: 401 | 403;
   count: number;
+  reason?: AuthDeniedReason;
   headers: Record<string, string | string[] | undefined>;
   matchers: readonly RouteMatcher[];
 }): HttpAuthDeniedLogLine {
@@ -184,6 +186,7 @@ export function buildHttpAuthDeniedLogLine(input: {
     method: METHODS.has(method) ? method : "OTHER",
     status: input.status,
     authKind: authKindFrom(input.headers),
+    reason: input.reason && AUTH_DENIED_REASONS.includes(input.reason) ? input.reason : "other",
     count: input.count,
     requestId: requestIdFrom(input.headers),
   };
@@ -260,6 +263,7 @@ export function installHttp5xxLog(options: {
               method: req.method,
               status: res.statusCode,
               count,
+              reason: state.authDeniedReason,
               headers: req.headers,
               matchers,
             })));

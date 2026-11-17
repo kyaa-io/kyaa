@@ -1,4 +1,5 @@
 import { AuthError } from "../../features/auth/domain/auth-errors";
+import { recordAuthDeniedReasonFromError } from "../observability/auth-denied-reason";
 import {
   mapPrivyIdentity,
   type CanonicalPrivyIdentity,
@@ -26,6 +27,7 @@ export async function authenticatePrivyAccessToken(
     return mapPrivyIdentity(await verifier.verify(token));
   } catch (error) {
     if (error instanceof AuthError && error.status !== 401) {
+      recordAuthDeniedReasonFromError(error);
       throw error;
     }
     throw new AuthError(

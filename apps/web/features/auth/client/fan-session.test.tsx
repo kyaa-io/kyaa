@@ -146,3 +146,42 @@ describe("renewal that stops answering", () => {
     expect(fetcher).toHaveBeenCalledOnce();
   });
 });
+
+describe("account unavailable (403 FAN_ACCOUNT_UNAVAILABLE)", () => {
+  const gone = () => Response.json({ error: { code: "FAN_ACCOUNT_UNAVAILABLE" } }, { status: 403 });
+  afterEach(async () => { fetcher.mockResolvedValue(new Response(null, { status: 204 })); await clearFanSession(); });
+
+  it("stops after one request, drops the hint, and tells the page once", async () => {
+    hint(); fetcher.mockImplementation(async () => gone());
+    const heard = vi.fn(); window.addEventListener("kyaa:fan-account-unavailable", heard);
+    const token = vi.fn(async () => "privy");
+    await renewFanSession(token, pid);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(token).not.toHaveBeenCalled();
+    expect(readFanSessionHint()).toBeNull();
+    expect(heard).toHaveBeenCalledTimes(1);
+    window.removeEventListener("kyaa:fan-account-unavailable", heard);
+  });
+
+  it("does not ask again on later page entries for the same account, until sign-out", async () => {
+    fetcher.mockImplementation(async () => gone());
+    await renewFanSession(async () => "privy", pid);
+    await renewFanSession(async () => "privy", pid);
+    await renewFanSession(async () => "privy", pid);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    fetcher.mockImplementation(async () => new Response(null, { status: 204 }));
+    await clearFanSession();
+    fetcher.mockImplementation(async () => Response.json({ session: true, exp: Date.now() + 30 * 86400_000, authenticatedAt: Date.now() }));
+    await renewFanSession(async () => "privy", pid);
+    expect(readFanSessionHint()?.pid).toBe(pid);
+  });
+
+  it("a plain 403 (provider must sign in again) or a 503 does not stop later attempts", async () => {
+    fetcher.mockResolvedValueOnce(new Response(null, { status: 403 }));
+    await renewFanSession(async () => "privy", pid);
+    fetcher.mockResolvedValueOnce(new Response(null, { status: 503 }));
+    await renewFanSession(async () => "privy", pid);
+    await renewFanSession(async () => "privy", pid);
+    expect(fetcher).toHaveBeenCalledTimes(3);
+  });
+});
