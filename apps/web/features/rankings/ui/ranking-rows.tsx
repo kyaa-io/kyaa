@@ -9,6 +9,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { fanLoginHref } from "@/components/login-href";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
@@ -287,14 +288,20 @@ const short = (locale: AppLocale, n: number) => n >= 10000 ? n.toLocaleString(lo
 
 const unitMark = (metric: RankingMetric) => metric === "points" ? <RankUnit unit="points" /> : metric === "fans" ? null : <RankUnit unit={metric === "likes" ? "likes" : "hearts"} />;
 
+/** Today's gain next to the value: a positive whole count, and never on the Today period (there the value is that gain already). Zero, a missing day or a loss draws nothing. */
+export const dayGainMark = (period: HomeRankingPeriod, dayGain: number | null | undefined) => period !== "day" && typeof dayGain === "number" && Number.isInteger(dayGain) && dayGain > 0 ? dayGain : undefined;
+
 /** The right-hand number of a row: the metric's value, read by name (hearts, points, likes, fans), never from score alone. A zero is told, in the muted colour (GPT review 11/13: an inked 0 on most rows read as noise). Rolls like an odometer only when a later answer changes it (real values, never an invented increase); from 10,000 it is short (12.3K), the full number stays in the label. */
-function Main({ locale, metric, value, delay }: { locale: AppLocale; metric: RankingMetric; value: number; delay: number }) {
+function Main({ locale, metric, value, delay, gain }: { locale: AppLocale; metric: RankingMetric; value: number; delay: number; gain?: number }) {
   const n = value.toLocaleString(locale);
-  const label = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
+  const gainText = gain ? `+${gain.toLocaleString(locale)}` : null;
+  const base = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
+  const label = gain ? `${base}, ${rankingsText(locale, "rkTodayGain", [gain.toLocaleString(locale)])}` : base;
   const template = metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : "\u0000";
   const [before, after] = template.split("\u0000");
   return <span className={styles.main} aria-label={label} title={n} data-metric={metric} data-zero={value === 0 || undefined}>
     <span aria-hidden="true" className={styles.mainInner}>
+      {gainText ? <FanText role="label" className={styles.gain} data-day-gain="">{gainText}</FanText> : null}
       {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
       <RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} />{after?.trim() ? <span>{after.trim()}</span> : null}
     </span>
@@ -380,7 +387,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
             <span className={styles.nameLine}><span className={styles.name} title={row.nickname}>{row.nickname}</span></span>
           </span>
         </NameTarget>
-        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} gain={dayGainMark(period, row.dayGain)} /></span>
       </RowFace>
       <Pulse />
       {open ? <RankRowPanel id={`${id}-panel`} kind="fan" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "points" ? "points" : "hearts"} extra={fanStats(locale, row, metric)} /> : null}
@@ -437,7 +444,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
               {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
           </span>
         </NameTarget>
-        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} /></span>
+        <span className={styles.value}><Main locale={locale} metric={metric} value={value} delay={rowDelay(i)} gain={dayGainMark(period, row.dayGain)} /></span>
       </RowFace>
       <Pulse />
       {open ? <RankRowPanel id={`${id}-panel`} kind="creator" row={row} days={days} locale={locale} gap={gapToFirst(i === 0 && ranking.rows[0] === row, value, top)} unit={metric === "likes" ? "likes" : "hearts"} extra={creatorStats(locale, row, metric, period)} /> : null}

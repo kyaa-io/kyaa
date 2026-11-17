@@ -32,7 +32,7 @@
 .item .profile:focus-visible { outline: var(--focus-width) solid var(--color-ink); outline-offset: var(--focus-offset); border-radius: var(--radius-small); }
 .item .profile:focus-visible .name { color: var(--color-accent-ink); }
 @media (prefers-reduced-motion: reduce) { .item .profile .name { transition: none; } }
-.rowFace { position: relative; display: grid; grid-template-columns: 28px 28px minmax(0, 1fr) var(--rank-value-col) 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 48px; padding: 0 var(--space-3); text-align: start; text-wrap: wrap; }
+.rowFace { position: relative; display: grid; grid-template-columns: 28px 28px minmax(0, 1fr) minmax(var(--rank-value-col), max-content) 16px; align-items: center; column-gap: var(--space-2); flex: 1 1 auto; box-sizing: border-box; width: 100%; min-width: 0; height: 48px; padding: 0 var(--space-3); text-align: start; text-wrap: wrap; }
 .rowFace[data-loading] { grid-template-columns: 28px 28px minmax(0, 1fr) auto; }
 .rowFace[data-placeholder] { grid-template-columns: 28px 28px minmax(0, 1fr); }
 /* 순위 칸 28 = 숫자 상자 18(오른쪽 맞춤, 두 자리까지) + 등락 삼각형 자리 10(삼각형은 그 안 오른쪽). 삼각형이 없는 행도 자리를 비워 숫자 끝선이 같다. 글자는 한 단계 작게(16→14, 대표 11/11 19:0x). */
@@ -59,6 +59,7 @@
 /* 고정폭 열에서 아이콘과 숫자를 함께 오른쪽에 정렬한다. */
 .main { display: flex; justify-content: flex-end; width: 100%; max-width: 100%; }
 .mainInner { display: flex; align-items: center; justify-content: flex-end; width: 100%; gap: 0; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); white-space: nowrap; }
+.main .gain { flex: none; margin-inline-end: var(--space-2); color: var(--color-rank-up); font-variant-numeric: tabular-nums; }
 .main[data-zero] .mainInner { color: var(--color-muted); }
 .main .mainNumber { font-size: inherit; font-weight: inherit; font-variant-numeric: tabular-nums; }
 .heart { flex: none; color: var(--color-accent); }
