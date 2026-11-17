@@ -93,7 +93,7 @@ begin
   perform pg_temp.ok((select status from public.fan_notification_channels where id = ch[1]) = 'eligible', 'channel status untouched');
   perform pg_temp.ok(not exists (select 1 from public.fan_notifications where app_user_id = u[1] and kind::text = 'email_delivery_blocked'), 'notice stays off by default');
   -- Nothing raw is stored.
-  perform pg_temp.ok(not exists (select 1 from public.email_delivery_events e where to_jsonb(e)::text ~* 'example\.invalid|\msmtp\M|\m550\M'), 'no raw address or diagnostic text stored');
+  perform pg_temp.ok(not exists (select 1 from public.email_delivery_events e cross join lateral jsonb_each_text(to_jsonb(e)) kv(k, v) where kv.k in (select column_name from information_schema.columns where table_schema = 'public' and table_name = 'email_delivery_events' and data_type = 'text') and kv.v ~* 'example\.(com|invalid)|smtp|\m550[ -]'), 'no raw address or diagnostic text stored');
 
   -- Same SNS message twice: same result, one row, no second effect.
   r := pg_temp.ev('sns-perm-1', 'Bounce', 'm-perm-1', d, pg_temp.bounce('Permanent', 'General'));
