@@ -49,7 +49,7 @@ export function AuthenticatedMedia({ asset, locale, alt, play = false, original 
     const download = async (signal: AbortSignal) => {
       const token = auth.authenticated?await provider.current():null; throwIfAborted(signal);
       if(auth.authenticated&&!token)throw new Error();
-      const response = await fetch(`${publicFanPost?"/api/fan-posts/media":"/api/media"}/${asset.id}?variant=${video || original ? "original" : "thumbnail"}`, { cache: "no-store", credentials: "omit", signal, headers: token?{ Authorization: `Bearer ${token}` }:{} });
+      const response = await fetch(`${publicFanPost?"/api/fan-posts/media":"/api/media"}/${asset.id}?variant=${video || original ? "original" : "thumbnail"}`, { cache: "no-store", credentials: "same-origin", signal, headers: token?{ Authorization: `Bearer ${token}` }:{} });
       if (!response.ok) throw new Error();
       const blob = await response.blob(); throwIfAborted(signal);
       return URL.createObjectURL(blob);

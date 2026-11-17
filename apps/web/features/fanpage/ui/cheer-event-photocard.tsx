@@ -36,7 +36,7 @@ function OwnedPhotocardReward({ collectionId, locale, name }: { collectionId: st
   const read = useCallback(async (signal: AbortSignal) => {
     const token = await provider.current(); throwIfAborted(signal);
     if (!token) throw new Error();
-    const response = await fetch(url, { cache: "no-store", credentials: "omit", signal, headers: { Authorization: `Bearer ${token}` } });
+    const response = await fetch(url, { cache: "no-store", credentials: "same-origin", signal, headers: { Authorization: `Bearer ${token}` } });
     if (!response.ok) throw new Error();
     const result = photocardClaimSchema.parse(await response.json()); throwIfAborted(signal);
     return result;
@@ -60,7 +60,7 @@ function OwnedPhotocardReward({ collectionId, locale, name }: { collectionId: st
     try {
       const token = await provider.current(); throwIfAborted(controller.signal);
       if (!token) throw new Error();
-      const response = await fetch(url, { method: "POST", cache: "no-store", credentials: "omit", signal: controller.signal,
+      const response = await fetch(url, { method: "POST", cache: "no-store", credentials: "same-origin", signal: controller.signal,
         headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
         body: JSON.stringify(data.mode === "member_pair" ? { bundleId: selected } : {}),
       });
@@ -111,7 +111,7 @@ export function PhotocardMedia({ asset, locale, alt }: { asset: Photocard["asset
       try {
         const token = await provider.current(); throwIfAborted(controller.signal);
         if (!token) throw new Error();
-        const response = await fetch(`/api/photocards/${asset.id}`, { cache: "no-store", credentials: "omit", signal: controller.signal, headers: { Authorization: `Bearer ${token}` } });
+        const response = await fetch(`/api/photocards/${asset.id}`, { cache: "no-store", credentials: "same-origin", signal: controller.signal, headers: { Authorization: `Bearer ${token}` } });
         if (!response.ok) throw new Error();
         const blob = await response.blob(); throwIfAborted(controller.signal);
         objectUrl = URL.createObjectURL(blob); setSnapshot({ key, url: objectUrl });

@@ -56,7 +56,7 @@ it("loads a thumbnail lazily, then discards its blob when the original is reques
   expect(transport).not.toHaveBeenCalled();
   enter();
   await screen.findByRole("img", { name: "사진" });
-  expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id?size=thumbnail", expect.objectContaining({ cache: "no-store", credentials: "omit", headers: { Authorization: "Bearer test-token" } }));
+  expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id?size=thumbnail", expect.objectContaining({ cache: "no-store", credentials: "same-origin", headers: { Authorization: "Bearer test-token" } }));
   view.rerender(<ContentAssetImage asset={photo} locale="ko" alt="사진" />);
   await waitFor(() => expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id", expect.any(Object)));
   expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:photo");
@@ -76,7 +76,7 @@ it("reads public previews without a token before SDK readiness, then reauthorize
     const { rerender } = render(<ContentAssetImage asset={photo} locale="ko" alt="사진" anonymousPreview />);
     await screen.findByRole("img", { name: "사진" });
     expect(auth.getAccessToken).not.toHaveBeenCalled();
-    expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id", expect.objectContaining({ headers: undefined, credentials: "omit" }));
+    expect(transport).toHaveBeenLastCalledWith("/api/content-assets/photo-id", expect.objectContaining({ headers: undefined, credentials: "same-origin" }));
     auth.ready = true;
     rerender(<ContentAssetImage asset={photo} locale="ko" alt="写真" />);
     await screen.findByRole("img", { name: "写真" });
