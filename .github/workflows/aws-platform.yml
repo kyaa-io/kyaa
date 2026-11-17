@@ -281,8 +281,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download "$GITHUB_RUN_ID" --name "worker-rollback-$GITHUB_RUN_ID-$((GITHUB_RUN_ATTEMPT - 1))" --dir work/aws-release/worker-backups || { echo "::error::수동 확인 필요: 이전 worker 기록 회수 실패"; exit 1; }
-          test -s work/aws-release/worker-backups/prepared.json && test -s work/aws-release/worker-backups/applied.json || { echo "::error::수동 확인 필요: worker 기록 누락"; exit 1; }
+          # A retry whose previous attempt stopped before worker preparation (e.g. a required check) has no record to resume; prepare fresh then.
+          if gh run download "$GITHUB_RUN_ID" --name "worker-rollback-$GITHUB_RUN_ID-$((GITHUB_RUN_ATTEMPT - 1))" --dir work/aws-release/worker-backups; then
+            test -s work/aws-release/worker-backups/prepared.json && test -s work/aws-release/worker-backups/applied.json || { echo "::error::수동 확인 필요: worker 기록 누락"; exit 1; }
+          else
+            echo "::warning::이전 시도에 worker 준비 기록이 없어 새로 준비합니다"
+            echo "WORKER_FRESH_PREPARE=1" >> "$GITHUB_ENV"
+          fi
       - name: Prepare all worker code updates
         run: node scripts/aws-release-workers.mjs prepare
       - name: Validate and deploy CloudFormation
