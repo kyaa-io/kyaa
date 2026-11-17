@@ -51,14 +51,14 @@ filter event = "http_slow"
 401·403 응답은 속도와 상관없이 한 줄을 남깁니다. 빠르게 끝난 회원 요청 실패(쿠키 누락 등)를 찾는 용도입니다. 느린 401·403은 `http_slow`도 함께 남습니다.
 
 ```json
-{"event":"http_auth_denied","route":"/api/groups/[groupId]/wallet","method":"GET","status":401,"authKind":"none","count":1,"requestId":"Root=1-67891233-abcdef012345678912345678"}
+{"event":"http_auth_denied","route":"/api/groups/[groupId]/wallet","method":"GET","status":401,"authKind":"none","reason":"other","count":1,"requestId":"Root=1-67891233-abcdef012345678912345678"}
 ```
 
-`authKind`는 요청이 가져온 인증 종류(`fan-session` 쿠키 / `bearer` 헤더 / `none`)만 뜻하고 값은 남기지 않습니다. 같은 route+status는 프로세스당 1분에 최대 5줄이며, 제한으로 생략된 횟수는 다음 창의 첫 줄 `count`에 더해집니다(`count` 1은 그 요청 하나).
+`authKind`는 요청이 가져온 인증 종류(`fan-session` 쿠키 / `bearer` 헤더 / `none`)만 뜻하고 값은 남기지 않습니다. `reason`은 거부 사유 고정 목록입니다: `user_missing`, `user_inactive`, `account_deleted`, `active_account_required`, `verified_email_required`, `apple_reauth_required`, `same_origin`, `fan_session_revoked`, `other`(사유를 기록하지 않은 거부). 회원 식별자·이메일·토큰은 담지 않습니다. 같은 route+status는 프로세스당 1분에 최대 5줄이며, 제한으로 생략된 횟수는 다음 창의 첫 줄 `count`에 더해집니다(`count` 1은 그 요청 하나).
 
 ```
 filter event = "http_auth_denied"
-| stats sum(count) as denied by route, status, authKind
+| stats sum(count) as denied by route, status, authKind, reason
 | sort denied desc
 | limit 20
 ```
