@@ -5,7 +5,7 @@ import { appUserIdByEmail, balances, count, exec, resetMember, scalar } from "./
 
 export type ApiResult<T = Record<string, unknown>> = { status: number; body: T };
 
-import { storedCredential, sessionToken } from "./session";
+import { storedCredential, sessionToken, OWN_SESSION_TOKEN } from "./session";
 
 function readEmail(account: string): string {
   const accounts = JSON.parse(fs.readFileSync(path.join(ACCOUNT_DIR, "accounts.json"), "utf8")) as Record<string, { email: string }>;
@@ -30,7 +30,11 @@ export class Member {
   async call<T = Record<string, unknown>>(method: "GET" | "POST", url: string, body?: unknown): Promise<ApiResult<T>> {
     const response = await fetch(`${BASE_URL}${url}`, {
       method,
-      headers: { authorization: `Bearer ${this.credential.token ?? await sessionToken(BASE_URL, this.credential.cookie!)}`, ...(body === undefined ? {} : { "content-type": "application/json" }) },
+      headers: {
+        authorization: `Bearer ${this.credential.token ?? await sessionToken(BASE_URL, this.credential.cookie!)}`,
+        ...(this.credential.token === OWN_SESSION_TOKEN && this.credential.cookie ? { cookie: this.credential.cookie } : {}),
+        ...(body === undefined ? {} : { "content-type": "application/json" }),
+      },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
     const text = await response.text();
