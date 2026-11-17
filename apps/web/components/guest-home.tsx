@@ -75,13 +75,13 @@ function ContentLoadError({ locale }: { locale: AppLocale }) {
   return <div className={styles.personalizationState} role="alert"><strong>{copy[locale].retryTitle}</strong><span>{copy[locale].retryHelp}</span><FanAction onClick={() => router.refresh()}>{copy[locale].retry}</FanAction></div>;
 }
 
-type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; homeSlots?: BannerSlotMap; celebrities: readonly PublishedCelebrity[]; locale: AppLocale; contentErrors?: HomeContentErrors; /** 홈배너1(랭킹 바로 위): 찐팬 하트 후원 줄 또는 찐팬 100 배너 줄(서버 플래그, 운영 기본 꺼짐). */ jjinfanGauge?: boolean; /** 후원 이벤트 설정(함께하는 크리에이터·후원처). */ heartDonation?: HeartDonationEvent; /** 홈배너1(랭킹 바로 위) 내용: 후원 게이지 줄(기본) 또는 찐팬 100 배너 줄. */ homeTop?: HomeTopBanner };
+type GuestHomeProps = { elinaRaffles?: RaffleList["raffles"]; homeBanners?: readonly HomeBanner[]; homeSlots?: BannerSlotMap; celebrities: readonly PublishedCelebrity[]; locale: AppLocale; contentErrors?: HomeContentErrors; /** 홈배너1(랭킹 바로 아래): 찐팬 하트 후원 줄 또는 찐팬 100 배너 줄(서버 플래그, 운영 기본 꺼짐). */ jjinfanGauge?: boolean; /** 후원 이벤트 설정(함께하는 크리에이터·후원처). */ heartDonation?: HeartDonationEvent; /** 홈배너1(랭킹 바로 아래) 내용: 후원 게이지 줄(기본) 또는 찐팬 100 배너 줄. */ homeTop?: HomeTopBanner };
 
 export function GuestHome(props: GuestHomeProps) {
   return <HomeLayout locale={props.locale} jjinfanGauge={props.jjinfanGauge} heartDonation={props.heartDonation} homeTop={props.homeTop} hero={<HomeHero {...props} />} midBanner={<HomeMidBanner banner={props.homeSlots?.home_mid} locale={props.locale} />} thinBanner={<HomeThinBanner banner={props.homeSlots?.home_below_board} locale={props.locale} />} notices={<HomeNoticesPlaceholder locale={props.locale} />} gallery={<HomeGalleryPlaceholder locale={props.locale} />} />;
 }
 
-/** 7차 홈(plan-ux-r8): 브랜드 줄·메인 배너 → 홈배너1(찐팬 하트 후원 줄, 찐팬 100 시작 뒤엔 찐팬 100 배너 줄) → 랭킹 → 홈배너2(등록 전엔 없음) → 얇은 배너 → 공지·갤러리. 한 열이고 옆 패널이 없다(다가오는 LIVE 블록은 2026-11-09 사용자 결정으로 뺐다). */
+/** 7차 홈(plan-ux-r8, 2026-11-17 순서 변경): 브랜드 줄·메인 배너 → 홈배너2(외부 광고, 등록 전엔 없음) → 랭킹 → 홈배너1(찐팬 하트 후원 줄, 찐팬 100 시작 뒤엔 찐팬 100 배너 줄) → 얇은 배너 → 공지·갤러리. 한 열이고 옆 패널이 없다(다가오는 LIVE 블록은 2026-11-09 사용자 결정으로 뺐다). */
 function HomeLayout({ locale, jjinfanGauge = false, heartDonation, homeTop = "donation", hero, midBanner, thinBanner, notices, gallery }: { locale: AppLocale; jjinfanGauge?: boolean; heartDonation?: HeartDonationEvent; homeTop?: HomeTopBanner; hero: ReactNode; midBanner: ReactNode; thinBanner: ReactNode; notices: ReactNode; gallery: ReactNode }) {
   return (
     <FanAppFrame
@@ -92,9 +92,9 @@ function HomeLayout({ locale, jjinfanGauge = false, heartDonation, homeTop = "do
       <div className={styles.shell}>
         <main id="main-content" className={styles.main}>
           {hero}
-          {jjinfanGauge ? <div className={styles.jjinfanStrip} data-banner-slot="home_top">{homeTop === "jjinfan100" ? <HomeBelowRankingSlot locale={locale} /> : <HomeHeartDonation locale={locale} event={heartDonation} />}</div> : null}
-          <div id="home-ranking" className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
           {midBanner}
+          <div id="home-ranking" className={styles.contentSection}><HomeRankingCard locale={locale} /></div>
+          {jjinfanGauge ? <div className={styles.jjinfanStrip} data-banner-slot="home_top">{homeTop === "jjinfan100" ? <HomeBelowRankingSlot locale={locale} /> : <HomeHeartDonation locale={locale} event={heartDonation} />}</div> : null}
           {thinBanner}
           <ObservedLiveStrip locale={locale} />
           {notices}
@@ -138,7 +138,7 @@ export function StreamingGuestHome({ queries, ...props }: StreamingHomeProps) {
 function HomeThinBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
   return banner ? <ThinBanner banner={banner} locale={locale} /> : null;
 }
-/** 홈배너2: 랭킹 바로 아래(위 16px). 등록·공개된 배너가 없거나 읽기에 실패하면 구역도 간격도 그리지 않는다. */
+/** 홈배너2(외부 광고 칸): 메인 배너 바로 아래, 랭킹 바로 위(위 16px). 등록·공개된 배너가 없거나 읽기에 실패하면 구역도 간격도 그리지 않는다. */
 function HomeMidBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
   return banner ? <div className={styles.midBanner}><ThinBanner banner={banner} locale={locale} size="mid" /></div> : null;
 }

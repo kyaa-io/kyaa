@@ -89,7 +89,7 @@ describe("canonical 03 guest home", () => {
     expect(screen.getAllByTestId("home-ranking")).toHaveLength(1);
   });
 
-  it("shows the heart donation strip as 홈배너1 right above the ranking only when the server flag is on, with nothing under the ranking", () => {
+  it("shows the heart donation strip as 홈배너1 right under the ranking only when the server flag is on", () => {
     const off = render(<GuestHome {...defaultProps} />);
     expect(off.container.querySelector("[data-home-heart-donation]")).toBeNull();
     expect(off.container.querySelector('[data-banner-slot="home_top"]')).toBeNull();
@@ -99,33 +99,55 @@ describe("canonical 03 guest home", () => {
     const ranking = on.container.querySelector("#home-ranking")!;
     expect(top.querySelector("[data-home-heart-donation]")).not.toBeNull();
     expect(top.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
-    expect(top.compareDocumentPosition(ranking) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(on.container.querySelector('[data-banner-slot="home-below-ranking"]')).toBeNull();
+    expect(ranking.compareDocumentPosition(top) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(top.textContent).not.toContain("찐팬 100");
   });
-  it("puts the 찐팬 100 banner row in 홈배너1 instead of the donation strip when the setting says jjinfan100", () => {
+  it("puts the 찐팬 100 banner row under the ranking instead of the donation strip when the setting says jjinfan100", () => {
     const { container } = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" />);
     const top = container.querySelector('[data-banner-slot="home_top"]')!;
     const slot = top.querySelector('[data-banner-slot="home-below-ranking"]')!;
     expect(slot.textContent).toContain("찐팬 100 챌린지");
     expect(slot.querySelector("a")).toHaveAttribute("href", "/yuna?locale=ko&challenge=jjinfan100");
     expect(container.querySelector("[data-home-heart-donation]")).toBeNull();
-    expect(top.compareDocumentPosition(container.querySelector("#home-ranking")!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(container.querySelector("#home-ranking")!.compareDocumentPosition(top) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(container.querySelectorAll('[data-banner-slot="home-below-ranking"]')).toHaveLength(1);
   });
-  it("draws 홈배너2 right under the ranking from the home_mid slot, before the thin banner, and nothing when the slot is empty", () => {
-    const mid = { ...bannerFixture, id: "55555555-5555-4555-8555-555555555555", title: "광고", category: "ad" as const, placement: "home_mid" as const };
-    const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
-    const first = render(<GuestHome {...defaultProps} homeSlots={{ home_mid: mid, home_below_board: thin }} />);
-    const midStrip = first.container.querySelector('[data-banner-size="mid"]')!;
-    const thinStrip = first.container.querySelector('[data-banner-size="thin"]')!;
-    expect(midStrip).toHaveAttribute("data-banner-id", mid.id);
-    expect(screen.getByTestId("home-ranking").compareDocumentPosition(midStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(midStrip.compareDocumentPosition(thinStrip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    first.unmount();
-    const second = render(<GuestHome {...defaultProps} />);
-    expect(second.container.querySelector('[data-banner-size="mid"]')).toBeNull();
-    expect(second.container.querySelector("[class*=midBanner]")).toBeNull();
+  const order = (container: HTMLElement, selectors: string[]) => {
+    const nodes = selectors.map(selector => container.querySelector(selector)!);
+    nodes.forEach(node => expect(node).not.toBeNull());
+    nodes.slice(1).forEach((node, index) => expect(nodes[index].compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
+  };
+  const adBanner = { ...bannerFixture, id: "55555555-5555-4555-8555-555555555555", title: "광고", alt: "로컬바이브 광고", href: "https://example.com/localvibe", category: "ad" as const, placement: "home_mid" as const };
+  const thinBanner = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
+  it("draws the external ad (home_mid) between the hero and the ranking, then 홈배너1 under the ranking and the thin banner after it, in both donation and jjinfan100 modes", () => {
+    const hero = '[aria-labelledby="live-heading"]';
+    const donation = render(<GuestHome {...defaultProps} jjinfanGauge homeSlots={{ home_mid: adBanner, home_below_board: thinBanner }} />);
+    order(donation.container, [hero, '[data-banner-size="mid"]', "#home-ranking", '[data-banner-slot="home_top"]', '[data-banner-size="thin"]']);
+    expect(donation.container.querySelector('[data-banner-slot="home_top"] [data-home-heart-donation]')).not.toBeNull();
+    donation.unmount();
+    const jjinfan = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" homeSlots={{ home_mid: adBanner, home_below_board: thinBanner }} />);
+    order(jjinfan.container, [hero, '[data-banner-size="mid"]', "#home-ranking", '[data-banner-slot="home_top"] [data-banner-slot="home-below-ranking"]', '[data-banner-size="thin"]']);
+  });
+  it("shows the ad as picture only with a top-right 광고 mark, a new-tab sponsored link and alt text", () => {
+    const { container } = render(<GuestHome {...defaultProps} homeSlots={{ home_mid: adBanner }} />);
+    const strip = container.querySelector('[data-banner-size="mid"]')!;
+    const link = strip.querySelector("a")!;
+    expect(link).toHaveAttribute("href", "https://example.com/localvibe");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link.getAttribute("rel")).toContain("sponsored");
+    expect(link).toHaveAttribute("data-outbound-placement", "content");
+    expect(strip.querySelector("img")).toHaveAttribute("alt", "로컬바이브 광고");
+    expect(link.textContent).toBe("광고");
+  });
+  it("draws nothing for the ad slot when empty, and the ranking follows the hero directly", () => {
+    const donation = render(<GuestHome {...defaultProps} jjinfanGauge />);
+    expect(donation.container.querySelector('[data-banner-size="mid"]')).toBeNull();
+    expect(donation.container.querySelector("[class*=midBanner]")).toBeNull();
+    order(donation.container, ['[aria-labelledby="live-heading"]', "#home-ranking", '[data-banner-slot="home_top"]']);
+    donation.unmount();
+    const jjinfan = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" />);
+    expect(jjinfan.container.querySelector('[data-banner-size="mid"]')).toBeNull();
+    order(jjinfan.container, ['[aria-labelledby="live-heading"]', "#home-ranking", '[data-banner-slot="home_top"]']);
   });
   it("draws the thin banner from the slot read with the page, before the notices, and nothing when the slot is empty", () => {
     const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
