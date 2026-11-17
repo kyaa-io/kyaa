@@ -52,22 +52,28 @@ export async function readPriorMetadata(directory) {
     throw error;
   }
 }
-async function priorCandidate(currentSha) {
-  // shortcut: only the newest successful main push is eligible; older cache search can be added if measured misses matter.
-  const listing = await github('/actions/workflows/aws-platform.yml/runs?event=push&branch=main&status=success&per_page=1');
-  const candidate = listing.workflow_runs?.[0];
-  if (!candidate || candidate.head_sha === currentSha || candidate.id === Number(process.env.GITHUB_RUN_ID)) return null;
-  const run = trustedRun(await github(`/actions/runs/${candidate.id}`), candidate.id);
+export const PRIOR_CANDIDATE_LIMIT = 5;
+const PRIOR_ARTIFACT_NAMES = ['aws-release-source', 'aws-result-dev', 'aws-media-proof'];
+// Newer main runs can finish with build=false (no artifacts), so scan a bounded window for the first run that carries the proof artifacts.
+export async function priorCandidate(currentSha, { githubCall = github, run: runCommand = execute, readMetadata = readPriorMetadata, currentRunId = Number(process.env.GITHUB_RUN_ID) } = {}) {
+  const listing = await githubCall(`/actions/workflows/aws-platform.yml/runs?event=push&branch=main&status=success&per_page=${PRIOR_CANDIDATE_LIMIT}`);
+  let candidate = null;
+  for (const item of (listing.workflow_runs ?? []).slice(0, PRIOR_CANDIDATE_LIMIT)) {
+    if (item.head_sha === currentSha || item.id === currentRunId) continue;
+    const artifacts = await githubCall(`/actions/runs/${item.id}/artifacts?per_page=100`);
+    if (PRIOR_ARTIFACT_NAMES.some(name => !artifacts.artifacts?.some(artifact => artifact.name === name && !artifact.expired))) continue;
+    candidate = item;
+    break;
+  }
+  if (!candidate) return null;
+  const run = trustedRun(await githubCall(`/actions/runs/${candidate.id}`), candidate.id);
   if (run.head_branch !== 'main' || run.event !== 'push') fail('UNTRUSTED_MEDIA_SOURCE');
-  try { execute('git', ['merge-base', '--is-ancestor', run.head_sha, currentSha]); }
+  try { runCommand('git', ['merge-base', '--is-ancestor', run.head_sha, currentSha]); }
   catch (error) { if (error.status === 1) return null; throw error; }
-  const artifacts = await github(`/actions/runs/${run.id}/artifacts?per_page=100`);
-  const names = ['aws-release-source', 'aws-result-dev', 'aws-media-proof'];
-  if (names.some(name => !artifacts.artifacts?.some(item => item.name === name && !item.expired))) return null;
   const directory = await mkdtemp(join(tmpdir(), 'media-proof-'));
   try {
-    for (const name of names) execute('gh', ['run', 'download', String(run.id), '--repo', REPOSITORY, '--name', name, '--dir', join(directory, name)]);
-    const metadata = await readPriorMetadata(directory);
+    for (const name of PRIOR_ARTIFACT_NAMES) runCommand('gh', ['run', 'download', String(run.id), '--repo', REPOSITORY, '--name', name, '--dir', join(directory, name)]);
+    const metadata = await readMetadata(directory);
     return metadata ? { run, ...metadata } : null;
   } finally { await rm(directory, { recursive: true, force: true }); }
 }
