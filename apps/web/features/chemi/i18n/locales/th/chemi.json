@@ -1,0 +1,13 @@
+{
+  "menu": {
+    "home": "HOME",
+    "my": "MY"
+  },
+  "date": {
+    "basis": "",
+    "fortuneHours": "",
+    "fortuneMinutes": "",
+    "gameHours": "",
+    "gameMinutes": ""
+  }
+}
