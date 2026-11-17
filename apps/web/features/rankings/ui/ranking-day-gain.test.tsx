@@ -37,4 +37,29 @@ describe("home ranking row: today's gain next to the value", () => {
     expect(dayGainMark("day", 7)).toBeUndefined();
     expect(dayGainMark("all", 7)).toBe(7);
   });
+
+  it("flashes the +N when a later answer changes it (or brings it in), and not on the first look", () => {
+    const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({ top: 100, bottom: 148, height: 48, left: 0, right: 300, width: 300, x: 0, y: 100, toJSON() {} });
+    const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
+    Element.prototype.animate = animate;
+    vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+    const flashes = () => animate.mock.calls.filter((call) => JSON.stringify(call).includes("accent-line")).length;
+    try {
+      const view = render(<FanRows locale="ko" ranking={fans(undefined)} metric="points" scope="t" period="all" />);
+      view.rerender(<FanRows locale="ko" ranking={fans(7)} metric="points" scope="t" period="all" />);
+      expect(flashes()).toBe(1); // the gain came in: only the +7 flashes, the value is the same
+      expect(gainNode(view.container)).toHaveAttribute("data-flash");
+      view.rerender(<FanRows locale="ko" ranking={fans(7)} metric="points" scope="t" period="all" />);
+      expect(flashes()).toBe(1); // nothing changed
+      view.rerender(<FanRows locale="ko" ranking={fans(9)} metric="points" scope="t" period="all" />);
+      expect(flashes()).toBe(2);
+      const first = render(<FanRows locale="ko" ranking={fans(7)} metric="points" scope="u" period="all" />);
+      expect(flashes()).toBe(2); // first look
+      first.unmount();
+    } finally {
+      rect.mockRestore();
+      vi.unstubAllGlobals();
+      delete (Element.prototype as Partial<Element>).animate;
+    }
+  });
 });

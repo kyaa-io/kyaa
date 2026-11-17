@@ -117,7 +117,7 @@ it.each(APP_LOCALES)("renders the home contract in %s", async locale => {
   }
 });
 
-it("moves only changed rows on refresh and respects reduced motion", async () => {
+it("moves only changed rows on refresh and respects reduced motion (a place change alone does not flash the numbers)", async () => {
   const rect = visibleRows();
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
@@ -135,16 +135,14 @@ it("moves only changed rows on refresh and respects reduced motion", async () =>
       const view = render(<HomeRankingCard locale="ko" />);
       await screen.findByText("가");
       animate.mockClear(); // the entrance (own test below)
-      answer = fans([fanRow(1, { nickname: "나" }), fanRow(2, { nickname: "가" }), fanRow(3, { nickname: "다" })]);
+      answer = fans([fanRow(1, { nickname: "나", hearts: 28, score: 28 }), fanRow(2, { nickname: "가", hearts: 29, score: 29 }), fanRow(3, { nickname: "다" })]); // the places swap, the values stay
       clock += 11 * 60 * 1000;
       document.dispatchEvent(new Event("visibilitychange"));
       await waitFor(() => expect(view.container.querySelector("ol > li")!.textContent).toContain("나"));
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("px)"))).toHaveLength(reduced ? 0 : 2);
-      // The full colour ring holds for 3s after a 250ms entrance and fades over 850ms; no rotation, including reduced motion.
+      // A row that only changed place slides and shows its ▲▼; its numbers do not flash and no ring is drawn.
       expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("rotate"))).toHaveLength(0);
-      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("opacity") && JSON.stringify(call).includes('"duration":4100'))).toHaveLength(2);
-      const ringDelays = animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":4100') && JSON.stringify(call).includes("opacity")).map(call => (call as unknown as [unknown, { delay?: number }])[1].delay ?? 0);
-      expect(ringDelays).toEqual([0, 90]);
+      expect(animate.mock.calls.filter(call => JSON.stringify(call).includes("accent-line"))).toHaveLength(0);
       view.unmount();
     }
   } finally {
@@ -168,25 +166,43 @@ it("does not claim hidden ranks or draw login rows for short/empty answers", asy
   expect(screen.queryByText(/6~10/)).toBeNull();
 });
 
-it("rings only the rows whose value changed between two answers of one visit", async () => {
+it("flashes only the numbers whose value changed between two answers of one visit: the class is on while it runs and off when it ends, twice at 300ms, once under reduced motion", async () => {
   const rect = visibleRows();
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
-  const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
-  Element.prototype.animate = animate;
+  const finishers: Array<() => void> = [];
+  const animate = vi.fn(function (this: HTMLElement) { const animation = { cancel() {}, onfinish: null as null | (() => void), oncancel: null as null | (() => void) }; finishers.push(() => animation.onfinish?.()); return animation as unknown as Animation; });
+  Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
   const now = vi.spyOn(Date, "now");
   let clock = Date.parse("2026-11-08T03:00:00Z"); now.mockImplementation(() => clock);
+  const flashes = () => animate.mock.calls.filter(call => JSON.stringify(call).includes("accent-line")) as unknown as Array<[Array<{ offset?: number }>, { duration: number; delay?: number }]>;
   try {
-    vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
-    let answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나" })]);
-    vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
-    const view = render(<HomeRankingCard locale="ko" />);
-    await screen.findByText("가");
-    animate.mockClear();
-    answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나", hearts: 99, score: 99 })]);
-    clock += 11 * 60 * 1000;
-    document.dispatchEvent(new Event("visibilitychange"));
-    await waitFor(() => expect(animate.mock.calls.filter(call => JSON.stringify(call).includes('"duration":4100') && JSON.stringify(call).includes("opacity"))).toHaveLength(1));
-    view.unmount();
+    for (const reduced of [false, true]) {
+      clearResources(); animate.mockClear(); finishers.length = 0; window.localStorage.clear();
+      vi.stubGlobal("matchMedia", () => ({ matches: reduced, addEventListener() {}, removeEventListener() {} }));
+      let answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나" })]);
+      vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
+      const view = render(<HomeRankingCard locale="ko" />);
+      await screen.findByText("가");
+      expect(flashes()).toHaveLength(0); // the first look flashes nothing
+      expect(view.container.querySelector("[data-flash]")).toBeNull();
+      animate.mockClear(); finishers.length = 0;
+      answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나", hearts: 99, score: 99 })]);
+      clock += 11 * 60 * 1000;
+      document.dispatchEvent(new Event("visibilitychange"));
+      await waitFor(() => expect(flashes()).toHaveLength(1));
+      const [keyframes, timing] = flashes()[0]!;
+      expect(timing.duration).toBe(reduced ? 900 : 600);
+      // twice: two separate rises to the colour (not reduced), one pass (reduced); never a rotation.
+      const rises = keyframes.filter((frame, i) => i > 0 && JSON.stringify(frame).includes("accent-line") && !JSON.stringify(keyframes[i - 1]).includes("accent-line")).length;
+      expect(rises).toBe(reduced ? 1 : 2);
+      expect(JSON.stringify(keyframes)).not.toContain("rotate");
+      const second = view.container.querySelectorAll("li[data-row='fan-rank']")[1]!;
+      expect(second.querySelector("[data-flash-target='value']")).toHaveAttribute("data-flash");
+      expect(view.container.querySelectorAll("li[data-row='fan-rank'] [data-flash]")).toHaveLength(1);
+      finishers.forEach((finish) => finish());
+      expect(view.container.querySelector("[data-flash]")).toBeNull();
+      view.unmount();
+    }
   } finally {
     rect.mockRestore();
     now.mockRestore();
@@ -194,7 +210,7 @@ it("rings only the rows whose value changed between two answers of one visit", a
   }
 });
 
-it("a period change is not a value change: no ring (and no move) when the tabs switch to an answer the cache already holds", async () => {
+it("a period change is not a value change: no flash (and no move) when the tabs switch to an answer the cache already holds", async () => {
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
@@ -222,7 +238,7 @@ it("first look: rows come in top first (90ms apart), a period switch does not re
   const animate = vi.fn(() => ({ cancel() {} }) as unknown as Animation);
   Element.prototype.animate = animate;
   const calls = (part: string) => animate.mock.calls.filter(call => JSON.stringify(call).includes(part));
-  const rings = () => calls('"duration":4100').length;
+  const rings = () => calls("accent-line").length;
   try {
     vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
     // The memory a visitor kept from before 11/13 04:34 (v2, shared places): it must not read as movement.
