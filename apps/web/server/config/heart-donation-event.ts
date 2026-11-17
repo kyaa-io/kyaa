@@ -16,7 +16,7 @@ export function heartDonationEvent(env: Env = process.env): HeartDonationEvent {
 
 export type HomeTopBanner = "donation" | "jjinfan100";
 
-/** 홈배너1(랭킹 바로 위) 내용: 기본은 후원 게이지 줄, 찐팬 100이 시작되면 KYAA_HOME_TOP_BANNER=jjinfan100으로 그 자리를 찐팬 100 배너 줄로 바꾼다. */
+/** 홈배너1(랭킹 바로 아래) 내용: 기본은 후원 게이지 줄, 찐팬 100이 시작되면 KYAA_HOME_TOP_BANNER=jjinfan100으로 그 자리를 찐팬 100 배너 줄로 바꾼다. */
 export function homeTopBanner(env: Env = process.env): HomeTopBanner {
   return env.KYAA_HOME_TOP_BANNER?.trim() === "jjinfan100" ? "jjinfan100" : "donation";
 }

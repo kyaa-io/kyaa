@@ -182,7 +182,7 @@ it('offers 홈배너2 and 덕질배너1 as placements and saves the chosen slot'
  render(<HomeBannerManager locale="ko" role="admin"/>);
  await screen.findByDisplayValue('카라 LIVE');
  const select=screen.getByRole('combobox',{name:'노출 위치'});
- expect(within(select).getByRole('option',{name:/홈배너2 · 랭킹 아래 \(모바일 716 x 320, PC 2720 x 480\)/})).toBeInTheDocument();
+ expect(within(select).getByRole('option',{name:/홈배너2 · 랭킹 위 \(외부 광고, 모바일 716 x 320, PC 2720 x 480\)/})).toBeInTheDocument();
  expect(within(select).getByRole('option',{name:/덕질배너1 · 덕질 탭 가운데/})).toBeInTheDocument();
  expect(within(select).getByRole('option',{name:/덕질배너2 · 덕질 탭 PC 오른쪽 세로 \(720 x 1200\)/})).toBeInTheDocument();
  expect(within(select).getAllByRole('option')).toHaveLength(10);
