@@ -276,6 +276,8 @@ jobs:
         run: node scripts/aws-release-images.mjs
       - name: Require successful checks for the exact release commit
         run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)" "${SOURCE_RUN_ID:-$GITHUB_RUN_ID}"
+      - name: Prepare all worker code updates
+        run: node scripts/aws-release-workers.mjs prepare
       - name: Validate and deploy CloudFormation
         id: deploy_web
         run: |
@@ -288,7 +290,7 @@ jobs:
         if: env.AWS_SCHEDULE_CONFIG_JSON != ''
         run: node scripts/aws-release-cron.mjs deploy
       - name: Update worker code preserving approved switches
-        run: node scripts/aws-release-workers.mjs
+        run: node scripts/aws-release-workers.mjs apply
       - name: Preserve worker rollback packages
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -298,6 +300,7 @@ jobs:
           path: |
             work/aws-release/worker-backups/**/backup.zip
             work/aws-release/worker-backups/**/receipt.json
+            work/aws-release/worker-backups/prepared.json
       - name: Record the verified GitHub deployment
         run: node scripts/aws-release.mjs record "$RELEASE_ENV"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { updateWorkers, workers } from './aws-release-workers.mjs';
+import { prepareWorkers, applyWorkers, updateWorkers, workers } from './aws-release-workers.mjs';
 const hash = b => createHash('sha256').update(b).digest('base64');
 for (const scenario of ['match','difference','denied','revision','disabled','runtime','backup','environment']) {
  test(scenario, async () => {
@@ -33,6 +33,7 @@ for (const scenario of ['match','difference','denied','revision','disabled','run
     if(args[1]==='update-function-code') {
      assert.equal(args[args.indexOf('--revision-id')+1],'revision');
      if(scenario==='revision') throw Error('PreconditionFailed');
+     if (args.includes('--dry-run')) return {};
      hashes.set(name,hash(readFileSync(args.at(-1).slice(8)))); return {};
     }
     if(args[1]==='wait') return {};
@@ -84,4 +85,53 @@ test('release bundle mapping', () => {
   'benefit-maintenance': 'notification-index.cjs',
   'creator-registration-worker': 'creator-registration-index.cjs',
  });
+});
+for (const scenario of ['third dry run denied', 'revision drift', 'code drift', 'environment drift', 'zip drift', 'normal', 'dev absent']) {
+ test(`two phase: ${scenario}`, async () => {
+  const root = await mkdtemp(join(tmpdir(), 'worker-phases-'));
+  const backup = Buffer.from('backup');
+  const states = new Map(); const updates = []; let dryRuns = 0; let web = 0; let schedules = 0;
+  try {
+   await mkdir(join(root, 'apps/worker/dist-lambda'), { recursive: true });
+   for (const bundle of Object.values(workers)) await writeFile(join(root, 'apps/worker/dist-lambda', bundle), 'exports.handler=()=>{};');
+   const aws = args => {
+    const name = args[args.indexOf('--function-name') + 1];
+    if (scenario === 'dev absent' && name.includes('benefit-maintenance')) throw Object.assign(Error('missing'), { stderr: 'An error occurred (ResourceNotFoundException) when calling the GetFunctionConfiguration operation:' });
+    if (!states.has(name)) states.set(name, { FunctionArn: `arn:aws:lambda:ap-northeast-2:996702758024:function:${name}`, PackageType: 'Zip', Handler: 'index.handler', Runtime: 'nodejs24.x', Architectures: ['arm64'], RevisionId: 'r1', CodeSha256: hash(backup), Environment: { Variables: {} }, State: 'Active', LastUpdateStatus: 'Successful' });
+    const config = states.get(name);
+    if (args[1] === 'get-function') return { Configuration: config, Code: { Location: 'fake' } };
+    if (args[1] === 'update-function-code') {
+     assert.equal(args[args.indexOf('--revision-id') + 1], config.RevisionId);
+     if (args.includes('--dry-run')) { if (++dryRuns === 3 && scenario === 'third dry run denied') throw Error('AccessDenied'); }
+     else { updates.push(name); config.CodeSha256 = hash(readFileSync(args.at(-1).slice(8))); }
+    }
+    return config;
+   };
+   const run = async () => {
+    const prepared = await prepareWorkers('a'.repeat(40), root, aws, 'dev', async () => backup);
+    assert.equal(updates.length, 0);
+    await writeFile(join(root, 'prepared.json'), JSON.stringify(prepared));
+    web++; schedules++;
+    const third = states.get(prepared.functions[2].function);
+    if (scenario === 'revision drift') third.RevisionId = 'r2';
+    if (scenario === 'code drift') third.CodeSha256 = 'changed';
+    if (scenario === 'environment drift') third.Environment.Variables.CHANGED = 'true';
+    if (scenario === 'zip drift') await writeFile(join(root, prepared.functions[2].worker, 'code.zip'), 'changed');
+    await applyWorkers(JSON.parse(await readFile(join(root, 'prepared.json'), 'utf8')), root, aws);
+   };
+   if (scenario === 'third dry run denied') { await assert.rejects(run, /AccessDenied/); assert.deepEqual([web, schedules, updates.length], [0, 0, 0]); }
+   else if (scenario.endsWith('drift')) { await assert.rejects(run, /PREPARED_/); assert.equal(updates.length, 2); }
+   else { await run(); assert.equal(updates.length, scenario === 'dev absent' ? 3 : 4); }
+  } finally { await rm(root, { recursive: true, force: true }); }
+ });
+}
+test('prepare gates web and schedules, apply follows health', async () => {
+ const workflow = await readFile('.github/workflows/aws-platform.yml', 'utf8');
+ const prepare = workflow.indexOf('run: node scripts/aws-release-workers.mjs prepare');
+ const web = workflow.indexOf('- name: Validate and deploy CloudFormation');
+ const health = workflow.indexOf('- name: Require healthy ECS');
+ const schedules = workflow.indexOf('- name: Deploy ownership-verified');
+ const apply = workflow.indexOf('run: node scripts/aws-release-workers.mjs apply');
+ assert(prepare > 0 && prepare < web && web < health && health < schedules && schedules < apply);
+ assert(!workflow.slice(prepare, web).includes('continue-on-error'));
 });
