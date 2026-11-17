@@ -79,6 +79,8 @@ describe("EventLikeCard", () => {
     render(<EventLikeCard slug="elina" locale="ko" now={inWindow} />);
     const login = await screen.findByRole("link", { name: "좋아요 남기기" });
     await waitFor(() => expect(login.getAttribute("href")).toContain("/login"));
+    // 11/17: the fan page resets link colour unless the link says it is the primary action (pink with dark text on DEV).
+    expect(login).toHaveAttribute("data-fan-action-emphasis", "primary");
     fireEvent.click(login);
     expect(router.push).toHaveBeenCalledTimes(1);
     const destination = String(router.push.mock.calls[0]![0]);

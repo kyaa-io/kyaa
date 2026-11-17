@@ -208,7 +208,7 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
     const star = <Star strokeWidth={1.5} />;
     const doneLabel = locale === "ko" ? "좋아요 완료" : translate(locale, localizedMessages.reactionEventLiked, "Liked");
     return <div className={sectionClass} id="event-like" data-reaction-complete={actionState === "done" ? "true" : undefined}>
-      {ready && !authenticated ? <AuthIntentLink className={fanActionClassName("primary", { fullWidth: true })} focusKey="event-like" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#event-like" }}>{star}{t.action}</AuthIntentLink>
+      {ready && !authenticated ? <AuthIntentLink emphasis="primary" className={fanActionClassName("primary", { fullWidth: true })} focusKey="event-like" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#event-like" }}>{star}{t.action}</AuthIntentLink>
         : ready && actionState === "done" ? <FanActionStatus leadingIcon={star}>{doneLabel}</FanActionStatus>
         : <FanAction variant="primary" fullWidth leadingIcon={star} onClick={() => void (checkState === "error" ? readExisting() : postReaction())} disabled={!ready || checking || working} loading={!ready || checking || working}>{!ready || working ? t.working : checking ? t.checking : checkState === "error" ? t.retry : t.action}</FanAction>}
       {checkState === "error" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
