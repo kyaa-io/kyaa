@@ -74,7 +74,7 @@ it("passes my rank with its named values and movement for a signed-in viewer", a
   expect(state.rpc).toHaveBeenCalledWith("read_home_fan_ranking_v3", { p_viewer: ME, p_period: "all", p_limit: 50 });
 });
 
-// Real answers of read_home_fan_ranking_v3 / read_home_creator_ranking_v3 on the local database after 20261222140000.
+// Real answers of read_home_fan_ranking_v3 / read_home_creator_ranking_v3 on the local database after 20261231110000 (gains of 11/17).
 for (const name of Object.keys(v3) as (keyof typeof v3)[]) {
   const [kind, period, viewer] = name.split(":") as ["fans" | "creators", "all" | "day" | "week", string | undefined];
   it(`passes the database's v3 ${name} answer (points / likes) through the route schema with its stats`, async () => {
@@ -87,7 +87,11 @@ for (const name of Object.keys(v3) as (keyof typeof v3)[]) {
     expect(body.metric).toBe(metric);
     expect(body.rows).toHaveLength(Math.min(raw.rows.length, viewer ? 50 : 10));
     expect(state.rpc).toHaveBeenCalledWith(kind === "fans" ? "read_home_fan_ranking_v3" : "read_home_creator_ranking_v3", expect.objectContaining({ p_period: period }));
+    // 20261231110000: every points / likes row carries today's and the seven days' gain as numbers, in every period.
+    expect(body.weekGainDays).toBe(7);
     for (const row of body.rows) {
+      expect(row.dayGain).toEqual(expect.any(Number));
+      expect(row.weekGain).toBeGreaterThanOrEqual(row.dayGain);
       if (kind === "fans") { expect(row.points).toBe(row.score); expect(row.hearts).toEqual(expect.any(Number)); expect(row.tickets).toEqual(expect.any(Number)); expect(row.totalPoints).toBeGreaterThanOrEqual(row.points); }
       else { expect(row.likes).toBe(row.score); expect(row.hearts).toEqual(expect.any(Number)); expect(row.fans).toEqual(expect.any(Number)); expect(row.totalLikes).toBeGreaterThanOrEqual(row.likes); expect(row).not.toHaveProperty("followers"); }
     }
