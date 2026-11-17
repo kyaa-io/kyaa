@@ -19,7 +19,14 @@ export async function updateWorkers(sha, folder, aws, environment = 'prod', down
   if (!/^[a-f0-9]{40}$/.test(sha)) throw Error('INVALID_RELEASE_SHA');
   for (const [worker, bundle] of Object.entries(workers)) {
     const name = `byus-${worker}-${environment}`;
-    const before = aws(['lambda', 'get-function-configuration', '--function-name', name]);
+    let before;
+    try {
+      before = aws(['lambda', 'get-function-configuration', '--function-name', name]);
+    } catch (error) {
+      if (environment !== 'dev' || !/An error occurred \(ResourceNotFoundException\) when calling the GetFunctionConfiguration operation:/.test(String(error.stderr ?? ''))) throw error;
+      console.log(JSON.stringify({ function: name, skipped: 'absent' }));
+      continue;
+    }
     if (before.FunctionArn !== `arn:aws:lambda:ap-northeast-2:996702758024:function:${name}` || before.PackageType !== 'Zip' || before.Handler !== 'index.handler' || before.Runtime !== 'nodejs24.x' || before.Architectures?.join(',') !== 'arm64' || !before.RevisionId || before.LastUpdateStatus !== 'Successful' || before.State !== 'Active') throw Error('WORKER_IDENTITY_OR_STATE_MISMATCH');
     const beforeEnv = envHash(before);
     const dir = join(folder, worker); await mkdir(dir, { recursive: true });

@@ -55,3 +55,33 @@ test('worker failure gates deployment record for both environments',async()=>{
  assert(!workflow.slice(start,end).includes("RELEASE_ENV == 'prod'"));
  assert(workflow.slice(end).startsWith('      - name: Record the verified GitHub deployment\n        run:'));
 });
+for (const environment of ['dev', 'prod']) {
+ for (const code of ['ResourceNotFoundException', 'AccessDeniedException', 'ThrottlingException']) {
+  test(`${environment} missing worker handling: ${code}`, async t => {
+   const calls = [];
+   const output = [];
+   t.mock.method(console, 'log', value => output.push(JSON.parse(value)));
+   const error = Object.assign(new Error('AWS CLI failed'), { stderr: Buffer.from(`An error occurred (${code}) when calling the GetFunctionConfiguration operation: missing`) });
+   const aws = args => { calls.push(args); throw error; };
+   const run = () => updateWorkers('a'.repeat(40), '/unused', aws, environment);
+   if (environment === 'dev' && code === 'ResourceNotFoundException') {
+    await run();
+    assert.deepEqual(output, Object.keys(workers).map(worker => ({ function: `byus-${worker}-dev`, skipped: 'absent' })));
+    assert.equal(calls.length, 4);
+   } else {
+    await assert.rejects(run, e => e === error);
+    assert.equal(calls.length, 1);
+    assert.deepEqual(output, []);
+   }
+   assert(calls.every(args => args[1] === 'get-function-configuration'));
+  });
+ }
+}
+test('release bundle mapping', () => {
+ assert.deepEqual(workers, {
+  'mint-worker': 'index.cjs',
+  'notification-worker': 'notification-index.cjs',
+  'benefit-maintenance': 'notification-index.cjs',
+  'creator-registration-worker': 'creator-registration-index.cjs',
+ });
+});
