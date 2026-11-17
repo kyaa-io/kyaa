@@ -68,7 +68,7 @@ export async function submitProof(getToken: TokenGetter, input: {
   return proofCommandResultSchema.parse(await ensureOk(response));
 }
 
-export async function resubmitProof(getToken: TokenGetter, submissionId: string, input: { expectedRevision: number; uploadId: string; uploadIds?: string[]; imagePhash: string[]; note?: string; locale?: string }) {
+export async function resubmitProof(getToken: TokenGetter, submissionId: string, input: { requestKey: string; expectedRevision: number; uploadId: string; uploadIds: string[]; imagePhash: string[]; note?: string; locale?: string }) {
   const response = await authedFetch(getToken, `/api/me/proofs/${encodeURIComponent(submissionId)}/resubmit`, {
     method: "POST",
     headers: { "content-type": "application/json" },

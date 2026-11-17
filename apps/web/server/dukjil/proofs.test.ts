@@ -18,11 +18,14 @@ const valid = { requestKey: key, creator: "kyaa-wave", proofType: "purchase", up
 const dbResult = { id: sub, status: "pending", revision: 0, replayed: false };
 beforeEach(() => { vi.clearAllMocks(); vi.mocked(deps.authorize).mockResolvedValue({ appUserId: owner }); });
 
-it("resubmits every photo using the same atomic media contract", async () => {
+it("resubmits every photo through the keyed command, with a hash over the submission, revision, ordered uploads, hashes and note", async () => {
   vi.mocked(deps.rpc).mockResolvedValue(dbResult);
-  const ids = [upload, post];
-  expect((await h.resubmit(send({ expectedRevision: 1, uploadId: upload, uploadIds: ids, imagePhash: ["0123456789abcdef", "abcdef0123456789"] }), sub)).status).toBe(200);
-  expect(deps.rpc).toHaveBeenCalledWith("resubmit_certification_proof_multi", expect.objectContaining({ p_upload_ids: ids, p_expected_revision: 1 }));
+  const ids = [upload, post], imagePhash = ["0123456789abcdef", "abcdef0123456789"];
+  expect((await h.resubmit(send({ requestKey: key, expectedRevision: 1, uploadId: upload, uploadIds: ids, imagePhash }), sub)).status).toBe(200);
+  expect(deps.rpc).toHaveBeenCalledWith("resubmit_certification_proof_keyed", expect.objectContaining({
+    p_user: owner, p_submission_id: sub, p_request_key: key, p_upload_ids: ids, p_expected_revision: 1,
+    p_request_hash: proofRequestHash({ submissionId: sub, expectedRevision: 1, uploadIds: ids, imagePhash, note: null }),
+  }));
 });
 
 describe("submit", () => {
@@ -119,12 +122,38 @@ describe("post body", () => {
 });
 
 describe("resubmit", () => {
-  const body = { expectedRevision: 1, uploadId: upload, imagePhash: ["0123456789abcdef"] };
-  it("calls the resubmit function for the owner", async () => {
+  const body = { requestKey: key, expectedRevision: 1, uploadId: upload, uploadIds: [upload], imagePhash: ["0123456789abcdef"] };
+  it("calls the keyed resubmit function for the owner", async () => {
     vi.mocked(deps.rpc).mockResolvedValue({ ...dbResult, revision: 2 });
     const res = await h.resubmit(send(body), sub);
     expect(res.status).toBe(200); expect((await res.json()).revision).toBe(2);
-    expect(deps.rpc).toHaveBeenCalledWith("resubmit_certification_proof", { p_user: owner, p_submission_id: sub, p_expected_revision: 1, p_upload_id: upload, p_image_phash: ["0123456789abcdef"], p_pii_detected: false, p_post_body: "인증했어요" });
+    expect(deps.rpc).toHaveBeenCalledWith("resubmit_certification_proof_keyed", {
+      p_user: owner, p_submission_id: sub, p_request_key: key, p_expected_revision: 1, p_upload_ids: [upload], p_image_phash: ["0123456789abcdef"],
+      p_request_hash: proofRequestHash({ submissionId: sub, expectedRevision: 1, uploadIds: [upload], imagePhash: ["0123456789abcdef"], note: null }),
+      p_pii_detected: false, p_post_body: "인증했어요",
+    });
+  });
+  it("sends the same key and hash for a resend, and a different hash when the body differs", async () => {
+    vi.mocked(deps.rpc).mockResolvedValue(dbResult);
+    await h.resubmit(send(body), sub);
+    await h.resubmit(send(body), sub);
+    await h.resubmit(send({ ...body, note: "다른 말" }), sub);
+    const [first, second, third] = vi.mocked(deps.rpc).mock.calls.map((call) => call[1] as Record<string, unknown>);
+    expect(second.p_request_hash).toBe(first.p_request_hash);
+    expect(third.p_request_key).toBe(first.p_request_key);
+    expect(third.p_request_hash).not.toBe(first.p_request_hash);
+  });
+  it("maps a key reused with another body to a 409 IDEMPOTENCY_MISMATCH", async () => {
+    vi.mocked(deps.rpc).mockRejectedValueOnce(new Error("IDEMPOTENCY_MISMATCH"));
+    const res = await h.resubmit(send(body), sub);
+    expect(res.status).toBe(409);
+    expect((await res.json()).error.code).toBe("IDEMPOTENCY_MISMATCH");
+  });
+  it("rejects a body without a request key or the ordered upload list", async () => {
+    const { requestKey: _key, ...noKey } = body;
+    const { uploadIds: _ids, ...noIds } = body;
+    for (const bad of [noKey, noIds, { ...body, requestKey: "nope" }]) expect((await h.resubmit(send(bad), sub)).status).toBe(400);
+    expect(deps.rpc).not.toHaveBeenCalled();
   });
   it("maps a stale revision, a foreign submission and a bad id", async () => {
     vi.mocked(deps.rpc).mockRejectedValueOnce(new Error("REVISION_CONFLICT"));

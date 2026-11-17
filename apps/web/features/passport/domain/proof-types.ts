@@ -35,14 +35,16 @@ export const proofSubmitBodySchema = z.object({
 }).strict().refine(body => !body.uploadIds || (body.uploadIds[0] === body.uploadId && body.uploadIds.length === body.imagePhash.length)).refine((body) => body.proofType !== SNS_POST_PROOF || !body.publishConsent, { message: "an SNS post is not published on the proof board", path: ["publishConsent"] });
 export type ProofSubmitBody = z.infer<typeof proofSubmitBodySchema>;
 
+// requestKey is kept by the screen for one resubmit draft: a resend of the same body (answer lost) gets the first result back.
 export const proofResubmitBodySchema = z.object({
+  requestKey: z.uuid(),
   expectedRevision: z.number().int().min(0),
   uploadId: z.uuid(),
-  uploadIds: z.array(z.uuid()).min(1).max(3).refine(ids => new Set(ids).size === ids.length).optional(),
+  uploadIds: z.array(z.uuid()).min(1).max(3).refine(ids => new Set(ids).size === ids.length),
   imagePhash: proofPhashSchema,
   note: z.string().trim().max(PROOF_NOTE_MAX).optional(),
   locale: z.enum(APP_LOCALES).optional(),
-}).strict().refine(body => !body.uploadIds || (body.uploadIds[0] === body.uploadId && body.uploadIds.length === body.imagePhash.length));
+}).strict().refine(body => body.uploadIds[0] === body.uploadId && body.uploadIds.length === body.imagePhash.length);
 export type ProofResubmitBody = z.infer<typeof proofResubmitBodySchema>;
 
 // POST /api/me/proofs, POST /api/me/proofs/{id}/resubmit. status is always "pending" after a submit or resubmit.

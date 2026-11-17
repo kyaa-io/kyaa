@@ -164,24 +164,19 @@ export function ProofsScreen({ locale, slug }: Props) {
     try {
       const trimmed = note.trim() ? note.trim().slice(0, PROOF_NOTE_MAX) : undefined;
       const consent = publishable && publish;
-      const signature = JSON.stringify([mission.missionId, proofType, trimmed ?? null, consent, consent ? amountVisible : null, picked.map((item) => [item.id, item.masks])]);
-      if (resubmitting) {
+      // The draft (request key, ordered uploads, photo hashes) belongs to this member, this proof (or its revision) and exactly these fields and
+      // pictures. Same again after a lost answer: nothing is uploaded twice and the server finds the first result. Anything else starts over.
+      const signature = JSON.stringify([auth.user?.id ?? null, resubmitting ? [resubmitting.submissionId, resubmitting.revision] : null, mission.missionId, proofType, trimmed ?? null, consent, consent ? amountVisible : null, picked.map((item) => [item.id, item.masks])]);
+      if (attempt.current?.signature !== signature) attempt.current = { signature, requestKey: crypto.randomUUID(), uploadIds: [], imagePhash: null };
+      const current = attempt.current;
+      if (!current.imagePhash) {
         const encoded = await Promise.all(picked.map((item) => maskAndEncode(item.file, item.masks)));
-        const uploadIds = [];
-        for (const item of encoded) uploadIds.push(await uploadProofImage(getToken, mission.missionId, item.blob));
-        await resubmitProof(getToken, resubmitting.submissionId, { expectedRevision: resubmitting.revision, uploadId: uploadIds[0], uploadIds, imagePhash: encoded.map((item) => item.phash), note: trimmed, locale });
-      } else {
-        // Same pictures and fields as the last try: keep its request key and uploads so a stored-but-unanswered submit is not sent twice.
-        if (attempt.current?.signature !== signature) attempt.current = { signature, requestKey: crypto.randomUUID(), uploadIds: [], imagePhash: null };
-        const current = attempt.current;
-        if (!current.imagePhash) {
-          const encoded = await Promise.all(picked.map((item) => maskAndEncode(item.file, item.masks)));
-          for (const item of encoded.slice(current.uploadIds.length)) current.uploadIds.push(await uploadProofImage(getToken, mission.missionId, item.blob));
-          current.imagePhash = encoded.map((item) => item.phash);
-        }
-        await submitProof(getToken, { creator: slug, proofType, uploadId: current.uploadIds[0], uploadIds: current.uploadIds, publishConsent: consent, amountVisible: consent ? amountVisible : null, imagePhash: current.imagePhash, note: trimmed, locale, requestKey: current.requestKey });
-        attempt.current = null;
+        for (const item of encoded.slice(current.uploadIds.length)) current.uploadIds.push(await uploadProofImage(getToken, mission.missionId, item.blob));
+        current.imagePhash = encoded.map((item) => item.phash);
       }
+      if (resubmitting) await resubmitProof(getToken, resubmitting.submissionId, { requestKey: current.requestKey, expectedRevision: resubmitting.revision, uploadId: current.uploadIds[0], uploadIds: current.uploadIds, imagePhash: current.imagePhash, note: trimmed, locale });
+      else await submitProof(getToken, { creator: slug, proofType, uploadId: current.uploadIds[0], uploadIds: current.uploadIds, publishConsent: consent, amountVisible: consent ? amountVisible : null, imagePhash: current.imagePhash, note: trimmed, locale, requestKey: current.requestKey });
+      attempt.current = null;
       setPicked([]); setNote(""); setPrivacy(false); setCovered(false); setResubmitting(null);
       history.retry();
     } catch (error) {
