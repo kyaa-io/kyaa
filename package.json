@@ -30,7 +30,8 @@
     "@walletconnect/utils@>=2.21.0 <2.21.9": "2.21.9",
     "fast-glob": "$fast-glob",
     "zod@<4.6.6": "4.6.7",
-    "hono@<4.13.16": "4.13.18"
+    "hono@<4.13.16": "4.13.18",
+    "minimatch@>=7.0.0 <11.0.1": "11.0.1"
   },
   "scripts": {
     "env:local:dev": "node scripts/sync-web-dev-env.mjs",

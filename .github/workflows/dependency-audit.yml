@@ -36,7 +36,10 @@ jobs:
         run: npm run security:audit:baseline
 
       - name: Reject high and critical advisories in development tools
-        run: npm audit --audit-level=high --ignore-scripts
+        run: node scripts/verify-npm-audit-baseline.mjs --include-dev
+
+      - name: Check audit exception enforcement
+        run: node --test scripts/verify-npm-audit-baseline.test.mjs
 
       - name: Verify patched dependency constraints
         run: npm run security:verify
