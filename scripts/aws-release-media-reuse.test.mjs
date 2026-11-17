@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
-import { fingerprintMedia, resolvedBase, reusableProof, imageExists, readPriorMetadata } from './aws-release-media-reuse.mjs';
+import { fingerprintMedia, resolvedBase, reusableProof, imageExists, readPriorMetadata, priorCandidate, PRIOR_CANDIDATE_LIMIT } from './aws-release-media-reuse.mjs';
 import { REPOSITORY_ID, REPOSITORY, WORKFLOW_PATH } from './aws-release.mjs';
 const sha='a'.repeat(40), current='b'.repeat(40), digest='sha256:'+'c'.repeat(64), hash='d'.repeat(64);
 const run={run_attempt:1,id:123,repository:{id:REPOSITORY_ID,full_name:REPOSITORY},path:WORKFLOW_PATH,head_branch:'main',head_sha:sha,event:'push',status:'completed',conclusion:'success'};
@@ -74,4 +74,59 @@ test('a valid legacy release without runtime auth is a cache miss, not a promoti
  assert.throws(()=>reusableProof({...input,release:{...legacy,sourceSha:'invalid'}}),/INVALID_AWS_RELEASE_ARTIFACT/);
  assert.throws(()=>reusableProof({...input,release:legacy,run:{...run,repository:{id:1}}}),/UNTRUSTED/);
  assert.throws(()=>reusableProof({...input,release:{...release,runtimeAuth:null}}),/INVALID_RUNTIME_AUTH_PROOF/);
+});
+
+const prior = (id, headSha) => ({ id, head_sha: headSha });
+const withArtifacts = names => ({ artifacts: names.map(name => ({ name, expired: false })) });
+const allNames = ['aws-release-source', 'aws-result-dev', 'aws-media-proof'];
+function fakePrior({ runs, artifacts, details, ancestor = () => {} }) {
+ const calls = [], commands = [];
+ const githubCall = async path => {
+  calls.push(path);
+  if (path.includes('/runs?')) return { workflow_runs: runs };
+  const artifactMatch = path.match(/\/actions\/runs\/(\d+)\/artifacts/);
+  if (artifactMatch) return artifacts[artifactMatch[1]] ?? { artifacts: [] };
+  return details[path.match(/\/actions\/runs\/(\d+)$/)[1]];
+ };
+ const runCommand = (file, args) => { commands.push([file, ...args]); if (file === 'git') ancestor(args); return ''; };
+ const readMetadata = async () => ({ release, dev, proof });
+ return { calls, commands, options: { githubCall, run: runCommand, readMetadata, currentRunId: 999 } };
+}
+const detail = (id, overrides = {}) => ({ ...run, id, ...overrides });
+
+test('prior search skips newer runs without proof artifacts and verifies the next complete one', async () => {
+ const fake = fakePrior({ runs: [prior(300, 'c'.repeat(40)), prior(200, sha)], artifacts: { 300: { artifacts: [] }, 200: withArtifacts(allNames) }, details: { 200: detail(200) } });
+ const found = await priorCandidate(current, fake.options);
+ assert.equal(found.run.id, 200);
+ assert.equal(found.release, release);
+ assert.ok(fake.calls.includes('/actions/runs/200'));
+ assert.ok(!fake.calls.includes('/actions/runs/300'));
+ assert.ok(fake.commands.some(command => command[0] === 'git' && command.includes(sha)));
+ assert.equal(fake.commands.filter(command => command[0] === 'gh').length, 3);
+});
+
+test('prior search is a miss when no candidate has complete, unexpired artifacts or all are the current run', async () => {
+ const expired = { artifacts: allNames.map(name => ({ name, expired: name === 'aws-media-proof' })) };
+ const fake = fakePrior({ runs: [prior(999, 'c'.repeat(40)), prior(300, current), prior(200, sha), prior(100, 'e'.repeat(40))], artifacts: { 200: expired, 100: withArtifacts(allNames.slice(0, 2)) }, details: {} });
+ assert.equal(await priorCandidate(current, fake.options), null);
+ assert.equal(fake.commands.length, 0);
+});
+
+test('prior search rejects a later candidate from another repository instead of trying older ones', async () => {
+ const fake = fakePrior({ runs: [prior(300, 'c'.repeat(40)), prior(200, sha), prior(100, 'e'.repeat(40))], artifacts: { 300: { artifacts: [] }, 200: withArtifacts(allNames), 100: withArtifacts(allNames) }, details: { 200: detail(200, { repository: { id: 1, full_name: 'other/repo' } }), 100: detail(100) } });
+ await assert.rejects(priorCandidate(current, fake.options), /UNTRUSTED_AWS_WORKFLOW_RUN/);
+ assert.ok(!fake.calls.includes('/actions/runs/100'));
+ const notAncestor = fakePrior({ runs: [prior(300, 'c'.repeat(40)), prior(200, sha)], artifacts: { 200: withArtifacts(allNames) }, details: { 200: detail(200) }, ancestor: () => { throw Object.assign(new Error('not ancestor'), { status: 1 }); } });
+ assert.equal(await priorCandidate(current, notAncestor.options), null);
+ assert.equal(notAncestor.commands.filter(command => command[0] === 'gh').length, 0);
+ const lookupError = fakePrior({ runs: [prior(200, sha)], artifacts: {}, details: {} });
+ await assert.rejects(priorCandidate(current, { ...lookupError.options, githubCall: async path => { if (path.includes('/artifacts')) throw new Error('GITHUB_HTTP_500'); return { workflow_runs: [prior(200, sha)] }; } }), /GITHUB_HTTP_500/);
+});
+
+test('prior search lookup stays within the candidate limit', async () => {
+ const runs = Array.from({ length: 12 }, (_, index) => prior(100 + index, String(index % 10).repeat(40)));
+ const fake = fakePrior({ runs, artifacts: {}, details: {} });
+ assert.equal(await priorCandidate(current, fake.options), null);
+ assert.match(fake.calls[0], new RegExp(`per_page=${PRIOR_CANDIDATE_LIMIT}$`));
+ assert.equal(fake.calls.filter(path => path.includes('/artifacts')).length, PRIOR_CANDIDATE_LIMIT);
 });
