@@ -22,5 +22,21 @@
   "allowedModerateAdvisories": [
     1119441
   ],
-  "trackingDocument": "docs/security/dependency-remediation-2026-09.md"
+  "trackingDocument": "docs/security/dependency-remediation-2026-09.md",
+  "temporaryHighAdvisories": [
+    {
+      "source": 1119441,
+      "package": "uuid",
+      "until": "2026-11-25",
+      "approved": "2026-11-18 사용자 '기한부 예외'",
+      "reason": "간접 의존성(@metamask/sdk 등)의 uuid 8/9, 수정본 11.1.1은 메이저 변경 — 상위 패키지 갱신 대기"
+    },
+    {
+      "source": 1247710,
+      "package": "picomatch",
+      "until": "2026-11-25",
+      "approved": "2026-11-18 사용자 '기한부 예외'",
+      "reason": "공지에 수정 버전 없음(<=4.0.7 전체) — 수정 릴리스 대기"
+    }
+  ]
 }
