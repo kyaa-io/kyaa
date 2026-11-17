@@ -287,6 +287,17 @@ jobs:
       - name: Deploy ownership-verified disabled-by-default schedules
         if: env.AWS_SCHEDULE_CONFIG_JSON != ''
         run: node scripts/aws-release-cron.mjs deploy
+      - name: Update worker code preserving approved switches
+        run: node scripts/aws-release-workers.mjs
+      - name: Preserve worker rollback packages
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: worker-rollback-${{ github.run_attempt }}
+          overwrite: true
+          path: |
+            work/aws-release/worker-backups/**/backup.zip
+            work/aws-release/worker-backups/**/receipt.json
       - name: Record the verified GitHub deployment
         run: node scripts/aws-release.mjs record "$RELEASE_ENV"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
