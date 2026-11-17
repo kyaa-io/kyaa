@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "이벤트가 열리는 날에는 해당 크리에이터의 팬 페이지 홈 맨 위에 '이름 × Kyaa' 카드와 큰 '좋아요 남기기' 버튼이 보여요. 머리의 작은 좋아요와 같은 좋아요라서 한쪽을 누르면 둘 다 완료로 바뀌고, 이벤트 참여자 집계에도 그대로 들어가요.",
+    "첨부 화면은 로그인 전 로컬 검증 화면이며, 실제 운영 화면이 아니에요."
+  ],
+  "path": "/elina",
+  "images": [
+    "release-notes/images/2026-11-17-event-like-button-390.png",
+    "release-notes/images/2026-11-17-event-like-button-1440.png"
+  ]
+}

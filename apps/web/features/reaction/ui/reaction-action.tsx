@@ -12,12 +12,13 @@ import { withRequestDeadline } from "@/features/reliability/client/request-deadl
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AuthIntentLink } from "../../../components/auth-intent-link";
 import { consumeAuthIntent, readAuthIntent } from "../../../components/auth-intent";
 import { notifyFanActivityUpdated, subscribeFanActivityUpdates } from "../../../components/fan-ui/fan-activity-updates";
 import { ArrowRight } from "../../../components/icons";
 import { Star } from "../../../components/fan-ui/fan-icons";
+import { FanAction, FanActionStatus, fanActionClassName } from "../../../components/fan-ui/fan-action";
 import { reactionResultSchema, type ReactionResult } from "../domain/reaction";
 import styles from "./reaction-action.module.css";
 import { AccessibleOverlay } from "@/components/ui/overlay/accessible-overlay";
@@ -30,6 +31,15 @@ const copy = {
   ...additionalLocales((translationLocale) => ({ title: localizedMessages.m6f6dac867f8e[translationLocale], body: localizedMessages.mf0c0b01e1250[translationLocale], action: localizedMessages.m0be227a6d2b5[translationLocale], working: localizedMessages.me443ebcd1615[translationLocale], checking: localizedMessages.m130d18b3ca08[translationLocale], done: localizedMessages.mbd195f4596d0[translationLocale], error: localizedMessages.m3ee403208b42[translationLocale], statusError: localizedMessages.mab6d207fe534[translationLocale], retry: localizedMessages.ma338c790832e[translationLocale], passport: localizedMessages.m1641d12dfb0d[translationLocale], later: localizedMessages.m5c5e45421dcb[translationLocale] }))
 } as const;
 
+/**
+ * 같은 사용자·같은 페이지의 좋아요 칩과 이벤트 카드는 POST를 한 번만 보낸다. 한쪽이 보내는 동안 다른 쪽도 '남기는 중'으로 잠기고,
+ * 끝나면 `notifyFanActivityUpdated`로 다른 쪽이 서버 값을 다시 읽어 함께 '완료'가 된다.
+ */
+const postingKeys = new Set<string>();
+const postingListeners = new Set<() => void>();
+const setPosting = (key: string, on: boolean) => { if (on) postingKeys.add(key); else postingKeys.delete(key); postingListeners.forEach((listener) => listener()); };
+const subscribePosting = (listener: () => void) => { postingListeners.add(listener); return () => { postingListeners.delete(listener); }; };
+
 type CheckState = "checking" | "ready" | "error";
 type ActionState = "idle" | "working" | "done" | "error";
 
@@ -37,7 +47,7 @@ type ActionState = "idle" | "working" | "done" | "error";
  * Each Privy owner and creator gets a separate stateful instance. This prevents
  * a completed CTA or an in-flight response from a prior account being reused.
  */
-export function ReactionAction({ slug, locale, variant = "card", showRewardDialog = true }: { slug: string; locale: AppLocale; variant?: "card" | "compact" | "header"; showRewardDialog?: boolean }) {
+export function ReactionAction({ slug, locale, variant = "card", showRewardDialog = true }: { slug: string; locale: AppLocale; variant?: "card" | "compact" | "header" | "event"; showRewardDialog?: boolean }) {
   const { ready, authenticated, getAccessToken, user } = usePrivy();
   const ownerId = user?.id;
   return <ReactionActionForOwner key={`${ready ? "ready" : "loading"}:${authenticated ? "authenticated" : "guest"}:${ownerId ?? "unknown"}:${slug}`} slug={slug} locale={locale} variant={variant} showRewardDialog={showRewardDialog} ready={ready} authenticated={authenticated} ownerId={ownerId} getAccessToken={getAccessToken} />;
@@ -45,7 +55,7 @@ export function ReactionAction({ slug, locale, variant = "card", showRewardDialo
 
 function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready, authenticated, ownerId, getAccessToken }: {
   showRewardDialog: boolean;
-  variant: "card" | "compact" | "header";
+  variant: "card" | "compact" | "header" | "event";
   slug: string;
   locale: AppLocale;
   ready: boolean;
@@ -80,10 +90,12 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
   }, []);
 
   const postReaction = useCallback(async (fromVerifiedAuthIntent = false) => {
-    if (!ready || !authenticated || postInFlight.current) return;
+    const postingKey = `${ownerId}:${slug}`;
+    if (!ready || !authenticated || postInFlight.current || postingKeys.has(postingKey)) return;
     if (!fromVerifiedAuthIntent && (checkStateRef.current !== "ready" || knownReaction.current)) return;
     const controller = new AbortController();
     postAbort.current = controller;
+    setPosting(postingKey, true);
     const operation = (async () => {
       setActionState("working");
       try {
@@ -107,6 +119,7 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
       } finally {
         if (postAbort.current === controller) postAbort.current = null;
         postInFlight.current = null;
+        setPosting(postingKey, false);
       }
     })();
     postInFlight.current = operation;
@@ -179,24 +192,40 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
 
   const verificationHref = result ? `/c/${slug}/verify?locale=${locale}&source=reaction&reactionId=${result.reactionId}` : `/c/${slug}/verify?locale=${locale}`;
   const checking = authenticated && checkState === "checking";
-  const sectionClass = variant === "compact" ? styles.compact : variant === "header" ? styles.pill : styles.card;
+  const sharedPosting = useSyncExternalStore(subscribePosting, () => postingKeys.has(`${ownerId}:${slug}`), () => false);
+  const working = actionState === "working" || (sharedPosting && actionState !== "done");
+  const rewardModal = actionState === "done" && result && showModal && <AccessibleOverlay open onClose={() => setShowModal(false)} labelledBy="reaction-modal-title" backdropClassName={styles.backdrop} contentClassName={styles.modal}>
+    <div className={styles.stampReward}><StampArtwork type="first_reaction" locale={locale} /></div>
+    <h2 id="reaction-modal-title">{locale === "ko" ? "첫 좋아요 스탬프를 받았어요" : translate(locale, localizedMessages.m2e387fe4594c, "You earned your First Like Stamp")}</h2>
+    {result.passportExists ? null : <p>{locale === "ko" ? "첫 좋아요 스탬프를 보관했어요. 팬 인증을 마치고 패스포트를 만들면 스탬프함에 담겨요." : translate(locale, localizedMessages.m3cadbfa88dd5, "Your First Like Stamp is saved. Complete fan verification to add it to your Fan Passport.")}</p>}
+    <Link href={(result.passportExists ? `/passports?locale=${locale}#collection` : verificationHref) as Route}>{result.passportExists ? locale === "ko" ? "내 패스포트 보기" : translate(locale, localizedMessages.mca4d55210ded, "View my Passports") : t.passport}</Link>
+    <button type="button" onClick={() => setShowModal(false)}>{t.later}</button>
+  </AccessibleOverlay>;
+  const sectionClass = variant === "compact" ? styles.compact : variant === "header" ? styles.pill : variant === "event" ? styles.event : styles.card;
   const sectionLabel = variant === "compact" || variant === "header" ? t.title : undefined;
+  if (variant === "event") {
+    // 이벤트 카드의 큰 주 버튼. 칩과 같은 요청·같은 문구를 쓰고, 끝난 뒤에는 누를 수 없는 결과 표시(FanActionStatus)로 바뀐다.
+    const star = <Star strokeWidth={1.5} />;
+    const doneLabel = locale === "ko" ? "좋아요 완료" : translate(locale, localizedMessages.reactionEventLiked, "Liked");
+    return <div className={sectionClass} id="event-like" data-reaction-complete={actionState === "done" ? "true" : undefined}>
+      {ready && !authenticated ? <AuthIntentLink className={fanActionClassName("primary", { fullWidth: true })} focusKey="event-like" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#event-like" }}>{star}{t.action}</AuthIntentLink>
+        : ready && actionState === "done" ? <FanActionStatus leadingIcon={star}>{doneLabel}</FanActionStatus>
+        : <FanAction variant="primary" fullWidth leadingIcon={star} onClick={() => void (checkState === "error" ? readExisting() : postReaction())} disabled={!ready || checking || working} loading={!ready || checking || working}>{!ready || working ? t.working : checking ? t.checking : checkState === "error" ? t.retry : t.action}</FanAction>}
+      {checkState === "error" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
+      {actionState === "error" && checkState !== "error" ? <p role="alert" className={styles.error}>{t.error}</p> : null}
+      {rewardModal}
+    </div>;
+  }
   return <section className={sectionClass} id="first-reaction" aria-label={sectionLabel} aria-labelledby={variant === "card" ? "first-reaction-title" : undefined} data-reaction-complete={actionState === "done" ? "true" : undefined}>
     {variant === "card" && <><span className={styles.icon} aria-hidden="true"><Star strokeWidth={1.5} /></span>
     <div className={styles.copy}><h2 id="first-reaction-title">{t.title}</h2><span>{t.body}</span></div></>}
     {!ready ? <button disabled><Star strokeWidth={1.5} />{t.working}</button>
       : !authenticated ? <AuthIntentLink focusKey="first-reaction" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#first-reaction" }}><Star strokeWidth={1.5} />{t.action}<ArrowRight /></AuthIntentLink>
       : checkState === "error" ? <button type="button" onClick={() => void readExisting()}><Star strokeWidth={1.5} />{t.retry}<ArrowRight /></button>
-      : <button type="button" onClick={() => void postReaction()} disabled={checking || actionState === "working" || actionState === "done"}><Star strokeWidth={1.5} />{checking ? t.checking : actionState === "working" ? t.working : actionState === "done" ? (variant !== "card" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
+      : <button type="button" onClick={() => void postReaction()} disabled={checking || working || actionState === "done"}><Star strokeWidth={1.5} />{checking ? t.checking : working ? t.working : actionState === "done" ? (variant !== "card" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
     {!showRewardDialog && <span role="status">{actionState === "done" ? t.done : ""}</span>}
     {checkState === "error" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
     {actionState === "error" && checkState !== "error" ? <p role="alert" className={styles.error}>{t.error}</p> : null}
-    {actionState === "done" && result && showModal && <AccessibleOverlay open onClose={() => setShowModal(false)} labelledBy="reaction-modal-title" backdropClassName={styles.backdrop} contentClassName={styles.modal}>
-      <div className={styles.stampReward}><StampArtwork type="first_reaction" locale={locale} /></div>
-      <h2 id="reaction-modal-title">{locale === "ko" ? "첫 좋아요 스탬프를 받았어요" : translate(locale, localizedMessages.m2e387fe4594c, "You earned your First Like Stamp")}</h2>
-      {result.passportExists ? null : <p>{locale === "ko" ? "첫 좋아요 스탬프를 보관했어요. 팬 인증을 마치고 패스포트를 만들면 스탬프함에 담겨요." : translate(locale, localizedMessages.m3cadbfa88dd5, "Your First Like Stamp is saved. Complete fan verification to add it to your Fan Passport.")}</p>}
-      <Link href={(result.passportExists ? `/passports?locale=${locale}#collection` : verificationHref) as Route}>{result.passportExists ? locale === "ko" ? "내 패스포트 보기" : translate(locale, localizedMessages.mca4d55210ded, "View my Passports") : t.passport}</Link>
-      <button type="button" onClick={() => setShowModal(false)}>{t.later}</button>
-    </AccessibleOverlay>}
+    {rewardModal}
   </section>;
 }
