@@ -1,4 +1,4 @@
--- ONCHAIN-STAMPS-CAPFIX-1117: acceptance test for the recovery dispatch cap (20261229002000). Before that migration this
+-- ONCHAIN-STAMPS-CAPFIX-1117: acceptance test for the recovery dispatch cap (20261231102000). Before that migration this
 -- reproduced 501 recovery reservations on one UTC day (Codex review 11/17).
 -- Disposable clean-chain DB only; everything rolls back.
 do $$ begin if inet_server_addr() is not null then raise exception 'Disposable Unix-socket database required'; end if; end $$;
@@ -62,7 +62,7 @@ select pg_temp.mkuser(1), pg_temp.mkuser(2), pg_temp.mkuser(3), pg_temp.mkcel(1,
 create temporary table legacy_before as select count(*) n from public.blockchain_jobs where entity_type = 'community_stamp';
 
 update public.fan_action_producer_routes set enabled=true,enabled_at=now();
--- Acceptance (ONCHAIN-STAMPS-CAPFIX-1117, 20261229002000): 500 items enqueued on an earlier UTC day plus 1 enqueued today are
+-- Acceptance (ONCHAIN-STAMPS-CAPFIX-1117, 20261231102000): 500 items enqueued on an earlier UTC day plus 1 enqueued today are
 -- admitted on one UTC day. Actual recovery reservations must stop at 500 and the shared budget must keep room for new actions.
 do $$
 declare i integer; h text; r record; admitted integer:=0; deferred uuid; v_day date:=(clock_timestamp() at time zone 'UTC')::date;

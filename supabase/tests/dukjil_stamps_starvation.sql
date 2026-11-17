@@ -1,4 +1,4 @@
--- ONCHAIN-STAMPS-IMPL-1117 (20261229000000): dukjil stamps on the native lane, held stamps, backlog recovery manifest.
+-- ONCHAIN-STAMPS-IMPL-1117 (20261231100000): dukjil stamps on the native lane, held stamps, backlog recovery manifest.
 -- Disposable clean-chain DB only; everything rolls back.
 do $$ begin if inet_server_addr() is not null then raise exception 'Disposable Unix-socket database required'; end if; end $$;
 begin;

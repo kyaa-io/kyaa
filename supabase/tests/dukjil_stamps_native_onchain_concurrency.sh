@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ONCHAIN-STAMPS-IMPL-1117 races on a disposable clean-chain DB with 20261229000000 applied (commits fixtures; never a shared DB).
+# ONCHAIN-STAMPS-IMPL-1117 races on a disposable clean-chain DB with 20261231100000 applied (commits fixtures; never a shared DB).
 # 1. The same dukjil stamp issued from two sessions -> one stamp, one outbox.
 # 2. Two recovery runs at once under a daily cap of 12 -> 12 enqueued in total, one outbox per stamp, rerun adds nothing.
 # 3. A registration and a release at once -> each held stamp gets exactly one outbox.
