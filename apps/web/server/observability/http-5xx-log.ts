@@ -11,9 +11,19 @@ import path from "node:path";
 
 export const API_5XX_EVENT = "http_5xx";
 export const API_SLOW_EVENT = "http_slow";
+export const API_AUTH_DENIED_EVENT = "http_auth_denied";
 export const UNMATCHED_ROUTE = "(unmatched)";
 /** 이 시간(ms) 이상 걸린 5xx 아닌 응답을 `http_slow` 한 줄로 남긴다. 평소 p95 0.74초의 느린 요청이 어느 경로인지 찾는 용도. */
 export const SLOW_REQUEST_MS = 500;
+
+/** 같은 route+status의 `http_auth_denied` 줄은 프로세스당 이 시간 안에 최대 AUTH_DENIED_MAX_LINES줄만 남긴다. */
+export const AUTH_DENIED_WINDOW_MS = 60_000;
+export const AUTH_DENIED_MAX_LINES = 5;
+const AUTH_DENIED_MAX_KEYS = 1000;
+// server/auth/fan-session-cookie.ts의 FAN_SESSION_COOKIE와 같은 값. 그 파일은 server-only라 여기서 가져오지 않는다(시험이 값을 맞춰 본다).
+export const FAN_SESSION_COOKIE_NAME = "__Host-kyaa-fan-session";
+
+export type AuthKind = "fan-session" | "bearer" | "none";
 
 type RouteMatcher = { page: string; regex: RegExp };
 type RequestErrorInfo = { name: string; code: string | null; digest: string | null; routePath: string | null };
@@ -39,6 +49,18 @@ export type HttpSlowLogLine = {
   durationMs: number;
   /** RSC(화면 이동·prefetch) 요청인지. 값은 `_rsc` 쿼리나 `rsc` 헤더의 존재만 보고, 내용은 남기지 않는다. */
   rsc: boolean;
+  requestId: string | null;
+};
+
+export type HttpAuthDeniedLogLine = {
+  event: typeof API_AUTH_DENIED_EVENT;
+  route: string;
+  method: string;
+  status: 401 | 403;
+  /** 요청이 어떤 종류의 인증을 들고 왔는지만. 쿠키·토큰 값과 회원 식별자는 남기지 않는다. */
+  authKind: AuthKind;
+  /** 이 줄까지 같은 route+status 거부 횟수(직전 창에서 제한으로 생략된 횟수 포함). */
+  count: number;
   requestId: string | null;
 };
 
@@ -140,6 +162,62 @@ export function buildHttpSlowLogLine(input: {
   };
 }
 
+export function authKindFrom(headers: Record<string, string | string[] | undefined>): AuthKind {
+  const cookie = headerValue(headers.cookie) ?? "";
+  if (cookie.split(";").some((part) => part.trim().startsWith(`${FAN_SESSION_COOKIE_NAME}=`))) return "fan-session";
+  if (/^Bearer[ \t]+\S/i.test(headerValue(headers.authorization)?.trim() ?? "")) return "bearer";
+  return "none";
+}
+
+export function buildHttpAuthDeniedLogLine(input: {
+  url: string | undefined;
+  method: string | undefined;
+  status: 401 | 403;
+  count: number;
+  headers: Record<string, string | string[] | undefined>;
+  matchers: readonly RouteMatcher[];
+}): HttpAuthDeniedLogLine {
+  const method = (input.method ?? "").toUpperCase();
+  return {
+    event: API_AUTH_DENIED_EVENT,
+    route: resolveRouteTemplate(input.url, input.matchers),
+    method: METHODS.has(method) ? method : "OTHER",
+    status: input.status,
+    authKind: authKindFrom(input.headers),
+    count: input.count,
+    requestId: requestIdFrom(input.headers),
+  };
+}
+
+/** route+status마다 창(1분) 안에서 최대 maxLines줄만 허용한다. 제한으로 생략된 횟수는 다음 창의 첫 줄 count에 합산한다. */
+export function createAuthDeniedLimiter(options: { windowMs?: number; maxLines?: number; now?: () => number } = {}) {
+  const windowMs = options.windowMs ?? AUTH_DENIED_WINDOW_MS;
+  const maxLines = options.maxLines ?? AUTH_DENIED_MAX_LINES;
+  const now = options.now ?? Date.now;
+  const windows = new Map<string, { start: number; lines: number; suppressed: number }>();
+  return function admit(route: string, status: number): number | null {
+    const at = now();
+    const key = `${status} ${route}`;
+    let entry = windows.get(key);
+    if (!entry || at - entry.start >= windowMs) {
+      if (!entry && windows.size >= AUTH_DENIED_MAX_KEYS) {
+        for (const [k, v] of windows) if (at - v.start >= windowMs) windows.delete(k);
+        if (windows.size >= AUTH_DENIED_MAX_KEYS) return null;
+      }
+      entry = { start: at, lines: 0, suppressed: entry?.suppressed ?? 0 };
+      windows.set(key, entry);
+    }
+    if (entry.lines >= maxLines) {
+      entry.suppressed += 1;
+      return null;
+    }
+    entry.lines += 1;
+    const count = 1 + entry.suppressed;
+    entry.suppressed = 0;
+    return count;
+  };
+}
+
 /** instrumentation.onRequestError에서 부른다. 응답 훅이 같은 요청의 5xx 줄에 오류 정보를 합친다. */
 export function recordRequestError(error: unknown, context: { routePath?: string }): void {
   const state = requestState.getStore();
@@ -153,6 +231,7 @@ export function installHttp5xxLog(options: {
   matchers?: readonly RouteMatcher[];
   write?: (line: string) => void;
   slowMs?: number;
+  authDeniedLimiter?: (route: string, status: number) => number | null;
 } = {}): void {
   const proto = http.Server.prototype as unknown as { emit: Emit; [INSTALLED]?: boolean };
   // dev 서버는 instrumentation을 다시 읽을 수 있다. 한 번만 감싼다.
@@ -162,6 +241,7 @@ export function installHttp5xxLog(options: {
   const matchers = options.matchers ?? loadRouteMatchers();
   const write = options.write ?? ((line: string) => console.error(line));
   const slowMs = options.slowMs ?? SLOW_REQUEST_MS;
+  const admitAuthDenied = options.authDeniedLimiter ?? createAuthDeniedLimiter();
   const originalEmit = proto.emit;
 
   proto.emit = function emit(this: http.Server, event: string | symbol, ...args: unknown[]): boolean {
@@ -171,6 +251,20 @@ export function installHttp5xxLog(options: {
     const startedAt = performance.now();
     res.once("finish", () => {
       if (res.statusCode < 500) {
+        if (res.statusCode === 401 || res.statusCode === 403) {
+          const route = resolveRouteTemplate(req.url, matchers);
+          const count = admitAuthDenied(route, res.statusCode);
+          if (count !== null) {
+            write(JSON.stringify(buildHttpAuthDeniedLogLine({
+              url: req.url,
+              method: req.method,
+              status: res.statusCode,
+              count,
+              headers: req.headers,
+              matchers,
+            })));
+          }
+        }
         const durationMs = performance.now() - startedAt;
         if (durationMs >= slowMs) {
           write(JSON.stringify(buildHttpSlowLogLine({
