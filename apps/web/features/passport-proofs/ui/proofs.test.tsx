@@ -10,7 +10,7 @@ import { JjinfanTitle, ProofBoardList, ProofHistory, ProofsScreen } from "./proo
 import { MyProofRows, ProofMethods, ProofPhotoFeed, ProofReward, PublicProofsTab } from "./proofs-tab";
 import { APP_LOCALES } from "@/i18n/locales";
 
-const authState = vi.hoisted(() => ({ authenticated: false, getAccessToken: async () => "session-token" as string | null }));
+const authState = vi.hoisted(() => ({ authenticated: false, user: { id: "member-a" } as { id: string } | null, getAccessToken: async () => "session-token" as string | null }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => ({ ready: true, ...authState }) }));
 const query = vi.hoisted(() => ({ value: "" }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(query.value) }));
@@ -304,6 +304,114 @@ describe("a lost submit response (PROOF-RETRY-1116)", () => {
   });
 });
 
+describe("a lost resubmit response (PROOF-RESUBMIT-IDEMP-1117)", () => {
+  const mission = "55555555-5555-4555-8555-555555555555";
+  const submission = "11111111-1111-4111-8111-111111111111";
+  const ups = ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa4"];
+  type Saved = { hash: string; revision: number };
+  /** A server that stores the resubmit, then lets the first answer get lost; a resend of the same key and body is answered from the record. */
+  const setup = (options: { lose?: boolean; fail?: number } = {}) => {
+    const saved = new Map<string, Saved>();
+    const requests: Array<Record<string, unknown>> = [];
+    let uploads = 0, revision = 3, status = "changes_requested", lose = options.lose ?? true, fail = options.fail;
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/uploads")) return Response.json({ uploadId: ups[uploads++] });
+      if (url.includes("/missions")) return Response.json({ items: [{ missionId: mission, proofType: "receipt", platform: null, submittable: true, unavailableReason: null, closesAt: "2027-01-01T00:00:00Z" }] });
+      if (url.includes("/posts")) return Response.json({ items: [], nextBefore: null });
+      if (url.endsWith(`/api/me/proofs/${submission}/resubmit`) && init?.method === "POST") {
+        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        requests.push(body);
+        if (fail) return Response.json({ error: { code: "REVISION_CONFLICT" } }, { status: fail });
+        const hash = JSON.stringify([body.expectedRevision, body.uploadIds, body.imagePhash, body.note ?? null]);
+        const previous = saved.get(String(body.requestKey));
+        if (previous) {
+          if (previous.hash !== hash) return Response.json({ error: { code: "IDEMPOTENCY_MISMATCH" } }, { status: 409 });
+          return Response.json({ submissionId: submission, status: "pending", revision: previous.revision, replayed: true });
+        }
+        if (status !== "changes_requested" || body.expectedRevision !== revision) return Response.json({ error: { code: "REVISION_CONFLICT" } }, { status: 409 });
+        revision += 1; status = "pending";
+        saved.set(String(body.requestKey), { hash, revision });
+        if (lose) { lose = false; throw new TypeError("response lost after save"); }
+        return Response.json({ submissionId: submission, status: "pending", revision, replayed: false });
+      }
+      if (url.includes("/api/me/proofs?creator=")) return Response.json({ items: [item({ submissionId: submission, status, revision, reason: status === "changes_requested" ? "금액이 가려졌어요" : null })] });
+      return Response.json({ items: [] });
+    }));
+    Object.assign(URL, { createObjectURL: () => "blob:proof", revokeObjectURL: () => {} });
+    authState.authenticated = true;
+    authState.user = { id: "member-a" };
+    return { requests, uploadCount: () => uploads, revision: () => revision };
+  };
+  const open = async (container: HTMLElement) => {
+    fireEvent.click(await screen.findByRole("button", { name: "다시 제출" }));
+    await screen.findByText("이름·주소·카드번호 등 개인정보를 가려서 올려 주세요");
+    fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["x"], "a.png", { type: "image/png" }), new File(["y"], "b.png", { type: "image/png" })] } });
+    fireEvent.click(screen.getByLabelText("개인정보를 모두 가렸어요 (필수)"));
+  };
+  const press = async () => {
+    const button = () => screen.getAllByRole("button", { name: "다시 제출" })[0] as HTMLButtonElement;
+    await waitFor(() => expect(button().disabled).toBe(false));
+    fireEvent.click(button());
+    await waitFor(() => expect(screen.queryByRole("button", { name: proofsText("ko", "pfSubmitting") })).toBeNull());
+  };
+  afterEach(() => { vi.unstubAllGlobals(); authState.user = { id: "member-a" }; });
+
+  it("resends the saved resubmit with the same key and body: no new upload, no second revision, the first success shows", async () => {
+    const seen = setup();
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    await open(container);
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(1));
+    expect(seen.uploadCount()).toBe(2);
+    expect(seen.revision()).toBe(4);
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(2));
+    expect(seen.requests[1]).toEqual(seen.requests[0]);
+    expect(seen.requests[1]).toMatchObject({ requestKey: expect.any(String), expectedRevision: 3, uploadIds: ups.slice(0, 2), uploadId: ups[0] });
+    expect(seen.uploadCount()).toBe(2);
+    expect(seen.revision()).toBe(4);
+    await waitFor(() => expect(screen.getAllByText("심사 중")).toHaveLength(1));
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+  it("starts a new draft (new key, new uploads) when a field changes after a failure", async () => {
+    const seen = setup();
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    await open(container);
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(1));
+    fireEvent.change(screen.getByLabelText("한마디 (선택)"), { target: { value: "바꿈" } });
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(2));
+    expect(seen.requests[1].requestKey).not.toBe(seen.requests[0].requestKey);
+    expect(seen.uploadCount()).toBe(4);
+  });
+  it("starts a new draft when another member is signed in", async () => {
+    const seen = setup();
+    const { container, rerender } = render(<ProofsScreen locale="ko" slug="mina" />);
+    await open(container);
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(1));
+    authState.user = { id: "member-b" };
+    rerender(<ProofsScreen locale="ko" slug="mina" />);
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(2));
+    expect(seen.requests[1].requestKey).not.toBe(seen.requests[0].requestKey);
+    expect(seen.uploadCount()).toBe(4);
+  });
+  it("drops the draft after an answer that proves nothing was stored", async () => {
+    const seen = setup({ fail: 409 });
+    const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
+    await open(container);
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(1));
+    await press();
+    await waitFor(() => expect(seen.requests).toHaveLength(2));
+    expect(seen.requests[1].requestKey).not.toBe(seen.requests[0].requestKey);
+    expect(seen.uploadCount()).toBe(4);
+  });
+});
+
 describe("proof API calls carry the session token", () => {
   const ok = (body: unknown) => Response.json(body);
   const uuid = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
@@ -322,7 +430,7 @@ describe("proof API calls carry the session token", () => {
     const getToken = async () => "session-token";
     await uploadProofImage(getToken, uuid, new Blob(["x"]));
     await submitProof(getToken, { creator: "mina", proofType: "ticket", uploadId: uuid, publishConsent: false, amountVisible: null, imagePhash: [] }).catch(() => undefined);
-    await resubmitProof(getToken, uuid, { expectedRevision: 1, uploadId: uuid, imagePhash: [] }).catch(() => undefined);
+    await resubmitProof(getToken, uuid, { requestKey: uuid, expectedRevision: 1, uploadId: uuid, uploadIds: [uuid], imagePhash: [] }).catch(() => undefined);
     await listMyProofs(getToken, "mina").catch(() => undefined);
     await listProofMissions(getToken, "mina").catch(() => undefined);
     expect(calls(fetchMock)).toHaveLength(5);
@@ -339,7 +447,7 @@ describe("proof API calls carry the session token", () => {
     for (const run of [
       () => uploadProofImage(none, uuid, new Blob(["x"])),
       () => submitProof(none, { creator: "mina", proofType: "ticket", uploadId: uuid, publishConsent: false, amountVisible: null, imagePhash: [] }),
-      () => resubmitProof(none, uuid, { expectedRevision: 1, uploadId: uuid, imagePhash: [] }),
+      () => resubmitProof(none, uuid, { requestKey: uuid, expectedRevision: 1, uploadId: uuid, uploadIds: [uuid], imagePhash: [] }),
       () => listMyProofs(none, "mina"),
       () => listProofMissions(none, "mina"),
     ]) await expect(run()).rejects.toMatchObject({ kind: "auth", status: 401 });

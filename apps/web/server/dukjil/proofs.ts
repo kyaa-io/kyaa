@@ -117,9 +117,11 @@ export function createProofHandlers(deps: ProofDependencies) {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
       if (!UUID.test(submissionId)) throw new SyntaxError("submission id");
       const body = proofResubmitBodySchema.parse(await boundedJson(request, 4096));
-      const raw = await deps.rpc(body.uploadIds ? "resubmit_certification_proof_multi" : "resubmit_certification_proof", {
-        p_user: appUserId, p_submission_id: submissionId, p_expected_revision: body.expectedRevision, ...(body.uploadIds ? { p_upload_ids: body.uploadIds } : { p_upload_id: body.uploadId }),
-        p_image_phash: body.imagePhash, p_pii_detected: containsPersonalInfo(body.note), p_post_body: postBody(request, body.note, body.locale),
+      const raw = await deps.rpc("resubmit_certification_proof_keyed", {
+        p_user: appUserId, p_submission_id: submissionId, p_request_key: body.requestKey, p_expected_revision: body.expectedRevision,
+        p_upload_ids: body.uploadIds, p_image_phash: body.imagePhash,
+        p_request_hash: proofRequestHash({ submissionId, expectedRevision: body.expectedRevision, uploadIds: body.uploadIds, imagePhash: body.imagePhash, note: body.note ?? null }),
+        p_pii_detected: containsPersonalInfo(body.note), p_post_body: postBody(request, body.note, body.locale),
       });
       return Response.json(command(raw), { headers: privateHeaders });
     }),
