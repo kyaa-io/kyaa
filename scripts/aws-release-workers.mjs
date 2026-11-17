@@ -117,7 +117,8 @@ export async function main() {
   await mkdir('work/aws-release/worker-backups', { recursive: true });
   const folder = await mkdtemp(join(process.cwd(), 'work/aws-release/worker-backups/run-'));
   try {
-    execFileSync('tar', ['-x', '-C', folder], { input: execFileSync('git', ['archive', release.sourceSha], { maxBuffer: 256*1024*1024 }) });
+    // The repository archive is larger than any in-memory buffer (ENOBUFS at 256 MB, DEV run 44115795913), so stream it straight into tar.
+    execFileSync('bash', ['-o', 'pipefail', '-c', 'git archive "$1" | tar -x -C "$2"', 'archive', release.sourceSha, folder], { stdio: ['ignore', 'ignore', 'pipe'] });
     execFileSync('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund', '--workspace', '@byus/worker', '--include-workspace-root'], { cwd: folder, stdio: 'pipe' });
     execFileSync(process.execPath, ['apps/worker/scripts/build-lambda.mjs'], { cwd: folder, stdio: 'pipe' });
     const prepared = await prepareWorkers(release.sourceSha, folder, aws, environment);
@@ -125,4 +126,4 @@ export async function main() {
     await writeFile('work/aws-release/worker-backups/applied.json', JSON.stringify({ sourceSha: release.sourceSha, runId: process.env.GITHUB_RUN_ID, functions: [] }), { mode: 0o600 });
   } finally { await rm(join(folder, 'node_modules'), { recursive: true, force: true }); }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(() => { console.error('WORKER_RELEASE_FAILED; 수동 확인 필요: inspect AWS state before retry'); process.exitCode = 1; });
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(error => { console.error(`WORKER_RELEASE_FAILED: ${String(error?.code ?? '')} ${String(error?.message ?? error).split('\n')[0].slice(0, 300)}; 수동 확인 필요: inspect AWS state before retry`); process.exitCode = 1; });
