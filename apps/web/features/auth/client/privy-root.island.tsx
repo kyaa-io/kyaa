@@ -60,7 +60,7 @@ function PrivyBridgeProvider({ children }: { children: ReactNode }) {
     refreshUser: () => refreshUser(),
     createWallet: () => Promise.resolve(createWallet({ createAdditional: false })),
   }), [auth, createWallet, initOAuth, login, oauthLoading, refreshUser, subscribeOAuth]);
-  return <PrivyBridgeContext.Provider value={value}><FanSessionKeeper ownerId={userId} getPrivyAccessToken={getAccessToken} />{children}</PrivyBridgeContext.Provider>;
+  return <PrivyBridgeContext.Provider value={value}><FanSessionKeeper ownerId={userId} getPrivyAccessToken={getAccessToken} onAccountUnavailable={signOut} />{children}</PrivyBridgeContext.Provider>;
 }
 
 export default function PrivyAuthRoot({ appId, appleLoginEnabled, testAccountLoginEnabled, children }: {

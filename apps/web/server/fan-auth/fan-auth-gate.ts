@@ -8,6 +8,7 @@ import {
 import { AppleLifecycleUnavailableError } from "../auth/apple-notifications/apple-lifecycle";
 import { authenticateEmailAccessToken, EMAIL_TOKEN_PREFIX } from "../auth/email/email-auth";
 import { FAN_SESSION_BEARER, FanSessionRejectedError, fanSessionRevoked } from "../auth/fan-session-cookie";
+import { recordAuthDeniedReason } from "../observability/auth-denied-reason";
 import type { IdentityRepository } from "../repositories/identity-repository";
 
 export type FanAuthRepository = Pick<IdentityRepository, "findUserByPrivyId">;
@@ -73,7 +74,10 @@ export async function authorizeFanRequest(input: {
     let user;
     try { user = await input.repository.findUserByPrivyId(owner.privyUserId); }
     catch { throw new FanAuthUnavailableError(); }
-    if (!user || user.id !== owner.appUserId || user.status !== "active") throw new AuthError("AUTHENTICATION_REQUIRED", 403, "Fan access is unavailable");
+    if (!user || user.id !== owner.appUserId || user.status !== "active") {
+      recordAuthDeniedReason(user && user.id === owner.appUserId ? "user_inactive" : "user_missing");
+      throw new AuthError("AUTHENTICATION_REQUIRED", 403, "Fan access is unavailable");
+    }
     return { appUserId: owner.appUserId };
   }
   const identity = await authenticate(token, input.verifier);
@@ -85,11 +89,13 @@ export async function authorizeFanRequest(input: {
   }
 
   if (!user || user.status !== "active") {
+    recordAuthDeniedReason(user ? "user_inactive" : "user_missing");
     throw new AuthError("AUTHENTICATION_REQUIRED", 403, "Fan access is unavailable");
   }
 
   if (identity.fanSession && (identity.fanSession.appUserId !== user.id ||
     fanSessionRevoked(identity.fanSession.authenticatedAt, user.sessionsValidAfter))) {
+    recordAuthDeniedReason("fan_session_revoked");
     throw new AuthError("AUTHENTICATION_REQUIRED", 401, "Authentication is required");
   }
   return { appUserId: user.id };

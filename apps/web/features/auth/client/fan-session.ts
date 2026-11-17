@@ -4,6 +4,8 @@ const HINT_KEY = "kyaa:fan-session";
 export const RECHECK_AFTER_MS = 24 * 60 * 60_000;
 /** Covers connecting, headers and reading the body. A request that outlives it is aborted, never left running. */
 export const FAN_SESSION_REQUEST_TIMEOUT_MS = 10_000;
+/** Body code of the 403 that says the account is gone or disabled. Same value as server/auth/fan-session-route.ts. */
+export const FAN_ACCOUNT_UNAVAILABLE = "FAN_ACCOUNT_UNAVAILABLE";
 interface Hint { pid: string; exp: number; at: number }
 export function readFanSessionHint(now = Date.now()): Hint | null {
   try {
@@ -23,6 +25,8 @@ function writeHint(hint: Hint | null) {
 }
 let generation = 0;
 let activePid: string | null = null;
+/** The server said this account is unavailable. No more exchanges for it until the person signs out or another account signs in. */
+let unavailablePid: string | null = null;
 let pendingFetch: { operation: Promise<unknown>; abort: () => void } | null = null;
 let running: Promise<void> | null = null;
 async function exchange(token: string, pid: string, ownerGeneration: number, preserveHintOnUnauthorized = false): Promise<boolean> {
@@ -44,6 +48,12 @@ async function exchange(token: string, pid: string, ownerGeneration: number, pre
       const body = await response.json().catch(() => null) as { error?: { code?: string } } | null;
       // A body that stalled or was aborted says nothing about the verdict, so the hint stays.
       if (controller.signal.aborted || generation !== ownerGeneration) return false;
+      if (response.status === 403 && body?.error?.code === FAN_ACCOUNT_UNAVAILABLE) {
+        unavailablePid = pid;
+        writeHint(null);
+        window.dispatchEvent(new Event("kyaa:fan-account-unavailable"));
+        return false;
+      }
       if (body?.error?.code !== "PRIVY_PROOF_REQUIRED" && !(response.status === 401 && preserveHintOnUnauthorized)) writeHint(null);
     }
     return false;
@@ -54,6 +64,7 @@ async function exchange(token: string, pid: string, ownerGeneration: number, pre
 }
 /** Runs once per page entry. Cookie renewal never waits for Privy. Daily proof refresh runs afterwards. */
 export function renewFanSession(getPrivyToken: () => Promise<string | null>, pid: string): Promise<void> {
+  if (unavailablePid === pid) return Promise.resolve();
   if (activePid !== pid) { cancelFanSessionMaintenance(); activePid = pid; }
   if (running) return running;
   const ownerGeneration = generation;
@@ -64,6 +75,7 @@ export function renewFanSession(getPrivyToken: () => Promise<string | null>, pid
     const hint = readFanSessionHint();
     if (hint?.pid === pid) {
       await exchange(FAN_SESSION_BEARER, pid, ownerGeneration);
+      if (unavailablePid === pid) return;
       if (readFanSessionHint()?.pid === pid && Date.now() - hint.at < RECHECK_AFTER_MS) return;
     }
     if (generation !== ownerGeneration) return;
@@ -133,6 +145,8 @@ export function watchFanSessionLoss(getPrivyToken: () => Promise<string | null>,
 /** Abort any renewal and wait until it has settled, so no cookie response can arrive after the delete. Both requests are time-limited. */
 export async function clearFanSession(): Promise<void> {
   const previousHint = readFanSessionHint();
+  const previousUnavailable = unavailablePid;
+  unavailablePid = null;
   cancelFanSessionMaintenance();
   writeHint(null);
   const inflight = pendingFetch;
@@ -143,6 +157,6 @@ export async function clearFanSession(): Promise<void> {
   try {
     const response = await fetch("/api/auth/fan-session", { method: "DELETE", cache: "no-store", credentials: "same-origin", keepalive: true, signal: controller.signal });
     if (!response.ok) throw new Error("Session sign-out failed");
-  } catch (error) { writeHint(previousHint); throw error; }
+  } catch (error) { writeHint(previousHint); unavailablePid = previousUnavailable; throw error; }
   finally { clearTimeout(timer); }
 }

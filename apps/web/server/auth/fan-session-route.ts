@@ -3,6 +3,7 @@ import { AuthError } from "../../features/auth/domain/auth-errors";
 import { mapPrivyIdentity } from "../../features/auth/domain/identity";
 import { EMAIL_TOKEN_PREFIX } from "./email/email-auth";
 import { AppleLifecycleUnavailableError } from "./apple-notifications/apple-lifecycle";
+import { recordAuthDeniedReason, recordAuthDeniedReasonFromError } from "../observability/auth-denied-reason";
 import { PrivyUnavailableError } from "./privy-unavailable";
 import type { FanAuthRepository } from "../fan-auth/fan-auth-gate";
 import type { ResolvedFanSession } from "./privy-node-verifier";
@@ -23,6 +24,7 @@ export interface FanSessionRouteDependencies {
   repository: FanAuthRepository;
   now?: () => number;
 }
+export const FAN_ACCOUNT_UNAVAILABLE = "FAN_ACCOUNT_UNAVAILABLE";
 const headers = (cookie?: string) => {
   const result = new Headers({ "cache-control": "no-store", "referrer-policy": "no-referrer", vary: "Authorization, Cookie" });
   if (cookie) result.append("set-cookie", cookie);
@@ -43,7 +45,7 @@ function sameOrigin(request: Request, appOrigin: string): boolean {
  */
 function failure(error: unknown, unexpected: Response): Response {
   if (error instanceof AppleLifecycleUnavailableError || error instanceof PrivyUnavailableError) return reply(503);
-  if (error instanceof AuthError && error.status === 403) return reply(403, clearFanSessionCookieHeader());
+  if (error instanceof AuthError && error.status === 403) { recordAuthDeniedReasonFromError(error); return reply(403, clearFanSessionCookieHeader()); }
   if (error instanceof AuthError || error instanceof FanSessionRejectedError) return reply(401, clearFanSessionCookieHeader());
   return unexpected;
 }
@@ -56,7 +58,7 @@ export function createFanSessionRoute(deps: FanSessionRouteDependencies) {
   const cookie = (request: Request) => deps.key ? openFanSession(readFanSessionCookie(request.headers.get("cookie")), deps.key, now()) : null;
   return {
     async POST(request: Request): Promise<Response> {
-      if (!sameOrigin(request, deps.appOrigin)) return reply(403);
+      if (!sameOrigin(request, deps.appOrigin)) { recordAuthDeniedReason("same_origin"); return reply(403); }
       if (deps.enabled === false) return Response.json({ session: false }, { headers: headers(clearFanSessionCookieHeader()) });
       if (!deps.key) return reply(503);
       const token = bearer(request);
@@ -85,8 +87,12 @@ export function createFanSessionRoute(deps: FanSessionRouteDependencies) {
       }
       let user;
       try { user = await deps.repository.findUserByPrivyId(payload.pid); } catch { return reply(503); }
-      if (!user || user.status !== "active") return reply(403, clearFanSessionCookieHeader());
-      if ((previous && previous.uid !== user.id) || fanSessionRevoked(payload.sat!, user.sessionsValidAfter)) return reply(401, clearFanSessionCookieHeader());
+      // The account is gone or disabled: say so in the body so the client signs out instead of asking again.
+      if (!user || user.status !== "active") {
+        recordAuthDeniedReason(user ? "user_inactive" : "user_missing");
+        return Response.json({ error: { code: FAN_ACCOUNT_UNAVAILABLE } }, { status: 403, headers: headers(clearFanSessionCookieHeader()) });
+      }
+      if ((previous && previous.uid !== user.id) || fanSessionRevoked(payload.sat!, user.sessionsValidAfter)) { recordAuthDeniedReason("fan_session_revoked"); return reply(401, clearFanSessionCookieHeader()); }
       try {
         if (await deps.isPrivileged(user.id, user.verifiedEmail) || (payload.em !== user.verifiedEmail && payload.em !== null && await deps.isPrivileged(user.id, payload.em))) return new Response(JSON.stringify({ session: false }), { status: 200, headers: headers(clearFanSessionCookieHeader()) });
       } catch { return reply(503); }
@@ -99,7 +105,7 @@ export function createFanSessionRoute(deps: FanSessionRouteDependencies) {
       return new Response(JSON.stringify({ session: true, exp: exp * 1000, authenticatedAt: payload.sat }), { status: 200, headers: responseHeaders });
     },
     async DELETE(request: Request): Promise<Response> {
-      if (!sameOrigin(request, deps.appOrigin)) return reply(403);
+      if (!sameOrigin(request, deps.appOrigin)) { recordAuthDeniedReason("same_origin"); return reply(403); }
       const previous = cookie(request);
       if (previous) {
         try { await deps.revokeSessions(previous.uid, new Date(now()).toISOString()); }

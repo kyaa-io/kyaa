@@ -3,6 +3,7 @@ import { refreshLocalSignupEvent } from "../signup-event/refresh";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { createClient } from "@/server/data/client";
+import { recordAuthDeniedReason } from "../observability/auth-denied-reason";
 import type { CanonicalPrivyIdentity, CanonicalWallet, VerifiedIdentityProviderAccount } from "../../features/auth/domain/identity";
 import {
   preferredLocaleSchema,
@@ -87,6 +88,7 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
       p_wallet_address: wallet.address,
     }));
     if (error?.message && /ACCOUNT_DELETED|FAN_WEB_ACTIVE_ACCOUNT_REQUIRED/.test(error.message)) {
+      recordAuthDeniedReason(/ACCOUNT_DELETED/.test(error.message) ? "account_deleted" : "active_account_required");
       throw new AuthError("AUTHENTICATION_REQUIRED", 403, "Account is unavailable");
     }
     if (error) throwStageError("session.identity", "Identity synchronization failed");
