@@ -54,8 +54,20 @@ const failures = [];
 if (counts.critical > baseline.maximum.critical) {
   failures.push(`critical vulnerabilities: ${counts.critical} (allowed ${baseline.maximum.critical})`);
 }
-if (counts.high > baseline.maximum.high) {
-  failures.push(`high vulnerabilities: ${counts.high} (allowed ${baseline.maximum.high})`);
+// Time-boxed exceptions for high advisories with no compatible fix yet (user-approved, each with an end date in KST).
+const todayKst = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+const temporaryHigh = new Map((baseline.temporaryHighAdvisories ?? [])
+  .filter((entry) => Number.isInteger(entry?.source) && typeof entry.until === "string" && todayKst <= entry.until)
+  .map((entry) => [entry.source, entry]));
+const highAdvisories = [...new Set(Object.values(report.vulnerabilities ?? {})
+  .flatMap((vulnerability) => (vulnerability?.via ?? [])
+    .filter((via) => typeof via === "object" && via !== null && Number.isInteger(via.source) && via.severity === "high")
+    .map((via) => via.source)))];
+const uncoveredHigh = highAdvisories.filter((source) => !temporaryHigh.has(source));
+if (counts.high > baseline.maximum.high && (highAdvisories.length === 0 || uncoveredHigh.length > 0)) {
+  failures.push(`high vulnerabilities: ${counts.high} (allowed ${baseline.maximum.high})${uncoveredHigh.length ? `; advisories without an active exception: ${uncoveredHigh.sort((l, r) => l - r).join(", ")}` : ""}`);
+} else if (counts.high > baseline.maximum.high) {
+  process.stderr.write(`npm audit: ${counts.high} high findings covered by time-boxed exceptions ${highAdvisories.map((s) => `${s} until ${temporaryHigh.get(s).until}`).join(", ")}\n`);
 }
 if (counts.moderate > baseline.maximum.moderate) {
   failures.push(`moderate vulnerabilities: ${counts.moderate} (baseline ${baseline.maximum.moderate})`);
