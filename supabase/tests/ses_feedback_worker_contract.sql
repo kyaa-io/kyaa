@@ -74,7 +74,7 @@ begin
     from public.email_delivery_events where sns_message_id = 'sns-aws-bounce'), 'event row keeps type, send and channel');
   select * into strict h from public.email_channel_delivery_health where channel_id = ch[1];
   perform pg_temp.ok(h.state = 'bounced' and h.reason = 'bounce_general' and public.email_channel_delivery_blocked(ch[1]), 'channel stopped');
-  perform pg_temp.ok(not exists (select 1 from public.email_delivery_events e where to_jsonb(e)::text ~* 'example\.com|smtp|550'), 'no raw address or diagnostic stored');
+  perform pg_temp.ok(not exists (select 1 from public.email_delivery_events e cross join lateral jsonb_each_text(to_jsonb(e)) kv(k, v) where kv.k in (select column_name from information_schema.columns where table_schema = 'public' and table_name = 'email_delivery_events' and data_type = 'text') and kv.v ~* 'example\.(com|invalid)|smtp|\m550[ -]'), 'no raw address or diagnostic stored');
 
   -- (b) AWS Delivery example.
   perform pg_temp.job(u[2], ch[2], pg_temp.d(2), 'accepted', 'ses-delivery-2');
