@@ -1,6 +1,7 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import page from "@/server/home-gallery/fixtures/read_public_home_gallery_photos_page.json";
-import empty from "@/server/home-gallery/fixtures/read_public_home_gallery_photos_empty.json";
+import page from "@/server/home-gallery/fixtures/read_public_home_gallery_page_first.json";
+import second from "@/server/home-gallery/fixtures/read_public_home_gallery_page_second.json";
+import empty from "@/server/home-gallery/fixtures/read_public_home_gallery_page_empty.json";
 vi.mock("server-only", () => ({}));
 const state = vi.hoisted(() => ({ rpc: vi.fn() }));
 vi.mock("@/server/config/env", () => ({ loadServerEnv: () => ({ SUPABASE_URL: "https://db.test", SUPABASE_SERVICE_ROLE_KEY: "service" }) }));
@@ -10,34 +11,63 @@ import { GET } from "./route";
 
 beforeEach(() => vi.clearAllMocks());
 
-// Fixtures are real read_public_home_gallery_photos responses from supabase/tests/home_gallery_shorts.sh.
-it("answers the real SQL page with a cursor and public keys only, and asks SQL with the content locale", async () => {
+const key = (value: { at: string; id: string; rank: number }) => Buffer.from(JSON.stringify({ r: value.rank, a: value.at, i: value.id })).toString("base64url");
+
+// Fixtures are real read_public_home_gallery_page responses from supabase/tests/home_gallery_cursor.sh (the key is the sort key of the page's last photo).
+it("answers the real SQL page with a cursor made of the last photo's sort key and public keys only, and asks SQL with the content locale", async () => {
   state.rpc.mockResolvedValue({ data: page, error: null });
   const res = await GET(new Request("https://byus.test/api/public/gallery?locale=en"));
   expect(res.status).toBe(200);
   expect(res.headers.get("cache-control")).toMatch(/s-maxage=60/);
   const body = await res.json();
   expect(body.items).toHaveLength(2);
-  expect(body.nextCursor).toEqual(expect.any(String));
+  expect(body.nextCursor).toBe(key(page.last!));
   for (const item of body.items) expect(Object.keys(item).every(key => ["id", "source", "image", "alt", "creator", "sourceHref"].includes(key))).toBe(true);
-  expect(state.rpc).toHaveBeenCalledWith("read_public_home_gallery_photos", { p_locale: "en", p_offset: 0, p_limit: 24 });
-  state.rpc.mockResolvedValue({ data: empty, error: null });
-  await GET(new Request(`https://byus.test/api/public/gallery?cursor=${body.nextCursor}`));
-  expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_photos", { p_locale: "ko", p_offset: 2, p_limit: 24 });
+  expect(state.rpc).toHaveBeenCalledWith("read_public_home_gallery_page", { p_locale: "en", p_limit: 24, p_offset: 0 });
+  // the next read continues after that key, not at a position
+  state.rpc.mockResolvedValue({ data: second, error: null });
+  const next = await GET(new Request(`https://byus.test/api/public/gallery?cursor=${body.nextCursor}`));
+  expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_page", { p_locale: "ko", p_limit: 24, p_after_rank: page.last!.rank, p_after_at: page.last!.at, p_after_id: page.last!.id });
+  expect((await next.json()).nextCursor).toBe(key(second.last!));
+});
+
+it("still reads a position cursor issued before the change once, and continues by key after it", async () => {
+  state.rpc.mockResolvedValue({ data: page, error: null });
+  const res = await GET(new Request(`https://byus.test/api/public/gallery?cursor=${Buffer.from(JSON.stringify({ o: 24 })).toString("base64url")}`));
+  expect(res.status).toBe(200);
+  expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_page", { p_locale: "ko", p_limit: 24, p_offset: 24 });
+  expect((await res.json()).nextCursor).toBe(key(page.last!));
 });
 
 it("answers an empty page, refuses repeated, unknown or bad cursor keys, and says unavailable when SQL fails", async () => {
   state.rpc.mockResolvedValue({ data: empty, error: null });
   expect(await (await GET(new Request("https://byus.test/api/public/gallery"))).json()).toEqual({ items: [], nextCursor: null });
-  for (const query of ["locale=ko&locale=en", "limit=2", "cursor=bm9wZQ"]) expect((await GET(new Request(`https://byus.test/api/public/gallery?${query}`))).status, query).toBe(400);
+  const bad = [
+    "bm9wZQ", // not JSON
+    Buffer.from(JSON.stringify({ o: 1, r: 1, a: page.last!.at, i: page.last!.id })).toString("base64url"), // position and key together
+    Buffer.from(JSON.stringify({ r: 0, a: page.last!.at, i: page.last!.id })).toString("base64url"), // key part missing and rank out of range
+    Buffer.from(JSON.stringify({ r: 1, a: "tomorrow", i: page.last!.id })).toString("base64url"), // not a timestamp
+    Buffer.from(JSON.stringify({ r: 1, a: page.last!.at, i: "x'; drop table" })).toString("base64url"), // not a photo id
+    Buffer.from(JSON.stringify({ o: -1 })).toString("base64url"),
+  ];
+  for (const query of ["locale=ko&locale=en", "limit=2", ...bad.map(cursor => `cursor=${cursor}`)]) expect((await GET(new Request(`https://byus.test/api/public/gallery?${query}`))).status, query).toBe(400);
+  expect(state.rpc).toHaveBeenCalledTimes(1);
   state.rpc.mockResolvedValue({ data: null, error: { message: "down" } });
   expect((await GET(new Request("https://byus.test/api/public/gallery"))).status).toBe(503);
+});
+
+it("refuses a SQL page whose key is not its last photo (the next read would continue from the wrong place)", async () => {
+  for (const data of [{ ...page, last: { ...page.last, id: page.items[0]!.id } }, { ...page, last: null }, { items: [], hasMore: false, last: page.last }, { items: page.items, hasMore: true }]) {
+    state.rpc.mockResolvedValue({ data, error: null });
+    expect((await GET(new Request("https://byus.test/api/public/gallery"))).status).toBe(503);
+  }
 });
 
 // Generated by the disposable DB test, including eight official notices / nine asset paths.
 it("passes SQL-authorized relative photos through the server loader and public API unchanged", async () => {
   const { default: relative } = await import("@/server/home-gallery/fixtures/read_public_home_gallery_photos_relative.json");
-  state.rpc.mockResolvedValue({ data: relative, error: null });
+  // The items are real SQL rows; the key is added here because that fixture was generated before the page read had one.
+  state.rpc.mockResolvedValue({ data: { ...relative, last: { rank: 2147483647, at: "2026-11-15T09:13:27+09:00", id: relative.items.at(-1)!.id } }, error: null });
   const res = await GET(new Request("https://byus.test/api/public/gallery"));
   expect(res.status).toBe(200);
   expect(await res.json()).toEqual({ items: relative.items, nextCursor: null });
@@ -50,6 +80,6 @@ it.each([
   "/api/content-assets/99000000-0000-4000-8000-000000000001\n",
   "/api/content-assets/../private", "http://evil.test/photo.webp", "data:image/png;base64,AA==",
 ])("rejects unsafe relative/unsupported RPC image URLs: %s", async (url) => {
-  state.rpc.mockResolvedValue({ data: { ...page, items: [{ ...page.items[0], image: { ...page.items[0]!.image, url } }] }, error: null });
+  state.rpc.mockResolvedValue({ data: { ...page, items: [{ ...page.items[0], image: { ...page.items[0]!.image, url } }], last: { ...page.last, id: page.items[0]!.id } }, error: null });
   expect((await GET(new Request("https://byus.test/api/public/gallery"))).status).toBe(503);
 });

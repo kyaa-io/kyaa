@@ -9,15 +9,32 @@ import { homeGalleryPageSchema, homeShortsPageSchema, homeShortsSchema, type Hom
 type Db = Pick<SupabaseClient, "rpc">;
 const SHORTS_READ = 12;
 const SHORTS_POOL = 60;
+/** Video ids per like-count read (the SQL limit) and how many of those reads run at once. */
+const LIKES_BATCH = 200;
+const LIKES_PARALLEL = 3;
 export class HomeGalleryRepositoryError extends Error {}
 
-/** Opaque offset cursor; the SQL read merges two sources newest first, so it pages by position. */
-export function encodeHomeGalleryCursor(offset: number) { return Buffer.from(JSON.stringify({ o: offset })).toString("base64url"); }
-const cursorSchema = z.object({ o: z.number().int().min(0).max(10000) }).strict();
-export function decodeHomeGalleryCursor(value: string): number | null {
+const iso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}(:\d{2})?)$/;
+const sortKeySchema = z.object({ rank: z.number().int().min(1).max(2147483647), at: z.string().regex(iso).refine(value => !Number.isNaN(Date.parse(value))), id: z.string().regex(/^[0-9A-Za-z:_-]{1,200}$/) }).strict();
+type SortKey = z.infer<typeof sortKeySchema>;
+/** read_public_home_gallery_page answer: the page plus the sort key of its last photo, which is what the next read continues after. */
+const keyPageSchema = homeGalleryPageSchema.extend({ last: sortKeySchema.nullable() }).strict()
+  .refine(page => (page.items.at(-1)?.id ?? null) === (page.last?.id ?? null));
+
+/**
+ * Opaque cursor: the sort key (curation rank, time, id) of the last photo the reader got. The SQL read continues after that key, so a photo hidden,
+ * unpublished or added in front of it cannot move the next page. A `{ o }` cursor (position) was issued before 2026-11-17 and is still read once.
+ */
+export function encodeHomeGalleryCursor(key: SortKey) { return Buffer.from(JSON.stringify({ r: key.rank, a: key.at, i: key.id })).toString("base64url"); }
+const cursorSchema = z.union([
+  z.object({ r: sortKeySchema.shape.rank, a: sortKeySchema.shape.at, i: sortKeySchema.shape.id }).strict().transform(value => ({ after: { rank: value.r, at: value.a, id: value.i } })),
+  z.object({ o: z.number().int().min(0).max(10000) }).strict().transform(value => ({ offset: value.o })),
+]);
+type Cursor = z.output<typeof cursorSchema>;
+export function decodeHomeGalleryCursor(value: string): Cursor | null {
   try {
     const parsed = cursorSchema.safeParse(JSON.parse(Buffer.from(value, "base64url").toString("utf8")));
-    return parsed.success ? parsed.data.o : null;
+    return parsed.success ? parsed.data : null;
   } catch { return null; }
 }
 
@@ -25,27 +42,31 @@ export class HomeGalleryRepository {
   constructor(private readonly db: Db, private readonly creatorAvatars?: CreatorAvatarReader) {}
 
   async listPublished(locale: "ko" | "en", input: { limit: number; cursor?: string | null }): Promise<HomeGalleryPage> {
-    const offset = input.cursor ? decodeHomeGalleryCursor(input.cursor) : 0;
-    if (offset === null) throw new HomeGalleryRepositoryError("Invalid home gallery cursor");
-    const { data, error } = await this.db.rpc("read_public_home_gallery_photos", { p_locale: locale, p_offset: offset, p_limit: input.limit });
+    const cursor = input.cursor ? decodeHomeGalleryCursor(input.cursor) : { offset: 0 };
+    if (cursor === null) throw new HomeGalleryRepositoryError("Invalid home gallery cursor");
+    const from = "after" in cursor
+      ? { p_after_rank: cursor.after.rank, p_after_at: cursor.after.at, p_after_id: cursor.after.id }
+      : { p_offset: cursor.offset };
+    const page = await this.readPage(locale, input.limit, from);
+    return { items: page.items, nextCursor: page.hasMore && page.last ? encodeHomeGalleryCursor(page.last) : null };
+  }
+
+  private async readPage(locale: "ko" | "en", limit: number, from: { p_offset: number } | { p_after_rank: number; p_after_at: string; p_after_id: string }) {
+    const { data, error } = await this.db.rpc("read_public_home_gallery_page", { p_locale: locale, p_limit: limit, ...from });
     if (error) throw new HomeGalleryRepositoryError(error.message);
-    const page = homeGalleryPageSchema.parse(data);
-    return { items: page.items, nextCursor: page.hasMore ? encodeHomeGalleryCursor(offset + page.items.length) : null };
+    return keyPageSchema.parse(data);
   }
 
   /**
    * The newest `pages` × 24 photos in one list, for the home block that picks the most varied 12 from them (the newest 24 alone can be
-   * one or two creators). The pages are read in parallel by offset; `nextCursor` continues after the last page read.
+   * one or two creators). The pages are read in parallel by position; `nextCursor` continues after the last photo of the last page.
    */
   async listPublishedPool(locale: "ko" | "en", input: { pages: number }): Promise<HomeGalleryPage> {
-    const pages = await Promise.all(Array.from({ length: input.pages }, async (_, index) => {
-      const { data, error } = await this.db.rpc("read_public_home_gallery_photos", { p_locale: locale, p_offset: index * 24, p_limit: 24 });
-      if (error) throw new HomeGalleryRepositoryError(error.message);
-      return homeGalleryPageSchema.parse(data);
-    }));
+    const pages = await Promise.all(Array.from({ length: input.pages }, (_, index) => this.readPage(locale, 24, { p_offset: index * 24 })));
     const seen = new Set<string>();
     const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
-    return { items, nextCursor: pages.at(-1)?.hasMore ? encodeHomeGalleryCursor(input.pages * 24) : null };
+    const last = pages.at(-1);
+    return { items, nextCursor: last?.hasMore && last.last ? encodeHomeGalleryCursor(last.last) : null };
   }
 
   /** The creator's own profile photo, so a short's caption shows the real avatar. A creator without one keeps the default icon. */
@@ -84,6 +105,24 @@ export class HomeGalleryRepository {
     return diversify ? diversifyShorts(shown) : shown;
   }
 
+  /** Public like totals for the videos, a few reads of up to LIKES_BATCH ids; a video without a total (not public) counts 0. */
+  private async readLikeCounts(videoIds: readonly string[]): Promise<Record<string, number>> {
+    const ids = [...new Set(videoIds)];
+    const batches = Array.from({ length: Math.ceil(ids.length / LIKES_BATCH) }, (_, index) => ids.slice(index * LIKES_BATCH, (index + 1) * LIKES_BATCH));
+    const likes: Record<string, number> = Object.fromEntries(ids.map(id => [id, 0]));
+    let next = 0;
+    const worker = async () => {
+      for (let batch = batches[next++]; batch; batch = batches[next++]) {
+        const { data, error } = await this.db.rpc("read_public_shortform_like_counts", { p_video_ids: batch });
+        if (error) throw new HomeGalleryRepositoryError(error.message);
+        const counts = z.record(z.string(), z.number().int().nonnegative()).parse(data);
+        for (const id of batch) likes[id] = counts[id] ?? 0;
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(LIKES_PARALLEL, batches.length) }, worker));
+    return likes;
+  }
+
   /** A single stable catalog lets sorting and creator chips operate on the same public videos. */
   async listShortsCatalog(locale: "ko" | "en") {
     const items = await this.shortsPool(locale, false);
@@ -94,12 +133,7 @@ export class HomeGalleryRepository {
       items.push(...await this.withCoverRule(page.items));
       if (!page.hasMore) break;
     }
-    const popularity = await Promise.all(items.map(async (item) => {
-      const { data, error } = await this.db.rpc("read_shortform_participation", { p_video_id: item.videoId, p_app_user_id: null });
-      if (error) throw new HomeGalleryRepositoryError(error.message);
-      return [item.videoId, data === null ? 0 : z.object({ likeCount: z.number().int().nonnegative() }).parse(data).likeCount] as const;
-    }));
-    const likes = Object.fromEntries(popularity);
+    const likes = await this.readLikeCounts(items.map(item => item.videoId));
     return { items: await this.withAvatars(locale, items), likes };
   }
 

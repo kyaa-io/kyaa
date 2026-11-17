@@ -1,0 +1,25 @@
+{
+  "last": {
+    "at": "2026-11-15T08:25:27+09:00",
+    "id": "839d3d45-f1cc-469c-8df8-35872fbc5771:1",
+    "rank": 2147483647
+  },
+  "items": [
+    {
+      "id": "839d3d45-f1cc-469c-8df8-35872fbc5771:1",
+      "alt": "커서 사진 49",
+      "image": {
+        "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/0000000000000000000000000000000000000000000000000000000000000149.webp",
+        "width": 1080,
+        "height": 1080
+      },
+      "source": "official_sns",
+      "creator": {
+        "name": "R8 사진",
+        "slug": "r8data-photo"
+      },
+      "sourceHref": "/c/r8data-photo/notices/cur-49"
+    }
+  ],
+  "hasMore": false
+}
