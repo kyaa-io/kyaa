@@ -1,0 +1,40 @@
+{
+  "last": {
+    "at": "2026-11-15T09:13:27+09:00",
+    "id": "e7c4571f-80e0-4834-b6f9-7829f584673a:1",
+    "rank": 2147483647
+  },
+  "items": [
+    {
+      "id": "81dbc598-138c-4870-a48f-98b9e40992a2:1",
+      "alt": "커서 새 사진",
+      "image": {
+        "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/0000000000000000000000000000000000000000000000000000000000000200.webp",
+        "width": 1080,
+        "height": 1080
+      },
+      "source": "official_sns",
+      "creator": {
+        "name": "R8 사진",
+        "slug": "r8data-photo"
+      },
+      "sourceHref": "/c/r8data-photo/notices/cur-fresh"
+    },
+    {
+      "id": "e7c4571f-80e0-4834-b6f9-7829f584673a:1",
+      "alt": "커서 사진 1",
+      "image": {
+        "url": "https://dev.kyaa.io/public-assets/cms-assets/public-image-assets/0000000000000000000000000000000000000000000000000000000000000101.webp",
+        "width": 1080,
+        "height": 1080
+      },
+      "source": "official_sns",
+      "creator": {
+        "name": "R8 사진",
+        "slug": "r8data-photo"
+      },
+      "sourceHref": "/c/r8data-photo/notices/cur-1"
+    }
+  ],
+  "hasMore": true
+}

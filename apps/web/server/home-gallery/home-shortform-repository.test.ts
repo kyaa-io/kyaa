@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { HomeGalleryRepository } from "./home-gallery-repository";
+import { decodeHomeGalleryCursor, encodeHomeGalleryCursor, HomeGalleryRepository } from "./home-gallery-repository";
 
 vi.mock("server-only", () => ({}));
 
@@ -14,16 +14,65 @@ const pageRpc = (list: ReturnType<typeof video>[]) => vi.fn(async (name: string,
 describe("home shortform", () => {
   it("uses public reaction totals to rank every creator's visible shorts", async () => {
     const list = [video(1, "a"), video(2, "b")];
-    const rpc = vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number; p_video_id?: string }) => {
+    const rpc = vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number; p_video_ids?: string[] }) => {
       if (name === "read_public_video_thumbnails") return { data: {}, error: null };
-      if (name === "read_shortform_participation") return { data: { likeCount: args.p_video_id === list[1]!.videoId ? 4 : 1 }, error: null };
+      if (name === "read_public_shortform_like_counts") return { data: { [list[0]!.videoId]: 1, [list[1]!.videoId]: 4 }, error: null };
       const offset = args.p_offset ?? 0, limit = args.p_limit ?? 12;
       return { data: { items: list.slice(offset, offset + limit), hasMore: false }, error: null };
     });
     const catalog = await new HomeGalleryRepository({ rpc } as never).listShortsCatalog("ko");
     expect(catalog.items).toHaveLength(2);
     expect(catalog.likes).toEqual({ [list[0]!.videoId]: 1, [list[1]!.videoId]: 4 });
-    expect(rpc).toHaveBeenCalledWith("read_shortform_participation", { p_video_id: list[0]!.videoId, p_app_user_id: null });
+    expect(rpc).toHaveBeenCalledWith("read_public_shortform_like_counts", { p_video_ids: [list[0]!.videoId, list[1]!.videoId] });
+    expect(rpc).not.toHaveBeenCalledWith("read_shortform_participation", expect.anything());
+  });
+  it("reads the like totals of a real SQL answer: a public video with likes, one without, and a hidden creator's video left out", async () => {
+    const answer = (await import("./fixtures/read_public_shortform_like_counts.json")).default;
+    expect(answer).toEqual({ sv000000004: 4, sv000000009: 0 });
+    const list = ["sv000000004", "sv000000009", "sv000001201"].map((videoId, index) => video(index + 1, "a", videoId));
+    const rpc = vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number }) => {
+      if (name === "read_public_video_thumbnails") return { data: {}, error: null };
+      if (name === "read_public_shortform_like_counts") return { data: answer, error: null };
+      return { data: { items: list.slice(args.p_offset ?? 0, (args.p_offset ?? 0) + (args.p_limit ?? 12)), hasMore: false }, error: null };
+    });
+    expect((await new HomeGalleryRepository({ rpc } as never).listShortsCatalog("ko")).likes).toEqual({ sv000000004: 4, sv000000009: 0, sv000001201: 0 });
+  });
+  it.each([12, 120, 1200])("reads the like totals of %i videos in a few bounded batches, with the same likes and order as one read per video", async (count) => {
+    const list = Array.from({ length: count }, (_, i) => video(i + 1, ["a", "b", "c"][i % 3]!));
+    const expected = (videoId: string) => Number(videoId.slice(5)) % 17;
+    let running = 0, peak = 0;
+    const batches: string[][] = [];
+    const rpc = vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number; p_video_ids?: string[] }) => {
+      if (name === "read_public_video_thumbnails") return { data: {}, error: null };
+      if (name === "read_public_shortform_like_counts") {
+        batches.push(args.p_video_ids!);
+        running += 1; peak = Math.max(peak, running);
+        await new Promise(resolve => setTimeout(resolve, 5));
+        running -= 1;
+        return { data: Object.fromEntries(args.p_video_ids!.map(id => [id, expected(id)])), error: null };
+      }
+      const offset = args.p_offset ?? 0, limit = args.p_limit ?? 12;
+      return { data: { items: list.slice(offset, offset + limit), hasMore: list.length > offset + limit }, error: null };
+    });
+    const catalog = await new HomeGalleryRepository({ rpc } as never).listShortsCatalog("ko");
+    expect(catalog.items.map(item => item.videoId)).toEqual(list.map(item => item.videoId));
+    expect(catalog.likes).toEqual(Object.fromEntries(list.map(item => [item.videoId, expected(item.videoId)])));
+    expect(rpc.mock.calls.filter(call => call[0] === "read_shortform_participation")).toHaveLength(0);
+    expect(batches).toHaveLength(Math.ceil(count / 200));
+    expect(batches.every(batch => batch.length <= 200)).toBe(true);
+    expect(batches.flat().sort()).toEqual(list.map(item => item.videoId).sort());
+    expect(peak).toBeLessThanOrEqual(3);
+  });
+  it("counts a video the batch left out (not public) as 0 likes, and fails the whole catalog when a batch fails", async () => {
+    const list = [video(1, "a"), video(2, "b")];
+    const base = (likes: { data: unknown; error: unknown }) => vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number }) => {
+      if (name === "read_public_video_thumbnails") return { data: {}, error: null };
+      if (name === "read_public_shortform_like_counts") return likes;
+      return { data: { items: list.slice(args.p_offset ?? 0, (args.p_offset ?? 0) + (args.p_limit ?? 12)), hasMore: false }, error: null };
+    });
+    expect((await new HomeGalleryRepository({ rpc: base({ data: { [list[1]!.videoId]: 3 }, error: null }) } as never).listShortsCatalog("ko")).likes).toEqual({ [list[0]!.videoId]: 0, [list[1]!.videoId]: 3 });
+    await expect(new HomeGalleryRepository({ rpc: base({ data: null, error: { message: "unavailable" } }) } as never).listShortsCatalog("ko")).rejects.toThrow("unavailable");
+    await expect(new HomeGalleryRepository({ rpc: base({ data: { [list[0]!.videoId]: -1 }, error: null }) } as never).listShortsCatalog("ko")).rejects.toThrow();
   });
   it("reads public creator videos without requiring a LIVE page, with the cover the site stored", async () => {
     const one = video(1, "nchive", "U8YzMfHLFQM");
@@ -82,12 +131,22 @@ describe("home shortform", () => {
 });
 
 describe("home gallery pool", () => {
-  it("reads the newest three pages in parallel and continues after them", async () => {
-    const photo = (i: number) => ({ id: `n${i}:0`, source: "official_sns", image: { url: "https://example.com/a.jpg", width: 4, height: 5 }, alt: "alt", creator: { slug: "a", name: "a" } });
-    const rpc = vi.fn(async (_: string, args: { p_offset: number }) => ({ data: { items: Array.from({ length: 24 }, (_, i) => photo(args.p_offset + i)), hasMore: true }, error: null }));
+  const photo = (i: number) => ({ id: `n${i}:0`, source: "official_sns", image: { url: "https://example.com/a.jpg", width: 4, height: 5 }, alt: "alt", creator: { slug: "a", name: "a" } });
+  const last = (i: number) => ({ rank: 2147483647, at: "2026-11-17T01:02:03.123456+00:00", id: `n${i}:0` });
+  it("reads the newest three pages in parallel and continues after the last photo read", async () => {
+    const rpc = vi.fn(async (_: string, args: { p_offset: number }) => ({ data: { items: Array.from({ length: 24 }, (_, i) => photo(args.p_offset + i)), hasMore: true, last: last(args.p_offset + 23) }, error: null }));
     const page = await new HomeGalleryRepository({ rpc } as never).listPublishedPool("ko", { pages: 3 });
     expect(page.items).toHaveLength(72);
     expect(rpc.mock.calls.map(call => (call[1] as { p_offset: number }).p_offset).sort((a, b) => a - b)).toEqual([0, 24, 48]);
-    expect(page.nextCursor).not.toBeNull();
+    expect(rpc.mock.calls.every(call => call[0] === "read_public_home_gallery_page" && (call[1] as { p_offset: number; p_limit: number }).p_limit === 24)).toBe(true);
+    expect(decodeHomeGalleryCursor(page.nextCursor!)).toEqual({ after: { rank: 2147483647, at: "2026-11-17T01:02:03.123456+00:00", id: "n71:0" } });
+  });
+  it("continues after the sort key of a cursor, and refuses a cursor it did not issue", async () => {
+    const rpc = vi.fn(async () => ({ data: { items: [photo(30)], hasMore: false, last: last(30) }, error: null }));
+    const repo = new HomeGalleryRepository({ rpc } as never);
+    expect(await repo.listPublished("en", { limit: 24, cursor: encodeHomeGalleryCursor(last(23)) })).toEqual({ items: [photo(30)], nextCursor: null });
+    expect(rpc).toHaveBeenCalledWith("read_public_home_gallery_page", { p_locale: "en", p_limit: 24, p_after_rank: 2147483647, p_after_at: "2026-11-17T01:02:03.123456+00:00", p_after_id: "n23:0" });
+    await expect(repo.listPublished("en", { limit: 24, cursor: "bm9wZQ" })).rejects.toThrow(/cursor/);
+    expect(rpc).toHaveBeenCalledTimes(1);
   });
 });
