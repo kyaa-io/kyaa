@@ -17,11 +17,35 @@ describe("사주 고정 관법", () => {
       ].map((v: string) => [...v].map(c => ({甲:'갑',乙:'을',丙:'병',丁:'정',戊:'무',己:'기',庚:'경',辛:'신',壬:'임',癸:'계',子:'자',丑:'축',寅:'인',卯:'묘',辰:'진',巳:'사',午:'오',未:'미',申:'신',酉:'유',戌:'술',亥:'해'}[c])).join('')));
     }
   });
-  it("보정 후 23시부터 다음 일주가 된다", () => {
-    const a = calculateSaju({year:2024,month:3,day:10,hour:23,minute:0});
-    const b = calculateSaju({year:2024,month:3,day:10,hour:23,minute:59});
-    expect(a.pillars.day).not.toEqual(b.pillars.day);
-    expect(b.pillars.hour?.earthlyBranch).toBe("자");
+  it("서울 보정 자시 경계의 인접 분에서 독립 일주·시주로 전환한다", () => {
+    // 2024-03-10 서울: 경도 -32.088분 + 균시차 약 -10분.
+    // 분 단위 입력에서 23:42는 진태양시 23시 전, 23:43은 이후다.
+    const fixtures = [
+      { minute: 42, solarHour: 22, solarMinute: 59, day: "계유", hour: "계해", chinese: ["癸酉", "癸亥"] },
+      { minute: 43, solarHour: 23, solarMinute: 0, day: "갑술", hour: "갑자", chinese: ["甲戌", "甲子"] },
+    ];
+    for (const f of fixtures) {
+      const r = calculateSaju({year:2024,month:3,day:10,hour:23,minute:f.minute});
+      const independent = Solar.fromYmdHms(2024,3,10,f.solarHour,f.solarMinute,0).getLunar();
+      expect([independent.getDayInGanZhiExact(), independent.getTimeInGanZhi()]).toEqual(f.chinese);
+      expect(r.pillars.day!.heavenlyStem + r.pillars.day!.earthlyBranch).toBe(f.day);
+      expect(r.pillars.hour!.heavenlyStem + r.pillars.hour!.earthlyBranch).toBe(f.hour);
+    }
+  });
+  it.each([
+    { month: 2, day: 4, hour: 17, minute: 27, before: ["계묘", "을축"], after: ["갑진", "병인"], chineseBefore: ["癸卯", "乙丑"], chineseAfter: ["甲辰", "丙寅"] },
+    { month: 3, day: 5, hour: 11, minute: 23, before: ["갑진", "병인"], after: ["갑진", "정묘"], chineseBefore: ["甲辰", "丙寅"], chineseAfter: ["甲辰", "丁卯"] },
+  ])("절입 $month/$day 직전·직후에 고정 연월주로 전환한다", f => {
+    // manseryeok의 분 정밀도 절입: 입춘 08:27Z, 경칩 02:23Z.
+    // 독립 엔진은 중국 표준시(서울보다 1시간 전)로 같은 순간을 대조한다.
+    for (const offset of [-1, 1]) {
+      const r = calculateSaju({year:2024,month:f.month,day:f.day,hour:f.hour,minute:f.minute+offset});
+      expect([r.pillars.year, r.pillars.month].map(p => p!.heavenlyStem+p!.earthlyBranch)).toEqual(offset < 0 ? f.before : f.after);
+      const independent = Solar.fromYmdHms(2024,f.month,f.day,f.hour-1,f.minute+offset,0).getLunar();
+      expect([independent.getYearInGanZhiExact(), independent.getMonthInGanZhiExact()]).toEqual(offset < 0 ? f.chineseBefore : f.chineseAfter);
+      expect(r.termBoundary).toBe(false);
+      expect(r.locked).toEqual([]);
+    }
   });
   it("서울 약 30분과 균시차를 적용한다", () => {
     expect((126.978 - 135) * 4).toBeCloseTo(-32.088);
