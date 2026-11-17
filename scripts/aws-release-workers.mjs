@@ -104,7 +104,7 @@ export async function main() {
   const aws = args => { const out = execFileSync('aws', [...args, '--region', 'ap-northeast-2', '--output', 'json', '--no-cli-pager'], { encoding: 'utf8', stdio: ['ignore','pipe','pipe'] }); return out.trim() ? JSON.parse(out) : {}; };
   if (aws(['sts','get-caller-identity']).Account !== '996702758024') throw Error('ACCOUNT_MISMATCH');
   const preparedPath = 'work/aws-release/worker-backups/prepared.json';
-  if (mode === 'apply' || Number(process.env.GITHUB_RUN_ATTEMPT ?? 1) > 1) {
+  if (mode === 'apply' || (Number(process.env.GITHUB_RUN_ATTEMPT ?? 1) > 1 && process.env.WORKER_FRESH_PREPARE !== '1')) {
     const prepared = JSON.parse(await readFile(preparedPath, 'utf8'));
     if (prepared.sourceSha !== release.sourceSha || prepared.environment !== environment || prepared.runId !== process.env.GITHUB_RUN_ID) throw Error('PREPARED_RELEASE_MISMATCH');
     const folder = join(process.cwd(), 'work/aws-release/worker-backups', basename(prepared.folder));
