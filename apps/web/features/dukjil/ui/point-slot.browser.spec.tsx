@@ -13,7 +13,7 @@ import proofStyles from "@/features/passport-proofs/ui/proofs-tab.module.css";
 import memberStyles from "@/features/groups/ui/group-members.module.css";
 
 // 포인트·보상 표시 원칙: 세로로 반복되는 행에서 아이콘(코인·하트)의 왼쪽 선은 숫자가 달라도 같다.
-// 포인트는 폭이 고정된 알약(60, +999까지)이라 알약의 오른쪽 끝도 줄마다 같다(출석 팝업의 보상 줄과 `오늘 출석 완료` 줄 포함).
+// 포인트는 폭이 고정된 알약(60, +999까지)이라 알약의 오른쪽 끝도 줄마다 같고, 숫자는 동전 오른쪽 상자 가운데에 있다(출석 팝업의 보상 줄과 `오늘 출석 완료` 줄 포함).
 // 실제 CSS 모듈과 실제 부품 마크업을 그리고, 앱 서버·API·개인 데이터는 쓰지 않는다(합성 값).
 function cssModule(path: string, names: Record<string, string>) {
   return readFileSync(resolve(process.cwd(), path), "utf8").replace(/\.([a-zA-Z_][\w-]*)/g, (match, name: string) => names[name] ? `.${names[name]}` : match);
@@ -57,6 +57,8 @@ it.each([390, 1440])("at %ipx the coin and heart of every row share one left lin
         attendance: left('[data-case="attendance"] [data-earn-badge="inline"] img', "section"),
         attendanceRight: [...globalThis.document.querySelectorAll('[data-case="attendance"] [data-point-pill]')].map((el) => Math.round(el.getBoundingClientRect().right * 10) / 10),
         centers: [...globalThis.document.querySelectorAll("[data-point-pill]")].map((el) => { const coin = el.querySelector("img")!.getBoundingClientRect(), text = el.querySelector("[data-point-value]")!.getBoundingClientRect(); return Math.abs((coin.top + coin.height / 2) - (text.top + text.height / 2)); }),
+        // 숫자 글자의 가운데가 동전 오른쪽 상자의 가운데와 같다(사용자 11/17 12:49).
+        valueOffset: [...globalThis.document.querySelectorAll('[data-case="attendance"] [data-point-pill] [data-point-value]')].map((el) => { const box = el.getBoundingClientRect(), range = globalThis.document.createRange(); range.selectNodeContents(el); const text = range.getBoundingClientRect(); return Math.abs((text.left + text.right) / 2 - (box.left + box.right) / 2); }),
         proofs: left('[data-case="proofs"] [data-earn-badge="inline"] img', "li"),
         members: left('[data-case="members"] img[data-reward-kind="heart"]', "li"),
         overflow: globalThis.document.documentElement.scrollWidth > innerWidth,
@@ -65,6 +67,8 @@ it.each([390, 1440])("at %ipx the coin and heart of every row share one left lin
     expect(lines.attendance).toHaveLength(3);
     expect(new Set(lines.attendanceRight).size, `right ${lines.attendanceRight.join(",")}`).toBe(1);
     expect(Math.max(...lines.centers)).toBeLessThanOrEqual(0.5);
+    expect(lines.valueOffset).toHaveLength(3);
+    expect(Math.max(...lines.valueOffset), `value offset ${lines.valueOffset.join(",")}`).toBeLessThanOrEqual(0.5);
     expect(lines.proofs.length).toBeGreaterThan(1);
     expect(lines.members).toHaveLength(4);
     for (const key of ["attendance", "proofs", "members"] as const) expect(new Set(lines[key]).size, `${key} ${lines[key].join(",")}`).toBe(1);

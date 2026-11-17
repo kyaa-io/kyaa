@@ -4,9 +4,9 @@
 /* 작게: 좁은 칸 안. */
 .small { gap: 1px; height: 16px; padding: 0 4px 0 2px; line-height: 16px; }
 .small img { width: 12px; height: 12px; }
-/* 세로로 반복되는 줄: 알약 폭을 60으로 고정하고(+999까지) 동전은 왼쪽 끝, 숫자는 오른쪽 끝. 줄마다 알약의 양 끝과 동전 세로선이 같다. */
+/* 세로로 반복되는 줄: 알약 폭을 60으로 고정하고(+999까지) 동전은 왼쪽 끝, 숫자는 동전 오른쪽의 남은 칸을 채운 상자 안에서 가운데(사용자 2026-11-17 12:49). 줄마다 알약의 양 끝·동전 세로선·숫자 가운데선이 같다. */
 .slot { min-inline-size: 60px; }
-.slot > [data-point-value] { margin-inline-start: auto; }
+.slot > [data-point-value] { flex: 1 1 auto; text-align: center; }
 /* 버튼 모서리에 걸칠 때의 자리. */
 .badge { position: absolute; top: -8px; right: -8px; z-index: 1; pointer-events: none; }
 .host { position: relative; display: inline-flex; }
