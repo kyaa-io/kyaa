@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { APP_LOCALES } from "../../../i18n/locales";
 import { koreanDateLineState } from "./korean-date";
@@ -10,7 +11,7 @@ function keys(value: Record<string, unknown>, prefix = ""): string[] {
       ? keys(child as Record<string, unknown>, path + ".") : [path];
   }).sort();
 }
-const load = (locale: string) => JSON.parse(readFileSync(new URL(`./locales/${locale}/chemi.json`, import.meta.url), "utf8"));
+const load = (locale: string) => JSON.parse(readFileSync(resolve(__dirname, "locales", locale, "chemi.json"), "utf8"));
 describe("chemi language scaffold", () => {
   for (const locale of APP_LOCALES) it(locale, () => {
     const catalog = load(locale);
