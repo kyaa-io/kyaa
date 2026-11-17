@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { pageLikeEventWindows } from "../reaction/domain/page-like-event";
+import { pageLikeEventWindows, passportIssuedEventWindows } from "../reaction/domain/page-like-event";
 
 export const eventParticipantFixedEvents = ["x-mission", "signup-raffle"] as const;
 export const eventParticipantWindowEvents = ["page-like", "passport-issued"] as const;
@@ -20,7 +20,7 @@ export const eventParticipantPresets = [
   { event: "page-like", ...pageLikeEventWindows["elina-onboarding-1117"] },
   { event: "page-like", ...pageLikeEventWindows["changha-onboarding-1118"] },
   { event: "page-like", ...pageLikeEventWindows["yuna-onboarding-1119"] },
-  { key: "elina-passport-1120", event: "passport-issued", slug: "elina", from: "2026-11-20T00:00:00+09:00", to: "2026-11-22T00:00:00+09:00" },
+  { event: "passport-issued", ...passportIssuedEventWindows["elina-passport-1120"] },
   { event: "page-like", ...pageLikeEventWindows["changha-photo-1122"] },
 ] as const satisfies readonly ({ key: string } & Extract<EventParticipantQuery, { slug: string }>)[];
 export type EventParticipantPresetKey = (typeof eventParticipantPresets)[number]["key"];

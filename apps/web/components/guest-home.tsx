@@ -17,6 +17,7 @@ import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 import { Suspense, use, type ReactNode } from "react";
 import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
+import { prioritizeEventBanners } from "../features/home/domain/event-banner-priority";
 import { xMissionHomeBanner } from "../features/home/domain/x-mission-home-banner";
 import { firstStepsHomeBanner } from "../features/home/domain/first-steps-home-banner";
 import { signupRaffleHomeBanner } from "../features/home/domain/signup-raffle-home-banner";
@@ -178,7 +179,7 @@ function StreamHomeGalleryContent({ queries, locale, photos }: Pick<StreamingHom
 function StreamHomeHero({ queries, firstSteps = false, signupRaffle = false, ...props }: Pick<StreamingHomeProps, "queries" | "locale" | "firstSteps" | "signupRaffle">) {
   const result = use(queries.homeBanners);
   return <HomeHero {...props} celebrities={[]}
-    homeBanners={[...pinnedHomeBanners(props.locale, firstSteps, signupRaffle), ...(result.status === "fulfilled" ? result.value : [])]}
+    homeBanners={prioritizeEventBanners([...pinnedHomeBanners(props.locale, firstSteps, signupRaffle), ...(result.status === "fulfilled" ? result.value : [])], Date.now())}
     contentErrors={{ homeBanners: result.status === "rejected" }}
     elinaGuide={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamElinaGuide queries={queries} locale={props.locale} hero /></Suspense>} />;
 }

@@ -9,6 +9,11 @@ export const pageLikeEventWindows = {
   "changha-photo-1122": { key: "changha-photo-1122", slug: "changha", from: "2026-11-22T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
 } as const;
 
+/** 엘리나 패스포트 이벤트(11/20~21). 관리자 집계의 `passport-issued` 창이고, 홈 배너 순서만 이 정의를 함께 읽는다. */
+export const passportIssuedEventWindows = {
+  "elina-passport-1120": { key: "elina-passport-1120", slug: "elina", from: "2026-11-20T00:00:00+09:00", to: "2026-11-22T00:00:00+09:00" },
+} as const;
+
 export type PageLikeEventWindow = (typeof pageLikeEventWindows)[keyof typeof pageLikeEventWindows];
 
 /** 이벤트 이름: 배너 제목과 같은 `이름 × Kyaa`. 한국어 말고는 영문 이름을 쓴다. */
