@@ -8,7 +8,8 @@ declare bad text; n bigint; t record; owner text := (select pg_get_userbyid(relo
     'chemi_claim_pending_points','chemi_complete_reading','chemi_save_reading','chemi_reading_context','chemi_share_done',
     'chemi_reading_detail','chemi_reading_list','chemi_rewards_today','chemi_visit','chemi_participation',
     'chemi_issue_play','chemi_refund_play','chemi_create_share','chemi_get_share',
-    'chemi_mail_claim','chemi_mail_finish','chemi_reminder_set'];
+    'chemi_mail_claim','chemi_mail_finish','chemi_reminder_set',
+    'chemi_chain_work','chemi_chain_read','chemi_chain_metadata','chemi_chain_collect'];
 begin
   select string_agg(c.relname||':'||pg_get_userbyid(c.relowner), ', ') into bad from pg_class c join pg_namespace s on s.oid=c.relnamespace
     where s.nspname='public' and c.relname like 'chemi\_%' and pg_get_userbyid(c.relowner)<>owner;
