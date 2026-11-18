@@ -411,6 +411,7 @@ describe("server environment", () => {
     "NEXT_PUBLIC_SUPABASE_URL",
     "RELAYER_PRIVATE_KEY",
     "GIWA_RELAYER_PRIVATE_KEY",
+    "CHEMI_CHAIN_SIGNER_PRIVATE_KEY",
     "PINATA_JWT",
     "PINATA_GATEWAY_URL",
     "AWS_S3_BUCKET",

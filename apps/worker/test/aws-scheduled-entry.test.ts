@@ -121,3 +121,17 @@ it("fails when a real streaming 200 body times out after its heartbeat", async (
   expect(logs.at(-1)).toMatchObject({outcome:"failure",status:200});expect(logs.some(log=>log.outcome==="success")).toBe(false);
  } finally {controller.abort();server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}
 });
+
+it("runs the chain worker only for an enabled DEV maintenance response", async () => {
+  const loadSecret = vi.fn(async (id: string) => id === "byus/worker/dev-chemi-chain"
+    ? "{}" : JSON.stringify({ CRON_SECRET: "s".repeat(32) }));
+  const fetcher = vi.fn<typeof fetch>()
+    .mockResolvedValueOnce(Response.json({ mail: 0 }))
+    .mockResolvedValueOnce(Response.json({ mail: 0, chainRecords: 0 }));
+  const dev = createScheduledHandler({ loadSecret, fetcher }, { ...env, WORKER_ENVIRONMENT: "dev" });
+  const event = { ...invocation, task: "chemi-maintenance", environment: "dev" };
+  await dev(event);
+  expect(loadSecret).toHaveBeenCalledTimes(1);
+  await dev(event);
+  expect(loadSecret).toHaveBeenLastCalledWith("byus/worker/dev-chemi-chain");
+});
