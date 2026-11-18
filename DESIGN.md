@@ -2803,3 +2803,10 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 ### 2026-11-15 카카오 알림톡 중단
 
 `/settings?section=channels`는 `fan_notification_delivery_control`의 카카오 `mode`가 `enabled`가 아니면 카카오 연결·수신 동의·전화번호 등록 영역을 표시하지 않는다. 기존 화면 코드는 보존하며 같은 발송 설정을 다시 켜면 노출할 수 있다. 이메일 영역과 기존 글꼴·간격·반경·색상·공통 컴포넌트는 그대로 사용한다.
+
+### 2026-11-18 토스페이먼츠 심사용 사이트 정보 (PG-REVIEW-SITE)
+
+- 하단 사업자 정보(`FanSiteFooter` full·compact 공통 `FanFooterBusinessInfo`): 한국 운영사 그룹을 상호·대표자·사업자등록번호(+공정위 `사업자정보 확인` 링크)·통신판매업 신고번호·사업장 소재지(`서울특별시 강남구 도산대로28길 46, 6층 및 7층 전체(논현동)`)·대표전화·이메일·호스팅 서비스 제공자 8줄로 늘렸다. 값은 `components/fan-shell/korea-business-info.ts` 한 곳에서만 읽는다. 통신판매업 신고번호는 `mailOrderNumber`가 null인 동안 `신고 준비 중`을 보이며, 번호가 나오면 그 값만 채운다. 확인 링크는 새 창·공통 UTM과 클릭 측정(`data-outbound-placement="footer"`, `kind="website"`)을 따른다. 새 라벨은 ko·en만 두고 나머지 언어는 en을 쓴다. 390에서 줄 바꿈은 기존 flex-wrap 그대로다.
+- 하단 법적 링크 줄에 `요금 안내`(`/pricing`)·`환불 정책`(`/refund`)을 더했고 줄이 넘치면 줄 바꿈한다(`.legalLinks` flex-wrap).
+- `/pricing`·`/refund`는 `/terms`와 같은 `LegalPage`(읽기 폭 760)를 쓴다. 문서 내용은 `components/legal-commerce-content.ts`(ko 원문 + en, 그 밖의 언어는 en 문서를 `lang="en"`으로 보임). 가격표는 `LegalSection.table`로 그린다: 768+에서는 열 42/26/32% 고정 표, 767 이하는 행마다 상품명 아래 `라벨 · 값` 줄로 쌓는다(`legal-page.module.css`). 값은 케미 가격표 확정본(기획서 12-1, 2026-11-18)을 그대로 옮겼고 케미 탭은 운영에서 꺼 둔 채라 결제는 출시와 함께 열린다는 한 줄만 둔다.
+- 알려진 한계: 요금·환불 문서의 ja 등 나머지 10개 언어 번역은 없다(en 표시). 시행일 `2026년 11월 18일`은 게시일로 정했으므로 실제 반영일이 다르면 바꾼다.

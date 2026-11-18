@@ -183,8 +183,16 @@
 
 .legalLinks {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-6);
+  gap: 0 var(--space-6);
+}
+
+.businessGroups dd a {
+  display: inline-block;
+  color: var(--footer-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .legalLinks a {
