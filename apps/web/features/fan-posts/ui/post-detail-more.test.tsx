@@ -82,18 +82,41 @@ it("offers a retry when the list cannot be read, and no banner on a brand page",
   expect(screen.queryByTestId("banner")).toBeNull();
 });
 
-it("shows a book icon until the public photo loads and for posts without a readable photo", () => {
-  state.answer = () => ({ status: "ready", data: { items: [post("photo", { assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4ca", width: 640, height: 480 }] }), post("members", { visibility: "members", artist: true, assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4cb", width: 640, height: 480 }] })] } });
-  const { container } = render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
-  const images = [...container.querySelectorAll("img")];
-  expect(images.map(image => image.getAttribute("src"))).toEqual(["/api/content-assets/bba239f6-6c6b-4a36-87bf-b325dfe5d4ca?size=thumbnail"]);
-  const [photo, members] = screen.getAllByRole("link");
-  expect(members.querySelector(".lucide-book-open")).toBeTruthy();
-  expect(photo.querySelector(".lucide-book-open")).toBeTruthy();
-  fireEvent.load(images[0]);
+it("uses the writer’s picture before the public photo and falls back to the book icon", () => {
+  const asset = { id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4ca", width: 640, height: 480 };
+  state.answer = () => ({ status: "ready", data: { items: [
+    post("photo", { assets: [asset] }),
+    post("members", { visibility: "members", artist: true, assets: [asset] }),
+    post("no-avatar", { author: { nickname: "팬", avatarUrl: null } }),
+  ] } });
+  render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
+  const [photo, members, noAvatar] = screen.getAllByRole("link");
+  const [avatar, thumbnail] = photo.querySelectorAll("img");
+  const avatarUrl = "/images/avatars/star-pink.webp";
+  expect(avatar.getAttribute("src")).toBe(avatarUrl);
+  expect(thumbnail.getAttribute("src")).toBe(`/api/content-assets/${asset.id}?size=thumbnail`);
+  expect(thumbnail.dataset.loaded).toBe("false");
+  fireEvent.load(avatar);
+  expect(avatar.dataset.loaded).toBe("true");
   expect(photo.querySelector(".lucide-book-open")).toBeNull();
-  fireEvent.error(images[0]);
-  expect(photo.querySelector(".lucide-book-open")).toBeTruthy();
+
+  fireEvent.load(thumbnail);
+  expect(thumbnail.dataset.loaded).toBe("true");
+  expect(photo.querySelectorAll("img")).toHaveLength(1);
+  fireEvent.error(thumbnail);
+  expect(thumbnail.dataset.loaded).toBe("false");
+  expect(photo.querySelector("img")?.getAttribute("src")).toBe(avatarUrl);
+
+  const [artistAvatar] = members.querySelectorAll("img");
+  expect(members.querySelectorAll("img")).toHaveLength(1);
+  expect(artistAvatar.getAttribute("src")).toBe(avatarUrl);
+  expect(artistAvatar.hasAttribute("data-artist-avatar")).toBe(true);
+  fireEvent.load(artistAvatar);
+  fireEvent.error(artistAvatar);
+  expect(artistAvatar.dataset.loaded).toBe("false");
+  expect(members.querySelector(".lucide-book-open")).toBeTruthy();
+  expect(noAvatar.querySelector("img")).toBeNull();
+  expect(noAvatar.querySelector(".lucide-book-open")).toBeTruthy();
 });
 
 it("uses the board post schema for ranking and cursor pages", () => {
