@@ -1,3 +1,5 @@
+import { drainChemiMail } from "./chemi-mail-worker.js";
+import { createWorkerClient } from "./data-client.js";
 import { SupabaseNotificationQueue } from "./adapters/supabase-notification-queue.js";
 import { WebPushSender } from "./adapters/web-push-sender.js";
 import type { NotificationWorkerEnv } from "./notification-env.js";
@@ -28,6 +30,31 @@ export function sesFeedbackFor(env: NotificationWorkerEnv, client: SesV2SendClie
   return { configurationSetName: env.NOTIFICATION_EMAIL_CONFIGURATION_SET, environment: env.NOTIFICATION_EXTERNAL_ENVIRONMENT };
 }
 
+function sesConfig(env: NotificationWorkerEnv, client: SesV2SendClient | undefined) {
+  const origin = env.NOTIFICATION_EXTERNAL_ENVIRONMENT === "prod" ? "https://kyaa.io" : "https://dev.kyaa.io";
+  const feedback = sesFeedbackFor(env, client);
+  return {
+    region: env.SES_REGION!,
+    fromEmail: env.SES_FROM_EMAIL!,
+    unsubscribeSecret: env.POSTGREST_SERVICE_TOKEN,
+    unsubscribeOrigin: origin,
+    ...(client ? { client } : {}),
+    ...(feedback ? { feedback } : {}),
+    ...(env.SUPABASE_URL ? { storageOrigin: new URL(env.SUPABASE_URL).origin } : {}),
+  };
+}
+
+async function runProductionChemiMail(env: NotificationWorkerEnv, client: SesV2SendClient | undefined) {
+  const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
+    global: { fetch: (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(5000) }) },
+  });
+  return drainChemiMail(async (name, args) => {
+    const { data, error } = await db.rpc(name, args);
+    if (error) throw new Error("CHEMI_MAIL_QUEUE_UNAVAILABLE");
+    return data;
+  }, sesConfig(env, client), "ses_email");
+}
+
 async function runFanNotificationsOnce(
   env: NotificationWorkerEnv,
   remainingTimeInMillis: (() => number) | undefined,
@@ -54,11 +81,14 @@ async function runFanNotificationsOnce(
   const client = env.NOTIFICATION_EXTERNAL_MODE === "ses_email" ? await getSesClient() : undefined;
   const queue=SupabaseExternalNotificationQueue.create(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,env.NOTIFICATION_EXTERNAL_ENVIRONMENT,env.NOTIFICATION_EXTERNAL_MODE==="ses_email",env);
   const sink=new NotificationTestSinkSender(queue);
-  const feedback=sesFeedbackFor(env,client);
-  const ses=env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?new SesEmailSender({region:env.SES_REGION!,fromEmail:env.SES_FROM_EMAIL!,unsubscribeSecret:env.POSTGREST_SERVICE_TOKEN,unsubscribeOrigin:env.NOTIFICATION_EXTERNAL_ENVIRONMENT==="prod"?"https://kyaa.io":"https://dev.kyaa.io",...(client?{client}:{}),...(feedback?{feedback}:{}),...(env.SUPABASE_URL?{storageOrigin:new URL(env.SUPABASE_URL).origin}:{})}):null;
+  const ses = env.NOTIFICATION_EXTERNAL_MODE === "ses_email" ? new SesEmailSender(sesConfig(env, client)) : null;
   const senders=env.NOTIFICATION_EXTERNAL_MODE==="test_sink"?{email:sink,kakao:sink}:ses?{email:ses,kakao:ses}:{email:new EmailSender({url:env.EMAIL_PROVIDER_URL!,token:env.EMAIL_PROVIDER_TOKEN!}),kakao:new KakaoSender({url:env.KAKAO_PROVIDER_URL!,token:env.KAKAO_PROVIDER_TOKEN!})};
   const external=await new ExternalNotificationWorker(queue,senders,{workerId:`${env.NOTIFICATION_WORKER_ID}:external`,batchSize:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?env.NOTIFICATION_EMAIL_BATCH_SIZE:env.NOTIFICATION_WORKER_BATCH_SIZE,leaseSeconds:env.NOTIFICATION_EXTERNAL_MODE==="ses_email"?300:env.NOTIFICATION_WORKER_LEASE_SECONDS,...(remainingTimeInMillis ? { remainingTimeInMillis } : {})}).runOnce();
-  return push+external;
+  const chemi = ses && env.NOTIFICATION_EXTERNAL_ENVIRONMENT === "prod"
+    && (remainingTimeInMillis?.() ?? Infinity) > 35_000
+    ? await runProductionChemiMail(env, client)
+    : 0;
+  return push + external + chemi;
 }
 
 export async function runKakaoNotificationsOnce(env: NotificationWorkerEnv) {

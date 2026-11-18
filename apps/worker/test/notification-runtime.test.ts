@@ -1,5 +1,10 @@
 import { beforeEach, expect, it, vi } from "vitest";
 const state=vi.hoisted(()=>({queue:vi.fn(),push:vi.fn(),pushRun:vi.fn(),sesClient:vi.fn(),external:vi.fn(),ses:vi.fn(),http:vi.fn(),inquiry:vi.fn(),reminders:vi.fn(),runmusic:vi.fn(),groupRaffles:vi.fn(),kakaoQueue:vi.fn(),kakaoWorker:vi.fn(),solapi:vi.fn(),telegram:vi.fn(),cs:vi.fn(),commands:vi.fn(),certifications:vi.fn(),legacy:vi.fn()}));
+const chemiRpc = vi.hoisted(() => vi.fn(async () => ({ data: null, error: null })));
+vi.mock("../src/data-client.js", async (importOriginal) => ({
+  ...await importOriginal<typeof import("../src/data-client.js")>(),
+  createWorkerClient: () => ({ rpc: chemiRpc }),
+}));
 vi.mock("../src/adapters/supabase-notification-queue.js",()=>({SupabaseNotificationQueue:{create:()=>({})}}));
 vi.mock("../src/adapters/web-push-sender.js",()=>({WebPushSender:class {}}));
 vi.mock("../src/notification-worker.js",()=>({NotificationWorker:class {constructor(...args:unknown[]){state.push(...args);}async runOnce(){return state.pushRun();}}}));
@@ -200,6 +205,7 @@ it("shares one preflight client across both email paths before either can claim"
  await runNotificationWorkerOnce(env);
  expect(state.sesClient).toHaveBeenCalledExactlyOnceWith(env.SES_ROLE_ARN);
  expect(state.ses).toHaveBeenCalledWith(expect.objectContaining({ client }));
+ expect(chemiRpc).toHaveBeenCalledExactlyOnceWith("chemi_mail_claim", {});
  expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client, undefined);
  state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
  state.queue.mockClear(); state.inquiry.mockClear();

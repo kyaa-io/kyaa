@@ -717,6 +717,50 @@
         }
       }
     },
+    "ScheduleChemiMaintenance": {
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-chemi-maintenance"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(0/5 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"chemi-maintenance\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
     "ScheduleOnchainDashboard": {
       "Type": "AWS::Scheduler::Schedule",
       "Properties": {

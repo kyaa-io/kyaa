@@ -76,6 +76,7 @@ export interface NotificationEmailInput {
   templateKey: string;
   context?: NotificationEmailContext | undefined;
   inlineAssets?: NotificationEmailInlineAssets | undefined;
+  senderInfo?: string;
   unsubscribeUrl?: string | undefined;
 }
 
@@ -300,11 +301,18 @@ function formatStartsAt(value: string | undefined, locale: "ko" | "en"): { full:
 
 export function renderNotificationEmail(
   input: NotificationEmailInput,
+  customCopy?: EmailCopy,
 ): RenderedNotificationEmail {
-  assertEmailTemplateEnabled(input.templateKey);
   const templateKey = input.templateKey;
-  const kind = emailKind(templateKey);
-  const copy = localizedCopy(templateKey, input.locale, input.context);
+  let kind: EmailKind = "fan";
+  let copy;
+  if (customCopy) {
+    copy = { ...customCopy, value: undefined };
+  } else {
+    assertEmailTemplateEnabled(templateKey);
+    kind = emailKind(templateKey);
+    copy = localizedCopy(templateKey, input.locale, input.context);
+  }
   if (templateKey === "level_up" && !input.context?.newLevel?.trim()) {
     throw new ExternalNotificationError("EMAIL_TEMPLATE_CONTEXT_INVALID", false);
   }
@@ -323,7 +331,7 @@ export function renderNotificationEmail(
   const cardValue = templateKey === "level_up" ? input.context?.newLevel?.trim() : copy.value;
 
   const title = escapeHtml(copy.title);
-  const detail = escapeHtml(copy.detail);
+  const detail = escapeHtml(copy.detail).replaceAll("\n", "<br>");
   const escapedEventTitle = escapeHtml(eventTitle);
   const eventTitleSize = eventTitle.length > 18 ? 32 : 38;
   const deepLink = escapeHtml(input.deepLink);
@@ -429,6 +437,7 @@ export function renderNotificationEmail(
             <tr>
               <td style="padding:16px 24px 20px;border-top:1px solid #eeeeee;font-family:Pretendard,'Apple SD Gothic Neo','Malgun Gothic',Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#666666;text-align:center;">
                 <div style="font-weight:400;">Kyaa. Every Fan Moment Counts.</div>
+                ${input.senderInfo ? `<div style="padding-top:7px;">${escapeHtml(input.senderInfo)}</div>` : ""}
                 <div style="padding-top:7px;"><a href="${settingsUrl}" style="color:#666666;text-decoration:underline;">${settings}</a>${input.unsubscribeUrl ? ` · <a href="${escapeHtml(input.unsubscribeUrl)}" style="color:#666666;text-decoration:underline;">${unsubscribeLabel}</a>` : ""}</div>
               </td>
             </tr>
@@ -445,6 +454,7 @@ export function renderNotificationEmail(
   if (startsAt) textParts.push(startsAt);
   if (cardValue) textParts.push(`${copy.valueLabel}: ${cardValue}`);
   textParts.push("", `${copy.cta}: ${input.deepLink}`, "", `${copy.settings}: ${settingsUrl}`);
+  if (input.senderInfo) textParts.push(input.senderInfo);
   if (input.unsubscribeUrl) textParts.push(`${unsubscribeLabel}: ${input.unsubscribeUrl}`);
 
   return { subject: copy.subject, html, text: textParts.join("\n") };
