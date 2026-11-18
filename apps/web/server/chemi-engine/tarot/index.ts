@@ -7,6 +7,9 @@ export type TarotInput = {
   userId: string;
   kstDate: string;
   deckVersion: string;
+  spread?: string;
+  topic?: string;
+  position?: number;
   /** Supplied by server/chemi/env.ts from the secret store; never returned. */
   salt: string | undefined;
 };
@@ -29,9 +32,17 @@ export function drawMemberTarot(input: TarotInput, count: 1 | 3 = 1): TarotCard[
   if (!input.userId.trim() || !input.deckVersion.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(input.kstDate) ||
       new Date(`${input.kstDate}T00:00:00Z`).toISOString().slice(0, 10) !== input.kstDate ||
       (count !== 1 && count !== 3)) throw new Error("CHEMI_INVALID_INPUT");
-  const seed = createHmac("sha256", input.salt)
-    .update(JSON.stringify([input.userId, input.kstDate, input.deckVersion])).digest();
-  return draw(stream(seed), count);
+  const position = input.position ?? 0;
+  if (!Number.isInteger(position) || position < 0 || position + count > 78) throw new Error("CHEMI_INVALID_INPUT");
+  const deckKey = [
+    input.userId,
+    input.kstDate.replaceAll("-", ""),
+    input.deckVersion,
+    input.spread ?? (count === 1 ? "daily" : "three"),
+    input.topic ?? "",
+  ];
+  const seed = createHmac("sha256", input.salt).update(JSON.stringify(deckKey)).digest();
+  return draw(stream(seed), position + count).slice(position);
 }
 
 function draw(next: (bound: number) => number, count: number): TarotCard[] {

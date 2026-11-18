@@ -15,7 +15,7 @@ const sql = (q: string) =>
   }).trim();
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/dukjil/creator-id", () => ({
-  resolveCreatorId: async () => null,
+  resolveCreatorId: async () => user,
 }));
 vi.mock("@/server/fanpage/dependencies", () => ({
   createFanpageDependencies: () => ({
@@ -90,14 +90,25 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)(
     expect((await pair(partners[1], "fortune", "friend_today")).status).toBe(
       200,
     );
+    const day = sql("select dukjil_kst_date()");
+    const { drawMemberTarot } = await import("@/server/chemi-engine/tarot");
+    const [expected] = drawMemberTarot({ userId: user, kstDate: day, deckVersion: "tarot-v1", salt: process.env.CHEMI_TAROT_SALT, position: 5 });
     const read = () =>
-      POST(post({ content: "tarot", kind: "daily", character: "dosa" }));
+      POST(post({ content: "tarot", kind: "daily", character: "dosa", position: 5, d: day, card: (expected.card + 1) % 78, rev: !expected.reversed }));
     const saved = await (await read()).json();
+    expect(saved.result.cards).toEqual([expected]);
     expect(saved.replayed).toBe(false);
     expect(await (await read()).json()).toMatchObject({
       readingId: saved.readingId,
       replayed: true,
     });
+    const favorite = () => POST(post({ content: "tarot", kind: "daily", character: "yuna", position: 17 }));
+    const rewards = await Promise.all(Array.from({ length: 8 }, async () => {
+      const response = await (await favorite()).json();
+      expect(response).toMatchObject({ readingId: saved.readingId, result: saved.result, replayed: true });
+      return response.reward.exp ?? 0;
+    }));
+    expect(rewards.sort()).toEqual([0, 0, 0, 0, 0, 0, 0, 10]);
     expect(
       await (await GET(new Request("http://localhost/?content=tarot"))).json(),
     ).toMatchObject([{ readingId: saved.readingId }]);
