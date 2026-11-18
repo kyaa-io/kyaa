@@ -1,6 +1,6 @@
 // Local-only synthetic owner data; renders the real MY screen without production access.
 const params = new URLSearchParams(location.search);
-if (params.get("view") === "my-favorites") {
+if (["my-favorites", "my-passport-chips"].includes(params.get("view") ?? "")) {
   const entries = [
     ["aryeom", "아렴", "/images/calendar/aryeom-profile.jpg"],
     ["wena", "위나", "/images/kyaa-wave/wena-profile.webp"],
@@ -29,7 +29,7 @@ if (params.get("view") === "my-favorites") {
     if (url.pathname === "/api/me/summary") {
       if (params.get("data") === "error") return Promise.resolve(Response.json({}, { status: 503 }));
       return Promise.resolve(Response.json({ summary: {
-        profile: { nickname: "별빛팬" }, creators: params.get("data") === "empty" ? [] : creators,
+        profile: { nickname: params.get("nickname") ?? "별빛팬" }, creators: params.get("data") === "empty" ? [] : creators,
         live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] },
         collection: { passportCount: creators.length, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
       } }));

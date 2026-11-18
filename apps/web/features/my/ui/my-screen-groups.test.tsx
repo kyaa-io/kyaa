@@ -120,7 +120,8 @@ it('shows stamp progress and the next tier with earned stamps in colour and the 
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'empty')).toHaveLength(6);
   expect(within(card).getByLabelText('출석, 찍힘')).toBeInTheDocument();
   expect(within(card).getAllByLabelText(/아직 안 찍힘/)).toHaveLength(6);
-  expect(within(card).getByRole('link', { name: '자세히 보기' })).toHaveAttribute('href', `/passports/${passportA}?locale=ko`);
+  expect(within(card).getByRole('link', { name: '자세히 보기', exact: true })).toHaveAttribute('href', '/passports?locale=ko');
+  expect(within(card).getByRole('link', { name: / · 자세히 보기$/ })).toHaveAttribute('href', `/passports/${passportA}?locale=ko`);
   expect(card.textContent).not.toMatch(/가입기념/);
   // 작은 여권 그림에도 받은 스탬프가 찍혀 있다.
   expect(card.querySelectorAll('[data-passport-slot]')).toHaveLength(3);

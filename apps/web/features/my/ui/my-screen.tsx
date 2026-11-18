@@ -189,14 +189,16 @@ function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   return <div className={styles.pencilMy} aria-busy="true">
     <FanSkeletonStatus locale={locale} label={t.loading} />
-    <header className={styles.pencilProfile}>
-      <AvatarPlaceholder size={56}/>
-      <div className={styles.pencilProfileCopy}><FanSkeleton width={160} height={32} /></div>
-      <ProfileNav locale={locale} label={t.settings} giftUnread={0} />
-    </header>
-    <MyStats locale={locale} passport="loading" stamps="loading"/>
-    <div className={styles.homeRow}>
-      <MyPassportCardSkeleton title={t.myPassport} />
+    <div className={styles.pencilSummary}>
+      <header className={styles.pencilProfile}>
+        <AvatarPlaceholder size={56}/>
+        <div className={styles.pencilProfileCopy}><FanSkeleton width={160} height={32} /></div>
+        <ProfileNav locale={locale} label={t.settings} giftUnread={0} />
+      </header>
+      <MyStats locale={locale} passport="loading" stamps="loading"/>
+      <div className={styles.homeRow}>
+        <MyPassportCardSkeleton title={t.myPassport} />
+      </div>
     </div>
     <MyShortcuts locale={locale} items={myShortcutItems(locale, hrefWithLocale(locale))}/>
   </div>;
@@ -299,15 +301,17 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     const labels = { title: t.myPassport, detail: myHomeText(locale, "viewDetails"), noCreators: t.noCreators, findCreator: t.findCreator, loadError: w.error, retry: w.retry, creators: t.creators };
     const stamps = communityStamps.state.status === "ready" ? communityStamps.state.data.stamps : [];
     return <DukjilProvider locale={locale}><div className={styles.pencilMy}>
-      <header className={styles.pencilProfile}>
-        <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
-        <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <><FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag><TierGuideInfo locale={locale}/></> : null}</div>
-        <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
-      </header>
-      <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
-      <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
-      <div className={styles.homeRow}>
-        <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
+      <div className={styles.pencilSummary}>
+        <header className={styles.pencilProfile}>
+          <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
+          <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
+          <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
+        </header>
+        <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
+        <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
+        <div className={styles.homeRow}>
+          <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
+        </div>
       </div>
       <MyEventsSection locale={locale}/>
       <CommunityStampCollection locale={locale} resource={communityStamps} creatorNames={Object.fromEntries(summary.creators.map((creator) => [creator.celebrity.slug, creator.celebrity.name]))}/>
