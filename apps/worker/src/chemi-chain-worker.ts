@@ -18,7 +18,7 @@ export async function runChemiBatch(store: ChemiBatchStore, now = Date.now) {
     if (outcome === 'unknown') return false;
     if (outcome === 'confirmed') return true;
     if (ids.length === 1) {
-      await store.retry(ids[0]);
+      await store.retry(ids[0]!);
       return true;
     }
     const half = Math.floor(ids.length / 2);

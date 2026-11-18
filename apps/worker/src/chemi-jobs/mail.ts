@@ -1,4 +1,4 @@
-import { runChemiMail, type ChemiMaintenanceRpc } from "../chemi-mail-worker.js";
+import { runChemiMail, type ChemiMaintenanceRpc } from "../chemi-mail-worker.ts";
 
 export const chemiMailJob = {
   name: "mail",
