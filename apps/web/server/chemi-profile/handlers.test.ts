@@ -10,7 +10,9 @@ beforeEach(() => { process.env.CHEMI_TAB = "true"; });
 afterEach(() => { if (original === undefined) delete process.env.CHEMI_TAB; else process.env.CHEMI_TAB = original; });
 
 const emptyProfile = { birth: null, consent: null, partners: [], partnerLimit: 10 };
-function deps(rpc: ChemiProfileDependencies["rpc"] = vi.fn(async () => emptyProfile)) {
+const noSummary = { readingDays: 0, askThreads: 0, partners: 0, orders: 0, askPassesLeft: 0, sajuReading: false, fortuneToday: false, starToday: false };
+const emptyResponse = { ...emptyProfile, birthMark: null, summary: noSummary };
+function deps(rpc: ChemiProfileDependencies["rpc"] = vi.fn(async (name: string) => name === "chemi_my_birth_summary" ? noSummary : emptyProfile)) {
   return { rpc: vi.fn(rpc), authorize: vi.fn(async () => ({ appUserId: USER })) };
 }
 const json = (method: string, body: unknown) => new Request("http://localhost/api/chemi/x", {
@@ -24,7 +26,7 @@ describe("chemi profile handlers", () => {
     const d = deps();
     const h = createChemiProfileHandlers(d);
     for (const [run, request] of [[h.getProfile, json("GET", undefined)], [h.putBirth, json("PUT", birth)], [h.deleteBirth, json("DELETE", undefined)],
-      [h.postPartner, json("POST", {})], [h.deletePartner, json("DELETE", { partnerId: PARTNER })]] as const) {
+      [h.postPartner, json("POST", {})], [h.patchPartner, json("PATCH", {})], [h.deletePartner, json("DELETE", { partnerId: PARTNER })]] as const) {
       expect((await run(request)).status).toBe(404);
     }
     expect(d.authorize).not.toHaveBeenCalled();
@@ -43,7 +45,18 @@ describe("chemi profile handlers", () => {
     const response = await createChemiProfileHandlers(deps()).getProfile(new Request("http://localhost/api/chemi/profile", { headers: { authorization: "Bearer t" } }));
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(await response.json()).toEqual(emptyProfile);
+    expect(await response.json()).toEqual(emptyResponse);
+  });
+
+  it("adds the birth mark (year pillar) and erase counts to a saved profile", async () => {
+    const stored = { ...emptyProfile, birth: { birthDate: "1995-05-05", calendar: "solar", birthTime: "14:30", timePrecision: "exact", gender: "female", birthPlace: "서울특별시", ageBand: "adult", editableFrom: null } };
+    const counts = { readingDays: 34, askThreads: 6, partners: 2, orders: 6, askPassesLeft: 11, sajuReading: true, fortuneToday: true, starToday: false };
+    const response = await createChemiProfileHandlers(deps(async (name) => name === "chemi_my_birth_summary" ? counts : stored)).getProfile(json("GET", undefined));
+    expect(await response.json()).toMatchObject({ birthMark: { stem: "을", branch: "해", animal: "돼지", element: "wood" }, summary: counts });
+    // 입춘 전(1995-01-20)은 앞해(갑술년 · 개띠), 입춘 날 시간을 모르면 해가 정해지지 않는다.
+    const before = { ...stored, birth: { ...stored.birth, birthDate: "1995-01-20" } };
+    expect((await (await createChemiProfileHandlers(deps(async (name) => name === "chemi_my_birth_summary" ? counts : before)).getProfile(json("GET", undefined))).json()).birthMark)
+      .toMatchObject({ stem: "갑", branch: "술", animal: "개", element: "wood" });
   });
 
   it("saves birth with the server's consent version and maps the age band", async () => {
@@ -86,6 +99,13 @@ describe("chemi profile handlers", () => {
     const created = await createChemiProfileHandlers(d).postPartner(json("POST", { birthDate: "1997-03-12", calendar: "lunar", birthTime: null, timePrecision: "unknown", gender: null, nickname: " 민지 ", source: "saju" }));
     expect([created.status, await created.json()]).toEqual([201, { partnerId: PARTNER }]);
     expect(d.rpc).toHaveBeenCalledWith("chemi_add_partner", expect.objectContaining({ p_nickname: "민지", p_calendar: "lunar", p_birth_time: null }));
+    const patch = { partnerId: PARTNER, birthDate: "1997-03-13", calendar: "solar", birthTime: "08:10", timePrecision: "exact", gender: "male", nickname: " 민지 " };
+    const updated = await createChemiProfileHandlers(deps(async () => ({ updated: true }))).patchPartner(json("PATCH", patch));
+    expect([updated.status, await updated.json()]).toEqual([200, { updated: true }]);
+    const gone = deps(async () => ({ updated: false }));
+    expect((await createChemiProfileHandlers(gone).patchPartner(json("PATCH", patch))).status).toBe(404);
+    expect(gone.rpc).toHaveBeenCalledWith("chemi_update_partner", expect.objectContaining({ p_partner: PARTNER, p_nickname: "민지", p_birth_time: "08:10" }));
+    expect((await createChemiProfileHandlers(deps()).patchPartner(json("PATCH", { ...patch, partnerId: "nope" }))).status).toBe(400);
     const missing = await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: PARTNER }));
     expect(missing.status).toBe(404);
     expect((await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: "nope" }))).status).toBe(400);

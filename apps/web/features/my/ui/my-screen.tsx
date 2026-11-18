@@ -37,6 +37,9 @@ import { giftText } from "@/features/gifts/ui/gift-text";
 import { MyEventsSection } from "./my-events";
 import { MyStats } from "./my-stats";
 import { MyShortcuts, type MyShortcut } from "./my-shortcuts";
+import { useChemiRelease } from "@/features/chemi/ui/chemi-release";
+import { chemiMyShortcutText } from "@/features/chemi/ui/copy";
+import { MyBirthShortcutDetail } from "@/features/chemi/ui/my-birth/my-birth-shortcut-detail";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import { CreatorImage } from "@/components/fan-ui/creator-image";
 import { FanAppFrame, FanContentContainer, type FanLocale } from "@/components/fan-shell/fan-app-shell";
@@ -248,6 +251,7 @@ function OwnerScopedDashboard({ summary, fallback, locale, avatarResource, refre
 
 function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSlug, onSelectSlug, ownerKey }: { ownerKey: string; summary: MySummary; locale: FanLocale; avatarResource: ReturnType<typeof useAvatar>; refreshSummary: () => void; selectedSlug: string | null; onSelectSlug: (slug: string) => void }) {
   const groupsEnabled=useGroupsRelease();
+  const chemiOn = useChemiRelease();
   const t = copy[locale];
   const w = walletCopy(locale);
   const nickname = summary.profile.nickname?.trim() || null;
@@ -311,7 +315,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       </div>
       <MyEventsSection locale={locale}/>
       <CommunityStampCollection locale={locale} resource={communityStamps} creatorNames={Object.fromEntries(summary.creators.map((creator) => [creator.celebrity.slug, creator.celebrity.name]))}/>
-      <MyShortcuts locale={locale} items={myShortcutItems(locale, hrefWithLocale(locale))} end={<MyLogout locale={locale} shortcut/>}/>
+      <MyShortcuts locale={locale} items={withBirthShortcut(myShortcutItems(locale, hrefWithLocale(locale)), locale, chemiOn)} end={<MyLogout locale={locale} shortcut/>}/>
     </div></DukjilProvider>;
   }
 
@@ -539,6 +543,13 @@ function myShortcutItems(locale: FanLocale, hrefFor: (path: string) => string): 
     { key: "reports", href: hrefFor("/my/groups/reports"), label: groupOwnReportsCopy(locale)[0], art: "reports" },
     { key: "inquiries", href: hrefFor("/my/inquiries"), label: supportCopy[locale].title, art: "inquiries" },
   ];
+}
+/** 케미 탭이 열린 곳에서만 '활동 내역' 다음에 '내 생일 정보' 줄을 둔다(값은 그 줄 안에서 읽는다). */
+function withBirthShortcut(items: MyShortcut[], locale: FanLocale, chemiOn: boolean): MyShortcut[] {
+  if (!chemiOn) return items;
+  const birth: MyShortcut = { key: "birth", href: hrefWithLocale(locale)("/my/birth"), label: chemiMyShortcutText(locale).label, art: "birth", detail: <MyBirthShortcutDetail locale={locale}/> };
+  const at = items.findIndex((item) => item.key === "activity") + 1;
+  return [...items.slice(0, at), birth, ...items.slice(at)];
 }
 const hrefWithLocale = (locale: FanLocale) => (path: string) => `${path}${path.includes("?") ? "&" : "?"}locale=${locale}`;
 

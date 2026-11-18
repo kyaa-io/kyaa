@@ -2,11 +2,12 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
-  chemiBirthErasedSchema, chemiBirthRequestSchema, chemiBirthSavedSchema, chemiPartnerCreateSchema, chemiPartnerCreatedSchema,
-  chemiPartnerDeleteSchema, chemiPartnerDeletedSchema, chemiProfileSchema,
+  chemiBirthErasedSchema, chemiBirthRequestSchema, chemiBirthSavedSchema, chemiBirthSummarySchema, chemiPartnerCreateSchema, chemiPartnerCreatedSchema,
+  chemiPartnerDeleteSchema, chemiPartnerDeletedSchema, chemiPartnerUpdateSchema, chemiPartnerUpdatedSchema, chemiProfileSchema,
 } from "@/features/chemi/domain/contracts/profile";
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
 import { chemiClosedResponse } from "@/server/chemi/dependencies";
+import { birthMark } from "./birth-mark";
 
 // 케미 프로필 API(설계 arch-chemi r3 §3 프로필 줄). 판단은 SQL 함수가 하고 여기서는 요청·응답 꼴만 본다.
 // 생일 지우기(동의 철회)는 feature:* 를 보지 않는다. CHEMI_TAB 이 꺼져 있으면 모든 경로가 404 다.
@@ -49,7 +50,11 @@ const ok = (body: unknown, status = 200) => Response.json(body, { status, header
 
 export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
   return {
-    getProfile: handler(async (_request, d, user) => ok(chemiProfileSchema.parse(await d.rpc("chemi_read_profile", { p_user: user }))))(deps),
+    getProfile: handler(async (_request, d, user) => {
+      const [read, summary] = await Promise.all([d.rpc("chemi_read_profile", { p_user: user }), d.rpc("chemi_my_birth_summary", { p_user: user })]);
+      const profile = chemiProfileSchema.parse(read);
+      return ok({ ...profile, birthMark: profile.birth ? birthMark(profile.birth) : null, summary: chemiBirthSummarySchema.parse(summary) });
+    })(deps),
 
     putBirth: handler(async (request, d, user) => {
       const input = chemiBirthRequestSchema.parse(await boundedJson(request, 2048));
@@ -78,6 +83,15 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
         p_precision: input.timePrecision, p_gender: input.gender, p_source: input.source,
       }));
       return ok(created, 201);
+    })(deps),
+
+    patchPartner: handler(async (request, d, user) => {
+      const input = chemiPartnerUpdateSchema.parse(await boundedJson(request, 2048));
+      const result = chemiPartnerUpdatedSchema.parse(await d.rpc("chemi_update_partner", {
+        p_user: user, p_partner: input.partnerId, p_nickname: input.nickname, p_birth_date: input.birthDate, p_calendar: input.calendar,
+        p_birth_time: input.birthTime, p_precision: input.timePrecision, p_gender: input.gender,
+      }));
+      return result.updated ? ok(result) : Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
     })(deps),
 
     deletePartner: handler(async (request, d, user) => {
