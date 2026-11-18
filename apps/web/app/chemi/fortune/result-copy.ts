@@ -97,17 +97,16 @@ export const spiritNotes: Record<string, [string, string]> = {
   화개살: ["혼자 깊이 몰두하는 기운", "공부·취미·덕질에 집중이 잘 돼요. 사람 많은 자리보다 조용한 자리가 편한 날이에요."],
 };
 
-/** 한국 날짜 2026.11.19 — 시안과 같은 점 표기. */
-export function kstDate(locale: string, at: number = Date.now()) {
-  return new Intl.DateTimeFormat(locale, {
+/** 한국 날짜 2026.11.19 — 시안과 같은 점 표기. Node·브라우저의 로캘 구분자와 무관하게 고정한다. */
+export function kstDate(at: number = Date.now()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-  })
-    .format(at)
-    .replace(/\.\s*/g, ".")
-    .replace(/\.$/, "");
+  }).formatToParts(at);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}.${part("month")}.${part("day")}`;
 }
 
 export function kstWeekday(locale: string, at: number = Date.now()) {

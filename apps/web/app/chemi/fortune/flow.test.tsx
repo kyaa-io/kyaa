@@ -35,8 +35,24 @@ const reading = {
     grade: { name: "좋은 날" },
     fields: { fandom: 91, people: 88, money: 71, rest: 80, work: 85, love: 78 },
     periods: { morning: 84, afternoon: 72, night: 88 },
-    evidence: { dayPillar: "을미", stage: "쇠", spirit: "화개살" },
-    luck: { color: "초록", number: 3, direction: "동", luckyHour: { start: 9, end: 11 } },
+    evidence: {
+      dayPillar: "을미",
+      yearPillar: "병오",
+      relation: "무관",
+      stage: "쇠",
+      spirit: "화개살",
+      tenGod: "식신",
+      useful: "목",
+      timeBasis: "시주 포함",
+    },
+    luck: {
+      color: "초록",
+      number: 3,
+      direction: "동",
+      item: "나무 연필",
+      luckyHour: { start: 9, end: 11 },
+      restHour: null,
+    },
   },
 };
 
@@ -215,6 +231,49 @@ it("shows a failure instead of crashing when a new reading has no lucky data", a
   expect(screen.getByRole("button", { name: "다시 시도" })).toBeVisible();
 });
 
+it("rejects a new reading whose display or detail field has the wrong type", async () => {
+  const wrong = [
+    { luck: { ...reading.result.luck, color: { name: "초록" } } },
+    { luck: { ...reading.result.luck, number: "3" } },
+    { luck: { ...reading.result.luck, restHour: { start: "a", end: 1 } } },
+    { evidence: { ...reading.result.evidence, yearPillar: { cycle: 1 } } },
+    { evidence: { ...reading.result.evidence, useful: undefined } },
+  ];
+  for (const patch of wrong) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (path: string) =>
+        path === "/api/chemi/readings"
+          ? Response.json({ ...reading, result: { ...reading.result, ...patch } })
+          : Response.json({ participation: null }),
+      ),
+    );
+    const { unmount } = render(<FortuneFlow locale="ko" />);
+    fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+    expect(await screen.findByText("운세를 불러오지 못했습니다.")).toBeVisible();
+    unmount();
+    window.history.replaceState(null, "", "/chemi/fortune");
+  }
+});
+
+it("rejects a reading whose headline or reward fields are not text and numbers", async () => {
+  for (const patch of [{ styled: { headline: { a: 1 } } }, { reward: { exp: { a: 1 } } }]) {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (path: string) =>
+        path === "/api/chemi/readings"
+          ? Response.json({ ...reading, ...patch })
+          : Response.json({ participation: null }),
+      ),
+    );
+    const { unmount } = render(<FortuneFlow locale="ko" />);
+    fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+    expect(await screen.findByText("운세를 불러오지 못했습니다.")).toBeVisible();
+    unmount();
+    window.history.replaceState(null, "", "/chemi/fortune");
+  }
+});
+
 it("sends a restored reading without lucky data back to the entrance", async () => {
   window.history.replaceState(null, "", "/chemi/fortune?step=talk-4&c=changha&r=reading");
   vi.stubGlobal(
@@ -273,6 +332,42 @@ it("resumes the calculation when the member goes back and then forward during it
   expect(await screen.findByText("좋다, 더 말해 줘", {}, { timeout: 4000 })).toBeVisible();
   expect(window.location.search).toContain("step=talk-1");
   expect(request.mock.calls.filter(([path]) => path === "/api/chemi/readings").length).toBeGreaterThanOrEqual(2);
+});
+
+it("does not turn a new calculation for another character into the earlier result when going back and forward", async () => {
+  let second: (response: Response) => void = () => {};
+  let calls = 0;
+  const request = vi.fn((path: string) => {
+    if (path !== "/api/chemi/readings") return Promise.resolve(Response.json({ participation: null }));
+    calls += 1;
+    return calls === 1
+      ? Promise.resolve(Response.json(reading))
+      : new Promise<Response>((resolve) => (second = resolve));
+  });
+  vi.stubGlobal("fetch", request);
+  window.history.replaceState(null, "", "/chemi/fortune?c=changha");
+  render(<FortuneFlow locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  expect(await screen.findByText("좋다, 더 말해 줘", {}, { timeout: 3000 })).toBeVisible();
+  // 다른 최애로 바꿔 새 계산을 시작한다. 응답은 아직 오지 않았다.
+  window.history.replaceState(null, "", "/chemi/fortune?c=changha");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  fireEvent.click((await screen.findAllByRole("button", { name: "다음 최애" }))[0]);
+  const other = new URLSearchParams(window.location.search).get("c");
+  expect(other).not.toBe("changha");
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  await waitFor(() => expect(window.location.search).toContain("step=calc"));
+  const calcUrl = window.location.search;
+  // 응답 전에 뒤로 갔다가 앞으로 간다.
+  window.history.replaceState(null, "", `/chemi/fortune?c=${other}`);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  window.history.replaceState({ fortuneDepth: 1 }, "", `/chemi/fortune${calcUrl}`);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  await waitFor(() => expect(calls).toBe(3));
+  expect(window.location.search).not.toContain("r=reading&step=talk");
+  expect(new URLSearchParams(window.location.search).get("c")).toBe(other);
+  second(Response.json({ ...reading, readingId: "other-reading" }));
+  await waitFor(() => expect(window.location.search).toContain("r=other-reading"), { timeout: 4000 });
 });
 
 it("shows a loading shape, not the entrance, while a restored address loads", async () => {

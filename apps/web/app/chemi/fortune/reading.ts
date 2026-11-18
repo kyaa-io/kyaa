@@ -38,36 +38,72 @@ export function todayKst() {
 }
 
 const isNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value);
+const isText = (value: unknown) => typeof value === "string";
 const isHour = (value: unknown) =>
   value == null ||
   (typeof value === "object" && isNumber((value as any).start) && isNumber((value as any).end));
 
-/** 화면이 곧바로 읽는 필드의 모양을 확인한다. 하나라도 어긋나면 이 풀이는 그리지 않는다. */
+/**
+ * 화면이 읽는 필드(결과·행운·근거 상세까지)의 모양을 확인한다.
+ * 하나라도 어긋나면 이 풀이는 그리지 않는다 — 문자열 자리에 객체가 오면 그리다 멈춘다.
+ */
 function isFortuneResult(result: Record<string, any> | null | undefined) {
   if (!result || result.locked !== false) return false;
   const { fields, periods, luck, evidence } = result;
   return (
     isNumber(result.score) &&
-    typeof result.grade?.name === "string" &&
+    isText(result.grade?.name) &&
     ["fandom", "people", "work", "rest", "love", "money"].every((key) => isNumber(fields?.[key])) &&
     ["morning", "afternoon", "night"].every((key) => isNumber(periods?.[key])) &&
     typeof luck === "object" &&
     luck !== null &&
+    ["color", "direction", "item"].every((key) => isText(luck[key])) &&
+    isNumber(luck.number) &&
     isHour(luck.luckyHour) &&
     isHour(luck.restHour) &&
-    typeof evidence?.dayPillar === "string" &&
+    ["dayPillar", "yearPillar", "relation", "tenGod", "useful", "timeBasis"].every((key) =>
+      isText(evidence?.[key]),
+    ) &&
     Object.hasOwn(stageNotes, evidence.stage) &&
     Object.hasOwn(spiritNotes, evidence.spirit)
   );
 }
 
+const optional = (value: unknown, ok: (value: unknown) => boolean) => value == null || ok(value);
+const isObject = (value: unknown): value is Record<string, any> =>
+  typeof value === "object" && value !== null;
+
+/** 화면이 그대로 그리는 한마디·보상 필드의 모양. 없는 건 괜찮고, 있는데 다른 모양이면 거절한다. */
+function isFortuneExtras(value: Record<string, any>) {
+  const { styled, reward } = value;
+  return (
+    optional(styled, (item) => {
+      const { headline, share } = item as Record<string, any>;
+      return (
+        isObject(item) &&
+        optional(headline, isText) &&
+        optional(share, (card) => isObject(card) && optional(card.line, isText))
+      );
+    }) &&
+    optional(
+      reward,
+      (item) =>
+        isObject(item) &&
+        optional(item.points, isNumber) &&
+        optional(item.exp, isNumber) &&
+        optional(item.stamp, (flag) => typeof flag === "boolean"),
+    )
+  );
+}
+
 /** 방금 만든 풀이 응답. 저장된 한국 날짜가 있어야 화면이 그 날짜로 표시한다. */
-function parseNewFortune(data: unknown): FortuneReading | null {
+export function parseNewFortune(data: unknown): FortuneReading | null {
   const value = data as { readingId?: unknown; kstDate?: unknown; result?: any } | null;
   if (
     typeof value?.readingId !== "string" ||
     typeof value.kstDate !== "string" ||
-    !isFortuneResult(value.result)
+    !isFortuneResult(value.result) ||
+    !isFortuneExtras(value)
   )
     return null;
   return value as unknown as FortuneReading;

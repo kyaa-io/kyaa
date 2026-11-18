@@ -20,7 +20,7 @@ import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
-import type { FortuneReading as Reading } from "./reading";
+import { parseNewFortune, type FortuneReading as Reading } from "./reading";
 import {
   band,
   flowNotes,
@@ -100,13 +100,15 @@ export function FortuneResult({
             character,
           }),
         });
-        data = await response.json();
+        const body = await response.json();
         if (signal.aborted) return;
-        if ((data as { error?: { code?: string } }).error?.code === "CHEMI_BIRTH_REQUIRED") {
+        if (body?.error?.code === "CHEMI_BIRTH_REQUIRED") {
           setStatus("empty");
           return;
         }
-        if (!response.ok || !data.result) throw Error();
+        const parsed = response.ok ? parseNewFortune(body) : null;
+        if (!parsed) throw Error();
+        data = parsed;
       }
       setReading(data);
       setPoints(data.reward?.points ?? 0);
@@ -191,7 +193,7 @@ export function FortuneResult({
       </FanText>
       {status === "result" && (
         <FanText as="time" role="meta">
-          {kstDate("ko", day)} ({kstWeekday("ko", day)})
+          {kstDate(day)} ({kstWeekday("ko", day)})
         </FanText>
       )}
     </div>

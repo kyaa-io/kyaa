@@ -137,6 +137,8 @@ export function FortuneFlow({
   const [participation, setParticipation] = useState<Participation>(null);
   const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
+  /** 화면에 있는 `reading`을 받은 최애. 주소의 최애와 다르면 그 결과는 이 주소의 것이 아니다. */
+  const readingOf = useRef<FortuneCharacterId | null>(null);
 
   const day = kstDayStart(reading?.kstDate);
   const index = fortuneCharacters.findIndex((c) => c.id === character);
@@ -162,6 +164,7 @@ export function FortuneFlow({
         );
         const data = parseTodayFortune(await response.json().catch(() => null));
         if (!response.ok || !data) throw Error();
+        readingOf.current = id;
         setReading({ ...data, readingId, replayed: true });
         setStep(reachableFortuneStep(target, true));
       } catch {
@@ -215,6 +218,7 @@ export function FortuneFlow({
         await new Promise((resolve) => setTimeout(resolve, wait));
         if (abort.current !== controller) return;
         if (controller.signal.aborted) throw Error();
+        readingOf.current = id;
         setReading(data);
         setPhase("idle");
         setNeedBirth(false);
@@ -256,7 +260,9 @@ export function FortuneFlow({
       const url = readUrl();
       setCharacter(url.character);
       setPhase("idle");
-      if (url.step === "calc" && !reading) {
+      // 이전 최애의 결과가 남아 있어도 주소의 최애 결과가 아니면 없는 것으로 본다.
+      const shown = reading && readingOf.current === url.character ? reading : undefined;
+      if (url.step === "calc" && !shown) {
         if (!authenticated) {
           writeUrl({ step: null }, "replace", 0);
           setStep("enter");
@@ -266,10 +272,10 @@ export function FortuneFlow({
         void run(url.character);
         return;
       }
-      const next = reachableFortuneStep(url.step, Boolean(reading));
+      const next = reachableFortuneStep(url.step, Boolean(shown));
       // 주소가 가리키는 단계와 보이는 단계가 다르면 주소를 보이는 단계에 맞춘다.
       if (next !== url.step)
-        writeUrl({ step: next === "enter" ? null : next, r: reading?.readingId ?? null }, "replace");
+        writeUrl({ step: next === "enter" ? null : next, r: shown?.readingId ?? null }, "replace");
       setStep(next);
     }
     window.addEventListener("popstate", onPop);
@@ -453,7 +459,7 @@ export function FortuneFlow({
             </FanText>
             {talk && (
               <FanText as="time" role="meta">
-                {kstDate("ko", day)}
+                {kstDate(day)}
               </FanText>
             )}
             {talk && (

@@ -34,16 +34,27 @@ it("copies the public share URL and records completion only after a successful c
     if (path === "/api/chemi/readings")
       return Response.json({
         readingId: "reading",
+        kstDate: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now()),
         styled: null,
         replayed: true,
         reward: {},
         result: {
+          locked: false,
           score: 82,
           grade: { name: "좋은 날" },
           fields: { fandom: 88, people: 81, money: 79, rest: 83, work: 80, love: 75 },
           periods: { morning: 84, afternoon: 72, night: 88 },
-          evidence: { dayPillar: "정유", stage: "쇠", spirit: "화개살" },
-          luck: { color: "초록" },
+          evidence: {
+            dayPillar: "정유",
+            yearPillar: "병오",
+            relation: "무관",
+            stage: "쇠",
+            spirit: "화개살",
+            tenGod: "식신",
+            useful: "목",
+            timeBasis: "시주 포함",
+          },
+          luck: { color: "초록", number: 3, direction: "동", item: "나무 연필" },
         },
       });
     if (path === "/api/chemi/rewards/today")
@@ -140,16 +151,27 @@ it("sends the member to the Chemi home from the main button until questions exis
       path === "/api/chemi/readings"
         ? Response.json({
             readingId: "reading",
+            kstDate: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now()),
             styled: null,
             replayed: true,
             reward: {},
             result: {
+              locked: false,
               score: 82,
               grade: { name: "좋은 날" },
               fields: { fandom: 88, people: 81, money: 79, rest: 83, work: 80, love: 75 },
               periods: { morning: 84, afternoon: 72, night: 88 },
-              evidence: { dayPillar: "정유", stage: "쇠", spirit: "화개살" },
-              luck: { color: "초록" },
+              evidence: {
+                dayPillar: "정유",
+                yearPillar: "병오",
+                relation: "무관",
+                stage: "쇠",
+                spirit: "화개살",
+                tenGod: "식신",
+                useful: "목",
+                timeBasis: "시주 포함",
+              },
+              luck: { color: "초록", number: 3, direction: "동", item: "나무 연필" },
             },
           })
         : Response.json({ grants: [] }),
