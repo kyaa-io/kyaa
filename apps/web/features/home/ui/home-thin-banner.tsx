@@ -17,8 +17,8 @@ export function ThinBanner({ banner, locale, size = "thin" }: { banner: HomeBann
   const ad = banner.category === "ad";
   const mobile = size === "side" ? banner.desktopImage : banner.mobileImage ?? banner.desktopImage;
   const picture = <picture>
-    {size !== "side" && <source media={size === "thin" ? "(min-width: 64rem)" : "(min-width: 48rem)"} srcSet={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} />}
-    <img src={mobile.url} width={mobile.width} height={mobile.height} alt={banner.alt || banner.title} loading="lazy" decoding="async" />
+    <source media={size === "side" ? "(min-width: 80rem)" : size === "thin" ? "(min-width: 64rem)" : "(min-width: 48rem)"} srcSet={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} />
+    <img src={size === "side" ? undefined : mobile.url} width={mobile.width} height={mobile.height} alt={banner.alt || banner.title} loading="lazy" decoding="async" />
   </picture>;
   const mark = ad ? <FanTag tone="neutral" className={styles.tag}>{bannerCategoryLabel("ad", locale)}</FanTag> : null;
   return <div className={size === "mid" ? `${styles.strip} ${styles.stripMid}` : size === "side" ? `${styles.strip} ${styles.stripSide}` : styles.strip} data-home-thin-banner data-banner-id={banner.id} data-banner-size={size}>

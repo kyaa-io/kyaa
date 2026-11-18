@@ -27,10 +27,10 @@ it("reads group-discovery banners through the placement-specific RPC", async()=>
 });
 
 it("reads the 덕질 area and keeps only its own slots", async()=>{
- const rpc=vi.fn().mockResolvedValue({data:{dukjil_mid:{...valid,placement:'dukjil_mid',category:'event'},dukjil_side:{...valid,placement:'dukjil_side',category:'ad'},home_mid:{...valid,placement:'home_mid'}},error:null});
+ const rpc=vi.fn().mockResolvedValue({data:{dukjil_mid:{...valid,placement:'dukjil_mid',category:'event'},dukjil_side:{...valid,placement:'dukjil_side',category:'ad'},dukjil_side_2:{...valid,placement:'dukjil_side_2',category:'ad'},dukjil_side_3:{...valid,placement:'dukjil_side_3',category:'ad'},home_mid:{...valid,placement:'home_mid'}},error:null});
  const slots=await createHomeBannerRepository({url:undefined,serviceRoleKey:undefined}, {rpc} as never).listSlots('ko','dukjil');
  expect(rpc).toHaveBeenCalledWith('read_published_slot_banners',{p_locale:'ko',p_area:'dukjil'});
- expect(Object.keys(slots)).toEqual(['dukjil_mid','dukjil_side']);
+ expect(Object.keys(slots)).toEqual(['dukjil_mid','dukjil_side','dukjil_side_2','dukjil_side_3']);
 });
 it("reads home_mid with the home slots", async()=>{
  const rpc=vi.fn().mockResolvedValue({data:{home_mid:{...valid,placement:'home_mid',category:'ad'}},error:null});
