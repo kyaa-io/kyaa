@@ -83,15 +83,11 @@ describe("chemi profile handlers", () => {
     expect([unknown.status, await unknown.json()]).toEqual([503, { error: { code: "CHEMI_UNAVAILABLE" } }]);
   });
 
-  it("adds partners through v2 and deletes them with the stored partner's fingerprint", async () => {
-    const SALT = "ab".repeat(32);
-    const stored = { id: PARTNER, nickname: "민지", birthDate: "1997-03-12", calendar: "lunar", birthTime: null, timePrecision: "unknown", gender: null, source: "saju", lastUsedAt: "2027-01-13T00:00:00Z" };
+  it("adds partners through v2 and deletes them with one locked v3 call", async () => {
     let deleted = false;
     const d = deps(async (name) => {
       if (name === "chemi_add_partner_v2") return { partnerId: PARTNER, rev: 7 };
-      if (name === "chemi_read_profile") return { ...emptyProfile, partners: deleted ? [] : [stored] };
-      if (name === "chemi_fp_salt") return SALT;
-      if (name === "chemi_delete_partner_v2") { deleted = true; return { deleted: true }; }
+      if (name === "chemi_delete_partner_v3") { const was = deleted; deleted = true; return { deleted: !was }; }
       throw new Error(`unexpected ${name}`);
     });
     const created = await createChemiProfileHandlers(d).postPartner(json("POST", { birthDate: "1997-03-12", calendar: "lunar", birthTime: null, timePrecision: "unknown", gender: null, nickname: " 민지 ", source: "saju" }));
@@ -99,13 +95,20 @@ describe("chemi profile handlers", () => {
     expect(d.rpc).toHaveBeenCalledWith("chemi_add_partner_v2", expect.objectContaining({ p_nickname: "민지", p_calendar: "lunar", p_birth_time: null, p_place_code: null }));
     const removed = await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: PARTNER }));
     expect([removed.status, await removed.json()]).toEqual([200, { deleted: true }]);
-    const fp = d.rpc.mock.calls.find(([name]) => name === "chemi_delete_partner_v2")?.[1]?.p_fp;
-    expect(fp).toBe(chemiPartnerFingerprint(SALT, stored));
-    expect(fp).toMatch(/^fp:[0-9a-f]{32}$/);
+    expect(d.rpc).toHaveBeenCalledWith("chemi_delete_partner_v3", { p_user: expect.any(String), p_partner: PARTNER });
     const missing = await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: PARTNER }));
     expect(missing.status).toBe(404);
     expect((await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: "nope" }))).status).toBe(400);
-    for (const old of ["chemi_add_partner", "chemi_delete_partner"]) expect(d.rpc).not.toHaveBeenCalledWith(old, expect.anything());
+    // 삭제 길은 조회·소금 RPC 를 따로 부르지 않는다(검토 ISSUE 1: 그 사이 철회·탈퇴가 끝나면 소금이 되살아났다).
+    for (const other of ["chemi_add_partner", "chemi_delete_partner", "chemi_delete_partner_v2", "chemi_fp_salt", "chemi_read_profile"]) {
+      expect(d.rpc).not.toHaveBeenCalledWith(other, expect.anything());
+    }
+  });
+
+  it("fingerprint test vectors match the SQL chemi_partner_fp vectors in r4_profile.sql E3", () => {
+    const salt = "01".repeat(32);
+    expect(chemiPartnerFingerprint(salt, { birthDate: "1997-03-12", calendar: "solar", birthTime: "08:10", timePrecision: "band", gender: "male" })).toBe("fp:6c0a293e0166149e48d52762d2329597");
+    expect(chemiPartnerFingerprint(salt, { birthDate: "1998-01-01", calendar: "lunar", birthTime: null, timePrecision: "unknown", gender: null })).toBe("fp:ecfdf362a75372e01193b9a402893946");
   });
 
   it("fingerprints ignore place and nickname but change with birth input", () => {

@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
+import { chemiPartnerFingerprint } from "./fingerprint";
 import { createChemiProfileHandlers } from "./handlers";
 
 // 실제 SQL 응답을 라우트 스키마에 통과시키는 시험. 명시적으로 켤 때만 돈다(일회용 DB, 비밀 없음):
@@ -61,5 +62,40 @@ it.skipIf(!db)("profile routes run against the real chemi SQL functions, empty s
   const erased = await call(h.deleteBirth, "DELETE");
   expect([erased.status, (await erased.json()).erased.profile]).toEqual([200, 1]);
   expect(await (await call(h.getProfile, "GET")).json()).toEqual({ birth: null, consent: null, partners: [], partnerLimit: 10 });
+
+  // 검토 ISSUE 1: 지문은 SQL(chemi_partner_fp)과 fingerprint.ts 가 같은 값이어야 v3 가 그 줄을 찾는다.
+  const birth = { birthDate: "1995-05-05", calendar: "solar", birthTime: null, timePrecision: "unknown", gender: null, birthPlace: null, consent: true };
+  const stored = { birthDate: "1997-03-12", calendar: "solar", birthTime: "08:10", timePrecision: "band", gender: "male" };
+  expect((await call(h.putBirth, "PUT", birth)).status).toBe(200);
+  const p2 = (await (await call(h.postPartner, "POST", { nickname: "민지", ...stored, source: "saju" })).json()).partnerId;
+  const salt = sql(`select public.chemi_fp_salt('${user}')`);
+  const fp = chemiPartnerFingerprint(salt, stored);
+  sql(`insert into public.chemi_readings(user_id,content,kind,character,kst_date,target_key,result,engine_version,table_version,opened_by)
+    values('${user}','saju','compat','changha',public.dukjil_kst_date(),'${fp}','{}','e','t','free')`);
+  expect((await call(h.deletePartner, "DELETE", { partnerId: p2 })).status).toBe(200);
+  expect(sql(`select count(*) from public.chemi_readings where user_id='${user}' and target_key='${fp}'`)).toBe("0");
+
+  // 검토 ISSUE 1: 화면이 상대를 본 뒤 생일 철회가 먼저 끝나고, 늦게 온 지우기 → 404, 소금은 비운 채로 남는다.
+  const p3 = (await (await call(h.postPartner, "POST", { nickname: "하나", ...stored, source: "saju" })).json()).partnerId;
+  expect((await call(h.getProfile, "GET")).status).toBe(200);
+  expect((await call(h.deleteBirth, "DELETE")).status).toBe(200);
+  expect((await call(h.deletePartner, "DELETE", { partnerId: p3 })).status).toBe(404);
+  expect(sql(`select count(*) from public.chemi_user_state where user_id='${user}' and fp_salt is not null`)).toBe("0");
+  expect(sql(`select coalesce(public.chemi_fp_salt('${user}'), 'null')`)).toBe("null");
+  expect(sql(`select count(*) from public.chemi_user_state where user_id='${user}' and fp_salt is not null`)).toBe("0");
+
+  // 검토 ISSUE 1: 상대를 본 뒤 탈퇴가 완료(묘비)되고, 늦게 온 지우기 → 403, 케미 상태 줄이 다시 생기지 않는다.
+  expect((await call(h.putBirth, "PUT", birth)).status).toBe(200);
+  const p4 = (await (await call(h.postPartner, "POST", { nickname: "셋", ...stored, source: "saju" })).json()).partnerId;
+  sql(`select public.chemi_fp_salt('${user}')`);
+  sql(`select public.chemi_begin_account_deletion('did:privy:chemi-profile-${user}')`);
+  const lease = sql(`select public.claim_account_deletion('${user}')->>'leaseToken'`);
+  expect(sql(`select public.chemi_complete_account_deletion('${user}', '${lease}')`)).toBe("t");
+  expect(sql(`select count(*) from public.chemi_user_state where user_id='${user}'`)).toBe("0");
+  const late = await call(h.deletePartner, "DELETE", { partnerId: p4 });
+  expect([late.status, (await late.json()).error.code]).toEqual([403, "CHEMI_ACCOUNT_CLOSED"]);
+  await expect(rpc("chemi_fp_salt", { p_user: user })).rejects.toThrow("CHEMI_ACCOUNT_CLOSED");
+  expect(sql(`select count(*) from public.chemi_user_state where user_id='${user}'`)).toBe("0");
+  expect(sql(`select count(*) from public.chemi_partners where user_id='${user}'`)).toBe("0");
   // 시험 계정(app_users 1줄)은 다른 표의 기록이 붙어 지우지 않는다. 일회용 DB 를 지워 정리한다.
 });

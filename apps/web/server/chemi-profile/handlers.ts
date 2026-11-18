@@ -7,10 +7,9 @@ import {
 } from "@/features/chemi/domain/contracts/profile";
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
 import { chemiClosedResponse } from "@/server/chemi/dependencies";
-import { chemiPartnerFingerprint } from "./fingerprint";
 
 // 케미 프로필 API(설계 arch-chemi r3 §3 프로필 줄). 판단은 SQL 함수가 하고 여기서는 요청·응답 꼴만 본다.
-// 생일·상대 저장은 r4 v2 함수만 부른다(옛 chemi_save_birth·chemi_add_partner·chemi_delete_partner 는 service_role 권한 회수).
+// 생일·상대 저장은 r4 v2 함수, 상대 지우기는 v3 만 부른다(옛 chemi_save_birth·chemi_add_partner·chemi_delete_partner·chemi_delete_partner_v2 는 service_role 권한 회수).
 // 생일 지우기(동의 철회)는 feature:* 를 보지 않는다. CHEMI_TAB 이 꺼져 있으면 모든 경로가 404 다.
 
 export interface ChemiProfileDependencies {
@@ -87,15 +86,9 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
 
     deletePartner: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiPartnerDeleteSchema.parse(await boundedJson(request, 512));
-      const notFound = () => Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
-      // 지문 줄(궁합 결과)을 함께 지우려면 지금 저장된 상대 입력으로 지문을 만든다.
-      const partner = chemiProfileSchema.parse(await d.rpc("chemi_read_profile", { p_user: user })).partners.find((p) => p.id === input.partnerId);
-      if (!partner) return notFound();
-      const salt = z.string().parse(await d.rpc("chemi_fp_salt", { p_user: user }));
-      const result = chemiPartnerDeletedSchema.parse(await d.rpc("chemi_delete_partner_v2", {
-        p_user: user, p_partner: input.partnerId, p_fp: chemiPartnerFingerprint(salt, partner),
-      }));
-      return result.deleted ? ok(result) : notFound();
+      // 상대 조회·지문·삭제를 한 RPC(사용자 잠금 아래)에서 한다: 조회 뒤 철회·탈퇴가 끝나도 소금·상태 줄이 다시 생기지 않는다.
+      const result = chemiPartnerDeletedSchema.parse(await d.rpc("chemi_delete_partner_v3", { p_user: user, p_partner: input.partnerId }));
+      return result.deleted ? ok(result) : Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
     })(deps),
   };
 }

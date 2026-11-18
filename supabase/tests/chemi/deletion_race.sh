@@ -155,4 +155,37 @@ for i in 1 2 3 4; do
 done
 [ "$($P -At -c "select count(distinct (select count(*) from public.mobile_fan_economy_ledger l where l.app_user_id=u.id and l.source_type='chemi_reward')) from public.app_users u where u.id::text like 'cae00000-%'")" = 2 ] || fail "⑦d only one ordering was exercised"
 
+# ⑦e 검토 ISSUE 1: 상대 지우기(v3)와 생일 철회·탈퇴 완료를 동시에, 순서 양쪽 → 끝에 소금·상태 줄이 되살아나지 않는다(교착 0).
+for i in 1 2 3 4; do
+  U=cee00000-0000-4000-8000-0000000000$(printf %02d $i); S=did:privy:chemi-race-11-$i
+  user "$U" "$S"
+  $P -At >/dev/null <<SQL
+select public.chemi_save_birth_v2('$U','1995-05-05','solar',null,'unknown',null,null,null,null,null,null,null,'v1');
+select public.chemi_add_partner_v2('$U','민지','1997-03-12','solar','08:10','band','male','saju',null,null,null,null);
+select public.chemi_fp_salt('$U');
+SQL
+  PA=$($P -At -c "select id from public.chemi_partners where user_id='$U'")
+  if [ $((i % 2)) = 0 ]; then a=0; b=0.3; else a=0.3; b=0; fi
+  if [ $i -le 2 ]; then
+    other="select public.chemi_withdraw_birth_consent('$U')"
+  else
+    $P -At -c "select public.chemi_begin_account_deletion('$S')" >/dev/null
+    TOKEN=$($P -At -c "select public.claim_account_deletion('$U')->>'leaseToken'")
+    other="select public.chemi_complete_account_deletion('$U','$TOKEN')"
+  fi
+  ($P -At -c "begin; select pg_sleep($a); select public.chemi_delete_partner_v3('$U','$PA'); select pg_sleep(0.6); commit;" >"$OUT/v$i" 2>&1 || true) &
+  ($P -At -c "begin; select pg_sleep($b); $other; select pg_sleep(0.6); commit;" >"$OUT/w$i" 2>&1 || true) &
+  wait
+  ! grep -q "deadlock" "$OUT/v$i" "$OUT/w$i" || fail "⑦e.$i deadlock"
+  [ "$($P -At -c "select count(*) from public.chemi_partners where user_id='$U'")" = 0 ] || fail "⑦e.$i partner left"
+  if [ $i -le 2 ]; then
+    grep -q '"profile"' "$OUT/w$i" || fail "⑦e.$i withdraw: $(cat "$OUT/w$i")"
+    [ "$($P -At -c "select count(*) from public.chemi_user_state where user_id='$U' and fp_salt is not null")" = 0 ] || fail "⑦e.$i salt recreated after withdrawal"
+  else
+    grep -qx t "$OUT/w$i" || fail "⑦e.$i complete: $(cat "$OUT/w$i")"
+    [ "$($P -At -c "select count(*) from public.chemi_user_state where user_id='$U'")" = 0 ] || fail "⑦e.$i chemi_user_state recreated after deletion"
+    if ! grep -q '"deleted" *: *true' "$OUT/v$i"; then grep -q CHEMI_ACCOUNT_CLOSED "$OUT/v$i" || fail "⑦e.$i delete: $(cat "$OUT/v$i")"; fi
+  fi
+done
+
 echo "deletion_race DB-only ok; NOT VERIFIED: web ⑥, real payment ⑦, payment/webhook/manual resolve ⑧–⑩ (W1-PAY); D2 remains pending"

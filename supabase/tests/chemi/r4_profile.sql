@@ -3,6 +3,7 @@
 --  B. 권한: 옛 프로필 RPC 3개 service_role false · v2 true · 내부·트리거 함수 false · 새 표 4개 닫힘
 --  C. 상대 고치기·지우기(r4c #18·#19, r4b #11) · 생일 철회(r4b #12·#13 의 M1 꼴) · 0시 정리(#16)
 --  D. 트리거: 옛 저장 함수로도 birth_rev 오름(r4b §2.4 #9) · 옛 궁합 쓰기가 장부에 남음(U2) · 제재 계정(restricted)
+--  E. 검토 ISSUE 1: 상대를 본 뒤 철회·탈퇴 완료 → 늦게 온 지우기가 소금·상태 줄을 만들지 않음 · SQL 지문 = fingerprint.ts 시험값
 begin;
 create function pg_temp.expect_error(statement text, expected text) returns void language plpgsql as $$
 begin execute statement; raise exception 'expected:%', expected;
@@ -131,15 +132,16 @@ do $$
 declare bad text;
 begin
   select string_agg(p.oid::regprocedure::text, ', ') into bad from pg_proc p where p.pronamespace = 'public'::regnamespace
-    and p.proname in ('chemi_save_birth','chemi_add_partner','chemi_delete_partner') and has_function_privilege('service_role', p.oid, 'execute');
+    and (p.proname in ('chemi_save_birth','chemi_add_partner','chemi_delete_partner') or p.oid = 'public.chemi_delete_partner_v2(uuid,uuid,text)'::regprocedure)
+    and has_function_privilege('service_role', p.oid, 'execute');
   if bad is not null then raise exception 'B old profile RPC still executable: %', bad; end if;
   select string_agg(p.oid::regprocedure::text, ', ') into bad from pg_proc p where p.pronamespace = 'public'::regnamespace
-    and p.proname in ('chemi_save_birth_v2','chemi_add_partner_v2','chemi_update_partner_v2','chemi_delete_partner_v2','chemi_purge_ephemeral',
+    and p.proname in ('chemi_save_birth_v2','chemi_add_partner_v2','chemi_update_partner_v2','chemi_delete_partner_v3','chemi_purge_ephemeral',
       'chemi_fp_salt','chemi_begin_account_deletion','chemi_complete_account_deletion','chemi_withdraw_birth_consent','chemi_read_profile')
     and not has_function_privilege('service_role', p.oid, 'execute');
   if bad is not null then raise exception 'B route RPC not executable: %', bad; end if;
   select string_agg(p.oid::regprocedure::text, ', ') into bad from pg_proc p where p.pronamespace = 'public'::regnamespace
-    and p.proname in ('chemi_assert_unrestricted','chemi_erase_partner_rows','chemi_profile_rev_trg','chemi_partner_rev_trg','chemi_readings_legacy_use_trg',
+    and p.proname in ('chemi_assert_unrestricted','chemi_erase_partner_rows','chemi_partner_fp','chemi_profile_rev_trg','chemi_partner_rev_trg','chemi_readings_legacy_use_trg',
       'chemi_erase_user','chemi_release_user_holds')
     and (has_function_privilege('service_role', p.oid, 'execute') or has_function_privilege('anon', p.oid, 'execute')
       or has_function_privilege('authenticated', p.oid, 'execute'));
@@ -225,7 +227,10 @@ begin
   if (select fp_salt from public.chemi_user_state where user_id = u) is not null then raise exception '#12 fp_salt kept'; end if;
   if (select string_agg(kind, ',') from public.chemi_charms where user_id = u) <> 'special' then raise exception '#12 charms'; end if;
   if (select count(*) from public.chemi_daily_uses where user_id = u and item_key ~ 'fp:|love') > 0 then raise exception '#12 fingerprint text left'; end if;
-  -- 다시 등록하면 새 소금
+  -- 생일이 없으면 소금을 만들지 않는다(ISSUE 1). 다시 등록하면 새 소금
+  if public.chemi_fp_salt(u) is not null or (select fp_salt from public.chemi_user_state where user_id = u) is not null then
+    raise exception '#12 salt recreated without birth consent'; end if;
+  perform public.chemi_save_birth_v2(u, '1995-05-05', 'solar', null, 'unknown', 'female', null, null, null, null, null, null, 'v1');
   if public.chemi_fp_salt(u) = salt then raise exception '#12 salt reused'; end if;
 
   -- #16 0시 정리: purge_after ≤ 오늘 풀이 삭제 + 장부 참조 지움, 그제 이전 장부 줄 삭제, 어제·오늘은 유지
@@ -280,6 +285,48 @@ begin
   update public.app_user_moderation_restrictions set revoked_at = now() where app_user_id = u;
   set local session_replication_role = origin;
   perform public.chemi_save_birth_v2(u, '1995-05-07', 'solar', null, 'unknown', null, null, null, null, null, null, null, 'v1');
+end $$;
+-- E ------------------------------------------------------------------------------------------------
+do $$
+declare u uuid := extensions.gen_random_uuid(); p uuid; tok uuid; s1 bytea := decode(repeat('01', 32), 'hex'); fp text; t uuid; res jsonb;
+begin
+  -- E3 지문 시험값(apps/web/server/chemi-profile/handlers.test.ts 와 같은 값)
+  if public.chemi_partner_fp(s1, '1997-03-12', 'solar', '08:10', 'band', 'male') <> 'fp:6c0a293e0166149e48d52762d2329597'
+    or public.chemi_partner_fp(s1, '1998-01-01', 'lunar', null, 'unknown', null) <> 'fp:ecfdf362a75372e01193b9a402893946' then
+    raise exception 'E3 SQL fingerprint differs from fingerprint.ts'; end if;
+
+  -- E3 v3 는 저장된 입력과 이미 있는 소금으로 지문 줄을 찾아 지운다
+  insert into public.app_users (id, privy_user_id, verified_email) values (u, 'did:privy:r4-e', 'r4e@example.test');
+  perform public.chemi_save_birth_v2(u, '1995-05-05', 'solar', null, 'unknown', 'female', null, null, null, null, null, null, 'v1');
+  p := (public.chemi_add_partner_v2(u, '민지', '1997-03-12', 'solar', '08:10', 'band', 'male', 'saju', null, null, null, null) ->> 'partnerId')::uuid;
+  fp := 'fp:' || left(encode(extensions.hmac(convert_to('1997-03-12|solar|08:10|band|male', 'UTF8'), decode(public.chemi_fp_salt(u), 'hex'), 'sha256'), 'hex'), 32);
+  insert into public.chemi_readings (user_id, content, kind, character, kst_date, target_key, result, engine_version, table_version, opened_by)
+    values (u, 'saju', 'compat', 'changha', public.dukjil_kst_date(), fp, '{}', 'e', 't', 'free') returning id into t;
+  res := public.chemi_delete_partner_v3(u, p);
+  if not (res ->> 'deleted')::boolean or exists (select 1 from public.chemi_readings where id = t) then
+    raise exception 'E3 v3 did not erase the fingerprint row: % %', res, (select target_key from public.chemi_readings where id = t); end if;
+  if (public.chemi_delete_partner_v3(u, p) ->> 'deleted')::boolean then raise exception 'E3 second delete true'; end if;
+
+  -- E1 상대를 본 뒤(조회) 생일 철회가 먼저 끝나고 늦게 온 지우기: false, 소금 null 유지, 상태 줄 그대로
+  p := (public.chemi_add_partner_v2(u, '하나', '1998-01-01', 'lunar', null, 'unknown', null, 'saju', null, null, null, null) ->> 'partnerId')::uuid;
+  perform public.chemi_read_profile(u);
+  perform public.chemi_withdraw_birth_consent(u);
+  if (public.chemi_delete_partner_v3(u, p) ->> 'deleted')::boolean then raise exception 'E1 delete after withdrawal true'; end if;
+  if public.chemi_fp_salt(u) is not null or (select fp_salt from public.chemi_user_state where user_id = u) is not null then
+    raise exception 'E1 salt recreated after withdrawal'; end if;
+
+  -- E2 상대를 본 뒤 탈퇴 완료(묘비): 늦게 온 지우기·소금 요청 모두 CHEMI_ACCOUNT_CLOSED, chemi_user_state 0
+  perform public.chemi_save_birth_v2(u, '1995-05-05', 'solar', null, 'unknown', 'female', null, null, null, null, null, null, 'v1');
+  p := (public.chemi_add_partner_v2(u, '셋', '1998-01-01', 'lunar', null, 'unknown', null, 'saju', null, null, null, null) ->> 'partnerId')::uuid;
+  perform public.chemi_fp_salt(u);
+  perform public.chemi_read_profile(u);
+  perform public.chemi_begin_account_deletion('did:privy:r4-e');
+  tok := (public.claim_account_deletion(u) ->> 'leaseToken')::uuid;
+  if not public.chemi_complete_account_deletion(u, tok) then raise exception 'E2 deletion not completed'; end if;
+  perform pg_temp.expect_error(format('select public.chemi_delete_partner_v3(%L, %L)', u, p), 'CHEMI_ACCOUNT_CLOSED');
+  perform pg_temp.expect_error(format('select public.chemi_fp_salt(%L)', u), 'CHEMI_ACCOUNT_CLOSED');
+  if exists (select 1 from public.chemi_user_state where user_id = u) or exists (select 1 from public.chemi_partners where user_id = u)
+    or exists (select 1 from public.chemi_profiles where user_id = u) then raise exception 'E2 chemi state recreated after deletion'; end if;
 end $$;
 select 'r4_profile ok' as result;
 rollback;
