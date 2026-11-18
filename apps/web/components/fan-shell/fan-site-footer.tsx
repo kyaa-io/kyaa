@@ -17,6 +17,7 @@ import { FanContentContainer } from "./fan-content-container";
 import styles from "./fan-site-footer.module.css";
 import { AnalyticsConsentLink } from "@/features/analytics/client/analytics-consent-link";
 import { HQ_LINE } from "@/seo/global-headquarters";
+import { KOREA_BUSINESS_INFO } from "./korea-business-info";
 
 const TELEGRAM_CHANNEL_URL = "https://t.me/Kyaa_Official";
 const HQ_CORPORATE_NUMBER = "8130900";
@@ -138,16 +139,51 @@ const copy = {
   }))
 } as const;
 
+// 새 사업자 정보·정책 링크 라벨. 한국어와 영어만 두고 다른 언어는 영어를 쓴다(소비자법 고지 문구).
+const businessCopy = {
+  ko: {
+    pricing: "요금 안내",
+    pricingAria: "요금 안내 열기",
+    refund: "환불 정책",
+    refundAria: "환불 정책 열기",
+    companyName: "상호",
+    mailOrderNumber: "통신판매업 신고번호",
+    mailOrderPending: "신고 준비 중",
+    phone: "대표전화",
+    email: "이메일",
+    hosting: "호스팅 서비스 제공자",
+    verify: "사업자정보 확인",
+    verifyAria: "공정거래위원회 사업자정보 확인, 새 창",
+  },
+  en: {
+    pricing: "Pricing",
+    pricingAria: "Open Pricing",
+    refund: "Refund Policy",
+    refundAria: "Open Refund Policy",
+    companyName: "Company",
+    mailOrderNumber: "Mail-order business report no.",
+    mailOrderPending: "Filing in progress",
+    phone: "Phone",
+    email: "Email",
+    hosting: "Hosting provider",
+    verify: "Verify business information",
+    verifyAria: "Verify business information with the Korea Fair Trade Commission, new window",
+  },
+} as const;
+
 function fanHref(pathname: string, locale: FanLocale): Route {
   return `${pathname}?locale=${locale}` as Route;
 }
 
 function FanFooterLegalLinks({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
+  const b = businessCopy[locale === "ko" ? "ko" : "en"];
   return (
     <div className={styles.legalLinks}>
       <Link className={styles.privacyLink} href={fanHref("/privacy", locale)} aria-label={locale === "ko" ? "개인정보처리방침 열기" : translate(locale, localizedMessages.mc2da954c6e18, "Open Privacy Policy")}>{t.privacy}</Link>
       <Link href={fanHref("/terms", locale)} aria-label={locale === "ko" ? "이용약관 열기" : translate(locale, localizedMessages.m9083a379799f, "Open Terms of Use")}>{t.terms}</Link>
+      <Link href={fanHref("/pricing", locale)} aria-label={b.pricingAria}>{b.pricing}</Link>
+      <Link href={fanHref("/refund", locale)} aria-label={b.refundAria}>{b.refund}</Link>
       <AnalyticsConsentLink locale={locale} />
     </div>
   );
@@ -155,6 +191,8 @@ function FanFooterLegalLinks({ locale }: { locale: FanLocale }) {
 
 function FanFooterBusinessInfo({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
+  const b = businessCopy[locale === "ko" ? "ko" : "en"];
+  const info = KOREA_BUSINESS_INFO;
   return (
     <div className={styles.businessGroups} role="group" aria-label={t.businessInfo}>
       <dl aria-label={t.headquarters}>
@@ -162,13 +200,30 @@ function FanFooterBusinessInfo({ locale }: { locale: FanLocale }) {
         <div><dt>{t.corporateNumber}</dt><dd>{HQ_CORPORATE_NUMBER}</dd></div>
       </dl>
       <dl aria-label={t.operator}>
-        <div><dt>{t.operator}</dt><dd lang="ko">주식회사 셀리랩</dd></div>
-        <div><dt>{t.representative}</dt><dd lang="ko">김보석</dd></div>
-        <div><dt>{t.registrationNumber}</dt><dd>736-86-03473</dd></div>
+        <div><dt>{b.companyName}</dt><dd lang="ko">{info.companyName}</dd></div>
+        <div><dt>{t.representative}</dt><dd lang="ko">{info.representative}</dd></div>
+        <div>
+          <dt>{t.registrationNumber}</dt>
+          <dd>
+            {info.registrationNumber}{" "}
+            <a
+              href={info.lookupUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={b.verifyAria}
+              data-outbound-placement="footer"
+              data-outbound-kind="website"
+            >{b.verify}</a>
+          </dd>
+        </div>
+        <div><dt>{b.mailOrderNumber}</dt><dd>{info.mailOrderNumber ?? b.mailOrderPending}</dd></div>
         <div className={styles.businessAddress}>
           <dt>{t.businessAddress}</dt>
-          <dd lang="ko">서울특별시 강남구 도산대로28길 46, 6층</dd>
+          <dd lang="ko">{info.address}</dd>
         </div>
+        <div><dt>{b.phone}</dt><dd>{info.phone}</dd></div>
+        <div><dt>{b.email}</dt><dd>{info.email}</dd></div>
+        <div><dt>{b.hosting}</dt><dd lang="en">{info.hostingProvider}</dd></div>
       </dl>
     </div>
   );

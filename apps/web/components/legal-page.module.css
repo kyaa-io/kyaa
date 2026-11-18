@@ -92,7 +92,9 @@
 }
 
 .document p,
-.document li {
+.document li,
+.document th,
+.document td {
   margin: 0;
   color: var(--color-ink);
   font-size: 15px;
@@ -124,5 +126,95 @@
 
   .document {
     gap: 32px;
+  }
+}
+
+.document .tableScroll {
+  overflow-x: auto;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-media);
+}
+
+.document table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.document th:nth-child(1) {
+  width: 42%;
+}
+
+.document th:nth-child(2) {
+  width: 26%;
+}
+
+.document th,
+.document td {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.document thead th {
+  border-top: 0;
+  white-space: nowrap;
+}
+
+.document td:nth-child(2) {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 47.999rem) {
+  .document table {
+    table-layout: auto;
+  }
+
+  .document th:nth-child(n) {
+    width: auto;
+  }
+
+  .document thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .document tbody,
+  .document tr,
+  .document tbody th,
+  .document td {
+    display: block;
+  }
+
+  .document tr {
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-line);
+  }
+
+  .document tr:first-child {
+    border-top: 0;
+  }
+
+  .document tbody th,
+  .document td {
+    padding: 0;
+    border: 0;
+  }
+
+  .document td {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-1);
+  }
+
+  .document td::before {
+    flex: none;
+    max-width: 45%;
+    content: attr(data-label);
   }
 }

@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import { APP_LOCALES } from "@/i18n/locales";
 import { FanSiteFooter } from "./fan-site-footer";
+import { KOREA_BUSINESS_INFO } from "./korea-business-info";
 
 const footerCss = readFileSync(
   resolve(process.cwd(), "components/fan-shell/fan-site-footer.module.css"),
@@ -20,9 +21,11 @@ describe("FanSiteFooter", () => {
     expect(footer).toHaveAttribute("data-footer-variant", "compact");
     expect(within(footer).queryByRole("navigation")).not.toBeInTheDocument();
     expect(within(footer).queryByRole("heading")).not.toBeInTheDocument();
-    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(0);
+    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(1);
     expect(within(footer).getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
     expect(within(footer).getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
+    expect(within(footer).getByRole("link", { name: "요금 안내 열기" })).toHaveAttribute("href", "/pricing?locale=ko");
+    expect(within(footer).getByRole("link", { name: "환불 정책 열기" })).toHaveAttribute("href", "/refund?locale=ko");
     const groups = footer.querySelectorAll("dl");
     expect(groups).toHaveLength(2);
     expect(groups[0]).toHaveTextContent("KAYY Inc. · Whitestone, Queens, NY, USA");
@@ -55,7 +58,7 @@ describe("FanSiteFooter", () => {
     expect(within(navigation).getByRole("link", { name: "문의하기" })).toHaveAttribute("href", "/my/inquiries?locale=ko");
     expect(within(navigation).getByRole("link", { name: "온체인 기록" })).toHaveAttribute("href", "/pages/onchain?locale=ko");
     expect(within(navigation).queryByRole("link", { name: "이미지 출처 열기" })).not.toBeInTheDocument();
-    expect(footer).not.toHaveTextContent("support@kyaa.io");
+    expect(footer).toHaveTextContent("support@kyaa.io");
     expect(within(footer).getByText("© 2026 kyaa. All rights reserved.")).toBeInTheDocument();
     expect(footer).not.toHaveTextContent(/Instagram|LinkedIn|채용/);
   });
@@ -87,7 +90,7 @@ describe("FanSiteFooter", () => {
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByRole("navigation").querySelectorAll("section")).toHaveLength(3);
     expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(17);
-    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(5);
+    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(6);
     const wave = within(footer).getByRole("link", { name: "kyaa wave" });
     expect(wave).toHaveAttribute("href", "https://kyaawave.com/");
     expect(wave).toHaveAttribute("target", "_blank");
@@ -113,19 +116,33 @@ describe("FanSiteFooter", () => {
       expect(hq[0].querySelector("dt")?.textContent).toMatch(/\S/);
       expect(hq[1].querySelector("dd")?.textContent).toBe("8130900");
       expect(hq[1].querySelector("dt")?.textContent).toMatch(/\S/);
-      expect(operator).toHaveLength(4);
+      expect(operator).toHaveLength(8);
       expect(operator[0].querySelector("dd")).toHaveTextContent("주식회사 셀리랩");
       expect(operator[1].querySelector("dd")).toHaveTextContent("김보석");
       expect(operator[2].querySelector("dd")).toHaveTextContent("736-86-03473");
-      expect(operator[3].querySelector("dd")).toHaveTextContent("서울특별시 강남구 도산대로28길 46, 6층");
+      expect(operator[3].querySelector("dd")?.textContent).toBe(KOREA_BUSINESS_INFO.mailOrderNumber ?? (locale === "ko" ? "신고 준비 중" : "Filing in progress"));
+      expect(operator[4].querySelector("dd")).toHaveTextContent("서울특별시 강남구 도산대로28길 46, 6층 및 7층 전체(논현동)");
+      expect(operator[5].querySelector("dd")).toHaveTextContent("010-6434-8327");
+      expect(operator[6].querySelector("dd")).toHaveTextContent("support@kyaa.io");
+      expect(operator[7].querySelector("dd")).toHaveTextContent("Amazon Web Services");
+      const lookup = operator[2].querySelector("a");
+      expect(lookup).toHaveAttribute("href", "https://www.ftc.go.kr/bizCommPop.do?wrkr_no=7368603473");
+      expect(lookup).toHaveAttribute("target", "_blank");
+      expect(lookup).toHaveAttribute("rel", "noopener noreferrer");
+      expect(lookup).toHaveAttribute("data-outbound-placement", "footer");
+      expect(lookup).toHaveAttribute("data-outbound-kind", "website");
+      expect(lookup).not.toHaveAttribute("data-outbound-tracking");
+      for (const href of [`/pricing?locale=${locale}`, `/refund?locale=${locale}`]) {
+        expect(screen.getByRole("contentinfo").querySelector(`a[href="${href}"]`)).toBeInTheDocument();
+      }
       expect(groups[0].textContent).not.toMatch(/151-17|20th Ave|EIN/);
       unmount();
     }
   });
 
   it.each([
-    ["ko", "글로벌 본사", "법인번호(뉴욕주)", "한국 운영사"],
-    ["en", "Global HQ", "NY DOS ID", "Korea operator"],
+    ["ko", "글로벌 본사", "법인번호(뉴욕주)", "상호"],
+    ["en", "Global HQ", "NY DOS ID", "Company"],
   ] as const)("labels the two groups in %s", (locale, hqLabel, numberLabel, operatorLabel) => {
     render(<FanSiteFooter locale={locale} />);
     const groups = [...screen.getByRole("contentinfo").querySelectorAll("dl")];

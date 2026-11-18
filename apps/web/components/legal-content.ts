@@ -14,6 +14,10 @@ export type LegalSection = {
     email: "support@kyaa.io";
     after?: string;
   };
+  table?: {
+    head: readonly string[];
+    rows: readonly (readonly string[])[];
+  };
 };
 
 export type LegalDocumentContent = {
@@ -22,6 +26,10 @@ export type LegalDocumentContent = {
   title: string;
   description: string;
   sections: readonly LegalSection[];
+  /** 요금 안내·환불 정책처럼 언어별 시행일 라벨이 없는 문서가 직접 쓴다. */
+  effectiveDate?: string;
+  /** 문서 본문이 화면 언어와 다른 언어일 때의 언어 표시. */
+  lang?: string;
 };
 
 export const legalLabels = {
