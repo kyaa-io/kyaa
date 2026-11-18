@@ -19,3 +19,10 @@ it("draws the empty tab frame with the requested locale when CHEMI_TAB is true",
   const page = await ChemiPage({ searchParams: Promise.resolve({ locale: "ja" }) });
   expect(page.props).toMatchObject({ locale: "ja", currentPath: "/chemi" });
 });
+
+it("closes direct result and shared-result entries before reading a share", async () => {
+  const { default: FortunePage } = await import("./fortune/page");
+  for (const params of [{}, {from:"sample"}]) {
+    await expect(FortunePage({searchParams: Promise.resolve(params)})).rejects.toThrow("NOT_FOUND");
+  }
+});

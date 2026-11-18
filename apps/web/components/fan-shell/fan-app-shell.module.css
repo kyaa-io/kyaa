@@ -119,8 +119,8 @@
 
 /* Short pages: the footer starts below the first screen, not behind the fixed bottom tab, so it is never on screen while
  * the body is still loading and is never pushed down (layout shift) when the body arrives. */
-.frame { --fan-bottom-nav-height: 64px; }
-.groupsNavigation.frame { --fan-bottom-nav-height: 65px; }
+.frame, :root:has(.frame [data-fortune-result]) { --fan-bottom-nav-height: 64px; }
+.groupsNavigation.frame, :root:has(.groupsNavigation.frame [data-fortune-result]) { --fan-bottom-nav-height: 65px; }
 @media (max-width: 63.999rem) {
   .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height)); grid-auto-rows: max-content; }
 }
@@ -212,3 +212,5 @@
 
 /* Signed-out header, every width: one small 로그인 action in the status slot (user 11/13 — the illustrated join chip read as an ad). */
 .guestLogin { flex: 0 0 auto; white-space: nowrap; }
+
+:root:has([data-fortune-result]) { --chemi-result-nav-height: var(--fan-bottom-nav-height); }

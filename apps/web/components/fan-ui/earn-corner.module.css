@@ -2,7 +2,7 @@
 .pill { display: inline-flex; flex: none; align-items: center; gap: 2px; box-sizing: border-box; height: 20px; padding: 0 6px 0 2px; border-radius: 999px; background: var(--color-coin); color: var(--color-coin-ink); font-size: var(--fan-badge-size); line-height: 20px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pill img { display: block; flex: none; width: 16px; height: 16px; }
 /* 작게: 좁은 칸 안. */
-.small { gap: 1px; height: 16px; padding: 0 4px 0 2px; line-height: 16px; }
+.small { gap: 1px; height: 16px; padding: 0 var(--space-1); line-height: 16px; }
 .small img { width: 12px; height: 12px; }
 /* 세로로 반복되는 줄: 알약 폭을 60으로 고정하고(+999까지) 동전은 왼쪽 끝, 숫자는 동전 오른쪽의 남은 칸을 채운 상자 안에서 가운데(사용자 2026-11-17 12:49). 줄마다 알약의 양 끝·동전 세로선·숫자 가운데선이 같다. */
 .slot { min-inline-size: 60px; }
