@@ -4,6 +4,7 @@
   padding-block: var(--space-4);
 }
 .banner {
+  width: min(100%, calc(var(--space-12) * 15 + var(--space-2)));
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-card);
@@ -24,8 +25,11 @@
   color: var(--color-surface);
   background: var(--color-home-caption);
 }
-.caption small,
-.caption > span {
+.caption > a {
+  width: auto;
+  flex: none;
+}
+.caption small {
   background: var(--color-home-caption);
   padding-inline: var(--space-2);
   border-radius: var(--radius-small);
@@ -53,8 +57,6 @@
   object-fit: cover;
   border-radius: var(--radius-small);
 }
-.row b {
-}
 .row small {
   margin-inline-start: auto;
   color: var(--color-muted);
@@ -63,20 +65,6 @@
   .list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-}
-.controls {
-  position: absolute;
-  inset: var(--space-2) var(--space-2) auto auto;
-  display: flex;
-  gap: var(--space-1);
-}
-.controls button {
-  min-width: var(--min-target);
-  min-height: var(--min-target);
-  border: none;
-  border-radius: var(--radius-pill);
-  background: var(--color-home-caption);
-  color: var(--color-surface);
 }
 .rankings {
   display: flex;
@@ -88,8 +76,6 @@
   padding: var(--space-4);
   border: thin solid var(--color-line);
   border-radius: var(--radius-card);
-}
-.rankCard h2 {
 }
 .rankRow {
   display: grid;

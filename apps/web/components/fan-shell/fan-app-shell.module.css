@@ -213,4 +213,4 @@
 /* Signed-out header, every width: one small 로그인 action in the status slot (user 11/13 — the illustrated join chip read as an ad). */
 .guestLogin { flex: 0 0 auto; white-space: nowrap; }
 
-:root:has([data-fortune-result]) { --chemi-result-nav-height: var(--fan-bottom-nav-height); }
+.frame:has([data-fortune-result]) { --chemi-result-nav-height: var(--fan-bottom-nav-height); }

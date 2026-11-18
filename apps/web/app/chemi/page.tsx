@@ -6,6 +6,7 @@ import {
 import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
 
+import { chemiTabLabel } from "@/features/chemi/ui/copy";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { ChemiHome } from "./home";
 
@@ -21,6 +22,7 @@ export default async function ChemiPage({
   const { home: copy } = (
     await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)
   ).default;
+  const preview = process.env.APP_ENV ? process.env.APP_ENV === "dev" : process.env.VERCEL_ENV === "preview" || process.env.NODE_ENV === "development";
   const growth = params.tab === "growth";
   return (
     <FanAppFrame locale={locale} currentPath="/chemi" mainId="chemi-main">
@@ -30,8 +32,8 @@ export default async function ChemiPage({
         tabIndex={-1}
         data-chemi-tab=""
       >
-        <FanTabs
-          label="케미"
+        {preview && <FanTabs
+          label={chemiTabLabel(locale)}
           current={growth ? "growth" : "play"}
           items={[
             { key: "play", label: copy.play, href: `/chemi?locale=${locale}` },
@@ -41,8 +43,8 @@ export default async function ChemiPage({
               href: `/chemi?tab=growth&locale=${locale}`,
             },
           ]}
-        />
-        <ChemiHome copy={copy} locale={locale} growth={growth} />
+        />}
+        <ChemiHome preview={preview} copy={copy} locale={locale} growth={growth} />
       </FanContentContainer>
     </FanAppFrame>
   );

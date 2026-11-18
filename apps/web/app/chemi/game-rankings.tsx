@@ -48,13 +48,13 @@ function RankingRow({ row }: { row: RecordRow }) {
   );
 }
 
-export function GameRankings({ games }: { games: readonly GameRanking[] }) {
+export function GameRankings({ games, label }: { label: string; games: readonly GameRanking[] }) {
   return (
-    <aside className={styles.rankings} aria-label="이번 주 랭킹">
+    <aside className={styles.rankings} aria-label={label}>
       {games.map((game) => (
         <section className={styles.rankCard} key={game.game}>
           <header>
-            <img src={`/chemi/thumb-${game.game}.png`} alt="" />
+            <img src={`/chemi/thumb-${game.game}-128.webp`} alt="" />
             <FanHeading>{game.title}</FanHeading>
           </header>
           <div className={styles.leaders}>

@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "케미 홈 배너에서 오늘의 운세를 바로 시작할 수 있어요.",
+    "운세 목록에서 아직 열리지 않은 콘텐츠는 준비 중으로 표시해요."
+  ],
+  "path": "/chemi",
+  "images": ["release-notes/images/2026-11-18-chemi-home-fix-local.png"]
+}

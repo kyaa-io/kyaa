@@ -5,33 +5,27 @@ import Link from "next/link";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { HomeBanner } from "./home-banner";
 import { GameRankings, type GameRanking } from "./game-rankings";
+import { entries } from "./contents";
 import styles from "./home.module.css";
 
 export type HomeCopy =
   typeof import("@/features/chemi/i18n/locales/ko/chemi.json").home;
 
-const entries = [
-  ["saju", "readings"],
-  ["fortune", "readings"],
-  ["zodiac", "readings"],
-  ["tarot", "readings"],
-  ["pair", "games"],
-  ["run", "games"],
-] as const;
-
 export function ChemiHome({
   copy,
   locale,
   growth,
+  preview,
   rankings = [],
 }: {
   copy: HomeCopy;
   locale: string;
   growth: boolean;
+  preview: boolean;
   rankings?: readonly GameRanking[];
 }) {
   const [category, setCategory] = useState("all");
-  if (growth)
+  if (preview && growth)
     return (
       <div className={styles.row}>
         <b>{copy.raise}</b>
@@ -39,11 +33,11 @@ export function ChemiHome({
       </div>
     );
   return (
-    <div className={styles.home} data-ranked={Boolean(rankings.length)}>
+    <div className={styles.home} data-ranked={preview && Boolean(rankings.length)}>
       <HomeBanner copy={copy} locale={locale} />
-      {rankings.length > 0 && <GameRankings games={rankings} />}
+      {preview && rankings.length > 0 && <GameRankings label={copy.rankings} games={rankings} />}
       <section>
-        <FanTabs
+        {preview && <FanTabs
           variant="chip"
           label={copy.filter}
           current={category}
@@ -52,22 +46,22 @@ export function ChemiHome({
             label: copy[key],
             onSelect: () => setCategory(key),
           }))}
-        />
+        />}
         <div className={styles.list}>
           {entries
-            .filter(([, type]) => category === "all" || category === type)
-            .map(([id]) => {
+            .filter(([, type]) => (preview || type === "readings") && (category === "all" || category === type))
+            .map(([id, , path]) => {
               const content = (
                 <>
-                  <img src={`/chemi/thumb-${id}.png`} alt="" />
+                  <img src={`/chemi/thumb-${id}-128.webp`} alt="" />
                   <b>{copy[id]}</b>
                 </>
               );
-              return id === "fortune" ? (
+              return path ? (
                 <Link
                   key={id}
                   className={styles.row}
-                  href={`/chemi/fortune?locale=${locale}`}
+                  href={`${path}?locale=${locale}`}
                 >
                   {content}
                 </Link>

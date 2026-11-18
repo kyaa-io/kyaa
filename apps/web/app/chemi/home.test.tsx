@@ -10,13 +10,13 @@ vi.mock("@/features/rankings/ui/ranking-rows", () => ({
 }));
 
 it("filters the six activities without offering a pending game or leaderboard", () => {
-  render(<ChemiHome copy={copy} locale="ko" growth={false} />);
+  render(<ChemiHome preview copy={copy} locale="ko" growth={false} />);
   expect(screen.getByRole("link", { name: copy.fortune })).toHaveAttribute(
     "href",
     "/chemi/fortune?locale=ko",
   );
   fireEvent.click(screen.getByRole("button", { name: copy.games }));
-  expect(screen.queryByText(copy.fortune)).toBeNull();
+  expect(screen.queryByRole("link", { name: copy.fortune })).toBeNull();
   expect(screen.getByText(copy.pair)).toBeVisible();
   expect(screen.queryByRole("complementary")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: copy.readings }));
@@ -39,10 +39,10 @@ it("flashes just the record when an existing player's score changes", () => {
     leaders: [row],
     mine: null,
   };
-  const view = render(<GameRankings games={[game]} />);
+  const view = render(<GameRankings label={copy.rankings} games={[game]} />);
   expect(flashNumbers).not.toHaveBeenCalled();
   view.rerender(
-    <GameRankings
+    <GameRankings label={copy.rankings}
       games={[{ ...game, leaders: [{ ...row, record: "0:38" }] }]}
     />,
   );
@@ -50,4 +50,12 @@ it("flashes just the record when an existing player's score changes", () => {
     expect.any(HTMLElement),
     new Set(["value"]),
   );
+});
+
+it("keeps production on the fortune list even for a growth deep link", () => {
+  render(<ChemiHome copy={copy} locale="ko" growth preview={false} />);
+  expect(screen.getByRole("link", { name: copy.start })).toBeVisible();
+  expect(screen.queryByText(copy.games)).toBeNull();
+  expect(screen.queryByText(copy.pair)).toBeNull();
+  expect(screen.queryByText(copy.raise)).toBeNull();
 });

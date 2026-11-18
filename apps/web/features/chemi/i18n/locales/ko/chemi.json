@@ -28,6 +28,8 @@
     "next": "다음 배너",
     "pause": "일시정지",
     "resume": "재생",
-    "filter": "콘텐츠 종류"
+    "filter": "콘텐츠 종류",
+    "creator": "창하",
+    "rankings": "이번 주 랭킹"
   }
 }
