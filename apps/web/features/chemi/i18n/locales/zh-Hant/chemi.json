@@ -9,5 +9,25 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "遊玩",
+    "growth": "成長",
+    "raise": "培養偶像",
+    "all": "全部",
+    "readings": "占卜",
+    "games": "遊戲",
+    "saju": "偶像八字",
+    "fortune": "今日運勢",
+    "zodiac": "星座運勢",
+    "tarot": "今日塔羅",
+    "pair": "配對遊戲",
+    "run": "偶像跑酷",
+    "ready": "準備中",
+    "start": "開始",
+    "next": "下一張",
+    "pause": "暫停",
+    "resume": "播放",
+    "filter": "內容類別"
   }
 }

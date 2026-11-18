@@ -7,7 +7,7 @@ import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
 
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
-import { FanAction } from "@/components/fan-ui/fan-action";
+import { ChemiHome } from "./home";
 
 export const dynamic = "force-dynamic";
 export default async function ChemiPage({
@@ -18,6 +18,9 @@ export default async function ChemiPage({
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
   const locale = parseAppLocale(params.locale);
+  const { home: copy } = (
+    await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)
+  ).default;
   const growth = params.tab === "growth";
   return (
     <FanAppFrame locale={locale} currentPath="/chemi" mainId="chemi-main">
@@ -31,19 +34,15 @@ export default async function ChemiPage({
           label="케미"
           current={growth ? "growth" : "play"}
           items={[
-            { key: "play", label: "놀기", href: `/chemi?locale=${locale}` },
+            { key: "play", label: copy.play, href: `/chemi?locale=${locale}` },
             {
               key: "growth",
-              label: "성장",
+              label: copy.growth,
               href: `/chemi?tab=growth&locale=${locale}`,
             },
           ]}
         />
-        {!growth && (
-          <FanAction href={`/chemi/fortune?locale=${locale}`}>
-            오늘의 운세
-          </FanAction>
-        )}
+        <ChemiHome copy={copy} locale={locale} growth={growth} />
       </FanContentContainer>
     </FanAppFrame>
   );

@@ -2811,3 +2811,7 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 공통 소유자는 fan-app-shell.tsx, fan-app-shell.module.css와 features/chemi/ui/copy.ts다. 하단은 고정 4열 대신 grid-auto-flow:column / grid-auto-columns:minmax(0,1fr)로 균등 분배한다(390px에서 97.5px → 78px). 열 사이 별도 gap 없이 기존 아이콘↔글자 4px, 좌우 padding 4px를 보존한다. 데스크톱은 기존 자동 너비와 탭 사이 16px, 최소 항목 너비 110px를 유지하며 다섯 번째 항목만 추가한다. 1024–1199px의 gap 0·가변 너비 예외도 보존한다. 탭 수 증가 외에 글자 크기·색·터치 영역을 줄이지 않는다.
 
 시안 승인 전 /chemi 본문은 빈 상태 그대로 유지한다. 이번 예외는 탭 진입점 확보이며 본문 디자인 승인을 뜻하지 않는다.
+
+케미 01의 PC 랭킹 열은 288px이며, 카드마다 상위 3명과 내 기록을 표시한다. 줄 높이는 52px, 아바타는 36px이며 등락은 이름 오른쪽에 붙인다. 기록 갱신은 §9의 flashNumbers를 따른다. 준비 중인 게임은 랭킹 카드를 숨긴다.
+
+공유 토스트는 복사 성공 후에만 표시한다. 모바일은 고정 CTA 위 12px, PC는 오른쪽·아래 24px를 띄우고 본문 위치를 유지한다.

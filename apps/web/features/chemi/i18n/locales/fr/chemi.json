@@ -9,5 +9,25 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "Jouer",
+    "growth": "Progression",
+    "raise": "Élever son idole",
+    "all": "Tout",
+    "readings": "Divination",
+    "games": "Jeux",
+    "saju": "Saju de mon idole",
+    "fortune": "Fortune du jour",
+    "zodiac": "Horoscope",
+    "tarot": "Tarot du jour",
+    "pair": "Jeu de paires",
+    "run": "Course des idoles",
+    "ready": "Bientôt",
+    "start": "Commencer",
+    "next": "Bannière suivante",
+    "pause": "Pause",
+    "resume": "Lecture",
+    "filter": "Type de contenu"
   }
 }

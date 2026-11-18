@@ -9,5 +9,25 @@
     "fortuneMinutes": "{count}분 뒤 내일 운세가 열려요",
     "gameHours": "{count}시간 뒤 무료 판이 다시 열려요",
     "gameMinutes": "{count}분 뒤 무료 판이 다시 열려요"
+  },
+  "home": {
+    "play": "놀기",
+    "growth": "성장",
+    "raise": "최애 키우기",
+    "all": "전체",
+    "readings": "운세",
+    "games": "게임",
+    "saju": "최애 사주",
+    "fortune": "오늘의 운세",
+    "zodiac": "별자리 운세",
+    "tarot": "오늘의 타로",
+    "pair": "짝 맞추기",
+    "run": "최애 런",
+    "ready": "준비 중",
+    "start": "시작하기",
+    "next": "다음 배너",
+    "pause": "일시정지",
+    "resume": "재생",
+    "filter": "콘텐츠 종류"
   }
 }

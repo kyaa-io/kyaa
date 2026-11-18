@@ -9,5 +9,25 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "遊ぶ",
+    "growth": "成長",
+    "raise": "推しを育てる",
+    "all": "すべて",
+    "readings": "占い",
+    "games": "ゲーム",
+    "saju": "推しの四柱推命",
+    "fortune": "今日の運勢",
+    "zodiac": "星占い",
+    "tarot": "今日のタロット",
+    "pair": "絵合わせ",
+    "run": "推しラン",
+    "ready": "準備中",
+    "start": "始める",
+    "next": "次のバナー",
+    "pause": "一時停止",
+    "resume": "再生",
+    "filter": "種類"
   }
 }

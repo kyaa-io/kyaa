@@ -9,5 +9,25 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "Chơi",
+    "growth": "Phát triển",
+    "raise": "Nuôi dưỡng thần tượng",
+    "all": "Tất cả",
+    "readings": "Bói toán",
+    "games": "Trò chơi",
+    "saju": "Tứ trụ thần tượng",
+    "fortune": "Vận may hôm nay",
+    "zodiac": "Tử vi cung hoàng đạo",
+    "tarot": "Tarot hôm nay",
+    "pair": "Ghép đôi",
+    "run": "Đường chạy thần tượng",
+    "ready": "Sắp ra mắt",
+    "start": "Bắt đầu",
+    "next": "Ảnh tiếp theo",
+    "pause": "Tạm dừng",
+    "resume": "Phát",
+    "filter": "Loại nội dung"
   }
 }
