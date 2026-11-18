@@ -27,6 +27,22 @@ describe("fan content trust boundary", () => {
     expect((await h.periodRanking(request("GET"),"artist")).status).toBe(401);
   });
 
+  it("fills a post page after excluding the current post and resumes after the last visible post", async () => {
+    const d = dependencies(), h = createContentHandlers(d);
+    const first = { ...post, id: owner };
+    const second = { ...post, id: "30000000-0000-4000-8000-000000000001" };
+    d.rpc.mockResolvedValueOnce({ items: [post, first], hasMore: true })
+      .mockResolvedValueOnce({ items: [second], hasMore: false });
+    const url = `https://byus.test/api/posts?limit=1&exclude=${post.id}`;
+    const response = await h.posts(request("GET", undefined, url), "artist");
+    const data = await response.json();
+    expect(data.items).toEqual([first]);
+    expect(d.rpc).toHaveBeenLastCalledWith("read_fan_posts", expect.objectContaining({ p_limit: 2 }));
+    const next = await h.posts(request("GET", undefined, `${url}&cursor=${data.nextCursor}`), "artist");
+    expect(await next.json()).toEqual({ items: [second], nextCursor: null });
+    expect(d.rpc).toHaveBeenLastCalledWith("read_fan_posts", expect.objectContaining({ p_before_id: first.id }));
+  });
+
   it("keeps the pin order in official-news cursors and isolates that cursor from post pages", async () => {
     const d = dependencies(), h = createContentHandlers(d);
     d.rpc.mockResolvedValue({ notices: [{ id, slug: "pinned", title: "Pinned notice", pinned: true, kind: "standard", postType: "notice", visibility: "public", revision: 1, publishedAt: "2026-09-01T00:00:00Z" }], hasMore: true });

@@ -1,4 +1,5 @@
 "use client";
+import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
@@ -56,7 +57,7 @@ export function CheerReplies({ detail = false, cheerId, slug, locale, returnTo, 
       {replies.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button className={styles.button} onClick={replies.retry}>{copy.retry}</button></p>}
       <ul className={detail ? `${commentStyles.list} ${detailStyles.commentList}` : `${styles.list} ${commentStyles.list}`}>{replies.state.data.replies.map(reply => <li key={reply.id} className={detail ? undefined : styles.card}>
         <div className={detail ? detailStyles.commentMeta : `${styles.meta} ${commentStyles.metaRow}`}><img src={reply.avatarUrl} alt="" width={detail ? 32 : 28} height={detail ? 32 : 28} data-artist-avatar={reply.artist || undefined} /><strong>{reply.nickname}</strong>{reply.artist && <GroupArtistMark locale={locale} />}<RelativeTime value={reply.createdAt} locale={locale} />{!reply.isOwner && <ContentActions targetType="cheer" targetId={reply.id} locale={locale} onChanged={refresh} />}</div>
-        <ContentTranslation sourceText={reply.body} targetType="cheer" targetId={reply.id} locale={locale}><p className={styles.body}>{reply.body}</p></ContentTranslation>
+        <ContentTranslation sourceText={reply.body} targetType="cheer" targetId={reply.id} locale={locale}><p className={styles.body}><LinkifiedText text={reply.body} locale={locale} /></p></ContentTranslation>
         {reply.isOwner && <div className={styles.actions}><button type="button" disabled={mutation.busy} onClick={() => void remove(reply.id)}>{copy.delete}</button></div>}
       </li>)}</ul>
       {(cursor || replies.state.data.nextCursor) && <nav className={styles.pagination} aria-label={copy.comments}>{cursor && <button onClick={() => setCursor(null)}>{copy.newest}</button>}{replies.state.data.nextCursor && <button onClick={() => setCursor(replies.state.status === "ready" ? replies.state.data.nextCursor : null)}>{copy.older}</button>}</nav>}

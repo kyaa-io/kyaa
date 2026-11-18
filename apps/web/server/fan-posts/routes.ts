@@ -163,16 +163,18 @@ function page<T extends { id: string; createdAt: string }>(schema: z.ZodType<T>,
   const last = data.items.at(-1);
   return { items: data.items, nextCursor: data.hasMore && last ? Buffer.from(JSON.stringify({ at: last.createdAt, id: last.id })).toString("base64url") : null };
 }
-function postPage(raw: unknown, sort: "latest" | "popular") {
+function postPage(raw: unknown, sort: "latest" | "popular", limit: number, exclude?: string) {
   const data = checked(z.object({ items: z.array(postSchema).max(50), hasMore: z.boolean() }).strict(), raw);
-  const last = data.items.at(-1);
-  const nextCursor = data.hasMore && last ? Buffer.from(JSON.stringify({
+  const eligible = exclude ? data.items.filter(item => item.id !== exclude) : data.items;
+  const items = eligible.slice(0, limit);
+  const last = items.at(-1);
+  const nextCursor = (data.hasMore || eligible.length > limit) && last ? Buffer.from(JSON.stringify({
     sort,
     ...(sort === "popular" ? { score: last.likeCount + last.commentCount } : {}),
     at: last.createdAt,
     id: last.id,
   })).toString("base64url") : null;
-  return { items: data.items, nextCursor };
+  return { items, nextCursor };
 }
 export function contentFailure(error: unknown) {
   // A non-401 AuthError means the account itself is unavailable (suspended/deleted), not that the viewer is a non-member, so it must not look like FAN_WEB_FORBIDDEN (the join-guidance signal).
@@ -226,9 +228,11 @@ export function createContentHandlers(deps: ContentDependencies) {
       const p_app_user_id = await owner(request, request.method === "GET");
       if (request.method === "GET") {
         const params = postPageParams(request);
-        const raw = await deps.rpc("read_fan_posts", { p_app_user_id, p_slug: slug, ...params });
+        const exclude = z.uuid().optional().parse(one(new URL(request.url), "exclude"));
+        if (exclude && params.p_limit === 50) throw new Error("FAN_WEB_INVALID_INPUT");
+        const raw = await deps.rpc("read_fan_posts", { p_app_user_id, p_slug: slug, ...params, p_limit: params.p_limit + (exclude ? 1 : 0) });
         if (raw === null) throw new Error("FAN_WEB_NOT_FOUND");
-        return json(postPage(raw, params.p_sort));
+        return json(postPage(raw, params.p_sort, params.p_limit, exclude));
       }
       const value = boardCreatePostSchema.parse(await boundedJson(request, RICH_POST_REQUEST_BYTES));
       const rich = richBoardBody(value, slug);
