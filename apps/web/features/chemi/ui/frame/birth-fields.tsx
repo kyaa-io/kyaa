@@ -31,7 +31,7 @@ export function BirthDateField({ label, value, onChange, error, copy, autoFocus 
   return <div className={styles.field}>
     <div className={styles.label}>
       <FanText role="label"><label htmlFor={id}>{label}</label></FanText>
-      <FanAction variant="text" size="sm" onClick={() => setPicker({ kind: "date", value, onPick: onChange })}>{copy.wheelButton}</FanAction>
+      <FanAction variant="text" size="sm" className={styles.linkAction} onClick={() => setPicker({ kind: "date", value, onPick: onChange })}><FanText role="meta">{copy.wheelButton}</FanText></FanAction>
     </div>
     <FanText as="div" role="item">
     <input
@@ -56,7 +56,7 @@ export function BirthDateField({ label, value, onChange, error, copy, autoFocus 
 
 /** 라벨 붙은 체크 칸(44). 모름·동의 체크가 같이 쓴다. */
 export function CheckLabel({ checked, onChange, children }: Readonly<{ checked: boolean; onChange: (checked: boolean) => void; children: ReactNode }>) {
-  return <label className={styles.check}><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><FanText role="body">{children}</FanText></label>;
+  return <label className={styles.check}><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><FanText role="meta" className={styles.checkText}>{children}</FanText></label>;
 }
 
 /** 태어난 시간: 값을 고르는 칸 + '모름' 체크. 모름이면 칸이 비워지고 눌리지 않는다. 체크를 풀면 칸이 열려 '선택'으로 보인다. */
@@ -69,7 +69,7 @@ export function BirthTimeField({ value, onChange, copy }: Readonly<{ value: Birt
     <div className={styles.label}><FanText role="label">{copy.fieldTime}</FanText></div>
     <div className={styles.inline}>
       <FanAction variant="neutral" className={shown ? styles.select : `${styles.select} ${styles.placeholder}`} disabled={unknown} onClick={() => setPicker({ kind: "time", value, onPick: onChange })}>
-        <span>{shown ?? copy.select}</span><FanIcon icon={ChevronRight} />
+        <FanText role={shown ? "item" : "body"}>{shown ?? copy.select}</FanText><FanIcon icon={ChevronRight} />
       </FanAction>
       <CheckLabel checked={unknown} onChange={(checked) => { setOpened(!checked); if (checked) onChange({ kind: "unknown" }); }}>{copy.unknownCheck}</CheckLabel>
     </div>
@@ -83,7 +83,7 @@ export function BirthPlaceField({ value, onChange, copy }: Readonly<{ value: str
   return <div className={styles.field}>
     <div className={styles.label}><FanText role="label">{copy.fieldPlace}</FanText></div>
     <FanAction variant="neutral" className={value ? styles.select : `${styles.select} ${styles.placeholder}`} onClick={() => setPicker({ kind: "place", onPick: onChange })}>
-      <span>{value ?? copy.select}</span><FanIcon icon={ChevronRight} />
+      <FanText role={value ? "item" : "body"}>{value ?? copy.select}</FanText><FanIcon icon={ChevronRight} />
     </FanAction>
     <BirthPicker target={picker} copy={copy} onClose={() => setPicker(null)} />
   </div>;

@@ -1,12 +1,15 @@
 /* MY 내 생일 정보(승인 시안 11-2 7차 round-my7/my.css 를 토큰 그대로 옮김). 읽기 띠 720 한 열에 카드, 남는 폭은 '쓰는 곳' 레일. */
 .screen { display: grid; gap: var(--space-6); padding-block: var(--space-4); }
 .pagehead { display: flex; align-items: center; gap: var(--space-3); }
-.back { border: 1px solid var(--color-line); border-radius: var(--radius-pill); }
+.screen .back { border: 1px solid var(--color-line); }
 .columns { display: grid; gap: var(--space-6); }
 .maincol { display: grid; align-content: start; gap: var(--space-6); min-width: 0; }
 .card { display: grid; gap: var(--space-4); }
 .sechead { display: flex; align-items: center; gap: var(--space-2); min-height: 36px; }
-.push { margin-left: auto; }
+.screen .push { flex: none; width: auto; margin-left: auto; }
+/* 값 옆 '넣기': 줄 높이를 늘리지 않고 누르는 영역만 44로 */
+.screen .fillAction { min-height: var(--space-5); padding: 0; color: var(--color-accent-ink); text-decoration: underline; }
+.screen .fillAction::after { inset: calc(var(--space-3) * -1); }
 
 /* 내 정보: 라벨 위 · 값 아래 칸. 390 2×2, 768+ 한 줄 4칸 */
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
@@ -20,10 +23,10 @@
 .birthmark { display: inline-flex; align-items: center; gap: var(--space-1); height: var(--space-8); padding: 0 var(--space-3) 0 var(--space-2); border: 1px solid var(--color-accent-line); border-radius: var(--radius-pill); background: var(--color-accent-soft); color: var(--color-accent-ink); white-space: nowrap; }
 
 /* 저장 직후 바뀐 값: 그 자리에서 핑크 틴트가 300ms 들어왔다 빠지기 두 번. 움직임 줄이기는 움직이지 않고 틴트를 켜 둔다. */
-[data-flash] { position: relative; isolation: isolate; }
-[data-flash]::before { content: ""; position: absolute; inset: calc(var(--space-1) * -1) calc(var(--space-2) * -1); z-index: -1; border-radius: var(--radius-small); background: var(--color-accent-soft); opacity: 0; }
-@media (prefers-reduced-motion: no-preference) { [data-flash]::before { animation: my-birth-flash calc(var(--motion-reward) / 2) var(--motion-easing) var(--motion-slow) 2 both; } }
-@media (prefers-reduced-motion: reduce) { [data-flash]::before { animation: none; opacity: 1; } }
+.screen [data-flash] { position: relative; isolation: isolate; }
+.screen [data-flash]::before { content: ""; position: absolute; inset: calc(var(--space-1) * -1) calc(var(--space-2) * -1); z-index: -1; border-radius: var(--radius-small); background: var(--color-accent-soft); opacity: 0; }
+@media (prefers-reduced-motion: no-preference) { .screen [data-flash]::before { animation: my-birth-flash calc(var(--motion-reward) / 2) var(--motion-easing) var(--motion-slow) 2 both; } }
+@media (prefers-reduced-motion: reduce) { .screen [data-flash]::before { animation: none; opacity: 1; } }
 @keyframes my-birth-flash { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
 
 /* 불러오지 못했을 때: 그 카드 자리에만 한 문장 + 다시 시도 */
@@ -52,6 +55,9 @@
 .agreed { gap: var(--space-1); padding-bottom: var(--space-3); }
 .consent { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: var(--min-target); }
 .wipeButton { justify-self: start; color: var(--color-error); }
+/* 글자 버튼은 누르는 영역(44)을 지키면서 카드 안쪽 끝선에 글자를 맞춘다 */
+.screen .flushStart { justify-content: flex-start; padding-inline-start: 0; }
+.screen .flushEnd { justify-content: flex-end; padding-inline-end: 0; min-width: var(--min-target); }
 
 /* 쓰는 곳: 390 은 썸네일 64 · 이름 · 상태 두 칸, 768+ 레일은 사진이 프레임인 미디어 카드 세 칸 */
 .uses { display: grid; gap: var(--space-4); align-content: start; min-width: 0; }

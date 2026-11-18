@@ -545,7 +545,7 @@ function myShortcutItems(locale: FanLocale, hrefFor: (path: string) => string): 
   ];
 }
 /** 케미 탭이 열린 곳에서만 '활동 내역' 다음에 '내 생일 정보' 줄을 둔다(값은 그 줄 안에서 읽는다). */
-function withBirthShortcut(items: MyShortcut[], locale: FanLocale, chemiOn: boolean): MyShortcut[] {
+export function withBirthShortcut(items: MyShortcut[], locale: FanLocale, chemiOn: boolean): MyShortcut[] {
   if (!chemiOn) return items;
   const birth: MyShortcut = { key: "birth", href: hrefWithLocale(locale)("/my/birth"), label: chemiMyShortcutText(locale).label, art: "birth", detail: <MyBirthShortcutDetail locale={locale}/> };
   const at = items.findIndex((item) => item.key === "activity") + 1;

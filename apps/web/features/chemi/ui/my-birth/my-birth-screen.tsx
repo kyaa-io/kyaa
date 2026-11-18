@@ -143,7 +143,7 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
   const meValue = (key: "date" | "time" | "gender" | "place", value: string | null, fillable = false) => <div>
     <FanText as="dt" role="meta">{{ date: copy.fieldDate, time: copy.fieldTime, gender: copy.fieldGender, place: copy.fieldPlace }[key]}</FanText>
     <FanText as="dd" role={value ? "item" : "body"} className={value ? undefined : styles.none}>
-      {value ? flashed(key, value) : <>{copy.none}{fillable ? <FanAction variant="text" size="sm" ariaLabel={fillCopy(copy.fillAria, { field: key === "time" ? copy.fieldTime : copy.fieldPlace })} onClick={() => setOverlay({ kind: "birth", mode: "fill" })}>{copy.fill}</FanAction> : null}</>}
+      {value ? flashed(key, value) : <>{copy.none}{fillable ? <FanAction variant="text" size="sm" className={styles.fillAction} ariaLabel={fillCopy(copy.fillAria, { field: key === "time" ? copy.fieldTime : copy.fieldPlace })} onClick={() => setOverlay({ kind: "birth", mode: "fill" })}>{copy.fill}</FanAction> : null}</>}
     </FanText>
   </div>;
 
@@ -175,11 +175,11 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
           <span className={styles.who}><FanText as="strong" role="item">{partner.nickname}</FanText><FanText role="meta" className={styles.meta}>{metas.map((meta) => <span key={meta}>{meta}</span>)}</FanText></span>
           <span className={styles.acts}>
             <FanAction variant="text" ariaLabel={fillCopy(copy.partnerEditAria, { name: partner.nickname })} onClick={() => setOverlay({ kind: "partner", id: partner.id })}>{copy.partnerEdit}</FanAction>
-            <FanAction variant="text" className={styles.quiet} ariaLabel={fillCopy(copy.partnerDeleteAria, { name: partner.nickname })} onClick={() => setOverlay({ kind: "partner-wipe", id: partner.id })}>{copy.partnerDelete}</FanAction>
+            <FanAction variant="text" className={`${styles.quiet} ${styles.flushEnd}`} ariaLabel={fillCopy(copy.partnerDeleteAria, { name: partner.nickname })} onClick={() => setOverlay({ kind: "partner-wipe", id: partner.id })}>{copy.partnerDelete}</FanAction>
           </span>
         </li>;
       })}
-      {partners.length === 0 ? <li className={styles.solo} data-row=""><FanAction variant="text" onClick={() => setOverlay({ kind: "partner", id: null })}>{copy.partnerNew}</FanAction></li> : null}
+      {partners.length === 0 ? <li className={styles.solo} data-row=""><FanAction variant="text" className={styles.flushStart} onClick={() => setOverlay({ kind: "partner", id: null })}>{copy.partnerNew}</FanAction></li> : null}
     </ul>
   </FanSurface> : null;
 
@@ -188,7 +188,7 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
       <FanHeading id="my-birth-consent">{copy.consentTitle}</FanHeading>
       <FanText role="meta" className={styles.push}>{fillCopy(copy.consentDate, { date: kstParts(profile.consent.at).text })}</FanText>
     </div>
-    <div className={styles.consent}><FanText role="body">{copy.consentItem}</FanText><FanAction variant="text" onClick={() => setConsentOpen(true)}>{copy.consentView}</FanAction></div>
+    <div className={styles.consent}><FanText role="body">{copy.consentItem}</FanText><FanAction variant="text" className={styles.flushEnd} onClick={() => setConsentOpen(true)}>{copy.consentView}</FanAction></div>
   </FanSurface> : null;
 
   const status = (id: "saju" | "fortune" | "star") => {
@@ -218,7 +218,7 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
         {meCard}
         {partnerCard}
         {consentCard}
-        {birth ? <FanAction variant="text" className={styles.wipeButton} onClick={() => setOverlay({ kind: "wipe" })}>{copy.wipe}</FanAction> : null}
+        {birth ? <FanAction variant="text" className={`${styles.wipeButton} ${styles.flushStart}`} onClick={() => setOverlay({ kind: "wipe" })}>{copy.wipe}</FanAction> : null}
       </div>
       {usesRail}
     </div>
