@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
+import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import styles from "./scene.module.css";
 
 export type BirthInput = {
@@ -17,6 +18,12 @@ const calendars = [
   ["solar", "양력"],
   ["lunar", "음력"],
   ["lunar_leap", "음력 윤달"],
+] as const;
+
+const genders = [
+  ["female", "여성"],
+  ["male", "남성"],
+  [null, "선택 안 함"],
 ] as const;
 
 /** 숫자만 받아 1995.05.05 꼴로 만든다. */
@@ -109,19 +116,16 @@ export function BirthSheet({
               value={date}
               onChange={(event) => setDate(maskBirthDate(event.target.value))}
             />
-            <div className={styles.segment} role="group" aria-label="달력 종류">
-              {calendars.map(([key, label]) => (
-                <FanAction
-                  key={key}
-                  variant="neutral"
-                  size="sm"
-                  aria-pressed={calendar === key}
-                  onClick={() => setCalendar(key)}
-                >
-                  {label}
-                </FanAction>
-              ))}
-            </div>
+            <FanTabs
+              variant="segment"
+              label="달력 종류"
+              current={calendar}
+              items={calendars.map(([key, label]) => ({
+                key,
+                label,
+                onSelect: () => setCalendar(key),
+              }))}
+            />
           </>
         )}
         {step === 1 && (
@@ -146,29 +150,16 @@ export function BirthSheet({
         {step === 2 && (
           <>
             <span id="chemi-gender">성별</span>
-            <div
-              className={styles.segment}
-              role="group"
-              aria-labelledby="chemi-gender"
-            >
-              {(
-                [
-                  ["female", "여성"],
-                  ["male", "남성"],
-                  [null, "선택 안 함"],
-                ] as const
-              ).map(([key, label]) => (
-                <FanAction
-                  key={label}
-                  variant="neutral"
-                  size="sm"
-                  aria-pressed={gender === key}
-                  onClick={() => setGender(key)}
-                >
-                  {label}
-                </FanAction>
-              ))}
-            </div>
+            <FanTabs
+              variant="segment"
+              label="성별"
+              current={gender ?? "none"}
+              items={genders.map(([key, label]) => ({
+                key: key ?? "none",
+                label,
+                onSelect: () => setGender(key),
+              }))}
+            />
             <small>저장하면 생일 정보 수집·이용에 동의한 것으로 봐요.</small>
           </>
         )}

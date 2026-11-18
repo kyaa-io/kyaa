@@ -8,6 +8,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanNumber } from "@/components/fan-ui/fan-number";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanGauge } from "@/components/fan-ui/fan-number";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -29,13 +30,15 @@ import {
 } from "./lines";
 import {
   ChemiRequestError,
+  isAuthFailure,
   loadParticipation,
+  parseTodayFortune,
   requestFortune,
   saveBirth,
   type FortuneReading,
   type Participation,
 } from "./reading";
-import { kstDate } from "./result-copy";
+import { kstDate, kstDayStart } from "./result-copy";
 import { FortuneResult } from "./result";
 import { Under14 } from "./under-14";
 import styles from "./scene.module.css";
@@ -50,6 +53,13 @@ const talkChoice = [
 const mobileTalkArt = ["portrait", "calm", "laugh", "care"] as const;
 
 type Phase = "idle" | "calc" | "error";
+/** 오류 안내를 가른다: 로그인 만료, 서비스 거절, 연결 끊김. */
+type Failure = "auth" | "service" | "network";
+const failureTitle: Record<Failure, string> = {
+  auth: "로그인이 만료되었습니다.",
+  service: "운세를 불러오지 못했습니다.",
+  network: "연결이 끊겼습니다.",
+};
 type Sheet = null | "login" | "birth";
 
 function readUrl() {
@@ -62,16 +72,30 @@ function readUrl() {
   };
 }
 
+/** 이 운세 흐름이 쌓은 기록 칸 수. 새 탭에서 복원한 주소는 0이다. */
+function flowDepth() {
+  const depth = (window.history.state as { fortuneDepth?: number } | null)?.fortuneDepth;
+  return typeof depth === "number" ? depth : 0;
+}
+
 function writeUrl(
   patch: Record<string, string | null>,
   mode: "push" | "replace",
+  /** replace 에서 기록 칸 수를 다시 센다(입장 주소로 되돌린 칸이 새 바닥이 될 때). */
+  depth?: number,
 ) {
   const params = new URLSearchParams(window.location.search);
   for (const [key, value] of Object.entries(patch))
     value === null ? params.delete(key) : params.set(key, value);
   const url = `${window.location.pathname}?${params}`;
-  if (mode === "push") window.history.pushState(null, "", url);
-  else window.history.replaceState(null, "", url);
+  if (mode === "push")
+    window.history.pushState({ fortuneDepth: flowDepth() + 1 }, "", url);
+  else
+    window.history.replaceState(
+      depth === undefined ? window.history.state : { fortuneDepth: depth },
+      "",
+      url,
+    );
 }
 
 function participationText(participation: Participation) {
@@ -82,10 +106,12 @@ function participationText(participation: Participation) {
   return `${prefix} ${participation.count.toLocaleString("ko-KR")}명이 봤어요`;
 }
 
-function seoulDate(locale: AppLocale, options: Intl.DateTimeFormatOptions) {
-  return new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", ...options }).format(
-    Date.now(),
-  );
+function seoulDate(
+  locale: AppLocale,
+  options: Intl.DateTimeFormatOptions,
+  at: number,
+) {
+  return new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", ...options }).format(at);
 }
 
 export function FortuneFlow({ locale }: { locale: AppLocale }) {
@@ -94,6 +120,7 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
   const [character, setCharacter] = useState<FortuneCharacterId>("changha");
   const [reading, setReading] = useState<FortuneReading>();
   const [phase, setPhase] = useState<Phase>("idle");
+  const [failure, setFailure] = useState<Failure>("network");
   const [sheet, setSheet] = useState<Sheet>(null);
   const [needBirth, setNeedBirth] = useState(false);
   const [birthBusy, setBirthBusy] = useState(false);
@@ -103,6 +130,7 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
   const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
 
+  const day = kstDayStart(reading?.kstDate);
   const index = fortuneCharacters.findIndex((c) => c.id === character);
   const name = fortuneCharacters[index].name;
 
@@ -123,13 +151,14 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
           `/api/chemi/readings/${encodeURIComponent(readingId)}?c=${id}`,
           { headers: { Authorization: `Bearer ${await getAccessToken()}` } },
         );
-        const data = await response.json();
-        if (!response.ok || !data.result) throw Error();
+        const data = parseTodayFortune(await response.json().catch(() => null));
+        if (!response.ok || !data) throw Error();
         setReading({ ...data, readingId, replayed: true });
         setStep(reachableFortuneStep(target, true));
       } catch {
         writeUrl({ step: null, r: null }, "replace");
         setStep("enter");
+        showFanToast({ title: "오늘의 운세 결과가 아니라 처음 화면으로 돌아왔어요." });
       }
     }
     const url = readUrl();
@@ -153,6 +182,9 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
   useEffect(() => {
     function onPop() {
       if (collapsing.current) return;
+      // 계산 중에 떠나면 요청을 끊어, 늦게 온 응답이 화면을 끌고 가지 못하게 한다.
+      abort.current?.abort();
+      abort.current = null;
       const url = readUrl();
       setCharacter(url.character);
       setPhase("idle");
@@ -162,12 +194,18 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
     return () => window.removeEventListener("popstate", onPop);
   }, [reading]);
 
+  useEffect(() => () => abort.current?.abort(), []);
+
   const run = useCallback(
     async (id: FortuneCharacterId) => {
       abort.current?.abort();
       const controller = new AbortController();
       abort.current = controller;
-      const timer = setTimeout(() => controller.abort(), 15000);
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 15000);
       setPhase("calc");
       const started = Date.now();
       try {
@@ -178,6 +216,7 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
         );
         const wait = Math.max(0, 1200 - (Date.now() - started));
         await new Promise((resolve) => setTimeout(resolve, wait));
+        if (abort.current !== controller) return;
         if (controller.signal.aborted) throw Error();
         setReading(data);
         setPhase("idle");
@@ -185,14 +224,23 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
         writeUrl({ step: "talk-1", r: data.readingId }, "replace");
         setStep("talk-1");
       } catch (error) {
+        // 다른 단계로 떠났거나 새 요청이 이어받은 요청의 끝은 화면에 반영하지 않는다.
+        if (abort.current !== controller) return;
         if (error instanceof ChemiRequestError && error.code === "CHEMI_BIRTH_REQUIRED") {
-          writeUrl({ step: null }, "replace");
+          writeUrl({ step: null }, "replace", 0);
           setStep("enter");
           setPhase("idle");
           setNeedBirth(true);
           setSheet("birth");
           return;
         }
+        setFailure(
+          timedOut || !(error instanceof ChemiRequestError)
+            ? "network"
+            : isAuthFailure(error)
+              ? "auth"
+              : "service",
+        );
         setPhase("error");
       } finally {
         clearTimeout(timer);
@@ -236,9 +284,16 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
   }
 
   /** 결과로 들어갈 때 대화 칸들을 접어, 뒤로 가면 입장이 되게 한다. */
-  function openResult(talkCount: number) {
-    collapsing.current = true;
+  function openResult() {
     const keep = { r: reading?.readingId ?? null, c: character };
+    const depth = flowDepth();
+    // 새 탭에서 복원해 쌓은 칸이 없으면 접을 것이 없다. 지금 칸을 결과로 바꾼다.
+    if (depth === 0) {
+      writeUrl({ step: "result", ...keep }, "replace");
+      setStep("result");
+      return;
+    }
+    collapsing.current = true;
     const reset = () => {
       window.removeEventListener("popstate", reset);
       writeUrl({ step: "result", ...keep }, "push");
@@ -246,12 +301,12 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
       setStep("result");
     };
     window.addEventListener("popstate", reset);
-    window.history.go(-talkCount);
+    window.history.go(-depth);
   }
 
   function advance() {
     const talk = talkNumber(step);
-    if (talk === 4) return openResult(4);
+    if (talk === 4) return openResult();
     const next = nextFortuneStep(step);
     writeUrl({ step: next }, "push");
     setStep(next);
@@ -368,14 +423,14 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
             </FanText>
             {talk && (
               <FanText as="time" role="meta">
-                {kstDate("ko")}
+                {kstDate("ko", day)}
               </FanText>
             )}
             {talk && (
               <FanAction
                 variant="text"
                 className={styles.skip}
-                onClick={() => openResult(talk)}
+                onClick={openResult}
               >
                 건너뛰기
               </FanAction>
@@ -392,12 +447,18 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
         {phase === "error" ? (
           <FanState
             inline
-            kind="error"
-            title="연결이 끊겼습니다."
+            kind={failure === "auth" ? "auth" : "error"}
+            title={failureTitle[failure]}
             actions={
-              <FanAction size="sm" onClick={() => void run(character)}>
-                다시 시도
-              </FanAction>
+              failure === "auth" ? (
+                <FanAction size="sm" onClick={login}>
+                  로그인
+                </FanAction>
+              ) : (
+                <FanAction size="sm" onClick={() => void run(character)}>
+                  다시 시도
+                </FanAction>
+              )
             }
           />
         ) : (
@@ -417,7 +478,7 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
                   <FanHeading as="h2">{result.grade.name}</FanHeading>
                 </div>
                 <FanText role="meta">
-                  {seoulDate(locale, { month: "long", day: "numeric", weekday: "long" })}{" "}
+                  {seoulDate(locale, { month: "long", day: "numeric", weekday: "long" }, day)}{" "}
                   · {result.evidence.dayPillar}일
                 </FanText>
                 {reading?.styled?.headline && (

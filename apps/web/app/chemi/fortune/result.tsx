@@ -18,7 +18,7 @@ import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
-import { ChevronRight } from "@/components/fan-ui/fan-icons";
+import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import type { FortuneReading as Reading } from "./reading";
 import {
@@ -26,6 +26,7 @@ import {
   flowNotes,
   fieldNotes,
   kstDate,
+  kstDayStart,
   kstWeekday,
   periodHours,
   periodNotes,
@@ -172,6 +173,7 @@ export function FortuneResult({
   const name =
     fortuneCharacters.find((item) => item.id === character)?.name ?? "창하";
   const back = backHref ?? `/chemi?locale=${locale}`;
+  const day = kstDayStart(reading?.kstDate);
   const toolbar = (
     <div className={styles.toolbar}>
       <FanAction
@@ -185,7 +187,7 @@ export function FortuneResult({
       </FanText>
       {status === "result" && (
         <FanText as="time" role="meta">
-          {kstDate("ko")} ({kstWeekday("ko")})
+          {kstDate("ko", day)} ({kstWeekday("ko", day)})
         </FanText>
       )}
     </div>
@@ -499,10 +501,10 @@ export function FortuneResult({
                 variant="text"
                 key={label}
                 className={styles.nextItem}
-                trailingIcon={<FanIcon icon={ChevronRight} />}
-                onClick={soon(`${label}은 준비 중이에요`)}
+                onClick={soon(`${withTopic(label)} 준비 중이에요`)}
               >
                 <FanText role="item">{label}</FanText>
+                <span aria-hidden="true">›</span>
               </FanAction>
             ),
           )}

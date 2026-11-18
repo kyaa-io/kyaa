@@ -51,7 +51,7 @@
   min-height: 0;
   flex: 1;
   justify-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   min-width: var(--min-target);
   padding: var(--space-1) 0;
   border: 0;
@@ -268,17 +268,6 @@
 .steps i[aria-current="step"] {
   background: var(--color-accent);
 }
-.segment {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  gap: var(--space-1);
-}
-.segment > [aria-pressed="true"] {
-  border-color: var(--color-accent-line);
-  background: var(--color-accent-soft);
-  color: var(--color-accent-ink);
-}
 .timeGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -289,7 +278,8 @@
     gap: var(--space-4);
   }
   .turnRow {
-    display: inline-grid;
+    display: inline-flex;
+    gap: var(--space-2);
   }
   .turnStage {
     display: none;
@@ -319,7 +309,7 @@
   .who[data-face] {
     justify-content: start;
   }
-  .who[data-face] small {
+  .who[data-face] > :last-child {
     margin-inline-start: auto;
   }
   .stage[data-portrait] {

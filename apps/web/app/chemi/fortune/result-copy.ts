@@ -98,20 +98,23 @@ export const spiritNotes: Record<string, [string, string]> = {
 };
 
 /** 한국 날짜 2026.11.19 — 시안과 같은 점 표기. */
-export function kstDate(locale: string) {
+export function kstDate(locale: string, at: number = Date.now()) {
   return new Intl.DateTimeFormat(locale, {
     timeZone: "Asia/Seoul",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   })
-    .format(Date.now())
+    .format(at)
     .replace(/\.\s*/g, ".")
     .replace(/\.$/, "");
 }
 
-export function kstWeekday(locale: string) {
-  return new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", weekday: "short" }).format(
-    Date.now(),
-  );
+export function kstWeekday(locale: string, at: number = Date.now()) {
+  return new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", weekday: "short" }).format(at);
+}
+
+/** 저장된 한국 날짜(YYYY-MM-DD)를 그날 한낮의 시각으로 바꾼다. 없으면 지금. */
+export function kstDayStart(day?: string) {
+  return day ? Date.parse(`${day}T12:00:00+09:00`) : Date.now();
 }
