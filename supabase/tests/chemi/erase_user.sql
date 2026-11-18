@@ -10,7 +10,7 @@ create function pg_temp.user_tables() returns table (tbl text, col text) languag
   select c.relname::text, a.attname::text from pg_class c join pg_namespace n on n.oid = c.relnamespace
     join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped
   where n.nspname = 'public' and c.relkind = 'r' and c.relname like 'chemi\_%' and a.atttypid = 'uuid'::regtype
-    and a.attname in ('user_id','user_low','user_high','giver_id','receiver_id')
+    and a.attname in ('user_id','user_low','user_high','giver_id','receiver_id','reporter_id')
 $$;
 create function pg_temp.rows_of(p_user uuid, p_keep text[]) returns jsonb language plpgsql as $$
 declare t record; n bigint; out jsonb := '{}';
@@ -37,6 +37,9 @@ begin
     values (r, u, 'fortune', 'daily', 'changha', d, '{"score":54}', 'e1', 't1');
   insert into public.chemi_reading_styles (reading_id, character, locale, text, source) values (r, 'changha', 'ko', '"말"', 'table');
   insert into public.chemi_point_grants (user_id, character, kst_date, status, reading_id) values (u, 'changha', d, 'pending_wallet', r);
+  insert into public.chemi_daily_uses (user_id, kst_date, bucket, seq, item_key, reading_id) values (u, d, 'open:fortune', 1, 'daily:' || d, r);
+  insert into public.chemi_charms (user_id, kind, kst_date, character, design_code, reading_id) values (u, 'card', d, 'changha', 'charm-1', r);
+  insert into public.chemi_reports (reporter_id, target_kind, target_id, reason) values (u, 'reading_line', r, 'other');
   insert into public.chemi_day_stamps (user_id, kst_date, first_content) values (u, d, 'fortune');
   insert into public.chemi_exp_log (user_id, character, source, kst_date, exp) values (u, 'changha', 'fortune', d, 10);
   insert into public.chemi_minis (user_id, character, exp_total) values (u, 'changha', 10);

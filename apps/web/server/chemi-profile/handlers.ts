@@ -9,6 +9,7 @@ import { boundedJson, CertificationBodyError } from "@/server/certification/cert
 import { chemiClosedResponse } from "@/server/chemi/dependencies";
 
 // 케미 프로필 API(설계 arch-chemi r3 §3 프로필 줄). 판단은 SQL 함수가 하고 여기서는 요청·응답 꼴만 본다.
+// 생일·상대 저장은 r4 v2 함수, 상대 지우기는 v3 만 부른다(옛 chemi_save_birth·chemi_add_partner·chemi_delete_partner·chemi_delete_partner_v2 는 service_role 권한 회수).
 // 생일 지우기(동의 철회)는 feature:* 를 보지 않는다. CHEMI_TAB 이 꺼져 있으면 모든 경로가 404 다.
 
 export interface ChemiProfileDependencies {
@@ -18,7 +19,7 @@ export interface ChemiProfileDependencies {
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const STATUS: Record<string, number> = {
-  CHEMI_MAIL_UNVERIFIED: 409, CHEMI_UNDER_14: 403, CHEMI_EDIT_LIMIT: 409, CHEMI_PARTNER_FULL: 409, CHEMI_ACCOUNT_CLOSED: 403, CHEMI_INVALID: 400,
+  CHEMI_MAIL_UNVERIFIED: 409, CHEMI_UNDER_14: 403, CHEMI_ACCOUNT_RESTRICTED: 403, CHEMI_EDIT_LIMIT: 409, CHEMI_PARTNER_FULL: 409, CHEMI_ACCOUNT_CLOSED: 403, CHEMI_INVALID: 400,
 };
 
 function failure(error: unknown) {
@@ -46,6 +47,7 @@ export function chemiAuthenticatedHandler(run: (request: Request, deps: ChemiPro
 }
 
 const ok = (body: unknown, status = 200) => Response.json(body, { status, headers });
+const NO_PLACE = { p_place_code: null, p_lat: null, p_lon: null, p_tz: null };
 
 export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
   return {
@@ -54,9 +56,11 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
     putBirth: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiBirthRequestSchema.parse(await boundedJson(request, 2048));
       try {
-        const saved = chemiBirthSavedSchema.parse(await d.rpc("chemi_save_birth", {
+        // 장소 코드·좌표 표(STAR-2)가 들어오기 전에는 코드를 받지 않는다: 글자 장소는 이름으로만, 계산은 '장소 모름'.
+        const saved = chemiBirthSavedSchema.parse(await d.rpc("chemi_save_birth_v2", {
           p_user: user, p_birth_date: input.birthDate, p_calendar: input.calendar, p_birth_time: input.birthTime,
-          p_precision: input.timePrecision, p_gender: input.gender, p_birth_place: input.birthPlace, p_consent_version: CHEMI_BIRTH_CONSENT_VERSION,
+          p_precision: input.timePrecision, p_gender: input.gender, p_birth_place: input.birthPlace, ...NO_PLACE, p_term_side: null,
+          p_consent_version: CHEMI_BIRTH_CONSENT_VERSION,
         }));
         return ok({ ageBand: saved.ageBand, edited: saved.edited, editableFrom: saved.editableFrom });
       } catch (error) {
@@ -73,16 +77,17 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
 
     postPartner: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiPartnerCreateSchema.parse(await boundedJson(request, 2048));
-      const created = chemiPartnerCreatedSchema.parse(await d.rpc("chemi_add_partner", {
+      const created = chemiPartnerCreatedSchema.parse(await d.rpc("chemi_add_partner_v2", {
         p_user: user, p_nickname: input.nickname, p_birth_date: input.birthDate, p_calendar: input.calendar, p_birth_time: input.birthTime,
-        p_precision: input.timePrecision, p_gender: input.gender, p_source: input.source,
+        p_precision: input.timePrecision, p_gender: input.gender, p_source: input.source, ...NO_PLACE,
       }));
-      return ok(created, 201);
+      return ok({ partnerId: created.partnerId }, 201);
     })(deps),
 
     deletePartner: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiPartnerDeleteSchema.parse(await boundedJson(request, 512));
-      const result = chemiPartnerDeletedSchema.parse(await d.rpc("chemi_delete_partner", { p_user: user, p_partner: input.partnerId }));
+      // 상대 조회·지문·삭제를 한 RPC(사용자 잠금 아래)에서 한다: 조회 뒤 철회·탈퇴가 끝나도 소금·상태 줄이 다시 생기지 않는다.
+      const result = chemiPartnerDeletedSchema.parse(await d.rpc("chemi_delete_partner_v3", { p_user: user, p_partner: input.partnerId }));
       return result.deleted ? ok(result) : Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
     })(deps),
   };
