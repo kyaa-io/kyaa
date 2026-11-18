@@ -73,12 +73,12 @@
 .history[hidden] { display:none; }
 
 .recordGrid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:var(--space-2); list-style:none; padding:0; margin:var(--space-3) 0 var(--space-6); }
-.recordGrid .recordCard,.recordGrid .unearnedCard { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:var(--space-1); width:100%; height:100%; box-sizing:border-box; padding:var(--space-2) var(--space-1) 0; border:1px solid var(--color-line); border-radius:var(--radius-media); background:var(--color-surface); color:var(--color-text); text-align:center; overflow-wrap:anywhere; word-break:keep-all; }
-.recordGrid .recordCard { cursor:pointer; min-height:var(--min-target); padding-block-end:var(--space-2); }
+.recordGrid .recordCard,.recordGrid .unearnedCard { width:100%; height:100%; box-sizing:border-box; padding:var(--space-2) var(--space-1) 0; border:1px solid var(--color-line); border-radius:var(--radius-media); background:var(--color-surface); color:var(--color-text); text-align:center; overflow-wrap:anywhere; word-break:keep-all; }
+.recordGrid .recordCard { cursor:pointer; min-height:var(--min-target); padding:0; }
 .recordGrid img { width:100%; max-width:40px; height:auto; object-fit:contain; }
 .recordGrid .recordFace { display:flex; flex-direction:column; align-items:center; gap:var(--space-1); min-width:0; }
 .recordGrid time { color:var(--color-muted); white-space:nowrap; }
-.recordGrid .unearnedCard .action { margin-block-start:auto; min-height:var(--min-target); padding:0 var(--space-1); background:transparent; color:var(--color-service-ink); white-space:nowrap; }
+.recordGrid .unearnedCard .action { min-height:var(--min-target); padding:0 var(--space-1); background:transparent; color:var(--color-service-ink); white-space:nowrap; }
 .activityTable { width:100%; border-collapse:collapse; font:inherit; text-align:left; }
 .activityTable th,.activityTable td { padding:var(--space-3) var(--space-1); border-bottom:1px solid var(--color-line); overflow-wrap:anywhere; }
 @media(min-width:1024px) { .recordGrid { grid-template-columns:repeat(6,minmax(0,1fr)); gap:var(--space-3); } .recordGrid img { max-width:48px; } }
@@ -88,9 +88,20 @@
 .artistStampList { display:grid; gap:var(--space-2); }
 /* 팬페이지는 칩 한 줄이다. 390은 가로로 넘기고, 1024 이상은 줄바꿈한다. */
 @media (width < 64rem) { .artistChips[data-fan-tabs] { flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; scrollbar-width:none; } .artistChips[data-fan-tabs]::-webkit-scrollbar { display:none; } }
-/* 고른 팬페이지의 스탬프는 아래 '받으러 가기' 카드와 같은 격자·같은 카드다. 그림 → 이름 → 날짜. */
-.recordGrid.earnedGrid { margin-block-end:0; }
-.recordGrid .recordCard { padding:0; }
-.recordGrid .recordCard > [data-fan-action] { display:flex; flex-direction:column; align-items:center; justify-content:flex-start; gap:var(--space-1); width:100%; height:100%; min-height:var(--min-target); padding:var(--space-2) var(--space-1); border:0; border-radius:inherit; background:transparent; color:var(--color-text); font:inherit; text-align:center; cursor:pointer; }
-.recordGrid .recordCard > [data-fan-action] > span { display:flex; flex-direction:column; align-items:center; gap:var(--space-1); min-width:0; max-width:100%; }
+.recordGrid .recordCard > [data-fan-action] { width:100%; height:100%; min-height:var(--min-target); padding:var(--space-2) var(--space-1) 0; border:0; border-radius:inherit; background:transparent; color:var(--color-text); font:inherit; text-align:center; cursor:pointer; }
+.recordGrid .recordCard > [data-fan-action] > span { min-width:0; width:100%; }
 .recordGrid .recordCard time { font-size:var(--fan-metadata-size); }
+
+/* 같은 줄에서 그림·이름·날짜 또는 링크의 높이를 함께 맞춘다. */
+.recordGrid .recordCard,
+.recordGrid .unearnedCard,
+.recordGrid .recordCard > [data-fan-action],
+.recordGrid .recordCard > [data-fan-action] > span {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-template-rows:subgrid;
+  grid-row:span 3;
+  justify-items:center;
+  row-gap:var(--space-1);
+}
+.recordGrid time { align-self:center; padding-block:var(--space-1); }

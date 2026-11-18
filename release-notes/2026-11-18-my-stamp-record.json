@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "MY 스탬프 기록에서 받은 스탬프 바로 다음 칸에 ‘받으러 가기’가 이어져요.",
+    "첨부 화면은 예시 스탬프로 확인한 화면이에요."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-18-my-stamp-record-1440.png",
+    "release-notes/images/2026-11-18-my-stamp-record-390.png"
+  ]
+}
