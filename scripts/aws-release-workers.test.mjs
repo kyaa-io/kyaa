@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm, readFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, readFile, chmod, utimes } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -18,7 +18,10 @@ for (const scenario of ['match','difference','denied','revision','disabled','run
    if(scenario==='match') {
     await mkdir(join(root,'mint-worker'));
     await writeFile(join(root,'mint-worker/index.cjs'),'exports.handler=()=>{};');
-    execFileSync('zip',['-X','-q','code.zip','index.cjs'],{cwd:join(root,'mint-worker')});
+    const fixture = join(root,'mint-worker/index.cjs');
+    await chmod(fixture, 0o644);
+    await utimes(fixture, 315532800, 315532800);
+    execFileSync('zip',['-X','-q','code.zip','index.cjs'],{cwd:join(root,'mint-worker'),env:{...process.env,TZ:'UTC'}});
     backup=await readFile(join(root,'mint-worker/code.zip'));
    }
    const aws=args=>{
@@ -40,7 +43,15 @@ for (const scenario of ['match','difference','denied','revision','disabled','run
     return config;
    };
    const run=()=>updateWorkers('a'.repeat(40),root,aws,'dev',async()=>scenario==='backup'?Buffer.from('bad'):backup);
-   if(['denied','revision','runtime','backup','environment'].includes(scenario)) await assert.rejects(run);
+   if (scenario === 'match') {
+    for (const timestamp of [946684800, 1735689600]) {
+     for (const file of new Set(Object.values(workers))) {
+      await utimes(join(root,'apps/worker/dist-lambda',file), timestamp, timestamp);
+     }
+     await run();
+     assert.equal(calls.filter(args => args[1] === 'update-function-code' && !args.includes('--dry-run')).length, 0);
+    }
+   } else if(['denied','revision','runtime','backup','environment'].includes(scenario)) await assert.rejects(run);
    else {await run(); assert.equal(hashes.size,scenario==='match'?0:4);}
    if(['denied','runtime','backup'].includes(scenario)) assert.equal(hashes.size,0);
    assert(calls.every(a=>['get-function','get-function-configuration','update-function-code','wait'].includes(a[1])));
