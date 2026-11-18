@@ -79,5 +79,8 @@
   .myCard :is(.book, .bookSkeleton) { max-inline-size:380px; margin-inline:auto; }
 }
 @media (min-width:1024px) {
-  .myCard :is(.book, .bookSkeleton) { max-inline-size:560px; }
+  .myCard > .body { grid-template-columns:minmax(0,560px) minmax(0,1fr); column-gap:var(--space-8); }
+  .myCard :is(.book, .bookSkeleton) { max-inline-size:560px; grid-area:1 / 1; }
+  .myCard .chipRow { grid-area:2 / 1; }
+  .myCard .facts { grid-area:1 / 2 / span 2; }
 }

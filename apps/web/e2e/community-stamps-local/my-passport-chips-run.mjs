@@ -37,9 +37,12 @@ try {
         chipTop: element.getBoundingClientRect().top,
         chipBottom: element.getBoundingClientRect().bottom,
         recordTop: record.getBoundingClientRect().top,
+        recordLeft: record.getBoundingClientRect().left,
+        bookRight: book.getBoundingClientRect().right,
         profileBeforeBook: profile.compareDocumentPosition(book) & Node.DOCUMENT_POSITION_FOLLOWING,
         rows: new Set(visible.map((chip) => chip.offsetTop)).size,
         hidden: element.children.length - visible.length,
+        visibleCount: visible.length,
         clipped: visible.some((chip) => {
           const { left, right } = chip.getBoundingClientRect();
           return left < element.getBoundingClientRect().left - 0.5 || right > edge + 0.5;
@@ -50,7 +53,9 @@ try {
       };
     });
     assert.ok(geometry.profileBeforeBook && geometry.alignedEdges && geometry.alignedProfile);
-    assert.ok(geometry.bookBottom < geometry.chipTop && geometry.chipBottom < geometry.recordTop);
+    assert.ok(geometry.bookBottom < geometry.chipTop);
+    if (width === 390) assert.ok(geometry.chipBottom < geometry.recordTop);
+    else assert.ok(geometry.bookRight < geometry.recordLeft && geometry.recordTop < geometry.bookBottom);
     if (width === 390) assert.ok(geometry.bookBottom <= 844 && geometry.recordTop < 844);
     assert.equal(geometry.rows, 1);
     assert.equal(geometry.pageWidth, width);
@@ -61,9 +66,6 @@ try {
     }
     assert.equal(geometry.clipped, false);
     await expect(page.getByRole('link', { name: '자세히 보기', exact: true })).toHaveAttribute('href', '/passports?locale=ko');
-    if (process.env.MY_PASSPORT_CAPTURE_DIR) {
-      await page.screenshot({ path: `${process.env.MY_PASSPORT_CAPTURE_DIR}/2026-11-19-my-passport-top-${width}.png` });
-    }
     const target = chips.nth(1);
     const name = await target.innerText();
     await target.focus();
@@ -74,8 +76,8 @@ try {
     await expect(chips.first()).toBeFocused();
     await expect(chips.first()).toBeInViewport({ ratio: 0.99 });
     await page.setViewportSize({ width: width === 390 ? 1440 : 390, height: 844 });
-    if (width === 390) await expect(chips).toHaveCount(15);
-    else await expect.poll(() => chips.count()).toBeLessThan(15);
+    if (width === 390) await expect.poll(() => chips.count()).toBeGreaterThan(geometry.visibleCount);
+    else await expect.poll(() => chips.count()).toBeLessThan(geometry.visibleCount);
     assert.deepEqual(errors, []);
     console.log(width, geometry);
     await page.close();

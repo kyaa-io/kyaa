@@ -371,7 +371,9 @@
 .pencilProfile>a{flex:none;width:56px;height:56px}
 .pencilProfileCopy{flex:1;min-width:0;display:grid;gap:4px}
 .pencilProfileCopy h1{overflow-wrap:anywhere}
-.pencilName{display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-2)}
+.pencilName{display:flex;align-items:center;gap:var(--space-2)}
+.pencilName h1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pencilName > span{display:block;flex:none;max-inline-size:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pencilProfile nav{display:flex;gap:8px;align-items:center}
 .pencilMy .pencilProfile nav>a{min-height:44px;border-radius:12px;border-color:transparent;color:var(--color-muted);padding-inline:8px;font-size:14px}
 .homeRow{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--space-5);align-items:start}
@@ -406,7 +408,7 @@
 
 
 /* Keep the profile and both summary cards on the same outer edges. */
-.pencilSummary { display:grid; gap:var(--space-4); }
+.pencilSummary { display:grid; grid-template-columns:minmax(0,1fr); min-width:0; gap:var(--space-4); }
 .pencilMy .pencilSummary .pencilProfile nav > a { justify-content:center; }
 @media (width < 48rem) {
   .pencilSummary { gap:var(--space-3); }
