@@ -48,7 +48,7 @@ else
 fi
 
   $P -f "$HERE/schema_additive.sql"
-  for f in m1_closure chain_payload schema_base_fn erase_user; do
+  for f in m1_closure chain_payload schema_base_fn erase_user r4_profile; do
     $P -f "$HERE/$f.sql"
   done
 fi
@@ -124,4 +124,68 @@ for i in 1 2 3 4; do
   ! grep -q "deadlock" "$OUT/r$i" "$OUT/e$i" || fail "⑦c.$i deadlock"
   grep -q '"status" *: *"pending"' "$OUT/e$i" || fail "⑦c.$i begin: $(cat "$OUT/e$i")"
 done
+# ⑦d R4D F-B12 표 6행: 실제 보상 경로(chemi_complete_reading → 지갑 → 사용자 잠금 → group_wallet_post 3P)와 탈퇴 시작을 두 순서로.
+#    선행 지급은 한 번 보존, 비활성화 뒤 신규 지급 0, 교착 0, 완료(감싸개) 뒤 케미 줄·개인정보 0.
+#    지갑 출처 허용은 이 일회용 DB 안에서만 켠다(reward_race.sh 와 같은 방식).
+$P -c "update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,
+  migration_evidence_sha256=repeat('a',64),rewards_start_on=public.dukjil_kst_date()" >/dev/null
+for i in 1 2 3 4; do
+  U=cae00000-0000-4000-8000-0000000000$(printf %02d $i); S=did:privy:chemi-race-10-$i
+  user "$U" "$S"
+  $P -c "begin; set local session_replication_role=replica;
+    insert into public.fan_passports(app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id) values('$U','$U',gen_random_uuid(),gen_random_uuid()); commit" >/dev/null
+  if [ $((i % 2)) = 0 ]; then a=0; b=0.3; else a=0.3; b=0; fi
+  ($P -At -c "begin; select pg_sleep($a); select public.chemi_complete_reading('$U','fortune','daily','changha','$U','','{}','v1','v1'); select pg_sleep(0.6); commit;" >"$OUT/p$i" 2>&1 || true) &
+  ($P -At -c "$(begin_sql "$S" $b)" >"$OUT/q$i" 2>&1 || true) &
+  wait
+  ! grep -q "deadlock" "$OUT/p$i" "$OUT/q$i" || fail "⑦d.$i deadlock"
+  grep -q '"status" *: *"pending"' "$OUT/q$i" || fail "⑦d.$i begin: $(cat "$OUT/q$i")"
+  paid=$($P -At -c "select count(*) from public.mobile_fan_economy_ledger where app_user_id='$U' and source_type='chemi_reward'")
+  if grep -q CHEMI_ACCOUNT_CLOSED "$OUT/p$i"; then [ "$paid" = 0 ] || fail "⑦d.$i paid after disable"; else [ "$paid" = 1 ] || fail "⑦d.$i reward before begin paid $paid"; fi
+  # 비활성화 뒤 새 풀이·미지급 청구는 거절, 지급 수 그대로
+  ! $P -At -c "select public.chemi_complete_reading('$U','star','daily','changha','$U','','{}','v1','v1')" >/dev/null 2>&1 || fail "⑦d.$i reading after disable"
+  ! $P -At -c "select public.chemi_claim_pending_points('$U')" >/dev/null 2>&1 || fail "⑦d.$i claim after disable"
+  [ "$($P -At -c "select count(*) from public.mobile_fan_economy_ledger where app_user_id='$U' and source_type='chemi_reward'")" = "$paid" ] || fail "⑦d.$i paid changed"
+  TOKEN=$($P -At -c "select public.claim_account_deletion('$U')->>'leaseToken'")
+  [ "$($P -At -c "select public.chemi_complete_account_deletion('$U','$TOKEN')")" = "t" ] || fail "⑦d.$i complete"
+  left=$($P -At -c "select (select count(*) from public.chemi_readings where user_id='$U')+(select count(*) from public.chemi_point_grants where user_id='$U')
+    +(select count(*) from public.chemi_daily_uses where user_id='$U')+(select count(*) from public.app_users where id='$U' and privy_user_id not like 'deleted:%')")
+  [ "$left" = 0 ] || fail "⑦d.$i personal rows left $left"
+  [ "$($P -At -c "select count(*) from public.mobile_fan_economy_ledger where app_user_id='$U' and source_type='chemi_reward'")" = "$paid" ] || fail "⑦d.$i ledger not preserved"
+done
+[ "$($P -At -c "select count(distinct (select count(*) from public.mobile_fan_economy_ledger l where l.app_user_id=u.id and l.source_type='chemi_reward')) from public.app_users u where u.id::text like 'cae00000-%'")" = 2 ] || fail "⑦d only one ordering was exercised"
+
+# ⑦e 검토 ISSUE 1: 상대 지우기(v3)와 생일 철회·탈퇴 완료를 동시에, 순서 양쪽 → 끝에 소금·상태 줄이 되살아나지 않는다(교착 0).
+for i in 1 2 3 4; do
+  U=cee00000-0000-4000-8000-0000000000$(printf %02d $i); S=did:privy:chemi-race-11-$i
+  user "$U" "$S"
+  $P -At >/dev/null <<SQL
+select public.chemi_save_birth_v2('$U','1995-05-05','solar',null,'unknown',null,null,null,null,null,null,null,'v1');
+select public.chemi_add_partner_v2('$U','민지','1997-03-12','solar','08:10','band','male','saju',null,null,null,null);
+select public.chemi_fp_salt('$U');
+SQL
+  PA=$($P -At -c "select id from public.chemi_partners where user_id='$U'")
+  if [ $((i % 2)) = 0 ]; then a=0; b=0.3; else a=0.3; b=0; fi
+  if [ $i -le 2 ]; then
+    other="select public.chemi_withdraw_birth_consent('$U')"
+  else
+    $P -At -c "select public.chemi_begin_account_deletion('$S')" >/dev/null
+    TOKEN=$($P -At -c "select public.claim_account_deletion('$U')->>'leaseToken'")
+    other="select public.chemi_complete_account_deletion('$U','$TOKEN')"
+  fi
+  ($P -At -c "begin; select pg_sleep($a); select public.chemi_delete_partner_v3('$U','$PA'); select pg_sleep(0.6); commit;" >"$OUT/v$i" 2>&1 || true) &
+  ($P -At -c "begin; select pg_sleep($b); $other; select pg_sleep(0.6); commit;" >"$OUT/w$i" 2>&1 || true) &
+  wait
+  ! grep -q "deadlock" "$OUT/v$i" "$OUT/w$i" || fail "⑦e.$i deadlock"
+  [ "$($P -At -c "select count(*) from public.chemi_partners where user_id='$U'")" = 0 ] || fail "⑦e.$i partner left"
+  if [ $i -le 2 ]; then
+    grep -q '"profile"' "$OUT/w$i" || fail "⑦e.$i withdraw: $(cat "$OUT/w$i")"
+    [ "$($P -At -c "select count(*) from public.chemi_user_state where user_id='$U' and fp_salt is not null")" = 0 ] || fail "⑦e.$i salt recreated after withdrawal"
+  else
+    grep -qx t "$OUT/w$i" || fail "⑦e.$i complete: $(cat "$OUT/w$i")"
+    [ "$($P -At -c "select count(*) from public.chemi_user_state where user_id='$U'")" = 0 ] || fail "⑦e.$i chemi_user_state recreated after deletion"
+    if ! grep -q '"deleted" *: *true' "$OUT/v$i"; then grep -q CHEMI_ACCOUNT_CLOSED "$OUT/v$i" || fail "⑦e.$i delete: $(cat "$OUT/v$i")"; fi
+  fi
+done
+
 echo "deletion_race DB-only ok; NOT VERIFIED: web ⑥, real payment ⑦, payment/webhook/manual resolve ⑧–⑩ (W1-PAY); D2 remains pending"
