@@ -9,7 +9,8 @@ const push=vi.fn();
 vi.mock('next/navigation',()=>({useRouter:()=>({push,back:vi.fn()})}));
 afterEach(()=>{cleanup();push.mockReset();});
 describe('tier guide',()=>{
- it('opens a dismissible dialog and preserves locale on the guide destination',()=>{
+ it('preserves locale and does not go back while guide navigation is pending',async()=>{
+ const back=vi.spyOn(window.history,'back');
  render(<TierGuideInfo locale="ko"/>);
  fireEvent.click(screen.getByRole('button',{name:'팬 등급 안내'}));
  expect(screen.getByRole('dialog')).toBeTruthy();
@@ -17,6 +18,10 @@ describe('tier guide',()=>{
  fireEvent.click(screen.getByRole('button',{name:'보러 가기'}));
  expect(push).toHaveBeenCalledWith('/notices/tier-guide?locale=ko');
  expect(screen.queryByRole('dialog')).toBeNull();
+ await new Promise(resolve=>setTimeout(resolve,10));
+ const backCalls=back.mock.calls.length;
+ back.mockRestore();
+ expect(backCalls).toBe(0);
  });
  for(const locale of APP_LOCALES) it(`shows all 11 actual stages in ${locale}`,()=>{
  const {container}=render(<TierGuide locale={locale}/>);

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "MY에서 등급 안내 창의 ‘보러 가기’를 누르면 팬 등급 안내가 열려요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-19-my-tier-guide.png"
+  ]
+}

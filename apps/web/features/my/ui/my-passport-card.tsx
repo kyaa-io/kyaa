@@ -1,7 +1,7 @@
 "use client";
 import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
-import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -98,11 +98,12 @@ type BookBodyProps = {
   passportId: string; celebrity: Parameters<typeof PassportIdentityArtwork>[0]["celebrity"]; tier: NonNullable<Creator["passport"]>["tier"]; stageKey: string | null; tierName: string;
   tierStep: ReturnType<typeof nextTierStep>; book: ReturnType<typeof usePassportBook>; href: string; bookLabel: string; locale: AppLocale;
   /** What the slot row shows while the mission policy is off. */
+  selector?: ReactNode;
   fallback?: ReactNode; fallbackCount?: number; error?: { message: string; retryLabel: string; onRetry: () => void } | null;
 };
 
 /** 여권 그림 · 등급 · 스탬프 게이지 · 미션북 9칸. MY의 패스포트 카드와 덕질 탭의 덕질 기록이 같은 부품을 쓴다. 카드 외곽(`.card`)은 부르는 쪽이 둔다. */
-export function PassportBookBody({ passportId, celebrity, tier, stageKey, tierName, tierStep, book, href, bookLabel, locale, fallback = null, fallbackCount = 0, error = null }: BookBodyProps) {
+export function PassportBookBody({ passportId, celebrity, tier, stageKey, tierName, tierStep, book, href, bookLabel, locale, selector, fallback = null, fallbackCount = 0, error = null }: BookBodyProps) {
   const filled = book.page?.filled ?? null;
   const total = book.page?.slots.length ?? 9;
   const filledArt = filledSlotArt(book.page);
@@ -111,6 +112,7 @@ export function PassportBookBody({ passportId, celebrity, tier, stageKey, tierNa
       <Link href={href as Route} className={styles.book} data-my-passport-book={passportId} aria-label={bookLabel}>
         <PassportIdentityArtwork celebrity={celebrity} locale={locale} level={tier} stamps={[]} slotArt={filledArt} totalCount={filled ?? fallbackCount} priority />
       </Link>
+      {selector}
       <div className={styles.facts}>
         <h3>{myHomeText(locale, "passportRecord", [celebrity.name])}</h3>
         <p className={styles.tier}>
@@ -143,10 +145,40 @@ type CardProps = {
   labels: MyPassportLabels;
 };
 
+function PassportCreatorSelector({ selected, ordered, label, onSelect }: {
+  selected: string; ordered: Creator[]; label: string; onSelect: (slug: string) => void;
+}) {
+  const container = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const rail = container.current?.querySelector("nav");
+    if (!rail) return;
+    const chips = Array.from(rail.querySelectorAll("button"));
+    const fit = () => {
+      const { left, right } = rail.getBoundingClientRect();
+      for (const chip of chips) {
+        const bounds = chip.getBoundingClientRect();
+        chip.inert = bounds.left < left - 0.5 || bounds.right > right + 0.5;
+      }
+    };
+    fit();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(fit);
+    observer.observe(rail);
+    chips.forEach((chip) => observer.observe(chip));
+    return () => observer.disconnect();
+  });
+  return <div ref={container} className={styles.chipRow}>
+    <FanTabs className={styles.selector} variant="chip" label={label} current={selected} items={ordered.map(({ celebrity }) => ({
+      key: celebrity.slug, label: <span className={styles.chipName} title={celebrity.name}>{celebrity.name}</span>, onSelect: () => onSelect(celebrity.slug),
+    }))} />
+  </div>;
+}
+
 /** MY에서 가장 큰 덩어리. 여권, 등급, 스탬프 진행과 등급 진행, 그 아래 받은 스탬프(색)과 못 받은 스탬프(회색 잠금)을 한 카드에 둔다. */
 export function MyPassportCard({ creators, selectedSlug, onSelect, communityStamps, stampsError, retryStamps, locale, labels }: CardProps) {
   const eligible = creators.filter((creator) => creator.passport);
   const selected = eligible.find((creator) => creator.celebrity.slug === selectedSlug) ?? eligible[0];
+  const ordered = selected ? [selected, ...eligible.filter((creator) => creator !== selected)] : eligible;
   const passport = selected?.passport ?? null;
   const book = usePassportBook(passport?.id);
   const href = passport ? `/passports/${passport.id}?locale=${locale}` : `/passports?locale=${locale}`;
@@ -160,11 +192,11 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   const tierStep = passport ? nextTierStep(locale, passport) : null;
   const manyPassports = eligible.length > 1;
   useEffect(() => { try { localStorage.setItem(CHIPS_KEY, manyPassports ? "1" : "0"); } catch { /* 기기별 편의값이다. */ } }, [manyPassports]);
-  return <section className={styles.card} aria-label={labels.title}>
-    <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={href}>{labels.detail}</FanSectionLink></header>
+  return <section className={`${styles.card} ${styles.myCard}`} aria-label={labels.title}>
+    <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={manyPassports ? `/passports?locale=${locale}` : href}>{labels.detail}</FanSectionLink></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
-      {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
       <PassportBookBody passportId={passport.id} celebrity={selected.celebrity} tier={passport.tier} stageKey={stage?.current.key ?? null} tierName={tierName} tierStep={tierStep} book={book} href={href} bookLabel={`${selected.celebrity.name} · ${labels.detail}`} locale={locale} fallbackCount={fallbackStamps.length}
+        selector={manyPassports ? <PassportCreatorSelector selected={selected.celebrity.slug} ordered={ordered} label={labels.creators} onSelect={onSelect} /> : null}
         fallback={fallbackStamps.length > 0 ? <ul className={styles.slots}>{fallbackStamps.map((stamp) => <li className={styles.slot} data-state="filled" key={stamp.id}><span className={styles.slotArt}><img src={communityStampThumb(stamp.kind)} alt="" width={56} height={56} /></span><span className={styles.slotName}>{communityStampLabel(stamp.kind, locale)}</span></li>)}</ul> : null}
         error={book.status === "error" || (book.status === "off" && stampsError) ? { message: labels.loadError, retryLabel: labels.retry, onRetry: () => { book.retry(); retryStamps(); } } : null} />
     </>}
@@ -177,11 +209,11 @@ const CHIPS_KEY = "kyaa:my:passport-chips";
 export function MyPassportCardSkeleton({ title }: { title: string }) {
   const [chips, setChips] = useState(false);
   useLayoutEffect(() => { try { setChips(localStorage.getItem(CHIPS_KEY) === "1"); } catch { /* 자리만 잡는 값이라 없어도 된다. */ } }, []);
-  return <section className={styles.card} aria-label={title}>
+  return <section className={`${styles.card} ${styles.myCard}`} aria-label={title}>
     <header><FanHeading>{title}</FanHeading></header>
-    {chips ? <div className={styles.selector} style={{ visibility: "hidden" }} aria-hidden="true" data-passport-chip-space><FanTabs variant="chip" label="" current="" items={[{ key: "space", label: "\u00a0" }]} /></div> : null}
     <div className={styles.body} aria-hidden="true">
       <span className={styles.bookSkeleton}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized sizes="(max-width:767px) 100vw, 380px" priority /></span>
+      {chips ? <div className={styles.chipRow} style={{ visibility: "hidden" }} aria-hidden="true" data-passport-chip-space><FanTabs className={styles.selector} variant="chip" label="" current="" items={[{ key: "space", label: "\u00a0" }]} /></div> : null}
       <div className={styles.facts}><FanSkeleton width="60%" height={24} /><FanSkeleton width="40%" height={32} /><FanSkeleton width="100%" height={40} /><FanSkeleton width="100%" height={40} /></div>
     </div>
     <div className={styles.slots} aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <span className={styles.slot} key={index}><FanSkeleton shape="circle" width={48} height={48} /><FanSkeleton width={40} height={12} /></span>)}</div>
