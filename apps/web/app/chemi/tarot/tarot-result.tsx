@@ -1,0 +1,297 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
+import { FanTag } from "@/components/fan-ui/fan-tag";
+import { FanText } from "@/components/fan-ui/fan-text";
+import { celebrateReward } from "@/components/fan-ui/reward-celebration";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
+import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
+import type { AppLocale } from "@/i18n/locales";
+import type { TarotMeaning } from "./use-tarot-meaning";
+import type { TarotAuth, TarotDraw, TarotReward } from "./types";
+import styles from "./tarot.module.css";
+
+const DIRECTION = ["정방향", "역방향"] as const;
+const dayLine = (date: string) => {
+  const [, month, day] = date.split("-").map(Number);
+  return `${month}월 ${day}일의 카드`;
+};
+
+type Rewards = { reward: TarotReward; replayed: boolean; points: number };
+
+export function TarotResult({
+  locale,
+  character,
+  draw,
+  member,
+  auth,
+  meaning,
+  headers,
+}: {
+  locale: AppLocale;
+  character: TarotCharacter;
+  draw: TarotDraw;
+  member: boolean;
+  auth: TarotAuth;
+  meaning: TarotMeaning;
+  headers: () => Promise<Record<string, string>>;
+}) {
+  const person = tarotCharacter(character);
+  const [rewards, setRewards] = useState<Rewards | null>(null);
+  const [keepSave, setKeepSave] = useState(true);
+  const celebrated = useRef(false);
+  const authorize = useRef(headers);
+  useLayoutEffect(() => {
+    authorize.current = headers;
+  });
+
+  // 회원: 이 최애로 오늘 받은 것을 서버 값 그대로 읽는다. 다시 온 장면에서 열었으면 먼저 한 번 맞춘다(같은 카드 · 같은 날, 중복 지급 없음).
+  useEffect(() => {
+    if (!member) return;
+    const controller = new AbortController();
+    const signal = controller.signal;
+    void (async () => {
+      const authorization = await authorize.current();
+      let reward = draw.reward;
+      let replayed = draw.replayed;
+      if (draw.settle) {
+        const response = await fetch("/api/chemi/readings", {
+          method: "POST",
+          headers: authorization,
+          signal,
+          body: JSON.stringify({ content: "tarot", kind: "daily", character, position: 0 }),
+        });
+        if (response.ok) {
+          const data = (await response.json()) as { reward?: TarotReward; replayed?: boolean };
+          reward = data.reward ?? {};
+          replayed = Boolean(data.replayed);
+        }
+      }
+      let points = reward.points ?? 0;
+      const today = await fetch("/api/chemi/rewards/today", { headers: authorization, signal });
+      if (today.ok) {
+        const grants = ((await today.json()) as { grants?: { character: string; points: number }[] }).grants;
+        points = grants?.find((grant) => grant.character === character)?.points ?? points;
+      }
+      if (!signal.aborted) setRewards({ reward, replayed, points });
+    })().catch(() => !signal.aborted && setRewards({ reward: draw.reward, replayed: draw.replayed, points: draw.reward.points ?? 0 }));
+    return () => controller.abort();
+    // draw 는 같은 카드면 같은 값이다: 값이 같은데 새 객체라고 다시 맞추지 않는다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [member, draw.card, draw.readingId, draw.settle, character]);
+
+  useEffect(() => {
+    if (!rewards || celebrated.current || rewards.replayed || rewards.points <= 0) return;
+    celebrated.current = true;
+    celebrateReward({ locale, points: rewards.points, stamps: Number(Boolean(rewards.reward.stamp)) });
+  }, [rewards, locale]);
+
+  const alt = TAROT_DECK[draw.card][2];
+  const direction = DIRECTION[Number(draw.reversed)];
+  const content = meaning.card?.dir[draw.reversed ? "down" : "up"];
+  const slotLine = draw.slot ? ` · ${TAROT_DECK_SIZE}장 중 ${draw.slot}번째` : "";
+
+  const rewardRow = member ? <RewardRow character={character} name={person.name} rewards={rewards} locale={locale} /> : null;
+  const saveBox = !member ? (
+    keepSave ? (
+      <div className={styles.save}>
+        <p>
+          <FanText role="label">저장 안 됨</FanText>
+          <FanText role="meta">로그인하면 오늘 카드가 저장돼요</FanText>
+        </p>
+        <div className={styles.saveActions}>
+          <FanAction onClick={auth.login}>로그인하고 저장</FanAction>
+          <FanAction variant="text" onClick={() => setKeepSave(false)}>
+            저장 안 하고 볼게
+          </FanAction>
+        </div>
+      </div>
+    ) : (
+      <p className={styles.saveOff}>
+        <FanText role="label">저장 안 됨</FanText>
+        <FanText role="meta">로그인하면 오늘 카드가 저장돼요</FanText>
+      </p>
+    )
+  ) : null;
+  const failed = meaning.status === "error";
+  const pair = failed ? null : (
+    <div className={styles.pair}>
+      <FanText role="meta">{`오늘 ${person.name}와 나`}</FanText>
+      {content ? <FanHeading as="h3">{content.pair}</FanHeading> : <FanSkeleton width="70%" height={22} />}
+    </div>
+  );
+
+  return (
+    <article className={styles.result} data-reversed={draw.reversed || undefined} data-result="">
+      <div className={styles.colMain}>
+        <header className={styles.head}>
+          <FanText as="p" role="meta">{`${dayLine(draw.date)}${slotLine}`}</FanText>
+          <div className={styles.nameRow}>
+            <FanHeading as="h1">{tarotTitle(draw.card)}</FanHeading>
+            <FanTag tone="fan">{direction}</FanTag>
+          </div>
+        </header>
+        <div className={styles.hero} data-reversed={draw.reversed || undefined}>
+          <picture>
+            <source media="(min-width: 48rem)" srcSet="/chemi/tarot/cloth-1440.webp" />
+            <img className={styles.cloth} src="/chemi/tarot/cloth-390.webp" alt="" />
+          </picture>
+          <img className={styles.cardFace} src={tarotFace(draw.card)} alt={alt} />
+        </div>
+        <div className={styles.pairPanel}>
+          {pair}
+          {rewardRow}
+          {saveBox}
+        </div>
+
+        <section className={styles.mean} data-failed={failed || undefined}>
+          <div className={styles.meanBody}>
+            {failed ? (
+              <Retry onRetry={meaning.retry} />
+            ) : (
+              <>
+                <FanHeading>오늘의 뜻</FanHeading>
+                {content ? (
+                  <>
+                    <FanText as="p" role="item" className={styles.lead}>
+                      {content.lead}
+                    </FanText>
+                    <dl className={styles.rows}>
+                      {content.rows.map(([label, text]) => (
+                        <div key={label}>
+                          <FanText as="dt" role="meta">
+                            {label}
+                          </FanText>
+                          <FanText as="dd" role="body">
+                            {text}
+                          </FanText>
+                        </div>
+                      ))}
+                    </dl>
+                  </>
+                ) : (
+                  <Placeholder />
+                )}
+              </>
+            )}
+          </div>
+          <div className={styles.pairSide}>{pair}</div>
+        </section>
+
+        <section className={styles.sym} hidden={failed}>
+          <FanHeading>그림 속 상징</FanHeading>
+          {meaning.card ? (
+            <FanText as="p" role="body">
+              {meaning.card.symbol}
+            </FanText>
+          ) : (
+            <Placeholder rows={3} />
+          )}
+        </section>
+
+        <footer className={styles.legal}>
+          <FanText as="p" role="meta">
+            재미로 보는 풀이입니다. 중요한 결정의 근거로 쓰지 마세요.
+          </FanText>
+          <FanText as="p" role="meta">
+            풀이 문장은 AI가 말투를 다듬었습니다.
+          </FanText>
+        </footer>
+      </div>
+
+      <div className={styles.colAside}>
+        <div className={styles.said}>
+          <div className={styles.react}>
+            <img src={tarotFaceThumb(character)} alt="" />
+            <span>
+              <FanText role="label">{person.name}</FanText>
+              {content ? (
+                <FanText role="body">{content.react[person.voice]}</FanText>
+              ) : failed ? null : (
+                <FanSkeleton width="80%" />
+              )}
+            </span>
+          </div>
+          <div className={styles.asideReward}>
+            {rewardRow}
+            {saveBox}
+          </div>
+        </div>
+        <section className={styles.keys} hidden={failed}>
+          <FanHeading>전통 키워드</FanHeading>
+          {meaning.card ? (
+            <dl className={styles.rows}>
+              {(["up", "down"] as const).map((side, index) => (
+                <div key={side} aria-current={Number(draw.reversed) === index ? "true" : undefined}>
+                  <FanText as="dt" role="meta">
+                    {DIRECTION[index]}
+                  </FanText>
+                  <dd>
+                    <ul className={styles.words}>
+                      {meaning.card[side].split(" · ").map((word) => (
+                        <li key={word} data-row="">
+                          <FanText role={Number(draw.reversed) === index ? "item" : "body"}>{word}</FanText>
+                        </li>
+                      ))}
+                    </ul>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <Placeholder rows={2} />
+          )}
+        </section>
+      </div>
+    </article>
+  );
+}
+
+function Placeholder({ rows = 4 }: { rows?: number }): ReactNode {
+  return (
+    <div className={styles.placeholder} aria-hidden="true">
+      {Array.from({ length: rows }, (_, index) => (
+        <FanSkeleton key={index} width={index % 2 ? "70%" : "100%"} />
+      ))}
+    </div>
+  );
+}
+
+function Retry({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className={styles.retry} role="alert">
+      <FanText as="p" role="body">
+        풀이를 불러오지 못했습니다.
+      </FanText>
+      <FanAction size="sm" onClick={onRetry}>
+        다시 시도
+      </FanAction>
+    </div>
+  );
+}
+
+/** 받은 것을 적는 한 줄. 서버가 준 값만 그리고, 없는 값은 칸도 만들지 않는다. 패스포트가 없으면 받으러 가는 링크가 된다. */
+function RewardRow({ character, name, rewards, locale }: { character: TarotCharacter; name: string; rewards: Rewards | null; locale: AppLocale }) {
+  if (!rewards) return <div className={styles.rewardRow} aria-hidden="true"><FanSkeleton width="60%" /></div>;
+  const { reward, replayed, points } = rewards;
+  const parts: ReactNode[] = [];
+  if (points > 0 && !replayed) parts.push(<EarnBadge key="points" locale={locale} points={points} variant="inline" />);
+  if (reward.stamp) parts.push(<FanText key="stamp" role="meta">스탬프 1개</FanText>);
+  if (reward.exp) parts.push(<FanText key="exp" role="meta">{`친밀 +${reward.exp}`}</FanText>);
+  if (reward.week) parts.push(<FanText key="week" role="meta">{`이번 주 ${reward.week}일`}</FanText>);
+  if (replayed && points > 0 && parts.length === 0) parts.push(<FanText key="received" role="meta">{`${name} · 오늘 받음`}</FanText>);
+  if (points <= 0 && character !== "dosa")
+    return (
+      <Link className={styles.rewardRow} data-link="" href={`/c/${character}`}>
+        <FanText className={styles.go} role="label">패스포트 받고 포인트·스탬프</FanText>
+        {reward.exp ? <FanText role="meta">{`친밀 +${reward.exp}`}</FanText> : null}
+      </Link>
+    );
+  if (parts.length === 0) return null;
+  return <p className={styles.rewardRow}>{parts}</p>;
+}

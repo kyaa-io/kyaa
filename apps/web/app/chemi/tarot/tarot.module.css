@@ -1,0 +1,937 @@
+/* 오늘의 타로(06-2 입장·뽑기, 06-3 결과). 글자 크기·굵기는 FanText·FanHeading 역할이 정하고, 이 파일은 배치·면·움직임만 정한다.
+ * 카드 치수는 승인 시안(06 E5)의 92 · 168 · 136 을 간격 토큰의 합으로 적었다(PC 는 136 · 216 · 216). */
+.root {
+  --card: calc(var(--space-16) + var(--space-8));
+  --card-half: var(--space-12);
+  --card-open: calc(var(--space-10) * 4 + var(--space-2));
+  --hero-card: calc(var(--space-16) * 2 + var(--space-2));
+  --stage-min: calc(var(--space-16) * 8 + var(--space-12));
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-block: var(--space-2);
+}
+@media (min-width: 48rem) {
+  .root {
+    --card: calc(var(--space-16) * 2 + var(--space-2));
+    --card-half: calc(var(--space-16) + var(--space-1));
+    --card-open: calc(var(--space-16) * 3 + var(--space-6));
+    --hero-card: var(--card-open);
+    --stage-min: calc(var(--space-16) * 11 + var(--space-2) * 2);
+  }
+}
+/* 뽑는 동안은 몰입 화면: 장면이 화면 아래 끝까지 찬다. */
+.root[data-chemi-immersive] {
+  min-height: calc(100svh - var(--fan-header-height, var(--space-16)) - var(--space-4));
+}
+
+.root :is(p, ul, dl) {
+  margin: 0;
+}
+
+/* 머리 줄: 뒤로 가기 · 최애 이름(또는 고르기 띠) · 건너뛰기 */
+.chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.root .back {
+  border: 1px solid var(--color-control-line);
+}
+.who {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: var(--min-target);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+.root .skip {
+  margin-inline-start: auto;
+  color: var(--color-muted);
+}
+.pickband {
+  display: flex;
+  flex: 1;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.root .pickband > button {
+  display: grid;
+  flex: 1;
+  width: auto;
+  height: auto;
+  min-width: var(--min-target);
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) 0;
+  border-radius: var(--radius-small);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.pickband img {
+  display: block;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.root .pickband > button[aria-pressed="true"] {
+  color: var(--color-accent-ink);
+}
+.pickband > button[aria-pressed="true"] img {
+  outline-color: var(--color-accent);
+}
+@media (min-width: 48rem) {
+  .pickband {
+    flex: none;
+    gap: var(--space-4);
+  }
+  .root .pickband > button {
+    flex: none;
+    min-width: var(--space-16);
+  }
+}
+
+/* 장면 */
+.stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  flex: 1;
+  grid-template-rows: minmax(0, 1fr) auto;
+  min-height: var(--stage-min);
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 0;
+  transform-origin: 50% 0;
+}
+/* 입장은 인물 쪽으로 당겨 보고, 떠올리기부터 탁자가 다 보이게 한 번 물러난다(transform 만). */
+.stage[data-near] .scene img {
+  transform: scale(1.3);
+}
+.stage[data-settle] .scene img {
+  animation: settle var(--motion-reward) var(--motion-easing) 1 both;
+}
+@keyframes settle {
+  from {
+    transform: scale(1.3);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@media (min-width: 48rem) {
+  .stage[data-near] .scene img {
+    transform: scale(1.1);
+  }
+  .stage[data-settle] .scene img {
+    animation-name: settle-wide;
+  }
+}
+@keyframes settle-wide {
+  from {
+    transform: scale(1.1);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* 최애 바꾸기·카드 줄 넘김 화살표: 흰 80% 44 원 */
+.stage .turn {
+  position: absolute;
+  top: 36%;
+  z-index: 1;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  color: var(--color-ink);
+  translate: 0 -50%;
+}
+.stage .prev {
+  left: var(--space-2);
+}
+.stage .next {
+  right: var(--space-2);
+}
+@media (min-width: 48rem) {
+  .stage .prev {
+    left: var(--space-8);
+  }
+  .stage .next {
+    right: var(--space-8);
+  }
+}
+
+/* 탁자: 덱·카드 줄·뒤집힌 카드가 놓인다. 대화 판 바로 위. */
+.table {
+  position: relative;
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  min-width: 0;
+  padding-top: var(--space-4);
+}
+.stage[data-talk] .table {
+  align-content: start;
+  padding-top: calc(var(--card-open) + var(--space-5));
+}
+@media (min-width: 48rem) {
+  .stage[data-talk] .table {
+    padding-top: var(--card-open);
+  }
+}
+.onTable {
+  display: block;
+  width: calc(var(--card) * 1.304);
+  margin-bottom: var(--space-2);
+  aspect-ratio: 2 / 3;
+}
+.onTable img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-small);
+}
+.onTable[data-reversed] img {
+  rotate: 180deg;
+}
+.onTable:focus-visible {
+  outline: var(--focus-width) solid var(--color-surface);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-small);
+}
+
+/* 대화 판: 흰 면(불투명). 대답 버튼 → 바로 아래 대사. */
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  width: min(calc(var(--space-12) * 10), calc(100% - var(--space-8)));
+  margin: var(--space-4) auto;
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+@media (min-width: 48rem) {
+  .panel {
+    margin-bottom: var(--space-6);
+    padding: var(--space-5) var(--space-6);
+  }
+}
+.title {
+  display: grid;
+  gap: var(--space-1);
+}
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.choices > * {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+}
+.dialog {
+  display: grid;
+  gap: var(--space-1);
+}
+.speaker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--space-6);
+}
+.speaker .nextLine {
+  min-height: var(--min-target);
+  margin-block: calc(var(--space-2) - var(--space-5));
+  padding: 0;
+  color: var(--color-muted);
+}
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.nameTrail {
+  margin-inline-start: auto;
+  white-space: nowrap;
+}
+.picked {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* 덱 */
+.deck {
+  position: relative;
+  width: var(--card);
+  margin-bottom: var(--space-6);
+  aspect-ratio: 2 / 3;
+}
+.deck img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-small);
+}
+.deck img:nth-child(1) {
+  translate: calc(var(--space-1) * -1) var(--space-1);
+}
+.deck img:nth-child(3) {
+  translate: var(--space-1) calc(var(--space-1) * -1);
+}
+.deck[data-split] img:nth-child(1) {
+  translate: calc(var(--card) * -0.62) 0;
+  rotate: -9deg;
+}
+.deck[data-split] img:nth-child(2) {
+  translate: 0 calc(var(--space-2) * -1);
+}
+.deck[data-split] img:nth-child(3) {
+  translate: calc(var(--card) * 0.62) 0;
+  rotate: 9deg;
+}
+.deck[data-split] img {
+  animation: riffle 750ms var(--motion-easing) 2 alternate both;
+}
+@keyframes riffle {
+  from {
+    translate: 0 0;
+    rotate: 0deg;
+  }
+}
+
+/* 큰 카드 넘기기: 가운데에 맞춰 멈추는 가로 줄. 가운데 카드만 크고 불투명, 양옆은 멀수록 흐리다. */
+.railBox {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  justify-self: stretch;
+}
+.rail {
+  --gap: var(--space-6);
+  display: flex;
+  align-items: end;
+  gap: var(--gap);
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: var(--space-8) 0 var(--space-1);
+  overflow-x: auto;
+  overflow-y: hidden;
+  list-style: none;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  cursor: grab;
+}
+/* 첫·끝 카드도 가운데에 설 수 있게 양끝에 반 줄 폭의 빈 자리를 둔다. */
+.rail::before,
+.rail::after {
+  content: "";
+  flex: none;
+  width: calc(50% - var(--card-half) - var(--gap));
+}
+.rail[data-locked]::before,
+.rail[data-locked]::after {
+  display: none;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.rail[data-dragging] {
+  cursor: grabbing;
+  scroll-snap-type: none;
+}
+.rail li {
+  flex: none;
+  scroll-snap-align: center;
+}
+.root .card {
+  display: block;
+  width: var(--card);
+  height: auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: none;
+  opacity: var(--o, 0.3);
+  aspect-ratio: 2 / 3;
+  transform-origin: 50% 100%;
+  transition:
+    transform var(--motion-fast) var(--motion-easing),
+    opacity var(--motion-fast) var(--motion-easing);
+}
+.card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.root .card[aria-current="true"] {
+  opacity: 1;
+  transform: scale(1.304);
+}
+.card:focus-visible {
+  outline: var(--focus-width) solid var(--color-surface);
+  outline-offset: 2px;
+}
+@media (min-width: 48rem) {
+  .rail {
+    --gap: var(--space-8);
+    padding-top: var(--space-10);
+  }
+}
+/* 2초 동안 아무것도 안 하면 가운데 카드가 한 번 들썩인다(글 안내 대신). */
+.card[data-nudge] img {
+  animation: nudge var(--motion-reward) var(--motion-easing) 1;
+}
+@keyframes nudge {
+  40% {
+    translate: 0 calc(var(--space-2) * -1);
+  }
+}
+.rail[data-locked] {
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+  scroll-snap-type: none;
+}
+.rail[data-locked] .card {
+  opacity: 0.24;
+}
+.rail[data-locked] .card[aria-current="true"] {
+  opacity: 1;
+  translate: 0 calc(var(--space-6) * -1);
+}
+.rail[data-locked] .card[data-side] {
+  transform: none;
+}
+.stage .cardPrev,
+.stage .cardNext {
+  top: auto;
+  bottom: calc(var(--space-1) + var(--card) * 0.75 - var(--min-target) / 2);
+  translate: none;
+  display: none;
+}
+.stage .cardPrev {
+  left: var(--space-8);
+}
+.stage .cardNext {
+  right: var(--space-8);
+}
+@media (min-width: 48rem) {
+  .stage .cardPrev,
+  .stage .cardNext {
+    display: inline-flex;
+  }
+}
+
+/* 덱 띠: 78장 가장자리. 어디를 끌어도 가운데 카드가 그 자리 카드로 바뀐다. */
+.pickRow {
+  display: grid;
+  gap: var(--space-2);
+}
+.pickRow > button {
+  width: 100%;
+  max-width: none;
+}
+@media (min-width: 48rem) {
+  .pickRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-4);
+  }
+}
+.band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: var(--space-12);
+  border-radius: var(--radius-small);
+  touch-action: none;
+  cursor: ew-resize;
+}
+.band i {
+  flex: 1 1 0;
+  height: var(--space-6);
+  border-right: 1px solid transparent;
+  background: url("/chemi/tarot/back.webp") 24% 30% / var(--card) auto padding-box;
+}
+.band i[aria-current="true"] {
+  height: var(--space-8);
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  translate: 0 calc(var(--space-1) * -1);
+}
+.band:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 0;
+}
+.bandFixed {
+  cursor: default;
+  touch-action: auto;
+}
+
+/* 뒤집힌 카드: 0.6초에 한 번(rotateY, transform 만). 역방향은 그림만 거꾸로 놓인다. */
+.drawn {
+  width: var(--card-open);
+  aspect-ratio: 2 / 3;
+  perspective: calc(var(--card-open) * 8);
+}
+.flip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.flip img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-media);
+  backface-visibility: hidden;
+}
+.flip .rear {
+  transform: rotateY(180deg);
+}
+.flip[data-reversed] .face {
+  rotate: 180deg;
+}
+.flip[data-turning] {
+  animation: flip var(--motion-reward) var(--motion-easing) 1 both;
+}
+@keyframes flip {
+  from {
+    transform: translateY(var(--from-y, 0)) scale(var(--from-s, 1)) rotateY(180deg);
+  }
+  to {
+    transform: translateY(0) scale(1) rotateY(0deg);
+  }
+}
+
+/* 끊김 알림(시스템 UI): 장면 위쪽 한 줄 */
+.offline {
+  position: absolute;
+  top: var(--space-4);
+  right: 0;
+  left: 0;
+  z-index: 1;
+  display: flex;
+  width: max-content;
+  max-width: calc(100% - var(--space-8));
+  margin: 0 auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+.offline::before {
+  content: "";
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: 50%;
+  background: var(--color-error);
+}
+
+/* 들어갈 때 로딩: 분홍 전면 + 도사 + 막대. 150ms 안에 끝나면 보이지 않는다. */
+.loading {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-dialog);
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  background: var(--color-accent-soft);
+  animation: appear var(--motion-slow) var(--motion-easing) 150ms 1 both;
+}
+.loading img {
+  display: block;
+  width: calc(var(--space-10) * 4 + var(--space-2));
+}
+.loadbar {
+  width: calc(var(--space-16) * 3 + var(--space-2));
+  height: var(--space-6);
+  margin-top: calc(var(--space-2) - var(--space-8));
+  border-radius: var(--radius-pill);
+}
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+
+/* 결과 ───────────────────────────────────────────── */
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.colMain,
+.colAside {
+  display: contents;
+}
+.head {
+  display: grid;
+  gap: var(--space-1);
+  order: 1;
+}
+.head .nameRow {
+  align-items: center;
+}
+.hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+  order: 2;
+}
+.cloth {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 100%;
+}
+.hero picture {
+  position: absolute;
+  inset: 0;
+}
+.cardFace {
+  position: relative;
+  display: block;
+  width: var(--hero-card);
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-small);
+}
+.hero[data-reversed] .cardFace {
+  rotate: 180deg;
+}
+.pairPanel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  order: 3;
+}
+.pair {
+  display: grid;
+  gap: var(--space-1);
+}
+.rewardRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--space-6);
+  margin: 0;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.rewardRow > * + * {
+  padding-inline-start: var(--space-2);
+  border-inline-start: 1px solid var(--color-line);
+}
+.rewardRow > [data-earn-badge] + * {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+.rewardRow[data-link] {
+  position: relative;
+}
+.rewardRow[data-link]::after {
+  content: "";
+  position: absolute;
+  inset: calc(var(--space-2) - var(--space-5)) 0;
+}
+.rewardRow[data-link]:focus-visible {
+  outline: var(--focus-width) solid var(--color-ink);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-small);
+}
+.go {
+  color: var(--color-accent-ink);
+}
+.mean,
+.keys,
+.sym {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+.mean {
+  order: 4;
+}
+.keys {
+  order: 5;
+}
+.sym {
+  order: 6;
+}
+.meanBody {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.pairSide {
+  display: none;
+}
+.lead {
+  margin: 0;
+}
+.rows {
+  display: grid;
+  margin: 0;
+}
+.rows > div {
+  display: grid;
+  grid-template-columns: var(--space-12) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: baseline;
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-line);
+}
+.rows > div:last-child {
+  border-bottom: 1px solid var(--color-line);
+}
+.rows dd {
+  margin: 0;
+}
+.keys .rows > div[aria-current="true"] dt {
+  color: var(--color-accent-ink);
+}
+.keys .rows > div:not([aria-current="true"]) dd {
+  color: var(--color-muted);
+}
+.words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.words li + li {
+  margin-inline-start: var(--space-3);
+  padding-inline-start: var(--space-3);
+  border-inline-start: 1px solid var(--color-line);
+}
+.placeholder {
+  display: grid;
+  gap: var(--space-3);
+}
+.retry {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  box-sizing: border-box;
+  min-height: calc(var(--space-16) * 2 + var(--space-5) * 2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  text-align: center;
+}
+.said {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+  order: 7;
+}
+.react {
+  display: grid;
+  grid-template-columns: var(--min-target) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+.react img {
+  display: block;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.react > span {
+  display: grid;
+  min-width: 0;
+}
+.asideReward {
+  display: none;
+}
+.legal {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-muted);
+  order: 8;
+}
+.save {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+.save p,
+.saveOff {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+}
+.saveActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.saveActions > * {
+  width: 100%;
+  max-width: none;
+}
+
+@media (min-width: 48rem) {
+  .result {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) calc(var(--space-16) * 5 + var(--space-10));
+    align-items: start;
+    gap: var(--space-6);
+  }
+  .colMain,
+  .colAside {
+    display: grid;
+    gap: var(--space-6);
+    min-width: 0;
+  }
+  .colMain {
+    gap: var(--space-3);
+  }
+  .head,
+  .hero,
+  .pairPanel,
+  .mean,
+  .keys,
+  .sym,
+  .said,
+  .legal {
+    order: 0;
+    margin-top: 0;
+  }
+  .colMain > :is(.mean, .sym, .legal) {
+    margin-top: calc(var(--space-6) - var(--space-3));
+  }
+  .hero {
+    padding: var(--space-6);
+  }
+  .pairPanel {
+    display: none;
+  }
+  .mean {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+    padding: var(--space-6);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+  .mean[data-failed] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .mean[data-failed] .pairSide {
+    display: none;
+  }
+  .meanBody {
+    padding-inline-end: var(--space-6);
+    border-inline-end: 1px solid var(--color-line);
+  }
+  .mean[data-failed] .meanBody {
+    padding-inline-end: 0;
+    border-inline-end: 0;
+  }
+  .pairSide {
+    display: grid;
+    align-content: center;
+  }
+  .sym,
+  .keys {
+    padding: var(--space-6);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+  .asideReward {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .asideReward:empty {
+    display: none;
+  }
+  .rows > div:last-child {
+    border-bottom: 0;
+  }
+  .keys .rows > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+  .keys .words {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+  .keys .words li + li {
+    margin-inline-start: 0;
+  }
+  .said {
+    padding: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage[data-settle] .scene img,
+  .deck[data-split] img,
+  .card[data-nudge] img,
+  .flip[data-turning],
+  .loading {
+    animation: none;
+  }
+  .root .card {
+    transition: none;
+  }
+}

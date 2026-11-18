@@ -65,3 +65,9 @@ it.each([true, false])("shows the open fortune first (preview=%s)", (preview) =>
   const fortune = screen.getByRole("link", { name: copy.fortune });
   expect(fortune.parentElement?.firstElementChild).toBe(fortune);
 });
+
+it("opens today's tarot from the list and keeps the unreleased contents pending", () => {
+  render(<ChemiHome copy={copy} locale="ko" growth={false} preview={false} />);
+  expect(screen.getByRole("link", { name: copy.tarot })).toHaveAttribute("href", "/chemi/tarot?locale=ko");
+  expect(screen.getByText(copy.saju).closest("div")).toHaveTextContent(copy.ready);
+});
