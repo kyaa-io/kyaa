@@ -1,7 +1,7 @@
 "use client";
 import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
-import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -145,6 +145,35 @@ type CardProps = {
   labels: MyPassportLabels;
 };
 
+function PassportCreatorSelector({ selected, ordered, label, onSelect }: {
+  selected: string; ordered: Creator[]; label: string; onSelect: (slug: string) => void;
+}) {
+  const container = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    const rail = container.current?.querySelector("nav");
+    if (!rail) return;
+    const chips = Array.from(rail.querySelectorAll("button"));
+    const fit = () => {
+      const { left, right } = rail.getBoundingClientRect();
+      for (const chip of chips) {
+        const bounds = chip.getBoundingClientRect();
+        chip.inert = bounds.left < left - 0.5 || bounds.right > right + 0.5;
+      }
+    };
+    fit();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(fit);
+    observer.observe(rail);
+    chips.forEach((chip) => observer.observe(chip));
+    return () => observer.disconnect();
+  });
+  return <div ref={container}>
+    <FanTabs className={styles.selector} variant="chip" label={label} current={selected} items={ordered.map(({ celebrity }) => ({
+      key: celebrity.slug, label: <span className={styles.chipName} title={celebrity.name}>{celebrity.name}</span>, onSelect: () => onSelect(celebrity.slug),
+    }))} />
+  </div>;
+}
+
 /** MY에서 가장 큰 덩어리. 여권, 등급, 스탬프 진행과 등급 진행, 그 아래 받은 스탬프(색)과 못 받은 스탬프(회색 잠금)을 한 카드에 둔다. */
 export function MyPassportCard({ creators, selectedSlug, onSelect, communityStamps, stampsError, retryStamps, locale, labels }: CardProps) {
   const eligible = creators.filter((creator) => creator.passport);
@@ -164,10 +193,10 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   const manyPassports = eligible.length > 1;
   useEffect(() => { try { localStorage.setItem(CHIPS_KEY, manyPassports ? "1" : "0"); } catch { /* 기기별 편의값이다. */ } }, [manyPassports]);
   return <section className={`${styles.card} ${styles.myCard}`} aria-label={labels.title}>
-    <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={href}>{labels.detail}</FanSectionLink></header>
+    <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={manyPassports ? `/passports?locale=${locale}` : href}>{labels.detail}</FanSectionLink></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
       <PassportBookBody passportId={passport.id} celebrity={selected.celebrity} tier={passport.tier} stageKey={stage?.current.key ?? null} tierName={tierName} tierStep={tierStep} book={book} href={href} bookLabel={`${selected.celebrity.name} · ${labels.detail}`} locale={locale} fallbackCount={fallbackStamps.length}
-        selector={eligible.length > 1 ? <FanTabs className={styles.selector} variant="chip" label={labels.creators} current={selected.celebrity.slug} items={ordered.map((creator) => ({ key: creator.celebrity.slug, label: <span className={styles.chipName} title={creator.celebrity.name}>{creator.celebrity.name}</span>, onSelect: () => onSelect(creator.celebrity.slug) }))} /> : null}
+        selector={manyPassports ? <PassportCreatorSelector selected={selected.celebrity.slug} ordered={ordered} label={labels.creators} onSelect={onSelect} /> : null}
         fallback={fallbackStamps.length > 0 ? <ul className={styles.slots}>{fallbackStamps.map((stamp) => <li className={styles.slot} data-state="filled" key={stamp.id}><span className={styles.slotArt}><img src={communityStampThumb(stamp.kind)} alt="" width={56} height={56} /></span><span className={styles.slotName}>{communityStampLabel(stamp.kind, locale)}</span></li>)}</ul> : null}
         error={book.status === "error" || (book.status === "off" && stampsError) ? { message: labels.loadError, retryLabel: labels.retry, onRetry: () => { book.retry(); retryStamps(); } } : null} />
     </>}

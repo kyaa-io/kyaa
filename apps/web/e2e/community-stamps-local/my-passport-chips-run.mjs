@@ -13,52 +13,69 @@ try {
     await page.goto(`${harness.baseURL}/?view=my-passport-chips`);
     const rail = page.locator('[data-fan-tabs="chip"]');
     const chips = rail.getByRole('button');
-    await expect(chips).toHaveCount(15);
+    await expect(rail.locator("button")).toHaveCount(15);
     await page.evaluate(() => document.fonts.ready);
     await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
     const geometry = await rail.evaluate((element) => {
       const profile = document.querySelector('header:has(h1)');
       const edge = element.getBoundingClientRect().right;
       const book = document.querySelector('[data-my-passport-book]');
-      const record = element.nextElementSibling;
+      const stats = document.querySelector('[data-block="my-stats"]').parentElement;
+      const passport = book.closest('section');
+      const profileRect = profile.getBoundingClientRect();
+      const centerY = (rect) => (rect.top + rect.bottom) / 2;
+      const record = element.parentElement.nextElementSibling;
+      const visible = [...element.children].filter((chip) => !chip.inert);
       return {
+        alignedEdges: [stats, passport].every((card) => {
+          const rect = card.getBoundingClientRect();
+          return Math.abs(rect.left - profileRect.left) <= 1 && Math.abs(rect.right - profileRect.right) <= 1;
+        }),
+        alignedProfile: [...profile.children].every((child) =>
+          Math.abs(centerY(child.getBoundingClientRect()) - centerY(profileRect)) <= 1),
         bookBottom: book.getBoundingClientRect().bottom,
         chipTop: element.getBoundingClientRect().top,
         chipBottom: element.getBoundingClientRect().bottom,
         recordTop: record.getBoundingClientRect().top,
         profileBeforeBook: profile.compareDocumentPosition(book) & Node.DOCUMENT_POSITION_FOLLOWING,
-        rows: new Set([...element.children].map((chip) => chip.offsetTop)).size,
-        overflows: element.scrollWidth > element.clientWidth,
-        clipped: [...element.children].some((chip) => {
+        rows: new Set(visible.map((chip) => chip.offsetTop)).size,
+        hidden: element.children.length - visible.length,
+        clipped: visible.some((chip) => {
           const { left, right } = chip.getBoundingClientRect();
-          return left < edge && right > edge;
+          return left < element.getBoundingClientRect().left - 0.5 || right > edge + 0.5;
         }),
         pageWidth: document.documentElement.scrollWidth,
         profileHeight: profile.getBoundingClientRect().height,
         profileGap: profile.nextElementSibling.getBoundingClientRect().top - profile.getBoundingClientRect().bottom,
       };
     });
-    assert.ok(geometry.profileBeforeBook);
+    assert.ok(geometry.profileBeforeBook && geometry.alignedEdges && geometry.alignedProfile);
     assert.ok(geometry.bookBottom < geometry.chipTop && geometry.chipBottom < geometry.recordTop);
     if (width === 390) assert.ok(geometry.bookBottom <= 844 && geometry.recordTop < 844);
     assert.equal(geometry.rows, 1);
     assert.equal(geometry.pageWidth, width);
     assert.equal(geometry.profileHeight, width === 390 ? 48 : 56);
-    assert.equal(geometry.profileGap, width === 390 ? 20 : 24);
+    assert.equal(geometry.profileGap, width === 390 ? 12 : 16);
     if (width === 390) {
-      assert.equal(geometry.overflows, true);
-      assert.equal(geometry.clipped, true);
+      assert.ok(geometry.hidden > 0);
     }
+    assert.equal(geometry.clipped, false);
+    await expect(page.getByRole('link', { name: '자세히 보기', exact: true })).toHaveAttribute('href', '/passports?locale=ko');
     if (process.env.MY_PASSPORT_CAPTURE_DIR) {
-      await page.screenshot({ path: `${process.env.MY_PASSPORT_CAPTURE_DIR}/2026-11-18-my-passport-${width}.png` });
+      await page.screenshot({ path: `${process.env.MY_PASSPORT_CAPTURE_DIR}/2026-11-19-my-passport-top-${width}.png` });
     }
-    await chips.last().focus();
+    const target = chips.nth(1);
+    const name = await target.innerText();
+    await target.focus();
     await page.keyboard.press('Enter');
-    await expect(page.locator('[data-my-passport-book]')).toHaveAccessibleName(/Aleksandra/);
-    await expect(chips.first()).toHaveText('Aleksandra Wiśniewska-Kowalczyk');
+    await expect(page.locator('[data-my-passport-book]')).toHaveAccessibleName(`${name} · 자세히 보기`);
+    await expect(chips.first()).toHaveText(name);
     await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
     await expect(chips.first()).toBeFocused();
     await expect(chips.first()).toBeInViewport({ ratio: 0.99 });
+    await page.setViewportSize({ width: width === 390 ? 1440 : 390, height: 844 });
+    if (width === 390) await expect(chips).toHaveCount(15);
+    else await expect.poll(() => chips.count()).toBeLessThan(15);
     assert.deepEqual(errors, []);
     console.log(width, geometry);
     await page.close();

@@ -404,3 +404,11 @@
 .loadingTiles>span,.loadingRow { display:block; height:140px; border:1px solid var(--color-line); border-radius:var(--radius-card); background:var(--color-accent-soft); }
 .loadingRow { height:88px; }
 
+
+/* Keep the profile and both summary cards on the same outer edges. */
+.pencilSummary { display:grid; gap:var(--space-4); }
+.pencilMy .pencilSummary .pencilProfile nav > a { justify-content:center; }
+@media (width < 48rem) {
+  .pencilSummary { gap:var(--space-3); }
+  .pencilSummary .pencilProfile { gap:var(--space-2); }
+}
