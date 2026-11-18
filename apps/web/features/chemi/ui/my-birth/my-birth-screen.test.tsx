@@ -80,15 +80,47 @@ describe("MY 내 생일 정보", () => {
     for (const text of ["생일 원본·출생 정보", "34일치", "6개", "2명", "구매 내역", "6건", "질문 11개", "되돌릴 수 없어요."]) expect(within(dialog).getByText(text)).toBeTruthy();
   });
 
-  it("shows one failure line with a retry in the card when the read fails, and a login prompt for a guest", () => {
+  it("keeps both columns when the read fails: the failure line with one retry, the other cards and the fixed used-by tiles", () => {
     resource.state = { status: "error", kind: "network" };
     const { unmount } = draw();
-    expect(screen.getByText("불러오지 못했습니다.")).toBeTruthy();
+    expect(screen.getAllByText("불러오지 못했습니다.")).toHaveLength(3);
+    expect(screen.getAllByRole("button", { name: "다시 시도" })).toHaveLength(1);
+    for (const name of ["내 정보", "궁합 상대", "동의", "쓰는 곳"]) expect(screen.getByRole("heading", { name })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /오늘의 운세/ }).getAttribute("href")).toBe("/chemi/fortune?locale=ko");
+    expect(screen.queryByText("풀이 있음")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
     expect(resource.retry).toHaveBeenCalled();
     unmount();
     resource.state = { status: "error", kind: "auth" };
     draw();
     expect(screen.getByRole("link", { name: "로그인" })).toBeTruthy();
+  });
+
+  it("starts the first entry with the time cell open and 모름 unchecked, but keeps 모름 checked when an unknown time is edited", () => {
+    resource.state = { status: "ready", data: profile({ birth: null, consent: null, partners: [], birthMark: null }) };
+    const { unmount } = draw();
+    fireEvent.click(screen.getByRole("button", { name: "입력하기" }));
+    expect((screen.getByRole("checkbox", { name: "모름" }) as HTMLInputElement).checked).toBe(false);
+    expect((screen.getAllByRole("button", { name: "선택" })[0] as HTMLButtonElement).disabled).toBe(false);
+    unmount();
+    resource.state = { status: "ready", data: profile({ birth: { ...profile().birth!, birthTime: null, timePrecision: "unknown" } }) };
+    draw();
+    fireEvent.click(screen.getByRole("button", { name: "고치기" }));
+    expect((screen.getByRole("checkbox", { name: "모름" }) as HTMLInputElement).checked).toBe(true);
+  });
+
+  it("shows the invalid-date line under the date, not a toast, when the server refuses a lunar date that does not exist", async () => {
+    const fetchMock = vi.fn(async () => Response.json({ error: { code: "CHEMI_INVALID_DATE" } }, { status: 400 }));
+    vi.stubGlobal("fetch", fetchMock);
+    draw();
+    fireEvent.click(screen.getByRole("button", { name: "고치기" }));
+    fireEvent.click(screen.getByRole("button", { name: "음력 윤달" }));
+    fireEvent.click(screen.getByRole("button", { name: "저장" }));
+    expect(await screen.findByText("유효하지 않은 날짜입니다.")).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("dialog")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "음력" }));
+    expect(screen.queryByText("유효하지 않은 날짜입니다.")).toBeNull();
+    vi.unstubAllGlobals();
   });
 });

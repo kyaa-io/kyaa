@@ -80,6 +80,34 @@ describe("chemi profile handlers", () => {
     }
   });
 
+  it("refuses a lunar date that does not exist (1995 has no leap 5th month) on every save route, before SQL", async () => {
+    const leap = { birthDate: "1995-05-05", calendar: "lunar_leap" };
+    const partner = { birthTime: null, timePrecision: "unknown", gender: null, nickname: "민지" };
+    const cases = [
+      ["putBirth", json("PUT", { ...birth, ...leap })],
+      ["postPartner", json("POST", { ...partner, ...leap, source: "saju" })],
+      ["patchPartner", json("PATCH", { ...partner, ...leap, partnerId: PARTNER })],
+    ] as const;
+    for (const [route, request] of cases) {
+      const d = deps();
+      const response = await createChemiProfileHandlers(d)[route](request);
+      expect([route, response.status, await response.json()]).toEqual([route, 400, { error: { code: "CHEMI_INVALID_DATE" } }]);
+      expect(d.rpc).not.toHaveBeenCalled();
+    }
+    // 같은 날짜라도 음력·양력으로 적으면 실제 있는 날이라 저장된다. 윤달이 실제 있는 해(2020 윤4월)도 저장된다.
+    for (const body of [{ ...birth, birthDate: "1995-05-05", calendar: "lunar" }, { ...birth, birthDate: "2020-04-15", calendar: "lunar_leap" }]) {
+      const d = deps(async () => ({ ageBand: "adult", saved: true, edited: false, editableFrom: null }));
+      expect((await createChemiProfileHandlers(d).putBirth(json("PUT", body))).status, JSON.stringify(body)).toBe(200);
+    }
+  });
+
+  it("still reads a profile saved with a lunar date that does not exist: the birth mark is empty, everything else stays reachable", async () => {
+    const stored = { ...emptyProfile, birth: { birthDate: "1995-05-05", calendar: "lunar_leap", birthTime: null, timePrecision: "unknown", gender: null, birthPlace: null, ageBand: "adult", editableFrom: null } };
+    const response = await createChemiProfileHandlers(deps(async (name) => name === "chemi_my_birth_summary" ? noSummary : stored)).getProfile(json("GET", undefined));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ birth: { birthDate: "1995-05-05", calendar: "lunar_leap" }, birthMark: null, summary: noSummary });
+  });
+
   it("maps SQL refusals", async () => {
     const fail = (code: string) => deps(async (name) => { if (name === "chemi_read_profile") return { ...emptyProfile, birth: { ...birth, consent: undefined, ageBand: "adult", editableFrom: "2027-02-12T10:00:00+09:00" } }; throw new Error(code); });
     const under14 = await createChemiProfileHandlers(fail("CHEMI_UNDER_14")).putBirth(json("PUT", birth));

@@ -1,14 +1,14 @@
 -- 케미 탭 W6-MY-BIRTH · MY 생일 정보 화면에 필요한 함수 보강(설계 arch-chemi r3 §3 프로필 줄, 시트 11-2 · 04).
 -- 더하기만 한다: 표·열 변경 0. 기존 chemi_save_birth 는 같은 서명으로 바꿔 쓰고(권한 유지), 새 함수 2개를 더한다.
 --  1) 30일 안이어도 시간·태어난 곳을 '처음 채우는' 저장은 고치기 횟수에 넣지 않는다(나머지 값이 그대로일 때만).
---  2) 고쳐도 '동의함' 날짜(consent_at)는 동의 문구의 판이 바뀔 때만 바뀐다.
+--  2) 고쳐도 '동의함' 날짜(consent_at)는 동의 문구의 판이 바뀔 때만 바뀐다. 이 규칙은 저장이 일어나는 모든 경로(같은 값 · 30일 안 채우기 · 일반 고치기)가 똑같이 따른다.
 --  3) 궁합 상대 고치기(chemi_update_partner).
 --  4) 지우기 확인에 보여 줄 건수와 '쓰는 곳' 상태(chemi_my_birth_summary). 읽기만 한다.
 
 create or replace function public.chemi_save_birth(p_user uuid, p_birth_date date, p_calendar text, p_birth_time time, p_precision text,
   p_gender text, p_birth_place text, p_consent_version text) returns jsonb
 language plpgsql security definer set search_path = '' as $$
-declare cur public.chemi_profiles%rowtype; band text; at_time timestamptz := pg_catalog.clock_timestamp(); editable timestamptz; place text := nullif(btrim(p_birth_place), '');
+declare cur public.chemi_profiles%rowtype; band text; at_time timestamptz := pg_catalog.clock_timestamp(); editable timestamptz; place text := nullif(btrim(p_birth_place), ''); next_consent timestamptz;
 begin
   perform public.chemi_lock_user(p_user);
   if p_birth_date is null or p_consent_version is null or p_birth_date > public.dukjil_kst_date(at_time) then
@@ -22,9 +22,14 @@ begin
     values (p_user, p_birth_date, p_calendar, p_birth_time, p_precision, p_gender, place, p_consent_version, at_time, at_time);
     return jsonb_build_object('ageBand', band, 'saved', true, 'edited', false, 'editableFrom', null);
   end if;
+  -- 동의 문구의 판이 바뀌었을 때만 동의 시각을 새로 찍는다(어느 경로로 저장해도 같다). 고치기 횟수·시각은 건드리지 않는다.
+  next_consent := case when cur.consent_version is distinct from p_consent_version then at_time else cur.consent_at end;
   if (cur.birth_date, cur.calendar, cur.birth_time, cur.time_precision, cur.gender, cur.birth_place)
     is not distinct from (p_birth_date, p_calendar, p_birth_time, p_precision, p_gender, place) then
-    return jsonb_build_object('ageBand', band, 'saved', false, 'edited', false,
+    if cur.consent_version is distinct from p_consent_version then
+      update public.chemi_profiles set consent_version = p_consent_version, consent_at = next_consent where user_id = p_user;
+    end if;
+    return jsonb_build_object('ageBand', band, 'saved', cur.consent_version is distinct from p_consent_version, 'edited', false,
       'editableFrom', case when cur.edited_at is not null and cur.edited_at + interval '30 days' > at_time then cur.edited_at + interval '30 days' end);
   end if;
   editable := cur.edited_at + interval '30 days';
@@ -34,7 +39,8 @@ begin
       and (cur.time_precision <> 'unknown' and (cur.birth_time, cur.time_precision) is not distinct from (p_birth_time, p_precision)
            or cur.time_precision = 'unknown')
       and (cur.birth_place is not null and cur.birth_place = place or cur.birth_place is null) then
-      update public.chemi_profiles set birth_time = p_birth_time, time_precision = p_precision, birth_place = place where user_id = p_user;
+      update public.chemi_profiles set birth_time = p_birth_time, time_precision = p_precision, birth_place = place,
+        consent_version = p_consent_version, consent_at = next_consent where user_id = p_user;
       delete from public.chemi_charts where user_id = p_user;
       return jsonb_build_object('ageBand', band, 'saved', true, 'edited', false, 'editableFrom', editable);
     end if;
@@ -42,7 +48,7 @@ begin
   end if;
   update public.chemi_profiles set birth_date = p_birth_date, calendar = p_calendar, birth_time = p_birth_time, time_precision = p_precision,
     gender = p_gender, birth_place = place,
-    consent_at = case when consent_version is distinct from p_consent_version then at_time else consent_at end, consent_version = p_consent_version,
+    consent_at = next_consent, consent_version = p_consent_version,
     edited_at = at_time, edit_count = edit_count + 1
   where user_id = p_user;
   delete from public.chemi_charts where user_id = p_user;

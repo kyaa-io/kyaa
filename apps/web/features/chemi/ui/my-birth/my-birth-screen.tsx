@@ -21,7 +21,7 @@ import { chemiProfileResponseSchema, type ChemiBirthMark, type ChemiProfileRespo
 import type { AppLocale } from "@/i18n/locales";
 import { fillCopy, type MyBirthCopy } from "../frame/birth-copy";
 import { timeLabel } from "../frame/birth-fields";
-import { BirthSheet, type BirthSheetMode } from "./birth-sheet";
+import { BirthSheet, type BirthSheetMode, type SaveResult } from "./birth-sheet";
 import { ConsentDialog, PartnerWipeDialog, WipeDialog } from "./birth-dialogs";
 import { BirthLoginGate } from "./birth-login-gate";
 import { PartnerSheet, type Partner, type PartnerDraft } from "./partner-sheet";
@@ -81,11 +81,25 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
   }
   if (state.status === "loading") return <div className={styles.screen}>{header}<BirthSkeleton locale={locale} copy={copy} uses={uses} launch={launch} /></div>;
   if (state.status === "error") {
+    const failLine = <FanText as="p" role="meta">{copy.loadFail}</FanText>;
     return <div className={styles.screen}>{header}
-      <FanSurface as="section" className={styles.card} aria-labelledby="my-birth-me">
-        <div className={styles.sechead}><FanHeading id="my-birth-me">{copy.meTitle}</FanHeading></div>
-        <div className={styles.cardState} role="alert"><FanText as="p" role="meta">{copy.loadFail}</FanText><FanAction variant="neutral" size="sm" onClick={retry}>{copy.retry}</FanAction></div>
-      </FanSurface>
+      <div className={styles.columns}>
+        <div className={styles.maincol}>
+          <FanSurface as="section" className={`${styles.card} ${styles.me}`} aria-labelledby="my-birth-me">
+            <div className={styles.sechead}><FanHeading id="my-birth-me">{copy.meTitle}</FanHeading></div>
+            <div className={styles.cardState} role="alert">{failLine}<FanAction variant="neutral" size="sm" onClick={retry}>{copy.retry}</FanAction></div>
+          </FanSurface>
+          {launch ? null : <FanSurface as="section" className={`${styles.card} ${styles.partners}`} aria-labelledby="my-birth-partners">
+            <div className={styles.sechead}><FanHeading id="my-birth-partners">{copy.partnersTitle}</FanHeading></div>
+            <div className={styles.cardState}>{failLine}</div>
+          </FanSurface>}
+          <FanSurface as="section" className={`${styles.card} ${styles.agreed}`} aria-labelledby="my-birth-consent">
+            <div className={styles.sechead}><FanHeading id="my-birth-consent">{copy.consentTitle}</FanHeading></div>
+            <div className={styles.cardState}>{failLine}</div>
+          </FanSurface>
+        </div>
+        <UsesRail copy={copy} uses={uses} status={() => null} />
+      </div>
     </div>;
   }
 
@@ -96,10 +110,17 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
   const genderName = (gender: Partner["gender"]) => (gender === "female" ? copy.female : gender === "male" ? copy.male : null);
   const flashed = (key: FlashKey, node: ReactNode) => flash.has(key) ? <span data-flash="">{node}</span> : <span>{node}</span>;
 
-  const saveBirth = async (draft: BirthDraft) => {
+  // 서버가 존재하지 않는 음력 날짜(없는 윤달 등)를 돌려주면 토스트 대신 입력 판의 날짜 아래에 오류 한 줄을 띄운다.
+  const failedSave = async (response: Response | null): Promise<SaveResult> => {
+    const body = response?.status === 400 ? await response.json().catch(() => null) : null;
+    if (body?.error?.code === "CHEMI_INVALID_DATE") return "invalid-date";
+    showFanToast({ title: copy.saveFailed, tone: "error" });
+    return "failed";
+  };
+  const saveBirth = async (draft: BirthDraft): Promise<SaveResult> => {
     const previous = birth ? draftFromBirth(birth) : null;
     const response = await request("PUT", "/api/chemi/profile/birth", birthRequest(draft)).catch(() => null);
-    if (!response?.ok) { showFanToast({ title: copy.saveFailed, tone: "error" }); return false; }
+    if (!response?.ok) return failedSave(response);
     if (previous) {
       const changed = new Set<FlashKey>();
       if (previous.dateText !== draft.dateText || previous.calendar !== draft.calendar) changed.add("date");
@@ -111,16 +132,16 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
       if (!sameDraft(previous, draft)) showFanToast({ title: copy.savedToast, tone: "success" });
     }
     retry();
-    return true;
+    return "saved";
   };
-  const savePartner = (id: string | null) => async (draft: PartnerDraft) => {
+  const savePartner = (id: string | null) => async (draft: PartnerDraft): Promise<SaveResult> => {
     const body = { nickname: draft.nickname, birthDate: birthTextToIso(draft.dateText) as string, calendar: draft.calendar, ...timeToApi(draft.time), gender: draft.gender };
     const response = await (id
       ? request("PATCH", "/api/chemi/partners", { partnerId: id, ...body })
       : request("POST", "/api/chemi/partners", { ...body, source: "saju" })).catch(() => null);
-    if (!response?.ok) { showFanToast({ title: copy.saveFailed, tone: "error" }); return false; }
+    if (!response?.ok) return failedSave(response);
     retry();
-    return true;
+    return "saved";
   };
   const wipe = async (method: "DELETE", url: string, body: unknown, done: string, after: () => void) => {
     setBusy(true);
@@ -193,23 +214,11 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
 
   const status = (id: "saju" | "fortune" | "star") => {
     if (!birth) return null;
-    if (id === "saju") return flash.has("saju") ? copy.useSajuFresh : summary.sajuReading ? copy.useSajuReady : null;
-    if (id === "fortune") return flash.has("fortune") ? copy.useFortuneFresh : summary.fortuneToday ? copy.useTodayReady : null;
-    return summary.starToday ? copy.useTodayReady : null;
+    const fresh = flash.has(id as FlashKey);
+    if (id === "saju") return fresh ? { text: copy.useSajuFresh, fresh } : summary.sajuReading ? { text: copy.useSajuReady, fresh } : null;
+    if (id === "fortune") return fresh ? { text: copy.useFortuneFresh, fresh } : summary.fortuneToday ? { text: copy.useTodayReady, fresh } : null;
+    return summary.starToday ? { text: copy.useTodayReady, fresh } : null;
   };
-  const usesRail = <aside className={styles.uses} aria-labelledby="my-birth-uses">
-    <div className={styles.sechead}><FanHeading id="my-birth-uses">{copy.usesTitle}</FanHeading></div>
-    <div className={styles.tiles}>
-      {uses.map((use) => {
-        const value = status(use.id);
-        const content = <>
-          <img className={styles.pic} src={use.image} alt="" width={512} height={512} loading="lazy" decoding="async" />
-          <span className={styles.tilebody}><FanText as="strong" role="item">{use.name}</FanText>{value ? <FanText as="div" role="meta">{flash.has(use.id as FlashKey) ? <span data-flash="">{value}</span> : value}</FanText> : null}</span>
-        </>;
-        return use.href ? <Link key={use.id} className={styles.tile} href={use.href as Route}>{content}</Link> : <div key={use.id} className={styles.tile}>{content}</div>;
-      })}
-    </div>
-  </aside>;
 
   return <div className={styles.screen}>
     {header}
@@ -220,7 +229,7 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
         {consentCard}
         {birth ? <FanAction variant="text" className={`${styles.wipeButton} ${styles.flushStart}`} onClick={() => setOverlay({ kind: "wipe" })}>{copy.wipe}</FanAction> : null}
       </div>
-      {usesRail}
+      <UsesRail copy={copy} uses={uses} status={status} />
     </div>
     {overlay?.kind === "birth" ? <BirthSheet key={overlay.mode} mode={overlay.mode} initial={birth ? draftFromBirth(birth) : null} copy={copy} onSave={saveBirth} onClose={() => setOverlay(null)} onOpenConsent={() => setConsentOpen(true)} /> : null}
     {overlay?.kind === "partner" && (overlay.id === null || editing) ? <PartnerSheet key={overlay.id ?? "new"} initial={editing ? partnerDraft(editing) : null} copy={copy} onSave={savePartner(overlay.id)} onDelete={() => setOverlay({ kind: "partner-wipe", id: overlay.id as string })} onClose={() => setOverlay(null)} /> : null}
@@ -228,6 +237,23 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
     {overlay?.kind === "partner-wipe" ? <PartnerWipeDialog copy={copy} name={partners.find((partner) => partner.id === overlay.id)?.nickname ?? ""} busy={busy} onConfirm={() => wipe("DELETE", "/api/chemi/partners", { partnerId: overlay.id }, copy.partnerDeletedToast, () => undefined)} onClose={() => setOverlay(null)} /> : null}
     {consentOpen ? <ConsentDialog copy={copy} onClose={() => setConsentOpen(false)} /> : null}
   </div>;
+}
+
+/** 쓰는 곳: 고정 링크라 읽기에 실패해도 그대로 보인다. 상태 줄만 읽은 값에서 온다. */
+function UsesRail({ copy, uses, status }: Readonly<{ copy: MyBirthCopy; uses: MyBirthUses; status: (id: MyBirthUses[number]["id"]) => { text: string; fresh: boolean } | null }>) {
+  return <aside className={styles.uses} aria-labelledby="my-birth-uses">
+    <div className={styles.sechead}><FanHeading id="my-birth-uses">{copy.usesTitle}</FanHeading></div>
+    <div className={styles.tiles}>
+      {uses.map((use) => {
+        const value = status(use.id);
+        const content = <>
+          <img className={styles.pic} src={use.image} alt="" width={512} height={512} loading="lazy" decoding="async" />
+          <span className={styles.tilebody}><FanText as="strong" role="item">{use.name}</FanText>{value ? <FanText as="div" role="meta">{value.fresh ? <span data-flash="">{value.text}</span> : value.text}</FanText> : null}</span>
+        </>;
+        return use.href ? <Link key={use.id} className={styles.tile} href={use.href as Route}>{content}</Link> : <div key={use.id} className={styles.tile}>{content}</div>;
+      })}
+    </div>
+  </aside>;
 }
 
 /** 생일의 해와 그 해 천간의 오행: 을해년 · 돼지띠. 설명 문장 없이 핑크 틴트 알약 하나. */

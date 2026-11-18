@@ -10,6 +10,8 @@ import { BirthDateField, BirthPlaceField, BirthTimeField, CheckLabel, ChoiceFiel
 import styles from "./my-birth.module.css";
 
 export type BirthSheetMode = "edit" | "first" | "fill";
+/** 저장 결과. invalid-date 는 서버가 존재하지 않는 음력 날짜라고 돌려준 경우다. */
+export type SaveResult = "saved" | "invalid-date" | "failed";
 
 const calendarOptions = (copy: MyBirthCopy) => [
   { key: "solar" as const, label: copy.solar }, { key: "lunar" as const, label: copy.lunar }, { key: "lunar_leap" as const, label: copy.lunarLeap },
@@ -28,25 +30,30 @@ export function BirthSheet({ mode, initial, copy, onSave, onClose, onOpenConsent
   mode: BirthSheetMode;
   initial: BirthDraft | null;
   copy: MyBirthCopy;
-  onSave: (draft: BirthDraft) => Promise<boolean>;
+  onSave: (draft: BirthDraft) => Promise<SaveResult>;
   onClose: () => void;
   onOpenConsent: () => void;
 }>) {
   const [draft, setDraft] = useState<BirthDraft>(initial ?? emptyDraft);
   const [agreed, setAgreed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [rejected, setRejected] = useState(false);
   const today = koreaToday();
   const issue = mode === "fill" || draft.dateText === "" ? null : birthDateIssue(draft.dateText, today);
-  const error = issue === "invalid" ? copy.invalidDate : issue === "under14" ? copy.under14 : null;
+  const error = issue === "invalid" || rejected ? copy.invalidDate : issue === "under14" ? copy.under14 : null;
   const complete = mode === "fill" || birthDateIssue(draft.dateText, today) === null;
   const changed = mode === "first" ? agreed : initial !== null && !sameDraft(draft, initial);
-  const patch = (next: Partial<BirthDraft>) => setDraft((current) => ({ ...current, ...next }));
+  const patch = (next: Partial<BirthDraft>) => {
+    if ("dateText" in next || "calendar" in next) setRejected(false);
+    setDraft((current) => ({ ...current, ...next }));
+  };
   const title = mode === "first" ? copy.firstTitle : mode === "fill" ? copy.fillTitle : copy.editTitle;
   const save = async () => {
     setBusy(true);
     const done = await onSave(draft);
     setBusy(false);
-    if (done) onClose();
+    if (done === "saved") onClose();
+    else if (done === "invalid-date") setRejected(true);
   };
   return <FanSheet
     open
@@ -60,7 +67,7 @@ export function BirthSheet({ mode, initial, copy, onSave, onClose, onOpenConsent
         <BirthDateField label={copy.fieldDate} value={draft.dateText} onChange={(dateText) => patch({ dateText })} error={error} copy={copy} />
         <ChoiceField<BirthCalendar> label={copy.calendarLabel} options={calendarOptions(copy)} value={draft.calendar} onChange={(calendar) => patch({ calendar })} />
       </>}
-      <BirthTimeField value={draft.time} onChange={(time) => patch({ time })} copy={copy} />
+      <BirthTimeField startOpen={mode !== "edit"} value={draft.time} onChange={(time) => patch({ time })} copy={copy} />
       {mode === "fill" ? null : <ChoiceField label={copy.fieldGender} options={genderOptions(copy)} value={genderKey(draft.gender)} onChange={(key) => patch({ gender: genderValue(key) })} />}
       <BirthPlaceField value={draft.place} onChange={(place) => patch({ place })} copy={copy} />
       {mode === "first" ? <div className={styles.agree}>

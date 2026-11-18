@@ -8,6 +8,7 @@ import {
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
 import { chemiClosedResponse } from "@/server/chemi/dependencies";
 import { birthMark } from "./birth-mark";
+import { lunarDateExists } from "./lunar-date";
 
 // 케미 프로필 API(설계 arch-chemi r3 §3 프로필 줄). 판단은 SQL 함수가 하고 여기서는 요청·응답 꼴만 본다.
 // 생일 지우기(동의 철회)는 feature:* 를 보지 않는다. CHEMI_TAB 이 꺼져 있으면 모든 경로가 404 다.
@@ -19,7 +20,7 @@ export interface ChemiProfileDependencies {
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const STATUS: Record<string, number> = {
-  CHEMI_UNDER_14: 403, CHEMI_EDIT_LIMIT: 409, CHEMI_PARTNER_FULL: 409, CHEMI_ACCOUNT_CLOSED: 403, CHEMI_INVALID: 400,
+  CHEMI_UNDER_14: 403, CHEMI_EDIT_LIMIT: 409, CHEMI_PARTNER_FULL: 409, CHEMI_ACCOUNT_CLOSED: 403, CHEMI_INVALID: 400, CHEMI_INVALID_DATE: 400,
 };
 
 function failure(error: unknown) {
@@ -46,6 +47,11 @@ function handler(run: (request: Request, deps: ChemiProfileDependencies, user: s
   };
 }
 
+/** 음력으로 적은 날짜가 실제 없으면(1995년 윤5월 등) 저장하지 않는다. 저장된 뒤에는 생일 표지를 계산할 수 없다. */
+function requireRealDate(input: { birthDate: string; calendar: "solar" | "lunar" | "lunar_leap" }) {
+  if (!lunarDateExists(input.birthDate, input.calendar)) throw new Error("CHEMI_INVALID_DATE");
+}
+
 const ok = (body: unknown, status = 200) => Response.json(body, { status, headers });
 
 export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
@@ -58,6 +64,7 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
 
     putBirth: handler(async (request, d, user) => {
       const input = chemiBirthRequestSchema.parse(await boundedJson(request, 2048));
+      requireRealDate(input);
       try {
         const saved = chemiBirthSavedSchema.parse(await d.rpc("chemi_save_birth", {
           p_user: user, p_birth_date: input.birthDate, p_calendar: input.calendar, p_birth_time: input.birthTime,
@@ -78,6 +85,7 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
 
     postPartner: handler(async (request, d, user) => {
       const input = chemiPartnerCreateSchema.parse(await boundedJson(request, 2048));
+      requireRealDate(input);
       const created = chemiPartnerCreatedSchema.parse(await d.rpc("chemi_add_partner", {
         p_user: user, p_nickname: input.nickname, p_birth_date: input.birthDate, p_calendar: input.calendar, p_birth_time: input.birthTime,
         p_precision: input.timePrecision, p_gender: input.gender, p_source: input.source,
@@ -87,6 +95,7 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
 
     patchPartner: handler(async (request, d, user) => {
       const input = chemiPartnerUpdateSchema.parse(await boundedJson(request, 2048));
+      requireRealDate(input);
       const result = chemiPartnerUpdatedSchema.parse(await d.rpc("chemi_update_partner", {
         p_user: user, p_partner: input.partnerId, p_nickname: input.nickname, p_birth_date: input.birthDate, p_calendar: input.calendar,
         p_birth_time: input.birthTime, p_precision: input.timePrecision, p_gender: input.gender,

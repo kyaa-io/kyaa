@@ -17,7 +17,7 @@ export function timeLabel(time: BirthTime, copy: MyBirthCopy) {
   return null;
 }
 
-/** 생년월일: 숫자 8자리를 치면 점이 붙고, '휠로 고르기'로 같은 값을 휠에서 고른다. 오류는 입력 아래 한 줄. */
+/** 생년월일: 숫자 8자리를 치면 점이 붙고, 비어 있는 동안(자리표시자)은 body 400, 값이 들어가면 item 700으로 바뀐다. '휠로 고르기'로 같은 값을 휠에서 고른다. 오류는 입력 아래 한 줄. */
 export function BirthDateField({ label, value, onChange, error, copy, autoFocus }: Readonly<{
   label: string;
   value: string;
@@ -33,7 +33,7 @@ export function BirthDateField({ label, value, onChange, error, copy, autoFocus 
       <FanText role="label"><label htmlFor={id}>{label}</label></FanText>
       <FanAction variant="text" size="sm" className={styles.linkAction} onClick={() => setPicker({ kind: "date", value, onPick: onChange })}><FanText role="meta">{copy.wheelButton}</FanText></FanAction>
     </div>
-    <FanText as="div" role="item">
+    <FanText as="div" role={value ? "item" : "body"}>
     <input
       id={id}
       className={styles.input}
@@ -59,10 +59,10 @@ export function CheckLabel({ checked, onChange, children }: Readonly<{ checked: 
   return <label className={styles.check}><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} /><FanText role="meta" className={styles.checkText}>{children}</FanText></label>;
 }
 
-/** 태어난 시간: 값을 고르는 칸 + '모름' 체크. 모름이면 칸이 비워지고 눌리지 않는다. 체크를 풀면 칸이 열려 '선택'으로 보인다. */
-export function BirthTimeField({ value, onChange, copy }: Readonly<{ value: BirthTime; onChange: (time: BirthTime) => void; copy: MyBirthCopy }>) {
+/** 태어난 시간: 값을 고르는 칸 + '모름' 체크. 모름이면 칸이 비워지고 눌리지 않는다. 체크를 풀면 칸이 열려 '선택'으로 보인다. 처음 넣는 판(startOpen)은 체크 없이 열린 칸으로 시작한다. */
+export function BirthTimeField({ value, onChange, copy, startOpen = false }: Readonly<{ value: BirthTime; onChange: (time: BirthTime) => void; copy: MyBirthCopy; startOpen?: boolean }>) {
   const [picker, setPicker] = useState<BirthPickerTarget | null>(null);
-  const [opened, setOpened] = useState(false);
+  const [opened, setOpened] = useState(startOpen);
   const unknown = value.kind === "unknown" && !opened;
   const shown = timeLabel(value, copy);
   return <div className={styles.field}>
