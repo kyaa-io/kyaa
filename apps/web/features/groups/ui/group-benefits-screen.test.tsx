@@ -154,9 +154,20 @@ it('대표 11/15 17:34 덕질배너2: the vertical banner is its own column afte
  expect(body.compareDocumentPosition(slot)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
  expect(slot.querySelector('[data-banner-size="side"]')).not.toBeNull();
  expect(slot.querySelector('a')).toHaveAttribute('href','/guide/dukjil?locale=ko');
- expect(slot.querySelector('img')).toHaveAttribute('src','/dukjil-side.webp');
+ expect(slot.querySelector('source')).toHaveAttribute('srcset','/dukjil-side.webp');
+ expect(slot.querySelector('source')).toHaveAttribute('media','(min-width: 80rem)');
+ expect(slot.querySelector('img')).not.toHaveAttribute('src');
  expect(v.container.querySelector('[data-dukjil-banner-slot]')).toBeNull();
  v.unmount();
+ const ads=[
+  {...side,id:uid(912),placement:'dukjil_side_2' as const,category:'ad' as const,href:'https://example.com/second'},
+  {...side,id:uid(913),placement:'dukjil_side_3' as const,category:'ad' as const,href:'https://example.com/third'},
+ ];
+ const stacked=render(<GroupBenefitsScreen locale='ko' sideBanner={side} additionalSideBanners={ads}/>);
+ const rail=stacked.container.querySelector('[data-dukjil-side-slot]')!;
+ expect(Array.from(rail.querySelectorAll('[data-banner-id]'),banner=>banner.getAttribute('data-banner-id'))).toEqual([side.id,ads[0].id,ads[1].id]);
+ expect(rail.querySelectorAll('a[rel~=sponsored]')).toHaveLength(2);
+ stacked.unmount();
  const none=render(<GroupBenefitsScreen locale='ko'/>);
  await screen.findByText('글쓰기');
  expect(none.container.querySelector('[data-dukjil-side-slot]')).toBeNull();

@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "PC 덕질 탭 오른쪽에 배너 자리 두 곳을 추가했어요. 게시된 배너만 위에서부터 차례로 보여요.",
+    "첨부 화면은 예시 배너를 넣어 확인한 화면이에요."
+  ],
+  "path": "/benefits",
+  "images": ["release-notes/images/2026-11-18-dukjil-pc-banner-slots.png"]
+}

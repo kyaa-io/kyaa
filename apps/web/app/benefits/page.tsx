@@ -18,6 +18,6 @@ function slug(value: string | string[] | undefined) { return typeof value === "s
 
 export default async function BenefitsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const query = await searchParams;
-  if(process.env.KYAA_GROUPS_ENABLED === "true") { const appLocale = locale(query.locale); const [initialHeart, banners] = await Promise.all([loadServerSelectedBias(appLocale), dukjilBanners(appLocale)]); return <GroupBenefitsScreen locale={appLocale} initialHeart={initialHeart} signedOut={!(await cookies()).has("privy-session")} banner={banners.dukjil_mid} sideBanner={banners.dukjil_side} />; }
+  if(process.env.KYAA_GROUPS_ENABLED === "true") { const appLocale = locale(query.locale); const [initialHeart, banners] = await Promise.all([loadServerSelectedBias(appLocale), dukjilBanners(appLocale)]); return <GroupBenefitsScreen locale={appLocale} initialHeart={initialHeart} signedOut={!(await cookies()).has("privy-session")} banner={banners.dukjil_mid} sideBanner={banners.dukjil_side} additionalSideBanners={[banners.dukjil_side_2, banners.dukjil_side_3]} />; }
   return <BenefitsScreen locale={locale(query.locale)} initialCelebrity={slug(query.celebrity)} />;
 }
