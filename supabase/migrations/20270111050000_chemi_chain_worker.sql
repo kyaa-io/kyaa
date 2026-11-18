@@ -1,0 +1,142 @@
+-- Signed transactions are persisted before broadcast, so reconciliation can replay identical bytes.
+alter table public.chemi_chain_batches add column signed_tx text,
+  add column operation text check (operation in ('mint','burn','rank')),
+  add column record_ids uuid[],
+  add column attestation_uid text check (attestation_uid ~ '^0x[0-9a-f]{64}$');
+
+create function public.chemi_chain_work(p_owner uuid, p_action text, p_args jsonb default '{}')
+returns jsonb language plpgsql security definer set search_path = '' as $$
+declare r public.chemi_chain_records; b public.chemi_chain_batches; ids uuid[]; op text; result jsonb; n int;
+begin
+  if p_action='acquire' then
+    insert into public.chemi_chain_writer(singleton,lease_owner,lease_expires_at)
+    values(true,p_owner::text,clock_timestamp()+interval '5 minutes')
+    on conflict(singleton) do update set lease_owner=excluded.lease_owner,lease_expires_at=excluded.lease_expires_at
+      where public.chemi_chain_writer.lease_expires_at <= clock_timestamp();
+    return to_jsonb(found);
+  end if;
+  perform 1 from public.chemi_chain_writer where lease_owner=p_owner::text and lease_expires_at>clock_timestamp() for update;
+  if not found then raise exception 'CHEMI_WRITER_EXPIRED'; end if;
+  if p_action='release' then
+    delete from public.chemi_chain_writer where lease_owner=p_owner::text;
+  elsif p_action='recover' then
+    update public.chemi_chain_records set status='pending',lease_owner=null,lease_expires_at=null where status='leased' and lease_expires_at<=clock_timestamp();
+    select jsonb_build_object('id',id,'hash',tx_hash,'raw',signed_tx,'op',operation,'ids',record_ids)
+      into result from public.chemi_chain_batches where status='sent' order by created_at limit 1;
+    return result;
+  elsif p_action='lease' then
+    if exists(select from public.chemi_chain_batches where status='sent') then return '[]'; end if;
+    update public.chemi_chain_records c set status='waiting_wallet' where status='pending' and kind<>'rank_table'
+      and wallet_address is null and not exists(select from public.user_wallets w where w.app_user_id=c.user_id and w.chain_id=91342);
+    update public.chemi_chain_records c set wallet_address=w.address,status='pending' from public.user_wallets w
+      where c.status in ('waiting_wallet','pending') and w.app_user_id=c.user_id and w.chain_id=91342 and c.wallet_address is null;
+    select case when status='burn_pending' then 'burn' when kind='rank_table' then 'rank' else 'mint' end
+      into op from public.chemi_chain_records where eligible_at<=now() and coalesce(next_attempt_at,now())<=now()
+      and (status='burn_pending' or (status in ('pending','retry') and (wallet_address is not null or (kind='rank_table' and p_args->>'rank'='true'))))
+      order by eligible_at,id limit 1;
+    result:='[]';
+    for r in select * from public.chemi_chain_records where eligible_at<=now() and coalesce(next_attempt_at,now())<=now()
+      and case op when 'burn' then status='burn_pending' when 'rank' then kind='rank_table' and status in ('pending','retry')
+      else kind<>'rank_table' and status in ('pending','retry') and wallet_address is not null end
+      order by eligible_at,id limit (case when op='rank' then 1 else 100 end) for update skip locked loop
+      if op<>'burn' then perform public.chemi_chain_payload_check(r.kind,r.payload,r.kst_date); end if;
+      update public.chemi_chain_records set status=case when op='burn' then status else 'leased' end,
+        lease_owner=p_owner::text,lease_expires_at=clock_timestamp()+interval '5 minutes' where id=r.id;
+      result:=result || jsonb_build_array(jsonb_build_object('id',r.id,'op',op,'address',r.wallet_address,
+        'date',case when op='rank' then r.kst_date end,'payload',case when op='rank' then r.payload end));
+    end loop;
+    return result;
+  elsif p_action='prepare' then
+    select array_agg(value::uuid) into ids from jsonb_array_elements_text(p_args->'ids');
+    op:=p_args->>'op';
+    perform 1 from public.chemi_chain_records where id=any(ids) and lease_owner=p_owner::text
+      and status=case when op='burn' then 'burn_pending' else 'leased' end for update;
+    get diagnostics n=row_count;
+    if n<>cardinality(ids) or n not between 1 and 100 then raise exception 'CHEMI_LEASE_CHANGED'; end if;
+    insert into public.chemi_chain_batches(status,tx_hash,signed_tx,record_ids,operation,record_count,sent_at)
+      values('sent',p_args->>'hash',p_args->>'raw',ids,op,n,now()) returning * into b;
+    update public.chemi_chain_records set batch_id=b.id,tx_hash=b.tx_hash,status=case when op='burn' then status else 'sent' end where id=any(ids);
+    return to_jsonb(b.id);
+  elsif p_action in ('confirmed','reverted') then
+    select * into strict b from public.chemi_chain_batches where id=(p_args->>'batch')::uuid and status='sent' for update;
+    update public.chemi_chain_batches set status=case when p_action='confirmed' then 'confirmed' else 'failed' end,
+      signed_tx=null,attestation_uid=p_args->>'attestationUid',confirmed_at=case when p_action='confirmed' then now() end,
+      error_code=case when p_action='reverted' then 'TX_REVERTED' when p_args->>'evidence'='issued' then 'RECOVERED_ISSUED' end where id=b.id;
+    update public.chemi_chain_records set status=case when b.operation='burn' and p_action='confirmed' then 'burned'
+      when status='burn_pending' then status when p_action='confirmed' then 'minted' else 'leased' end,
+      minted_at=case when p_action='confirmed' and b.operation<>'burn' then now() else minted_at end,
+      burned_at=case when p_action='confirmed' and b.operation='burn' then now() else burned_at end,
+      token_no=case when p_action='confirmed' and b.operation='mint' then (select sum(get_byte(uuid_send(id),i)::numeric * power(256::numeric,15-i)) from generate_series(0,15) i) else token_no end,
+      attempts=attempts+1,lease_owner=case when p_action='reverted' then p_owner::text end,
+      lease_expires_at=case when p_action='reverted' then now()+interval '5 minutes' end where batch_id=b.id and status in ('sent','burn_pending');
+  elsif p_action='retry' then
+    update public.chemi_chain_records set attempts=attempts+1,next_attempt_at=now()+interval '5 minutes',
+      status=case when status='leased' then 'retry' else status end,lease_owner=null,lease_expires_at=null
+      where id=(p_args->>'id')::uuid and lease_owner=p_owner::text and status in ('leased','burn_pending');
+  else raise exception 'CHEMI_INVALID'; end if;
+  return 'true';
+end $$;
+revoke all on function public.chemi_chain_work(uuid,text,jsonb) from public, anon, authenticated;
+grant execute on function public.chemi_chain_work(uuid,text,jsonb) to service_role;
+
+create function public.chemi_chain_read(p_user uuid,p_id uuid,p_filter text,p_cursor uuid) returns jsonb
+language sql stable security definer set search_path='' as $$
+with page as (
+ select c.id,c.kind,c.kst_date,c.status,c.attempts,c.token_no::text,c.tx_hash,c.created_at
+ from public.chemi_chain_records c where c.user_id=p_user and (p_filter is null or c.kind=p_filter)
+ and (p_id is null or c.id=p_id) and (p_cursor is null or (c.created_at,c.id) <
+ (select created_at,id from public.chemi_chain_records where id=p_cursor and user_id=p_user))
+ order by c.created_at desc,c.id desc limit 51
+), visible as (select * from page order by created_at desc,id desc limit 50)
+select jsonb_build_object('records',coalesce((select jsonb_agg(to_jsonb(v) order by created_at desc,id desc) from visible v),'[]'),
+ 'nextCursor',case when (select count(*) from page)>50 then (select id from visible order by created_at,id limit 1) end,
+ 'delayed',exists(select from public.chemi_chain_records where user_id=p_user and status in ('pending','retry') and eligible_at<now()-interval '30 minutes'))
+$$;
+create function public.chemi_chain_metadata(p_id uuid) returns jsonb language plpgsql stable security definer set search_path='' as $$
+declare r public.chemi_chain_records;
+begin
+ select * into r from public.chemi_chain_records where id=p_id and status='minted' and kind<>'rank_table';
+ if not found then return null; end if;
+ perform public.chemi_chain_payload_check(r.kind,r.payload,r.kst_date);
+ return jsonb_build_object('kind',r.kind,'date',r.kst_date,'payload',r.payload);
+end $$;
+revoke all on function public.chemi_chain_read(uuid,uuid,text,uuid),public.chemi_chain_metadata(uuid) from public,anon,authenticated;
+grant execute on function public.chemi_chain_read(uuid,uuid,text,uuid),public.chemi_chain_metadata(uuid) to service_role;
+
+-- Finalized standings belong to the game service. Read only whole finalized groups.
+create function public.chemi_chain_collect() returns integer language plpgsql security definer set search_path='' as $$
+declare day date := (now() at time zone 'Asia/Seoul')::date; entry record; n integer:=0; response jsonb;
+begin
+ for entry in select distinct on (user_id,game,kst_date) * from public.chemi_game_plays p
+   where kst_date<day and status='verified' and user_id is not null and score is not null
+   and not exists(select from public.chemi_chain_records c where c.record_key='game_best:'||p.user_id::text||':'||p.game||':'||p.kst_date::text)
+   order by user_id,game,kst_date,score desc,submitted_at,id limit 500 loop
+   response:=public.chemi_chain_enqueue('game_best','game_best:'||entry.user_id||':'||entry.game||':'||entry.kst_date,entry.user_id,
+     jsonb_build_object('date',entry.kst_date,'game',entry.game,'map',entry.map,'score',entry.score),now(),entry.kst_date);
+   if (response->>'queued')::boolean then n:=n+1; end if;
+ end loop;
+ for entry in select w.*,p.map from public.chemi_game_weeks w join public.chemi_game_plays p on p.id=w.best_play_id
+   where w.status='final' and p.status='verified' and w.week_start+7<=day and w.final_rank is not null
+   and not exists(select from public.chemi_game_weeks open where open.week_start=w.week_start and open.game=w.game and open.status<>'final')
+   and not exists(select from public.chemi_chain_records c where c.record_key='rank:'||w.week_start||':'||w.game||':'||w.user_id)
+   order by w.week_start,w.game,w.final_rank limit 500 loop
+   response:=public.chemi_chain_enqueue('rank','rank:'||entry.week_start||':'||entry.game||':'||entry.user_id,entry.user_id,
+     jsonb_build_object('week',entry.week_start,'rank',entry.final_rank,'game',entry.game,'map',entry.map,'score',entry.best_score),now(),entry.week_start);
+   if (response->>'queued')::boolean then n:=n+1; end if;
+ end loop;
+ for entry in select w.week_start,
+   encode(extensions.digest(string_agg(w.game||':'||p.map||':'||w.final_rank||':'||w.best_score,','
+     order by w.game collate "C",w.final_rank,p.map collate "C",w.best_score),'sha256'),'hex') as root
+   from public.chemi_game_weeks w join public.chemi_game_plays p on p.id=w.best_play_id
+   where w.week_start+7<=day and w.status='final' and p.status='verified' and w.final_rank is not null
+   and not exists(select from public.chemi_game_weeks o where o.week_start=w.week_start and o.status<>'final')
+   and not exists(select from public.chemi_chain_records c where c.record_key='rank_table:'||w.week_start)
+   group by w.week_start loop
+   response:=public.chemi_chain_enqueue('rank_table','rank_table:'||entry.week_start,null,
+     jsonb_build_object('week',entry.week_start,'game','all','map','all','root',entry.root),now(),entry.week_start);
+   if (response->>'queued')::boolean then n:=n+1; end if;
+ end loop;
+ return n;
+end $$;
+revoke all on function public.chemi_chain_collect() from public,anon,authenticated;
+grant execute on function public.chemi_chain_collect() to service_role;

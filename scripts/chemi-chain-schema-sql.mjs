@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 케미 기록 허용 목록(apps/web/server/chemi-chain/chain-schema.ts) → SQL 검사 함수 public.chemi_chain_payload_check.
 // 설계 arch-chemi r3 §7.3. 생성물은 손으로 고치지 않는다.
-//   node scripts/chemi-chain-schema-sql.mjs [--out <file>]   생성물을 쓴다(기본: 20270110085000_chemi_chain_allow.sql)
+//   node scripts/chemi-chain-schema-sql.mjs [--out <file>]   생성물을 쓴다(기본: 현재 버전의 기존 migration)
 //   node scripts/chemi-chain-schema-sql.mjs --check          가장 최근 allow migration 과 생성 결과가 같은지 본다(chain_schema_drift)
 import { readFile, readdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
@@ -109,7 +109,8 @@ async function main(argv) {
     return;
   }
   const at = argv.indexOf("--out");
-  const out = at >= 0 ? resolve(argv[at + 1]) : join(MIGRATIONS, FIRST);
+  const out = at >= 0 ? resolve(argv[at + 1]) : await latestAllowMigration();
+  if (at < 0 && version > 1 && !out.endsWith(`_v${version}.sql`)) throw new Error("new schema version requires --out <new migration>");
   await writeFile(out, sql);
   console.log(`wrote ${out}`);
 }
