@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -109,7 +110,28 @@ export function noticeImages(notes) {
 
 export function checkNotes(base, head, pullRequest = false) {
   if (!SHA.test(base) || !SHA.test(head)) throw new Error('INVALID_COMMIT');
-  return readNotes(pullRequest ? git('merge-base', base, head) : base, head);
+  const notes = readNotes(pullRequest ? git('merge-base', base, head) : base, head);
+  for (const note of notes) {
+    const disclosure = '예시 데이터로 만든 로컬 화면입니다.';
+    let local = false;
+    for (const path of note.images ?? []) {
+      const meta = JSON.parse(git('show', head + ':' + path + '.capture'));
+      const address = new URL(meta.url);
+      const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(address.hostname);
+      const png = execFileSync(process.env.GIT_EXECUTABLE || 'git', ['show', head + ':' + path], {maxBuffer: 5_000_000});
+      if (!['https:', 'http:'].includes(address.protocol) || address.username || address.password || address.search || address.hash ||
+          !['guest', 'login'].includes(meta.mode) || !['devshot', 'local-login'].includes(meta.tool) ||
+          (meta.tool === 'devshot' && address.origin !== 'https://dev.kyaa.io') ||
+          (meta.tool === 'local-login' && (!loopback || meta.mode !== 'login')) ||
+          !Number.isFinite(Date.parse(meta.capturedAt)) || createHash('sha256').update(png).digest('hex') !== meta.sha256)
+        throw new Error('INVALID_CAPTURE_RECEIPT: ' + path);
+      local ||= loopback;
+    }
+    if (note.images?.length && (note.changes.filter(line => line === disclosure).length !== Number(local) ||
+        note.changes.some(line => line !== disclosure && /(?:예시|로컬).*화면|화면.*(?:예시|로컬)/.test(line))))
+      throw new Error('INVALID_CAPTURE_DISCLOSURE');
+  }
+  return notes;
 }
 
 export function formatNotice(notes, completedAt, site = 'kyaa') {
