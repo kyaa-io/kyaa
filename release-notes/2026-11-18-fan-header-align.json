@@ -1,0 +1,5 @@
+{
+  "changes": ["PC에서 팬페이지 이름 줄의 위쪽과 팬 인증·좋아요 줄의 아래쪽을 프로필 사진에 맞췄어요.", "첨부 이미지는 예시 데이터를 넣은 확인 화면이에요."],
+  "path": "/changha",
+  "images": ["release-notes/images/2026-11-18-fan-header-align-1440.png"]
+}

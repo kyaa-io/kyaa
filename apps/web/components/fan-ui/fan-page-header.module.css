@@ -93,6 +93,16 @@
   .identity { grid-template-columns: 128px minmax(0, 1fr); grid-template-rows: auto; column-gap: var(--space-5); }
   .image { grid-row: 1; width: 128px; height: 128px; }
   .body { grid-column: 2; grid-row: 1; align-self: center; display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); min-width: 0; }
+  /* 세 줄이 있는 팬페이지는 사진의 위아래에 이름과 행동 줄을 맞춘다. */
+  .header[data-fan-page-header="fan"] .body:has(> .meta):has(> .actions) {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+  /* 글꼴의 윗여백을 보정해 이름 글자를 사진 윗선에 맞춘다. */
+  .header[data-fan-page-header="fan"] .body:has(> .meta):has(> .actions) .name {
+    position: relative;
+    inset-block-start: -2px;
+  }
   .headline { padding-right: var(--menu-space, 0); }
   .titleRow { padding-right: 0; }
   .name { display: block; text-overflow: ellipsis; white-space: nowrap; }
