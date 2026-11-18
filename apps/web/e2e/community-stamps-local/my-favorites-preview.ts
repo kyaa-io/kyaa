@@ -29,7 +29,7 @@ if (["my-favorites", "my-passport-chips"].includes(params.get("view") ?? "")) {
     if (url.pathname === "/api/me/summary") {
       if (params.get("data") === "error") return Promise.resolve(Response.json({}, { status: 503 }));
       return Promise.resolve(Response.json({ summary: {
-        profile: { nickname: "별빛팬" }, creators: params.get("data") === "empty" ? [] : creators,
+        profile: { nickname: params.get("nickname") ?? "별빛팬" }, creators: params.get("data") === "empty" ? [] : creators,
         live: { upcoming: [], history: [] }, rewards: { availableCount: 0, entries: 0, items: [] },
         collection: { passportCount: creators.length, stampCount: 0, collectibleCount: 0, recent: [] }, unreadNotificationCount: 0,
       } }));

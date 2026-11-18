@@ -10,12 +10,16 @@ try {
     const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1050 } });
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    await page.goto(`${harness.baseURL}/?view=my-passport-chips`);
+    const nickname = '별빛따라걷는팬친구';
+    await page.goto(`${harness.baseURL}/?view=my-passport-chips&nickname=${encodeURIComponent(nickname)}`);
+    const heading = page.getByRole('heading', { name: `${nickname}님`, exact: true });
+    await expect(heading).toBeVisible();
     const rail = page.locator('[data-fan-tabs="chip"]');
     const chips = rail.getByRole('button');
     await expect(rail.locator("button")).toHaveCount(15);
     await page.evaluate(() => document.fonts.ready);
     await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
+    assert.ok(await heading.evaluate((element) => element.scrollWidth <= element.clientWidth));
     const geometry = await rail.evaluate((element) => {
       const profile = document.querySelector('header:has(h1)');
       const edge = element.getBoundingClientRect().right;
@@ -31,8 +35,10 @@ try {
           const rect = card.getBoundingClientRect();
           return Math.abs(rect.left - profileRect.left) <= 1 && Math.abs(rect.right - profileRect.right) <= 1;
         }),
-        alignedProfile: [...profile.children].every((child) =>
-          Math.abs(centerY(child.getBoundingClientRect()) - centerY(profileRect)) <= 1),
+        alignedProfile: Math.abs(centerY(profile.children[0].getBoundingClientRect()) -
+          centerY(profile.querySelector("h1").getBoundingClientRect())) <= 1,
+        actionsBelow: profile.children[2].getBoundingClientRect().top >=
+          profile.children[0].getBoundingClientRect().bottom - 1,
         bookBottom: book.getBoundingClientRect().bottom,
         chipTop: element.getBoundingClientRect().top,
         chipBottom: element.getBoundingClientRect().bottom,
@@ -59,7 +65,8 @@ try {
     if (width === 390) assert.ok(geometry.bookBottom <= 844 && geometry.recordTop < 844);
     assert.equal(geometry.rows, 1);
     assert.equal(geometry.pageWidth, width);
-    assert.equal(geometry.profileHeight, width === 390 ? 48 : 56);
+    assert.equal(geometry.actionsBelow, width === 390);
+    if (width === 1440) assert.equal(geometry.profileHeight, 56);
     assert.equal(geometry.profileGap, width === 390 ? 12 : 16);
     if (width === 390) {
       assert.ok(geometry.hidden > 0);

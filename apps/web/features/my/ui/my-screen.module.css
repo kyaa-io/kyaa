@@ -389,8 +389,13 @@
 .guestProfile>nav{width:100%;justify-content:flex-end}
 .guestProfile .pencilProfileCopy{flex:1 1 calc(100% - 60px)}
 }
-/* 390: 선물·알림·설정은 이름만 남기고 아이콘 셋으로 줄인다(이름 칸을 지킨다). 이름은 aria-label이 전한다. */
+/* Give the nickname the full identity column on narrow screens. */
 @media(max-width:599px){
+.pencilSummary .pencilProfile { display:grid; grid-template-columns:48px minmax(0,1fr) auto; row-gap:0; }
+.pencilSummary .pencilName { display:contents; }
+.pencilSummary .pencilName > h1 { grid-area:1 / 2 / 2 / -1; }
+.pencilSummary .pencilName > span { grid-area:2 / 2; justify-self:start; max-inline-size:100%; }
+.pencilSummary .pencilProfile > nav { grid-area:2 / 3; }
 .pencilMy .pencilProfile nav{gap:var(--space-1)}
 .pencilMy .pencilProfile nav>a{min-width:44px;justify-content:center}
 .pencilMy .pencilProfile nav [data-nav-label]{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -412,5 +417,5 @@
 .pencilMy .pencilSummary .pencilProfile nav > a { justify-content:center; }
 @media (width < 48rem) {
   .pencilSummary { gap:var(--space-3); }
-  .pencilSummary .pencilProfile { gap:var(--space-2); }
+  .pencilSummary .pencilProfile { column-gap:var(--space-2); }
 }
