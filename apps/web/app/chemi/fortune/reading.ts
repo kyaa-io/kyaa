@@ -64,7 +64,9 @@ function isFortuneResult(result: Record<string, any> | null | undefined) {
     ["dayPillar", "yearPillar", "relation", "tenGod", "useful", "timeBasis"].every((key) =>
       isText(evidence?.[key]),
     ) &&
+    isText(evidence.stage) &&
     Object.hasOwn(stageNotes, evidence.stage) &&
+    isText(evidence.spirit) &&
     Object.hasOwn(spiritNotes, evidence.spirit)
   );
 }

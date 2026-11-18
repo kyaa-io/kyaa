@@ -153,6 +153,21 @@ it("sends a restored reading without result fields back to the entrance", async 
   expect(window.location.search).not.toContain("step=");
 });
 
+it.each([
+  { stage: ["쇠"] },
+  { spirit: ["화개살"] },
+])("returns to the entrance when a stored reading has invalid evidence %j", async (patch) => {
+  window.history.replaceState(null, "", "/chemi/fortune?step=talk-1&c=changha&r=reading");
+  const result = { ...reading.result, evidence: { ...reading.result.evidence, ...patch } };
+  vi.stubGlobal("fetch", restoreFetch(() => Response.json(stored({ result }))));
+  render(<FortuneFlow locale="ko" />);
+  await waitFor(() => expect(showFanToast).toHaveBeenCalledWith({
+    title: "오늘의 운세 결과가 아니라 처음 화면으로 돌아왔어요.",
+  }));
+  expect(await screen.findByRole("button", { name: "응, 봐 줘" })).toBeVisible();
+  expect(window.location.search).not.toContain("step=");
+});
+
 it("tells an expired login apart from a service refusal", async () => {
   const request = (status: number, code: string) =>
     vi.fn(async (path: string) =>
@@ -238,6 +253,9 @@ it("rejects a new reading whose display or detail field has the wrong type", asy
     { luck: { ...reading.result.luck, restHour: { start: "a", end: 1 } } },
     { evidence: { ...reading.result.evidence, yearPillar: { cycle: 1 } } },
     { evidence: { ...reading.result.evidence, useful: undefined } },
+    { evidence: { ...reading.result.evidence, stage: ["쇠"] } },
+    { evidence: { ...reading.result.evidence, spirit: ["화개살"] } },
+    { evidence: { ...reading.result.evidence, spirit: { toString: "화개살" } } },
   ];
   for (const patch of wrong) {
     vi.stubGlobal(
