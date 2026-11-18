@@ -154,11 +154,15 @@ export class SesEmailSender implements ExternalNotificationSender {
       });
   }
 
-  async send(job: ExternalNotificationJob): Promise<{ providerMessageId: string }> {
+  async send(job: Pick<ExternalNotificationJob, "id" | "notificationId" | "templateKey" | "destination" | "channel" | "locale" | "payload">, custom?: {
+    copy: NonNullable<Parameters<typeof renderNotificationEmail>[1]>;
+    senderInfo?: string;
+    advertising: boolean;
+  }): Promise<{ providerMessageId: string }> {
     if (job.channel !== "email") {
       throw new ExternalNotificationError("EMAIL_INVALID_CHANNEL", false);
     }
-    assertEmailTemplateEnabled(job.templateKey);
+    if (!custom) assertEmailTemplateEnabled(job.templateKey);
     if (!isEmail(job.destination)) {
       throw new ExternalNotificationError("EMAIL_INVALID_DESTINATION", false);
     }
@@ -180,7 +184,7 @@ export class SesEmailSender implements ExternalNotificationSender {
       fetcher: this.config.fetcher,
     });
     let unsubscribe: ReturnType<typeof emailUnsubscribeLinks> | null = null;
-    if (this.unsubscribeKey) {
+    if (this.unsubscribeKey && (!custom || custom.advertising)) {
       try {
         unsubscribe = emailUnsubscribeLinks(
           this.unsubscribeOrigin,
@@ -197,15 +201,17 @@ export class SesEmailSender implements ExternalNotificationSender {
         (this.config.logError ?? ((message: string) => console.error(message)))("EMAIL_UNSUBSCRIBE_SIGN_FAILED: sending without the unsubscribe link");
       }
     }
+    if (custom?.advertising && !unsubscribe) throw new ExternalNotificationError("EMAIL_UNSUBSCRIBE_UNAVAILABLE", false);
     const email = renderNotificationEmail({
+      ...(custom?.senderInfo ? { senderInfo: custom.senderInfo } : {}),
       ...(unsubscribe ? { unsubscribeUrl: unsubscribe.pageUrl } : {}),
       title: job.payload.title, detail: job.payload.detail, deepLink,
       locale: job.locale, templateKey: job.templateKey,
       inlineAssets: { logoContentId: "byus-logo", ...(assets.posterContentId ? { posterContentId: assets.posterContentId } : {}) },
       ...(context ? { context: { ...context, imageUrl: undefined } } : {}),
-    });
+    }, custom?.copy);
 
-    const feedbackFields = sesFeedbackFields(this.config.feedback, job.id);
+    const feedbackFields = sesFeedbackFields(this.config.feedback, custom ? undefined : job.id);
     let response: { MessageId?: string };
     try {
       // SES v2 SendEmail has no idempotency token. The queue lease limits concurrent
