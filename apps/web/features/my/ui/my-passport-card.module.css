@@ -72,3 +72,11 @@
 
 /* The book occupies x=65..1468 of its 1536px source; trim only the blank sides. */
 .book > [data-passport-identity], .book > img { inline-size:109.48%; max-inline-size:none; margin-inline-start:-4.63%; }
+
+.myCard > .body { grid-template-columns:minmax(0,1fr); gap:var(--space-4); }
+@media (min-width:768px) {
+  .myCard :is(.book, .bookSkeleton) { max-inline-size:380px; margin-inline:auto; }
+}
+@media (min-width:1024px) {
+  .myCard :is(.book, .bookSkeleton) { max-inline-size:560px; }
+}
