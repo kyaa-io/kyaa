@@ -179,4 +179,12 @@ insert into fan_passports(app_user_id,celebrity_id,quiz_pass_id,blockchain_job_i
 values('$u','$other',gen_random_uuid(),gen_random_uuid()); commit"
 race "select chemi_reading_context('$u','tarot','daily','','dosa','$other')"
 [[ $(sql "select points from chemi_point_grants where user_id='$u' and character='dosa' and kst_date=dukjil_kst_date()") == 3 ]]
+day 2030-02-06
+workers=()
+for character in dosa changha elina yuna; do
+  sql "select chemi_complete_reading('$u','fortune','daily','$character','$u','','{}','v1','v1')" >/dev/null &
+  workers+=("$!")
+done
+for worker in "${workers[@]}"; do wait "$worker"; done
+[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and source='fortune' and kst_date=dukjil_kst_date()") == 30 ]]
 echo "reward_race PASS"
