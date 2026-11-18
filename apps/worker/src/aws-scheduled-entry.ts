@@ -1,5 +1,6 @@
 import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 const paths = {
+  "chemi-maintenance": "/api/internal/chemi/maintenance",
   "runmusic-telegram": "/api/internal/runmusic/telegram/process",
   indexnow: "/api/internal/seo/indexnow", "instagram-sync": "/api/internal/instagram/sync",
   "instagram-live": "/api/internal/instagram/live-sync", "chzzk-live": "/api/internal/chzzk/live-sync",
@@ -21,7 +22,7 @@ export function createScheduledHandler({ loadSecret, fetcher = fetch }: { loadSe
     try{secret=JSON.parse(await loadSecret(source.CRON_RUNTIME_SECRET_ID)) as {CRON_SECRET?:string};}catch{throw new Error("Cron secret is invalid");}
     if (typeof secret.CRON_SECRET !== "string" || secret.CRON_SECRET.length < 32) throw new Error("Cron secret is invalid");
     const onchain = input.task === "onchain-dashboard";
-    const response = await fetcher(new URL(paths[input.task as keyof typeof paths], origin), { headers: { authorization: `Bearer ${secret.CRON_SECRET}`, "x-byus-scheduler": "aws", ...(onchain ? { "x-byus-onchain-stream": "1" } : {}) }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(onchain ? 570_000 : 240_000) });
+    const response = await fetcher(new URL(paths[input.task as keyof typeof paths], origin), { ...(input.task === "chemi-maintenance" ? { method: "POST" } : {}), headers: { authorization: `Bearer ${secret.CRON_SECRET}`, "x-byus-scheduler": "aws", ...(onchain ? { "x-byus-onchain-stream": "1" } : {}) }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(onchain ? 570_000 : 240_000) });
     status = response.status;
     try {
       if (!response.ok || response.status === 204) throw new Error("Scheduled task failed or has a different owner");

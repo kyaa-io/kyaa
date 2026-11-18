@@ -1,13 +1,51 @@
 import { notFound } from "next/navigation";
-import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
+import {
+  FanAppFrame,
+  FanContentContainer,
+} from "@/components/fan-shell/fan-app-shell";
 import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
 
+import { chemiTabLabel } from "@/features/chemi/ui/copy";
+import { FanTabs } from "@/components/fan-ui/fan-tabs";
+import { ChemiHome } from "./home";
+
 export const dynamic = "force-dynamic";
-export default async function ChemiPage({ searchParams }: { searchParams: Promise<{ locale?: string | string[] }> }) {
+export default async function ChemiPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ locale?: string | string[]; tab?: string }>;
+}) {
   if (!chemiEnabled()) notFound();
-  const locale = parseAppLocale((await searchParams).locale);
-  return <FanAppFrame locale={locale} currentPath="/chemi" mainId="chemi-main">
-    <FanContentContainer as="main" id="chemi-main" tabIndex={-1} data-chemi-tab="">{null}</FanContentContainer>
-  </FanAppFrame>;
+  const params = await searchParams;
+  const locale = parseAppLocale(params.locale);
+  const { home: copy } = (
+    await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)
+  ).default;
+  const preview = process.env.APP_ENV ? process.env.APP_ENV === "dev" : process.env.VERCEL_ENV === "preview" || process.env.NODE_ENV === "development";
+  const growth = params.tab === "growth";
+  return (
+    <FanAppFrame locale={locale} currentPath="/chemi" mainId="chemi-main">
+      <FanContentContainer
+        as="main"
+        id="chemi-main"
+        tabIndex={-1}
+        data-chemi-tab=""
+      >
+        {preview && <FanTabs
+          label={chemiTabLabel(locale)}
+          current={growth ? "growth" : "play"}
+          items={[
+            { key: "play", label: copy.play, href: `/chemi?locale=${locale}` },
+            {
+              key: "growth",
+              label: copy.growth,
+              href: `/chemi?tab=growth&locale=${locale}`,
+            },
+          ]}
+        />}
+        <ChemiHome preview={preview} copy={copy} locale={locale} growth={growth} />
+      </FanContentContainer>
+    </FanAppFrame>
+  );
 }

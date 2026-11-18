@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { FanText } from "./fan-text";
 import { FanAction } from "./fan-action";
 import { FanSkeleton } from "./fan-skeleton";
 import styles from "./fan-state.module.css";
@@ -13,7 +14,7 @@ type StateBase = Readonly<{
   compact?: boolean;
 }>;
 
-type StateSlots = Readonly<{ description?: string; icon?: ReactNode; actions?: ReactNode }>;
+type StateSlots = Readonly<{ bodyTitle?: boolean; description?: string; icon?: ReactNode; actions?: ReactNode }>;
 
 /**
  * 빈 상태(DESIGN.md "빈 상태" 행, C6·C8, 게이트 D2 2026-11-09, 2026-11-10 R7 개정): 구역 안이든 페이지 전체든 한 문장 14/400 회색. 아이콘·설명·임의 행동 슬롯은 받지 않는다.
@@ -23,7 +24,7 @@ type SectionEmptyProps = StateBase & Readonly<{ kind: "empty"; action?: Readonly
 
 type OtherStateProps = StateBase & StateSlots & Readonly<{
   /** `loading`은 폐기 예정(DESIGN.md 로딩 행, design-lint C6): 새 코드는 `FanSkeleton`·`FanSkeletonRows`. 남은 사용처는 로그인 세션 동기화 한 곳. */
-  kind: "loading" | "error" | "auth";
+  kind: "loading" | "error" | "auth" | "info";
 }>;
 
 type FanStateProps = SectionEmptyProps | OtherStateProps;
@@ -38,7 +39,7 @@ export function FanState(props: FanStateProps) {
       </section>
     );
   }
-  const { description, icon, actions, inline = false, compact = false } = props as StateBase & StateSlots;
+  const { description, icon, actions, bodyTitle, inline = false, compact = false } = props as StateBase & StateSlots;
   return (
     <section
       className={[styles.state, inline ? styles.inline : "", compact ? styles.compact : "", className ?? ""].filter(Boolean).join(" ")}
@@ -47,7 +48,7 @@ export function FanState(props: FanStateProps) {
       aria-busy={kind === "loading"}
     >
       {icon}
-      {kind === "loading" ? <p className={styles.srOnly}>{title}</p> : inline ? <p className={styles.title}>{compact ? title.replace(/[.。]$/, "") : title}</p> : <h2>{title}</h2>}
+      {kind === "loading" ? <p className={styles.srOnly}>{title}</p> : inline && bodyTitle ? <FanText as="p" role="body">{title}</FanText> : inline ? <p className={styles.title}>{compact ? title.replace(/[.。]$/, "") : title}</p> : <h2>{title}</h2>}
       {description ? <p>{description}</p> : null}
       {kind === "loading" ? <FanSkeleton width={120} height={16} /> : null}
       {actions ? <div className={styles.actions}>{actions}</div> : null}

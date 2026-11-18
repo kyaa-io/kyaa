@@ -9,5 +9,27 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "Play",
+    "growth": "Growth",
+    "raise": "Raise your favorite",
+    "all": "All",
+    "readings": "Readings",
+    "games": "Games",
+    "saju": "Star Saju",
+    "fortune": "Daily fortune",
+    "zodiac": "Horoscope",
+    "tarot": "Daily tarot",
+    "pair": "Match pairs",
+    "run": "Star Run",
+    "ready": "Coming soon",
+    "start": "Start",
+    "next": "Next banner",
+    "pause": "Pause",
+    "resume": "Play",
+    "filter": "Content type",
+    "creator": "Changha",
+    "rankings": "Weekly rankings"
   }
 }

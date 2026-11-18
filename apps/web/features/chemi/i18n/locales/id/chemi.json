@@ -9,5 +9,27 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "Main",
+    "growth": "Pertumbuhan",
+    "raise": "Rawat idolamu",
+    "all": "Semua",
+    "readings": "Ramalan",
+    "games": "Game",
+    "saju": "Saju idola",
+    "fortune": "Ramalan hari ini",
+    "zodiac": "Horoskop",
+    "tarot": "Tarot hari ini",
+    "pair": "Cari pasangan",
+    "run": "Lari idola",
+    "ready": "Segera hadir",
+    "start": "Mulai",
+    "next": "Banner berikutnya",
+    "pause": "Jeda",
+    "resume": "Putar",
+    "filter": "Jenis konten",
+    "creator": "Changha",
+    "rankings": "Peringkat mingguan"
   }
 }

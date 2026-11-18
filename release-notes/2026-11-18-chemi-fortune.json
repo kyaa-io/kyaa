@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "케미의 놀기 탭에서 오늘의 운세 점수와 계산 근거, 오늘의 행운을 볼 수 있어요.",
+    "자랑하기를 누르면 공유용 링크를 복사해요."
+  ],
+  "path": "/chemi/fortune",
+  "images": ["release-notes/images/2026-11-18-chemi-fortune.png"]
+}
