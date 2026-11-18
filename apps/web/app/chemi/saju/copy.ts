@@ -1,0 +1,513 @@
+/**
+ * 사주 풀이 문장. 풀이 표(AS-TX)가 들어오기 전까지 승인 시안 03 의 말투로 만든 임시 문장이다.
+ * 같은 사주표와 같은 시각이면 같은 문장이 나온다.
+ */
+import {
+  branchRelation,
+  dayBranch,
+  dayPillarAt,
+  dayStem,
+  elementColor,
+  elementCounts,
+  elementName,
+  elements,
+  generates,
+  helpingElement,
+  kstParts,
+  monthSpanAt,
+  seasonAt,
+  seoulDateLabel,
+  stemElement,
+  tenGod,
+  type Branch,
+  type Chart,
+  type MonthSpan,
+  type Pillar,
+  type Stem,
+  type TenGod,
+} from "./chart";
+
+type StemNote = {
+  /** 한낮의 해처럼 — 일간을 비유하는 말 */
+  image: string;
+  /** 「…한 사람」 앞에 오는 말 */
+  trait: string;
+  strengthR: string;
+  strengthN: string;
+  cautionR: string;
+  cautionN: string;
+  fandomR: string;
+  /** 「창하와 나」 줄 */
+  bond: string;
+};
+
+export const stemNotes: Record<Stem, StemNote> = {
+  갑: {
+    image: "곧게 뻗은 큰 나무",
+    trait: "한번 정한 길을 끝까지 가는",
+    strengthR: "한번 정한 일은 끝까지 밀고 가요",
+    strengthN: "한번 정한 일을 끝까지 밀고 가는 것",
+    cautionR: "굽히는 데 서툴러 혼자 짊어져요",
+    cautionN: "굽히는 게 서툴러 혼자 짊어지는 것",
+    fandomR: "오래 꾸준히 응원할 때 가장 빛나요",
+    bond: "같이 걸으면 길이 곧아지는 사이",
+  },
+  을: {
+    image: "바위틈에서도 피는 풀꽃",
+    trait: "부드럽게 버티는",
+    strengthR: "환경이 바뀌어도 금방 적응해요",
+    strengthN: "환경이 바뀌어도 금방 적응하는 것",
+    cautionR: "속마음을 숨기다 지칠 때가 있어요",
+    cautionN: "속마음을 숨기다 지치는 것",
+    fandomR: "조용히 챙기고 오래 곁을 지킬 때 빛나요",
+    bond: "말하지 않아도 챙겨 주는 사이",
+  },
+  병: {
+    image: "한낮의 해",
+    trait: "좋아하는 걸 숨기지 않는",
+    strengthR: "좋아하는 마음을 바로 말로 꺼내요",
+    strengthN: "좋아하는 마음을 바로 말로 꺼내는 것",
+    cautionR: "서운한 일을 오래 마음에 담아 둬요",
+    cautionN: "서운한 일을 오래 담아 두는 것",
+    fandomR: "현장에서 크게 응원할 때 가장 빛나요",
+    bond: "같이 있으면 대화가 끊이지 않는 사이",
+  },
+  정: {
+    image: "어둠을 밝히는 촛불",
+    trait: "작은 온기를 오래 건네는",
+    strengthR: "한 사람에게 깊게 마음을 써요",
+    strengthN: "한 사람에게 깊게 마음을 쓰는 것",
+    cautionR: "마음이 식으면 확 멀어져요",
+    cautionN: "마음이 식으면 확 멀어지는 것",
+    fandomR: "한 명을 깊게 파고들 때 가장 빛나요",
+    bond: "작은 말에도 온기가 도는 사이",
+  },
+  무: {
+    image: "오래된 큰 산",
+    trait: "흔들려도 자리를 지키는",
+    strengthR: "무슨 일에도 중심을 잡아요",
+    strengthN: "무슨 일에도 중심을 잡는 것",
+    cautionR: "마음을 바꾸는 데 시간이 걸려요",
+    cautionN: "마음을 바꾸는 데 시간이 걸리는 것",
+    fandomR: "묵묵히 오래 지켜볼 때 가장 빛나요",
+    bond: "곁에 있으면 든든해지는 사이",
+  },
+  기: {
+    image: "씨앗을 품은 너른 밭",
+    trait: "사람과 일을 키워 내는",
+    strengthR: "곁의 사람을 자연스럽게 챙겨요",
+    strengthN: "곁의 사람을 자연스럽게 챙기는 것",
+    cautionR: "남의 일까지 떠안고 지쳐요",
+    cautionN: "남의 일까지 떠안고 지치는 것",
+    fandomR: "함께 키워 가는 응원에서 가장 빛나요",
+    bond: "같이 있으면 뭐든 자라는 사이",
+  },
+  경: {
+    image: "잘 벼린 쇠칼",
+    trait: "옳고 그름이 분명한",
+    strengthR: "결정이 빠르고 맺고 끊음이 분명해요",
+    strengthN: "결정이 빠르고 맺고 끊음이 분명한 것",
+    cautionR: "말이 곧아서 차갑게 들릴 때가 있어요",
+    cautionN: "말이 곧아서 차갑게 들리는 것",
+    fandomR: "정보를 모으고 정리할 때 가장 빛나요",
+    bond: "솔직하게 말해도 편한 사이",
+  },
+  신: {
+    image: "닦을수록 빛나는 보석",
+    trait: "섬세하게 다듬는",
+    strengthR: "작은 차이를 먼저 알아봐요",
+    strengthN: "작은 차이를 먼저 알아보는 것",
+    cautionR: "스스로에게 기준이 높아 예민해져요",
+    cautionN: "스스로에게 기준이 높아 예민해지는 것",
+    fandomR: "굿즈와 기록을 아름답게 모을 때 빛나요",
+    bond: "서로를 더 빛나게 닦아 주는 사이",
+  },
+  임: {
+    image: "멈추지 않는 큰 강",
+    trait: "넓게 받아들이는",
+    strengthR: "처음 보는 사람과도 금방 어울려요",
+    strengthN: "처음 보는 사람과도 금방 어울리는 것",
+    cautionR: "마음이 이리저리 흘러 갈피를 잃어요",
+    cautionN: "마음이 이리저리 흘러 갈피를 잃는 것",
+    fandomR: "여러 사람과 함께 즐길 때 가장 빛나요",
+    bond: "같이 있으면 이야기가 흘러가는 사이",
+  },
+  계: {
+    image: "새벽에 내리는 맑은 이슬비",
+    trait: "조용히 스며드는",
+    strengthR: "분위기를 먼저 읽고 맞춰 줘요",
+    strengthN: "분위기를 먼저 읽고 맞춰 주는 것",
+    cautionR: "걱정을 혼자 오래 품어요",
+    cautionN: "걱정을 혼자 오래 품는 것",
+    fandomR: "밤에 혼자 영상을 보며 깊어질 때 빛나요",
+    bond: "말없이 곁에 있어도 편한 사이",
+  },
+};
+
+export const roughHeadline = (stem: Stem) => `${stemNotes[stem].image}처럼, ${stemNotes[stem].trait} 사람`;
+
+/** 타고난 기운 다섯 줄과 가장 많은 기운. */
+export function elementRows(chart: Chart) {
+  const counts = elementCounts(chart);
+  const top = Math.max(...elements.map((element) => counts[element]));
+  return elements.map((element) => ({
+    element,
+    name: elementName[element],
+    count: counts[element],
+    top: counts[element] === top && top > 0,
+  }));
+}
+export const helping = (chart: Chart) => {
+  const element = helpingElement(chart);
+  return `${elementName[element]} · ${elementColor[element]}`;
+};
+
+type Level = "좋음" | "보통" | "조심";
+type GodNote = {
+  yearTitle: string;
+  yearBond: string;
+  monthTitle: string;
+  monthBond: string;
+  grade: string;
+  /** 사람·일·돈·연애 */
+  rate: [Level, Level, Level, Level];
+  /** 일·공부 / 사람 / 마음 */
+  flow: [string, string, string];
+};
+
+export const godNotes: Record<TenGod, GodNote> = {
+  비견: {
+    yearTitle: "나란히 걷는 사람이 생기는 해",
+    yearBond: "같이 뛰면 힘이 나는 해",
+    monthTitle: "곁에서 같이 뛰는 달",
+    monthBond: "이번 주에 말이 잘 통해",
+    grade: "다지는 해",
+    rate: ["좋음", "보통", "조심", "보통"],
+    flow: ["혼자 하던 일을 나눠 맡기 좋아요", "비슷한 목표의 사람을 만나요", "남과 견주는 마음은 줄여 봐요"],
+  },
+  겁재: {
+    yearTitle: "내 몫을 단단히 지키는 해",
+    yearBond: "서로 선을 지켜 주는 해",
+    monthTitle: "욕심을 줄이고 챙기는 달",
+    monthBond: "이번 주는 말을 아껴요",
+    grade: "견디는 해",
+    rate: ["보통", "보통", "조심", "보통"],
+    flow: ["욕심내기보다 맡은 일부터 끝내요", "부탁은 선을 정하고 들어줘요", "지출과 약속을 한 번 더 세어 봐요"],
+  },
+  식신: {
+    yearTitle: "하는 만큼 즐거움이 따라오는 해",
+    yearBond: "응원이 잘 닿는 해",
+    monthTitle: "좋아하는 걸 꾸준히 하는 달",
+    monthBond: "이번 주에 웃을 일이 많아",
+    grade: "오르는 해",
+    rate: ["좋음", "좋음", "보통", "좋음"],
+    flow: ["좋아하는 일을 꾸준히 하면 결과가 나와요", "같이 먹고 웃는 자리가 늘어요", "여유가 생겨서 취미를 키우기 좋아요"],
+  },
+  상관: {
+    yearTitle: "숨겨 둔 재주가 드러나는 해",
+    yearBond: "응원이 잘 닿는 해",
+    monthTitle: "하고 싶은 말이 터지는 달",
+    monthBond: "이번 주에 아이디어가 넘쳐",
+    grade: "오르는 해",
+    rate: ["좋음", "좋음", "보통", "조심"],
+    flow: ["새로 시작한 일에 사람이 모이는 해예요", "솔직한 말이 눈에 띄어요, 말투만 부드럽게 해요", "하반기에 미뤄 둔 계획을 꺼내기 좋아요"],
+  },
+  편재: {
+    yearTitle: "기회가 먼저 문을 두드리는 해",
+    yearBond: "같이 움직이면 기회가 커지는 해",
+    monthTitle: "발이 빨라지는 달",
+    monthBond: "이번 주에 연락이 많아",
+    grade: "움직이는 해",
+    rate: ["좋음", "좋음", "좋음", "보통"],
+    flow: ["여러 일이 한꺼번에 들어와요, 순서를 정해요", "새로운 사람과 만날 일이 많아요", "쓰는 만큼 들어오니 장바구니는 한 번 쉬어요"],
+  },
+  정재: {
+    yearTitle: "차곡차곡 쌓은 것이 보이는 해",
+    yearBond: "믿고 맡길 수 있는 해",
+    monthTitle: "꾸준함이 돈이 되는 달",
+    monthBond: "이번 주는 약속이 잘 지켜져",
+    grade: "다지는 해",
+    rate: ["보통", "좋음", "좋음", "좋음"],
+    flow: ["맡은 일을 성실히 하면 인정이 따라와요", "약속을 지키는 사람으로 믿음을 얻어요", "계획한 지출을 지키면 마음이 편해요"],
+  },
+  편관: {
+    yearTitle: "시험대에서 단단해지는 해",
+    yearBond: "서로 자극이 되는 해",
+    monthTitle: "버틸수록 단단해지는 달",
+    monthBond: "이번 주는 쉬어 가는 게 좋아",
+    grade: "견디는 해",
+    rate: ["조심", "보통", "보통", "조심"],
+    flow: ["부담이 큰 일이 와도 끝까지 하면 실력이 늘어요", "무리한 부탁은 거절해도 괜찮아요", "잠을 먼저 챙기면 마음이 가라앉아요"],
+  },
+  정관: {
+    yearTitle: "맡은 자리에서 인정받는 해",
+    yearBond: "믿음이 쌓이는 해",
+    monthTitle: "평판이 올라가는 달",
+    monthBond: "이번 주는 말이 잘 전해져",
+    grade: "오르는 해",
+    rate: ["좋음", "좋음", "보통", "보통"],
+    flow: ["책임 있는 자리를 맡기 좋은 때예요", "윗사람과 관계가 풀리는 해예요", "규칙적인 하루가 마음을 안정시켜요"],
+  },
+  편인: {
+    yearTitle: "배움이 방향을 바꾸는 해",
+    yearBond: "생각이 비슷해지는 해",
+    monthTitle: "머릿속이 깊어지는 달",
+    monthBond: "이번 주에 혼자 있는 시간이 필요해",
+    grade: "쉬어 가는 해",
+    rate: ["보통", "보통", "조심", "조심"],
+    flow: ["새로운 분야를 배우기 좋아요, 시작이 느려도 괜찮아요", "혼자 생각하는 시간이 길어져요", "생각이 많아지면 몸을 먼저 움직여요"],
+  },
+  정인: {
+    yearTitle: "도움받아 안정을 찾는 해",
+    yearBond: "기대어도 괜찮은 해",
+    monthTitle: "든든한 사람이 곁에 오는 달",
+    monthBond: "이번 주에 응원이 많아",
+    grade: "다지는 해",
+    rate: ["좋음", "보통", "보통", "좋음"],
+    flow: ["배운 걸 정리하고 자격을 갖추기 좋아요", "도와주는 사람을 만나요", "마음이 편해져 오래 미룬 일을 꺼내요"],
+  },
+};
+
+const godScore: Record<TenGod, number> = {
+  식신: 2, 정재: 2, 정관: 2, 정인: 2, 상관: 1, 편재: 1, 편인: 1, 비견: 1, 편관: 0, 겁재: 0,
+};
+
+const monthLabel = (at: number) => `${kstParts(at).month}월`;
+const dateRange = (from: number, to: number) => `${seoulDateLabel(from)} ~ ${seoulDateLabel(to - 86400000)}`;
+
+function pillarKorean(pillar: Pillar) {
+  return `${pillar.heavenlyStem}${pillar.earthlyBranch}`;
+}
+
+export type FirstReading = {
+  headline: string;
+  image: string;
+  trait: string;
+  strengthR: string;
+  strengthN: string;
+  cautionR: string;
+  cautionN: string;
+  fandomR: string;
+  bond: string;
+  rows: ReturnType<typeof elementRows>;
+  flowTitle: string;
+  flow: { label: string; text: string }[];
+  pillar: string;
+};
+
+export function firstReading(chart: Chart, at: number): FirstReading {
+  const stem = dayStem(chart);
+  const note = stemNotes[stem];
+  const season = seasonAt(at);
+  const god = godNotes[tenGod(stem, season.yearPillar.heavenlyStem)];
+  return {
+    headline: roughHeadline(stem),
+    image: note.image,
+    trait: note.trait,
+    strengthR: note.strengthR,
+    strengthN: note.strengthN,
+    cautionR: note.cautionR,
+    cautionN: note.cautionN,
+    fandomR: note.fandomR,
+    bond: note.bond,
+    rows: elementRows(chart),
+    flowTitle: "올해 흐름",
+    flow: [
+      { label: "일·공부", text: god.flow[0] },
+      { label: "사람", text: god.flow[1] },
+      { label: "마음", text: god.flow[2] },
+    ],
+    pillar: pillarKorean(chart.pillars.day!),
+  };
+}
+
+export type YearReading = {
+  title: string;
+  bond: string;
+  /** 붉은 말의 해 */
+  name: string;
+  /** 2026 병오년 · 2.4 ~ 내년 2.3 */
+  span: string;
+  grade: string;
+  rate: { label: string; level: Level }[];
+  months: { label: string; score: number; current: boolean }[];
+  good: string;
+  rest: string;
+  help: string;
+  line: string;
+  beforeSpring: boolean;
+};
+
+const animal: Record<Branch, string> = {
+  자: "쥐", 축: "소", 인: "범", 묘: "토끼", 진: "용", 사: "뱀", 오: "말", 미: "양", 신: "원숭이", 유: "닭", 술: "개", 해: "돼지",
+};
+const stemColor: Record<Stem, string> = {
+  갑: "푸른", 을: "푸른", 병: "붉은", 정: "붉은", 무: "누런", 기: "누런", 경: "흰", 신: "흰", 임: "검은", 계: "검은",
+};
+
+function monthsOfSeason(chart: Chart, at: number) {
+  const season = seasonAt(at);
+  const day = dayStem(chart);
+  const dayBr = dayBranch(chart);
+  const list: { at: number; span: MonthSpan; score: number }[] = [];
+  let cursor = season.startAt + 86400000;
+  for (let i = 0; i < 12; i++) {
+    const span = monthSpanAt(cursor);
+    const relation = branchRelation(dayBr, span.pillar.earthlyBranch);
+    const score =
+      godScore[tenGod(day, span.pillar.heavenlyStem)] +
+      (relation === "good" ? 1 : relation === "rough" ? -1 : 0);
+    list.push({ at: span.startAt, span, score });
+    cursor = span.endAt + 86400000;
+  }
+  return list;
+}
+
+export function yearReading(chart: Chart, at: number): YearReading {
+  const season = seasonAt(at);
+  const stem = dayStem(chart);
+  const god = godNotes[tenGod(stem, season.yearPillar.heavenlyStem)];
+  const months = monthsOfSeason(chart, at);
+  const current = monthSpanAt(at).startAt;
+  const best = Math.max(...months.map((m) => m.score));
+  const worst = Math.min(...months.map((m) => m.score));
+  const goodMonths = months.filter((m) => m.score === best).slice(0, 2);
+  const restMonth = months.find((m) => m.score === worst)!;
+  const seasonStart = kstParts(season.startAt);
+  const seasonEnd = kstParts(season.endAt);
+  const { year: today } = kstParts(at);
+  return {
+    title: god.yearTitle,
+    bond: god.yearBond,
+    name: `${stemColor[season.yearPillar.heavenlyStem]} ${animal[season.yearPillar.earthlyBranch]}의 해`,
+    span: `${season.year} ${pillarKorean(season.yearPillar)}년 · ${seasonStart.month}.${seasonStart.day} ~ ${seasonEnd.year === today ? "" : "내년 "}${seasonEnd.month}.${seasonEnd.day - 1}`,
+    grade: god.grade,
+    rate: (["사람", "일", "돈", "연애"] as const).map((label, index) => ({ label, level: god.rate[index] })),
+    months: months.map((m) => ({
+      label: String(m.span.month),
+      score: m.score,
+      current: m.at === current,
+    })),
+    good: goodMonths.map((m) => monthLabel(m.at)).join(" · "),
+    rest: `${monthLabel(restMonth.at)} · 일정을 넉넉하게`,
+    help: helping(chart),
+    line: `${goodMonths.map((m) => monthLabel(m.at)).join("이랑 ")}이 좋은 달이야. ${monthLabel(restMonth.at)}엔 일정 줄이고 나랑 쉬자.`,
+    beforeSpring: today !== season.year,
+  };
+}
+
+export type MonthReading = {
+  title: string;
+  bond: string;
+  /** 이달 · 11월 */
+  name: string;
+  span: string;
+  rate: { label: string; level: Level }[];
+  weeks: { label: string; score: number; current: boolean }[];
+  strong: string;
+  rest: string;
+  nextTerm: string;
+  line: string;
+};
+
+export function monthReading(chart: Chart, at: number): MonthReading {
+  const span = monthSpanAt(at);
+  const stem = dayStem(chart);
+  const dayBr = dayBranch(chart);
+  const god = godNotes[tenGod(stem, span.pillar.heavenlyStem)];
+  const weeks: MonthReading["weeks"] = [];
+  const weekMs = 7 * 86400000;
+  for (let start = span.startAt; start < span.endAt; start += weekMs) {
+    let score = 0;
+    for (let d = 0; d < 7 && start + d * 86400000 < span.endAt; d++) {
+      const pillar = dayPillarAt(start + d * 86400000);
+      const relation = branchRelation(dayBr, pillar.earthlyBranch);
+      score += (relation === "good" ? 1 : relation === "rough" ? -1 : 0) + (godScore[tenGod(stem, pillar.heavenlyStem)] >= 2 ? 1 : 0);
+    }
+    const end = Math.min(start + weekMs, span.endAt);
+    weeks.push({ label: `${seoulDateLabel(start)}~${seoulDateLabel(end - 86400000)}`, score, current: at >= start && at < end });
+  }
+  const best = weeks.reduce((a, b) => (b.score > a.score ? b : a));
+  const worst = weeks.reduce((a, b) => (b.score < a.score ? b : a));
+  const term = kstParts(span.endAt);
+  const tag = (week: (typeof weeks)[number]) => (week.current ? `${week.label} · 이번 주` : week.label);
+  return {
+    title: god.monthTitle,
+    bond: god.monthBond,
+    name: `이달 · ${span.month}월`,
+    span: dateRange(span.startAt, span.endAt),
+    rate: (["사람", "일", "돈", "연애"] as const).map((label, index) => ({ label, level: god.rate[index] })),
+    weeks,
+    strong: tag(best),
+    rest: tag(worst),
+    nextTerm: `${term.month}월 ${term.day}일 ${span.nextTerm}`,
+    line: best.current ? "이번 주가 제일 힘 있어. 미뤄 둔 거 지금 해." : `${best.label} 주가 제일 힘 있어. 미뤄 둔 건 그때 해.`,
+  };
+}
+
+/** 두 일간의 오행 관계로 만든 궁합 풀이. 서버가 준 합·충 목록으로 한 칸씩 더한다. */
+type Pair = "same" | "gives" | "controls";
+
+export type PairReading = {
+  title: string;
+  /** 서로 채움 · 마음 결 · 끌림 · 맞춰 갈 곳 */
+  rows: { label: string; level: "많이" | "보통" | "조금"; top: boolean; note?: string }[];
+  note: string;
+  powers: string;
+  clash: string;
+  together: string;
+  line: (name: string) => string;
+};
+
+const levels = ["조금", "보통", "많이"] as const;
+const pairTable: Record<Pair, { title: string; base: [number, number, number, number]; note: string; clash: string; together: string; line: string }> = {
+  gives: {
+    title: "온도는 달라도, 서로 없는 걸 채워 주는 사이",
+    base: [2, 1, 1, 0],
+    note: "한쪽이 달아오르면 다른 쪽이 식혀 줘요",
+    clash: "정해 둔 계획이 바뀔 때",
+    together: "바뀌면 이유를 먼저 말하기",
+    line: "온도는 달라도 잘 맞네.",
+  },
+  same: {
+    title: "닮은 결이라, 말하지 않아도 통하는 사이",
+    base: [1, 2, 0, 1],
+    note: "비슷한 기운이라 편하지만 같은 곳에서 같이 지쳐요",
+    clash: "둘 다 양보하고 싶지 않을 때",
+    together: "한 사람이 먼저 쉬자고 말하기",
+    line: "결이 닮아서 편하겠네.",
+  },
+  controls: {
+    title: "부딪히면서 서로를 키워 주는 사이",
+    base: [1, 0, 2, 2],
+    note: "한쪽이 길을 잡아 주고 다른 쪽이 속도를 조절해요",
+    clash: "의견이 정반대로 갈릴 때",
+    together: "결론보다 이유를 먼저 듣기",
+    line: "다르니까 더 끌리는 사이네.",
+  },
+};
+
+export function pairReading(a: Stem, b: Stem, combinations: number, clashes: number): PairReading {
+  const ea = stemElement[a];
+  const eb = stemElement[b];
+  const kind: Pair = ea === eb ? "same" : generates[ea] === eb || generates[eb] === ea ? "gives" : "controls";
+  const table = pairTable[kind];
+  const bump = (value: number, by: number) => Math.max(0, Math.min(2, value + by));
+  const [fill, mood, pull, adjust] = table.base;
+  const scores = [fill, mood, bump(pull, combinations ? 1 : 0), bump(adjust, clashes ? 1 : 0)];
+  const best = Math.max(...scores);
+  const labels = ["서로 채움", "마음 결", "끌림", "맞춰 갈 곳"];
+  return {
+    title: table.title,
+    rows: labels.map((label, index) => ({
+      label,
+      level: levels[scores[index]],
+      top: scores[index] === best && index === scores.indexOf(best),
+    })),
+    note: `서로 채움 · ${table.note}`,
+    powers: `${stemNotes[a].image} × ${stemNotes[b].image}`,
+    clash: table.clash,
+    together: table.together,
+    line: (name) => `${table.line} ${name} 얘기 더 해 볼래?`,
+  };
+}

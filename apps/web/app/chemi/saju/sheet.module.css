@@ -1,0 +1,91 @@
+/* 생일·궁합 상대 입력 시트(승인 시안 03-2 생일·03-5 입력). 입력칸은 알약 모양, 누르는 영역은 44 이상. */
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+.field input,
+.timeRow input[type="time"] {
+  min-height: var(--min-target);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.field input:disabled {
+  opacity: 0.5;
+}
+.field input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.timeRow input[type="time"] {
+  flex: 1;
+  min-width: 0;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--min-target);
+}
+.check input {
+  flex: none;
+  width: var(--space-5);
+  height: var(--space-5);
+  accent-color: var(--color-accent);
+}
+.rail {
+  height: var(--min-target);
+}
+
+/* 더 깊이·궁합 상대 고르기 */
+.topics {
+  display: grid;
+  gap: var(--space-1);
+}
+.topics > p {
+  margin: 0;
+  padding-top: var(--space-3);
+}
+.topics .topicRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--min-target);
+  height: auto;
+  padding: var(--space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  border-radius: 0;
+  background: none;
+  color: var(--color-ink);
+  text-align: start;
+}
+.topics .topicRow > span {
+  flex: 1;
+  min-width: 0;
+}
+.topicBody {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+}
+.topicText {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  text-align: start;
+}

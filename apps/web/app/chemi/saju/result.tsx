@@ -1,0 +1,431 @@
+"use client";
+
+/**
+ * 최애 사주 풀이 화면(승인 시안 03-2 결과·03-4 올해·이달·03-5 궁합).
+ * 390은 한 열(최애 한마디 + 큰 버튼이 탭바 위에 고정), 1024+는 본문 + 오른쪽 레일.
+ * 질문하기·유료 주제는 M2 이므로 이 화면에는 자리를 두지 않는다.
+ */
+import type { CSSProperties } from "react";
+import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { FanState } from "@/components/fan-ui/fan-state";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanNumber } from "@/components/fan-ui/fan-number";
+import { FanText } from "@/components/fan-ui/fan-text";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import type { AppLocale } from "@/i18n/locales";
+import type { Chart } from "./chart";
+import {
+  firstReading,
+  monthReading,
+  pairReading,
+  yearReading,
+} from "./copy";
+import { sajuCharacters, sajuTone, type SajuCharacterId } from "./lines";
+import type { PairResult } from "./reading";
+import styles from "./result.module.css";
+
+export type ResultView = "first" | "year" | "month" | "pair";
+
+export type Pair = {
+  name: string;
+  result: PairResult;
+  /** 상대 출생 시간을 알고 본 궁합인가 */
+  timeKnown: boolean;
+};
+
+const hero = (character: SajuCharacterId) =>
+  character === "changha"
+    ? "/chemi/saju/saju-changha-wide-v1.webp"
+    : `/chemi/saju/saju-${character}-v1.webp`;
+
+const levelWidth = { 많이: 92, 보통: 56, 조금: 28 } as const;
+const rateWidth = { 좋음: 92, 보통: 56, 조심: 28 } as const;
+
+export function SajuResult({
+  locale,
+  character,
+  view,
+  chart,
+  at,
+  points,
+  exp,
+  pair,
+  sharing,
+  backHref,
+  onBack,
+  onShare,
+  onTopics,
+  onGo,
+  onScene,
+  onPair,
+  onBirthTime,
+}: {
+  locale: AppLocale;
+  character: SajuCharacterId;
+  view: ResultView;
+  chart: Chart;
+  at: number;
+  points: number;
+  exp: number;
+  pair?: Pair;
+  sharing: boolean;
+  backHref: string;
+  onBack: () => void;
+  onShare: () => void;
+  onTopics: () => void;
+  onGo: (view: ResultView) => void;
+  onScene: () => void;
+  onPair: () => void;
+  /** 태어난 시간을 넣으면 열리는 칸에서 시간 입력으로 간다. */
+  onBirthTime: () => void;
+}) {
+  const name = sajuCharacters.find((item) => item.id === character)!.name;
+  const locked = chart.locked.length > 0;
+  const first = firstReading(chart, at);
+  const year = yearReading(chart, at);
+  const month = monthReading(chart, at);
+  const compat =
+    view === "pair" && pair
+      ? pairReading(
+          pair.result.dayStems[0],
+          pair.result.dayStems[1],
+          pair.result.combinations.length,
+          pair.result.clashes.length,
+        )
+      : null;
+  const tone = sajuTone(character);
+  const sayLine =
+    view === "year"
+      ? year.line
+      : view === "month"
+        ? month.line
+        : compat && pair
+          ? tone.pairReact(compat.line(pair.name))
+          : tone.react({
+              image: first.image,
+              trait: first.trait,
+              strengthN: first.strengthN,
+              cautionN: first.cautionN,
+              bond: first.bond,
+              yearTitle: year.title,
+            });
+
+  const kicker =
+    view === "pair" && pair
+      ? `${name}가 봐 준 궁합 · 나 × ${pair.name}`
+      : `${name}가 풀어 준 나의 ${{ first: "사주", year: "올해", month: "이달" }[view as "first"]}`;
+  const title =
+    view === "first" ? first.headline : view === "year" ? year.title : view === "month" ? month.title : compat!.title;
+  const bondKicker = { first: `${name}와 나`, year: `올해 ${name}와 나`, month: `이달 ${name}와 나`, pair: "" }[view];
+  const bond = view === "first" ? first.bond : view === "year" ? year.bond : view === "month" ? month.bond : "";
+
+  const bar = (label: string, value: number, top = false) => (
+    <span
+      className={styles.bar}
+      role="progressbar"
+      aria-label={label}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={value}
+      data-top={top || undefined}
+    >
+      <i style={{ width: `${value}%` }} />
+    </span>
+  );
+  const kv = (rows: readonly (readonly [string, string])[]) => (
+    <dl className={styles.kv}>
+      {rows.map(([label, value]) => (
+        <div key={label}>
+          <FanText as="dt" role="meta">
+            {label}
+          </FanText>
+          <FanText as="dd" role="item">
+            {value}
+          </FanText>
+        </div>
+      ))}
+    </dl>
+  );
+  const chartBars = (items: readonly { label: string; score: number; current: boolean }[], max: number) => (
+    <ol className={styles.chart} style={{ "--n": items.length } as CSSProperties}>
+      {items.map((item) => (
+        <li key={item.label} data-row="" data-current={item.current || undefined}>
+          <i style={{ "--h": `${Math.max(14, Math.round(((item.score + 1) / (max + 1)) * 100))}%` } as CSSProperties} />
+          <FanText role="meta">{item.label}</FanText>
+        </li>
+      ))}
+    </ol>
+  );
+  const lockedCard = (
+    <FanState
+      inline
+      kind="info"
+      title="태어난 시간을 알면 열려요"
+      actions={
+        <FanAction size="sm" onClick={onBirthTime}>
+          태어난 시간 넣기
+        </FanAction>
+      }
+    />
+  );
+
+  const bondCard =
+    view !== "pair" ? (
+      <section className={`${styles.panel} ${styles.bondPanel}`}>
+        <FanText as="p" role="meta">
+          {bondKicker}
+        </FanText>
+        <FanHeading>{bond}</FanHeading>
+        <Rewards locale={locale} points={points} exp={exp} />
+      </section>
+    ) : (
+      <div className={styles.pairReward}>
+        <Rewards locale={locale} points={points} exp={exp} />
+      </div>
+    );
+
+  const actions = (
+    <div className={styles.actions}>
+      {view === "first" ? (
+        <FanAction onClick={onScene}>장면 다시 보기</FanAction>
+      ) : (
+        <FanAction onClick={view === "pair" ? onPair : onTopics}>
+          {view === "pair" ? "다른 사람과" : "다른 주제"}
+        </FanAction>
+      )}
+    </div>
+  );
+
+  return (
+    <article data-saju-result={view} className={styles.layout}>
+      <div className={styles.toolbar}>
+        <FanAction
+          href={view === "first" ? backHref : undefined}
+          onClick={view === "first" ? undefined : onBack}
+          ariaLabel="뒤로 가기"
+          leadingIcon={<FanIcon icon={ChevronLeft} />}
+          className={styles.round}
+        />
+        <FanText role="label" className={styles.chip}>
+          {name}
+        </FanText>
+      </div>
+      <div className={styles.main}>
+        <header className={styles.head}>
+          <FanText as="p" role="meta">
+            {kicker}
+          </FanText>
+          <FanHeading as="h1">{title}</FanHeading>
+          {view === "pair" && pair && !pair.timeKnown && (
+            <FanText as="p" role="meta">
+              {pair.name} 출생 시간 없이 봄
+            </FanText>
+          )}
+          <picture className={styles.hero}>
+            <img src={hero(character)} alt="" />
+          </picture>
+        </header>
+        {view !== "first" && bondCard}
+
+        {view === "first" && (
+          <>
+            <div className={styles.summary}>
+              {bondCard}
+            <section className={`${styles.panel} ${styles.split}`}>
+              <div className={styles.block}>
+                <FanHeading>타고난 기운</FanHeading>
+                {locked ? (
+                  lockedCard
+                ) : (
+                  <div className={styles.bars}>
+                    {first.rows.map((row) => (
+                      <div className={styles.barRow} key={row.element}>
+                        <FanText role="meta">{row.name}</FanText>
+                        <FanNumber locale={locale} value={row.count} />
+                        {bar(row.name, Math.round((row.count / 4) * 100), row.top)}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+            </div>
+            {!locked && (
+              <>
+                <section className={styles.section}>
+                  <FanHeading>타고난 성격</FanHeading>
+                  {kv([
+                    ["강점", first.strengthR],
+                    ["조심할 점", first.cautionR],
+                    ["나다운 덕질", first.fandomR],
+                  ])}
+                </section>
+                <section className={styles.section}>
+                  <FanHeading>{first.flowTitle}</FanHeading>
+                  {kv(first.flow.map((item) => [item.label, item.text] as const))}
+                </section>
+              </>
+            )}
+          </>
+        )}
+
+        {view === "year" && (
+          <section className={`${styles.panel} ${styles.section}`}>
+            <FanHeading>{year.name}</FanHeading>
+            <FanText as="p" role="meta">
+              {year.span}
+            </FanText>
+            {year.beforeSpring && (
+              <FanText as="p" role="meta">
+                아직 입춘 전이라 지난해 기준으로 봤어요
+              </FanText>
+            )}
+            {kv([["올해 등급", year.grade]])}
+            <div className={styles.rates}>
+              {year.rate.map((item) => (
+                <div key={item.label}>
+                  <FanText role="meta">{item.label}</FanText>
+                  <FanText role="item">{item.level}</FanText>
+                  {bar(item.label, rateWidth[item.level])}
+                </div>
+              ))}
+            </div>
+            <FanText as="p" role="meta">
+              열두 달
+            </FanText>
+            {chartBars(year.months, 4)}
+            {kv([
+              ["좋은 달", year.good],
+              ["여유 둘 달", year.rest],
+              ["도움 기운", year.help],
+            ])}
+          </section>
+        )}
+
+        {view === "month" && (
+          <section className={`${styles.panel} ${styles.section}`}>
+            <FanHeading>{month.name}</FanHeading>
+            <FanText as="p" role="meta">
+              {month.span}
+            </FanText>
+            <div className={styles.rates}>
+              {month.rate.map((item) => (
+                <div key={item.label}>
+                  <FanText role="meta">{item.label}</FanText>
+                  <FanText role="item">{item.level}</FanText>
+                  {bar(item.label, rateWidth[item.level])}
+                </div>
+              ))}
+            </div>
+            <FanText as="p" role="meta">
+              주별 흐름
+            </FanText>
+            {chartBars(month.weeks, 5)}
+            {kv([
+              ["힘 있는 주", month.strong],
+              ["쉬어 갈 주", month.rest],
+              ["새 기운", month.nextTerm],
+            ])}
+          </section>
+        )}
+
+        {view === "pair" && compat && pair && (
+          <section className={`${styles.panel} ${styles.section}`}>
+            <FanHeading>나 × {pair.name}</FanHeading>
+            <div className={styles.bars}>
+              {compat.rows.map((row) => (
+                <div className={styles.barRowWide} key={row.label}>
+                  <FanText role={row.top ? "label" : "meta"} className={styles.topLabel} data-top={row.top || undefined}>
+                    {row.label}
+                  </FanText>
+                  <FanText role="item">{row.level}</FanText>
+                  {bar(row.label, levelWidth[row.level], row.top)}
+                </div>
+              ))}
+            </div>
+            <FanText as="p" role="meta">
+              {compat.note}
+            </FanText>
+            {kv([
+              ["둘의 기운", compat.powers],
+              ["부딪히는 곳", compat.clash],
+              ["같이 있을 때", compat.together],
+            ])}
+          </section>
+        )}
+
+        <div className={styles.mobileActions}>{actions}</div>
+        <div className={styles.dockSpace} aria-hidden="true" />
+        <footer className={styles.legal}>
+          <FanText as="p" role="meta">
+            운의 흐름을 참고로 보는 풀이예요. 정해진 미래가 아니에요.
+          </FanText>
+          {view === "pair" && (
+            <FanText as="p" role="meta">
+              실제 두 사람의 관계를 단정하지 않아요.
+            </FanText>
+          )}
+        </footer>
+      </div>
+
+      <aside className={styles.side}>
+        <div className={styles.dock}>
+          <section className={styles.reaction}>
+            <img src={`/chemi/saju/avatar-${character}-v1.jpg`} alt="" />
+            <FanText as="strong" role="item" className={styles.said}>
+              {name}
+            </FanText>
+            <FanText as="p" role="body">
+              {sayLine}
+            </FanText>
+          </section>
+          <div className={styles.cta}>
+            <FanAction variant="primary" fullWidth disabled={sharing} onClick={onShare}>
+              자랑하기
+            </FanAction>
+          </div>
+          <div className={styles.desktopOnly}>{actions}</div>
+        </div>
+        {view === "first" && (
+          <nav className={styles.nextList} aria-label="더 깊이">
+            <FanText as="p" role="item" className={styles.nextTitle}>
+              더 깊이
+            </FanText>
+            {(
+              [
+                ["올해", "무료", "year"],
+                ["이달", "무료", "month"],
+              ] as const
+            ).map(([label, tag, target]) => (
+              <FanAction variant="text" key={label} className={styles.nextItem} onClick={() => onGo(target)}>
+                <span className={styles.nextRow}>
+                  <FanText role="item">{label}</FanText>
+                  <FanText role="meta">{tag}</FanText>
+                  <FanIcon icon={ChevronRight} />
+                </span>
+              </FanAction>
+            ))}
+            <FanAction variant="text" className={styles.nextItem} onClick={onPair}>
+              <span className={styles.nextRow}>
+                <FanText role="item">궁합</FanText>
+                <FanText role="meta">하루 1번 무료</FanText>
+                <FanIcon icon={ChevronRight} />
+              </span>
+            </FanAction>
+          </nav>
+        )}
+      </aside>
+    </article>
+  );
+}
+
+function Rewards({ locale, points, exp }: { locale: AppLocale; points: number; exp: number }) {
+  return (
+    <div className={styles.rewardRow}>
+      {points > 0 && <EarnBadge locale={locale} points={points} variant="inline" />}
+      {exp > 0 && <FanText role="meta">친밀 +{exp}</FanText>}
+    </div>
+  );
+}
