@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 // Gate repository overrides must not reach fixture Git, CLI children, or in-process readNotes.
 for (const key of Object.keys(process.env)) {
   if (key.startsWith('GIT_')) delete process.env[key];
@@ -42,6 +43,10 @@ test('CLI check batches a release with more than ten images instead of rejecting
     for (let index = 0; index < 11; index += 1) {
       const name = `note-${index}`;
       writeFileSync(join(dir, `release-notes/images/${name}.png`), png);
+      writeFileSync(join(dir, `release-notes/images/${name}.png.capture`), JSON.stringify({
+        tool: 'devshot', mode: 'guest', url: 'https://dev.kyaa.io/', capturedAt: new Date().toISOString(),
+        sha256: createHash('sha256').update(png).digest('hex'),
+      }));
       writeFileSync(join(dir, `release-notes/${name}.json`), JSON.stringify({ ...note, images: [`release-notes/images/${name}.png`] }));
     }
     git('add', '.'); git('commit', '-qm', 'many notes'); const head = git('rev-parse', 'HEAD');
