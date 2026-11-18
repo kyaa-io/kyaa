@@ -50,19 +50,25 @@ export function moreTitle(item: Pick<Item, "body">) {
   const [title, article] = postSlotTexts(item.body);
   return (title || article || item.body).split("\n")[0].trim();
 }
-/** 공개 글의 첫 사진만 바로 읽는다. 사진을 쓸 수 없으면 프로필 사진과 글 아이콘 순으로 대체한다. */
+/** 공개 글의 첫 사진만 바로 읽는다. 사진이 표시될 때까지 공통 글 아이콘으로 대체한다. */
 const thumbnailOf = (item: Item) => item.visibility === "public" && item.assets?.[0] ? `/api/content-assets/${item.assets[0].id}?size=thumbnail` : null;
 
+function MoreThumbnail({ src }: { src: string | null }) {
+  const [loaded, setLoaded] = useState(false);
+  return <span className={styles.thumb}>
+    {loaded ? null : <FanIcon icon={BookOpen} size={16} />}
+    {src && <img src={src} alt="" width={64} height={48} loading="lazy" decoding="async"
+      onLoad={() => setLoaded(true)} onError={() => setLoaded(false)} data-loaded={loaded} />}
+  </span>;
+}
+
 function MoreRow({ item, slug, locale, tab }: { item: Item; slug: string; locale: AppLocale; tab: Tab }) {
-  const [broken, setBroken] = useState(false), thumbnail = thumbnailOf(item), copy = contentCopy(locale);
-  const [avatarBroken, setAvatarBroken] = useState(false);
+  const thumbnail = thumbnailOf(item);
+  const copy = contentCopy(locale);
   const returnTo = boardHref(slug, locale);
   const href = `/c/${slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}${tab === "latest" ? "&more=latest" : ""}`;
   return <li data-row=""><Link className={styles.row} href={href as Route} data-post-more-row="">
-    <span className={styles.thumb}>{thumbnail && !broken
-      ? <img src={thumbnail} alt="" width={64} height={48} loading="lazy" decoding="async" onError={() => setBroken(true)} />
-      : !avatarBroken && item.author.avatarUrl ? <img className={styles.avatar} data-artist-avatar={item.artist || undefined} src={item.author.avatarUrl} alt="" width={32} height={32} loading="lazy" decoding="async" onError={() => setAvatarBroken(true)} />
-      : <FanIcon icon={BookOpen} size={16} />}</span>
+    <MoreThumbnail key={thumbnail} src={thumbnail} />
     <span className={styles.text}>
       <FanText role="row-title" className={styles.title}>{moreTitle(item)}</FanText>
       {/* 0은 그리지 않는다. 둘 다 0이면 숫자 줄이 없다(게시판 목록의 댓글 수와 같은 규칙). */}

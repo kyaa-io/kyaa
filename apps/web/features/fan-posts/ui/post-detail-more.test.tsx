@@ -82,15 +82,18 @@ it("offers a retry when the list cannot be read, and no banner on a brand page",
   expect(screen.queryByTestId("banner")).toBeNull();
 });
 
-it("shows a public post's first photo and the writer's picture otherwise, ringed for the page's artist", () => {
+it("shows a book icon until the public photo loads and for posts without a readable photo", () => {
   state.answer = () => ({ status: "ready", data: { items: [post("photo", { assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4ca", width: 640, height: 480 }] }), post("members", { visibility: "members", artist: true, assets: [{ id: "bba239f6-6c6b-4a36-87bf-b325dfe5d4cb", width: 640, height: 480 }] })] } });
   const { container } = render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
   const images = [...container.querySelectorAll("img")];
-  expect(images.map(image => image.getAttribute("src"))).toEqual(["/api/content-assets/bba239f6-6c6b-4a36-87bf-b325dfe5d4ca?size=thumbnail", "/images/avatars/star-pink.webp"]);
-  expect(images.map(image => image.hasAttribute("data-artist-avatar"))).toEqual([false, true]);
-  fireEvent.error(images[1]);
-  expect(images[1].isConnected).toBe(false);
-  expect(screen.getAllByRole("link")[1].querySelector(".lucide-book-open")).toBeTruthy();
+  expect(images.map(image => image.getAttribute("src"))).toEqual(["/api/content-assets/bba239f6-6c6b-4a36-87bf-b325dfe5d4ca?size=thumbnail"]);
+  const [photo, members] = screen.getAllByRole("link");
+  expect(members.querySelector(".lucide-book-open")).toBeTruthy();
+  expect(photo.querySelector(".lucide-book-open")).toBeTruthy();
+  fireEvent.load(images[0]);
+  expect(photo.querySelector(".lucide-book-open")).toBeNull();
+  fireEvent.error(images[0]);
+  expect(photo.querySelector(".lucide-book-open")).toBeTruthy();
 });
 
 it("uses the board post schema for ranking and cursor pages", () => {
