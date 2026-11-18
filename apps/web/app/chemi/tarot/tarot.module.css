@@ -673,12 +673,10 @@
   border-inline-start: 0;
 }
 .rewardRow[data-link] {
-  position: relative;
-}
-.rewardRow[data-link]::after {
-  content: "";
-  position: absolute;
-  inset: calc(var(--space-2) - var(--space-5)) 0;
+  box-sizing: border-box;
+  min-height: var(--min-target);
+  width: 100%;
+  flex-wrap: nowrap;
 }
 .rewardRow[data-link]:focus-visible {
   outline: var(--focus-width) solid var(--color-ink);
@@ -687,6 +685,12 @@
 }
 .go {
   color: var(--color-accent-ink);
+}
+.rewardRow > .goArrow {
+  flex: none;
+  margin-inline-start: auto;
+  padding-inline-start: 0;
+  border-inline-start: 0;
 }
 .mean,
 .keys,
@@ -746,6 +750,9 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+.words li {
+  word-break: keep-all;
 }
 .words li + li {
   margin-inline-start: var(--space-3);
@@ -862,6 +869,12 @@
   .hero {
     padding: var(--space-6);
   }
+  .cloth {
+    object-position: 50% 0;
+  }
+  .keys .words {
+    flex-wrap: nowrap;
+  }
   .pairPanel {
     display: none;
   }
@@ -909,14 +922,6 @@
   .keys .rows > div {
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-1);
-  }
-  .keys .words {
-    display: grid;
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-  }
-  .keys .words li + li {
-    margin-inline-start: 0;
   }
   .said {
     padding: var(--space-6);

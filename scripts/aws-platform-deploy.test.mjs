@@ -397,7 +397,10 @@ test('CI OIDC trust uses the observed immutable repository identity and exact en
  const web=(r)=>r.Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web');
  assert.equal(web(renderTemplate(c,t)).Environment.some(x=>x.Name==='CHEMI_TAB'),false);
  c.runtimeEnvironment.CHEMI_TAB='true';
+ const listed=structuredClone(c);listed.runtimeSecretKeys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','PRIVY_APP_SECRET'];
+ assert.throws(()=>validateConfig(listed,t),/required key/);
  assert(web(renderTemplate(c,t)).Environment.some(x=>x.Name==='CHEMI_TAB'&&x.Value==='true'));
+ assert(web(renderTemplate(c,t)).Secrets.some(x=>x.Name==='CHEMI_TAROT_SALT'&&JSON.stringify(x.ValueFrom).includes(':CHEMI_TAROT_SALT::')));
  c.runtimeEnvironment.CHEMI_TAB='1';assert.throws(()=>validateConfig(c,t),/CHEMI_TAB/);
  });
 

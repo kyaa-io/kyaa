@@ -4,16 +4,19 @@ import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
-import type { TarotAuth, TarotDraw, TarotReward } from "./types";
+import { kstDate, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
 import styles from "./tarot.module.css";
 
 const DIRECTION = ["정방향", "역방향"] as const;
@@ -42,6 +45,8 @@ export function TarotResult({
   headers: () => Promise<Record<string, string>>;
 }) {
   const person = tarotCharacter(character);
+  // 지난 날의 결과 링크로 열었으면 오늘 받은 것을 이 카드의 보상으로 보여 주지 않는다.
+  const today = draw.date === kstDate();
   const [rewards, setRewards] = useState<Rewards | null>(null);
   const [keepSave, setKeepSave] = useState(true);
   const celebrated = useRef(false);
@@ -52,7 +57,7 @@ export function TarotResult({
 
   // 회원: 이 최애로 오늘 받은 것을 서버 값 그대로 읽는다. 다시 온 장면에서 열었으면 먼저 한 번 맞춘다(같은 카드 · 같은 날, 중복 지급 없음).
   useEffect(() => {
-    if (!member) return;
+    if (!member || !today) return;
     const controller = new AbortController();
     const signal = controller.signal;
     void (async () => {
@@ -83,7 +88,7 @@ export function TarotResult({
     return () => controller.abort();
     // draw 는 같은 카드면 같은 값이다: 값이 같은데 새 객체라고 다시 맞추지 않는다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [member, draw.card, draw.readingId, draw.settle, character]);
+  }, [member, today, draw.card, draw.readingId, draw.settle, character]);
 
   useEffect(() => {
     if (!rewards || celebrated.current || rewards.replayed || rewards.points <= 0) return;
@@ -96,7 +101,7 @@ export function TarotResult({
   const content = meaning.card?.dir[draw.reversed ? "down" : "up"];
   const slotLine = draw.slot ? ` · ${TAROT_DECK_SIZE}장 중 ${draw.slot}번째` : "";
 
-  const rewardRow = member ? <RewardRow character={character} name={person.name} rewards={rewards} locale={locale} /> : null;
+  const rewardRow = member && today ? <RewardRow character={character} name={person.name} rewards={rewards} locale={locale} /> : null;
   const saveBox = !member ? (
     keepSave ? (
       <div className={styles.save}>
@@ -137,10 +142,7 @@ export function TarotResult({
           </div>
         </header>
         <div className={styles.hero} data-reversed={draw.reversed || undefined}>
-          <picture>
-            <source media="(min-width: 48rem)" srcSet="/chemi/tarot/cloth-1440.webp" />
-            <img className={styles.cloth} src="/chemi/tarot/cloth-390.webp" alt="" />
-          </picture>
+          <img className={styles.cloth} src="/chemi/tarot/cloth-390.webp" alt="" />
           <img className={styles.cardFace} src={tarotFace(draw.card)} alt={alt} />
         </div>
         <div className={styles.pairPanel}>
@@ -288,8 +290,9 @@ function RewardRow({ character, name, rewards, locale }: { character: TarotChara
   if (points <= 0 && character !== "dosa")
     return (
       <Link className={styles.rewardRow} data-link="" href={`/c/${character}`}>
-        <FanText className={styles.go} role="label">패스포트 받고 포인트·스탬프</FanText>
+        <FanText className={styles.go} role="label">{`패스포트 받고 +${CHEMI_PASSPORT_DAILY_POINTS}P · 스탬프`}</FanText>
         {reward.exp ? <FanText role="meta">{`친밀 +${reward.exp}`}</FanText> : null}
+        <FanIcon icon={ChevronRight} size={16} className={styles.goArrow} />
       </Link>
     );
   if (parts.length === 0) return null;

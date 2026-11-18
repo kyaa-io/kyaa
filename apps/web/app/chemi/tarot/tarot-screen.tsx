@@ -48,10 +48,13 @@ export function TarotScreen({
   locale,
   initialCharacter,
   initialStep,
+  initialReading = null,
 }: {
   locale: AppLocale;
   initialCharacter: TarotCharacter;
   initialStep: TarotStep;
+  /** 결과 링크의 `r`. 날짜가 바뀐 뒤에도 그날 받은 결과를 다시 연다. */
+  initialReading?: string | null;
 }) {
   const router = useRouter();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
@@ -97,9 +100,12 @@ export function TarotScreen({
     void (async () => {
       const day = kstDate();
       const authorization = await authorize.current();
-      const list = await fetch(`/api/chemi/readings?content=tarot&from=${day}&to=${day}`, { headers: authorization, signal });
+      // 결과 링크로 열면 날짜 제한 없이 찾아 그 읽기의 날짜를 쓴다. 내 읽기가 아니면 오늘 카드로 되돌아간다.
+      const range = initialReading ? "" : `&from=${day}&to=${day}`;
+      const list = await fetch(`/api/chemi/readings?content=tarot${range}`, { headers: authorization, signal });
       if (!list.ok) throw new Error("list");
-      const saved = ((await list.json()) as { readingId: string; kind: string }[]).find((item) => item.kind === "daily");
+      const items = ((await list.json()) as { readingId: string; kind: string; date: string }[]).filter((item) => item.kind === "daily");
+      const saved = items.find((item) => item.readingId === initialReading) ?? items.find((item) => item.date === day);
       if (!saved) {
         if (!signal.aborted) setToday(null);
         return;
@@ -109,12 +115,12 @@ export function TarotScreen({
       const card = firstCard(((await detail.json()) as { result?: Reading }).result);
       if (!card) throw new Error("card");
       if (!signal.aborted)
-        setToday({ ...card, slot: null, date: day, readingId: saved.readingId, replayed: true, reward: {}, settle: true });
+        setToday({ ...card, slot: null, date: saved.date, readingId: saved.readingId, replayed: true, reward: {}, settle: saved.date === day });
     })()
       .then(() => !signal.aborted && setBoot("ready"))
       .catch(() => !signal.aborted && setBoot("error"));
     return () => controller.abort();
-  }, [ready, authenticated, attempt]);
+  }, [ready, authenticated, attempt, initialReading]);
 
   const go = useCallback(
     (next: TarotStep, options: { replace?: boolean } = {}) => {

@@ -6,14 +6,14 @@ import {
 import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { isTarotCharacter } from "@/features/chemi/tarot/script";
 import { parseAppLocale } from "@/i18n/locales";
-import { isTarotStep } from "./types";
+import { isReadingId, isTarotStep } from "./types";
 import { TarotScreen } from "./tarot-screen";
 
 export const dynamic = "force-dynamic";
 export default async function TarotPage({
   searchParams,
 }: {
-  searchParams: Promise<{ locale?: string | string[]; c?: string; step?: string }>;
+  searchParams: Promise<{ locale?: string | string[]; c?: string; step?: string; r?: string }>;
 }) {
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
@@ -25,6 +25,7 @@ export default async function TarotPage({
           locale={locale}
           initialCharacter={isTarotCharacter(params.c) ? params.c : "changha"}
           initialStep={isTarotStep(params.step) ? params.step : "enter"}
+          initialReading={params.step === "result" && isReadingId(params.r) ? params.r : null}
         />
       </FanContentContainer>
     </FanAppFrame>

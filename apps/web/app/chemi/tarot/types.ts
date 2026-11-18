@@ -34,6 +34,9 @@ export type TarotAuth = {
   login: () => void;
 };
 
+export const isReadingId = (value: string | undefined): value is string =>
+  typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+
 export const kstDate = (now: number = Date.now()) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 

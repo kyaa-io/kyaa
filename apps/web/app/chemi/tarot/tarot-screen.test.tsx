@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import cards from "@/content/chemi/tarot/cards.json";
 import { TarotScreen } from "./tarot-screen";
+import { kstDate } from "./types";
 
 const { auth, push, celebrate } = vi.hoisted(() => ({
   auth: { authenticated: false },
@@ -15,7 +16,7 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({
 vi.mock("@/components/fan-ui/reward-celebration", () => ({ celebrateReward: celebrate }));
 
 const calls: { path: string; method: string; body?: string }[] = [];
-let today: { readingId: string; kind: string }[] = [];
+let today: { readingId: string; kind: string; date: string }[] = [];
 let reward: Record<string, unknown> = {};
 
 beforeEach(() => {
@@ -50,8 +51,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const open = (step: "enter" | "pick" | "result" = "enter") =>
-  render(<TarotScreen locale="ko" initialCharacter="changha" initialStep={step} />);
+const open = (step: "enter" | "pick" | "result" = "enter", initialReading: string | null = null) =>
+  render(<TarotScreen locale="ko" initialCharacter="changha" initialStep={step} initialReading={initialReading} />);
 
 it("starts at the entry scene for a guest and walks to the thought step", async () => {
   open();
@@ -95,7 +96,7 @@ it("sends a guest draw without credentials and walks card → talk → result wi
 
 it("shows the saved card as a revisit for a member and settles the reward once", async () => {
   auth.authenticated = true;
-  today = [{ readingId: "saved", kind: "daily" }];
+  today = [{ readingId: "saved", kind: "daily", date: kstDate() }];
   reward = { exp: 10 };
   open();
   const view = await screen.findByRole("button", { name: "오늘 카드 보기" });
@@ -104,7 +105,7 @@ it("shows the saved card as a revisit for a member and settles the reward once",
   expect(screen.getByText("역방향")).toBeVisible();
   fireEvent.click(view);
   expect(await screen.findByRole("heading", { name: "XIII 죽음" })).toBeVisible();
-  await waitFor(() => expect(screen.getAllByText("패스포트 받고 포인트·스탬프").length).toBeGreaterThan(0));
+  await waitFor(() => expect(screen.getAllByText("패스포트 받고 +3P · 스탬프").length).toBeGreaterThan(0));
   const settles = calls.filter((call) => call.path === "/api/chemi/readings" && call.method === "POST");
   expect(settles).toHaveLength(1);
   expect(JSON.parse(settles[0].body!)).toMatchObject({ character: "changha", position: 0 });
@@ -113,12 +114,36 @@ it("shows the saved card as a revisit for a member and settles the reward once",
 
 it("shows only what the server gave: no points, no made-up counts", async () => {
   auth.authenticated = true;
-  today = [{ readingId: "saved", kind: "daily" }];
+  today = [{ readingId: "saved", kind: "daily", date: kstDate() }];
   open("result");
   await screen.findByRole("heading", { name: "XIII 죽음" });
-  await waitFor(() => expect(screen.getAllByText("패스포트 받고 포인트·스탬프").length).toBeGreaterThan(0));
+  await waitFor(() => expect(screen.getAllByText("패스포트 받고 +3P · 스탬프").length).toBeGreaterThan(0));
   expect(screen.queryByText(/스탬프 1개/)).toBeNull();
   expect(screen.queryByText(/이번 주 \d+일/)).toBeNull();
+});
+
+it("reopens the result of the linked reading on a later day, without today's rewards", async () => {
+  auth.authenticated = true;
+  today = [
+    { readingId: "later", kind: "daily", date: kstDate() },
+    { readingId: "linked", kind: "daily", date: "2026-11-17" },
+  ];
+  open("result", "linked");
+  expect(await screen.findByRole("heading", { name: "XIII 죽음" })).toBeVisible();
+  expect(screen.getByText("11월 17일의 카드")).toBeVisible();
+  expect(calls.some((call) => call.path === "/api/chemi/readings/linked")).toBe(true);
+  expect(calls.some((call) => call.path.startsWith("/api/chemi/readings?") && !call.path.includes("from="))).toBe(true);
+  expect(calls.some((call) => call.method === "POST")).toBe(false);
+  expect(calls.some((call) => call.path === "/api/chemi/rewards/today")).toBe(false);
+  expect(screen.queryByText("패스포트 받고 +3P · 스탬프")).toBeNull();
+});
+
+it("falls back to today's card when the linked reading is not the member's", async () => {
+  auth.authenticated = true;
+  today = [{ readingId: "mine", kind: "daily", date: kstDate() }];
+  open("result", "someone-else");
+  await screen.findByRole("heading", { name: "XIII 죽음" });
+  expect(calls.some((call) => call.path === "/api/chemi/readings/mine")).toBe(true);
 });
 
 it("goes back to the Chemi tab from the first step", async () => {
