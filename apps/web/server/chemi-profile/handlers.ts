@@ -18,7 +18,7 @@ export interface ChemiProfileDependencies {
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const STATUS: Record<string, number> = {
-  CHEMI_UNDER_14: 403, CHEMI_EDIT_LIMIT: 409, CHEMI_PARTNER_FULL: 409, CHEMI_ACCOUNT_CLOSED: 403, CHEMI_INVALID: 400,
+  CHEMI_MAIL_UNVERIFIED: 409, CHEMI_UNDER_14: 403, CHEMI_EDIT_LIMIT: 409, CHEMI_PARTNER_FULL: 409, CHEMI_ACCOUNT_CLOSED: 403, CHEMI_INVALID: 400,
 };
 
 function failure(error: unknown) {
@@ -32,7 +32,7 @@ function failure(error: unknown) {
   return Response.json({ error: { code: "CHEMI_UNAVAILABLE" } }, { status: 503, headers });
 }
 
-function handler(run: (request: Request, deps: ChemiProfileDependencies, user: string) => Promise<Response>) {
+export function chemiAuthenticatedHandler(run: (request: Request, deps: ChemiProfileDependencies, user: string) => Promise<Response>) {
   return (deps: ChemiProfileDependencies) => async (request: Request) => {
     const closed = chemiClosedResponse();
     if (closed) return closed;
@@ -49,9 +49,9 @@ const ok = (body: unknown, status = 200) => Response.json(body, { status, header
 
 export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
   return {
-    getProfile: handler(async (_request, d, user) => ok(chemiProfileSchema.parse(await d.rpc("chemi_read_profile", { p_user: user }))))(deps),
+    getProfile: chemiAuthenticatedHandler(async (_request, d, user) => ok(chemiProfileSchema.parse(await d.rpc("chemi_read_profile", { p_user: user }))))(deps),
 
-    putBirth: handler(async (request, d, user) => {
+    putBirth: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiBirthRequestSchema.parse(await boundedJson(request, 2048));
       try {
         const saved = chemiBirthSavedSchema.parse(await d.rpc("chemi_save_birth", {
@@ -69,9 +69,9 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
       }
     })(deps),
 
-    deleteBirth: handler(async (_request, d, user) => ok({ erased: chemiBirthErasedSchema.parse(await d.rpc("chemi_withdraw_birth_consent", { p_user: user })) }))(deps),
+    deleteBirth: chemiAuthenticatedHandler(async (_request, d, user) => ok({ erased: chemiBirthErasedSchema.parse(await d.rpc("chemi_withdraw_birth_consent", { p_user: user })) }))(deps),
 
-    postPartner: handler(async (request, d, user) => {
+    postPartner: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiPartnerCreateSchema.parse(await boundedJson(request, 2048));
       const created = chemiPartnerCreatedSchema.parse(await d.rpc("chemi_add_partner", {
         p_user: user, p_nickname: input.nickname, p_birth_date: input.birthDate, p_calendar: input.calendar, p_birth_time: input.birthTime,
@@ -80,7 +80,7 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
       return ok(created, 201);
     })(deps),
 
-    deletePartner: handler(async (request, d, user) => {
+    deletePartner: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiPartnerDeleteSchema.parse(await boundedJson(request, 512));
       const result = chemiPartnerDeletedSchema.parse(await d.rpc("chemi_delete_partner", { p_user: user, p_partner: input.partnerId }));
       return result.deleted ? ok(result) : Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
