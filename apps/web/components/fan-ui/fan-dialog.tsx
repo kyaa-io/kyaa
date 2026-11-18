@@ -9,6 +9,8 @@ import styles from "./fan-dialog.module.css";
 export type FanDialogPrimary = Readonly<{
   label: string;
   onClick: () => void;
+  /** Marks an action that closes the overlay and navigates. */
+  navigates?: boolean;
   loading?: boolean;
   disabled?: boolean;
   variant?: "primary" | "danger";
@@ -65,7 +67,7 @@ function Footer({ primary, secondary, busy }: { primary?: FanDialogPrimary; seco
   if (!primary && !secondary) return null;
   return <footer className={styles.footer}>
     {secondary ? <FanAction variant="neutral" onClick={secondary.onClick} disabled={secondary.disabled || busy}>{secondary.label}</FanAction> : null}
-    {primary ? <FanAction variant={primary.variant === "danger" ? "danger" : "primary"} onClick={primary.onClick} disabled={primary.disabled} loading={primary.loading}>{primary.label}</FanAction> : null}
+    {primary ? <FanAction variant={primary.variant === "danger" ? "danger" : "primary"} onClick={primary.onClick} disabled={primary.disabled} loading={primary.loading} data-overlay-navigates={primary.navigates ? "" : undefined}>{primary.label}</FanAction> : null}
   </footer>;
 }
 
