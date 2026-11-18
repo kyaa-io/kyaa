@@ -59,3 +59,9 @@ it("keeps production on the fortune list even for a growth deep link", () => {
   expect(screen.queryByText(copy.pair)).toBeNull();
   expect(screen.queryByText(copy.raise)).toBeNull();
 });
+
+it.each([true, false])("shows the open fortune first (preview=%s)", (preview) => {
+  render(<ChemiHome copy={copy} locale="ko" growth={false} preview={preview} />);
+  const fortune = screen.getByRole("link", { name: copy.fortune });
+  expect(fortune.parentElement?.firstElementChild).toBe(fortune);
+});

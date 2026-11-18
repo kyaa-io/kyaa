@@ -16,14 +16,14 @@
   object-fit: cover;
 }
 .caption {
+  composes: fade from "../../components/home-entry-cards/banner-overlay.module.css";
   position: absolute;
-  inset: auto 0 0;
+  inset: 0;
   display: flex;
   align-items: end;
   justify-content: space-between;
   padding: var(--space-8) var(--space-4) var(--space-3);
   color: var(--color-surface);
-  background: var(--color-home-caption);
 }
 .caption > a {
   width: auto;

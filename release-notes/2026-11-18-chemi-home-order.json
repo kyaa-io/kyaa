@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "케미 홈 목록 맨 위에서 오늘의 운세를 열 수 있고, 준비 중인 콘텐츠는 그 뒤에 표시돼요.",
+    "운세 배너는 그림 아래로 갈수록 자연스럽게 어두워져요. 첨부 이미지는 로컬 확인 화면이에요."
+  ],
+  "path": "/chemi",
+  "images": ["release-notes/images/2026-11-18-chemi-home-order-local.png"]
+}
