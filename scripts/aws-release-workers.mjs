@@ -1,7 +1,7 @@
 // Proposal: update code only; preserve environment switches, concurrency and schedules.
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdtemp, readFile, rm, mkdir, copyFile, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, mkdir, copyFile, chmod, utimes, writeFile } from 'node:fs/promises';
 import { join, basename } from 'node:path';
 import { pathToFileURL } from 'node:url';
 export const workers = { 'mint-worker': 'index.cjs', 'notification-worker': 'notification-index.cjs', 'benefit-maintenance': 'notification-index.cjs', 'creator-registration-worker': 'creator-registration-index.cjs' };
@@ -38,8 +38,13 @@ export async function prepareWorkers(sha, folder, aws, environment = 'prod', dow
     await writeFile(join(dir, 'backup.zip'), backup, { mode: 0o600 });
     await writeFile(join(dir, 'receipt.json'), JSON.stringify({ function: name, sourceSha: sha, previousCodeSha256: before.CodeSha256, environmentHash: beforeEnv }));
 
-    await copyFile(join(folder, 'apps/worker/dist-lambda', bundle), join(dir, 'index.cjs'));
-    execFileSync('zip', ['-X', '-q', 'code.zip', 'index.cjs'], { cwd: dir });
+    const entry = join(dir, 'index.cjs');
+    await copyFile(join(folder, 'apps/worker/dist-lambda', bundle), entry);
+    await chmod(entry, 0o644);
+    const zipEpoch = 315532800; // 1980-01-01 UTC, the earliest DOS timestamp.
+    await utimes(entry, zipEpoch, zipEpoch);
+    await rm(join(dir, 'code.zip'), { force: true });
+    execFileSync('zip', ['-X', '-q', 'code.zip', 'index.cjs'], { cwd: dir, env: { ...process.env, TZ: 'UTC', ZIPOPT: '' } });
     const hash = createHash('sha256').update(await readFile(join(dir, 'code.zip'))).digest('base64');
     aws(['lambda', 'update-function-code', '--dry-run', '--function-name', name, '--revision-id', before.RevisionId, '--zip-file', `fileb://${join(dir, 'code.zip')}`]);
     prepared.functions.push({ worker, function: name, revisionId: before.RevisionId, codeSha256: before.CodeSha256, environmentHash: beforeEnv, preparedZipHash: hash });
