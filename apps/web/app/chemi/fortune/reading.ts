@@ -1,5 +1,6 @@
 import type { computeDailyFortune } from "@/server/chemi-engine/fortune";
 import type { FortuneCharacterId } from "./lines";
+import { spiritNotes, stageNotes } from "./result-copy";
 
 export type FortuneReading = {
   readingId: string;
@@ -8,7 +9,7 @@ export type FortuneReading = {
   reward?: { points?: number; stamp?: boolean; exp?: number };
   replayed?: boolean;
   /** 저장된 풀이의 한국 날짜(YYYY-MM-DD). */
-  kstDate?: string;
+  kstDate: string;
 };
 
 /** `status`: 서버가 돌려준 HTTP 상태. 네트워크가 끊겨 응답이 없으면 null. */
@@ -21,12 +22,14 @@ export class ChemiRequestError extends Error {
   }
 }
 
-/** 로그인이 만료됐거나 권한이 없을 때. 같은 요청을 반복해도 풀리지 않는다. */
+/**
+ * 로그인이 만료됐을 때. 같은 요청을 반복해도 풀리지 않는다.
+ * 403이라도 케미가 직접 돌려준 거절(`CHEMI_*`, 예: 이용 종료 계정)은 로그인 문제가 아니다.
+ */
 export function isAuthFailure(error: unknown) {
-  return (
-    error instanceof ChemiRequestError &&
-    (error.status === 401 || error.status === 403)
-  );
+  if (!(error instanceof ChemiRequestError)) return false;
+  if (error.status === 401) return true;
+  return error.status === 403 && !error.code?.startsWith("CHEMI_");
 }
 
 /** 오늘의 한국 날짜 YYYY-MM-DD. */
@@ -34,35 +37,51 @@ export function todayKst() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now());
 }
 
+const isNumber = (value: unknown) => typeof value === "number" && Number.isFinite(value);
+const isHour = (value: unknown) =>
+  value == null ||
+  (typeof value === "object" && isNumber((value as any).start) && isNumber((value as any).end));
+
+/** 화면이 곧바로 읽는 필드의 모양을 확인한다. 하나라도 어긋나면 이 풀이는 그리지 않는다. */
+function isFortuneResult(result: Record<string, any> | null | undefined) {
+  if (!result || result.locked !== false) return false;
+  const { fields, periods, luck, evidence } = result;
+  return (
+    isNumber(result.score) &&
+    typeof result.grade?.name === "string" &&
+    ["fandom", "people", "work", "rest", "love", "money"].every((key) => isNumber(fields?.[key])) &&
+    ["morning", "afternoon", "night"].every((key) => isNumber(periods?.[key])) &&
+    typeof luck === "object" &&
+    luck !== null &&
+    isHour(luck.luckyHour) &&
+    isHour(luck.restHour) &&
+    typeof evidence?.dayPillar === "string" &&
+    Object.hasOwn(stageNotes, evidence.stage) &&
+    Object.hasOwn(spiritNotes, evidence.spirit)
+  );
+}
+
+/** 방금 만든 풀이 응답. 저장된 한국 날짜가 있어야 화면이 그 날짜로 표시한다. */
+function parseNewFortune(data: unknown): FortuneReading | null {
+  const value = data as { readingId?: unknown; kstDate?: unknown; result?: any } | null;
+  if (
+    typeof value?.readingId !== "string" ||
+    typeof value.kstDate !== "string" ||
+    !isFortuneResult(value.result)
+  )
+    return null;
+  return value as unknown as FortuneReading;
+}
+
 /**
  * 저장된 풀이 응답이 '오늘의 운세'인지 확인한다. 다른 콘텐츠·다른 날·모양이 다른 결과는 null.
  * 날짜는 서버가 저장한 한국 날짜와 오늘을 비교한다.
  */
 export function parseTodayFortune(data: unknown): FortuneReading | null {
-  const value = data as {
-    readingId?: unknown;
-    content?: unknown;
-    kind?: unknown;
-    kstDate?: unknown;
-    result?: Record<string, any> | null;
-  } | null;
-  const result = value?.result;
-  if (
-    typeof value?.readingId !== "string" ||
-    value.content !== "fortune" ||
-    value.kind !== "daily" ||
-    value.kstDate !== todayKst() ||
-    !result ||
-    result.locked !== false ||
-    typeof result.score !== "number" ||
-    typeof result.grade?.name !== "string" ||
-    typeof result.fields?.fandom !== "number" ||
-    typeof result.periods?.morning !== "number" ||
-    typeof result.luck !== "object" ||
-    typeof result.evidence?.dayPillar !== "string"
-  )
+  const value = data as { content?: unknown; kind?: unknown; kstDate?: unknown } | null;
+  if (value?.content !== "fortune" || value.kind !== "daily" || value.kstDate !== todayKst())
     return null;
-  return value as unknown as FortuneReading;
+  return parseNewFortune(data);
 }
 
 const json = (token: string | null) => ({
@@ -83,9 +102,10 @@ export async function requestFortune(
     body: JSON.stringify({ content: "fortune", kind: "daily", character }),
   });
   const data = await response.json().catch(() => null);
-  if (!response.ok || !data?.result)
-    throw new ChemiRequestError(data?.error?.code ?? null, response.status);
-  return data;
+  if (!response.ok) throw new ChemiRequestError(data?.error?.code ?? null, response.status);
+  const reading = parseNewFortune(data);
+  if (!reading) throw new ChemiRequestError("CHEMI_BAD_RESPONSE", response.status);
+  return reading;
 }
 
 export async function saveBirth(

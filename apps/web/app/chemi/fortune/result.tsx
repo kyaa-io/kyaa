@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { ChevronLeft } from "@/components/fan-ui/fan-icons";
+import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanDisclosure } from "@/components/fan-ui/fan-collapsible";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -39,6 +39,7 @@ export function FortuneResult({
   locale,
   from,
   initial,
+  pending = false,
   backHref,
   character = "changha",
 }: {
@@ -49,6 +50,8 @@ export function FortuneResult({
   backHref?: string;
   /** 대화 장면에서 이미 받은 결과. 있으면 다시 요청하지 않는다. */
   initial?: Reading;
+  /** 저장된 결과를 불러오는 중. 요청은 부른 쪽이 하고, 여기서는 불러오는 모양만 그린다. */
+  pending?: boolean;
 }) {
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [attempt, retry] = useState(0);
@@ -62,6 +65,7 @@ export function FortuneResult({
     const signal = controller.signal;
     setStatus("loading");
     async function load() {
+      if (pending) return;
       if (from) {
         const response = await fetch(
           `/api/chemi/shares/${encodeURIComponent(from)}`,
@@ -136,7 +140,7 @@ export function FortuneResult({
         setStatus((current) => (current === "result" ? current : "error"));
     });
     return () => controller.abort();
-  }, [ready, authenticated, user?.id, getAccessToken, from, attempt, locale, initial, character]);
+  }, [ready, authenticated, user?.id, getAccessToken, from, attempt, locale, initial, character, pending]);
 
   async function share() {
     if (!reading || sharing) return;
@@ -487,9 +491,9 @@ export function FortuneResult({
             <FanAction
               variant="primary"
               fullWidth
-              onClick={soon("질문하기는 준비 중이에요")}
+              href={`/chemi?locale=${locale}`}
             >
-              이 결과로 질문하기
+              다른 운세 보기
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
@@ -505,7 +509,7 @@ export function FortuneResult({
               >
                 <span className={styles.nextRow}>
                   <FanText role="item">{label}</FanText>
-                  <span aria-hidden="true">›</span>
+                  <FanIcon icon={ChevronRight} />
                 </span>
               </FanAction>
             ),

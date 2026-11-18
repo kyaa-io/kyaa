@@ -25,6 +25,7 @@ vi.mock("@/components/fan-ui/reward-celebration", () => ({
 
 const reading = {
   readingId: "reading",
+  kstDate: todayKst(),
   styled: null,
   replayed: false,
   reward: { points: 3 },
@@ -175,4 +176,120 @@ it("ignores a calculation that finishes after the member went back", async () =>
   await new Promise((resolve) => setTimeout(resolve, 1500));
   expect(window.location.search).not.toContain("step=");
   expect(screen.getByRole("button", { name: "응, 봐 줘" })).toBeVisible();
+});
+
+const failWith = (status: number, code: string) =>
+  vi.fn(async (path: string) =>
+    path === "/api/chemi/readings"
+      ? Response.json({ error: { code } }, { status })
+      : Response.json({ participation: null }),
+  );
+
+it("does not ask a closed account to log in again", async () => {
+  vi.stubGlobal("fetch", failWith(403, "CHEMI_ACCOUNT_CLOSED"));
+  render(<FortuneFlow locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  expect(await screen.findByText("운세를 불러오지 못했습니다.")).toBeVisible();
+  expect(screen.queryByText("로그인이 만료되었습니다.")).toBeNull();
+});
+
+it("still treats a forbidden login token as an expired login", async () => {
+  vi.stubGlobal("fetch", failWith(403, "VERIFIED_EMAIL_REQUIRED"));
+  render(<FortuneFlow locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  expect(await screen.findByText("로그인이 만료되었습니다.")).toBeVisible();
+});
+
+it("shows a failure instead of crashing when a new reading has no lucky data", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (path: string) =>
+      path === "/api/chemi/readings"
+        ? Response.json({ ...reading, result: { ...reading.result, luck: null } })
+        : Response.json({ participation: null }),
+    ),
+  );
+  render(<FortuneFlow locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  expect(await screen.findByText("운세를 불러오지 못했습니다.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "다시 시도" })).toBeVisible();
+});
+
+it("sends a restored reading without lucky data back to the entrance", async () => {
+  window.history.replaceState(null, "", "/chemi/fortune?step=talk-4&c=changha&r=reading");
+  vi.stubGlobal(
+    "fetch",
+    restoreFetch(() => Response.json(stored({ result: { ...reading.result, luck: null } }))),
+  );
+  render(<FortuneFlow locale="ko" />);
+  await waitFor(() => expect(showFanToast).toHaveBeenCalled());
+  expect(window.location.search).not.toContain("step=");
+  expect(screen.getByRole("button", { name: "응, 봐 줘" })).toBeVisible();
+});
+
+it("shows the saved date of a new reading, not the time it was drawn", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (path: string) =>
+      path === "/api/chemi/readings"
+        ? Response.json({ ...reading, kstDate: "2030-01-02" })
+        : Response.json({ participation: null }),
+    ),
+  );
+  render(<FortuneFlow locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  expect(await screen.findByText("2030.01.02", {}, { timeout: 3000 })).toBeVisible();
+});
+
+it("rejects a new reading that has no saved date", async () => {
+  const { kstDate: _omit, ...undated } = reading;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (path: string) =>
+      path === "/api/chemi/readings"
+        ? Response.json(undated)
+        : Response.json({ participation: null }),
+    ),
+  );
+  render(<FortuneFlow locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  expect(await screen.findByText("운세를 불러오지 못했습니다.")).toBeVisible();
+});
+
+it("resumes the calculation when the member goes back and then forward during it", async () => {
+  const request = vi.fn(async (path: string) =>
+    path === "/api/chemi/readings"
+      ? Response.json(reading)
+      : Response.json({ participation: null }),
+  );
+  vi.stubGlobal("fetch", request);
+  render(<FortuneFlow locale="ko" />);
+  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  await waitFor(() => expect(window.location.search).toContain("step=calc"));
+  window.history.replaceState(null, "", "/chemi/fortune?c=changha");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  window.history.replaceState({ fortuneDepth: 1 }, "", "/chemi/fortune?step=calc&c=changha");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  expect(await screen.findByText("좋다, 더 말해 줘", {}, { timeout: 4000 })).toBeVisible();
+  expect(window.location.search).toContain("step=talk-1");
+  expect(request.mock.calls.filter(([path]) => path === "/api/chemi/readings").length).toBeGreaterThanOrEqual(2);
+});
+
+it("shows a loading shape, not the entrance, while a restored address loads", async () => {
+  window.history.replaceState(null, "", "/chemi/fortune?step=talk-2&c=changha&r=reading");
+  let finish: (response: Response) => void = () => {};
+  vi.stubGlobal(
+    "fetch",
+    vi.fn((path: string) =>
+      path.startsWith("/api/chemi/readings/")
+        ? new Promise<Response>((resolve) => (finish = resolve))
+        : Promise.resolve(Response.json({ participation: null })),
+    ),
+  );
+  render(<FortuneFlow locale="ko" restoring />);
+  expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
+  await waitFor(() => expect(finish).not.toBe(undefined));
+  await waitFor(() => finish(Response.json(stored())));
+  expect(await screen.findByText("덕질은 어때?")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
 });

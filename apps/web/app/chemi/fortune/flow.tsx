@@ -114,7 +114,14 @@ function seoulDate(
   return new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", ...options }).format(at);
 }
 
-export function FortuneFlow({ locale }: { locale: AppLocale }) {
+export function FortuneFlow({
+  locale,
+  restoring: restoringFromUrl = false,
+}: {
+  locale: AppLocale;
+  /** 주소에 단계와 결과가 있어 저장된 결과를 불러오는 중이면 입장 화면 대신 불러오는 모양을 그린다. */
+  restoring?: boolean;
+}) {
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const [step, setStep] = useState<FortuneStep>("enter");
   const [character, setCharacter] = useState<FortuneCharacterId>("changha");
@@ -126,6 +133,7 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
   const [birthBusy, setBirthBusy] = useState(false);
   const [birthError, setBirthError] = useState<string | null>(null);
   const [under14, setUnder14] = useState(false);
+  const [restoring, setRestoring] = useState(restoringFromUrl);
   const [participation, setParticipation] = useState<Participation>(null);
   const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
@@ -144,6 +152,7 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
       if (!ready) return;
       if (!authenticated) {
         writeUrl({ step: null, r: null }, "replace");
+        setRestoring(false);
         return;
       }
       try {
@@ -159,6 +168,8 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
         writeUrl({ step: null, r: null }, "replace");
         setStep("enter");
         showFanToast({ title: "오늘의 운세 결과가 아니라 처음 화면으로 돌아왔어요." });
+      } finally {
+        setRestoring(false);
       }
     }
     const url = readUrl();
@@ -166,6 +177,7 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
     if (url.step !== "enter") {
       if (!url.readingId) {
         writeUrl({ step: null, r: null }, "replace");
+        setRestoring(false);
         return;
       }
       void restore(url.readingId, url.character, url.step);
@@ -178,21 +190,6 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
     // 한 번만 읽는다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, authenticated]);
-
-  useEffect(() => {
-    function onPop() {
-      if (collapsing.current) return;
-      // 계산 중에 떠나면 요청을 끊어, 늦게 온 응답이 화면을 끌고 가지 못하게 한다.
-      abort.current?.abort();
-      abort.current = null;
-      const url = readUrl();
-      setCharacter(url.character);
-      setPhase("idle");
-      setStep(reachableFortuneStep(url.step, Boolean(reading)));
-    }
-    window.addEventListener("popstate", onPop);
-    return () => window.removeEventListener("popstate", onPop);
-  }, [reading]);
 
   useEffect(() => () => abort.current?.abort(), []);
 
@@ -248,6 +245,36 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
     },
     [getAccessToken],
   );
+
+  // 브라우저 뒤로·앞으로 이동. 계산 중이던 기록으로 앞으로 오면 같은 요청을 다시 이어 간다.
+  useEffect(() => {
+    function onPop() {
+      if (collapsing.current) return;
+      // 계산 중에 떠나면 요청을 끊어, 늦게 온 응답이 화면을 끌고 가지 못하게 한다.
+      abort.current?.abort();
+      abort.current = null;
+      const url = readUrl();
+      setCharacter(url.character);
+      setPhase("idle");
+      if (url.step === "calc" && !reading) {
+        if (!authenticated) {
+          writeUrl({ step: null }, "replace", 0);
+          setStep("enter");
+          return;
+        }
+        setStep("calc");
+        void run(url.character);
+        return;
+      }
+      const next = reachableFortuneStep(url.step, Boolean(reading));
+      // 주소가 가리키는 단계와 보이는 단계가 다르면 주소를 보이는 단계에 맞춘다.
+      if (next !== url.step)
+        writeUrl({ step: next === "enter" ? null : next, r: reading?.readingId ?? null }, "replace");
+      setStep(next);
+    }
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [reading, authenticated, run]);
 
   function start() {
     if (!authenticated) return setSheet("login");
@@ -313,6 +340,9 @@ export function FortuneFlow({ locale }: { locale: AppLocale }) {
   }
 
   if (under14) return <Under14 locale={locale} />;
+
+  if (restoring)
+    return <FortuneResult pending locale={locale} character={character} backHref={`/chemi?locale=${locale}`} />;
 
   if (step === "result" && reading)
     return (

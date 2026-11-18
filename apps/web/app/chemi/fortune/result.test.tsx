@@ -132,3 +132,33 @@ it("renders the public card for a guest and links back to Chemi", async () => {
   ).toHaveAttribute("href", "/chemi?locale=ko");
   expect(request).toHaveBeenCalledOnce();
 });
+
+it("sends the member to the Chemi home from the main button until questions exist", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (path: string) =>
+      path === "/api/chemi/readings"
+        ? Response.json({
+            readingId: "reading",
+            styled: null,
+            replayed: true,
+            reward: {},
+            result: {
+              score: 82,
+              grade: { name: "좋은 날" },
+              fields: { fandom: 88, people: 81, money: 79, rest: 83, work: 80, love: 75 },
+              periods: { morning: 84, afternoon: 72, night: 88 },
+              evidence: { dayPillar: "정유", stage: "쇠", spirit: "화개살" },
+              luck: { color: "초록" },
+            },
+          })
+        : Response.json({ grants: [] }),
+    ),
+  );
+  render(<FortuneResult locale="ko" />);
+  expect(await screen.findByRole("link", { name: "다른 운세 보기" })).toHaveAttribute(
+    "href",
+    "/chemi?locale=ko",
+  );
+  expect(screen.queryByText("이 결과로 질문하기")).toBeNull();
+});
