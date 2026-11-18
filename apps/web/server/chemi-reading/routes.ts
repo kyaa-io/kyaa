@@ -39,9 +39,7 @@ const reading = z.object({
   ]),
   character,
   partnerId: z.string().uuid().optional(),
-  card: z.number().int().min(0).max(77).optional(),
-  rev: z.union([z.literal(0), z.literal(1), z.boolean()]).optional(),
-  d: z.string().date().optional(),
+  position: z.number().int().min(0).max(77).default(0),
   targetKey: z.string().max(120).optional(),
 });
 const share = z.object({ readingId: z.string().uuid(), character });
@@ -172,6 +170,12 @@ export async function rewardRoute(
         input.kind !== (input.content === "saju" ? "first" : "daily")
       )
         throw Error("CHEMI_PAYMENT_REQUIRED");
+      const celebrity =
+        input.character === "dosa"
+          ? null
+          : await resolveCreatorId(input.character);
+      if (input.character !== "dosa" && !celebrity)
+        throw Error("CHEMI_UNAVAILABLE");
       const context = z
         .object({
           day: z.string(),
@@ -184,32 +188,23 @@ export async function rewardRoute(
             p_kind: input.kind,
             p_target: paired ? input.partnerId : "",
             p_character: input.character,
+            p_celebrity: celebrity,
           }),
         );
       if (context.saved) return context.saved;
       const day = context.day;
-      const celebrity =
-        input.character === "dosa"
-          ? null
-          : await resolveCreatorId(input.character);
-      if (input.character !== "dosa" && !celebrity)
-        throw Error("CHEMI_UNAVAILABLE");
       let result: unknown;
       let version: string;
       if (input.content === "tarot") {
         version = "tarot-v1";
         result = {
-          cards:
-            input.d === day &&
-            input.card !== undefined &&
-            input.rev !== undefined
-              ? [{ card: input.card, reversed: Boolean(input.rev) }]
-              : drawMemberTarot({
-                  userId: p_user,
-                  kstDate: day,
-                  deckVersion: version,
-                  salt: process.env.CHEMI_TAROT_SALT,
-                }),
+          cards: drawMemberTarot({
+            userId: p_user,
+            kstDate: day,
+            deckVersion: version,
+            position: input.position,
+            salt: process.env.CHEMI_TAROT_SALT,
+          }),
         };
       } else {
         const profile = z

@@ -149,3 +149,25 @@ before=$(sql "select group_wallet_balance('$u','fan_point')")
 race "select chemi_refund_play('$u','$play')"
 [[ $(sql "select group_wallet_balance('$u','fan_point')") == $((before+10)) ]]
 echo "same-user reading and dukjil award passed, deadlocks=0"
+race "select chemi_complete_reading('$u','fortune','daily','elina','$u','','{}','v1','v1')"
+[[ $(sql "select count(*) from chemi_readings where user_id='$u' and content='fortune' and kind='daily' and kst_date=dukjil_kst_date()") == 1 ]]
+[[ $(sql "select points from chemi_point_grants where user_id='$u' and character='elina'") == 3 ]]
+[[ $(sql "select exp_total from chemi_minis where user_id='$u' and character='elina'") == 10 ]]
+[[ $(sql "select count(distinct seed) from chemi_game_plays where user_id='$u' and game='run'") == 1 ]]
+free_play=$(sql "select id from chemi_game_plays where user_id='$u' and slot_kind='free' limit 1")
+race "select chemi_refund_play('$u','$free_play')"
+[[ $(sql "select status from chemi_game_plays where id='$free_play'") == refunded ]]
+old_day=$(sql "select kst_date from chemi_game_plays where id='$free_play'")
+day "$old_day"
+run_seed=$(sql "select seed from chemi_game_plays where id='$free_play'")
+[[ $(sql "select chemi_issue_play('$u',gen_random_uuid(),'run','yuna',false)->>'seed'") == "$run_seed" ]]
+other=ab100000-0000-4000-8000-000000000009
+sql "insert into app_users(id,privy_user_id,verified_email) values('$other','did:privy:course-other','course@example.test')"
+[[ $(sql "select chemi_issue_play('$other',gen_random_uuid(),'run','elina',false)->>'seed'") == "$run_seed" ]]
+day 2030-02-05
+[[ $(sql "select chemi_issue_play('$other',gen_random_uuid(),'run','elina',false)->>'seed'") != "$run_seed" ]]
+sql "$read_call"
+race "select chemi_reading_context('$u','fortune','daily','','elina','$u')"
+[[ $(sql "select chemi_reading_context('$u','fortune','daily','','elina','$u')#>'{saved,reward}'") == '{}' ]]
+sql "select chemi_complete_reading('$u','star','daily','elina','$u','','{}','v1','v1')"
+[[ $(sql "select sum(points) from chemi_point_grants where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 6 ]]
