@@ -1,1 +1,1 @@
-{"tool":"playwright","url":"http://localhost:3193/c/elina/community/bb7259a1-bf0e-44a6-a90c-609cdebcdd21","mode":"local-fixture","width":1440,"height":900,"capturedAt":"2026-11-18T15:12:11.708Z","sha256":"5edf408bcea92eb9cd36a5ce721d3c4a63f863e0717960c305c4c1bcd44b8e53"}
+{"tool":"local-login","url":"http://localhost:3598/c/local-test-creator/community/fb220000-0000-4000-8000-000000000001","mode":"login","capturedAt":"2026-11-18T16:10:45.897Z","sha256":"551a01f1280de89dd745bb5a6d4938f2297e927fbd153e8b20419a195aee9cc9"}
