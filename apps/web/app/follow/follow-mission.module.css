@@ -47,15 +47,21 @@
   .missions { padding-top: var(--space-3); }
 }
 
-/* PC: 왼쪽 4 = 제목 위·작은 키 비주얼 아래(대표 21:03 제보 187446), 오른쪽 8 = 카드 두 장 나란히(01·02 | 03). 1440×900 첫 화면에 Gleam 전체와 03 버튼이 든다 */
+/* PC: 왼쪽 4 = 제목 위·작은 키 비주얼 아래(대표 21:03 제보 187446), 오른쪽 8 = 카드 두 장 나란히(01·02 | 03). 그림과 두 카드의 윗선을 공유한다(대표 11/18 18:18) */
 @media (width >= 64rem) {
+  main:has(> .hero) { padding-top: var(--space-4); }
   .hero { grid-template-columns: minmax(0, 4fr) minmax(0, 8fr); grid-template-areas: "top missions" "visual missions" "browser missions"; grid-template-rows: auto auto 1fr; column-gap: var(--space-10); row-gap: var(--space-6); align-items: start; }
   .panel { display: contents; }
   .visual { grid-area: visual; order: 0; }
   .top { grid-area: top; }
   .browser { grid-area: browser; }
-  .missions { grid-area: missions; padding-top: 0; border-top: 0; }
-  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .top > nav { translate: 0 calc((var(--fan-display-caption-size) * var(--fan-metadata-leading) - var(--min-target)) / 2); }
+  .missions { grid-area: missions; grid-row: 1 / -1; grid-template-rows: subgrid; row-gap: normal; align-self: stretch; padding-top: 0; border-top: 0; }
+  .head { grid-row: 1; align-self: end; }
+  .cards { grid-row: 2 / -1; align-self: start; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .cards:not(:has(iframe)) { align-items: stretch; }
+  .cards:not(:has(iframe)) > .card:first-child { align-content: space-between; }
+  .entry > .cta > a { max-width: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .card[data-celebrate] :is(.check, .rowText) { animation: none; }
