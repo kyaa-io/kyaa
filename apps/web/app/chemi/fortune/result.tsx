@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { ChevronLeft } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { FanDisclosure } from "@/components/fan-ui/fan-collapsible";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanNumber, FanGauge } from "@/components/fan-ui/fan-number";
@@ -21,7 +24,7 @@ import styles from "./result.module.css";
 type Reading = {
   readingId: string;
   result: ReturnType<typeof computeDailyFortune>;
-  styled?: { headline?: string; share?: { line?: string } };
+  styled?: { headline?: string; share?: { line?: string } } | null;
   reward?: { points?: number; stamp?: boolean; exp?: number };
 };
 
@@ -32,7 +35,7 @@ export function FortuneResult({
   locale: AppLocale;
   from?: string;
 }) {
-  const { ready, authenticated, user, getAccessToken } = useByUsAuth();
+  const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [attempt, retry] = useState(0);
   const [reading, setReading] = useState<Reading>();
   const [points, setPoints] = useState(0);
@@ -58,7 +61,7 @@ export function FortuneResult({
       }
       if (!ready) return;
       if (!authenticated) {
-        setStatus("empty");
+        setStatus("guest");
         return;
       }
       const headers = {
@@ -149,14 +152,39 @@ export function FortuneResult({
     }
   }
   const back = `/chemi?locale=${locale}`;
+  const toolbar = (
+    <div className={styles.toolbar}>
+      <FanAction
+        href={back}
+        ariaLabel="케미 탭으로 돌아가기"
+        leadingIcon={<FanIcon icon={ChevronLeft} />}
+      />
+      <b className={styles.chip}>창하</b>
+      {status === "result" && (
+        <FanText as="time" role="meta">
+          {new Intl.DateTimeFormat(locale, {
+            timeZone: "Asia/Seoul",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }).format(Date.now())}
+        </FanText>
+      )}
+    </div>
+  );
+  if (status === "guest")
+    return (
+      <FanState
+        kind="auth"
+        title="로그인하고 오늘의 운세를 확인하세요"
+        actions={<FanAction onClick={login}>로그인</FanAction>}
+      />
+    );
   if (status === "loading" || status === "error") {
     return (
-      <section className={styles.layout}>
+      <section data-fortune-result="" className={styles.layout}>
+        {toolbar}
         <header>
-          <FanAction href={back} aria-label="놀기로 돌아가기" variant="text">
-            ‹
-          </FanAction>{" "}
-          창하
           <div className={styles.placeholder}>
             <FanSkeleton width="30%" />
             <FanSkeleton width="65%" />
@@ -167,12 +195,13 @@ export function FortuneResult({
               </>
             ) : (
               <FanState
+                bodyTitle
                 className={styles.failedHero}
                 inline
                 kind="error"
                 title="결과를 불러오지 못했습니다"
                 actions={
-                  <FanAction onClick={() => retry((n) => n + 1)}>
+                  <FanAction size="sm" onClick={() => retry((n) => n + 1)}>
                     다시 시도
                   </FanAction>
                 }
@@ -188,15 +217,20 @@ export function FortuneResult({
           <FanSkeletonRows rows={1} variant="entity" />
           <FanSkeletonRows rows={4} />
         </div>
+        <div className={styles.errorCta} aria-hidden="true">
+          <FanSkeleton shape="block" />
+        </div>
       </section>
     );
   }
   if (status === "shared")
     return (
-      <section>
-        <FanHeading as="h1">오늘의 운세</FanHeading>
-        <p>{line}</p>
-        <FanAction href={back}>놀기</FanAction>
+      <section className={styles.layout}>
+        {toolbar}
+        <div className={styles.panel}>
+          <FanHeading as="h1">오늘의 운세</FanHeading>
+          <FanState inline kind="info" title={line} />
+        </div>
       </section>
     );
   if (status === "empty" || !reading || reading.result.locked)
@@ -215,24 +249,24 @@ export function FortuneResult({
       다른 주제
     </FanAction>
   );
-  const goodDay = (
-    <FanAction
-      onClick={() => showFanToast({ title: "좋은 날 찾기는 준비 중이에요" })}
-    >
-      좋은 날 찾기 · 준비 중
-    </FanAction>
-  );
+  const goodDay = <FanAction disabled data-disabled-reason="준비 중">준비 중</FanAction>;
   const reaction = (
     <aside className={styles.reaction}>
-      <img src="/chemi/changha.png" alt="" />
-      <strong>창하의 한마디</strong>
-      {reading.styled?.share?.line && <p>{reading.styled.share.line}</p>}
-      {points > 0 && (
-        <EarnBadge locale={locale} points={points} variant="inline" />
+      {reading.styled?.share?.line && (
+        <>
+          <img src="/chemi/changha.png" alt="" />
+          <strong>창하의 한마디</strong>
+          <p>{reading.styled.share.line}</p>
+        </>
       )}
-      {Boolean(reading.reward?.exp) && (
-        <small>친밀 +{reading.reward?.exp}</small>
-      )}
+      <div className={styles.rewards}>
+        {points > 0 && (
+          <EarnBadge locale={locale} points={points} variant="inline" />
+        )}
+        {Boolean(reading.reward?.exp) && (
+          <small>친밀 +{reading.reward?.exp}</small>
+        )}
+      </div>
       <div className={styles.cta}>
         <FanAction
           variant="primary"
@@ -250,19 +284,8 @@ export function FortuneResult({
   );
   return (
     <article data-fortune-result="" className={styles.layout}>
+      {toolbar}
       <header>
-        <FanAction href={back} aria-label="놀기로 돌아가기" variant="text">
-          ‹
-        </FanAction>{" "}
-        <b>창하</b>{" "}
-        <FanText as="time" role="meta">
-          {new Intl.DateTimeFormat(locale, {
-            timeZone: "Asia/Seoul",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          }).format(Date.now())}
-        </FanText>
         <FanText as="p" role="meta">
           창하가 본 나의 오늘
         </FanText>
@@ -282,7 +305,9 @@ export function FortuneResult({
       <section className={styles.panel}>
         <FanHeading>
           <FanNumber size="xl" locale={locale} value={result.score} />{" "}
-          {result.grade.name}
+          {reading.styled?.headline &&
+            reading.styled.headline !== result.grade.name &&
+            result.grade.name}
         </FanHeading>
         <div className={styles.mobileReaction}>{reaction}</div>
         {(
@@ -301,9 +326,7 @@ export function FortuneResult({
         ))}
       </section>
       <section className={styles.panel}>
-        <FanHeading>오늘의 운세</FanHeading>
-        <details>
-          <summary>계산 펼쳐보기</summary>
+        <FanDisclosure label="왜 이 점수일까">
           <dl className={styles.facts}>
             {Object.entries({
               일진: result.evidence.dayPillar,
@@ -322,9 +345,8 @@ export function FortuneResult({
               </div>
             ))}
           </dl>
-        </details>
-        <details>
-          <summary>오늘의 행운</summary>
+        </FanDisclosure>
+        <FanDisclosure label="오늘의 행운">
           <dl className={styles.facts}>
             {Object.entries({
               색: result.luck.color,
@@ -349,11 +371,11 @@ export function FortuneResult({
                 ),
             )}
           </dl>
-        </details>
+        </FanDisclosure>
       </section>
       <div className={styles.mobileActions}>
         {topics}
-        {goodDay}
+        <FanAction disabled data-disabled-reason="준비 중">좋은 날 찾기 · 준비 중</FanAction>
       </div>
     </article>
   );
