@@ -147,6 +147,7 @@ type CardProps = {
 export function MyPassportCard({ creators, selectedSlug, onSelect, communityStamps, stampsError, retryStamps, locale, labels }: CardProps) {
   const eligible = creators.filter((creator) => creator.passport);
   const selected = eligible.find((creator) => creator.celebrity.slug === selectedSlug) ?? eligible[0];
+  const ordered = selected ? [selected, ...eligible.filter((creator) => creator !== selected)] : eligible;
   const passport = selected?.passport ?? null;
   const book = usePassportBook(passport?.id);
   const href = passport ? `/passports/${passport.id}?locale=${locale}` : `/passports?locale=${locale}`;
@@ -163,7 +164,7 @@ export function MyPassportCard({ creators, selectedSlug, onSelect, communityStam
   return <section className={styles.card} aria-label={labels.title}>
     <header><FanHeading>{labels.title}</FanHeading><FanSectionLink href={href}>{labels.detail}</FanSectionLink></header>
     {!selected || !passport ? <div className={styles.empty}><p>{labels.noCreators}</p><FanAction href={`/celebrities?locale=${locale}`}>{labels.findCreator}</FanAction></div> : <>
-      {eligible.length > 1 ? <div className={styles.selector}><FanTabs variant="chip" label={labels.creators} current={selected.celebrity.slug} items={eligible.map((creator) => ({ key: creator.celebrity.slug, label: creator.celebrity.name, onSelect: () => onSelect(creator.celebrity.slug) }))} /></div> : null}
+      {eligible.length > 1 ? <FanTabs className={styles.selector} variant="chip" label={labels.creators} current={selected.celebrity.slug} items={ordered.map((creator) => ({ key: creator.celebrity.slug, label: <span className={styles.chipName} title={creator.celebrity.name}>{creator.celebrity.name}</span>, onSelect: () => onSelect(creator.celebrity.slug) }))} /> : null}
       <PassportBookBody passportId={passport.id} celebrity={selected.celebrity} tier={passport.tier} stageKey={stage?.current.key ?? null} tierName={tierName} tierStep={tierStep} book={book} href={href} bookLabel={`${selected.celebrity.name} · ${labels.detail}`} locale={locale} fallbackCount={fallbackStamps.length}
         fallback={fallbackStamps.length > 0 ? <ul className={styles.slots}>{fallbackStamps.map((stamp) => <li className={styles.slot} data-state="filled" key={stamp.id}><span className={styles.slotArt}><img src={communityStampThumb(stamp.kind)} alt="" width={56} height={56} /></span><span className={styles.slotName}>{communityStampLabel(stamp.kind, locale)}</span></li>)}</ul> : null}
         error={book.status === "error" || (book.status === "off" && stampsError) ? { message: labels.loadError, retryLabel: labels.retry, onRetry: () => { book.retry(); retryStamps(); } } : null} />
@@ -179,7 +180,7 @@ export function MyPassportCardSkeleton({ title }: { title: string }) {
   useLayoutEffect(() => { try { setChips(localStorage.getItem(CHIPS_KEY) === "1"); } catch { /* 자리만 잡는 값이라 없어도 된다. */ } }, []);
   return <section className={styles.card} aria-label={title}>
     <header><FanHeading>{title}</FanHeading></header>
-    {chips ? <div className={styles.selector} style={{ visibility: "hidden" }} aria-hidden="true" data-passport-chip-space><FanTabs variant="chip" label="" current="" items={[{ key: "space", label: "\u00a0" }]} /></div> : null}
+    {chips ? <div style={{ visibility: "hidden" }} aria-hidden="true" data-passport-chip-space><FanTabs className={styles.selector} variant="chip" label="" current="" items={[{ key: "space", label: "\u00a0" }]} /></div> : null}
     <div className={styles.body} aria-hidden="true">
       <span className={styles.bookSkeleton}><Image src="/images/passport/passport-open-book.svg" alt="" width={1536} height={1024} unoptimized sizes="(max-width:767px) 100vw, 380px" priority /></span>
       <div className={styles.facts}><FanSkeleton width="60%" height={24} /><FanSkeleton width="40%" height={32} /><FanSkeleton width="100%" height={40} /><FanSkeleton width="100%" height={40} /></div>

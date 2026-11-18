@@ -301,7 +301,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
     return <DukjilProvider locale={locale}><div className={styles.pencilMy}>
       <header className={styles.pencilProfile}>
         <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
-        <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <><FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag><TierGuideInfo locale={locale}/></> : null}</div>
+        <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
         <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
       </header>
       <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />

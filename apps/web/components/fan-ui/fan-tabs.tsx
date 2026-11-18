@@ -30,7 +30,7 @@ export function TabLabel({ item }: { item: FanTabItem }) {
 
 /** Keeps the selected tab visible. Aligns on mount, when `current` changes, and after a width change only
  * if the tab is no longer fully visible, so manual scrolling is kept. Only the strip's own scrollLeft moves. */
-function useKeepSelectedVisible(current: string) {
+function useKeepSelectedVisible(current: string, firstKey: string | undefined) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const nav = ref.current;
@@ -63,7 +63,7 @@ function useKeepSelectedVisible(current: string) {
     observer.observe(nav);
     for (const tab of Array.from(nav.children)) observer.observe(tab);
     return () => { observer.disconnect(); stop(); };
-  }, [current]);
+  }, [current, firstKey]);
   return ref;
 }
 
@@ -94,7 +94,7 @@ function FanNavTabs({ variant, label, current, items, id, className }: Readonly<
   className?: string;
 }>) {
   const [selected, select] = useOptimistic(current);
-  const ref = useKeepSelectedVisible(selected);
+  const ref = useKeepSelectedVisible(selected, items[0]?.key);
   const choose = (item: FanTabItem) => startTransition(() => { select(item.key); item.onSelect?.(); });
   const cls = [styles.tabs, styles[variant], className ?? ""].filter(Boolean).join(" ");
   return <nav id={id} ref={ref} className={cls} aria-label={label} data-fan-tabs={variant} data-items={items.length}>

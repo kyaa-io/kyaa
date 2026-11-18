@@ -1,6 +1,6 @@
 // Local-only synthetic owner data; renders the real MY screen without production access.
 const params = new URLSearchParams(location.search);
-if (params.get("view") === "my-favorites") {
+if (["my-favorites", "my-passport-chips"].includes(params.get("view") ?? "")) {
   const entries = [
     ["aryeom", "아렴", "/images/calendar/aryeom-profile.jpg"],
     ["wena", "위나", "/images/kyaa-wave/wena-profile.webp"],

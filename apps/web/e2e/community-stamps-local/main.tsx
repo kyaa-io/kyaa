@@ -1,5 +1,6 @@
 import "./my-favorites-preview";
 import { StampArtworkPreview } from "./stamp-artwork-preview";
+import { GroupsReleaseProvider } from "../../features/groups/ui/groups-release";
 import { MyScreen } from "../../features/my/ui/my-screen";
 import { PassportPreview, RafflePreview } from "./passport-preview";
 import { APP_LOCALES } from "../../i18n/locales";
@@ -23,6 +24,7 @@ function PreviewRoute() {
  if (view === "passports") return <PassportPreview/>;
  if (view === "raffle-layout") return <RafflePreview locale={locale}/>;
  if (view === "stamp-artwork") return <StampArtworkPreview locale={locale}/>;
+ if (view === "my-passport-chips") return <GroupsReleaseProvider enabled><MyScreen locale={locale}/></GroupsReleaseProvider>;
  if (view === "my-tiers" || view === "my-favorites") return <MyScreen locale={locale}/>;
  return <App/>;
 }
