@@ -40,8 +40,9 @@ it("copies the public share URL and records completion only after a successful c
         result: {
           score: 82,
           grade: { name: "좋은 날" },
-          fields: { fandom: 88, people: 81, money: 79, rest: 83 },
-          evidence: { dayPillar: "정유" },
+          fields: { fandom: 88, people: 81, money: 79, rest: 83, work: 80, love: 75 },
+          periods: { morning: 84, afternoon: 72, night: 88 },
+          evidence: { dayPillar: "정유", stage: "쇠", spirit: "화개살" },
           luck: { color: "초록" },
         },
       });
@@ -65,8 +66,8 @@ it("copies the public share URL and records completion only after a successful c
   );
   render(<FortuneResult locale="ko" />);
   const [button] = await screen.findAllByRole("button", { name: "자랑하기" });
-  expect(screen.getAllByText("좋은 날")).toHaveLength(1);
-  expect(screen.queryByText("창하의 한마디")).toBeNull();
+  expect(screen.getAllByText("좋은 날")).toHaveLength(2);
+  expect(screen.getByText("창하의 한마디")).toBeVisible();
   expect(toast).not.toHaveBeenCalled();
   expect(celebrate).not.toHaveBeenCalled();
   fireEvent.click(button!);
@@ -127,7 +128,7 @@ it("renders the public card for a guest and links back to Chemi", async () => {
   render(<FortuneResult locale="ko" from="card" />);
   expect(await screen.findByText("공유한 한마디.")).toBeVisible();
   expect(
-    screen.getByRole("link", { name: "케미 탭으로 돌아가기" }),
+    screen.getByRole("link", { name: "뒤로 가기" }),
   ).toHaveAttribute("href", "/chemi?locale=ko");
   expect(request).toHaveBeenCalledOnce();
 });

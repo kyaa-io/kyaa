@@ -5,6 +5,7 @@ import {
 } from "@/components/fan-shell/fan-app-shell";
 import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
+import { FortuneFlow } from "./flow";
 import { FortuneResult } from "./result";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,11 @@ export default async function FortunePage({
   return (
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="fortune-main">
       <FanContentContainer as="main" id="fortune-main">
-        <FortuneResult key={params.from} locale={locale} from={params.from} />
+        {params.from ? (
+          <FortuneResult key={params.from} locale={locale} from={params.from} />
+        ) : (
+          <FortuneFlow locale={locale} />
+        )}
       </FanContentContainer>
     </FanAppFrame>
   );
