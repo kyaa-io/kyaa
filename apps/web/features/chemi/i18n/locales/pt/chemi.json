@@ -9,5 +9,27 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "Jogar",
+    "growth": "Crescimento",
+    "raise": "Cuide do seu ídolo",
+    "all": "Tudo",
+    "readings": "Previsões",
+    "games": "Jogos",
+    "saju": "Saju do seu ídolo",
+    "fortune": "Sorte do dia",
+    "zodiac": "Horóscopo",
+    "tarot": "Tarô do dia",
+    "pair": "Jogo de pares",
+    "run": "Corrida dos ídolos",
+    "ready": "Em breve",
+    "start": "Começar",
+    "next": "Próximo banner",
+    "pause": "Pausar",
+    "resume": "Reproduzir",
+    "filter": "Tipo de conteúdo",
+    "creator": "Changha",
+    "rankings": "Classificação semanal"
   }
 }

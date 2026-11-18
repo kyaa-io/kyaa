@@ -1,0 +1,5 @@
+/* Photo captions fade into the image above the text. */
+.fade {
+  /* design-lint-disable S1 -- 승인된 홈 사진 배너 제목의 가독성 덮개 (DESIGN.md 케미 홈). */
+  background: linear-gradient(180deg, transparent 30%, var(--color-home-hero-shade) 100%);
+}

@@ -9,5 +9,27 @@
     "fortuneMinutes": "",
     "gameHours": "",
     "gameMinutes": ""
+  },
+  "home": {
+    "play": "游玩",
+    "growth": "成长",
+    "raise": "培养偶像",
+    "all": "全部",
+    "readings": "占卜",
+    "games": "游戏",
+    "saju": "偶像八字",
+    "fortune": "今日运势",
+    "zodiac": "星座运势",
+    "tarot": "今日塔罗",
+    "pair": "配对游戏",
+    "run": "偶像跑酷",
+    "ready": "准备中",
+    "start": "开始",
+    "next": "下一张",
+    "pause": "暂停",
+    "resume": "播放",
+    "filter": "内容类别",
+    "creator": "昌河",
+    "rankings": "本周排名"
   }
 }

@@ -6,8 +6,9 @@ import {
 import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
 
+import { chemiTabLabel } from "@/features/chemi/ui/copy";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
-import { FanAction } from "@/components/fan-ui/fan-action";
+import { ChemiHome } from "./home";
 
 export const dynamic = "force-dynamic";
 export default async function ChemiPage({
@@ -18,6 +19,10 @@ export default async function ChemiPage({
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
   const locale = parseAppLocale(params.locale);
+  const { home: copy } = (
+    await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)
+  ).default;
+  const preview = process.env.APP_ENV ? process.env.APP_ENV === "dev" : process.env.VERCEL_ENV === "preview" || process.env.NODE_ENV === "development";
   const growth = params.tab === "growth";
   return (
     <FanAppFrame locale={locale} currentPath="/chemi" mainId="chemi-main">
@@ -27,23 +32,19 @@ export default async function ChemiPage({
         tabIndex={-1}
         data-chemi-tab=""
       >
-        <FanTabs
-          label="케미"
+        {preview && <FanTabs
+          label={chemiTabLabel(locale)}
           current={growth ? "growth" : "play"}
           items={[
-            { key: "play", label: "놀기", href: `/chemi?locale=${locale}` },
+            { key: "play", label: copy.play, href: `/chemi?locale=${locale}` },
             {
               key: "growth",
-              label: "성장",
+              label: copy.growth,
               href: `/chemi?tab=growth&locale=${locale}`,
             },
           ]}
-        />
-        {!growth && (
-          <FanAction href={`/chemi/fortune?locale=${locale}`}>
-            오늘의 운세
-          </FanAction>
-        )}
+        />}
+        <ChemiHome preview={preview} copy={copy} locale={locale} growth={growth} />
       </FanContentContainer>
     </FanAppFrame>
   );
