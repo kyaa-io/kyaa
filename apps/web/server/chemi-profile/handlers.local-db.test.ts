@@ -16,9 +16,10 @@ it.skipIf(!db)("profile routes run against the real chemi SQL functions, empty s
   const sql = (query: string) => execFileSync("psql", [db!, "-XAtq", "-v", "ON_ERROR_STOP=1", "-c", query], { encoding: "utf8" }).trim();
   const literal = (v: unknown) => v === null || v === undefined ? "null" : `'${String(v).replaceAll("'", "''")}'`;
   const rpc = async (name: string, args: Record<string, unknown>) => {
-    if (!/^chemi_[a-z_]+$/.test(name)) throw Error("unexpected rpc");
+    if (!/^chemi_[a-z0-9_]+$/.test(name)) throw Error("unexpected rpc");
     const call = Object.entries(args).map(([key, value]) => `${key} => ${literal(value)}`).join(", ");
-    try { return JSON.parse(sql(`select public.${name}(${call})`)); }
+    // 라우트와 같은 역할(service_role)로 부른다 — 회수된 옛 함수는 여기서 42501 이 된다.
+    try { const out = sql(`set role service_role; select public.${name}(${call})`); return out.startsWith("{") || out.startsWith("[") ? JSON.parse(out) : out; }
     catch (error) { throw new Error(String((error as { stderr?: string }).stderr ?? "").match(/ERROR:\s+(\S+)/)?.[1] ?? "SQL_FAILED"); }
   };
   const user = randomUUID();
@@ -53,6 +54,9 @@ it.skipIf(!db)("profile routes run against the real chemi SQL functions, empty s
   expect(full.partners).toEqual([expect.objectContaining({ id: partnerId, nickname: "민지", birthTime: "08:10", timePrecision: "band" })]);
   expect((await call(h.deletePartner, "DELETE", { partnerId })).status).toBe(200);
   expect((await call(h.deletePartner, "DELETE", { partnerId })).status).toBe(404);
+  // 회수된 옛 프로필 함수는 service_role 로 부를 수 없다(F-B15)
+  await expect(rpc("chemi_add_partner", { p_user: user, p_nickname: "x", p_birth_date: "1990-01-01", p_calendar: "solar", p_birth_time: null, p_precision: "unknown", p_gender: null, p_source: "saju" })).rejects.toThrow();
+  expect(sql(`select count(*) from public.chemi_partners where user_id='${user}'`)).toBe("0");
   // 동의 철회: 지운 것 요약, 다시 빈 상태
   const erased = await call(h.deleteBirth, "DELETE");
   expect([erased.status, (await erased.json()).erased.profile]).toEqual([200, 1]);

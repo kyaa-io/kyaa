@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { CHEMI_BIRTH_CONSENT_VERSION, createChemiProfileHandlers, type ChemiProfileDependencies } from "./handlers";
+import { chemiPartnerFingerprint } from "./fingerprint";
 
 const USER = "a3e1c2d4-0000-4000-8000-000000000001";
 const PARTNER = "b3e1c2d4-0000-4000-8000-000000000002";
@@ -51,10 +52,11 @@ describe("chemi profile handlers", () => {
     const response = await createChemiProfileHandlers(d).putBirth(json("PUT", birth));
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ageBand: "minor", edited: false, editableFrom: null });
-    expect(d.rpc).toHaveBeenCalledWith("chemi_save_birth", {
+    expect(d.rpc).toHaveBeenCalledWith("chemi_save_birth_v2", {
       p_user: USER, p_birth_date: "1995-05-05", p_calendar: "solar", p_birth_time: "14:30", p_precision: "exact", p_gender: "female",
-      p_birth_place: "서울", p_consent_version: CHEMI_BIRTH_CONSENT_VERSION,
+      p_birth_place: "서울", p_place_code: null, p_lat: null, p_lon: null, p_tz: null, p_term_side: null, p_consent_version: CHEMI_BIRTH_CONSENT_VERSION,
     });
+    expect(d.rpc).not.toHaveBeenCalledWith("chemi_save_birth", expect.anything());
   });
 
   it("refuses malformed birth input without calling SQL", async () => {
@@ -81,13 +83,41 @@ describe("chemi profile handlers", () => {
     expect([unknown.status, await unknown.json()]).toEqual([503, { error: { code: "CHEMI_UNAVAILABLE" } }]);
   });
 
-  it("adds and deletes partners", async () => {
-    const d = deps(async (name) => name === "chemi_add_partner" ? { partnerId: PARTNER } : { deleted: false });
+  it("adds partners through v2 and deletes them with the stored partner's fingerprint", async () => {
+    const SALT = "ab".repeat(32);
+    const stored = { id: PARTNER, nickname: "민지", birthDate: "1997-03-12", calendar: "lunar", birthTime: null, timePrecision: "unknown", gender: null, source: "saju", lastUsedAt: "2027-01-13T00:00:00Z" };
+    let deleted = false;
+    const d = deps(async (name) => {
+      if (name === "chemi_add_partner_v2") return { partnerId: PARTNER, rev: 7 };
+      if (name === "chemi_read_profile") return { ...emptyProfile, partners: deleted ? [] : [stored] };
+      if (name === "chemi_fp_salt") return SALT;
+      if (name === "chemi_delete_partner_v2") { deleted = true; return { deleted: true }; }
+      throw new Error(`unexpected ${name}`);
+    });
     const created = await createChemiProfileHandlers(d).postPartner(json("POST", { birthDate: "1997-03-12", calendar: "lunar", birthTime: null, timePrecision: "unknown", gender: null, nickname: " 민지 ", source: "saju" }));
     expect([created.status, await created.json()]).toEqual([201, { partnerId: PARTNER }]);
-    expect(d.rpc).toHaveBeenCalledWith("chemi_add_partner", expect.objectContaining({ p_nickname: "민지", p_calendar: "lunar", p_birth_time: null }));
+    expect(d.rpc).toHaveBeenCalledWith("chemi_add_partner_v2", expect.objectContaining({ p_nickname: "민지", p_calendar: "lunar", p_birth_time: null, p_place_code: null }));
+    const removed = await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: PARTNER }));
+    expect([removed.status, await removed.json()]).toEqual([200, { deleted: true }]);
+    const fp = d.rpc.mock.calls.find(([name]) => name === "chemi_delete_partner_v2")?.[1]?.p_fp;
+    expect(fp).toBe(chemiPartnerFingerprint(SALT, stored));
+    expect(fp).toMatch(/^fp:[0-9a-f]{32}$/);
     const missing = await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: PARTNER }));
     expect(missing.status).toBe(404);
     expect((await createChemiProfileHandlers(d).deletePartner(json("DELETE", { partnerId: "nope" }))).status).toBe(400);
+    for (const old of ["chemi_add_partner", "chemi_delete_partner"]) expect(d.rpc).not.toHaveBeenCalledWith(old, expect.anything());
+  });
+
+  it("fingerprints ignore place and nickname but change with birth input", () => {
+    const salt = "01".repeat(32); const base = { birthDate: "1997-03-12", calendar: "solar", birthTime: "08:10", timePrecision: "band", gender: "male" };
+    expect(chemiPartnerFingerprint(salt, { ...base, nickname: "x", birthPlaceCode: "kr:11" } as typeof base)).toBe(chemiPartnerFingerprint(salt, base));
+    expect(chemiPartnerFingerprint(salt, { ...base, birthDate: "1997-03-13" })).not.toBe(chemiPartnerFingerprint(salt, base));
+    expect(chemiPartnerFingerprint("02".repeat(32), base)).not.toBe(chemiPartnerFingerprint(salt, base));
+    expect(() => chemiPartnerFingerprint("short", base)).toThrow();
+  });
+
+  it("maps a restricted account to 403", async () => {
+    const response = await createChemiProfileHandlers(deps(async () => { throw new Error("CHEMI_ACCOUNT_RESTRICTED"); })).putBirth(json("PUT", birth));
+    expect([response.status, await response.json()]).toEqual([403, { error: { code: "CHEMI_ACCOUNT_RESTRICTED" } }]);
   });
 });

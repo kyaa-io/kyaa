@@ -17,5 +17,10 @@ begin
       and length(p.prosrc) > 40) <> 11 then
     raise exception 'm1_closure: contract function missing or empty';
   end if;
+  -- r4c §12.4: 옛 프로필 RPC 의 service_role 권한을 다시 주는 migration 은 금지(모든 오버로드)
+  if exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public'
+      and p.proname in ('chemi_save_birth','chemi_add_partner','chemi_delete_partner') and has_function_privilege('service_role', p.oid, 'execute')) then
+    raise exception 'm1_closure: retired profile RPC executable by service_role';
+  end if;
 end $$;
 select 'm1_closure ok' as result;
