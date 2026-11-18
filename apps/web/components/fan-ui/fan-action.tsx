@@ -72,6 +72,7 @@ type FanActionProps = Readonly<{
       type?: "button" | "submit";
       disabled?: boolean;
       ariaBusy?: boolean;
+      "data-overlay-navigates"?: "";
       /** Disables the control, keeps its label/width and shows a spinner. */
       loading?: boolean;
     }>
@@ -152,6 +153,7 @@ export function FanAction({
         aria-controls={props["aria-controls"]}
         aria-label={ariaLabel}
         aria-describedby={describedBy}
+        data-overlay-navigates={buttonProps["data-overlay-navigates"]}
         data-fan-action=""
         data-fan-action-emphasis={variant === "primary" ? "primary" : undefined}
         data-has-leading={leadingIcon ? "true" : undefined}
