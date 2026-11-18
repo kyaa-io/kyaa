@@ -170,10 +170,7 @@ export async function rewardRoute(
         input.kind !== (input.content === "saju" ? "first" : "daily")
       )
         throw Error("CHEMI_PAYMENT_REQUIRED");
-      const celebrity =
-        input.character === "dosa"
-          ? null
-          : await resolveCreatorId(input.character);
+      const celebrity = await resolveCreatorId(input.character);
       if (input.character !== "dosa" && !celebrity)
         throw Error("CHEMI_UNAVAILABLE");
       const context = z

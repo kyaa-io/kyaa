@@ -1,7 +1,9 @@
+alter table public.chemi_minis drop constraint chemi_minis_character_check,
+  add check (character in ('changha','elina','yuna','dosa'));
+alter table public.chemi_exp_log drop constraint chemi_exp_log_character_check,
+  add check (character in ('changha','elina','yuna','dosa'));
 alter table public.chemi_point_grants add column content text;
 update public.chemi_point_grants g set content=r.content from public.chemi_readings r where g.reading_id=r.id;
-alter table public.chemi_point_grants drop constraint chemi_point_grants_user_id_character_kst_date_key,
-  add unique(user_id,kst_date,content,character);
 
 alter table public.chemi_game_plays drop constraint chemi_game_plays_user_id_game_kst_date_slot_kind_slot_no_key;
 create unique index chemi_active_play_slot on public.chemi_game_plays(user_id,game,kst_date,slot_kind,slot_no)
@@ -43,7 +45,7 @@ begin
     end if;
     insert into public.chemi_day_stamps(user_id,kst_date,first_content) values(p_user,d,p_content) on conflict do nothing;
     if found then reward := jsonb_build_object('stamp',true); end if;
-    if p_character <> 'dosa' and p_celebrity is not null then
+    if p_character = 'dosa' or p_celebrity is not null then
       insert into public.chemi_exp_log(user_id,character,source,kst_date,exp)
         values(p_user,p_character,p_content,d,case when p_content='saju' then 20 else 10 end)
         on conflict do nothing returning exp into earned;
@@ -52,10 +54,12 @@ begin
           on conflict(user_id,character) do update set exp_total=public.chemi_minis.exp_total+excluded.exp_total;
         reward := reward || jsonb_build_object('exp',earned);
       end if;
-      insert into public.chemi_point_grants(user_id,character,celebrity_id,kst_date,status,reading_id,content)
-        values(p_user,p_character,p_celebrity,d,'pending_passport',r.id,p_content) on conflict do nothing;
-      if public.chemi_claim_pending_points(p_user,p_character)>0 then
-        reward := reward || jsonb_build_object('points',3);
+      if p_celebrity is not null then
+        insert into public.chemi_point_grants(user_id,character,celebrity_id,kst_date,status,reading_id,content)
+          values(p_user,p_character,p_celebrity,d,'pending_passport',r.id,p_content) on conflict do nothing;
+        if public.chemi_claim_pending_points(p_user,p_character)>0 then
+          reward := reward || jsonb_build_object('points',3);
+        end if;
       end if;
       if replay and reward = '{}'::jsonb then
         return jsonb_build_object('readingId',r.id,'result',r.result,'replayed',true,'reward',reward);

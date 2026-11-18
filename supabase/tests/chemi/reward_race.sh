@@ -92,11 +92,11 @@ day() {
   sql "create or replace function public.dukjil_kst_date(p_at timestamptz default pg_catalog.clock_timestamp())
     returns date language sql stable as 'select date ''$1'''"
 }
-# A dosa-only day and a replay cannot advance the new week's fifth favorite day.
+# Dosa earns reading EXP and counts toward weekly participation.
 day 2030-01-14
 sql "select chemi_complete_reading('$u','star','daily','dosa',null,'','{}','v1','v1')"
 for date in 15 16 17 18; do day "2030-01-$date"; sql "$read_call"; done
-[[ $(sql "select count(*) from chemi_week_boxes where user_id='$u'") == 1 ]]
+[[ $(sql "select count(*) from chemi_week_boxes where user_id='$u'") == 2 ]]
 day 2030-01-19
 race "$read_call"
 day 2030-01-20
@@ -106,7 +106,7 @@ sql "$read_call"
 for date in 21 22 23 24 25; do day "2030-01-$date"; sql "$read_call"; done
 [[ $(sql "select count(*) from chemi_pass_lots where user_id='$u' and closed_reason='replace' and held=0 and remaining=0") == 1 ]]
 [[ $(sql "select count(*) from chemi_pass_lots where user_id='$u' and closed_at is null and remaining=1") == 1 ]]
-echo "weekly replay, expiry, dosa exclusion and prior unused/held replacement passed"
+echo "weekly replay, expiry, dosa participation and prior unused/held replacement passed"
 
 # Hold the real wallet lock in the dukjil transaction while the new day's
 # reading arrives. A reversed lock order must fail a session, never be retried.
@@ -170,4 +170,13 @@ sql "$read_call"
 race "select chemi_reading_context('$u','fortune','daily','','elina','$u')"
 [[ $(sql "select chemi_reading_context('$u','fortune','daily','','elina','$u')#>'{saved,reward}'") == '{}' ]]
 sql "select chemi_complete_reading('$u','star','daily','elina','$u','','{}','v1','v1')"
-[[ $(sql "select sum(points) from chemi_point_grants where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 6 ]]
+[[ $(sql "select sum(points) from chemi_point_grants where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 3 ]]
+[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 20 ]]
+sql "select chemi_complete_reading('$u','tarot','daily','dosa','$other','','{}','v1','v1')"
+[[ $(sql "select points from chemi_point_grants where user_id='$u' and character='dosa' and kst_date=dukjil_kst_date()") == 0 ]]
+sql "begin; set local session_replication_role=replica;
+insert into fan_passports(app_user_id,celebrity_id,quiz_pass_id,blockchain_job_id)
+values('$u','$other',gen_random_uuid(),gen_random_uuid()); commit"
+race "select chemi_reading_context('$u','tarot','daily','','dosa','$other')"
+[[ $(sql "select points from chemi_point_grants where user_id='$u' and character='dosa' and kst_date=dukjil_kst_date()") == 3 ]]
+echo "reward_race PASS"
