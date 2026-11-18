@@ -51,4 +51,26 @@ revoke all on function public.chemi_partner_fp(bytea, date, text, time, text, te
 grant execute on function public.chemi_delete_partner_v3(uuid, uuid) to service_role;
 revoke execute on function public.chemi_delete_partner_v2(uuid, uuid, text) from service_role;
 
+-- 설치 확인(R4E 조건 2, 검토 ISSUE 3). 운영은 byus_admin → set role postgres 로 적용한다.
+-- ① 케미 표·함수의 소유자는 적용 역할이어야 한다(소유자가 섞이면 SECURITY DEFINER 함수가 다른 권한으로 돈다).
+-- ② 두 탈퇴 감싸개의 실제 소유자가 위임 대상(기존 begin_owned_account_deletion·complete_account_deletion)을 실행할 수 있어야 한다.
+--    못 하면 모든 탈퇴가 42501(웹 503)이 되므로 여기서 설치를 멈춘다. 이 블록은 아무것도 바꾸지 않는다.
+do $$
+declare bad text;
+begin
+  select string_agg(x, ', ') into bad from (
+    select c.oid::regclass::text || ':' || pg_catalog.pg_get_userbyid(c.relowner) x from pg_catalog.pg_class c
+    where c.relnamespace = 'public'::regnamespace and c.relname like 'chemi\_%' and pg_catalog.pg_get_userbyid(c.relowner) <> current_user
+    union all
+    select p.oid::regprocedure::text || ':' || pg_catalog.pg_get_userbyid(p.proowner) from pg_catalog.pg_proc p
+    where p.pronamespace = 'public'::regnamespace and p.proname like 'chemi\_%' and pg_catalog.pg_get_userbyid(p.proowner) <> current_user) o;
+  if bad is not null then raise exception 'CHEMI_INSTALL_OWNER: chemi objects not owned by %: %', current_user, bad; end if;
+  select string_agg(w::text || ' (' || pg_catalog.pg_get_userbyid(p.proowner) || ') -> ' || d::text, ', ') into bad
+  from (values ('public.chemi_begin_account_deletion(text)'::regprocedure, 'public.begin_owned_account_deletion(text)'::regprocedure),
+               ('public.chemi_complete_account_deletion(uuid,uuid)'::regprocedure, 'public.complete_account_deletion(uuid,uuid)'::regprocedure)) v(w, d)
+  join pg_catalog.pg_proc p on p.oid = v.w
+  where not pg_catalog.has_function_privilege(p.proowner, v.d, 'EXECUTE');
+  if bad is not null then raise exception 'CHEMI_INSTALL_OWNER: deletion wrapper owner cannot execute %', bad; end if;
+end $$;
+
 commit;
