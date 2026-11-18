@@ -17,7 +17,8 @@ import {
 import {
   calculateChart,
   separation,
-  dailySky,
+  scoreDay,
+  birthMoonSigns,
 } from "@/server/chemi-engine/star";
 import { drawGuestTarot, drawMemberTarot } from "@/server/chemi-engine/tarot";
 
@@ -64,7 +65,7 @@ function birthInput(b: z.infer<typeof birth>) {
   };
 }
 
-function natalPlanets(b: z.infer<typeof birth>) {
+function birthInstant(b: z.infer<typeof birth>) {
   const input = birthInput(b);
   const { year, month, day } = input.isLunar
     ? lunarToSolar(input.year, input.month, input.day, input.isLeapMonth)
@@ -76,14 +77,36 @@ function natalPlanets(b: z.infer<typeof birth>) {
     input.hour ?? 12,
     input.minute ?? 0,
   );
-  const instant = toZoned(local, "Asia/Seoul").toDate();
-  // Geocentric planets need no birthplace. Never infer houses from a missing location.
+  return { local, instant: toZoned(local, "Asia/Seoul").toDate() };
+}
+
+// Geocentric planets need no birthplace. Never infer houses from a missing location.
+function natalChart(b: z.infer<typeof birth>) {
   return calculateChart({
-    instant,
+    instant: birthInstant(b).instant,
     timeKnown: false,
     latitude: 0,
     longitude: 0,
-  }).planets;
+  });
+}
+
+// 태어난 시간을 모르면 그날 안에서 해·달이 별자리 경계를 넘었는지 알려 준다(둘이면 '또는').
+function birthDaySigns(b: z.infer<typeof birth>) {
+  const { local } = birthInstant(b);
+  const start = toZoned(
+    new CalendarDateTime(local.year, local.month, local.day),
+    "Asia/Seoul",
+  ).toDate();
+  const end = new Date(start.getTime() + 24 * 3600000);
+  const sun = [start, new Date(end.getTime() - 1)].map(
+    (instant) =>
+      calculateChart({ instant, timeKnown: false, latitude: 0, longitude: 0 })
+        .planets[0]!.sign,
+  );
+  return {
+    sun: [...new Set(sun)],
+    moon: birthMoonSigns(start, end),
+  };
 }
 
 const statuses: Record<string, number> = {
@@ -236,9 +259,10 @@ export async function rewardRoute(
             : self;
           version = FORTUNE_TABLE_VERSION;
         } else if (input.content === "star") {
-          const natal = natalPlanets(b);
+          const chart = natalChart(b);
+          const natal = chart.planets;
           if (partner) {
-            const other = natalPlanets(partner);
+            const other = natalChart(partner).planets;
             result = {
               angles: natal.flatMap((a) =>
                 other.map((b) => ({
@@ -248,7 +272,31 @@ export async function rewardRoute(
                 })),
               ),
             };
-          } else result = { natal, sky: dailySky(day) };
+          } else {
+            const scored = scoreDay(chart, day);
+            result = {
+              natal: natal.map(({ body, longitude, sign }) => ({
+                body,
+                longitude,
+                sign,
+              })),
+              timeKnown: false,
+              signs: birthDaySigns(b),
+              stars: scored.stars,
+              reasons: scored.reasons.map(
+                ({ body, target, angle, hour, applying, score, exitDate }) => ({
+                  body,
+                  target,
+                  angle,
+                  hour,
+                  applying,
+                  score,
+                  exitDate,
+                }),
+              ),
+              distributionVersion: scored.distributionVersion,
+            };
+          }
           version = "astronomy-engine@2.1.19";
         } else {
           if (partner) {

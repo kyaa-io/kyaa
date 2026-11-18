@@ -1,0 +1,21 @@
+/* 별점 부품(시안 ST3 등록 예정): 채운 별은 글자색, 빈 별은 분홍 선색. 16·20만 쓴다. */
+.rating {
+  display: inline-flex;
+  gap: var(--space-1);
+  vertical-align: middle;
+}
+.rating svg {
+  width: var(--space-4);
+  height: var(--space-4);
+  fill: var(--color-accent-line);
+}
+.rating[data-size="20"] svg {
+  width: var(--space-5);
+  height: var(--space-5);
+}
+.rating svg[data-on] {
+  fill: var(--color-ink);
+}
+.rating[data-tone="accent"] svg[data-on] {
+  fill: var(--color-accent);
+}

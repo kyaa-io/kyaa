@@ -1,0 +1,38 @@
+/* 출생 차트 원판(승인 시안 05-3): 200 정사각, 바퀴 글자는 12px 이상. 색은 분홍·잉크 둘뿐. */
+.wheel {
+  display: block;
+  width: min(200px, 100%);
+  aspect-ratio: 1;
+  margin-inline: auto;
+}
+.rim {
+  fill: var(--color-accent-soft);
+  stroke: var(--color-ink);
+  stroke-width: 0.75;
+}
+.inner {
+  fill: var(--color-surface);
+  stroke: var(--color-ink);
+  stroke-width: 0.75;
+}
+.spoke {
+  stroke: var(--color-accent-line);
+  stroke-width: 0.75;
+}
+.sign {
+  fill: var(--color-ink);
+}
+.aspect {
+  stroke: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  stroke-width: 1;
+}
+.aspect[data-hard] {
+  stroke: var(--color-accent);
+  stroke-dasharray: 3 2;
+}
+.dot {
+  fill: var(--color-ink);
+}
+.dot[data-lead] {
+  fill: var(--color-accent);
+}

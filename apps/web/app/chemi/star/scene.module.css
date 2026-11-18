@@ -1,0 +1,378 @@
+/* 별자리 운세 입장·대화 장면(승인 시안 05-2). 390은 한 열, 768+는 그림이 장면을 채우고 말풍선 패널이 왼쪽 아래에 앉는다. */
+.page {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--space-3);
+  min-height: calc(100svh - var(--chemi-scene-chrome, 8rem));
+  padding-block: var(--space-3) var(--space-4);
+}
+.chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.skip {
+  margin-inline-start: auto;
+}
+.nameChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--min-target);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+}
+.round {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.round svg {
+  width: var(--space-5);
+  height: var(--space-5);
+}
+.pick {
+  display: flex;
+  flex: 1;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.pickItem {
+  display: grid;
+  height: auto;
+  min-height: 0;
+  flex: 1;
+  justify-items: center;
+  min-width: var(--min-target);
+  padding: var(--space-1) 0;
+  border: 0;
+  border-radius: var(--radius-small);
+  background: none;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.pickItem > span {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+.pick img {
+  display: block;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+.pickItem[aria-pressed="true"] {
+  color: var(--color-accent-ink);
+}
+.pickItem[aria-pressed="true"] span {
+  color: var(--color-accent-ink);
+}
+.pickItem[aria-pressed="true"] img {
+  outline-color: var(--color-accent);
+}
+.turnRow {
+  display: none;
+}
+.stage {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: end;
+  overflow: hidden;
+  min-height: min(72svh, 40rem);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+}
+.turn {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-surface) 80%, transparent);
+  color: var(--color-ink);
+  translate: 0 -50%;
+}
+.turn svg {
+  width: var(--space-5);
+  height: var(--space-5);
+}
+.prev {
+  left: var(--space-2);
+}
+.next {
+  right: var(--space-2);
+}
+.controls {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
+}
+.controls h1 {
+  margin: 0;
+}
+.title {
+  display: grid;
+  gap: var(--space-1);
+}
+.choices {
+  display: flex;
+  gap: var(--space-3);
+}
+.choices > * {
+  flex: 1;
+}
+.dialog {
+  display: grid;
+  gap: var(--space-1);
+}
+.dialog p {
+  margin: 0;
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.who {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.face {
+  display: none;
+}
+.dots {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-inline-start: var(--space-1);
+}
+.dots i {
+  width: var(--space-1);
+  height: var(--space-1);
+  border-radius: 50%;
+  background: var(--color-muted);
+  animation: dot 1.1s ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.dots i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes dot {
+  50% {
+    transform: translateY(calc(var(--space-1) * -1));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dots i {
+    animation: none;
+  }
+}
+.card {
+  display: grid;
+  gap: var(--space-1);
+}
+.signCard {
+  display: grid;
+  gap: var(--space-1);
+}
+.signCard h2 {
+  margin: 0;
+}
+.sceneRows {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-media);
+  list-style: none;
+}
+.sceneRow {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-1) var(--space-3);
+}
+.sceneRow > div {
+  display: grid;
+  gap: var(--space-1);
+}
+.sceneRow p {
+  margin: 0;
+  color: var(--color-muted);
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.reasonList {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-media);
+  list-style: none;
+}
+.reasonList li {
+  display: grid;
+  gap: var(--space-1);
+}
+.reasonList li + li {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-line);
+}
+.reasonList p {
+  margin: 0;
+}
+.pair {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-media);
+}
+.pair > div {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+}
+.loading {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-4);
+  min-height: 100svh;
+  background: var(--color-accent-soft);
+}
+.under {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-4);
+  min-height: 60svh;
+  text-align: center;
+}
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+.field input {
+  min-height: var(--min-target);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+/* 보이는 칸 36, 누르는 영역 46(칩 규칙). 공통 세그먼트 틀 40에서 이 시트만 44로 늘린다. */
+.field .rail {
+  height: var(--min-target);
+}
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+.steps i {
+  height: var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+}
+.steps i[aria-current="step"] {
+  background: var(--color-accent);
+}
+.timeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+@media (min-width: 48rem) {
+  .page {
+    gap: var(--space-4);
+  }
+  .turnRow {
+    display: inline-flex;
+    gap: var(--space-2);
+  }
+  .turnStage {
+    display: none;
+  }
+  .pick {
+    flex: none;
+    gap: var(--space-4);
+  }
+  .pickItem {
+    flex: none;
+    min-width: var(--space-16);
+  }
+  .stage {
+    min-height: min(72svh, 50rem);
+  }
+  .controls {
+    width: min(26.25rem, calc(100% - var(--space-16)));
+    margin: var(--space-8);
+  }
+  .face {
+    display: block;
+    width: var(--space-16);
+    height: var(--space-16);
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .who[data-face] {
+    justify-content: start;
+  }
+  .who[data-face] > :last-child {
+    margin-inline-start: auto;
+  }
+  .stage[data-portrait] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    background: var(--color-accent-soft);
+  }
+  .stage[data-portrait] .art {
+    inset: 0 0 0 50%;
+  }
+  .stage[data-portrait] .controls {
+    align-self: end;
+    justify-self: center;
+    margin: var(--space-8) var(--space-8);
+  }
+}
+.starsLine {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}

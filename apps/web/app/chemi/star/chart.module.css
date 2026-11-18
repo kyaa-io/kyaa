@@ -1,0 +1,65 @@
+/* 출생 차트 보조 목록: 행성 줄·원소 막대·각도 줄(승인 시안 05-3 chart). */
+.rows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rows li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--min-target);
+  padding-block: var(--space-2);
+  border-top: 1px solid var(--color-line);
+}
+.bars {
+  display: grid;
+  gap: var(--space-3);
+}
+.barRow {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) 1.5rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+.bar {
+  display: block;
+  height: var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+}
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-ink) 70%, transparent);
+}
+@media (min-width: 48rem) {
+  .rows {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-8);
+  }
+  .barGroups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-8);
+  }
+  .wheelPanel {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-8);
+  }
+}
+.barGroups {
+  display: grid;
+  align-items: start;
+  gap: var(--space-4);
+}
+.wheelPanel {
+  justify-items: center;
+}
+.wheelPanel > :last-child {
+  width: 100%;
+}
