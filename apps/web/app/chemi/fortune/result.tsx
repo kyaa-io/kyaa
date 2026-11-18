@@ -503,8 +503,10 @@ export function FortuneResult({
                 className={styles.nextItem}
                 onClick={soon(`${withTopic(label)} 준비 중이에요`)}
               >
-                <FanText role="item">{label}</FanText>
-                <span aria-hidden="true">›</span>
+                <span className={styles.nextRow}>
+                  <FanText role="item">{label}</FanText>
+                  <span aria-hidden="true">›</span>
+                </span>
               </FanAction>
             ),
           )}

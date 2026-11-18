@@ -216,7 +216,9 @@
   text-wrap: pretty;
 }
 .cta {
+  display: flex;
   grid-column: 1 / -1;
+  justify-content: center;
 }
 .nextList {
   display: grid;
@@ -233,6 +235,16 @@
   background: none;
   color: var(--color-ink);
   text-align: start;
+}
+.nextList .nextItem > span {
+  flex: 1;
+  min-width: 0;
+}
+.nextRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 .actions {
   display: flex;

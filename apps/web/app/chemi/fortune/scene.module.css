@@ -51,7 +51,6 @@
   min-height: 0;
   flex: 1;
   justify-items: center;
-  gap: var(--space-2);
   min-width: var(--min-target);
   padding: var(--space-1) 0;
   border: 0;
@@ -59,6 +58,11 @@
   background: none;
   color: var(--color-muted);
   white-space: nowrap;
+}
+.pickItem > span {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
 }
 .pick img {
   display: block;
@@ -254,6 +258,10 @@
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-ink);
+}
+/* 보이는 칸 36, 누르는 영역 46(칩 규칙). 공통 세그먼트 틀 40에서 이 시트만 44로 늘린다. */
+.field .rail {
+  height: var(--min-target);
 }
 .steps {
   display: grid;
