@@ -68,7 +68,9 @@ export async function processAccountDeletion(deps: AccountDeletionDependencies, 
       await deps.rpc("finish_account_deletion_provider", { p_app_user_id: job.appUserId, p_lease_token: job.leaseToken, p_provider: "supabase" });
     }
     failure = "FINALIZATION_UNAVAILABLE";
-    const completed = await deps.rpc("complete_account_deletion", { p_app_user_id: job.appUserId, p_lease_token: job.leaseToken });
+    // Chemi wrapper (Q2): runs the existing completion first and erases chemi rows only when it returns true,
+    // in the same transaction. Rollback = restore both names to the existing functions.
+    const completed = await deps.rpc("chemi_complete_account_deletion", { p_app_user_id: job.appUserId, p_lease_token: job.leaseToken });
     if (completed !== true) throw new Error("Account cleanup is pending");
     return "completed";
   } catch {
@@ -100,7 +102,7 @@ export function createDeleteAccountHandler(deps: AccountDeletionDependencies) {
       try { await confirmation(request); } catch {
         return Response.json({ error: { code: "DELETION_CONFIRMATION_REQUIRED" } }, { status: 400, headers });
       }
-      const deletion = deletionSchema.parse(await deps.rpc("begin_owned_account_deletion", { p_privy_user_id: subject }));
+      const deletion = deletionSchema.parse(await deps.rpc("chemi_begin_account_deletion", { p_privy_user_id: subject }));
       let status = deletion.status;
       if (status === "pending" && deletion.appUserId) {
         // Accepted deletion remains pending if a transient cleanup dependency fails.

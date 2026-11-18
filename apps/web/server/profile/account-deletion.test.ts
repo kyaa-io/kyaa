@@ -7,12 +7,12 @@ const lease = "33333333-3333-4333-8333-333333333333";
 const object = { id: "44444444-4444-4444-8444-444444444444", bucket: "fan-avatars", path: `${owner}/photo.webp`, generation: 4 };
 function dependencies() {
   const rpc = vi.fn(async (name: string, _args?: Record<string, unknown>): Promise<unknown> => ({
-    begin_owned_account_deletion: { appUserId: owner, status: "pending" },
+    chemi_begin_account_deletion: { appUserId: owner, status: "pending" },
     claim_content_asset_cleanup: { items: [] },
     claim_mobile_media_cleanup: { items: [] },
     claim_account_deletion: { appUserId: owner, leaseToken: lease, providerSubject: "did:privy:owner", objects: [object] },
-    account_deletion_storage_ready: true, complete_account_deletion: true,
-  })[name as "begin_owned_account_deletion"] ?? null);
+    account_deletion_storage_ready: true, chemi_complete_account_deletion: true,
+  })[name as "chemi_begin_account_deletion"] ?? null);
   return { verifySubject: vi.fn().mockResolvedValue("did:privy:owner"), rpc, removeObject: vi.fn().mockResolvedValue(undefined), deleteProviderUser: vi.fn().mockResolvedValue(undefined) } satisfies AccountDeletionDependencies;
 }
 const request = (body = '{"confirmation":"DELETE"}') => new Request("https://byus.test/api/me/account", { method: "DELETE", headers: { Authorization: "Bearer verified", "Content-Type": "application/json" }, body });
@@ -31,7 +31,9 @@ describe("durable account deletion", () => {
     const deps = dependencies(); const response = await createDeleteAccountHandler(deps)(request());
     expect(response.status).toBe(200); expect(await response.json()).toEqual({ deletion: { status: "completed" } });
     expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(deps.rpc).toHaveBeenCalledWith("begin_owned_account_deletion", { p_privy_user_id: "did:privy:owner" });
+    expect(deps.rpc).toHaveBeenCalledWith("chemi_begin_account_deletion", { p_privy_user_id: "did:privy:owner" });
+    expect(deps.rpc).toHaveBeenCalledWith("chemi_complete_account_deletion", { p_app_user_id: owner, p_lease_token: lease });
+    for (const legacy of ["begin_owned_account_deletion", "complete_account_deletion"]) expect(deps.rpc).not.toHaveBeenCalledWith(legacy, expect.anything());
     expect(deps.rpc).toHaveBeenCalledWith("finish_account_deletion_object", { p_app_user_id: owner, p_lease_token: lease, p_object_id: object.id, p_generation: 4 });
     expect(deps.removeObject.mock.invocationCallOrder[0]).toBeLessThan(deps.deleteProviderUser.mock.invocationCallOrder[0]);
   });
@@ -58,7 +60,7 @@ describe("durable account deletion", () => {
     deps.deleteProviderUser.mockImplementation(async () => { if (failRemaining) throw new Error("retry"); });
     deps.deleteSupabaseUser.mockImplementation(async () => { if (failRemaining) throw new Error("retry"); });
     expect(await processAccountDeletion(deps,owner)).toBe("pending");
-    expect(deps.rpc).not.toHaveBeenCalledWith("complete_account_deletion",expect.anything());
+    expect(deps.rpc).not.toHaveBeenCalledWith("chemi_complete_account_deletion",expect.anything());
     failRemaining=false;
     expect(await processAccountDeletion(deps,owner)).toBe("completed");
     expect(privyDeleted && supabaseDeleted).toBe(true);
