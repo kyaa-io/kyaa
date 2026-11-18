@@ -104,7 +104,7 @@ export function FanPageHeaderSkeleton({ stats, tabs }: Readonly<{ stats?: ReactN
         <div className={styles.titleRow}><FanSkeleton className={styles.nameSkeleton} /></div>
       </div>
       {stats ? <div className={styles.meta}><div className={styles.stats}>{stats}</div></div> : null}
-      <div className={styles.actions}><FanSkeleton shape="circle" width={96} height={36} className={styles.star} /></div>
+      <div className={styles.actions}><FanSkeleton shape="circle" width={96} height={28} className={styles.star} /></div>
       </div>
       <div className={styles.description}><FanSkeleton className={styles.descriptionSkeleton} /></div>
     </div>

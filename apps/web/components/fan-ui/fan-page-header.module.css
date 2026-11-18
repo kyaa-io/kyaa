@@ -86,6 +86,7 @@
 .stats { flex: 0 1 auto; display: flex; flex-wrap: wrap; align-items: center; min-width: 0; min-height: 24px; }
 .tabs { min-width: 0; }
 .nameSkeleton { width: 60%; height: 28px; }
+.header[aria-busy="true"] .titleRow { min-height: calc(var(--fan-h1-size) * var(--fan-heading-leading)); }
 .descriptionSkeleton { width: 80%; height: 21px; }
 
 /* 768+: 사진 128 | 이름·내 등급 / SNS·접속 / 별·좋아요 세 줄이 사진 높이 안에 들고, 소개는 사진 아래 전폭 줄이다(대표 11/17 00:36). 메뉴는 오른쪽 위. */
@@ -93,15 +94,15 @@
   .identity { grid-template-columns: 128px minmax(0, 1fr); grid-template-rows: auto; column-gap: var(--space-5); }
   .image { grid-row: 1; width: 128px; height: 128px; }
   .body { grid-column: 2; grid-row: 1; align-self: center; display: flex; flex-direction: column; align-items: stretch; gap: var(--space-2); min-width: 0; }
-  /* 세 줄이 있는 팬페이지는 사진의 위아래에 이름과 행동 줄을 맞춘다. */
-  .header[data-fan-page-header="fan"] .body:has(> .meta):has(> .actions) {
+  /* 세 줄이 있는 머리는 사진의 위아래에 이름과 행동 줄을 맞춘다. */
+  .body:has(> .meta):has(> .actions) {
     align-self: stretch;
     justify-content: space-between;
   }
   /* 글꼴의 윗여백을 보정해 이름 글자를 사진 윗선에 맞춘다. */
-  .header[data-fan-page-header="fan"] .body:has(> .meta):has(> .actions) .name {
+  .body:has(> .meta):has(> .actions) .name {
     position: relative;
-    inset-block-start: -2px;
+    inset-block-start: -4px;
   }
   .headline { padding-right: var(--menu-space, 0); }
   .titleRow { padding-right: 0; }
