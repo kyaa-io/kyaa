@@ -1,4 +1,5 @@
-import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
+import { createWorkerSecretLoader } from "./aws-secret.js";
+import { SecretsManagerClient } from "@aws-sdk/client-secrets-manager";
 const paths = {
   "chemi-maintenance": "/api/internal/chemi/maintenance",
   "runmusic-telegram": "/api/internal/runmusic/telegram/process",
@@ -24,8 +25,14 @@ export function createScheduledHandler({ loadSecret, fetcher = fetch }: { loadSe
     const onchain = input.task === "onchain-dashboard";
     const response = await fetcher(new URL(paths[input.task as keyof typeof paths], origin), { ...(input.task === "chemi-maintenance" ? { method: "POST" } : {}), headers: { authorization: `Bearer ${secret.CRON_SECRET}`, "x-byus-scheduler": "aws", ...(onchain ? { "x-byus-onchain-stream": "1" } : {}) }, cache: "no-store", redirect: "error", signal: AbortSignal.timeout(onchain ? 570_000 : 240_000) });
     status = response.status;
+    let chainEnabled = false;
     try {
       if (!response.ok || response.status === 204) throw new Error("Scheduled task failed or has a different owner");
+      if (input.task === "chemi-maintenance" && input.environment === "dev") {
+        const result = await response.json();
+        chainEnabled = !!result && typeof result === "object" && "chainRecords" in result &&
+          typeof result.chainRecords === "number" && Number.isSafeInteger(result.chainRecords) && result.chainRecords >= 0;
+      }
       if (onchain) {
         let result: unknown;
         try { result = await response.json(); } catch { throw new Error("Onchain refresh response incomplete"); }
@@ -35,10 +42,14 @@ export function createScheduledHandler({ loadSecret, fetcher = fetch }: { loadSe
     } finally {
       try { await response.body?.cancel(); } catch { /* Cleanup must not mask the task outcome. */ }
     }
+    if (chainEnabled) {
+      const { runScheduledChemiChain } = await import("./chemi-chain-runtime.js");
+      await runScheduledChemiChain("dev", loadSecret);
+    }
     log("success");
     return { enabled: true, task: input.task, status: response.status };
     } catch (error) { log("failure"); throw error; }
   };
 }
 const secrets = new SecretsManagerClient({});
-export const handler = createScheduledHandler({ async loadSecret(id) { const value = await secrets.send(new GetSecretValueCommand({ SecretId: id })); if (!value.SecretString) throw new Error("Cron secret is empty"); return value.SecretString; } });
+export const handler = createScheduledHandler({ loadSecret: createWorkerSecretLoader(command => secrets.send(command)) });
