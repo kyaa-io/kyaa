@@ -1,8 +1,0 @@
-{
-  "changes": [
-    "작은 화면의 MY에서 닉네임을 더 길게 볼 수 있어요. 등급과 선물·알림·설정 버튼은 이름 아래 줄로 옮겼어요.",
-    "첨부 이미지는 시험 계정으로 확인한 로컬 화면이에요."
-  ],
-  "path": "/my",
-  "images": ["release-notes/images/2026-11-19-my-profile-nickname-390.png"]
-}
