@@ -4,7 +4,6 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { usePrivyBridge } from "@/features/auth/client/privy-bridge";
 import { rememberSession } from "@/features/auth/client/session-hint";
 import { purgeVideoBlobs } from "@/features/content-safety/ui/video-blob-cache";
-import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { readAuthIntent } from "./auth-intent";
@@ -246,7 +245,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
         setSnapshot({ ready: true, pending: false, ownerId, generation, destination });
         const location = browserLocation();
         // LoginPage owns return navigation after the SDK has cleaned its OAuth URL.
-        if (destination !== provisionalDestination && location === provisionalDestination) router.replace(destination as Route);
+        if (destination !== provisionalDestination && location === provisionalDestination) (router.replace as (href: string) => void)(destination);
       } catch (caught) {
         if (caught instanceof StaleLoginIdentityError) {
           invalidateIfCurrent(ownerId, generation);
@@ -269,7 +268,7 @@ export function ByUsSessionProvider({ children }: { children: ReactNode }) {
         setError(nextError);
         setSnapshot({ ready: false, pending: false, ownerId, generation, destination: null });
         const location = browserLocation();
-        if (location === provisionalDestination || location === transition.sourceLocation) router.replace(loginPath as Route);
+        if (location === provisionalDestination || location === transition.sourceLocation) (router.replace as (href: string) => void)(loginPath);
       } finally {
         if (synchronizationRef.current?.promise === promise) synchronizationRef.current = null;
         if (requestControllerRef.current === requestController) requestControllerRef.current = null;
