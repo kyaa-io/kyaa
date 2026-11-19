@@ -74,7 +74,7 @@ class MonitorTest(unittest.TestCase):
         event = self.alarm(AlarmName=name, AlarmArn=f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}")
         logs = Mock()
         logs.start_query.return_value = {"queryId": "test-query"}
-        row = {"route": "/api/celebrities/[slug]/youtube", "statuses": "[503]", "hits": "51", "codes": '["YOUTUBE_QUOTA_EXCEEDED"]'}
+        row = {"route": "/api/celebrities/[slug]/youtube", "statuses": "503", "hits": "51", "codes": "YOUTUBE_QUOTA_EXCEEDED"}
         logs.get_query_results.return_value = {
             "status": "Complete",
             "results": [[{"field": key, "value": value} for key, value in row.items()]],
@@ -89,6 +89,23 @@ class MonitorTest(unittest.TestCase):
             logs.get_query_results.side_effect = RuntimeError("sensitive detail")
             monitor.handler(event, None)
             self.assertEqual(notify.call_args.args[1], message.rsplit("\n", 1)[0] + "\n원인 조회 실패")
+
+    def test_alb_cause_value_formats_filter_each_token(self):
+        cases = (
+            ("503", "YOUTUBE_TIMEOUT", "503", "YOUTUBE_TIMEOUT"),
+            ("503, 200, 500", "YOUTUBE_QUOTA_EXCEEDED, invalid/path, YOUTUBE_TIMEOUT",
+             "503, 500", "YOUTUBE_QUOTA_EXCEEDED, YOUTUBE_TIMEOUT"),
+            ('[503, 200, "500"]', '["YOUTUBE_QUOTA_EXCEEDED", "invalid/path", "YOUTUBE_TIMEOUT"]',
+             "503, 500", "YOUTUBE_QUOTA_EXCEEDED, YOUTUBE_TIMEOUT"),
+        )
+        for statuses, codes, expected_statuses, expected_codes in cases:
+            with self.subTest(statuses=statuses, codes=codes):
+                row = {"route": "/api/example", "hits": "3", "statuses": statuses, "codes": codes}
+                results = [[{"field": key, "value": value} for key, value in row.items()]]
+                self.assertEqual(
+                    monitor.format_alb_causes(results),
+                    f"/api/example {expected_statuses} × 3 · {expected_codes}",
+                )
 
     def test_eight_service_alarms_reach_the_room_and_everything_else_stays_filtered(self):
         def event(name):

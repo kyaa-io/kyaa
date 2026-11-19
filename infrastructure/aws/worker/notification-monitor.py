@@ -170,7 +170,7 @@ def format_alb_causes(results):
         try:
             values = json.loads(raw)
         except ValueError:
-            values = [raw]
+            values = [value.strip() for value in raw.split(",")]
         if not isinstance(values, list):
             values = [str(values)]
         return ", ".join(str(value) for value in values[:5] if re.fullmatch(pattern, str(value)))
