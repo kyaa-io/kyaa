@@ -32,11 +32,14 @@ import {
   isAuthFailure,
   listFirsts,
   loadProfile,
+  loadPairReading,
   loadReading,
+  readTemporaryPartners,
   requestFirst,
   requestPair,
   saveBirth,
   savePartner,
+  writeTemporaryPartners,
   type Partner,
   type SajuReading,
 } from "./reading";
@@ -51,7 +54,8 @@ const views: readonly ResultView[] = ["first", "year", "month", "pair"];
 const talkChoice = ["맞아, 나 그래", "그럼 올해는?", "너랑은 어때?", "정리해서 보여 줘"] as const;
 const art = "/chemi/saju";
 
-type Nav = { step: Step; view: ResultView; character: SajuCharacterId; r: string | null };
+/** r: 첫 풀이 번호 · p: 궁합 풀이 번호 · w: 궁합 상대 번호 */
+type Nav = { step: Step; view: ResultView; character: SajuCharacterId; r: string | null; p: string | null; w: string | null };
 type Phase = "idle" | "calc" | "pairCalc" | "error" | "limit";
 type Failure = "auth" | "service" | "network";
 const failureTitle: Record<Failure, string> = {
@@ -74,8 +78,14 @@ function readUrl(): Nav {
     view: views.find((item) => item === params.get("view")) ?? "first",
     character: character?.id ?? "changha",
     r: params.get("r"),
+    p: params.get("p"),
+    w: params.get("w"),
   };
 }
+
+/** 풀이를 불러올 수 없을 때 돌아가는 입장 상태. */
+const toEnter = (url: Nav): Nav => ({ ...url, step: "enter", view: "first", r: null, p: null, w: null });
+const clearedUrl = { step: null, view: null, r: null, p: null, w: null };
 
 /** 이 흐름이 쌓은 기록 칸 수. 새 탭에서 복원한 주소는 0이다. */
 function flowDepth() {
@@ -97,7 +107,7 @@ function writeUrl(patch: Record<string, string | null>, mode: "push" | "replace"
     );
 }
 
-const initialNav: Nav = { step: "enter", view: "first", character: "changha", r: null };
+const initialNav: Nav = { step: "enter", view: "first", character: "changha", r: null, p: null, w: null };
 
 export function SajuFlow({
   locale,
@@ -128,7 +138,13 @@ export function SajuFlow({
   const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
   const navRef = useRef(nav);
-  const temporaryPartner = useRef<string | null>(null);
+  /** 저장하지 않기로 한 상대 중 아직 서버에서 지우지 못한 번호. */
+  const temporaryPartners = useRef(new Set<string>());
+  /** 창을 닫는 순간에는 토큰을 새로 받을 수 없어, 상대를 등록할 때 받은 토큰을 둔다. */
+  const cleanupToken = useRef<string | null>(null);
+  /** 이 화면에서 본 궁합 풀이. 뒤로·앞으로 이동할 때 주소의 번호로 다시 꺼낸다. */
+  const pairs = useRef(new Map<string, Pair>());
+  const lastPair = useRef<{ partnerId: string; who: string; timeKnown: boolean; temporary: boolean } | null>(null);
   const now = Date.now();
 
   const { step, view, character } = nav;
@@ -147,6 +163,8 @@ export function SajuFlow({
         view: next.step === "result" && next.view !== "first" ? next.view : null,
         c: next.character,
         r: next.r,
+        p: next.step === "result" && next.view === "pair" ? next.p : null,
+        w: next.step === "result" && next.view === "pair" ? next.w : null,
       },
       mode,
       depth,
@@ -180,6 +198,25 @@ export function SajuFlow({
     [locale],
   );
 
+  /** 주소의 궁합 풀이 번호로 궁합 결과를 되살린다. 상대가 이미 지워졌으면 이름을 '상대'로 둔다. */
+  const restorePair = useCallback(async (token: string | null, url: Nav, signal?: AbortSignal) => {
+    if (!url.p) return null;
+    const cached = pairs.current.get(url.p);
+    if (cached) return cached;
+    const result = await loadPairReading(token, url.p, url.character, signal);
+    if (!result) return null;
+    const profile = await loadProfile(token, signal).catch(() => null);
+    const partner = profile?.partners.find((item) => item.id === url.w);
+    const restored: Pair = {
+      id: url.p,
+      name: partner?.nickname ?? "상대",
+      result,
+      timeKnown: partner ? partner.timePrecision === "exact" : true,
+    };
+    pairs.current.set(url.p, restored);
+    return restored;
+  }, []);
+
   // 첫 진입: 주소의 단계·최애를 읽는다. 결과가 없으면 입장으로 돌린다.
   useEffect(() => {
     const url = readUrl();
@@ -191,16 +228,16 @@ export function SajuFlow({
       return;
     }
     if (!url.r) {
-      writeUrl({ step: null, view: null }, "replace", 0);
-      navRef.current = { ...url, step: "enter", view: "first" };
+      writeUrl(clearedUrl, "replace", 0);
+      navRef.current = toEnter(url);
       setNav(navRef.current);
       setRestoring(false);
       return;
     }
     if (!ready) return;
     if (!authenticated) {
-      writeUrl({ step: null, view: null, r: null }, "replace", 0);
-      navRef.current = { ...url, step: "enter", view: "first", r: null };
+      writeUrl(clearedUrl, "replace", 0);
+      navRef.current = toEnter(url);
       setNav(navRef.current);
       setRestoring(false);
       return;
@@ -212,11 +249,17 @@ export function SajuFlow({
         if (!data) throw Error();
         setReading({ ...data, replayed: true });
         void settle({ ...data, replayed: true }, url.character, token);
-        // 궁합은 상대 정보가 주소에 없어 복원하지 않는다.
-        if (url.view === "pair") commit({ view: "first" }, "replace");
+        if (url.view === "pair") {
+          const restored = await restorePair(token, url);
+          if (restored) setPair(restored);
+          else {
+            commit({ view: "first", p: null, w: null }, "replace");
+            showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+          }
+        }
       } catch {
-        writeUrl({ step: null, view: null, r: null }, "replace", 0);
-        navRef.current = { ...url, step: "enter", view: "first", r: null };
+        writeUrl(clearedUrl, "replace", 0);
+        navRef.current = toEnter(url);
         setNav(navRef.current);
         showFanToast({ title: "저장된 풀이가 아니라 처음 화면으로 돌아왔어요." });
       } finally {
@@ -252,21 +295,40 @@ export function SajuFlow({
   }, [ready, authenticated]);
 
   useEffect(() => () => abort.current?.abort(), []);
-  // 저장하지 않기로 한 상대는 이 화면을 떠날 때 지운다.
   const tokenRef = useRef(getAccessToken);
   tokenRef.current = getAccessToken;
-  useEffect(() => {
-    const leave = () => {
-      const id = temporaryPartner.current;
-      temporaryPartner.current = null;
-      if (id) void tokenRef.current().then((token) => deletePartner(token, id, true));
-    };
-    window.addEventListener("pagehide", leave);
-    return () => {
-      window.removeEventListener("pagehide", leave);
-      leave();
-    };
+  const forget = useCallback((id: string) => {
+    temporaryPartners.current.delete(id);
+    writeTemporaryPartners(temporaryPartners.current);
   }, []);
+  /** 저장하지 않기로 한 상대를 서버에서 지운다. 지우지 못한 번호는 남겨 두고 다음 기회에 다시 지운다. */
+  const flushTemporary = useCallback(async () => {
+    const ids = [...temporaryPartners.current];
+    if (!ids.length) return;
+    const token = await tokenRef.current().catch(() => null);
+    if (!token) return;
+    await Promise.all(ids.map(async (id) => (await deletePartner(token, id)) && forget(id)));
+  }, [forget]);
+  // 지난번에 지우지 못한 임시 상대가 있으면 로그인 뒤 한 번 더 지운다.
+  useEffect(() => {
+    if (!ready || !authenticated) return;
+    for (const id of readTemporaryPartners()) temporaryPartners.current.add(id);
+    void flushTemporary();
+    // 로그인 상태가 정해질 때 한 번만 부른다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, authenticated]);
+  useEffect(() => {
+    // 창을 닫는 순간에는 토큰을 새로 받을 수 없으므로 미리 받아 둔 토큰으로 바로 보낸다.
+    const closing = () => {
+      const token = cleanupToken.current;
+      if (token) for (const id of temporaryPartners.current) void deletePartner(token, id, true);
+    };
+    window.addEventListener("pagehide", closing);
+    return () => {
+      window.removeEventListener("pagehide", closing);
+      void flushTemporary();
+    };
+  }, [flushTemporary]);
 
   const run = useCallback(
     async (id: SajuCharacterId) => {
@@ -331,23 +393,42 @@ export function SajuFlow({
       abort.current?.abort();
       abort.current = null;
       setPhase("idle");
+      setRestoring(false);
       setSheet(null);
       const reachable = Boolean(reading) && url.step !== "calc";
-      const next: Nav =
-        url.step === "enter" || reachable
-          ? { ...url, view: url.view === "pair" && !pair ? "first" : url.view }
-          : { ...url, step: "enter", view: "first", r: null };
+      const next: Nav = url.step === "enter" || reachable ? url : toEnter(url);
       navRef.current = next;
-      if (next.step !== url.step || next.view !== url.view)
+      if (next.step !== url.step)
         writeUrl(
           { step: next.step === "enter" ? null : next.step, view: next.view === "first" ? null : next.view },
           "replace",
         );
       setNav(next);
+      if (next.step !== "result" || next.view !== "pair") return;
+      // 궁합 기록으로 돌아오면 그 기록의 풀이를 꺼낸다. 이 화면에서 본 적 없으면 저장된 풀이를 불러온다.
+      const known = next.p ? pairs.current.get(next.p) : undefined;
+      if (known) return setPair(known);
+      const controller = new AbortController();
+      abort.current = controller;
+      setRestoring(true);
+      void (async () => {
+        try {
+          const restored = await restorePair(await tokenRef.current(), next, controller.signal);
+          if (controller.signal.aborted) return;
+          if (!restored) throw Error();
+          setPair(restored);
+        } catch {
+          if (controller.signal.aborted) return;
+          commit({ view: "first", p: null, w: null }, "replace");
+          showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+        } finally {
+          if (!controller.signal.aborted) setRestoring(false);
+        }
+      })();
     }
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, [reading, pair]);
+  }, [commit, reading, restorePair]);
 
   function start() {
     if (!authenticated) return setSheet("login");
@@ -451,10 +532,16 @@ export function SajuFlow({
     }
   }
 
-  async function runPair(partnerId: string, who: string, timeKnown: boolean) {
+  async function runPair(partnerId: string, who: string, timeKnown: boolean, temporary = false) {
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
+    lastPair.current = { partnerId, who, timeKnown, temporary };
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, 15000);
     setPairName(who);
     setSheet(null);
     setPhase("pairCalc");
@@ -464,10 +551,19 @@ export function SajuFlow({
       const data = await requestPair(token, character, partnerId, controller.signal);
       await new Promise((resolve) => setTimeout(resolve, Math.max(0, 1200 - (Date.now() - started))));
       if (abort.current !== controller || controller.signal.aborted) return;
-      setPair({ name: who, result: data.result, timeKnown });
+      const next: Pair = { id: data.readingId, name: who, result: data.result, timeKnown };
+      pairs.current.set(next.id, next);
+      setPair(next);
       setPhase("idle");
+      lastPair.current = null;
       void settle(data, character, token);
-      commit({ step: "result", view: "pair" }, "push");
+      // 첫 풀이 번호도 함께 둔다. 입장에서 바로 궁합을 본 경우 주소에 아직 없다.
+      commit(
+        { step: "result", view: "pair", r: reading?.readingId ?? navRef.current.r, p: next.id, w: partnerId },
+        "push",
+      );
+      // 저장하지 않기로 한 상대는 결과를 받은 바로 뒤에 지운다.
+      if (temporary) void flushTemporary();
     } catch (error) {
       if (abort.current !== controller) return;
       if (
@@ -478,9 +574,15 @@ export function SajuFlow({
         return;
       }
       setFailure(
-        !(error instanceof ChemiRequestError) ? "network" : isAuthFailure(error) ? "auth" : "service",
+        timedOut || !(error instanceof ChemiRequestError)
+          ? "network"
+          : isAuthFailure(error)
+            ? "auth"
+            : "service",
       );
       setPhase("error");
+    } finally {
+      clearTimeout(timer);
     }
   }
 
@@ -488,11 +590,17 @@ export function SajuFlow({
     setBirthBusy(true);
     setBirthError(null);
     try {
+      // 앞서 저장하지 않기로 한 상대가 남아 있으면 새 상대를 등록하기 전에 지운다.
+      await flushTemporary();
       const token = await getAccessToken();
       const id = await savePartner(token, nickname, birth);
-      if (!save) temporaryPartner.current = id;
+      if (!save) {
+        cleanupToken.current = token;
+        temporaryPartners.current.add(id);
+        writeTemporaryPartners(temporaryPartners.current);
+      }
       setBirthBusy(false);
-      await runPair(id, nickname, birth.timePrecision === "exact");
+      await runPair(id, nickname, birth.timePrecision === "exact", !save);
     } catch (error) {
       setBirthBusy(false);
       setBirthError(
@@ -533,18 +641,19 @@ export function SajuFlow({
       </section>
     );
 
-  if (step === "result" && reading && phase !== "pairCalc" && phase !== "limit")
+  const activePair = pair && pair.id === nav.p ? pair : undefined;
+  if (step === "result" && reading && phase !== "pairCalc" && phase !== "limit" && phase !== "error")
     return (
       <>
         <SajuResult
           locale={locale}
           character={character}
-          view={view === "pair" && !pair ? "first" : view}
+          view={view === "pair" && !activePair ? "first" : view}
           chart={reading.result}
           at={now}
           points={points}
           exp={exp}
-          pair={pair}
+          pair={activePair}
           sharing={sharing}
           backHref={`/chemi/saju?c=${character}&locale=${locale}`}
           onBack={() => window.history.back()}
@@ -751,7 +860,7 @@ export function SajuFlow({
             ariaLabel="뒤로 가기"
             leadingIcon={<FanIcon icon={ChevronLeft} />}
             className={styles.round}
-            onClick={() => window.history.back()}
+            onClick={() => (phase === "error" && step === "result" ? setPhase("idle") : window.history.back())}
           />
         )}
         {step === "enter" ? (
@@ -794,7 +903,6 @@ export function SajuFlow({
         {entering && again && reading && (
           <FanAction
             variant="neutral"
-            size="sm"
             className={styles.history}
             onClick={() => openView("first")}
           >
@@ -808,14 +916,13 @@ export function SajuFlow({
             title={failureTitle[failure]}
             actions={
               failure === "auth" ? (
-                <FanAction size="sm" onClick={login}>
-                  로그인
-                </FanAction>
+                <FanAction onClick={login}>로그인</FanAction>
               ) : (
                 <FanAction
-                  size="sm"
                   onClick={() => {
+                    const retry = lastPair.current;
                     if (step === "calc") void run(character);
+                    else if (retry) void runPair(retry.partnerId, retry.who, retry.timeKnown, retry.temporary);
                     else setPhase("idle");
                   }}
                 >

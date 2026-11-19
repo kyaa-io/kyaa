@@ -83,6 +83,32 @@ export async function requestPair(
   return data as SajuReading<PairResult>;
 }
 
+const isPairResult = (result: unknown): result is PairResult => {
+  const candidate = result as Partial<PairResult> | null;
+  return (
+    Array.isArray(candidate?.dayStems) &&
+    candidate.dayStems.length === 2 &&
+    Array.isArray(candidate.combinations) &&
+    Array.isArray(candidate.clashes)
+  );
+};
+
+/** 저장된 궁합 풀이 한 건의 결과. 사주 첫 풀이나 다른 콘텐츠는 null. */
+export async function loadPairReading(
+  token: string | null,
+  readingId: string,
+  character: SajuCharacterId,
+  signal?: AbortSignal,
+) {
+  const response = await fetch(
+    `/api/chemi/readings/${encodeURIComponent(readingId)}?c=${character}`,
+    { headers: json(token), signal },
+  );
+  const data = await response.json().catch(() => null);
+  if (!response.ok || !isReading(data)) return null;
+  return isPairResult(data.result) ? data.result : null;
+}
+
 /** 저장된 첫 풀이 한 건. 다른 콘텐츠·종류는 null. */
 export async function loadReading(
   token: string | null,
@@ -165,11 +191,35 @@ export async function loadParticipation(signal?: AbortSignal): Promise<Participa
   return (await response.json()).participation ?? null;
 }
 
+/** 상대를 지웠으면 true. 이미 없는 상대(404)도 지운 것으로 본다. 네트워크 오류·그 밖의 응답은 false. */
 export async function deletePartner(token: string | null, partnerId: string, keepalive = false) {
-  await fetch("/api/chemi/partners", {
+  const response = await fetch("/api/chemi/partners", {
     method: "DELETE",
     headers: json(token),
     keepalive,
     body: JSON.stringify({ partnerId }),
-  }).catch(() => {});
+  }).catch(() => null);
+  return Boolean(response && (response.ok || response.status === 404));
+}
+
+const temporaryKey = "chemi:saju:temporary-partners";
+
+/** 저장하지 않기로 했지만 아직 서버에서 지우지 못한 상대 번호. 다음 방문에서 다시 지운다. */
+export function readTemporaryPartners(): string[] {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(temporaryKey) ?? "[]");
+    return Array.isArray(stored) ? stored.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function writeTemporaryPartners(ids: Iterable<string>) {
+  try {
+    const list = [...ids];
+    if (list.length) window.localStorage.setItem(temporaryKey, JSON.stringify(list));
+    else window.localStorage.removeItem(temporaryKey);
+  } catch {
+    // 저장소를 쓸 수 없으면 이 화면을 떠날 때의 삭제만 시도한다.
+  }
 }

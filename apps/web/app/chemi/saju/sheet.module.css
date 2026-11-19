@@ -44,9 +44,6 @@
   height: var(--space-5);
   accent-color: var(--color-accent);
 }
-.rail {
-  height: var(--min-target);
-}
 
 /* 더 깊이·궁합 상대 고르기 */
 .topics {

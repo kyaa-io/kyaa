@@ -114,3 +114,19 @@ describe("대화 줄", () => {
       for (const n of [1, 2, 3, 4] as const) expect(sajuTalkLine(id, n, input)).not.toMatch(/원|결제|P\b/);
   });
 });
+
+describe("열두 달·주별 칩 표시", () => {
+  it("올해는 좋은 달이 한 곳 이상, 여유 둘 달이 한 곳이고 좋은 달 표시는 글의 달과 같다", () => {
+    const year = yearReading(chart, at("2026-11-19"));
+    const good = year.months.filter((month) => month.mark === "good").map((month) => `${month.label}월`);
+    expect(good.length).toBeGreaterThan(0);
+    expect(year.good.split(" · ")).toEqual(good);
+    expect(year.months.filter((month) => month.mark === "rest").length).toBeLessThanOrEqual(1);
+  });
+  it("이달은 힘 있는 주와 쉬어 갈 주가 칩 표시와 글에 같이 나온다", () => {
+    const month = monthReading(chart, at("2026-11-19"));
+    const strong = month.weeks.find((week) => week.mark === "good");
+    expect(strong && month.strong.startsWith(strong.range)).toBe(true);
+    expect(month.weeks.every((week) => /^\d+\.\d+$/.test(week.label))).toBe(true);
+  });
+});

@@ -29,6 +29,8 @@ import styles from "./result.module.css";
 export type ResultView = "first" | "year" | "month" | "pair";
 
 export type Pair = {
+  /** 궁합 풀이 번호(주소의 p) */
+  id: string;
   name: string;
   result: PairResult;
   /** 상대 출생 시간을 알고 본 궁합인가 */
@@ -41,7 +43,6 @@ const hero = (character: SajuCharacterId) =>
     : `/chemi/saju/saju-${character}-v1.webp`;
 
 const levelWidth = { 많이: 92, 보통: 56, 조금: 28 } as const;
-const rateWidth = { 좋음: 92, 보통: 56, 조심: 28 } as const;
 
 export function SajuResult({
   locale,
@@ -134,8 +135,8 @@ export function SajuResult({
       <i style={{ width: `${value}%` }} />
     </span>
   );
-  const kv = (rows: readonly (readonly [string, string])[]) => (
-    <dl className={styles.kv}>
+  const kv = (rows: readonly (readonly [string, string])[], layout?: "cols" | "stack") => (
+    <dl className={styles.kv} data-layout={layout}>
       {rows.map(([label, value]) => (
         <div key={label}>
           <FanText as="dt" role="meta">
@@ -148,15 +149,34 @@ export function SajuResult({
       ))}
     </dl>
   );
-  const chartBars = (items: readonly { label: string; score: number; current: boolean }[], max: number) => (
-    <ol className={styles.chart} style={{ "--n": items.length } as CSSProperties}>
+  const chips = (
+    items: readonly { label: string; mark?: "good" | "rest"; current: boolean }[],
+    names: { good: string; rest: string },
+  ) => (
+    <ol className={styles.chips} style={{ "--n": items.length } as CSSProperties}>
       {items.map((item) => (
-        <li key={item.label} data-row="" data-current={item.current || undefined}>
-          <i style={{ "--h": `${Math.max(14, Math.round(((item.score + 1) / (max + 1)) * 100))}%` } as CSSProperties} />
-          <FanText role="meta">{item.label}</FanText>
+        <li
+          key={item.label}
+          data-row=""
+          data-mark={item.mark}
+          data-current={item.current || undefined}
+          aria-current={item.current ? "date" : undefined}
+        >
+          <FanText role={item.mark || item.current ? "label" : "meta"}>{item.label}</FanText>
+          {item.mark && <span className={styles.srOnly}>{`, ${names[item.mark]}`}</span>}
         </li>
       ))}
     </ol>
+  );
+  const stats = (items: readonly (readonly [string, string])[]) => (
+    <div className={styles.stats} style={{ "--cols": items.length } as CSSProperties}>
+      {items.map(([label, value]) => (
+        <div key={label}>
+          <FanText role="meta">{label}</FanText>
+          <FanText role="item">{value}</FanText>
+        </div>
+      ))}
+    </div>
   );
   const lockedCard = (
     <FanState
@@ -227,33 +247,32 @@ export function SajuResult({
             <img src={hero(character)} alt="" />
           </picture>
         </header>
-        {view !== "first" && bondCard}
 
         {view === "first" && (
           <>
             <div className={styles.summary}>
               {bondCard}
-            <section className={`${styles.panel} ${styles.split}`}>
-              <div className={styles.block}>
-                <FanHeading>타고난 기운</FanHeading>
-                {locked ? (
-                  lockedCard
-                ) : (
-                  <div className={styles.bars}>
-                    {first.rows.map((row) => (
-                      <div className={styles.barRow} key={row.element}>
-                        <FanText role="meta">{row.name}</FanText>
-                        <FanNumber locale={locale} value={row.count} />
-                        {bar(row.name, Math.round((row.count / 4) * 100), row.top)}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </section>
+              <section className={`${styles.panel} ${styles.split}`}>
+                <div className={styles.block}>
+                  <FanHeading>타고난 기운</FanHeading>
+                  {locked ? (
+                    lockedCard
+                  ) : (
+                    <div className={styles.bars}>
+                      {first.rows.map((row) => (
+                        <div className={styles.barRow} key={row.element}>
+                          <FanText role="meta">{row.name}</FanText>
+                          <FanNumber locale={locale} value={row.count} />
+                          {bar(row.name, Math.round((row.count / 4) * 100), row.top)}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </section>
             </div>
             {!locked && (
-              <>
+              <div className={styles.cols}>
                 <section className={styles.section}>
                   <FanHeading>타고난 성격</FanHeading>
                   {kv([
@@ -266,93 +285,106 @@ export function SajuResult({
                   <FanHeading>{first.flowTitle}</FanHeading>
                   {kv(first.flow.map((item) => [item.label, item.text] as const))}
                 </section>
-              </>
+              </div>
             )}
           </>
         )}
 
         {view === "year" && (
-          <section className={`${styles.panel} ${styles.section}`}>
-            <FanHeading>{year.name}</FanHeading>
-            <FanText as="p" role="meta">
-              {year.span}
-            </FanText>
-            {year.beforeSpring && (
-              <FanText as="p" role="meta">
-                아직 입춘 전이라 지난해 기준으로 봤어요
-              </FanText>
-            )}
-            {kv([["올해 등급", year.grade]])}
-            <div className={styles.rates}>
-              {year.rate.map((item) => (
-                <div key={item.label}>
-                  <FanText role="meta">{item.label}</FanText>
-                  <FanText role="item">{item.level}</FanText>
-                  {bar(item.label, rateWidth[item.level])}
+          <>
+            <div className={styles.summary}>
+              {bondCard}
+              <section className={`${styles.panel} ${styles.split}`}>
+                <div className={styles.block}>
+                  <FanHeading>{year.name}</FanHeading>
+                  <FanText as="p" role="meta">
+                    {year.span}
+                  </FanText>
+                  {year.beforeSpring && (
+                    <FanText as="p" role="meta">
+                      아직 입춘 전이라 지난해 기준으로 봤어요
+                    </FanText>
+                  )}
+                  {stats([["올해 등급", year.grade]])}
+                  {stats(year.rate.map((item) => [item.label, item.level] as const))}
                 </div>
-              ))}
+              </section>
             </div>
-            <FanText as="p" role="meta">
-              열두 달
-            </FanText>
-            {chartBars(year.months, 4)}
-            {kv([
-              ["좋은 달", year.good],
-              ["여유 둘 달", year.rest],
-              ["도움 기운", year.help],
-            ])}
-          </section>
+            <section className={styles.section}>
+              <FanHeading>열두 달</FanHeading>
+              {chips(year.months, { good: "좋은 달", rest: "여유 둘 달" })}
+            </section>
+            <section className={styles.section}>
+              {kv(
+                [
+                  ["좋은 달", year.good],
+                  ["여유 둘 달", year.rest],
+                  ["도움 기운", year.help],
+                ],
+                "cols",
+              )}
+            </section>
+          </>
         )}
 
         {view === "month" && (
-          <section className={`${styles.panel} ${styles.section}`}>
-            <FanHeading>{month.name}</FanHeading>
-            <FanText as="p" role="meta">
-              {month.span}
-            </FanText>
-            <div className={styles.rates}>
-              {month.rate.map((item) => (
-                <div key={item.label}>
-                  <FanText role="meta">{item.label}</FanText>
-                  <FanText role="item">{item.level}</FanText>
-                  {bar(item.label, rateWidth[item.level])}
+          <>
+            <div className={styles.summary}>
+              {bondCard}
+              <section className={`${styles.panel} ${styles.split}`}>
+                <div className={styles.block}>
+                  <FanHeading>{month.name}</FanHeading>
+                  <FanText as="p" role="meta">
+                    {month.span}
+                  </FanText>
+                  {stats(month.rate.map((item) => [item.label, item.level] as const))}
                 </div>
-              ))}
+              </section>
             </div>
-            <FanText as="p" role="meta">
-              주별 흐름
-            </FanText>
-            {chartBars(month.weeks, 5)}
-            {kv([
-              ["힘 있는 주", month.strong],
-              ["쉬어 갈 주", month.rest],
-              ["새 기운", month.nextTerm],
-            ])}
-          </section>
+            <section className={styles.section}>
+              <FanHeading>주별 흐름</FanHeading>
+              {chips(month.weeks, { good: "힘 있는 주", rest: "쉬어 갈 주" })}
+            </section>
+            <section className={styles.section}>
+              {kv(
+                [
+                  ["힘 있는 주", month.strong],
+                  ["쉬어 갈 주", month.rest],
+                  ["새 기운", month.nextTerm],
+                ],
+                "cols",
+              )}
+            </section>
+          </>
         )}
 
         {view === "pair" && compat && pair && (
-          <section className={`${styles.panel} ${styles.section}`}>
-            <FanHeading>나 × {pair.name}</FanHeading>
-            <div className={styles.bars}>
-              {compat.rows.map((row) => (
-                <div className={styles.barRowWide} key={row.label}>
-                  <FanText role={row.top ? "label" : "meta"} className={styles.topLabel} data-top={row.top || undefined}>
-                    {row.label}
-                  </FanText>
-                  <FanText role="item">{row.level}</FanText>
-                  {bar(row.label, levelWidth[row.level], row.top)}
-                </div>
-              ))}
+          <section className={`${styles.panel} ${styles.pairPanel}`}>
+            <div className={styles.block}>
+              <FanHeading>나 × {pair.name}</FanHeading>
+              <div className={styles.bars}>
+                {compat.rows.map((row) => (
+                  <div className={styles.barRowWide} key={row.label}>
+                    <FanText role={row.top ? "label" : "meta"} className={styles.topLabel} data-top={row.top || undefined}>
+                      {row.label}
+                    </FanText>
+                    <FanText role="item">{row.level}</FanText>
+                    {bar(row.label, levelWidth[row.level], row.top)}
+                  </div>
+                ))}
+              </div>
+              <FanText as="p" role="meta">
+                {compat.note}
+              </FanText>
             </div>
-            <FanText as="p" role="meta">
-              {compat.note}
-            </FanText>
-            {kv([
-              ["둘의 기운", compat.powers],
-              ["부딪히는 곳", compat.clash],
-              ["같이 있을 때", compat.together],
-            ])}
+            {kv(
+              [
+                ["둘의 기운", compat.powers],
+                ["부딪히는 곳", compat.clash],
+                ["같이 있을 때", compat.together],
+              ],
+              "stack",
+            )}
           </section>
         )}
 

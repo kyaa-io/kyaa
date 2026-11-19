@@ -39,7 +39,7 @@ const show = (view: ResultView, extra: Partial<Parameters<typeof SajuResult>[0]>
       exp={20}
       sharing={false}
       backHref="/chemi/saju"
-      pair={{ name: "민지", result: { dayStems: ["병", "계"], combinations: [], clashes: [] }, timeKnown: false }}
+      pair={{ id: "pair-1", name: "민지", result: { dayStems: ["병", "계"], combinations: [], clashes: [] }, timeKnown: false }}
       {...handlers}
       {...extra}
     />,
@@ -67,9 +67,24 @@ it("올해·이달·궁합은 각자 제목과 다른 주제·다른 사람과 �
   expect(screen.getByText("열두 달")).toBeTruthy();
   expect(screen.getAllByRole("button", { name: "다른 주제" }).length).toBeGreaterThan(0);
 });
+it("올해 열두 달은 숫자 칩 12개이고 좋은 달·여유 둘 달이 표시로 구분된다", () => {
+  const { container } = show("year");
+  const chips = [...container.querySelectorAll("ol li[data-row]")];
+  expect(chips).toHaveLength(12);
+  expect(chips.filter((chip) => chip.getAttribute("data-mark") === "good").length).toBeGreaterThan(0);
+  expect(chips.filter((chip) => chip.getAttribute("data-mark") === "rest")).toHaveLength(1);
+  expect(chips.filter((chip) => chip.hasAttribute("data-current"))).toHaveLength(1);
+  // 색만으로 구분하지 않는다: 표시된 칩은 읽어 주는 이름도 가진다.
+  expect(container.querySelector('[data-mark="good"]')?.textContent).toContain("좋은 달");
+  expect(container.querySelector('[data-mark="rest"]')?.textContent).toContain("여유 둘 달");
+});
 it("이달 풀이", () => {
-  show("month");
+  const { container } = show("month");
   expect(screen.getByText("주별 흐름")).toBeTruthy();
+  const chips = [...container.querySelectorAll("ol li[data-row]")];
+  expect(chips.length).toBeGreaterThanOrEqual(4);
+  expect(container.querySelector('[data-mark="good"]')?.textContent).toContain("힘 있는 주");
+  expect(container.querySelector('[data-mark="rest"]')?.textContent).toContain("쉬어 갈 주");
 });
 it("궁합: 상대 이름과 시간 없이 봄 표시, 두 문장 고지", () => {
   const { container } = show("pair");

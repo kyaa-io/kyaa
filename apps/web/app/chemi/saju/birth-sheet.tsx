@@ -129,7 +129,6 @@ export function BirthSheet({
           />
           <FanTabs
             variant="segment"
-            className={styles.rail}
             label="달력 종류"
             current={calendar}
             items={calendars.map(([key, label]) => ({
@@ -163,7 +162,6 @@ export function BirthSheet({
         </div>
         <FanTabs
           variant="segment"
-          className={styles.rail}
           label="성별"
           current={gender ?? "none"}
           items={genders.map(([key, label]) => ({

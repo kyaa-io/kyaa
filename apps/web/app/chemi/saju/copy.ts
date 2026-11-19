@@ -330,7 +330,7 @@ export type YearReading = {
   span: string;
   grade: string;
   rate: { label: string; level: Level }[];
-  months: { label: string; score: number; current: boolean }[];
+  months: { label: string; mark?: "good" | "rest"; current: boolean }[];
   good: string;
   rest: string;
   help: string;
@@ -385,7 +385,7 @@ export function yearReading(chart: Chart, at: number): YearReading {
     rate: (["사람", "일", "돈", "연애"] as const).map((label, index) => ({ label, level: god.rate[index] })),
     months: months.map((m) => ({
       label: String(m.span.month),
-      score: m.score,
+      mark: goodMonths.includes(m) ? "good" : m === restMonth ? "rest" : undefined,
       current: m.at === current,
     })),
     good: goodMonths.map((m) => monthLabel(m.at)).join(" · "),
@@ -403,7 +403,8 @@ export type MonthReading = {
   name: string;
   span: string;
   rate: { label: string; level: Level }[];
-  weeks: { label: string; score: number; current: boolean }[];
+  /** label 은 시작 날짜(11.14), range 는 시작~끝 */
+  weeks: { label: string; range: string; mark?: "good" | "rest"; current: boolean }[];
   strong: string;
   rest: string;
   nextTerm: string;
@@ -415,7 +416,7 @@ export function monthReading(chart: Chart, at: number): MonthReading {
   const stem = dayStem(chart);
   const dayBr = dayBranch(chart);
   const god = godNotes[tenGod(stem, span.pillar.heavenlyStem)];
-  const weeks: MonthReading["weeks"] = [];
+  const scored: { label: string; range: string; score: number; current: boolean }[] = [];
   const weekMs = 7 * 86400000;
   for (let start = span.startAt; start < span.endAt; start += weekMs) {
     let score = 0;
@@ -425,12 +426,23 @@ export function monthReading(chart: Chart, at: number): MonthReading {
       score += (relation === "good" ? 1 : relation === "rough" ? -1 : 0) + (godScore[tenGod(stem, pillar.heavenlyStem)] >= 2 ? 1 : 0);
     }
     const end = Math.min(start + weekMs, span.endAt);
-    weeks.push({ label: `${seoulDateLabel(start)}~${seoulDateLabel(end - 86400000)}`, score, current: at >= start && at < end });
+    scored.push({
+      label: seoulDateLabel(start),
+      range: `${seoulDateLabel(start)}~${seoulDateLabel(end - 86400000)}`,
+      score,
+      current: at >= start && at < end,
+    });
   }
-  const best = weeks.reduce((a, b) => (b.score > a.score ? b : a));
-  const worst = weeks.reduce((a, b) => (b.score < a.score ? b : a));
+  const best = scored.reduce((a, b) => (b.score > a.score ? b : a));
+  const worst = scored.reduce((a, b) => (b.score < a.score ? b : a));
+  const weeks: MonthReading["weeks"] = scored.map((week) => ({
+    label: week.label,
+    range: week.range,
+    mark: week === best ? "good" : week === worst ? "rest" : undefined,
+    current: week.current,
+  }));
   const term = kstParts(span.endAt);
-  const tag = (week: (typeof weeks)[number]) => (week.current ? `${week.label} · 이번 주` : week.label);
+  const tag = (week: (typeof scored)[number]) => (week.current ? `${week.range} · 이번 주` : week.range);
   return {
     title: god.monthTitle,
     bond: god.monthBond,
@@ -441,7 +453,7 @@ export function monthReading(chart: Chart, at: number): MonthReading {
     strong: tag(best),
     rest: tag(worst),
     nextTerm: `${term.month}월 ${term.day}일 ${span.nextTerm}`,
-    line: best.current ? "이번 주가 제일 힘 있어. 미뤄 둔 거 지금 해." : `${best.label} 주가 제일 힘 있어. 미뤄 둔 건 그때 해.`,
+    line: best.current ? "이번 주가 제일 힘 있어. 미뤄 둔 거 지금 해." : `${best.range} 주가 제일 힘 있어. 미뤄 둔 건 그때 해.`,
   };
 }
 
