@@ -138,6 +138,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 최소 터치 | 44 | `--min-target` |
 | primary 버튼 | 44(390) / 48(1024+), 최대 폭 320 | `--fan-action-primary-height` `--fan-action-max-width` |
 | 작은 버튼 `size="sm"` | 보이는 36, 누르는 영역 44 | `FanAction` |
+| 큰 주 버튼 `size="lg"` | 높이 56, 글자 16, 아이콘 22, 폭 상한 없이 부모 폭을 채움. 화면 첫 행동인 이벤트 좋아요 카드에만(11/19 사용자 "좋아요 버튼 크게") | `--fan-action-lg-height` `--fan-action-lg-icon-size` |
 | 칩 | 보이는 36, 누르는 영역 44(::after) | `--fan-chip-height` |
 | 머리 칩(팬 인증·좋아요·별) | 28, 누르는 영역 44 | `FanStarAction` |
 | 밑줄 탭 / 세그먼트 / 태그 | 48 / 40 / 22 | `FanTabs`, `FanTag` |
@@ -151,7 +152,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 
 | 부품 | 쓰는 경우 | 주요 props | 쓰지 않는 경우 |
 |---|---|---|---|
-| `FanAction` | 글자가 있는 모든 버튼·링크 버튼 | `variant` primary·secondary(=neutral)·text·danger, `size` md·sm, `href`/`onClick`, `leadingIcon`, `loading`, `fullWidth`, `helperText` | primary는 화면당 1. `danger`는 모달 안 확인만. `service`·`passport`·`trailingIcon` 화살표는 폐기 |
+| `FanAction` | 글자가 있는 모든 버튼·링크 버튼 | `variant` primary·secondary(=neutral)·text·danger, `size` md·sm·lg, `href`/`onClick`, `leadingIcon`, `loading`, `fullWidth`, `helperText` | primary는 화면당 1. `danger`는 모달 안 확인만. `service`·`passport`·`trailingIcon` 화살표는 폐기 |
 | `FanIconButton` | 글자 없는 44 아이콘 버튼 | `aria-label` 필수, 메뉴·툴팁 트리거 | 글자가 있으면 `FanAction` |
 | `FanHeading` · `FanSectionHeader` | 화면 제목·구역 제목, 제목 줄 오른쪽 작은 링크 | `as` h1·h2·h3, `action {label, href}`, `extraAction` | `description`(보조 문구) 쓰지 않음 |
 | `FanSectionLink` | 제목 줄 오른쪽 `전체 보기 ›`. 같은 자리에서 펼치는 목록 미리보기도 이것(`onClick`+`expanded`, 펼친 뒤 `접기 ›`; 예: 팬페이지 390 팬 활동 3행 `FanMissions preview`, 11/13) | `href`/`onClick`, `expanded` | 목록 아래 따로 둔 버튼 줄 |
@@ -192,6 +193,10 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `GleamWidget` (`app/follow/gleam-widget.tsx`) | 이벤트 상세에 넣는 Gleam 대회 위젯(X 팔로우·리포스트, 완료 체크는 Gleam이 그림). 지금은 `/follow` 01·02 미션 카드 안 하나(사용자 11/16) | `href`(Gleam 설치 코드 주소) `title` | 다른 화면에 넣을 때는 CSP `gleamWidgetPaths`에 그 경로를 더한다. Gleam 안 색·글꼴은 무료 플랜이라 바꾸지 못한다 |
 | `/follow` 03 참여 줄 (`app/follow/follow-mission.module.css` `.entry`·`.ways`·`.row`) | 로그인·좋아요 카드를 위 카드의 Gleam 참여 줄과 같은 모양으로 보인다(대표 11/16 22:57 "gleam하고 비슷하게"). 흰 상자(16) 안에 얇은 머리 줄(번호·좋아요 수)과 테두리 줄(8): 검은 네모 아이콘 40 + 이름 + 오른쪽 버튼 | 버튼은 `FanAction` primary 하나(로그인 → 좋아요), 완료는 `--color-success` 체크 칸 64×44 | **이 화면만의 예외**(대표 지시): 아이콘 뒤 네모 면과 카드 안 상자 겹침은 Gleam 줄과 나란히 읽히게 하려는 것이라 다른 화면에 쓰지 않는다. 길이·둥글기는 Gleam 값(6·44·12)에 가장 가까운 토큰(`--radius-small`·`--space-10`·`--space-3`)을 쓴다. PC(64rem 이상)에서 완료 후 공유 버튼은 참여 완료 줄과 좌우 끝을 맞추기 위해 공통 폭 상한을 해제한다(11/18 18:18 정렬 요청). 휴대폰 순서는 01·02 → 03 |
 | `MyEvents` · `MyEventRowLink` (`features/my/ui/my-events.tsx`) | MY 이벤트 현황: 참여 중·참여 가능한 이벤트 한 줄(도장 40 · 이름 · 상태·기회 수 · D-day · 화살표). 래플·럭키드로우·찐팬100 하트 후원이 같은 줄을 쓴다(대표 11/13 09:12) | `rows` (`title` `href` `entered` `chances` `closesAt`) | 가짜 줄·자리표시 줄 없음. 줄이 없으면(비로그인·이벤트 없음) 구역을 그리지 않는다 |
+
+| `HomeEventStrip` | 홈 상단 이벤트 링크 | 제목·자정까지 남은 시간·44px `FanIconButton` | 흰 면과 강조 선. 배너 조회 후 본문과 같이 표시하며, 닫으면 아래 16px 패딩도 제거 |
+| `EventDayEyebrow` | 이벤트 배너 머리말 | 오늘 하루 이벤트·자정까지 남은 시간 | 12px 태그와 메타데이터 |
+| 홈 배너 이미지 배지 | 집계 중인 홈 캠페인 | 이미지 상단 모서리에 현지화된 상태 표시(모바일 왼쪽, 태블릿 이상 오른쪽) | 흰 알약·강조 잉크의 글자와 상태 점. 슬라이드 번호와 같은 글자 크기·안쪽 여백·모서리 간격. 11/19 추가 요청에 따라 이미지에 겹쳐 표시 |
 
 ### 7-1. 어느 것을 쓸까
 1. 답을 받아야 넘어가면 `FanDialog`, 390에서 긴 선택이면 `FanSheet`.
@@ -254,6 +259,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
    - 게이지·칸 채움(칸마다 45ms)
    - 선물 안 읽음 빛(애셋 opacity·transform, 3회 뒤 정지)
    - 아티스트 접속 알약(팬페이지 머리 접속 줄): 지금 접속 중이면 핑크 알약 + 점 고리 퍼짐 1.6s × 3회(숫자 롤링 뒤 .6s 지연), 방문만 한 날은 정지
+   - 홈 이벤트 첫 진입(11/19 요청): 흰 띠 뒤 옅은 강조 면이 세 번 나타났다 사라진 뒤, 배너의 ‘이벤트 중’ 배지가 세 번 부드럽게 흐려졌다 돌아온다. 움직임 줄이기에서는 둘 다 고정한다.
    - 팬 수 알약(팬페이지 머리 접속 줄 첫 값 `팬 27`, 대표 11/13): 핑크 알약(`--color-accent-soft` 면, 글자 `--color-accent-ink`) 뒤 면이 `--color-accent-line`으로 .6s 진해졌다 돌아오기 × 3회(숫자 롤링 뒤 .6s 지연), 글자는 움직이지 않고 이후 정지, reduced-motion은 알약만
 
 | 모션 토큰 | 값 | 쓰임 |
@@ -263,7 +269,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `--motion-easing` | cubic-bezier(.2, 0, 0, 1) | 모든 전환 |
 | `--motion-count` | 400ms | 숫자 카운트 |
 | `--motion-reward` | 600ms | 보상 팝 |
-| 연출 예외(`data-motion`) | 롤링 600(랭킹 850), FLIP 450, ▲▼ 500, 값 깜빡임 600, 스탬프 900, 럭키드로우 idle 8s 주기 | 해당 부품만 |
+| 연출 예외(`data-motion`) | 롤링 600(랭킹 850), FLIP 450, ▲▼ 500, 값 깜빡임 600, 스탬프 900, 럭키드로우 idle 8s 주기, 홈 이벤트 띠 배경 600ms × 3회, 이미지 배지 1200ms × 3회, 2100ms 지연·최저 opacity .6(11/19 요청) | 해당 부품만. 홈의 두 연출은 opacity만 바뀌고 움직임 줄이기에서는 정지 |
 | 폐기 | `--motion-control` 160 · `--motion-layout` 240 · `--motion-exit` 120 | fast/slow로 |
 
 규칙

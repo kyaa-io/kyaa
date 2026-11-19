@@ -124,3 +124,9 @@ it("shows a finished action as a status in the button slot, not a dimmed disable
   expect(status.className).toMatch(/neutral/);
   expect(status.className).toMatch(/status/);
 });
+
+it("gives the large primary button and its finished status the same lg size", () => {
+  render(<><FanAction variant="primary" size="lg" fullWidth>좋아요 남기기</FanAction><FanActionStatus size="lg">좋아요 완료</FanActionStatus></>);
+  expect(screen.getByRole("button", { name: "좋아요 남기기" }).className).toContain(styles.lg);
+  expect(screen.getByRole("status").className).toContain(styles.lg);
+});

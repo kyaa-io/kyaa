@@ -39,7 +39,7 @@ describe("admin event participants read", () => {
     expect(deps.rpc).not.toHaveBeenCalled();
   });
   it("passes the page and window only for windowed events", async () => {
-    const from = "2026-11-17T00:00:00+09:00", to = "2026-11-18T00:00:00+09:00";
+    const from = "2026-11-17T00:00:00+09:00", to = "2026-11-24T00:00:00+09:00";
     deps.rpc.mockResolvedValue({ ...page, rows: [{ ...row, status: "issued" }] });
     const response = await handler(request(`event=passport-issued&slug=elina&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`));
     expect(response.status).toBe(200);
@@ -58,7 +58,7 @@ describe("admin event participants read", () => {
     expect(deps.rpc).not.toHaveBeenCalled();
   });
   it("passes a campaign only when it is a known preset describing exactly this window, and returns its source totals", async () => {
-    const from = "2026-11-17T00:00:00+09:00", to = "2026-11-18T00:00:00+09:00", window = `slug=elina&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
+    const from = "2026-11-17T00:00:00+09:00", to = "2026-11-24T00:00:00+09:00", window = `slug=elina&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
     const tagged = { ...page, rows: [{ ...row, sourceTag: { source: "telegram", content: "cgaa" } }, { ...row, id: "10000000-0000-4000-8000-000000000002", sourceTag: null }], total: 2, sourceTotals: [{ source: "telegram", content: "cgaa", count: 1 }] };
     deps.rpc.mockResolvedValue(tagged);
     const response = await handler(request(`event=page-like&${window}&campaign=elina-onboarding-1117`));

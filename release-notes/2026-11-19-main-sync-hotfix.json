@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "다음 업데이트 후에도 홈 첫 배너에서 엘리나 이벤트로 바로 이동하고, 팬페이지에서 큰 좋아요 버튼으로 참여할 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-19-event-shift2-fix2-390.png",
+    "release-notes/images/2026-11-19-event-like-big-390.png"
+  ]
+}

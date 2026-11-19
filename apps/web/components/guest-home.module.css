@@ -32,6 +32,8 @@
 
 .shell { display: grid; width: min(100%, var(--shell-max-width)); margin-inline: auto; padding: 24px 16px var(--fan-section-gap); padding-inline: var(--shell-inset); }
 .main { min-width: 0; }
+/* Keep the footer below the first viewport while the banner and event strip resolve together. */
+.pendingContent { min-block-size: 100svh; }
 .heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
 .contentSection { margin-top: var(--fan-section-gap); }
 /* 대표 2026-11-17: 찐팬 하트 후원 줄(홈배너1)은 랭킹 카드 바로 아래, 위 16px. 다음 구역과의 간격은 그쪽이 가진다. */
@@ -44,7 +46,7 @@
 .heroCarousel { position: relative; color: var(--color-surface); }
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 /* 홈 배너 규격(2026-11-09 사용자 피드백): 본문 폭 안, 390 높이 200, 768+ 폭의 28%(380 상한). 왼쪽 글·오른쪽 그림은 home-hero-banner.module.css. */
-.heroViewport { position: relative; width: 100%; overflow: hidden; height: 200px; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
+.heroViewport { position: relative; isolation: isolate; width: 100%; overflow: hidden; height: 200px; border-radius: 20px; background: var(--ink); touch-action: pan-y pinch-zoom; }
 .heroShine { position: absolute; inset: 0; z-index: 2; border-radius: inherit; box-shadow: inset 0 0 0 1px var(--color-line); pointer-events: none; }
 .heroShine::before { content: none; }
 .heroCarousel[data-motion-visible="true"][data-shine-paused="false"] .heroShine::before { animation-play-state: running; }
@@ -86,6 +88,7 @@
 .carouselControls > button { position: absolute; top: 50%; transform: translateY(-50%); display: grid; width: 44px; min-width: 44px; height: 44px; padding: 0; place-items: center; border: 0; background: transparent; color: var(--color-surface); cursor: pointer; pointer-events: auto; }
 .carouselControls > button::before { position: absolute; width: 32px; height: 32px; border: 1px solid color-mix(in srgb, var(--color-surface) 24%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--color-ink) 44%, transparent); content: ""; transition: background-color 160ms cubic-bezier(.2,0,0,1); }
 .carouselControls > button svg { position: relative; z-index: 1; width: 16px; height: 16px; }
+.carouselPill { padding: var(--space-1) var(--space-2); border-radius: var(--radius-pill); font-size: var(--fan-badge-size); }
 .carouselCounter { display: none; }
 /* 좌우 화살표는 배너 이미지 박스 안쪽 가장자리, 세로 가운데(사용자 2026-11-11 08:30: 11/10 '밖' 결정 대체). */
 .carouselPrevious { left: 0; }
@@ -403,7 +406,7 @@
   .carouselControls > .carouselPrevious, .carouselControls > .carouselNext { width: 1px; min-width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .carouselControls > .carouselPrevious:focus-visible, .carouselControls > .carouselNext:focus-visible { width: 44px; min-width: 44px; height: 44px; overflow: visible; clip-path: none; }
   .carouselProgress { display: none; }
-  .carouselCounter { position: absolute; z-index: var(--z-home-live); top: 12px; right: 12px; display: block; pointer-events: none; padding:var(--space-1) var(--space-2); border-radius: var(--radius-pill); background: var(--color-home-caption); color: var(--color-surface); font-size:var(--fan-badge-size); font-variant-numeric: tabular-nums; }
+  .carouselCounter { position: absolute; z-index: var(--z-home-live); top: 12px; right: 12px; display: block; pointer-events: none; background: var(--color-home-caption); color: var(--color-surface); font-variant-numeric: tabular-nums; }
 }
 
 

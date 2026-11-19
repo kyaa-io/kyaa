@@ -1,48 +1,44 @@
 import { describe, expect, it } from "vitest";
-import { prioritizeEventBanners } from "./event-banner-priority";
+import { adminEventBanners, isAdminEventBanner, orderHomeBanners } from "./event-banner-priority";
+import { SIGNUP_RAFFLE_BANNER_ID } from "./signup-raffle-home-banner";
+import { xMissionHomeBanner } from "./x-mission-home-banner";
 
-const banners = [
-  { id: "guide", href: "/guide" },
-  { id: "x", href: "/s/x?locale=ko" },
-  { id: "elina", href: "/elina" },
-  { id: "changha", href: "/changha?locale=ko" },
-  { id: "yuna", href: "/yuna/" },
-  { id: "elina-passport", href: "/c/elina/verify?locale=ko" },
-  { id: "elina-news", href: "/c/elina/notices/hello" },
-  { id: "external", href: "https://example.com/elina" },
+const pinned = [
+  { id: "missionbook", category: "guide" },
+  { id: SIGNUP_RAFFLE_BANNER_ID, category: "event" },
+  { id: xMissionHomeBanner("ko").id, category: "event" },
+  { id: "gggi" },
 ];
-const ids = (at: string) => prioritizeEventBanners(banners, new Date(at)).map((banner) => banner.id);
-const original = banners.map((banner) => banner.id);
-const without = (id: string) => original.filter((value) => value !== id);
+const managed = [
+  { id: "news", category: "announcement" },
+  { id: "yuna", category: "event" },
+  { id: "elina-news", category: "announcement" },
+  { id: "changha", category: "event" },
+  { id: "plain" },
+];
+const ids = (list: readonly { id: string }[]) => list.map((banner) => banner.id);
 
-describe("prioritizeEventBanners", () => {
-  it("puts Elina's banner first during her 11/17 window and keeps the others in order", () => {
-    expect(ids("2026-11-17T00:00:00+09:00")).toEqual(["elina", ...without("elina")]);
-    expect(ids("2026-11-17T23:59:59+09:00")[0]).toBe("elina");
+describe("orderHomeBanners", () => {
+  it("puts the admin 'event' banners first in admin order, then the code-pinned banners, then the other admin banners", () => {
+    expect(ids(orderHomeBanners(pinned, managed))).toEqual(["yuna", "changha", ...ids(pinned), "news", "elina-news", "plain"]);
   });
 
-  it("puts Changha's banner first on 11/18 and during 11/22~23", () => {
-    expect(ids("2026-11-18T10:00:00+09:00")).toEqual(["changha", ...without("changha")]);
-    expect(ids("2026-11-22T00:00:00+09:00")[0]).toBe("changha");
-    expect(ids("2026-11-23T23:59:59+09:00")[0]).toBe("changha");
+  it("prioritizes Elina first, adds Changha and Yuna on Nov 20, and stops at the end of the window", () => {
+    const campaigns = ["yuna", "changha", "elina"].map(id => ({ id, category: "event", href: `/${id}?locale=ko` }));
+    expect(ids(adminEventBanners(campaigns, Date.parse("2026-11-19T23:59:59+09:00")))).toEqual(["elina"]);
+    expect(ids(adminEventBanners(campaigns, Date.parse("2026-11-20T00:00:00+09:00")))).toEqual(["elina", "changha", "yuna"]);
+    expect(ids(adminEventBanners(campaigns, Date.parse("2026-11-24T00:00:00+09:00")))).toEqual([]);
   });
 
-  it("puts Yuna's banner first on 11/19, matching despite a trailing slash", () => {
-    expect(ids("2026-11-19T12:00:00+09:00")).toEqual(["yuna", ...without("yuna")]);
+  it("keeps pinned first when no admin banner is an event (code-pinned event banners never jump ahead)", () => {
+    expect(ids(orderHomeBanners(pinned, managed.filter((banner) => banner.category !== "event")))).toEqual([...ids(pinned), "news", "elina-news", "plain"]);
+    expect(ids(orderHomeBanners(pinned, []))).toEqual(ids(pinned));
   });
 
-  it("puts the Elina Passport banner (/c/elina/verify) first on 11/20~21, not her page banner", () => {
-    expect(ids("2026-11-20T12:00:00+09:00")).toEqual(["elina-passport", ...without("elina-passport")]);
-    expect(ids("2026-11-21T23:59:59+09:00")[0]).toBe("elina-passport");
-  });
-
-  it("returns the same list when no window is open (11/16, 11/24)", () => {
-    expect(prioritizeEventBanners(banners, new Date("2026-11-16T12:00:00+09:00"))).toBe(banners);
-    expect(prioritizeEventBanners(banners, new Date("2026-11-24T12:00:00+09:00"))).toBe(banners);
-  });
-
-  it("leaves the order alone when the open window has no matching banner", () => {
-    const withoutElina = banners.filter((banner) => banner.id !== "elina");
-    expect(prioritizeEventBanners(withoutElina, new Date("2026-11-17T12:00:00+09:00")).map((banner) => banner.id)).toEqual(withoutElina.map((banner) => banner.id));
+  it("does not count the signup raffle or the X event as admin event banners", () => {
+    expect(isAdminEventBanner({ id: SIGNUP_RAFFLE_BANNER_ID, category: "event" })).toBe(false);
+    expect(isAdminEventBanner({ id: xMissionHomeBanner("ko").id, category: "event" })).toBe(false);
+    expect(isAdminEventBanner({ id: "yuna", category: "event" })).toBe(true);
+    expect(ids(adminEventBanners(managed))).toEqual(["yuna", "changha"]);
   });
 });

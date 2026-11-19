@@ -1,21 +1,41 @@
-import { pageLikeEventWindows, passportIssuedEventWindows } from "@/features/reaction/domain/page-like-event";
+import { openPageLikeEvent } from "../../reaction/domain/page-like-event";
+import { SIGNUP_RAFFLE_BANNER_ID } from "./signup-raffle-home-banner";
+import { xMissionHomeBanner } from "./x-mission-home-banner";
 
-const inWindow = (window: { from: string; to: string }, at: number) => Date.parse(window.from) <= at && at < Date.parse(window.to);
+/** 홈이 코드로 두는 구분 '이벤트' 배너(가입 래플·X 이벤트). 관리자 배너가 아니므로 '오늘 하루 이벤트' 강조·상단 띠·1번 앞세움 대상이 아니다. */
+const codePinnedEventBannerIds: ReadonlySet<string> = new Set([SIGNUP_RAFFLE_BANNER_ID, xMissionHomeBanner("ko").id]);
 
-/** 지금 열린 이벤트 창(`eventParticipantWindowEvents`)이 가리키는 배너 경로 판정. page-like는 `/<slug>`, passport-issued는 `/c/<slug>/verify`로 시작하는 내부 링크. */
-function openEventBannerMatchers(at: number): ((path: string) => boolean)[] {
-  const pageLike = Object.values(pageLikeEventWindows).filter((window) => inWindow(window, at)).map((window) => (path: string) => path === `/${window.slug}`);
-  const passport = Object.values(passportIssuedEventWindows).filter((window) => inWindow(window, at)).map((window) => (path: string) => path === `/c/${window.slug}/verify` || path.startsWith(`/c/${window.slug}/verify/`));
-  return [...pageLike, ...passport];
+/** 관리자에서 구분을 '이벤트'로 둔 공개 배너. 날짜 창이 아니라 이 구분이 진행 중 이벤트를 가리킨다(11/19 14:1x 결정). */
+export function isAdminEventBanner(banner: { id: string; category?: string }): boolean {
+  return banner.category === "event" && !codePinnedEventBannerIds.has(banner.id);
 }
 
-/**
- * 이벤트 날에는 그날 이벤트 배너를 홈 슬라이더 첫 칸으로 올린다(관리자 화면으로는 순서를 못 바꾼다).
- * 판단은 배너 링크(href)뿐이다. 맞는 배너끼리 원래 순서를 지키고 나머지 배너의 순서도 그대로이며, 열린 창이 없으면 입력을 그대로 돌려준다.
- */
-export function prioritizeEventBanners<T extends { href: string }>(banners: readonly T[], now: Date | number): readonly T[] {
-  const matchers = openEventBannerMatchers(typeof now === "number" ? now : now.getTime());
-  if (!matchers.length) return banners;
-  const isEvent = (banner: T) => banner.href.startsWith("/") && !banner.href.startsWith("//") && matchers.some((match) => match(banner.href.split(/[?#]/)[0]!.replace(/(?<=.)\/$/, "")));
-  return [...banners.filter(isEvent), ...banners.filter((banner) => !isEvent(banner))];
+type EventBanner = { id: string; category?: string; href?: string };
+
+// Home promotion starts on the public announcement date. Like counting
+// retains its earlier start dates for each creator.
+const campaignSlugs = ["elina", "changha", "yuna"] as const;
+const nextCampaignDay = Date.parse("2026-11-20T00:00:00+09:00");
+
+function campaignIndex(banner: EventBanner): number {
+  const path = banner.href?.split(/[?#]/)[0]?.replace(/\/$/, "");
+  return campaignSlugs.findIndex(slug => path === `/${slug}`);
+}
+
+export function isLiveCampaignBanner(banner: EventBanner, now: number): boolean {
+  const index = campaignIndex(banner);
+  return isAdminEventBanner(banner) && index >= 0 && (index === 0 || now >= nextCampaignDay)
+    && Boolean(openPageLikeEvent(campaignSlugs[index]!, now));
+}
+
+export function adminEventBanners<T extends EventBanner>(banners: readonly T[], now = Date.now()): T[] {
+  const active = banners.filter(banner => isLiveCampaignBanner(banner, now));
+  active.sort((a, b) => campaignIndex(a) - campaignIndex(b));
+  return [...active, ...banners.filter(banner => isAdminEventBanner(banner) && campaignIndex(banner) < 0)];
+}
+
+export function orderHomeBanners<T extends EventBanner>(pinned: readonly T[], managed: readonly T[], now = Date.now()): T[] {
+  const events = adminEventBanners(managed, now);
+  const prioritized = new Set(events.map(banner => banner.id));
+  return [...events, ...pinned, ...managed.filter(banner => !prioritized.has(banner.id))];
 }

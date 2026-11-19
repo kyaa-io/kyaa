@@ -17,6 +17,7 @@ import { createHomeGalleryRepository } from "../server/home-gallery/home-gallery
 import { createHomeNoticeRepository } from "../server/home-notice/home-notice-repository";
 import { cookies } from "next/headers";
 import { FIRST_STEPS_COOKIE, firstStepsDoneCookie } from "../features/onboarding/domain/first-steps";
+import { EVENT_STRIP_COOKIE } from "../features/home/domain/event-day";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,9 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ locale?: string | string[] }> }) {
   const locale = parseAppLocale((await searchParams).locale);
-  const firstStepsDone = firstStepsDoneCookie((await cookies()).get(FIRST_STEPS_COOKIE)?.value);
+  const cookieStore = await cookies();
+  const firstStepsDone = firstStepsDoneCookie(cookieStore.get(FIRST_STEPS_COOKIE)?.value);
+  const closedEventStrip = cookieStore.get(EVENT_STRIP_COOKIE)?.value;
   const environment = loadServerEnv();
   const celebrityRepository = createPublishedContentRepositoryFromEnvironment();
   const bannerRepository = createHomeBannerRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
@@ -69,6 +72,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       heartDonation={heartDonationEvent()}
       homeTop={homeTopBanner()}
       firstSteps={!firstStepsDone}
+      closedEventStrip={closedEventStrip}
     />
   </>;
 }
