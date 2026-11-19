@@ -17,7 +17,7 @@ describe("HomeEventStrip", () => {
     expect(link).toHaveAttribute("href", "/yuna?locale=ko");
     expect(link).toHaveTextContent("유나 × Kyaa");
     expect(link).toHaveTextContent("오늘 하루 이벤트");
-    expect(link).toHaveTextContent("10시간 36분 남음");
+    expect(link).toHaveTextContent("17시간 36분 남음");
   });
 
   it("closes with a 44px button and remembers the banner id in a cookie", () => {
@@ -30,14 +30,14 @@ describe("HomeEventStrip", () => {
 
   it("uses the reader's language", () => {
     render(<HomeEventStrip banner={{ ...banner, title: "Yuna × Kyaa" }} locale="en" now={at} />);
-    expect(screen.getByRole("link")).toHaveTextContent("10h 36m left");
+    expect(screen.getByRole("link")).toHaveTextContent("17h 36m left");
     expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
   });
 });
 
 describe("EventDayEyebrow", () => {
   it("shows the tag with the time left; under an hour it counts minutes only", () => {
-    const { container } = render(<EventDayEyebrow locale="ko" now={new Date("2026-11-19T23:24:00+09:00")} />);
+    const { container } = render(<EventDayEyebrow locale="ko" now={new Date("2026-11-20T06:24:00+09:00")} />);
     expect(container).toHaveTextContent("오늘 하루 이벤트");
     expect(container).toHaveTextContent("36분 남음");
   });

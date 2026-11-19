@@ -11,6 +11,18 @@ export function minutesUntilKstMidnight(now: Date | number): number {
   return Math.ceil((nextMidnight - at) / MINUTE_MS);
 }
 
+/** X 이벤트 글은 저녁에 올라가 12시간 진행된다(11/19 사용자 결정: 다음 날 07:00 KST 마감). */
+export const EVENT_DAY_END_HOUR_KST = 7;
+
+/** 지금부터 다음 이벤트 마감(KST 07:00)까지 남은 분. 07:00 전이면 오늘 07:00, 지나면 다음 날 07:00. */
+export function minutesUntilEventDayEnd(now: Date | number): number {
+  const at = typeof now === "number" ? now : now.getTime();
+  const kst = at + KST_OFFSET_MS;
+  let end = Math.floor(kst / DAY_MS) * DAY_MS + EVENT_DAY_END_HOUR_KST * 60 * MINUTE_MS;
+  if (kst >= end) end += DAY_MS;
+  return Math.ceil((end - kst) / MINUTE_MS);
+}
+
 type EventDayCopy = { label: string; hour: string; minute: string; join: string; left: (time: string) => string; close: string };
 
 const copy: Record<AppLocale, EventDayCopy> = {
@@ -36,7 +48,7 @@ export const eventDayCloseLabel = (locale: AppLocale): string => copy[locale].cl
 /** `10시간 36분 남음`. 1시간 미만이면 분만(`36분 남음`), 정각이면 시간만(`10시간 남음`). */
 export function eventDayRemainingText(locale: AppLocale, now: Date | number): string {
   const { hour, minute, join, left } = copy[locale];
-  const total = minutesUntilKstMidnight(now);
+  const total = minutesUntilEventDayEnd(now);
   const hours = Math.floor(total / 60);
   const minutes = total % 60;
   const parts = [hours > 0 ? `${hours}${hour}` : null, hours === 0 || minutes > 0 ? `${minutes}${minute}` : null].filter((part): part is string => part !== null);
