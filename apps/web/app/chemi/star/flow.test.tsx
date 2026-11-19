@@ -210,3 +210,43 @@ it("resumes a calculation address opened in a new tab instead of dropping to the
   const posts = fetcher.mock.calls.filter(([path, init]) => path === "/api/chemi/readings" && init?.method === "POST");
   expect(JSON.parse(String(posts[0]![1]!.body)).character).toBe("elina");
 });
+
+function slowRestore(lateResponse: () => Response) {
+  let finish: () => void = () => {};
+  const late = new Promise<void>((resolve) => (finish = resolve));
+  stubFetch((path) => {
+    if (path.startsWith("/api/chemi/readings/a?")) return late.then(lateResponse) as unknown as Response;
+    if (path.startsWith("/api/chemi/readings/b?")) return Response.json({ ...reading(), readingId: "b" });
+    return undefined;
+  });
+  return finish;
+}
+
+async function leaveSlowRestoreForB() {
+  window.history.replaceState(null, "", "/chemi/star?locale=ko&step=result&r=a&c=changha");
+  render(<StarFlow locale="ko" restoring />);
+  window.history.pushState(null, "", "/chemi/star?locale=ko&step=result&r=b&c=changha");
+  window.dispatchEvent(new PopStateEvent("popstate"));
+  expect(await screen.findByRole("heading", { name: "왜 그런지" })).toBeTruthy();
+}
+
+it("ignores a slow restore that fails after the history moved to another result", async () => {
+  const finish = slowRestore(() => Response.json({ error: { code: "CHEMI_NOT_FOUND" } }, { status: 404 }));
+  await leaveSlowRestoreForB();
+  finish();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(window.location.search).toContain("r=b");
+  expect(window.location.search).toContain("step=result");
+  expect(toast).not.toHaveBeenCalled();
+  expect(screen.getByRole("heading", { name: "왜 그런지" })).toBeTruthy();
+});
+
+it("ignores a slow restore that succeeds after the history moved to another result", async () => {
+  const finish = slowRestore(() => Response.json({ ...reading(), readingId: "a" }));
+  await leaveSlowRestoreForB();
+  finish();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  expect(window.location.search).toContain("r=b");
+  expect(window.location.search).not.toContain("r=a");
+  expect(screen.getByRole("heading", { name: "왜 그런지" })).toBeTruthy();
+});

@@ -99,7 +99,7 @@
     column-gap: var(--space-5);
   }
   .planets li {
-    grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+    grid-template-columns: 3.5rem 6rem auto;
   }
   .aspects li {
     grid-template-columns: minmax(0, 1fr);

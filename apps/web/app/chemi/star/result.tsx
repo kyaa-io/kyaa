@@ -231,7 +231,7 @@ export function StarResult({
             <FanHeading as="h1">{overallHeadline[stars.overall - 1]}</FanHeading>
           </div>
           <FanText as="p" role="meta">
-            태어난 시간 없이 본 운세
+            {result.timeKnown ? "태어난 시각으로 본 운세" : "태어난 시간 없이 본 운세"}
           </FanText>
           <StarRating
             value={stars.overall}

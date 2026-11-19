@@ -144,6 +144,8 @@ export function StarFlow({
   const [participation, setParticipation] = useState<Participation>(null);
   const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
+  /** 저장된 결과를 불러오는 요청. 다른 주소로 이동하거나 새 요청이 시작되면 끊어 늦은 응답이 화면·주소를 덮지 못하게 한다. */
+  const restore = useRef<AbortController | null>(null);
 
   const index = starCharacters.findIndex((c) => c.id === character);
   const name = starCharacters[index].name;
@@ -154,14 +156,19 @@ export function StarFlow({
    */
   const loadSaved = useCallback(
     async (readingId: string, id: StarCharacterId, target: StarStep) => {
+      restore.current?.abort();
+      const controller = new AbortController();
+      restore.current = controller;
       setRestoring(true);
       setRestoreFailure(null);
       try {
-        const response = await fetch(
-          `/api/chemi/readings/${encodeURIComponent(readingId)}?c=${id}`,
-          { headers: { Authorization: `Bearer ${await getAccessToken()}` } },
-        );
+        const token = await getAccessToken();
+        const response = await fetch(`/api/chemi/readings/${encodeURIComponent(readingId)}?c=${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
         const body = await response.json().catch(() => null);
+        if (restore.current !== controller) return;
         if (response.ok) {
           const data = parseTodayStar(body);
           if (!data) throw new ChemiRequestError("CHEMI_NOT_TODAY", response.status);
@@ -171,6 +178,8 @@ export function StarFlow({
         }
         throw new ChemiRequestError(body?.error?.code ?? null, response.status);
       } catch (error) {
+        // 다른 주소로 떠났거나 새 불러오기가 이어받은 요청의 끝은 주소와 화면에 반영하지 않는다.
+        if (restore.current !== controller) return;
         const gone =
           error instanceof ChemiRequestError &&
           (error.code === "CHEMI_NOT_TODAY" || error.status === 400 || error.status === 404);
@@ -184,13 +193,22 @@ export function StarFlow({
           setRestoreFailure({ readingId, character: id, step: target });
         }
       } finally {
-        setRestoring(false);
+        if (restore.current === controller) {
+          restore.current = null;
+          setRestoring(false);
+        }
       }
     },
     [getAccessToken],
   );
 
-  useEffect(() => () => abort.current?.abort(), []);
+  useEffect(
+    () => () => {
+      abort.current?.abort();
+      restore.current?.abort();
+    },
+    [],
+  );
 
   const run = useCallback(
     async (id: StarCharacterId) => {
@@ -278,6 +296,9 @@ export function StarFlow({
       // 계산 중에 떠나면 요청을 끊어, 늦게 온 응답이 화면을 끌고 가지 못하게 한다.
       abort.current?.abort();
       abort.current = null;
+      restore.current?.abort();
+      restore.current = null;
+      setRestoring(false);
       const url = readUrl();
       setCharacter(url.character);
       setPhase("idle");

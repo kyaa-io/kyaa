@@ -84,7 +84,7 @@ export function StarChart({
       <div className={styles.main}>
         <header className={styles.head}>
           <FanText as="p" role="meta">
-            열대 황도 기준 · 태어난 시간 없이
+            {reading.result.timeKnown ? "열대 황도 기준 · 태어난 시각 반영" : "열대 황도 기준 · 태어난 시간 없이"}
           </FanText>
           <FanHeading as="h1">{summary}</FanHeading>
         </header>

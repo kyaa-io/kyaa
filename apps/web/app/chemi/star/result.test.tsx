@@ -106,3 +106,16 @@ it("draws the wheel with all twelve signs and ten planets, and the chart section
   expect(screen.getByRole("heading", { name: "원소 · 양식" })).toBeTruthy();
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("황소의 고집, 게의 다정함");
 });
+
+it("says whether the birth time was used, on the result and on the chart", () => {
+  const unknown = render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  expect(screen.getByText("태어난 시간 없이 본 운세")).toBeTruthy();
+  unknown.unmount();
+  const exact = { ...reading, result: { ...reading.result, timeKnown: true } } as StarReading;
+  const result = render(<StarResult locale="ko" reading={exact} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  expect(screen.getByText("태어난 시각으로 본 운세")).toBeTruthy();
+  expect(screen.queryByText("태어난 시간 없이 본 운세")).toBeNull();
+  result.unmount();
+  render(<StarChart locale="ko" reading={exact} character="changha" onBack={() => {}} />);
+  expect(screen.getByText("열대 황도 기준 · 태어난 시각 반영")).toBeTruthy();
+});

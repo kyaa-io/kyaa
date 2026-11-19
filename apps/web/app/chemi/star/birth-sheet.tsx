@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
+import { FanText } from "@/components/fan-ui/fan-text";
 import {
   birthDateIssue,
   birthTextToIso,
@@ -99,10 +100,14 @@ export function BirthSheet({
               value={gender ?? "none"}
               onChange={(key) => setGender(key === "none" ? null : key)}
             />
-            <small>저장하면 생일 정보 수집·이용에 동의한 것으로 봐요.</small>
+            <FanText role="meta">저장하면 생일 정보 수집·이용에 동의한 것으로 봐요.</FanText>
           </>
         )}
-        {error && <small role="alert">{error}</small>}
+        {error && (
+          <div role="alert">
+            <FanText role="meta">{error}</FanText>
+          </div>
+        )}
       </div>
     </FanSheet>
   );
