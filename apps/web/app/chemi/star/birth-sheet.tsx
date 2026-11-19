@@ -1,53 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
-import { FanTabs } from "@/components/fan-ui/fan-tabs";
+import {
+  birthDateIssue,
+  birthTextToIso,
+  koreaToday,
+  timeToApi,
+  type BirthCalendar,
+  type BirthGender,
+  type BirthTime,
+} from "@/features/chemi/domain/birth-form";
+import ko from "@/features/chemi/i18n/locales/ko/chemi.json";
+import { BirthDateField, BirthTimeField, ChoiceField } from "@/features/chemi/ui/frame/birth-fields";
 import styles from "./scene.module.css";
 
 export type BirthInput = {
   birthDate: string;
-  calendar: "solar" | "lunar" | "lunar_leap";
+  calendar: BirthCalendar;
   birthTime: string | null;
-  timePrecision: "exact" | "unknown";
-  gender: "female" | "male" | null;
+  timePrecision: "exact" | "band" | "unknown";
+  gender: BirthGender;
 };
 
+const copy = ko.myBirth;
 const calendars = [
-  ["solar", "양력"],
-  ["lunar", "음력"],
-  ["lunar_leap", "음력 윤달"],
-] as const;
-
+  { key: "solar" as const, label: copy.solar },
+  { key: "lunar" as const, label: copy.lunar },
+  { key: "lunar_leap" as const, label: copy.lunarLeap },
+];
 const genders = [
-  ["female", "여성"],
-  ["male", "남성"],
-  [null, "선택 안 함"],
-] as const;
+  { key: "female" as const, label: copy.female },
+  { key: "male" as const, label: copy.male },
+  { key: "none" as const, label: copy.noGender },
+];
 
-/** 숫자만 받아 1995.05.05 꼴로 만든다. */
-export function maskBirthDate(raw: string) {
-  const digits = raw.replace(/\D/g, "").slice(0, 8);
-  return [digits.slice(0, 4), digits.slice(4, 6), digits.slice(6, 8)]
-    .filter(Boolean)
-    .join(".");
-}
-
-/** 1995.05.05 → 1995-05-05. 없는 날짜·미래·1900년 이전이면 null. */
-export function parseBirthDate(masked: string) {
-  const match = /^(\d{4})\.(\d{2})\.(\d{2})$/.exec(masked);
-  if (!match) return null;
-  const [, year, month, day] = match;
-  const date = new Date(`${year}-${month}-${day}T00:00:00Z`);
-  const valid =
-    !Number.isNaN(+date) &&
-    date.toISOString().startsWith(`${year}-${month}-${day}`) &&
-    Number(year) >= 1900 &&
-    +date <= Date.now();
-  return valid ? `${year}-${month}-${day}` : null;
-}
-
+/**
+ * 별자리 운세 첫 생일 시트(생년월일·달력 → 태어난 시간 → 성별). 입력 칸·시간 휠·시진 띠는
+ * 내 생일 정보와 같은 공통 부품이고, 브라우저 기본 날짜·시간 입력은 쓰지 않는다.
+ */
 export function BirthSheet({
   open,
   busy,
@@ -63,24 +54,19 @@ export function BirthSheet({
 }) {
   const [step, setStep] = useState(0);
   const [date, setDate] = useState("");
-  const [calendar, setCalendar] = useState<BirthInput["calendar"]>("solar");
-  const [time, setTime] = useState<string | null>(null);
-  const [gender, setGender] = useState<BirthInput["gender"]>(null);
-  const birthDate = parseBirthDate(date);
+  const [calendar, setCalendar] = useState<BirthCalendar>("solar");
+  const [time, setTime] = useState<BirthTime>({ kind: "unknown" });
+  const [gender, setGender] = useState<BirthGender>(null);
+  const issue = date === "" ? null : birthDateIssue(date, koreaToday());
+  const dateError = issue === "invalid" ? copy.invalidDate : issue === "under14" ? copy.under14 : null;
   const last = step === 2;
   const primary = {
     label: last ? "저장하고 보기" : "다음",
-    disabled: step === 0 ? !birthDate : false,
+    disabled: step === 0 ? birthDateIssue(date, koreaToday()) !== null : false,
     loading: busy,
     onClick: () => {
       if (!last) return setStep(step + 1);
-      onSave({
-        birthDate: birthDate!,
-        calendar,
-        birthTime: time,
-        timePrecision: time ? "exact" : "unknown",
-        gender,
-      });
+      onSave({ birthDate: birthTextToIso(date)!, calendar, ...timeToApi(time), gender });
     },
   };
   return (
@@ -90,77 +76,28 @@ export function BirthSheet({
       title="생일 정보"
       closeLabel="닫기"
       primary={primary}
-      secondary={
-        step > 0 ? { label: "이전", onClick: () => setStep(step - 1) } : undefined
-      }
+      secondary={step > 0 ? { label: "이전", onClick: () => setStep(step - 1) } : undefined}
     >
       <div className={styles.field}>
-        <div
-          className={styles.steps}
-          role="img"
-          aria-label={`3단계 중 ${step + 1}단계`}
-        >
+        <div className={styles.steps} role="img" aria-label={`3단계 중 ${step + 1}단계`}>
           {[0, 1, 2].map((index) => (
             <i key={index} aria-current={index === step ? "step" : undefined} />
           ))}
         </div>
         {step === 0 && (
           <>
-            <label htmlFor="chemi-birth">생년월일</label>
-            <input
-              id="chemi-birth"
-              autoComplete="bday"
-              inputMode="numeric"
-              maxLength={10}
-              placeholder="YYYY.MM.DD"
-              value={date}
-              onChange={(event) => setDate(maskBirthDate(event.target.value))}
-            />
-            <FanTabs
-              variant="segment"
-              className={styles.rail}
-              label="달력 종류"
-              current={calendar}
-              items={calendars.map(([key, label]) => ({
-                key,
-                label,
-                onSelect: () => setCalendar(key),
-              }))}
-            />
+            <BirthDateField label={copy.fieldDate} value={date} onChange={setDate} error={dateError} copy={copy} />
+            <ChoiceField<BirthCalendar> label={copy.calendarLabel} options={calendars} value={calendar} onChange={setCalendar} />
           </>
         )}
-        {step === 1 && (
-          <>
-            <label htmlFor="chemi-time">태어난 시간</label>
-            <input
-              id="chemi-time"
-              type="time"
-              value={time ?? ""}
-              onChange={(event) => setTime(event.target.value || null)}
-            />
-            <FanAction
-              variant="neutral"
-              size="sm"
-              aria-pressed={time === null}
-              onClick={() => setTime(null)}
-            >
-              시간 몰라요
-            </FanAction>
-          </>
-        )}
+        {step === 1 && <BirthTimeField startOpen value={time} onChange={setTime} copy={copy} />}
         {step === 2 && (
           <>
-            <span id="chemi-gender">성별</span>
-            <FanTabs
-              variant="segment"
-              className={styles.rail}
-              label="성별"
-              current={gender ?? "none"}
-              items={genders.map(([key, label]) => ({
-                key: key ?? "none",
-                label,
-                onSelect: () => setGender(key),
-              }))}
+            <ChoiceField
+              label={copy.fieldGender}
+              options={genders}
+              value={gender ?? "none"}
+              onChange={(key) => setGender(key === "none" ? null : key)}
             />
             <small>저장하면 생일 정보 수집·이용에 동의한 것으로 봐요.</small>
           </>

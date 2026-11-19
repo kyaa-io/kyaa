@@ -7,6 +7,7 @@ import type { AppLocale } from "@/i18n/locales";
 import {
   aspectMeaning,
   aspectTitle,
+  degreeInSign,
   elementCounts,
   modalityCounts,
   natalAspects,
@@ -100,44 +101,44 @@ export function StarChart({
             </div>
           </div>
         </section>
-        <section className={`${styles.section} ${styles.todaySec}`}>
-          <FanHeading>행성 10개</FanHeading>
-          <ul className={chart.rows}>
-            {natal.map((planet) => (
-              <li data-row="star" key={planet.body}>
-                <FanText as="strong" role="item">
-                  {bodyNames[planet.body]}
-                </FanText>
-                <FanText role="body">{signNames[planet.sign].full}</FanText>
-              </li>
-            ))}
-          </ul>
-        </section>
-        <section className={`${styles.section} ${styles.whySec}`}>
-          <FanHeading>원소 · 양식</FanHeading>
-          <div className={chart.barGroups}>
-            {countBars(elements, "원소")}
-            {countBars(modalityCounts(natal), "양식")}
-          </div>
-        </section>
-        {aspects.length > 0 && (
-          <section className={`${styles.section} ${styles.chartSec}`}>
-            <FanHeading>타고난 각도</FanHeading>
-            <ul className={chart.rows}>
-              {aspects.map((aspect) => (
-                <li data-row="star" key={`${aspect.a}${aspect.b}${aspect.angle}`}>
+        <div className={chart.split}>
+          <section className={`${styles.section} ${styles.todaySec}`}>
+            <FanHeading>행성 10개</FanHeading>
+            <ul className={chart.planets}>
+              {natal.map((planet) => (
+                <li data-row="star" key={planet.body}>
                   <FanText as="strong" role="item">
-                    {aspectTitle(aspect.a, aspect.b)}
+                    {bodyNames[planet.body]}
                   </FanText>
-                  <FanText role="meta">{aspectMeaning[aspect.angle]}</FanText>
+                  <FanText role="body">{signNames[planet.sign].full}</FanText>
+                  <FanText role="meta">{degreeInSign(planet.longitude)}</FanText>
                 </li>
               ))}
             </ul>
           </section>
-        )}
-        <div className={styles.mobileActions}>
-          <div className={styles.actions}>
-            <FanAction href={`/chemi?locale=${locale}`}>다른 주제</FanAction>
+          <div className={chart.splitSide}>
+            <section className={`${styles.section} ${styles.whySec}`}>
+              <FanHeading>원소 · 양식</FanHeading>
+              <div className={chart.barGroups}>
+                {countBars(elements, "원소")}
+                {countBars(modalityCounts(natal), "양식")}
+              </div>
+            </section>
+            {aspects.length > 0 && (
+              <section className={`${styles.section} ${styles.chartSec}`}>
+                <FanHeading>타고난 각도</FanHeading>
+                <ul className={chart.aspects}>
+                  {aspects.map((aspect) => (
+                    <li data-row="star" key={`${aspect.a}${aspect.b}${aspect.angle}`}>
+                      <FanText as="strong" role="item">
+                        {aspectTitle(aspect.a, aspect.b)}
+                      </FanText>
+                      <FanText role="meta">{aspectMeaning[aspect.angle]}</FanText>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </div>
         </div>
       </div>

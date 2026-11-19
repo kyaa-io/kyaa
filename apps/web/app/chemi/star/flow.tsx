@@ -26,6 +26,7 @@ import {
   domainLine,
   domains,
   overallHeadline,
+  pickReasons,
   reasonView,
   signNames,
   starBestLine,
@@ -134,6 +135,12 @@ export function StarFlow({
   const [birthError, setBirthError] = useState<string | null>(null);
   const [under14, setUnder14] = useState(false);
   const [restoring, setRestoring] = useState(restoringFromUrl);
+  /** 저장된 결과를 불러오다 일시적으로 막힌 주소. 주소는 그대로 두고 다시 시도하게 한다. */
+  const [restoreFailure, setRestoreFailure] = useState<{
+    readingId: string;
+    character: StarCharacterId;
+    step: StarStep;
+  } | null>(null);
   const [participation, setParticipation] = useState<Participation>(null);
   const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
@@ -141,50 +148,47 @@ export function StarFlow({
   const index = starCharacters.findIndex((c) => c.id === character);
   const name = starCharacters[index].name;
 
-  // 첫 진입: 주소의 단계·최애를 읽는다. 결과가 없으면 입장으로 돌린다.
-  useEffect(() => {
-    async function restore(readingId: string, id: StarCharacterId, target: StarStep) {
-      if (!ready) return;
-      if (!authenticated) {
-        writeUrl({ step: null, r: null }, "replace");
-        setRestoring(false);
-        return;
-      }
+  /**
+   * 주소의 결과 id로 저장된 오늘 결과를 불러온다. 결과가 없거나 오늘 것이 아니면(404·모양 불일치) 입장으로 돌리고,
+   * 서버 장애·연결 끊김·로그인 갱신 같은 일시 실패는 주소를 그대로 두고 다시 시도를 보인다.
+   */
+  const loadSaved = useCallback(
+    async (readingId: string, id: StarCharacterId, target: StarStep) => {
+      setRestoring(true);
+      setRestoreFailure(null);
       try {
         const response = await fetch(
           `/api/chemi/readings/${encodeURIComponent(readingId)}?c=${id}`,
           { headers: { Authorization: `Bearer ${await getAccessToken()}` } },
         );
-        const data = parseTodayStar(await response.json().catch(() => null));
-        if (!response.ok || !data) throw Error();
-        setReading({ ...data, readingId, replayed: true });
-        setStep(reachableStarStep(target, true));
-      } catch {
-        writeUrl({ step: null, r: null }, "replace");
-        setStep("enter");
-        showFanToast({ title: "오늘의 별자리 결과가 아니라 처음 화면으로 돌아왔어요." });
+        const body = await response.json().catch(() => null);
+        if (response.ok) {
+          const data = parseTodayStar(body);
+          if (!data) throw new ChemiRequestError("CHEMI_NOT_TODAY", response.status);
+          setReading({ ...data, readingId, replayed: true });
+          setStep(reachableStarStep(target, true));
+          return;
+        }
+        throw new ChemiRequestError(body?.error?.code ?? null, response.status);
+      } catch (error) {
+        const gone =
+          error instanceof ChemiRequestError &&
+          (error.code === "CHEMI_NOT_TODAY" || error.status === 400 || error.status === 404);
+        if (gone) {
+          writeUrl({ step: null, r: null }, "replace");
+          setReading(undefined);
+          setStep("enter");
+          showFanToast({ title: "오늘의 별자리 결과가 아니라 처음 화면으로 돌아왔어요." });
+        } else {
+          setStep("enter");
+          setRestoreFailure({ readingId, character: id, step: target });
+        }
       } finally {
         setRestoring(false);
       }
-    }
-    const url = readUrl();
-    setCharacter(url.character);
-    if (url.step !== "enter") {
-      if (!url.readingId) {
-        writeUrl({ step: null, r: null }, "replace");
-        setRestoring(false);
-        return;
-      }
-      void restore(url.readingId, url.character, url.step);
-    }
-    const controller = new AbortController();
-    void loadParticipation(controller.signal)
-      .then(setParticipation)
-      .catch(() => {});
-    return () => controller.abort();
-    // 한 번만 읽는다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, authenticated]);
+    },
+    [getAccessToken],
+  );
 
   useEffect(() => () => abort.current?.abort(), []);
 
@@ -237,7 +241,37 @@ export function StarFlow({
     [getAccessToken],
   );
 
-  // 브라우저 뒤로·앞으로 이동. 계산 중이던 기록으로 앞으로 오면 같은 요청을 다시 이어 간다.
+  // 첫 진입: 주소의 단계·최애를 읽는다. 로그인 상태가 정해진 뒤 한 번만 처리한다.
+  const entered = useRef(false);
+  useEffect(() => {
+    if (!ready || entered.current) return;
+    entered.current = true;
+    const url = readUrl();
+    setCharacter(url.character);
+    if (url.step !== "enter") {
+      if (!authenticated) {
+        writeUrl({ step: null, r: null }, "replace");
+        setRestoring(false);
+      } else if (url.readingId) void loadSaved(url.readingId, url.character, url.step);
+      else if (url.step === "calc") {
+        // 계산 중에 연 주소: 같은 날 같은 최애는 저장된 결과를 돌려주므로 요청을 이어 간다.
+        setStep("calc");
+        void run(url.character);
+      } else {
+        writeUrl({ step: null, r: null }, "replace");
+        setRestoring(false);
+      }
+    }
+    const controller = new AbortController();
+    void loadParticipation(controller.signal)
+      .then(setParticipation)
+      .catch(() => {});
+    return () => controller.abort();
+    // run·loadSaved 는 getAccessToken 에만 기대므로 로그인 상태가 정해질 때 한 번이면 충분하다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, authenticated]);
+
+  // 브라우저 뒤로·앞으로 이동. 기억하고 있는 결과가 주소의 결과 id와 같을 때만 쓴다.
   useEffect(() => {
     function onPop() {
       if (collapsing.current) return;
@@ -247,7 +281,8 @@ export function StarFlow({
       const url = readUrl();
       setCharacter(url.character);
       setPhase("idle");
-      if (url.step === "calc" && !reading) {
+      setRestoreFailure(null);
+      if (url.step === "calc") {
         if (!authenticated) {
           writeUrl({ step: null }, "replace", 0);
           setStep("enter");
@@ -257,15 +292,25 @@ export function StarFlow({
         void run(url.character);
         return;
       }
-      const next = reachableStarStep(url.step, Boolean(reading));
+      // 주소의 결과 id가 기억하는 결과와 다르면(다른 기록으로 이동) 그 결과를 다시 불러온다.
+      if (url.step !== "enter" && url.readingId && url.readingId !== reading?.readingId) {
+        setStep("enter");
+        void loadSaved(url.readingId, url.character, url.step);
+        return;
+      }
+      const usable = Boolean(reading) && (url.step === "enter" || url.readingId === reading?.readingId);
+      const next = reachableStarStep(url.step, usable);
       // 주소가 가리키는 단계와 보이는 단계가 다르면 주소를 보이는 단계에 맞춘다.
-      if (next !== url.step)
-        writeUrl({ step: next === "enter" ? null : next, r: reading?.readingId ?? null }, "replace");
+      if (next !== url.step || (next !== "enter" && !url.readingId))
+        writeUrl(
+          { step: next === "enter" ? null : next, r: next === "enter" ? null : (reading?.readingId ?? null) },
+          "replace",
+        );
       setStep(next);
     }
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
-  }, [reading, authenticated, run]);
+  }, [reading, authenticated, run, loadSaved]);
 
   function start() {
     if (!authenticated) return setSheet("login");
@@ -341,7 +386,7 @@ export function StarFlow({
     const signOf = (target: string) =>
       result.natal.find((planet) => planet.body === target)?.sign ?? null;
     return {
-      reasons: result.reasons.slice(0, 3).map((reason) => reasonView(reason, signOf, reading.kstDate)),
+      reasons: pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate)),
       sunName: signList(result.signs.sun, (sign) => signNames[sign].full),
       sunBare: signList(result.signs.sun, (sign) => signNames[sign].bare),
     };
@@ -351,6 +396,17 @@ export function StarFlow({
 
   if (restoring)
     return <StarResultSkeleton locale={locale} character={character} />;
+  if (restoreFailure)
+    return (
+      <StarResultSkeleton
+        locale={locale}
+        character={restoreFailure.character}
+        failed
+        onRetry={() =>
+          void loadSaved(restoreFailure.readingId, restoreFailure.character, restoreFailure.step)
+        }
+      />
+    );
   if (step === "result" && reading)
     return (
       <StarResult
@@ -504,15 +560,16 @@ export function StarFlow({
             {talk === 1 && stars && derived && reading && (
               <div className={styles.signCard}>
                 <FanText role="meta">{dayLabel(reading.kstDate)} · 오늘 하늘</FanText>
-                <FanHeading as="h2">{derived.sunName}</FanHeading>
-                <div className={styles.starsLine}>
-                  <FanText role="meta">총운</FanText>
+                <div className={styles.signLine}>
+                  <FanHeading as="h2">{derived.sunName}</FanHeading>
                   <StarRating
                     value={stars.overall}
                     label={`총운 별점 5개 중 ${stars.overall}개`}
-                    size={20}
                     tone="accent"
                   />
+                  <FanText role="meta" className={styles.signTail}>
+                    총운
+                  </FanText>
                 </div>
               </div>
             )}
@@ -520,7 +577,7 @@ export function StarFlow({
               <ul className={styles.sceneRows}>
                 {domains.map((key) => (
                   <li data-row="star" className={styles.sceneRow} key={key}>
-                    <div>
+                    <div className={styles.sceneHead}>
                       <FanText role="label">{domainLabels[key]}</FanText>
                       <StarRating
                         value={stars[key]}
@@ -538,10 +595,15 @@ export function StarFlow({
               <ul className={styles.reasonList}>
                 {derived.reasons.map((reason) => (
                   <li data-row="star" key={reason.title + reason.aspect}>
-                    <FanText as="strong" role="item">
-                      {reason.title}
+                    <div className={styles.reasonHead}>
+                      <FanText as="strong" role="item">
+                        {reason.title}
+                      </FanText>
+                      <FanText role="meta">{reason.when}</FanText>
+                    </div>
+                    <FanText as="p" role="meta">
+                      {reason.tone}
                     </FanText>
-                    <FanText role="meta">{reason.when}</FanText>
                   </li>
                 ))}
               </ul>
@@ -549,18 +611,31 @@ export function StarFlow({
             {talk === 4 && derived && (
               <div className={styles.pair}>
                 {creator && (
-                  <div>
-                    <FanText role="meta">{name}</FanText>
-                    <FanText as="strong" role="item">
-                      {signNames[creator].bare}
-                    </FanText>
+                  <div className={styles.pairSide}>
+                    <img className={styles.pairFace} src={`${art}/face-${character}-v1.webp`} alt="" />
+                    <span>
+                      <FanText as="strong" role="item">
+                        {name}
+                      </FanText>
+                      <FanText as="span" role="meta">
+                        {signNames[creator].bare}
+                      </FanText>
+                    </span>
                   </div>
                 )}
-                <div>
-                  <FanText role="meta">나</FanText>
-                  <FanText as="strong" role="item">
-                    {derived.sunBare}
+                {creator && <span className={styles.pairLine} aria-hidden="true" />}
+                <div className={styles.pairSide}>
+                  <FanText as="span" role="label" className={styles.pairMe}>
+                    나
                   </FanText>
+                  <span>
+                    <FanText as="strong" role="item">
+                      나
+                    </FanText>
+                    <FanText as="span" role="meta">
+                      {derived.sunBare}
+                    </FanText>
+                  </span>
                 </div>
               </div>
             )}
@@ -572,7 +647,7 @@ export function StarFlow({
                   </FanAction>
                 )}
                 <FanAction
-                  variant="primary"
+                  variant={entering || talk === 4 ? "primary" : "neutral"}
                   disabled={entering && !ready}
                   onClick={() => (entering ? start() : advance())}
                 >

@@ -17,7 +17,7 @@ export function parseStarStep(value: string | null | undefined): StarStep {
 
 /**
  * 결과를 아직 받지 못했으면 대화·결과·차트 단계로 갈 수 없다.
- * 계산 중(calc)은 새로 고침해도 입장으로 돌아가서 다시 시작한다.
+ * 계산 중(calc) 주소는 결과가 없으면 화면이 같은 요청을 다시 이어 간다(같은 날 같은 최애는 저장된 결과를 돌려준다).
  */
 export function reachableStarStep(step: StarStep, hasReading: boolean): StarStep {
   if (hasReading) return step === "calc" ? "talk-1" : step;

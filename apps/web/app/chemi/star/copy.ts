@@ -211,6 +211,8 @@ export type ReasonView = {
   domain: StarDomain | "overall";
   up: boolean;
   when: string;
+  /** 근거 한 줄 풀이(영역과 오르내림에 맞는 말). */
+  tone: string;
   text: string;
 };
 
@@ -254,10 +256,32 @@ export function reasonView(
     domain,
     up,
     when,
+    tone: toneLine[domain][up ? "smooth" : "hard"],
     text: `${withParticle(body, "은는")} ${withParticle(mine, "과와")} ${aspectPhrase[reason.angle]?.[up ? 0 : 1] ?? "이어져 있어요"}. ${
       toneLine[domain][up ? "smooth" : "hard"]
     }`,
   };
+}
+
+/**
+ * 근거 카드에 올릴 행성 각도를 고른다. 센 순서를 지키되 서로 다른 영역이 먼저 오게 해,
+ * 같은 영역 태그만 줄줄이 나오지 않게 한다(태생 시각이 없으면 해·달은 총운만 움직인다).
+ */
+export function pickReasons(reasons: StarReason[], count = 3) {
+  const seen = new Set<string>();
+  const distinct: StarReason[] = [];
+  const repeated: StarReason[] = [];
+  for (const reason of reasons) {
+    const domain = reasonDomain(reason.body);
+    if (seen.has(domain)) repeated.push(reason);
+    else {
+      seen.add(domain);
+      distinct.push(reason);
+    }
+  }
+  return [...distinct, ...repeated]
+    .slice(0, count)
+    .sort((a, b) => reasons.indexOf(a) - reasons.indexOf(b));
 }
 
 export function bestDomain(stars: Record<StarDomain, number>) {

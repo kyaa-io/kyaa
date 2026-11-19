@@ -31,6 +31,9 @@ export function modalityCounts(planets: StarPlanet[]) {
   return modalityNames.map((name, index) => ({ name, count: counts[index]! }));
 }
 
+/** 별자리 안에서의 위치. 황경 14.6도면 "14°". */
+export const degreeInSign = (longitude: number) => `${Math.floor(((longitude % 30) + 30) % 30)}°`;
+
 const separation = (a: number, b: number) => {
   const delta = Math.abs(a - b) % 360;
   return delta > 180 ? 360 - delta : delta;

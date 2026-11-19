@@ -49,7 +49,13 @@ const birth = z.object({
   birthTime: z.string().nullable(),
   calendar: z.string(),
   gender: z.enum(["male", "female"]).nullable(),
+  timePrecision: z.enum(["exact", "band", "unknown"]).optional(),
 });
+type Birth = z.infer<typeof birth>;
+/** 시간을 적었는데 정밀도가 없으면(구형 행) 정확한 시각으로 본다. */
+function timePrecision(b: Birth) {
+  return b.birthTime ? (b.timePrecision ?? "exact") : "unknown";
+}
 function birthInput(b: z.infer<typeof birth>) {
   const [year, month, day] = b.birthDate.split("-").map(Number);
   const [hour, minute] = (b.birthTime?.split(":") ?? []).map(Number);
@@ -90,23 +96,96 @@ function natalChart(b: z.infer<typeof birth>) {
   });
 }
 
-// 태어난 시간을 모르면 그날 안에서 해·달이 별자리 경계를 넘었는지 알려 준다(둘이면 '또는').
-function birthDaySigns(b: z.infer<typeof birth>) {
-  const { local } = birthInstant(b);
-  const start = toZoned(
-    new CalendarDateTime(local.year, local.month, local.day),
-    "Asia/Seoul",
-  ).toDate();
-  const end = new Date(start.getTime() + 24 * 3600000);
-  const sun = [start, new Date(end.getTime() - 1)].map(
-    (instant) =>
-      calculateChart({ instant, timeKnown: false, latitude: 0, longitude: 0 })
-        .planets[0]!.sign,
-  );
+function signsBetween(start: Date, endExclusive: Date) {
+  const sunSign = (instant: Date) =>
+    calculateChart({ instant, timeKnown: false, latitude: 0, longitude: 0 })
+      .planets[0]!.sign;
   return {
-    sun: [...new Set(sun)],
-    moon: birthMoonSigns(start, end),
+    sun: [
+      ...new Set([
+        sunSign(start),
+        sunSign(new Date(endExclusive.getTime() - 1)),
+      ]),
+    ],
+    moon: birthMoonSigns(start, endExclusive),
   };
+}
+
+// 태어난 시각을 아는 만큼만 좁힌다: 정확하면 그 순간, 시진이면 앞뒤 1시간, 모르면 한국 달력의 그날 하루.
+// 하루의 끝은 다음 날 자정을 따로 변환해 얻는다(24시간을 더하면 과거 시차 전환일에 어긋난다).
+export function birthWindow(b: Birth) {
+  const { local } = birthInstant(b);
+  const precision = timePrecision(b);
+  if (precision === "exact") {
+    const at = toZoned(local, "Asia/Seoul").toDate();
+    return { start: at, endExclusive: new Date(at.getTime() + 1) };
+  }
+  if (precision === "band") {
+    const at = toZoned(local, "Asia/Seoul").toDate().getTime();
+    return {
+      start: new Date(at - 3600000),
+      endExclusive: new Date(at + 3600000),
+    };
+  }
+  const day = new CalendarDateTime(local.year, local.month, local.day);
+  return {
+    start: toZoned(day, "Asia/Seoul").toDate(),
+    endExclusive: toZoned(day.add({ days: 1 }), "Asia/Seoul").toDate(),
+  };
+}
+
+function birthDaySigns(b: Birth) {
+  const { start, endExclusive } = birthWindow(b);
+  return signsBetween(start, endExclusive);
+}
+
+/** 별자리 오늘 풀이(daily) 결과. 새로 만들 때와 구형 저장분을 다시 읽을 때 같은 식을 쓴다. */
+export function starDailyResult(b: Birth, day: string) {
+  const chart = natalChart(b);
+  const scored = scoreDay(chart, day);
+  return {
+    natal: chart.planets.map(({ body, longitude, sign }) => ({
+      body,
+      longitude,
+      sign,
+    })),
+    timeKnown: timePrecision(b) === "exact",
+    signs: birthDaySigns(b),
+    stars: scored.stars,
+    reasons: scored.reasons.map(
+      ({ body, target, angle, hour, applying, score, exitDate }) => ({
+        body,
+        target,
+        angle,
+        hour,
+        applying,
+        score,
+        exitDate,
+      }),
+    ),
+    distributionVersion: scored.distributionVersion,
+  };
+}
+
+/**
+ * 별자리 오늘 풀이가 별점 없는 구형 모양({natal, sky})으로 저장돼 있으면, 저장된 날짜와 지금 프로필로
+ * 같은 식을 다시 계산해 새 모양으로 돌려준다(저장된 행은 건드리지 않는다).
+ */
+async function upgradeLegacyStar(
+  saved: Record<string, any>,
+  readProfile: () => Promise<unknown>,
+) {
+  if (
+    saved.content !== undefined &&
+    (saved.content !== "star" || saved.kind !== "daily")
+  )
+    return saved;
+  if (saved.result?.stars || !saved.result?.natal || !saved.kstDate) return saved;
+  const profile = z
+    .object({ birth: birth.nullable() })
+    .parse(await readProfile());
+  if (!profile.birth) return saved;
+  return { ...saved, result: starDailyResult(profile.birth, saved.kstDate) };
 }
 
 const statuses: Record<string, number> = {
@@ -162,12 +241,16 @@ export async function rewardRoute(
           p_from: z.string().date().nullable().parse(params.get("from")),
           p_to: z.string().date().nullable().parse(params.get("to")),
         });
-      if (op === "detail")
-        return deps.rpc("chemi_reading_detail", {
+      if (op === "detail") {
+        const saved = await deps.rpc("chemi_reading_detail", {
           p_user,
           p_id: z.string().uuid().parse(id),
           p_character: character.nullable().parse(params.get("c")),
         });
+        return upgradeLegacyStar(saved as Record<string, any>, () =>
+          deps.rpc("chemi_read_profile", { p_user }),
+        );
+      }
       if (op === "share") {
         const input = share.parse(body);
         return deps.rpc("chemi_create_share", {
@@ -211,7 +294,12 @@ export async function rewardRoute(
             p_celebrity: celebrity,
           }),
         );
-      if (context.saved) return context.saved;
+      if (context.saved)
+        return input.content === "star" && input.kind === "daily"
+          ? upgradeLegacyStar(context.saved, () =>
+              deps.rpc("chemi_read_profile", { p_user }),
+            )
+          : context.saved;
       const day = context.day;
       let result: unknown;
       let version: string;
@@ -259,9 +347,8 @@ export async function rewardRoute(
             : self;
           version = FORTUNE_TABLE_VERSION;
         } else if (input.content === "star") {
-          const chart = natalChart(b);
-          const natal = chart.planets;
           if (partner) {
+            const natal = natalChart(b).planets;
             const other = natalChart(partner).planets;
             result = {
               angles: natal.flatMap((a) =>
@@ -272,31 +359,7 @@ export async function rewardRoute(
                 })),
               ),
             };
-          } else {
-            const scored = scoreDay(chart, day);
-            result = {
-              natal: natal.map(({ body, longitude, sign }) => ({
-                body,
-                longitude,
-                sign,
-              })),
-              timeKnown: false,
-              signs: birthDaySigns(b),
-              stars: scored.stars,
-              reasons: scored.reasons.map(
-                ({ body, target, angle, hour, applying, score, exitDate }) => ({
-                  body,
-                  target,
-                  angle,
-                  hour,
-                  applying,
-                  score,
-                  exitDate,
-                }),
-              ),
-              distributionVersion: scored.distributionVersion,
-            };
-          }
+          } else result = starDailyResult(b, day);
           version = "astronomy-engine@2.1.19";
         } else {
           if (partner) {

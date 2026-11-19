@@ -114,13 +114,15 @@
 }
 .domain {
   display: grid;
-  grid-template-columns: 6.5rem minmax(0, 1fr);
-  align-items: start;
-  gap: var(--space-1) var(--space-3);
-}
-.domain > div {
-  display: grid;
   gap: var(--space-1);
+}
+.domainHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.domainHead .bright {
+  margin-inline-start: auto;
 }
 .domain p {
   margin: 0;
@@ -129,13 +131,11 @@
   text-wrap: pretty;
 }
 .domain[data-best] {
-  grid-template-columns: minmax(0, 1fr) auto;
   padding: var(--space-3);
   border: 1px solid var(--color-accent-line);
   border-radius: var(--radius-media);
 }
 .domain[data-best] p {
-  grid-column: 1 / -1;
   color: var(--color-ink);
 }
 .bright {
@@ -274,13 +274,6 @@
 .sectionHead h2 {
   margin: 0;
 }
-.actions {
-  display: flex;
-  gap: var(--space-2);
-}
-.actions > * {
-  flex: 1;
-}
 .desktopOnly {
   display: none;
   grid-column: 1 / -1;
@@ -370,7 +363,6 @@
   }
   .domain,
   .domain[data-best] {
-    grid-template-columns: minmax(0, 1fr);
     align-content: start;
     gap: var(--space-2);
     padding: 0 var(--space-4);
@@ -384,7 +376,14 @@
   }
   .domain[data-best] p {
     color: var(--color-muted);
-    grid-column: auto;
+  }
+  .domainHead {
+    display: grid;
+    justify-items: start;
+    gap: var(--space-1);
+  }
+  .domainHead .bright {
+    margin-inline-start: 0;
   }
   .desktopOnly {
     display: block;

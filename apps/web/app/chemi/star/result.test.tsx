@@ -46,7 +46,7 @@ it("opens the full chart from the summary", () => {
   expect(onChart).toHaveBeenCalledOnce();
 });
 
-it("copies the public share URL and records completion only after a successful copy", async () => {
+it("opens the share card and copies the public URL; completion is recorded only after a successful copy", async () => {
   const fetcher = vi.fn(async (path: string) => {
     if (path === "/api/chemi/rewards/today") return Response.json({ grants: [] });
     if (path === "/api/chemi/shares") return Response.json({ shareId: "card", url: "/chemi/star?from=card" });
@@ -56,13 +56,43 @@ it("copies the public share URL and records completion only after a successful c
   vi.stubGlobal("fetch", fetcher);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: copy } });
   render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} />);
-  const share = screen.getAllByRole("button", { name: "자랑하기" })[0]!;
-  fireEvent.click(share);
+  fireEvent.click(screen.getAllByRole("button", { name: "자랑하기" })[0]!);
+  const dialog = await screen.findByRole("dialog");
+  const card = dialog.querySelector("[data-star-share-card]")!;
+  expect(within(card as HTMLElement).getByText("한 박자 쉬어 가는 날")).toBeTruthy();
+  expect(within(card as HTMLElement).getByText("황소자리")).toBeTruthy();
+  expect(within(card as HTMLElement).getByText(/^“.+”$/)).toBeTruthy();
+  const copyLink = within(dialog).getByRole("button", { name: "링크 복사" });
+  fireEvent.click(copyLink);
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: "복사하지 못했어요", tone: "error" }));
   expect(fetcher.mock.calls.some(([path]) => String(path).includes("/done"))).toBe(false);
-  fireEvent.click(share);
+  fireEvent.click(within(await screen.findByRole("dialog")).getByRole("button", { name: "링크 복사" }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: "결과를 복사했어요", tone: "success" }));
   await waitFor(() => expect(fetcher.mock.calls.some(([path]) => String(path).includes("/done"))).toBe(true));
+});
+
+it("has one way out to the other fortunes, not two buttons to the same place", () => {
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ grants: [] })));
+  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  expect(screen.queryByRole("link", { name: "다른 주제" })).toBeNull();
+  expect(screen.getAllByRole("link", { name: "다른 운세 보기" })).toHaveLength(1);
+});
+
+it("tags each reason with a different area before repeating one", () => {
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ grants: [] })));
+  const many = {
+    ...reading,
+    result: {
+      ...reading.result,
+      reasons: ["Moon", "Sun", "Venus", "Mercury", "Saturn"].map((body, index) => ({
+        body, target: "Sun", angle: 60, hour: 10, applying: true, score: 5 - index, exitDate: "2026-11-25",
+      })),
+    },
+  } as unknown as StarReading;
+  render(<StarResult locale="ko" reading={many} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  const why = screen.getByRole("heading", { name: "왜 그런지" }).closest("section")!;
+  const tags = within(why).getAllByRole("listitem").map((item) => item.querySelector("[class*=tag]")?.textContent);
+  expect(new Set(tags).size).toBe(3);
 });
 
 it("draws the wheel with all twelve signs and ten planets, and the chart sections", () => {

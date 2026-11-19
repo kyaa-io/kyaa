@@ -19,3 +19,9 @@
 .rating[data-tone="accent"] svg[data-on] {
   fill: var(--color-accent);
 }
+.rating[data-tone="light"] svg {
+  fill: color-mix(in srgb, var(--color-surface) 40%, transparent);
+}
+.rating[data-tone="light"] svg[data-on] {
+  fill: var(--color-surface);
+}

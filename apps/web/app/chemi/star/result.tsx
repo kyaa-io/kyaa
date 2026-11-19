@@ -5,6 +5,7 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ChevronDown, ChevronUp } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -20,6 +21,7 @@ import {
   domainLong,
   domains,
   overallHeadline,
+  pickReasons,
   reasonView,
   signNames,
   starCharacters,
@@ -33,6 +35,7 @@ import {
 import { withParticle } from "./particle";
 import { Legal, Reaction, Toolbar, art } from "./parts";
 import { signList, type StarReading } from "./reading";
+import { StarShareCard } from "./share-card";
 import { StarRating } from "./stars";
 import styles from "./result.module.css";
 
@@ -114,6 +117,7 @@ export function StarResult({
   const { authenticated, getAccessToken } = useByUsAuth();
   const [points, setPoints] = useState(reading.reward?.points ?? 0);
   const [sharing, setSharing] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const { result } = reading;
   const name = starCharacters.find((c) => c.id === character)?.name ?? "창하";
   const stars = result.stars;
@@ -126,7 +130,7 @@ export function StarResult({
     const byBody = new Map(result.natal.map((planet) => [planet.body, planet.sign]));
     return (target: string) => byBody.get(target) ?? null;
   }, [result.natal]);
-  const reasons = result.reasons.slice(0, 3).map((reason) => reasonView(reason, signOf, reading.kstDate));
+  const reasons = pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate));
 
   // 처음 만든 결과의 보상 연출과 오늘 받은 몫을 한 번 가져온다.
   useEffect(() => {
@@ -157,7 +161,8 @@ export function StarResult({
     return () => controller.abort();
   }, [reading, authenticated, getAccessToken, locale, character]);
 
-  async function share() {
+  /** 공유 링크를 만들어 복사하거나(copy) 기기 공유창으로 보낸다(send). */
+  async function share(via: "copy" | "send") {
     if (sharing) return;
     setSharing(true);
     try {
@@ -172,27 +177,31 @@ export function StarResult({
       });
       if (!response.ok) throw Error();
       const card = await response.json();
-      await navigator.clipboard.writeText(new URL(card.url, location.origin).href);
-      showFanToast({ title: "결과를 복사했어요", tone: "success" });
+      const href = new URL(card.url, location.origin).href;
+      if (via === "send") await navigator.share({ title: overallHeadline[stars.overall - 1], url: href });
+      else {
+        await navigator.clipboard.writeText(href);
+        showFanToast({ title: "결과를 복사했어요", tone: "success" });
+      }
+      setShareOpen(false);
       await fetch(`/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ via: "copy" }),
+        body: JSON.stringify({ via }),
       }).catch(() => {});
-    } catch {
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       showFanToast({ title: "복사하지 못했어요", tone: "error" });
     } finally {
       setSharing(false);
     }
   }
 
-  const actions = (
-    <div className={styles.actions}>
-      <FanAction disabled={sharing} onClick={share}>
-        자랑하기
-      </FanAction>
-      <FanAction href={`/chemi?locale=${locale}`}>다른 주제</FanAction>
-    </div>
+  const canSend = typeof navigator !== "undefined" && typeof navigator.share === "function";
+  const shareAction = (
+    <FanAction fullWidth onClick={() => setShareOpen(true)}>
+      자랑하기
+    </FanAction>
   );
   const rows: readonly (StarDomain | "overall")[] = ["overall", ...domains];
   const lineOf = (key: StarDomain | "overall") =>
@@ -253,18 +262,18 @@ export function StarResult({
                   className={`${styles.domain} ${key === "overall" ? styles.overallRow : ""}`}
                   data-best={isBest || undefined}
                 >
-                  <div>
+                  <div className={styles.domainHead}>
                     <FanText role="label">{domainLabels[key]}</FanText>
                     <StarRating
                       value={stars[key]}
                       label={`${domainLabels[key]} 별점 5개 중 ${stars[key]}개`}
                     />
+                    {isBest && (
+                      <FanText role="label" className={styles.bright}>
+                        오늘 가장 밝은 곳
+                      </FanText>
+                    )}
                   </div>
-                  {isBest && (
-                    <FanText role="label" className={styles.bright}>
-                      오늘 가장 밝은 곳
-                    </FanText>
-                  )}
                   <FanText as="p" role="body">
                     {key === "overall"
                       ? overallHeadline[stars.overall - 1]
@@ -317,7 +326,9 @@ export function StarResult({
                     <FanText role="meta">{reason.aspect}</FanText>
                     <span className={styles.tag}>
                       <FanIcon icon={reason.up ? ChevronUp : ChevronDown} />
-                      <FanText role="meta">{domainLabels[reason.domain]}</FanText>
+                      <FanText role="meta">
+                        {domainLabels[reason.domain]} {reason.up ? "도움" : "부담"}
+                      </FanText>
                     </span>
                   </div>
                   <FanText role="meta" className={styles.when}>
@@ -331,16 +342,7 @@ export function StarResult({
             </ul>
           </section>
         </div>
-        <section className={`${styles.section} ${styles.chartSec}`}>
-          <div className={styles.sectionHead}>
-            <FanHeading>내 출생 차트</FanHeading>
-            <FanAction variant="text" size="sm" onClick={onChart}>
-              전체 보기<span aria-hidden="true"> ›</span>
-            </FanAction>
-          </div>
-          {chartCards}
-        </section>
-        <div className={styles.mobileActions}>{actions}</div>
+        <div className={styles.mobileActions}>{shareAction}</div>
       </div>
       <aside className={styles.side}>
         <Reaction
@@ -352,10 +354,44 @@ export function StarResult({
               다른 운세 보기
             </FanAction>
           }
-          extra={<div className={styles.desktopOnly}>{actions}</div>}
+          extra={<div className={styles.desktopOnly}>{shareAction}</div>}
         />
+        <section className={`${styles.section} ${styles.chartSec}`}>
+          <div className={styles.sectionHead}>
+            <FanHeading>내 출생 차트</FanHeading>
+            <FanAction variant="text" size="sm" onClick={onChart}>
+              전체 보기<span aria-hidden="true"> ›</span>
+            </FanAction>
+          </div>
+          {chartCards}
+        </section>
         <Legal />
       </aside>
+      <FanDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        title="자랑하기"
+        closeLabel="닫기"
+        responsive
+        secondary={canSend ? { label: "링크 복사", onClick: () => void share("copy") } : undefined}
+        primary={
+          canSend
+            ? { label: "보내기", loading: sharing, onClick: () => void share("send") }
+            : { label: "링크 복사", loading: sharing, onClick: () => void share("copy") }
+        }
+      >
+        <StarShareCard
+          character={character}
+          name={name}
+          dateText={`${withParticle(name, "이가")} 읽어 준 ${monthDay(reading.kstDate)} 하늘`}
+          headline={overallHeadline[stars.overall - 1]!}
+          overall={stars.overall}
+          sign={sunName}
+          best={best}
+          bestStar={stars[best]}
+          line={starSayLine(character, best, stars[best])}
+        />
+      </FanDialog>
     </article>
   );
 }

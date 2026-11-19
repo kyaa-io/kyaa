@@ -14,7 +14,7 @@ export function StarRating({
   /** 읽어 줄 이름: "애정 별점 5개 중 5개"처럼 부른 쪽에서 정한다. */
   label: string;
   size?: 16 | 20;
-  tone?: "ink" | "accent";
+  tone?: "ink" | "accent" | "light";
 }) {
   return (
     <span
