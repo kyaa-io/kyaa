@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "궁합 상대 입력 창에서 생년월일 휠이나 태어난 시간 판을 닫아도 입력 창이 남고, 넣은 값이 그대로 있어요.",
+    "궁합 상대를 저장하려면 저장 동의에 체크해야 하고, 버튼은 '저장하고 궁합 보기'예요.",
+    "궁합에서 가장 높은 칸은 모두 분홍으로 표시하고, 그 칸마다 설명이 한 줄씩 나와요.",
+    "타고난 기운 줄에 오행 그림을 붙이고, 큰 화면 세로 그림의 빈 면을 그림 색으로 채웠어요.",
+    "저장된 다른 사주 기록으로 뒤로·앞으로 가면 그 기록의 풀이가 보여요. 예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/saju",
+  "images": [
+    "release-notes/images/2026-11-19-chemi-saju-fix3-partner-consent-390-local.png",
+    "release-notes/images/2026-11-19-chemi-saju-fix3-elements-390-local.png",
+    "release-notes/images/2026-11-19-chemi-saju-fix3-portrait-1440-local.png"
+  ]
+}

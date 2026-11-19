@@ -99,6 +99,7 @@
 }
 .block {
   display: grid;
+  align-content: start;
   gap: var(--space-3);
 }
 .rewardRow {
@@ -131,6 +132,9 @@
   grid-template-columns: 5.5rem 3rem minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3);
+}
+.pairNote {
+  margin: 0;
 }
 .topLabel[data-top] {
   color: var(--color-accent-ink);

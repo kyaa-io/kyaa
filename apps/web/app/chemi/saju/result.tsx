@@ -386,7 +386,7 @@ export function SajuResult({
                 ))}
               </div>
               {compat.notes.map((note) => (
-                <FanText as="p" role="meta" key={note.label}>
+                <FanText as="p" role="meta" className={styles.pairNote} key={note.label}>
                   {note.label} · {note.text}
                 </FanText>
               ))}
