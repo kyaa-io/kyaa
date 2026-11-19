@@ -40,6 +40,7 @@ function requiredRuntimeSecrets(config) {
     && env.EMAIL_AUTH_PROVIDER === 'cognito' && env.LEGACY_EMAIL_AUTH_ENABLED === 'false';
   const keys = fullAws ? ['PRIVY_APP_SECRET', 'REQUEST_HASH_SECRET'] : [...REQUIRED_SECRET_KEYS];
   if (env.AUTH_PROVIDER === 'cognito' || env.EMAIL_AUTH_PROVIDER === 'cognito') keys.push('AUTH_COOKIE_SECRET');
+  if (env.CHEMI_TAB === 'true') keys.push('CHEMI_TAROT_SALT');
   return keys;
 }
 const KEY = /^[A-Z][A-Z0-9_]{0,127}$/;
