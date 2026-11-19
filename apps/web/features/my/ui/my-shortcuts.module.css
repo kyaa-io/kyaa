@@ -9,6 +9,7 @@
 .grid > :is(a, .row):nth-child(n+3) { border-top:1px solid var(--color-line-subtle); }
 .grid img { display:block; inline-size:40px; block-size:40px; object-fit:contain; }
 .grid :is(strong, .row > span:nth-child(2)) { min-width:0; font-size:var(--fan-description-size); font-weight:var(--fan-item-title-weight); line-height:1.35; overflow-wrap:anywhere; word-break:keep-all; }
+.label { display:grid; min-width:0; }
 .grid svg { inline-size:20px; block-size:20px; color:var(--color-muted); }
 .grid > :is(a, .row):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; border-radius:var(--radius-media); }
 @media (hover:hover) and (pointer:fine) { .grid > a:hover strong, .grid > .row:hover > span:nth-child(2) { text-decoration:underline; text-underline-offset:3px; } }
