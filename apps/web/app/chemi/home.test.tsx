@@ -69,5 +69,6 @@ it.each([true, false])("shows the open fortune first (preview=%s)", (preview) =>
 it("opens today's tarot from the list and keeps the unreleased contents pending", () => {
   render(<ChemiHome copy={copy} locale="ko" growth={false} preview={false} />);
   expect(screen.getByRole("link", { name: copy.tarot })).toHaveAttribute("href", "/chemi/tarot?locale=ko");
-  expect(screen.getByText(copy.saju).closest("div")).toHaveTextContent(copy.ready);
+  expect(screen.getByRole("link", { name: copy.saju })).toHaveAttribute("href", "/chemi/saju?locale=ko");
+  expect(screen.getByRole("link", { name: copy.zodiac })).toHaveAttribute("href", "/chemi/star?locale=ko");
 });
