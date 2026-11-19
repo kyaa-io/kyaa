@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { expect, it, vi } from "vitest";
 import { POST, GET } from "@/app/api/chemi/readings/route";
+import { POST as openDate } from "@/app/api/chemi/fortune/date/route";
 import { POST as visit } from "@/app/api/chemi/visit/route";
 import { POST as share } from "@/app/api/chemi/shares/route";
 import { POST as done } from "@/app/api/chemi/shares/[id]/done/route";
@@ -151,3 +152,24 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)(
     expect(await (await finish()).json()).toEqual({ reward: {} });
   },
 );
+
+it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("opens a quoted date with the computed result and restores it", async () => {
+  expect(process.env.PGHOST).toMatch(/\/byus-clean-db\.[^/]+\/socket$/);
+  expect(process.env.PGDATABASE).toBe("byus_clean");
+  vi.stubEnv("CHEMI_TAB", "true");
+  sql(`insert into app_users(id,privy_user_id,verified_email) values('${user}','did:privy:${user}','${user}@example.invalid') on conflict do nothing;
+    insert into chemi_profiles(user_id,birth_date,calendar,birth_time,time_precision,consent_version,consent_at)
+    values('${user}','1995-05-05','solar','14:30','exact','test',now()) on conflict do nothing;
+    select group_wallet_post('${user}','fan_point',3,'chemi_reward',gen_random_uuid())`);
+  const day = sql("select dukjil_kst_date()+3");
+  const open = async (confirm: boolean) => {
+    const response = await openDate(new Request("http://localhost", { method: "POST", headers: { authorization: "Bearer fixture" },
+      body: JSON.stringify({ day, character: "dosa", confirm }) }));
+    expect(response.status).toBe(200);
+    return response.json();
+  };
+  expect(await open(false)).toMatchObject({ price: 3 });
+  const reading = await open(true);
+  expect(reading).toMatchObject({ kstDate: day, result: { locked: false, score: expect.any(Number) } });
+  expect(await open(true)).toMatchObject({ replayed: true, readingId: reading.readingId, balance: reading.balance });
+});

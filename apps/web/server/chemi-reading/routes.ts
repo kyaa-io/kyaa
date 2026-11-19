@@ -1,3 +1,4 @@
+import { isFortuneResult } from "@/app/chemi/fortune/reading";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { chemiClosedResponse } from "@/server/chemi/dependencies";
@@ -199,7 +200,7 @@ const statuses: Record<string, number> = {
   CHEMI_UNAVAILABLE: 503,
 };
 type Operation =
-  "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
+  "pointDate" | "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
 export async function rewardRoute(
   op: Operation,
   request: Request,
@@ -233,6 +234,23 @@ export async function rewardRoute(
       const deps = createFanpageDependencies();
       if (op === "card") return deps.rpc("chemi_get_share", { p_share: id });
       const { appUserId: p_user } = await deps.authorize(auth);
+      if (op === "pointDate") {
+        const input = z.object({ character, day: z.iso.date(), confirm: z.boolean() }).parse(body);
+        const args = { p_user, p_character: input.character, p_day: input.day, p_version: FORTUNE_TABLE_VERSION };
+        const quote = z.object({ balance: z.number(), price: z.number(), readingId: z.string().optional() })
+          .passthrough().parse(await deps.rpc("chemi_point_date", { ...args, p_result: null }));
+        if (!input.confirm || quote.todayFree || quote.readingId || quote.balance < quote.price) {
+          const path = process.env.CHEMI_POINT_TOPUP_PATH;
+          const topupPath = process.env.APP_ENV === "dev" && path && /^\/chemi\/[a-z0-9/-]+$/.test(path)
+            ? path : undefined;
+          return { ...quote, topupPath };
+        }
+        const profile = z.object({ birth: birth.nullable() }).parse(await deps.rpc("chemi_read_profile", { p_user }));
+        if (!profile.birth) throw Error("CHEMI_BIRTH_REQUIRED");
+        const result = computeDailyFortune({ ...calculateSaju(birthInput(profile.birth)), gender: profile.birth.gender ?? undefined }, input.day);
+        if (!isFortuneResult(result)) throw Error("CHEMI_UNAVAILABLE");
+        return deps.rpc("chemi_point_date", { ...args, p_result: result });
+      }
       if (op === "visit") return deps.rpc("chemi_visit", { p_user });
       if (op === "list")
         return deps.rpc("chemi_reading_list", {
