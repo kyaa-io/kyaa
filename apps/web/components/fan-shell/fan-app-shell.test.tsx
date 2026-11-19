@@ -1,5 +1,6 @@
 import styles from "./fan-app-shell.module.css";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
+import { ChemiReleaseProvider } from "@/features/chemi/ui/chemi-release";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -71,6 +72,28 @@ describe("fan app shell navigation", () => {
       "FAVORITES",
       "MY",
     ]);
+  });
+
+  it("has no chemi tab while CHEMI_TAB is off, in the header data and in the rendered bars", () => {
+    for (const groups of [false, true]) expect(fanNavigationItems("ko", "/", groups).map((item) => item.id)).not.toContain("chemi");
+    render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
+    expect(document.querySelector('[data-fan-navigation-id="chemi"]')).toBeNull();
+  });
+  it("orders the tabs HOME · 모임 · 케미 · 덕질 · MY when CHEMI_TAB is on", () => {
+    expect(fanNavigationItems("ko", "/", true, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
+    expect(fanNavigationItems("ko", "/", false, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
+    expect(fanNavigationItems("ko", "/chemi", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "케미", isCurrent: true });
+    expect(fanNavigationItems("ja", "/", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "Chemi", href: "/chemi?locale=ja" });
+  });
+  it("marks only the chemi tab current on /chemi and keeps home out of it", () => {
+    expect(activeFanSection("/chemi")).toBe("chemi");
+    expect(fanNavigationItems("ko", "/chemi", true, true).filter((item) => item.isCurrent).map((item) => item.id)).toEqual(["chemi"]);
+    expect(fanNavigationItems("ko", "/", true, true).find((item) => item.id === "chemi")?.isCurrent).toBe(false);
+  });
+  it("draws five tabs in the header and the bottom bar when the release context is on", () => {
+    render(<GroupsReleaseProvider enabled><ChemiReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></ChemiReleaseProvider></GroupsReleaseProvider>);
+    const ids = [...document.querySelectorAll("[data-fan-navigation-id]")].map((node) => node.getAttribute("data-fan-navigation-id"));
+    expect(ids).toEqual(["home", "community", "chemi", "favorites", "my", "home", "community", "chemi", "favorites", "my"]);
   });
 
   it("derives the active destination from the current route on the first render", () => {

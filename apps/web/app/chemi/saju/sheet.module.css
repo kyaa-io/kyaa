@@ -1,0 +1,52 @@
+/* 생일·궁합 상대 입력 시트의 칸 배치(입력 부품은 features/chemi/ui/frame). */
+.form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+/* 동의 줄은 문장 사이에서만 줄이 바뀐다. */
+.sentence {
+  display: inline-block;
+}
+
+/* 더 깊이·궁합 상대 고르기 */
+.topics {
+  display: grid;
+  gap: var(--space-1);
+}
+.topics > p {
+  margin: 0;
+  padding-top: var(--space-3);
+}
+.topics .topicRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--min-target);
+  height: auto;
+  padding: var(--space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  border-radius: 0;
+  background: none;
+  color: var(--color-ink);
+  text-align: start;
+}
+.topics .topicRow > span {
+  flex: 1;
+  min-width: 0;
+}
+.topicBody {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+}
+.topicText {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  text-align: start;
+}
