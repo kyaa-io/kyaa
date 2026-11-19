@@ -240,9 +240,7 @@ export async function rewardRoute(
         const quote = z.object({ balance: z.number(), price: z.number(), readingId: z.string().optional() })
           .passthrough().parse(await deps.rpc("chemi_point_date", { ...args, p_result: null }));
         if (!input.confirm || quote.todayFree || quote.readingId || quote.balance < quote.price) {
-          const path = process.env.CHEMI_POINT_TOPUP_PATH;
-          const topupPath = process.env.APP_ENV === "dev" && path && /^\/chemi\/[a-z0-9/-]+$/.test(path)
-            ? path : undefined;
+          const topupPath = process.env.APP_ENV === "dev" ? "/chemi/points/topup" : undefined;
           return { ...quote, topupPath };
         }
         const profile = z.object({ birth: birth.nullable() }).parse(await deps.rpc("chemi_read_profile", { p_user }));
