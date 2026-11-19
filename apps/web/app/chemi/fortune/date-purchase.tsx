@@ -4,6 +4,7 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { DateShortage } from "./date-shortage";
 import { parseNewFortune, todayKst, type FortuneReading } from "./reading";
 import { flowNotes } from "./result-copy";
 import styles from "./result.module.css";
@@ -99,7 +100,7 @@ export function DatePurchase({
       {saved && !saved.result.locked ? (
         <div aria-live="polite">
           <FanText role="item">
-            {saved.kstDate} · {saved.result.grade.name}
+            {saved.kstDate.replaceAll("-", ".")} · {saved.result.grade.name}
           </FanText>
           <p>{flowNotes[saved.result.grade.name]}</p>
           <p>운세 {saved.result.score}점</p>
@@ -113,28 +114,29 @@ export function DatePurchase({
           {quote.balance >= quote.price ? (
             <>
               <p>구매 후 잔액 {quote.balance - quote.price}P</p>
-              <FanAction
-                variant="primary"
-                disabled={busy}
-                onClick={() => request(true)}
-              >
-                {quote.price}P로 운세 열기
-              </FanAction>
+              <div className={`${styles.purchaseActions} ${styles.purchaseConfirm}`}>
+                <FanAction
+                  variant="primary"
+                  size="lg"
+                  disabled={busy}
+                  onClick={() => request(true)}
+                >
+                  {quote.price}P로 운세 열기
+                </FanAction>
+                <FanAction variant="text" disabled={busy} onClick={() => reset("")}>
+                  취소
+                </FanAction>
+              </div>
             </>
           ) : (
-            <>
-              <p>{quote.price - quote.balance}P가 부족해요.</p>
-              <FanAction href={`/my/wallet?view=attendance&locale=${locale}`}>
-                출석하고 포인트 받기
-              </FanAction>
-              {quote.topupPath && (
-                <FanAction href={topupHref(quote.topupPath)}>시험 포인트 충전</FanAction>
-              )}
-            </>
+            <DateShortage
+              shortBy={quote.price - quote.balance}
+              topupHref={quote.topupPath ? topupHref(quote.topupPath) : undefined}
+              locale={locale}
+              busy={busy}
+              onCancel={() => reset("")}
+            />
           )}
-          <FanAction disabled={busy} onClick={() => reset("")}>
-            취소
-          </FanAction>
         </div>
       ) : (
         <FanAction

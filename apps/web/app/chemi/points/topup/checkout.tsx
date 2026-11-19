@@ -142,7 +142,7 @@ export function Checkout({ locale }: { locale: string }) {
           <FanText role="item">1,000원</FanText>
         </div>
         <div className={styles.actions}>
-          <FanAction variant="primary" disabled={!ready || busy} onClick={pay}>
+          <FanAction variant="primary" size="lg" disabled={!ready || busy} onClick={pay}>
             1,000원 결제하기
           </FanAction>
           {pending && (

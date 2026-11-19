@@ -1,6 +1,7 @@
 .page {
   display: grid;
   gap: var(--space-4);
+  max-width: 720px;
 }
 .panel {
   display: grid;
