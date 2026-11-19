@@ -1,12 +1,12 @@
 import { act, renderHook } from "@testing-library/react";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { useOpenNativeModal } from "./top-layer";
 
 // jsdom has no :modal; showModal sets `open`, and the hook asks for :modal. Stub matches for the dialogs this test opens.
 it("follows a native modal opening, closing and leaving the page, so the toast layer can be drawn inside it", async () => {
   const dialog = document.createElement("dialog");
   const matches = dialog.matches.bind(dialog);
-  dialog.matches = (selector: string) => selector === ":modal" ? dialog.open : matches(selector);
+  vi.spyOn(dialog, "matches").mockImplementation((selector) => selector === ":modal" ? dialog.open : matches(selector));
   document.body.append(dialog);
   const { result } = renderHook(() => useOpenNativeModal());
   expect(result.current).toBeNull();

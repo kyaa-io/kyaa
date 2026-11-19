@@ -1,0 +1,256 @@
+import { assertEmailTemplateEnabled, renderNotificationEmail } from "../email-template.ts";
+import { emailInlineAssets } from "../email-inline-assets.ts";
+import { deriveEmailUnsubscribeKey, emailUnsubscribeHeaders, emailUnsubscribeKeyTag, emailUnsubscribeLinks, signEmailUnsubscribeToken } from "../email-unsubscribe.ts";
+import { SendEmailCommand, SESv2Client } from "@aws-sdk/client-sesv2";
+import {
+  ExternalNotificationError,
+  type ExternalNotificationJob,
+} from "../external-notification-domain.ts";
+import type { ExternalNotificationSender } from "../external-notification-ports.ts";
+
+export interface SesV2SendClient {
+  send(command: SendEmailCommand): Promise<{ MessageId?: string }>;
+}
+
+export interface SesEmailSenderConfig {
+  region: string;
+  fromEmail: string;
+  trustedOrigin?: string;
+  /** Secret the unsubscribe link key is derived from. Without it mail still goes out, just without the link. */
+  unsubscribeSecret?: string | undefined;
+  logError?: (message: string) => void;
+  /** Origin that serves the unsubscribe page; dev workers use https://dev.kyaa.io. */
+  unsubscribeOrigin?: string;
+  now?: () => Date;
+  client?: SesV2SendClient;
+  storageOrigin?: string;
+  fetcher?: typeof fetch;
+  // Set only for primary-account sends; SES then publishes delivery events.
+  feedback?: SesFeedbackConfig;
+}
+
+export interface SesFeedbackConfig {
+  configurationSetName: string;
+  environment: "dev" | "staging" | "prod";
+}
+
+// MessageTag names and values allow only ASCII letters, digits, "_" and "-",
+// up to 256 characters (SES API v2 MessageTag reference).
+const MESSAGE_TAG_VALUE = /^[A-Za-z0-9_-]{1,256}$/;
+
+export function sesFeedbackFields(feedback: SesFeedbackConfig | undefined, deliveryId?: string) {
+  if (!feedback) return {};
+  const tags = [
+    ...(deliveryId === undefined ? [] : [{ Name: "delivery_id", Value: deliveryId }]),
+    { Name: "env", Value: feedback.environment },
+  ];
+  if (!tags.every(tag => MESSAGE_TAG_VALUE.test(tag.Value)))
+    throw new ExternalNotificationError("EMAIL_INVALID_CONFIG", false);
+  return { ConfigurationSetName: feedback.configurationSetName, EmailTags: tags };
+}
+
+const DEFAULT_TRUSTED_ORIGIN = "https://kyaa.io";
+const CANONICAL_ORIGINS = new Set(["https://byus.kr", "https://kyaa.io"]);
+const RETRYABLE_ERROR_NAMES = new Set([
+  "InternalFailure",
+  "InternalServerError",
+  "LimitExceededException",
+  "RequestTimeout",
+  "RequestTimeoutException",
+  "ServiceUnavailable",
+  "ServiceUnavailableException",
+  "Throttling",
+  "ThrottlingException",
+  "TooManyRequestsException",
+]);
+const PERMANENT_ERROR_NAMES = new Set([
+  "AccessDeniedException",
+  "AccountSuspendedException",
+  "BadRequestException",
+  "MailFromDomainNotVerifiedException",
+  "MessageRejected",
+  "NotFoundException",
+]);
+
+function isEmail(value: string): boolean {
+  return (
+    value.length <= 254 &&
+    !value.includes("\r") &&
+    !value.includes("\n") &&
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+  );
+}
+
+function trustedOrigin(value: string): string {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || url.username || url.password) {
+      throw new Error("invalid trusted origin");
+    }
+    return url.origin;
+  } catch {
+    throw new ExternalNotificationError("EMAIL_INVALID_CONFIG", false);
+  }
+}
+
+function resolveDeepLink(value: string, origin: string): string {
+  try {
+    if (!value.trim() || value.startsWith("//")) {
+      throw new Error("protocol-relative URL is not trusted");
+    }
+    const url = new URL(value, `${origin}/`);
+    if (url.protocol !== "https:" || (!CANONICAL_ORIGINS.has(url.origin) && url.origin !== origin) || url.username || url.password) {
+      throw new Error("URL is outside the trusted origin");
+    }
+    return url.href;
+  } catch {
+    throw new ExternalNotificationError("EMAIL_INVALID_DEEP_LINK", false);
+  }
+}
+
+function isRetryableAwsError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return true;
+  const value = error as {
+    name?: unknown;
+    $fault?: unknown;
+    $metadata?: { httpStatusCode?: unknown };
+    $retryable?: unknown;
+  };
+  if (typeof value.name === "string" && RETRYABLE_ERROR_NAMES.has(value.name)) return true;
+  if (typeof value.name === "string" && PERMANENT_ERROR_NAMES.has(value.name)) return false;
+  if (value.$retryable) return true;
+  if (typeof value.$metadata?.httpStatusCode === "number") {
+    return value.$metadata.httpStatusCode === 429 || value.$metadata.httpStatusCode >= 500;
+  }
+  return value.$fault !== "client";
+}
+
+export class SesEmailSender implements ExternalNotificationSender {
+  private readonly client: SesV2SendClient;
+  private readonly origin: string;
+  private readonly unsubscribeOrigin: string;
+  private readonly unsubscribeKey: Buffer | null;
+
+  private readonly config: SesEmailSenderConfig;
+
+  constructor(config: SesEmailSenderConfig) {
+    this.config = config;
+    if (!config.region.trim() || !isEmail(config.fromEmail)) {
+      throw new ExternalNotificationError("EMAIL_INVALID_CONFIG", false);
+    }
+    this.origin = trustedOrigin(config.trustedOrigin ?? DEFAULT_TRUSTED_ORIGIN);
+    this.unsubscribeOrigin = trustedOrigin(config.unsubscribeOrigin ?? this.origin);
+    const logError = config.logError ?? ((message: string) => console.error(message));
+    try {
+      this.unsubscribeKey = deriveEmailUnsubscribeKey(config.unsubscribeSecret);
+      console.info(`email unsubscribe key tag=${emailUnsubscribeKeyTag(this.unsubscribeKey)}`);
+    } catch {
+      this.unsubscribeKey = null;
+      logError("EMAIL_UNSUBSCRIBE_UNAVAILABLE: no signing secret; member mail is sent without the unsubscribe link");
+    }
+    this.client =
+      config.client ??
+      new SESv2Client({
+        region: config.region,
+        maxAttempts: 1,
+        requestHandler: { connectionTimeout: 2_000, requestTimeout: 8_000, throwOnRequestTimeout: true },
+      });
+  }
+
+  async send(job: Pick<ExternalNotificationJob, "id" | "notificationId" | "templateKey" | "destination" | "channel" | "locale" | "payload">, custom?: {
+    copy: NonNullable<Parameters<typeof renderNotificationEmail>[1]>;
+    senderInfo?: string;
+    advertising: boolean;
+  }): Promise<{ providerMessageId: string }> {
+    if (job.channel !== "email") {
+      throw new ExternalNotificationError("EMAIL_INVALID_CHANNEL", false);
+    }
+    if (!custom) assertEmailTemplateEnabled(job.templateKey);
+    if (!isEmail(job.destination)) {
+      throw new ExternalNotificationError("EMAIL_INVALID_DESTINATION", false);
+    }
+    const localizedLink = new URL(resolveDeepLink(job.payload.deepLink, this.origin));
+    localizedLink.searchParams.set("locale", job.locale);
+    const deepLink = localizedLink.href;
+
+    const context = job.payload.context;
+    let imageUrl: string | undefined;
+    if (typeof context?.imageUrl === "string") {
+      try {
+        const image = new URL(context.imageUrl, `${this.origin}/`);
+        if (image.protocol === "https:" && !image.username && !image.password && !context.imageUrl.startsWith("//")) imageUrl = image.href;
+      } catch { /* An absent or invalid poster must not block the notification. */ }
+    }
+    const assets = await emailInlineAssets(imageUrl, {
+      origin: this.origin,
+      storageOrigin: this.config.storageOrigin,
+      fetcher: this.config.fetcher,
+    });
+    let unsubscribe: ReturnType<typeof emailUnsubscribeLinks> | null = null;
+    if (this.unsubscribeKey && (!custom || custom.advertising)) {
+      try {
+        unsubscribe = emailUnsubscribeLinks(
+          this.unsubscribeOrigin,
+          signEmailUnsubscribeToken(this.unsubscribeKey, {
+            notificationId: job.notificationId,
+            templateKey: job.templateKey,
+            destination: job.destination,
+            ...(this.config.now ? { now: this.config.now() } : {}),
+          }),
+          job.locale,
+        );
+      } catch {
+        // A failure to sign must never hold back a win or pick-up notice.
+        (this.config.logError ?? ((message: string) => console.error(message)))("EMAIL_UNSUBSCRIBE_SIGN_FAILED: sending without the unsubscribe link");
+      }
+    }
+    if (custom?.advertising && !unsubscribe) throw new ExternalNotificationError("EMAIL_UNSUBSCRIBE_UNAVAILABLE", false);
+    const email = renderNotificationEmail({
+      ...(custom?.senderInfo ? { senderInfo: custom.senderInfo } : {}),
+      ...(unsubscribe ? { unsubscribeUrl: unsubscribe.pageUrl } : {}),
+      title: job.payload.title, detail: job.payload.detail, deepLink,
+      locale: job.locale, templateKey: job.templateKey,
+      inlineAssets: { logoContentId: "byus-logo", ...(assets.posterContentId ? { posterContentId: assets.posterContentId } : {}) },
+      ...(context ? { context: { ...context, imageUrl: undefined } } : {}),
+    }, custom?.copy);
+
+    const feedbackFields = sesFeedbackFields(this.config.feedback, custom ? undefined : job.id);
+    let response: { MessageId?: string };
+    try {
+      // SES v2 SendEmail has no idempotency token. The queue lease limits concurrent
+      // sends, but a retry after an ambiguous provider response can still duplicate mail.
+      response = await this.client.send(
+        new SendEmailCommand({
+          FromEmailAddress: this.config.fromEmail,
+          Destination: { ToAddresses: [job.destination] },
+          ReplyToAddresses: ["support@kyaa.io"],
+          ...feedbackFields,
+          Content: {
+            Simple: {
+              ...(unsubscribe && job.payload.priority === 3 ? { Headers: emailUnsubscribeHeaders(unsubscribe) } : {}),
+              Attachments: assets.attachments,
+              Subject: { Data: email.subject, Charset: "UTF-8" },
+              Body: {
+                Html: { Data: email.html, Charset: "UTF-8" },
+                Text: {
+                  Data: email.text,
+                  Charset: "UTF-8",
+                },
+              },
+            },
+          },
+        }),
+      );
+    } catch (error) {
+      if (isRetryableAwsError(error)) {
+        throw new ExternalNotificationError("EMAIL_RETRYABLE", true);
+      }
+      throw new ExternalNotificationError("EMAIL_REJECTED", false);
+    }
+
+    if (!response.MessageId) {
+      throw new ExternalNotificationError("EMAIL_INVALID_RESPONSE", false);
+    }
+    return { providerMessageId: response.MessageId };
+  }
+}

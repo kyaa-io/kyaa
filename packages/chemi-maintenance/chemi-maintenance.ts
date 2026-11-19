@@ -1,5 +1,5 @@
 import { chemiMailJob } from "./chemi-jobs/mail.ts";
-import type { ChemiMaintenanceRpc } from "./chemi-mail-worker.js";
+import type { ChemiMaintenanceRpc } from "./chemi-mail-worker.ts";
 
 const jobs = [
   chemiMailJob,

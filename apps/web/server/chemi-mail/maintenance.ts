@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "@/server/config/env";
 import { cronOwnerResponse } from "@/server/cron/owner";
-import { runChemiMaintenance } from "../../../worker/src/chemi-maintenance";
+import { runChemiMaintenance } from "@byus/chemi-maintenance";
 
 export async function chemiMaintenanceRoute(request: Request) {
   const ownership = cronOwnerResponse(request);

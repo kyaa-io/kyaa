@@ -1,0 +1,14 @@
+{
+  "name": "@byus/chemi-maintenance",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./chemi-maintenance.ts",
+    "./*": "./*.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sesv2": "3.1091.0",
+    "zod": "4.6.7"
+  }
+}
