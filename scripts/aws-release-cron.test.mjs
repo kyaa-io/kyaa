@@ -44,10 +44,21 @@ test('protected legacy ownership requires a valid bypass and never forwards it t
  for(const invalid of [undefined,'','bad\rheader','bad\nheader',42])assert.throws(()=>ownershipHeaders(secret,true,invalid),/PRIVATE_VERCEL_BYPASS_REQUIRED/);
  for(const value of [undefined,bypass,'bad\nheader'])assert.deepEqual(ownershipHeaders(secret,false,value),{authorization:`Bearer ${secret}`});
 });
-test('all seven HTTP schedules match Vercel cadence, exact task and common owner gate',async()=>{
+test('HTTP schedules match Vercel mappings and the DEV-only Chemi task',async()=>{
  const template=JSON.parse(await readFile('infrastructure/aws/platform/scheduled-workers.json','utf8'));
  const schedules=Object.values(template.Resources).filter(r=>r.Type==='AWS::Scheduler::Schedule'&&r.Properties.Target.Arn?.['Fn::GetAtt']?.[0]==='CronFunction');
- assert.equal(schedules.length,7);assert.equal(manifest.tasks.length,7);
+ const taskName=s=>JSON.parse(s.Properties.Target.Input['Fn::Sub']).task;
+ const chemi=template.Resources.ScheduleChemiMaintenance;
+ assert.deepEqual(schedules.map(taskName).sort(),[...manifest.tasks.map(t=>t.name),'chemi-maintenance'].sort());
+ assert.equal(taskName(chemi),'chemi-maintenance');
+ assert.equal(chemi.Condition,'ChemiDev');
+ assert.deepEqual(template.Conditions.ChemiDev,{'Fn::Equals':[{Ref:'Environment'},'dev']});
+ assert.equal(chemi.Properties.ScheduleExpression,'cron(0/5 * * * ? *)');
+ assert.equal(chemi.Properties.Target.RetryPolicy.MaximumRetryAttempts,0);
+ const chemiPath='/api/internal/chemi/maintenance';
+ assert(!vercel.crons.some(cron=>cron.path===chemiPath));
+ assert.match(await readFile('apps/worker/src/aws-scheduled-entry.ts','utf8'),/"chemi-maintenance": "\/api\/internal\/chemi\/maintenance"/);
+ assert.match(await readFile('apps/web/server/chemi-mail/maintenance.ts','utf8'),/const ownership = cronOwnerResponse\(request\)/);
  for(const task of manifest.tasks){
   const scheduled=schedules.filter(s=>JSON.parse(s.Properties.Target.Input['Fn::Sub']).task===task.name);
   assert.equal(scheduled.length,1);
@@ -77,7 +88,12 @@ test('native media has its own 180-second, 2-GiB, 2-GiB-tmp concurrency boundary
  for(const resource of Object.values(template.Resources).filter(r=>r.Type==='AWS::Scheduler::Schedule')){
   assert.deepEqual(resource.Properties.State,{'Fn::If':['SchedulesEnabled','ENABLED','DISABLED']});
  }
- assert.equal(Object.values(template.Resources).filter(r=>r.Type==='AWS::Scheduler::Schedule').length,17);
+ const actual=Object.values(template.Resources).filter(r=>r.Type==='AWS::Scheduler::Schedule').map(r=>{
+  const input=JSON.parse(r.Properties.Target.Input['Fn::Sub']);
+  return input.task ?? input.source;
+ });
+ assert.deepEqual(actual.sort(),[...manifest.tasks,...manifest.maintenanceTasks].map(t=>t.name)
+  .concat('chemi-maintenance','byus.aws-media','byus.aws-mint-cadence').sort());
  assert(template.Rules.RequireOwnershipProof);
 });
 

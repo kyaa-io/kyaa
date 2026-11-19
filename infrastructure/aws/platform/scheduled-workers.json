@@ -741,6 +741,7 @@
       }
     },
     "ScheduleChemiMaintenance": {
+      "Condition": "ChemiDev",
       "Type": "AWS::Scheduler::Schedule",
       "Properties": {
         "Name": {
