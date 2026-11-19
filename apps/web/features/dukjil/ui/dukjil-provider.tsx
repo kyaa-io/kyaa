@@ -57,7 +57,7 @@ function useCatalog(locale: AppLocale) {
     return () => { live = false; };
   }, [attempt, auth.ready, locale, request]);
   const ready = state?.locale === locale;
-  return { catalog: ready ? state?.catalog : undefined, settled: ready, ready: auth.ready, authenticated: auth.authenticated };
+  return { catalog: ready ? state?.catalog : undefined, settled: ready, ready: auth.ready, authenticated: auth.authenticated, ownerKey: auth.ownerKey };
 }
 
 /** One catalog read and (with a slug) one `today` read; every badge, tile and the dialog reads from here. */
@@ -71,20 +71,32 @@ export function DukjilProvider(props: ProviderProps) {
 }
 
 function DukjilProviderRoot({ slug, locale, hasPassport, accountToday = false, children }: ProviderProps) {
-  const { catalog, settled, ready, authenticated } = useCatalog(locale);
+  const { catalog, settled, ready, authenticated, ownerKey } = useCatalog(locale);
   const catalogOn = catalogIsActive(catalog);
   const today = useGroupResource(authenticated && catalogOn && (slug || accountToday) ? `/api/me/dukjil/today${slug ? `?creator=${encodeURIComponent(slug)}` : ""}` : null, parseDukjilToday);
-  const [local, setLocal] = useState<DukjilAttendanceState>();
+  const scope = JSON.stringify([ownerKey, slug]);
+  const [claim, setClaim] = useState<{ scope: string; attendance: DukjilAttendanceState }>();
+  const serverDate = today.data?.kstDate;
+  const receiptDate = claim?.attendance.result?.attendanceDate;
+  const local = authenticated && claim?.scope === scope && (!serverDate || !receiptDate || receiptDate >= serverDate)
+    ? claim.attendance : undefined;
+  const setAttendance = useCallback((attendance: DukjilAttendanceState) => setClaim({ scope, attendance }), [scope]);
   const { retry } = today;
   const refresh = useCallback(() => retry(), [retry]);
+  useEffect(() => {
+    if (!serverDate) return;
+    const reset = Date.parse(`${serverDate}T00:00:00+09:00`) + 86_400_000;
+    const timer = window.setTimeout(retry, Math.max(0, reset - Date.now() + 1_000));
+    return () => window.clearTimeout(timer);
+  }, [retry, serverDate]);
   const active = activeToday(today.data);
   const fromServer = active?.attendance ?? undefined;
   const attendance = local ?? fromServer;
   const status: DukjilStatus = !settled || !ready ? "loading" : !catalogOn || today.data?.policyActive === false ? "off" : "on";
   const value = useMemo<DukjilState>(() => ({
     slug, locale, authenticated, status, hasPassport: hasPassport ?? active?.hasPassport ?? undefined, catalog, today: today.data,
-    todayFailure: today.failure, attendance, attendanceKnown: local !== undefined || today.data !== undefined, setAttendance: setLocal, refresh,
-  }), [slug, locale, authenticated, status, hasPassport, active, catalog, today.data, today.failure, attendance, local, refresh]);
+    todayFailure: today.failure, attendance, attendanceKnown: local !== undefined || today.data !== undefined, setAttendance, refresh,
+  }), [slug, locale, authenticated, status, hasPassport, active, catalog, today.data, today.failure, attendance, local, refresh, setAttendance]);
   return <DukjilContext.Provider value={value}>{children}</DukjilContext.Provider>;
 }
 

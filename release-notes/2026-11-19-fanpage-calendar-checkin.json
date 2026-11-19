@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "팬페이지에서 출석을 마치면 새로고침 없이 ‘다가오는 일정’ 달력의 해당 날짜에 체크 표시가 나타나요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/elina",
+  "images": [
+    "release-notes/images/2026-11-19-fanpage-calendar-390.png",
+    "release-notes/images/2026-11-19-fanpage-calendar-1440.png"
+  ]
+}

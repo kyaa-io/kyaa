@@ -109,11 +109,13 @@ export function CelebrityMiniCalendar({
   upcomingLive,
   embedded = false,
   onMonthChange,
+  attendanceDates = [],
 }: {
   celebrity: PublishedCelebrity;
   locale: AppLocale;
   upcomingLive: PublishedCelebrityLive | null;
   embedded?: boolean;
+  attendanceDates?: readonly (string | undefined)[];
   onMonthChange?: (month: string) => void;
 }) {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
@@ -202,7 +204,7 @@ export function CelebrityMiniCalendar({
   const days = combinedCalendarDays({ month, timeZone: "Asia/Seoul", days: liveDays }, schedules.items,
     [{ slug: celebrity.slug, name: celebrity.name, image: celebrity.image.url }],
     new Map(liveDays.flatMap(day => day.events.map(event => [event.slug, celebrity.slug] as const))));
-  const checkedDateSet = new Set(checkedDates);
+  const checkedDateSet = new Set([...checkedDates, ...attendanceDates]);
   const firstWeekday = calendarWeekday(days[0]?.date ?? `${month}-01`);
   const previousMonth = adjacentCalendarMonth(month, -1);
   const nextMonth = adjacentCalendarMonth(month, 1);
@@ -243,7 +245,10 @@ export function CelebrityMiniCalendar({
           const checkedIn = checkedDateSet.has(day.date);
           const style = index === 0 ? { gridColumnStart: firstWeekday + 1 } : undefined;
           if (firstEvent) {
-            const eventLabel = locale === "ko" ? `${dayNumber}일, ${participation.schedules} ${day.events.length}${checkedIn ? ", 출석 완료" : ""}` : `${dayNumber}, ${participation.schedules} ${day.events.length}`;
+            const dateLabel = checkedIn
+              ? locale === "ko" ? `${dayNumber}일, 출석 완료` : translate(locale, localizedMessages.mdfeb64d2c67d, "{0}, checked in", [dayNumber])
+              : locale === "ko" ? `${dayNumber}일` : String(dayNumber);
+            const eventLabel = `${dateLabel}, ${participation.schedules} ${day.events.length}`;
             return (
               <MiniCalendarEventDay
                 date={day.date}
