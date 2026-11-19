@@ -7,7 +7,11 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({
 }));
 vi.mock("next/script", async () => {
   const { useEffect } = await import("react");
-  return { default: ({ onReady }: { onReady: () => void }) => { useEffect(() => onReady(), [onReady]); return null; } };
+  function Script({ onReady }: { onReady: () => void }) {
+    useEffect(() => onReady(), [onReady]);
+    return null;
+  }
+  return { default: Script };
 });
 const balances = (activity: number, paid: number) => ({ balances: [{ activity_points: activity, paid_points: paid, total_points: activity + paid }] });
 afterEach(() => {
