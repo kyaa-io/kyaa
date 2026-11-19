@@ -39,7 +39,7 @@ deploy = load("deploy", "scripts/deploy-aws-notification-monitor.py")
 
 class MonitorTest(unittest.TestCase):
     def setUp(self):
-        self.env = patch.dict(os.environ, {"SECRET_ARN": "monitor-secret", "EXPECTED_CHAT_ID": "-100123456789", "TABLE_NAME": "receipts", "TOPIC_ARN": "prod-topic"})
+        self.env = patch.dict(os.environ, {"WEB_LOG_GROUP": "byus-prod-platform-WebLogs-example", "SECRET_ARN": "monitor-secret", "EXPECTED_CHAT_ID": "-100123456789", "TABLE_NAME": "receipts", "TOPIC_ARN": "prod-topic"})
         self.env.start()
         self.addCleanup(self.env.stop)
 
@@ -68,6 +68,27 @@ class MonitorTest(unittest.TestCase):
             event["Records"][0]["Sns"]["TopicArn"] = "other-topic"
             monitor.handler(event, None)
         notify.assert_not_called()
+
+    def test_alb_alarm_appends_causes_or_reports_lookup_failure(self):
+        name = monitor.ALB_ALARM_PREFIX + "example"
+        event = self.alarm(AlarmName=name, AlarmArn=f"arn:aws:cloudwatch:{monitor.REGION}:{monitor.ACCOUNT}:alarm:{name}")
+        logs = Mock()
+        logs.start_query.return_value = {"queryId": "test-query"}
+        row = {"route": "/api/celebrities/[slug]/youtube", "statuses": "[503]", "hits": "51", "codes": '["YOUTUBE_QUOTA_EXCEEDED"]'}
+        logs.get_query_results.return_value = {
+            "status": "Complete",
+            "results": [[{"field": key, "value": value} for key, value in row.items()]],
+        }
+        with patch.object(monitor, "client", return_value=logs), patch.object(monitor, "notify") as notify:
+            monitor.handler(event, None)
+            message = notify.call_args.args[1]
+            self.assertTrue(message.endswith("/api/celebrities/[slug]/youtube 503 × 51 · YOUTUBE_QUOTA_EXCEEDED"))
+            query = logs.start_query.call_args.kwargs
+            self.assertEqual(query["endTime"] - query["startTime"], 600)
+            self.assertEqual(query["logGroupName"], "byus-prod-platform-WebLogs-example")
+            logs.get_query_results.side_effect = RuntimeError("sensitive detail")
+            monitor.handler(event, None)
+            self.assertEqual(notify.call_args.args[1], message.rsplit("\n", 1)[0] + "\n원인 조회 실패")
 
     def test_eight_service_alarms_reach_the_room_and_everything_else_stays_filtered(self):
         def event(name):

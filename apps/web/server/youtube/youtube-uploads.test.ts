@@ -105,3 +105,29 @@ it("picks the newest long video for NCHIVE, whose latest uploads are all Shorts 
   const videos = observed.map(([id, publishedAt, seconds]) => entry(id, `PT${Math.floor(seconds / 60)}M${seconds % 60}S`, { publishedAt }));
   expect(await pickEmbeddableUpload(channelUrl, { apiKey: "key", fetcher: embedApi(videos) })).toEqual({ videoId: "KdZJIKbDbHs" });
 });
+
+it.each([
+  ["quotaExceeded", "YOUTUBE_QUOTA_EXCEEDED"],
+  ["keyInvalid", "YOUTUBE_KEY_INVALID"],
+  ["rateLimitExceeded", "YOUTUBE_RATE_LIMIT_EXCEEDED"],
+  ["arbitrary-provider-value", "YOUTUBE_HTTP_403"],
+])("records a safe code for Google reason %s", async (reason, code) => {
+  const onFailure = vi.fn();
+  const fetcher = vi.fn(async () => Response.json({ error: { errors: [{ reason, message: "private details" }] } }, { status: 403 }));
+  expect(await readYouTubeUploads(`https://youtube.com/channel/${channel}`, { apiKey: "key", fetcher, onFailure })).toBeNull();
+  expect(onFailure.mock.calls).toEqual([[{ code, upstreamStatus: 403 }]]);
+});
+
+it("records the timeout when Google does not respond", async () => {
+  vi.useFakeTimers();
+  try {
+    const onFailure = vi.fn();
+    const fetcher = vi.fn<typeof fetch>(() => new Promise(() => {}));
+    const result = readYouTubeUploads(`https://youtube.com/channel/${channel}`, { apiKey: "key", fetcher, onFailure });
+    await vi.runAllTimersAsync();
+    expect(await result).toBeNull();
+    expect(onFailure.mock.calls).toEqual([[{ code: "YOUTUBE_TIMEOUT" }]]);
+  } finally {
+    vi.useRealTimers();
+  }
+});

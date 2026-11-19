@@ -69,6 +69,9 @@ def main():
     if aws("sts", "get-caller-identity")["Account"] != ACCOUNT:
         raise RuntimeError("production AWS account mismatch")
     stack = aws("cloudformation", "describe-stacks", "--stack-name", "byus-prod-platform")["Stacks"][0]
+    web_logs = aws("cloudformation", "describe-stack-resource", "--stack-name", "byus-prod-platform", "--logical-resource-id", "WebLogs")["StackResourceDetail"]["PhysicalResourceId"]
+    if not re.fullmatch(r"byus-prod-platform-WebLogs-[A-Za-z0-9]+", web_logs):
+        raise RuntimeError("unexpected production web log group")
     topic = next(row["OutputValue"] for row in stack["Outputs"] if row["OutputKey"] == "AlarmTopicArn")
     if not re.fullmatch(f"arn:aws:sns:{REGION}:{ACCOUNT}:byus-prod-platform-AlarmTopic-[A-Za-z0-9]+", topic):
         raise RuntimeError("unexpected production alarm topic")
@@ -104,7 +107,7 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     rendered = args.out / "notification-monitor-rendered.json"
     rendered.write_text(json.dumps(template, indent=2))
-    parameters = [f"MonitorSecretArn={secret_arn}", f"AlarmTopicArn={topic}", f"ExpectedChatId={secret['TELEGRAM_CHAT_ID']}"]
+    parameters = [f"WebLogGroupName={web_logs}", f"MonitorSecretArn={secret_arn}", f"AlarmTopicArn={topic}", f"ExpectedChatId={secret['TELEGRAM_CHAT_ID']}"]
     if args.deploy:
         subprocess.run(["aws", "cloudformation", "deploy", "--profile", args.profile, "--region", REGION, "--stack-name", STACK, "--template-file", str(rendered), "--parameter-overrides", *parameters, "--capabilities", "CAPABILITY_IAM", "--no-fail-on-empty-changeset"], check=True)
         connect_alarms(aws, topic)

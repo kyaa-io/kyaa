@@ -3,7 +3,7 @@ import "server-only";
 import { z } from "zod";
 import { parseYouTubeChannelUrl } from "@/features/live/domain/youtube-channel";
 import type { OfficialMedia } from "@/features/media/domain/official-media";
-import { fetchYouTubeApiJson } from "./youtube-live-source";
+import { fetchYouTubeApiJson, type YouTubeFailure } from "./youtube-live-source";
 
 const channelId = z.string().regex(/^UC[A-Za-z0-9_-]{22}$/);
 const videoId = z.string().regex(/^[A-Za-z0-9_-]{11}$/);
@@ -12,7 +12,7 @@ const playlistPage = z.object({ items: z.array(z.object({ contentDetails: z.obje
 const videoPage = z.object({ items: z.array(z.object({ id: videoId, snippet: z.object({ channelId, title: z.string().max(500), publishedAt: z.iso.datetime({ offset: true }), liveBroadcastContent: z.enum(["none", "live", "upcoming"]) }), status: z.object({ privacyStatus: z.enum(["public", "private", "unlisted"]) }), liveStreamingDetails: z.record(z.string(), z.unknown()).optional() })).max(6) });
 
 /** Only the published official channel is resolved; this never searches for matching names. */
-export async function readYouTubeUploads(channelUrl: string, options: { apiKey?: string; fetcher?: typeof fetch } = {}): Promise<OfficialMedia[] | null> {
+export async function readYouTubeUploads(channelUrl: string, options: { apiKey?: string; fetcher?: typeof fetch; onFailure?: (failure: YouTubeFailure) => void } = {}): Promise<OfficialMedia[] | null> {
   const target = parseYouTubeChannelUrl(channelUrl);
   if (!target) return [];
   const apiKey = options.apiKey ?? process.env.YOUTUBE_DATA_API_KEY;
@@ -22,7 +22,7 @@ export async function readYouTubeUploads(channelUrl: string, options: { apiKey?:
   async function get(path: string, params: Record<string, string>) {
     const url = new URL(`https://www.googleapis.com/youtube/v3/${path}`);
     url.search = new URLSearchParams({ ...params, key: apiKey! }).toString();
-    return (await fetchYouTubeApiJson(url, fetcher, Date.now()))?.payload;
+    return (await fetchYouTubeApiJson(url, fetcher, Date.now(), options.onFailure))?.payload;
   }
   try {
     const channels = channelPage.parse(await get("channels", { part: "contentDetails", [target.kind === "id" ? "id" : "forHandle"]: target.value }));
