@@ -69,3 +69,17 @@ it("shows activity earning when the production balance is short", async () => {
   ).toBeTruthy();
   expect(screen.queryByText("시험 포인트 충전")).toBeNull();
 });
+
+it.each([
+  [2, "1P가 부족해요."],
+  [3, "구매 후 잔액 0P"],
+  [4, "구매 후 잔액 1P"],
+] as const)("quotes a 3P purchase with a %iP balance", async (balance, message) => {
+  vi.stubGlobal("fetch", async () => Response.json({ balance, price: 3 }));
+  render(<DatePurchase character="dosa" locale="ko" />);
+  fireEvent.change(screen.getByLabelText("운세를 볼 날짜"), {
+    target: { value: "2027-05-15" },
+  });
+  fireEvent.click(screen.getByText("가격 확인"));
+  expect(await screen.findByText(message)).toBeTruthy();
+});
