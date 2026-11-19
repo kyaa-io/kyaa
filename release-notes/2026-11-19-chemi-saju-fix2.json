@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "궁합을 불러오지 못했을 때 오류와 다시 시도가 화면 안에 보이고, 오류 문구는 대화 상자 안에 들어가요.",
+    "390 풀이 화면은 올해 흐름 다음에 더 깊이, 장면 다시 보기, 고지 순서로 이어져요.",
+    "15초 안에 풀이를 받지 못하면 오류 화면으로 바뀌어요.",
+    "궁합 상대는 저장 여부를 묻지 않고 항상 저장하며, 지우기는 MY 생일 정보에서 해요.",
+    "생일 입력 칸을 MY 생일 정보와 같은 칸으로 바꿨어요. 예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/saju",
+  "images": [
+    "release-notes/images/2026-11-19-chemi-saju-fix2-order-390-local.png",
+    "release-notes/images/2026-11-19-chemi-saju-fix2-error-390-local.png",
+    "release-notes/images/2026-11-19-chemi-saju-fix2-partner-390-local.png"
+  ]
+}

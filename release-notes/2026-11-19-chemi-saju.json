@@ -1,0 +1,16 @@
+{
+  "changes": [
+    "케미에서 최애 사주를 볼 수 있어요. 생일을 한 번 알려 주면 최애가 사주를 풀어 줘요.",
+    "타고난 기운과 성격, 올해 흐름을 보여 주고, 같은 최애로 다시 오면 올해와 이달 풀이를 무료로 볼 수 있어요.",
+    "저장해 둔 사람이나 새로 입력한 사람과 하루 한 번 궁합을 볼 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/saju",
+  "images": [
+    "release-notes/images/2026-11-19-chemi-saju-again-390.png",
+    "release-notes/images/2026-11-19-chemi-saju-result-390.png",
+    "release-notes/images/2026-11-19-chemi-saju-year-390.png",
+    "release-notes/images/2026-11-19-chemi-saju-pair-390.png",
+    "release-notes/images/2026-11-19-chemi-saju-result-1440.png"
+  ]
+}

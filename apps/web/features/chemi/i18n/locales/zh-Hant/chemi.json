@@ -104,6 +104,8 @@
     "invalidDate": "",
     "under14": "",
     "partnerUnder14": "",
+    "partnerConsent": "",
+    "partnerSave": "",
     "savedToast": "",
     "saveFailed": "",
     "partnerDeletedToast": "",
