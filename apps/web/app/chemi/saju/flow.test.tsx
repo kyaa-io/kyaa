@@ -157,14 +157,15 @@ async function fillNewPartner() {
   const sheet = await screen.findByRole("dialog", { name: "궁합 상대 넣기" });
   fireEvent.change(within(sheet).getByLabelText("별명"), { target: { value: "하나" } });
   fireEvent.change(within(sheet).getByLabelText("생년월일"), { target: { value: "20000101" } });
-  fireEvent.click(within(sheet).getByRole("button", { name: "궁합 보기" }));
+  fireEvent.click(within(sheet).getByLabelText(/상대 정보를 저장해요/));
+  fireEvent.click(within(sheet).getByRole("button", { name: "저장하고 궁합 보기" }));
 }
 const noPartners: Record<string, Route> = {
   ...baseRoutes,
   "GET /api/chemi/profile": () => Response.json({ birth: null, partners: [] }),
 };
 
-it("새 상대는 저장하고 궁합을 본 뒤 지우지 않는다. 저장 여부를 묻지 않는다", async () => {
+it("새 상대는 저장 동의에 체크해야 저장하고 궁합을 보며, 본 뒤에 지우지 않는다", async () => {
   const api = server({
     ...noPartners,
     "POST /api/chemi/partners": () => Response.json({ partnerId: "kept-1" }),
@@ -173,8 +174,15 @@ it("새 상대는 저장하고 궁합을 본 뒤 지우지 않는다. 저장 여
   await openResult("/chemi/saju?step=result&c=changha&r=first-1");
   fireEvent.click(await screen.findByRole("button", { name: /^궁합/ }));
   const sheet = await screen.findByRole("dialog", { name: "궁합 상대 넣기" });
-  expect(within(sheet).queryByLabelText(/저장/)).toBeNull();
-  await fillNewPartner();
+  const save = within(sheet).getByRole("button", { name: "저장하고 궁합 보기" });
+  fireEvent.change(within(sheet).getByLabelText("별명"), { target: { value: "하나" } });
+  fireEvent.change(within(sheet).getByLabelText("생년월일"), { target: { value: "20000101" } });
+  expect(save).toBeDisabled();
+  expect(within(sheet).getByLabelText(/궁합 기록을 위해 상대 정보를 저장해요/)).not.toBeChecked();
+  expect(api.count("POST /api/chemi/partners")).toBe(0);
+  fireEvent.click(within(sheet).getByLabelText(/상대 정보를 저장해요/));
+  expect(save).toBeEnabled();
+  fireEvent.click(save);
   expect(await screen.findByText("나 × 하나", {}, { timeout: 4000 })).toBeVisible();
   expect(api.count("POST /api/chemi/partners")).toBe(1);
   expect(api.calls.find((call) => call.key === "POST /api/chemi/partners")?.body).toMatchObject({
@@ -219,4 +227,47 @@ it("궁합이 실패하면 장면이 보이도록 스크롤을 맨 위로 올린
   expect(scrollTo).toHaveBeenLastCalledWith(0, 0);
   // 오류 문구는 그림 위 맨 글자가 아니라 대화 상자 면 안에 있다.
   expect(screen.getByRole("alert").parentElement?.className).toMatch(/controls/);
+});
+
+it("상대 입력 시트에서 겹친 생년월일 휠·태어난 시간 판을 닫아도 입력 시트와 넣은 값이 남는다", async () => {
+  server({ ...noPartners });
+  await openResult("/chemi/saju?step=result&c=changha&r=first-1");
+  fireEvent.click(await screen.findByRole("button", { name: /^궁합/ }));
+  const sheet = await screen.findByRole("dialog", { name: "궁합 상대 넣기" });
+  fireEvent.change(within(sheet).getByLabelText("별명"), { target: { value: "하나" } });
+  fireEvent.click(within(sheet).getByRole("button", { name: "휠로 고르기" }));
+  const wheel = await screen.findByRole("dialog", { name: "생년월일" });
+  fireEvent.click(within(wheel).getByRole("button", { name: "선택 완료" }));
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  expect(screen.queryByRole("dialog", { name: "생년월일" })).toBeNull();
+  expect(screen.getByRole("dialog", { name: "궁합 상대 넣기" })).toBeVisible();
+  expect(within(screen.getByRole("dialog", { name: "궁합 상대 넣기" })).getByLabelText("별명")).toHaveValue("하나");
+  fireEvent.click(within(screen.getByRole("dialog", { name: "궁합 상대 넣기" })).getByRole("button", { name: /^선택$/ }));
+  const time = await screen.findByRole("dialog", { name: "태어난 시간" });
+  fireEvent.click(within(time).getByRole("button", { name: "닫기" }));
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  expect(screen.queryByRole("dialog", { name: "태어난 시간" })).toBeNull();
+  expect(screen.getByRole("dialog", { name: "궁합 상대 넣기" })).toBeVisible();
+});
+
+it("서로 다른 사주 기록 사이를 뒤로·앞으로 가면 그 주소의 풀이를 다시 읽는다", async () => {
+  const second = { readingId: "first-2", result: chart, replayed: true };
+  const api = server({
+    ...baseRoutes,
+    "GET /api/chemi/readings/first-2": () => Response.json(second),
+  });
+  await openResult("/chemi/saju?step=result&c=changha&r=first-1");
+  expect(await screen.findByText("타고난 기운")).toBeVisible();
+  expect(api.count("GET /api/chemi/readings/first-2")).toBe(0);
+  await act(async () => {
+    window.history.pushState({}, "", "/chemi/saju?step=result&c=changha&r=first-2");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await vi.waitFor(() => expect(api.count("GET /api/chemi/readings/first-2")).toBe(1));
+  expect(await screen.findByText("타고난 기운")).toBeVisible();
+  await act(async () => {
+    window.history.pushState({}, "", "/chemi/saju?step=result&c=changha&r=first-1");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+  await vi.waitFor(() => expect(api.calls.filter((c) => c.key === "GET /api/chemi/readings/first-1").length).toBeGreaterThanOrEqual(2));
 });

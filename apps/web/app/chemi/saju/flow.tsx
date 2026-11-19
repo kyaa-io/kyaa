@@ -354,11 +354,9 @@ export function SajuFlow({
       if (collapsing.current) return;
       const url = readUrl();
       const current = navRef.current;
-      // 시트를 닫으며 생긴 뒤로 가기는 주소가 같다. 진행 중인 요청을 끊지 않는다.
-      if (url.step === current.step && url.view === current.view && url.r === current.r) {
-        setSheet(null);
-        return;
-      }
+      // 시트·겹친 판을 닫으며 생긴 뒤로 가기는 주소가 같다. 닫히는 판은 공용 오버레이가 스스로 닫으므로
+      // 여기서 시트를 지우지 않는다(겹친 판만 닫혀야 할 때 입력 시트까지 닫힌다). 진행 중인 요청도 끊지 않는다.
+      if (url.step === current.step && url.view === current.view && url.r === current.r && url.p === current.p) return;
       abort.current?.abort();
       abort.current = null;
       setPhase("idle");
@@ -373,23 +371,43 @@ export function SajuFlow({
           "replace",
         );
       setNav(next);
-      if (next.step !== "result" || next.view !== "pair") return;
-      // 궁합 기록으로 돌아오면 그 기록의 풀이를 꺼낸다. 이 화면에서 본 적 없으면 저장된 풀이를 불러온다.
-      const known = next.p ? pairs.current.get(next.p) : undefined;
-      if (known) return setPair(known);
+      // 다른 사주 기록으로 오면 그 기록의 풀이를 꺼낸다. 궁합 기록이면 그 궁합 풀이도 꺼낸다.
+      const needReading = next.step !== "enter" && Boolean(next.r) && next.r !== reading?.readingId;
+      const wantsPair = next.step === "result" && next.view === "pair";
+      const known = wantsPair && next.p ? pairs.current.get(next.p) : undefined;
+      if (!needReading && (!wantsPair || known)) {
+        if (known) setPair(known);
+        return;
+      }
       const controller = new AbortController();
       abort.current = controller;
       setRestoring(true);
       void (async () => {
         try {
-          const restored = await restorePair(await tokenRef.current(), next, controller.signal);
-          if (controller.signal.aborted) return;
-          if (!restored) throw Error();
-          setPair(restored);
+          const token = await tokenRef.current();
+          if (needReading) {
+            const data = await loadReading(token, next.r!, next.character, controller.signal);
+            if (controller.signal.aborted) return;
+            if (!data) throw Error();
+            setReading({ ...data, replayed: true });
+          }
+          if (!wantsPair) return;
+          try {
+            const restored = await restorePair(token, next, controller.signal);
+            if (controller.signal.aborted) return;
+            if (!restored) throw Error();
+            setPair(restored);
+          } catch {
+            if (controller.signal.aborted) return;
+            commit({ view: "first", p: null, w: null }, "replace");
+            showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+          }
         } catch {
           if (controller.signal.aborted) return;
-          commit({ view: "first", p: null, w: null }, "replace");
-          showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+          writeUrl(clearedUrl, "replace", 0);
+          navRef.current = toEnter(next);
+          setNav(navRef.current);
+          showFanToast({ title: "저장된 풀이가 아니라 처음 화면으로 돌아왔어요." });
         } finally {
           if (!controller.signal.aborted) setRestoring(false);
         }
@@ -855,7 +873,7 @@ export function SajuFlow({
           </>
         )}
       </div>
-      <div className={styles.stage} data-portrait={character !== "changha" || undefined}>
+      <div className={styles.stage} data-portrait={character === "changha" ? undefined : character}>
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
           <img src={mobileArt} alt={`${name}의 사주 장면`} />

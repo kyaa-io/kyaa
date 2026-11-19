@@ -87,6 +87,17 @@ describe("풀이 문장", () => {
     expect(clashing.rows.find((row) => row.label === "맞춰 갈 곳")?.level).toBe("많이");
     expect(pairReading("병", "병", 1, 0).rows).toHaveLength(4);
   });
+  it("궁합: 가장 높은 칸은 같아도 모두 강조하고, 강조한 칸마다 그 칸의 설명이 한 줄씩 있다", () => {
+    // 병(불)×계(물)은 서로 다른 오행이 극하는 사이: 끌림·맞춰 갈 곳이 함께 많이.
+    const tied = pairReading("병", "계", 1, 1);
+    const top = tied.rows.filter((row) => row.top).map((row) => row.label);
+    expect(top).toEqual(["끌림", "맞춰 갈 곳"]);
+    expect(tied.notes.map((note) => note.label)).toEqual(top);
+    expect(tied.notes.every((note) => note.text.length > 0)).toBe(true);
+    // 같은 오행은 마음 결이 가장 높고, 설명도 그 칸 하나다.
+    const same = pairReading("병", "병", 0, 0);
+    expect(same.notes.map((note) => note.label)).toEqual(["마음 결"]);
+  });
 });
 
 describe("대화 줄", () => {

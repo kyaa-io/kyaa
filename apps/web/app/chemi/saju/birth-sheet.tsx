@@ -2,7 +2,7 @@
 
 /**
  * 생일 입력 시트(승인 시안 03-2 생일·03-5 궁합 상대). MY 생일 정보와 같은 입력 부품
- * (생년월일 칸·시간 칸·달력·성별 고르기)을 쓰고, 이 화면에서는 내 동의 또는 상대 별명만 더한다.
+ * (생년월일 칸·시간 칸·달력·성별 고르기)을 쓰고, 이 화면에서는 저장 동의와 상대 별명만 더한다.
  */
 import { useState } from "react";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -34,7 +34,7 @@ export function BirthSheet({
   onSave,
 }: {
   open: boolean;
-  /** me: 내 생일(저장 동의 필요) · partner: 궁합 상대(별명) */
+  /** me: 내 생일 · partner: 궁합 상대(별명). 두 모드 모두 저장 동의 체크가 있어야 저장한다. */
   mode: "me" | "partner";
   copy: MyBirthCopy;
   busy: boolean;
@@ -52,7 +52,7 @@ export function BirthSheet({
   const issue = dateText === "" ? null : birthDateIssue(dateText, koreaToday());
   const dateError =
     issue === "invalid" ? copy.invalidDate : issue === "under14" ? (partner ? copy.partnerUnder14 : copy.under14) : null;
-  const ready = birthDateIssue(dateText, koreaToday()) === null && (partner ? nickname.trim() !== "" : agree);
+  const ready = birthDateIssue(dateText, koreaToday()) === null && (!partner || nickname.trim() !== "") && agree;
   return (
     <FanSheet
       open={open}
@@ -60,7 +60,7 @@ export function BirthSheet({
       title={partner ? copy.partnerNewTitle : copy.firstTitle}
       closeLabel={copy.close}
       primary={{
-        label: partner ? "궁합 보기" : copy.save,
+        label: partner ? copy.partnerSave : copy.save,
         disabled: !ready,
         loading: busy,
         onClick: () =>
@@ -90,7 +90,7 @@ export function BirthSheet({
           value={genderKey(gender)}
           onChange={(key) => setGender(genderValue(key))}
         />
-        {!partner && <CheckLabel checked={agree} onChange={setAgree}>{copy.consentItem}</CheckLabel>}
+        <CheckLabel checked={agree} onChange={setAgree}>{partner ? copy.partnerConsent : copy.consentItem}</CheckLabel>
         {error && (
           <FanText as="p" role="meta" aria-live="assertive">
             {error}

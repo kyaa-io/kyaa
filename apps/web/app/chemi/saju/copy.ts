@@ -462,9 +462,10 @@ type Pair = "same" | "gives" | "controls";
 
 export type PairReading = {
   title: string;
-  /** 서로 채움 · 마음 결 · 끌림 · 맞춰 갈 곳 */
-  rows: { label: string; level: "많이" | "보통" | "조금"; top: boolean; note?: string }[];
-  note: string;
+  /** 서로 채움 · 마음 결 · 끌림 · 맞춰 갈 곳. top 은 가장 높은 칸(같으면 모두). */
+  rows: { label: string; level: "많이" | "보통" | "조금"; top: boolean }[];
+  /** 강조된 칸마다 그 칸의 설명 한 줄. */
+  notes: { label: string; text: string }[];
   powers: string;
   clash: string;
   together: string;
@@ -472,11 +473,20 @@ export type PairReading = {
 };
 
 const levels = ["조금", "보통", "많이"] as const;
-const pairTable: Record<Pair, { title: string; base: [number, number, number, number]; note: string; clash: string; together: string; line: string }> = {
+const pairLabels = ["서로 채움", "마음 결", "끌림", "맞춰 갈 곳"] as const;
+const pairTable: Record<
+  Pair,
+  { title: string; base: [number, number, number, number]; notes: [string, string, string, string]; clash: string; together: string; line: string }
+> = {
   gives: {
     title: "온도는 달라도, 서로 없는 걸 채워 주는 사이",
     base: [2, 1, 1, 0],
-    note: "한쪽이 달아오르면 다른 쪽이 식혀 줘요",
+    notes: [
+      "한쪽이 달아오르면 다른 쪽이 식혀 줘요",
+      "표현은 달라도 마음이 향하는 곳이 비슷해요",
+      "다른 점이 오히려 서로를 궁금하게 해요",
+      "속도가 다를 때는 한 걸음씩 맞춰 봐요",
+    ],
     clash: "정해 둔 계획이 바뀔 때",
     together: "바뀌면 이유를 먼저 말하기",
     line: "온도는 달라도 잘 맞네.",
@@ -484,7 +494,12 @@ const pairTable: Record<Pair, { title: string; base: [number, number, number, nu
   same: {
     title: "닮은 결이라, 말하지 않아도 통하는 사이",
     base: [1, 2, 0, 1],
-    note: "비슷한 기운이라 편하지만 같은 곳에서 같이 지쳐요",
+    notes: [
+      "비슷해서 채워 줄 건 적어도 마음은 편해요",
+      "비슷한 기운이라 편하지만 같은 곳에서 같이 지쳐요",
+      "닮은 점이 많아 천천히 가까워져요",
+      "같은 고집이 겹칠 때는 한 사람이 먼저 물러서요",
+    ],
     clash: "둘 다 양보하고 싶지 않을 때",
     together: "한 사람이 먼저 쉬자고 말하기",
     line: "결이 닮아서 편하겠네.",
@@ -492,7 +507,12 @@ const pairTable: Record<Pair, { title: string; base: [number, number, number, nu
   controls: {
     title: "부딪히면서 서로를 키워 주는 사이",
     base: [1, 0, 2, 2],
-    note: "한쪽이 길을 잡아 주고 다른 쪽이 속도를 조절해요",
+    notes: [
+      "서로 없는 힘을 상대에게서 배워요",
+      "생각하는 방식이 달라 이야기가 길어져요",
+      "다르니까 자꾸 눈이 가요",
+      "한쪽이 길을 잡아 주고 다른 쪽이 속도를 조절해요",
+    ],
     clash: "의견이 정반대로 갈릴 때",
     together: "결론보다 이유를 먼저 듣기",
     line: "다르니까 더 끌리는 사이네.",
@@ -508,15 +528,15 @@ export function pairReading(a: Stem, b: Stem, combinations: number, clashes: num
   const [fill, mood, pull, adjust] = table.base;
   const scores = [fill, mood, bump(pull, combinations ? 1 : 0), bump(adjust, clashes ? 1 : 0)];
   const best = Math.max(...scores);
-  const labels = ["서로 채움", "마음 결", "끌림", "맞춰 갈 곳"];
+  const rows = pairLabels.map((label, index) => ({
+    label,
+    level: levels[scores[index]],
+    top: scores[index] === best,
+  }));
   return {
     title: table.title,
-    rows: labels.map((label, index) => ({
-      label,
-      level: levels[scores[index]],
-      top: scores[index] === best && index === scores.indexOf(best),
-    })),
-    note: `서로 채움 · ${table.note}`,
+    rows,
+    notes: rows.flatMap((row, index) => (row.top ? [{ label: row.label, text: table.notes[index] }] : [])),
     powers: `${stemNotes[a].image} × ${stemNotes[b].image}`,
     clash: table.clash,
     together: table.together,

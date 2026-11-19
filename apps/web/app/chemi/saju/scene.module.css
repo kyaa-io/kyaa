@@ -276,10 +276,27 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     background: var(--color-accent-soft);
   }
-  .stage[data-portrait] .art {
+  .stage[data-portrait]::before {
+    content: "";
+    position: absolute;
     inset: 0 0 0 50%;
+    z-index: -1;
+    background: center / cover no-repeat;
+  }
+  .stage[data-portrait="elina"]::before {
+    background-image: url("/chemi/saju/saju-elina-fill-v1.webp");
+  }
+  .stage[data-portrait="yuna"]::before {
+    background-image: url("/chemi/saju/saju-yuna-fill-v1.webp");
+  }
+  .stage[data-portrait="dosa"]::before {
+    background-image: url("/chemi/saju/saju-dosa-fill-v1.webp");
+  }
+  .stage[data-portrait] .art {
+    inset: 0 50% 0 0;
   }
   .stage[data-portrait] .controls {
+    grid-column: 2;
     align-self: end;
     justify-self: center;
     margin: var(--space-8) var(--space-8);

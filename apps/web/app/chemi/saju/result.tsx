@@ -6,7 +6,7 @@
  * 질문하기·유료 주제는 M2 이므로 이 화면에는 자리를 두지 않는다.
  */
 import type { CSSProperties } from "react";
-import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
+import { ChevronLeft, ChevronRight, Droplet, Flame, Gem, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -15,7 +15,7 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
-import type { Chart } from "./chart";
+import type { Chart, Element } from "./chart";
 import {
   firstReading,
   monthReading,
@@ -25,6 +25,15 @@ import {
 import { sajuCharacters, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
+
+/** 타고난 기운 줄 앞의 오행 그림. */
+const elementIcon: Record<Element, typeof Sprout> = {
+  wood: Sprout,
+  fire: Flame,
+  earth: Mountain,
+  metal: Gem,
+  water: Droplet,
+};
 
 export type ResultView = "first" | "year" | "month" | "pair";
 
@@ -261,9 +270,12 @@ export function SajuResult({
                     <div className={styles.bars}>
                       {first.rows.map((row) => (
                         <div className={styles.barRow} key={row.element}>
-                          <FanText role="meta">{row.name}</FanText>
+                          <span className={styles.elementName}>
+                            <FanIcon icon={elementIcon[row.element]} size={16} />
+                            <FanText role="meta">{row.name}</FanText>
+                          </span>
                           <FanNumber locale={locale} value={row.count} />
-                          {bar(row.name, Math.round((row.count / 4) * 100), row.top)}
+                          {bar(row.name, Math.round((row.count / 4) * 100))}
                         </div>
                       ))}
                     </div>
@@ -373,9 +385,11 @@ export function SajuResult({
                   </div>
                 ))}
               </div>
-              <FanText as="p" role="meta">
-                {compat.note}
-              </FanText>
+              {compat.notes.map((note) => (
+                <FanText as="p" role="meta" key={note.label}>
+                  {note.label} · {note.text}
+                </FanText>
+              ))}
             </div>
             {kv(
               [
