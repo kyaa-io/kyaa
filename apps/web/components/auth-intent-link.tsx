@@ -115,7 +115,7 @@ export function AuthIntentLink({
       focusKey ? `[data-overlay-focus-key="${focusKey}"]` : undefined,
     );
     const destination = resolveAuthIntentDestination(intent, locale, authState);
-    if (destination) router.push(destination as Route);
+    if (destination) router.push<string>(destination as Route);
   }
 
   return (

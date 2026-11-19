@@ -60,7 +60,7 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
   function setFilter(value: "all" | Media["kind"]) {
     const query = new URLSearchParams(search.toString());
     if (value === "all") query.delete("media"); else query.set("media", value);
-    router.replace(`${pathname}?${query.toString()}#celebrity-content` as Route, { scroll: false });
+    router.replace<string>(`${pathname}?${query.toString()}#celebrity-content` as Route, { scroll: false });
   }
   const auth = usePrivy(), session = useByUsSession();
   const official = useNewsSource(`/api/celebrities/${encodeURIComponent(slug)}/media?locale=${toContentLocale(locale)}`, parseOfficial, key, { key: auth.ready && auth.authenticated ? `member:${session.ownerId ?? auth.user?.id}:${session.generation}` : "public", ready: !auth.ready || session.ready, getToken: async () => { if (!auth.ready || !auth.authenticated) return null; const token = await auth.getAccessToken(); if (!token) throw Error(); return token; } });

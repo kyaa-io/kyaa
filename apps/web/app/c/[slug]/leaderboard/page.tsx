@@ -7,5 +7,5 @@ export const dynamic = "force-dynamic";
 export default async function Page({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string }> }) {
   const { slug } = await params;
   const { locale } = await searchParams;
-  redirect(`${creatorHomeHref(encodeURIComponent(slug))}?tab=leaderboard&locale=${parseAppLocale(locale)}#celebrity-content` as Route);
+  redirect<string>(`${creatorHomeHref(encodeURIComponent(slug))}?tab=leaderboard&locale=${parseAppLocale(locale)}#celebrity-content` as Route);
 }

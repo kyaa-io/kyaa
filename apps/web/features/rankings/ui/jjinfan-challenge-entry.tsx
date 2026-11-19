@@ -17,8 +17,8 @@ export function JjinfanChallengeEntry({ slug, locale, ready, verified }: { slug:
   const close = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("challenge");
-    router.replace(`${url.pathname}${url.search}${url.hash}` as Route, { scroll: false });
+    router.replace<string>(`${url.pathname}${url.search}${url.hash}` as Route, { scroll: false });
   };
   return <FanDialog size="sm" className={styles.dialog} open={open} onOpenChange={value => { if (!value) close(); }} title={t.invite} closeLabel={t.close}
-    primary={{ label: t.join, onClick: () => router.push(fanVerifyHref(slug, locale, `/${encodeURIComponent(slug)}?locale=${locale}`) as Route) }} />;
+    primary={{ label: t.join, onClick: () => router.push<string>(fanVerifyHref(slug, locale, `/${encodeURIComponent(slug)}?locale=${locale}`) as Route) }} />;
 }

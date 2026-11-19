@@ -80,7 +80,7 @@ export function WalletHistoryPanel({locale,localRows,preview,className}:{locale:
 }
 function WalletAttendanceRoute({locale}:{locale:AppLocale}) {
  const router=useRouter(),href=`/my?locale=${locale}`;
- return <FanAppFrame locale={locale} currentPath="/my" groupsEnabled mainId="attendance-main"><FanContentContainer as="main" id="attendance-main" tabIndex={-1} className={styles.page}><div className={styles.srOnly}><FanHeading as="h1" variant="personal-page">{walletCopy(locale).attendance}</FanHeading></div></FanContentContainer><WalletAttendanceDialog locale={locale} open onClose={()=>router.replace(href as Route)}/></FanAppFrame>;
+ return <FanAppFrame locale={locale} currentPath="/my" groupsEnabled mainId="attendance-main"><FanContentContainer as="main" id="attendance-main" tabIndex={-1} className={styles.page}><div className={styles.srOnly}><FanHeading as="h1" variant="personal-page">{walletCopy(locale).attendance}</FanHeading></div></FanContentContainer><WalletAttendanceDialog locale={locale} open onClose={()=>router.replace<string>(href as Route)}/></FanAppFrame>;
 }
 export function WalletAttendanceDialog({locale,open,onClose}:{locale:AppLocale;open:boolean;onClose:()=>void}) {
  const auth=useGroupRequest(),c=walletCopy(locale),returnTo=`/my/wallet?view=attendance&locale=${locale}`;

@@ -21,7 +21,7 @@ export default async function LegacyCelebrityPage({ params, searchParams }: {
   if (query.get("tab") === "raffles" || query.get("tab") === "benefits") {
     const locale = parseAppLocale(query.get("locale"));
     const intent = sanitizeAuthIntentId(query.get("authIntent"));
-    permanentRedirect(`${creatorRafflesHref(slug, locale)}${intent ? `&authIntent=${intent}` : ""}` as Route);
+    permanentRedirect<string>(`${creatorRafflesHref(slug, locale)}${intent ? `&authIntent=${intent}` : ""}` as Route);
   }
-  permanentRedirect(`${creatorHomeHref(slug)}${query.size ? `?${query}` : ""}` as Route);
+  permanentRedirect<string>(`${creatorHomeHref(slug)}${query.size ? `?${query}` : ""}` as Route);
 }

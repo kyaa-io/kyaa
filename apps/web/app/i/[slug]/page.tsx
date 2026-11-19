@@ -14,5 +14,5 @@ export default async function InviteShortLinkPage({ params, searchParams }: { pa
   const single = new URLSearchParams(Object.entries(query).flatMap(([key, value]) => typeof value === "string" ? [[key, value]] : []));
   const target = await resolveInviteShortLink(slug, parseAppLocale(single.get("locale") ?? undefined), createFanpageDependencies(), single);
   if (!target) notFound();
-  redirect(target as Route);
+  redirect<string>(target as Route);
 }

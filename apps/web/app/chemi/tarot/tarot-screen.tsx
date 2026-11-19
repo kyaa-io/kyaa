@@ -229,7 +229,7 @@ export function TarotScreen({
   const back = () => {
     const index = (history.state?.tarot as number | undefined) ?? 0;
     if (index > 0) history.back();
-    else router.push(`/chemi?locale=${locale}`);
+    else router.push<string>(`/chemi?locale=${locale}`);
   };
   // 결과 → 고르기: 결과로 오는 길의 장면 기록을 접어 결과의 바로 앞 칸이 입장 장면이 되게 한다.
   const openResult = () => {

@@ -195,7 +195,7 @@ export function KakaoCallbackScreen({ locale }: { locale: Locale }) {
         return;
       }
       setView("success");
-      router.replace(result.returnPath as Route);
+      router.replace<string>(result.returnPath as Route);
     }).catch((error: unknown) => {
       terminal.current = true;
       if (!subscribed) return;

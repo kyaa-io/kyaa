@@ -70,7 +70,7 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
     });
   }, [auth]);
 
-  const goBack = () => { if (window.history.length > 1) router.back(); else router.push(`/my?locale=${locale}`); };
+  const goBack = () => { if (window.history.length > 1) router.back(); else router.push<string>(`/my?locale=${locale}`); };
   const header = <div className={styles.pagehead}>
     <FanIconButton className={styles.back} aria-label={copy.back} onClick={goBack}><FanIcon icon={ChevronLeft} /></FanIconButton>
     <FanHeading as="h1">{copy.title}</FanHeading>

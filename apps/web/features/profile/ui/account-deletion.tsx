@@ -41,7 +41,7 @@ function OwnerDeletion({ locale, auth }: { locale: AppLocale; auth: ReturnType<t
   async function leave() {
     if (pending.current) return;
     pending.current = true; setBusy(true); setError("");
-    try { await auth.logout(); router.replace(`/?locale=${locale}`); }
+    try { await auth.logout(); router.replace<string>(`/?locale=${locale}`); }
     catch { if (alive.current) setError(t.logoutFailed); }
     finally { pending.current = false; if (alive.current) setBusy(false); }
   }

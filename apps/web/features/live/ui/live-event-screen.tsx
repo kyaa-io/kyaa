@@ -1008,11 +1008,11 @@ export function LiveEventScreen({
         : undefined });
       persistAuthIntent(getSessionStorage(), intent);
       if (!authenticated) {
-        router.push(buildAuthLoginHref(intent, locale) as Route);
+        router.push<string>(buildAuthLoginHref(intent, locale) as Route);
       } else {
         const returnQuery = new URLSearchParams({ locale, authIntent: intent.id });
         const verificationQuery = new URLSearchParams({ locale, returnTo: `/live/${slug}?${returnQuery}` });
-        router.push(`/c/${view.data.live.celebrity.slug}/verify?${verificationQuery}` as Route);
+        router.push<string>(`/c/${view.data.live.celebrity.slug}/verify?${verificationQuery}` as Route);
       }
       return;
     }
@@ -1128,7 +1128,7 @@ export function LiveEventScreen({
     const cleanQuery = new URLSearchParams(searchParams.toString());
     cleanQuery.delete("attendanceCode");
     const queryString = cleanQuery.toString();
-    router.replace(`${pathname}${queryString ? `?${queryString}` : ""}#fan-code` as Route);
+    router.replace<string>(`${pathname}${queryString ? `?${queryString}` : ""}#fan-code` as Route);
     if (attendancePhase === "closed") {
       getSessionStorage().removeItem(`byus:fan-code-draft:${slug}`);
       setFanCode("");

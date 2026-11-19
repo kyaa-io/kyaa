@@ -46,7 +46,7 @@ function SharedPassportLandingInner({ token, creator, locale, activity, authenti
     setBusy(true); setError("");
     try {
       const result = await communityStampAction(getAccessToken, "share-visit", { token }, (value) => communityShareDestinationSchema.parse(value));
-      if (alive.current) router.push(`${creatorHomeHref(result.creator)}?locale=${locale}` as Route);
+      if (alive.current) router.push<string>(`${creatorHomeHref(result.creator)}?locale=${locale}` as Route);
     } catch {
       inFlight.current = false;
       if (alive.current) { setBusy(false); setError(c.failed); }

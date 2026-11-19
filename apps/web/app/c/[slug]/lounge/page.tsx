@@ -9,5 +9,5 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const locale = parseAppLocale(query.locale);
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
-  redirect(boardHref(celebrity.slug, locale, { source: "fans" }));
+  redirect<string>(boardHref(celebrity.slug, locale, { source: "fans" }));
 }

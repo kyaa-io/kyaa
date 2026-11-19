@@ -5,5 +5,5 @@ import { permanentRedirect } from "next/navigation";
 type Props = { searchParams: Promise<{ locale?: string | string[] }> };
 
 export default async function Page({ searchParams }: Props) {
-  permanentRedirect(elinaRafflesHref(parseAppLocale((await searchParams).locale)));
+  permanentRedirect<string>(elinaRafflesHref(parseAppLocale((await searchParams).locale)));
 }

@@ -599,7 +599,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
   useEffect(() => {
     if (logoutPending.current) return;
     if (ready && session.ready && !authenticated) {
-      router.replace(
+      router.replace<string>(
         `/login?returnTo=${encodeURIComponent(settingsReturnTo)}&locale=${locale}`,
       );
     }
@@ -1008,7 +1008,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
     setLogoutError("");
     try {
       await logout();
-      router.replace(`/login?locale=${locale}`);
+      router.replace<string>(`/login?locale=${locale}`);
     } catch {
       logoutPending.current = false;
       setLoggingOut(false);

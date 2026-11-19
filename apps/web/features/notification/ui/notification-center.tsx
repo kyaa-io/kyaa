@@ -260,7 +260,7 @@ export function NotificationCenter() {
     const result = await read(item);
     if (!activeRef.current || ownerRef.current !== ownerId) return;
     setReadPendingId(null);
-    if (result) router.push(withLocalePath(item.deepLink, locale) as Route);
+    if (result) router.push<string>(withLocalePath(item.deepLink, locale) as Route);
     else if (result === false) setReadFailure(item);
   }
   async function readAll() {

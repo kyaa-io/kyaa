@@ -19,5 +19,5 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function FanRankingsPage({ params, searchParams }: Props) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const locale = parseAppLocale(query.locale);
-  redirect(`/${encodeURIComponent(slug)}?tab=members&people=ranking&locale=${locale}` as Route);
+  redirect<string>(`/${encodeURIComponent(slug)}?tab=members&people=ranking&locale=${locale}` as Route);
 }

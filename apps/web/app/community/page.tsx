@@ -16,5 +16,5 @@ export default async function CommunityPage({ searchParams }: {
   const tabs: Record<string, string> = { posts: "board", board: "board", fans: "leaderboard", members: "leaderboard", certifications: "certifications" };
   const tab = typeof values.tab === "string" ? tabs[values.tab] : undefined;
   if (slug && tab) query.set("tab", tab);
-  permanentRedirect(`${slug ? `/c/${encodeURIComponent(slug)}` : "/pages/groups"}${query.size ? `?${query}` : ""}` as Route);
+  permanentRedirect<string>(`${slug ? `/c/${encodeURIComponent(slug)}` : "/pages/groups"}${query.size ? `?${query}` : ""}` as Route);
 }

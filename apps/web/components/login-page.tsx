@@ -338,7 +338,7 @@ export function LoginPage({
     const navigationKey = `${privyUserId}|${byUsSession.generation}|${byUsSession.destination}`;
     if (navigatedTransitionRef.current === navigationKey) return;
     navigatedTransitionRef.current = navigationKey;
-    router.replace(byUsSession.destination as Route);
+    router.replace<string>(byUsSession.destination as Route);
   }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, byUsSession.recoveryPath, oauthReturnPending, privyUserId, ready, restartOAuthPath, router]);
 
   useEffect(() => {

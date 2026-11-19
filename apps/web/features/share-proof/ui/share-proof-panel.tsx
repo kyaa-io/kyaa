@@ -44,7 +44,7 @@ function ShareProofTileInner({ slug, locale }: { slug: string; locale: AppLocale
       <strong>{c.title}</strong>
       <span className={gridStyles.state} data-status={progress?.done ? "approved" : "available"}>{state}{reward ? <EarnBadge variant="inline" locale={locale} points={reward} /> : null}</span>
     </Link>
-    {open && <ShareProofDialog slug={slug} locale={locale} onClose={() => router.replace(withShare(false) as Route, { scroll: false })} />}
+    {open && <ShareProofDialog slug={slug} locale={locale} onClose={() => router.replace<string>(withShare(false) as Route, { scroll: false })} />}
   </>;
 }
 
@@ -88,7 +88,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
   }
   const returnTo = `${pathname}?${params?.toString() ?? ""}`;
   return <FanDialog open onOpenChange={value => { if (!value) onClose(); }} responsive size="md" title={c.title} closeLabel={c.close}
-    primary={!ready ? undefined : authenticated ? { label: c.submit, onClick: () => void submit(), loading: busy } : { label: c.login, onClick: () => router.push(fanLoginHref(locale, returnTo) as Route) }} secondary={{ label: c.close, onClick: onClose }}>
+    primary={!ready ? undefined : authenticated ? { label: c.submit, onClick: () => void submit(), loading: busy } : { label: c.login, onClick: () => router.push<string>(fanLoginHref(locale, returnTo) as Route) }} secondary={{ label: c.close, onClick: onClose }}>
     <div className={styles.body} data-share-proof="">
       <section className={styles.step}>
         <p className={styles.stepTitle}>{c.step1}</p>

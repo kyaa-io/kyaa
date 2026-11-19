@@ -35,7 +35,7 @@ export function FanLanguageSwitch({
     <Select.Root
       value={locale}
       onValueChange={(next) => {
-        if (isAppLocale(next) && next !== locale) router.push(withLocalePath(href ?? `${window.location.pathname}${window.location.search}${window.location.hash}`, next) as Route);
+        if (isAppLocale(next) && next !== locale) router.push<string>(withLocalePath(href ?? `${window.location.pathname}${window.location.search}${window.location.hash}`, next) as Route);
       }}
     >
       <Select.Trigger

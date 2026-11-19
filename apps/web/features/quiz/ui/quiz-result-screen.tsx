@@ -221,9 +221,9 @@ export function QuizResultScreen({
       })) as { result?: unknown };
       const result = parseQuizStartProjection(body.result);
       if (result.kind === "holder") {
-        router.push((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
+        router.push<string>((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
       } else {
-        router.push(appendLiveReturnTo(
+        router.push<string>(appendLiveReturnTo(
           withLocale(`/c/${celebritySlug}/verify/questions?attempt=${result.attempt.id}`, locale),
           liveReturnTo,
         ) as Route);

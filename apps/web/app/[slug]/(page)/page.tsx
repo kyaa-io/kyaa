@@ -51,12 +51,12 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
   if (!celebrity) notFound();
   if (requestedTab === "raffles" || requestedTab === "benefits") {
     const authIntent = sanitizeAuthIntentId(requestedAuthIntent);
-    redirect(`${creatorRafflesHref(slug, locale)}${authIntent ? `&authIntent=${authIntent}` : ""}` as Route);
+    redirect<string>(`${creatorRafflesHref(slug, locale)}${authIntent ? `&authIntent=${authIntent}` : ""}` as Route);
   }
-  if (requestedTab === "collection" && !GROUP_COLLECTIONS_VISIBLE) redirect(`${creatorHomeHref(slug)}?locale=${locale}` as Route);
+  if (requestedTab === "collection" && !GROUP_COLLECTIONS_VISIBLE) redirect<string>(`${creatorHomeHref(slug)}?locale=${locale}` as Route);
   // 261107-2 leaderboard-raffle-slop: with fan pages on the group layout, the old leaderboard tab has no place in the tab strip (the fan list is `members`, opened from the header's 팬 N).
   // An old link lands on that screen, which carries the 찐팬 100 gauge and the fan list.
-  if (requestedTab === "leaderboard" && process.env.KYAA_GROUPS_ENABLED === "true" && slug !== WAVE_FANPAGE_SLUG) redirect(`${creatorHomeHref(slug)}?tab=members&locale=${locale}` as Route);
+  if (requestedTab === "leaderboard" && process.env.KYAA_GROUPS_ENABLED === "true" && slug !== WAVE_FANPAGE_SLUG) redirect<string>(`${creatorHomeHref(slug)}?tab=members&locale=${locale}` as Route);
   const initialTab: CelebrityFanTab = slug === WAVE_FANPAGE_SLUG && requestedTab === "friends" ? "friends" : parseFanPageTab(requestedTab);
   const initialBoardSection = resolveBoardSection(requestedTab, requestedSection);
   const initialBoardSource = resolveBoardSource(requestedTab, requestedSource);

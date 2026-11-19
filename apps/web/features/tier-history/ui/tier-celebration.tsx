@@ -66,7 +66,7 @@ export function TierRiseDialog({ change, bonusPoints = 0, onClose }: { change: T
   const [landed, setLanded] = useState(false);
   // FanRewardPop plays when its trigger changes after mount: flip it once the dialog is on screen.
   useEffect(() => { const frame = requestAnimationFrame(() => setLanded(true)); return () => cancelAnimationFrame(frame); }, []);
-  const open = useCallback(() => { onClose(); router.push(`/passports/${encodeURIComponent(change.passportId)}?locale=${locale}#tier-history` as Route); }, [change.passportId, locale, onClose, router]);
+  const open = useCallback(() => { onClose(); router.push<string>(`/passports/${encodeURIComponent(change.passportId)}?locale=${locale}#tier-history` as Route); }, [change.passportId, locale, onClose, router]);
   const tier = fanTierName(locale, change.tier);
   return <FanDialog open onOpenChange={value => { if (!value) onClose(); }} size="sm" title={c.risen(tier)} closeLabel={c.close}
     primary={{ label: c.history, onClick: open }} secondary={{ label: c.close, onClick: onClose }}>

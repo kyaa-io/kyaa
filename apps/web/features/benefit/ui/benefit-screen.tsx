@@ -557,7 +557,7 @@ export function BenefitsScreen({
 
   function choose(value: string) {
     setSelected(value);
-    router.replace(`/benefits?${query(locale, value)}` as Route, {
+    router.replace<string>(`/benefits?${query(locale, value)}` as Route, {
       scroll: false,
     });
   }

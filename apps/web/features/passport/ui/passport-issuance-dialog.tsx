@@ -412,7 +412,7 @@ export function PassportIssuanceScreen({ passportId }: { passportId: string }) {
   useEffect(() => { void load(); }, [load]);
   // No first stamp row means there is no ceremony to replay: the Passport itself is the destination.
   const openPassport = state.kind === "ready" && !hasFirstStamp(state.issuance);
-  useEffect(() => { if (openPassport) router.replace((liveReturnTo ?? withLocale(`/passports/${passportId}`, locale)) as Route); }, [openPassport, liveReturnTo, locale, passportId, router]);
+  useEffect(() => { if (openPassport) router.replace<string>((liveReturnTo ?? withLocale(`/passports/${passportId}`, locale)) as Route); }, [openPassport, liveReturnTo, locale, passportId, router]);
 
   if (state.kind === "ready" && hasFirstStamp(state.issuance)) return <PassportIssuanceCeremony issuance={state.issuance} locale={locale} returnTo={liveReturnTo} />;
   const issuanceQuery = new URLSearchParams({ locale });

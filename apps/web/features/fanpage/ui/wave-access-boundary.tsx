@@ -58,8 +58,8 @@ export function WaveAccessBoundary({ locale, children }: { locale: AppLocale; ch
   const needsCheckin = auth.authenticated && resource.state.status === "ready" && !resource.state.data.participation;
   useEffect(() => {
     if (!auth.ready || !session.ready || overlay) return;
-    if (!auth.authenticated) router.replace(loginHref as Route);
-    else if (needsCheckin) router.replace(checkinHref as Route);
+    if (!auth.authenticated) router.replace<string>(loginHref as Route);
+    else if (needsCheckin) router.replace<string>(checkinHref as Route);
   }, [auth.ready, auth.authenticated, session.ready, needsCheckin, overlay, router, loginHref, checkinHref]);
   if (auth.ready && auth.authenticated && resource.state.status === "ready" && resource.state.data.participation) return <WaveParticipantNameContext.Provider value={resource.state.data.participation.displayName ?? null}>{children}</WaveParticipantNameContext.Provider>;
   return <FanAppFrame locale={locale} mainId="wave-access-main"><FanContentContainer as="main" id="wave-access-main" className={styles.main} tabIndex={-1}>

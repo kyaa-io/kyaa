@@ -15,7 +15,7 @@ export default async function LoginRoute({
 }) {
   const query = await searchParams;
   const nativeReturn = nativeReauthenticationReturn(query);
-  if (nativeReturn) redirect(nativeReturn as Route);
+  if (nativeReturn) redirect<string>(nativeReturn as Route);
   const locale = parseAppLocale(query.locale);
   return (
     <Suspense fallback={<FanRouteLoading locale={locale} />}>

@@ -267,7 +267,7 @@ export function QuizEntryScreen({
         if (authIntent) returnQuery.set("authIntent", authIntent);
         if (liveReturnTo) returnQuery.set("returnTo", liveReturnTo);
         const returnTo = `/c/${slug}/verify?${returnQuery.toString()}`;
-        router.replace(appendLoginContext("/onboarding/profile", {
+        router.replace<string>(appendLoginContext("/onboarding/profile", {
           returnTo,
           intent: "passport",
           entity: slug,
@@ -292,7 +292,7 @@ export function QuizEntryScreen({
       if (intent?.actionType === "START_FAN_VERIFICATION" && intent.targetType === "celebrity" && intent.targetId === slug) {
         consumeAuthIntent(getSessionStorage(), intent.id);
       }
-      router.push((liveReturnTo ?? withLocale(`/passports/${heldPassportId}`, locale)) as Route);
+      router.push<string>((liveReturnTo ?? withLocale(`/passports/${heldPassportId}`, locale)) as Route);
       return;
     }
     setStarting(true);
@@ -318,18 +318,18 @@ export function QuizEntryScreen({
         consumeAuthIntent(getSessionStorage(), intent.id);
       }
       if (result.kind === "holder") {
-        router.push((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
+        router.push<string>((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
         return;
       }
       if (result.attempt.status === "open") sendGa4Event("fan_verification_start");
       if (result.attempt.status !== "open") {
-        router.push(appendLiveReturnTo(
+        router.push<string>(appendLiveReturnTo(
           withLocale(`/c/${slug}/verify/result?attempt=${result.attempt.id}`, locale),
           liveReturnTo,
         ) as Route);
         return;
       }
-      router.push(appendLiveReturnTo(
+      router.push<string>(appendLiveReturnTo(
         withLocale(`/c/${slug}/verify/questions?attempt=${result.attempt.id}`, locale),
         liveReturnTo,
       ) as Route);
@@ -361,7 +361,7 @@ export function QuizEntryScreen({
     // replace, so Back never re-opens this dialog.
     if (closeOrigin) rememberQuizFocusReturn(getSessionStorage(), slug, closeOrigin.itemId);
     clearQuizCloseReturn(getSessionStorage());
-    router.replace(listHref as Route);
+    router.replace<string>(listHref as Route);
   }, [closeOrigin, listHref, router, slug]);
   // Before the intro arrives (or when it fails) there is no dialog to hold focus, so Esc closes from the page itself.
   useEffect(() => {
