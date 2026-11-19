@@ -14,7 +14,7 @@ export type PublicFaq = {
  * Keep the site identity identical on every localized home URL. The
  * Organization is the Korean operator, Sallylab Inc., which the legal pages
  * name as the provider of kyaa; its parentOrganization is the global
- * headquarters KAYY Inc., shown with the same name and region as the site
+ * headquarters KYAA Inc., shown with the same name and region as the site
  * footer. The social URLs are the official channels published in the footer.
  */
 export function homeStructuredData() {
