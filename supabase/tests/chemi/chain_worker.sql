@@ -1,6 +1,6 @@
 begin;
 do $$
-declare owner1 uuid:=gen_random_uuid(); owner2 uuid:=gen_random_uuid(); actor uuid:=gen_random_uuid(); other_user uuid:=gen_random_uuid(); rec uuid:=gen_random_uuid(); bad uuid:=gen_random_uuid(); job jsonb; page jsonb;
+declare owner1 uuid:=gen_random_uuid(); owner2 uuid:=gen_random_uuid(); actor uuid:=gen_random_uuid(); other_user uuid:=gen_random_uuid(); rec uuid:=gen_random_uuid(); job jsonb; page jsonb;
 begin
  assert public.chemi_chain_work(owner1,'acquire')='true'::jsonb;
  assert public.chemi_chain_work(owner2,'acquire')='false'::jsonb;
@@ -18,12 +18,20 @@ begin
  assert public.chemi_chain_collect()=0;
  assert exists(select from public.chemi_chain_records where kind='game_best' and user_id=actor and payload->>'map'='elina');
  insert into public.chemi_chain_records(id,record_key,user_id,kind,kst_date,payload,eligible_at,status,wallet_address)
- select bad,bad::text,actor,kind,kst_date,'{}',eligible_at-interval '1 minute',status,wallet_address
- from public.chemi_chain_records where id=rec;
+ select gen_random_uuid(),gen_random_uuid()::text,actor,kind,kst_date,'{}',eligible_at-interval '1 minute',status,wallet_address
+ from public.chemi_chain_records cross join generate_series(1,100)
+ where chemi_chain_records.id=rec;
  job:=public.chemi_chain_work(owner1,'lease');
  assert job @> jsonb_build_array(jsonb_build_object('id',rec));
  assert jsonb_array_length(job)=1;
- assert exists(select from public.chemi_chain_records where id=bad and status='retry' and next_attempt_at>now());
+ assert (select count(*)=100 from public.chemi_chain_records
+   where user_id=actor and status='retry' and attempts=1 and next_attempt_at=now()+interval '5 minutes');
+ insert into public.chemi_chain_records(id,record_key,kind,kst_date,payload,eligible_at,status)
+ values(gen_random_uuid(),'rank-test','rank_table',current_date,'{}',now()-interval '1 hour','pending');
+ update public.chemi_chain_records set status='pending' where id=rec;
+ job:=public.chemi_chain_work(owner1,'lease','{"rank":true}');
+ assert jsonb_array_length(job)=1 and job @> jsonb_build_array(jsonb_build_object('id',rec,'op','mint'));
+ assert exists(select from public.chemi_chain_records where record_key='rank-test' and status='retry' and attempts=1);
  update public.chemi_chain_records set lease_expires_at=now()-interval '1 minute' where id=rec;
  perform public.chemi_chain_work(owner1,'recover');
  assert (select status='pending' from public.chemi_chain_records where id=rec);
