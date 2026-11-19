@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { eventParticipantPresets } from "../../admin/event-participants";
 import { openPageLikeEvent, pageLikeEventWindows } from "../domain/page-like-event";
+import fanActionStyles from "@/components/fan-ui/fan-action.module.css";
 import { EventLikeCard } from "./event-like-card";
 import { ReactionAction } from "./reaction-action";
 
@@ -50,7 +51,9 @@ describe("EventLikeCard", () => {
     stubServer();
     render(<EventLikeCard slug="elina" locale="ko" now={inWindow} />);
     expect(screen.getByRole("heading", { name: "엘리나 × Kyaa" })).toBeInTheDocument();
-    expect(await screen.findByRole("button", { name: "좋아요 남기기" })).toBeEnabled();
+    const button = await screen.findByRole("button", { name: "좋아요 남기기" });
+    expect(button).toBeEnabled();
+    expect(button.className).toContain(fanActionStyles.lg);
     expect(screen.getByText("팬 1,234")).toBeInTheDocument();
   });
 
@@ -63,7 +66,7 @@ describe("EventLikeCard", () => {
 
   it.each([
     ["just before the window", "elina", "2026-11-16T23:59:59+09:00"],
-    ["at the exclusive end of the window", "elina", "2026-11-18T00:00:00+09:00"],
+    ["at the exclusive end of the window", "elina", "2026-11-24T00:00:00+09:00"],
     ["another creator's window", "changha", "2026-11-17T13:05:00+09:00"],
     ["a creator without an event", "kara", "2026-11-17T13:05:00+09:00"],
   ])("renders nothing for %s", (_, slug, at) => {
@@ -95,6 +98,7 @@ describe("EventLikeCard", () => {
     render(<EventLikeCard slug="elina" locale="ko" now={inWindow} />);
     fireEvent.click(await screen.findByRole("button", { name: "좋아요 남기기" }));
     expect(await screen.findByText("좋아요 완료")).toBeInTheDocument();
+    expect(document.querySelector("#event-like [data-fan-action-status]")!.className).toContain(fanActionStyles.lg);
     expect(screen.queryByRole("button", { name: "좋아요 남기기" })).not.toBeInTheDocument();
     expect(server.posts()).toHaveLength(1);
     expect(String(server.posts()[0]![0])).toBe("/api/celebrities/elina/reactions");
@@ -123,12 +127,24 @@ describe("EventLikeCard", () => {
 });
 
 describe("page-like event windows", () => {
-  it("opens one creator's window from its first instant until the next day starts (KST)", () => {
+  it("keeps Elina, Changha and Yuna open from each start day until 11/24 00:00 (KST), not for one day", () => {
+    expect(openPageLikeEvent("elina", new Date("2026-11-16T23:59:59+09:00"))).toBeUndefined();
     expect(openPageLikeEvent("elina", new Date("2026-11-17T00:00:00+09:00"))?.key).toBe("elina-onboarding-1117");
-    expect(openPageLikeEvent("elina", new Date("2026-11-17T23:59:59+09:00"))?.key).toBe("elina-onboarding-1117");
-    expect(openPageLikeEvent("elina", new Date("2026-11-18T00:00:00+09:00"))).toBeUndefined();
-    expect(openPageLikeEvent("changha", new Date("2026-11-23T12:00:00+09:00"))?.key).toBe("changha-photo-1122");
-    expect(openPageLikeEvent("changha", new Date("2026-11-20T12:00:00+09:00"))).toBeUndefined();
+    expect(openPageLikeEvent("elina", new Date("2026-11-18T00:00:00+09:00"))?.key).toBe("elina-onboarding-1117");
+    expect(openPageLikeEvent("elina", new Date("2026-11-23T23:59:59+09:00"))?.key).toBe("elina-onboarding-1117");
+    expect(openPageLikeEvent("elina", new Date("2026-11-24T00:00:00+09:00"))).toBeUndefined();
+    expect(openPageLikeEvent("changha", new Date("2026-11-17T23:59:59+09:00"))).toBeUndefined();
+    expect(openPageLikeEvent("changha", new Date("2026-11-20T12:00:00+09:00"))?.key).toBe("changha-onboarding-1118");
+    expect(openPageLikeEvent("changha", new Date("2026-11-23T12:00:00+09:00"))?.key).toBe("changha-onboarding-1118");
+    expect(openPageLikeEvent("changha", new Date("2026-11-24T00:00:00+09:00"))).toBeUndefined();
+    expect(openPageLikeEvent("yuna", new Date("2026-11-18T23:59:59+09:00"))).toBeUndefined();
+    expect(openPageLikeEvent("yuna", new Date("2026-11-19T00:00:00+09:00"))?.key).toBe("yuna-onboarding-1119");
+    expect(openPageLikeEvent("yuna", new Date("2026-11-23T23:59:59+09:00"))?.key).toBe("yuna-onboarding-1119");
+    expect(openPageLikeEvent("yuna", new Date("2026-11-24T00:00:00+09:00"))).toBeUndefined();
+  });
+
+  it("keeps Changha's unreleased-photo window (11/22~23) as its own counted window", () => {
+    expect(pageLikeEventWindows["changha-photo-1122"]).toMatchObject({ from: "2026-11-22T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" });
   });
 
   it("is the same definition the admin participant presets count", () => {

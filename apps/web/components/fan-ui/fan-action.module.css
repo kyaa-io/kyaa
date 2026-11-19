@@ -94,6 +94,19 @@
   content: "";
 }
 
+/* 큰 주 버튼: 높이 56, 글자 16, 아이콘 22. 폭 상한 320을 두지 않고 부모 폭을 꽉 채운다. primary·status에 겹쳐 쓴다. */
+.action.lg.lg {
+  width: 100%;
+  max-width: none;
+  min-height: var(--fan-action-lg-height);
+  font-size: var(--fan-item-title-size);
+}
+.lg > svg,
+.lg .leading svg {
+  width: var(--fan-action-lg-icon-size);
+  height: var(--fan-action-lg-icon-size);
+}
+
 .text {
   padding-inline: 8px;
   border-color: transparent;

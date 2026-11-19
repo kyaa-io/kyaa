@@ -164,6 +164,8 @@
   --fan-section-heading-min-height: 56px;
   /* 게이트 A2: 기본 버튼 높이 390 44, 1024 이상 48. */
   --fan-action-primary-height: 44px;
+  --fan-action-lg-height: 56px;
+  --fan-action-lg-icon-size: 22px;
   /* 게이트 B2: 칩 36 · 14/700(누르는 영역은 ::after로 44). */
   --fan-chip-height: 36px;
   --fan-chip-size: 14px;

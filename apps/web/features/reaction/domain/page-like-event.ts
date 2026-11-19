@@ -1,15 +1,15 @@
 /**
- * 팬페이지 좋아요 이벤트 창(2026-11-16 ~ 11-23, 하루는 KST 00:00~23:59). `to`는 다음 00:00(미포함).
+ * 팬페이지 좋아요 이벤트 창. 엘리나·창하·유나는 각자 시작일 00:00(KST)부터 2026-11-24 00:00(11/23 끝)까지 계속 열려 있고(11/19 14:1x 계획 변경: 하루로 닫지 않는다), 창하 미공개 사진 창(11/22~23)은 따로 둔다. `to`는 다음 00:00(미포함).
  * 관리자 참여자 집계(`features/admin/event-participants.ts`)와 팬페이지의 이벤트 좋아요 카드가 이 한 정의를 같이 읽는다.
  */
 export const pageLikeEventWindows = {
-  "elina-onboarding-1117": { key: "elina-onboarding-1117", slug: "elina", from: "2026-11-17T00:00:00+09:00", to: "2026-11-18T00:00:00+09:00" },
-  "changha-onboarding-1118": { key: "changha-onboarding-1118", slug: "changha", from: "2026-11-18T00:00:00+09:00", to: "2026-11-19T00:00:00+09:00" },
-  "yuna-onboarding-1119": { key: "yuna-onboarding-1119", slug: "yuna", from: "2026-11-19T00:00:00+09:00", to: "2026-11-20T00:00:00+09:00" },
+  "elina-onboarding-1117": { key: "elina-onboarding-1117", slug: "elina", from: "2026-11-17T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
+  "changha-onboarding-1118": { key: "changha-onboarding-1118", slug: "changha", from: "2026-11-18T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
+  "yuna-onboarding-1119": { key: "yuna-onboarding-1119", slug: "yuna", from: "2026-11-19T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
   "changha-photo-1122": { key: "changha-photo-1122", slug: "changha", from: "2026-11-22T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
 } as const;
 
-/** 엘리나 패스포트 이벤트(11/20~21). 관리자 집계의 `passport-issued` 창이고, 홈 배너 순서만 이 정의를 함께 읽는다. */
+/** 엘리나 패스포트 이벤트(11/20~21). 관리자 집계의 `passport-issued` 창이다. */
 export const passportIssuedEventWindows = {
   "elina-passport-1120": { key: "elina-passport-1120", slug: "elina", from: "2026-11-20T00:00:00+09:00", to: "2026-11-22T00:00:00+09:00" },
 } as const;
