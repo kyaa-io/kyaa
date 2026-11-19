@@ -52,6 +52,7 @@ vi.mock("@/server/fanpage/dependencies", () => ({
         );
       }
       if (output === "") return null;
+      if (output === "t" || output === "f") return output === "t";
       try {
         return JSON.parse(output);
       } catch {
