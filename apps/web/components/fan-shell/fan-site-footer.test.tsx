@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import { APP_LOCALES } from "@/i18n/locales";
 import { FanSiteFooter } from "./fan-site-footer";
+import { KOREA_BUSINESS_INFO } from "./korea-business-info";
 
 const footerCss = readFileSync(
   resolve(process.cwd(), "components/fan-shell/fan-site-footer.module.css"),
@@ -20,12 +21,14 @@ describe("FanSiteFooter", () => {
     expect(footer).toHaveAttribute("data-footer-variant", "compact");
     expect(within(footer).queryByRole("navigation")).not.toBeInTheDocument();
     expect(within(footer).queryByRole("heading")).not.toBeInTheDocument();
-    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(0);
+    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(1);
     expect(within(footer).getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
     expect(within(footer).getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
-    const groups = footer.querySelectorAll("dl");
+    expect(within(footer).getByRole("link", { name: "요금 안내 열기" })).toHaveAttribute("href", "/pricing?locale=ko");
+    expect(within(footer).getByRole("link", { name: "환불 정책 열기" })).toHaveAttribute("href", "/refund?locale=ko");
+    const groups = footer.querySelectorAll('[role="group"][aria-label] [role="group"]');
     expect(groups).toHaveLength(2);
-    expect(groups[0]).toHaveTextContent("KAYY Inc. · Whitestone, Queens, NY, USA");
+    expect(groups[0]).toHaveTextContent("KAYY Inc.");
     expect(groups[1]).toHaveTextContent("736-86-03473");
     expect(footer).toHaveTextContent("주식회사 셀리랩");
   });
@@ -55,7 +58,7 @@ describe("FanSiteFooter", () => {
     expect(within(navigation).getByRole("link", { name: "문의하기" })).toHaveAttribute("href", "/my/inquiries?locale=ko");
     expect(within(navigation).getByRole("link", { name: "온체인 기록" })).toHaveAttribute("href", "/pages/onchain?locale=ko");
     expect(within(navigation).queryByRole("link", { name: "이미지 출처 열기" })).not.toBeInTheDocument();
-    expect(footer).not.toHaveTextContent("support@kyaa.io");
+    expect(footer).toHaveTextContent("support@kyaa.io");
     expect(within(footer).getByText("© 2026 kyaa. All rights reserved.")).toBeInTheDocument();
     expect(footer).not.toHaveTextContent(/Instagram|LinkedIn|채용/);
   });
@@ -87,7 +90,7 @@ describe("FanSiteFooter", () => {
     const footer = screen.getByRole("contentinfo");
     expect(within(footer).getByRole("navigation").querySelectorAll("section")).toHaveLength(3);
     expect(within(footer).getByRole("navigation").querySelectorAll("a")).toHaveLength(17);
-    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(5);
+    expect(footer.querySelectorAll('a[target="_blank"]')).toHaveLength(6);
     const wave = within(footer).getByRole("link", { name: "kyaa wave" });
     expect(wave).toHaveAttribute("href", "https://kyaawave.com/");
     expect(wave).toHaveAttribute("target", "_blank");
@@ -101,37 +104,70 @@ describe("FanSiteFooter", () => {
     expect(footer.querySelector("dl")).toBeInTheDocument();
   });
 
-  it.each(APP_LOCALES)("splits business information into Global HQ and Korea operator groups in %s", (locale) => {
+  it("separates the company information from the social group with a divider", () => {
+    render(<FanSiteFooter locale="ko" />);
+    const footer = screen.getByRole("contentinfo");
+    const social = within(footer).getByRole("heading", { name: "소셜" });
+    const info = within(footer).getByRole("group", { name: "사업자 정보" });
+    expect(social.compareDocumentPosition(info) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(footerCss.match(/\.business\s*\{([^}]*)\}/)?.[1]).toContain("border-top: 1px solid var(--footer-line)");
+    expect(footerCss.match(/\.companyMore\s*\{([^}]*)\}/)?.[1]).toContain("border-top: 1px solid var(--footer-line)");
+  });
+
+  it.each(APP_LOCALES)("lays out Global HQ and Korea operator as the same three lines in %s", (locale) => {
     for (const variant of ["full", "compact"] as const) {
       const { unmount } = render(<FanSiteFooter locale={locale} variant={variant} />);
-      const groups = [...screen.getByRole("contentinfo").querySelectorAll("dl")];
+      const footer = screen.getByRole("contentinfo");
+      const groups = [...footer.querySelectorAll<HTMLElement>("[role=group] [role=group]")];
       expect(groups).toHaveLength(2);
-      const [hq, operator] = groups.map((group) => [...group.querySelectorAll(":scope > div")]);
-      expect(hq).toHaveLength(2);
-      expect(hq[0].querySelector("dd")).toHaveTextContent("KAYY Inc. · Whitestone, Queens, NY, USA");
-      expect(hq[0].querySelector("dd")).toHaveAttribute("lang", "en");
-      expect(hq[0].querySelector("dt")?.textContent).toMatch(/\S/);
-      expect(hq[1].querySelector("dd")?.textContent).toBe("8130900");
-      expect(hq[1].querySelector("dt")?.textContent).toMatch(/\S/);
-      expect(operator).toHaveLength(4);
-      expect(operator[0].querySelector("dd")).toHaveTextContent("주식회사 셀리랩");
-      expect(operator[1].querySelector("dd")).toHaveTextContent("김보석");
-      expect(operator[2].querySelector("dd")).toHaveTextContent("736-86-03473");
-      expect(operator[3].querySelector("dd")).toHaveTextContent("서울특별시 강남구 도산대로28길 46, 6층");
+      const [hq, operator] = groups.map((group) => ({
+        label: group.querySelector("p")?.textContent,
+        lines: [...group.querySelectorAll(":scope > p")].slice(1),
+      }));
+      expect(hq.lines).toHaveLength(3);
+      expect(operator.lines).toHaveLength(3);
+      expect(hq.label).toMatch(/\S/);
+      expect(operator.label).toMatch(/\S/);
+      expect(hq.lines[0]).toHaveTextContent(/^KAYY Inc\. · .+ JAEYEONG KIM$/);
+      expect(hq.lines[1]).toHaveTextContent(/8130900$/);
+      expect(hq.lines[2]).toHaveTextContent("Whitestone, Queens, NY, USA");
+      expect(hq.lines[2]).toHaveAttribute("lang", "en");
+      expect(operator.lines[0]).toHaveTextContent(/^주식회사 셀리랩 · .+ 김보석$/);
+      expect(operator.lines[1]).toHaveTextContent("736-86-03473");
+      expect(operator.lines[2]).toHaveTextContent("서울특별시 강남구 도산대로28길 46, 6층 및 7층 전체(논현동)");
+      const lookup = operator.lines[1].querySelector("a");
+      expect(lookup).toHaveAttribute("href", "https://www.ftc.go.kr/bizCommPop.do?wrkr_no=7368603473");
+      expect(lookup).toHaveAttribute("target", "_blank");
+      expect(lookup).toHaveAttribute("rel", "noopener noreferrer");
+      expect(lookup).toHaveAttribute("data-outbound-placement", "footer");
+      expect(lookup).toHaveAttribute("data-outbound-kind", "website");
+      expect(lookup).not.toHaveAttribute("data-outbound-tracking");
+
+      const more = [...footer.querySelectorAll("dl > div")];
+      expect(more).toHaveLength(4);
+      expect(more[0].querySelector("dd")?.textContent).toBe(KOREA_BUSINESS_INFO.mailOrderNumber ?? (locale === "ko" ? "신고 준비 중" : "Filing in progress"));
+      expect(more[1].querySelector("dd")).toHaveTextContent("010-6434-8327");
+      expect(more[2].querySelector("dd")).toHaveTextContent("support@kyaa.io");
+      expect(more[3].querySelector("dd")).toHaveTextContent("Amazon Web Services");
+      for (const href of [`/pricing?locale=${locale}`, `/refund?locale=${locale}`]) {
+        expect(footer.querySelector(`a[href="${href}"]`)).toBeInTheDocument();
+      }
       expect(groups[0].textContent).not.toMatch(/151-17|20th Ave|EIN/);
       unmount();
     }
   });
 
   it.each([
-    ["ko", "글로벌 본사", "법인번호(뉴욕주)", "한국 운영사"],
-    ["en", "Global HQ", "NY DOS ID", "Korea operator"],
-  ] as const)("labels the two groups in %s", (locale, hqLabel, numberLabel, operatorLabel) => {
+    ["ko", "글로벌 본사", "한국 운영사", "법인번호(뉴욕주)", "사업자등록번호", "대표자"],
+    ["en", "Global HQ", "Korea operator", "NY DOS ID", "Business registration number", "Representative"],
+  ] as const)("labels the two groups in %s", (locale, hqLabel, operatorLabel, numberLabel, registrationLabel, representative) => {
     render(<FanSiteFooter locale={locale} />);
-    const groups = [...screen.getByRole("contentinfo").querySelectorAll("dl")];
-    expect(groups[0].querySelectorAll("dt")[0]).toHaveTextContent(hqLabel);
-    expect(groups[0].querySelectorAll("dt")[1]).toHaveTextContent(numberLabel);
-    expect(groups[1].querySelectorAll("dt")[0]).toHaveTextContent(operatorLabel);
+    const groups = [...screen.getByRole("contentinfo").querySelectorAll("[role=group] [role=group]")];
+    expect(groups[0].querySelector("p")).toHaveTextContent(hqLabel);
+    expect(groups[1].querySelector("p")).toHaveTextContent(operatorLabel);
+    expect(groups[0].querySelectorAll(":scope > p")[1]).toHaveTextContent(`${representative} JAEYEONG KIM`);
+    expect(groups[0].querySelectorAll(":scope > p")[2]).toHaveTextContent(numberLabel);
+    expect(groups[1].querySelectorAll(":scope > p")[2]).toHaveTextContent(registrationLabel);
   });
 
   it.each(APP_LOCALES)("lists the fan guides right under the service guide in %s", (locale) => {

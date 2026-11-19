@@ -5,6 +5,7 @@ import { FocusFlowFrame } from "./fan-shell/focus-flow-frame";
 import { FanLanguageSwitch } from "./fan-shell/fan-language-switch";
 import type { FanLocale } from "./fan-shell/fan-app-shell";
 import type { LegalDocumentContent, LegalDocumentId } from "./legal-content";
+import type { CommerceDocumentId } from "./legal-commerce-content";
 import { legalLabels } from "./legal-content";
 import styles from "./legal-page.module.css";
 
@@ -14,12 +15,13 @@ export function LegalPage({
   locale,
 }: {
   document: LegalDocumentContent;
-  documentId: LegalDocumentId;
+  documentId: LegalDocumentId | CommerceDocumentId;
   locale: FanLocale;
 }) {
   const labels = legalLabels[locale];
   const nextLocale = locale === "ko" ? "en" : "ko";
-  const pathname = documentId === "privacy" ? "/privacy" : "/terms";
+  const pathname = `/${documentId}`;
+  const effectiveDate = document.effectiveDate ?? labels.effectiveDate[documentId as LegalDocumentId];
 
   return (
     <FocusFlowFrame
@@ -44,13 +46,31 @@ export function LegalPage({
         <header className={styles.intro}>
           <p>{labels.notice}</p>
           <h1>{document.title}</h1>
-          <span>{labels.effectiveDate[documentId]}</span>
+          <span>{effectiveDate}</span>
           <p>{document.description}</p>
         </header>
-        <article className={styles.document}>
+        <article className={styles.document} lang={document.lang}>
           {document.sections.map((section) => (
             <section key={section.heading}>
               <h2>{section.heading}</h2>
+              {section.table ? (
+                <div className={styles.tableScroll}>
+                  <table>
+                    <thead>
+                      <tr>{section.table.head.map((cell) => <th key={cell} scope="col">{cell}</th>)}</tr>
+                    </thead>
+                    <tbody>
+                      {section.table.rows.map((row) => (
+                        <tr key={row[0]}>
+                          {row.map((cell, index) => index === 0
+                            ? <th key={index} scope="row" data-label={section.table!.head[index]}>{cell}</th>
+                            : <td key={index} data-label={section.table!.head[index]}>{cell}</td>)}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
               {section.paragraphs?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               {section.items ? (
                 <ul>

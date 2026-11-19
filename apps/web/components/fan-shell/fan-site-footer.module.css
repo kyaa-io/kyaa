@@ -130,42 +130,70 @@
 
 .business {
   margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--footer-line);
   color: var(--footer-muted);
   font-size: var(--fan-metadata-size);
   font-weight: var(--fan-body-weight);
   line-height: 1.6;
 }
 
-.businessGroups {
+.businessInfo {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
-.business dl {
+/* 글로벌 본사·한국 운영사는 같은 네 칸(머리말 + 세 줄)이다. 좁은 폭에서는 위아래로 쌓는다. */
+.companyGroups {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.company {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+}
+
+.company p {
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.company .companyLabel {
+  color: var(--footer-ink);
+}
+
+/* 두 덩어리에 들어가지 않는 법정 항목은 가는 선 아래 한 줄이다. */
+.companyMore {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1) var(--space-5);
   margin: 0;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--footer-line);
 }
 
-.business dl > div {
+.companyMore > div {
   display: flex;
   flex-wrap: wrap;
   gap: 0 var(--space-2);
 }
 
-.business dt {
+.companyMore dt {
   white-space: nowrap;
 }
 
-.business dd {
+.companyMore dd {
   margin: 0;
   overflow-wrap: break-word;
 }
 
-.businessAddress {
-  flex-basis: 100%;
+.company a {
+  color: var(--footer-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .legal {
@@ -183,8 +211,9 @@
 
 .legalLinks {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-6);
+  gap: 0 var(--space-6);
 }
 
 .legalLinks a {
@@ -208,6 +237,20 @@
 @media (min-width: 48rem) {
   .footer {
     padding-top: var(--space-12);
+  }
+
+  /* 두 덩어리의 같은 줄이 같은 높이에 서도록 네 줄을 서로 맞춘다. */
+  .companyGroups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(4, auto);
+    column-gap: var(--space-12);
+    row-gap: var(--space-1);
+  }
+
+  .company {
+    grid-row: span 4;
+    grid-template-rows: subgrid;
+    row-gap: var(--space-1);
   }
 
   .navigation {
@@ -288,47 +331,21 @@
   justify-content: space-between;
   gap: 0 var(--space-6);
   margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .compactBusiness {
   display: flex;
   min-width: 0;
   flex: 1 1 auto;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-4);
+  flex-direction: column;
+  gap: var(--space-2);
   padding-block: var(--space-3);
 }
 
-.compactBusiness .businessGroups {
+.compactBusiness .businessInfo {
   min-width: 0;
-}
-
-.compactBusiness dl {
-  display: flex;
-  min-width: 0;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-4);
-  margin: 0;
-}
-
-.compactBusiness dl > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 var(--space-2);
-}
-
-.compactBusiness dt {
-  white-space: nowrap;
-}
-
-.compactBusiness dd {
-  margin: 0;
-  overflow-wrap: break-word;
-}
-
-.compactBusiness .businessAddress {
-  flex-basis: auto;
 }
 
 @media (max-width: 47.999rem) {

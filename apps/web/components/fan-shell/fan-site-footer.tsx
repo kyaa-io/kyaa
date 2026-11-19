@@ -16,10 +16,13 @@ import type { FanLocale } from "./fan-app-shell";
 import { FanContentContainer } from "./fan-content-container";
 import styles from "./fan-site-footer.module.css";
 import { AnalyticsConsentLink } from "@/features/analytics/client/analytics-consent-link";
-import { HQ_LINE } from "@/seo/global-headquarters";
+import { HQ_COUNTRY, HQ_LOCALITY, HQ_NAME, HQ_REGION } from "@/seo/global-headquarters";
+import { KOREA_BUSINESS_INFO } from "./korea-business-info";
 
 const TELEGRAM_CHANNEL_URL = "https://t.me/Kyaa_Official";
 const HQ_CORPORATE_NUMBER = "8130900";
+const HQ_REPRESENTATIVE = "JAEYEONG KIM";
+const HQ_PLACE = `${HQ_LOCALITY}, ${HQ_REGION}, ${HQ_COUNTRY}`;
 
 // Brand marks from Simple Icons; Instagram reuses our existing local mark.
 const SOCIAL_CHANNELS = [
@@ -72,7 +75,6 @@ const copy = {
     corporateNumber: "법인번호(뉴욕주)",
     representative: "대표자",
     registrationNumber: "사업자등록번호",
-    businessAddress: "사업장 소재지",
   },
   en: {
     tagline: "Keep a record of moments with your favorites.",
@@ -102,7 +104,6 @@ const copy = {
     corporateNumber: "NY DOS ID",
     representative: "Representative",
     registrationNumber: "Business registration number",
-    businessAddress: "Registered address",
   },
 
   ...additionalLocales((translationLocale) => ({
@@ -134,8 +135,37 @@ const copy = {
     corporateNumber: localizedMessages.m8431e92781f3[translationLocale],
     representative: localizedMessages.mb0979e47f86e[translationLocale],
     registrationNumber: localizedMessages.m6a7a6594ed5a[translationLocale],
-    businessAddress: localizedMessages.m1f45fe0f4807[translationLocale],
   }))
+} as const;
+
+// 새 사업자 정보·정책 링크 라벨. 한국어와 영어만 두고 다른 언어는 영어를 쓴다(소비자법 고지 문구).
+const businessCopy = {
+  ko: {
+    pricing: "요금 안내",
+    pricingAria: "요금 안내 열기",
+    refund: "환불 정책",
+    refundAria: "환불 정책 열기",
+    mailOrderNumber: "통신판매업 신고번호",
+    mailOrderPending: "신고 준비 중",
+    phone: "대표전화",
+    email: "이메일",
+    hosting: "호스팅 서비스 제공자",
+    verify: "사업자정보 확인",
+    verifyAria: "공정거래위원회 사업자정보 확인, 새 창",
+  },
+  en: {
+    pricing: "Pricing",
+    pricingAria: "Open Pricing",
+    refund: "Refund Policy",
+    refundAria: "Open Refund Policy",
+    mailOrderNumber: "Mail-order business report no.",
+    mailOrderPending: "Filing in progress",
+    phone: "Phone",
+    email: "Email",
+    hosting: "Hosting provider",
+    verify: "Verify business information",
+    verifyAria: "Verify business information with the Korea Fair Trade Commission, new window",
+  },
 } as const;
 
 function fanHref(pathname: string, locale: FanLocale): Route {
@@ -144,31 +174,59 @@ function fanHref(pathname: string, locale: FanLocale): Route {
 
 function FanFooterLegalLinks({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
+  const b = businessCopy[locale === "ko" ? "ko" : "en"];
   return (
     <div className={styles.legalLinks}>
       <Link className={styles.privacyLink} href={fanHref("/privacy", locale)} aria-label={locale === "ko" ? "개인정보처리방침 열기" : translate(locale, localizedMessages.mc2da954c6e18, "Open Privacy Policy")}>{t.privacy}</Link>
       <Link href={fanHref("/terms", locale)} aria-label={locale === "ko" ? "이용약관 열기" : translate(locale, localizedMessages.m9083a379799f, "Open Terms of Use")}>{t.terms}</Link>
+      <Link href={fanHref("/pricing", locale)} aria-label={b.pricingAria}>{b.pricing}</Link>
+      <Link href={fanHref("/refund", locale)} aria-label={b.refundAria}>{b.refund}</Link>
       <AnalyticsConsentLink locale={locale} />
     </div>
   );
 }
 
+const DOT = <span aria-hidden="true"> · </span>;
+
+/**
+ * 회사 정보: 글로벌 본사와 한국 운영사를 같은 세 줄(사명·대표자 / 등록번호 / 주소)로 두고,
+ * 나머지 법정 항목은 두 덩어리 아래 한 줄에 모은다.
+ */
 function FanFooterBusinessInfo({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
+  const b = businessCopy[locale === "ko" ? "ko" : "en"];
+  const info = KOREA_BUSINESS_INFO;
   return (
-    <div className={styles.businessGroups} role="group" aria-label={t.businessInfo}>
-      <dl aria-label={t.headquarters}>
-        <div><dt>{t.headquarters}</dt><dd lang="en">{HQ_LINE}</dd></div>
-        <div><dt>{t.corporateNumber}</dt><dd>{HQ_CORPORATE_NUMBER}</dd></div>
-      </dl>
-      <dl aria-label={t.operator}>
-        <div><dt>{t.operator}</dt><dd lang="ko">주식회사 셀리랩</dd></div>
-        <div><dt>{t.representative}</dt><dd lang="ko">김보석</dd></div>
-        <div><dt>{t.registrationNumber}</dt><dd>736-86-03473</dd></div>
-        <div className={styles.businessAddress}>
-          <dt>{t.businessAddress}</dt>
-          <dd lang="ko">서울특별시 강남구 도산대로28길 46, 6층</dd>
+    <div className={styles.businessInfo} role="group" aria-label={t.businessInfo}>
+      <div className={styles.companyGroups}>
+        <div className={styles.company} role="group" aria-label={t.headquarters}>
+          <p className={styles.companyLabel}><strong>{t.headquarters}</strong></p>
+          <p><span lang="en">{HQ_NAME}</span>{DOT}<span>{t.representative} <span lang="en">{HQ_REPRESENTATIVE}</span></span></p>
+          <p><span>{t.corporateNumber}</span> <span>{HQ_CORPORATE_NUMBER}</span></p>
+          <p lang="en">{HQ_PLACE}</p>
         </div>
+        <div className={styles.company} role="group" aria-label={t.operator}>
+          <p className={styles.companyLabel}><strong>{t.operator}</strong></p>
+          <p><span lang="ko">{info.companyName}</span>{DOT}<span>{t.representative} <span lang="ko">{info.representative}</span></span></p>
+          <p>
+            <span>{t.registrationNumber}</span> <span>{info.registrationNumber}</span>{DOT}
+            <a
+              href={info.lookupUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={b.verifyAria}
+              data-outbound-placement="footer"
+              data-outbound-kind="website"
+            >{b.verify}</a>
+          </p>
+          <p lang="ko">{info.address}</p>
+        </div>
+      </div>
+      <dl className={styles.companyMore}>
+        <div><dt>{b.mailOrderNumber}</dt><dd>{info.mailOrderNumber ?? b.mailOrderPending}</dd></div>
+        <div><dt>{b.phone}</dt><dd>{info.phone}</dd></div>
+        <div><dt>{b.email}</dt><dd>{info.email}</dd></div>
+        <div><dt>{b.hosting}</dt><dd lang="en">{info.hostingProvider}</dd></div>
       </dl>
     </div>
   );
