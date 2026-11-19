@@ -6,6 +6,7 @@ import { homeBannerSchema } from "../../features/home/domain/home-banner";
 import { renderToString } from "react-dom/server";
 import { gggiHomeBanner } from "../../features/home/domain/gggi-home-banner";
 import { missionbookHomeBanner } from "../../features/home/domain/missionbook-home-banner";
+import { xMissionHomeBanner } from "../../features/home/domain/x-mission-home-banner";
 import { ManagedHomeBanner } from "./managed-home-banner";
 
 vi.mock("next/link", () => ({ default: ({ children, ...props }: ComponentProps<"a">) => <a {...props}>{children}</a> }));
@@ -25,6 +26,14 @@ describe("managed home banner", () => {
     expect(container.querySelector("[data-missionbook]")).not.toBeNull();
     expect(container.querySelector('[data-missionbook-likes][data-tone="banner"]')).toHaveTextContent("좋아요 350명");
     expect(render(<ManagedHomeBanner banner={guide()} locale="ko" />).container.querySelector("[data-missionbook-likes]")).toBeNull();
+  });
+  it("marks an admin 'event' banner with the one-day tag and the time left, and no code-pinned event banner", () => {
+    const { container } = render(<ManagedHomeBanner banner={guide({ category: "event", href: "/yuna", title: "유나 × Kyaa" })} locale="ko" />);
+    const eyebrow = container.querySelector("[data-event-day-eyebrow]");
+    expect(eyebrow).toHaveTextContent("오늘 하루 이벤트");
+    expect(eyebrow?.querySelector("[data-fan-tag]")).not.toBeNull();
+    expect(render(<ManagedHomeBanner banner={xMissionHomeBanner("ko")} locale="ko" />).container.querySelector("[data-event-day-eyebrow]")).toBeNull();
+    expect(render(<ManagedHomeBanner banner={guide({ category: "announcement" })} locale="ko" />).container.querySelector("[data-event-day-eyebrow]")).toBeNull();
   });
   it("keeps other banners on the live layout", () => {
     const { container } = render(<ManagedHomeBanner banner={guide({ category: "announcement" })} locale="ko" />);
