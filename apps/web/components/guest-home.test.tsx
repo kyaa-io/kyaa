@@ -405,12 +405,12 @@ describe("streamed Home sections", () => {
     return { pending, queries };
   }
 
-  it("shows the pinned banners immediately and releases each section without waiting for optional queries", async () => {
+  it("keeps home navigation available while waiting for the banner data", async () => {
     const home = pendingHome();
-    let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
-    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질미션북");
-    expect([...view.container.querySelectorAll("[data-managed-home-banner]")].slice(0, 3).map(el => el.getAttribute("data-managed-home-banner"))).toEqual([missionbook, xEvent, gggi]);
+    await act(async () => { render(<StreamingGuestHome {...home} locale="ko" />); });
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "주요 메뉴" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
     await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.homeSlots.resolve({}); });
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
@@ -418,21 +418,63 @@ describe("streamed Home sections", () => {
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
   });
 
-  it("orders pinned banners missionbook → signup raffle → X event → first steps → GGGI → CMS, in the waiting and the finished carousel", async () => {
+  it("orders pinned banners missionbook → signup raffle → X event → first steps → GGGI → CMS, in the finished carousel", async () => {
     const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
     const raffle = SIGNUP_RAFFLE_BANNER_ID;
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle firstSteps />); });
-    expect(ids(view)).toEqual([missionbook, raffle, xEvent, FIRST_STEPS_BANNER_ID, gggi]);
+    expect(ids(view)).toEqual([]);
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
     expect(ids(view)).toEqual([missionbook, raffle, xEvent, FIRST_STEPS_BANNER_ID, gggi, bannerFixture.id]);
     expect(ids(view).filter(id => id === raffle || id === xEvent)).toHaveLength(2);
     view.unmount();
     const off = pendingHome();
     await act(async () => { view = render(<StreamingGuestHome {...off} locale="ko" />); });
+    await act(async () => { off.pending.homeBanners.resolve([]); });
     expect(ids(view)).not.toContain(raffle);
     expect(ids(view)).toEqual([missionbook, xEvent, gggi]);
+  });
+
+  it("puts the admin 'event' banner first and shows its strip under the header, closing it for good (cookie)", async () => {
+    const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
+    const eventBanner = { ...bannerFixture, id: "77777777-7777-4777-8777-777777777777", title: "이벤트 × Kyaa", href: "/wena", category: "event" as const };
+    const home = pendingHome();
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
+    expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
+    await act(async () => { home.pending.homeBanners.resolve([bannerFixture, eventBanner]); });
+    expect(ids(view)).toEqual([eventBanner.id, missionbook, xEvent, gggi, bannerFixture.id]);
+    const strip = view.container.querySelector("[data-home-event-strip]")!;
+    expect(strip).toHaveAttribute("data-home-event-strip", eventBanner.id);
+    expect(strip.querySelector("a")).toHaveAttribute("href", "/wena?locale=ko");
+    expect(strip).toHaveTextContent("이벤트 × Kyaa");
+    expect(view.container.querySelector("main > :first-child")).toBe(strip.parentElement);
+    const stripSlot = strip.parentElement!;
+    fireEvent.click(within(strip as HTMLElement).getByRole("button", { name: "닫기" }));
+    expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
+    expect(stripSlot).not.toBeInTheDocument();
+    expect(document.cookie).toContain(`kyaa_event_strip_closed=${eventBanner.id}`);
+    view.unmount();
+    const again = pendingHome();
+    await act(async () => { view = render(<StreamingGuestHome {...again} locale="ko" closedEventStrip={eventBanner.id} />); });
+    await act(async () => { again.pending.homeBanners.resolve([eventBanner]); });
+    expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
+    expect(ids(view)[0]).toBe(eventBanner.id);
+    document.cookie = "kyaa_event_strip_closed=; max-age=0; path=/";
+  });
+
+  it("draws no strip when no admin banner is an event, or when the read fails", async () => {
+    const home = pendingHome();
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle />); });
+    await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
+    expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
+    view.unmount();
+    const failed = pendingHome();
+    await act(async () => { view = render(<StreamingGuestHome {...failed} locale="ko" />); });
+    await act(async () => { failed.pending.homeBanners.reject(); });
+    expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
   });
 
   it("renders ready home sections before gallery data, then reserves photo geometry while Shorts is pending", async () => {
@@ -444,12 +486,10 @@ describe("streamed Home sections", () => {
     await act(async () => { view = render(<StreamingGuestHome locale="ko" queries={{ ...home.queries,
       homeGallery: settleHomeQuery(gallery.promise),
       homeShorts: settleHomeQuery(shorts.promise) }} />); });
+    await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
     // The gallery is unresolved, but independent queries may render immediately.
     expect(view.container.querySelector('[data-home-measure="photos"][data-home-state="loading"]')).not.toBeNull();
     expect(screen.getByText("아직 공지 없음")).toBeInTheDocument();
-    await act(async () => {
-      home.pending.homeBanners.resolve([bannerFixture]);
-    });
     expect(view.container.querySelector(`[data-managed-home-banner="${bannerFixture.id}"]`)).not.toBeNull();
     expect(view.container.querySelector('[data-gallery-layout]')).toBeNull();
     await act(async () => { gallery.resolve({ items: photos as never, nextCursor: null }); });
@@ -464,18 +504,18 @@ describe("streamed Home sections", () => {
     const shorts = (await import("@/server/home-gallery/fixtures/read_public_home_shorts.json")).default;
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome queries={{ ...home.queries, homeGallery: Promise.resolve({ status: "fulfilled", value: { items: photos as never, nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: shorts as never }) }} locale="ko" />); });
+    await act(async () => { view = render(<StreamingGuestHome queries={{ ...home.queries, homeBanners: settleHomeQuery(Promise.resolve([])), homeGallery: Promise.resolve({ status: "fulfilled", value: { items: photos as never, nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: shorts as never }) }} locale="ko" />); });
     expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.length);
     expect(view.container.querySelectorAll('[data-row="short"]')).toHaveLength(shorts.length);
     view.unmount();
-    await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "rejected" }), homeShorts: Promise.resolve({ status: "rejected" }) }} locale="ko" />); });
+    await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeBanners: settleHomeQuery(Promise.resolve([])), homeGallery: Promise.resolve({ status: "rejected" }), homeShorts: Promise.resolve({ status: "rejected" }) }} locale="ko" />); });
     expect(view.container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
     expect(view.container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     // A failed read is not "none yet".
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
     expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
     view.unmount();
-    await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeGallery: Promise.resolve({ status: "fulfilled", value: { items: [], nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: [] }) }} locale="ko" />); });
+    await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeBanners: settleHomeQuery(Promise.resolve([])), homeGallery: Promise.resolve({ status: "fulfilled", value: { items: [], nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: [] }) }} locale="ko" />); });
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
     expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
   });

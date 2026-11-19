@@ -131,6 +131,7 @@ export function LiveCountdown({
 
 export function LiveHeroCarousel({
   homeBanners,
+  liveEventBannerIds,
   locale,
   elina,
   elinaRaffles,
@@ -143,6 +144,7 @@ export function LiveHeroCarousel({
   elinaGuide?: ReactNode;
   elinaRaffles?: RaffleList["raffles"];
   elina?: PublishedCelebrity;
+  liveEventBannerIds?: readonly string[];
   homeBanners: readonly HomeBanner[];
   locale: AppLocale;
 }) {
@@ -319,7 +321,7 @@ export function LiveHeroCarousel({
               aria-hidden={index !== activeIndex} aria-roledescription="slide"
               aria-label={t.position(index + 1, total)} inert={index !== activeIndex}
               data-active={index === activeIndex ? "true" : "false"}>
-              {banner ? renderBanner ? renderBanner(banner) : banner.id === FIRST_STEPS_BANNER_ID ? <FirstStepsHomeBanner banner={banner} locale={locale} priority={index === 0} /> : <ManagedHomeBanner banner={banner} locale={locale} priority={index === 0} />
+              {banner ? renderBanner ? renderBanner(banner) : banner.id === FIRST_STEPS_BANNER_ID ? <FirstStepsHomeBanner banner={banner} locale={locale} priority={index === 0} /> : <ManagedHomeBanner liveEvent={liveEventBannerIds?.includes(banner.id)} banner={banner} locale={locale} priority={index === 0} />
                 : elinaGuide !== undefined ? elinaGuide : <ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} hero priority={index === 0} />}
             </article>
           ))}
@@ -327,7 +329,7 @@ export function LiveHeroCarousel({
         <span className={styles.heroShine} aria-hidden="true" />
       </div>
 
-      <span className={styles.carouselCounter} aria-hidden="true">{String(activeIndex + 1).padStart(2, "0")} | {String(total).padStart(2, "0")}</span>
+      <span className={`${styles.carouselPill} ${styles.carouselCounter}`} aria-hidden="true">{String(activeIndex + 1).padStart(2, "0")} | {String(total).padStart(2, "0")}</span>
       {hasControls ? (
         <div className={styles.carouselControls}>
           <button className={styles.carouselPrevious} type="button" aria-label={t.previous} onClick={() => goTo(activeIndex - 1, true)}>
