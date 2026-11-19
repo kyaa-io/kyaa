@@ -34,15 +34,27 @@ it("copies the public share URL and records completion only after a successful c
     if (path === "/api/chemi/readings")
       return Response.json({
         readingId: "reading",
+        kstDate: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now()),
         styled: null,
         replayed: true,
         reward: {},
         result: {
+          locked: false,
           score: 82,
           grade: { name: "좋은 날" },
-          fields: { fandom: 88, people: 81, money: 79, rest: 83 },
-          evidence: { dayPillar: "정유" },
-          luck: { color: "초록" },
+          fields: { fandom: 88, people: 81, money: 79, rest: 83, work: 80, love: 75 },
+          periods: { morning: 84, afternoon: 72, night: 88 },
+          evidence: {
+            dayPillar: "정유",
+            yearPillar: "병오",
+            relation: "무관",
+            stage: "쇠",
+            spirit: "화개살",
+            tenGod: "식신",
+            useful: "목",
+            timeBasis: "시주 포함",
+          },
+          luck: { color: "초록", number: 3, direction: "동", item: "나무 연필" },
         },
       });
     if (path === "/api/chemi/rewards/today")
@@ -65,8 +77,8 @@ it("copies the public share URL and records completion only after a successful c
   );
   render(<FortuneResult locale="ko" />);
   const [button] = await screen.findAllByRole("button", { name: "자랑하기" });
-  expect(screen.getAllByText("좋은 날")).toHaveLength(1);
-  expect(screen.queryByText("창하의 한마디")).toBeNull();
+  expect(screen.getAllByText("좋은 날")).toHaveLength(2);
+  expect(screen.getByText("창하의 한마디")).toBeVisible();
   expect(toast).not.toHaveBeenCalled();
   expect(celebrate).not.toHaveBeenCalled();
   fireEvent.click(button!);
@@ -127,7 +139,48 @@ it("renders the public card for a guest and links back to Chemi", async () => {
   render(<FortuneResult locale="ko" from="card" />);
   expect(await screen.findByText("공유한 한마디.")).toBeVisible();
   expect(
-    screen.getByRole("link", { name: "케미 탭으로 돌아가기" }),
+    screen.getByRole("link", { name: "뒤로 가기" }),
   ).toHaveAttribute("href", "/chemi?locale=ko");
   expect(request).toHaveBeenCalledOnce();
+});
+
+it("sends the member to the Chemi home from the main button until questions exist", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (path: string) =>
+      path === "/api/chemi/readings"
+        ? Response.json({
+            readingId: "reading",
+            kstDate: new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now()),
+            styled: null,
+            replayed: true,
+            reward: {},
+            result: {
+              locked: false,
+              score: 82,
+              grade: { name: "좋은 날" },
+              fields: { fandom: 88, people: 81, money: 79, rest: 83, work: 80, love: 75 },
+              periods: { morning: 84, afternoon: 72, night: 88 },
+              evidence: {
+                dayPillar: "정유",
+                yearPillar: "병오",
+                relation: "무관",
+                stage: "쇠",
+                spirit: "화개살",
+                tenGod: "식신",
+                useful: "목",
+                timeBasis: "시주 포함",
+              },
+              luck: { color: "초록", number: 3, direction: "동", item: "나무 연필" },
+            },
+          })
+        : Response.json({ grants: [] }),
+    ),
+  );
+  render(<FortuneResult locale="ko" />);
+  expect(await screen.findByRole("link", { name: "다른 운세 보기" })).toHaveAttribute(
+    "href",
+    "/chemi?locale=ko",
+  );
+  expect(screen.queryByText("이 결과로 질문하기")).toBeNull();
 });

@@ -214,3 +214,7 @@
 .guestLogin { flex: 0 0 auto; white-space: nowrap; }
 
 :root:has(.frame [data-fortune-result], .frame [data-saju-result]) { --chemi-result-nav-height: var(--fan-bottom-nav-height); }
+
+/* 케미 오늘의 타로 뽑는 화면은 몰입 화면: 하단 탭과 푸터를 두지 않는다. */
+.frame:has([data-chemi-immersive]) { padding-bottom: 0; }
+.frame:has([data-chemi-immersive]) :is(.bottomNavigation, [data-fan-site-footer]) { display: none; }
