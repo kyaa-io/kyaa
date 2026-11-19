@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "케미에서 오늘의 타로를 뽑을 수 있어요. 최애를 고르고, 큰 카드를 넘겨 한 장을 뽑아요.",
+    "뽑은 카드는 최애가 세 마디로 읽어 주고, 결과에서 오늘의 뜻과 그림 속 상징을 볼 수 있어요.",
+    "로그인하면 오늘 뽑은 카드가 저장되고, 다시 들어오면 같은 카드를 보여 줘요. 로그인하지 않으면 저장되지 않아요.",
+    "결과 화면의 링크는 날짜가 바뀐 뒤 새 탭에서 열어도 그날 뽑은 카드를 그대로 보여 줘요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/tarot",
+  "images": [
+    "release-notes/images/2026-11-19-chemi-tarot-pick-local.png",
+    "release-notes/images/2026-11-19-chemi-tarot-fix-result-390-local.png",
+    "release-notes/images/2026-11-19-chemi-tarot-fix-result-1440-local.png"
+  ]
+}
