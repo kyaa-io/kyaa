@@ -50,15 +50,29 @@ end $$;
 revoke all on function public.read_published_slot_banners(public.content_locale,text) from public,anon,authenticated;
 grant execute on function public.read_published_slot_banners(public.content_locale,text) to service_role;
 
--- Same owner rule as 20261215050000.
-do $$declare target_owner name;reader_owner name;begin
- select pg_get_userbyid(proowner) into target_owner from pg_proc where oid='public.home_banner_asset_json(uuid)'::regprocedure;
- select pg_get_userbyid(proowner) into reader_owner from pg_proc where oid='public.read_published_slot_banners(public.content_locale,text)'::regprocedure;
- if reader_owner in('anon','authenticated','service_role')then raise exception 'Unexpected definer owner %',reader_owner;end if;
- if reader_owner<>target_owner then execute format('grant execute on function public.home_banner_asset_json(uuid) to %I',reader_owner);end if;
- if reader_owner<>(select pg_get_userbyid(relowner) from pg_class where oid='public.home_banners'::regclass) then
-  execute format('grant select on table public.home_banners,public.home_banner_localizations to %I',reader_owner);
- end if;
+do $$
+declare
+  reader_owner name := pg_get_userbyid((select proowner from pg_proc where oid =
+    'public.read_published_slot_banners(public.content_locale,text)'::regprocedure));
+  dependency regprocedure;
+  relation regclass;
+begin
+  if reader_owner in ('anon','authenticated','service_role') then
+    raise exception 'Unexpected definer owner %', reader_owner;
+  end if;
+  foreach dependency in array array['public.home_banner_asset_json(uuid)'::regprocedure,
+    'public.live_effective_status_at(uuid,timestamptz)'::regprocedure] loop
+    if not has_function_privilege(reader_owner, dependency, 'execute') then
+      execute format('grant execute on function %s to %I', dependency, reader_owner);
+    end if;
+  end loop;
+  foreach relation in array array['public.home_banners'::regclass, 'public.home_banner_localizations'::regclass,
+    'public.live_events'::regclass, 'public.celebrities'::regclass, 'public.group_raffles'::regclass,
+    'public.group_pages'::regclass] loop
+    if not has_table_privilege(reader_owner, relation, 'select') then
+      execute format('grant select on table %s to %I', relation, reader_owner);
+    end if;
+  end loop;
 end$$;
 create or replace function public.get_admin_home_banner_manager(p_actor_app_user_id uuid,p_actor_admin_allowlist_id uuid)
 returns jsonb language plpgsql stable security definer set search_path='' as $$
