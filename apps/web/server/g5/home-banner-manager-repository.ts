@@ -43,7 +43,9 @@ export function createHomeBannerManagerRepository(
         const { data, error } = await db.rpc("save_admin_managed_banner", {
           ...common, p_banner_id: command.id, p_expected_revision: command.expectedRevision,
           p_kind: command.kind, p_celebrity_id: command.celebrityId,
-          p_localizations: command.localizations, p_placement: command.placement ?? null, p_category: command.category ?? null,
+          p_localizations: command.placement === "member_event_popup"
+            ? { ...command.localizations, startsAt: command.startsAt, endsAt: command.endsAt }
+            : command.localizations, p_placement: command.placement ?? null, p_category: command.category ?? null,
         });
         return result(data, error);
       }

@@ -187,7 +187,8 @@ it('offers 홈배너2 and 덕질배너1 as placements and saves the chosen slot'
  expect(within(select).getByRole('option',{name:/덕질배너2 · 덕질 탭 PC 오른쪽 세로 \(720 x 1200\)/})).toBeInTheDocument();
  expect(within(select).getByRole('option',{name:/덕질배너3 · 덕질 탭 PC 오른쪽 세로 둘째/})).toBeInTheDocument();
  expect(within(select).getByRole('option',{name:/덕질배너4 · 덕질 탭 PC 오른쪽 세로 셋째/})).toBeInTheDocument();
- expect(within(select).getAllByRole('option')).toHaveLength(12);
+ expect(within(select).getByRole('option',{name:'회원 이벤트 팝업'})).toHaveValue('member_event_popup');
+ expect(within(select).getAllByRole('option')).toHaveLength(13);
  fireEvent.change(select,{target:{value:'dukjil_side_3'}});
  fireEvent.click(screen.getByRole('button',{name:'초안 저장'}));
  await waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));

@@ -1,3 +1,7 @@
+import { MemberEventPopup } from "../../components/banner-slot/member-event-popup";
+import { LocaleProvider } from "../../components/locale-provider";
+import { PageNoticeModal } from "../../features/groups/ui/page-notice-modal";
+import { LiveEventScreen } from "../../features/live/ui/live-event-screen";
 import { parseAppLocale } from "../../i18n/locales";
 import { CreatorHeroPicture } from "../../components/fan-ui/creator-hero-picture";
 import { CreatorPortrait } from "../../components/fan-ui/creator-portrait";
@@ -12,7 +16,7 @@ import { gggiHomeBanner } from "../../features/home/domain/gggi-home-banner";
 import { LiveCalendarScreen } from "../../features/live/ui/live-calendar-screen";
 import { buildLiveCalendarMonth } from "../../features/live/domain/live-calendar";
 import type { LiveEventResponse } from "../../features/live/domain/live-event";
-import { bannerFixture } from "./fixture";
+import { bannerFixture, popupLive } from "./fixture";
 import "../../app/globals.css";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 
@@ -50,7 +54,13 @@ const artBanner = { ...bannerFixture, category: "guide" as const,
 const calendar = buildLiveCalendarMonth({ month: "2026-09", events: lives.map(({live}) => ({ id: live.id, slug: live.slug, startsAt: live.startsAt, effectiveStatus: live.effectiveStatus, title: live.title, celebrity: { name: creator.name, image: creator.image.url }, reservationState: null, hasBenefit: null })) });
 document.documentElement.lang = locale;
 const changhaImage = { url: "/images/guest-home/changha-card.jpg", alt: "창하", position: "center 32%" };
-createRoot(document.getElementById("root")!).render(location.pathname === "/photo-check" ? <main style={{maxWidth:940,margin:"16px auto",padding:16}}>
+createRoot(document.getElementById("root")!).render(location.pathname === "/event-popup-preview" || location.pathname === "/live/elina-week-0" ? <LocaleProvider initialLocale={locale}>
+  {location.pathname === "/live/elina-week-0" ? <LiveEventScreen slug="elina-week-0" locale={locale} initialData={popupLive} /> : <>
+    <GuestHome celebrities={[creator]} homeBanners={[banner]} locale={locale} />
+    {query.has("result") && <PageNoticeModal locale={locale} storageKey="raffle-results:elina:1" title="래플 결과 안내" actionHref="/my/raffles" actionLabel="결과 보기" />}
+  </>}
+  <MemberEventPopup />
+</LocaleProvider> : location.pathname === "/photo-check" ? <main style={{maxWidth:940,margin:"16px auto",padding:16}}>
   <div className={fanPageStyles.hero}><CreatorHeroPicture slug="changha" image={changhaImage} className={fanPageStyles.heroPicture} /></div>
   <div style={{display:"flex",gap:16,alignItems:"center",marginTop:16}}><CreatorPortrait slug="changha" image={changhaImage} /><CreatorAvatar slug="changha" src={changhaImage.url} photos={undefined} size={64} /></div>
 </main> : location.pathname === "/events" ?

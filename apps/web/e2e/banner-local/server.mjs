@@ -31,7 +31,7 @@ export async function startHarness({ port = 4193 } = {}) {
     configFile: false, esbuild: { jsx: "automatic" }, root: here, publicDir: path.join(web, "public"),
     cacheDir: path.join(web, "node_modules/.vite-banner-local"),
     resolve: { alias: [
-      { find: "@/components/byus-session-provider", replacement: path.join(here, "../translation-local/session.ts") },
+      { find: "@/components/byus-session-provider", replacement: path.join(here, "session.ts") },
       { find: "@", replacement: web },
       { find: "next/navigation", replacement: path.join(here, "next-navigation.ts") },
       ...["next/link", "next/image", "server-only"].map(name => ({ find: name, replacement: path.join(web, "e2e/mission-local", { "next/link": "next-link.tsx", "next/image": "next-image.tsx", "next/navigation": "next-navigation.ts", "server-only": "server-only.ts" }[name]) })),

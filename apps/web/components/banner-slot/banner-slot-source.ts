@@ -7,6 +7,15 @@ import type { AppLocale } from "@/i18n/locales";
 const responseSchema = z.object({ slots: z.record(z.string(), z.unknown()) }).strict();
 const requests = new Map<string, Promise<BannerSlotMap>>();
 
+export function parseBannerSlots(body: unknown): BannerSlotMap {
+  const slots: BannerSlotMap = {};
+  for (const [slot, value] of Object.entries(responseSchema.parse(body).slots)) {
+    const banner = homeBannerSchema.safeParse(value);
+    if (banner.success && banner.data.placement === slot) slots[slot as keyof BannerSlotMap] = banner.data;
+  }
+  return slots;
+}
+
 /** One request per area and language, shared by every slot on the page. A failure folds every slot of that area. */
 function loadSlots(area: BannerSlotArea, locale: AppLocale): Promise<BannerSlotMap> {
   const key = `${area}:${locale}`;
@@ -14,14 +23,7 @@ function loadSlots(area: BannerSlotArea, locale: AppLocale): Promise<BannerSlotM
   if (!request) {
     request = fetch(`/api/public/banner-slots?area=${area}&locale=${encodeURIComponent(locale)}`)
       .then(response => response.ok ? response.json() : { slots: {} })
-      .then(body => {
-        const slots: BannerSlotMap = {};
-        for (const [slot, value] of Object.entries(responseSchema.parse(body).slots)) {
-          const banner = homeBannerSchema.safeParse(value);
-          if (banner.success && banner.data.placement === slot) slots[slot as keyof BannerSlotMap] = banner.data;
-        }
-        return slots;
-      })
+      .then(parseBannerSlots)
       .catch(() => { requests.delete(key); return {}; });
     requests.set(key, request);
   }

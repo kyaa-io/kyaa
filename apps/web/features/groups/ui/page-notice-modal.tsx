@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useId,useRef,useState} from 'react';
+import {useEffect,useId,useRef,useState,type ReactNode} from 'react';
 import {useGroupRequest} from './use-group-resource';
 import {ArrowRight,X} from 'lucide-react';
 import {AccessibleOverlay} from '@/components/ui/overlay/accessible-overlay';
@@ -13,12 +13,16 @@ const STORAGE_PREFIX='kyaa:page-notice:';
 function remembered(key:string){try{return window.localStorage.getItem(STORAGE_PREFIX+key)==='seen';}catch{return false;}}
 function remember(key:string){try{window.localStorage.setItem(STORAGE_PREFIX+key,'seen');}catch{/* Closing still works without storage. */}}
 
+export function pageNoticeBlocked(){return document.querySelector('[role="dialog"], [role="alertdialog"], [data-overlay-host]')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]');}
+
 /** Closing by any route remembers this round; signed-in readers also sync with the server. */
 export function PageNoticeModal({locale,storageKey,title,description,actionLabel,actionHref,enabled=true}:{locale:AppLocale;storageKey:string;title:string;description?:string;actionLabel:string;actionHref:string;enabled?:boolean}){
  const {request,authenticated,ready,ownerKey}=useGroupRequest();
  const key=`${ownerKey.split(':')[0]}:${storageKey}`,url=`/api/me/page-notices?key=${encodeURIComponent(storageKey)}`;
- const [open,setOpen]=useState(false),shown=useRef<string|null>(null),titleId=useId(),copy=cheerEventCopy(locale,false);
+ const [open,setOpen]=useState(false),shown=useRef<string|null>(null);
+ const [closedKey,setClosedKey]=useState<string|null>(null);
  const [verified,setVerified]=useState<string|null>(null);
+ const dismissed=closedKey===key||(verified===key&&!open&&remembered(key));
  useEffect(()=>{
   if(!ready||!enabled)return;
   let active=true;
@@ -37,7 +41,7 @@ export function PageNoticeModal({locale,storageKey,title,description,actionLabel
   if(!enabled||!ready||verified!==key||shown.current===key)return;
   const check=()=>{
    if(shown.current===key||remembered(key)||document.visibilityState==='hidden')return;
-   if(document.querySelector('[role="dialog"], [role="alertdialog"], [data-overlay-host]')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))return;
+   if(pageNoticeBlocked())return;
    shown.current=key;setOpen(true);
   };
   check();
@@ -46,11 +50,25 @@ export function PageNoticeModal({locale,storageKey,title,description,actionLabel
   const interval=window.setInterval(check,30_000);
   return()=>{observer.disconnect();window.clearInterval(interval);};
  },[enabled,ready,verified,key]);
- const close=()=>{remember(key);setOpen(false);if(authenticated)void request(url,{method:'POST'}).catch(()=>undefined);};
+ const close=()=>{remember(key);setClosedKey(key);setOpen(false);if(authenticated)void request(url,{method:'POST'}).catch(()=>undefined);};
  if(!enabled)return null;
- return <AccessibleOverlay open={open&&verified===key} onClose={close} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.modal}>
-  <header className={styles.header}><FanHeading id={titleId}>{title}</FanHeading><span className={styles.closeSlot}><FanAction variant='text' className={styles.close} onClick={close} ariaLabel={copy.close} leadingIcon={<X size={20} aria-hidden='true'/>}/></span></header>
+ return <>
+  {!dismissed && <span hidden data-page-notice-priority="" />}
+  <PageNoticeDialog open={open&&verified===key} onClose={close} locale={locale} title={title}
+    description={description} actionLabel={actionLabel} actionHref={actionHref}/>
+ </>;
+}
+
+export function PageNoticeDialog({open,onClose,locale,title,description,actionLabel,actionHref,children,secondary}:{
+ open:boolean;onClose:()=>void;locale:AppLocale;title:string;description?:string;
+ actionLabel:string;actionHref:string;children?:ReactNode;secondary?:ReactNode;
+}){
+ const titleId=useId(),copy=cheerEventCopy(locale,false);
+ return <AccessibleOverlay open={open} trackHistory={!secondary} onClose={onClose} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={secondary ? `${styles.modal} ${styles.eventModal}` : styles.modal}>
+  <header className={styles.header}><FanHeading id={titleId}>{title}</FanHeading><span className={styles.closeSlot}><FanAction variant='text' className={styles.close} onClick={onClose} ariaLabel={copy.close} leadingIcon={<X size={20} aria-hidden='true'/>}/></span></header>
+  {children}
   {description&&<p className={styles.description}>{description}</p>}
-  <FanAction variant='primary' href={actionHref} onClick={close} trailingIcon={<ArrowRight/>}>{actionLabel}</FanAction>
+  <FanAction variant='primary' href={actionHref} onClick={onClose} trailingIcon={secondary ? undefined : <ArrowRight/>}>{actionLabel}</FanAction>
+  {secondary}
  </AccessibleOverlay>;
 }

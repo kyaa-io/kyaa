@@ -22,7 +22,7 @@ begin
  for i in 1..4 loop
    live_id:=extensions.gen_random_uuid();
    insert into public.live_events(id,slug,celebrity_id,brand_id,publication_status,content_status,starts_at,ends_at,reservation_opens_at,reservation_closes_at,youtube_url,approved_hero_url,fan_code_hash,published_at)
-   values(live_id,'home-banner-live-'||i||'-'||replace(live_id::text,'-',''),creator,template.brand_id,'published','scheduled',now()+(i||' days')::interval,now()+(i||' days')::interval+interval '1 hour',now()-interval '1 day',now()+(i||' days')::interval-interval '1 hour',template.youtube_url,template.approved_hero_url,template.fan_code_hash,now());
+   values(live_id,'home-banner-live-'||i||'-'||replace(live_id::text,'-',''),creator,template.brand_id,'published','scheduled',now()+(i||' days')::interval,now()+(i||' days')::interval+interval '1 hour',now()-interval '1 day',now()+(i||' days')::interval-interval '1 hour','https://www.youtube.com/watch?v=abcdefghijk',template.approved_hero_url,template.fan_code_hash,now());
    insert into public.live_event_localizations(live_event_id,locale,title,summary,hero_alt)
    values(live_id,'ko','정기 라이브 '||i,'예정 라이브','라이브 이미지'),(live_id,'en','Regular live '||i,'Upcoming live','Live image');
  end loop;
@@ -102,6 +102,37 @@ begin
  manager:=public.get_admin_home_banner_manager(actor,allow_id);
  if manager->'items'->0->>'id'<>second->>'id' then raise exception 'atomic ordering failed'; end if;
  if (select count(*) from public.audit_logs where entity_type='home_banner')<5 then raise exception 'home banner audit missing'; end if;
+end $$;
+
+do $$
+declare
+ actor uuid:=current_setting('byus.home_banner.actor')::uuid;
+ allow_id uuid:=current_setting('byus.home_banner.allow')::uuid;
+ target text;
+ loc jsonb;
+ payload jsonb;
+ first_id uuid;
+ expired_id uuid;
+begin
+ select '/live/'||slug into strict target from public.live_events where slug like 'home-banner-live-1-%';
+ loc:=jsonb_build_object('title','LIVE','description','','ctaLabel','Join','href',target,'alt','LIVE',
+   'desktopAssetId',current_setting('byus.home_banner.asset'),'mobileAssetId',null);
+ payload:=jsonb_build_object('ko',loc,'en',loc,'startsAt',now()-interval '2 hours','endsAt',now()-interval '1 hour');
+ expired_id:=(public.save_admin_managed_banner(actor,allow_id,gen_random_uuid(),null,0,'announcement',null,payload,'member_event_popup','event')->>'id')::uuid;
+ perform public.set_admin_home_banner_publication(actor,allow_id,gen_random_uuid(),expired_id,1,'published');
+ if public.read_published_slot_banners('ko','member-event')<>'{}'::jsonb then raise exception 'expired popup shown'; end if;
+
+ payload:=payload||jsonb_build_object('endsAt',now()+interval '1 hour');
+ first_id:=(public.save_admin_managed_banner(actor,allow_id,gen_random_uuid(),null,0,'announcement',null,payload,'member_event_popup','event')->>'id')::uuid;
+ if public.read_published_slot_banners('ko','member-event')<>'{}'::jsonb then raise exception 'draft popup shown'; end if;
+ perform public.set_admin_home_banner_publication(actor,allow_id,gen_random_uuid(),first_id,1,'published');
+ if public.read_published_slot_banners('ko','member-event')->'member_event_popup'->>'id' is distinct from first_id::text then raise exception 'active popup missing'; end if;
+ if public.read_published_slot_banners('ko','home') ? 'member_event_popup'
+   or public.read_published_slot_banners('en','fanpage') ? 'member_event_popup'
+   or public.read_published_slot_banners('en','dukjil') ? 'member_event_popup' then raise exception 'popup leaked into public slots'; end if;
+ perform public.set_admin_home_banner_publication(actor,allow_id,gen_random_uuid(),first_id,2,'draft');
+ if public.read_published_slot_banners('ko','member-event')<>'{}'::jsonb then raise exception 'unpublished popup shown'; end if;
+ raise notice 'PASS member event popup schedule and publication';
 end $$;
 
 rollback;

@@ -8,3 +8,24 @@
 .footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); flex-wrap: wrap; }
 .footer label { display: inline-flex; align-items: center; gap: var(--space-2); min-height: var(--min-target); color: var(--color-muted); font-size: var(--fan-description-size); cursor: pointer; }
 .footer input { width: var(--space-5); height: var(--space-5); accent-color: var(--color-ink); }
+
+.modal.eventModal[data-overlay-content] {
+  width: calc(100dvw - var(--space-8));
+  max-width: 480px;
+  max-height: calc(100dvh - var(--space-8));
+  box-shadow: var(--shadow-overlay);
+}
+
+.eventModal picture,
+.eventModal picture img {
+  display: block;
+  width: 100%;
+}
+
+.eventModal picture img {
+  height: auto;
+}
+
+.eventModal .close { border-radius: var(--radius-pill); }
+
+.eventModal > a { justify-self: center; }
