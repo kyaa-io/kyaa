@@ -48,7 +48,7 @@ fi
     for (const mode of ['prepare', 'apply']) {
       const worker = steps.find(step => step.run === 'node scripts/aws-release-workers.mjs ' + mode);
       assert.ok(steps.indexOf(worker) > steps.indexOf(recovery));
-      assert.equal(worker.if, undefined);
+      assert.equal(worker.if, "env.PROMOTE_WORKERS == 'true'");
     }
     assert.equal(recovery['continue-on-error'], undefined);
   });

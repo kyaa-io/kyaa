@@ -16,6 +16,10 @@ on:
         description: Reject stale or unknown live versions for a reserved promotion
         type: boolean
         default: false
+      promote_workers:
+        description: Also update the four worker Lambdas in production (dev always updates them)
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
@@ -67,6 +71,8 @@ jobs:
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
       AWS_SCHEDULE_CONFIG_JSON: ${{ vars.AWS_SCHEDULE_CONFIG_JSON }}
       GITHUB_TOKEN: ${{ github.token }}
+      # Production worker code changes only when the run asks for it; the approved promotion does not.
+      PROMOTE_WORKERS: ${{ (inputs.environment || 'dev') == 'dev' || inputs.promote_workers == true }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -277,7 +283,7 @@ jobs:
       - name: Require successful checks for the exact release commit
         run: node scripts/aws-release-ci.mjs "$(jq -r .sourceSha work/aws-release/aws-release.json)" "${SOURCE_RUN_ID:-$GITHUB_RUN_ID}"
       - name: Recover original worker preparation on retry
-        if: github.run_attempt > 1
+        if: env.PROMOTE_WORKERS == 'true' && github.run_attempt > 1
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -308,6 +314,7 @@ jobs:
           echo "::error::수동 확인 필요: worker 백업 다운로드 3회 실패"
           exit 1
       - name: Prepare all worker code updates
+        if: env.PROMOTE_WORKERS == 'true'
         run: node scripts/aws-release-workers.mjs prepare
       - name: Validate and deploy CloudFormation
         id: deploy_web
@@ -321,9 +328,10 @@ jobs:
         if: env.AWS_SCHEDULE_CONFIG_JSON != ''
         run: node scripts/aws-release-cron.mjs deploy
       - name: Update worker code preserving approved switches
+        if: env.PROMOTE_WORKERS == 'true'
         run: node scripts/aws-release-workers.mjs apply
       - name: Preserve worker rollback packages
-        if: always()
+        if: always() && env.PROMOTE_WORKERS == 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: worker-rollback-${{ github.run_id }}-${{ github.run_attempt }}

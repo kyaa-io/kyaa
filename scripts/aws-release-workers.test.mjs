@@ -191,3 +191,16 @@ for (const scenario of ['partial', 'lost response', 'external']) {
   } finally { await rm(root, { recursive: true, force: true }); }
  });
 }
+test('production updates workers only when the run asks for it; dev always does', async () => {
+ const { load } = await import('js-yaml');
+ const workflow = load(await readFile('.github/workflows/aws-platform.yml', 'utf8'));
+ const { env, steps } = workflow.jobs.release;
+ assert.equal(workflow.on.workflow_dispatch.inputs.promote_workers.default, false);
+ assert.equal(env.PROMOTE_WORKERS, "${{ (inputs.environment || 'dev') == 'dev' || inputs.promote_workers == true }}");
+ const gated = steps.filter(step => /worker/i.test(step.name ?? ''));
+ assert.deepEqual(gated.map(step => step.if), [
+  "env.PROMOTE_WORKERS == 'true' && github.run_attempt > 1", "env.PROMOTE_WORKERS == 'true'",
+  "env.PROMOTE_WORKERS == 'true'", "always() && env.PROMOTE_WORKERS == 'true'",
+ ]);
+ assert(steps.every(step => !/aws-release-workers|worker-rollback|worker-backups/.test(JSON.stringify(step)) || gated.includes(step)));
+});
