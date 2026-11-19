@@ -50,6 +50,6 @@ begin
   res := public.chemi_save_birth_v2(u, '1995-05-06', 'solar', null, 'unknown', 'female', null, null, null, null, null, null, 'v2');
   select * into p from public.chemi_profiles where user_id = u;
   if not (res->>'edited')::boolean or p.consent_version <> 'v2' or p.consent_at <= old_at or p.edit_count <> 1 then raise exception 'edit, new version: % %', res, p; end if;
-  raise notice 'PASS chemi_save_birth consent rule is the same on every save path';
+  raise notice 'PASS chemi_save_birth_v2 consent rule is the same on every save path';
 end $$;
 rollback;
