@@ -306,9 +306,10 @@ describe("login page (Cognito)", () => {
     await waitFor(() => expect(fetch).toHaveBeenCalled());
     expect(screen.getByText("로그인 상태를 연결하고 있어요.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Google로 계속하기/ })).not.toBeInTheDocument();
-    expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko");
+    expect(replace).not.toHaveBeenCalled();
     finishSync?.(Response.json({ profile: { completed: true, nickname: "John" } }));
     await waitFor(() => expect(replace).toHaveBeenCalledWith("/live/kara-nualeaf?locale=ko"));
+    expect(replace).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith("/api/auth/session", expect.objectContaining({
       method: "POST",
       headers: {
@@ -351,7 +352,7 @@ describe("login page (Cognito)", () => {
     expect(screen.getByText(/이메일 공유가 가능한 계정으로 다시 로그인/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "다른 계정으로 로그인" }));
     await waitFor(() => expect(logout).toHaveBeenCalledOnce());
-    expect(replace).toHaveBeenNthCalledWith(1, "/c/kara/verify?locale=ko");
+    expect(replace).not.toHaveBeenCalledWith("/c/kara/verify?locale=ko");
     expect(replace).toHaveBeenCalledWith(expect.stringMatching(/^\/login\?returnTo=%2Fc%2Fkara%2Fverify/));
     expect(query).toContain("authIntent=11111111-1111-4111-8111-111111111111");
   });
