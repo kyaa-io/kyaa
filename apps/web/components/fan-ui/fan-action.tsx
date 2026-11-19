@@ -24,12 +24,13 @@ export type FanActionVariant =
 
 export function fanActionClassName(
   variant: FanActionVariant,
-  options: { fullWidth?: boolean; className?: string; size?: "md" | "sm" } = {},
+  options: { fullWidth?: boolean; className?: string; size?: "md" | "sm" | "lg" } = {},
 ) {
   return [
     styles.action,
     styles[variant === "secondary" ? "neutral" : variant],
     options.size === "sm" ? styles.sm : "",
+    options.size === "lg" ? styles.lg : "",
     options.fullWidth ? styles.fullWidth : "",
     options.className ?? "",
   ].filter(Boolean).join(" ");
@@ -39,8 +40,8 @@ type FanActionProps = Readonly<{
   /** Omit for an icon-only action; then aria-label is required. */
   children?: ReactNode;
   variant?: FanActionVariant;
-  /** `sm`: 높이 36(행 안 버튼). 누르는 영역은 44를 유지한다. */
-  size?: "md" | "sm";
+  /** `sm`: 높이 36(행 안 버튼). 누르는 영역은 44를 유지한다. `lg`: 높이 56·가로 꽉 차는 화면의 주 버튼(이벤트 좋아요). */
+  size?: "md" | "sm" | "lg";
   fullWidth?: boolean;
   className?: string;
   "aria-current"?: ButtonHTMLAttributes<HTMLButtonElement>["aria-current"];
@@ -179,9 +180,9 @@ export function FanAction({
  * 비활성(.4 불투명) 대신 보조 버튼 면(흰 면·1px 선·잉크 글자)을 primary 자리 크기(높이 44/48, 최대 폭 320)로 그린다 —
  * 응모 전후로 줄 높이·폭이 그대로이고 글자 대비는 잉크 그대로다. 아이콘은 `leadingIcon`(간격 8).
  */
-export function FanActionStatus({ children, leadingIcon, className }: Readonly<{ children: ReactNode; leadingIcon?: ReactNode; className?: string }>) {
+export function FanActionStatus({ children, leadingIcon, className, size }: Readonly<{ children: ReactNode; leadingIcon?: ReactNode; className?: string; size?: "lg" }>) {
   return (
-    <p role="status" className={[styles.action, styles.neutral, styles.status, className ?? ""].filter(Boolean).join(" ")} data-fan-action-status="">
+    <p role="status" className={[styles.action, styles.neutral, styles.status, size === "lg" ? styles.lg : "", className ?? ""].filter(Boolean).join(" ")} data-fan-action-status="">
       {leadingIcon ? <span className={styles.leading} aria-hidden="true">{leadingIcon}</span> : null}
       <span className={styles.label}>{children}</span>
     </p>

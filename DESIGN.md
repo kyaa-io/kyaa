@@ -138,6 +138,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 최소 터치 | 44 | `--min-target` |
 | primary 버튼 | 44(390) / 48(1024+), 최대 폭 320 | `--fan-action-primary-height` `--fan-action-max-width` |
 | 작은 버튼 `size="sm"` | 보이는 36, 누르는 영역 44 | `FanAction` |
+| 큰 주 버튼 `size="lg"` | 높이 56, 글자 16, 아이콘 22, 폭 상한 없이 부모 폭을 채움. 화면 첫 행동인 이벤트 좋아요 카드에만(11/19 사용자 "좋아요 버튼 크게") | `--fan-action-lg-height` `--fan-action-lg-icon-size` |
 | 칩 | 보이는 36, 누르는 영역 44(::after) | `--fan-chip-height` |
 | 머리 칩(팬 인증·좋아요·별) | 28, 누르는 영역 44 | `FanStarAction` |
 | 밑줄 탭 / 세그먼트 / 태그 | 48 / 40 / 22 | `FanTabs`, `FanTag` |
@@ -151,7 +152,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 
 | 부품 | 쓰는 경우 | 주요 props | 쓰지 않는 경우 |
 |---|---|---|---|
-| `FanAction` | 글자가 있는 모든 버튼·링크 버튼 | `variant` primary·secondary(=neutral)·text·danger, `size` md·sm, `href`/`onClick`, `leadingIcon`, `loading`, `fullWidth`, `helperText` | primary는 화면당 1. `danger`는 모달 안 확인만. `service`·`passport`·`trailingIcon` 화살표는 폐기 |
+| `FanAction` | 글자가 있는 모든 버튼·링크 버튼 | `variant` primary·secondary(=neutral)·text·danger, `size` md·sm·lg, `href`/`onClick`, `leadingIcon`, `loading`, `fullWidth`, `helperText` | primary는 화면당 1. `danger`는 모달 안 확인만. `service`·`passport`·`trailingIcon` 화살표는 폐기 |
 | `FanIconButton` | 글자 없는 44 아이콘 버튼 | `aria-label` 필수, 메뉴·툴팁 트리거 | 글자가 있으면 `FanAction` |
 | `FanHeading` · `FanSectionHeader` | 화면 제목·구역 제목, 제목 줄 오른쪽 작은 링크 | `as` h1·h2·h3, `action {label, href}`, `extraAction` | `description`(보조 문구) 쓰지 않음 |
 | `FanSectionLink` | 제목 줄 오른쪽 `전체 보기 ›`. 같은 자리에서 펼치는 목록 미리보기도 이것(`onClick`+`expanded`, 펼친 뒤 `접기 ›`; 예: 팬페이지 390 팬 활동 3행 `FanMissions preview`, 11/13) | `href`/`onClick`, `expanded` | 목록 아래 따로 둔 버튼 줄 |

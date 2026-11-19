@@ -358,9 +358,9 @@ const xEventPath = /^\/x-(?:mission|opening)-[^/#?]+$/u;
 // worker 빌드는 web 소스를 가져올 수 없어 복사해 두며 test/telegram-alert-worker.test.ts 가 두 목록이 같은지 대조한다.
 // `to`는 다음 00:00(미포함). passport-issued 창은 대상이 아니다.
 export const pageLikeEventWindows: readonly { readonly slug: string; readonly from: string; readonly to: string }[] = [
-  { slug: "elina", from: "2026-11-17T00:00:00+09:00", to: "2026-11-18T00:00:00+09:00" },
-  { slug: "changha", from: "2026-11-18T00:00:00+09:00", to: "2026-11-19T00:00:00+09:00" },
-  { slug: "yuna", from: "2026-11-19T00:00:00+09:00", to: "2026-11-20T00:00:00+09:00" },
+  { slug: "elina", from: "2026-11-17T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
+  { slug: "changha", from: "2026-11-18T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
+  { slug: "yuna", from: "2026-11-19T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
   { slug: "changha", from: "2026-11-22T00:00:00+09:00", to: "2026-11-24T00:00:00+09:00" },
 ];
 const creatorPagePath = /^\/([^/#?]+)$/u;
