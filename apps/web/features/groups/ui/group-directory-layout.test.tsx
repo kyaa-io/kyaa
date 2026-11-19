@@ -1,3 +1,4 @@
+import creationStyles from './group-creation-banner.module.css';
 import {act,cleanup,fireEvent,render,screen,within,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 const state=vi.hoisted(()=>({urls:[] as string[],loading:new Set<string>(),empty:false,authenticated:true,dialog:[] as unknown[]}));
@@ -80,7 +81,7 @@ it('offers the fan page application for an empty result, with no favorite reques
 });
 it('offers two illustrated application banners with their existing destinations',()=>{
  const {container}=render(<GroupDirectory locale='ko'/>);
- const area=container.querySelector('[class*=discoveryCreation]') as HTMLElement;
+ const area=container.getElementsByClassName(creationStyles.creation)[0] as HTMLElement;
  const rows=within(area).getAllByRole('link');
  expect(rows.map(row=>row.querySelector('img')?.getAttribute('src'))).toEqual(['/images/groups/create-fan.webp','/images/groups/create-hobby.webp']);
  expect(within(area).getByRole('link',{name:'팬페이지 개설 신청'})).toBe(rows[0]);expect(within(area).getByRole('link',{name:'취미·브랜드 페이지 개설 신청'})).toBe(rows[1]);

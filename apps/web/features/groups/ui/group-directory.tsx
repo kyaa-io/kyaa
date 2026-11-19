@@ -169,7 +169,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=
       </>}
     </section><aside className={styles.discoveryAside}>
       <section className={styles.discoveryAttendance}><div><h3>{c.attendance}</h3></div><DukjilProvider locale={locale}><CheckinCorner locale={locale}>{attendanceAction}</CheckinCorner></DukjilProvider></section>
-      <div className={`${styles.discoveryCreation} ${creationStyles.creation}`}>
+      <div className={creationStyles.creation}>
         {(['fan', 'hobby'] as const).map(kind => {
           const title=groupApplyText(locale,kind==='fan'?'fanPageApply':'hobbyBrandPageApply');
           return <Link key={kind} className={creationStyles.banner} href={`/pages/groups/apply?locale=${locale}${kind==='fan'?'&kind=fan':''}` as Route} onClick={event=>openApplication(event,kind)} aria-label={title}>
