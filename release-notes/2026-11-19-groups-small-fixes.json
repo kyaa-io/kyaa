@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "모임 목록에서 Kyaa Wave 로고를 원래 비율로 선명하게 보여줘요.",
+    "좋아요 이벤트가 열린 팬페이지 카드에는 ‘이벤트 중’ 표시가 잠깐 깜박여요. 기기에서 움직임 줄이기를 켜면 표시가 고정돼요.",
+    "팬페이지 개설 신청과 취미·브랜드 페이지 개설 신청 카드 사이에 여백을 되살렸어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-19-groups-wave-logo.png",
+    "release-notes/images/2026-11-19-groups-event-tag.png",
+    "release-notes/images/2026-11-19-groups-application-gap.png"
+  ]
+}

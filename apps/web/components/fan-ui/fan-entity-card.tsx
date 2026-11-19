@@ -4,6 +4,7 @@ import type { Route } from "next";
 import Link from "./hover-prefetch-link";
 import type { ReactNode } from "react";
 
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { GroupImage } from "@/features/groups/ui/group-image";
 import type { AppLocale } from "@/i18n/locales";
 import type { PhotoSet } from "@/features/media/domain/public-image";
@@ -70,12 +71,14 @@ function FanEntityTile({ href, image, name, kind, locale, badge, newBadge, class
   const sizes = "(min-width: 1024px) 168px, (min-width: 768px) 140px, 34vw";
   const initials = Array.from(name.replace(/^[^\p{L}\p{N}]+/u, "") || name).slice(0, 2).join("");
   // Only fan pages show a creator's face; a brand or hobby page linked to a creator record still shows its own logo whole.
-  const creatorSlug = image.slug && (kind === "fan" || !image.src) ? image.slug : undefined;
+  const waveLogo = image.slug === WAVE_FANPAGE_SLUG;
+  const tileSource = waveLogo ? "/images/connect/kyaa-wave/logo.svg" : image.src;
+  const creatorSlug = !waveLogo && image.slug && (kind === "fan" || !image.src) ? image.slug : undefined;
   const content = <>
-    <span className={[styles.tileMedia, !creatorSlug && image.src ? mediaFillClass : ""].filter(Boolean).join(" ")} data-tile-media={creatorSlug ? "creator" : image.src ? "page" : "initials"}>
+    <span className={[styles.tileMedia, !creatorSlug && image.src && !waveLogo ? mediaFillClass : "", waveLogo ? styles.waveLogo : ""].filter(Boolean).join(" ")} data-tile-media={creatorSlug ? "creator" : tileSource ? "page" : "initials"}>
       {creatorSlug
         ? <CreatorImage slug={creatorSlug} src={image.src} photos={image.photos} position={image.position} presentation="portrait" alt="" width={336} height={336} sizes={sizes} fallback={<span className={styles.tileInitials} aria-hidden="true">{initials}</span>} />
-        : image.src ? <GroupImage locale={locale} src={image.src} alt="" width={336} height={336} className={styles.tileLogo} backdrop /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
+        : tileSource ? <GroupImage locale={locale} src={tileSource} alt="" width={336} height={336} className={styles.tileLogo} backdrop={!waveLogo} /> : <span className={styles.tileInitials} aria-hidden="true">{initials}</span>}
       {badge && <span className={styles.tileBadge}>{badge}</span>}
       {newBadge && <span className={styles.tileNew}>NEW</span>}
     </span>

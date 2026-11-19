@@ -1,4 +1,5 @@
 .creation.creation {
+  display: grid;
   gap:var(--space-4);
   padding-top:calc(var(--space-3) + var(--space-4));
   padding-left:var(--space-4);

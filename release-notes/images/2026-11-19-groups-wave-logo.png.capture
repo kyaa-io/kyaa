@@ -1,0 +1,1 @@
+{"tool":"local-login","mode":"login","url":"http://localhost:3983/pages/groups","capturedAt":"2026-11-19T11:24:46.441Z","sha256":"d374e80e4cafac5750ee5a87e786704336ea67df56510dcf9d569a6a01fc7b17","captureMethod":"Playwright element screenshot using local-login storageState","viewport":{"width":1440,"height":900},"fixture":true}
