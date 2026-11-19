@@ -3,6 +3,9 @@ import { useRankingResource } from "@/features/rankings/ui/use-ranking-resource"
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { activeJjinfanChallengesSchema } from "@/features/rankings/domain/types";
 import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
+import motionStyles from "@/components/fan-ui/event-blink.module.css";
+import { liveEventLabel } from "@/features/home/domain/event-day";
+import { openPageLikeEvent, pageLikeEventWindows } from "@/features/reaction/domain/page-like-event";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -41,6 +44,7 @@ import creationStyles from "./group-creation-banner.module.css";
 import stateStyles from "./group-directory-state.module.css";
 import {SourceStatePanel} from "./source-state-panel";
 import {GroupApplicationDialog} from "./group-application-dialog";
+const eventBoundaries = Object.values(pageLikeEventWindows).flatMap(({ from, to }) => [Date.parse(from), Date.parse(to)]).sort((a, b) => a - b);
 const parseChallenges=(value:unknown)=>activeJjinfanChallengesSchema.parse(value);
 export const seeAllLabel:Record<AppLocale,string>={ko:'전체 보기',en:'View all',ja:'すべて見る','zh-Hans':'查看全部','zh-Hant':'查看全部',es:'Ver todo',id:'Lihat semua',vi:'Xem tất cả',th:'ดูทั้งหมด',pt:'Ver tudo',fr:'Tout voir',ru:'Все страницы'};
 const fanpageLabel:Record<AppLocale,string>={ko:'팬페이지',en:'Fan pages',ja:'ファンページ','zh-Hans':'粉丝主页','zh-Hant':'粉絲專頁',es:'Páginas de fans',id:'Halaman penggemar',vi:'Trang người hâm mộ',th:'แฟนเพจ',pt:'Páginas de fãs',fr:'Pages de fans',ru:'Фан-страницы'};
@@ -119,7 +123,27 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=
   if(mine&&!mineRow)setMineRow(true);
   // 찐팬 100 challenge (C7): fan pages an administrator turned on carry a tag in every list on this screen.
   const challenges=useRankingResource(`/api/rankings/challenges?locale=${locale}`,parseChallenges),challengeSlugs=new Set(challenges.state.status==='ready'?challenges.state.data.items.map(item=>item.slug):[]);
-  const pageCard=(page:GroupList["items"][number])=><FanEntityCard key={page.id} size="tile" href={groupHref(page,locale)} image={{src:page.imageUrl,slug:page.slug}} name={page.name} kind={page.kind} locale={locale} memberCount={page.memberCount} newBadge={page.kind==='fan'&&page.isNew===true&&!(page.challenge??(!!page.slug&&challengeSlugs.has(page.slug)))} badge={page.kind==='fan'&&(page.challenge??(!!page.slug&&challengeSlugs.has(page.slug)))?<FanTag tone="fan"><span aria-label={rankingsText(locale,'jjTag')}>{challengeBadge[locale]}</span></FanTag>:undefined}/>;
+  const [eventTime, setEventTime] = useState<number>();
+  useEffect(() => {
+    let timer: number | undefined;
+    const update = () => {
+      const now = Date.now();
+      setEventTime(now);
+      const next = eventBoundaries.find(boundary => boundary > now);
+      if (next !== undefined) timer = window.setTimeout(update, Math.min(next - now, 2 ** 31 - 1));
+    };
+    update();
+    return () => window.clearTimeout(timer);
+  }, []);
+  const pageCard = (page: GroupList["items"][number]) => {
+    const isFan = page.kind === "fan";
+    const challenge = isFan && (page.challenge ?? (!!page.slug && challengeSlugs.has(page.slug)));
+    const event = isFan && page.slug && eventTime !== undefined && openPageLikeEvent(page.slug, eventTime);
+    const badge = event
+      ? <FanTag tone="fan" className={motionStyles.eventBlink}>{liveEventLabel(locale)}</FanTag>
+      : challenge ? <FanTag tone="fan"><span aria-label={rankingsText(locale, "jjTag")}>{challengeBadge[locale]}</span></FanTag> : undefined;
+    return <FanEntityCard key={page.id} size="tile" href={groupHref(page, locale)} image={{ src: page.imageUrl, slug: page.slug }} name={page.name} kind={page.kind} locale={locale} newBadge={isFan && page.isNew === true && !badge} badge={badge}/>;
+  };
   const applyKind=nonFanType?'hobby':'fan';
   const applyLabel=nonFanType?t.apply:groupApplyText(locale,'fanPageApply');
   const attendanceAction=!resource.authenticated?<FanAction className={styles.discoveryAttendanceGuest} variant="neutral" href={directoryLogin}><span className={directoryStyles.attendanceIcon} aria-hidden="true"/><span className={directoryStyles.attendanceLabel}>{w.attendance}</span></FanAction>:<FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} variant="primary"><span className={directoryStyles.attendanceIcon} aria-hidden="true"/><span className={directoryStyles.attendanceLabel}>{w.attendance}</span></FanAction>;

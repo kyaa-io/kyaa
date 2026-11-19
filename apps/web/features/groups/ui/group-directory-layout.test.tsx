@@ -1,4 +1,4 @@
-import {cleanup,fireEvent,render,screen,within,waitFor} from '@testing-library/react';
+import {act,cleanup,fireEvent,render,screen,within,waitFor} from '@testing-library/react';
 import {afterEach,beforeEach,expect,it,vi} from 'vitest';
 const state=vi.hoisted(()=>({urls:[] as string[],loading:new Set<string>(),empty:false,authenticated:true,dialog:[] as unknown[]}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletAttendanceDialog:()=>null}));
@@ -8,7 +8,7 @@ vi.mock('./directory-top',()=>({MyArtists:()=><div data-testid='my-artists'/>,Th
 vi.mock('./group-application-dialog',()=>({GroupApplicationDialog:(props:unknown)=>{state.dialog.push(props);return <div role='dialog'/>;}}));
 vi.mock('@/features/dukjil/ui/dukjil-provider',()=>({DukjilProvider:({children}:any)=>children,useDukjil:()=>null}));
 const page=(n:number,kind='hobby')=>({id:`e9600000-0000-4000-8000-00000000000${n}`,kind,name:`Page ${n}`,description:'소개',imageUrl:null,slug:null,memberCount:n,status:'published',question:null,anonymous:false,celebrityId:null});
-vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({ready:true,authenticated:state.authenticated,ownerKey:'o',request:vi.fn()}),useGroupResource:(url:string|null)=>{if(url)state.urls.push(url);const base={ready:true,authenticated:state.authenticated,ownerKey:'o',error:false,retry:vi.fn(),request:vi.fn()};if(!url)return{...base,loading:false};if([...state.loading].some(part=>url.includes(part)))return{...base,loading:true};if(url.includes('/status'))return{...base,loading:false,data:{items:[]}};return{...base,loading:false,data:{items:state.empty&&url.includes('limit=20')?[]:[page(1),page(2,'brand'),page(3,'fan')],totalCount:state.empty&&url.includes('limit=20')?0:3,nextCursor:null}};}}));
+vi.mock('./use-group-resource',()=>({useGroupRequest:()=>({ready:true,authenticated:state.authenticated,ownerKey:'o',request:vi.fn()}),useGroupResource:(url:string|null)=>{if(url)state.urls.push(url);const base={ready:true,authenticated:state.authenticated,ownerKey:'o',error:false,retry:vi.fn(),request:vi.fn()};if(!url)return{...base,loading:false};if([...state.loading].some(part=>url.includes(part)))return{...base,loading:true};if(url.includes('/status'))return{...base,loading:false,data:{items:[]}};return{...base,loading:false,data:{items:state.empty&&url.includes('limit=20')?[]:[page(1),page(2,'brand'),{...page(3,'fan'),slug:'elina'}],totalCount:state.empty&&url.includes('limit=20')?0:3,nextCursor:null}};}}));
 import {GroupDirectory} from './group-directory';
 beforeEach(()=>{state.urls.length=0;state.loading.clear();state.empty=false;state.authenticated=true;state.dialog.length=0;history.replaceState(null,'','/pages/groups');});
 afterEach(cleanup);
@@ -109,4 +109,19 @@ it.each(['all','fan'])('uses discovery only for the default %s list',type=>{
 it('preserves a direct non-default order instead of forcing discovery',()=>{
  history.replaceState(null,'','/pages/groups?sort=today');render(<GroupDirectory locale='ko'/>);
  expect(state.urls.some(url=>url.includes('limit=20')&&url.includes('sort=today'))).toBe(true);
+});
+
+it('shows the event tag only on the matching fanpage until its window closes', () => {
+  vi.useFakeTimers();
+  try {
+    vi.setSystemTime(new Date('2026-11-23T23:59:59+09:00'));
+    const view = render(<GroupDirectory locale='ko'/>);
+    const card = screen.getByRole('link', { name: /Page 3/ });
+    expect(within(card).getByText('이벤트 중')).toBe(screen.getByText('이벤트 중'));
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.queryByText('이벤트 중')).toBeNull();
+    view.unmount();
+  } finally {
+    vi.useRealTimers();
+  }
 });

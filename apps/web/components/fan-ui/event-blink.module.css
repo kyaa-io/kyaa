@@ -1,0 +1,9 @@
+.eventBlink { animation: liveEventBlink 1.2s var(--motion-easing) 2.1s 3; }
+
+@keyframes liveEventBlink {
+  50% { opacity: .6; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eventBlink { animation: none; }
+}

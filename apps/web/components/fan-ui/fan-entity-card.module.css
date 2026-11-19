@@ -37,6 +37,7 @@
 .tileMedia > img { display: block; width: 100%; height: 100%; object-fit: cover; }
 /* Logos and banners of hobby and brand pages keep all their content: contained, and the margin is the picture's own blurred colour (media-fill). */
 .tileMedia > .tileLogo { object-fit: contain; }
+.waveLogo { background: var(--color-surface); padding: var(--space-2); }
 .tileMedia > span[role="img"] { width: 100%; height: 100%; color: var(--color-muted); }
 .tileInitials { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--color-muted); font-size: var(--fan-heading-size); font-weight: 700; }
 .tileInfo { display: grid; min-width: 0; align-content: start; gap: var(--space-1); }
