@@ -1,0 +1,461 @@
+/* 최애 사주 결과(승인 시안 03-2 결과·03-4 올해·이달·03-5 궁합).
+   390은 한 열(최애 한마디 말풍선과 큰 버튼이 탭바 위에 고정), 1024+는 본문 + 오른쪽 레일.
+   본문과 레일은 390에서 display: contents 로 풀어 order 로 줄을 세운다. */
+.layout {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  align-items: start;
+}
+.main,
+.side {
+  display: contents;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.round {
+  flex: none;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--min-target);
+  padding-inline: var(--space-4);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+}
+.head {
+  display: grid;
+  gap: var(--space-1);
+  order: 1;
+}
+.head p,
+.head h1,
+.section h2,
+.section p,
+.bondPanel p,
+.bondPanel h2,
+.reaction p,
+.said,
+.legal p,
+.nextTitle {
+  margin: 0;
+}
+.head p {
+  color: var(--color-muted);
+}
+.head h1 {
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.hero {
+  display: block;
+  margin-top: var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-card);
+}
+.hero img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center 20%;
+}
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+.bondPanel {
+  order: 2;
+  gap: var(--space-2);
+}
+.summary {
+  display: contents;
+}
+.pairReward {
+  order: 2;
+}
+.split,
+.section {
+  order: 3;
+  display: grid;
+  gap: var(--space-3);
+}
+.panel.section,
+.panel.split {
+  gap: var(--space-3);
+}
+.block {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+}
+.rewardRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  color: var(--color-muted);
+}
+.rewardRow:empty {
+  display: none;
+}
+.bars {
+  display: grid;
+  gap: var(--space-3);
+}
+.barRow {
+  display: grid;
+  grid-template-columns: 5rem 2.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+.elementName {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.barRowWide {
+  display: grid;
+  grid-template-columns: 5.5rem 3rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+.pairNote {
+  margin: 0;
+}
+.topLabel[data-top] {
+  color: var(--color-accent-ink);
+}
+.bar {
+  display: block;
+  height: var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+}
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-ink) 70%, transparent);
+}
+.bar[data-top] i {
+  background: var(--color-accent);
+}
+.kv {
+  display: grid;
+  margin: 0;
+  border-bottom: 1px solid var(--color-line);
+}
+.kv > div {
+  display: grid;
+  grid-template-columns: 6.25rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+.kv dd {
+  margin: 0;
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+.stats > div {
+  display: grid;
+  gap: var(--space-1);
+  align-content: start;
+}
+.chips {
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.chips li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--space-8);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+.chips li[data-mark="good"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+.chips li[data-mark="rest"] {
+  border-style: dashed;
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+.chips li[data-current] {
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.cols {
+  display: contents;
+}
+.pairPanel {
+  order: 3;
+  display: grid;
+  gap: var(--space-3);
+}
+.mobileActions {
+  order: 5;
+}
+.dockSpace {
+  order: 7;
+  height: var(--space-16);
+}
+.dockSpace::after {
+  content: "";
+  display: block;
+  height: var(--space-16);
+}
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.actions > * {
+  flex: 1;
+}
+.legal {
+  order: 6;
+  color: var(--color-muted);
+}
+
+/* 최애 한마디 + 큰 버튼. 390은 탭바 위 고정, 1024+는 오른쪽 레일의 분홍 카드. */
+.dock {
+  position: fixed;
+  z-index: var(--z-bottom-nav);
+  bottom: calc(var(--chemi-result-nav-height) + env(safe-area-inset-bottom));
+  inset-inline: 0;
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+}
+.reaction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.reaction img {
+  grid-row: 1 / span 2;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+.said,
+.reaction p {
+  grid-column: 2;
+}
+.reaction p {
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.cta {
+  display: flex;
+  justify-content: center;
+}
+.cta > * {
+  width: 100%;
+}
+.desktopOnly {
+  display: none;
+}
+.nextList {
+  display: grid;
+  order: 4;
+}
+.nextList .nextItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--min-target);
+  padding: var(--space-3) 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+  border-radius: 0;
+  background: none;
+  color: var(--color-ink);
+  text-align: start;
+}
+.nextList .nextItem > span {
+  flex: 1;
+  min-width: 0;
+}
+.nextRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+.nextRow > :first-child {
+  flex: 1;
+  text-align: start;
+}
+.nextTitle {
+  padding-block: var(--space-2);
+}
+:global(body):has(.dock) :global([data-fan-toast-viewport]) {
+  bottom: calc(
+    var(--chemi-result-nav-height) + env(safe-area-inset-bottom) + var(--space-3) * 2 +
+      var(--min-target) * 2 + var(--space-8)
+  );
+}
+.loadingHero {
+  aspect-ratio: 16 / 9;
+}
+@media (min-width: 48rem) {
+  .panel {
+    padding: var(--space-6);
+  }
+  .hero img {
+    aspect-ratio: 5 / 2;
+  }
+}
+@media (min-width: 64rem) {
+  .summary {
+    display: grid;
+    overflow: hidden;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+  }
+  .summary > .split {
+    order: 1;
+    border: 0;
+    border-radius: 0;
+    background: none;
+  }
+  .summary > .bondPanel {
+    order: 2;
+    align-content: center;
+    border: 0;
+    border-inline-start: 1px solid var(--color-line);
+    border-radius: 0;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-8);
+    align-items: start;
+  }
+  .kv[data-layout="cols"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--space-8);
+  }
+  .kv[data-layout="cols"] > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+    border-top: 0;
+  }
+  .pairPanel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 0;
+  }
+  .pairPanel > .block {
+    padding-inline-end: var(--space-6);
+  }
+  .kv[data-layout="stack"] {
+    align-content: start;
+    padding-inline-start: var(--space-6);
+    border-bottom: 0;
+    border-inline-start: 1px solid var(--color-line);
+  }
+  .kv[data-layout="stack"] > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+    border-top: 0;
+  }
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 22.5rem;
+    column-gap: var(--space-6);
+    padding-bottom: var(--space-8);
+  }
+  .toolbar {
+    grid-column: 1 / -1;
+  }
+  .main,
+  .side {
+    display: grid;
+    gap: var(--space-8);
+    align-content: start;
+  }
+  .side {
+    gap: var(--space-6);
+  }
+  .main > *,
+  .side > * {
+    order: 0 !important;
+  }
+  .mobileActions,
+  .dockSpace {
+    display: none;
+  }
+  .desktopOnly {
+    display: block;
+  }
+  .dock {
+    position: static;
+    padding: var(--space-5);
+    border: 1px solid var(--color-accent-line);
+    border-radius: var(--radius-card);
+    background: var(--color-accent-soft);
+  }
+  .reaction {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  .reaction img,
+  .reaction p,
+  .said {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  :global(body):has(.dock) :global([data-fan-toast-viewport]) {
+    bottom: var(--space-6);
+  }
+}

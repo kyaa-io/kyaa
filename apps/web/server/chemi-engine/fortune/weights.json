@@ -1,0 +1,11 @@
+{
+  "version": "v55-fortune-2",
+  "base": 70,
+  "useful": 12,
+  "supportive": 7,
+  "adverse": -11,
+  "stage": [3, 2, 3, 4, 5, 3, 2, 1, 1, 0, 1, 2],
+  "relation": {"육합": 6, "삼합": 5, "반합": 3, "충": -6, "형": -4, "해": -3, "원진": -2, "복음": 1, "없음": 0},
+  "annualFloorBonus": 4,
+  "fieldBonus": 6
+}

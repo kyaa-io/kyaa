@@ -1,0 +1,151 @@
+.home {
+  display: grid;
+  gap: var(--space-8);
+  padding-block: var(--space-4);
+}
+.banner {
+  width: min(100%, calc(var(--space-12) * 15 + var(--space-2)));
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+}
+.banner img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 9 / 4;
+  object-fit: cover;
+}
+.caption {
+  composes: fade from "../../components/home-entry-cards/banner-overlay.module.css";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  padding: var(--space-8) var(--space-4) var(--space-3);
+  color: var(--color-surface);
+}
+.caption > a {
+  width: auto;
+  flex: none;
+}
+.caption small {
+  background: var(--color-home-caption);
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-small);
+}
+.caption h1 {
+  margin: 0;
+}
+.list {
+  display: grid;
+  margin-top: var(--space-4);
+  column-gap: var(--space-6);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-bottom: thin solid var(--color-line-subtle);
+  color: inherit;
+  text-decoration: none;
+}
+.row img {
+  width: var(--space-16);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-small);
+}
+.row small {
+  margin-inline-start: auto;
+  color: var(--color-muted);
+}
+@media (min-width: 48rem) {
+  .list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.rankings {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+}
+.rankCard {
+  flex: none;
+  padding: var(--space-4);
+  border: thin solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+.rankRow {
+  display: grid;
+  grid-template-columns: var(--space-8) calc(
+      var(--space-8) + var(--space-1)
+    ) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: calc(var(--space-12) + var(--space-1));
+}
+.rankRow img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-pill);
+}
+.rankRow div {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.rankRow b {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+@media (min-width: 48rem) {
+  .home[data-ranked="true"] {
+    grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 6);
+    column-gap: var(--space-6);
+  }
+  .rankings {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    flex-direction: column;
+    align-self: start;
+  }
+}
+.rankCard header {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+.rankCard header img {
+  width: var(--space-16);
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-small);
+}
+@media (max-width: 47.99rem) {
+  .rankCard {
+    width: min(100%, calc(var(--space-16) * 5));
+  }
+  .rankCard header img {
+    display: none;
+  }
+  .leaders {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+  }
+  .leaders .rankRow {
+    grid-template-columns: auto 1fr;
+    gap: var(--space-1);
+  }
+  .leaders img {
+    width: var(--space-8);
+  }
+  .leaders .rankRow div,
+  .leaders .rankRow strong:last-child {
+    grid-column: 1/-1;
+  }
+}

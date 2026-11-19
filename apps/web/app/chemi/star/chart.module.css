@@ -1,0 +1,108 @@
+/* 출생 차트 보조 목록: 행성 줄·원소 막대·각도 줄(승인 시안 05-3 chart). */
+.planets,
+.aspects {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.planets li,
+.aspects li {
+  display: grid;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--min-target);
+  padding-block: var(--space-2);
+  border-top: 1px solid var(--color-line);
+}
+/* 이름 · 별자리 · 도수가 왼쪽부터 붙는 표. 값이 줄 반대편 끝으로 벌어지지 않는다. */
+.planets li {
+  grid-template-columns: 4.5rem 6.5rem auto;
+}
+.aspects li {
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+}
+.split,
+.splitSide {
+  display: contents;
+}
+.bars {
+  display: grid;
+  gap: var(--space-3);
+}
+.barRow {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr) 1.5rem;
+  align-items: center;
+  gap: var(--space-3);
+}
+.bar {
+  display: block;
+  height: var(--space-2);
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+}
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-ink) 70%, transparent);
+}
+@media (min-width: 48rem) {
+  .planets,
+  .aspects {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-8);
+  }
+  .barGroups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-8);
+  }
+  .wheelPanel {
+    grid-template-columns: 15rem minmax(0, 1fr);
+    align-items: center;
+    gap: var(--space-8);
+  }
+}
+.barGroups {
+  display: grid;
+  align-items: start;
+  gap: var(--space-4);
+}
+.wheelPanel {
+  justify-items: center;
+}
+.wheelPanel > :last-child {
+  width: 100%;
+}
+
+/* 1024+: 행성은 왼쪽 반, 원소·양식과 각도는 오른쪽 반(승인 시안 05-3 chart). 반 폭 472에서 줄 두 칸씩이라 줄 폭이 226쯤이다. */
+@media (min-width: 64rem) {
+  .split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--space-8);
+    align-items: start;
+  }
+  .splitSide {
+    display: grid;
+    gap: var(--space-8);
+    align-content: start;
+  }
+  .split > *,
+  .splitSide > * {
+    order: 0 !important;
+  }
+  .planets,
+  .aspects {
+    column-gap: var(--space-5);
+  }
+  .planets li {
+    grid-template-columns: 3.5rem 6rem auto;
+  }
+  .aspects li {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}

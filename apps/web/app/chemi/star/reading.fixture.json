@@ -1,0 +1,124 @@
+{
+ "readingId": "a56a7d41-63c3-42a0-8c96-01d3f668429a",
+ "content": "star",
+ "kind": "daily",
+ "kstDate": "2026-11-19",
+ "result": {
+  "natal": [
+   {
+    "body": "Sun",
+    "sign": "taurus",
+    "longitude": 44.273477075109966
+   },
+   {
+    "body": "Moon",
+    "sign": "cancer",
+    "longitude": 104.23635169489728
+   },
+   {
+    "body": "Mercury",
+    "sign": "gemini",
+    "longitude": 63.99423082004056
+   },
+   {
+    "body": "Venus",
+    "sign": "aries",
+    "longitude": 15.780240397658819
+   },
+   {
+    "body": "Mars",
+    "sign": "leo",
+    "longitude": 141.64743159651604
+   },
+   {
+    "body": "Jupiter",
+    "sign": "sagittarius",
+    "longitude": 253.68787430888455
+   },
+   {
+    "body": "Saturn",
+    "sign": "pisces",
+    "longitude": 351.74060827475404
+   },
+   {
+    "body": "Uranus",
+    "sign": "aquarius",
+    "longitude": 300.47216611427746
+   },
+   {
+    "body": "Neptune",
+    "sign": "capricorn",
+    "longitude": 295.53739154425637
+   },
+   {
+    "body": "Pluto",
+    "sign": "scorpio",
+    "longitude": 239.649971042142
+   }
+  ],
+  "signs": {
+   "sun": [
+    "taurus"
+   ],
+   "moon": [
+    "cancer"
+   ]
+  },
+  "stars": {
+   "love": 1,
+   "work": 3,
+   "money": 4,
+   "people": 3,
+   "overall": 2
+  },
+  "reasons": [
+   {
+    "body": "Moon",
+    "hour": 10,
+    "angle": 120,
+    "score": -1.4361199580323785,
+    "target": "Moon",
+    "applying": false,
+    "exitDate": "2026-11-19"
+   },
+   {
+    "body": "Uranus",
+    "hour": 0,
+    "angle": 0,
+    "score": -1.3822244658719227,
+    "target": "Mercury",
+    "applying": false,
+    "exitDate": "2026-12-12"
+   },
+   {
+    "body": "Moon",
+    "hour": 23,
+    "angle": 0,
+    "score": 0.9022721126090119,
+    "target": "Saturn",
+    "applying": true,
+    "exitDate": "2026-11-20"
+   },
+   {
+    "body": "Moon",
+    "hour": 10,
+    "angle": 60,
+    "score": -0.8700251853672781,
+    "target": "Sun",
+    "applying": false,
+    "exitDate": "2026-11-19"
+   },
+   {
+    "body": "Moon",
+    "hour": 9,
+    "angle": 90,
+    "score": 0.7620462708627201,
+    "target": "Jupiter",
+    "applying": false,
+    "exitDate": "2026-11-19"
+   }
+  ],
+  "timeKnown": false,
+  "distributionVersion": "launch-simulation-v2"
+ }
+}

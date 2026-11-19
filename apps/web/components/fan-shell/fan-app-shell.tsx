@@ -8,6 +8,8 @@ import { messages as footerMessages } from "@/i18n/catalogs/components__fan-shel
 import { translate } from "@/i18n/messages";
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
+import { useChemiRelease } from "@/features/chemi/ui/chemi-release";
+import { chemiTabLabel } from "@/features/chemi/ui/copy";
 import { GroupHeaderAccount } from "@/features/groups/ui/group-header-account";
 import { FanHeaderStatus } from "./fan-header-status";
 import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
@@ -22,7 +24,7 @@ import { communityCopy } from "@/i18n/catalogs/features__community";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "next";
 import Link from "../fan-ui/hover-prefetch-link";
-import { Bell, BookOpen, Heart, Home, UsersRound } from "lucide-react";
+import { Bell, BookOpen, Heart, Home, Sparkles, UsersRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { PencilHeaderIcon } from "./pencil-header-icon";
@@ -38,7 +40,7 @@ import { FanSiteFooter } from "./fan-site-footer";
 import styles from "./fan-app-shell.module.css";
 
 export type FanLocale = AppLocale;
-export type FanSection = "home" | "community" | "favorites" | "my";
+export type FanSection = "home" | "community" | "chemi" | "favorites" | "my";
 
 function useBrowserHash() {
   const [hash, setHash] = useState("");
@@ -68,6 +70,7 @@ export function localeSwitchHref(
 
 export function activeFanSection(pathname: string): FanSection {
   if (pathname === "/pages/groups" || pathname.startsWith("/pages/groups/")) return "favorites";
+  if (pathname === "/chemi" || pathname.startsWith("/chemi/")) return "chemi";
   if (pathname === "/community" || pathname.startsWith("/community/")) return "community";
   if (pathname === "/live" || pathname.startsWith("/live/") || pathname === "/celebrities" || pathname === "/bias" || pathname.startsWith("/bias/") || pathname.startsWith("/c/") || creatorSlugFromHomePath(pathname) !== null || pathname.startsWith(`/${WAVE_FANPAGE_SLUG}/programs/`)) return "favorites";
   if (
@@ -85,7 +88,17 @@ export function fanNavigationItems(
   locale: FanLocale,
   pathname: string,
   groupsEnabled = false,
+  chemiEnabled = false,
 ): readonly FanNavigationItem[] {
+  const items = baseNavigationItems(locale, pathname, groupsEnabled);
+  if (!chemiEnabled) return items;
+  // 케미 sits right after the community tab (HOME · 모임 · 케미 · 덕질 · MY).
+  const chemi: FanNavigationItem = { id: "chemi", href: `/chemi?locale=${locale}` as Route, label: chemiTabLabel(locale), icon: groupsEnabled ? <PencilHeaderIcon name="chemi" /> : undefined, isCurrent: activeFanSection(pathname) === "chemi" };
+  const at = items.findIndex((item) => item.id === "community") + 1;
+  return [...items.slice(0, at), chemi, ...items.slice(at)];
+}
+
+function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled: boolean): readonly FanNavigationItem[] {
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
   const globalBenefits = pathname === '/benefits' || pathname.startsWith('/benefits/') || pathname === '/my/capsules' || pathname.startsWith('/my/capsules/');
@@ -118,6 +131,7 @@ function withGiftDot(items: readonly FanNavigationItem[], locale: FanLocale, gro
 const icons: Record<FanSection, ReactNode> = {
   home: <Home aria-hidden="true" />,
   community: <UsersRound aria-hidden="true" />,
+  chemi: <Sparkles aria-hidden="true" />,
   favorites: <Heart aria-hidden="true" />,
   my: <BookOpen aria-hidden="true" />,
 };
@@ -125,6 +139,7 @@ const icons: Record<FanSection, ReactNode> = {
 function mobileLabel(section: FanSection, locale: FanLocale, groupsEnabled = false) {
   if (section === "home") return locale === "ko" ? "홈" : translate(locale, localizedMessages.m8082d5c40271, "Home");
   if (section === "community") return communityCopy(locale).title;
+  if (section === "chemi") return chemiTabLabel(locale);
   if (section === "favorites") return groupsEnabled ? groupsCopy(locale).groups : locale === "ko" ? "최애" : translate(locale, localizedMessages.m7a1e6f7131e7, "Favorites");
   return "MY";
 }
@@ -158,20 +173,24 @@ export function FanAppHeader({
   actionsAreIdentity,
   currentPath,
   groupsEnabled: explicitGroupsEnabled,
+  chemiEnabled: explicitChemiEnabled,
 }: {
   locale: FanLocale;
   actions?: ReactNode;
   actionsAreIdentity?: boolean;
   currentPath?: string;
   groupsEnabled?: boolean;
+  chemiEnabled?: boolean;
 }) {
   const released = useGroupsRelease();
   const groupsEnabled = explicitGroupsEnabled ?? released;
+  const chemiReleased = useChemiRelease();
+  const chemiEnabled = explicitChemiEnabled ?? chemiReleased;
   const browserPathname = usePathname() || currentPath || "/";
   const searchParams = useSearchParams();
   const browserHash = useBrowserHash();
   const pathname = currentPath ?? browserPathname;
-  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled), locale, groupsEnabled);
+  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled, chemiEnabled), locale, groupsEnabled);
   const notificationsLabel = locale === "ko" ? "알림" : translate(locale, footerMessages.m2c4e2b786e56, "Notifications");
   const nextLocale = locale === "ko" ? "en" : "ko";
   const languageHref = localeSwitchHref(
@@ -205,12 +224,14 @@ export function FanAppHeader({
 
 export { FanContentContainer } from "./fan-content-container";
 
-export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: explicitGroupsEnabled }: { locale: FanLocale; currentPath?: string; groupsEnabled?: boolean }) {
+export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: explicitGroupsEnabled, chemiEnabled: explicitChemiEnabled }: { locale: FanLocale; currentPath?: string; groupsEnabled?: boolean; chemiEnabled?: boolean }) {
   const released = useGroupsRelease();
   const groupsEnabled = explicitGroupsEnabled ?? released;
+  const chemiReleased = useChemiRelease();
+  const chemiEnabled = explicitChemiEnabled ?? chemiReleased;
   const browserPathname = usePathname() || "/";
   const pathname = currentPath ?? browserPathname;
-  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled), locale, groupsEnabled).map((item) => ({
+  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled, chemiEnabled), locale, groupsEnabled).map((item) => ({
     ...item,
     icon: item.icon ?? icons[item.id as FanSection],
     label: <span>{groupsEnabled ? item.label : mobileLabel(item.id as FanSection, locale, groupsEnabled)}</span>,
@@ -243,6 +264,7 @@ export function FanAppFrame({
   mainId,
   currentPath,
   groupsEnabled,
+  chemiEnabled,
 }: {
   locale: FanLocale;
   children: ReactNode;
@@ -252,6 +274,7 @@ export function FanAppFrame({
   mainId?: string;
   currentPath?: string;
   groupsEnabled?: boolean;
+  chemiEnabled?: boolean;
 }) {
   const released = useGroupsRelease();
   const resolvedGroupsEnabled = groupsEnabled ?? released;
@@ -266,10 +289,10 @@ export function FanAppFrame({
           {locale === "ko" ? "본문으로 바로가기" : translate(locale, localizedMessages.ma938d26ac3b9, "Skip to content")}
         </a>
       ) : null}
-      <FanAppHeader locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
+      <FanAppHeader locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} chemiEnabled={chemiEnabled} />
       {children}
       <FanSiteFooter locale={locale} />
-      <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} />
+      <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} chemiEnabled={chemiEnabled} />
     </div>
   );
 }

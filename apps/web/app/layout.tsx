@@ -7,6 +7,7 @@ import { LocaleProvider } from "../components/locale-provider";
 import { luckyDrawEntryPreview } from "@/features/benefit/lucky-draw-entry";
 import { LuckyDrawPreviewProvider } from "@/features/benefit/ui/lucky-draw-preview";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
+import { ChemiReleaseProvider } from "@/features/chemi/ui/chemi-release";
 import { DocumentLocale } from "../components/document-locale";
 import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progress";
 import { AuthRoot } from "@/features/auth/client/auth-root";
@@ -86,6 +87,7 @@ export default async function RootLayout({
         {rewardedExchange.enabled && <meta name="kyaa-rewarded-ad-unit" content={rewardedExchange.adUnit} />}
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
+        <ChemiReleaseProvider enabled={process.env.CHEMI_TAB === "true"}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
         <AuthRoot authProvider={authProvider} privyAppId={privyAppId} appleLoginEnabled={appleLoginEnabled} testAccountLoginEnabled={testAccountLoginEnabled}>
           <DeferredRootClients slot="before" />
@@ -105,6 +107,7 @@ export default async function RootLayout({
           <DeferredRootClients slot="after" />
         </AuthRoot>
         </LuckyDrawPreviewProvider>
+        </ChemiReleaseProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>
       </body>

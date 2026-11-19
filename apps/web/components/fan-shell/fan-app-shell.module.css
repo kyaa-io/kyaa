@@ -39,7 +39,7 @@
 .utilityLink svg { width: 20px; height: 20px; stroke-width: 1.8; }
 .bottomNavigation {
   position: fixed; z-index: var(--z-bottom-nav); right: 0; bottom: 0; left: 0;
-  display: grid; grid-template-columns: repeat(4,1fr);
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0,1fr);
   min-height: calc(64px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
   border-top: 1px solid var(--fan-line); background: var(--color-surface);
 }
@@ -71,7 +71,7 @@
 
 :is(.desktopNavItem,.bottomNavigationItem,.utilityLink){text-decoration:none;}
 
-.bottomNavigation{grid-template-columns:repeat(4,minmax(0,1fr))}.bottomNavigationItem{min-width:0;padding:8px 4px;line-height:1.25;text-align:center}.bottomNavigationItem>span{max-width:100%;white-space:normal;overflow-wrap:anywhere}.bottomNavigationItem svg{flex-shrink:0}@media(max-width:63.999rem){.frame{padding-bottom:calc(32px + 3em + env(safe-area-inset-bottom))}}
+.bottomNavigation{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}.bottomNavigationItem{min-width:0;padding:8px 4px;line-height:1.25;text-align:center}.bottomNavigationItem>span{max-width:100%;white-space:normal;overflow-wrap:anywhere}.bottomNavigationItem svg{flex-shrink:0}@media(max-width:63.999rem){.frame{padding-bottom:calc(32px + 3em + env(safe-area-inset-bottom))}}
 
 /* The released groups shell follows the shared Pencil header and navigation. */
 .groupsNavigation.header { box-sizing: border-box; height: 68px; color: var(--color-ink); }
@@ -119,8 +119,8 @@
 
 /* Short pages: the footer starts below the first screen, not behind the fixed bottom tab, so it is never on screen while
  * the body is still loading and is never pushed down (layout shift) when the body arrives. */
-.frame { --fan-bottom-nav-height: 64px; }
-.groupsNavigation.frame { --fan-bottom-nav-height: 65px; }
+.frame, :root:has(.frame [data-fortune-result], .frame [data-saju-result]) { --fan-bottom-nav-height: 64px; }
+.groupsNavigation.frame, :root:has(.groupsNavigation.frame [data-fortune-result], .groupsNavigation.frame [data-saju-result]) { --fan-bottom-nav-height: 65px; }
 @media (max-width: 63.999rem) {
   .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height)); grid-auto-rows: max-content; }
 }
@@ -212,3 +212,9 @@
 
 /* Signed-out header, every width: one small 로그인 action in the status slot (user 11/13 — the illustrated join chip read as an ad). */
 .guestLogin { flex: 0 0 auto; white-space: nowrap; }
+
+:root:has(.frame [data-fortune-result], .frame [data-saju-result]) { --chemi-result-nav-height: var(--fan-bottom-nav-height); }
+
+/* 케미 오늘의 타로 뽑는 화면은 몰입 화면: 하단 탭과 푸터를 두지 않는다. */
+.frame:has([data-chemi-immersive]) { padding-bottom: 0; }
+.frame:has([data-chemi-immersive]) :is(.bottomNavigation, [data-fan-site-footer]) { display: none; }

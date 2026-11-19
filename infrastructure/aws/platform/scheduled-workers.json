@@ -100,6 +100,14 @@
         },
         "true"
       ]
+    },
+    "ChemiDev": {
+      "Fn::Equals": [
+        {
+          "Ref": "Environment"
+        },
+        "dev"
+      ]
     }
   },
   "Rules": {
@@ -227,6 +235,21 @@
                   "Resource": {
                     "Ref": "CronSecretArn"
                   }
+                },
+                {
+                  "Fn::If": [
+                    "ChemiDev",
+                    {
+                      "Effect": "Allow",
+                      "Action": "secretsmanager:GetSecretValue",
+                      "Resource": {
+                        "Fn::Sub": "arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:byus/worker/dev-chemi-chain-??????"
+                      }
+                    },
+                    {
+                      "Ref": "AWS::NoValue"
+                    }
+                  ]
                 }
               ]
             }
@@ -709,6 +732,51 @@
           },
           "Input": {
             "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"account-deletions\"}"
+          },
+          "RetryPolicy": {
+            "MaximumEventAgeInSeconds": 300,
+            "MaximumRetryAttempts": 0
+          }
+        }
+      }
+    },
+    "ScheduleChemiMaintenance": {
+      "Condition": "ChemiDev",
+      "Type": "AWS::Scheduler::Schedule",
+      "Properties": {
+        "Name": {
+          "Fn::Sub": "byus-${Environment}-chemi-maintenance"
+        },
+        "GroupName": {
+          "Ref": "ScheduleGroup"
+        },
+        "ScheduleExpression": "cron(0/5 * * * ? *)",
+        "ScheduleExpressionTimezone": "UTC",
+        "FlexibleTimeWindow": {
+          "Mode": "OFF"
+        },
+        "State": {
+          "Fn::If": [
+            "SchedulesEnabled",
+            "ENABLED",
+            "DISABLED"
+          ]
+        },
+        "Target": {
+          "Arn": {
+            "Fn::GetAtt": [
+              "CronFunction",
+              "Arn"
+            ]
+          },
+          "RoleArn": {
+            "Fn::GetAtt": [
+              "SchedulerRole",
+              "Arn"
+            ]
+          },
+          "Input": {
+            "Fn::Sub": "{\"source\": \"byus.aws-cron\", \"environment\": \"${Environment}\", \"task\": \"chemi-maintenance\"}"
           },
           "RetryPolicy": {
             "MaximumEventAgeInSeconds": 300,

@@ -80,9 +80,9 @@
   line-height: 1.2;
   transition: background-color var(--motion-control) var(--motion-easing), color var(--motion-control) var(--motion-easing);
 }
-/* 보이는 칸은 34, 누르는 영역은 44. */
+/* 보이는 칸은 32, 누르는 영역은 44. ::after 는 칸 테두리 1px 안쪽(padding box 30)에서 시작하므로 위아래 7px씩 넓힌다. */
 .segment .tab { position: relative; }
-.segment .tab::after { position: absolute; inset: -5px 0; content: ""; }
+.segment .tab::after { position: absolute; inset: -7px 0; content: ""; }
 .segment .tab[aria-current="page"], .segment .tab[aria-pressed="true"], .segment .tab[aria-selected="true"] { border-color: var(--color-accent-line); background: var(--color-accent-soft); color: var(--color-accent-ink); }
 @media (prefers-reduced-motion: reduce) {
   .segment .tab { transition-duration: .01ms; }
