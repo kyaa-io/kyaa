@@ -1,16 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 
 // Toss returns to the checkout pathname without the query from the fortune page.
 const storageKey = "chemi-point-fortune-return";
 
-export default function TopupReturnLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export function FortuneReturnLink() {
   const [back, setBack] = useState("");
   useEffect(() => {
     const incoming = new URLSearchParams(window.location.search).get(
@@ -39,21 +35,17 @@ export default function TopupReturnLayout({
       // Storage is optional when the original return URL is still present.
     }
   }, []);
+  if (!back) return null;
   return (
-    <>
-      {children}
-      {back && (
-        <FanAction
-          href={back}
-          onClick={() => {
-            try {
-              sessionStorage.removeItem(storageKey);
-            } catch {}
-          }}
-        >
-          선택한 날짜의 운세로 돌아가기
-        </FanAction>
-      )}
-    </>
+    <FanAction
+      href={back}
+      onClick={() => {
+        try {
+          sessionStorage.removeItem(storageKey);
+        } catch {}
+      }}
+    >
+      선택한 날짜의 운세로 돌아가기
+    </FanAction>
   );
 }

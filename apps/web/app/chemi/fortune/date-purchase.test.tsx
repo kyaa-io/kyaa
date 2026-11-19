@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import TopupReturnLayout from "../points/topup/layout";
+import { FortuneReturnLink } from "../points/topup/return-link";
 import { DatePurchase } from "./date-purchase";
 
 vi.mock("@/features/auth/client/cognito-auth", () => ({
@@ -34,10 +34,10 @@ it("returns to the selected date and requires confirmation again after a DEV top
   const destination = new URL((topup as HTMLAnchorElement).href);
   first.unmount();
   history.replaceState({}, "", destination.pathname + destination.search);
-  const checkout = render(<TopupReturnLayout>시험 충전</TopupReturnLayout>);
+  const checkout = render(<FortuneReturnLink />);
   checkout.unmount();
   history.replaceState({}, "", destination.pathname + "?paymentKey=fixture");
-  const callback = render(<TopupReturnLayout>시험 승인</TopupReturnLayout>);
+  const callback = render(<FortuneReturnLink />);
   const back = (
     screen.getByRole("link", {
       name: "선택한 날짜의 운세로 돌아가기",
