@@ -1,0 +1,103 @@
+/* MY 내 생일 정보(승인 시안 11-2 7차 round-my7/my.css 를 토큰 그대로 옮김). 읽기 띠 720 한 열에 카드, 남는 폭은 '쓰는 곳' 레일. */
+.screen { display: grid; gap: var(--space-6); padding-block: var(--space-4); }
+.pagehead { display: flex; align-items: center; gap: var(--space-3); }
+.screen .back { border: 1px solid var(--color-line); }
+.columns { display: grid; gap: var(--space-6); }
+.maincol { display: grid; align-content: start; gap: var(--space-6); min-width: 0; }
+.card { display: grid; gap: var(--space-4); }
+.sechead { display: flex; align-items: center; gap: var(--space-2); min-height: 36px; }
+.screen .push { flex: none; width: auto; margin-left: auto; }
+/* 값 옆 '넣기': 줄 높이를 늘리지 않고 누르는 영역만 44로 */
+.screen .fillAction { min-height: var(--space-5); padding: 0; color: var(--color-accent-ink); text-decoration: underline; }
+.screen .fillAction::after { inset: calc(var(--space-3) * -1); }
+
+/* 내 정보: 라벨 위 · 값 아래 칸. 390 2×2, 768+ 한 줄 4칸 */
+.facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4); margin: 0; }
+.facts > div { display: grid; gap: var(--space-1); min-width: 0; }
+.facts dt { color: var(--color-muted); }
+.facts dd { display: flex; align-items: center; gap: var(--space-2); margin: 0; overflow-wrap: anywhere; }
+.facts dd.none { color: var(--color-muted); }
+@media (width >= 48rem) { .facts { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* 생일 표지: 해(을해년 · 돼지띠)와 그 해 천간의 오행. 핑크 틴트 알약 */
+.birthmark { display: inline-flex; align-items: center; gap: var(--space-1); height: var(--space-8); padding: 0 var(--space-3) 0 var(--space-2); border: 1px solid var(--color-accent-line); border-radius: var(--radius-pill); background: var(--color-accent-soft); color: var(--color-accent-ink); white-space: nowrap; }
+
+/* 저장 직후 바뀐 값: 그 자리에서 핑크 틴트가 300ms 들어왔다 빠지기 두 번. 움직임 줄이기는 움직이지 않고 틴트를 켜 둔다. */
+.screen [data-flash] { position: relative; isolation: isolate; }
+.screen [data-flash]::before { content: ""; position: absolute; inset: calc(var(--space-1) * -1) calc(var(--space-2) * -1); z-index: -1; border-radius: var(--radius-small); background: var(--color-accent-soft); opacity: 0; }
+@media (prefers-reduced-motion: no-preference) { .screen [data-flash]::before { animation: my-birth-flash calc(var(--motion-reward) / 2) var(--motion-easing) var(--motion-slow) 2 both; } }
+@media (prefers-reduced-motion: reduce) { .screen [data-flash]::before { animation: none; opacity: 1; } }
+@keyframes my-birth-flash { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
+
+/* 불러오지 못했을 때: 그 카드 자리에만 한 문장 + 다시 시도 */
+.cardState { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+@media (width >= 48rem) { .cardState { justify-content: flex-start; } }
+
+/* 궁합 상대: 사람 줄 위아래 12 · line-subtle. 768+ 같은 무게 두 열 */
+.partners { gap: var(--space-1); padding-bottom: var(--space-2); }
+.people { display: grid; margin: 0; padding: 0; list-style: none; }
+.people li { display: flex; align-items: center; gap: var(--space-2); min-width: 0; min-height: calc(var(--min-target) + var(--space-6)); padding: var(--space-3) 0; }
+.people li + li { border-top: 1px solid var(--color-line-subtle); }
+.who { display: grid; flex: 1; gap: var(--space-1); min-width: 0; }
+.who > strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.meta { display: flex; gap: var(--space-2); min-width: 0; color: var(--color-muted); white-space: nowrap; }
+.meta span + span { padding-left: var(--space-2); border-left: 1px solid var(--color-line); }
+.acts { display: flex; flex: none; }
+.quiet { color: var(--color-muted); }
+@media (width >= 48rem) {
+  .partners { padding-bottom: var(--space-3); }
+  .people { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-8); }
+  .people li:nth-child(2) { border-top: 0; }
+}
+.solo { grid-column: 1 / -1; }
+
+/* 동의: 머리(이름 · 동의한 날) + 한 줄(항목 · 보기) */
+.agreed { gap: var(--space-1); padding-bottom: var(--space-3); }
+.consent { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: var(--min-target); }
+.wipeButton { justify-self: start; color: var(--color-error); }
+/* 글자 버튼은 누르는 영역(44)을 지키면서 카드 안쪽 끝선에 글자를 맞춘다 */
+.screen .flushStart { justify-content: flex-start; padding-inline-start: 0; }
+.screen .flushEnd { justify-content: flex-end; padding-inline-end: 0; min-width: var(--min-target); }
+
+/* 쓰는 곳: 390 은 썸네일 64 · 이름 · 상태 한 줄씩, 768+ 레일은 사진이 프레임인 미디어 카드 세 칸 */
+.uses { display: grid; gap: var(--space-4); align-content: start; min-width: 0; }
+.tiles { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4) var(--space-3); }
+.tile { display: flex; align-items: center; gap: var(--space-3); min-width: 0; border-radius: var(--radius-small); color: inherit; text-decoration: none; }
+.pic { display: block; flex: none; width: 64px; height: 64px; border-radius: var(--radius-small); object-fit: cover; }
+.tilebody { display: grid; gap: var(--space-1); min-width: 0; }
+.tilebody small { color: var(--color-muted); }
+a.tile:focus-visible { outline: var(--focus-width) solid var(--color-ink); outline-offset: var(--focus-offset); }
+@media (hover: hover) and (pointer: fine) { a.tile:hover strong { text-decoration: underline; text-underline-offset: var(--space-1); } }
+
+/* 390: 내 정보 → 궁합 상대 → 동의 → 쓰는 곳 → 모두 지우기 */
+@media (width < 48rem) {
+  .maincol { display: contents; }
+  .me { order: 1; }
+  .partners { order: 3; }
+  .agreed { order: 4; }
+  .uses { order: 5; }
+  .wipeButton { order: 6; }
+}
+@media (width >= 48rem) {
+  .columns { grid-template-columns: var(--band-read) minmax(0, 1fr); align-items: start; }
+  .uses { padding-top: var(--space-6); }
+  .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tiles:has(> :last-child:nth-child(2)) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tile { display: grid; align-content: start; gap: var(--space-2); }
+  .pic { width: 100%; height: auto; aspect-ratio: 4 / 3; border-radius: var(--radius-card); object-position: 50% 20%; }
+}
+
+/* 입력 판 안쪽 */
+.form { display: grid; gap: var(--space-4); }
+.agree { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+
+/* 동의 전문 · 지우기 확인 */
+.terms { display: grid; gap: var(--space-3); margin: 0; }
+.terms > div { display: grid; gap: var(--space-1); }
+.terms dd { margin: 0; }
+.wipe { display: grid; gap: var(--space-2); }
+.scope { margin: 0; color: var(--color-muted); }
+.gone + .scope { margin-top: var(--space-2); }
+.gone { display: grid; margin: 0; padding: 0; list-style: none; }
+.gone li { display: flex; justify-content: space-between; gap: var(--space-4); padding: var(--space-2) 0; border-bottom: 1px solid var(--color-line-subtle); }
+.warn { margin: 0; color: var(--color-error); }
