@@ -3,7 +3,7 @@ do $$
 declare bad text; n bigint; t record; owner text := (select pg_get_userbyid(relowner) from pg_class where oid = 'public.app_users'::regclass);
   -- 라우트·유지 작업이 부르는 함수 전부(r4 profile_fn 뒤: 옛 프로필 3개는 빠지고 v2 가 든다. profile_guard 뒤: 상대 지우기는 v3 만).
   service_fns constant text[] := array['chemi_feature_state','chemi_read_profile','chemi_save_birth_v2','chemi_add_partner_v2',
-    'chemi_update_partner_v2','chemi_delete_partner_v3','chemi_fp_salt','chemi_purge_ephemeral','chemi_purge_stale_partners',
+    'chemi_update_partner_v2','chemi_update_partner_v3','chemi_my_birth_summary','chemi_delete_partner_v3','chemi_fp_salt','chemi_purge_ephemeral','chemi_purge_stale_partners',
     'chemi_withdraw_birth_consent','chemi_begin_account_deletion','chemi_complete_account_deletion',
     'chemi_claim_pending_points','chemi_complete_reading','chemi_save_reading','chemi_reading_context','chemi_share_done',
     'chemi_reading_detail','chemi_reading_list','chemi_rewards_today','chemi_visit','chemi_participation',

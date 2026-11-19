@@ -13,8 +13,9 @@ it("GET /api/chemi/profile: 404 while CHEMI_TAB is off, then the stored profile"
   expect((await GET(request("GET"))).status).toBe(404);
   expect(rpc).not.toHaveBeenCalled();
   process.env.CHEMI_TAB = "true";
-  rpc.mockResolvedValue({ birth: null, consent: null, partners: [], partnerLimit: 10 });
+  const noSummary = { readingDays: 0, askThreads: 0, partners: 0, orders: 0, askPassesLeft: 0, sajuReading: false, fortuneToday: false, starToday: false };
+  rpc.mockImplementation(async (name: string) => name === "chemi_my_birth_summary" ? noSummary : { birth: null, consent: null, partners: [], partnerLimit: 10 });
   const response = await GET(request("GET"));
-  expect([response.status, await response.json()]).toEqual([200, { birth: null, consent: null, partners: [], partnerLimit: 10 }]);
+  expect([response.status, await response.json()]).toEqual([200, { birth: null, consent: null, partners: [], partnerLimit: 10, birthMark: null, summary: noSummary }]);
   expect(rpc).toHaveBeenCalledWith("chemi_read_profile", { p_user: "a3e1c2d4-0000-4000-8000-000000000001" });
 });

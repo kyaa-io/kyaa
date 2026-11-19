@@ -82,7 +82,7 @@
   color: var(--color-surface);
 }
 
-/* 행 안 작은 버튼: 보이는 높이 36, 누르는 영역은 ::after로 44. */
+/* 행 안 작은 버튼: 보이는 높이 36, 누르는 영역은 ::after로 44(테두리 1px 안쪽에서 시작하므로 5px씩). */
 .sm {
   min-height: 36px;
   padding: 6px 12px;
@@ -90,7 +90,7 @@
 }
 .sm::after {
   position: absolute;
-  inset: -4px 0;
+  inset: -5px 0;
   content: "";
 }
 

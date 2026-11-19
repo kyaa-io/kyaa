@@ -2,14 +2,16 @@ import "server-only";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import {
-  chemiBirthErasedSchema, chemiBirthRequestSchema, chemiBirthSavedSchema, chemiPartnerCreateSchema, chemiPartnerCreatedSchema,
-  chemiPartnerDeleteSchema, chemiPartnerDeletedSchema, chemiProfileSchema,
+  chemiBirthErasedSchema, chemiBirthRequestSchema, chemiBirthSavedSchema, chemiBirthSummarySchema, chemiPartnerCreateSchema, chemiPartnerCreatedSchema,
+  chemiPartnerDeleteSchema, chemiPartnerDeletedSchema, chemiPartnerUpdateSchema, chemiPartnerUpdatedSchema, chemiProfileSchema,
 } from "@/features/chemi/domain/contracts/profile";
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
 import { chemiClosedResponse } from "@/server/chemi/dependencies";
+import { birthMark } from "./birth-mark";
+import { lunarDateExists } from "./lunar-date";
 
 // 케미 프로필 API(설계 arch-chemi r3 §3 프로필 줄). 판단은 SQL 함수가 하고 여기서는 요청·응답 꼴만 본다.
-// 생일·상대 저장은 r4 v2 함수, 상대 지우기는 v3 만 부른다(옛 chemi_save_birth·chemi_add_partner·chemi_delete_partner·chemi_delete_partner_v2 는 service_role 권한 회수).
+// 생일 저장·상대 추가는 r4 v2 함수, 상대 고치기·지우기는 v3 만 부른다(옛 chemi_save_birth·chemi_add_partner·chemi_delete_partner·chemi_delete_partner_v2·chemi_update_partner 는 service_role 권한 회수).
 // 생일 지우기(동의 철회)는 feature:* 를 보지 않는다. CHEMI_TAB 이 꺼져 있으면 모든 경로가 404 다.
 
 export interface ChemiProfileDependencies {
@@ -20,6 +22,7 @@ export interface ChemiProfileDependencies {
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const STATUS: Record<string, number> = {
   CHEMI_MAIL_UNVERIFIED: 409, CHEMI_UNDER_14: 403, CHEMI_ACCOUNT_RESTRICTED: 403, CHEMI_EDIT_LIMIT: 409, CHEMI_PARTNER_FULL: 409, CHEMI_ACCOUNT_CLOSED: 403, CHEMI_INVALID: 400,
+  CHEMI_INVALID_DATE: 400,
 };
 
 function failure(error: unknown) {
@@ -46,15 +49,25 @@ export function chemiAuthenticatedHandler(run: (request: Request, deps: ChemiPro
   };
 }
 
+/** 음력으로 적은 날짜가 실제 없으면(1995년 윤5월 등) 저장하지 않는다. 저장된 뒤에는 생일 표지를 계산할 수 없다. */
+function requireRealDate(input: { birthDate: string; calendar: "solar" | "lunar" | "lunar_leap" }) {
+  if (!lunarDateExists(input.birthDate, input.calendar)) throw new Error("CHEMI_INVALID_DATE");
+}
+
 const ok = (body: unknown, status = 200) => Response.json(body, { status, headers });
 const NO_PLACE = { p_place_code: null, p_lat: null, p_lon: null, p_tz: null };
 
 export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
   return {
-    getProfile: chemiAuthenticatedHandler(async (_request, d, user) => ok(chemiProfileSchema.parse(await d.rpc("chemi_read_profile", { p_user: user }))))(deps),
+    getProfile: chemiAuthenticatedHandler(async (_request, d, user) => {
+      const [read, summary] = await Promise.all([d.rpc("chemi_read_profile", { p_user: user }), d.rpc("chemi_my_birth_summary", { p_user: user })]);
+      const profile = chemiProfileSchema.parse(read);
+      return ok({ ...profile, birthMark: profile.birth ? birthMark(profile.birth) : null, summary: chemiBirthSummarySchema.parse(summary) });
+    })(deps),
 
     putBirth: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiBirthRequestSchema.parse(await boundedJson(request, 2048));
+      requireRealDate(input);
       try {
         // 장소 코드·좌표 표(STAR-2)가 들어오기 전에는 코드를 받지 않는다: 글자 장소는 이름으로만, 계산은 '장소 모름'.
         const saved = chemiBirthSavedSchema.parse(await d.rpc("chemi_save_birth_v2", {
@@ -77,11 +90,23 @@ export function createChemiProfileHandlers(deps: ChemiProfileDependencies) {
 
     postPartner: chemiAuthenticatedHandler(async (request, d, user) => {
       const input = chemiPartnerCreateSchema.parse(await boundedJson(request, 2048));
+      requireRealDate(input);
       const created = chemiPartnerCreatedSchema.parse(await d.rpc("chemi_add_partner_v2", {
         p_user: user, p_nickname: input.nickname, p_birth_date: input.birthDate, p_calendar: input.calendar, p_birth_time: input.birthTime,
         p_precision: input.timePrecision, p_gender: input.gender, p_source: input.source, ...NO_PLACE,
       }));
       return ok({ partnerId: created.partnerId }, 201);
+    })(deps),
+
+    patchPartner: chemiAuthenticatedHandler(async (request, d, user) => {
+      const input = chemiPartnerUpdateSchema.parse(await boundedJson(request, 2048));
+      requireRealDate(input);
+      // 지문 비교·옛 줄 지우기는 SQL 이 사용자 잠금 아래에서 한다(chemi_update_partner_v3). 웹은 소금을 읽지 않는다.
+      const result = chemiPartnerUpdatedSchema.parse(await d.rpc("chemi_update_partner_v3", {
+        p_user: user, p_partner: input.partnerId, p_nickname: input.nickname, p_birth_date: input.birthDate, p_calendar: input.calendar,
+        p_birth_time: input.birthTime, p_precision: input.timePrecision, p_gender: input.gender,
+      }));
+      return result.updated ? ok(result) : Response.json({ error: { code: "NOT_FOUND" } }, { status: 404, headers });
     })(deps),
 
     deletePartner: chemiAuthenticatedHandler(async (request, d, user) => {
