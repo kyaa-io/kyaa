@@ -17,6 +17,7 @@ import { MISSIONBOOK_BANNER_ID } from "../../features/home/domain/missionbook-ho
 import { MissionbookLikeCount } from "../../features/home/ui/missionbook-like-count";
 import { isAdminEventBanner } from "../../features/home/domain/event-banner-priority";
 import { EventDayEyebrow } from "../../features/home/ui/event-day-eyebrow";
+import motionStyles from "../fan-ui/event-blink.module.css";
 import { liveEventLabel } from "../../features/home/domain/event-day";
 import { HomeHeroBanner } from "./home-hero-banner";
 import { bypassImageOptimization, homeHeroCampaignSizes, homeHeroSizes } from "../fan-ui/public-image-policy";
@@ -56,7 +57,7 @@ export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent 
   const creatorWelcome = banner.kind === "announcement" && banner.celebrityId !== null && banner.desktopImage.width === banner.desktopImage.height;
   const artwork = <BannerArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={priority} creatorWelcome={creatorWelcome} campaign={gggiCampaign} />;
   return <div className={styles.root} data-managed-home-banner={banner.id} data-signup-raffle={banner.id === SIGNUP_RAFFLE_BANNER_ID || undefined} data-creator-welcome={creatorWelcome} data-guide-art={guideArt || undefined} data-missionbook={missionbook || undefined} data-first-steps={banner.id === FIRST_STEPS_BANNER_ID || undefined} data-gggi-campaign={gggiCampaign || undefined}>
-    <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
+    <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
       eyebrow={isAdminEventBanner(banner) ? <EventDayEyebrow locale={locale} /> : banner.category && ['event','group','fanpage'].includes(banner.category) || guideArt ? bannerCategoryLabel(banner.category ?? "guide", locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={missionbook ? <MissionbookLikeCount locale={locale} tone="banner" /> : banner.description}
       action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />

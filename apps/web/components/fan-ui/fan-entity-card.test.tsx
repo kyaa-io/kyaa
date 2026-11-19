@@ -40,6 +40,13 @@ describe("FanEntityCard list row", () => {
     expect(screen.queryByText("팬 126")).toBeNull();
     expect(screen.getByRole("link", { name: /엘리나/ })).toBeTruthy();
   });
+  it("shows the original Wave logo without a blurred copy", () => {
+    const { container } = render(<FanEntityCard size="tile" href="/a" image={{ slug: "kyaa-wave-fanpage", src: "/cms-wave.webp" }} name="Kyaa Wave" kind="brand" locale="ko" />);
+    const images = container.querySelectorAll("[data-tile-media] img");
+    expect(images).toHaveLength(1);
+    expect(images[0]).toHaveAttribute("src", "/images/connect/kyaa-wave/logo.svg");
+  });
+
   it("tile size: a brand page linked to a creator record shows its own logo whole, a fan page shows the creator crop", () => {
     const { container, rerender } = render(<FanEntityCard size="tile" href="/a" image={{ slug: "gggi", src: "/images/gggi/logo-green.png" }} name="GGGI" kind="brand" locale="ko" memberCount={3} />);
     expect(container.querySelector("[data-tile-media]")?.getAttribute("data-tile-media")).toBe("page");

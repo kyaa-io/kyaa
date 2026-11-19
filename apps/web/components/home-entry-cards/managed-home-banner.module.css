@@ -57,7 +57,6 @@
   background: var(--color-surface);
   color: var(--color-accent-ink);
   pointer-events: none;
-  animation: liveEventBlink 1.2s var(--motion-easing) 2.1s 3;
 }
 
 .liveEvent::before {
@@ -66,14 +65,6 @@
   block-size: var(--space-1);
   border-radius: var(--radius-pill);
   background: currentColor;
-}
-
-@keyframes liveEventBlink {
-  50% { opacity: .6; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .liveEvent { animation: none; }
 }
 
 @media (width < 48rem) {
