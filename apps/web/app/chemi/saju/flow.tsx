@@ -23,23 +23,22 @@ import {
 } from "@/components/fan-ui/fan-skeleton";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
+import type { MyBirthCopy } from "@/features/chemi/ui/frame/birth-copy";
 import { BirthSheet, type SheetResult } from "./birth-sheet";
 import { monthReading, firstReading, yearReading } from "./copy";
 import { sajuCharacters, sajuTalkLine, sajuTone, type SajuCharacterId, type SajuLineInput } from "./lines";
 import {
   ChemiRequestError,
-  deletePartner,
   isAuthFailure,
   listFirsts,
   loadProfile,
   loadPairReading,
   loadReading,
-  readTemporaryPartners,
+  orAbort,
   requestFirst,
   requestPair,
   saveBirth,
   savePartner,
-  writeTemporaryPartners,
   type Partner,
   type SajuReading,
 } from "./reading";
@@ -111,9 +110,12 @@ const initialNav: Nav = { step: "enter", view: "first", character: "changha", r:
 
 export function SajuFlow({
   locale,
+  birthCopy,
   restoring: restoringFromUrl = false,
 }: {
   locale: AppLocale;
+  /** 생일 입력 시트의 글. MY 생일 정보와 같은 글을 쓴다. */
+  birthCopy: MyBirthCopy;
   /** 주소에 단계와 결과가 있어 저장된 결과를 불러오는 중이면 입장 화면 대신 불러오는 모양을 그린다. */
   restoring?: boolean;
 }) {
@@ -138,13 +140,9 @@ export function SajuFlow({
   const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
   const navRef = useRef(nav);
-  /** 저장하지 않기로 한 상대 중 아직 서버에서 지우지 못한 번호. */
-  const temporaryPartners = useRef(new Set<string>());
-  /** 창을 닫는 순간에는 토큰을 새로 받을 수 없어, 상대를 등록할 때 받은 토큰을 둔다. */
-  const cleanupToken = useRef<string | null>(null);
   /** 이 화면에서 본 궁합 풀이. 뒤로·앞으로 이동할 때 주소의 번호로 다시 꺼낸다. */
   const pairs = useRef(new Map<string, Pair>());
-  const lastPair = useRef<{ partnerId: string; who: string; timeKnown: boolean; temporary: boolean } | null>(null);
+  const lastPair = useRef<{ partnerId: string; who: string; timeKnown: boolean } | null>(null);
   const now = Date.now();
 
   const { step, view, character } = nav;
@@ -211,7 +209,7 @@ export function SajuFlow({
       id: url.p,
       name: partner?.nickname ?? "상대",
       result,
-      timeKnown: partner ? partner.timePrecision === "exact" : true,
+      timeKnown: partner ? partner.timePrecision !== "unknown" : true,
     };
     pairs.current.set(url.p, restored);
     return restored;
@@ -297,38 +295,10 @@ export function SajuFlow({
   useEffect(() => () => abort.current?.abort(), []);
   const tokenRef = useRef(getAccessToken);
   tokenRef.current = getAccessToken;
-  const forget = useCallback((id: string) => {
-    temporaryPartners.current.delete(id);
-    writeTemporaryPartners(temporaryPartners.current);
-  }, []);
-  /** 저장하지 않기로 한 상대를 서버에서 지운다. 지우지 못한 번호는 남겨 두고 다음 기회에 다시 지운다. */
-  const flushTemporary = useCallback(async () => {
-    const ids = [...temporaryPartners.current];
-    if (!ids.length) return;
-    const token = await tokenRef.current().catch(() => null);
-    if (!token) return;
-    await Promise.all(ids.map(async (id) => (await deletePartner(token, id)) && forget(id)));
-  }, [forget]);
-  // 지난번에 지우지 못한 임시 상대가 있으면 로그인 뒤 한 번 더 지운다.
+  // 장면이 결과 화면 자리를 대신할 때(계산·한도·오류) 스크롤이 남아 있으면 장면이 화면 밖에 그려진다.
   useEffect(() => {
-    if (!ready || !authenticated) return;
-    for (const id of readTemporaryPartners()) temporaryPartners.current.add(id);
-    void flushTemporary();
-    // 로그인 상태가 정해질 때 한 번만 부른다.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, authenticated]);
-  useEffect(() => {
-    // 창을 닫는 순간에는 토큰을 새로 받을 수 없으므로 미리 받아 둔 토큰으로 바로 보낸다.
-    const closing = () => {
-      const token = cleanupToken.current;
-      if (token) for (const id of temporaryPartners.current) void deletePartner(token, id, true);
-    };
-    window.addEventListener("pagehide", closing);
-    return () => {
-      window.removeEventListener("pagehide", closing);
-      void flushTemporary();
-    };
-  }, [flushTemporary]);
+    if (phase !== "idle") window.scrollTo(0, 0);
+  }, [phase]);
 
   const run = useCallback(
     async (id: SajuCharacterId) => {
@@ -343,11 +313,10 @@ export function SajuFlow({
       setPhase("calc");
       const started = Date.now();
       try {
-        const token = await getAccessToken();
+        const token = await orAbort(getAccessToken(), controller.signal);
         const data = await requestFirst(token, id, controller.signal);
-        await new Promise((resolve) => setTimeout(resolve, Math.max(0, 1200 - (Date.now() - started))));
+        await orAbort(new Promise((resolve) => setTimeout(resolve, Math.max(0, 1200 - (Date.now() - started)))), controller.signal);
         if (abort.current !== controller) return;
-        if (controller.signal.aborted) throw Error();
         setReading(data);
         setFirsts((current) => ({ ...current, [id]: data.readingId }));
         setPhase("idle");
@@ -532,11 +501,11 @@ export function SajuFlow({
     }
   }
 
-  async function runPair(partnerId: string, who: string, timeKnown: boolean, temporary = false) {
+  async function runPair(partnerId: string, who: string, timeKnown: boolean) {
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
-    lastPair.current = { partnerId, who, timeKnown, temporary };
+    lastPair.current = { partnerId, who, timeKnown };
     let timedOut = false;
     const timer = setTimeout(() => {
       timedOut = true;
@@ -547,10 +516,10 @@ export function SajuFlow({
     setPhase("pairCalc");
     const started = Date.now();
     try {
-      const token = await getAccessToken();
+      const token = await orAbort(getAccessToken(), controller.signal);
       const data = await requestPair(token, character, partnerId, controller.signal);
-      await new Promise((resolve) => setTimeout(resolve, Math.max(0, 1200 - (Date.now() - started))));
-      if (abort.current !== controller || controller.signal.aborted) return;
+      await orAbort(new Promise((resolve) => setTimeout(resolve, Math.max(0, 1200 - (Date.now() - started)))), controller.signal);
+      if (abort.current !== controller) return;
       const next: Pair = { id: data.readingId, name: who, result: data.result, timeKnown };
       pairs.current.set(next.id, next);
       setPair(next);
@@ -562,8 +531,6 @@ export function SajuFlow({
         { step: "result", view: "pair", r: reading?.readingId ?? navRef.current.r, p: next.id, w: partnerId },
         "push",
       );
-      // 저장하지 않기로 한 상대는 결과를 받은 바로 뒤에 지운다.
-      if (temporary) void flushTemporary();
     } catch (error) {
       if (abort.current !== controller) return;
       if (
@@ -586,26 +553,18 @@ export function SajuFlow({
     }
   }
 
-  async function savePair({ nickname, save, birth }: SheetResult) {
+  async function savePair({ nickname, birth }: SheetResult) {
     setBirthBusy(true);
     setBirthError(null);
     try {
-      // 앞서 저장하지 않기로 한 상대가 남아 있으면 새 상대를 등록하기 전에 지운다.
-      await flushTemporary();
-      const token = await getAccessToken();
-      const id = await savePartner(token, nickname, birth);
-      if (!save) {
-        cleanupToken.current = token;
-        temporaryPartners.current.add(id);
-        writeTemporaryPartners(temporaryPartners.current);
-      }
+      const id = await savePartner(await getAccessToken(), nickname, birth);
       setBirthBusy(false);
-      await runPair(id, nickname, birth.timePrecision === "exact", !save);
+      await runPair(id, nickname, birth.timePrecision !== "unknown");
     } catch (error) {
       setBirthBusy(false);
       setBirthError(
         error instanceof ChemiRequestError && error.code === "CHEMI_PARTNER_FULL"
-          ? "저장한 상대가 가득 찼어요. 저장하지 않고 보거나, 저장한 상대에서 골라 주세요."
+          ? "저장한 상대가 가득 찼어요. 저장한 상대에서 골라 주세요."
           : "저장하지 못했어요. 다시 시도해 주세요.",
       );
     }
@@ -740,6 +699,7 @@ export function SajuFlow({
         <BirthSheet
           open={sheet === "birth"}
           mode="me"
+          copy={birthCopy}
           busy={birthBusy}
           error={birthError}
           onClose={() => setSheet(null)}
@@ -748,6 +708,7 @@ export function SajuFlow({
         <BirthSheet
           open={sheet === "pair"}
           mode="partner"
+          copy={birthCopy}
           busy={birthBusy}
           error={birthError}
           onClose={() => setSheet(null)}
@@ -765,7 +726,7 @@ export function SajuFlow({
                 key={partner.id}
                 variant="text"
                 className={sheetStyles.topicRow}
-                onClick={() => void runPair(partner.id, partner.nickname, partner.timePrecision === "exact")}
+                onClick={() => void runPair(partner.id, partner.nickname, partner.timePrecision !== "unknown")}
               >
                 <span className={sheetStyles.topicBody}>
                   <span className={sheetStyles.topicText}>
@@ -910,27 +871,29 @@ export function SajuFlow({
           </FanAction>
         )}
         {phase === "error" ? (
-          <FanState
-            inline
-            kind={failure === "auth" ? "auth" : "error"}
-            title={failureTitle[failure]}
-            actions={
-              failure === "auth" ? (
-                <FanAction onClick={login}>로그인</FanAction>
-              ) : (
-                <FanAction
-                  onClick={() => {
-                    const retry = lastPair.current;
-                    if (step === "calc") void run(character);
-                    else if (retry) void runPair(retry.partnerId, retry.who, retry.timeKnown, retry.temporary);
-                    else setPhase("idle");
-                  }}
-                >
-                  다시 시도
-                </FanAction>
-              )
-            }
-          />
+          <div className={styles.controls}>
+            <FanState
+              inline
+              kind={failure === "auth" ? "auth" : "error"}
+              title={failureTitle[failure]}
+              actions={
+                failure === "auth" ? (
+                  <FanAction onClick={login}>로그인</FanAction>
+                ) : (
+                  <FanAction
+                    onClick={() => {
+                      const retry = lastPair.current;
+                      if (step === "calc") void run(character);
+                      else if (retry) void runPair(retry.partnerId, retry.who, retry.timeKnown);
+                      else setPhase("idle");
+                    }}
+                  >
+                    다시 시도
+                  </FanAction>
+                )
+              }
+            />
+          </div>
         ) : (
           <div className={styles.controls}>
             {entering && phase === "idle" && (

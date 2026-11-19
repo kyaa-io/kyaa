@@ -1,6 +1,7 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
+import koCatalog from "@/features/chemi/i18n/locales/ko/chemi.json";
 import type { Chart } from "./chart";
 import { SajuFlow } from "./flow";
 
@@ -76,7 +77,7 @@ afterEach(async () => {
 async function openResult(url: string) {
   window.history.replaceState(null, "", url);
   const restoring = new URLSearchParams(window.location.search).get("step") === "result";
-  render(<SajuFlow locale="ko" restoring={restoring} />);
+  render(<SajuFlow locale="ko" birthCopy={koCatalog.myBirth} restoring={restoring} />);
   return screen.findByRole("heading", { level: 1 });
 }
 async function startPairWithSaved() {
@@ -152,12 +153,10 @@ it("뒤로·앞으로 가면 주소의 궁합 풀이 번호에 맞는 풀이를 
   expect(await screen.findByText("나 × 민지")).toBeVisible();
 });
 
-async function fillNewPartner(save: boolean) {
-  const sheet = await screen.findByRole("dialog", { name: "궁합 상대" });
+async function fillNewPartner() {
+  const sheet = await screen.findByRole("dialog", { name: "궁합 상대 넣기" });
   fireEvent.change(within(sheet).getByLabelText("별명"), { target: { value: "하나" } });
   fireEvent.change(within(sheet).getByLabelText("생년월일"), { target: { value: "20000101" } });
-  fireEvent.click(within(sheet).getByLabelText("모름"));
-  if (save) fireEvent.click(within(sheet).getByLabelText("이 사람 저장"));
   fireEvent.click(within(sheet).getByRole("button", { name: "궁합 보기" }));
 }
 const noPartners: Record<string, Route> = {
@@ -165,23 +164,7 @@ const noPartners: Record<string, Route> = {
   "GET /api/chemi/profile": () => Response.json({ birth: null, partners: [] }),
 };
 
-it("저장하지 않기로 한 상대는 결과를 받은 바로 뒤에 서버에서 지운다", async () => {
-  const api = server({
-    ...noPartners,
-    "POST /api/chemi/partners": () => Response.json({ partnerId: "temp-1" }),
-    "POST /api/chemi/readings": () => Response.json(pairReading),
-    "DELETE /api/chemi/partners": () => Response.json({ deleted: true }),
-  });
-  await openResult("/chemi/saju?step=result&c=changha&r=first-1");
-  fireEvent.click(await screen.findByRole("button", { name: /^궁합/ }));
-  await fillNewPartner(false);
-  expect(await screen.findByText("나 × 하나", {}, { timeout: 4000 })).toBeVisible();
-  await waitFor(() => expect(api.count("DELETE /api/chemi/partners")).toBe(1));
-  expect(api.calls.find((call) => call.key === "DELETE /api/chemi/partners")?.body).toEqual({ partnerId: "temp-1" });
-  expect(window.localStorage.getItem("chemi:saju:temporary-partners")).toBeNull();
-});
-
-it("저장하기로 한 상대는 지우지 않는다", async () => {
+it("새 상대는 저장하고 궁합을 본 뒤 지우지 않는다. 저장 여부를 묻지 않는다", async () => {
   const api = server({
     ...noPartners,
     "POST /api/chemi/partners": () => Response.json({ partnerId: "kept-1" }),
@@ -189,30 +172,51 @@ it("저장하기로 한 상대는 지우지 않는다", async () => {
   });
   await openResult("/chemi/saju?step=result&c=changha&r=first-1");
   fireEvent.click(await screen.findByRole("button", { name: /^궁합/ }));
-  await fillNewPartner(true);
+  const sheet = await screen.findByRole("dialog", { name: "궁합 상대 넣기" });
+  expect(within(sheet).queryByLabelText(/저장/)).toBeNull();
+  await fillNewPartner();
   expect(await screen.findByText("나 × 하나", {}, { timeout: 4000 })).toBeVisible();
+  expect(api.count("POST /api/chemi/partners")).toBe(1);
+  expect(api.calls.find((call) => call.key === "POST /api/chemi/partners")?.body).toMatchObject({
+    nickname: "하나",
+    birthDate: "2000-01-01",
+    timePrecision: "unknown",
+    source: "saju",
+  });
   expect(api.count("DELETE /api/chemi/partners")).toBe(0);
 });
 
-it("지우기에 실패한 임시 상대는 번호를 남겨 두었다가 다음 방문에서 다시 지운다", async () => {
-  let deletes = 0;
-  const routes: Record<string, Route> = {
-    ...noPartners,
-    "POST /api/chemi/partners": () => Response.json({ partnerId: "temp-1" }),
-    "POST /api/chemi/readings": () => Response.json(pairReading),
-    "DELETE /api/chemi/partners": () =>
-      ++deletes === 1 ? Response.json({ error: { code: "CHEMI_UNAVAILABLE" } }, { status: 503 }) : Response.json({ deleted: true }),
-  };
-  server(routes);
+it("궁합 요청에 쓸 토큰을 15초 안에 받지 못하면 오류 화면이 보인다", async () => {
+  server({ ...baseRoutes, "POST /api/chemi/readings": () => Response.json(pairReading) });
   await openResult("/chemi/saju?step=result&c=changha&r=first-1");
   fireEvent.click(await screen.findByRole("button", { name: /^궁합/ }));
-  await fillNewPartner(false);
-  expect(await screen.findByText("나 × 하나", {}, { timeout: 4000 })).toBeVisible();
-  await waitFor(() => expect(deletes).toBe(1));
-  expect(JSON.parse(window.localStorage.getItem("chemi:saju:temporary-partners")!)).toEqual(["temp-1"]);
-  // 다음 방문: 화면을 새로 열면 남은 번호를 다시 지운다.
-  document.body.innerHTML = "";
+  const pick = await screen.findByRole("button", { name: /민지/ });
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  try {
+    // 상대 목록은 받았고, 궁합을 요청하기 직전 토큰 조회가 끝나지 않는다.
+    getAccessToken.mockImplementationOnce(() => new Promise(() => {}));
+    fireEvent.click(pick);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000);
+    });
+    expect(screen.getByText("연결이 끊겼습니다.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "다시 시도" })).toBeVisible();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("궁합이 실패하면 장면이 보이도록 스크롤을 맨 위로 올린다", async () => {
+  const scrollTo = vi.fn();
+  vi.stubGlobal("scrollTo", scrollTo);
+  server({
+    ...baseRoutes,
+    "POST /api/chemi/readings": () => Response.json({ error: { code: "CHEMI_UNAVAILABLE" } }, { status: 503 }),
+  });
   await openResult("/chemi/saju?step=result&c=changha&r=first-1");
-  await waitFor(() => expect(deletes).toBe(2));
-  await waitFor(() => expect(window.localStorage.getItem("chemi:saju:temporary-partners")).toBeNull());
+  await startPairWithSaved();
+  await screen.findByText("사주를 불러오지 못했습니다.", {}, { timeout: 3000 });
+  expect(scrollTo).toHaveBeenLastCalledWith(0, 0);
+  // 오류 문구는 그림 위 맨 글자가 아니라 대화 상자 면 안에 있다.
+  expect(screen.getByRole("alert").parentElement?.className).toMatch(/controls/);
 });

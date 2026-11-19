@@ -223,10 +223,10 @@
   gap: var(--space-3);
 }
 .mobileActions {
-  order: 4;
+  order: 5;
 }
 .dockSpace {
-  order: 6;
+  order: 7;
   height: var(--space-16);
 }
 .dockSpace::after {
@@ -242,7 +242,7 @@
   flex: 1;
 }
 .legal {
-  order: 5;
+  order: 6;
   color: var(--color-muted);
 }
 
@@ -295,7 +295,7 @@
 }
 .nextList {
   display: grid;
-  order: 6;
+  order: 4;
 }
 .nextList .nextItem {
   display: flex;

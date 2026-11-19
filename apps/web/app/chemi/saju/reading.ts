@@ -38,6 +38,16 @@ export function isAuthFailure(error: unknown) {
   return error.status === 403 && !error.code?.startsWith("CHEMI_");
 }
 
+/** 15초 안에 끝나야 하는 단계. 신호가 끊기면 기다리던 약속이 끝나지 않아도 바로 실패한다. */
+export function orAbort<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const fail = () => reject(new DOMException("aborted", "AbortError"));
+    if (signal.aborted) return fail();
+    signal.addEventListener("abort", fail, { once: true });
+    promise.then(resolve, reject).finally(() => signal.removeEventListener("abort", fail));
+  });
+}
+
 const json = (token: string | null) => ({
   Authorization: `Bearer ${token}`,
   "Content-Type": "application/json",
@@ -130,7 +140,7 @@ export type Birth = {
   birthDate: string;
   calendar: "solar" | "lunar" | "lunar_leap";
   birthTime: string | null;
-  timePrecision: "exact" | "unknown";
+  timePrecision: "exact" | "band" | "unknown";
   gender: "female" | "male" | null;
 };
 export type Partner = Birth & { id: string; nickname: string };
@@ -189,37 +199,4 @@ export async function loadParticipation(signal?: AbortSignal): Promise<Participa
   const response = await fetch("/api/chemi/home", { signal });
   if (!response.ok) return null;
   return (await response.json()).participation ?? null;
-}
-
-/** 상대를 지웠으면 true. 이미 없는 상대(404)도 지운 것으로 본다. 네트워크 오류·그 밖의 응답은 false. */
-export async function deletePartner(token: string | null, partnerId: string, keepalive = false) {
-  const response = await fetch("/api/chemi/partners", {
-    method: "DELETE",
-    headers: json(token),
-    keepalive,
-    body: JSON.stringify({ partnerId }),
-  }).catch(() => null);
-  return Boolean(response && (response.ok || response.status === 404));
-}
-
-const temporaryKey = "chemi:saju:temporary-partners";
-
-/** 저장하지 않기로 했지만 아직 서버에서 지우지 못한 상대 번호. 다음 방문에서 다시 지운다. */
-export function readTemporaryPartners(): string[] {
-  try {
-    const stored = JSON.parse(window.localStorage.getItem(temporaryKey) ?? "[]");
-    return Array.isArray(stored) ? stored.filter((id): id is string => typeof id === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-export function writeTemporaryPartners(ids: Iterable<string>) {
-  try {
-    const list = [...ids];
-    if (list.length) window.localStorage.setItem(temporaryKey, JSON.stringify(list));
-    else window.localStorage.removeItem(temporaryKey);
-  } catch {
-    // 저장소를 쓸 수 없으면 이 화면을 떠날 때의 삭제만 시도한다.
-  }
 }
