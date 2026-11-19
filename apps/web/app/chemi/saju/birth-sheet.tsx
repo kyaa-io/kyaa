@@ -4,7 +4,7 @@
  * 생일 입력 시트(승인 시안 03-2 생일·03-5 궁합 상대). MY 생일 정보와 같은 입력 부품
  * (생년월일 칸·시간 칸·달력·성별 고르기)을 쓰고, 이 화면에서는 저장 동의와 상대 별명만 더한다.
  */
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
 import {
@@ -90,7 +90,14 @@ export function BirthSheet({
           value={genderKey(gender)}
           onChange={(key) => setGender(genderValue(key))}
         />
-        <CheckLabel checked={agree} onChange={setAgree}>{partner ? copy.partnerConsent : copy.consentItem}</CheckLabel>
+        <CheckLabel checked={agree} onChange={setAgree}>
+          {(partner ? copy.partnerConsent : copy.consentItem).split(/(?<=[.。])\s+/).map((sentence, index) => (
+            <Fragment key={sentence}>
+              {index > 0 && " "}
+              <span className={styles.sentence}>{sentence}</span>
+            </Fragment>
+          ))}
+        </CheckLabel>
         {error && (
           <FanText as="p" role="meta" aria-live="assertive">
             {error}

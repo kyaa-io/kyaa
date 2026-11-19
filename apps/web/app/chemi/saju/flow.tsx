@@ -14,6 +14,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanDialog, FanSheet } from "@/components/fan-ui/fan-dialog";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanText } from "@/components/fan-ui/fan-text";
+import { MediaBackdrop, mediaFillClass } from "@/components/fan-ui/media-fill";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import {
@@ -143,6 +144,8 @@ export function SajuFlow({
   /** 이 화면에서 본 궁합 풀이. 뒤로·앞으로 이동할 때 주소의 번호로 다시 꺼낸다. */
   const pairs = useRef(new Map<string, Pair>());
   const lastPair = useRef<{ partnerId: string; who: string; timeKnown: boolean } | null>(null);
+  /** 뒤로·앞으로 이동으로 기록을 불러오다 멈췄을 때 '다시 시도'가 부르는 같은 불러오기. */
+  const restoreRetry = useRef<(() => void) | null>(null);
   const now = Date.now();
 
   const { step, view, character } = nav;
@@ -302,6 +305,7 @@ export function SajuFlow({
 
   const run = useCallback(
     async (id: SajuCharacterId) => {
+      restoreRetry.current = null;
       abort.current?.abort();
       const controller = new AbortController();
       abort.current = controller;
@@ -359,6 +363,7 @@ export function SajuFlow({
       if (url.step === current.step && url.view === current.view && url.r === current.r && url.p === current.p) return;
       abort.current?.abort();
       abort.current = null;
+      restoreRetry.current = null;
       setPhase("idle");
       setRestoring(false);
       setSheet(null);
@@ -379,39 +384,59 @@ export function SajuFlow({
         if (known) setPair(known);
         return;
       }
-      const controller = new AbortController();
-      abort.current = controller;
-      setRestoring(true);
-      void (async () => {
-        try {
-          const token = await tokenRef.current();
-          if (needReading) {
-            const data = await loadReading(token, next.r!, next.character, controller.signal);
-            if (controller.signal.aborted) return;
-            if (!data) throw Error();
-            setReading({ ...data, replayed: true });
-          }
-          if (!wantsPair) return;
+      // 계산 경로와 같이 15초 제한·중단 신호를 쓴다. 제한을 넘기면 오류 화면에서 다시 시도할 수 있다.
+      lastPair.current = null;
+      const attempt = () => {
+        abort.current?.abort();
+        const controller = new AbortController();
+        abort.current = controller;
+        let timedOut = false;
+        const timer = setTimeout(() => {
+          timedOut = true;
+          controller.abort();
+        }, 15000);
+        setPhase("idle");
+        setRestoring(true);
+        void (async () => {
           try {
-            const restored = await restorePair(token, next, controller.signal);
-            if (controller.signal.aborted) return;
-            if (!restored) throw Error();
-            setPair(restored);
+            const token = await orAbort(tokenRef.current(), controller.signal);
+            if (needReading) {
+              const data = await loadReading(token, next.r!, next.character, controller.signal);
+              if (controller.signal.aborted) throw Error();
+              if (!data) throw Error();
+              setReading({ ...data, replayed: true });
+            }
+            if (!wantsPair) return;
+            try {
+              const restored = await restorePair(token, next, controller.signal);
+              if (controller.signal.aborted) throw Error();
+              if (!restored) throw Error();
+              setPair(restored);
+            } catch (error) {
+              if (controller.signal.aborted) throw error;
+              commit({ view: "first", p: null, w: null }, "replace");
+              showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+            }
           } catch {
-            if (controller.signal.aborted) return;
-            commit({ view: "first", p: null, w: null }, "replace");
-            showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+            // 다른 이동이 이어받은 요청의 끝은 화면에 반영하지 않는다.
+            if (abort.current !== controller) return;
+            if (timedOut) {
+              setFailure("network");
+              setPhase("error");
+              return;
+            }
+            writeUrl(clearedUrl, "replace", 0);
+            navRef.current = toEnter(next);
+            setNav(navRef.current);
+            showFanToast({ title: "저장된 풀이가 아니라 처음 화면으로 돌아왔어요." });
+          } finally {
+            clearTimeout(timer);
+            if (abort.current === controller) setRestoring(false);
           }
-        } catch {
-          if (controller.signal.aborted) return;
-          writeUrl(clearedUrl, "replace", 0);
-          navRef.current = toEnter(next);
-          setNav(navRef.current);
-          showFanToast({ title: "저장된 풀이가 아니라 처음 화면으로 돌아왔어요." });
-        } finally {
-          if (!controller.signal.aborted) setRestoring(false);
-        }
-      })();
+        })();
+      };
+      restoreRetry.current = attempt;
+      attempt();
     }
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
@@ -520,6 +545,7 @@ export function SajuFlow({
   }
 
   async function runPair(partnerId: string, who: string, timeKnown: boolean) {
+    restoreRetry.current = null;
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
@@ -676,6 +702,8 @@ export function SajuFlow({
 
   const wideArt = character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-v1.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
+  /** 세로 그림 최애: 넓은 화면에서 그림을 통째로 왼쪽에 두고 남는 면은 공통 MediaFill 이 그 그림의 흐린 복사본으로 채운다. */
+  const portrait = character !== "changha";
   const primaryLabel = entering && !again ? "응, 봐 줘" : talk ? talkChoice[talk - 1] : null;
 
   const turns = (cls: string, side = false) => (
@@ -873,7 +901,11 @@ export function SajuFlow({
           </>
         )}
       </div>
-      <div className={styles.stage} data-portrait={character === "changha" ? undefined : character}>
+      <div
+        className={portrait ? `${styles.stage} ${mediaFillClass}` : styles.stage}
+        data-portrait={portrait ? character : undefined}
+      >
+        {portrait && <MediaBackdrop src={wideArt} />}
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
           <img src={mobileArt} alt={`${name}의 사주 장면`} />
@@ -901,7 +933,8 @@ export function SajuFlow({
                   <FanAction
                     onClick={() => {
                       const retry = lastPair.current;
-                      if (step === "calc") void run(character);
+                      if (restoreRetry.current) restoreRetry.current();
+                      else if (step === "calc") void run(character);
                       else if (retry) void runPair(retry.partnerId, retry.who, retry.timeKnown);
                       else setPhase("idle");
                     }}

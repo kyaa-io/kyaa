@@ -250,6 +250,47 @@ it("상대 입력 시트에서 겹친 생년월일 휠·태어난 시간 판을 
   expect(screen.getByRole("dialog", { name: "궁합 상대 넣기" })).toBeVisible();
 });
 
+it("기록 이동으로 풀이를 다시 읽다 15초 안에 끝나지 않으면 오류 화면과 다시 시도가 보이고, 늦게 온 응답은 화면에 반영되지 않는다", async () => {
+  let attempts = 0;
+  let lateStart: (() => void) | null = null;
+  const api = server({
+    ...baseRoutes,
+    "GET /api/chemi/readings/first-2": (init) => {
+      attempts += 1;
+      if (attempts > 1) return Response.json({ readingId: "first-2", result: chart, replayed: true });
+      // 첫 시도는 끝나지 않는다. 중단 신호가 오면 끊긴다.
+      return new Promise<Response>((_, reject) => {
+        lateStart = () => reject(new DOMException("aborted", "AbortError"));
+        init?.signal?.addEventListener("abort", lateStart, { once: true });
+      });
+    },
+  });
+  await openResult("/chemi/saju?step=result&c=changha&r=first-1");
+  expect(await screen.findByText("타고난 기운")).toBeVisible();
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  try {
+    await act(async () => {
+      window.history.pushState({}, "", "/chemi/saju?step=result&c=changha&r=first-2");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(screen.getByRole("status")).toBeVisible();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15000);
+    });
+    expect(screen.getByText("연결이 끊겼습니다.")).toBeVisible();
+    expect(screen.queryByText("타고난 기운")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "다시 시도" }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(50);
+    });
+  } finally {
+    vi.useRealTimers();
+  }
+  expect(await screen.findByText("타고난 기운")).toBeVisible();
+  expect(api.count("GET /api/chemi/readings/first-2")).toBe(2);
+  expect(screen.queryByText("연결이 끊겼습니다.")).toBeNull();
+});
+
 it("서로 다른 사주 기록 사이를 뒤로·앞으로 가면 그 주소의 풀이를 다시 읽는다", async () => {
   const second = { readingId: "first-2", result: chart, replayed: true };
   const api = server({

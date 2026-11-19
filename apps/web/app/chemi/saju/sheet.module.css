@@ -4,6 +4,11 @@
   gap: var(--space-4);
 }
 
+/* 동의 줄은 문장 사이에서만 줄이 바뀐다. */
+.sentence {
+  display: inline-block;
+}
+
 /* 더 깊이·궁합 상대 고르기 */
 .topics {
   display: grid;

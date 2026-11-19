@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "궁합 상대는 저장 동의에 체크해야 저장되고 궁합을 볼 수 있어요. 앞서 안내한 '결과를 받자마자 상대를 지우는' 동작은 하지 않고, 저장한 상대는 MY에서 지울 수 있어요.",
+    "저장 동의 안내가 문장 사이에서 줄이 바뀌어요.",
+    "뒤로·앞으로 가서 다른 기록의 풀이를 불러오다 15초가 넘으면 '연결이 끊겼습니다'와 다시 시도 버튼이 나와요.",
+    "큰 화면 세로 그림 최애는 그림 전체를 왼쪽에 두고, 남는 면은 그 그림의 흐린 색으로 채워요. 예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/saju",
+  "images": [
+    "release-notes/images/2026-11-19-chemi-saju-fix4-portrait-1440-local.png",
+    "release-notes/images/2026-11-19-chemi-saju-fix4-portrait-768-local.png",
+    "release-notes/images/2026-11-19-chemi-saju-fix4-consent-390-local.png",
+    "release-notes/images/2026-11-19-chemi-saju-fix4-restore-390-local.png"
+  ]
+}
