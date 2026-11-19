@@ -36,6 +36,7 @@ export type Http5xxLogLine = {
   source: "thrown" | "response";
   errorName: string | null;
   errorCode: string | null;
+  upstreamStatus?: number;
   digest: string | null;
   requestId: string | null;
 };
@@ -133,9 +134,10 @@ export function buildHttp5xxLogLine(input: {
     route: input.error?.routePath ?? resolveRouteTemplate(input.url, input.matchers),
     method: METHODS.has(method) ? method : "OTHER",
     status: input.status,
-    source: input.error ? "thrown" : "response",
+    source: input.error && !input.error.handled ? "thrown" : "response",
     errorName: input.error?.name ?? null,
     errorCode: input.error?.code ?? null,
+    ...(input.error?.upstreamStatus === undefined ? {} : { upstreamStatus: input.error.upstreamStatus }),
     digest: input.error?.digest ?? null,
     requestId: requestIdFrom(input.headers),
   };
@@ -222,10 +224,10 @@ export function createAuthDeniedLimiter(options: { windowMs?: number; maxLines?:
 }
 
 /** instrumentation.onRequestError에서 부른다. 응답 훅이 같은 요청의 5xx 줄에 오류 정보를 합친다. */
-export function recordRequestError(error: unknown, context: { routePath?: string }): void {
+export function recordRequestError(error: unknown, context: { routePath?: string; handled?: boolean; upstreamStatus?: number }): void {
   const state = requestState.getStore();
   if (!state) return;
-  state.error = { ...describeError(error), routePath: context.routePath || null };
+  state.error = { ...describeError(error), routePath: context.routePath || null, handled: context.handled, upstreamStatus: context.upstreamStatus };
 }
 
 type Emit = (this: http.Server, event: string | symbol, ...args: unknown[]) => boolean;

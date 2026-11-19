@@ -1,5 +1,7 @@
 """Production operator notices only; never sends or retries member deliveries."""
 import base64
+from datetime import datetime
+import math
 import gzip
 import json
 import os
@@ -20,6 +22,7 @@ ALARMS.add("byus-notification-worker-prod-monitor-test")
 # Service alarms: the two database alarms are exact names; the platform stack generates the suffix of the other six,
 # so those are matched by the fixed name stem up to the generated suffix. Anything else under byus-prod-platform- stays filtered.
 # Each value is (kind, description). kind "db" -> DB notice, "web" -> web notice.
+ALB_ALARM_PREFIX = "byus-prod-platform-AlbErrorsAlarm-"
 SERVICE_ALARM_NAMES = {
     "byus-prod-database-replication-slot-lag": ("db", "복제 슬롯이 WAL을 5GiB 넘게 붙잡고 있음"),
     "byus-prod-database-transaction-log-usage": ("db", "트랜잭션 로그 사용량 10GiB 초과"),
@@ -29,7 +32,7 @@ SERVICE_ALARM_PREFIXES = {
     "byus-prod-platform-DatabaseCpuAlarm-": ("db", "DB CPU 사용률 기준 초과"),
     "byus-prod-platform-CpuAlarm-": ("web", "서비스 CPU 사용률 기준 초과"),
     "byus-prod-platform-MemoryAlarm-": ("web", "서비스 메모리 사용률 기준 초과"),
-    "byus-prod-platform-AlbErrorsAlarm-": ("web", "로드밸런서 오류 기준 초과"),
+    ALB_ALARM_PREFIX: ("web", "로드밸런서 오류 기준 초과"),
     "byus-prod-platform-UnhealthyTasksAlarm-": ("web", "비정상 태스크 감지"),
 }
 SERVICE_NOTICE = {"db": ("DB 경보", "AWS 콘솔에서 RDS 지표를 확인하세요."), "web": ("웹 경보", "AWS 콘솔에서 서비스 지표를 확인하세요.")}
@@ -162,6 +165,64 @@ def scheduled_check():
     return notify("check:ses-2026-10-27", text)
 
 
+def format_alb_causes(results):
+    def safe_values(raw, pattern):
+        try:
+            values = json.loads(raw)
+        except ValueError:
+            values = [value.strip() for value in raw.split(",")]
+        if not isinstance(values, list):
+            values = [str(values)]
+        return ", ".join(str(value) for value in values[:5] if re.fullmatch(pattern, str(value)))
+
+    lines = []
+    for result in results[:3]:
+        row = {entry["field"]: entry["value"] for entry in result}
+        route, hits = row.get("route", ""), row.get("hits", "")
+        if not re.fullmatch(r"(?:/[-a-zA-Z0-9_./\[\]]{0,199}|\(unmatched\))", route) or not re.fullmatch(r"[1-9][0-9]{0,11}", hits):
+            continue
+        statuses = safe_values(row.get("statuses", ""), r"5[0-9]{2}")
+        codes = safe_values(row.get("codes", ""), r"[A-Za-z0-9_.$-]{1,64}")
+        lines.append(f"{route} {statuses} × {hits} · {codes or '원인 코드 없음'}")
+    return "\n".join(lines) or "경보 시간창에 기록된 웹 오류 없음"
+
+
+def alb_causes(alarm):
+    try:
+        end = datetime.fromisoformat(alarm["StateChangeTime"].replace("Z", "+00:00"))
+        if end.utcoffset() is None:
+            raise ValueError("alarm timestamp requires timezone")
+        trigger = alarm.get("Trigger", {})
+        period, evaluations = trigger.get("Period", 300), trigger.get("EvaluationPeriods", 2)
+        if type(period) is not int or type(evaluations) is not int or not 0 < period * evaluations <= 3600 or period <= 0:
+            raise ValueError("invalid evaluation window")
+        end_seconds = math.ceil(end.timestamp())
+        start_seconds = int(end.timestamp()) // period * period - period * evaluations
+        logs = client("logs")
+        query_id = logs.start_query(
+            logGroupName=os.environ["WEB_LOG_GROUP"],
+            startTime=start_seconds,
+            endTime=end_seconds,
+            queryString=(
+                "filter event = 'http_5xx' and status >= 500 and status < 600"
+                f" and toMillis(@timestamp) < {int(end.timestamp() * 1000)}"
+                " | stats count(*) as hits, values(status) as statuses, values(errorCode) as codes by route"
+                " | sort hits desc | limit 3"
+            ),
+        )["queryId"]
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            result = logs.get_query_results(queryId=query_id)
+            if result["status"] == "Complete":
+                return format_alb_causes(result["results"])
+            if result["status"] not in {"Scheduled", "Running"}:
+                break
+            time.sleep(0.5)
+    except Exception:
+        pass
+    return "원인 조회 실패"
+
+
 def handler(event, _context):
     if "awslogs" in event:
         return handle_logs(event)
@@ -182,7 +243,10 @@ def handler(event, _context):
             kind, alarm_text = service
             title, check = SERVICE_NOTICE[kind]
             description = {"ALARM": alarm_text, "OK": "정상 상태 복귀", "INSUFFICIENT_DATA": "상태 지표 수신 중단"}[state]
-            notices.append((f"alarm:{name}:{changed_at}:{state}", f"[KYAA 운영 · {title}]\n{name}\n{description}\n{check}"))
+            message = f"[KYAA 운영 · {title}]\n{name}\n{description}\n{check}"
+            if state == "ALARM" and name.startswith(ALB_ALARM_PREFIX):
+                message += "\n" + alb_causes(alarm)
+            notices.append((f"alarm:{name}:{changed_at}:{state}", message))
             continue
         title = "[KYAA 운영 · 경보 전달 시험]" if name.endswith("monitor-test") else "[KYAA 운영 · 알림 채널 경보]"
         description = {"ALARM": "채널 비활성 감지", "OK": "정상 상태 복귀", "INSUFFICIENT_DATA": "상태 지표 수신 중단"}[state]

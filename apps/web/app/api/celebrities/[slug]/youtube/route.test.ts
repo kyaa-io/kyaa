@@ -2,6 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({ find: vi.fn(), read: vi.fn() }));
 vi.mock("@/server/content/published-content-repository", () => ({ createPublishedContentRepositoryFromEnvironment: () => ({ findBySlug: state.find }) }));
 vi.mock("@/server/youtube/youtube-uploads", () => ({ readYouTubeUploads: state.read }));
+import { requestStateStore, type RequestState } from "@/server/observability/auth-denied-reason";
 import { GET } from "./route";
 const request = new Request("https://byus.kr/api/celebrities/elina/youtube");
 afterEach(() => { vi.unstubAllEnvs(); });
@@ -14,9 +15,15 @@ it("rechecks publication before serving cached public uploads", async () => {
   state.find.mockResolvedValue({ socialLinks: [{ platform: "youtube", url: "https://youtube.com/@ElinaKarimova" }] });
   state.read.mockResolvedValue([]);
   expect(await (await GET(request, { params: Promise.resolve({ slug: "elina" }) })).json()).toEqual({ items: [], nextCursor: null });
-  expect(state.read).toHaveBeenCalledWith("https://youtube.com/@ElinaKarimova");
-  state.read.mockResolvedValue(null);
-  expect((await GET(request, { params: Promise.resolve({ slug: "elina" }) })).status).toBe(503);
+  expect(state.read).toHaveBeenCalledWith("https://youtube.com/@ElinaKarimova", { onFailure: expect.any(Function) });
+  state.read.mockImplementation(async (_url, { onFailure }) => {
+    onFailure({ code: "YOUTUBE_QUOTA_EXCEEDED", upstreamStatus: 403 });
+    return null;
+  });
+  const logState: RequestState = {};
+  const response = await requestStateStore().run(logState, () => GET(request, { params: Promise.resolve({ slug: "elina" }) }));
+  expect(response.status).toBe(503);
+  expect(logState.error).toMatchObject({ code: "YOUTUBE_QUOTA_EXCEEDED", upstreamStatus: 403, handled: true });
 });
 it("returns an empty list, not an error, when the API key is not set", async () => {
   vi.stubEnv("YOUTUBE_DATA_API_KEY", "");

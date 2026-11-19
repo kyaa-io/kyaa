@@ -6,6 +6,10 @@
       "Type": "String",
       "AllowedPattern": "arn:aws:sns:ap-northeast-2:996702758024:byus-prod-platform-AlarmTopic-[A-Za-z0-9]+"
     },
+    "WebLogGroupName": {
+      "Type": "String",
+      "AllowedPattern": "byus-prod-platform-WebLogs-[A-Za-z0-9]+"
+    },
     "ExpectedChatId": {
       "Type": "String",
       "AllowedPattern": "-[0-9]{5,20}"
@@ -119,6 +123,13 @@
                   "Effect": "Allow",
                   "Action": "logs:FilterLogEvents",
                   "Resource": "arn:aws:logs:ap-northeast-2:996702758024:log-group:/aws/lambda/byus-notification-worker-prod:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["logs:StartQuery", "logs:GetQueryResults"],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${WebLogGroupName}:*"
+                  }
                 }
               ]
             }
@@ -150,6 +161,9 @@
         },
         "Environment": {
           "Variables": {
+            "WEB_LOG_GROUP": {
+              "Ref": "WebLogGroupName"
+            },
             "SECRET_ARN": {
               "Ref": "MonitorSecretArn"
             },

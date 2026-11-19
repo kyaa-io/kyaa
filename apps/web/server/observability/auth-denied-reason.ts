@@ -15,7 +15,7 @@ export const AUTH_DENIED_REASONS = [
 export type AuthDeniedReason = (typeof AUTH_DENIED_REASONS)[number];
 
 export type RequestState = {
-  error?: { name: string; code: string | null; digest: string | null; routePath: string | null };
+  error?: { handled?: boolean; upstreamStatus?: number; name: string; code: string | null; digest: string | null; routePath: string | null };
   authDeniedReason?: AuthDeniedReason;
 };
 

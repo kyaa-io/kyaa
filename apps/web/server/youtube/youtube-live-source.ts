@@ -103,17 +103,31 @@ function endpoint(path: "channels" | "search" | "videos", params: Record<string,
   return url;
 }
 
+const googleFailureCodes = new Map([
+  ["quotaExceeded", "YOUTUBE_QUOTA_EXCEEDED"],
+  ["dailyLimitExceeded", "YOUTUBE_QUOTA_EXCEEDED"],
+  ["keyInvalid", "YOUTUBE_KEY_INVALID"],
+  ["API_KEY_INVALID", "YOUTUBE_KEY_INVALID"],
+  ["rateLimitExceeded", "YOUTUBE_RATE_LIMIT_EXCEEDED"],
+  ["userRateLimitExceeded", "YOUTUBE_RATE_LIMIT_EXCEEDED"],
+]);
+
+export type YouTubeFailure = { code: string; upstreamStatus?: number };
+
 export async function fetchYouTubeApiJson(
   url: URL,
   fetcher: typeof fetch,
   fallbackFetchedAtMs: number,
+  onFailure?: (failure: YouTubeFailure) => void,
 ): Promise<YouTubeApiJson | null> {
   const controller = new AbortController();
+  let upstreamStatus: number | undefined;
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<never>((_, reject) => {
     timeoutId = setTimeout(() => {
-      controller.abort();
+      onFailure?.({ code: "YOUTUBE_TIMEOUT", upstreamStatus });
       reject(new Error("YouTube API request timed out"));
+      controller.abort();
     }, REQUEST_TIMEOUT_MS);
   });
 
@@ -124,13 +138,30 @@ export async function fetchYouTubeApiJson(
         redirect: "error",
         signal: controller.signal,
         headers: { accept: "application/json" },
+      }).catch(error => {
+        if (!controller.signal.aborted) onFailure?.({ code: "YOUTUBE_NETWORK_ERROR" });
+        throw error;
       });
-      if (
-        !response.ok ||
-        !response.headers.get("content-type")?.toLowerCase().includes("json")
-      ) {
+      upstreamStatus = response.status;
+      const isJson = response.headers.get("content-type")?.toLowerCase().includes("json");
+      if (!response.ok) {
+        if (onFailure) {
+          const body = isJson ? await readBoundedJson(response, controller.signal).catch(() => null) : null;
+          if (controller.signal.aborted) return null;
+          const error = objectValue(objectValue(body)?.error);
+          const reasons: unknown[] = [
+            ...(Array.isArray(error?.errors) ? error.errors : []),
+            ...(Array.isArray(error?.details) ? error.details : []),
+          ];
+          const code = reasons.map(entry => {
+            const reason = objectValue(entry)?.reason;
+            return typeof reason === "string" ? googleFailureCodes.get(reason) : undefined;
+          }).find(Boolean);
+          onFailure({ code: code ?? `YOUTUBE_HTTP_${response.status}`, upstreamStatus });
+        }
         return null;
       }
+      if (!isJson) return null;
       const payload = objectValue(await readBoundedJson(response, controller.signal));
       if (payload === null) return null;
       const fetchedAtHeader = response.headers.get(FETCHED_AT_HEADER);
