@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "별자리 출생 차트의 행성 줄에서 별자리 이름 바로 옆에 도수가 붙어 읽기 쉬워졌어요.",
+    "자랑하기 카드의 날짜 줄이 그림과 떨어져 또렷하게 보여요.",
+    "태어난 시각을 정확히 넣으면 결과와 차트에 시각을 반영했다고 알려 줘요.",
+    "저장된 결과를 불러오는 중 뒤로 가면 늦게 온 응답이 지금 화면과 주소를 바꾸지 않아요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/star",
+  "images": [
+    "release-notes/images/2026-11-19-chemi-star-fix2-chart-local.png",
+    "release-notes/images/2026-11-19-chemi-star-fix2-share-local.png"
+  ]
+}

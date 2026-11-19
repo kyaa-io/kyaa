@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "별자리 운세 결과 오른쪽에 내 출생 차트가 같이 보이고, 출생 차트의 행성 줄이 한눈에 읽혀요.",
+    "생일을 처음 넣을 때 태어난 시간을 휠이나 2시간 띠로 고를 수 있어요.",
+    "결과의 자랑하기를 누르면 카드를 먼저 보고 링크를 복사하거나 보낼 수 있어요.",
+    "새 탭으로 연 결과 주소가 잠시 막혀도 지워지지 않고 다시 시도할 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/star",
+  "images": [
+    "release-notes/images/2026-11-19-chemi-star-fix-result-local.png",
+    "release-notes/images/2026-11-19-chemi-star-fix-share-local.png"
+  ]
+}
