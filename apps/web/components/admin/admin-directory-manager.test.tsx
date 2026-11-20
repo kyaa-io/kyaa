@@ -48,7 +48,7 @@ describe("AdminDirectoryManager", () => {
     const ownerRow = screen.getByText("owner@byus.test").closest("tr")!;
     expect(within(ownerRow).getByRole("combobox", { name: "역할: owner@byus.test" })).toBeDisabled();
     expect(within(ownerRow).getByRole("button", { name: "역할 저장" })).toBeDisabled();
-    expect(within(ownerRow).getByRole("button", { name: "접근 해제" })).toBeDisabled();
+    expect(within(ownerRow).getByRole("button", { name: "권한 해제" })).toBeDisabled();
   });
 
   it("loads successfully when React replays effects in StrictMode", async () => {
@@ -102,12 +102,12 @@ describe("AdminDirectoryManager", () => {
     render(<AdminDirectoryManager />);
     await screen.findByText("ops@byus.test");
     const otherRow = screen.getByText("ops@byus.test").closest("tr")!;
-    fireEvent.click(within(otherRow).getByRole("button", { name: "접근 해제" }));
+    fireEvent.click(within(otherRow).getByRole("button", { name: "권한 해제" }));
     expect(screen.getByRole("alertdialog")).toHaveTextContent("회원 계정과 변경 이력은 유지됩니다.");
     fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "변경" }));
 
     expect(await screen.findByText("관리자 접근 권한을 해제했습니다.")).toBeInTheDocument();
-    expect(screen.getByText("접근 해제", { selector: "span" })).toBeInTheDocument();
+    expect(screen.getByText("권한 해제", { selector: "span" })).toBeInTheDocument();
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === "PATCH")!;
     expect(JSON.parse(String(patch[1]?.body))).toEqual({ id: otherId, role: "operator", active: false, expectedUpdatedAt: updatedAt });
   });

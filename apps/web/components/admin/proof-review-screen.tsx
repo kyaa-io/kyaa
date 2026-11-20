@@ -1,5 +1,6 @@
 "use client";
 
+import { adminReviewLabels } from "@/i18n/catalogs/components__admin__review-navigation";
 import { useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -31,12 +32,12 @@ export function AuthorizedProofReview() {
   if (session.status !== "authorized") return <AdminAccessState locale={locale} status={session.status} />;
   return (
     <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
-      <main style={{ display: "grid", gap: 16, padding: 16 }}>
-        <h1>{locale === "ko" ? "인증 증빙 검토" : "Proof review"}</h1>
+      <section style={{ display: "grid", gap: 16, padding: 16 }}>
+        <h1>{adminReviewLabels[locale].stampReview}</h1>
         <ProofReviewPanel locale={locale} request={request} canWrite={session.admin.role !== "viewer"} />
         <ShareProofAdminPanel locale={locale} request={request} canWrite={session.admin.role !== "viewer"} />
         <InstaRepostAdminPanel locale={locale} request={request} requestImage={requestImage} canWrite={session.admin.role !== "viewer"} />
-      </main>
+      </section>
     </AdminOperationsShell>
   );
 }

@@ -26,7 +26,7 @@ describe("ADM-012 audit log", () => {
       .mockResolvedValueOnce({ ok: true, json: async () => ({ items: [item, older], nextCursor: null }) });
     vi.stubGlobal("fetch", fetchMock);
     render(<AuditLogManager />);
-    fireEvent.click(await screen.findByRole("button", { name: "이전 로그 더 보기" }));
+    fireEvent.click(await screen.findByRole("button", { name: "이전 기록 더 보기" }));
     await screen.findByText("live.override.ended");
     expect(screen.getAllByText("live.override.created")).toHaveLength(1);
     await waitFor(() => expect(fetchMock.mock.calls[1][0]).toContain("cursor=opaque-next"));

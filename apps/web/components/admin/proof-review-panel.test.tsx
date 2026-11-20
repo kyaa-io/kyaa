@@ -37,7 +37,7 @@ describe("ProofReviewPanel", () => {
       : url.includes("proof-submissions") ? { ok: true, status: 200, data: { submissions: [{ ...row, proofType: "sns_post", publishConsent: false, duplicateOf: [] }] } } : null);
     expect(await screen.findByText("SNS post")).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Approve" }));
-    expect(await screen.findByText("Done. Amount 30P")).toBeTruthy();
+    expect(await screen.findByText("Done. Points 30P")).toBeTruthy();
   });
 
   it("requires a reason to reject and shows conflict and stamp errors", async () => {

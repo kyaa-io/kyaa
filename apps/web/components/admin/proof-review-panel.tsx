@@ -16,22 +16,22 @@ type Row = {
 
 const TEXT = {
   ko: {
-    status: "상태", pending: "대기", in_review: "검토 중", approved: "승인", rejected: "반려", changes_requested: "재제출 요청",
+    status: "상태", pending: "대기", in_review: "검토 중", approved: "승인", rejected: "반려", changes_requested: "보완 요청",
     applicant: "신청자", creator: "크리에이터", type: "인증 종류", consent: "공개 동의", amount: "금액 공개", flags: "경고", actions: "처리", submitted: "제출",
-    yes: "예", no: "아니오", dup: "중복 의심", empty: "대기 중인 인증이 없습니다.", loading: "불러오는 중",
-    pointReviews: "포인트 환수 검토", member: "회원", page: "페이지", stamp: "스탬프", points: "금액", pointReason: "사유", at: "시각", more: "더 보기", pointEmpty: "검토할 포인트 환수가 없습니다.", body: "게시글", viewImage: "이미지 보기", hideImage: "이미지 닫기", imageAlt: "제출 이미지", imageFailed: "이미지를 불러오지 못했습니다.", NOT_FOUND: "이미지를 찾을 수 없습니다.", reason: "사유", approve: "승인", reject: "반려", changes: "재제출 요청", refresh: "새로고침",
+    yes: "예", no: "아니오", dup: "중복 의심", empty: "심사를 기다리는 증빙이 없어요.", loading: "불러오는 중",
+    pointReviews: "포인트 회수 심사", member: "회원", page: "페이지", stamp: "스탬프", points: "포인트", pointReason: "사유", at: "시각", more: "더 보기", pointEmpty: "회수할 포인트가 없어요.", body: "게시글", viewImage: "이미지 보기", hideImage: "이미지 닫기", imageAlt: "제출 이미지", imageFailed: "이미지를 불러오지 못했습니다.", NOT_FOUND: "이미지를 찾을 수 없습니다.", reason: "사유", approve: "승인", reject: "반려", changes: "보완 요청", refresh: "새로고침",
     done: "처리했습니다.", replayed: "이미 처리된 요청입니다. 이전 결과를 보여줍니다.",
     REVISION_CONFLICT: "다른 관리자가 먼저 처리했습니다. 새로고침하세요.", INVALID_TRANSITION: "이 상태에서는 처리할 수 없습니다.",
     PROOF_STAMP_UNAVAILABLE: "스탬프를 발급할 수 없어 승인하지 못했습니다.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "이용이 제한된 회원이라 승인할 수 없어요.", GROUP_WALLET_UNAVAILABLE: "지갑 기능이 꺼져 있어 처리하지 못했어요.", GROUP_WALLET_WRITE_FENCED: "지갑 쓰기가 잠시 막혀 있어 처리하지 못했어요.", REASON_REQUIRED: "사유를 3자 이상 적어 주세요.",
     ADMIN_REQUIRED: "관리자 권한이 필요합니다.", failed: "처리하지 못했습니다.", PROOF_ALREADY_APPROVED: "같은 플랫폼으로 이미 승인된 인증이 있습니다.",
-    voidTitle: "스탬프 무효 처리", stampId: "스탬프 ID", sanction: "제재 포함", voidRun: "무효 처리", voided: "무효 처리했습니다.", titleRevoked: "찐팬 칭호를 해제했습니다.", noTitle: "해제할 찐팬 칭호가 없습니다.",
+    voidTitle: "스탬프 무효 처리", stampId: "스탬프 ID", sanction: "제재도 함께 적용", voidRun: "무효 처리", voided: "무효 처리했습니다.", titleRevoked: "찐팬 칭호를 해제했습니다.", noTitle: "해제할 찐팬 칭호가 없습니다.",
     STAMP_NOT_FOUND: "스탬프를 찾을 수 없습니다.", correction: "포인트 정정", review: "포인트 정정은 검토가 필요합니다.", corrected: "포인트를 정정했습니다.", none: "정정할 포인트가 없습니다.",
   },
   en: {
     status: "Status", pending: "Pending", in_review: "In review", approved: "Approved", rejected: "Rejected", changes_requested: "Resubmission requested",
     applicant: "Applicant", creator: "Creator", type: "Proof type", consent: "Public consent", amount: "Amount visible", flags: "Warnings", actions: "Actions", submitted: "Submitted",
     yes: "Yes", no: "No", dup: "Possible duplicate", empty: "No proofs waiting.", loading: "Loading",
-    pointReviews: "Point clawback reviews", member: "Member", page: "Page", stamp: "Stamp", points: "Amount", pointReason: "Reason", at: "Time", more: "Load more", pointEmpty: "No point clawbacks to review.", body: "Post text", viewImage: "View image", hideImage: "Hide image", imageAlt: "Submitted image", imageFailed: "Could not load the image.", NOT_FOUND: "Image not found.", reason: "Reason", approve: "Approve", reject: "Reject", changes: "Request resubmission", refresh: "Refresh",
+    pointReviews: "Point clawback reviews", member: "Member", page: "Page", stamp: "Stamp", points: "Points", pointReason: "Reason", at: "Time", more: "Load more", pointEmpty: "No point clawbacks to review.", body: "Post text", viewImage: "View image", hideImage: "Hide image", imageAlt: "Submitted image", imageFailed: "Could not load the image.", NOT_FOUND: "Image not found.", reason: "Reason", approve: "Approve", reject: "Reject", changes: "Request resubmission", refresh: "Refresh",
     done: "Done.", replayed: "Already handled. Showing the earlier result.",
     REVISION_CONFLICT: "Another admin handled this first. Refresh.", INVALID_TRANSITION: "Not allowed in this state.",
     PROOF_STAMP_UNAVAILABLE: "No stamp could be issued, so approval was not applied.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "This member is restricted, so this can't be approved.", GROUP_WALLET_UNAVAILABLE: "The wallet is turned off, so this couldn't be processed.", GROUP_WALLET_WRITE_FENCED: "Wallet changes are paused, so this couldn't be processed.", REASON_REQUIRED: "Enter a reason of at least 3 characters.",

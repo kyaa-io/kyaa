@@ -34,11 +34,11 @@ const roles: readonly AdminRole[] = ["admin", "operator", "viewer"];
 
 const copy = {
   ko: {
-    eyebrow: "접근 권한", title: "관리자 관리", description: "운영 도구에 접근할 관리자를 추가하고 역할과 활성 상태를 관리합니다.",
+    eyebrow: "접근 권한", title: "관리자 권한", description: "운영 도구에 접근할 관리자를 추가하고 역할과 활성 상태를 관리합니다.",
     addTitle: "관리자 추가", email: "이메일", emailPlaceholder: "admin@example.com", role: "역할", add: "관리자 추가", adding: "추가 중…",
     search: "이메일 검색", searchPlaceholder: "이메일로 검색", count: (visible: number, total: number) => `${total}명 중 ${visible}명`,
-    status: "상태", active: "활성", inactive: "접근 해제", updated: "최근 변경", actions: "작업", saveRole: "역할 저장", saving: "저장 중…",
-    deactivate: "접근 해제", reactivate: "재활성화", self: "내 계정", selfHelp: "현재 로그인한 계정의 역할과 상태는 여기서 변경할 수 없습니다.",
+    status: "상태", active: "활성", inactive: "권한 해제", updated: "최근 변경", actions: "작업", saveRole: "역할 저장", saving: "저장 중…",
+    deactivate: "권한 해제", reactivate: "재활성화", self: "내 계정", selfHelp: "현재 로그인한 계정의 역할과 상태는 여기서 변경할 수 없습니다.",
     loading: "관리자 명단을 불러오는 중입니다.", empty: "등록된 관리자가 없습니다.", emptySearch: "검색 결과가 없습니다.",
     emptyHelp: "위 양식에서 첫 관리자를 추가하세요.", emptySearchHelp: "다른 이메일로 검색해 보세요.", loadError: "관리자 명단을 불러오지 못했습니다.", retry: "다시 시도",
     added: "관리자를 추가했습니다.", roleSaved: "역할을 변경했습니다.", deactivated: "관리자 접근 권한을 해제했습니다.", reactivated: "관리자를 재활성화했습니다.",
@@ -50,7 +50,7 @@ const copy = {
       INVALID_INPUT: "이메일과 역할을 확인해 주세요.", ADMIN_DIRECTORY_DUPLICATE_EMAIL: "이미 등록된 이메일입니다.",
       ADMIN_DIRECTORY_NOT_FOUND: "관리자 정보를 찾을 수 없습니다. 목록을 새로고침해 주세요.",
       ADMIN_DIRECTORY_SELF_CHANGE: "현재 로그인한 계정의 역할이나 상태는 변경할 수 없습니다.",
-      ADMIN_DIRECTORY_LAST_ADMIN: "마지막 활성 admin은 강등하거나 접근 해제할 수 없습니다.",
+      ADMIN_DIRECTORY_LAST_ADMIN: "마지막 관리자의 역할을 낮추거나 권한을 해제할 수 없어요.",
       ADMIN_DIRECTORY_CONFLICT: "다른 관리자가 먼저 변경했습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.",
       ADMIN_DIRECTORY_UNAVAILABLE: "관리자 관리 기능을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
       FORBIDDEN: "관리자 관리 권한이 없습니다.", UNAUTHENTICATED: "관리자 로그인이 필요합니다.",
