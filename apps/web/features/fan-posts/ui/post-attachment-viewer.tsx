@@ -1,5 +1,5 @@
 "use client";
-import {useState} from 'react';
+import {useState,type CSSProperties} from 'react';
 import {Dialog} from '@base-ui/react/dialog';
 import {ChevronLeft,ChevronRight,Play,X} from 'lucide-react';
 import type {AppLocale} from '@/i18n/locales';
@@ -16,11 +16,13 @@ export function PostAttachmentViewer({assets,video,locale,publicFanPost=false}:P
  const [selected,setSelected]=useState(0),[open,setOpen]=useState(false),[playing,setPlaying]=useState(true);
  const copy=contentCopy(locale),page=paginationCopy(locale),media=waveMediaCopy(locale),asset=assets[selected]??assets[0],count=assets.length||Number(Boolean(video));
  if(!count)return null;
+ const attachment = asset ?? video;
+ const mediaFrame = attachment && { "--attachment-ratio": attachment.width / attachment.height, "--attachment-width": `${attachment.width}px` } as CSSProperties;
  const photo=(thumbnail=false,index=selected)=><ContentAssetImage asset={assets[index]??assets[0]} locale={locale} alt={thumbnail?'':copy.photo} thumbnail={thumbnail} failure={thumbnail?'icon':'frame'}/>;
  const controls=assets.length>1&&<><button className={styles.previous} type='button' aria-label={page.previous} disabled={selected===0} onClick={()=>setSelected(value=>value-1)}><ChevronLeft size={20}/></button><button className={styles.next} type='button' aria-label={page.next} disabled={selected===assets.length-1} onClick={()=>setSelected(value=>value+1)}><ChevronRight size={20}/></button></>;
  const thumbnails=<div className={styles.thumbnails}>{assets.map((item,index)=><div className={styles.thumbnail} key={item.id}><div className={styles.thumbnailMedia}>{photo(true,index)}</div><button className={styles.selectThumbnail} type='button' aria-label={`${copy.photo} ${index+1}`} aria-pressed={selected===index} onClick={()=>setSelected(index)}/></div>)}</div>;
- return <div className={`${styles.viewer} ${!asset?styles.videoViewer:''}`}>
-  <div className={styles.current}>
+ return <div className={styles.viewer}>
+  <div className={styles.current} data-attachment-frame="" style={mediaFrame}>
    {asset?photo():video&&<><AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} publicFanPost={publicFanPost} alt={media.play} play={playing}/>{!playing&&<button type='button' className={styles.play} aria-label={media.play} onClick={()=>setPlaying(true)}><Play size={24}/></button>}</>}
    {controls}<span className={styles.position} aria-live='polite'>{selected+1} / {count}</span>
   </div>
@@ -29,7 +31,7 @@ export function PostAttachmentViewer({assets,video,locale,publicFanPost=false}:P
     <Dialog.Trigger className={styles.viewAll}>{media.viewAll}</Dialog.Trigger>
     <Dialog.Portal><Dialog.Backdrop className={styles.backdrop}/><Dialog.Popup className={styles.popup}>
      <div className={styles.dialogHeading}><Dialog.Title>{asset?copy.photo:media.play}</Dialog.Title><Dialog.Close className={styles.close} aria-label={copy.cancel}><X size={20}/></Dialog.Close></div>
-     {open&&<><div className={`${styles.expanded} ${!asset?styles.expandedVideo:''}`}>{asset?photo():video&&<AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} publicFanPost={publicFanPost} alt={media.play} play/>}{controls}<span className={styles.position} aria-live='polite'>{selected+1} / {count}</span></div>{asset&&thumbnails}</>}
+     {open&&<><div className={styles.expanded} data-attachment-frame="" style={mediaFrame}>{asset?photo():video&&<AuthenticatedMedia asset={{...video,kind:'video'}} locale={locale} publicFanPost={publicFanPost} alt={media.play} play/>}{controls}<span className={styles.position} aria-live='polite'>{selected+1} / {count}</span></div>{asset&&thumbnails}</>}
     </Dialog.Popup></Dialog.Portal>
    </Dialog.Root>
   </div>

@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "PC에서 팬페이지 게시판이 탭과 같은 너비를 쓰도록 바꿨어요. 글 상세의 추천 목록도 글이 있는 줄만 표시해요.",
+    "글을 읽을 때 사진과 영상 전체를 화면 크기에 맞춰 원래 비율로 볼 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/elina",
+  "images": [
+    "release-notes/images/2026-11-19-board-layout-1440.png",
+    "release-notes/images/2026-11-19-board-layout-390.png",
+    "release-notes/images/2026-11-19-board-photo-390.png",
+    "release-notes/images/2026-11-19-board-inline-photo-1440.png",
+    "release-notes/images/2026-11-19-board-video-1440.png"
+  ]
+}

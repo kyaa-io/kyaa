@@ -5,15 +5,15 @@ import { MORE_ROWS, moreTitle, parseMore, PostDetailMore } from "./post-detail-m
 type State = { status: "ready"; data: { items: ReturnType<typeof post>[]; nextCursor?: string } } | { status: "loading" } | { status: "error" };
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(window.location.search) }));
 
-const state = vi.hoisted(() => ({ urls: [] as string[], answer: (_url: string): State => ({ status: "loading" }), retry: vi.fn() }));
-vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: (url: string) => { state.urls.push(url); return { state: state.answer(url), retry: state.retry }; } }));
+const state = vi.hoisted(() => ({ urls: [] as string[], answer: (_url: string): State => ({ status: "loading" }), pending: false, retry: vi.fn() }));
+vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: (url: string) => { state.urls.push(url); return { state: state.answer(url), pending: state.pending, retry: state.retry }; } }));
 vi.mock("@/components/banner-slot/banner-slot", () => ({ BannerSlot: ({ slot }: { slot: string }) => <div data-testid="banner" data-slot={slot} /> }));
 
 const post = (id: string, extra: Record<string, unknown> = {}) => ({
   id, celebritySlug: "elina", body: `${id} 제목\n본문`, visibility: "public", revision: 1, author: { nickname: "팬", avatarUrl: "/images/avatars/star-pink.webp" },
   assets: [], video: null, createdAt: "2026-11-10T00:00:00Z", updatedAt: "2026-11-10T00:00:00Z", isOwner: false, likeCount: 3, liked: false, commentCount: 1, ...extra,
 });
-beforeEach(() => { window.history.replaceState(null, "", "/"); state.urls = []; state.retry.mockReset(); });
+beforeEach(() => { window.history.replaceState(null, "", "/"); state.urls = []; state.pending = false; state.retry.mockReset(); });
 afterEach(cleanup);
 
 it("reads the week ranking of the same page, leaves out the post being read and shows five rows with likes and comments", () => {
@@ -51,13 +51,35 @@ it("shows the next group of ranked posts below the same heading", () => {
   expect(screen.queryByRole("button", { name: "더 보기" })).toBeNull();
 });
 
-it("keeps the block height with empty rows, not loading bars, when the page has few other posts", () => {
+it("retains the second popular page while the first latest page is pending", () => {
+  const popular: State = { status: "ready", data: { items: ["a", "b", "c", "d", "e", "f"].map(id => post(id)) } };
+  state.answer = () => popular;
+  const view = <PostDetailMore slug="elina" postId="current" locale="ko" />;
+  const { rerender } = render(view);
+  fireEvent.click(screen.getByRole("button", { name: "더 보기" }));
+  const rowHrefs = () => screen.getAllByRole("link").map(row => row.getAttribute("href"));
+  const popularPage = rowHrefs();
+  expect(popularPage).toEqual([expect.stringContaining("/community/f?")]);
+
+  state.pending = true;
+  fireEvent.click(screen.getByRole("button", { name: "최신" }));
+  rerender(<PostDetailMore {...view.props} />);
+  expect(state.urls.at(-1)).toBe("/api/celebrities/elina/posts?locale=ko&limit=5&exclude=current");
+  expect(screen.getByRole("region")).toHaveAttribute("aria-busy", "true");
+  expect(rowHrefs()).toEqual(popularPage);
+
+  state.pending = false;
+  state.answer = () => ({ status: "ready", data: { items: ["g", "h", "i", "j", "k"].map(id => post(id)) } });
+  rerender(<PostDetailMore {...view.props} />);
+  expect(screen.getByRole("region")).not.toHaveAttribute("aria-busy");
+  expect(rowHrefs()).toEqual(["g", "h", "i", "j", "k"].map(id => expect.stringMatching(new RegExp(`/community/${id}\\?.*&more=latest$`))));
+});
+
+it("renders only the available rows when the page has few other posts", () => {
   state.answer = () => ({ status: "ready", data: { items: [post("a"), post("current")] } });
   const { container } = render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
   expect(screen.getAllByRole("link")).toHaveLength(1);
-  const empty = container.querySelectorAll("li[aria-hidden=true]");
-  expect(empty).toHaveLength(MORE_ROWS - 1);
-  for (const row of empty) expect(row.childElementCount).toBe(0);
+  expect(container.querySelectorAll("li")).toHaveLength(1);
 });
 
 it("leaves a zero count out, and the whole count line when both are zero", () => {
@@ -70,6 +92,7 @@ it("allows switching tabs when the selected list is empty", () => {
   state.answer = () => ({ status: "ready", data: { items: [post("current")] } });
   render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
   expect(screen.queryByRole("link")).toBeNull();
+  expect(screen.getByRole("complementary")).toHaveAttribute("data-empty");
   expect(screen.getByRole("button", { name: "최신" })).toBeTruthy();
   expect(screen.getByTestId("banner")).toBeTruthy();
 });
@@ -125,4 +148,21 @@ it("uses the board post schema for ranking and cursor pages", () => {
   expect(parseMore({ items: [fanPost] })).toMatchObject({ items: [fanPost], nextCursor: null });
   expect(parseMore({ items: [fanPost], nextCursor: "next" }).nextCursor).toBe("next");
   expect(moreTitle({ body: "첫 줄\n둘째 줄" })).toBe("첫 줄");
+});
+
+it("keeps the empty panel inline when another tab starts loading and then finds posts", () => {
+  state.answer = () => ({ status: "ready", data: { items: [] } });
+  const view = <PostDetailMore slug="elina" postId="current" locale="ko" />;
+  const { rerender } = render(view);
+  expect(screen.getByText("추천할 글이 없어요.")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "최신" }));
+
+  state.answer = () => ({ status: "loading" });
+  rerender(<PostDetailMore {...view.props} />);
+  expect(screen.getByRole("complementary")).toHaveAttribute("data-inline");
+
+  state.answer = () => ({ status: "ready", data: { items: [post("a")] } });
+  rerender(<PostDetailMore {...view.props} />);
+  expect(screen.getByRole("complementary")).toHaveAttribute("data-inline");
+  expect(screen.getByRole("link")).toBeVisible();
 });

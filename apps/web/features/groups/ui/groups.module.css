@@ -296,7 +296,7 @@
 /* UI-R10 F14: the see-all link sits at the right end of the side title row. */
 .applicationAside header>h2{flex:1;min-width:0;margin:0}.applicationAside header>a{margin-inline-start:auto}
 /* 2026-11-09 shell-width: the post column fills the cell next to the fixed 288px rail; its left edge is the tab row's left edge. */
-.creatorPostRead{min-width:0;display:grid}
+.creatorPostRead{min-width:0;display:grid;width:100%;max-width:var(--band-read)}
 /* UI-R10 F11: board story rows share the 16px page gutter; tabs and headings may wrap in long locales. */
 /* UI-R10 F06/D11: two results fill the row instead of clustering in two of three tracks. */
 
@@ -308,14 +308,16 @@
 
 @media(max-width:1023px){.discoveryAside .discoveryAttendance{display:none}.discoveryLayout{/* design-lint-disable N4 -- User 2026-11-10: mobile bottom navigation clearance. */ padding-bottom:var(--space-16)}}
 
-.creatorPostLayout:not(:has(>aside)),.boardOnlyLayout{grid-template-columns:minmax(0,1fr)}
+.boardOnlyLayout{grid-template-columns:minmax(0,1fr)}
+.creatorPostLayout:not(:has(> aside, > [data-board-ad-rail])),
+.creatorPostDetailLayout:has(>[data-post-detail-more][data-inline]):not(:has(> [data-post-detail-more] [data-banner-slot], > [data-post-detail-more] [data-board-ad-rail])) { grid-template-columns: minmax(0, 1fr); }
 
-/* 게시판 목록 띠 R3: 목록 920(2026-11-13 PM 점검 "PC 목록이 좁은 가운데 열에 갇힘"). */
-.creatorPostLayout:not(:has(>aside)),.boardOnlyLayout { width:100%; max-width:var(--band-list); margin-inline:auto; }
-/* 글 상세(2026-11-11 사용자 "게시판 좌우 여백이 어색함. 다른 글 추천", 2026-11-12 14:24 "옆으로 채워져야"): PC는 본문 열이 프로필·탭 줄의 왼쪽 선에서 시작하고 다른 글·배너 레일 360/384(R4)가 오른쪽 끝선까지 닿는다. 좌우 빈 공간 없음, 간격 R5. 1024 미만은 위 규칙대로 한 열(레일은 본문 아래). */
+/* 모임 자체 게시판 목록 띠. 크리에이터 게시판은 탭과 같은 폭을 쓴다. */
+.boardOnlyLayout { width:100%; max-width:var(--band-list); margin-inline:auto; }
+/* 글 상세(2026-11-11 사용자 "게시판 좌우 여백이 어색함. 다른 글 추천", 2026-11-12 14:24 "옆으로 채워져야"): PC는 본문 열이 프로필·탭 줄의 왼쪽 선에서 시작하고 다른 글·배너 레일 360가 오른쪽 끝선까지 닿는다. 좌우 빈 공간 없음, 간격 R5. 1024 미만은 위 규칙대로 한 열(레일은 본문 아래). */
 .creatorPostDetailLayout{padding-top:0}
+.creatorPostDetailLayout > [data-post-detail-more][data-inline]:not(:has([data-banner-slot], [data-board-ad-rail])) { position: static; width:100%; max-width:var(--band-read); }
 @media (width >= 64rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,1fr) var(--rail-md);column-gap:var(--col-gap)}}
-@media (width >= 80rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,1fr) var(--rail-wide)}}
 
 @media(width < 64rem){.discoveryAttendance [data-fan-action]{width:44px;height:44px;min-height:44px;padding:0}.discoveryAside .discoveryAttendance{bottom:calc(var(--space-16) + var(--space-4) + var(--space-14) + env(safe-area-inset-bottom))}}
 
@@ -324,3 +326,13 @@
 @media(min-width:1024px){.creatorHomeMain>.creatorShortcuts a{flex-direction:row;justify-content:center;align-items:center;min-height:var(--min-target)}.creatorHomeMain>.creatorShortcuts .shortcutStamp{width:24px;height:24px}.creatorHomeMain>.creatorShortcuts a>span:first-child{height:24px}}
 
 .creatorShortcuts>span:first-child{min-width:0}.creatorShortcuts>span:first-child>a{width:100%;height:100%}
+
+.boardAdRail { display: none; }
+@media (width >= 80rem) {
+  .boardAdRail { display: grid; min-width: 0; gap: var(--space-3); max-width: var(--rail-md); margin-inline-start: auto; width: 100%; }
+  .creatorPostLayout:has(> [data-board-ad-rail]) {
+    grid-template-columns: minmax(0, 1fr) var(--rail-md);
+    column-gap: var(--col-gap);
+  }
+  .creatorPostDetailLayout > [data-post-detail-more]:has([data-board-ad-rail]) { position: static; }
+}

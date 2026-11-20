@@ -11,6 +11,7 @@ it('selects authenticated attachments with arrows and thumbnails and opens the s
  expect(screen.getByRole('button',{name:'Previous'})).toBeDisabled();
  fireEvent.click(screen.getByRole('button',{name:'Next'}));
  expect(screen.getByRole('img',{name:'Attached photo'})).toHaveAttribute('src','/authorized/second');
+ expect(screen.getByRole('img',{name:'Attached photo'}).closest('[data-attachment-frame]')).toHaveStyle('--attachment-ratio: 0.75');
  expect(screen.getByRole('button',{name:'Attached photo 2'})).toHaveAttribute('aria-pressed','true');
  const trigger=screen.getByRole('button',{name:'View all'});trigger.focus();fireEvent.click(trigger);
  const dialog=await screen.findByRole('dialog');

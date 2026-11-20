@@ -30,13 +30,14 @@ function loadSlots(area: BannerSlotArea, locale: AppLocale): Promise<BannerSlotM
   return request;
 }
 
-export function useBannerSlots(area: BannerSlotArea, locale: AppLocale): BannerSlotMap {
+export function useBannerSlots(area: BannerSlotArea, locale: AppLocale, enabled = true): BannerSlotMap {
   const [slots, setSlots] = useState<BannerSlotMap>({});
   useEffect(() => {
+    if (!enabled) return;
     let active = true;
     void loadSlots(area, locale).then(next => { if (active) setSlots(next); });
     return () => { active = false; };
-  }, [area, locale]);
+  }, [area, locale, enabled]);
   return slots;
 }
 
