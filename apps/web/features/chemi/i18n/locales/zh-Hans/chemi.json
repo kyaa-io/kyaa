@@ -155,11 +155,15 @@
     "back": "返回"
   },
   "readingUi": {
+    "askAgain": "再问一次",
+    "askCaution": "今天要注意什么？",
+    "askStrength": "我该怎么发挥优势？",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "再次查看",
+    "anotherDate": "其他日期的运势",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",

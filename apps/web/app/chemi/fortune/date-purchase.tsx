@@ -11,6 +11,9 @@ import { parseNewFortune, todayKst, type FortuneReading } from "./reading";
 import { flowNotes } from "./result-copy";
 import styles from "./result.module.css";
 
+// Standard price from chemi_point_date. The date-specific quote controls confirmation.
+export const DATE_READING_PRICE = 3;
+
 export function DatePurchase({
   character,
   locale,
@@ -26,27 +29,17 @@ export function DatePurchase({
   const [quote, setQuote] = useState<{
     price: number;
     balance: number;
-    topupPath?: string;
   }>();
+  const [revisit, setRevisit] = useState(false);
   const [saved, setSaved] = useState<FortuneReading>();
   useEffect(() => {
     const day = new URLSearchParams(window.location.search).get("date");
     if (day && /^\d{4}-\d{2}-\d{2}$/.test(day)) setDay(day);
   }, []);
-  function topupHref(path: string) {
-    const back = new URL(window.location.href);
-    back.searchParams.set("date", day);
-    back.hash = "fortune-date";
-    const params = new URLSearchParams({
-      returnTo: back.pathname + back.search + back.hash,
-      date: day,
-      character,
-    });
-    return `${path}?${params}`;
-  }
   function reset(value: string) {
     setDay(value);
     setQuote(undefined);
+    setRevisit(false);
     setSaved(undefined);
     setError(false);
   }
@@ -72,6 +65,7 @@ export function DatePurchase({
       const reading = parseNewFortune(body);
       if (body.readingId && !reading) throw Error();
       setQuote(body.todayFree ? undefined : body);
+      setRevisit(Boolean(reading && body.replayed));
       setSaved(reading ?? undefined);
     } catch {
       setError(true);
@@ -82,7 +76,7 @@ export function DatePurchase({
   }
   return (
     <section id="fortune-date" className={`${styles.panel} ${styles.purchase}`}>
-      <FanHeading as="h2"><ReadingText id="anotherDate" /></FanHeading>
+      <FanHeading as="h2">{uiText("anotherDate")} · {DATE_READING_PRICE}P</FanHeading>
       <label>
         <ReadingText id="date" />
         <input
@@ -101,7 +95,9 @@ export function DatePurchase({
         </p>
       )}
       {saved && !saved.result.locked ? (
-        <div aria-live="polite">
+        revisit ? (
+          <FanAction onClick={() => setRevisit(false)}><ReadingText id="readDateAgain" /></FanAction>
+        ) : <div aria-live="polite">
           <FanText role="item">
             {saved.kstDate.replaceAll("-", ".")} · {saved.result.grade.name}
           </FanText>
@@ -134,7 +130,6 @@ export function DatePurchase({
           ) : (
             <DateShortage
               shortBy={quote.price - quote.balance}
-              topupHref={quote.topupPath ? topupHref(quote.topupPath) : undefined}
               locale={locale}
               busy={busy}
               onCancel={() => reset("")}

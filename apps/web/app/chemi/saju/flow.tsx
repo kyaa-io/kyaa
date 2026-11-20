@@ -722,8 +722,6 @@ export function SajuFlow({
   const wideArt =
     character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-wide-v2.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
-  /** 세로 그림 최애: 넓은 화면에서 그림을 통째로 왼쪽에 두고 남는 면은 공통 MediaFill 이 그 그림의 흐린 복사본으로 채운다. */
-  const portrait = character !== "changha";
   const primaryLabel = entering && !again ? sceneCopy.start : talk ? text(talkChoice[talk - 1]) : null;
 
   const turns = (cls: string, side = false) => (

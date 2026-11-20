@@ -155,11 +155,15 @@
     "back": "戻る"
   },
   "readingUi": {
+    "askAgain": "もう一つ聞く",
+    "askCaution": "今日は何に気をつければいい？",
+    "askStrength": "自分の強みをどう生かせる？",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "もう一度見る",
+    "anotherDate": "別の日の運勢",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",

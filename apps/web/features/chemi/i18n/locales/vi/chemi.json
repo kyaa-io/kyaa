@@ -155,11 +155,15 @@
     "back": "Quay lại"
   },
   "readingUi": {
+    "askAgain": "Hỏi thêm một câu",
+    "askCaution": "Hôm nay mình nên chú ý điều gì?",
+    "askStrength": "Mình nên phát huy điểm mạnh thế nào?",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "Xem lại",
+    "anotherDate": "Vận may ngày khác",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",

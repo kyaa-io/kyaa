@@ -155,11 +155,15 @@
     "back": "Go back"
   },
   "readingUi": {
+    "askAgain": "Ask one more question",
+    "askCaution": "What should I watch out for today?",
+    "askStrength": "How can I use my strengths?",
     "skip": "Skip",
     "symbol": "Symbols in the picture",
     "me": "Me",
     "chart": "My birth chart",
-    "anotherDate": "Read another date",
+    "readDateAgain": "Read again",
+    "anotherDate": "Fortune for another date",
     "otherFortunes": "Explore other fortunes",
     "otherTopics": "Other topics",
     "retry": "Try again",

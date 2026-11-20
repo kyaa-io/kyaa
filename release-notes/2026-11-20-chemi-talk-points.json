@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "사주 첫 풀이에서 조심할 점이나 내 장점을 골라 최애에게 한 번 더 물어볼 수 있어요.",
+    "오늘 운세에서 다른 날짜 풀이의 가격 3P를 먼저 확인하고, 이미 구매한 풀이는 무료로 다시 읽을 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/saju",
+  "images": [
+    "release-notes/images/2026-11-20-chemi-talk-points-ask.png",
+    "release-notes/images/2026-11-20-chemi-talk-points-date.png"
+  ]
+}

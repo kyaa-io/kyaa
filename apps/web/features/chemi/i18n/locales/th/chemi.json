@@ -155,11 +155,15 @@
     "back": "กลับ"
   },
   "readingUi": {
+    "askAgain": "ถามอีกข้อ",
+    "askCaution": "วันนี้ควรระวังอะไรบ้าง",
+    "askStrength": "จะใช้จุดแข็งของฉันได้อย่างไร",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "อ่านอีกครั้ง",
+    "anotherDate": "ดวงชะตาวันอื่น",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",
