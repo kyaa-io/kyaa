@@ -1,3 +1,4 @@
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
 import {
@@ -28,6 +29,7 @@ export default async function SajuPage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="saju-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="saju-main">
+          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
           {params.from ? (
             <SajuShared key={params.from} locale={locale} from={params.from} />
           ) : (

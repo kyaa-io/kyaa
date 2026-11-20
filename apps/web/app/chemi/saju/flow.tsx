@@ -15,6 +15,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanDialog, FanSheet } from "@/components/fan-ui/fan-dialog";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanText } from "@/components/fan-ui/fan-text";
+import { completeShare } from "@/features/chemi/ui/complete-share";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import {
@@ -531,14 +532,16 @@ export function SajuFlow({
       });
       if (!response.ok) throw Error();
       const card = await response.json();
-      await navigator.clipboard.writeText(new URL(card.url, location.origin).href);
-      showFanToast({ title: text("copied"), tone: "success" });
-      await fetch(`/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ via: "copy" }),
-      }).catch(() => {});
-    } catch {
+      const url = new URL(card.url, location.origin).href;
+      const via = typeof navigator.share === "function" ? "send" : "copy";
+      if (via === "send") await navigator.share({ url });
+      else {
+        await navigator.clipboard.writeText(url);
+        showFanToast({ title: text("copied"), tone: "success" });
+      }
+      await completeShare(card.shareId, via, headers, text);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       showFanToast({ title: text("copyFailed"), tone: "error" });
     } finally {
       setSharing(false);
