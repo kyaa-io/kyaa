@@ -127,11 +127,11 @@ export function SajuResult({
 
   const kicker =
     view === "pair" && pair
-      ? `${name}가 봐 준 궁합 · 나 × ${pair.name}`
-      : `${name}가 풀어 준 나의 ${{ first: uiText("sajuName"), year: uiText("year"), month: uiText("month") }[view as "first"]}`;
+      ? uiText("pairTitle", { name, partner: pair.name })
+      : uiText("readingTitle", { name, topic: uiText(view === "year" ? "year" : view === "month" ? "month" : "sajuName") });
   const title =
     view === "first" ? first.headline : view === "year" ? year.title : view === "month" ? month.title : compat!.title;
-  const bondKicker = { first: `${name}와 나`, year: `올해 ${name}와 나`, month: `이달 ${name}와 나`, pair: "" }[view];
+  const bondKicker = { first: uiText("bondFirst", { name }), year: uiText("bondYear", { name }), month: uiText("bondMonth", { name }), pair: "" }[view];
   const bond = view === "first" ? first.bond : view === "year" ? year.bond : view === "month" ? month.bond : "";
 
   const bar = (label: string, value: number, top = false) => (
@@ -280,7 +280,7 @@ export function SajuResult({
           )}
           {view === "pair" && pair && !pair.timeKnown && (
             <FanText as="p" role="meta">
-              {pair.name} 출생 시간 없이 봄
+              {uiText("pairNoTime", { name: pair.name })}
             </FanText>
           )}
           <picture className={styles.hero}>

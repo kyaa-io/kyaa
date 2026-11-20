@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingTitle, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -49,7 +49,7 @@ export function SajuShared({ locale, from }: { locale: AppLocale; from: string }
   return (
     <section className={styles.layout}>
       <div className={styles.panel}>
-        <FanHeading as="h1">최애 사주</FanHeading>
+        <FanHeading as="h1"><ReadingTitle id="saju" /></FanHeading>
         <FanState inline kind="info" title={state.line} />
         <FanAction variant="neutral" href={home}>
           {uiText("chemi")}</FanAction>
