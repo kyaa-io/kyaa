@@ -115,3 +115,4 @@
 .feedCaption { display:grid; justify-items:start; gap:var(--space-1); padding:var(--space-2); border-radius:var(--radius-small); }
 .feedCaption a,.feedCaption button { color:inherit; }
 .feedCaption button[aria-expanded=true] { max-height:35dvh; overflow:auto; }
+.expandedCaption { max-height:35dvh; overflow:auto; overscroll-behavior:contain; white-space:pre-wrap; overflow-wrap:anywhere; }

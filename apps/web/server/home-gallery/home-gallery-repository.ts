@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { createClient } from "@/server/data/client";
 import { createCreatorAvatarReader, type CreatorAvatarReader } from "./creator-avatars";
+import { snsIngestSlug } from "@/server/sns-ingest/source-url";
 import { diversifyShorts } from "@/features/home/domain/home-gallery-order";
 import { homeGalleryPageSchema, homeShortsPageSchema, homeShortsSchema, type HomeGalleryPage, type HomeShort } from "@/features/home/domain/home-gallery";
 
@@ -134,7 +135,8 @@ export class HomeGalleryRepository {
       if (!page.hasMore) break;
     }
     const likes = await this.readLikeCounts(items.map(item => item.videoId));
-    return { items: await this.withAvatars(locale, items), likes };
+    const catalogItems = items.map(item => item.platform === "youtube" ? item : { ...item, sourceNoticeSlug: snsIngestSlug(item.platform, item.videoId) });
+    return { items: await this.withAvatars(locale, catalogItems), likes };
   }
 
   async listShorts(locale: "ko" | "en", input: { limit: number }): Promise<readonly HomeShort[]> {
