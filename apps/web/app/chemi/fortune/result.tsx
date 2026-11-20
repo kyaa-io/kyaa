@@ -1,4 +1,5 @@
 "use client";
+import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
@@ -54,6 +55,7 @@ export function FortuneResult({
   initial,
   pending = false,
   backHref,
+  onAsk,
   character = "changha",
 }: {
   character?: FortuneCharacterId;
@@ -65,6 +67,8 @@ export function FortuneResult({
   initial?: Reading;
   /** 저장된 결과를 불러오는 중. 요청은 부른 쪽이 하고, 여기서는 불러오는 모양만 그린다. */
   pending?: boolean;
+  /** 내 풀이를 볼 때만 준다: 주 버튼이 이 결과로 질문하기가 된다. */
+  onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
@@ -183,7 +187,7 @@ export function FortuneResult({
       await fetch(
         `/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`,
         { method: "POST", headers, body: JSON.stringify({ via: "copy" }) },
-      ).catch(() => {});
+      ).then(response => showShareReward(response, uiText)).catch(() => {});
     } catch {
       showFanToast({ title: uiText("copyFailed"), tone: "error" });
     } finally {
@@ -504,12 +508,8 @@ export function FortuneResult({
             {sayLine}
           </FanText>
           <div className={styles.cta}>
-            <FanAction
-              variant="primary"
-              fullWidth
-              href={`/chemi?locale=${locale}`}
-            >
-              <ReadingText id="otherFortunes" />
+            <FanAction variant="primary" fullWidth {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
+              <ReadingText id={onAsk ? "askFromResult" : "otherFortunes"} />
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>

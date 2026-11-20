@@ -40,6 +40,8 @@ import {
   type Participation,
 } from "./reading";
 import { kstDate, kstDayStart } from "./result-copy";
+import { AskScene } from "@/features/chemi/ask/ask-scene";
+import { askGo, useAskLocation } from "@/features/chemi/ask/location";
 import { FortuneResult } from "./result";
 import { Under14 } from "./under-14";
 import styles from "./scene.module.css";
@@ -118,6 +120,7 @@ export function FortuneFlow({
   restoring?: boolean;
 }) {
   const text = useReadingCopy();
+  const ask = useAskLocation();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const [step, setStep] = useState<FortuneStep>("enter");
   const [character, setCharacter] = useState<FortuneCharacterId>("changha");
@@ -346,6 +349,8 @@ export function FortuneFlow({
   if (restoring)
     return <FortuneResult pending locale={locale} character={character} backHref={`/chemi?locale=${locale}`} />;
 
+  if (step === "result" && reading && ask)
+    return <AskScene locale={locale} content="fortune" character={character} readingId={reading.readingId} at={ask} />;
   if (step === "result" && reading)
     return (
       <FortuneResult
@@ -353,6 +358,7 @@ export function FortuneFlow({
         initial={reading}
         character={character}
         backHref={`/chemi/fortune?c=${character}&locale=${locale}`}
+        onAsk={() => askGo({ step: "topic" })}
       />
     );
 
