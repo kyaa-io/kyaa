@@ -205,7 +205,8 @@ it("shares one preflight client across both email paths before either can claim"
  await runNotificationWorkerOnce(env);
  expect(state.sesClient).toHaveBeenCalledExactlyOnceWith(env.SES_ROLE_ARN);
  expect(state.ses).toHaveBeenCalledWith(expect.objectContaining({ client }));
- expect(chemiRpc).toHaveBeenCalledExactlyOnceWith("chemi_mail_claim", {});
+ expect(chemiRpc).toHaveBeenCalledWith("chemi_mail_claim", {});
+ expect(chemiRpc).toHaveBeenCalledWith("consume_cs_receipt");
  expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client, undefined);
  state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
  state.queue.mockClear(); state.inquiry.mockClear();

@@ -57,3 +57,20 @@ export function renderBusinessInquiryEmail(job: BusinessInquiry) {
 </body></html>`;
   return { subject, text, html };
 }
+
+export function renderCsReceipt(job: { id: string; locale: "ko" | "en"; body: string }) {
+  const ko = job.locale === "ko";
+  const heading = ko ? "문의를 접수했어요" : "We’ve received your inquiry";
+  const subject = `[kyaa] ${heading} (#${job.id})`;
+  const excerpt = inquirySubjectExcerpt(job.body);
+  const note = ko ? "내용을 확인한 후 이메일로 답변드릴게요." : "We’ll review your message and reply by email.";
+  const footer = ko ? "kyaa에서 럭키드로우 소식도 만나보세요." : "Explore the latest lucky draws on kyaa.";
+  const home = "https://kyaa.io/?utm_source=kyaa&utm_medium=email&utm_campaign=cs_receipt&utm_content=footer";
+  const instagram = "https://www.instagram.com/kyaa_app/";
+  const action = ko ? "kyaa 바로가기" : "Visit kyaa";
+  return {
+    subject,
+    text: [heading, `#${job.id}`, excerpt, note, footer, `${action} · ${home}`, `@kyaa_app · ${instagram}`].join("\n\n"),
+    html: `<main lang="${job.locale}" style="max-width:560px;margin:32px auto;padding:24px;font:16px/1.6 Arial,sans-serif;color:#242124"><strong>kyaa</strong><h1>${heading}</h1><p>#${escapeHtml(job.id)}</p><blockquote style="margin:16px 0;padding:16px;background:#faf6fa;overflow-wrap:anywhere">${escapeHtml(excerpt)}</blockquote><p>${note}</p><hr><p>${footer}<br><a href="${escapeHtml(home)}">${action}</a> · <a href="${instagram}">@kyaa_app</a></p></main>`,
+  };
+}
