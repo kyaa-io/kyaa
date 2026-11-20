@@ -236,7 +236,8 @@
   gap: var(--space-1);
 }
 .sceneHead {
-  display: flex;
+  display: grid;
+  grid-template-columns: 3em max-content;
   align-items: center;
   gap: var(--space-3);
 }
