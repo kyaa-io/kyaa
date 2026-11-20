@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 import { useAdminSession } from "./use-admin-session";
 import { AdminAccessState } from "./admin-access-state";
 import { AdminOperationsShell, type AdminLocale } from "./operations-shell";
-import { GroupAdminShell } from "./group-admin-shell";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { useFanpageResource } from "@/features/fanpage/ui/use-fanpage-resource";
 import { useNewsSource } from "@/features/fanpage/ui/use-news-source";
@@ -18,7 +17,7 @@ export { styles };
 export function ParticipationAdmin({ locale, title, description, children, className, groupLayout = false }: { groupLayout?: boolean; locale: AdminLocale; title: string; description: string; className?: string; children: (role: string) => ReactNode }) {
   const session = useAdminSession(), auth = usePrivy();
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale={locale} />;
-  if (groupLayout) return <GroupAdminShell locale={locale}><div className={className} key={auth.user?.id}>{children(session.admin.role)}</div></GroupAdminShell>;
+  if (groupLayout) return <AdminOperationsShell locale={locale} adminRole={session.admin.role}><div className={className} key={auth.user?.id}>{children(session.admin.role)}</div></AdminOperationsShell>;
   return <AdminOperationsShell locale={locale} adminRole={session.admin.role}><div className={[styles.adminPanel,className].filter(Boolean).join(" ")} key={auth.user?.id}><header className={styles.adminHeading}><h1>{title}</h1>{description&&<p>{description}</p>}</header>{children(session.admin.role)}</div></AdminOperationsShell>;
 }
 export function useAdminPage<T extends { id: string }>(url: string, parse: (value: unknown) => { items: T[]; nextCursor: string | null }) {

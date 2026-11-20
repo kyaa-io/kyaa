@@ -42,7 +42,7 @@
 .workspaceHeading button, .formActions button { min-height: 44px; padding: 0 16px; border-radius: 12px; font-weight: 700; }
 .workspaceHeading button { display: none; align-items: center; gap: 8px; border: 0; background: var(--cherry); color: var(--color-surface); }
 .workspaceHeading button svg { width: 18px; }
-button:disabled { cursor: not-allowed; }
+.workspace button:disabled { cursor: not-allowed; }
 .workspaceHeading button:disabled, .primaryButton:disabled { background: var(--color-soft); color: var(--color-muted); }
 .integrationNotice { margin-bottom: 24px; }
 .integrationNotice p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }

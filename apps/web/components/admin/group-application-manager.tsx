@@ -1,4 +1,5 @@
 "use client";
+import { adminReviewLabels } from "@/i18n/catalogs/components__admin__review-navigation";
 import {isLegacyQualification,qualificationSchema} from "@/features/groups/domain/qualification";
 import {GroupImage} from "@/features/groups/ui/group-image";
 import {qualificationCopy} from "@/features/groups/ui/qualification-copy";
@@ -13,8 +14,8 @@ const application = z.object({ qualification:qualificationSchema.nullable().opti
 const parse = (value: unknown) => z.object({ items: z.array(application), nextCursor: z.string().nullable() }).parse(value);
 const reviewResult = z.object({ id: z.uuid(), status: z.string(), pageId: z.uuid().nullable() });
 const copy = {
- ko: { title: "페이지 개설 신청", description: "신청 내용을 검토하고 승인한 페이지의 소유자를 지정합니다.", all: "전체", submitted: "검토 대기", reviewing: "검토 중", start_review: "검토 시작", changes_requested: "보완 요청", approved: "승인", rejected: "반려", fan: "팬페이지", hobby: "취미", brand: "브랜드", reason: "검토 의견", decision: "처리", approve: "승인", reject: "반려", request_changes: "보완 요청", save: "검토 결과 저장", question: "가입 질문" },
- en: { title: "Page applications", description: "Review applications and assign ownership when approving a page.", all: "All", submitted: "Pending", reviewing: "In review", start_review: "Start review", changes_requested: "Changes requested", approved: "Approved", rejected: "Rejected", fan: "Fan page", hobby: "Hobby", brand: "Brand", reason: "Review notes", decision: "Decision", approve: "Approve", reject: "Reject", request_changes: "Request changes", save: "Save review", question: "Join question" },
+ ko: { title: adminReviewLabels.ko.groupApplications, description: "신청 내용을 검토하고 승인한 페이지의 소유자를 지정합니다.", all: "전체", submitted: "검토 대기", reviewing: "검토 중", start_review: "검토 시작", changes_requested: "보완 요청", approved: "승인", rejected: "반려", fan: "팬페이지", hobby: "취미", brand: "브랜드", reason: "검토 의견", decision: "처리", approve: "승인", reject: "반려", request_changes: "보완 요청", save: "검토 결과 저장", question: "가입 질문" },
+ en: { title: adminReviewLabels.en.groupApplications, description: "Review applications and assign ownership when approving a page.", all: "All", submitted: "Pending", reviewing: "In review", start_review: "Start review", changes_requested: "Changes requested", approved: "Approved", rejected: "Rejected", fan: "Fan page", hobby: "Hobby", brand: "Brand", reason: "Review notes", decision: "Decision", approve: "Approve", reject: "Reject", request_changes: "Request changes", save: "Save review", question: "Join question" },
 };
 export type GroupApplicationPresentation=Record<string,{creatorName?:string;materialsLabel?:string;materialsHref?:string;relationship?:string}>;
 export function GroupApplicationManager({ locale,presentation }: { locale: "ko" | "en";presentation?:GroupApplicationPresentation }) {
