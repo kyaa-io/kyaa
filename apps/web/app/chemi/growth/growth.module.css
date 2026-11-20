@@ -1,0 +1,312 @@
+.grow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  padding-block: var(--space-4);
+}
+.grow .chips {
+  flex-wrap: nowrap;
+  padding-block: var(--space-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chips > * {
+  flex: none;
+  padding-inline-start: var(--space-1);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+.chip img {
+  width: calc(var(--space-6) + var(--space-1));
+  height: calc(var(--space-6) + var(--space-1));
+  border-radius: 50%;
+}
+.chips [aria-pressed="true"] .chip > span {
+  color: inherit;
+}
+.stage {
+  display: grid;
+  gap: var(--space-4);
+  justify-items: center;
+}
+.room {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.room > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.room .mini {
+  position: absolute;
+  bottom: 17%;
+  left: 50%;
+  width: 36%;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border-radius: var(--radius-small);
+  translate: -50% 0;
+  animation: mini-in var(--motion-slow) var(--motion-easing) both;
+}
+.mini img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 400 / 580;
+}
+.mini img[data-hop="true"] {
+  animation: mini-hop var(--motion-slow) var(--motion-easing);
+}
+@keyframes mini-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+@keyframes mini-hop {
+  40% {
+    transform: translateY(-9%);
+  }
+}
+.name,
+.room .sample {
+  position: absolute;
+  top: var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: calc(var(--space-8) + var(--space-1));
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+.name {
+  left: var(--space-3);
+}
+.room .sample {
+  right: var(--space-3);
+}
+.line {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 50%;
+  width: max-content;
+  max-width: calc(100% - var(--space-6));
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  text-align: center;
+  translate: -50% 0;
+}
+.side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-8);
+  min-width: 0;
+}
+.level {
+  display: grid;
+  gap: var(--space-2);
+}
+.levelHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.exp {
+  font-variant-numeric: tabular-nums;
+}
+.next {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+}
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.earn,
+.album {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.earn {
+  display: grid;
+  column-gap: var(--space-4);
+}
+.earn a {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--space-16);
+  border-bottom: 1px solid var(--color-line-subtle);
+  color: inherit;
+  text-decoration: none;
+}
+.earn img {
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-small);
+  object-fit: cover;
+}
+.gain,
+.got {
+  margin-inline-start: auto;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.earn .gain {
+  color: var(--color-ink);
+}
+.got {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+.album {
+  display: grid;
+  grid-auto-columns: calc(var(--space-12) * 2 + var(--space-2));
+  grid-auto-flow: column;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.album .card {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-media);
+  color: inherit;
+  text-align: start;
+}
+.album .card > span {
+  display: block;
+  width: 100%;
+}
+.album .card .face {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+.photo {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-media);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+.photo:has(img) {
+  border: 0;
+  background: var(--color-accent-soft);
+}
+.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo[data-fresh] {
+  animation: card-in var(--motion-reward) var(--motion-easing) both;
+}
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+.date {
+  font-variant-numeric: tabular-nums;
+}
+.viewer {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+}
+.viewer img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-media);
+  background: var(--color-accent-soft);
+}
+.chips :focus-visible,
+.room .mini:focus-visible,
+.album .card:focus-visible,
+.earn a:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+@media (width >= 64rem) {
+  .grow {
+    grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+    column-gap: var(--space-10);
+    align-items: start;
+  }
+  .grow .chips {
+    grid-column: 1 / -1;
+  }
+  .earn {
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+  }
+  .earn a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: center;
+    column-gap: var(--space-3);
+    min-height: 0;
+    border-bottom: 0;
+  }
+  .earn img {
+    grid-row: span 2;
+  }
+  .earn a > :nth-child(2) {
+    align-self: end;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gain,
+  .got {
+    align-self: start;
+    margin-inline-start: 0;
+  }
+  .album {
+    grid-auto-columns: auto;
+    grid-auto-flow: row;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-3);
+    overflow: visible;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .room .mini,
+  .mini img[data-hop="true"],
+  .photo[data-fresh] {
+    animation: none;
+  }
+}
