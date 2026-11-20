@@ -65,7 +65,7 @@ export function SajuResult({
   exp,
   pair,
   sharing,
-  backLabel = "뒤로 가기",
+  backLabel,
   onBack,
   onShare,
   onTopics,
@@ -235,7 +235,7 @@ export function SajuResult({
       <div className={styles.toolbar}>
         <FanAction
           onClick={view === "first" ? onScene : onBack}
-          ariaLabel={backLabel}
+          ariaLabel={backLabel ?? uiText("back")}
           leadingIcon={<FanIcon icon={ChevronLeft} />}
           className={styles.round}
         />
@@ -403,7 +403,7 @@ export function SajuResult({
         {view === "pair" && compat && pair && (
           <section className={`${styles.panel} ${styles.pairPanel}`}>
             <div className={styles.block}>
-              <FanHeading>나 × {pair.name}</FanHeading>
+              <FanHeading>{uiText("pairMe", { name: pair.name })}</FanHeading>
               <div className={styles.bars}>
                 {compat.rows.map((row) => (
                   <div className={styles.barRowWide} key={row.label}>
@@ -497,10 +497,11 @@ export function SajuResult({
 }
 
 function Rewards({ locale, points, exp }: { locale: AppLocale; points: number; exp: number }) {
+  const uiText = useReadingCopy();
   return (
     <div className={styles.rewardRow}>
       {points > 0 && <EarnBadge locale={locale} points={points} variant="inline" />}
-      {exp > 0 && <FanText role="meta">친밀 +{exp}</FanText>}
+      {exp > 0 && <FanText role="meta">{uiText("affinityGain", { exp: exp })}</FanText>}
     </div>
   );
 }

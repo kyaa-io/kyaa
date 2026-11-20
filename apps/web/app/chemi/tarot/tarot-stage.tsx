@@ -44,7 +44,7 @@ type Props = {
   onRetry: () => void;
 };
 
-const DIRECTION = ["정방향", "역방향"] as const;
+
 
 export function TarotStage(props: Props) {
   const uiText = useReadingCopy();
@@ -130,7 +130,7 @@ export function TarotStage(props: Props) {
       <div className={styles.scene}>
         <picture key={character}>
           <source media="(min-width: 48rem)" srcSet={`/chemi/tarot/scene-${character}-l.webp`} />
-          <img src={`/chemi/tarot/scene-${character}-p.webp`} alt={`촛불 켠 방, 탁자 건너편에 앉은 ${person.name}`} />
+          <img src={`/chemi/tarot/scene-${character}-p.webp`} alt={uiText("candleRoom", { name: person.name })} />
         </picture>
       </div>
       {entry ? (
@@ -146,7 +146,7 @@ export function TarotStage(props: Props) {
             className={styles.onTable}
             data-reversed={shown.reversed || undefined}
             href={`#`}
-            aria-label={`오늘 카드: ${tarotTitle(shown.card)}`}
+            aria-label={uiText("todayCardLabel", { card: tarotTitle(shown.card) })}
             onClick={(event) => {
               event.preventDefault();
               props.onResult();
@@ -174,7 +174,7 @@ export function TarotStage(props: Props) {
           </div>
         ) : null}
         {revisit ? <NameRow draw={shown} trailing={uiText("todayCard")} /> : null}
-        {talking && draw ? <NameRow draw={draw} trailing={draw.slot ? `${draw.slot}번째 카드` : null} /> : null}
+        {talking && draw ? <NameRow draw={draw} trailing={draw.slot ? uiText("nthCard", { slot: draw.slot }) : null} /> : null}
         {step === "lock" ? (
           <div className={styles.picked}>
             <LockedBand slot={slot ?? 1} />
@@ -229,12 +229,13 @@ export function TarotStage(props: Props) {
 }
 
 function NameRow({ draw, trailing }: { draw: TarotDraw; trailing: string | null }) {
+  const uiText = useReadingCopy();
   return (
     <div className={styles.nameRow}>
       <FanText as="p" role="item">
         {tarotTitle(draw.card)}
       </FanText>
-      <FanTag tone="fan">{DIRECTION[Number(draw.reversed)]}</FanTag>
+      <FanTag tone="fan">{uiText(draw.reversed ? "reversed" : "upright")}</FanTag>
       {trailing ? (
         <FanText className={styles.nameTrail} role="meta">
           {trailing}
@@ -246,6 +247,7 @@ function NameRow({ draw, trailing }: { draw: TarotDraw; trailing: string | null 
 
 /** 확정: 고른 자리의 카드가 위로 들리고 나머지 줄은 흐려진다. */
 function LockedRail({ slot, cardRef }: { slot: number; cardRef: RefObject<HTMLSpanElement | null> }) {
+  const uiText = useReadingCopy();
   return (
     <ul className={styles.rail} data-locked="">
       <li data-row="">
@@ -254,7 +256,7 @@ function LockedRail({ slot, cardRef }: { slot: number; cardRef: RefObject<HTMLSp
         </span>
       </li>
       <li data-row="">
-        <span ref={cardRef} className={styles.card} aria-current="true" aria-label={`${slot}번째 카드`}>
+        <span ref={cardRef} className={styles.card} aria-current="true" aria-label={uiText("nthCard", { slot: slot })}>
           <img src={TAROT_BACK} alt="" />
         </span>
       </li>
@@ -268,6 +270,7 @@ function LockedRail({ slot, cardRef }: { slot: number; cardRef: RefObject<HTMLSp
 }
 
 function LockedBand({ slot }: { slot: number }) {
+  const uiText = useReadingCopy();
   return (
     <>
       <div className={`${styles.band} ${styles.bandFixed}`} aria-hidden="true">
@@ -275,7 +278,7 @@ function LockedBand({ slot }: { slot: number }) {
           <i key={index} aria-current={index === slot - 1 ? "true" : undefined} />
         ))}
       </div>
-      <FanText role="meta">{`78장 중 ${slot}번째 카드`}</FanText>
+      <FanText role="meta">{uiText("deckSlot", { total: 78, slot })}</FanText>
     </>
   );
 }

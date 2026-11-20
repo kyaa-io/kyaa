@@ -1,3 +1,4 @@
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { bodyNames, signNames, zodiacSigns } from "./copy";
 import { natalAspects } from "./astro";
 import type { StarPlanet } from "./reading";
@@ -30,6 +31,7 @@ function spread(planets: StarPlanet[]) {
 }
 
 export function ChartWheel({ planets }: { planets: StarPlanet[] }) {
+  const uiText = useReadingCopy();
   const rings = spread(planets);
   const lines = natalAspects(
     planets.filter((planet) => planet.body !== "Uranus" && planet.body !== "Neptune" && planet.body !== "Pluto"),
@@ -40,9 +42,9 @@ export function ChartWheel({ planets }: { planets: StarPlanet[] }) {
       className={styles.wheel}
       viewBox="0 0 200 200"
       role="img"
-      aria-label={`내 출생 차트 원판. ${planets
+      aria-label={uiText("birthWheel", { planets: planets
         .map((p) => `${bodyNames[p.body]} ${signNames[p.sign].full}`)
-        .join(", ")}`}
+        .join(", ") })}
     >
       <circle className={styles.rim} cx={center} cy={center} r={rim} />
       <circle className={styles.inner} cx={center} cy={center} r={bandInner} />

@@ -41,15 +41,6 @@ import { StarShareCard } from "./share-card";
 import { StarRating } from "./stars";
 import styles from "./result.module.css";
 
-function monthDay(date: string) {
-  return `${Number(date.slice(5, 7))}월 ${Number(date.slice(8, 10))}일`;
-}
-function weekday(date: string) {
-  return new Intl.DateTimeFormat("ko-KR", { weekday: "short", timeZone: "UTC" }).format(
-    new Date(`${date}T00:00:00Z`),
-  );
-}
-
 /** 저장된 결과를 불러오는 동안 보이는 모양. 요청은 부른 쪽이 한다. */
 export function StarResultSkeleton({
   locale,
@@ -185,7 +176,7 @@ export function StarResult({
       if (via === "send") await navigator.share({ title: overallHeadline[stars.overall - 1], url: href });
       else {
         await navigator.clipboard.writeText(href);
-        showFanToast({ title: "결과를 복사했어요", tone: "success" });
+        showFanToast({ title: uiText("copyDone"), tone: "success" });
       }
       setShareOpen(false);
       await fetch(`/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`, {
@@ -195,7 +186,7 @@ export function StarResult({
       }).catch(() => {});
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-      showFanToast({ title: "복사하지 못했어요", tone: "error" });
+      showFanToast({ title: uiText("copyFailed"), tone: "error" });
     } finally {
       setSharing(false);
     }
@@ -229,7 +220,7 @@ export function StarResult({
       <div className={styles.main}>
         <header className={styles.head}>
           <FanText as="p" role="meta">
-            {withParticle(name, "이가")} 읽어 준 {monthDay(reading.kstDate)} 하늘 · {sunName}
+            {uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate)) })} · {sunName}
           </FanText>
           <div className={styles.titleRow}>
             <FanHeading as="h1">{overallHeadline[stars.overall - 1]}</FanHeading>
@@ -239,7 +230,7 @@ export function StarResult({
           </FanText>
           <StarRating
             value={stars.overall}
-            label={`총운 별점 5개 중 ${stars.overall}개`}
+            label={uiText("overallStars", { count: stars.overall })}
             size={20}
             tone="accent"
           />
@@ -253,9 +244,9 @@ export function StarResult({
             {points > 0 && <EarnBadge locale={locale} points={points} variant="inline" />}
             {reading.reward?.stamp && <FanText role="meta"><ReadingText id="stamp" /></FanText>}
             {Boolean(reading.reward?.exp) && (
-              <FanText role="meta">친밀 +{reading.reward?.exp}</FanText>
+              <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
             )}
-            {points > 0 && <FanText role="meta">{name} 몫</FanText>}
+            {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
           </div>
           <ul className={styles.domains}>
             {rows.map((key) => {
@@ -270,7 +261,7 @@ export function StarResult({
                     <FanText role="label">{domainLabels[key]}</FanText>
                     <StarRating
                       value={stars[key]}
-                      label={`${domainLabels[key]} 별점 5개 중 ${stars[key]}개`}
+                      label={uiText("ratedStars", { domain: domainLabels[key], count: stars[key] })}
                     />
                     {isBest && (
                       <FanText role="label" className={styles.bright}>
@@ -387,7 +378,7 @@ export function StarResult({
         <StarShareCard
           character={character}
           name={name}
-          dateText={`${withParticle(name, "이가")} 읽어 준 ${monthDay(reading.kstDate)} 하늘`}
+          dateText={uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate)) })}
           headline={overallHeadline[stars.overall - 1]!}
           overall={stars.overall}
           sign={sunName}

@@ -13,7 +13,7 @@ import styles from "./tarot.module.css";
 /** 가운데 카드에서 멀수록 흐려지는 불투명도(흐림 필터 없음). */
 const OPACITY = [1, 0.72, 0.5, 0.34, 0.22];
 const START = Math.floor(TAROT_DECK_SIZE / 2);
-const slotLabel = (index: number) => `${TAROT_DECK_SIZE}장 중 ${index + 1}번째 카드`;
+
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 /** 큰 카드 줄은 탁자에 놓이고, 덱 띠와 '아무거나 뽑기'는 대화 판 안(controlsHost)에 같은 상태로 그려진다. */
@@ -29,6 +29,7 @@ export function CardRail({
   controlsHost: HTMLElement | null;
 }) {
   const uiText = useReadingCopy();
+  const slotLabel = (index: number) => uiText("deckSlot", { total: TAROT_DECK_SIZE, slot: index + 1 });
   const rail = useRef<HTMLUListElement>(null);
   const [current, setCurrent] = useState(START);
   const currentRef = useRef(START);

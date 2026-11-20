@@ -1,6 +1,6 @@
 "use client";
 
-import { ReadingText } from "@/features/chemi/i18n/reading-ui";
+import { useReadingCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -20,11 +20,8 @@ import type { TarotMeaning } from "./use-tarot-meaning";
 import { kstDate, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
 import styles from "./tarot.module.css";
 
-const DIRECTION = ["정방향", "역방향"] as const;
-const dayLine = (date: string) => {
-  const [, month, day] = date.split("-").map(Number);
-  return `${month}월 ${day}일의 카드`;
-};
+
+
 
 type Rewards = { reward: TarotReward; replayed: boolean; points: number };
 
@@ -45,6 +42,7 @@ export function TarotResult({
   meaning: TarotMeaning;
   headers: () => Promise<Record<string, string>>;
 }) {
+  const uiText = useReadingCopy();
   const person = tarotCharacter(character);
   // 지난 날의 결과 링크로 열었으면 오늘 받은 것을 이 카드의 보상으로 보여 주지 않는다.
   const today = draw.date === kstDate();
@@ -98,9 +96,9 @@ export function TarotResult({
   }, [rewards, locale]);
 
   const alt = TAROT_DECK[draw.card][2];
-  const direction = DIRECTION[Number(draw.reversed)];
+  const direction = uiText(draw.reversed ? "reversed" : "upright");
   const content = meaning.card?.dir[draw.reversed ? "down" : "up"];
-  const slotLine = draw.slot ? ` · ${TAROT_DECK_SIZE}장 중 ${draw.slot}번째` : "";
+  const slotLine = draw.slot ? ` · ${uiText("deckSlot", { total: TAROT_DECK_SIZE, slot: draw.slot })}` : "";
 
   const rewardRow = member && today ? <RewardRow character={character} name={person.name} rewards={rewards} locale={locale} /> : null;
   const saveBox = !member ? (
@@ -127,7 +125,7 @@ export function TarotResult({
   const failed = meaning.status === "error";
   const pair = failed ? null : (
     <div className={styles.pair}>
-      <FanText role="meta">{`오늘 ${person.name}와 나`}</FanText>
+      <FanText role="meta">{uiText("todayPair", { name: person.name })}</FanText>
       {content ? <FanHeading as="h3">{content.pair}</FanHeading> : <FanSkeleton width="70%" height={22} />}
     </div>
   );
@@ -136,7 +134,7 @@ export function TarotResult({
     <article className={styles.result} data-reversed={draw.reversed || undefined} data-result="">
       <div className={styles.colMain}>
         <header className={styles.head}>
-          <FanText as="p" role="meta">{`${dayLine(draw.date)}${slotLine}`}</FanText>
+          <FanText as="p" role="meta">{`${uiText("cardDay", { date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(draw.date)) })}${slotLine}`}</FanText>
           <div className={styles.nameRow}>
             <FanHeading as="h1">{tarotTitle(draw.card)}</FanHeading>
             <FanTag tone="fan">{direction}</FanTag>
@@ -232,7 +230,7 @@ export function TarotResult({
               {(["up", "down"] as const).map((side, index) => (
                 <div key={side} aria-current={Number(draw.reversed) === index ? "true" : undefined}>
                   <FanText as="dt" role="meta">
-                    {DIRECTION[index]}
+                    {uiText(index ? "reversed" : "upright")}
                   </FanText>
                   <dd>
                     <ul className={styles.words}>
@@ -280,19 +278,20 @@ function Retry({ onRetry }: { onRetry: () => void }) {
 
 /** 받은 것을 적는 한 줄. 서버가 준 값만 그리고, 없는 값은 칸도 만들지 않는다. 패스포트가 없으면 받으러 가는 링크가 된다. */
 function RewardRow({ character, name, rewards, locale }: { character: TarotCharacter; name: string; rewards: Rewards | null; locale: AppLocale }) {
+  const uiText = useReadingCopy();
   if (!rewards) return <div className={styles.rewardRow} aria-hidden="true"><FanSkeleton width="60%" /></div>;
   const { reward, replayed, points } = rewards;
   const parts: ReactNode[] = [];
   if (points > 0 && !replayed) parts.push(<EarnBadge key="points" locale={locale} points={points} variant="inline" />);
   if (reward.stamp) parts.push(<FanText key="stamp" role="meta"><ReadingText id="stamp" /></FanText>);
-  if (reward.exp) parts.push(<FanText key="exp" role="meta">{`친밀 +${reward.exp}`}</FanText>);
-  if (reward.week) parts.push(<FanText key="week" role="meta">{`이번 주 ${reward.week}일`}</FanText>);
-  if (replayed && points > 0 && parts.length === 0) parts.push(<FanText key="received" role="meta">{`${name} · 오늘 받음`}</FanText>);
+  if (reward.exp) parts.push(<FanText key="exp" role="meta">{uiText("affinityGain", { exp: reward.exp })}</FanText>);
+  if (reward.week) parts.push(<FanText key="week" role="meta">{uiText("weekDays", { days: reward.week })}</FanText>);
+  if (replayed && points > 0 && parts.length === 0) parts.push(<FanText key="received" role="meta">{uiText("receivedToday", { name })}</FanText>);
   if (points <= 0 && character !== "dosa")
     return (
       <Link className={styles.rewardRow} data-link="" href={`/c/${character}`}>
-        <FanText className={styles.go} role="label">{`패스포트 받고 +${CHEMI_PASSPORT_DAILY_POINTS}P · 스탬프`}</FanText>
-        {reward.exp ? <FanText role="meta">{`친밀 +${reward.exp}`}</FanText> : null}
+        <FanText className={styles.go} role="label">{uiText("passportReward", { points: CHEMI_PASSPORT_DAILY_POINTS })}</FanText>
+        {reward.exp ? <FanText role="meta">{uiText("affinityGain", { exp: reward.exp })}</FanText> : null}
         <FanIcon icon={ChevronRight} size={16} className={styles.goArrow} />
       </Link>
     );

@@ -106,17 +106,17 @@ export function DatePurchase({
             {saved.kstDate.replaceAll("-", ".")} · {saved.result.grade.name}
           </FanText>
           <p>{flowNotes[saved.result.grade.name]}</p>
-          <p>운세 {saved.result.score}점</p>
-          <p>행운의 색 {saved.result.luck.color} · 행운의 숫자 {saved.result.luck.number}</p>
+          <p>{uiText("fortuneScore", { score: saved.result.score })}</p>
+          <p>{uiText("luckyPair", { color: saved.result.luck.color, number: saved.result.luck.number })}</p>
         </div>
       ) : quote ? (
         <div aria-live="polite">
           <p>
-            가격 {quote.price}P · 현재 잔액 {quote.balance}P
+            {uiText("priceBalance", { price: quote.price, balance: quote.balance })}
           </p>
           {quote.balance >= quote.price ? (
             <>
-              <p>구매 후 잔액 {quote.balance - quote.price}P</p>
+              <p>{uiText("afterPurchase", { balance: quote.balance - quote.price })}</p>
               <div className={`${styles.purchaseActions} ${styles.purchaseConfirm}`}>
                 <FanAction
                   variant="primary"
@@ -124,7 +124,7 @@ export function DatePurchase({
                   disabled={busy}
                   onClick={() => request(true)}
                 >
-                  {quote.price}P로 운세 열기
+                  {uiText("openPaid", { price: quote.price })}
                 </FanAction>
                 <FanAction variant="text" disabled={busy} onClick={() => reset("")}>
                   <ReadingText id="cancel" />

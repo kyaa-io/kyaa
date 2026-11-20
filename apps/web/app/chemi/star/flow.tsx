@@ -104,17 +104,9 @@ function writeUrl(
     );
 }
 
-function participationText(participation: Participation) {
-  if (!participation) return null;
-  const prefix = { today: "오늘", week: "이번 주", all: "지금까지" }[participation.period];
-  return `${prefix} ${participation.count.toLocaleString("ko-KR")}명이 봤어요`;
-}
 
-function dayLabel(date: string) {
-  const day = new Date(`${date}T00:00:00Z`);
-  const weekday = new Intl.DateTimeFormat("ko-KR", { weekday: "long", timeZone: "UTC" }).format(day);
-  return `${Number(date.slice(5, 7))}월 ${Number(date.slice(8, 10))}일 ${weekday}`;
-}
+
+
 
 export function StarFlow({
   locale,
@@ -548,7 +540,7 @@ export function StarFlow({
       <div className={styles.stage}>
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
-          <img src={`${art}/hero-${character}-p-v1.webp`} alt={`${name}와 밤하늘 별자리`} />
+          <img src={`${art}/hero-${character}-p-v1.webp`} alt={text("nightArt", { name })} />
         </picture>
         {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
         {phase === "error" ? (
@@ -575,19 +567,19 @@ export function StarFlow({
             {entering && (
               <div className={styles.title}>
                 <FanHeading as="h1"><ReadingTitle id="zodiac" /></FanHeading>
-                {participationText(participation) && (
-                  <FanText role="meta">{participationText(participation)}</FanText>
+                {participation && (
+                  <FanText role="meta">{text(`${participation.period}Views`, { count: participation.count.toLocaleString(locale) })}</FanText>
                 )}
               </div>
             )}
             {talk === 1 && stars && derived && reading && (
               <div className={styles.signCard}>
-                <FanText role="meta">{dayLabel(reading.kstDate)} · 오늘 하늘</FanText>
+                <FanText role="meta">{new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", weekday: "long", timeZone: "UTC" }).format(new Date(reading.kstDate))} · {text("skyToday")}</FanText>
                 <div className={styles.signLine}>
                   <FanHeading as="h2">{derived.sunName}</FanHeading>
                   <StarRating
                     value={stars.overall}
-                    label={`총운 별점 5개 중 ${stars.overall}개`}
+                    label={text("overallStars", { count: stars.overall })}
                     tone="accent"
                   />
                   <FanText role="meta" className={styles.signTail}>
@@ -604,7 +596,7 @@ export function StarFlow({
                       <FanText role="label">{domainLabels[key]}</FanText>
                       <StarRating
                         value={stars[key]}
-                        label={`${domainLabels[key]} 별점 5개 중 ${stars[key]}개`}
+                        label={text("ratedStars", { domain: domainLabels[key], count: stars[key] })}
                       />
                     </div>
                     <FanText as="p" role="body">

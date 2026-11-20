@@ -169,13 +169,13 @@ export function FortuneResult({
       await navigator.clipboard.writeText(
         new URL(card.url, location.origin).href,
       );
-      showFanToast({ title: "결과를 복사했어요", tone: "success" });
+      showFanToast({ title: uiText("copyDone"), tone: "success" });
       await fetch(
         `/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`,
         { method: "POST", headers, body: JSON.stringify({ via: "copy" }) },
       ).catch(() => {});
     } catch {
-      showFanToast({ title: "복사하지 못했어요", tone: "error" });
+      showFanToast({ title: uiText("copyFailed"), tone: "error" });
     } finally {
       setSharing(false);
     }
@@ -328,7 +328,7 @@ export function FortuneResult({
       <div className={styles.main}>
         <header className={styles.head}>
           <FanText as="p" role="meta">
-            {result.evidence.dayPillar}일 · {name}가 본 나의 오늘
+            {uiText("todayBy", { pillar: result.evidence.dayPillar, name })}
           </FanText>
           <FanHeading as="h1">{headline}</FanHeading>
           <picture className={styles.hero}>
@@ -353,9 +353,9 @@ export function FortuneResult({
             )}
             {reading.reward?.stamp && <FanText role="meta"><ReadingText id="stamp" /></FanText>}
             {Boolean(reading.reward?.exp) && (
-              <FanText role="meta">친밀 +{reading.reward?.exp}</FanText>
+              <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
             )}
-            {points > 0 && <FanText role="meta">{name} 몫</FanText>}
+            {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
           </div>
           <div className={styles.bars}>
             {top.map(([label, , value]) => bar(label, value))}
@@ -438,13 +438,13 @@ export function FortuneResult({
           <FanDisclosure label={uiText("whyScore")}>
             <dl className={styles.facts}>
               {Object.entries({
-                일진: result.evidence.dayPillar,
-                세운: result.evidence.yearPillar,
-                관계: result.evidence.relation,
-                십이운성: result.evidence.stage,
-                십신: result.evidence.tenGod,
-                용신: result.evidence.useful,
-                기준: result.evidence.timeBasis,
+                [uiText("tableDaypillar")]: result.evidence.dayPillar,
+                [uiText("tableYearpillar")]: result.evidence.yearPillar,
+                [uiText("tableRelation")]: result.evidence.relation,
+                [uiText("tableStage")]: result.evidence.stage,
+                [uiText("tableTengod")]: result.evidence.tenGod,
+                [uiText("tableUseful")]: result.evidence.useful,
+                [uiText("tableBasis")]: result.evidence.timeBasis,
               }).map(([label, value]) => (
                 <div key={label}>
                   <dt>{label}</dt>
@@ -458,16 +458,16 @@ export function FortuneResult({
           <FanDisclosure label={uiText("luck")}>
             <dl className={styles.facts}>
               {Object.entries({
-                색: result.luck.color,
-                숫자: result.luck.number,
-                방향: result.luck.direction,
-                물건: result.luck.item,
-                "행운 시간":
+                [uiText("tableColor")]: result.luck.color,
+                [uiText("tableNumber")]: result.luck.number,
+                [uiText("tableDirection")]: result.luck.direction,
+                [uiText("tableItem")]: result.luck.item,
+                [uiText("tableLuckyhour")]:
                   result.luck.luckyHour &&
-                  `${result.luck.luckyHour.start}~${result.luck.luckyHour.end}시`,
-                "쉬어 갈 시간":
+                  uiText("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),
+                [uiText("tableResthour")]:
                   result.luck.restHour &&
-                  `${result.luck.restHour.start}~${result.luck.restHour.end}시`,
+                  uiText("hourRange", { start: result.luck.restHour.start, end: result.luck.restHour.end }),
               }).map(
                 ([label, value]) =>
                   value != null && (
@@ -512,7 +512,7 @@ export function FortuneResult({
                 variant="text"
                 key={label}
                 className={styles.nextItem}
-                onClick={soon(`${withTopic(label)} 준비 중이에요`)}
+                onClick={soon(uiText("comingSoon", { subject: withTopic(label), label }))}
               >
                 <span className={styles.nextRow}>
                   <FanText role="item">{label}</FanText>

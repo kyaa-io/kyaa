@@ -99,13 +99,7 @@ function writeUrl(
     );
 }
 
-function participationText(participation: Participation) {
-  if (!participation) return null;
-  const prefix = { today: "오늘", week: "이번 주", all: "지금까지" }[
-    participation.period
-  ];
-  return `${prefix} ${participation.count.toLocaleString("ko-KR")}명이 봤어요`;
-}
+
 
 function seoulDate(
   locale: AppLocale,
@@ -479,7 +473,7 @@ export function FortuneFlow({
       <div className={styles.stage} data-portrait={character !== "changha" || undefined}>
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
-          <img src={mobileArt} alt={`${name}의 구름 위 정자`} />
+          <img src={mobileArt} alt={text("cloudArt", { name })} />
         </picture>
         {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
         {phase === "error" ? (
@@ -504,8 +498,8 @@ export function FortuneFlow({
             {entering && (
               <div className={styles.title}>
                 <FanHeading as="h1"><ReadingTitle id="fortune" /></FanHeading>
-                {participationText(participation) && (
-                  <FanText role="meta">{participationText(participation)}</FanText>
+                {participation && (
+                  <FanText role="meta">{text(`${participation.period}Views`, { count: participation.count.toLocaleString(locale) })}</FanText>
                 )}
               </div>
             )}
@@ -517,7 +511,7 @@ export function FortuneFlow({
                 </div>
                 <FanText role="meta">
                   {seoulDate(locale, { month: "long", day: "numeric", weekday: "long" }, day)}{" "}
-                  · {result.evidence.dayPillar}일
+                  · {text("pillarDay", { pillar: result.evidence.dayPillar })}
                 </FanText>
                 {reading?.styled?.headline && (
                   <FanText role="item">{reading.styled.headline}</FanText>
@@ -550,7 +544,7 @@ export function FortuneFlow({
                     [
                       text("luckyTime"),
                       result.luck.luckyHour &&
-                        `${result.luck.luckyHour.start}~${result.luck.luckyHour.end}시`,
+                        text("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),
                     ],
                   ] as const
                 ).map(
