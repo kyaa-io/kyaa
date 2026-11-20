@@ -1,1 +1,1 @@
-{"tool":"playwright","mode":"local-example","width":390,"sha256":"c691c5b203d821e97af7bba2e1e22b0079958621bb7ac65937646fc8841a2683"}
+{"tool":"local-login","url":"http://localhost:3848/chemi/saju/local-sample","mode":"login","capturedAt":"2026-11-20T18:10:30.048Z","sha256":"f660ffe1baf16cee44bff198e6136503b3afa694dabe2c423f596884465d0be8"}
