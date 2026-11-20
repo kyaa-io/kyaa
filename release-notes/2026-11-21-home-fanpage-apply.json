@@ -1,0 +1,5 @@
+{
+  "changes": ["홈에서 ‘팬페이지 개설 신청’을 누르면 바로 신청 화면으로 이동해요. 첨부한 화면은 로컬 검증 환경에서 촬영했어요."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-21-home-fanpage-apply-390.png"]
+}
