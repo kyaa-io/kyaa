@@ -92,3 +92,16 @@ describe('group application review',()=>{
  });
 
 });
+
+it('links the applicant in the list and detail and labels missing records',()=>{
+ const item=fixture.items[0] as Record<string,unknown>;
+ item.applicant={id:item.id,nickname:'예시 팬',joinedAt:'2026-11-01T12:00:00Z'};
+ try {
+  render(<GroupApplicationManager locale="ko"/>);
+  const links=screen.getAllByRole('link',{name:'예시 팬'});
+  expect(links).toHaveLength(2);
+  for(const link of links) expect(link).toHaveAttribute('href',`/admin/fans?fanId=${item.id}&lang=ko`);
+  expect(screen.getAllByText(/가입일/)).toHaveLength(2);
+  expect(screen.getAllByText(/기록 없음/)).toHaveLength(2);
+ } finally { delete item.applicant; }
+});

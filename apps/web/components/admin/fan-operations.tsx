@@ -326,6 +326,7 @@ export function FanOperations() {
       const body = (await response.json()) as { fan: FanDetail };
       if (openRequestId.current !== requestId) return;
       setDetail(body.fan);
+      setSelected({...fan, nickname:body.fan.nickname, accountStatus:body.fan.accountStatus});
       setPassportId(body.fan.passports[0]?.id ?? "");
       setState("ready");
     } catch {
@@ -333,6 +334,14 @@ export function FanOperations() {
       setState("error");
     }
   }
+  const linkedFanId = params.get("fanId");
+  const openedLink = useRef<string | null>(null);
+  useEffect(() => {
+    if (session.status !== "authorized" || !linkedFanId || openedLink.current === linkedFanId ||
+        !/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(linkedFanId)) return;
+    openedLink.current = linkedFanId;
+    void open({fanId:linkedFanId,nickname:null,accountStatus:"active",maskedWallet:null,celebritySummaries:[]});
+  }, [linkedFanId, session.status]);
   const closeDrawer = useCallback(() => {
     if (saving) return;
     openRequestId.current += 1;

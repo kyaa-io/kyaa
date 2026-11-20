@@ -91,3 +91,16 @@
 /* jzqEs / kITlr: queue filters and review action rows. */
 .applicationTabs,.applicationActions{align-items:center}
 .applicationMissingCreator{display:grid;gap:var(--space-2);padding:var(--space-3);border:1px solid var(--color-line);border-radius:var(--radius-card);font-size:var(--fan-description-size);line-height:22px}.applicationMissingCreator p{margin:0}.applicationMissingCreator>div{display:flex;flex-wrap:wrap;gap:var(--space-2)}
+
+.applicant {
+  display: block;
+  padding-inline: var(--space-3);
+  overflow-wrap: anywhere;
+  color: var(--color-muted);
+  font-size: var(--fan-metadata-size);
+  line-height: var(--fan-metadata-leading);
+}
+.applicant a {
+  color: var(--color-accent);
+  font-weight: var(--fan-item-title-weight);
+}

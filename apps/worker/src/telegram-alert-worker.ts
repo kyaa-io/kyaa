@@ -135,6 +135,7 @@ const kindSchema = z.enum([
   "live_reserved",
   "live_attended",
   "draw_published",
+  "page_application",
   "cs_inquiry_created",
   "cs_user_replied",
   "campaign_visited",
@@ -226,6 +227,7 @@ const alertSchema = z.object({
   youtube_video_id: z.string().regex(/^[A-Za-z0-9_-]{11}$/).optional(),
   sns_platform: z.enum(["instagram", "tiktok"]).optional(),
   sns_last_success_at: z.iso.datetime({ offset: true }).nullable().optional(),
+  application: z.object({id: z.uuid(), name: z.string(), kind: z.enum(["fan","hobby","brand"])}).nullish(),
   inquiry_id: z.uuid().nullable().optional(),
   campaign_name: z.string().min(1).max(80).optional(),
   campaign_channel: z.string().min(1).max(40).optional(),
@@ -511,6 +513,13 @@ function renderLegacyAlert(alert: TelegramAlertSnapshot): string[] {
   }
   if (alert.kind === "campaign_visited") {
     return ["• 캠페인 링크로 새 방문", `  ${cleanPublicName(alert.campaign_name ?? null, 80)}`, `  채널: ${cleanPublicName(alert.campaign_channel ?? null, 40)} · 브라우저 세션 1건`, `${ADMIN_URL}/campaigns`];
+  }
+  if (alert.kind === "page_application") {
+    const page = alert.application;
+    if (!page) throw new Error("TELEGRAM_ALERT_INVALID_BATCH");
+    const kind = {fan:"팬페이지", hobby:"취미", brand:"브랜드"}[page.kind];
+    return ["• 새 페이지 개설 신청", cleanPublicName(page.name, 80) + " · " + kind,
+      "신청자: " + (cleanPublicName(alert.actor_name, 48) || "닉네임 미설정"), ADMIN_URL + "/groups?applicationId=" + page.id];
   }
   if (alert.kind === "cs_inquiry_created" || alert.kind === "cs_user_replied") {
     const inquiryId = z.uuid().safeParse(alert.inquiry_id);
