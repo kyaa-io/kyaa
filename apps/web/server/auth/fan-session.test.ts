@@ -95,10 +95,15 @@ describe("POST/DELETE /api/auth/fan-session", () => {
   });
 
   it("clears the cookie instead of issuing one for a suspended, deleted or unknown member", async () => {
-    for (const user of [{ ...active, status: "disabled" as const }, null]) {
+    // Suspended or deleted: 403 so the browser signs out. Unknown (account row not created yet by the session sync):
+    // 200 { session: false } with no sign-out signal, so a new Google sign-up can finish (11/20 signup logout fix).
+    for (const [user, status, body] of [
+      [{ ...active, status: "disabled" as const }, 403, { error: { code: "FAN_ACCOUNT_UNAVAILABLE" } }],
+      [null, 200, { session: false }],
+    ] as const) {
       const response = await make({ repository: { findUserByPrivyId: vi.fn(async () => user) } })
         .POST(request("POST", { origin: "https://kyaa.io", authorization: "Bearer privy-jwt" }));
-      expect(response.status).toBe(403);
+      expect([response.status, await response.json()]).toEqual([status, body]);
       expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
     }
   });

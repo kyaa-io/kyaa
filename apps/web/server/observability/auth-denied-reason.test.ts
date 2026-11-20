@@ -102,9 +102,13 @@ describe("auth denied reason: /api/auth/fan-session", () => {
   it("user_missing / user_inactive, with a body code the browser can act on", async () => {
     expect(await reasonOf(() => route(null).POST(post("https://kyaa.io")))).toBe("user_missing");
     expect(await reasonOf(() => route({ ...active, status: "disabled" }).POST(post("https://kyaa.io")))).toBe("user_inactive");
-    const response = await route(null).POST(post("https://kyaa.io"));
-    expect([response.status, await response.json()]).toEqual([403, { error: { code: "FAN_ACCOUNT_UNAVAILABLE" } }]);
-    expect(response.headers.get("set-cookie")).toContain("Max-Age=0");
+    // A new Privy user before the session sync created the account row: no session, no sign-out signal (11/20 signup logout fix).
+    const missing = await route(null).POST(post("https://kyaa.io"));
+    expect([missing.status, await missing.json()]).toEqual([200, { session: false }]);
+    expect(missing.headers.get("set-cookie")).toContain("Max-Age=0");
+    const inactive = await route({ ...active, status: "disabled" }).POST(post("https://kyaa.io"));
+    expect([inactive.status, await inactive.json()]).toEqual([403, { error: { code: "FAN_ACCOUNT_UNAVAILABLE" } }]);
+    expect(inactive.headers.get("set-cookie")).toContain("Max-Age=0");
   });
 });
 
