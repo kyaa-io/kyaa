@@ -2,12 +2,29 @@
 import { render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FanSessionKeeper } from "./fan-session-keeper";
-import { clearFanSession } from "./fan-session";
+import { clearFanSession, readFanSessionHint } from "./fan-session";
 
 const fetcher = vi.fn();
 afterEach(async () => { fetcher.mockResolvedValue(new Response(null, { status: 204 })); await clearFanSession(); vi.unstubAllGlobals(); vi.clearAllMocks(); localStorage.clear(); });
 
 describe("FanSessionKeeper", () => {
+  it("exchanges once after login sync when the first response arrives late", async () => {
+    const ownerId = "did:privy:new";
+    let finish!: (response: Response) => void;
+    const first = new Promise<Response>((resolve) => { finish = resolve; });
+    vi.stubGlobal("fetch", fetcher);
+    fetcher.mockReturnValueOnce(first).mockResolvedValueOnce(Response.json({
+      session: true, exp: Date.now() + 60000, authenticatedAt: Date.now(),
+    }));
+    const { unmount } = render(<FanSessionKeeper ownerId={ownerId} getPrivyAccessToken={async () => "privy"} />);
+    await vi.waitFor(() => expect(fetcher).toHaveBeenCalledTimes(1));
+    window.dispatchEvent(new Event("kyaa:login-synchronized"));
+    finish(Response.json({ session: false }));
+    await vi.waitFor(() => expect(readFanSessionHint()?.pid).toBe(ownerId));
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    unmount();
+  });
+
   it("signs out once when the server says the account is unavailable, and sends no second request", async () => {
     vi.stubGlobal("fetch", fetcher);
     fetcher.mockImplementation(async () => Response.json({ error: { code: "FAN_ACCOUNT_UNAVAILABLE" } }, { status: 403 }));

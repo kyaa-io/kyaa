@@ -88,8 +88,14 @@ export function createFanSessionRoute(deps: FanSessionRouteDependencies) {
       let user;
       try { user = await deps.repository.findUserByPrivyId(payload.pid); } catch { return reply(503); }
       // The account is gone or disabled: say so in the body so the client signs out instead of asking again.
-      if (!user || user.status !== "active") {
-        recordAuthDeniedReason(user ? "user_inactive" : "user_missing");
+      if (!user) {
+        // A new Privy user whose account row the session sync (POST /api/auth/session) has not created yet.
+        // No session now and no sign-out signal: the client asks again after kyaa:login-synchronized (same reply as the FAN_SESSION_ISSUE=off switch).
+        recordAuthDeniedReason("user_missing");
+        return Response.json({ session: false }, { headers: headers(clearFanSessionCookieHeader()) });
+      }
+      if (user.status !== "active") {
+        recordAuthDeniedReason("user_inactive");
         return Response.json({ error: { code: FAN_ACCOUNT_UNAVAILABLE } }, { status: 403, headers: headers(clearFanSessionCookieHeader()) });
       }
       if ((previous && previous.uid !== user.id) || fanSessionRevoked(payload.sat!, user.sessionsValidAfter)) { recordAuthDeniedReason("fan_session_revoked"); return reply(401, clearFanSessionCookieHeader()); }
