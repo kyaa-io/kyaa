@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import { preload } from "react-dom";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -12,6 +13,7 @@ import { runCopy } from "./copy";
 import styles from "./run.module.css";
 
 const art = "/chemi/run";
+const trackAssets = ["run-map-changha.jpg", "changha-run.png", "cone.png", "heart.png"];
 type Ticket = { playId: string; seed: number; trial?: boolean };
 type Rank = { place: number; nickname: string; score: number; isMe: boolean };
 type Lobby = { freeRemaining: number; extraRemaining: number; ranking: Rank[] };
@@ -20,6 +22,7 @@ type Challenge = { score: number; nickname: string; available: boolean };
 type Submission = { playId: string; ticks: number; jumps: number[]; score: number };
 
 export function RunScreen(props: { locale: AppLocale; share: string | null }) {
+  for (const file of trackAssets) preload(`${art}/${file}`, { as: "image" });
   const auth = useByUsAuth();
   return <Session key={auth.user?.id ?? "guest"} {...props} auth={auth} />;
 }
@@ -133,7 +136,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
         <section className={styles.panel}>
           {result && <div className={styles.result}>
             <FanHeading>{resultLabel}</FanHeading>
-            <FanNumber value={result.score} locale={locale} unit="m" size="xl" />
+            <FanNumber value={result.score} locale={locale} unit="m" size="xl" className={styles.distance} />
             {!ticket && auth.authenticated && <p>+{result.exp} EXP</p>}
             {result.title && <p>{earned.replace(/1[,. ]000|1\.000/g, new Intl.NumberFormat(locale).format(result.title))}</p>}
             {challenge && <p>{challenge.nickname} · {distance(challenge.score)}</p>}
@@ -158,7 +161,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
             {exhausted ? <p role="status">{cap}</p> : confirm ? <>
               <FanAction disabled={busy} onClick={() => void begin(true)}>{extra} · {lobby?.extraRemaining}</FanAction>
               <FanAction onClick={() => setConfirm(false)}>×</FanAction>
-            </> : <FanAction disabled={!auth.ready || busy || (auth.authenticated && !lobby)} onClick={() =>
+            </> : <FanAction variant="primary" disabled={!auth.ready || busy || (auth.authenticated && !lobby)} onClick={() =>
               lobby?.freeRemaining === 0 ? setConfirm(true) : void begin()}>
               {!auth.authenticated && !challenge?.available ? login : lobby?.freeRemaining === 0 ? extra : start}
             </FanAction>}
