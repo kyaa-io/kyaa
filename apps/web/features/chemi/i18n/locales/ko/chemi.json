@@ -336,6 +336,19 @@
     "drawCard": "한 장 뽑을래",
     "match": "궁합",
     "later": "다음에",
-    "return": "돌아가기"
+    "return": "돌아가기",
+    "saveRead": "저장하고 보기",
+    "next": "다음",
+    "previous": "이전",
+    "birthConsent": "저장하면 생일 정보 수집·이용에 동의한 것으로 봐요.",
+    "stepOf": "3단계 중 {step}단계",
+    "pairTitle": "{name}가 봐 준 궁합 · 나 × {partner}",
+    "readingTitle": "{name}가 풀어 준 나의 {topic}",
+    "bondFirst": "{name}와 나",
+    "bondYear": "올해 {name}와 나",
+    "bondMonth": "이달 {name}와 나",
+    "pairNoTime": "{name} 출생 시간 없이 봄",
+    "theirWords": "{name}의 한마디",
+    "sajuSceneAlt": "{name}의 사주 장면"
   }
 }

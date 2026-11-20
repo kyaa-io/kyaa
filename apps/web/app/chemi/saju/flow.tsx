@@ -6,7 +6,7 @@
  * 공통 부품 대기: 대화 틀(장면·말풍선·고르기 띠)은 운세 구현(t3/chemi-w3-fortune-fix2)에 같은 모양이 있다.
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
-import { useReadingCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
+import { useReadingCopy, useSajuSceneCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -24,7 +24,6 @@ import {
   FanSkeletonStatus,
 } from "@/components/fan-ui/fan-skeleton";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import koCatalog from "@/features/chemi/i18n/locales/ko/chemi.json";
 import type { AppLocale } from "@/i18n/locales";
 import type { MyBirthCopy } from "@/features/chemi/ui/frame/birth-copy";
 import { BirthSheet, type SheetResult } from "./birth-sheet";
@@ -125,17 +124,16 @@ const serverSearch = () => "";
 export function SajuFlow({
   locale,
   birthCopy,
-  sceneCopy = { ...koCatalog.sajuScene, title: koCatalog.home.saju },
   restoring: restoringFromUrl = false,
 }: {
   locale: AppLocale;
   /** 생일 입력 시트의 글. MY 생일 정보와 같은 글을 쓴다. */
   birthCopy: MyBirthCopy;
-  sceneCopy?: typeof koCatalog.sajuScene & { title: string };
   /** 주소에 단계와 결과가 있어 저장된 결과를 불러오는 중이면 입장 화면 대신 불러오는 모양을 그린다. */
   restoring?: boolean;
 }) {
   const text = useReadingCopy();
+  const sceneCopy = useSajuSceneCopy();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const nav = readUrl(useSyncExternalStore(subscribeUrl, currentSearch, serverSearch));
   const [reading, setReading] = useState<SajuReading>();
@@ -818,7 +816,7 @@ export function SajuFlow({
         <FanSheet
           open={sheet === "topics"}
           onOpenChange={(open) => !open && setSheet(null)}
-          title="더 깊이"
+          title={sceneCopy.more}
           closeLabel={text("close")}
         >
           <div className={sheetStyles.topics}>
@@ -930,7 +928,7 @@ export function SajuFlow({
         {portrait && <MediaBackdrop src={wideArt} />}
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
-          <img src={mobileArt} alt={`${name}의 사주 장면`} />
+          <img src={mobileArt} alt={text("sajuSceneAlt", { name })} />
         </picture>
         {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
         {entering && again && reading && (

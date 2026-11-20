@@ -488,7 +488,7 @@ export function FortuneResult({
         <section className={styles.reaction}>
           <img src={`/chemi/fortune/avatar-${character}-v1.jpg`} alt="" />
           <FanText as="strong" role="item" className={styles.said}>
-            {name}의 한마디
+            {uiText("theirWords", { name })}
           </FanText>
           <FanText as="p" role="body">
             {sayLine}

@@ -24,14 +24,14 @@ export default async function FortunePage({
   const catalog = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
   return (
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="fortune-main">
-      <ReadingCopyProvider value={{ home: catalog.home, sajuScene: catalog.sajuScene, readingUi: catalog.readingUi }}>
-      <FanContentContainer as="main" id="fortune-main">
-        {params.from ? (
-          <FortuneResult key={params.from} locale={locale} from={params.from} />
-        ) : (
-          <FortuneFlow locale={locale} restoring={restoring} />
-        )}
-      </FanContentContainer>
+      <ReadingCopyProvider value={catalog}>
+        <FanContentContainer as="main" id="fortune-main">
+          {params.from ? (
+            <FortuneResult key={params.from} locale={locale} from={params.from} />
+          ) : (
+            <FortuneFlow locale={locale} restoring={restoring} />
+          )}
+        </FanContentContainer>
       </ReadingCopyProvider>
     </FanAppFrame>
   );

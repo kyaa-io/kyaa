@@ -328,7 +328,7 @@ it("shows the saved-reading action and greeting in English", async () => {
   window.history.replaceState(null, "", "/chemi/saju?locale=en");
   render(
     <ReadingCopyProvider value={enCatalog}>
-      <SajuFlow locale="en" birthCopy={koCatalog.myBirth} sceneCopy={{ ...enCatalog.sajuScene, title: enCatalog.home.saju }} />
+      <SajuFlow locale="en" birthCopy={koCatalog.myBirth} />
     </ReadingCopyProvider>
   );
   expect(await screen.findByRole("button", { name: "Past reading" })).toBeVisible();
