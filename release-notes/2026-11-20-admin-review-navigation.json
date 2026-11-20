@@ -1,8 +1,11 @@
 {
   "changes": [
     "관리자 메뉴에서 팬이 낸 미션은 ‘미션 인증 심사’, 구매·SNS 자료는 ‘스탬프 증빙 심사’에서 확인할 수 있어요.",
-    "모임 요약과 신청 화면에서도 왼쪽 관리자 메뉴로 다른 업무를 열 수 있어요. 화면은 로컬 시험 계정으로 촬영했어요."
+    "모임 요약과 신청 화면에서도 왼쪽 관리자 메뉴로 다른 업무를 열 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
   ],
   "path": "/admin/proof-review",
-  "images": ["release-notes/images/2026-11-20-admin-review-navigation.png"]
+  "images": [
+    "release-notes/images/2026-11-20-admin-review-navigation.png"
+  ]
 }
