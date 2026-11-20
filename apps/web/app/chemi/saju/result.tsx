@@ -15,6 +15,8 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import type { Chart, Element } from "./chart";
@@ -249,8 +251,21 @@ export function SajuResult({
       </div>
     );
 
+  async function saveAdvice() {
+    try {
+      const advice = view === "first" ? first.keywords[0].act : compat?.together ?? sayLine;
+      await saveAdviceImage(hero(character), new Intl.DateTimeFormat(locale).format(at), advice);
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) {
+        showFanToast({ title: uiText("retry"), tone: "error" });
+      }
+    }
+  }
+
   const actions = (
-    <div className={styles.actions}>
+    <div className={styles.resultActions}>
+      <FanAction onClick={saveAdvice}><ReadingText id="saveAdvice" /></FanAction>
+      <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
       {view === "first" ? (
         <FanAction onClick={onScene}><ReadingText id="replay" /></FanAction>
       ) : (
@@ -491,7 +506,7 @@ export function SajuResult({
           </section>
           <div className={styles.cta}>
             <FanAction variant="primary" fullWidth disabled={sharing} onClick={onShare}>
-              <ReadingText id="share" />
+              <ReadingText id="shareFriend" />
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>

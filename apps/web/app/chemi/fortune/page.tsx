@@ -1,3 +1,4 @@
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
 import {
@@ -26,6 +27,7 @@ export default async function FortunePage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="fortune-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="fortune-main">
+          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
           {params.from ? (
             <FortuneResult key={params.from} locale={locale} from={params.from} />
           ) : (

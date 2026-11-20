@@ -329,7 +329,7 @@ export function FortuneResult({
       <FanAction disabled={sharing} onClick={share}>
         <ReadingText id="share" />
       </FanAction>
-      <FanAction href={`/chemi?locale=${locale}`}><ReadingText id="otherTopics" /></FanAction>
+      <FanAction href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
     </div>
   );
   return (

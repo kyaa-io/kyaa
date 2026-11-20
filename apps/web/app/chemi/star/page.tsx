@@ -1,3 +1,4 @@
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
@@ -22,6 +23,7 @@ export default async function StarPage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="star-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="star-main">
+          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
           <StarFlow locale={locale} restoring={restoring} />
         </FanContentContainer>
       </ReadingCopyProvider>

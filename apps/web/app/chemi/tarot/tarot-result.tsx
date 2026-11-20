@@ -249,6 +249,7 @@ export function TarotResult({
           )}
         </section>
       </div>
+      <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
     </article>
   );
 }

@@ -336,6 +336,7 @@ export function StarResult({
             </ul>
           </section>
         </div>
+      <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
         <div className={styles.mobileActions}>{shareAction}</div>
       </div>
       <aside className={styles.side}>

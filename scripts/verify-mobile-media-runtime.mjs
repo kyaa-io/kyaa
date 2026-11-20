@@ -12,7 +12,7 @@ for (const [name, binary] of Object.entries(binaries)) {
   try {
     if (typeof binary !== "string") throw new Error("Unsupported platform");
     accessSync(binary, constants.X_OK);
-    const result = spawnSync(binary, ["-version"], { timeout: 5_000, encoding: "utf8", maxBuffer: 32_768 });
+    const result = spawnSync(binary, ["-version"], { timeout: 20_000, encoding: "utf8", maxBuffer: 32_768 });
     if (result.status !== 0 || !result.stdout.startsWith(`${name} version `)) throw new Error("Binary cannot run");
   } catch {
     console.error(`Required media binary is unavailable: ${name}`);

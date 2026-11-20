@@ -1,3 +1,4 @@
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
 import {
@@ -24,6 +25,7 @@ export default async function TarotPage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="tarot-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="tarot-main">
+          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
           <TarotScreen
             locale={locale}
             initialCharacter={isTarotCharacter(params.c) ? params.c : "changha"}
