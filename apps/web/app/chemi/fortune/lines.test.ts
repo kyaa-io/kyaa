@@ -27,6 +27,24 @@ it("builds the same line for the same input and keeps each character's tone", ()
   expect(fortuneTalkLine("yuna", 4, { ...input, luckyHour: null })).not.toContain("시");
 });
 
+it("keeps kyaa 도사 in 하오체 for every grade and branch", () => {
+  const grades = ["쉬어 가는 날", "조심하면 괜찮은 날", "무난한 날", "좋은 날", "아주 좋은 날"];
+  const lines = grades.flatMap((grade) =>
+    ([1, 2, 3, 4] as const).flatMap((talk) => [
+      fortuneTalkLine("dosa", talk, { ...input, grade }),
+      fortuneTalkLine("dosa", talk, { ...input, grade, people: 40, fandom: 40, luckyHour: null }),
+    ]),
+  );
+  for (const line of lines) {
+    for (const sentence of line.split(/(?<=[.?!])\s+/)) {
+      expect(sentence, line).not.toMatch(/(거야|해|줘|자)[.?!]?$/);
+    }
+  }
+  expect(fortuneTalkLine("dosa", 1, { ...input, grade: "무난한 날" })).toBe(
+    "오늘은 82점, 무난한 날이구려. 큰일 없이 편안히 흘러가겠소.",
+  );
+});
+
 it("masks birth digits and rejects impossible dates", () => {
   expect(maskBirthDate("19950505abc")).toBe("1995.05.05");
   expect(maskBirthDate("1995")).toBe("1995");
