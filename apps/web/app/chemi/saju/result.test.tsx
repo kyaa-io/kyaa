@@ -93,3 +93,29 @@ it("궁합: 상대 이름과 시간 없이 봄 표시, 두 문장 고지", () =>
   expect(container.textContent).toContain("실제 두 사람의 관계를 단정하지 않아요.");
   expect(screen.getAllByRole("button", { name: "다른 사람과" }).length).toBeGreaterThan(0);
 });
+
+it("처음 풀이 제목 아래: 최애마다 다른 한마디, 같은 키워드 세 칸", () => {
+  const seen = (["changha", "elina", "yuna"] as const).map((character) => {
+    const { container, unmount } = show("first", { character });
+    const opening = container.querySelector("header p:nth-of-type(2)")?.textContent;
+    const keywords = [...container.querySelectorAll("[data-keyword]")].map((row) => row.textContent);
+    unmount();
+    return { opening, keywords };
+  });
+  expect(new Set(seen.map((item) => item.opening)).size).toBe(3);
+  expect(seen[0].keywords).toEqual([
+    "조심할 것서운함 쌓아 두기그날 일은 그날 털어놓기",
+    "즐거운 것바로 말하는 응원좋았던 장면을 바로 댓글로 쓰기",
+    "행운같은 목표의 사람비슷한 목표인 사람에게 먼저 인사하기",
+  ]);
+  expect(seen[1].keywords).toEqual(seen[0].keywords);
+  expect(seen[2].keywords).toEqual(seen[0].keywords);
+});
+
+it("올해·이달·궁합에는 한마디와 키워드를 두지 않는다", () => {
+  for (const view of ["year", "month", "pair"] as const) {
+    const { container, unmount } = show(view);
+    expect(container.querySelector("[data-keyword]")).toBeNull();
+    unmount();
+  }
+});

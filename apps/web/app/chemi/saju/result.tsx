@@ -22,7 +22,7 @@ import {
   pairReading,
   yearReading,
 } from "./copy";
-import { sajuCharacters, sajuTone, type SajuCharacterId } from "./lines";
+import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
 
@@ -247,6 +247,30 @@ export function SajuResult({
             {kicker}
           </FanText>
           <FanHeading as="h1">{title}</FanHeading>
+          {view === "first" && (
+            <>
+              <FanText as="p" role="body" className={styles.opening}>
+                {sajuOpening(character, first.stem)}
+              </FanText>
+              <dl className={`${styles.kv} ${styles.keywords}`} data-layout="cols">
+                {first.keywords.map((item) => (
+                  <div key={item.kind} data-keyword={item.kind}>
+                    <FanText as="dt" role="meta">
+                      {item.label}
+                    </FanText>
+                    <dd>
+                      <FanText as="strong" role="item">
+                        {item.name}
+                      </FanText>
+                      <FanText as="span" role="meta">
+                        {item.act}
+                      </FanText>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
           {view === "pair" && pair && !pair.timeKnown && (
             <FanText as="p" role="meta">
               {pair.name} 출생 시간 없이 봄

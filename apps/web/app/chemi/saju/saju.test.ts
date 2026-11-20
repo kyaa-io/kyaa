@@ -8,8 +8,8 @@ import {
   tenGod,
   type Chart,
 } from "./chart";
-import { firstReading, godNotes, monthReading, pairReading, stemNotes, yearReading } from "./copy";
-import { sajuCharacters, sajuTalkLine, sajuTone } from "./lines";
+import { firstReading, godLuck, godNotes, monthReading, pairReading, stemKeywords, stemNotes, yearReading } from "./copy";
+import { sajuCharacters, sajuOpening, sajuOpeningStatus, sajuTalkLine, sajuTone } from "./lines";
 
 const at = (iso: string) => Date.parse(`${iso}T03:00:00Z`);
 const chart: Chart = {
@@ -139,5 +139,52 @@ describe("열두 달·주별 칩 표시", () => {
     const strong = month.weeks.find((week) => week.mark === "good");
     expect(strong && month.strong.startsWith(strong.range)).toBe(true);
     expect(month.weeks.every((week) => /^\d+\.\d+$/.test(week.label))).toBe(true);
+  });
+});
+
+describe("첫 풀이 키워드와 최애 한마디", () => {
+  const stems = Object.keys(stemNotes) as (keyof typeof stemNotes)[];
+  const idols = ["changha", "elina", "yuna"] as const;
+
+  it("조심할 것·즐거운 것은 일간 10개, 행운은 올해 관계 10개 모두 이름과 행동이 있다", () => {
+    expect(Object.keys(stemKeywords)).toEqual(stems);
+    expect(Object.keys(godLuck).sort()).toEqual(Object.keys(godNotes).sort());
+    for (const item of [...Object.values(stemKeywords).flatMap((k) => [k.caution, k.joy]), ...Object.values(godLuck)]) {
+      expect(item.name.length).toBeGreaterThan(1);
+      expect(item.name.length).toBeLessThanOrEqual(10);
+      expect(item.act.length).toBeLessThanOrEqual(20);
+      expect(item.act).not.toMatch(/[0-9,]+원|결제|P\b/);
+    }
+  });
+
+  it("같은 생일·같은 시각이면 키워드와 근거 키가 고정되고, 근거는 일간·올해 관계에서 온다", () => {
+    const first = firstReading(chart, at("2026-11-19"));
+    expect(first.keywords.map((k) => [k.label, k.name, k.act, k.basis])).toEqual([
+      ["조심할 것", "서운함 쌓아 두기", "그날 일은 그날 털어놓기", "stemNotes.병.cautionN"],
+      ["즐거운 것", "바로 말하는 응원", "좋았던 장면을 바로 댓글로 쓰기", "stemNotes.병.strengthN+fandomR"],
+      ["행운", "같은 목표의 사람", "비슷한 목표인 사람에게 먼저 인사하기", "godNotes.비견.flow"],
+    ]);
+  });
+
+  it("세 최애의 한마디는 일간마다 서로 다르고, 이름만 바꾼 문장이 없다", () => {
+    for (const stem of stems) {
+      const lines = idols.map((id) => sajuOpening(id, stem));
+      expect(new Set(lines).size).toBe(3);
+      // 말투 표시를 떼어 낸 뼈대도 겹치지 않는다(이름 치환·어미만 바꾼 문장 방지).
+      const bones = lines.map((line) => line.replace(/[^가-힣]/g, "").slice(0, 8));
+      expect(new Set(bones).size).toBe(3);
+      for (const line of lines) {
+        expect(line).not.toMatch(/창하|엘리나|유나|[0-9,]+원|결제/);
+        expect(line.length).toBeLessThanOrEqual(48);
+      }
+    }
+    expect(sajuOpening("changha", "병")).toBe("좋았으면 바로 말해. 네 댓글이 제일 먼저 보이면 좋겠어.");
+    expect(sajuOpening("elina", "병")).toMatch(/요\?/);
+    expect(sajuOpening("yuna", "병")).toMatch(/^오늘의 .+!/);
+    expect(sajuOpening("dosa", "병")).toMatch(/오\.$/);
+  });
+
+  it("인물 확인 전이라 DEV 캐릭터 견본으로 표시돼 있다", () => {
+    expect(sajuOpeningStatus).toBe("dev-sample");
   });
 });

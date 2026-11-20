@@ -56,6 +56,21 @@
   word-break: keep-all;
   text-wrap: balance;
 }
+.head .opening {
+  color: var(--color-ink);
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.keywords {
+  padding-top: var(--space-2);
+}
+.keywords dd {
+  display: grid;
+  gap: var(--space-1);
+}
+.keywords dd > span {
+  color: var(--color-muted);
+}
 .hero {
   display: block;
   margin-top: var(--space-2);

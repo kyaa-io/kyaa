@@ -144,6 +144,70 @@ export const stemNotes: Record<Stem, StemNote> = {
   },
 };
 
+/** 첫 풀이 키워드 한 칸: 짧은 이름 + 오늘 해 볼 행동 한 줄. */
+export type Keyword = { name: string; act: string };
+
+/**
+ * 조심할 것·즐거운 것. 근거는 같은 일간의 stemNotes 칸이다.
+ * caution ← cautionN(타고난 주의점), joy ← strengthN + fandomR(강점을 쓰는 팬 활동).
+ */
+export const stemKeywords: Record<Stem, { caution: Keyword; joy: Keyword }> = {
+  갑: {
+    caution: { name: "혼자 짊어지기", act: "오늘 하나는 부탁해 보기" },
+    joy: { name: "꾸준한 응원", act: "응원 기록을 하루 한 줄 남기기" },
+  },
+  을: {
+    caution: { name: "속마음 숨기기", act: "서운한 건 한 줄로 말하기" },
+    joy: { name: "조용히 챙기기", act: "놓친 영상에 댓글 하나 남기기" },
+  },
+  병: {
+    caution: { name: "서운함 쌓아 두기", act: "그날 일은 그날 털어놓기" },
+    joy: { name: "바로 말하는 응원", act: "좋았던 장면을 바로 댓글로 쓰기" },
+  },
+  정: {
+    caution: { name: "확 식는 마음", act: "멀어지고 싶을 땐 하루만 미루기" },
+    joy: { name: "깊게 파고들기", act: "본 영상에서 새 장면 하나 찾기" },
+  },
+  무: {
+    caution: { name: "굳은 고집", act: "다른 의견 하나 끝까지 듣기" },
+    joy: { name: "오래 지켜보기", act: "처음 좋아한 날의 영상 다시 보기" },
+  },
+  기: {
+    caution: { name: "남의 몫까지 떠안기", act: "부탁 하나는 내일로 미루기" },
+    joy: { name: "같이 키우는 응원", act: "팬 친구에게 영상 하나 보내기" },
+  },
+  경: {
+    caution: { name: "곧은 말", act: "보내기 전에 말끝 한 번 고치기" },
+    joy: { name: "정리하는 덕질", act: "이번 주 일정을 한 장에 모으기" },
+  },
+  신: {
+    caution: { name: "스스로 깎기", act: "덜 다듬어도 한 번 올려 보기" },
+    joy: { name: "기록 모으기", act: "오늘 사진 한 장 골라 앨범에 넣기" },
+  },
+  임: {
+    caution: { name: "갈피 잃기", act: "오늘 볼 것 하나만 정하기" },
+    joy: { name: "같이 보는 자리", act: "팬 모임에 인사 한 줄 남기기" },
+  },
+  계: {
+    caution: { name: "혼자 하는 걱정", act: "걱정 하나는 누구에게 말하기" },
+    joy: { name: "밤의 덕질", act: "자기 전 영상 보고 좋았던 점 적기" },
+  },
+};
+
+/** 행운. 근거는 올해와 일간의 관계(godNotes 의 flow 일·공부·사람 칸)다. */
+export const godLuck: Record<TenGod, Keyword> = {
+  비견: { name: "같은 목표의 사람", act: "비슷한 목표인 사람에게 먼저 인사하기" },
+  겁재: { name: "선을 정한 약속", act: "들어줄 수 있는 만큼 먼저 말하기" },
+  식신: { name: "같이 웃는 자리", act: "밥 약속 하나 먼저 잡기" },
+  상관: { name: "새로 꺼낸 계획", act: "미뤄 둔 계획 하나 꺼내 보기" },
+  편재: { name: "먼저 온 제안", act: "들어온 제안에 날짜로 답하기" },
+  정재: { name: "지킨 약속", act: "이번 주 약속 하나 끝까지 지키기" },
+  편관: { name: "끝까지 버틴 일", act: "어려운 일 하나 오늘 끝내기" },
+  정관: { name: "맡은 자리", act: "맡은 일 결과를 먼저 알리기" },
+  편인: { name: "새 배움", act: "궁금했던 분야 영상 하나 찾아보기" },
+  정인: { name: "도와주는 사람", act: "도움 필요한 일 하나 부탁하기" },
+};
+
 export const roughHeadline = (stem: Stem) => `${stemNotes[stem].image}처럼, ${stemNotes[stem].trait} 사람`;
 
 /** 타고난 기운 다섯 줄과 가장 많은 기운. */
@@ -280,6 +344,7 @@ function pillarKorean(pillar: Pillar) {
 }
 
 export type FirstReading = {
+  stem: Stem;
   headline: string;
   image: string;
   trait: string;
@@ -293,14 +358,19 @@ export type FirstReading = {
   flowTitle: string;
   flow: { label: string; text: string }[];
   pillar: string;
+  /** 조심할 것 · 즐거운 것 · 행운. basis 는 검토용 근거 키이고 화면에 쓰지 않는다. */
+  keywords: { kind: "caution" | "joy" | "luck"; label: string; basis: string; name: string; act: string }[];
 };
 
 export function firstReading(chart: Chart, at: number): FirstReading {
   const stem = dayStem(chart);
   const note = stemNotes[stem];
   const season = seasonAt(at);
-  const god = godNotes[tenGod(stem, season.yearPillar.heavenlyStem)];
+  const relation = tenGod(stem, season.yearPillar.heavenlyStem);
+  const god = godNotes[relation];
+  const marks = stemKeywords[stem];
   return {
+    stem,
     headline: roughHeadline(stem),
     image: note.image,
     trait: note.trait,
@@ -318,6 +388,11 @@ export function firstReading(chart: Chart, at: number): FirstReading {
       { label: "마음", text: god.flow[2] },
     ],
     pillar: pillarKorean(chart.pillars.day!),
+    keywords: [
+      { kind: "caution", label: "조심할 것", basis: `stemNotes.${stem}.cautionN`, ...marks.caution },
+      { kind: "joy", label: "즐거운 것", basis: `stemNotes.${stem}.strengthN+fandomR`, ...marks.joy },
+      { kind: "luck", label: "행운", basis: `godNotes.${relation}.flow`, ...godLuck[relation] },
+    ],
   };
 }
 
