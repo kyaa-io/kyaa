@@ -155,11 +155,15 @@
     "back": "返回"
   },
   "readingUi": {
+    "askAgain": "再問一次",
+    "askCaution": "今天要注意什麼？",
+    "askStrength": "我該怎麼發揮優勢？",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "再次查看",
+    "anotherDate": "其他日期的運勢",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",
@@ -401,6 +405,25 @@
     "star_money": "",
     "star_work": "",
     "pointsShort": "還差 {points}P。",
-    "testTopup": "測試儲值"
+    "testTopup": "測試儲值",
+    "depthHigh": "主動一步",
+    "depthMid": "保持節奏",
+    "depthLow": "留點餘裕",
+    "depthChangha": "聽我的建議",
+    "depthElina": "我們一起選好嗎？",
+    "depthYuna": "選一個試試吧！",
+    "depthDosa": "今日建議",
+    "depthFandomA": "重聽偶像的第一句歌詞",
+    "depthFandomB": "把安可片段傳給朋友",
+    "depthPeopleA": "午休時問候同事",
+    "depthPeopleB": "用語音感謝朋友",
+    "depthWorkA": "會前寫下一個問題",
+    "depthWorkB": "用三行總結課程",
+    "depthRestA": "移開視線看看窗外",
+    "depthRestB": "午餐後去公園散步",
+    "depthLoveA": "分享上次聊過的歌",
+    "depthLoveB": "約對方週末去咖啡館",
+    "depthMoneyA": "比較運費",
+    "depthMoneyB": "查看閒置的訂閱"
   }
 }

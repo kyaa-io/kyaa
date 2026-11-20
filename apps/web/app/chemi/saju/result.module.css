@@ -474,3 +474,9 @@
     bottom: var(--space-6);
   }
 }
+
+.questionToggle {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+}

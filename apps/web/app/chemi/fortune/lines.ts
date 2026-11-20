@@ -28,6 +28,8 @@ type Tone = {
   people: { high: string; low: string };
   fandom: (score: number, high: boolean) => string;
   luck: (hour: string | null, color: string) => string;
+  /** 등급별 한 마디를 이 말투로 따로 둔 최애(없으면 공통 반말 줄). */
+  gradeNotes?: Record<string, string>;
 };
 
 const tones: Record<FortuneCharacterId, Tone> = {
@@ -94,6 +96,13 @@ const tones: Record<FortuneCharacterId, Tone> = {
         : `덕질은 ${score}점이오. 오늘은 천천히 즐기시오. 큰 결제는 내일로 미루시오.`,
     luck: (hour, color) =>
       `${hour ? `${hour}가 청하기 좋소. ` : ""}${color}빛 물건도 챙기시오.`,
+    gradeNotes: {
+      "쉬어 가는 날": "오늘은 걸음을 늦추고 쉬어 가시오.",
+      "조심하면 괜찮은 날": "한 번만 더 살피면 무난히 지나갈 것이오.",
+      "무난한 날": "큰일 없이 편안히 흘러가겠소.",
+      "좋은 날": "누군가 먼저 손을 내밀지도 모르오.",
+      "아주 좋은 날": "하고 싶던 일을 오늘 시작해 보시오.",
+    },
   },
 };
 
@@ -135,7 +144,9 @@ export function fortuneTalkLine(
 ) {
   const tone = tones[character];
   if (talk === 1) {
-    const note = headline ? `${headline}.` : (gradeNotes[input.grade] ?? "");
+    const note = headline
+      ? `${headline}.`
+      : ((tone.gradeNotes ?? gradeNotes)[input.grade] ?? "");
     return `${tone.scoreLine(input.score, input.grade)} ${note}`.trim();
   }
   if (talk === 2) return input.people >= 80 ? tone.people.high : tone.people.low;

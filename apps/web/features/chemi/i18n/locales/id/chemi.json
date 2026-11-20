@@ -155,11 +155,15 @@
     "back": "Kembali"
   },
   "readingUi": {
+    "askAgain": "Tanya lagi",
+    "askCaution": "Apa yang perlu kuwaspadai hari ini?",
+    "askStrength": "Bagaimana cara memanfaatkan kelebihanku?",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "Baca lagi",
+    "anotherDate": "Ramalan untuk tanggal lain",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",
@@ -401,6 +405,25 @@
     "star_money": "",
     "star_work": "",
     "pointsShort": "Kurang {points}P.",
-    "testTopup": "Isi ulang uji"
+    "testTopup": "Isi ulang uji",
+    "depthHigh": "Ambil langkah pertama",
+    "depthMid": "Ikuti ritmemu",
+    "depthLow": "Beri waktu untuk jeda",
+    "depthChangha": "Saranku",
+    "depthElina": "Mau pilih bersama?",
+    "depthYuna": "Coba satu, yuk!",
+    "depthDosa": "Ide hari ini",
+    "depthFandomA": "Putar ulang bait pembuka",
+    "depthFandomB": "Kirim cuplikan encore ke teman",
+    "depthPeopleA": "Sapa rekan saat makan siang",
+    "depthPeopleB": "Ucapkan terima kasih lewat pesan suara",
+    "depthWorkA": "Tulis pertanyaan sebelum rapat",
+    "depthWorkB": "Rangkum pelajaran dalam tiga baris",
+    "depthRestA": "Pandanglah ke luar jendela",
+    "depthRestB": "Jalan sore di taman",
+    "depthLoveA": "Kirim lagu yang pernah kalian bahas",
+    "depthLoveB": "Ajak minum kopi akhir pekan",
+    "depthMoneyA": "Bandingkan ongkos kirim",
+    "depthMoneyB": "Periksa langganan yang jarang dipakai"
   }
 }

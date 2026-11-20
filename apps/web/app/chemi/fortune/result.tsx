@@ -26,7 +26,6 @@ import { parseNewFortune, type FortuneReading as Reading } from "./reading";
 import {
   band,
   flowNotes,
-  fieldNotes,
   kstDate,
   kstDayStart,
   kstWeekday,
@@ -37,6 +36,17 @@ import {
 } from "./result-copy";
 import { DatePurchase } from "./date-purchase";
 import styles from "./result.module.css";
+
+const exampleKeys = {
+  fandom: ["depthFandomA", "depthFandomB"],
+  people: ["depthPeopleA", "depthPeopleB"],
+  work: ["depthWorkA", "depthWorkB"],
+  rest: ["depthRestA", "depthRestB"],
+  love: ["depthLoveA", "depthLoveB"],
+  money: ["depthMoneyA", "depthMoneyB"],
+} as const;
+const summaryKeys = { high: "depthHigh", mid: "depthMid", low: "depthLow" } as const;
+const voiceKeys = { changha: "depthChangha", elina: "depthElina", yuna: "depthYuna", dosa: "depthDosa" } as const;
 
 export function FortuneResult({
   locale,
@@ -332,12 +342,12 @@ export function FortuneResult({
           </FanText>
           <FanHeading as="h1">{headline}</FanHeading>
           <picture className={styles.hero}>
-            <source
-              media="(min-width: 48rem)"
-              srcSet={`/chemi/fortune/fortune-${character === "changha" ? "" : `${character}-`}v1.webp`}
-            />
             <img
-              src={`/chemi/fortune/fortune-${character === "changha" ? "" : `${character}-`}v1.webp`}
+              src={
+                character === "changha"
+                  ? "/chemi/fortune/fortune-v1.webp"
+                  : `/chemi/fortune/fortune-${character}-wide-v2.webp`
+              }
               alt=""
             />
           </picture>
@@ -357,21 +367,21 @@ export function FortuneResult({
             )}
             {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
           </div>
-          <div className={styles.bars}>
-            {top.map(([label, , value]) => bar(label, value))}
-          </div>
-          <FanDisclosure label={uiText("areas")}>
-            <div className={styles.fields}>
-              {more.map(([label, key, value]) => (
+          <div className={styles.fields}>
+            {more.map(([label, key, value]) => {
+              const [first, second] = exampleKeys[key];
+              return (
                 <div key={key}>
                   {bar(label, value, key)}
-                  <FanText as="p" role="meta">
-                    {fieldNotes[key][band(value)]}
-                  </FanText>
+                  <FanText as="p" role="body">{uiText(summaryKeys[band(value)])}</FanText>
+                  <FanDisclosure label={uiText("more")} meta={label}>
+                    <FanText as="p" role="label">{uiText(voiceKeys[character])}</FanText>
+                    <ul><li data-row="">{uiText(first)}</li><li data-row="">{uiText(second)}</li></ul>
+                  </FanDisclosure>
                 </div>
-              ))}
-            </div>
-          </FanDisclosure>
+              );
+            })}
+          </div>
         </section>
         <section className={`${styles.section} ${styles.flowSec}`}>
           <FanHeading><ReadingText id="todayFlow" /></FanHeading>

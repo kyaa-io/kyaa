@@ -155,11 +155,15 @@
     "back": "戻る"
   },
   "readingUi": {
+    "askAgain": "もう一つ聞く",
+    "askCaution": "今日は何に気をつければいい？",
+    "askStrength": "自分の強みをどう生かせる？",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "もう一度見る",
+    "anotherDate": "別の日の運勢",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",
@@ -401,6 +405,25 @@
     "star_money": "",
     "star_work": "",
     "pointsShort": "{points}P足りません。",
-    "testTopup": "テストチャージ"
+    "testTopup": "テストチャージ",
+    "depthHigh": "一歩踏み出す日",
+    "depthMid": "いつものペースで",
+    "depthLow": "ひと息つこう",
+    "depthChangha": "僕のおすすめ",
+    "depthElina": "一緒に選びませんか？",
+    "depthYuna": "ひとつやってみよう！",
+    "depthDosa": "今日の提案",
+    "depthFandomA": "推しの歌い出しを聴き直す",
+    "depthFandomB": "アンコールを友達に送る",
+    "depthPeopleA": "昼休みに同僚に声をかける",
+    "depthPeopleB": "友達に声でお礼を伝える",
+    "depthWorkA": "会議の前に質問を書く",
+    "depthWorkB": "授業の要点を三行にまとめる",
+    "depthRestA": "画面から目を離す",
+    "depthRestB": "昼食後に公園を歩く",
+    "depthLoveA": "話題にした曲を送る",
+    "depthLoveB": "週末のカフェに誘う",
+    "depthMoneyA": "送料を比べる",
+    "depthMoneyB": "使っていない定額サービスを確認する"
   }
 }

@@ -131,3 +131,14 @@ it("올해·이달·궁합에는 한마디와 키워드를 두지 않는다", ()
     unmount();
   }
 });
+
+it.each([
+  ["오늘 뭘 조심할까?", "서운한 일을 오래 담아 두는 것"],
+  ["내 장점을 어떻게 써볼까?", "좋아하는 마음을 바로 말로 꺼내는 것"],
+])("선택한 질문에 도사가 현재 풀이로 답한다 (%s)", (question, evidence) => {
+  show("first", { character: "dosa" });
+  fireEvent.click(screen.getByText("한 번 더 묻기"));
+  fireEvent.click(screen.getByRole("button", { name: question }));
+  expect(screen.getByRole("status").textContent).toContain(evidence);
+  expect(screen.getByRole("status").textContent).toMatch(/시오\./);
+});

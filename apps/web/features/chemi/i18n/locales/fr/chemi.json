@@ -155,11 +155,15 @@
     "back": "Retour"
   },
   "readingUi": {
+    "askAgain": "Poser une autre question",
+    "askCaution": "À quoi dois-je faire attention aujourd’hui ?",
+    "askStrength": "Comment utiliser mes points forts ?",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "Relire",
+    "anotherDate": "Horoscope d’une autre date",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",
@@ -401,6 +405,25 @@
     "star_money": "",
     "star_work": "",
     "pointsShort": "Il vous manque {points} P.",
-    "testTopup": "Recharge test"
+    "testTopup": "Recharge test",
+    "depthHigh": "Fais le premier pas",
+    "depthMid": "Garde ton rythme",
+    "depthLow": "Accorde-toi une pause",
+    "depthChangha": "Mon conseil",
+    "depthElina": "On choisit ensemble ?",
+    "depthYuna": "Essaie donc !",
+    "depthDosa": "Idées du jour",
+    "depthFandomA": "Réécouter le premier couplet",
+    "depthFandomB": "Partager le rappel avec un ami",
+    "depthPeopleA": "Saluer un collègue à midi",
+    "depthPeopleB": "Remercier un ami par message vocal",
+    "depthWorkA": "Préparer une question avant la réunion",
+    "depthWorkB": "Résumer le cours en trois lignes",
+    "depthRestA": "Regarder par la fenêtre",
+    "depthRestB": "Marcher après le déjeuner",
+    "depthLoveA": "Envoyer la chanson évoquée ensemble",
+    "depthLoveB": "Proposer un café samedi",
+    "depthMoneyA": "Comparer les frais de livraison",
+    "depthMoneyB": "Vérifier les abonnements inutilisés"
   }
 }

@@ -155,11 +155,15 @@
     "back": "กลับ"
   },
   "readingUi": {
+    "askAgain": "ถามอีกข้อ",
+    "askCaution": "วันนี้ควรระวังอะไรบ้าง",
+    "askStrength": "จะใช้จุดแข็งของฉันได้อย่างไร",
     "skip": "",
     "symbol": "",
     "me": "",
     "chart": "",
-    "anotherDate": "",
+    "readDateAgain": "อ่านอีกครั้ง",
+    "anotherDate": "ดวงชะตาวันอื่น",
     "otherFortunes": "",
     "otherTopics": "",
     "retry": "",
@@ -401,6 +405,25 @@
     "star_money": "",
     "star_work": "",
     "pointsShort": "ขาดอีก {points}P",
-    "testTopup": "เติมพอยต์ทดสอบ"
+    "testTopup": "เติมพอยต์ทดสอบ",
+    "depthHigh": "ลองก้าวก่อน",
+    "depthMid": "ทำตามจังหวะเดิม",
+    "depthLow": "ให้เวลาตัวเองพัก",
+    "depthChangha": "เราแนะนำแบบนี้",
+    "depthElina": "เลือกด้วยกันไหมคะ",
+    "depthYuna": "ลองสักอย่างกันเถอะ!",
+    "depthDosa": "ไอเดียวันนี้",
+    "depthFandomA": "ฟังท่อนเปิดอีกครั้ง",
+    "depthFandomB": "ส่งคลิปอังกอร์ให้เพื่อน",
+    "depthPeopleA": "ทักเพื่อนร่วมงานช่วงพักเที่ยง",
+    "depthPeopleB": "ส่งเสียงขอบคุณเพื่อน",
+    "depthWorkA": "จดคำถามก่อนประชุม",
+    "depthWorkB": "สรุปบทเรียนสามบรรทัด",
+    "depthRestA": "พักสายตามองออกนอกหน้าต่าง",
+    "depthRestB": "เดินเล่นหลังมื้อเที่ยง",
+    "depthLoveA": "ส่งเพลงที่เคยคุยกัน",
+    "depthLoveB": "ชวนไปคาเฟ่วันหยุด",
+    "depthMoneyA": "เทียบค่าจัดส่ง",
+    "depthMoneyB": "ตรวจบริการรายเดือนที่ไม่ได้ใช้"
   }
 }

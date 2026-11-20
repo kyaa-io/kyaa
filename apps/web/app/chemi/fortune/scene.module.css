@@ -320,16 +320,4 @@
   .who[data-face] > :last-child {
     margin-inline-start: auto;
   }
-  .stage[data-portrait] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    background: var(--color-accent-soft);
-  }
-  .stage[data-portrait] .art {
-    inset: 0 0 0 50%;
-  }
-  .stage[data-portrait] .controls {
-    align-self: end;
-    justify-self: center;
-    margin: var(--space-8) var(--space-8);
-  }
 }
