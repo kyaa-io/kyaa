@@ -19,7 +19,7 @@ it("opens the entry scene with a known favorite and step, and falls back otherwi
   process.env.CHEMI_TAB = "true";
   const open = async (params: Record<string, string>) => {
     const page = await TarotPage({ searchParams: Promise.resolve(params) });
-    return (page.props.children.props.children as { props: Record<string, unknown> }).props;
+    return (page.props.children.props.children.props.children as { props: Record<string, unknown> }).props;
   };
   expect(await open({ c: "yuna", step: "pick" })).toMatchObject({ initialCharacter: "yuna", initialStep: "pick" });
   expect(await open({ c: "nobody", step: "x" })).toMatchObject({ initialCharacter: "changha", initialStep: "enter" });
@@ -29,7 +29,7 @@ it("passes the reading link only to the result step and only when it is a readin
   process.env.CHEMI_TAB = "true";
   const open = async (params: Record<string, string>) => {
     const page = await TarotPage({ searchParams: Promise.resolve(params) });
-    return (page.props.children.props.children as { props: Record<string, unknown> }).props;
+    return (page.props.children.props.children.props.children as { props: Record<string, unknown> }).props;
   };
   const id = "f712264a-858d-43ec-81b7-0bef38aabbc2";
   expect(await open({ step: "result", r: id })).toMatchObject({ initialReading: id });

@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -27,6 +28,7 @@ export function CardRail({
   reduced: boolean;
   controlsHost: HTMLElement | null;
 }) {
+  const uiText = useReadingCopy();
   const rail = useRef<HTMLUListElement>(null);
   const [current, setCurrent] = useState(START);
   const currentRef = useRef(START);
@@ -184,7 +186,7 @@ export function CardRail({
           className={styles.band}
           role="slider"
           tabIndex={0}
-          aria-label="카드 고르기"
+          aria-label={uiText("pickCard")}
           aria-valuemin={1}
           aria-valuemax={TAROT_DECK_SIZE}
           aria-valuenow={current + 1}
@@ -251,14 +253,14 @@ export function CardRail({
         <FanAction
           className={`${styles.turn} ${styles.cardPrev}`}
           variant="text"
-          ariaLabel="이전 카드"
+          ariaLabel={uiText("previousCard")}
           leadingIcon={<FanIcon icon={ChevronLeft} />}
           onClick={() => moveTo(currentRef.current - 1)}
         />
         <FanAction
           className={`${styles.turn} ${styles.cardNext}`}
           variant="text"
-          ariaLabel="다음 카드"
+          ariaLabel={uiText("nextCard")}
           leadingIcon={<FanIcon icon={ChevronRight} />}
           onClick={() => moveTo(currentRef.current + 1)}
         />

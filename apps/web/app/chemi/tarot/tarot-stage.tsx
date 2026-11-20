@@ -1,5 +1,7 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -45,6 +47,7 @@ type Props = {
 const DIRECTION = ["정방향", "역방향"] as const;
 
 export function TarotStage(props: Props) {
+  const uiText = useReadingCopy();
   const { step, character, shown, draw, slot, offline, meaning, reduced } = props;
   const person = tarotCharacter(character);
   const lines = TAROT_LINES[person.voice];
@@ -85,9 +88,9 @@ export function TarotStage(props: Props) {
 
   // 단계마다 주 버튼은 하나: 입장 · 다시 온 장면 · 떠올리기 · 마지막 대사.
   const primary = (() => {
-    if (entry) return revisit ? { label: "오늘 카드 보기", onClick: props.onResult } : { label: "한 장 뽑을래", onClick: props.onStart };
-    if (step === "think") return { label: "떠올렸어", onClick: props.onThought };
-    if (step === "talk3") return { label: "풀이 볼래", onClick: props.onResult };
+    if (entry) return revisit ? { label: uiText("viewCard"), onClick: props.onResult } : { label: uiText("drawCard"), onClick: props.onStart };
+    if (step === "think") return { label: uiText("thought"), onClick: props.onThought };
+    if (step === "talk3") return { label: uiText("seeReading"), onClick: props.onResult };
     return null;
   })();
 
@@ -132,8 +135,8 @@ export function TarotStage(props: Props) {
       </div>
       {entry ? (
         <>
-          <FanAction className={`${styles.turn} ${styles.prev}`} variant="text" ariaLabel="이전 최애" leadingIcon={<FanIcon icon={ChevronLeft} />} onClick={() => turn(-1)} />
-          <FanAction className={`${styles.turn} ${styles.next}`} variant="text" ariaLabel="다음 최애" leadingIcon={<FanIcon icon={ChevronRight} />} onClick={() => turn(1)} />
+          <FanAction className={`${styles.turn} ${styles.prev}`} variant="text" ariaLabel={uiText("prevStar")} leadingIcon={<FanIcon icon={ChevronLeft} />} onClick={() => turn(-1)} />
+          <FanAction className={`${styles.turn} ${styles.next}`} variant="text" ariaLabel={uiText("nextStar")} leadingIcon={<FanIcon icon={ChevronRight} />} onClick={() => turn(1)} />
         </>
       ) : null}
 
@@ -159,7 +162,7 @@ export function TarotStage(props: Props) {
             <img src={TAROT_BACK} alt="" />
           </div>
         ) : null}
-        {step === "pick" ? <CardRail onPick={props.onPick} randomLabel="아무거나 뽑기" reduced={reduced} controlsHost={controlsHost} /> : null}
+        {step === "pick" ? <CardRail onPick={props.onPick} randomLabel={uiText("randomCard")} reduced={reduced} controlsHost={controlsHost} /> : null}
         {step === "lock" ? <LockedRail slot={slot ?? 1} cardRef={lockedEl} /> : null}
         {talking && draw ? <Flip draw={draw} turning={step === "flip" && !reduced} areaRef={areaEl} flipRef={flipEl} /> : null}
       </div>
@@ -167,10 +170,10 @@ export function TarotStage(props: Props) {
       <div className={styles.panel}>
         {entry && !revisit ? (
           <div className={styles.title}>
-            <FanHeading as="h1">오늘의 타로</FanHeading>
+            <FanHeading as="h1"><ReadingTitle id="tarot" /></FanHeading>
           </div>
         ) : null}
-        {revisit ? <NameRow draw={shown} trailing="오늘 카드" /> : null}
+        {revisit ? <NameRow draw={shown} trailing={uiText("todayCard")} /> : null}
         {talking && draw ? <NameRow draw={draw} trailing={draw.slot ? `${draw.slot}번째 카드` : null} /> : null}
         {step === "lock" ? (
           <div className={styles.picked}>
@@ -215,9 +218,9 @@ export function TarotStage(props: Props) {
 
       {offline || (talking && meaning.status === "error") ? (
         <div className={styles.offline} role="alert">
-          <FanText role="body">연결이 끊겼습니다.</FanText>
+          <FanText role="body"><ReadingText id="offline" /></FanText>
           <FanAction size="sm" onClick={props.onRetry}>
-            다시 시도
+            <ReadingText id="retry" />
           </FanAction>
         </div>
       ) : null}
@@ -291,8 +294,9 @@ function Flip({ draw, turning, areaRef, flipRef }: { draw: TarotDraw; turning: b
 
 /** 입장·다시 온 장면의 최애 고르기 띠: 실제 사진 아바타 + 이름. 고른 최애는 핑크 고리와 굵은 이름. */
 export function Pickband({ character, onSelect }: { character: TarotCharacter; onSelect: (key: TarotCharacter) => void }) {
+  const uiText = useReadingCopy();
   return (
-    <div className={styles.pickband} role="group" aria-label="최애">
+    <div className={styles.pickband} role="group" aria-label={uiText("favorite")}>
       {TAROT_CHARACTERS.map((item) => (
         <FanIconButton key={item.key} aria-label={item.name} aria-pressed={item.key === character} onClick={() => onSelect(item.key)}>
           <img src={tarotAvatar(item.key)} alt="" />

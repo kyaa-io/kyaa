@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -56,16 +57,16 @@ import { StarRating } from "./stars";
 import { Under14 } from "./under-14";
 import styles from "./scene.module.css";
 
-const talkChoice = ["영역별로도 알려 줘", "왜 그런 거야?", "우리 둘은?", "오늘 정리 보기"] as const;
+const talkChoice = ["domains", "whyQuestion", "ourMatch", "starSummary"] as const;
 
 type Phase = "idle" | "calc" | "error";
 /** 오류 안내를 가른다: 로그인 만료, 서비스 거절, 연결 끊김. */
 type Failure = "auth" | "service" | "network";
-const failureTitle: Record<Failure, string> = {
-  auth: "로그인이 만료되었습니다.",
-  service: "별자리 운세를 불러오지 못했습니다.",
-  network: "연결이 끊겼습니다.",
-};
+const failureTitle = {
+  auth: "expired",
+  service: "starFailure",
+  network: "offline",
+} as const;
 type Sheet = null | "login" | "birth";
 
 function readUrl() {
@@ -123,6 +124,7 @@ export function StarFlow({
   /** 주소에 단계와 결과가 있어 저장된 결과를 불러오는 중이면 입장 화면 대신 불러오는 모양을 그린다. */
   restoring?: boolean;
 }) {
+  const text = useReadingCopy();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const [step, setStep] = useState<StarStep>("enter");
   const [character, setCharacter] = useState<StarCharacterId>("changha");
@@ -187,7 +189,7 @@ export function StarFlow({
           writeUrl({ step: null, r: null }, "replace");
           setReading(undefined);
           setStep("enter");
-          showFanToast({ title: "오늘의 별자리 결과가 아니라 처음 화면으로 돌아왔어요." });
+          showFanToast({ title: text("starMissing") });
         } else {
           setStep("enter");
           setRestoreFailure({ readingId, character: id, step: target });
@@ -471,21 +473,21 @@ export function StarFlow({
                 )
               : starEnterLine(character, needBirth ? "birth" : "enter");
 
-  const primaryLabel = entering ? "응, 봐 줘" : talk ? talkChoice[talk - 1] : null;
+  const primaryLabel = entering ? text("readFortune") : talk ? text(talkChoice[talk - 1]) : null;
 
   const turns = (cls: string, side = false) => (
     <>
       <FanAction
         variant="neutral"
         className={side ? `${cls} ${styles.prev}` : cls}
-        ariaLabel="이전 최애"
+        ariaLabel={text("prevStar")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         onClick={() => choose(index - 1)}
       />
       <FanAction
         variant="neutral"
         className={side ? `${cls} ${styles.next}` : cls}
-        ariaLabel="다음 최애"
+        ariaLabel={text("nextStar")}
         leadingIcon={<FanIcon icon={ChevronRight} />}
         onClick={() => choose(index + 1)}
       />
@@ -499,14 +501,14 @@ export function StarFlow({
           <FanAction
             variant="neutral"
             href={`/chemi?locale=${locale}`}
-            ariaLabel="케미 탭으로 돌아가기"
+            ariaLabel={text("chemiExit")}
             leadingIcon={<FanIcon icon={ChevronLeft} />}
             className={styles.round}
           />
         ) : (
           <FanAction
             variant="neutral"
-            ariaLabel="뒤로 가기"
+            ariaLabel={text("back")}
             leadingIcon={<FanIcon icon={ChevronLeft} />}
             className={styles.round}
             onClick={() => window.history.back()}
@@ -514,7 +516,7 @@ export function StarFlow({
         )}
         {step === "enter" ? (
           <>
-            <div className={styles.pick} role="group" aria-label="최애">
+            <div className={styles.pick} role="group" aria-label={text("favorite")}>
               {starCharacters.map((c) => (
                 <FanAction
                   key={c.id}
@@ -537,7 +539,7 @@ export function StarFlow({
             </FanText>
             {talk && (
               <FanAction variant="text" className={styles.skip} onClick={openResult}>
-                건너뛰기
+                <ReadingText id="skip" />
               </FanAction>
             )}
           </>
@@ -554,15 +556,15 @@ export function StarFlow({
             <FanState
             inline
             kind={failure === "auth" ? "auth" : "error"}
-            title={failureTitle[failure]}
+            title={text(failureTitle[failure])}
             actions={
               failure === "auth" ? (
                 <FanAction size="sm" onClick={login}>
-                  로그인
+                  <ReadingText id="login" />
                 </FanAction>
               ) : (
                 <FanAction size="sm" onClick={() => void run(character)}>
-                  다시 시도
+                  <ReadingText id="retry" />
                 </FanAction>
               )
             }
@@ -572,7 +574,7 @@ export function StarFlow({
           <div className={styles.controls}>
             {entering && (
               <div className={styles.title}>
-                <FanHeading as="h1">별자리 운세</FanHeading>
+                <FanHeading as="h1"><ReadingTitle id="zodiac" /></FanHeading>
                 {participationText(participation) && (
                   <FanText role="meta">{participationText(participation)}</FanText>
                 )}
@@ -589,7 +591,7 @@ export function StarFlow({
                     tone="accent"
                   />
                   <FanText role="meta" className={styles.signTail}>
-                    총운
+                    <ReadingText id="overall" />
                   </FanText>
                 </div>
               </div>
@@ -647,11 +649,11 @@ export function StarFlow({
                 {creator && <span className={styles.pairLine} aria-hidden="true" />}
                 <div className={styles.pairSide}>
                   <FanText as="span" role="label" className={styles.pairMe}>
-                    나
+                    <ReadingText id="me" />
                   </FanText>
                   <span>
                     <FanText as="strong" role="item">
-                      나
+                      <ReadingText id="me" />
                     </FanText>
                     <FanText as="span" role="meta">
                       {derived.sunBare}
@@ -664,8 +666,7 @@ export function StarFlow({
               <div className={styles.choices}>
                 {entering && (
                   <FanAction variant="neutral" href={`/chemi?locale=${locale}`}>
-                    다음에
-                  </FanAction>
+                    {text("later")}</FanAction>
                 )}
                 <FanAction
                   variant={entering || talk === 4 ? "primary" : "neutral"}
@@ -703,13 +704,13 @@ export function StarFlow({
       <FanDialog
         open={sheet === "login"}
         onOpenChange={(open) => !open && setSheet(null)}
-        title="로그인"
+        title={text("login")}
         size="sm"
-        closeLabel="닫기"
-        primary={{ label: "로그인 후 계속", onClick: login }}
+        closeLabel={text("close")}
+        primary={{ label: text("loginContinue"), onClick: login }}
       >
         <FanText as="p" role="body">
-          별자리 운세를 보려면 로그인해 주세요.
+          <ReadingText id="starLogin" />
         </FanText>
       </FanDialog>
       <BirthSheet

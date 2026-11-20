@@ -1,5 +1,6 @@
 "use client";
 
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -106,20 +107,20 @@ export function TarotResult({
     keepSave ? (
       <div className={styles.save}>
         <p>
-          <FanText role="label">저장 안 됨</FanText>
-          <FanText role="meta">로그인하면 오늘 카드가 저장돼요</FanText>
+          <FanText role="label"><ReadingText id="unsaved" /></FanText>
+          <FanText role="meta"><ReadingText id="saveHint" /></FanText>
         </p>
         <div className={styles.saveActions}>
-          <FanAction onClick={auth.login}>로그인하고 저장</FanAction>
+          <FanAction onClick={auth.login}><ReadingText id="loginSave" /></FanAction>
           <FanAction variant="text" onClick={() => setKeepSave(false)}>
-            저장 안 하고 볼게
+            <ReadingText id="withoutSaving" />
           </FanAction>
         </div>
       </div>
     ) : (
       <p className={styles.saveOff}>
-        <FanText role="label">저장 안 됨</FanText>
-        <FanText role="meta">로그인하면 오늘 카드가 저장돼요</FanText>
+        <FanText role="label"><ReadingText id="unsaved" /></FanText>
+        <FanText role="meta"><ReadingText id="saveHint" /></FanText>
       </p>
     )
   ) : null;
@@ -157,7 +158,7 @@ export function TarotResult({
               <Retry onRetry={meaning.retry} />
             ) : (
               <>
-                <FanHeading>오늘의 뜻</FanHeading>
+                <FanHeading><ReadingText id="meaning" /></FanHeading>
                 {content ? (
                   <>
                     <FanText as="p" role="item" className={styles.lead}>
@@ -186,7 +187,7 @@ export function TarotResult({
         </section>
 
         <section className={styles.sym} hidden={failed}>
-          <FanHeading>그림 속 상징</FanHeading>
+          <FanHeading><ReadingText id="symbol" /></FanHeading>
           {meaning.card ? (
             <FanText as="p" role="body">
               {meaning.card.symbol}
@@ -198,10 +199,10 @@ export function TarotResult({
 
         <footer className={styles.legal}>
           <FanText as="p" role="meta">
-            재미로 보는 풀이입니다. 중요한 결정의 근거로 쓰지 마세요.
+            <ReadingText id="fun" />
           </FanText>
           <FanText as="p" role="meta">
-            풀이 문장은 AI가 말투를 다듬었습니다.
+            <ReadingText id="ai" />
           </FanText>
         </footer>
       </div>
@@ -225,7 +226,7 @@ export function TarotResult({
           </div>
         </div>
         <section className={styles.keys} hidden={failed}>
-          <FanHeading>전통 키워드</FanHeading>
+          <FanHeading><ReadingText id="keywords" /></FanHeading>
           {meaning.card ? (
             <dl className={styles.rows}>
               {(["up", "down"] as const).map((side, index) => (
@@ -268,10 +269,10 @@ function Retry({ onRetry }: { onRetry: () => void }) {
   return (
     <div className={styles.retry} role="alert">
       <FanText as="p" role="body">
-        풀이를 불러오지 못했습니다.
+        <ReadingText id="loadFailure" />
       </FanText>
       <FanAction size="sm" onClick={onRetry}>
-        다시 시도
+        <ReadingText id="retry" />
       </FanAction>
     </div>
   );
@@ -283,7 +284,7 @@ function RewardRow({ character, name, rewards, locale }: { character: TarotChara
   const { reward, replayed, points } = rewards;
   const parts: ReactNode[] = [];
   if (points > 0 && !replayed) parts.push(<EarnBadge key="points" locale={locale} points={points} variant="inline" />);
-  if (reward.stamp) parts.push(<FanText key="stamp" role="meta">스탬프 1개</FanText>);
+  if (reward.stamp) parts.push(<FanText key="stamp" role="meta"><ReadingText id="stamp" /></FanText>);
   if (reward.exp) parts.push(<FanText key="exp" role="meta">{`친밀 +${reward.exp}`}</FanText>);
   if (reward.week) parts.push(<FanText key="week" role="meta">{`이번 주 ${reward.week}일`}</FanText>);
   if (replayed && points > 0 && parts.length === 0) parts.push(<FanText key="received" role="meta">{`${name} · 오늘 받음`}</FanText>);

@@ -1,3 +1,4 @@
+import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
 import {
   FanAppFrame,
@@ -18,8 +19,10 @@ export default async function TarotPage({
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
   const locale = parseAppLocale(params.locale);
+  const catalog = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
   return (
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="tarot-main">
+      <ReadingCopyProvider value={{ home: catalog.home, sajuScene: catalog.sajuScene, readingUi: catalog.readingUi }}>
       <FanContentContainer as="main" id="tarot-main">
         <TarotScreen
           locale={locale}
@@ -28,6 +31,7 @@ export default async function TarotPage({
           initialReading={params.step === "result" && isReadingId(params.r) ? params.r : null}
         />
       </FanContentContainer>
+      </ReadingCopyProvider>
     </FanAppFrame>
   );
 }
