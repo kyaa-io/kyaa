@@ -330,15 +330,7 @@ describe("storage upload CSP outside AWS hosting", () => {
     expect(csp.includes("https://auth.privy.io")).toBe(opened);
     expect(csp.includes("wss://relay.walletconnect.com")).toBe(opened);
   });
-  it("opens the Toss Payments origins on the DEV top-up page only", () => {
-    vi.stubEnv("HOSTING_PROVIDER", "");
-    vi.stubEnv("AWS_STORAGE_ENABLED", "true");
-    const topup = proxy(new NextRequest("http://localhost:3000/chemi/points/topup?locale=ko")).headers.get("Content-Security-Policy") ?? "";
-    expect(topup).toMatch(/script-src [^;]*https:\/\/js\.tosspayments\.com/);
-    for (const path of ["/benefits?locale=ko", "/chemi/fortune?locale=ko"]) {
-      expect(proxy(new NextRequest(`http://localhost:3000${path}`)).headers.get("Content-Security-Policy")).not.toContain("tosspayments");
-    }
-  });
+
   it("opens the Gleam widget origins on /follow only", () => {
     vi.stubEnv("HOSTING_PROVIDER", "");
     vi.stubEnv("AWS_STORAGE_ENABLED", "true");

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { awsStorageContentSecurityPolicy, privySignInEnabled, responseSecurityHeaders, withGleamWidget, withPrivySignIn, withTossPayments } from "./security-headers";
+import { awsStorageContentSecurityPolicy, privySignInEnabled, responseSecurityHeaders, withGleamWidget, withPrivySignIn } from "./security-headers";
 import { unstable_getResponseFromNextConfig } from "next/experimental/testing/server";
 import nextConfig from "./next.config";
 
@@ -78,20 +78,7 @@ describe("response security headers", () => {
     }
   });
 
-  it("opens the Toss Payments SDK only on the DEV top-up page", async () => {
-    const topup = await unstable_getResponseFromNextConfig({ url: "https://kyaa.io/chemi/points/topup?locale=ko", nextConfig });
-    const policy = topup.headers.get("content-security-policy")!;
-    expect(policy).toBe(withTossPayments(header("Content-Security-Policy")));
-    expect(policy).toMatch(/script-src [^;]*https:\/\/js\.tosspayments\.com/);
-    expect(policy).toMatch(/frame-src [^;]*https:\/\/\*\.tosspayments\.com/);
-    expect(policy).toMatch(/connect-src [^;]*https:\/\/\*\.tosspayments\.com/);
-    for (const path of ["/", "/chemi/points", "/chemi/fortune", "/api/chemi/points/topup"]) {
-      const response = await unstable_getResponseFromNextConfig({ url: `https://kyaa.io${path}`, nextConfig });
-      expect(response.headers.get("content-security-policy")).not.toContain("tosspayments");
-    }
-    expect(awsStorageContentSecurityPolicy({ toss: true }).split("; ").find((part) => part.startsWith("script-src "))).toContain("https://js.tosspayments.com");
-    expect(awsStorageContentSecurityPolicy({})).not.toContain("tosspayments");
-  });
+
   it("opens the Gleam widget script and entry frame only on the event page that embeds it", async () => {
     const follow = await unstable_getResponseFromNextConfig({ url: "https://kyaa.io/follow?locale=ko", nextConfig });
     const policy = follow.headers.get("content-security-policy")!;

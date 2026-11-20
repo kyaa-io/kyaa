@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 import {
   FanAppFrame,
   FanContentContainer,
 } from "@/components/fan-shell/fan-app-shell";
-import { chemiEnabled } from "@/features/chemi/domain/availability";
+import { chemiTopupEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
 import { Checkout } from "./checkout";
 
@@ -13,7 +13,7 @@ export default async function PointTopup({
 }: {
   searchParams: Promise<{ locale?: string }>;
 }) {
-  if (!chemiEnabled() || process.env.APP_ENV !== "dev") notFound();
+  if (!chemiTopupEnabled()) redirect("/chemi");
   const locale = parseAppLocale((await searchParams).locale);
   return (
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="topup-main">

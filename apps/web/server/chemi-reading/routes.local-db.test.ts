@@ -194,8 +194,6 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("tops up through the DEV order route,
   const { POST: topup } = await import("@/app/api/chemi/points/topup/route");
   vi.stubEnv("CHEMI_TAB", "true");
   vi.stubEnv("APP_ENV", "dev");
-  vi.stubEnv("TOSS_SECRET_KEY", "test_sk_disposable");
-  vi.stubEnv("TOSS_CLIENT_KEY", "test_ck_disposable");
   const member = randomUUID();
   sql(`insert into app_users(id,privy_user_id,verified_email) values('${member}','did:privy:${member}','${member}@example.invalid');
     insert into chemi_profiles(user_id,birth_date,calendar,birth_time,time_precision,consent_version,consent_at)
@@ -205,33 +203,33 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("tops up through the DEV order route,
   // The mocked authorization returns this member for the rest of the test.
   Object.assign(globalThis, { __chemiPayMember: member });
   let provider = { status: "DONE", totalAmount: 1000, balanceAmount: 1000, currency: "KRW", orderId: "" };
-  const providerCalls: string[] = [];
-  vi.stubGlobal("fetch", async (url: string, init?: RequestInit) => {
-    providerCalls.push((init?.method ?? "GET") + " " + url.replace("https://api.tosspayments.com/v1/payments", ""));
-    return Response.json({ ...provider });
+  vi.spyOn(await import("./topup-provider"), "pointPaymentProvider").mockReturnValue({
+    checkout: async () => "https://fixture.invalid/pay",
+    lookup: async () => ({ ...provider, status: provider.status as "DONE" | "CANCELED" }),
   });
   const call = (body: unknown) => topup(new Request("http://localhost", { method: "POST", headers: { authorization: "Bearer fixture" }, body: JSON.stringify(body) }));
   const day = sql("select dukjil_kst_date()+5");
   const date = async (confirm: boolean) => (await openDate(new Request("http://localhost", { method: "POST", headers: { authorization: "Bearer fixture" }, body: JSON.stringify({ day, character: "dosa", confirm }) }))).json();
 
-  expect(await date(false)).toMatchObject({ price: 3, balance: 1, topupPath: "/chemi/points/topup" });
+  expect(await date(false)).toMatchObject({ price: 3, balance: 1 });
   expect(balances()).toBe("1/0/1");
+  expect(await date(false)).not.toHaveProperty("topupPath");
+  vi.stubEnv("CHEMI_TOPUP_ENABLED", "true");
   const opened = await (await call({ action: "open" })).json();
-  expect(opened).toMatchObject({ amount: 1000, clientKey: "test_ck_disposable" });
+  expect(opened).toMatchObject({ amount: 1000, checkoutUrl: "https://fixture.invalid/pay" });
   provider.orderId = opened.orderId;
   expect((await call({ action: "refresh", orderId: randomUUID() })).status).toBe(404);
   provider = { ...provider, totalAmount: 999, balanceAmount: 999 };
   expect((await call({ action: "refresh", orderId: opened.orderId })).status).toBe(409);
   expect(balances()).toBe("1/0/1");
   provider = { ...provider, totalAmount: 1000, balanceAmount: 1000 };
-  const confirmed = await (await call({ action: "confirm", orderId: opened.orderId, amount: 1000, paymentKey: "pay_fixture" })).json();
+  const confirmed = await (await call({ action: "refresh", orderId: opened.orderId })).json();
   expect(confirmed).toMatchObject({ status: "DONE", balances: [{ activity_points: 1, paid_points: 100, total_points: 101 }] });
   await call({ action: "refresh", orderId: opened.orderId });
   expect(balances()).toBe("1/100/101");
-  expect(providerCalls[0]).toBe("GET /orders/" + opened.orderId);
-  expect(providerCalls).toContain("POST /confirm");
 
   expect(await date(false)).toMatchObject({ price: 3, balance: 101 });
+  vi.stubEnv("CHEMI_TOPUP_ENABLED", "false");
   const bought = await date(true);
   expect(bought).toMatchObject({ balance: 98, kstDate: day, result: { locked: false } });
   expect(balances()).toBe("0/98/98");
@@ -239,6 +237,7 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("tops up through the DEV order route,
   expect(balances()).toBe("0/98/98");
 
   provider = { ...provider, status: "CANCELED", balanceAmount: 0 };
+  vi.stubEnv("CHEMI_TOPUP_ENABLED", "true");
   const refused = await call({ action: "refresh", orderId: opened.orderId });
   expect(refused.status).toBe(409);
   expect(balances()).toBe("0/98/98");

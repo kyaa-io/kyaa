@@ -1,5 +1,4 @@
 "use client";
-import Script from "next/script";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -9,15 +8,11 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { FortuneReturnLink } from "./return-link";
 import styles from "./topup.module.css";
 
-type Toss = (key: string) => {
-  requestPayment(method: string, order: Record<string, unknown>): Promise<void>;
-};
 type Balance = { activity_points: number; paid_points: number; total_points: number };
 const orderKey = "chemi-point-order";
 
 export function Checkout({ locale }: { locale: string }) {
   const { getAccessToken } = useByUsAuth();
-  const [ready, setReady] = useState(false);
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState(false);
   const [balance, setBalance] = useState<Balance>();
@@ -77,15 +72,6 @@ export function Checkout({ locale }: { locale: string }) {
       history.replaceState(null, "", location.pathname);
       setMessage({ text: "결제가 완료되지 않았어요.", alert: true });
     }
-    if (query.has("paymentKey")) {
-      void settle({
-        action: "confirm",
-        paymentKey: query.get("paymentKey"),
-        amount: Number(query.get("amount")),
-        orderId: query.get("orderId"),
-      });
-      return;
-    }
     void post({ action: "balances" })
       .then(({ ok, result }) => ok && setBalance(result.balances[0]))
       .catch(() => undefined);
@@ -97,15 +83,8 @@ export function Checkout({ locale }: { locale: string }) {
     try {
       const { ok, result } = await post({ action: "open" });
       if (!ok) throw Error();
-      const sdk = (window as unknown as { TossPayments: Toss }).TossPayments(result.clientKey);
       sessionStorage.setItem(orderKey, result.orderId);
-      await sdk.requestPayment("카드", {
-        orderId: result.orderId,
-        orderName: result.orderName,
-        amount: result.amount,
-        successUrl: location.origin + location.pathname,
-        failUrl: location.origin + location.pathname + "?failed=1",
-      });
+      window.location.assign(result.checkoutUrl);
     } catch {
       setMessage({ text: "결제창을 열지 못했어요.", alert: true });
       setBusy(false);
@@ -118,11 +97,6 @@ export function Checkout({ locale }: { locale: string }) {
   ];
   return (
     <div className={styles.page}>
-      <Script
-        src="https://js.tosspayments.com/v1/payment"
-        onReady={() => setReady(true)}
-        onError={() => setMessage({ text: "결제창을 불러오지 못했어요.", alert: true })}
-      />
       <FanHeading as="h1">시험 포인트 충전</FanHeading>
       <section className={styles.panel} aria-label="포인트 충전">
         <dl className={styles.balances}>
@@ -142,7 +116,7 @@ export function Checkout({ locale }: { locale: string }) {
           <FanText role="item">1,000원</FanText>
         </div>
         <div className={styles.actions}>
-          <FanAction variant="primary" size="lg" disabled={!ready || busy} onClick={pay}>
+          <FanAction variant="primary" size="lg" disabled={busy} onClick={pay}>
             1,000원 결제하기
           </FanAction>
           {pending && (

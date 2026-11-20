@@ -3,7 +3,7 @@ import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./result.module.css";
 
-/** Not enough points: DEV offers the test top-up first, every environment offers attendance. */
+/** Not enough points: an enabled checkout offers the test top-up first, every environment offers attendance. */
 export function DateShortage({
   shortBy,
   topupHref,
@@ -27,11 +27,6 @@ export function DateShortage({
             variant="primary"
             size="lg"
             href={topupHref}
-            onClick={(event) => {
-              // The payment SDK is allowed only by the top-up document's security policy, so load that page fresh.
-              event.preventDefault();
-              window.location.assign(event.currentTarget.href);
-            }}
           >
             <ReadingText id="testTopup" />
           </FanAction>

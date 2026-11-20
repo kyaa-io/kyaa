@@ -1,3 +1,4 @@
+import { chemiTopupEnabled } from "@/features/chemi/domain/availability";
 import { isFortuneResult } from "@/app/chemi/fortune/reading";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
@@ -240,7 +241,7 @@ export async function rewardRoute(
         const quote = z.object({ balance: z.number(), price: z.number(), readingId: z.string().optional() })
           .passthrough().parse(await deps.rpc("chemi_point_date", { ...args, p_result: null }));
         if (!input.confirm || quote.todayFree || quote.readingId || quote.balance < quote.price) {
-          const topupPath = process.env.APP_ENV === "dev" ? "/chemi/points/topup" : undefined;
+          const topupPath = chemiTopupEnabled() ? "/chemi/points/topup" : undefined;
           return { ...quote, topupPath };
         }
         const profile = z.object({ birth: birth.nullable() }).parse(await deps.rpc("chemi_read_profile", { p_user }));

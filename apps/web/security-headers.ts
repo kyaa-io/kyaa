@@ -56,15 +56,7 @@ export function withPrivySignIn(policy: string): string {
 // Only the event page that shows the widget opens them; every other page keeps the base policy.
 export const gleamWidgetPaths: ReadonlySet<string> = new Set(["/follow"]);
 
-// Toss Payments SDK (DEV test top-up): the script, its payment frame and its calls open only on the top-up page.
-// The page itself answers 404 outside APP_ENV=dev, so no other environment shows the SDK.
-export const tossPaymentPaths: ReadonlySet<string> = new Set(["/chemi/points/topup"]);
-export function withTossPayments(policy: string): string {
-  return policy
-    .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://js.tosspayments.com")
-    .replace("frame-src ", "frame-src https://*.tosspayments.com ")
-    .replace("connect-src 'self'", "connect-src 'self' https://*.tosspayments.com");
-}
+
 export function withGleamWidget(policy: string): string {
   return policy
     .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://widget.gleamjs.io")
@@ -95,10 +87,9 @@ export const ADSENSE_ORIGIN = "https://kyaa.io";
 /** The viewer's origin as the proxy sees it; the snippet and its CSP origins open only for https://kyaa.io. */
 export function adsenseEnabled(viewerOrigin: string): boolean { return viewerOrigin === ADSENSE_ORIGIN; }
 
-export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean; privy?: boolean; gleam?: boolean; toss?: boolean }): string {
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean; privy?: boolean; gleam?: boolean }): string {
   let policy = config.privy ? withPrivySignIn(contentSecurityPolicy) : contentSecurityPolicy;
   if (config.gleam) policy = withGleamWidget(policy);
-  if (config.toss) policy = withTossPayments(policy);
   // adsbygoogle.js and what it calls back to (Google's AdSense code snippet requirements).
   if (config.adsense) {
     policy = policy
