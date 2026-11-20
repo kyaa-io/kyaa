@@ -8,7 +8,7 @@ const items = Array.from({ length: 8 }, (_, i) => ({ id: `id${i}`, videoId: `vid
 
 describe("shorts viewer", () => {
   it("shows every loaded card in the scroll row and navigates all videos and unmounts the previous player", () => {
-    render(<HomeShorts items={items} locale="ko" />);
+    render(<HomeShorts items={items} locale="ko" layout="grid" />);
     expect(screen.getAllByRole("listitem")).toHaveLength(8);
     fireEvent.click(screen.getByRole("button", { name: "영상 5" }));
     const dialog = screen.getByRole("dialog");
@@ -32,7 +32,7 @@ describe("shorts viewer", () => {
   });
   it("plays a TikTok short in the TikTok player with its kept cover", () => {
     const tiktok = { id: "t1", platform: "tiktok", videoId: "7690854938997558549", title: "안녕히 계세여~", href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", creator: { slug: "a", name: "A" } } as HomeShort;
-    const { container } = render(<HomeShorts items={[tiktok]} locale="ko" />);
+    const { container } = render(<HomeShorts items={[tiktok]} locale="ko" layout="grid" />);
     expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain("/images/media/tiktok/7690854938997558549.jpg");
     fireEvent.click(screen.getByRole("button", { name: "안녕히 계세여~" }));
     const dialog = screen.getByRole("dialog");
@@ -152,7 +152,7 @@ describe("Instagram reels in the shorts", () => {
     expect(container.textContent).not.toContain("instagram.com");
   });
   it("is skipped by the viewer's previous and next steps, which count only the playable videos", () => {
-    render(<HomeShorts items={[items[0]!, reel("i1"), items[1]!]} locale="ko" />);
+    render(<HomeShorts items={[items[0]!, reel("i1"), items[1]!]} locale="ko" layout="grid" />);
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: "영상 0" }));
     const dialog = screen.getByRole("dialog");

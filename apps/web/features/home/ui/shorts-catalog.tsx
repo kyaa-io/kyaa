@@ -5,6 +5,7 @@ import { FanSelectMenu } from "@/components/fan-ui/fan-select-menu";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import type { HomeShort } from "@/features/home/domain/home-gallery";
 import type { AppLocale } from "@/i18n/locales";
+import { ShortsFeed } from "./shorts-feed";
 import { HomeShorts } from "./home-shorts";
 import styles from "./home-gallery-page.module.css";
 
@@ -24,6 +25,7 @@ const copy: Record<AppLocale, { sort: string; latest: string; popular: string; a
 };
 
 export function ShortsCatalog({ catalog, locale, initialVideo }: { catalog: { items: readonly HomeShort[]; likes: Record<string, number> }; locale: AppLocale; initialVideo?: string }) {
+  const [browsing, setBrowsing] = useState(false);
   const [sort, setSort] = useState("latest");
   const [artist, setArtist] = useState("all");
   const t = copy[locale];
@@ -32,6 +34,7 @@ export function ShortsCatalog({ catalog, locale, initialVideo }: { catalog: { it
     const selected = catalog.items.filter(item => artist === "all" || item.creator.slug === artist);
     return sort === "popular" ? [...selected].sort((a, b) => (catalog.likes[b.videoId] ?? 0) - (catalog.likes[a.videoId] ?? 0) || catalog.items.indexOf(a) - catalog.items.indexOf(b)) : selected;
   }, [artist, catalog, sort]);
+  if (!browsing && items.length) return <ShortsFeed items={items} locale={locale} initialVideo={initialVideo} onClose={() => setBrowsing(true)} />;
   return <>
     <div className={styles.shortsControls}>
       <FanTabs variant="chip" label={t.artists} current={artist} items={[{ key: "all", label: t.all, onSelect: () => setArtist("all") }, ...artists.map(([slug, name]) => ({ key: slug, label: name, onSelect: () => setArtist(slug) }))]} />

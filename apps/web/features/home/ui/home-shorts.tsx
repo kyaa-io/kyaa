@@ -19,7 +19,7 @@ import { ShortsEngagement } from "./shorts-engagement";
 import { ShortsPlayer } from "./shorts-player";
 import styles from "./home-shorts.module.css";
 
-const navigation: Record<AppLocale, [string, string, string]> = {
+export const navigation: Record<AppLocale, [string, string, string]> = {
   ko: ["이전 영상", "다음 영상", "더 보기"], en: ["Previous video", "Next video", "More"], ja: ["前の動画", "次の動画", "その他"],
   "zh-Hans": ["上一个视频", "下一个视频", "更多"], "zh-Hant": ["上一個影片", "下一個影片", "更多"],
   es: ["Vídeo anterior", "Siguiente vídeo", "Más"], id: ["Video sebelumnya", "Video berikutnya", "Lainnya"], vi: ["Video trước", "Video tiếp theo", "Thêm"], th: ["วิดีโอก่อนหน้า", "วิดีโอถัดไป", "เพิ่มเติม"], pt: ["Vídeo anterior", "Próximo vídeo", "Mais"], fr: ["Vidéo précédente", "Vidéo suivante", "Plus"], ru: ["Предыдущее видео", "Следующее видео", "Ещё"],
@@ -35,7 +35,7 @@ const playsInViewer = (item: HomeShort) => item.platform !== "instagram";
 const PAGE_SIZE = 12;
 
 /** The creator's fan page from a short (PM 11/13): picture, name and `모임 ›` as one link, apart from the play button. Every short comes from a registered creator, so the page exists. */
-function CreatorGroupLink({ item, locale, className, source = false }: { item: HomeShort; locale: AppLocale; className: string; source?: boolean }) {
+export function CreatorGroupLink({ item, locale, className, source = false }: { item: HomeShort; locale: AppLocale; className: string; source?: boolean }) {
   const group = fanUiText(locale, "kindGroup");
   return <FanAction variant="text" className={className} href={creatorHomeHref(item.creator.slug, locale)} ariaLabel={`${item.creator.name} ${group}`}>
     <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={24} />
@@ -105,7 +105,7 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     </span>;
     return <li key={item.id} className={styles.item} data-row="short" {...(playsInViewer(item) ? {} : { "data-outbound-kind": "external", "data-outbound-placement": "content" })}>
         {playsInViewer(item)
-          ? <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(playable.indexOf(item))}>{cover}{caption}</FanAction>
+          ? !grid ? <FanAction variant="text" href={`/shorts?locale=${locale}&video=${encodeURIComponent(item.videoId)}`} className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction> : <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(playable.indexOf(item))}>{cover}{caption}</FanAction>
           : <FanAction variant="text" href={item.href} external className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>}
         {grid && <CreatorGroupLink item={item} locale={locale} className={styles.creatorLink} source />}
       </li>;

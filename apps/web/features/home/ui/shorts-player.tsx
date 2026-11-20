@@ -19,7 +19,7 @@ function rememberMuted(value: boolean) {
   try { sessionStorage.setItem(KEY, String(value)); } catch { /* memory still works */ }
 }
 
-type YouTubePlayer = { mute(): void; unMute(): void; isMuted(): boolean; playVideo(): void; destroy(): void };
+type YouTubePlayer = { mute(): void; unMute(): void; isMuted(): boolean; playVideo(): void; pauseVideo(): void; getPlayerState(): number; getDuration(): number; getCurrentTime(): number; destroy(): void };
 type YouTubeAPI = { Player: new (node: HTMLElement, options: { videoId: string; playerVars: Record<string, number>; events: { onReady: (event: { target: YouTubePlayer }) => void; onStateChange: (event: { target: YouTubePlayer; data: number }) => void; onAutoplayBlocked: () => void } }) => YouTubePlayer };
 declare global { interface Window { YT?: YouTubeAPI; onYouTubeIframeAPIReady?: () => void } }
 let youtubeLoader: Promise<YouTubeAPI> | null = null;
@@ -39,7 +39,7 @@ const soundCopy: Record<AppLocale, [string, string]> = {
   ko: ["소리 켜기", "음소거"], en: ["Turn sound on", "Mute"], ja: ["音声をオン", "ミュート"], "zh-Hans": ["打开声音", "静音"], "zh-Hant": ["開啟聲音", "靜音"], es: ["Activar sonido", "Silenciar"], id: ["Nyalakan suara", "Bisukan"], vi: ["Bật âm thanh", "Tắt tiếng"], th: ["เปิดเสียง", "ปิดเสียง"], pt: ["Ativar som", "Silenciar"], fr: ["Activer le son", "Couper le son"], ru: ["Включить звук", "Выключить звук"],
 };
 /** `onEnded`: the video played to its end (YouTube state 0, TikTok onStateChange 0). */
-export function ShortsPlayer({ item, locale, onEnded }: { item: HomeShort; locale: AppLocale; onEnded?: () => void }) {
+export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike }: { item: HomeShort; locale: AppLocale; onEnded?: () => void; immersive?: boolean; onLike?: () => void }) {
   const ended = useRef(onEnded);
   ended.current = onEnded;
   const [muted, setMuted] = useState(true);
@@ -47,6 +47,10 @@ export function ShortsPlayer({ item, locale, onEnded }: { item: HomeShort; local
   const iframe = useRef<HTMLIFrameElement>(null);
   const youtubeNode = useRef<HTMLIFrameElement>(null);
   const player = useRef<YouTubePlayer | null>(null);
+  const progress = useRef<HTMLProgressElement>(null);
+  const tap = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(tap.current), []);
+  const playing = useRef(false);
   const ready = useRef(false);
   const desired = useRef(true);
   const syncing = useRef(false);
@@ -74,6 +78,8 @@ export function ShortsPlayer({ item, locale, onEnded }: { item: HomeShort; local
           const value = event.data.value;
           if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); }
         }
+        if (event.data.type === "onCurrentTime" && progress.current && event.data.value?.duration > 0) progress.current.value = event.data.value.currentTime / event.data.value.duration;
+        if (event.data.type === "onStateChange") playing.current = event.data.value === 1;
         if (event.data.type === "onStateChange" && event.data.value === 0) ended.current?.();
         if (event.data.type === "onPlayerError" && event.data.value?.errorCode === 3002) { setSound(true, false); setBlocked(true); }
       };
@@ -83,17 +89,29 @@ export function ShortsPlayer({ item, locale, onEnded }: { item: HomeShort; local
     let disposed = false;
     void youtubeAPI().then(api => {
       if (disposed || !youtubeNode.current) return;
-      player.current = new api.Player(youtubeNode.current, { videoId: item.videoId, playerVars: { rel: 0, playsinline: 1, enablejsapi: 1, autoplay: 0 }, events: {
+      player.current = new api.Player(youtubeNode.current, { videoId: item.videoId, playerVars: { rel: 0, playsinline: 1, enablejsapi: 1, autoplay: Number(immersive) }, events: {
         onReady: event => { if (disposed) return; ready.current = true; player.current = event.target; setSound(desired.current, false); },
         onStateChange: event => { if (!disposed && event.data === 0) ended.current?.(); if (!disposed && ready.current && !syncing.current) { const value = event.target.isMuted(); if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); } } },
         onAutoplayBlocked: () => { if (!disposed) { setSound(true, false); setBlocked(true); } },
       } });
     }).catch(() => undefined);
-    const poll = window.setInterval(() => { if (!disposed && ready.current && player.current && !syncing.current) { const value = player.current.isMuted(); if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); } } }, 600);
+    const poll = window.setInterval(() => { if (!disposed && ready.current && player.current && !syncing.current) { if (progress.current && player.current.getDuration() > 0) progress.current.value = player.current.getCurrentTime() / player.current.getDuration(); const value = player.current.isMuted(); if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); } } }, 600);
     return () => { disposed = true; window.clearInterval(poll); player.current?.destroy(); player.current = null; };
-  }, [item.platform, item.videoId]);
+  }, [item.platform, item.videoId, immersive]);
   return <div className={styles.mediaFrame}>
-    {item.platform === "tiktok" ? <iframe ref={iframe} src={`https://www.tiktok.com/player/v1/${item.videoId}?autoplay=0`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <iframe ref={youtubeNode} src={`https://www.youtube.com/embed/${item.videoId}?rel=0&enablejsapi=1&autoplay=0`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
+    {item.platform === "tiktok" ? <iframe ref={iframe} src={`https://www.tiktok.com/player/v1/${item.videoId}?autoplay=${Number(immersive)}${immersive ? "&muted=1&controls=0&loop=1" : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <iframe ref={youtubeNode} src={`https://www.youtube.com/embed/${item.videoId}?rel=0&enablejsapi=1&autoplay=${Number(immersive)}${immersive ? `&playsinline=1&mute=1&controls=0&loop=1&playlist=${item.videoId}` : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
+    {immersive && <FanAction variant="text" type="button" className={styles.tapSurface} ariaLabel={item.title} onClick={() => {
+      if (tap.current !== undefined) {
+        clearTimeout(tap.current); tap.current = undefined; onLike?.(); return;
+      }
+      tap.current = setTimeout(() => {
+      tap.current = undefined;
+      if (item.platform === "tiktok") iframe.current?.contentWindow?.postMessage({ type: playing.current ? "pause" : "play", "x-tiktok-player": true }, "https://www.tiktok.com");
+      else if (player.current?.getPlayerState() === 1) player.current.pauseVideo();
+      else player.current?.playVideo();
+      }, 260);
+    }} />}
+    {immersive && <progress className={styles.feedProgress} ref={progress} value={0} max={1} aria-label={item.title} />}
     <FanAction variant="text" type="button" className={`${styles.soundButton} ${blocked ? styles.soundBlocked : ""}`} ariaLabel={soundCopy[locale][muted ? 0 : 1]} aria-pressed={!muted} onClick={() => setSound(!desired.current)}><FanIcon icon={muted ? VolumeX : Volume2} /></FanAction>
   </div>;
 }

@@ -1,4 +1,5 @@
 "use client";
+import { useImperativeHandle } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 
@@ -21,7 +22,7 @@ const commentsSchema = z.object({ items: z.array(z.object({ id: z.string(), body
 const parseReaction = (value: unknown) => reactionSchema.parse(value);
 const parseComments = (value: unknown) => commentsSchema.parse(value);
 
-export function ShortsEngagement({ videoId, locale, offset }: { videoId: string; locale: AppLocale; offset: number }) {
+export function ShortsEngagement({ videoId, locale, offset, likeRef }: { videoId: string; locale: AppLocale; offset: number; likeRef?: React.Ref<() => void> }) {
   const auth = useByUsAuth(), copy = contentCopy(locale), reactionCopy = postReactionCopy(locale), mutation = useContentMutation(locale);
   const [open, setOpen] = useState(false), [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState(""), [shareError, setShareError] = useState(false);
   const attempt = useRef<{ body: string; key: string } | null>(null);
@@ -30,6 +31,11 @@ export function ShortsEngagement({ videoId, locale, offset }: { videoId: string;
   const reactions = useCommunityResource(`/api/shorts/${encodeURIComponent(videoId)}/reactions`, parseReaction, false);
   const comments = useCommunityResource(open ? `/api/shorts/${encodeURIComponent(videoId)}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}` : null, parseComments, false);
   const change = async (reaction: PostReactionChoice) => { if (await mutation.request(`/api/shorts/${encodeURIComponent(videoId)}/reactions`, "PUT", { reaction })) reactions.retry(); };
+  useImperativeHandle(likeRef, () => () => {
+    if (!auth.ready || mutation.busy || reactions.state.status !== "ready") return;
+    if (!auth.authenticated) { location.assign(loginHref); return; }
+    if (reactions.state.data.reaction !== "like") void change("like");
+  });
   const submit = async () => {
     const value = body.trim(); if (!value || mutation.busy) return;
     if (attempt.current?.body !== value) attempt.current = { body: value, key: crypto.randomUUID() };
