@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import {CreatorAttendanceEntry} from "@/features/dukjil/ui/creator-attendance-entry";
 import {EarnBadge,EarnBadgeCorner} from "@/features/dukjil/ui/earn-badge";
 import {CheckinCorner} from "@/features/dukjil/ui/checkin-corner";
@@ -7,7 +8,7 @@ import {DukjilProvider} from "@/features/dukjil/ui/dukjil-provider";
 import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
 import{missionConditionsCopy}from"./mission-conditions-copy";
 import {missionSubmissionCopy} from "./mission-submission-copy";
-import {useRouter,useSearchParams} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import type {Route} from "next";
 import {GroupActivityHeader} from "./group-activity-header";
 import {SourceStatePanel} from "./source-state-panel";
@@ -47,7 +48,7 @@ export function GroupMissionScreen({pageId,missionId,locale,view='conditions'}:{
  // Plays only when this screen sees the own submission turn completed; the server rewardPoints is the only amount used.
  const {burst:rewardBurst,add:addReward,clear:clearReward}=usePointRewardBurst(),seenStatus=useRef<string|undefined>(undefined),ownSubmission=r.data?.submission,ownStatus=ownSubmission?.status,ownReward=ownSubmission?.rewardPoints;
  useEffect(()=>{const before=seenStatus.current;seenStatus.current=ownStatus;if(before!==undefined&&before!=='completed'&&ownStatus==='completed'&&ownReward)addReward(ownReward);},[ownStatus,ownReward,addReward]);
- async function mutate(path:string,method:string,input:Record<string,unknown>){if(busy)return false;const key=JSON.stringify([path,method,input]);if(operation.current?.key!==key)operation.current={key,requestId:crypto.randomUUID()};setBusy(true);setFailed(false);setConflict(false);try{await r.request(base+path,{method,body:JSON.stringify({...input,requestId:operation.current.requestId})});operation.current=undefined;setPrevious({key:'',items:[]});setCursor(undefined);r.retry();submissions.retry();if(path==='/submissions'&&method==='POST')router.push(viewHref('submission'),{scroll:false});return true;}catch(error){setFailed(true);setConflict(error instanceof GroupRequestError&&error.status===409);return false;}finally{setBusy(false);}}
+ async function mutate(path:string,method:string,input:Record<string,unknown>){if(busy)return false;const key=JSON.stringify([path,method,input]);if(operation.current?.key!==key)operation.current={key,requestId:crypto.randomUUID()};setBusy(true);setFailed(false);setConflict(false);try{await r.request(base+path,{method,body:JSON.stringify({...input,requestId:operation.current.requestId})});operation.current=undefined;setPrevious({key:'',items:[]});setCursor(undefined);r.retry();submissions.retry();if(path==='/submissions'&&method==='POST')untypedRouter(router).push(viewHref('submission'),{scroll:false});return true;}catch(error){setFailed(true);setConflict(error instanceof GroupRequestError&&error.status===409);return false;}finally{setBusy(false);}}
 
  if(!r.data)return <GroupShell locale={locale}>{r.error?<><p role='alert'>{t.error}</p><FanAction onClick={r.retry}>{t.retry}</FanAction></>:<FanSkeletonRows rows={4} variant='plain' ariaLabel={t.loading}/>}</GroupShell>;
  const d=r.data,showSubmission=view==='submission'&&Boolean(r.data.submission),submissionCopy=missionSubmissionCopy(locale),conditionCopy=missionConditionsCopy(locale),rows=[...(previous.key===r.ownerKey?previous.items:[]),...(submissions.data?.items??[])];

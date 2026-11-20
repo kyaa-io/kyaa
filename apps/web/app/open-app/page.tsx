@@ -1,3 +1,4 @@
+import { redirectTo } from "@/lib/navigation/untyped";
 import type { Metadata, Route } from "next";
 import { redirect } from "next/navigation";
 import { parseAppLocale } from "@/i18n/locales";
@@ -13,7 +14,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{returnT
  if(!isNativeAppAvailable()){
   const params=new URLSearchParams();
   for(const [key,value] of Object.entries(query))for(const item of [value].flat())if(item!==undefined)params.append(key,item);
-  redirect(openAppWebPath(params) as Route);
+  redirectTo(openAppWebPath(params) as Route);
  }
  const locale=parseAppLocale(query.locale),destination=resolveAppLinkDestination(query.returnTo);
  if(query.returnTo!==undefined&&!destination.valid)redirect(`/open-app?locale=${encodeURIComponent(locale)}&invalid=1`);

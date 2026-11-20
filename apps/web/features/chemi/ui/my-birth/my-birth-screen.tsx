@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import type { Route } from "next";
 import { useRouter } from "next/navigation";
@@ -70,7 +71,7 @@ export function MyBirthScreen({ locale, copy, uses, launch }: Readonly<{ locale:
     });
   }, [auth]);
 
-  const goBack = () => { if (window.history.length > 1) router.back(); else router.push(`/my?locale=${locale}`); };
+  const goBack = () => { if (window.history.length > 1) router.back(); else untypedRouter(router).push(`/my?locale=${locale}`); };
   const header = <div className={styles.pagehead}>
     <FanIconButton className={styles.back} aria-label={copy.back} onClick={goBack}><FanIcon icon={ChevronLeft} /></FanIconButton>
     <FanHeading as="h1">{copy.title}</FanHeading>

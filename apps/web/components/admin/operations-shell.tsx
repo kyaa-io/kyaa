@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import {
   Activity, BadgeCheck, BarChart3, Bell, Blocks, ChevronRight,
   CalendarDays, Clapperboard, ExternalLink, Gift, Globe, Images, LayoutDashboard, Megaphone, Menu,
@@ -80,7 +81,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
   function switchLocale() {
     const next = new URLSearchParams(searchParams.toString());
     next.set("lang", locale === "ko" ? "en" : "ko");
-    router.replace(`${pathname}?${next.toString()}` as Route, { scroll: false });
+    untypedRouter(router).replace(`${pathname}?${next.toString()}` as Route, { scroll: false });
   }
   function isActive(item: NavItem) {
     return item.exact ? pathname === item.href : pathname === item.href || pathname.startsWith(`${item.href}/`);

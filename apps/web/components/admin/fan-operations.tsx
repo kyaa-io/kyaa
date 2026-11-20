@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import {
   AlertCircle,
   ChevronRight,
@@ -345,7 +346,7 @@ export function FanOperations() {
       s = String(form.get("status") ?? "");
     if (q) next.set("q", q);
     if (s) next.set("status", s);
-    router.replace(`/admin/fans${next.size ? `?${next}` : ""}` as Route, {
+    untypedRouter(router).replace(`/admin/fans${next.size ? `?${next}` : ""}` as Route, {
       scroll: false,
     });
   }
@@ -458,7 +459,7 @@ export function FanOperations() {
           className={ops.textButton}
           type="button"
           onClick={() =>
-            router.replace(
+            untypedRouter(router).replace(
               (locale === "en"
                 ? "/admin/fans?lang=en"
                 : "/admin/fans") as Route,

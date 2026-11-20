@@ -1,6 +1,6 @@
+import { redirectTo } from "@/lib/navigation/untyped";
 import { parseAppLocale } from "@/i18n/locales";
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import type { Route } from "next";
 import { nativeReauthenticationReturn } from "../../server/auth/apple-notifications/native-reauthentication-route";
 import { readCognitoKakaoLoginPolicy } from "@/server/config/public-runtime-config";
@@ -15,7 +15,7 @@ export default async function LoginRoute({
 }) {
   const query = await searchParams;
   const nativeReturn = nativeReauthenticationReturn(query);
-  if (nativeReturn) redirect(nativeReturn as Route);
+  if (nativeReturn) redirectTo(nativeReturn as Route);
   const locale = parseAppLocale(query.locale);
   return (
     <Suspense fallback={<FanRouteLoading locale={locale} />}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import type { AppLocale } from "@/i18n/locales";
 import { withLocalePath } from "./locale-path";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -115,7 +116,7 @@ export function AuthIntentLink({
       focusKey ? `[data-overlay-focus-key="${focusKey}"]` : undefined,
     );
     const destination = resolveAuthIntentDestination(intent, locale, authState);
-    if (destination) router.push(destination as Route);
+    if (destination) untypedRouter(router).push(destination as Route);
   }
 
   return (

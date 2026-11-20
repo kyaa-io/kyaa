@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import {useState} from 'react';
 import {GroupLanguageDialog} from '@/features/groups/ui/group-language-dialog';
 import {rememberOverlayTrigger} from '@/components/ui/overlay/focus-return';
@@ -35,7 +36,7 @@ export function FanLanguageSwitch({
     <Select.Root
       value={locale}
       onValueChange={(next) => {
-        if (isAppLocale(next) && next !== locale) router.push(withLocalePath(href ?? `${window.location.pathname}${window.location.search}${window.location.hash}`, next) as Route);
+        if (isAppLocale(next) && next !== locale) untypedRouter(router).push(withLocalePath(href ?? `${window.location.pathname}${window.location.search}${window.location.hash}`, next) as Route);
       }}
     >
       <Select.Trigger

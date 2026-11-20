@@ -1,5 +1,6 @@
+import { redirectTo } from "@/lib/navigation/untyped";
 import type { Metadata, Route } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { parseAppLocale } from "@/i18n/locales";
 import { NO_INDEX } from "@/seo/metadata";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
@@ -14,5 +15,5 @@ export default async function InviteShortLinkPage({ params, searchParams }: { pa
   const single = new URLSearchParams(Object.entries(query).flatMap(([key, value]) => typeof value === "string" ? [[key, value]] : []));
   const target = await resolveInviteShortLink(slug, parseAppLocale(single.get("locale") ?? undefined), createFanpageDependencies(), single);
   if (!target) notFound();
-  redirect(target as Route);
+  redirectTo(target as Route);
 }

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirectTo } from "@/lib/navigation/untyped";
 import type { Route } from "next";
 import { sanitizeLocale, sanitizeReturnTo } from "../../../../components/login-intent";
 export const dynamic="force-dynamic";
@@ -9,5 +9,5 @@ export default async function Page({searchParams}:{searchParams:Promise<Record<s
   const query=await searchParams;
   const returnTo=sanitizeReturnTo(typeof query.returnTo==="string"?query.returnTo:undefined);
   const params=new URLSearchParams({returnTo:/^\/(?:api\/)?auth\/cognito(?:[/?#]|$)/i.test(returnTo)?"/":returnTo,locale:sanitizeLocale(typeof query.locale==="string"?query.locale:undefined)});
-  redirect(`/login?${params}` as Route);
+  redirectTo(`/login?${params}` as Route);
 }

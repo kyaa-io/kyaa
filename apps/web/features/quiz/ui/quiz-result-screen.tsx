@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__quiz__ui__quiz-result-screen";
 import { additionalLocales, translate } from "@/i18n/messages";
@@ -221,9 +222,9 @@ export function QuizResultScreen({
       })) as { result?: unknown };
       const result = parseQuizStartProjection(body.result);
       if (result.kind === "holder") {
-        router.push((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
+        untypedRouter(router).push((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
       } else {
-        router.push(appendLiveReturnTo(
+        untypedRouter(router).push(appendLiveReturnTo(
           withLocale(`/c/${celebritySlug}/verify/questions?attempt=${result.attempt.id}`, locale),
           liveReturnTo,
         ) as Route);

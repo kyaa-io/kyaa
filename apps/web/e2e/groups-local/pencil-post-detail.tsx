@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 // 로컬 하니스 전용: 서비스 FanPostDetail에서 분리한 합성 fixture 표시용 복사본. 서비스 코드에는 이 주입 경로가 없다.
 import { ArrowLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -91,7 +92,7 @@ export function PencilPostDetail({ postId, locale, presentation, boardPreview }:
   </form>;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{boardPreview?.backLabel??copy.back}</FanAction>
-    {boardPreview?.heading??<FanHeading as="h1" variant="personal-page">{presentation === "board" ? data.body.split("\n")[0] || copy.community : copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard boardMetadata={boardPreview?.metadata} boardLikeLabel={boardPreview?.likeLabel} boardLikeReward={boardPreview?.likeReward} presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace(communityHref)} detail />{boardPreview?.interactionNote}
+    {boardPreview?.heading??<FanHeading as="h1" variant="personal-page">{presentation === "board" ? data.body.split("\n")[0] || copy.community : copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard boardMetadata={boardPreview?.metadata} boardLikeLabel={boardPreview?.likeLabel} boardLikeReward={boardPreview?.likeReward} presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => untypedRouter(router).replace(communityHref)} detail />{boardPreview?.interactionNote}
     {post.refreshFailed && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <section className={styles.section} aria-labelledby={`${fieldId}-heading`}><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>
       {auth.ready && (auth.authenticated ? !replyTarget && composer : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{copy.login}</FanAction>)}

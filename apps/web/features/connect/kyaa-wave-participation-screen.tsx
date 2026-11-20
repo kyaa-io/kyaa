@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -89,14 +90,14 @@ function Participation({ locale, code, setCode, restored, authenticated, getAcce
   }, [authenticated, restored, getAccessToken, revision, t.auth, t.unavailable]);
 
   useEffect(() => {
-    if (restored && authenticated && stage === "done" && receipt) router.replace(destination as Route);
+    if (restored && authenticated && stage === "done" && receipt) untypedRouter(router).replace(destination as Route);
   }, [restored, authenticated, stage, receipt, router, destination]);
 
   const normalizedCode = normalizeParticipationCode(code);
   const returnTo = `/connect/kyaa-wave/participate?${new URLSearchParams({ ...(normalizedCode ? { code: normalizedCode } : {}), ...(destination !== "/" ? { returnTo: destination } : {}), locale })}`;
   const login = appendLoginContext("/login", { returnTo, locale, intent: null, entity: null }) as Route;
   useEffect(() => {
-    if (pathname === "/connect/kyaa-wave/participate" && restored && !authenticated) router.replace(login);
+    if (pathname === "/connect/kyaa-wave/participate" && restored && !authenticated) untypedRouter(router).replace(login);
   }, [pathname, restored, authenticated, router, login]);
   const codeField = <div className={styles.field}>
     <label htmlFor="participation-code">{t.code}</label>

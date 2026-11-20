@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { AlertCircle, ChevronRight, FileLock2, X } from "lucide-react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
@@ -83,7 +84,7 @@ export function AuditLogManager() {
     if (locale === "en") next.set("lang", "en");
     for (const key of ["actor", "entityType", "entityId", "action", "result", "correlation"]) { const value = String(form.get(key) ?? "").trim(); if (value) next.set(key, value); }
     for (const key of ["from", "to"]) { const value = toIso(form.get(key)); if (value) next.set(key, value); }
-    router.replace(`/admin/audit${next.size ? `?${next}` : ""}` as Route, { scroll: false });
+    untypedRouter(router).replace(`/admin/audit${next.size ? `?${next}` : ""}` as Route, { scroll: false });
   }
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale={locale} />;
   return <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
@@ -92,7 +93,7 @@ export function AuditLogManager() {
     <form className={`${styles.filterBar} ${styles.auditFilters}`} action={applyFilters}>
       <Filter name="actor" label={t.actor} value={params.get("actor")} /><Filter name="entityType" label={t.entityType} value={params.get("entityType")} /><Filter name="entityId" label={t.entityId} value={params.get("entityId")} /><Filter name="action" label={t.action} value={params.get("action")} /><Filter name="result" label={t.result} value={params.get("result")} /><Filter name="correlation" label={t.correlation} value={params.get("correlation")} />
       <Filter name="from" label={t.from} type="datetime-local" value={params.get("from")?.slice(0,16)} /><Filter name="to" label={t.to} type="datetime-local" value={params.get("to")?.slice(0,16)} />
-      <div className={styles.filterActions}><button className={styles.secondaryButton} type="submit">{t.apply}</button><button className={styles.textButton} type="button" onClick={() => router.replace((locale === "en" ? "/admin/audit?lang=en" : "/admin/audit") as Route)}>{t.reset}</button></div>
+      <div className={styles.filterActions}><button className={styles.secondaryButton} type="submit">{t.apply}</button><button className={styles.textButton} type="button" onClick={() => untypedRouter(router).replace((locale === "en" ? "/admin/audit?lang=en" : "/admin/audit") as Route)}>{t.reset}</button></div>
     </form>
     {state === "loading" && <div className={styles.skeletonList} aria-label={t.loading}>{[1,2,3,4,5].map((n) => <div key={n} />)}</div>}
     {state === "error" && <State icon={<AlertCircle aria-hidden="true" />} title={t.error} action={<button type="button" onClick={() => void request()}>{t.again}</button>} />}

@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { rememberSession } from "@/features/auth/client/session-hint";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
@@ -338,7 +339,7 @@ export function LoginPage({
     const navigationKey = `${privyUserId}|${byUsSession.generation}|${byUsSession.destination}`;
     if (navigatedTransitionRef.current === navigationKey) return;
     navigatedTransitionRef.current = navigationKey;
-    router.replace(byUsSession.destination as Route);
+    untypedRouter(router).replace(byUsSession.destination as Route);
   }, [authenticated, byUsSession.destination, byUsSession.error, byUsSession.generation, byUsSession.ownerId, byUsSession.recoveryPath, oauthReturnPending, privyUserId, ready, restartOAuthPath, router]);
 
   useEffect(() => {

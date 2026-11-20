@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
@@ -557,7 +558,7 @@ export function BenefitsScreen({
 
   function choose(value: string) {
     setSelected(value);
-    router.replace(`/benefits?${query(locale, value)}` as Route, {
+    untypedRouter(router).replace(`/benefits?${query(locale, value)}` as Route, {
       scroll: false,
     });
   }

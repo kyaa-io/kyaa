@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 import { LiveFanSubmissions } from "@/features/live-submissions/ui/live-fan-submissions";
 import { LivePlatformMark } from "@/features/live-submissions/ui/live-platform-mark";
@@ -1008,11 +1009,11 @@ export function LiveEventScreen({
         : undefined });
       persistAuthIntent(getSessionStorage(), intent);
       if (!authenticated) {
-        router.push(buildAuthLoginHref(intent, locale) as Route);
+        untypedRouter(router).push(buildAuthLoginHref(intent, locale) as Route);
       } else {
         const returnQuery = new URLSearchParams({ locale, authIntent: intent.id });
         const verificationQuery = new URLSearchParams({ locale, returnTo: `/live/${slug}?${returnQuery}` });
-        router.push(`/c/${view.data.live.celebrity.slug}/verify?${verificationQuery}` as Route);
+        untypedRouter(router).push(`/c/${view.data.live.celebrity.slug}/verify?${verificationQuery}` as Route);
       }
       return;
     }
@@ -1128,7 +1129,7 @@ export function LiveEventScreen({
     const cleanQuery = new URLSearchParams(searchParams.toString());
     cleanQuery.delete("attendanceCode");
     const queryString = cleanQuery.toString();
-    router.replace(`${pathname}${queryString ? `?${queryString}` : ""}#fan-code` as Route);
+    untypedRouter(router).replace(`${pathname}${queryString ? `?${queryString}` : ""}#fan-code` as Route);
     if (attendancePhase === "closed") {
       getSessionStorage().removeItem(`byus:fan-code-draft:${slug}`);
       setFanCode("");

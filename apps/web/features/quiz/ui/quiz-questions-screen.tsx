@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
 
 import { toContentLocale } from "@/i18n/locales";
@@ -214,11 +215,11 @@ export function QuizQuestionsScreen({
       const result = parseQuizStartProjection(body.result);
       if (generation !== requestGeneration.current) return;
       if (result.kind === "holder") {
-        router.replace((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
+        untypedRouter(router).replace((liveReturnTo ?? withLocale(`/passports/${result.passportId}`, locale)) as Route);
         return;
       }
       if (result.attempt.status !== "open") {
-        router.replace(resultPath(result.attempt.id) as Route);
+        untypedRouter(router).replace(resultPath(result.attempt.id) as Route);
         return;
       }
       setScreen({ kind: "ready", projection: { attempt: result.attempt, questions: result.questions } });
@@ -283,7 +284,7 @@ export function QuizQuestionsScreen({
       const current = parseQuizAttemptProjection(body.attempt);
       if (generation !== requestGeneration.current) return false;
       if (current.attempt.status !== "open") {
-        router.replace(resultPath(current.attempt.id) as Route);
+        untypedRouter(router).replace(resultPath(current.attempt.id) as Route);
         return true;
       }
       setScreen({ kind: "ready", projection: current });
@@ -318,7 +319,7 @@ export function QuizQuestionsScreen({
       const destination: string = result.issuance
         ? String(resultPath(result.attempt.id, result.issuance.passportId))
         : String(resultPath(result.attempt.id));
-      router.replace(destination as Route);
+      untypedRouter(router).replace(destination as Route);
     } catch (error) {
       reportRecoveryFailure("quiz.submit", error);
       if (error instanceof QuizUiError && error.code !== "ATTEMPT_CLOSED") {

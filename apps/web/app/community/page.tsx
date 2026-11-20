@@ -1,4 +1,5 @@
-import { notFound, permanentRedirect } from "next/navigation";
+import { permanentRedirectTo } from "@/lib/navigation/untyped";
+import { notFound } from "next/navigation";
 import type { Route } from "next";
 import { isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 
@@ -16,5 +17,5 @@ export default async function CommunityPage({ searchParams }: {
   const tabs: Record<string, string> = { posts: "board", board: "board", fans: "leaderboard", members: "leaderboard", certifications: "certifications" };
   const tab = typeof values.tab === "string" ? tabs[values.tab] : undefined;
   if (slug && tab) query.set("tab", tab);
-  permanentRedirect(`${slug ? `/c/${encodeURIComponent(slug)}` : "/pages/groups"}${query.size ? `?${query}` : ""}` as Route);
+  permanentRedirectTo(`${slug ? `/c/${encodeURIComponent(slug)}` : "/pages/groups"}${query.size ? `?${query}` : ""}` as Route);
 }

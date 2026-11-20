@@ -1,11 +1,11 @@
+import { redirectTo } from "@/lib/navigation/untyped";
 import { parseAppLocale } from "@/i18n/locales";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
-import { redirect } from "next/navigation";
 import type { Route } from "next";
 export const dynamic = "force-dynamic";
 /** The canonical panel uses the server's membership gate, including direct links. */
 export default async function Page({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string }> }) {
   const { slug } = await params;
   const { locale } = await searchParams;
-  redirect(`${creatorHomeHref(encodeURIComponent(slug))}?tab=leaderboard&locale=${parseAppLocale(locale)}#celebrity-content` as Route);
+  redirectTo(`${creatorHomeHref(encodeURIComponent(slug))}?tab=leaderboard&locale=${parseAppLocale(locale)}#celebrity-content` as Route);
 }
