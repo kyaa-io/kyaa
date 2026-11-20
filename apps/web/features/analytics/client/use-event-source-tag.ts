@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { EVENT_SOURCE_EVENT_SOURCE, eventSourceFromSearch, eventSourcePropertiesSchema, type EventSourceProperties } from "../domain/event-source-tag";
+import { EVENT_SOURCE_EVENT_SOURCE, eventSourceFromSearch, eventSourcePropertiesSchema, withEventSourceReturn, type EventSourceProperties } from "../domain/event-source-tag";
 import { pageViewIdempotencyKey, recordProductEventV1 } from "./product-event-client";
 
 const STORAGE_KEY = "byus.event-source.v1";
@@ -16,6 +16,20 @@ function readStored(slug: string): Stored | null {
 }
 function store(value: Stored): void {
   try { window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(value)); } catch { /* 저장하지 못해도 이 화면에서는 기록한다 */ }
+}
+
+/**
+ * 로그인 주소를 다른 브라우저로 넘길 때 쓴다. 세션 저장소는 브라우저를 건너가지 못하므로,
+ * 이 탭에 저장된 태그가 돌아갈 팬 페이지의 것이면 돌아갈 주소에 UTM으로 붙인다.
+ */
+export function withStoredEventSourceReturn(returnTo: string): string {
+  try {
+    const slug = new URL(returnTo, "https://byus.local").pathname.split("/").filter(Boolean).at(-1);
+    const saved = slug ? readStored(slug) : null;
+    if (!slug || !saved) return returnTo;
+    const search = new URLSearchParams({ utm_source: saved.tag.source, utm_campaign: saved.tag.campaign, utm_content: saved.tag.content });
+    return withEventSourceReturn(returnTo, `?${search}`, slug);
+  } catch { return returnTo; }
 }
 
 /**
