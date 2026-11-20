@@ -41,7 +41,8 @@ vi.mock("@/features/content-safety/ui/content-actions", () => ({
   ContentTranslation: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({
-  useCommunityResource: (url: string) => {
+  useCommunityResource: (url: string | null) => {
+    if (!url) return { state: { status: "loading" }, retry: vi.fn() };
     state.urls.push(url);
     if (url.includes("/replies?")) { state.replyReads.push(url); return { state: { status: "ready", data: { replies: [], total: 0, nextCursor: null } }, retry: state.retry }; }
     if (url.includes("/comments?")) {

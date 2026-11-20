@@ -17,13 +17,14 @@ import type { WaveProgramKey } from "@/features/fanpage/domain/wave-programs";
 import { postPageSchema } from "../domain/content";
 import { feedPageSchema } from "../domain/feed";
 import { FeedItemCard } from "./feed-item-card";
-import { CompactFeed, type PinnedNotice } from "./compact-feed";
+import { CompactFeed, isKyaaNotice, type PinnedNotice } from "./compact-feed";
 import { showMissionRewardToast } from "./mission-reward-toast";
 import { PostComposer } from "./post-composer";
 import { managementCopy } from "@/features/groups/ui/management-copy";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { feedCopy } from "@/i18n/catalogs/features__fan_posts__feed";
+import { BOARD_NOTICE_LIMIT } from "@/features/groups/ui/group-board-notices";
 import {boardCopy} from "@/features/groups/ui/board-copy";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import { waveEngagementCopy } from "@/i18n/catalogs/features__fanpage__wave-engagement";
@@ -32,6 +33,7 @@ import styles from "@/features/content-safety/ui/content.module.css";
 import { FanSurface } from "@/components/fan-ui/fan-surface";
 import feedStyles from "./fan-post-feed.module.css";
 
+const BOARD_PAGE_SIZE = 10;
 const parse = (value: unknown) => feedPageSchema.parse(value);
 const parseProgram = (value: unknown) => { const page = postPageSchema.parse(value); return { ...page, items: page.items.map(item => ({ ...item, kind: "fan_post" as const })), unavailableSources: [] }; };
 type Props = { pageImage?: ReactNode; pinnedNotices?: PinnedNotice[]; pinnedPending?: boolean; filterHref?: (source: BoardFeedSource) => Route; composeIntent?: boolean; composeReturnTo?: string; onComposeConsumed?: () => void; compact?: boolean; beforeFeed?: ReactNode; headingTitle?: string; mediaOnly?: boolean; introduction?: boolean; program?: WaveProgramKey; onPosted?: () => void; slug: string; locale: AppLocale; creatorName?: string; returnTo?: string; source?: BoardFeedSource; newsFilter?: NewsFilter; hideHeading?: boolean; intro?: string; officialPostLabel?: string; allowMembers?: boolean };
@@ -62,12 +64,26 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   const insightCopy = program === "live-insight" ? waveEngagementCopy(locale) : null;
   const introductionCopy = wavePrivacyCopy(locale);
   const cursor = cursors.at(-1) ?? null, selectedSource = introduction ? "fans" : source ?? "fans";
-  const query = new URLSearchParams({ locale: toContentLocale(locale), source: selectedSource });
-  if (compact) query.set("limit", String(compactLimit));
+  const groupedBoard = compact && selectedSource === "all";
+  const shownPinned = compact && !cursor && selectedSource !== "fans"
+    ? groupedBoard ? (pinnedNotices ?? []).slice(0, BOARD_NOTICE_LIMIT) : pinnedNotices ?? []
+    : [];
+  const remainingNotices = BOARD_NOTICE_LIMIT - shownPinned.length;
+  const officialQuery = new URLSearchParams({
+    locale: toContentLocale(locale), source: "official", news: "notice", limit: String(remainingNotices),
+  });
+  const official = useCommunityResource(groupedBoard && !cursor && !pinnedPending && remainingNotices > 0
+    ? `/api/celebrities/${slug}/feed?${officialQuery}` : null, parse);
+  const officialItems = groupedBoard && !cursor && remainingNotices > 0 && official.state.status === "ready"
+    ? official.state.data.items.filter(isKyaaNotice).slice(0, remainingNotices) : [];
+  const waitingForOfficial = groupedBoard && !cursor && remainingNotices > 0 && official.state.status === "loading";
+  const query = new URLSearchParams({ locale: toContentLocale(locale), source: groupedBoard ? "fans" : selectedSource });
+  if (compact) query.set("limit", String(groupedBoard ? BOARD_PAGE_SIZE - shownPinned.length - officialItems.length : compactLimit));
   if (cursor) query.set("cursor", cursor);
   if (mediaOnly) query.set("media", "1");
   if (newsFilter !== "all" && !introduction) query.set("news", newsFilter);
-  const resource = useCommunityResource(program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse, true, false, false, true);
+  const waitingForNotices = (!cursor && compact && selectedSource !== "fans" && pinnedPending) || waitingForOfficial;
+  const resource = useCommunityResource(groupedBoard && waitingForNotices ? null : program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse, true, false, false, !groupedBoard);
   useEffect(() => {
     if (resource.state.status !== "ready" || !window.location.hash.startsWith("#cheer-")) return;
     const id = window.location.hash.slice(1);
@@ -76,10 +92,8 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
     if (details) details.open = true;
     (row ?? document.getElementById(id))?.scrollIntoView?.({ block: "center" });
   }, [resource.state.status]);
-  const shownPinned = compact && !cursor && selectedSource !== "fans" ? pinnedNotices ?? [] : [];
-  const holding = pinnedPending && compact && !cursor && selectedSource !== "fans";
-  const state = holding && resource.state.status === "ready" ? ({ status: "loading" } as const) : resource.state;
-  const refresh = () => { setCursors([null]); resource.retry(); };
+  const state = waitingForNotices && resource.state.status === "ready" ? ({ status: "loading" } as const) : resource.state;
+  const refresh = () => { setCursors([null]); resource.retry(); if (groupedBoard && !cursor && remainingNotices > 0) official.retry(); };
   const saved = (reward?: { points: number; stamps?: number }) => { if (reward) showMissionRewardToast(locale, "post", reward); refresh(); closeComposer(); if (compact) setShowListAfterSave(true); onPosted?.(); };
   // A held page stays on screen while the next one loads; ignore repeat clicks until it arrives.
   const goToPage = (next: (string | null)[]) => { if (resource.pending) return; setCursors(next); section.current?.focus(); section.current?.scrollIntoView?.({ block: "start" }); };
@@ -111,10 +125,10 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
       : <div className={`${styles.composer} ${styles.composerFeatured}`} data-composer-guest=""><span className={styles.guestPrompt}>{discoveryCopy(locale).writePrompt}</span><div className={styles.composerTools}><FanAction className={styles.guestLogin} variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction></div></div>)}
     {selectedSource !== "official" && sessionReady && !alwaysOpen && (auth.authenticated ? (composerOpen ? <PostComposer board={compact} introduction={introduction} program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} heading={compact ? managementCopy(locale).write : undefined} headingId={compact ? heading : undefined} /> : compact ? null : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt}</span><strong>{introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}</strong></button>) : compact ? null : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction>)}
     {compact && composerOpen ? null : state.status === "ready" ? <>
-      {resource.refreshFailed && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={resource.retry}>{copy.retry}</FanAction></div>}
+      {(resource.refreshFailed || (groupedBoard && !cursor && remainingNotices > 0 && (official.state.status === "error" || official.refreshFailed))) && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}
       {state.data.unavailableSources.length > 0 && <div className={feedStyles.sourceStatus} role="status"><p>{feed.sourceError}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}
-      {state.data.items.length || shownPinned.length ? <>{compact ? <CompactFeed pageImage={pageImage} pinned={shownPinned} items={state.data.items} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /> : <FanSurface as="div" appearance="list"><ul className={styles.list}>{state.data.items.map(item => <li key={`${item.kind}:${item.id}`}><FeedItemCard item={item} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /></li>)}</ul></FanSurface>}</> : !state.data.nextCursor && !state.data.unavailableSources.length ? <div className={styles.feedEmpty} role="status"><MessageCircle size={28} aria-hidden="true" /><p>{copy.empty}</p></div> : null}
-      {compact ? (!state.data.items.length && !shownPinned.length && !state.data.nextCursor && cursors.length<2 ? null : <nav className={feedStyles.pageNumbers} aria-label={source ? feed.feed : feed.fanBoard}>
+      {state.data.items.length || shownPinned.length || officialItems.length ? <>{compact ? <CompactFeed pageImage={pageImage} pinned={shownPinned} items={groupedBoard ? [...officialItems, ...state.data.items] : state.data.items} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /> : <FanSurface as="div" appearance="list"><ul className={styles.list}>{state.data.items.map(item => <li key={`${item.kind}:${item.id}`}><FeedItemCard item={item} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /></li>)}</ul></FanSurface>}</> : !state.data.nextCursor && !state.data.unavailableSources.length ? <div className={styles.feedEmpty} role="status"><MessageCircle size={28} aria-hidden="true" /><p>{copy.empty}</p></div> : null}
+      {compact ? (!state.data.items.length && !shownPinned.length && !officialItems.length && !state.data.nextCursor && cursors.length<2 ? null : <nav className={feedStyles.pageNumbers} aria-label={source ? feed.feed : feed.fanBoard}>
         <button type="button" aria-label={copy.newer} disabled={!cursor} onClick={() => goToPage(cursors.slice(0, -1))}><ChevronLeft size={20} aria-hidden="true" /></button>
         {cursors.map((_, index) => <button key={index} type="button" aria-current={index === cursors.length - 1 ? "page" : undefined} onClick={() => goToPage(cursors.slice(0, index + 1))}>{index + 1}</button>)}
         {state.data.nextCursor && <button type="button" onClick={() => goToPage([...cursors, state.status === "ready" ? state.data.nextCursor : null])}>{cursors.length + 1}</button>}
