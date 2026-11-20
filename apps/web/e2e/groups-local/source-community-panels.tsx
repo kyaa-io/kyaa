@@ -1,3 +1,4 @@
+import { untypedRouter } from "@/lib/navigation/untyped";
 import {sourcePanelTitle,sourcePanelText,sourcePanelTextStyle,sourcePanelActionClass,sourcePanelActionText,sourcePanelActionExists,sourcePanelHasActions,sourcePanelOrder,sourcePanelField,sourcePanelContainerStyle,SourcePanelExtra} from './source-panel-properties';
 import {useEffect,useRef,useState,type CSSProperties,type ReactNode,type RefObject} from 'react';
 import {useRouter} from './navigation';
@@ -72,14 +73,14 @@ function Content({nodeId,onClose,onRetry}:{nodeId:SourceCommunityNodeId;onClose:
   case 'OyUaQ':body=<><p>만료됐거나 모임이 삭제됐을 수 있어요.</p>{actions(act('모임 탐색'))}</>;break;
   case 'lNppx':body=<><p>친구</p>{actions(act('메시지 보내기'))}</>;break;
   case 'QfuOB':body=<><div className='communityStateIdentity'>{photo('/images/groups/source-community/ebf863ae39f91c7e.webp','별빛','avatar')}<div><strong>별빛</strong><p>소유자 · 팬 인증 완료</p></div></div><p>공개한 최애 · 엔카이브</p>{actions(<>{act('친구 요청','retry')}{act('대화 요청','retry')}</>)}</>;break;
-  case 's1KGd8':body=<><p>메시지를 받을 수 없는 사용자예요.</p>{actions(act('대화 목록으로','close',{onClick:()=>router.push<string>('/my/friends')}))}</>;break;
+  case 's1KGd8':body=<><p>메시지를 받을 수 없는 사용자예요.</p>{actions(act('대화 목록으로','close',{onClick:()=>untypedRouter(router).push('/my/friends')}))}</>;break;
   case 'qIcNQ':body=<><p>회원 목록에서 친구를 찾아보세요.</p>{actions(act('전체 회원 보기'))}</>;break;
   case 'o44v7C':body=<><div className='communityStateIdentity'>{photo('/images/groups/source-community/1d6fe45b853f0134.webp','보라','avatar')}<div><strong>보라</strong><small>친구 요청 받음</small></div></div>{act('프로필 보기')}{actions(<>{act('수락','retry')}{act('거절')}</>)}</>;break;
   case 'VQfTU':body=<><p style={sourcePanelTextStyle(nodeId,'보라 · 엔카이브에서 만난 팬')}>보라 · 엔카이브에서 만난 팬</p><SourcePanelExtra id={nodeId}/>{actions(<>{act('수락','retry')}{act('거절')}</>)}</>;break;
   case 'a1h4W':body=<><p>이 사용자와 메시지를 주고받을 수 없어요.</p>{actions(act('차단 해제','retry'))}</>;break;
   case 'g2dR1B':body=<><fieldset><legend>DM 수신</legend>{[['requests','대화 요청 받기'],['friends','친구만'],['none','받지 않기']].map(([value,label])=><label className='communityStateChoice' key={value}><input type='radio' name='dmPolicy' value={value} checked={dm===value} onChange={()=>setDm(value)}/>{label}</label>)}</fieldset><fieldset><legend>프로필 공개</legend><label className='communityStateChoice'><input type='checkbox' checked={publicProfile} onChange={event=>setPublicProfile(event.target.checked)}/>{publicProfile&&<Icon name='check' color='#fff' size={14}/>}프로필 공개</label><label className='communityStateChoice'><input type='checkbox' checked={favorite} onChange={event=>setFavorite(event.target.checked)}/>{favorite&&<Icon name='check' color='#fff' size={14}/>}공개할 최애 · 엔카이브</label></fieldset><p>공개하지 않은 프로필과 최애는 다른 회원에게 보이지 않아요.</p>{actions(<>{act('취소')}{act('설정 저장')}</>)}</>;break;
-  case 'm5aSk':body=<><p>하늘 님에게 친구 요청을 보냈어요.</p>{actions(act('친구 목록으로','close',{onClick:()=>router.push<string>('/my/friends')}))}</>;break;
-  case 'JI7Qt':body=<><p>하늘 님이 요청을 수락하면 대화할 수 있어요.</p>{facts([['보낸 첫 메시지','내일도 함께 응원해요']],true)}{actions(act('대화 목록으로','close',{onClick:()=>router.push<string>('/my/friends')}))}</>;break;
+  case 'm5aSk':body=<><p>하늘 님에게 친구 요청을 보냈어요.</p>{actions(act('친구 목록으로','close',{onClick:()=>untypedRouter(router).push('/my/friends')}))}</>;break;
+  case 'JI7Qt':body=<><p>하늘 님이 요청을 수락하면 대화할 수 있어요.</p>{facts([['보낸 첫 메시지','내일도 함께 응원해요']],true)}{actions(act('대화 목록으로','close',{onClick:()=>untypedRouter(router).push('/my/friends')}))}</>;break;
   case 'O2tSZ':body=<><p>하늘을 운영진으로 지정할까요?</p>{actions(<>{act('취소')}{act('운영진 지정','retry')}</>)}</>;break;
   case 'XlbOv':body=<><SourcePanelExtra id={nodeId}/><p>신고 내용 · 반복 광고</p>{actions(act('대상 글 확인'))}</>;break;
   case 'A2n0y':body=<>{field('새 소유자','하늘')}<p>소유권을 넘기면 내 역할은 회원으로 바뀌어요.</p>{actions(<>{act('취소')}{act('소유권 넘기기','retry')}</>)}</>;break;

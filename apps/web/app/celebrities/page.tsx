@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { redirectTo } from "@/lib/navigation/untyped";
 import type { Route } from "next";
 import { groupsEnabled } from "@/features/groups/domain/availability";
 import { toContentLocale } from "@/i18n/locales";
@@ -23,7 +23,7 @@ export default async function CelebritiesPage({ searchParams }: { searchParams: 
     for(const [key,value] of Object.entries({owned,search:q,sort,role})){
       const text=Array.isArray(value)?value[0]:value;if(text)params.set(key,text);
     }
-    redirect<string>(`/pages/groups?${params}` as Route);
+    redirectTo(`/pages/groups?${params}` as Route);
   }
   const repository = createPublishedContentRepositoryFromEnvironment();
   // Filtered on the server so the page data carries no unlisted creator; the directory is the whole page, so a failed read errors it

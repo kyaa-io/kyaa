@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__notification__ui__kakao-callback-screen";
@@ -195,7 +196,7 @@ export function KakaoCallbackScreen({ locale }: { locale: Locale }) {
         return;
       }
       setView("success");
-      router.replace<string>(result.returnPath as Route);
+      untypedRouter(router).replace(result.returnPath as Route);
     }).catch((error: unknown) => {
       terminal.current = true;
       if (!subscribed) return;

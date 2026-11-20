@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { Fragment, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "@/components/icons";
@@ -45,7 +46,7 @@ export function LogoutConfirmDialog({ locale, onClose }: { locale: FanLocale; on
     setError("");
     try {
       await logout();
-      router.replace<string>(`/login?locale=${locale}`);
+      untypedRouter(router).replace(`/login?locale=${locale}`);
     } catch {
       pending.current = false;
       setBusy(false);

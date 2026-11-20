@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { Route } from "next";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
@@ -17,8 +18,8 @@ export function JjinfanChallengeEntry({ slug, locale, ready, verified }: { slug:
   const close = () => {
     const url = new URL(window.location.href);
     url.searchParams.delete("challenge");
-    router.replace<string>(`${url.pathname}${url.search}${url.hash}` as Route, { scroll: false });
+    untypedRouter(router).replace(`${url.pathname}${url.search}${url.hash}` as Route, { scroll: false });
   };
   return <FanDialog size="sm" className={styles.dialog} open={open} onOpenChange={value => { if (!value) close(); }} title={t.invite} closeLabel={t.close}
-    primary={{ label: t.join, onClick: () => router.push<string>(fanVerifyHref(slug, locale, `/${encodeURIComponent(slug)}?locale=${locale}`) as Route) }} />;
+    primary={{ label: t.join, onClick: () => untypedRouter(router).push(fanVerifyHref(slug, locale, `/${encodeURIComponent(slug)}?locale=${locale}`) as Route) }} />;
 }

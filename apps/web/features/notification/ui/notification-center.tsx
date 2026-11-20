@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupNotificationPanel } from "./group-notification-panel";
@@ -260,7 +261,7 @@ export function NotificationCenter() {
     const result = await read(item);
     if (!activeRef.current || ownerRef.current !== ownerId) return;
     setReadPendingId(null);
-    if (result) router.push<string>(withLocalePath(item.deepLink, locale) as Route);
+    if (result) untypedRouter(router).push(withLocalePath(item.deepLink, locale) as Route);
     else if (result === false) setReadFailure(item);
   }
   async function readAll() {

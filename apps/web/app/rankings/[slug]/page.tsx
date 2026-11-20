@@ -1,7 +1,7 @@
+import { redirectTo } from "@/lib/navigation/untyped";
 import type { Metadata } from "next";
 
 import type { Route } from "next";
-import { redirect } from "next/navigation";
 
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { parseAppLocale } from "@/i18n/locales";
@@ -19,5 +19,5 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function FanRankingsPage({ params, searchParams }: Props) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   const locale = parseAppLocale(query.locale);
-  redirect<string>(`/${encodeURIComponent(slug)}?tab=members&people=ranking&locale=${locale}` as Route);
+  redirectTo(`/${encodeURIComponent(slug)}?tab=members&people=ranking&locale=${locale}` as Route);
 }

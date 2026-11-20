@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { ArrowLeft, ArrowRight, LockKeyhole, ShieldCheck } from "lucide-react";
 import Link from "../fan-ui/hover-prefetch-link";
 import { useRouter } from "next/navigation";
@@ -31,7 +32,7 @@ export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAcces
   const router = useRouter();
   const session = useAdminSession();
   useEffect(() => {
-    if (session.status === "authorized") router.replace<string>(adminReturnPath(window.location.search) as Parameters<typeof router.replace>[0]);
+    if (session.status === "authorized") untypedRouter(router).replace(adminReturnPath(window.location.search) as Parameters<typeof router.replace>[0]);
   }, [router, session.status]);
   const resolvedAccess = access !== "unauthenticated"
     ? access

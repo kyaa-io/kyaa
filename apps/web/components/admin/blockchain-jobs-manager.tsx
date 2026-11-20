@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { AlertCircle, ChevronRight, Clock3, RefreshCw, X } from "lucide-react";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
@@ -95,7 +96,7 @@ export function BlockchainJobsManager() {
     const nextId = String(form.get("jobId") ?? "").trim();
     if (nextStatus) next.set("status", nextStatus);
     if (nextId) next.set("jobId", nextId);
-    router.replace<string>(`/admin/blockchain-jobs${next.size ? `?${next}` : ""}` as Route, { scroll: false });
+    untypedRouter(router).replace(`/admin/blockchain-jobs${next.size ? `?${next}` : ""}` as Route, { scroll: false });
   }
 
   async function retry() {
@@ -118,7 +119,7 @@ export function BlockchainJobsManager() {
       <label><span>{locale === "ko" ? "상태" : "Status"}</span><select key={status ?? "all"} name="status" defaultValue={status ?? ""}><option value="">{t.all}</option>{statusOptions.map((item) => <option key={item}>{item}</option>)}</select></label>
       <label className={styles.growField}><span>{t.search}</span><input key={jobId || "all"} name="jobId" defaultValue={jobId} placeholder="00000000-0000-0000-0000-000000000000" /></label>
       <button className={styles.secondaryButton} type="submit">{t.apply}</button>
-      <button className={styles.textButton} type="button" onClick={() => router.replace<string>((locale === "en" ? "/admin/blockchain-jobs?lang=en" : "/admin/blockchain-jobs") as Route)}>{t.reset}</button>
+      <button className={styles.textButton} type="button" onClick={() => untypedRouter(router).replace((locale === "en" ? "/admin/blockchain-jobs?lang=en" : "/admin/blockchain-jobs") as Route)}>{t.reset}</button>
     </form>
     {state === "loading" && <div className={styles.skeletonList} aria-label={t.loading}>{[1,2,3,4,5].map((n) => <div key={n} />)}</div>}
     {state === "error" && <StateMessage icon={<AlertCircle aria-hidden="true" />} title={t.error} action={<button type="button" onClick={() => void fetchJobs()}>{t.again}</button>} />}

@@ -1,3 +1,4 @@
+import { untypedRouter } from "@/lib/navigation/untyped";
 import {withLeaderRaffleFixture} from './leader-raffle-fixture';
 import { fanPageName, withGroupNameLocale } from './group-name-locale-fixture';
 import {withLocalPolicyFixture} from './local-policy-fixture';
@@ -344,7 +345,7 @@ function LocalProfilePreview(){
  useEffect(()=>{const restore=(event:PopStateEvent)=>setRequested(Boolean(event.state?.pencilFriendRequest));window.addEventListener('popstate',restore);return()=>window.removeEventListener('popstate',restore);},[]);
  const request=async()=>{if(busy)return;setBusy(true);setFailed(false);try{const response=await fetch('/api/me/social/friends',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({profileId:'e9200000-0000-4000-8000-000000000002',requestId})});if(!response.ok)throw Error();history.pushState({...history.state,pencilFriendRequest:true},'',`/my/friends?locale=${locale}&state=outgoing`);setRequested(true);setBusy(false);}catch{setFailed(true);setBusy(false);}};
  if(requested)return <GroupSocialScreen locale={locale} friendFilter='outgoing'/>;
- return <><ProfileConnectionPanel locale={locale} initialView={query.get('profileView')==='scan'?'scan':query.get('profileView')==='peer'?'peer':'profile'} identity={<><img src='/images/avatars/star-pink.webp' width={48} height={48} alt=''/><span>별빛</span></>} requestPending={busy} onRequestFriend={()=>void request()} peerIdentity={<><img src='/images/avatars/star-pink.webp' alt=''/><span>하늘</span><p>공개한 최애 · 엔카이브</p>{failed&&<p role='alert'>요청을 보내지 못했어요.</p>}</>} onClose={()=>router.push<string>('/nchive?tab=board')}/></>;
+ return <><ProfileConnectionPanel locale={locale} initialView={query.get('profileView')==='scan'?'scan':query.get('profileView')==='peer'?'peer':'profile'} identity={<><img src='/images/avatars/star-pink.webp' width={48} height={48} alt=''/><span>별빛</span></>} requestPending={busy} onRequestFriend={()=>void request()} peerIdentity={<><img src='/images/avatars/star-pink.webp' alt=''/><span>하늘</span><p>공개한 최애 · 엔카이브</p>{failed&&<p role='alert'>요청을 보내지 못했어요.</p>}</>} onClose={()=>untypedRouter(router).push('/nchive?tab=board')}/></>;
 }
 
 const sourceBoardEvent={title:'엔카이브 굿즈 추첨',image:'/images/groups/nchive-goods-concept.png',href:'/?view=raffle',exchangeHref:'/my/wallet?section=ticket'};
@@ -358,7 +359,7 @@ function CreatorPreview(){
 }
 function LocalWalletState({nodeId}:{nodeId:'fMkHm'|'Vgw4h'}){
  const router=useRouter();
- return <SourceWalletState nodeId={nodeId} onClose={()=>router.push<string>('/my/wallet')}/>;
+ return <SourceWalletState nodeId={nodeId} onClose={()=>untypedRouter(router).push('/my/wallet')}/>;
 }
 function SourceStateOverlay(){
  const [open,setOpen]=useState(true),ref=useRef<HTMLDialogElement>(null);

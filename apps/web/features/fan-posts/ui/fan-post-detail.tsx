@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { LinkifiedText } from "@/features/content-safety/ui/linkified-text";
 import { ProfileAuthor } from "@/features/group-social/profile-window";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
@@ -135,7 +136,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation, e
     busy={mutation.busy} error={replyTarget ? mutationError : null} onGate={setGateOpen} onSubmit={submit} onCancel={cancelReply} />;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
     <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
-    {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => router.replace<string>(communityHref)} detail />
+    {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => untypedRouter(router).replace(communityHref)} detail />
     {post.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <PassportRequiredDialog failure={mutation.failure} slug={data.celebritySlug} locale={locale} onClose={mutation.dismiss} />
     <section id="comments" className={detailStyles.comments} aria-labelledby={`${fieldId}-heading`} data-post-comments=""><h2 id={`${fieldId}-heading`}>{copy.comments} {data.commentCount.toLocaleString(locale)}</h2>

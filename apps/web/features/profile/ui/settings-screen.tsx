@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanSkeletonPage } from "@/components/fan-ui/fan-skeleton";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { GroupSettingsMenu } from "./group-settings-menu";
@@ -599,7 +600,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
   useEffect(() => {
     if (logoutPending.current) return;
     if (ready && session.ready && !authenticated) {
-      router.replace<string>(
+      untypedRouter(router).replace(
         `/login?returnTo=${encodeURIComponent(settingsReturnTo)}&locale=${locale}`,
       );
     }
@@ -1008,7 +1009,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
     setLogoutError("");
     try {
       await logout();
-      router.replace<string>(`/login?locale=${locale}`);
+      untypedRouter(router).replace(`/login?locale=${locale}`);
     } catch {
       logoutPending.current = false;
       setLoggingOut(false);

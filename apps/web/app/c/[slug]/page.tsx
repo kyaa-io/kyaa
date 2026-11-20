@@ -1,5 +1,6 @@
+import { permanentRedirectTo } from "@/lib/navigation/untyped";
 import { parseAppLocale } from "@/i18n/locales";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Route } from "next";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { creatorRafflesHref } from "@/features/benefit/domain/raffle-navigation";
@@ -21,7 +22,7 @@ export default async function LegacyCelebrityPage({ params, searchParams }: {
   if (query.get("tab") === "raffles" || query.get("tab") === "benefits") {
     const locale = parseAppLocale(query.get("locale"));
     const intent = sanitizeAuthIntentId(query.get("authIntent"));
-    permanentRedirect<string>(`${creatorRafflesHref(slug, locale)}${intent ? `&authIntent=${intent}` : ""}` as Route);
+    permanentRedirectTo(`${creatorRafflesHref(slug, locale)}${intent ? `&authIntent=${intent}` : ""}` as Route);
   }
-  permanentRedirect<string>(`${creatorHomeHref(slug)}${query.size ? `?${query}` : ""}` as Route);
+  permanentRedirectTo(`${creatorHomeHref(slug)}${query.size ? `?${query}` : ""}` as Route);
 }

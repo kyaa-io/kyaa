@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { toContentLocale } from "@/i18n/locales";
 
@@ -76,7 +77,7 @@ function InquiryList({ locale, admin = false }: Props) {
         if (!token) throw new Error("AUTHENTICATION_REQUIRED");
         const data = mutationSchema.parse(await checked(await fetch(api, { method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ ...input, locale: toContentLocale(locale) }) })));
         if (!mounted.current) return false;
-        router.push<string>(pageHref(false, locale, data.id));
+        untypedRouter(router).push(pageHref(false, locale, data.id));
         return true;
       }} />
     </section>}
