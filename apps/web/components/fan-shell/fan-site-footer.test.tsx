@@ -28,7 +28,7 @@ describe("FanSiteFooter", () => {
     expect(within(footer).getByRole("link", { name: "환불 정책 열기" })).toHaveAttribute("href", "/refund?locale=ko");
     const groups = footer.querySelectorAll('[role="group"][aria-label] [role="group"]');
     expect(groups).toHaveLength(2);
-    expect(groups[0]).toHaveTextContent("KAYY Inc.");
+    expect(groups[0]).toHaveTextContent("KYAA Inc.");
     expect(groups[1]).toHaveTextContent("736-86-03473");
     expect(footer).toHaveTextContent("주식회사 셀리랩");
   });
@@ -128,7 +128,7 @@ describe("FanSiteFooter", () => {
       expect(operator.lines).toHaveLength(3);
       expect(hq.label).toMatch(/\S/);
       expect(operator.label).toMatch(/\S/);
-      expect(hq.lines[0]).toHaveTextContent(/^KAYY Inc\. · .+ JAEYEONG KIM$/);
+      expect(hq.lines[0]).toHaveTextContent(/^KYAA Inc\. · .+ JAEYEONG KIM$/);
       expect(hq.lines[1]).toHaveTextContent(/8130900$/);
       expect(hq.lines[2]).toHaveTextContent("Whitestone, Queens, NY, USA");
       expect(hq.lines[2]).toHaveAttribute("lang", "en");

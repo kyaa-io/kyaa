@@ -19,7 +19,7 @@ describe("public structured data", () => {
       brand: { "@type": "Brand", name: "kyaa", url: "https://kyaa.io/" },
       parentOrganization: {
         "@type": "Organization",
-        name: "KAYY Inc.",
+        name: "KYAA Inc.",
         address: {
           "@type": "PostalAddress",
           addressLocality: "Whitestone, Queens",
