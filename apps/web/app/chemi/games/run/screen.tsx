@@ -204,8 +204,10 @@ function Track({ ticket, jump, pause, resume, finish }: { ticket: Ticket; jump: 
       else frameId = requestAnimationFrame(frame);
     }
     function keyDown(event: KeyboardEvent) {
-      if (event.target instanceof HTMLButtonElement || stopped.current || !["Space", "ArrowUp"].includes(event.code)) return;
+      if (stopped.current || !["Space", "ArrowUp"].includes(event.code) ||
+          (event.code === "Space" && event.target instanceof HTMLButtonElement)) return;
       event.preventDefault();
+      if (!event.repeat) pressed.current = true;
       held.current = true;
     }
     function keyUp(event: KeyboardEvent) {
@@ -229,7 +231,7 @@ function Track({ ticket, jump, pause, resume, finish }: { ticket: Ticket; jump: 
       <span aria-label={`${view.hearts}/3`}>{Array.from({ length: 3 }, (_, i) =>
         <img key={i} src={`${art}/heart.png`} alt="" data-empty={i >= view.hearts} />)}</span>
       <strong>{view.score} m</strong>
-      <FanAction disabled={view.done} onClick={() => { stopped.current = !paused; held.current = false; setPaused(!paused); }}>
+      <FanAction disabled={view.done} onClick={() => { stopped.current = !paused; held.current = false; pressed.current = false; setPaused(!paused); }}>
         {paused ? resume : pause}
       </FanAction>
     </div>
