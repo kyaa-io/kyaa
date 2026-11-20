@@ -122,4 +122,16 @@ begin
   assert not has_function_privilege('authenticated','public.refresh_signup_raffle_participant(uuid,boolean,timestamptz,timestamptz)','EXECUTE');
   assert not has_function_privilege('anon','public.refresh_signup_raffle_participant(uuid,boolean,timestamptz,timestamptz)','EXECUTE');
 end $$;
+set local kyaa.signup_raffle_require_attendance = 'on';
+insert into public.group_creator_attendance(app_user_id,celebrity_id,attendance_date,streak,points,request_key,policy_version,created_at)
+values ('ab240000-0000-4000-8000-000000000105','ab240000-0000-4000-8000-000000000a01',current_date,1,0,extensions.gen_random_uuid(),1,clock_timestamp());
+update public.app_users set status='disabled' where id='ab240000-0000-4000-8000-000000000002';
+do $$
+declare snapshot jsonb;
+begin
+  snapshot := public.read_signup_raffle_snapshot(null, now()-interval '1 day', now()+interval '1 day');
+  assert not (snapshot->'users' @> '[{"id":"ab240000-0000-4000-8000-000000000002"}]'::jsonb);
+  assert (select count(*)=1 from public.signup_raffle_actions
+    where app_user_id='ab240000-0000-4000-8000-000000000004' and kind='referral-signup');
+end $$;
 rollback;
