@@ -359,3 +359,9 @@
 .souvenir img {
   height: auto;
 }
+
+/* The face is right of centre in the landscape editorial photograph. */
+.card img[src*="hero-editorial-20260911"],
+.souvenir img[src*="hero-editorial-20260911"] {
+  object-position: 65% center;
+}

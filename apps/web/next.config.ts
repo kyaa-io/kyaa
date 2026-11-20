@@ -16,7 +16,15 @@ const nextConfig: NextConfig = {
   ...(Object.keys(experimental).length > 0 ? { experimental } : {}),
   ...(process.env.HOSTING_PROVIDER === "aws" ? { output: "standalone" as const, outputFileTracingRoot: path.resolve(__dirname, "../.."), cacheMaxMemorySize: 0, typescript: { tsconfigPath: "tsconfig.aws.json", ignoreBuildErrors: process.env.KYAA_AWS_BUILD_PHASE === "bundle" } } : {}),
   htmlLimitedBots,
-  images: { remotePatterns: publicImageRemotePatterns, qualities: [75, 90] },
+  images: {
+    remotePatterns: [
+      ...publicImageRemotePatterns,
+      ...(process.env.NODE_ENV === "development" && process.env.CHEMI_TAB === "true"
+        ? [new URL("https://kyaa.io/api/content-assets/857c6367-6f97-40ff-ac11-b14cc2fb4e6e")]
+        : []),
+    ],
+    qualities: [75, 90],
+  },
   poweredByHeader: false,
   typedRoutes: true,
   serverExternalPackages: ["ffmpeg-static", "ffprobe-static"],

@@ -14,7 +14,7 @@ const catalog = {
     scene: `${root}/changha/hero-desktop-20261021.webp`,
     cards: [
       `${root}/changha/profile-autumn-20261113.webp`,
-      `${root}/changha/hero-editorial-portrait-20260911.webp`,
+      `${root}/changha/hero-editorial-20260911.webp`,
       `${root}/changha/portrait-20261021.webp`,
       `${root}/changha/calendar-20261021.webp`,
     ],
@@ -30,12 +30,12 @@ const catalog = {
     ],
   },
   yuna: {
-    portrait: `${root}/yuna/hero-studio-mobile.jpg`,
+    portrait: "/images/groups/source-calendar/f9c838570dbcfc33.jpg",
     scene: `${root}/yuna/hero-beach.jpg`,
     cards: [
-      `${root}/yuna/hero-studio-mobile.jpg`,
+      "/images/groups/source-calendar/f9c838570dbcfc33.jpg",
       `${root}/yuna/hero-beach.jpg`,
-      `${root}/yuna/hero-editorial-portrait-20260911.webp`,
+      "https://kyaa.io/api/content-assets/857c6367-6f97-40ff-ac11-b14cc2fb4e6e",
       "/images/calendar/yuna-portrait.jpg",
     ],
   },
