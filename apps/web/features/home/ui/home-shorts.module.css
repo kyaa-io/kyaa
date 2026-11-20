@@ -95,7 +95,7 @@
 .feed { width:min(100%,56.25dvh); height:100%; overflow-y:auto; overscroll-behavior:contain; scroll-snap-type:y mandatory; scrollbar-width:none; }
 .slide { position:relative; width:100%; height:100%; scroll-snap-align:start; scroll-snap-stop:always; }
 .slide .mediaFrame,.slide > img { width:100%; max-width:none; height:100%; object-fit:contain; }
-.tapSurface { position:absolute; inset:0; border:0; background:transparent; touch-action:pan-y pinch-zoom; }
+.slide .tapSurface { width:100%; max-width:none; position:absolute; inset:0; border:0; background:transparent; touch-action:pan-y pinch-zoom; }
 .feedRail { position:absolute; bottom:max(3rem,env(safe-area-inset-bottom)); right:var(--space-2); }
 .feedRail .engagement { flex-direction:column; }
 .feedRail .brand { display:none; }
@@ -107,3 +107,11 @@
 .feedNav { position:absolute; right:var(--space-4); display:grid; gap:var(--space-2); }
 @media (width < 48rem) { .feed { width:100%; } .feedNav { display:none; } }
 .feedProgress { position:absolute; inset:auto 0 0; width:100%; height:2px; pointer-events:none; accent-color:var(--color-surface); }
+
+.playerPoster { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.mediaFrame[data-loading] iframe { opacity:0; }
+.feedCaption .viewerCreatorLink { color:var(--color-surface); }
+.feedCaption button { color:var(--color-surface); }
+.feedCaption { display:grid; justify-items:start; gap:var(--space-1); padding:var(--space-2); border-radius:var(--radius-small); }
+.feedCaption a,.feedCaption button { color:inherit; }
+.feedCaption button[aria-expanded=true] { max-height:35dvh; overflow:auto; }

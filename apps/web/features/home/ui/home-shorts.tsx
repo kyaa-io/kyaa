@@ -27,7 +27,7 @@ export const navigation: Record<AppLocale, [string, string, string]> = {
 
 // TikTok covers are signed links that expire within a day, so the covers of the creators' TikTok notices are kept as site images.
 // An Instagram reel has no platform cover to fall back on: only the cover the site stored for it shows, and a reel without one is left out like any short without a cover.
-const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : item.platform === "instagram" ? null : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
+export const shortCover = (item: HomeShort) => item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : item.platform === "instagram" ? null : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`;
 const platformName = (item: HomeShort) => item.platform === "tiktok" ? "TikTok" : item.platform === "instagram" ? "Instagram" : "YouTube";
 // Instagram reels open the original post in a new tab; only YouTube and TikTok shorts play in the viewer.
 const playsInViewer = (item: HomeShort) => item.platform !== "instagram";

@@ -43,6 +43,7 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
   const ended = useRef(onEnded);
   ended.current = onEnded;
   const [muted, setMuted] = useState(true);
+  const [loaded, setLoaded] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const iframe = useRef<HTMLIFrameElement>(null);
   const youtubeNode = useRef<HTMLIFrameElement>(null);
@@ -73,7 +74,7 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
     if (item.platform === "tiktok") {
       const onMessage = (event: MessageEvent) => {
         if (event.origin !== "https://www.tiktok.com" || event.source !== iframe.current?.contentWindow || !event.data?.["x-tiktok-player"]) return;
-        if (event.data.type === "onPlayerReady") { ready.current = true; setSound(desired.current, false); }
+        if (event.data.type === "onPlayerReady") { ready.current = true; setLoaded(true); setSound(desired.current, false); }
         if (event.data.type === "onMute" && ready.current && !syncing.current && typeof event.data.value === "boolean") {
           const value = event.data.value;
           if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); }
@@ -90,7 +91,7 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
     void youtubeAPI().then(api => {
       if (disposed || !youtubeNode.current) return;
       player.current = new api.Player(youtubeNode.current, { videoId: item.videoId, playerVars: { rel: 0, playsinline: 1, enablejsapi: 1, autoplay: Number(immersive) }, events: {
-        onReady: event => { if (disposed) return; ready.current = true; player.current = event.target; setSound(desired.current, false); },
+        onReady: event => { if (disposed) return; ready.current = true; setLoaded(true); player.current = event.target; setSound(desired.current, false); },
         onStateChange: event => { if (!disposed && event.data === 0) ended.current?.(); if (!disposed && ready.current && !syncing.current) { const value = event.target.isMuted(); if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); } } },
         onAutoplayBlocked: () => { if (!disposed) { setSound(true, false); setBlocked(true); } },
       } });
@@ -98,7 +99,9 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
     const poll = window.setInterval(() => { if (!disposed && ready.current && player.current && !syncing.current) { if (progress.current && player.current.getDuration() > 0) progress.current.value = player.current.getCurrentTime() / player.current.getDuration(); const value = player.current.isMuted(); if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); } } }, 600);
     return () => { disposed = true; window.clearInterval(poll); player.current?.destroy(); player.current = null; };
   }, [item.platform, item.videoId, immersive]);
-  return <div className={styles.mediaFrame}>
+  const cover = item.thumbnail ?? (item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`);
+  return <div className={styles.mediaFrame} data-loading={immersive && !loaded || undefined}>
+    {immersive && !loaded && <img className={styles.playerPoster} src={cover} alt="" />}
     {item.platform === "tiktok" ? <iframe ref={iframe} src={`https://www.tiktok.com/player/v1/${item.videoId}?autoplay=${Number(immersive)}${immersive ? "&muted=1&controls=0&loop=1" : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <iframe ref={youtubeNode} src={`https://www.youtube.com/embed/${item.videoId}?rel=0&enablejsapi=1&autoplay=${Number(immersive)}${immersive ? `&playsinline=1&mute=1&controls=0&loop=1&playlist=${item.videoId}` : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
     {immersive && <FanAction variant="text" type="button" className={styles.tapSurface} ariaLabel={item.title} onClick={() => {
       if (tap.current !== undefined) {
