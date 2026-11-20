@@ -8,7 +8,7 @@ const items = Array.from({ length: 8 }, (_, i) => ({ id: `id${i}`, videoId: `vid
 
 describe("shorts viewer", () => {
   it("shows every loaded card in the scroll row and navigates all videos and unmounts the previous player", () => {
-    render(<HomeShorts items={items} locale="ko" />);
+    render(<HomeShorts items={items} locale="ko" layout="grid" />);
     expect(screen.getAllByRole("listitem")).toHaveLength(8);
     fireEvent.click(screen.getByRole("button", { name: "영상 5" }));
     const dialog = screen.getByRole("dialog");
@@ -32,7 +32,7 @@ describe("shorts viewer", () => {
   });
   it("plays a TikTok short in the TikTok player with its kept cover", () => {
     const tiktok = { id: "t1", platform: "tiktok", videoId: "7690854938997558549", title: "안녕히 계세여~", href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", creator: { slug: "a", name: "A" } } as HomeShort;
-    const { container } = render(<HomeShorts items={[tiktok]} locale="ko" />);
+    const { container } = render(<HomeShorts items={[tiktok]} locale="ko" layout="grid" />);
     expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain("/images/media/tiktok/7690854938997558549.jpg");
     fireEvent.click(screen.getByRole("button", { name: "안녕히 계세여~" }));
     const dialog = screen.getByRole("dialog");
@@ -115,6 +115,7 @@ describe("shorts → fan page (PM 11/13)", () => {
   it("the home rail keeps its compact caption without the extra link", () => {
     render(<HomeShorts items={clips} locale="ko" />);
     expect(screen.queryByRole("link", { name: "엘리나 모임" })).toBeNull();
+    expect(screen.getByRole("link", { name: "엘리나 영상" })).toHaveAttribute("href", "/shorts?locale=ko&video=videoE");
   });
   it("the viewer shows the creator's way to the fan page under the video and lights it when a TikTok short ends", () => {
     const tiktok = [{ id: "t9", platform: "tiktok", videoId: "7690854938997558549", title: "틱톡", href: "https://www.tiktok.com/video/7690854938997558549", creator: { slug: "elina", name: "엘리나" } }] as HomeShort[];
@@ -134,13 +135,13 @@ describe("Instagram reels in the shorts", () => {
   const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000009?variant=thumbnail";
   const reel = (id: string, withCover = true) => ({ id, platform: "instagram", videoId: "AbCdEfGhIjK", title: "릴스 원문 캡션 #reels", href: "https://www.instagram.com/fixture.one/p/AbCdEfGhIjK/", creator: { slug: "a", name: "A" }, ...(withCover ? { thumbnail } : {}) }) as HomeShort;
   it("is a link to the original post that the shared outbound rule decorates, with the stored cover and the Instagram name", () => {
-    const { container } = render(<HomeShorts items={[reel("i1")]} locale="ko" />);
+    const { container } = render(<HomeShorts items={[reel("i1")]} locale="ko" layout="grid" />);
     const link = screen.getByRole("link", { name: "릴스 원문 캡션 #reels" });
     expect(link).toHaveAttribute("href", "https://www.instagram.com/fixture.one/p/AbCdEfGhIjK/");
     expect(link).toHaveAttribute("target", "_blank");
     expect(link.getAttribute("rel")).toContain("noopener");
     expect(link.closest("li")).toHaveAttribute("data-outbound-kind", "external");
-    expect(link).toHaveTextContent("A · Instagram");
+    expect(within(container).getByRole("link", { name: "A 모임" })).toHaveTextContent("A · Instagram");
     expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain(thumbnail);
     fireEvent.click(link);
     expect(screen.queryByRole("dialog")).toBeNull();
@@ -152,7 +153,7 @@ describe("Instagram reels in the shorts", () => {
     expect(container.textContent).not.toContain("instagram.com");
   });
   it("is skipped by the viewer's previous and next steps, which count only the playable videos", () => {
-    render(<HomeShorts items={[items[0]!, reel("i1"), items[1]!]} locale="ko" />);
+    render(<HomeShorts items={[items[0]!, reel("i1"), items[1]!]} locale="ko" layout="grid" />);
     expect(screen.getAllByRole("listitem")).toHaveLength(3);
     fireEvent.click(screen.getByRole("button", { name: "영상 0" }));
     const dialog = screen.getByRole("dialog");

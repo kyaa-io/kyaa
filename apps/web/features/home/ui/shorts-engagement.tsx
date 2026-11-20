@@ -1,4 +1,8 @@
 "use client";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
+import { messages as shareLabels } from "@/i18n/catalogs/components__notice__notice-share";
+import { translate } from "@/i18n/messages";
+import { useImperativeHandle } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 
@@ -21,7 +25,7 @@ const commentsSchema = z.object({ items: z.array(z.object({ id: z.string(), body
 const parseReaction = (value: unknown) => reactionSchema.parse(value);
 const parseComments = (value: unknown) => commentsSchema.parse(value);
 
-export function ShortsEngagement({ videoId, locale, offset }: { videoId: string; locale: AppLocale; offset: number }) {
+export function ShortsEngagement({ videoId, locale, offset, likeRef }: { videoId: string; locale: AppLocale; offset: number; likeRef?: React.Ref<() => void> }) {
   const auth = useByUsAuth(), copy = contentCopy(locale), reactionCopy = postReactionCopy(locale), mutation = useContentMutation(locale);
   const [open, setOpen] = useState(false), [cursor, setCursor] = useState<string | null>(null), [body, setBody] = useState(""), [shareError, setShareError] = useState(false);
   const attempt = useRef<{ body: string; key: string } | null>(null);
@@ -30,6 +34,11 @@ export function ShortsEngagement({ videoId, locale, offset }: { videoId: string;
   const reactions = useCommunityResource(`/api/shorts/${encodeURIComponent(videoId)}/reactions`, parseReaction, false);
   const comments = useCommunityResource(open ? `/api/shorts/${encodeURIComponent(videoId)}/comments?locale=${toContentLocale(locale)}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}` : null, parseComments, false);
   const change = async (reaction: PostReactionChoice) => { if (await mutation.request(`/api/shorts/${encodeURIComponent(videoId)}/reactions`, "PUT", { reaction })) reactions.retry(); };
+  useImperativeHandle(likeRef, () => () => {
+    if (!auth.ready || mutation.busy || reactions.state.status !== "ready") return;
+    if (!auth.authenticated) { location.assign(loginHref); return; }
+    if (reactions.state.data.reaction !== "like") void change("like");
+  });
   const submit = async () => {
     const value = body.trim(); if (!value || mutation.busy) return;
     if (attempt.current?.body !== value) attempt.current = { body: value, key: crypto.randomUUID() };
@@ -41,10 +50,10 @@ export function ShortsEngagement({ videoId, locale, offset }: { videoId: string;
     <span className={styles.brand}>kyaa</span>
     {reactions.state.status === "ready" ? <PostReactions locale={locale} {...reactions.state.data} busy={mutation.busy || !auth.ready} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void change(choice)} /> : reactions.state.status === "error" ? <FanAction variant="text" onClick={reactions.retry}>{copy.retry}</FanAction> : <span aria-live="polite">…</span>}
     <FanAction variant="text" type="button" onClick={() => setOpen(true)} ariaLabel={copy.comments}><FanIcon icon={MessageCircle} />{reactions.state.status === "ready" ? reactions.state.data.commentCount : ""}</FanAction>
-    <FanAction variant="text" type="button" onClick={() => void share()} ariaLabel={locale === "ko" ? "공유" : "Share"}><FanIcon icon={Share2} /></FanAction>
+    <FanAction variant="text" type="button" onClick={() => void share()} ariaLabel={locale === "ko" ? "공유" : translate(locale, shareLabels.m3327f2162cbe, "Share")}><FanIcon icon={Share2} /></FanAction>
     {shareError && <span role="alert">{copy.failed}</span>}
     {mutation.error && <span role="alert">{mutation.error}</span>}
-    <FanSheet open={open} onOpenChange={setOpen} title={copy.comments} closeLabel={locale === "ko" ? "닫기" : "Close"} snap="full">
+    <FanSheet open={open} onOpenChange={setOpen} title={copy.comments} closeLabel={fanUiText(locale, "close")} snap="full">
       {auth.ready && (auth.authenticated ? <form onSubmit={e => { e.preventDefault(); void submit(); }} className={styles.commentForm}>
         <label htmlFor={`short-comment-${videoId}`}>{reactionCopy.placeholder}</label><textarea id={`short-comment-${videoId}`} maxLength={1000} value={body} onChange={e => setBody(e.target.value)} disabled={mutation.busy} />
         <FanAction variant="text" type="submit" disabled={!body.trim() || mutation.busy}>{copy.send}</FanAction>

@@ -4,6 +4,7 @@ import { ShortsCatalog } from "./shorts-catalog";
 
 vi.mock("@/components/fan-ui/fan-select-menu", () => ({ FanSelectMenu: ({ options, onValueChange }: { options: { value: string; label: string }[]; onValueChange: (value: string) => void }) => <button onClick={() => onValueChange(options[1]!.value)}>{options[1]!.label}</button> }));
 vi.mock("@/components/fan-ui/fan-tabs", () => ({ FanTabs: ({ items }: { items: { label: string; onSelect: () => void }[] }) => <div>{items.map(item => <button key={item.label} onClick={item.onSelect}>{item.label}</button>)}</div> }));
+vi.mock("./shorts-feed", () => ({ ShortsFeed: ({ onClose }: { onClose(): void }) => <button onClick={onClose}>닫기</button> }));
 vi.mock("./home-shorts", () => ({ HomeShorts: ({ items }: { items: { videoId: string }[] }) => <div data-testid="videos">{items.map(item => item.videoId).join(",")}</div> }));
 
 it("sorts real reaction counts and keeps the artist filter when sorting", () => {
@@ -13,6 +14,7 @@ it("sorts real reaction counts and keeps the artist filter when sorting", () => 
     { id: "3", videoId: "three", creator: { slug: "a", name: "A" } },
   ];
   render(<ShortsCatalog catalog={{ items: items as never, likes: { one: 2, two: 9, three: 5 } }} locale="ko" />);
+  fireEvent.click(screen.getByText("닫기"));
   expect(screen.getByTestId("videos")).toHaveTextContent("one,two,three");
   fireEvent.click(screen.getByRole("button", { name: "인기" }));
   expect(screen.getByTestId("videos")).toHaveTextContent("two,three,one");

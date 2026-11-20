@@ -90,3 +90,35 @@
 .viewerCreator[data-ended] .creatorGo { background:var(--color-accent); color:var(--color-surface); }
 @media (hover: hover) and (pointer: fine) { .viewerCreator .viewerCreatorLink:hover:not(:disabled, [aria-disabled="true"]) { background:var(--color-shortform-control); } }
 @media (prefers-reduced-motion: reduce) { .viewerCreator .creatorGo { transition:none; } }
+
+.feedShell { position:fixed; inset:0; z-index:var(--z-dropdown); display:grid; place-items:center; height:100dvh; background:var(--color-shortform-canvas); color:var(--color-surface); }
+.feed { width:min(100%,56.25dvh); height:100%; overflow-y:auto; overscroll-behavior:contain; scroll-snap-type:y mandatory; scrollbar-width:none; }
+.slide { position:relative; width:100%; height:100%; scroll-snap-align:start; scroll-snap-stop:always; }
+.slide .mediaFrame,.slide > img { width:100%; max-width:none; height:100%; object-fit:contain; }
+.slide .tapSurface { width:100%; max-width:none; position:absolute; inset:0; border:0; background:transparent; touch-action:pan-y pinch-zoom; }
+.feedRail { position:absolute; bottom:max(3rem,env(safe-area-inset-bottom)); right:var(--space-2); }
+.feedRail .engagement { flex-direction:column; }
+.feedRail .brand { display:none; }
+.feedCaption { position:absolute; inset:auto 5rem max(1rem,env(safe-area-inset-bottom)) var(--space-3); background:var(--color-shortform-control); }
+.feedCaption button { color:inherit; text-align:start; }
+.feedCaption button[aria-expanded=false] { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; }
+.feedClose,.feedNav button { color:inherit; background:var(--color-shortform-control); border-radius:50%; width:var(--min-target); height:var(--min-target); }
+.feedClose { position:absolute; top:max(var(--space-2),env(safe-area-inset-top)); left:var(--space-2); }
+.feedNav { position:absolute; right:var(--space-4); display:grid; gap:var(--space-2); }
+@media (width < 48rem) { .feed { width:100%; } .feedNav { display:none; } }
+.feedProgress { position:absolute; inset:auto 0 0; width:100%; height:2px; pointer-events:none; accent-color:var(--color-surface); }
+
+.playerPoster { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.mediaFrame[data-loading] iframe { opacity:0; }
+.feedCaption .viewerCreatorLink { color:var(--color-surface); }
+.feedCaption button { color:var(--color-surface); }
+.feedCaption { display:grid; justify-items:start; gap:var(--space-1); padding:var(--space-2); border-radius:var(--radius-small); }
+.feedCaption a,.feedCaption button { color:inherit; }
+.feedCaption button[aria-expanded=true] { max-height:35dvh; overflow:auto; }
+.expandedCaption { max-height:35dvh; overflow:auto; overscroll-behavior:contain; white-space:pre-wrap; overflow-wrap:anywhere; }
+.slide { container-type:size; overflow:hidden; }
+.slide .mediaFrame iframe { position:absolute; left:50%; top:50%; width:max(100cqw,56.25cqh); height:max(100cqh,177.7778cqw); transform:translate(-50%,-50%); }
+.feedCaption,.feedRail { z-index:1; }
+.feedCaption { background:var(--color-shortform-control); }
+.feedCaption .viewerCreatorLink,.feedCaption button { justify-content:start; min-height:var(--min-target); background:transparent; color:var(--color-surface); }
+.feedCaption .creatorName,.feedCaption .creatorGo { color:inherit; }

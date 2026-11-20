@@ -57,6 +57,10 @@ export function withPrivySignIn(policy: string): string {
 export const gleamWidgetPaths: ReadonlySet<string> = new Set(["/follow"]);
 
 
+export function withShortsPlayer(policy: string): string {
+  return policy.replace("script-src ", "script-src https://www.youtube.com/iframe_api https://www.youtube.com/s/player/ ");
+}
+
 export function withGleamWidget(policy: string): string {
   return policy
     .replace("https://challenges.cloudflare.com", "https://challenges.cloudflare.com https://widget.gleamjs.io")
@@ -87,8 +91,9 @@ export const ADSENSE_ORIGIN = "https://kyaa.io";
 /** The viewer's origin as the proxy sees it; the snippet and its CSP origins open only for https://kyaa.io. */
 export function adsenseEnabled(viewerOrigin: string): boolean { return viewerOrigin === ADSENSE_ORIGIN; }
 
-export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean; privy?: boolean; gleam?: boolean }): string {
+export function awsStorageContentSecurityPolicy(config: { bucket?: string; region?: string; stage?: boolean; rewardedAds?: boolean; ga4?: boolean; adsense?: boolean; privy?: boolean; gleam?: boolean; shorts?: boolean }): string {
   let policy = config.privy ? withPrivySignIn(contentSecurityPolicy) : contentSecurityPolicy;
+  if (config.shorts) policy = withShortsPlayer(policy);
   if (config.gleam) policy = withGleamWidget(policy);
   // adsbygoogle.js and what it calls back to (Google's AdSense code snippet requirements).
   if (config.adsense) {

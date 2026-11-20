@@ -98,6 +98,7 @@ export function proxy(request: NextRequest): NextResponse {
         bucket: process.env.S3_PRIVATE_BUCKET, region: process.env.AWS_REGION,
         stage: request.nextUrl.pathname === "/admin/wave-stage",
         privy: privySignInEnabled(process.env),
+        shorts: request.nextUrl.pathname === "/shorts",
         gleam: gleamWidgetPaths.has(request.nextUrl.pathname),
       }));
     }
