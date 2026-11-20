@@ -68,15 +68,15 @@ create or replace function public.read_signup_raffle_snapshot(
 declare v_user uuid; v_snapshot jsonb;
 begin
   for v_user in select app_user_id from public.signup_raffle_entries
-    where (p_user_id is null or app_user_id=p_user_id)
-      and not public.signup_raffle_referral_excluded(app_user_id) order by app_user_id
+    where app_user_id=p_user_id
+       or (p_user_id is null and not public.signup_raffle_referral_excluded(app_user_id)) order by app_user_id
   loop
     perform public.refresh_signup_raffle_participant(v_user,false,p_starts_at,p_closes_at);
   end loop;
   with eligible as materialized (
     select * from public.signup_raffle_entries
-    where (p_user_id is null or app_user_id=p_user_id)
-      and not public.signup_raffle_referral_excluded(app_user_id)
+    where app_user_id=p_user_id
+       or (p_user_id is null and not public.signup_raffle_referral_excluded(app_user_id))
   )
   select pg_catalog.jsonb_build_object(
     'users', coalesce((select pg_catalog.jsonb_agg(pg_catalog.jsonb_build_object(
