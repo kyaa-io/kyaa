@@ -194,18 +194,21 @@ export const stemKeywords: Record<Stem, { caution: Keyword; joy: Keyword }> = {
   },
 };
 
-/** 행운. 근거는 올해와 일간의 관계(godNotes 의 flow 일·공부·사람 칸)다. */
-export const godLuck: Record<TenGod, Keyword> = {
-  비견: { name: "같은 목표의 사람", act: "비슷한 목표인 사람에게 먼저 인사하기" },
-  겁재: { name: "선을 정한 약속", act: "들어줄 수 있는 만큼 먼저 말하기" },
-  식신: { name: "같이 웃는 자리", act: "밥 약속 하나 먼저 잡기" },
-  상관: { name: "새로 꺼낸 계획", act: "미뤄 둔 계획 하나 꺼내 보기" },
-  편재: { name: "먼저 온 제안", act: "들어온 제안에 날짜로 답하기" },
-  정재: { name: "지킨 약속", act: "이번 주 약속 하나 끝까지 지키기" },
-  편관: { name: "끝까지 버틴 일", act: "어려운 일 하나 오늘 끝내기" },
-  정관: { name: "맡은 자리", act: "맡은 일 결과를 먼저 알리기" },
-  편인: { name: "새 배움", act: "궁금했던 분야 영상 하나 찾아보기" },
-  정인: { name: "도와주는 사람", act: "도움 필요한 일 하나 부탁하기" },
+/**
+ * 행운. 근거는 올해와 일간의 관계(godNotes)의 flow 한 줄이다. from 은 그 줄의 자리(0 일·공부, 1 사람, 2 마음)이고,
+ * 이름과 행동은 그 줄이 말하는 흐름을 오늘 할 일로 옮긴 것이다. 시기를 말하는 줄(상관 마음 "하반기")은 쓰지 않는다.
+ */
+export const godLuck: Record<TenGod, Keyword & { from: 0 | 1 | 2 }> = {
+  비견: { from: 1, name: "같은 목표의 사람", act: "비슷한 목표인 사람에게 먼저 인사하기" },
+  겁재: { from: 1, name: "선을 정한 부탁", act: "들어줄 수 있는 만큼 먼저 말하기" },
+  식신: { from: 1, name: "같이 웃는 자리", act: "밥 약속 하나 먼저 잡기" },
+  상관: { from: 0, name: "새로 시작한 일", act: "시작한 일을 한 사람에게 보여 주기" },
+  편재: { from: 1, name: "새로 만나는 사람", act: "처음 만난 사람에게 먼저 말 걸기" },
+  정재: { from: 1, name: "지킨 약속", act: "이번 주 약속 하나 끝까지 지키기" },
+  편관: { from: 0, name: "끝까지 버틴 일", act: "어려운 일 하나 오늘 끝내기" },
+  정관: { from: 0, name: "맡은 자리", act: "맡을 일 하나에 먼저 손 들기" },
+  편인: { from: 0, name: "새 배움", act: "궁금했던 분야 영상 하나 찾아보기" },
+  정인: { from: 1, name: "도와주는 사람", act: "도움 필요한 일 하나 부탁하기" },
 };
 
 export const roughHeadline = (stem: Stem) => `${stemNotes[stem].image}처럼, ${stemNotes[stem].trait} 사람`;
@@ -369,6 +372,7 @@ export function firstReading(chart: Chart, at: number): FirstReading {
   const relation = tenGod(stem, season.yearPillar.heavenlyStem);
   const god = godNotes[relation];
   const marks = stemKeywords[stem];
+  const luck = godLuck[relation];
   return {
     stem,
     headline: roughHeadline(stem),
@@ -391,7 +395,13 @@ export function firstReading(chart: Chart, at: number): FirstReading {
     keywords: [
       { kind: "caution", label: "조심할 것", basis: `stemNotes.${stem}.cautionN`, ...marks.caution },
       { kind: "joy", label: "즐거운 것", basis: `stemNotes.${stem}.strengthN+fandomR`, ...marks.joy },
-      { kind: "luck", label: "행운", basis: `godNotes.${relation}.flow`, ...godLuck[relation] },
+      {
+        kind: "luck",
+        label: "행운",
+        basis: `godNotes.${relation}.flow.${luck.from}`,
+        name: luck.name,
+        act: luck.act,
+      },
     ],
   };
 }

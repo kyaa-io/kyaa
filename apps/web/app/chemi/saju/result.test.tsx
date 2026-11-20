@@ -114,6 +114,17 @@ it("처음 풀이 제목 아래: 최애마다 다른 한마디, 같은 키워드
   expect(seen[2].keywords).toEqual(seen[0].keywords);
 });
 
+it("처음 풀이 한마디 아래에 DEV 견본 대사 표시, 다른 화면에는 없음", () => {
+  const first = show("first");
+  expect(first.container.querySelector('[data-opening-status="dev-sample"]')?.textContent).toBe("DEV 견본 대사 · 본인 확인 전");
+  first.unmount();
+  for (const view of ["year", "month", "pair"] as const) {
+    const { container, unmount } = show(view);
+    expect(container.querySelector("[data-opening-status]")).toBeNull();
+    unmount();
+  }
+});
+
 it("올해·이달·궁합에는 한마디와 키워드를 두지 않는다", () => {
   for (const view of ["year", "month", "pair"] as const) {
     const { container, unmount } = show(view);

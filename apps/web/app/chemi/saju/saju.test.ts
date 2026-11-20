@@ -162,7 +162,7 @@ describe("첫 풀이 키워드와 최애 한마디", () => {
     expect(first.keywords.map((k) => [k.label, k.name, k.act, k.basis])).toEqual([
       ["조심할 것", "서운함 쌓아 두기", "그날 일은 그날 털어놓기", "stemNotes.병.cautionN"],
       ["즐거운 것", "바로 말하는 응원", "좋았던 장면을 바로 댓글로 쓰기", "stemNotes.병.strengthN+fandomR"],
-      ["행운", "같은 목표의 사람", "비슷한 목표인 사람에게 먼저 인사하기", "godNotes.비견.flow"],
+      ["행운", "같은 목표의 사람", "비슷한 목표인 사람에게 먼저 인사하기", "godNotes.비견.flow.1"],
     ]);
   });
 
@@ -182,6 +182,17 @@ describe("첫 풀이 키워드와 최애 한마디", () => {
     expect(sajuOpening("elina", "병")).toMatch(/요\?/);
     expect(sajuOpening("yuna", "병")).toMatch(/^오늘의 .+!/);
     expect(sajuOpening("dosa", "병")).toMatch(/오\.$/);
+  });
+
+  it("행운은 올해 관계의 flow 한 줄을 근거로 삼고, 시기를 말하는 줄은 쓰지 않는다", () => {
+    for (const [relation, luck] of Object.entries(godLuck) as [keyof typeof godNotes, (typeof godLuck)[keyof typeof godLuck]][]) {
+      const line = godNotes[relation].flow[luck.from];
+      expect(line).toBeTruthy();
+      expect(line).not.toMatch(/상반기|하반기|[0-9]+월/);
+      expect(luck.act).not.toMatch(/상반기|하반기|[0-9]+월/);
+    }
+    expect(godLuck.상관.from).toBe(0);
+    expect(godLuck.편재.from).toBe(1);
   });
 
   it("인물 확인 전이라 DEV 캐릭터 견본으로 표시돼 있다", () => {
