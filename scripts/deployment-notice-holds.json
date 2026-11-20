@@ -7,6 +7,7 @@
     "release-notes/2026-11-14-jjinfan-banner-left.json"
   ],
   "chemi-tab": [
+    "release-notes/2026-11-21-chemi-entry-banners.json",
     "release-notes/2026-11-18-chemi-db.json",
     "release-notes/2026-11-18-chemi-extra-play.json",
     "release-notes/2026-11-18-chemi-favorite-draws.json",
@@ -14,7 +15,6 @@
     "release-notes/2026-11-18-chemi-reading-exp-cap.json",
     "release-notes/2026-11-18-chemi-reading-rewards.json",
     "release-notes/2026-11-18-chemi-saju-dependencies.json",
-    "release-notes/2026-11-19-chemi-dev-schedule.json",
     "release-notes/2026-11-19-chemi-fortune-fix3.json",
     "release-notes/2026-11-19-chemi-fortune-parser.json",
     "release-notes/2026-11-19-chemi-fortune.json",
@@ -22,6 +22,8 @@
     "release-notes/2026-11-19-chemi-mail.json",
     "release-notes/2026-11-19-chemi-my-birth.json",
     "release-notes/2026-11-19-chemi-point-date.json",
+    "release-notes/2026-11-20-chemi-point-pay.json",
+    "release-notes/2026-11-20-chemi-topup-hide.json",
     "release-notes/2026-11-19-chemi-profile-delete.json",
     "release-notes/2026-11-19-chemi-record-isolation.json",
     "release-notes/2026-11-19-chemi-record-lease.json",
@@ -30,12 +32,12 @@
     "release-notes/2026-11-19-chemi-tarot.json",
     "release-notes/2026-11-20-chemi-character-art.json",
     "release-notes/2026-11-20-chemi-fortune-detail.json",
-    "release-notes/2026-11-20-chemi-point-pay.json",
     "release-notes/2026-11-20-chemi-reading-english.json",
-    "release-notes/2026-11-20-chemi-saju-voice.json",
     "release-notes/2026-11-20-chemi-smoke-fix.json",
     "release-notes/2026-11-20-chemi-star-align.json",
     "release-notes/2026-11-20-chemi-talk-points.json",
-    "release-notes/2026-11-20-chemi-topup-hide.json"
+    "release-notes/2026-11-21-chemi-match.json",
+    "release-notes/2026-11-19-chemi-dev-schedule.json",
+    "release-notes/2026-11-20-chemi-saju-voice.json"
   ]
 }

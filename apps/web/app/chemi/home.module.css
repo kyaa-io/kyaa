@@ -5,6 +5,8 @@
 }
 .banner {
   width: min(100%, calc(var(--space-12) * 15 + var(--space-2)));
+}
+.artwork {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-card);
@@ -147,5 +149,32 @@
   .leaders .rankRow div,
   .leaders .rankRow strong:last-child {
     grid-column: 1/-1;
+  }
+}
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+.dots button {
+  border-radius: var(--radius-pill);
+  min-width: calc(var(--space-12) - var(--space-1));
+  min-height: calc(var(--space-12) - var(--space-1));
+}
+.dots button[aria-pressed="true"] {
+  background: var(--color-home-caption);
+  color: var(--color-surface);
+}
+@media (min-width: 64rem) {
+  .home[data-ranked="false"] {
+    grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 6);
+    align-items: start;
+    column-gap: var(--space-6);
+  }
+  .banner { width: 100%; }
+  .home[data-ranked="false"] .list {
+    margin-top: 0;
+    grid-template-columns: 1fr;
   }
 }

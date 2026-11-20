@@ -8,6 +8,7 @@ import { parseAppLocale } from "@/i18n/locales";
 
 import { chemiTabLabel } from "@/features/chemi/ui/copy";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
+import { getMatchPhotos } from "./games/match/photos";
 import { ChemiHome } from "./home";
 
 export const dynamic = "force-dynamic";
@@ -44,7 +45,7 @@ export default async function ChemiPage({
             },
           ]}
         />}
-        <ChemiHome preview={preview} copy={copy} locale={locale} growth={growth} />
+        <ChemiHome matchAvailable={Boolean(getMatchPhotos())} preview={preview} copy={copy} locale={locale} growth={growth} />
       </FanContentContainer>
     </FanAppFrame>
   );

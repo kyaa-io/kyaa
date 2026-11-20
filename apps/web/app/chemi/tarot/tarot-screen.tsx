@@ -307,6 +307,7 @@ export function TarotScreen({
         />
       ) : (
         <TarotStage
+          locale={locale}
           step={step}
           character={character}
           shown={shown && member ? shown : null}
