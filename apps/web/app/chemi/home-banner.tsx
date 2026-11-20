@@ -25,10 +25,8 @@ export function HomeBanner({
   }, [paused]);
   return (
     <section className={styles.banner} onFocus={() => setPaused(true)} onMouseEnter={() => setPaused(true)}>
+      <div className={styles.artwork}>
       <img src={`/chemi/${images[index]}`} alt="" />
-      <div className={styles.dots}>
-        {entries.map(([key], n) => <FanAction size="sm" key={key} type="button" ariaLabel={copy[key]} aria-pressed={n === index} onClick={() => { setPaused(true); setIndex(n); }}>{n + 1}</FanAction>)}
-      </div>
       <div className={styles.caption}>
         <div>
           <FanHeading as="h1">{copy[id]}</FanHeading>
@@ -36,6 +34,10 @@ export function HomeBanner({
         {path ? <FanAction variant="primary" href={`${path}?locale=${locale}`}>
           {copy.start}
         </FanAction> : <small>{copy.ready}</small>}
+      </div>
+      </div>
+      <div className={styles.dots}>
+        {entries.map(([key], n) => <FanAction size="sm" key={key} type="button" ariaLabel={copy[key]} aria-pressed={n === index} onClick={() => { setPaused(true); setIndex(n); }}>{n + 1}</FanAction>)}
       </div>
     </section>
   );

@@ -5,6 +5,8 @@
 }
 .banner {
   width: min(100%, calc(var(--space-12) * 15 + var(--space-2)));
+}
+.artwork {
   position: relative;
   overflow: hidden;
   border-radius: var(--radius-card);
@@ -150,17 +152,15 @@
   }
 }
 .dots {
-  position: absolute;
-  z-index: 1;
-  inset-block-start: var(--space-2);
-  inset-inline-end: var(--space-2);
   display: flex;
+  justify-content: center;
   gap: var(--space-1);
+  margin-top: var(--space-1);
 }
 .dots button {
   border-radius: var(--radius-pill);
-  min-width: var(--space-6);
-  min-height: var(--space-6);
+  min-width: calc(var(--space-12) - var(--space-1));
+  min-height: calc(var(--space-12) - var(--space-1));
 }
 .dots button[aria-pressed="true"] {
   background: var(--color-home-caption);
