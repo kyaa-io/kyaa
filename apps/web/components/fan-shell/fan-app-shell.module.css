@@ -220,9 +220,9 @@
 .frame:has([data-chemi-immersive]) :is(.bottomNavigation, [data-fan-site-footer]) { display: none; }
 
 @media (max-width: 30rem) {
-  .groupsNavigation .headerInner:has([data-header-tier]) { grid-template-columns: auto 1fr; column-gap: var(--space-1); }
+  .groupsNavigation .headerInner:has([data-header-tier]) { grid-template-columns: auto minmax(0, 1fr); column-gap: var(--space-1); --tier-header-gutter: clamp(var(--space-1), calc(20vw - 15 * var(--space-1)), var(--space-4)); padding-inline: var(--tier-header-gutter); }
   .headerInner:has([data-header-tier]) .brand,
-  .headerInner:has([data-header-tier]) .brand img { width: 72px; }
+  .headerInner:has([data-header-tier]) .brand img { width: clamp(var(--min-target), calc(40vw - 21 * var(--space-1)), calc(18 * var(--space-1))); }
 }
 @media (min-width: 64rem) {
   .groupsNavigation .headerInner:has([data-header-tier]) { grid-template-columns: minmax(72px, 1fr) max-content minmax(max-content, 1fr); column-gap: var(--space-2); }
@@ -230,3 +230,5 @@
   .headerInner:has([data-header-tier]) .desktopNavItem { min-width: 0; padding-inline: var(--space-2); }
   .headerInner:has([data-header-tier]) .actions { width: max-content; gap: var(--space-1); }
 }
+
+.groupsNavigation .actions [data-header-status] img[data-reward-kind] { width: 16px; height: 16px; }
