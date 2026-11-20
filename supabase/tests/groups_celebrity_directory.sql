@@ -17,12 +17,12 @@ end $$;
 
 -- Publishing creates the page with the same shape as the original backfill.
 update public.celebrities set status='published' where id='fa100000-0000-4000-8000-000000000001';
-do $$ declare g public.group_pages%rowtype; n integer; begin
+do $$ declare g public.group_pages%rowtype; room_keys text[]; begin
  select * into g from public.group_pages where celebrity_id='fa100000-0000-4000-8000-000000000001';
  if not found then raise exception 'published creator has no page'; end if;
  if g.id<>'fa100000-0000-4000-8000-000000000001' or g.kind<>'fan' or g.name<>'디어싱크' or g.description<>'디어싱크 소개' or g.image_url<>'/images/dirsync-a.jpg' or g.status<>'published' or g.anonymous then raise exception 'unexpected page shape %',to_jsonb(g); end if;
- select count(*) into n from public.group_rooms where page_id=g.id and default_key is not null;
- if n<>3 then raise exception 'default rooms missing: %',n; end if;
+ select array_agg(default_key order by default_key collate "C") into room_keys from public.group_rooms where page_id=g.id and default_key is not null;
+ if room_keys is distinct from array['artist','certified','chat','free'] then raise exception 'unexpected default room keys: %',room_keys; end if;
 end $$;
 
 -- Localizations written after the creator row in the same transaction still name the page; brands stay brands.
