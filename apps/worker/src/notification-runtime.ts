@@ -131,7 +131,8 @@ export async function runNotificationWorkerOnce(
     runTelegramCommandWorkerOnce(env),
     runTelegramCertificationWorkerOnce(env),
     env.GROUP_INVITATION_EMAIL_MODE === "ses_email" ? getSesClient().then(client=>runGroupInvitationEmailOnce(env,client,sesFeedbackFor(env,client))) : runGroupInvitationEmailOnce(env),
-    env.NOTIFICATION_EXTERNAL_MODE === "ses_email" ? getSesClient().then(client => runCsReceipt(env, client, sesFeedbackFor(env, client))) : 0,
+    env.NOTIFICATION_EXTERNAL_MODE === "ses_email" && env.NOTIFICATION_EXTERNAL_ENVIRONMENT === "prod"
+      ? getSesClient().then(client => runCsReceipt(env, client, sesFeedbackFor(env, client))) : 0,
   ]);
   const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "groupRaffles", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications", "groupInvitationEmail", "csReceipt"];
   const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";
