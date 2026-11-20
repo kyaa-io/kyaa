@@ -1,0 +1,5 @@
+{
+  "changes": ["앱에서 문의를 남기면 회원 이메일로 접수 번호와 문의 내용 앞부분을 보내드려요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/my/inquiries",
+  "images": ["release-notes/images/2026-11-20-cs-receipt.png", "release-notes/images/2026-11-20-cs-receipt-en.png"]
+}

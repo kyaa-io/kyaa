@@ -182,13 +182,13 @@ it("emits independent disabled-channel metrics only for an enabled production wo
 });
 
 
-it("resolves legacy credentials lazily and isolates fan-only SES failure while push is slow", async () => {
+it("shares receipt preflight failures while push is slow", async () => {
  let finishPush!: (value: number) => void;
  state.pushRun.mockReturnValueOnce(new Promise<number>(resolve => { finishPush = resolve; }));
  state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
  const env = parseNotificationEnv({ ...source, NOTIFICATION_EXTERNAL_ENVIRONMENT: "prod", NOTIFICATION_EXTERNAL_MODE: "ses_email", NOTIFICATION_WORKER_BATCH_SIZE: "2", SES_REGION: "ap-northeast-2", SES_FROM_EMAIL: "notifications@kyaa.io", SES_ROLE_ARN: "arn:aws:iam::200151116034:role/byus-notification-prod-email-bridge" });
  const task = runNotificationWorkerOnce(env);
- expect(state.sesClient).not.toHaveBeenCalled();
+ expect(state.sesClient).toHaveBeenCalledOnce();
  expect(state.commands).toHaveBeenCalledOnce();
  finishPush(2);
  await expect(task).rejects.toThrow("NOTIFICATION_RUNTIME_PARTIAL_FAILURE");
@@ -205,7 +205,8 @@ it("shares one preflight client across both email paths before either can claim"
  await runNotificationWorkerOnce(env);
  expect(state.sesClient).toHaveBeenCalledExactlyOnceWith(env.SES_ROLE_ARN);
  expect(state.ses).toHaveBeenCalledWith(expect.objectContaining({ client }));
- expect(chemiRpc).toHaveBeenCalledExactlyOnceWith("chemi_mail_claim", {});
+ expect(chemiRpc).toHaveBeenCalledWith("chemi_mail_claim", {});
+ expect(chemiRpc).toHaveBeenCalledWith("consume_cs_receipt");
  expect(state.inquiry).toHaveBeenCalledExactlyOnceWith(env, client, undefined);
  state.sesClient.mockRejectedValueOnce(new Error("private STS response"));
  state.queue.mockClear(); state.inquiry.mockClear();
