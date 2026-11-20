@@ -262,7 +262,7 @@ export function SajuResult({
   }
 
   const actions = (
-    <div className={styles.actions}>
+    <div className={styles.resultActions}>
       <FanAction onClick={saveAdvice}><ReadingText id="saveAdvice" /></FanAction>
       <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
       {view === "first" ? (
