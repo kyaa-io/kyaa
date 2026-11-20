@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
 import { expect, it, vi } from 'vitest';
 import { candidates, drawLocal } from '@/server/signup-event/local';
@@ -8,7 +9,7 @@ vi.mock('@/server/fanpage/dependencies', () => ({ createFanpageDependencies: () 
 vi.mock('@/server/data/client', () => ({ createClient: () => ({}) }));
 vi.mock('@/server/config/env', () => ({ loadServerEnv: () => ({}) }));
 vi.mock('@/server/signup-event/refresh', () => ({ refreshLocalSignupEvent: mocks.refresh }));
-vi.mock('@/server/signup-event/local', async original => ({ ...await original(), readLocalSnapshot: mocks.read }));
+vi.mock('@/server/signup-event/local', async original => ({ ...await original<typeof import('@/server/signup-event/local')>(), readLocalSnapshot: mocks.read }));
 vi.mock('@/server/signup-event/database', () => ({
   createSignupRaffleDatabase: () => ({}),
   readSignupRaffleStored: () => ({ users: [], actions: [], entries: [] }),
@@ -16,7 +17,7 @@ vi.mock('@/server/signup-event/database', () => ({
 
 // Point RAFFLE_TEST_DATABASE at a disposable migrated PostgreSQL database.
 it.skipIf(!process.env.RAFFLE_TEST_DATABASE)('keeps excluded personal entries and draws only eligible members', async () => {
-  const { Client } = (await import('pg')).default;
+  const { Client } = createRequire(import.meta.url)('pg');
   const db = new Client({ database: process.env.RAFFLE_TEST_DATABASE });
   await db.connect();
   try {
@@ -35,8 +36,8 @@ it.skipIf(!process.env.RAFFLE_TEST_DATABASE)('keeps excluded personal entries an
     const policy = { startsAt: new Date(now - 86400000).toISOString(), closesAt: new Date(now + 86400000).toISOString() };
     const window = [policy.startsAt, policy.closesAt];
     await db.query('set local role service_role');
-    const refresh = async (_, id, enter) => (await db.query('select public.refresh_signup_raffle_participant($1,$2,$3,$4) as ok', [id, enter, ...window])).rows[0].ok;
-    const read = async id => ({ ...(await db.query('select public.read_signup_raffle_snapshot($1,$2,$3) as snapshot', [id, ...window])).rows[0].snapshot, policy });
+    const refresh = async (_: unknown, id: string, enter: boolean) => (await db.query('select public.refresh_signup_raffle_participant($1,$2,$3,$4) as ok', [id, enter, ...window])).rows[0].ok;
+    const read = async (id: string | null) => ({ ...(await db.query('select public.read_signup_raffle_snapshot($1,$2,$3) as snapshot', [id, ...window])).rows[0].snapshot, policy });
     mocks.authorize.mockResolvedValue({ appUserId: owner });
     mocks.refresh.mockImplementation(refresh);
     mocks.read.mockImplementation(read);
