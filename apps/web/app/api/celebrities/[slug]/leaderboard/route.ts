@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 async function waveOriginalGET(request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await context.params;
-    return await createFanpageHandlers(createFanpageDependencies()).leaderboard(request, slug);
+    return await createFanpageHandlers(createFanpageDependencies(request)).leaderboard(request, slug);
   } catch (error) { return fanpageFailure(error); }
 }
 

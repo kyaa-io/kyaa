@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
-import { celebritySlugSchema, commentReactionResultSchema, commentReactionSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardSchema, postCommentSchema } from "../../features/fanpage/domain/community";
+import { celebritySlugSchema, commentReactionResultSchema, commentReactionSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardResponseSchema, postCommentSchema } from "../../features/fanpage/domain/community";
 import type { AdminSession } from "../admin/admin-session-gate";
 import { awardDukjilActionDetailed, dukjilBodyParams, dukjilWriteReward } from "../dukjil/award";
 
@@ -108,7 +108,7 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         const args = { p_slug: slug, p_app_user_id: owner, p_locale: locale(request), ...(category === "all" ? {} : { p_category: category }) };
         const result = await dependencies.rpc("read_celebrity_fan_leaderboard", args);
         if (!result) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
-        const body = parseResult(leaderboardSchema, result);
+        const body = parseResult(leaderboardResponseSchema, result);
         if (!body.available) return fanpageJson({ error: { code: "LEADERBOARD_NOT_AVAILABLE" }, membershipCount: body.membershipCount, ...(body.fanCount === undefined ? {} : { fanCount: body.fanCount }) }, 403);
         return fanpageJson({ ...body, me: owner ? body.me : null });
       } catch (error) { return fanpageFailure(error); }

@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 async function waveOriginalGET(request: Request, context: { params: Promise<{ slug: string }> }) {
   try {
     const { slug } = await context.params;
-    return await createFeedHandler(createFeedDependencies())(request, slug);
+    return await createFeedHandler(createFeedDependencies(request))(request, slug);
   } catch (error) {
     return feedFailure(error);
   }

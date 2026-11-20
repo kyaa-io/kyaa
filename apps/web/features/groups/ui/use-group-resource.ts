@@ -1,4 +1,5 @@
 "use client";
+import { authorTierRequestHeaders } from "@/features/rewards/domain/public-author-tier";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { dropResource, invalidateAfterWrite, isResourceWrite, peekResource, shareResourceRead, syncResourceOwner, useResourceEpoch, useRetainedResource } from "@/components/fan-ui/resource-cache";
 import { usePublicReadAuth } from "@/features/auth/client/public-read-auth";
@@ -50,7 +51,7 @@ export function useGroupRequest() {
     const token = authenticated ? await getAccessToken().catch(() => null) : null;
     if (identity.current !== ownerKey) throw new GroupRequestError(409, "SESSION_CHANGED");
     if (authenticated && !token) throw new GroupRequestError(401, "AUTH_REQUIRED");
-    const response = await fetch(path, { ...input, signal, cache: "no-store", headers: { ...(input?.body ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...input?.headers } });
+    const response = await fetch(path, { ...input, signal, cache: "no-store", headers: { ...authorTierRequestHeaders, ...(input?.body ? { "Content-Type": "application/json" } : {}), ...(token ? { Authorization: `Bearer ${token}` } : {}), ...input?.headers } });
     if (!response.ok) {
       const failure: unknown = await response.json().catch(() => null);
       const code = typeof failure === "object" && failure !== null && "error" in failure && typeof failure.error === "object" && failure.error !== null && "code" in failure.error && typeof failure.error.code === "string" ? failure.error.code : "REQUEST_FAILED";

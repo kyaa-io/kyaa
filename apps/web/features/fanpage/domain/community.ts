@@ -1,11 +1,12 @@
 import { z } from "zod";
+import { publicAuthorTierSchema } from "@/features/rewards/domain/public-author-tier";
 import { publicAvatarUrlSchema } from "../../profile/domain/avatar";
 import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const celebritySlugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(120);
 
 const nickname = z.string().min(1).max(80);
-const row = z.object({ profileId: z.uuid(), rank: z.number().int().positive(), nickname, avatarUrl: publicAvatarUrlSchema, points: z.number().int().nonnegative() }).strict();
+const row = z.object({ profileId: z.uuid(), rank: z.number().int().positive(), nickname, avatarUrl: publicAvatarUrlSchema, points: z.number().int().nonnegative(), tier: publicAuthorTierSchema.optional() });
 export const LEADERBOARD_MIN_FANS = 100;
 export const LEADERBOARD_CATEGORIES = ["all", "knowledge", "live", "mission", "certification"] as const;
 export const leaderboardCategorySchema = z.enum(LEADERBOARD_CATEGORIES);
@@ -33,6 +34,11 @@ export const leaderboardSchema = z.object({
   if (value.available !== expected || (!value.available && (value.rows.length || value.me))) {
     ctx.addIssue({ code: "custom", message: "Leaderboard membership boundary mismatch" });
   }
+});
+// The server rejects unexpected database fields before returning public rows.
+export const leaderboardResponseSchema = leaderboardSchema.safeExtend({
+  rows: z.array(row.strict()).max(100),
+  me: row.strict().nullable(),
 });
 export type Leaderboard = z.infer<typeof leaderboardSchema>;
 export const commentSchema = z.object({

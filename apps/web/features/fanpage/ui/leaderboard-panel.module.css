@@ -20,7 +20,6 @@
 .myPosition { display: grid; gap: 4px; flex: none; min-width: 60px; }
 .myPosition span { color: var(--color-muted); font-size: var(--fan-metadata-size); }
 .myPosition strong { font-size: 20px; font-variant-numeric: tabular-nums; }
-.myRank > b { min-width: 0; flex: 1; overflow-wrap: anywhere; font-size: 16px; }
 .myScore { flex: none; margin-inline-start: auto; color: var(--color-accent-ink); font-size: 24px; font-variant-numeric: tabular-nums; }
 .myScore span { margin-inline-start: 3px; font-size: var(--fan-metadata-size); }
 .leaderboard table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 16px; }
@@ -38,7 +37,8 @@
 .rank[data-medal="2"] { color: var(--color-accent-ink); background: var(--color-accent-soft); border-color: var(--color-accent); }
 .rank[data-medal="3"] { color: var(--color-accent-ink); background: var(--color-accent-line); border-color: var(--color-accent); }
 .rankedFan { display: flex; align-items: center; gap: 16px; min-width: 0; }
-.rankedFan > strong { min-width: 0; overflow-wrap: anywhere; font-size: 16px; font-weight: var(--fan-item-title-weight); }
+.rankedIdentity { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; }
+.rankedIdentity > strong { min-width: 0; overflow-wrap: anywhere; font-size: 16px; font-weight: var(--fan-item-title-weight); }
 .tieRule, .asOf { color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 1.7; text-wrap: pretty; }
 .tieRule { margin: 20px 0 4px; }
 .asOf { margin: 0; }

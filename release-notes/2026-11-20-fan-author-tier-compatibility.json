@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "업데이트 전에 열어 둔 팬페이지에서도 글과 댓글을 계속 읽을 수 있어요. 새로 열린 화면에서는 패스포트를 발급받은 작성자의 이름 옆에 등급이 보여요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-20-fan-author-tier-fix-board-390.png",
+    "release-notes/images/2026-11-20-fan-author-tier-fix-board-1440.png",
+    "release-notes/images/2026-11-20-fan-author-tier-fix-comments-390.png",
+    "release-notes/images/2026-11-20-fan-author-tier-fix-comments-1440.png"
+  ]
+}

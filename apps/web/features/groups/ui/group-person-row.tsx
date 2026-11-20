@@ -3,15 +3,15 @@ import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import type { ReactNode } from "react";
 import { ChevronRight, UserRound } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanTag } from "@/components/fan-ui/fan-tag";
+import { AuthorTierBadge } from "@/features/rewards/ui/author-tier-badge";
+import { publicAuthorTierSchema } from "@/features/rewards/domain/public-author-tier";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
-import { tierDisplayName } from "@/features/passport/domain/passport-read-model";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./group-members.module.css";
 
-/** Grade as a tag beside the name (261107-2 design-r4 7.1). */
+/** Passport grade beside the name. */
 export function GroupPersonTier({ tier, locale }: { tier: string; locale: AppLocale }) {
-  return <FanTag tone="neutral" className={styles.tierTag}>{tierDisplayName(locale, tier)}</FanTag>;
+  return <AuthorTierBadge tier={publicAuthorTierSchema.safeParse(tier).data} locale={locale} />;
 }
 
 /** Hearts at the row end: the main number of a fan row. One heart is one true fan. Icon 30 (visible ~17px: the artwork has margin) + 20/700 (대표 11/13 "하트 조금 크게"). */

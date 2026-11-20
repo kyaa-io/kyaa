@@ -1,4 +1,6 @@
 "use client";
+import type { PublicAuthorTier } from "@/features/rewards/domain/public-author-tier";
+import { AuthorTierBadge } from "@/features/rewards/ui/author-tier-badge";
 import { visiblePostViews } from "@/components/fan-ui/post-view-count";
 import { FileText, Heart, MessageCircle, Star } from "lucide-react";
 import type { Route } from "next";
@@ -36,6 +38,7 @@ export type FanPostRowProps = Readonly<{
   /** 홈에서만 넘긴다. 누르면 그 페이지 게시판으로 간다. */
   source?: Readonly<{ label: string; href: string }>;
   author?: ReactNode;
+  authorTier?: PublicAuthorTier;
   /** 인증 아티스트가 쓴 글이면 작성자 이름 옆에 태그를 둔다. */
   authorArtist?: boolean;
   time?: string | Date;
@@ -51,7 +54,7 @@ export type FanPostRowProps = Readonly<{
 
 const KYAA_LOGO = "/kyaa-app-icon-192.png";
 /** 게시판 목록 한 줄. 댓글·좋아요 수는 제목 옆(0이면 뺌). 값이 없는 열은 빼고 `—`를 쓰지 않는다. 왼쪽 칸은 첨부 사진 → 공지면 kyaa 로고 → 글쓴이 프로필 사진 → 페이지 이미지 → 글 아이콘 순이다. */
-export function FanPostRow({ href, locale, title, thumbnail, avatar, avatarArtist = false, pageImage, notice = false, commentCount, source, author, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board", columns = "default" }: FanPostRowProps) {
+export function FanPostRow({ href, locale, title, thumbnail, avatar, avatarArtist = false, pageImage, notice = false, commentCount, source, author, authorTier, authorArtist = false, time, edited = false, views, likes, reactedBy, density = "board", columns = "default" }: FanPostRowProps) {
   const [broken, setBroken] = useState(false);
   const count = (value: number) => value.toLocaleString(locale);
   const timeLabel = time === undefined ? "" : fanPostTimeLabel(time);
@@ -72,7 +75,7 @@ export function FanPostRow({ href, locale, title, thumbnail, avatar, avatarArtis
     </div>
     <div className={styles.meta}>
       {source && <Link href={source.href as Route} className={styles.source} title={source.label}>{source.label}</Link>}
-      {author && <span className={styles.authorCell}><span className={styles.author} title={typeof author === "string" ? author : undefined}>{author}</span>{authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}</span>}
+      {author && <span className={styles.authorCell}><span className={styles.author} title={typeof author === "string" ? author : undefined}>{author}</span><AuthorTierBadge tier={authorTier} locale={locale} />{authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}</span>}
       {timeLabel && <time className={styles.time} dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
       {timeLabel && edited && <EditedMark locale={locale} />}
       {density === "board" && (typeof views === "number" && visiblePostViews(views, likes) !== undefined ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}

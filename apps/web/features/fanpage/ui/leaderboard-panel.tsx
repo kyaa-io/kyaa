@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthorTierBadge } from "@/features/rewards/ui/author-tier-badge";
 import { FanDisclosure } from "@/components/fan-ui/fan-collapsible";
 import { useId, useState } from "react";
 import { Trophy } from "lucide-react";
@@ -54,7 +55,7 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
         {state.data.me && <div className={styles.myRank}>
           <div className={styles.myPosition}><span>{locale === "ko" ? "내 순위" : translate(locale, localizedMessages.m0c416452a30e, "My rank")}</span><strong>{state.data.me.rank.toLocaleString(locale)}{locale === "ko" ? "위" : ""}</strong></div>
           <Avatar avatar={fallbackAvatar} imageUrl={state.data.me.avatarUrl} size={40} label="" />
-          <b>{state.data.me.nickname}</b>
+          <span className={styles.rankedIdentity}><strong>{state.data.me.nickname}</strong><AuthorTierBadge tier={state.data.me.tier} locale={locale} /></span>
           <strong className={styles.myScore}>{state.data.me.points.toLocaleString(locale)}<span>{locale === "ko" ? "점" : translate(locale, localizedMessages.m5a9d59babd7a, " pts")}</span></strong>
         </div>}
         {state.data.rows.length ? <table>
@@ -66,7 +67,7 @@ export function LeaderboardPanel({ slug, locale, showGathering = true }: { slug:
           </tr></thead>
           <tbody>{state.data.rows.map(row => <tr key={row.rank} data-own={row.rank === state.data.me?.rank || undefined}>
             <td><span className={styles.rank} data-medal={row.rank <= 3 ? row.rank : undefined}>{row.rank <= 3 && <span className={styles.srOnly}>{copy.medals[row.rank - 1]} </span>}{row.rank}</span></td>
-            <td><div className={styles.rankedFan}><Avatar avatar={fallbackAvatar} imageUrl={row.avatarUrl} size={40} label="" /><strong>{row.nickname}</strong></div></td>
+            <td><div className={styles.rankedFan}><Avatar avatar={fallbackAvatar} imageUrl={row.avatarUrl} size={40} label="" /><span className={styles.rankedIdentity}><strong>{row.nickname}</strong><AuthorTierBadge tier={row.tier} locale={locale} /></span></div></td>
             <td>{row.points.toLocaleString(locale)}</td>
           </tr>)}</tbody>
         </table> : <div className={styles.empty}><p>{copy.empty}</p><FanAction href={fanPageHref(slug, locale, "home")} variant="neutral">{copy.explore}</FanAction></div>}

@@ -9,7 +9,7 @@ import { FanListMeta } from "./fan-list-meta";
 import { fanListCopy } from "./fan-list-copy";
 import { fanListTime } from "./fan-list-time";
 import styles from "./group-members.module.css";
-import tagStyles from "@/components/fan-ui/fan-tag.module.css";
+import badgeStyles from "@/features/rewards/ui/author-tier-badge.module.css";
 
 // Render actual row markup with actual CSS modules; no app server, API or private data.
 function cssModule(path: string, names: Record<string, string>) {
@@ -20,7 +20,7 @@ it("at 390px every locale, including the widest label, keeps the entire date vis
   try {
     const page = await browser.newPage({ viewport: { width: 390, height: 850 } });
     const globals = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
-    const css = globals + cssModule("features/groups/ui/group-members.module.css", styles) + cssModule("components/fan-ui/fan-tag.module.css", tagStyles);
+    const css = globals + cssModule("features/groups/ui/group-members.module.css", styles) + cssModule("features/rewards/ui/author-tier-badge.module.css", badgeStyles);
     let document = "";
     await page.route("https://fan-list.test/**", async route => {
       const url = new URL(route.request().url());
@@ -54,6 +54,9 @@ it("at 390px every locale, including the widest label, keeps the entire date vis
           overflow: globalThis.document.documentElement.scrollWidth > innerWidth,
           height: row.getBoundingClientRect().height, labelFirst: label.compareDocumentPosition(date) === Node.DOCUMENT_POSITION_FOLLOWING };
       });
+      const badge = await page.locator("[data-author-tier] img").boundingBox();
+      expect(badge?.width, locale).toBe(16);
+      expect(badge?.height, locale).toBe(16);
       expect(measured.date, locale).toBe(fanListTime(at, locale, now));
       expect(measured.dateShrink, locale).toBe("0");
       expect(measured.labelEllipsis, locale).toBe("ellipsis");

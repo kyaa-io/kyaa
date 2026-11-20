@@ -78,6 +78,7 @@
 .source { position: relative; z-index: 1; overflow: hidden; color: var(--color-muted); text-decoration: none; text-overflow: ellipsis; }
 .authorCell { display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
 .author { overflow: hidden; min-width: 0; text-overflow: ellipsis; }
+.authorCell .author > button, .authorCell .author > button > span { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-wrap: nowrap; }
 .number { font-variant-numeric: tabular-nums; }
 .number[data-blank] { display: none; }
 
