@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { FanAction } from "./fan-action";
+import { FanDocumentLink } from "./fan-document-link";
 import styles from "./fan-section-link.module.css";
 
 /** 섹션 머리 행동: 글자 링크 + 글자 '›'. 알약·테두리·아이콘 버튼 금지(design-lint N31). */
@@ -17,5 +18,6 @@ export function FanSectionLink({ href, reloadDocument, onClick, expanded, contro
 }) {
   const label = <>{children}<span className={styles.more} aria-hidden="true">›</span></>;
   if (href === undefined) return <FanAction variant="text" className={className} onClick={onClick} aria-expanded={expanded} aria-controls={controls} ariaLabel={ariaLabel}>{label}</FanAction>;
-  return <FanAction variant="text" className={className} href={href} reloadDocument={reloadDocument} ariaLabel={ariaLabel}>{label}</FanAction>;
+  if (reloadDocument) return <FanDocumentLink href={href} className={className} ariaLabel={ariaLabel}>{label}</FanDocumentLink>;
+  return <FanAction variant="text" className={className} href={href} ariaLabel={ariaLabel}>{label}</FanAction>;
 }

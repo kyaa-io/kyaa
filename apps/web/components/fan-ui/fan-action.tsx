@@ -58,7 +58,6 @@ type FanActionProps = Readonly<{
   | Readonly<{
       href: string;
       external?: boolean;
-      reloadDocument?: boolean;
       target?: "_blank";
       rel?: string;
       onClick?: MouseEventHandler<HTMLAnchorElement>;
@@ -133,8 +132,6 @@ export function FanAction({
       >
         {content}
       </a>
-    ) : linkProps.reloadDocument ? (
-      <a {...commonProps} href={linkProps.href}>{content}</a>
     ) : (
       <Link {...commonProps} href={linkProps.href as Route}>
         {content}

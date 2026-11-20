@@ -1,4 +1,5 @@
 "use client";
+import { FanDocumentLink } from "@/components/fan-ui/fan-document-link";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -107,8 +108,8 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     const linkToSource = grid && !onSelectVideo && !playsInViewer(item);
     const openCard = () => onSelectVideo ? onSelectVideo(item.videoId) : setIndex(playable.findIndex(video => video.id === item.id));
     return <li key={item.id} className={styles.item} data-row="short" {...(linkToSource ? { "data-outbound-kind": "external", "data-outbound-placement": "content" } : {})}>
-        {linkToFeed || linkToSource
-          ? <FanAction variant="text" href={linkToFeed ? `/shorts?locale=${locale}&video=${encodeURIComponent(item.videoId)}` : item.href} external={linkToSource} reloadDocument={linkToFeed} className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>
+        {linkToFeed ? <FanDocumentLink href={`/shorts?locale=${locale}&video=${encodeURIComponent(item.videoId)}`} className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanDocumentLink> : linkToSource
+          ? <FanAction variant="text" href={item.href} external className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>
           : <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={openCard}>{cover}{caption}</FanAction>}
         {grid && <CreatorGroupLink item={item} locale={locale} className={styles.creatorLink} source />}
       </li>;
