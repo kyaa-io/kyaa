@@ -74,7 +74,12 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
     if (item.platform === "tiktok") {
       const onMessage = (event: MessageEvent) => {
         if (event.origin !== "https://www.tiktok.com" || event.source !== iframe.current?.contentWindow || !event.data?.["x-tiktok-player"]) return;
-        if (event.data.type === "onPlayerReady") { ready.current = true; setLoaded(true); setSound(desired.current, false); }
+        if (event.data.type === "onPlayerReady") {
+          ready.current = true;
+          setLoaded(true);
+          setSound(desired.current, false);
+          if (immersive) iframe.current?.contentWindow?.postMessage({ type: "play", "x-tiktok-player": true }, "https://www.tiktok.com");
+        }
         if (event.data.type === "onMute" && ready.current && !syncing.current && typeof event.data.value === "boolean") {
           const value = event.data.value;
           if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); }
@@ -102,16 +107,16 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
   const cover = item.thumbnail ?? (item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`);
   return <div className={styles.mediaFrame} data-loading={immersive && !loaded || undefined}>
     {immersive && !loaded && <img className={styles.playerPoster} src={cover} alt="" />}
-    {item.platform === "tiktok" ? <iframe ref={iframe} src={`https://www.tiktok.com/player/v1/${item.videoId}?autoplay=${Number(immersive)}${immersive ? "&muted=1&controls=0&loop=1" : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <iframe ref={youtubeNode} src={`https://www.youtube.com/embed/${item.videoId}?rel=0&enablejsapi=1&autoplay=${Number(immersive)}${immersive ? `&playsinline=1&mute=1&controls=0&loop=1&playlist=${item.videoId}` : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
+    {item.platform === "tiktok" ? <iframe ref={iframe} src={`https://www.tiktok.com/player/v1/${item.videoId}?autoplay=0${immersive ? "&controls=0&loop=1" : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <iframe ref={youtubeNode} src={`https://www.youtube.com/embed/${item.videoId}?rel=0&enablejsapi=1&autoplay=${Number(immersive)}${immersive ? `&playsinline=1&mute=1&controls=0&loop=1&playlist=${item.videoId}` : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
     {immersive && <FanAction variant="text" type="button" className={styles.tapSurface} ariaLabel={item.title} onClick={() => {
       if (tap.current !== undefined) {
         clearTimeout(tap.current); tap.current = undefined; onLike?.(); return;
       }
       tap.current = setTimeout(() => {
-      tap.current = undefined;
-      if (item.platform === "tiktok") iframe.current?.contentWindow?.postMessage({ type: playing.current ? "pause" : "play", "x-tiktok-player": true }, "https://www.tiktok.com");
-      else if (player.current?.getPlayerState() === 1) player.current.pauseVideo();
-      else player.current?.playVideo();
+        tap.current = undefined;
+        if (item.platform === "tiktok") iframe.current?.contentWindow?.postMessage({ type: playing.current ? "pause" : "play", "x-tiktok-player": true }, "https://www.tiktok.com");
+        else if (player.current?.getPlayerState() === 1) player.current.pauseVideo();
+        else player.current?.playVideo();
       }, 260);
     }} />}
     {immersive && <progress className={styles.feedProgress} ref={progress} value={0} max={1} aria-label={item.title} />}
