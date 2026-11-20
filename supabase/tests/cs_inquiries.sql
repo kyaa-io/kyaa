@@ -98,8 +98,9 @@ begin
     raise exception 'Atomic inquiry creation contract failed';
   end if;
 
+  update public.app_users set preferred_locale = 'en' where id = owner_one;
   if public.consume_cs_receipt() is distinct from jsonb_build_object(
-    'id', inquiry_id, 'email', 'cs-owner-1@example.invalid', 'locale', 'ko', 'body', '도움이 필요해요'
+    'id', inquiry_id, 'email', 'cs-owner-1@example.invalid', 'locale', 'en', 'body', '도움이 필요해요'
   ) then raise exception 'Receipt payload mismatch'; end if;
   replay := public.cs_create(owner_one, '첫 문의', '도움이 필요해요', 'ko', create_key);
   if public.consume_cs_receipt() is not null then raise exception 'Duplicate receipt'; end if;

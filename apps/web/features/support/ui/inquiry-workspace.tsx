@@ -90,7 +90,7 @@ function InquiryList({ locale, admin = false }: Props) {
       : resource.state.status === "error" ? <FanState kind="error" title={t.error} actions={<FanAction onClick={resource.retry}>{t.retry}</FanAction>} />
         : <><ul className={styles.list} aria-label={admin ? t.adminTitle : t.title}>
           {resource.state.data.inquiries.map((inquiry) => <li key={inquiry.id}><Link href={pageHref(admin, locale, inquiry.id)} className={styles.inquiryRow}>
-            <div className={styles.rowContent}><div className={styles.rowMeta}><Status inquiry={inquiry} locale={locale} />{admin && <span>{inquiry.requesterName}</span>}<time dateTime={inquiry.updatedAt}>{date(inquiry.updatedAt, locale)} KST</time></div><h2>{inquiry.subject}</h2></div><ArrowRight aria-hidden="true" />
+            <div className={styles.rowContent}><div className={styles.rowMeta}><Status inquiry={inquiry} locale={locale} />{admin && <span>#{inquiry.id.slice(0, 8).toUpperCase()} · {inquiry.requesterName}</span>}<time dateTime={inquiry.updatedAt}>{date(inquiry.updatedAt, locale)} KST</time></div><h2>{inquiry.subject}</h2></div><ArrowRight aria-hidden="true" />
           </Link></li>)}
         </ul>
           {!resource.state.data.inquiries.length && <div className={styles.empty}><MessageSquare aria-hidden="true" /><p>{admin ? t.adminEmpty : t.empty}</p></div>}
