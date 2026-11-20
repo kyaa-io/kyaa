@@ -36,17 +36,25 @@ begin
 end \$\$;
 SQL
 
-wait_sleep() {
-  for _ in {1..50}; do
-    [[ "$(psql -X -Atq -c "select exists(select 1 from pg_stat_activity where application_name='$1' and wait_event='PgSleep')")" == t ]] && return 0
+# Keep the holder connected until every competing statement has finished.
+holder_dir=$(mktemp -d)
+mkfifo "$holder_dir/input"
+trap 'rm -rf "$holder_dir"' EXIT
+hold() {
+  PGAPPNAME="$1" psql -X -v ON_ERROR_STOP=1 -q -o /dev/null < "$holder_dir/input" &
+  HOLDER=$!
+  exec 3>"$holder_dir/input"
+  printf 'begin; %s;\n' "$2" >&3
+  for _ in {1..100}; do
+    [[ "$(psql -X -Atq -c "select exists(select 1 from pg_stat_activity where datname=current_database() and application_name='$1' and state='idle in transaction' and query like 'select public.%')")" == t ]] && return 0
     sleep 0.1
   done
   echo "holder did not reach checkpoint: $1" >&2; return 1
 }
-hold() { # $1 app name, $2 SQL run inside the held transaction
-  PGAPPNAME="$1" psql -X -v ON_ERROR_STOP=1 -q -o /dev/null -c "begin; $2; select pg_sleep(3); commit;" &
-  HOLDER=$!
-  wait_sleep "$1"
+release_holder() {
+  echo 'commit;' >&3
+  exec 3>&-
+  wait "$HOLDER"
 }
 # Prints the SQLSTATE of the statement run with a 1s lock_timeout, or ok.
 try() {
@@ -71,12 +79,12 @@ hold read_holder "select public.read_admin_celebrity_cms('$ACTOR','$NONE')"
 expect "second read by the same admin does not wait" ok "$READ_QUIZ"
 expect "write check waits for a running read" 55P03 "$WRITE_CHECK"
 expect "revocation waits for a running read" 55P03 "update public.admin_allowlist set active=false where id='$ACTOR'"
-wait "$HOLDER"
+release_holder
 
 hold write_holder "select public.require_content_editor('$ACTOR',true)"
 expect "second write by the same admin stays serialized" 55P03 "$WRITE_CHECK"
 expect "read waits for a running write" 55P03 "$READ_CELEB"
-wait "$HOLDER"
+release_holder
 
 psql -X -v ON_ERROR_STOP=1 -q -c "update public.admin_allowlist set active=false where id='$ACTOR'"
 expect "read after committed revocation is refused" P0001 "$READ_CELEB"
