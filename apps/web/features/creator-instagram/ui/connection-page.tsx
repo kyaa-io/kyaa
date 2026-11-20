@@ -1,5 +1,6 @@
 "use client";
 
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -14,7 +15,7 @@ class ConnectionRequestError extends Error { constructor(readonly status: number
 
 export function CreatorInstagramPage({ locale }: { locale: "ko" | "en" }) {
   const { ready, authenticated, user, getAccessToken } = usePrivy();
-  const { push } = useRouter();
+  const { push } = untypedRouter(useRouter());
   const query = useSearchParams();
   const owner = ready && authenticated ? user?.id ?? null : null;
   const currentOwner = useRef(owner);

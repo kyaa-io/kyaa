@@ -1,4 +1,5 @@
 "use client";
+import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanLanguageSwitch } from "@/components/fan-shell/fan-language-switch";
 import type { AppLocale } from "@/i18n/locales";
 
@@ -110,7 +111,7 @@ async function jsonBody(response: Response) {
 }
 
 export function ProfileOnboardingScreen({ celebrity }: { celebrity: PublishedCelebrity | null }) {
-  const { replace } = useRouter();
+  const { replace } = untypedRouter(useRouter());
   const searchParams = useSearchParams();
   const { ready, authenticated, getAccessToken } = usePrivy();
   const inputRef = useRef<HTMLInputElement>(null);
