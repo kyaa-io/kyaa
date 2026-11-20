@@ -1,8 +1,15 @@
 export const isXBrowser = (userAgent: string) => /\bTwitter(?:Android| for iPhone| for iPad|\/|\b)|\bX\/\d/i.test(userAgent);
 
-// Match known app markers only; ordinary mobile browsers keep their normal login flow.
-export function requiresGoogleBrowserHandoff(userAgent: string): boolean {
-  return /Instagram|Barcelona|KAKAOTALK|\bFBAN\/|\bFBAV\/|\bLine\//i.test(userAgent) || isXBrowser(userAgent);
+// Apps that show pages in their own embedded browser and say so in the user agent.
+const EMBEDDED_APP = /Instagram|Barcelona|KAKAOTALK|\bFBAN\/|\bFBAV\/|\bLine\/|musical_ly|BytedanceWebview|\bTikTok\b|\btrill_|Telegram-Android|MicroMessenger|NAVER\(inapp|DaumApps|Snapchat|LinkedInApp|WhatsApp/i;
+
+// Google refuses sign-in (403 disallowed_useragent) from embedded browsers. Besides the named apps, two generic
+// shapes mark one: Android System WebView ("; wv)") and iOS WebKit without the "Safari/" token every real iOS
+// browser sends. A home-screen web app has the same iOS shape but is not embedded, so the caller passes `standalone`.
+export function requiresGoogleBrowserHandoff(userAgent: string, standalone = false): boolean {
+  if (EMBEDDED_APP.test(userAgent) || isXBrowser(userAgent)) return true;
+  if (/Android/i.test(userAgent)) return /; wv\)/.test(userAgent);
+  return !standalone && /iPhone|iPad|iPod/i.test(userAgent) && /AppleWebKit/i.test(userAgent) && !/Safari\//i.test(userAgent);
 }
 
 export function isIosInstagram(userAgent: string): boolean {
@@ -21,6 +28,8 @@ export function externalBrowserUrl(userAgent: string, loginUrl: string): string 
   }
   if (url.protocol !== "https:" || url.username || url.password) return null;
   const target = `${url.host}${url.pathname}${url.search}`;
+  // KakaoTalk's own link for opening a page in the phone's browser, the same on iOS and Android.
+  if (/KAKAOTALK/i.test(userAgent)) return `kakaotalk://web/openExternal?url=${encodeURIComponent(url.href)}`;
   if (/iPhone|iPad|iPod/i.test(userAgent)) {
     // Instagram's own external-browser link (it asks the person to confirm). Public reports say its in-app
     // browser silently ignores x-safari-https in recent builds; other apps keep the Safari scheme.
@@ -37,8 +46,8 @@ export type GoogleLoginPlan =
   | { kind: "external"; url: string }
   | { kind: "notice" };
 
-export function planGoogleLogin(userAgent: string, loginUrl: string): GoogleLoginPlan {
-  if (!requiresGoogleBrowserHandoff(userAgent)) return { kind: "continue" };
+export function planGoogleLogin(userAgent: string, loginUrl: string, standalone = false): GoogleLoginPlan {
+  if (!requiresGoogleBrowserHandoff(userAgent, standalone)) return { kind: "continue" };
   const url = externalBrowserUrl(userAgent, loginUrl);
   return url ? { kind: "external", url } : { kind: "notice" };
 }

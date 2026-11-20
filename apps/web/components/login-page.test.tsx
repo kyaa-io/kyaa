@@ -396,7 +396,7 @@ describe("login page (Cognito)", () => {
       expect(assign).not.toHaveBeenCalled();
     });
 
-    it("shows the notice in the X app and points to Apple only there", () => {
+    it("shows the notice in every in-app browser and points to Apple when Apple sign-in is on", () => {
       const iosX = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Twitter for iPhone";
       stubHttps(iosX);
       const first = render(<LoginPage appleLoginEnabled />);
@@ -407,8 +407,28 @@ describe("login page (Cognito)", () => {
       expect(screen.getByRole("status")).not.toHaveTextContent("Apple");
       second.unmount();
       stubHttps(iosInstagram);
+      const third = render(<LoginPage appleLoginEnabled />);
+      expect(screen.getByRole("status")).toHaveTextContent("‘Apple로 계속하기’를 눌러");
+      third.unmount();
+      // TikTok has no rule of its own; Google would answer 403 disallowed_useragent there.
+      stubHttps("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 musical_ly_36.5.0 BytedanceWebview/d8a21c6");
       render(<LoginPage appleLoginEnabled />);
-      expect(screen.getByRole("status")).not.toHaveTextContent("Apple로 계속하기’를 눌러");
+      expect(screen.getByRole("status")).toHaveTextContent("‘Apple로 계속하기’를 눌러");
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+    });
+
+    it("keeps the event tag in the sign-in link handed to another browser", async () => {
+      const iosX = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Twitter for iPhone";
+      stubHttps(iosX);
+      window.sessionStorage.setItem("byus.event-source.v1", JSON.stringify({ slug: "changha", tag: { source: "x", campaign: "changha-onboarding-1118", content: "official" }, recorded: false }));
+      query = "returnTo=%2Fchangha%3Flocale%3Dko%23first-reaction&locale=ko";
+      render(<LoginPage appleLoginEnabled />);
+      fireEvent.click(screen.getByRole("button", { name: /Google/ }));
+      const handed = new URL(String(assign.mock.calls[0]?.[0]).replace("x-safari-https://", "https://"));
+      const returnTo = new URL(handed.searchParams.get("returnTo") ?? "", "https://kyaa.io");
+      expect(returnTo.pathname + returnTo.hash).toBe("/changha#first-reaction");
+      expect(Object.fromEntries(returnTo.searchParams)).toMatchObject({ utm_source: "x", utm_campaign: "changha-onboarding-1118", utm_content: "official" });
+      window.sessionStorage.removeItem("byus.event-source.v1");
     });
 
     it("never shows the internal timeout code in iOS Instagram after the SDK stays unready for 30 seconds", () => {

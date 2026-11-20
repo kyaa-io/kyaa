@@ -46,13 +46,16 @@ describe("Google login plan", () => {
       url: `instagram://extbrowser/?url=${encodeURIComponent(loginUrl)}`,
     });
   });
-  it.each(["iosKakao", "iosFacebook"] as const)("hands iOS %s to Safari", (name) => {
+  it.each(["iosKakao", "androidKakao"] as const)("hands %s to the phone's browser with KakaoTalk's own link", (name) => {
+    expect(planGoogleLogin(agents[name], loginUrl)).toEqual({ kind: "external", url: `kakaotalk://web/openExternal?url=${encodeURIComponent(loginUrl)}` });
+  });
+  it.each(["iosFacebook"] as const)("hands iOS %s to Safari", (name) => {
     expect(planGoogleLogin(agents[name], loginUrl)).toEqual({
       kind: "external",
       url: "x-safari-https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve",
     });
   });
-  it.each(["androidInstagram", "androidKakao", "androidFacebook"] as const)("hands Android %s to the browser by intent", (name) => {
+  it.each(["androidInstagram", "androidFacebook"] as const)("hands Android %s to the browser by intent", (name) => {
     expect(planGoogleLogin(agents[name], loginUrl)).toEqual({
       kind: "external",
       url: `intent://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(loginUrl)};end`,
@@ -76,5 +79,38 @@ describe("Google login plan", () => {
   it("never carries tokens, credentials or tracking", () => {
     expect(externalBrowserUrl(agents.iosInstagram, "https://user:pw@kyaa.io/login")).toBeNull();
     expect(externalBrowserUrl(agents.iosInstagram, loginUrl)).not.toMatch(/utm_|token|session/i);
+  });
+});
+
+describe("embedded browsers without a dedicated rule", () => {
+  const ios = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)";
+  const androidWebView = "Mozilla/5.0 (Linux; Android 14; SM-S921N Build/UP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.58 Mobile Safari/537.36";
+  const embedded = {
+    iosTikTok: `${ios} Mobile/15E148 musical_ly_36.5.0 JsSdk/2.0 NetType/WIFI Channel/App Store ByteLocale/ko Region/KR BytedanceWebview/d8a21c6`,
+    androidTikTok: `${androidWebView} trill_360505 JsSdk/1.0 NetType/WIFI AppName/trill BytedanceWebview/d8a21c6`,
+    androidTelegram: `${androidWebView} Telegram-Android/11.4.2 (Samsung SM-S921N; Android 14; SDK 34; HIGH)`,
+    androidUnknownApp: androidWebView,
+    iosUnknownApp: `${ios} Mobile/15E148`,
+  };
+  it.each(Object.keys(embedded) as Array<keyof typeof embedded>)("hands %s to an external browser", (name) => {
+    expect(requiresGoogleBrowserHandoff(embedded[name])).toBe(true);
+    const plan = planGoogleLogin(embedded[name], loginUrl);
+    expect(plan.kind).toBe("external");
+    if (plan.kind === "external") expect(plan.url.startsWith(name.startsWith("ios") ? "x-safari-https://kyaa.io/login?" : "intent://kyaa.io/login?")).toBe(true);
+  });
+  it("keeps Google sign-in in a page opened from the iOS home screen", () => {
+    expect(requiresGoogleBrowserHandoff(embedded.iosUnknownApp, true)).toBe(false);
+    expect(planGoogleLogin(embedded.iosUnknownApp, loginUrl, true)).toEqual({ kind: "continue" });
+  });
+  it.each(["iosSafari", "iosChrome", "androidChrome"] as const)("keeps Google sign-in in %s", (name) => {
+    expect(planGoogleLogin(agents[name], loginUrl)).toEqual({ kind: "continue" });
+  });
+  it.each([
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) FxiOS/131.0 Mobile/15E148 Safari/605.1.15",
+    "Mozilla/5.0 (Linux; Android 14; SAMSUNG SM-S921N) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/26.0 Chrome/122.0.0.0 Mobile Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+    "Mozilla/5.0 (Android 14; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0",
+  ])("keeps Google sign-in in an ordinary browser: %s", (agent) => {
+    expect(requiresGoogleBrowserHandoff(agent)).toBe(false);
   });
 });
