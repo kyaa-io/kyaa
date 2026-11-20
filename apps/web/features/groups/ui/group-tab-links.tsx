@@ -4,13 +4,15 @@ import type {AppLocale} from "@/i18n/locales";
 import {groupsCopy} from "./copy";
 import {groupCalendarLabel} from "./group-calendar-label";
 import {membersAndRank} from "./home-copy";
+import {chatCopy} from "./chat-copy";
 
 /** 모임·팬페이지가 함께 쓰는 탭 목록. 홈·게시판·방·캘린더 뒤에 멤버·랭킹을 붙인다. */
 export const groupTabs=['home','board','rooms','calendar'] as const;
 
-export function groupTabItems(locale:AppLocale,members=true):FanTabItem[]{
+/** `chat`: 팬페이지는 방 탭이 '채팅방(임시운영)' 하나다(주소의 tab=rooms 는 그대로). */
+export function groupTabItems(locale:AppLocale,members=true,chat=false):FanTabItem[]{
  const t=groupsCopy(locale);
- return [...groupTabs.map(value=>({key:value as string,label:value==='calendar'?groupCalendarLabel[locale]:t[value]})),...(members?[{key:'members',label:membersAndRank[locale]}]:[])];
+ return [...groupTabs.map(value=>({key:value as string,label:value==='calendar'?groupCalendarLabel[locale]:value==='rooms'&&chat?chatCopy(locale).title:t[value]})),...(members?[{key:'members',label:membersAndRank[locale]}]:[])];
 }
 
 /** 프레임 밖 화면(행사 등)이 쓰는 탭. 항상 스크롤을 건드리지 않는다. */

@@ -15,6 +15,7 @@ import homeStyles from "./creator-group-home.module.css";
 import { GroupPageFrame } from "./group-page-frame";
 import { useGroupPage, useOptionalGroupPage } from "./group-page-context";
 import { GroupRoomsPanel } from "./group-rooms-panel";
+import { GroupChatPanel } from "./group-chat-panel";
 import { GROUP_COLLECTIONS_VISIBLE } from "../domain/collection-visibility";
 import { useRetiredInfoTab } from "./use-retired-info-tab";
 
@@ -40,7 +41,8 @@ function GroupDetailBody({locale,pageId,calendarMonth,initialPostId,initialRoomI
       {tab==='manage'&&detail.membership&&detail.membership.role!=='member'&&<GroupManagement key={`${g.ownerKey}:${detail.membership.role}`} detail={detail} locale={locale} refresh={g.refresh}/>}
       {(tab==='board'||tab==='news')&&<GroupBoard key={g.ownerKey} detail={detail} locale={locale} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} initialPostId={initialPostId} initialBoardState={initialBoardState} listHref={creator&&tab==='board'?`/pages/groups/${pageId}?locale=${locale}&tab=board${boardSource==='all'?'':`&source=${boardSource}`}`:undefined}/>}
       {tab==='members'&&<GroupMembers key={`${g.ownerKey}:${pageId}`} pageId={pageId} rankingsSlug={page.slug} locale={locale} member={Boolean(detail.membership)} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} inTab presentation={{creatorName:page.name,subtitles:{},}}/>}
-      {tab==='rooms'&&<GroupRoomsPanel key={`${g.ownerKey}:${initialRoomId??''}:${detail.membership?'member':'guest'}`} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} pageId={pageId} locale={locale} slug={page.slug} imageUrl={page.imageUrl} initialRoomId={initialRoomId}/>}
+      {tab==='rooms'&&page.kind==='fan'&&<GroupChatPanel key={g.ownerKey} pageId={pageId} locale={locale} roomHref={href('rooms')}/>}
+      {tab==='rooms'&&page.kind!=='fan'&&<GroupRoomsPanel key={`${g.ownerKey}:${initialRoomId??''}:${detail.membership?'member':'guest'}`} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} pageId={pageId} locale={locale} slug={page.slug} imageUrl={page.imageUrl} initialRoomId={initialRoomId}/>}
       {tab==='activities'&&<GroupActivitiesPanel pageId={pageId} locale={locale} pageName={page.name}/>}
       {tab==='events'&&<GroupEventsList pageId={pageId} locale={locale}/>}
       {tab==='collection'&&<GroupCollections key={`${g.ownerKey}:${pageId}`} pageId={pageId} locale={locale} pageName={page.name}/>}

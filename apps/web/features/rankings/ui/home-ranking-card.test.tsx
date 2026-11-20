@@ -46,7 +46,7 @@ it("is the shared ranking board under one heading: ten heart rows per group, no 
   expect(screen.queryByText("포인트")).toBeNull();
   expect(screen.queryByText("전체 보기")).toBeNull();
   expect(container.querySelector("a[href*='/rankings']")).toBeNull();
-  for (const [url] of fetcher.mock.calls) expect(String(url)).toMatch(/metric=(points|likes).*limit=10/);
+  for (const [url] of fetcher.mock.calls.filter(([url]) => !String(url).startsWith("/api/groups/online-creators?"))) expect(String(url)).toMatch(/metric=(points|likes).*limit=10/);
 });
 
 it("signed out: ten rows per group, an opened row's picture and name lead to sign-in, and no sign-in button under the list", async () => {

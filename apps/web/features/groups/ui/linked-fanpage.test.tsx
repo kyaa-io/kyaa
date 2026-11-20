@@ -19,7 +19,7 @@ beforeEach(()=>{state.page={id:'page-id',kind:'fan',slug:'nchive',celebrityId:'c
 it('uses common fan home and preserves room/month/returnTo URLs',()=>{
  state.query='room=room-id&month=2026-11&returnTo=%2Fnchive%3Ftab%3Dhome';render(<GroupDetailScreen pageId='page-id' locale='ko' initialRoomId='room-id' calendarMonth='2026-11' initialReturnTo='/nchive?tab=home'/>);
  expect(screen.getByText('nchive shared home')).toBeInTheDocument();
- const room=new URL(screen.getByRole('link',{name:'비밀방'}).getAttribute('href')!,'https://kyaa.test');expect(room.searchParams.get('room')).toBe('room-id');expect(room.searchParams.get('returnTo')).toBe('/nchive?tab=home');
+ const room=new URL(screen.getByRole('link',{name:'채팅방(임시운영)'}).getAttribute('href')!,'https://kyaa.test');expect(room.searchParams.get('room')).toBe('room-id');expect(room.searchParams.get('returnTo')).toBe('/nchive?tab=home');
  expect(new URL(screen.getByRole('link',{name:'캘린더'}).getAttribute('href')!,'https://kyaa.test').searchParams.get('month')).toBe('2026-11');
 });
 it('keeps original legacy post ID/source rather than recasting as fan_post',()=>{

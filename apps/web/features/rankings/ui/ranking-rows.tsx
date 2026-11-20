@@ -26,6 +26,8 @@ import { RankRowPanel } from "./rank-row-panel";
 import { RankUnit, type RankUnitKind } from "./rank-unit";
 import { useRankExpand } from "./use-rank-expand";
 import { useRankingResource } from "./use-ranking-resource";
+import { useOnlineCreators } from "./use-online-creators";
+import { chatCopy } from "@/features/groups/ui/chat-copy";
 import styles from "./ranking-rows.module.css";
 
 /** Rows of the platform rankings on the home page: rank, picture, name, movement and the metric's value on one 52px line; today's gain and the way to first place are in the opened row. */
@@ -359,6 +361,8 @@ function NameTarget({ active, label, href, onOpen, children }: { active: boolean
   if (onOpen) return <FanAction variant="text" className={styles.profile} ariaLabel={label} onClick={onOpen}>{children}</FanAction>;
   return <span className={styles.profile}><span>{children}</span></span>;
 }
+/** 크리에이터 본인이 지금 자기 팬페이지에 들어와 있으면(대표 11/19 20:35) 이름 옆 핑크 태그. 점의 고리가 세 번 퍼지고 멈춘다. */
+const OnlineMark = ({ locale }: { locale: AppLocale }) => <FanTag tone="fan" icon={<span className={styles.onlineDot} aria-hidden="true" />}>{chatCopy(locale).online}</FanTag>;
 const LiveMark = ({ locale, name }: { locale: AppLocale; name: string }) => <span className={styles.live} role="img" aria-label={rankingsText(locale, "rkCreatorLive", [name])}><span className={styles.liveDot} aria-hidden="true" />LIVE</span>;
 
 
@@ -439,6 +443,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;
+  const online = useOnlineCreators(shown.map((row) => row.slug));
   return <ol className={styles.rows}>{shown.map((row, i) => {
     const id = `rank-${scope}-creators-${row.rank}`;
     const open = openKey === row.slug;
@@ -453,6 +458,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
           <span className={styles.body}>
             <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>
               {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
+              {online.has(row.slug) ? <OnlineMark locale={locale} /> : null}
               {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>
           </span>
         </NameTarget>

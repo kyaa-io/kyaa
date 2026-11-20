@@ -82,6 +82,11 @@
 
 .live { display: inline-flex; }
 .liveDot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-error); }
+/* 크리에이터 본인 접속(대표 11/19 20:35): FanTag fan 안의 점. 팬페이지 머리 접속 알약과 같은 고리 1.6s × 3회 뒤 정지(DESIGN 9절). */
+.onlineDot { position: relative; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--color-accent); }
+.onlineDot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--color-accent); opacity: 0; animation: onlinePulse 1.6s var(--motion-easing) .6s 3; }
+@keyframes onlinePulse { 0% { opacity: .6; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
+@media (prefers-reduced-motion: reduce) { .onlineDot::after { animation: none; } }
 
 
 

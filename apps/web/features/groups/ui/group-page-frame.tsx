@@ -19,6 +19,7 @@ import { GroupArtistBadge } from "./group-artist-badge";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
 import { GroupPresence } from "./group-presence";
+import { CreatorEntryToast } from "./creator-entry-toast";
 import { pageHeadCopy } from "./page-head-copy";
 import { ReactionAction } from "@/features/reaction/ui/reaction-action";
 import { GroupShell } from "./group-shell";
@@ -32,7 +33,7 @@ function useTabs(): FanTabItem[] {
   const g = useGroupPage();
   const hideMembers = g.routeSlug !== null && g.error;
   // 팬페이지만 '덕후인증' + 포인트 배지를 쓰고 '팬·랭킹' 탭을 두지 않는다. 취미·브랜드 모임은 '인증'과 '팬·랭킹' 그대로다. 팬 목록(?tab=members)은 머리의 '팬 N'에서 들어간다.
-  const items = groupTabItems(g.locale, !hideMembers && g.kind !== "fan");
+  const items = groupTabItems(g.locale, !hideMembers && g.kind !== "fan", g.kind === "fan");
   if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: g.kind === "fan" ? <ProofTabLabel label={proofTab[g.locale]} locale={g.locale} /> : g.locale === "ko" ? "인증" : "Proofs" });
   return items.map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
 }
@@ -69,7 +70,7 @@ export function GroupPageHead() {
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;
-  return <FanPageHeader
+  return <>{g.kind === "fan" ? <CreatorEntryToast /> : null}<FanPageHeader
     frameId={g.routePageId ?? g.routeSlug ?? g.page?.id}
     image={g.celebrity ? { src: g.celebrity.image.url, slug: g.kind === "fan" ? g.celebrity.slug : undefined, alt: "" } : { src: g.page?.imageUrl, alt: "" }}
     name={name}
@@ -87,7 +88,7 @@ export function GroupPageHead() {
     menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : g.reserveMenu ? <span aria-hidden="true" /> : undefined}
     stats={stats}
     tabs={tabs}
-  />;
+  /></>;
 }
 
 /** 가입 질문 폼과 가입 실패. 누른 결과로 열릴 때만 그 자리로 스크롤한다(S7). */
