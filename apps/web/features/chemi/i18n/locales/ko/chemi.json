@@ -399,6 +399,8 @@
     "star_love": "애정",
     "star_people": "사람",
     "star_money": "돈",
-    "star_work": "일·공부"
+    "star_work": "일·공부",
+    "pointsShort": "{points}P가 부족해요.",
+    "testTopup": "시험 포인트 충전"
   }
 }

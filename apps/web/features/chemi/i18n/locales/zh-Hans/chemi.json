@@ -399,6 +399,8 @@
     "star_love": "",
     "star_people": "",
     "star_money": "",
-    "star_work": ""
+    "star_work": "",
+    "pointsShort": "还差 {points}P。",
+    "testTopup": "测试充值"
   }
 }

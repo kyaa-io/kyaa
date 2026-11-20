@@ -399,6 +399,8 @@
     "star_love": "Love",
     "star_people": "Relationships",
     "star_money": "Money",
-    "star_work": "Work and study"
+    "star_work": "Work and study",
+    "pointsShort": "You need {points}P more.",
+    "testTopup": "Test top-up"
   }
 }

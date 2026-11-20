@@ -1,5 +1,5 @@
 "use client";
-import { ReadingText } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./result.module.css";
 
@@ -17,9 +17,10 @@ export function DateShortage({
   busy: boolean;
   onCancel: () => void;
 }) {
+  const text = useReadingCopy();
   return (
     <>
-      <p>{shortBy}P가 부족해요.</p>
+      <p>{text("pointsShort", { points: shortBy })}</p>
       <div className={styles.purchaseActions}>
         {topupHref && (
           <FanAction
@@ -32,7 +33,7 @@ export function DateShortage({
               window.location.assign(event.currentTarget.href);
             }}
           >
-            시험 포인트 충전
+            <ReadingText id="testTopup" />
           </FanAction>
         )}
         <FanAction href={`/my/wallet?view=attendance&locale=${locale}`}>
