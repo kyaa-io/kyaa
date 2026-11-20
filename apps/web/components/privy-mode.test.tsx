@@ -81,6 +81,19 @@ describe("privy mode", () => {
     expect(assign).not.toHaveBeenCalled();
   });
 
+  it.each([["iPhone Instagram",true],["iPhone Twitter for iPhone",true],["Android TikTok",false]] as const)(
+    "offers Apple and email in device order inside %s", async (ua, appleFirst) => {
+      const agent = vi.spyOn(navigator,"userAgent","get").mockReturnValue(ua);
+      try {
+        render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
+        const apple = screen.getByRole("button",{name:/Apple로 계속하기/});
+        const email = screen.getByRole("button",{name:/이메일로 계속하기/});
+        expect(Boolean(apple.compareDocumentPosition(email) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(appleFirst);
+        expect(screen.queryByRole("button",{name:/Google로 계속하기/})).toBeNull();
+        fireEvent.click(email);
+        expect(bridge.openEmailLogin).toHaveBeenCalledOnce();
+      } finally { agent.mockRestore(); }
+    });
   it("starts Apple in Privy", async () => {
     render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
     fireEvent.click(screen.getByRole("button", { name: /Apple로 계속하기/ }));
