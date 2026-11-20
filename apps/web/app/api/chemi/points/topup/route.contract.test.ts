@@ -12,3 +12,10 @@ it("rejects direct production orders before authorization or payment", async () 
   }));
   expect(response.status).toBe(404);
 });
+
+it.each(["", "false", "1"])("returns 404 in DEV when the flag is %j", async flag => {
+  vi.stubEnv("APP_ENV", "dev");
+  vi.stubEnv("CHEMI_TAB", "true");
+  vi.stubEnv("CHEMI_TOPUP_ENABLED", flag);
+  expect((await POST(new Request("https://example.test", { method: "POST" }))).status).toBe(404);
+});

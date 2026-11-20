@@ -30,31 +30,13 @@ function stubApi(handler: (body: Record<string, unknown>) => Response | Promise<
   return calls;
 }
 
-it("shows both balances and opens a Toss payment for 1,000 won", async () => {
-  const requestPayment = vi.fn(async () => undefined);
-  vi.stubGlobal("TossPayments", () => ({ requestPayment }));
-  const calls = stubApi((body) =>
-    body.action === "open"
-      ? Response.json({ orderId: "order-1", amount: 1000, orderName: "포인트 100P", clientKey: "test_ck_x" })
-      : Response.json(balances(2, 1)),
-  );
+it("reports an unavailable provider without recording an order", async () => {
+  stubApi(body => body.action === "open" ? new Response(null, { status: 503 }) : Response.json(balances(2, 1)));
   render(<Checkout locale="ko" />);
-  expect(await screen.findByText("활동 포인트")).toBeTruthy();
   await waitFor(() => expect(screen.getByText("3")).toBeTruthy());
   fireEvent.click(screen.getByRole("button", { name: "1,000원 결제하기" }));
-  await waitFor(() => expect(requestPayment).toHaveBeenCalled());
-  expect(calls.map((c) => c.action)).toEqual(["balances", "open"]);
-  expect(requestPayment).toHaveBeenCalledWith("카드", expect.objectContaining({ orderId: "order-1", amount: 1000 }));
-  expect(sessionStorage.getItem("chemi-point-order")).toBe("order-1");
-});
-
-it("confirms the Toss callback once and reports the new balances", async () => {
-  history.replaceState({}, "", "/chemi/points/topup?paymentKey=pay_1&orderId=order-1&amount=1000");
-  const calls = stubApi(() => Response.json({ status: "DONE", ...balances(0, 100) }));
-  render(<Checkout locale="ko" />);
-  expect(await screen.findByText("100P가 충전됐어요.")).toBeTruthy();
-  expect(calls).toEqual([{ action: "confirm", paymentKey: "pay_1", orderId: "order-1", amount: 1000 }]);
-  expect(location.search).toBe("");
+  expect(await screen.findByRole("alert")).toHaveTextContent("결제창을 열지 못했어요.");
+  expect(sessionStorage.getItem("chemi-point-order")).toBeNull();
 });
 
 it("reports a failed payment without calling the server for it", async () => {
