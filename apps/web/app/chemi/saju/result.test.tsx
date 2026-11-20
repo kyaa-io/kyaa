@@ -48,9 +48,11 @@ const show = (view: ResultView, extra: Partial<Parameters<typeof SajuResult>[0]>
 it("처음 풀이: 한 줄 제목·타고난 기운·성격·올해 흐름, 질문하기·가격은 없다", () => {
   const { container } = show("first");
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("한낮의 해처럼, 좋아하는 걸 숨기지 않는 사람");
-  for (const label of ["타고난 기운", "타고난 성격", "올해 흐름", "강점", "조심할 점"])
+  for (const label of ["타고난 기운", "타고난 성격", "올해 흐름", "강점", "조심할 것"])
     expect(screen.getByText(label)).toBeTruthy();
   expect(container.textContent).not.toMatch(/질문하기|원\b|1,900|결제/);
+  // 조심할 것은 제목 아래 키워드 한 곳에만 둔다.
+  expect(screen.queryByText("조심할 점")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: /^올해/ }));
   expect(handlers.onGo).toHaveBeenCalledWith("year");
 });

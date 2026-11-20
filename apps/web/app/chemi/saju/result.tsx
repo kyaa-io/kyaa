@@ -313,7 +313,6 @@ export function SajuResult({
                   <FanHeading>타고난 성격</FanHeading>
                   {kv([
                     ["강점", first.strengthR],
-                    ["조심할 점", first.cautionR],
                     ["나다운 덕질", first.fandomR],
                   ])}
                 </section>
