@@ -22,7 +22,7 @@ import {
   pairReading,
   yearReading,
 } from "./copy";
-import { sajuCharacters, sajuTone, type SajuCharacterId } from "./lines";
+import { sajuCharacters, sajuOpening, sajuOpeningStatus, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
 
@@ -247,6 +247,35 @@ export function SajuResult({
             {kicker}
           </FanText>
           <FanHeading as="h1">{title}</FanHeading>
+          {view === "first" && (
+            <>
+              <FanText as="p" role="body" className={styles.opening}>
+                {sajuOpening(character, first.stem)}
+              </FanText>
+              {sajuOpeningStatus === "dev-sample" && (
+                <FanText as="p" role="meta" data-opening-status={sajuOpeningStatus}>
+                  DEV 견본 대사 · 본인 확인 전
+                </FanText>
+              )}
+              <dl className={`${styles.kv} ${styles.keywords}`} data-layout="cols">
+                {first.keywords.map((item) => (
+                  <div key={item.kind} data-keyword={item.kind}>
+                    <FanText as="dt" role="meta">
+                      {item.label}
+                    </FanText>
+                    <dd>
+                      <FanText as="strong" role="item">
+                        {item.name}
+                      </FanText>
+                      <FanText as="span" role="meta">
+                        {item.act}
+                      </FanText>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          )}
           {view === "pair" && pair && !pair.timeKnown && (
             <FanText as="p" role="meta">
               {pair.name} 출생 시간 없이 봄
@@ -289,7 +318,6 @@ export function SajuResult({
                   <FanHeading>타고난 성격</FanHeading>
                   {kv([
                     ["강점", first.strengthR],
-                    ["조심할 점", first.cautionR],
                     ["나다운 덕질", first.fandomR],
                   ])}
                 </section>
