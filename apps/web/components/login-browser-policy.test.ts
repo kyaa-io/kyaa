@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { externalBrowserUrl, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
+import { landingHandoff, externalBrowserUrl, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 
 const loginUrl = "https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve";
 
@@ -112,5 +112,22 @@ describe("embedded browsers without a dedicated rule", () => {
     "Mozilla/5.0 (Android 14; Mobile; rv:131.0) Gecko/131.0 Firefox/131.0",
   ])("keeps Google sign-in in an ordinary browser: %s", (agent) => {
     expect(requiresGoogleBrowserHandoff(agent)).toBe(false);
+  });
+});
+
+describe("landing handoff", () => {
+  it.each([
+    [agents.iosInstagram, "instagram://extbrowser/"], [agents.iosKakao, "kakaotalk://web/openExternal"],
+    [agents.iosX, "x-safari-https://"], [agents.iosFacebook, "x-safari-https://"],
+    ["iPhone TikTok", "x-safari-https://"], ["iPhone Line/15", "https://kyaa.io/login?"],
+  ])("preserves the landing and source for %s", (ua, prefix) => {
+    const {target} = landingHandoff(ua,new URL(loginUrl));
+    expect(target?.startsWith(prefix)).toBe(true);
+    expect(decodeURIComponent(target!)).toContain("kyaa_browser=");
+  });
+  it("offers a package-free fallback for Android", () => {
+    const plan = landingHandoff(agents.androidX,new URL(loginUrl));
+    expect(plan.target).toContain("package=com.android.chrome");
+    expect(plan.fallback).not.toContain("package=");
   });
 });

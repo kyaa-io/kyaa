@@ -30,6 +30,7 @@ function makeBridge(): PrivyBridge {
     oauthLoading: false,
     startOAuth: vi.fn(async () => {}),
     subscribeOAuth: (listener) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
+    openEmailLogin: vi.fn(),
     openGoogleLogin: vi.fn(),
     refreshUser: vi.fn(async () => ({ id: "did:privy:fan", linkedAccounts: [] })),
     createWallet: vi.fn(async () => ({ address: "0x1" })),
