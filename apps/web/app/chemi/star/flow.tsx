@@ -654,21 +654,6 @@ export function StarFlow({
                 </div>
               </div>
             )}
-            {primaryLabel && (
-              <div className={styles.choices}>
-                {entering && (
-                  <FanAction variant="neutral" href={`/chemi?locale=${locale}`}>
-                    {text("later")}</FanAction>
-                )}
-                <FanAction
-                  variant={entering || talk === 4 ? "primary" : "neutral"}
-                  disabled={entering && !ready}
-                  onClick={() => (entering ? start() : advance())}
-                >
-                  {primaryLabel}
-                </FanAction>
-              </div>
-            )}
             <section className={styles.dialog} aria-live="polite">
               <p className={styles.who} data-face={talk ? "" : undefined}>
                 {talk && (
@@ -690,6 +675,21 @@ export function StarFlow({
                 )}
               </FanText>
             </section>
+            {primaryLabel && (
+              <div className={styles.choices}>
+                {entering && (
+                  <FanAction variant="neutral" href={`/chemi?locale=${locale}`}>
+                    {text("later")}</FanAction>
+                )}
+                <FanAction
+                  variant={entering || talk === 4 ? "primary" : "neutral"}
+                  disabled={entering && !ready}
+                  onClick={() => (entering ? start() : advance())}
+                >
+                  {primaryLabel}
+                </FanAction>
+              </div>
+            )}
           </div>
         )}
       </div>

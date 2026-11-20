@@ -184,16 +184,6 @@ export function TarotStage(props: Props) {
           </div>
         ) : null}
 
-        {primary ? (
-          <div className={styles.choices}>
-            <FanAction variant="primary" onClick={primary.onClick}>
-              {primary.label}
-            </FanAction>
-          </div>
-        ) : null}
-
-        {step === "pick" ? <div ref={setControlsHost} /> : null}
-
         <section className={styles.dialog} aria-live="polite">
           <div className={styles.speaker}>
             <FanText as="p" role="item">
@@ -217,6 +207,16 @@ export function TarotStage(props: Props) {
             </FanText>
           )}
         </section>
+        {primary ? (
+          <div className={styles.choices}>
+            <FanAction variant="primary" onClick={primary.onClick}>
+              {primary.label}
+            </FanAction>
+          </div>
+        ) : null}
+
+        {step === "pick" ? <div ref={setControlsHost} /> : null}
+
       </div>
 
       {offline || (talking && meaning.status === "error") ? (

@@ -562,21 +562,6 @@ export function FortuneFlow({
                 )}
               </dl>
             )}
-            {primaryLabel && (
-              <div className={styles.choices}>
-                {entering && (
-                  <FanAction variant="neutral" href={`/chemi?locale=${locale}`}>
-                    {text("later")}</FanAction>
-                )}
-                <FanAction
-                  variant="primary"
-                  disabled={entering && !ready}
-                  onClick={() => (entering ? start() : advance())}
-                >
-                  {primaryLabel}
-                </FanAction>
-              </div>
-            )}
             <section className={styles.dialog} aria-live="polite">
               <p className={styles.who} data-face={face ? "" : undefined}>
                 {face && <img className={styles.face} src={face} alt="" />}
@@ -596,6 +581,21 @@ export function FortuneFlow({
                 )}
               </FanText>
             </section>
+            {primaryLabel && (
+              <div className={styles.choices}>
+                {entering && (
+                  <FanAction variant="neutral" href={`/chemi?locale=${locale}`}>
+                    {text("later")}</FanAction>
+                )}
+                <FanAction
+                  variant="primary"
+                  disabled={entering && !ready}
+                  onClick={() => (entering ? start() : advance())}
+                >
+                  {primaryLabel}
+                </FanAction>
+              </div>
+            )}
           </div>
         )}
       </div>

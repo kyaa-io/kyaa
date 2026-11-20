@@ -726,7 +726,7 @@ export function SajuFlow({
   const wideArt =
     character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-wide-v2.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
-  const primaryLabel = entering && !again ? sceneCopy.start : talk ? text(talkChoice[talk - 1]) : null;
+  const primaryLabel = entering ? (again ? (reading ? sceneCopy.history : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
 
   const turns = (cls: string, side = false) => (
     <>
@@ -929,15 +929,6 @@ export function SajuFlow({
           <img src={mobileArt} alt={text("sajuSceneAlt", { name })} />
         </picture>
         {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
-        {entering && again && reading && (
-          <FanAction
-            variant="neutral"
-            className={styles.history}
-            onClick={() => openView("first")}
-          >
-            {sceneCopy.history}
-          </FanAction>
-        )}
         {phase === "error" ? (
           <div className={styles.controls}>
             <FanState
@@ -971,36 +962,6 @@ export function SajuFlow({
                 <ParticipationCount locale={locale} />
               </div>
             )}
-            {phase === "limit" && (
-              <FanAction variant="neutral" onClick={() => setPhase("idle")}>
-                {text("return")}</FanAction>
-            )}
-            {entering && again && reading && phase === "idle" && (
-              <div className={styles.choicesRow}>
-                <FanAction variant="neutral" onClick={() => setSheet("topics")}>
-                  {sceneCopy.more}
-                </FanAction>
-                <FanAction variant="neutral" onClick={() => void openPair()}>
-                  {sceneCopy.match}
-                </FanAction>
-              </div>
-            )}
-            {primaryLabel && phase === "idle" && (
-              <div className={styles.choices}>
-                {entering && (
-                  <FanAction variant="neutral" href={back}>
-                    {sceneCopy.later}
-                  </FanAction>
-                )}
-                <FanAction
-                  variant="primary"
-                  disabled={entering && (!ready || (authenticated && firsts === null))}
-                  onClick={() => (entering ? start() : advance())}
-                >
-                  {primaryLabel}
-                </FanAction>
-              </div>
-            )}
             <section className={styles.dialog} aria-live="polite">
               <p className={styles.who} data-face={talk ? "" : undefined}>
                 {talk && <img className={styles.face} src={`${art}/avatar-${character}-v1.jpg`} alt="" />}
@@ -1020,6 +981,36 @@ export function SajuFlow({
                 )}
               </FanText>
             </section>
+            {phase === "limit" && (
+              <FanAction variant="neutral" onClick={() => setPhase("idle")}>
+                {text("return")}</FanAction>
+            )}
+            {primaryLabel && phase === "idle" && (
+              <div className={styles.choices}>
+                {entering && !again && (
+                  <FanAction variant="neutral" href={back}>
+                    {sceneCopy.later}
+                  </FanAction>
+                )}
+                <FanAction
+                  variant="primary"
+                  disabled={entering && (!ready || (authenticated && firsts === null))}
+                  onClick={() => (entering ? (again ? openView("first") : start()) : advance())}
+                >
+                  {primaryLabel}
+                </FanAction>
+              </div>
+            )}
+            {entering && again && reading && phase === "idle" && (
+              <div className={styles.choicesRow}>
+                <FanAction variant="neutral" onClick={() => setSheet("topics")}>
+                  {sceneCopy.more}
+                </FanAction>
+                <FanAction variant="neutral" onClick={() => void openPair()}>
+                  {sceneCopy.match}
+                </FanAction>
+              </div>
+            )}
           </div>
         )}
       </div>
