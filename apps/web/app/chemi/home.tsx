@@ -17,11 +17,13 @@ export function ChemiHome({
   growth,
   preview,
   rankings = [],
+  matchAvailable = false,
 }: {
   copy: HomeCopy;
   locale: string;
   growth: boolean;
   preview: boolean;
+  matchAvailable?: boolean;
   rankings?: readonly GameRanking[];
 }) {
   const [category, setCategory] = useState("all");
@@ -49,8 +51,9 @@ export function ChemiHome({
         />}
         <div className={styles.list}>
           {entries
-            .filter(([, type]) => (preview || type === "readings") && (category === "all" || category === type))
-            .map(([id, , path]) => {
+            .filter(([id, type]) => (preview || type === "readings" || (id === "pair" && matchAvailable)) && (category === "all" || category === type))
+            .map(([id, , readingPath]) => {
+              const path = id === "pair" && matchAvailable ? "/chemi/games/match" : readingPath;
               const content = (
                 <>
                   <img src={`/chemi/thumb-${id}-128.webp`} alt="" />
