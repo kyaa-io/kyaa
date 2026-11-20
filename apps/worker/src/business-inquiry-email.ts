@@ -65,7 +65,7 @@ export function renderCsReceipt(job: { id: string; locale: "ko" | "en"; body: st
   const excerpt = inquirySubjectExcerpt(job.body);
   const note = ko ? "내용을 확인한 후 이메일로 답변드릴게요." : "We’ll review your message and reply by email.";
   const footer = ko ? "kyaa에서 럭키드로우 소식도 만나보세요." : "Explore the latest lucky draws on kyaa.";
-  const home = "https://kyaa.io/?utm_source=kyaa&utm_medium=email&utm_campaign=cs_receipt&utm_content=footer";
+  const home = "https://kyaa.io/?utm_source=kyaa&utm_medium=email&utm_campaign=cs_receipt&utm_content=cs_receipt_footer";
   const instagram = "https://www.instagram.com/kyaa_app/";
   const action = ko ? "kyaa 바로가기" : "Visit kyaa";
   return {
