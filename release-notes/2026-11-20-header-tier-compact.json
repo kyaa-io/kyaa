@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "상단의 하트·등급·포인트가 알림 아이콘 옆에 한 줄로 모여 보여요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-20-header-tier-compact.png"
+  ]
+}
