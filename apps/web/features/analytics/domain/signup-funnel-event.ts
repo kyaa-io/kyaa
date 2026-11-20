@@ -11,7 +11,7 @@ export const signupContextSchema = z.object({
   channel: z.enum(["direct", "search", "social", "email", "paid", "referral", "internal", "unknown"]),
   landing: z.enum(["home", "creator_directory", "creator", "live_directory", "live", "benefit", "fan_guide", "unknown"]),
   guide: z.enum(["elina", "ifew", "none"]),
-  browser: z.enum(["instagram", "kakao", "safari", "chrome", "other"]),
+  browser: z.enum(["instagram", "threads", "facebook", "line", "x", "tiktok", "telegram", "webview", "kakao", "safari", "chrome", "other"]),
   os: z.enum(["ios", "android", "other"]),
   locale: z.enum(["ko", "en"]),
 }).strict();
@@ -23,7 +23,7 @@ export const signupActionSchema = z.enum(["verify", "live", "raffles", "steps", 
 export type SignupAction = z.infer<typeof signupActionSchema>;
 export const signupPlacementSchema = z.enum(["hero", "step", "closing", "history"]);
 export type SignupPlacement = z.infer<typeof signupPlacementSchema>;
-export const signupProviderSchema = z.enum(["google", "apple", "kakao", "wechat", "line", "facebook", "naver", "test", "unknown"]);
+export const signupProviderSchema = z.enum(["google", "email", "apple", "kakao", "wechat", "line", "facebook", "naver", "test", "unknown"]);
 export type SignupProvider = z.infer<typeof signupProviderSchema>;
 export const signupTriggerSchema = z.enum(["provider", "session_restore", "retry", "reauth"]);
 export type SignupTrigger = z.infer<typeof signupTriggerSchema>;

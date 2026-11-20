@@ -22,6 +22,7 @@ export interface PrivyBridge {
   startOAuth(provider: "google" | "apple"): Promise<void>;
   subscribeOAuth(listener: PrivyOAuthListener): () => void;
   /** Privy's own Google sign-in window (operator login). */
+  openEmailLogin(): void;
   openGoogleLogin(): void;
   refreshUser(): Promise<PrivyLoginUser>;
   createWallet(): Promise<unknown>;

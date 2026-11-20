@@ -1,7 +1,7 @@
 export const isXBrowser = (userAgent: string) => /\bTwitter(?:Android| for iPhone| for iPad|\/|\b)|\bX\/\d/i.test(userAgent);
 
 // Apps that show pages in their own embedded browser and say so in the user agent.
-const EMBEDDED_APP = /Instagram|Barcelona|KAKAOTALK|\bFBAN\/|\bFBAV\/|\bLine\/|musical_ly|BytedanceWebview|\bTikTok\b|\btrill_|Telegram-Android|MicroMessenger|NAVER\(inapp|DaumApps|Snapchat|LinkedInApp|WhatsApp/i;
+const EMBEDDED_APP = /Instagram|Barcelona|KAKAOTALK|\bFBAN\/|\bFBAV\/|\bLine\/|musical_ly|BytedanceWebview|\bTikTok\b|\btrill_|Telegram|MicroMessenger|NAVER\(inapp|DaumApps|Snapchat|LinkedInApp|WhatsApp/i;
 
 // Google refuses sign-in (403 disallowed_useragent) from embedded browsers. Besides the named apps, two generic
 // shapes mark one: Android System WebView ("; wv)") and iOS WebKit without the "Safari/" token every real iOS
@@ -50,4 +50,28 @@ export function planGoogleLogin(userAgent: string, loginUrl: string, standalone 
   if (!requiresGoogleBrowserHandoff(userAgent, standalone)) return { kind: "continue" };
   const url = externalBrowserUrl(userAgent, loginUrl);
   return url ? { kind: "external", url } : { kind: "notice" };
+}
+
+const appMarkers = [
+  ["instagram", /Instagram/i], ["threads", /Barcelona/i], ["kakao", /KAKAOTALK/i],
+  ["facebook", /\bFB(?:AN|AV|_IAB)\//i], ["line", /\bLine\//i],
+  ["tiktok", /musical_ly|BytedanceWebview|TikTok|\btrill_/i], ["telegram", /Telegram/i],
+] as const;
+
+export function embeddedApp(ua: string) {
+  return isXBrowser(ua) ? "x" : appMarkers.find(([, marker]) => marker.test(ua))?.[0] ?? "webview";
+}
+
+export function landingHandoff(ua: string, address: URL) {
+  const marked = new URL(address);
+  marked.searchParams.set("kyaa_browser", embeddedApp(ua));
+  if (/\bLine\//i.test(ua)) {
+    marked.searchParams.set("openExternalBrowser", "1");
+    return { target: marked.href, fallback: marked.href };
+  }
+  const fallback = externalBrowserUrl(ua, marked.href);
+  const target = fallback?.startsWith("intent://")
+    ? fallback.replace("#Intent;", "#Intent;package=com.android.chrome;")
+    : fallback;
+  return { target, fallback };
 }

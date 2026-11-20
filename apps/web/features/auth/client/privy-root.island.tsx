@@ -56,6 +56,7 @@ function PrivyBridgeProvider({ children }: { children: ReactNode }) {
     oauthLoading,
     startOAuth: (provider) => initOAuth({ provider }).then(() => undefined),
     subscribeOAuth,
+    openEmailLogin: () => login({ loginMethods: ["email"] }),
     openGoogleLogin: () => login({ loginMethods: ["google"] }),
     refreshUser: () => refreshUser(),
     createWallet: () => Promise.resolve(createWallet({ createAdditional: false })),

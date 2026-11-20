@@ -1,3 +1,4 @@
+import { embeddedApp, requiresGoogleBrowserHandoff } from "@/components/login-browser-policy";
 import { z } from "zod";
 import { classifyLoginEntryAction, loginEntryActionSchema } from "../domain/login-entry-action";
 import { acquisitionLanding, classifyAcquisitionChannel, readStoredAcquisitionTouch } from "../domain/acquisition-attribution";
@@ -32,7 +33,7 @@ type TrackerEnvironment = {
 
 function browserContext(ua: string): Pick<SignupContext, "browser" | "os"> {
   return {
-    browser: /instagram/i.test(ua) ? "instagram" : /kakaotalk/i.test(ua) ? "kakao"
+    browser: requiresGoogleBrowserHandoff(ua) ? embeddedApp(ua)
       : /chrome|crios/i.test(ua) ? "chrome" : /safari/i.test(ua) ? "safari" : "other",
     os: /iphone|ipad|ipod/i.test(ua) ? "ios" : /android/i.test(ua) ? "android" : "other",
   };

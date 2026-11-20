@@ -21,6 +21,7 @@ import { GoogleAnalytics } from "../features/analytics/client/google-analytics";
 import { AwsPerformanceTelemetry } from "../features/analytics/client/aws-performance-telemetry";
 import { DeferredRootClients } from "../components/deferred-root-clients";
 import { BYUS_BRAND_ICONS } from "./brand-icons";
+import { LandingBrowserDialog } from "../components/landing-browser-dialog";
 import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
 import { FanToastProvider } from "../components/fan-ui/fan-toast";
 import { parseAppLocale, type AppLocale } from "../i18n/locales";
@@ -98,6 +99,7 @@ export default async function RootLayout({
             <PageViewTracker />
             {ga4MeasurementId && <GoogleAnalytics measurementId={ga4MeasurementId} />}
             <OutboundLinkTracker />
+            <LandingBrowserDialog locale={locale} />
           </Suspense>
           <Suspense fallback={null}>
             <DocumentLocale />

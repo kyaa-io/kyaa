@@ -43,6 +43,7 @@ import { customSocialContinue } from "@/i18n/catalogs/components__custom-social-
 import { isIosInstagram, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import { withStoredEventSourceReturn } from "../features/analytics/client/use-event-source-tag";
 import styles from "./login-page.module.css";
+import { emailLoginCopy } from "@/i18n/catalogs/components__email-login";
 import { EmailLoginForm } from "./email-login-form";
 
 const loginBackground = {
@@ -447,6 +448,13 @@ export function LoginPage({
     ready,
     error: sessionStateError,
   });
+  const inAppPrivy = embeddedBrowser && privy;
+  const appleFirst = embeddedBrowser && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const emailCodeButton = inAppPrivy && <FanAction variant="secondary" type="button"
+    disabled={!ready || authenticated || oauthStarting} onClick={() => {
+      loginMeasurementRef.current = signupFunnelTracker.beginLogin("email", "provider", toContentLocale(locale));
+      inAppPrivy.openEmailLogin();
+    }}>{emailLoginCopy(locale)[0]}</FanAction>;
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
     <div className={styles.browserNotice}>
       <p className={styles.error} role="status">
@@ -602,7 +610,7 @@ export function LoginPage({
         <div className={styles.copy}>
           <h1 id="login-heading">{locale === "ko" ? "최애와 함께한 순간을 기록하세요." : translate(locale, localizedMessages.m25a4dd3e23d7, "Keep a record of moments with your favorites.")}</h1>
         </div>
-        <button
+        {!inAppPrivy && <button
           className={styles.googleButton}
           type="button"
           disabled={authenticated || (!ready && !waitingForSdk) || oauthStarting}
@@ -612,8 +620,9 @@ export function LoginPage({
           <GoogleMark />
           <span>{ready || waitingForSdk ? locale === "ko" ? "Google로 계속하기" : translate(locale, localizedMessages.m6655518973dd, "Continue with Google") : locale === "ko" ? "로그인 준비 중" : translate(locale, localizedMessages.mc34b01c121dc, "Preparing sign-in")}</span>
           <ArrowRight />
-        </button>
-        {browserHandoffNotice}
+        </button>}
+        {!inAppPrivy && browserHandoffNotice}
+        {!appleFirst && emailCodeButton}
         {cognitoKakaoEnabled && !privy && <button className={styles.googleButton} type="button"
           disabled={!ready || authenticated || oauthStarting}
           aria-busy={authenticated || oauthStarting}
@@ -633,6 +642,10 @@ export function LoginPage({
             <ArrowRight />
           </button>
         )}
+        {appleFirst && emailCodeButton}
+        {inAppPrivy && <FanAction type="button" variant="text" onClick={() => startOAuthLogin("google")}>
+          Google · {/Android/i.test(navigator.userAgent) ? "Chrome" : "Safari"} ↗
+        </FanAction>}
         {!privy && <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />}
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
     </div>
