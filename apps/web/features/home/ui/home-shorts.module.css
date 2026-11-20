@@ -116,3 +116,9 @@
 .feedCaption a,.feedCaption button { color:inherit; }
 .feedCaption button[aria-expanded=true] { max-height:35dvh; overflow:auto; }
 .expandedCaption { max-height:35dvh; overflow:auto; overscroll-behavior:contain; white-space:pre-wrap; overflow-wrap:anywhere; }
+.slide { container-type:size; overflow:hidden; }
+.slide .mediaFrame iframe { position:absolute; left:50%; top:50%; width:max(100cqw,56.25cqh); height:max(100cqh,177.7778cqw); transform:translate(-50%,-50%); }
+.feedCaption,.feedRail { z-index:1; }
+.feedCaption { background:var(--color-shortform-control); }
+.feedCaption .viewerCreatorLink,.feedCaption button { justify-content:start; min-height:var(--min-target); background:transparent; color:var(--color-surface); }
+.feedCaption .creatorName,.feedCaption .creatorGo { color:inherit; }
