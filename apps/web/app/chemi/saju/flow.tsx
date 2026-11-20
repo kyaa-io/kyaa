@@ -728,18 +728,18 @@ export function SajuFlow({
   const mobileArt = `${art}/saju-${character}-v1.webp`;
   const primaryLabel = entering ? (again ? (reading ? sceneCopy.history : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
 
-  const turns = (cls: string, side = false) => (
+  const turns = () => (
     <>
       <FanAction
         variant="neutral"
-        className={side ? `${cls} ${styles.prev}` : cls}
+        className={`${styles.turn} ${styles.prev}`}
         ariaLabel={text("prevStar")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         onClick={() => choose(index - 1)}
       />
       <FanAction
         variant="neutral"
-        className={side ? `${cls} ${styles.next}` : cls}
+        className={`${styles.turn} ${styles.next}`}
         ariaLabel={text("nextStar")}
         leadingIcon={<FanIcon icon={ChevronRight} />}
         onClick={() => choose(index + 1)}
@@ -908,7 +908,6 @@ export function SajuFlow({
                 </FanAction>
               ))}
             </div>
-            <span className={styles.turnRow}>{turns(styles.round)}</span>
           </>
         ) : (
           <>
@@ -928,7 +927,7 @@ export function SajuFlow({
           <source media="(min-width: 48rem)" srcSet={wideArt} />
           <img src={mobileArt} alt={text("sajuSceneAlt", { name })} />
         </picture>
-        {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
+        {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}
         {phase === "error" ? (
           <div className={styles.controls}>
             <FanState

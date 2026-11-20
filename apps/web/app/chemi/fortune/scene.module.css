@@ -285,13 +285,6 @@
   .page {
     gap: var(--space-4);
   }
-  .turnRow {
-    display: inline-flex;
-    gap: var(--space-2);
-  }
-  .turnStage {
-    display: none;
-  }
   .pick {
     flex: none;
     gap: var(--space-4);

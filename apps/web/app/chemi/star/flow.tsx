@@ -465,20 +465,20 @@ export function StarFlow({
                 )
               : starEnterLine(character, needBirth ? "birth" : "enter");
 
-  const primaryLabel = entering ? text("readFortune") : talk ? text(talkChoice[talk - 1]) : null;
+  const primaryLabel = entering ? text("readHoroscope") : talk ? text(talkChoice[talk - 1]) : null;
 
-  const turns = (cls: string, side = false) => (
+  const turns = () => (
     <>
       <FanAction
         variant="neutral"
-        className={side ? `${cls} ${styles.prev}` : cls}
+        className={`${styles.turn} ${styles.prev}`}
         ariaLabel={text("prevStar")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         onClick={() => choose(index - 1)}
       />
       <FanAction
         variant="neutral"
-        className={side ? `${cls} ${styles.next}` : cls}
+        className={`${styles.turn} ${styles.next}`}
         ariaLabel={text("nextStar")}
         leadingIcon={<FanIcon icon={ChevronRight} />}
         onClick={() => choose(index + 1)}
@@ -522,7 +522,6 @@ export function StarFlow({
                 </FanAction>
               ))}
             </div>
-            <span className={styles.turnRow}>{turns(styles.round)}</span>
           </>
         ) : (
           <>
@@ -542,7 +541,7 @@ export function StarFlow({
           <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
           <img src={`${art}/hero-${character}-p-v1.webp`} alt={text("nightArt", { name })} />
         </picture>
-        {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
+        {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}
         {phase === "error" ? (
           <div className={styles.controls}>
             <FanState

@@ -389,18 +389,18 @@ export function FortuneFlow({
   // 입장에서는 '응, 봐 줘', 대화에서는 다음 말로 가는 강조 버튼 하나만 둔다.
   const primaryLabel = entering ? text("readFortune") : talk ? text(talkChoice[talk - 1]) : null;
 
-  const turns = (cls: string, side = false) => (
+  const turns = () => (
     <>
       <FanAction
         variant="neutral"
-        className={side ? `${cls} ${styles.prev}` : cls}
+        className={`${styles.turn} ${styles.prev}`}
         ariaLabel={text("prevStar")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         onClick={() => choose(index - 1)}
       />
       <FanAction
         variant="neutral"
-        className={side ? `${cls} ${styles.next}` : cls}
+        className={`${styles.turn} ${styles.next}`}
         ariaLabel={text("nextStar")}
         leadingIcon={<FanIcon icon={ChevronRight} />}
         onClick={() => choose(index + 1)}
@@ -446,7 +446,6 @@ export function FortuneFlow({
                 </FanAction>
               ))}
             </div>
-            <span className={styles.turnRow}>{turns(styles.round)}</span>
           </>
         ) : (
           <>
@@ -475,7 +474,7 @@ export function FortuneFlow({
           <source media="(min-width: 48rem)" srcSet={wideArt} />
           <img src={mobileArt} alt={text("cloudArt", { name })} />
         </picture>
-        {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
+        {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}
         {phase === "error" ? (
           <FanState
             inline

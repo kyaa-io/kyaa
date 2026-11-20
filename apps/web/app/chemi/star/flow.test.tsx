@@ -53,14 +53,14 @@ it("shows the entrance with the participation count and asks guests to log in", 
   render(<StarFlow locale="ko" />);
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("별자리 운세");
   expect(await screen.findByText("오늘 128명이 봤어요")).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  fireEvent.click(screen.getByRole("button", { name: "별자리 운세 보기" }));
   expect(await screen.findByText("별자리 운세를 보려면 로그인해 주세요.")).toBeTruthy();
 });
 
 it("walks calc → talk 1~4 → result → chart and back one step at a time", async () => {
   const fetcher = stubFetch();
   render(<StarFlow locale="ko" />);
-  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  fireEvent.click(screen.getByRole("button", { name: "별자리 운세 보기" }));
   expect(window.location.search).toContain("step=calc");
   await screen.findByText("1/4", undefined, { timeout: 4000 });
   expect(window.location.search).toContain("step=talk-1");
@@ -111,7 +111,7 @@ function openBirthSheet(extra: (path: string, init?: RequestInit) => Response | 
     return extra(path, init);
   });
   render(<StarFlow locale="ko" />);
-  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  fireEvent.click(screen.getByRole("button", { name: "별자리 운세 보기" }));
   return fetcher;
 }
 
@@ -194,7 +194,7 @@ it("reloads the result when going forward lands on an address with a different r
     path.startsWith("/api/chemi/readings/other") ? Response.json({ ...reading(), readingId: "other" }) : undefined,
   );
   render(<StarFlow locale="ko" />);
-  fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
+  fireEvent.click(screen.getByRole("button", { name: "별자리 운세 보기" }));
   await screen.findByText("1/4", undefined, { timeout: 4000 });
   window.history.pushState(null, "", "/chemi/star?locale=ko&step=result&r=other&c=changha");
   window.dispatchEvent(new PopStateEvent("popstate"));
