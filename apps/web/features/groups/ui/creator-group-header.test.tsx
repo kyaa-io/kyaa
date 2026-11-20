@@ -14,6 +14,7 @@ vi.mock('./proof-tab-label',()=>({ProofTabLabel:({label}:any)=>label}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=><button>page-menu</button>,useCompactHeader:()=>false}));
 vi.mock('./group-activities',()=>({GroupActivitiesPanel:({pageId}:any)=><div>activities:{pageId}</div>,GroupEventsList:()=>null,GroupCollections:()=>null}));
 vi.mock('./group-rooms-panel',()=>({GroupRoomsPanel:({pageId,slug}:any)=><div>rooms:{pageId}:{slug}</div>}));
+vi.mock('./group-chat-panel',()=>({GroupChatPanel:({pageId}:any)=><div>chat:{pageId}</div>}));
 vi.mock('./group-members',()=>({GroupMembers:()=>null}));
 vi.mock('@/features/reaction/ui/reaction-action',()=>({ReactionAction:({slug,variant}:any)=><button data-testid='page-like' data-variant={variant}>like:{slug}</button>}));
 vi.mock('./creator-group-home',()=>({CreatorBrandNewsPreview:()=>null}));
@@ -67,14 +68,14 @@ it('Q1 brand: signed-in join button, joined shows a status that does not leave, 
 it('signed out never asks for my summary',()=>{render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(state.urls.filter(url=>url?.startsWith('/api/me/'))).toEqual([]);});
 it('lists fan proof after the board and keeps the fan page free of a fans-and-ranking tab',()=>{
  state.data={page:page(),membership:null};const {container}=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);
- expect(Array.from(container.querySelectorAll('nav[data-fan-tabs] a')).map(link=>link.textContent)).toEqual(['홈','게시판','덕후인증','비밀방','캘린더']);
+ expect(Array.from(container.querySelectorAll('nav[data-fan-tabs] a')).map(link=>link.textContent)).toEqual(['홈','게시판','덕후인증','채팅방(임시운영)','캘린더']);
  expect(screen.getByRole('link',{name:'홈'})).toHaveAttribute('aria-current','page');
 });
 it('renders the page menu exactly once for a member and not at all otherwise',()=>{state.data={page:page(),membership:{role:'member',joinedAt:'2026-11-01'}};const view=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(screen.getAllByRole('button',{name:'page-menu'})).toHaveLength(1);view.unmount();state.data={page:page(),membership:null};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);expect(screen.queryByRole('button',{name:'page-menu'})).toBeNull();});
 it('keeps navigation context in the address family it came from',()=>{
  state.data={page:page(),membership:null};state.query='returnTo=%2Fmy&room=original-room&month=2026-12&source=fans';
  const first=render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='rooms'/>);
- expect(screen.getByRole('link',{name:'비밀방'})).toHaveAttribute('href','/elina?locale=ko&tab=rooms&returnTo=%2Fmy&room=original-room');
+ expect(screen.getByRole('link',{name:'채팅방(임시운영)'})).toHaveAttribute('href','/elina?locale=ko&tab=rooms&returnTo=%2Fmy&room=original-room');
  expect(screen.getByRole('link',{name:'캘린더'})).toHaveAttribute('href','/elina?locale=ko&tab=calendar&returnTo=%2Fmy&month=2026-12');
  expect(screen.getByRole('link',{name:'게시판'})).toHaveAttribute('href','/elina?locale=ko&tab=board&returnTo=%2Fmy&source=fans');
  expect(screen.queryByRole('link',{name:'팬·랭킹'})).toBeNull();first.unmount();
@@ -86,7 +87,7 @@ it('keeps navigation context in the address family it came from',()=>{
 it('tab bodies read the one provider and do not resolve the page again',()=>{
  state.data={page:page(),membership:null};
  render(<GroupPageProvider slug='elina' celebrity={celebrity} locale='ko'><CreatorGroupActivities locale='ko'/><CreatorGroupRooms slug='elina' locale='ko'/></GroupPageProvider>);
- expect(screen.getByText('activities:page-id')).toBeInTheDocument();expect(screen.getByText('rooms:page-id:elina')).toBeInTheDocument();
+ expect(screen.getByText('activities:page-id')).toBeInTheDocument();expect(screen.getByText('chat:page-id')).toBeInTheDocument();
  expect(state.urls.filter(url=>url==='/api/groups/resolve/elina').length).toBe(1);
 });
 it('shows a skeleton while resolving and keeps the resolver error with a retry',()=>{

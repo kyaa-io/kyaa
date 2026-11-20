@@ -1,0 +1,10 @@
+{
+  "_source": "local byus 55433, 2026-11-20, migration 20270112030300 inside a rolled-back transaction (fixtures FB-1119-CHAT-PRESENCE-IMPL3)",
+  "emptyFan": {"items": [], "artist": false, "canSend": true},
+  "sendArtist": {"id": "d78c5088-5ae8-4af2-9c1a-cb6826c5da2c"},
+  "readFan": {"items": [{"id": "d78c5088-5ae8-4af2-9c1a-cb6826c5da2c", "body": "엘리나 왔어요", "artist": true, "nickname": "팬0106", "avatarUrl": "/images/avatars/star-pink.webp", "createdAt": "2026-11-20T12:02:33.501054+09:00", "profileId": "00904709-ba3c-49ea-956b-73dba84ce750"}, {"id": "58de5d36-9135-4ffb-b7bd-c90cb4e95a88", "body": "반가워요", "artist": false, "nickname": "별빛", "avatarUrl": "/images/avatars/star-pink.webp", "createdAt": "2026-11-20T12:02:33.503473+09:00", "profileId": "f1610000-0000-4000-8000-000000000001"}], "artist": false, "canSend": true},
+  "readArtist": {"items": [{"id": "58de5d36-9135-4ffb-b7bd-c90cb4e95a88", "body": "반가워요", "artist": false, "nickname": "별빛", "avatarUrl": "/images/avatars/star-pink.webp", "createdAt": "2026-11-20T12:02:33.503473+09:00", "profileId": "f1610000-0000-4000-8000-000000000001"}], "artist": true, "canSend": true},
+  "onlineNone": [],
+  "online": ["elina"],
+  "errors": {"nonFan": "GROUPS_FORBIDDEN:not_verified", "duplicate": "GROUPS_RATE_LIMITED", "sixthIn10s": "GROUPS_RATE_LIMITED", "over500": "GROUPS_INVALID_REQUEST", "anonymous": "GROUPS_FORBIDDEN"}
+}

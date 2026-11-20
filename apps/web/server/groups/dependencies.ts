@@ -4,6 +4,7 @@ import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { secretRoomClosedResponse } from "./secret-room-closed";
 import { createGroupHandler, groupsUnavailable, type GroupOperation } from "./routes";
 import { createLeaderPassHandler, type LeaderPassOperation } from "./leader-pass";
+import { createGroupChatHandler, createOnlineCreatorsHandler } from "./chat";
 export async function groupRoute(operation: GroupOperation, request: Request, params: { id?: string; itemId?: string; slug?: string; postId?:string } = {}) {
   if (!SECRET_ROOMS_ENABLED && ["rooms", "room", "room-state", "messages", "message", "room-read"].includes(operation)) return secretRoomClosedResponse(request.method, operation === "rooms" || operation === "messages");
   if (process.env.KYAA_GROUPS_ENABLED !== "true") return Response.json({ error: { code: "GROUPS_NOT_FOUND" } }, { status: 404, headers: { "cache-control": "private, no-store" } });
@@ -22,4 +23,15 @@ export async function groupReportMediaRoute(request:Request,params:{id:string;it
 export async function leaderPassRoute(operation: LeaderPassOperation, request: Request, params: { id?: string } = {}) {
   if (process.env.KYAA_GROUPS_ENABLED !== "true") return Response.json({ error: { code: "GROUPS_NOT_FOUND" } }, { status: 404, headers: { "cache-control": "private, no-store" } });
   try { return await createLeaderPassHandler(createFanpageDependencies())(operation, request, params); } catch { return groupsUnavailable(); }
+}
+
+/** 팬페이지 '채팅방(임시운영)'. 닫혀 있는 비밀방(SECRET_ROOMS_ENABLED)과 따로 열린다. */
+export async function groupChatRoute(request: Request, pageId: string) {
+  if (process.env.KYAA_GROUPS_ENABLED !== "true") return Response.json({ error: { code: "GROUPS_NOT_FOUND" } }, { status: 404, headers: { "cache-control": "private, no-store" } });
+  try { return await createGroupChatHandler(createFanpageDependencies())(request, pageId); } catch { return groupsUnavailable(); }
+}
+
+export async function onlineCreatorsRoute(request: Request) {
+  if (process.env.KYAA_GROUPS_ENABLED !== "true") return Response.json({ online: [] }, { headers: { "cache-control": "private, no-store" } });
+  try { return await createOnlineCreatorsHandler(createFanpageDependencies())(request); } catch { return groupsUnavailable(); }
 }
