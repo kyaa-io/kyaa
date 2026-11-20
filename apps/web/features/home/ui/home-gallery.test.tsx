@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -130,15 +130,10 @@ describe("home gallery block", () => {
     const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={shorts} />);
     expect(container.querySelectorAll('[data-row="short"]')).toHaveLength(3);
     expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
-    const first = screen.getByRole("button", { name: /R8 라이브 r8-live-watch/ });
+    const first = screen.getByRole("link", { name: /R8 라이브 r8-live-watch/ });
     expect(first.querySelector("img")!.getAttribute("src")).toContain("R8shortsAA1/oardefault.jpg");
     expect(screen.getByRole("link", { name: /전체 보기/ })).toHaveAttribute("href", "/shorts?locale=ko");
-    fireEvent.click(first);
-    const dialog = screen.getByRole("dialog");
-    expect(within(dialog).getByTitle("R8 라이브 r8-live-watch")).toHaveAttribute("src", "https://www.youtube.com/embed/R8shortsAA1?rel=0");
-    expect(within(dialog).queryByRole("link", { name: /YouTube/ })).not.toBeInTheDocument();
-    fireEvent.click(within(dialog).getByRole("button", { name: "더 보기" }));
-    expect(within(dialog).getByRole("link", { name: /YouTube/ })).toHaveAttribute("href", "https://www.youtube.com/watch?v=R8shortsAA1");
+    expect(first).toHaveAttribute("href", "/shorts?locale=ko&video=R8shortsAA1");
     expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
   });
   it("preserves images within the portrait shortform card", () => {
