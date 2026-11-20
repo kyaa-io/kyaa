@@ -28,7 +28,7 @@ export function HomeBanner({
   }, [paused, setIndex]);
   return (
     <section className={styles.banner} onFocus={() => setPaused(true)} onMouseEnter={() => setPaused(true)}>
-      <div className={styles.artwork}>
+      <div className={styles.artwork} data-content={id}>
       <img src={`/chemi/${images[index]}`} alt="" />
       <div className={styles.caption}>
         <div>

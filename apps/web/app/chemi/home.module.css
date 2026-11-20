@@ -17,6 +17,9 @@
   aspect-ratio: 9 / 4;
   object-fit: cover;
 }
+.artwork[data-content="tarot"] img {
+  object-position: center top;
+}
 .caption {
   composes: fade from "../../components/home-entry-cards/banner-overlay.module.css";
   position: absolute;

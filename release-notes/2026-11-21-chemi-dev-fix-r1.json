@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "케미 첫 화면에서 지금 보고 있는 배너와 같은 놀이가 목록에 분홍색으로 표시돼요.",
+    "운세에서는 캐릭터의 말을 읽고 답을 고를 수 있어요. 사주를 다시 방문하면 지난 풀이를 바로 열 수 있어요.",
+    "사진은 로컬 시험 화면이에요."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/chemi-fix-r1-390.png",
+    "release-notes/images/chemi-fix-r1-1440.png"
+  ]
+}
