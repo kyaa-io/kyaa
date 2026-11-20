@@ -51,9 +51,9 @@ export function ChemiHome({
         />}
         <div className={styles.list}>
           {entries
-            .filter(([id, type]) => (preview || type === "readings" || (id === "pair" && matchAvailable)) && (category === "all" || category === type))
+            .filter(([id, type]) => (preview || type === "readings" || ((id === "pair" || id === "run") && matchAvailable)) && (category === "all" || category === type))
             .map(([id, , readingPath]) => {
-              const path = id === "pair" && matchAvailable ? "/chemi/games/match" : readingPath;
+              const path = id === "pair" && matchAvailable ? "/chemi/games/match" : id === "run" && matchAvailable ? "/chemi/games/run" : readingPath;
               const content = (
                 <>
                   <img src={`/chemi/thumb-${id}-128.webp`} alt="" />

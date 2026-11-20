@@ -3,7 +3,7 @@ vi.mock("server-only", () => ({}));
 const { enabled, authorize, rpc } = vi.hoisted(() => ({
   enabled: vi.fn(), authorize: vi.fn(), rpc: vi.fn(),
 }));
-vi.mock("@/app/chemi/games/match/photos", () => ({ getMatchPhotos: enabled }));
+vi.mock("@/features/chemi/domain/availability", () => ({ chemiEnabled: enabled }));
 vi.mock("@/server/fanpage/dependencies", () => ({
   createFanpageDependencies: () => ({ authorize, rpc }),
 }));

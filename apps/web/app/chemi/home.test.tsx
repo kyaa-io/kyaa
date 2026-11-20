@@ -73,9 +73,9 @@ it("opens today's tarot from the list and keeps the unreleased contents pending"
   expect(screen.getByRole("link", { name: copy.zodiac })).toHaveAttribute("href", "/chemi/star?locale=ko");
 });
 
-it("opens the enabled match game from the games tab without enabling the runner", () => {
+it("opens the enabled match game from the games tab and the runner", () => {
   render(<ChemiHome matchAvailable preview copy={copy} locale="ja" growth={false} />);
   fireEvent.click(screen.getByRole("button", { name: copy.games }));
   expect(screen.getByRole("link", { name: copy.pair })).toHaveAttribute("href", "/chemi/games/match?locale=ja");
-  expect(screen.queryByRole("link", { name: copy.run })).toBeNull();
+  expect(screen.getByRole("link", { name: copy.run })).toHaveAttribute("href", "/chemi/games/run?locale=ja");
 });
