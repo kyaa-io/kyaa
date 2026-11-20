@@ -1,6 +1,6 @@
 begin;
 insert into public.app_users(id,privy_user_id,verified_email)
-values('ab220000-0000-4000-8000-000000000001','did:privy:raffle-sql','raffle-sql@example.test');
+values('ab220000-0000-4000-8000-000000000001','did:privy:raffle-sql','raffle-sql@raffle-sql.kyaa.io');
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)
 values('ab220000-0000-4000-8000-000000000002','raffle-sql','published','/images/creator.webp',now(),'{creator}','creator');
 insert into public.fan_posts(id,celebrity_id,app_user_id,body,idempotency_key,create_request_hash)
@@ -22,7 +22,7 @@ insert into public.fan_post_comments(post_id,app_user_id,body,idempotency_key)
 select 'ab220000-0000-4000-8000-000000000003','ab220000-0000-4000-8000-000000000001','Verified comment '||n,extensions.gen_random_uuid()
 from generate_series(1,500) n;
 insert into public.app_users(id,privy_user_id,verified_email)
-values('ab220000-0000-4000-8000-000000000004','did:privy:raffle-other','raffle-other@example.test');
+values('ab220000-0000-4000-8000-000000000004','did:privy:raffle-other','raffle-other@raffle-sql.kyaa.io');
 set local role service_role;
 select public.refresh_signup_raffle_participant('ab220000-0000-4000-8000-000000000004',true,now()-interval '1 day',now()+interval '1 day');
 do $$
