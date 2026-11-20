@@ -44,7 +44,7 @@ export function CreatorGroupLink({ item, locale, className, source = false }: { 
   </FanAction>;
 }
 
-export function HomeShorts({ items: firstItems, locale, layout = "rail", initialVideo, offset = 0, hasMore: firstHasMore = false }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; offset?: number; hasMore?: boolean }) {
+export function HomeShorts({ items: firstItems, locale, layout = "rail", initialVideo, onSelectVideo, offset = 0, hasMore: firstHasMore = false }: { items: readonly HomeShort[]; locale: AppLocale; layout?: "rail" | "grid"; initialVideo?: string; onSelectVideo?: (videoId: string) => void; offset?: number; hasMore?: boolean }) {
   // The grid loads the next page when its end scrolls into view and the rail when its right end comes near, so the rail always runs to the
   // container's edge; the viewer then steps through everything loaded. A short whose cover cannot be shown is left out (never a bare URL).
   const [loaded, setItems] = useState(firstItems);
@@ -103,10 +103,13 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
       <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
       <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {platformName(item)}</FanText></span>
     </span>;
-    return <li key={item.id} className={styles.item} data-row="short" {...(playsInViewer(item) ? {} : { "data-outbound-kind": "external", "data-outbound-placement": "content" })}>
-        {playsInViewer(item)
-          ? !grid ? <FanAction variant="text" href={`/shorts?locale=${locale}&video=${encodeURIComponent(item.videoId)}`} className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction> : <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={() => setIndex(playable.indexOf(item))}>{cover}{caption}</FanAction>
-          : <FanAction variant="text" href={item.href} external className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>}
+    const linkToFeed = !grid;
+    const linkToSource = grid && !onSelectVideo && !playsInViewer(item);
+    const openCard = () => onSelectVideo ? onSelectVideo(item.videoId) : setIndex(playable.indexOf(item));
+    return <li key={item.id} className={styles.item} data-row="short" {...(linkToSource ? { "data-outbound-kind": "external", "data-outbound-placement": "content" } : {})}>
+        {linkToFeed || linkToSource
+          ? <FanAction variant="text" href={linkToFeed ? `/shorts?locale=${locale}&video=${encodeURIComponent(item.videoId)}` : item.href} external={linkToSource} className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>
+          : <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={openCard}>{cover}{caption}</FanAction>}
         {grid && <CreatorGroupLink item={item} locale={locale} className={styles.creatorLink} source />}
       </li>;
   });

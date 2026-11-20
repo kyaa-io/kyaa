@@ -115,6 +115,7 @@ describe("shorts → fan page (PM 11/13)", () => {
   it("the home rail keeps its compact caption without the extra link", () => {
     render(<HomeShorts items={clips} locale="ko" />);
     expect(screen.queryByRole("link", { name: "엘리나 모임" })).toBeNull();
+    expect(screen.getByRole("link", { name: "엘리나 영상" })).toHaveAttribute("href", "/shorts?locale=ko&video=videoE");
   });
   it("the viewer shows the creator's way to the fan page under the video and lights it when a TikTok short ends", () => {
     const tiktok = [{ id: "t9", platform: "tiktok", videoId: "7690854938997558549", title: "틱톡", href: "https://www.tiktok.com/video/7690854938997558549", creator: { slug: "elina", name: "엘리나" } }] as HomeShort[];
@@ -134,13 +135,13 @@ describe("Instagram reels in the shorts", () => {
   const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000009?variant=thumbnail";
   const reel = (id: string, withCover = true) => ({ id, platform: "instagram", videoId: "AbCdEfGhIjK", title: "릴스 원문 캡션 #reels", href: "https://www.instagram.com/fixture.one/p/AbCdEfGhIjK/", creator: { slug: "a", name: "A" }, ...(withCover ? { thumbnail } : {}) }) as HomeShort;
   it("is a link to the original post that the shared outbound rule decorates, with the stored cover and the Instagram name", () => {
-    const { container } = render(<HomeShorts items={[reel("i1")]} locale="ko" />);
+    const { container } = render(<HomeShorts items={[reel("i1")]} locale="ko" layout="grid" />);
     const link = screen.getByRole("link", { name: "릴스 원문 캡션 #reels" });
     expect(link).toHaveAttribute("href", "https://www.instagram.com/fixture.one/p/AbCdEfGhIjK/");
     expect(link).toHaveAttribute("target", "_blank");
     expect(link.getAttribute("rel")).toContain("noopener");
     expect(link.closest("li")).toHaveAttribute("data-outbound-kind", "external");
-    expect(link).toHaveTextContent("A · Instagram");
+    expect(within(container).getByRole("link", { name: "A 모임" })).toHaveTextContent("A · Instagram");
     expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain(thumbnail);
     fireEvent.click(link);
     expect(screen.queryByRole("dialog")).toBeNull();

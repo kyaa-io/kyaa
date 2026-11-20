@@ -25,6 +25,7 @@ const copy: Record<AppLocale, { sort: string; latest: string; popular: string; a
 };
 
 export function ShortsCatalog({ catalog, locale, initialVideo }: { catalog: { items: readonly HomeShort[]; likes: Record<string, number> }; locale: AppLocale; initialVideo?: string }) {
+  const [selected, setSelected] = useState(initialVideo);
   const [browsing, setBrowsing] = useState(false);
   const [sort, setSort] = useState("latest");
   const [artist, setArtist] = useState("all");
@@ -34,12 +35,12 @@ export function ShortsCatalog({ catalog, locale, initialVideo }: { catalog: { it
     const selected = catalog.items.filter(item => artist === "all" || item.creator.slug === artist);
     return sort === "popular" ? [...selected].sort((a, b) => (catalog.likes[b.videoId] ?? 0) - (catalog.likes[a.videoId] ?? 0) || catalog.items.indexOf(a) - catalog.items.indexOf(b)) : selected;
   }, [artist, catalog, sort]);
-  if (!browsing && items.length) return <ShortsFeed items={items} locale={locale} initialVideo={initialVideo} onClose={() => setBrowsing(true)} />;
+  if (!browsing && items.length) return <ShortsFeed items={items} locale={locale} initialVideo={selected} onClose={() => setBrowsing(true)} />;
   return <>
     <div className={styles.shortsControls}>
       <FanTabs variant="chip" label={t.artists} current={artist} items={[{ key: "all", label: t.all, onSelect: () => setArtist("all") }, ...artists.map(([slug, name]) => ({ key: slug, label: name, onSelect: () => setArtist(slug) }))]} />
       <FanSelectMenu label={t.sort} value={sort} onValueChange={setSort} align="end" options={[{ value: "latest", label: t.latest }, { value: "popular", label: t.popular }]} />
     </div>
-    <HomeShorts key={`${sort}:${artist}`} items={items} locale={locale} layout="grid" />
+    <HomeShorts key={`${sort}:${artist}`} items={items} locale={locale} layout="grid" onSelectVideo={videoId => { setSelected(videoId); setBrowsing(false); }} />
   </>;
 }
