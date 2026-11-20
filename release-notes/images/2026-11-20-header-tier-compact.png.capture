@@ -1,1 +1,1 @@
-{"tool": "playwright", "mode": "fixture", "url": "http://localhost:3976/", "capturedAt": "2026-11-20T11:37:07.916798+00:00", "sha256": "dfd0f6909953d7aab034c98e1741e82e596ae66de1879c1094eb5d7b92604712"}
+{"tool":"local-login","url":"http://localhost:3862/","mode":"login","capturedAt":"2026-11-20T13:22:24.919Z","sha256":"6b740533d63884bf1d4acdfb0c64178f9e8770a6f8b892be9b7132a46616d102"}
