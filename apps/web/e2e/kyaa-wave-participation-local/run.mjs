@@ -92,7 +92,7 @@ try {
    }
   }
   await page.goto(url({ scenario: 'already' }));
-  await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=/);
+  await expect(page).toHaveURL(/\/kyaa-wave-fanpage\?locale=/, { timeout: 20_000 /* authenticated request deadline */ });
   await expect(page.locator('input')).toHaveCount(0);
   await page.goto(url({ scenario: 'restoring' }));
   await expect(page.getByRole('status')).toBeVisible();

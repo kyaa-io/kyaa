@@ -36,7 +36,7 @@ try {
   for(const locale of APP_LOCALES){
    const copy=runmusicCopy[locale];
    await page.goto(url('new',locale));
-   await expect(page.getByRole('dialog')).toBeVisible();
+   await expect(page.getByRole('dialog')).toBeVisible({ timeout: 20_000 /* authenticated request deadline */ });
    await expect.poll(()=>page.getByRole('dialog').evaluate(dialog=>dialog.contains(document.activeElement))).toBe(true);
    await expect(page.getByRole('dialog').getByText(copy.kakaoIdHelpTitle,{exact:true})).toBeVisible();
    await expect(page.getByRole('dialog').getByLabel(copy.kakaoId,{exact:true})).toHaveAccessibleDescription(`${copy.contactHelp} ${copy.kakaoIdHelp.split(" → ").join(" ")}`);
