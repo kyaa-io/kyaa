@@ -429,7 +429,7 @@ export function SajuFlow({
             } catch (error) {
               if (controller.signal.aborted) throw error;
               commit({ view: "first", p: null, w: null }, "replace");
-              showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+              showFanToast({ title: text("pairMissing") });
             }
           } catch {
             // 다른 이동이 이어받은 요청의 끝은 화면에 반영하지 않는다.
@@ -442,7 +442,7 @@ export function SajuFlow({
             writeUrl(clearedUrl, "replace", 0);
             navRef.current = toEnter(next);
 
-            showFanToast({ title: "저장된 풀이가 아니라 처음 화면으로 돌아왔어요." });
+            showFanToast({ title: text("readingMissing") });
           } finally {
             clearTimeout(timer);
             if (abort.current === controller) setRestoring(false);
@@ -475,7 +475,7 @@ export function SajuFlow({
         setSheet(null);
         setUnder14(true);
       } else {
-        setBirthError("저장하지 못했어요. 다시 시도해 주세요.");
+        setBirthError(text("saveFailed"));
       }
     } finally {
       setBirthBusy(false);
@@ -533,14 +533,14 @@ export function SajuFlow({
       if (!response.ok) throw Error();
       const card = await response.json();
       await navigator.clipboard.writeText(new URL(card.url, location.origin).href);
-      showFanToast({ title: "결과를 복사했어요", tone: "success" });
+      showFanToast({ title: text("copied"), tone: "success" });
       await fetch(`/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`, {
         method: "POST",
         headers,
         body: JSON.stringify({ via: "copy" }),
       }).catch(() => {});
     } catch {
-      showFanToast({ title: "복사하지 못했어요", tone: "error" });
+      showFanToast({ title: text("copyFailed"), tone: "error" });
     } finally {
       setSharing(false);
     }
@@ -554,7 +554,7 @@ export function SajuFlow({
       setPartners(profile.partners);
       setSheet(profile.partners.length ? "pairPick" : "pair");
     } catch {
-      showFanToast({ title: "상대 목록을 불러오지 못했어요", tone: "error" });
+      showFanToast({ title: text("partnerFailure"), tone: "error" });
     }
   }
 
@@ -622,8 +622,8 @@ export function SajuFlow({
       setBirthBusy(false);
       setBirthError(
         error instanceof ChemiRequestError && error.code === "CHEMI_PARTNER_FULL"
-          ? "저장한 상대가 가득 찼어요. 저장한 상대에서 골라 주세요."
-          : "저장하지 못했어요. 다시 시도해 주세요.",
+          ? text("partnerLimit")
+          : text("saveFailed"),
       );
     }
   }
@@ -858,7 +858,7 @@ export function SajuFlow({
             >
               <span className={sheetStyles.topicBody}>
                 <span className={sheetStyles.topicText}>
-                  <FanText role="item">궁합</FanText>
+                  <FanText role="item">{text("match")}</FanText>
                   <FanText role="meta"><ReadingText id="dailyFree" /></FanText>
                 </span>
                 <FanIcon icon={ChevronRight} />
