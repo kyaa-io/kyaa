@@ -36,7 +36,10 @@ import { liveSuggestionsCopy } from "./catalogs/features__live-submissions__ui";
 import { rankingsSource } from "../features/rankings/ui/rankings-source";
 import { publicLiveDashboardCopy } from "./catalogs/features__public-live-dashboard";
 
+import { adminReviewLabels } from "./catalogs/components__admin__review-navigation";
+
 const fanWebCatalogs = new Set([
+  "components__admin__review-navigation.ts",
   "components__custom-social-auth.ts",
   "components__editor.ts",
   "components__fan-ui__fan-ui-copy.ts",
@@ -92,6 +95,7 @@ describe("localized messages", () => {
   });
   it("keeps fan web copy complete in every locale with matching placeholders", () => {
     const maps = [
+      adminReviewLabels,
       ...[paginationCopy, justNowLabel, waveDrawCopy, waveEngagementCopy, waveFriendsCopy, waveHomeCheerCopy, waveMediaCopy, waveMissionsCopy, waveNavigationCopy, wavePrivacyCopy, waveProgramsCopy, liveSuggestionsCopy, publicLiveDashboardCopy].map(copy => Object.fromEntries(APP_LOCALES.map(locale => [locale, copy(locale)]))),
       contentMessages, gggiCopy, personalCopy, accountDeletionCopy, deletionGuideCopy, raffleDiscoveryCopy, giftCopy, fanPageBrandCopy, leaderboardActivityCopy, Object.fromEntries(APP_LOCALES.map(locale => [locale, participationCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, discoveryCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, communityCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => [locale, feedCopy(locale)])), Object.fromEntries(APP_LOCALES.map(locale => {
       const navigation = fanPageNavigationCopy(locale);
