@@ -7,7 +7,8 @@ create index cs_receipt_pending_idx on public.cs_inquiries(created_at,id) where 
 create function public.consume_cs_receipt() returns jsonb
 language sql security definer set search_path='' as $$
   with candidate as (
-    select i.id, u.verified_email as email, i.locale, m.body
+    select i.id, u.verified_email as email,
+      case when coalesce(u.preferred_locale,i.locale)='ko' then 'ko' else 'en' end as locale, m.body
     from public.cs_inquiries i
     join public.app_users u on u.id=i.app_user_id and u.status='active'
     join public.cs_messages m on m.inquiry_id=i.id and m.operation='create'
