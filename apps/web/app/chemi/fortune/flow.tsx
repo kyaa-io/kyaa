@@ -380,11 +380,11 @@ export function FortuneFlow({
         : fortuneEnterLine(character, null, needBirth ? "birth" : "enter");
 
   const wideArt =
-    character === "changha" ? `${art}/fortune-v1.webp` : `${art}/fortune-${character}-v1.webp`;
+    character === "changha" ? `${art}/fortune-v1.webp` : `${art}/fortune-${character}-wide-v2.webp`;
   const mobileArt =
     character === "changha"
       ? `${art}/fortune-${talk ? mobileTalkArt[talk - 1] : "portrait"}-v1.webp`
-      : wideArt;
+      : `${art}/fortune-${character}-v2.webp`;
   const face =
     character === "changha" && talk && talk > 1
       ? `${art}/fortune-${mobileTalkArt[talk - 1]}-v1.webp`
@@ -474,7 +474,7 @@ export function FortuneFlow({
           </>
         )}
       </div>
-      <div className={styles.stage} data-portrait={character !== "changha" || undefined}>
+      <div className={styles.stage}>
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
           <img src={mobileArt} alt={`${name}의 구름 위 정자`} />

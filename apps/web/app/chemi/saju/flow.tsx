@@ -14,7 +14,6 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanDialog, FanSheet } from "@/components/fan-ui/fan-dialog";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanText } from "@/components/fan-ui/fan-text";
-import { MediaBackdrop, mediaFillClass } from "@/components/fan-ui/media-fill";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import {
@@ -700,10 +699,9 @@ export function SajuFlow({
               ? tone.again
               : tone.hello;
 
-  const wideArt = character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-v1.webp`;
+  const wideArt =
+    character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-wide-v2.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
-  /** 세로 그림 최애: 넓은 화면에서 그림을 통째로 왼쪽에 두고 남는 면은 공통 MediaFill 이 그 그림의 흐린 복사본으로 채운다. */
-  const portrait = character !== "changha";
   const primaryLabel = entering && !again ? "응, 봐 줘" : talk ? talkChoice[talk - 1] : null;
 
   const turns = (cls: string, side = false) => (
@@ -901,11 +899,7 @@ export function SajuFlow({
           </>
         )}
       </div>
-      <div
-        className={portrait ? `${styles.stage} ${mediaFillClass}` : styles.stage}
-        data-portrait={portrait ? character : undefined}
-      >
-        {portrait && <MediaBackdrop src={wideArt} />}
+      <div className={styles.stage}>
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
           <img src={mobileArt} alt={`${name}의 사주 장면`} />

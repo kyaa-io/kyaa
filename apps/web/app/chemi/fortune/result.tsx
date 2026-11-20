@@ -329,12 +329,12 @@ export function FortuneResult({
           </FanText>
           <FanHeading as="h1">{headline}</FanHeading>
           <picture className={styles.hero}>
-            <source
-              media="(min-width: 48rem)"
-              srcSet={`/chemi/fortune/fortune-${character === "changha" ? "" : `${character}-`}v1.webp`}
-            />
             <img
-              src={`/chemi/fortune/fortune-${character === "changha" ? "" : `${character}-`}v1.webp`}
+              src={
+                character === "changha"
+                  ? "/chemi/fortune/fortune-v1.webp"
+                  : `/chemi/fortune/fortune-${character}-wide-v2.webp`
+              }
               alt=""
             />
           </picture>
