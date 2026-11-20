@@ -21,11 +21,17 @@ export function GroupApplicationManager({ locale,presentation }: { locale: "ko" 
  const c = copy[locale];
  return <ParticipationAdmin groupLayout className={groupStyles.applicationSurface} locale={locale} title={c.title} description={c.description}>{role => <Manager locale={locale} role={role} presentation={presentation} />}</ParticipationAdmin>;
 }
-function Applicant({item,locale}:{item:z.infer<typeof application>;locale:"ko"|"en"}) {
- const user=item.applicant;
- if (!user) return <small>{locale==="ko"?"신청자 · 기록 없음":"Applicant · No record"}</small>;
- const joined=new Intl.DateTimeFormat(locale==="ko"?"ko-KR":"en-US",{dateStyle:"medium",timeStyle:"short"}).format(new Date(user.joinedAt));
- return <small>{locale==="ko"?"신청자":"Applicant"} · <a href={`/admin/fans?fanId=${user.id}&lang=${locale}`}>{user.nickname || user.id}</a> · {locale==="ko"?"가입일":"Joined"} {joined}</small>;
+function Applicant({ item, locale }: { item: z.infer<typeof application>; locale: "ko" | "en" }) {
+ const user = item.applicant;
+ const ko = locale === "ko";
+ const joined = user && new Intl.DateTimeFormat(ko ? "ko-KR" : "en-US", {
+  dateStyle: "medium", timeStyle: "short",
+ }).format(new Date(user.joinedAt));
+ return <small className={groupStyles.applicant}>
+  {ko ? "신청자" : "Applicant"} · {user
+   ? <><a href={`/admin/fans?fanId=${user.id}&lang=${locale}`}>{user.nickname || user.id}</a> · {ko ? "가입일" : "Joined"} {joined}</>
+   : ko ? "기록 없음" : "No record"}
+ </small>;
 }
 function Manager({ locale, role,presentation }: { locale: "ko" | "en"; role: string;presentation?:GroupApplicationPresentation }) {
  const c = copy[locale], [filter, setFilter] = useState("pending"), [selectedId,setSelectedId]=useState<string | undefined>(()=>typeof window==="undefined"?undefined:new URLSearchParams(window.location.search).get("applicationId")??undefined), list = useAdminPage("/api/groups/admin/applications", parse), creators = useParticipationCreators();
