@@ -1,6 +1,8 @@
 import { z } from "zod";
 import { authorSchema, visibilitySchema } from "@/features/fan-posts/domain/content";
 
+const clipAuthorSchema = authorSchema.pick({ nickname: true, avatarUrl: true }).strict();
+
 export const reactionEmojiSchema = z.enum(["❤", "👏", "✨"]);
 export const reactionSummarySchema = z.object({
   emoji: reactionEmojiSchema,
@@ -18,7 +20,7 @@ export const clipAssetSchema = z.object({
 
 export const fanClipSchema = z.object({
   id: z.uuid(), celebritySlug: z.string(), body: z.string().max(5000), visibility: visibilitySchema,
-  revision: z.number().int().positive(), author: authorSchema.extend({
+  revision: z.number().int().positive(), author: clipAuthorSchema.extend({
     profileId: z.uuid().nullable().optional(), fanTier: z.string().min(1).max(40).nullable().optional(),
   }), assets: z.array(clipAssetSchema).min(1).max(4),
   createdAt: z.iso.datetime({ offset: true }), updatedAt: z.iso.datetime({ offset: true }), isOwner: z.boolean(),
@@ -26,11 +28,11 @@ export const fanClipSchema = z.object({
 }).strict();
 
 // What a signed-out reader gets. Strict, so a member id or tier fails closed.
-export const guestFanClipSchema = fanClipSchema.extend({ author: authorSchema }).strict();
+export const guestFanClipSchema = fanClipSchema.extend({ author: clipAuthorSchema }).strict();
 
 export const fanClipCommentSchema = z.object({
   id: z.uuid(), clipId: z.uuid(), parentId: z.uuid().nullable(), body: z.string().trim().min(1).max(1000),
-  revision: z.number().int().positive(), author: authorSchema, createdAt: z.iso.datetime({ offset: true }),
+  revision: z.number().int().positive(), author: clipAuthorSchema, createdAt: z.iso.datetime({ offset: true }),
   isOwner: z.boolean(), reactions: z.array(reactionSummarySchema).max(3),
 }).strict();
 
