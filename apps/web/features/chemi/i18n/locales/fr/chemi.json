@@ -155,6 +155,9 @@
     "back": "Retour"
   },
   "readingUi": {
+    "askAgain": "Poser une autre question",
+    "askCaution": "À quoi dois-je faire attention aujourd’hui ?",
+    "askStrength": "Comment utiliser mes points forts ?",
     "skip": "",
     "symbol": "",
     "me": "",

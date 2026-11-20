@@ -155,6 +155,9 @@
     "back": "뒤로 가기"
   },
   "readingUi": {
+    "askAgain": "한 번 더 묻기",
+    "askCaution": "오늘 뭘 조심할까?",
+    "askStrength": "내 장점을 어떻게 써볼까?",
     "skip": "건너뛰기",
     "symbol": "그림 속 상징",
     "me": "나",

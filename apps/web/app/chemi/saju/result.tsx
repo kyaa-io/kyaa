@@ -7,7 +7,7 @@
  */
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { ChevronLeft, ChevronRight, Droplet, Flame, Gem, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -54,6 +54,37 @@ const hero = (character: SajuCharacterId) =>
     : `/chemi/saju/saju-${character}-wide-v2.webp`;
 
 const levelWidth = { 많이: 92, 보통: 56, 조금: 28 } as const;
+
+function FollowUp({ character, caution, strength }: {
+  character: SajuCharacterId;
+  caution: string;
+  strength: string;
+}) {
+  const [choice, choose] = useState<"askCaution" | "askStrength" | null>(null);
+  const replies = {
+    changha: [`${caution}은 오늘 조금 조심해 봐.`, `오늘은 ${strength}부터 살려 봐.`],
+    elina: [`오늘은 ${caution}을 조심해요.`, `오늘은 ${strength}부터 살려 봐요.`],
+    yuna: [`있지, 오늘은 ${caution}을 조심해.`, `오늘은 ${strength}부터 써 보자!`],
+    dosa: [`오늘은 ${caution}을 삼가시오.`, `오늘은 ${strength}부터 살려 보시오.`],
+  };
+  return (
+    <details onToggle={event => { if (!event.currentTarget.open) choose(null); }}>
+      <summary className={styles.questionToggle}><ReadingText id="askAgain" /></summary>
+      {choice ? (
+        <div role="status" className={styles.panel}>
+          <FanText as="p" role="label"><ReadingText id={choice} /></FanText>
+          <FanText as="p" role="body">{replies[character][choice === "askCaution" ? 0 : 1]}</FanText>
+        </div>
+      ) : (
+        <div className={styles.actions}>
+          {(["askCaution", "askStrength"] as const).map(question => (
+            <FanAction key={question} onClick={() => choose(question)}><ReadingText id={question} /></FanAction>
+          ))}
+        </div>
+      )}
+    </details>
+  );
+}
 
 export function SajuResult({
   locale,
@@ -276,6 +307,7 @@ export function SajuResult({
                   </div>
                 ))}
               </dl>
+              <FollowUp key={character + first.stem} character={character} caution={first.cautionN} strength={first.strengthN} />
             </>
           )}
           {view === "pair" && pair && !pair.timeKnown && (

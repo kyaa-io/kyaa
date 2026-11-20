@@ -155,6 +155,9 @@
     "back": "Kembali"
   },
   "readingUi": {
+    "askAgain": "Tanya lagi",
+    "askCaution": "Apa yang perlu kuwaspadai hari ini?",
+    "askStrength": "Bagaimana cara memanfaatkan kelebihanku?",
     "skip": "",
     "symbol": "",
     "me": "",

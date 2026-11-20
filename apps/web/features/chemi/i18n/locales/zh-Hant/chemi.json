@@ -155,6 +155,9 @@
     "back": "返回"
   },
   "readingUi": {
+    "askAgain": "再問一次",
+    "askCaution": "今天要注意什麼？",
+    "askStrength": "我該怎麼發揮優勢？",
     "skip": "",
     "symbol": "",
     "me": "",

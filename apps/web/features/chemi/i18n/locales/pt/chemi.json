@@ -155,6 +155,9 @@
     "back": "Voltar"
   },
   "readingUi": {
+    "askAgain": "Fazer mais uma pergunta",
+    "askCaution": "Com o que devo ter cuidado hoje?",
+    "askStrength": "Como posso usar meus pontos fortes?",
     "skip": "",
     "symbol": "",
     "me": "",
