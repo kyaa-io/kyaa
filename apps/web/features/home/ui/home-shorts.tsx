@@ -108,7 +108,7 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
     const openCard = () => onSelectVideo ? onSelectVideo(item.videoId) : setIndex(playable.indexOf(item));
     return <li key={item.id} className={styles.item} data-row="short" {...(linkToSource ? { "data-outbound-kind": "external", "data-outbound-placement": "content" } : {})}>
         {linkToFeed || linkToSource
-          ? <FanAction variant="text" href={linkToFeed ? `/shorts?locale=${locale}&video=${encodeURIComponent(item.videoId)}` : item.href} external={linkToSource} className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>
+          ? <FanAction variant="text" href={linkToFeed ? `/shorts?locale=${locale}&video=${encodeURIComponent(item.videoId)}` : item.href} external={linkToSource} reloadDocument={linkToFeed} className={styles.card} ariaLabel={item.title}>{cover}{caption}</FanAction>
           : <FanAction variant="text" type="button" className={styles.card} ariaLabel={item.title} onClick={openCard}>{cover}{caption}</FanAction>}
         {grid && <CreatorGroupLink item={item} locale={locale} className={styles.creatorLink} source />}
       </li>;
