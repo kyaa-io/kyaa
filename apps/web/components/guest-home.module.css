@@ -37,6 +37,7 @@
 .heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
 .contentSection { margin-top: var(--fan-section-gap); }
 /* 대표 2026-11-17: 찐팬 하트 후원 줄(홈배너1)은 랭킹 카드 바로 아래, 위 16px. 다음 구역과의 간격은 그쪽이 가진다. */
+.fanPageApply { margin-top: var(--space-4); }
 .jjinfanStrip { margin-top: var(--space-4); }
 /* 홈배너2(home_mid, 외부 광고): 메인 배너 바로 아래, 위 16px. 광고가 있으면 랭킹도 16px 아래에 붙는다. 없으면 구역도 간격도 그리지 않는다. */
 .midBanner { margin-top: var(--space-4); }
