@@ -1,5 +1,6 @@
 "use client";
 
+import { ParticipationCount } from "../participation";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import Link from "@/components/fan-ui/hover-prefetch-link";
@@ -26,6 +27,7 @@ import type { TarotDraw, TarotStep } from "./types";
 import styles from "./tarot.module.css";
 
 type Props = {
+  locale: string;
   step: TarotStep;
   character: TarotCharacter;
   /** 회원이 오늘 이미 뽑은 카드. 있으면 입장 장면이 '다시 온 장면'이다. */
@@ -171,6 +173,7 @@ export function TarotStage(props: Props) {
         {entry && !revisit ? (
           <div className={styles.title}>
             <FanHeading as="h1"><ReadingTitle id="tarot" /></FanHeading>
+                <ParticipationCount locale={props.locale} />
           </div>
         ) : null}
         {revisit ? <NameRow draw={shown} trailing={uiText("todayCard")} /> : null}
