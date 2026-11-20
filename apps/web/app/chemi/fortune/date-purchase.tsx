@@ -30,6 +30,7 @@ export function DatePurchase({
     price: number;
     balance: number;
   }>();
+  const [revisit, setRevisit] = useState(false);
   const [saved, setSaved] = useState<FortuneReading>();
   useEffect(() => {
     const day = new URLSearchParams(window.location.search).get("date");
@@ -38,6 +39,7 @@ export function DatePurchase({
   function reset(value: string) {
     setDay(value);
     setQuote(undefined);
+    setRevisit(false);
     setSaved(undefined);
     setError(false);
   }
@@ -63,6 +65,7 @@ export function DatePurchase({
       const reading = parseNewFortune(body);
       if (body.readingId && !reading) throw Error();
       setQuote(body.todayFree ? undefined : body);
+      setRevisit(Boolean(reading && body.replayed));
       setSaved(reading ?? undefined);
     } catch {
       setError(true);
@@ -92,7 +95,9 @@ export function DatePurchase({
         </p>
       )}
       {saved && !saved.result.locked ? (
-        <div aria-live="polite">
+        revisit ? (
+          <FanAction onClick={() => setRevisit(false)}><ReadingText id="readDateAgain" /></FanAction>
+        ) : <div aria-live="polite">
           <FanText role="item">
             {saved.kstDate.replaceAll("-", ".")} · {saved.result.grade.name}
           </FanText>
