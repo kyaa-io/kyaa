@@ -356,7 +356,7 @@ export function StarFlow({
         setSheet(null);
         setUnder14(true);
       } else {
-        setBirthError("저장하지 못했어요. 다시 시도해 주세요.");
+        setBirthError(text("saveFailed"));
       }
     } finally {
       setBirthBusy(false);

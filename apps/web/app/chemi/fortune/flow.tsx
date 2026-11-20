@@ -172,7 +172,7 @@ export function FortuneFlow({
       } catch {
         writeUrl({ step: null, r: null }, "replace");
         setStep("enter");
-        showFanToast({ title: "오늘의 운세 결과가 아니라 처음 화면으로 돌아왔어요." });
+        showFanToast({ title: text("fortuneMissing") });
       } finally {
         setRestoring(false);
       }
@@ -305,7 +305,7 @@ export function FortuneFlow({
         setSheet(null);
         setUnder14(true);
       } else {
-        setBirthError("저장하지 못했어요. 다시 시도해 주세요.");
+        setBirthError(text("saveFailed"));
       }
     } finally {
       setBirthBusy(false);

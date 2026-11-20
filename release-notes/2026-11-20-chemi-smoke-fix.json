@@ -3,12 +3,10 @@
     "영어로 최애 사주를 열면 제목과 지난 풀이 버튼, 첫 인사가 영어로 보여요.",
     "지난 풀이를 새로고침한 뒤에도 뒤로 가기를 누르면 최애를 다시 고를 수 있어요.",
     "오늘 운세의 한마디에서 저녁 시간을 19시처럼 표시해요.",
-    "사진은 예시 데이터로 확인한 로컬 화면이에요."
+    "예시 데이터로 만든 로컬 화면입니다."
   ],
   "path": "/chemi/saju",
   "images": [
-    "release-notes/images/2026-11-20-chemi-smoke-en-390.png",
-    "release-notes/images/2026-11-20-chemi-smoke-back-1440.png",
-    "release-notes/images/2026-11-20-chemi-smoke-fortune-390.png"
+    "release-notes/images/2026-11-20-chemi-saju-local-en.png"
   ]
 }
