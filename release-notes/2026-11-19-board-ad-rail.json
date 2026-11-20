@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "넓은 화면에서 크리에이터 게시판과 글 상세 오른쪽에 덕질 탭과 같은 광고가 표시돼요.",
+    "표시할 광고가 없으면 광고 자리를 비워 두지 않으며, 모바일에서는 게시글 목록을 이어서 볼 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/nchive",
+  "images": [
+    "release-notes/images/2026-11-19-board-ads-1440.png",
+    "release-notes/images/2026-11-19-board-ads-390.png",
+    "release-notes/images/2026-11-19-post-ads-1440.png",
+    "release-notes/images/2026-11-19-post-ads-390.png"
+  ]
+}

@@ -1,4 +1,5 @@
 "use client";
+import { BoardAdRail } from "@/features/groups/ui/board-ad-rail";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReactionCount, ReactionIcon } from "@/components/fan-ui/reaction-count";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
@@ -23,7 +24,7 @@ import styles from "./post-detail-more.module.css";
 type Item = FanPost;
 type Tab = "popular" | "latest";
 
-/** 레일에 늘 같은 행 수 높이를 둔다. 글이 적으면 남는 칸은 막대 없는 빈 줄이라 블록 높이가 데이터 수를 따라 바뀌지 않는다(막대는 불러오는 중에만). */
+/** 한 번에 표시하는 추천 글 수와 로딩 행 수. */
 export const MORE_ROWS = 5;
 
 const labels: Record<AppLocale, readonly [string, string, string]> = {
@@ -96,50 +97,63 @@ function MoreRow({ item, slug, locale, tab }: { item: Item; slug: string; locale
  * 글 상세 옆(1024 미만에서는 본문 아래) '이 페이지의 다른 글'. 같은 페이지의 인기·최신 팬 글을 읽는 사람의 권한 그대로 받아
  * 지금 글을 빼고 다섯 개를 보인다. 그 아래 팬페이지 관리 배너 자리(브랜드 페이지는 없음)는 배너가 없으면 아무것도 그리지 않는다.
  */
-type MoreProps = { slug: string; postId: string; locale: AppLocale; banner?: boolean };
+type MoreProps = { slug: string; postId: string; locale: AppLocale; banner?: boolean; ads?: boolean };
 
 export function PostDetailMore(props: MoreProps) {
   const tab = useSearchParams().get("more") === "latest" ? "latest" : "popular";
   return <MoreList key={`${props.slug}:${props.postId}:${props.locale}`} {...props} tab={tab} />;
 }
 
-function MoreList({ slug, postId, locale, banner = true, tab }: MoreProps & { tab: Tab }) {
-  const [offset, setOffset] = useState(0);
-  const [cursor, setCursor] = useState<string | null>(null);
+function MoreList({ slug, postId, locale, banner = true, ads, tab }: MoreProps & { tab: Tab }) {
+  // Keep the controls in the same column after the reader switches tabs.
+  const [tabPlacement, setTabPlacement] = useState<boolean | null>(null);
+  const [pagination, setPagination] = useState<{ tab: Tab; offset: number; cursor: string | null }>({ tab, offset: 0, cursor: null });
+  // Reset together with the URL tab, which Next.js can commit after the click handler.
+  const page = pagination.tab === tab ? pagination : { tab, offset: 0, cursor: null };
+  if (page !== pagination) setPagination(page);
+  const { offset, cursor } = page;
   const [title, popularLabel, latestLabel] = labels[locale], copy = contentCopy(locale), contentLocale = toContentLocale(locale);
   const query = new URLSearchParams({ locale: contentLocale, limit: String(MORE_ROWS), exclude: postId });
   if (cursor) query.set("cursor", cursor);
   const base = `/api/celebrities/${encodeURIComponent(slug)}`;
   const url = tab === "popular" ? `${base}/popular-posts?period=week&locale=${contentLocale}` : `${base}/posts?${query}`;
-  const resource = useCommunityResource(url, parseMore);
+  const resource = useCommunityResource(url, parseMore, true, false, false, true);
+  const [shownPage, setShownPage] = useState({ tab, offset });
+  // The resource retains the previous response while pending. Keep its page and link context too.
+  if (!resource.pending && (shownPage.tab !== tab || shownPage.offset !== offset)) {
+    setShownPage({ tab, offset });
+  }
+  const visiblePage = resource.pending ? shownPage : { tab, offset };
   const data = resource.state.status === "ready" ? resource.state.data : null;
   const eligible = data?.items.filter(item => item.id !== postId) ?? [];
-  const start = offset >= eligible.length ? 0 : offset;
+  const start = visiblePage.offset >= eligible.length ? 0 : visiblePage.offset;
   const items = eligible.slice(start, start + MORE_ROWS);
   const nextCursor = data?.nextCursor;
-  const hasMore = tab === "popular" ? eligible.length > start + MORE_ROWS : Boolean(nextCursor);
+  const hasMore = !resource.pending && (tab === "popular" ? eligible.length > start + MORE_ROWS : Boolean(nextCursor));
+  const empty = data !== null && items.length === 0 && !hasMore;
+  const inline = tabPlacement ?? (data === null || empty);
   function selectTab(next: Tab) {
     if (next === tab) return;
-    setOffset(0);
-    setCursor(null);
+    setTabPlacement(inline);
     const url = new URL(window.location.href);
     if (next === "latest") url.searchParams.set("more", "latest");
     else url.searchParams.delete("more");
     window.history.replaceState(null, "", url);
   }
-  return <aside className={styles.rail} data-post-detail-more="">
-    <section className={styles.panel} aria-labelledby={`post-more-${postId}`}>
+  return <aside className={styles.rail} data-post-detail-more="" data-inline={inline ? "" : undefined} data-empty={empty ? "" : undefined}>
+    <section aria-busy={resource.pending || undefined} className={styles.panel} aria-labelledby={`post-more-${postId}`}>
       <header><FanText role="item" as="strong" id={`post-more-${postId}`}>{title}</FanText><FanTabs variant="segment" label={title} current={tab} className={styles.tabs} items={[{ key: "popular", label: popularLabel, onSelect: () => selectTab("popular") }, { key: "latest", label: latestLabel, onSelect: () => selectTab("latest") }]} /></header>
       {resource.state.status === "ready"
-        ? <ul className={styles.list}>{items.map(item => <MoreRow key={item.id} item={item} slug={slug} locale={locale} tab={tab} />)}{Array.from({ length: MORE_ROWS - items.length }, (_, index) => <li key={`blank-${index}`} data-row="" className={styles.empty} aria-hidden="true" />)}</ul>
+        ? items.length > 0 ? <ul className={styles.list}>{items.map(item => <MoreRow key={item.id} item={item} slug={slug} locale={locale} tab={visiblePage.tab} />)}</ul> : <div role="status"><FanText as="p" role="meta" className={styles.empty}>{copy.moreEmpty}</FanText></div>
         : resource.state.status === "error"
           ? <div role="status" className={styles.failed}><FanText role="meta">{copy.failed}</FanText><FanAction variant="neutral" onClick={resource.retry}>{copy.retry}</FanAction></div>
           : <ul className={styles.list} aria-busy="true">{Array.from({ length: MORE_ROWS }, (_, index) => <li key={index} data-row="" className={styles.blank}><FanSkeleton shape="block" className={styles.thumb} /><span className={styles.text}><FanSkeleton /><FanSkeleton /></span></li>)}</ul>}
-      <div className={styles.pagination}>{hasMore && <FanAction variant="neutral" onClick={() => {
-        if (tab === "popular") setOffset(start + MORE_ROWS);
-        else if (nextCursor) setCursor(nextCursor);
-      }}>{copy.more}</FanAction>}</div>
+      {hasMore && <div className={styles.pagination}><FanAction variant="neutral" onClick={() => {
+        if (tab === "popular") setPagination({ ...page, offset: start + MORE_ROWS });
+        else if (nextCursor) setPagination({ ...page, cursor: nextCursor });
+      }}>{copy.more}</FanAction></div>}
     </section>
+    {ads && <BoardAdRail locale={locale} />}
     {banner && <BannerSlot slot="fanpage_second" locale={locale} />}
   </aside>;
 }

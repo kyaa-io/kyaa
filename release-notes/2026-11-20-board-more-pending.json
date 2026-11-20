@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "게시글 상세에서 인기 추천 글을 더 본 뒤 ‘최신’을 누르면, 최신 글이 도착할 때까지 읽던 글과 아래 광고가 제자리에 남아요.",
+    "첫 장은 전환 직전, 둘째 장은 최신 글을 기다리는 순간이에요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-20-board-more-pending-before-1440.png",
+    "release-notes/images/2026-11-20-board-more-pending-pending-1440.png"
+  ]
+}

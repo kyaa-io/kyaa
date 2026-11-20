@@ -15,6 +15,7 @@ import {CreatorGroupHome} from './creator-group-home';
 import {CreatorBoardAside} from './creator-board-aside';
 import {PopularPosts} from './popular-posts';
 import {fanStories} from './home-copy';
+import {BoardAdRail} from './board-ad-rail';
 import styles from './groups.module.css';
 const parseSummary=(body:unknown)=>mySummarySchema.parse((body as {summary:unknown}).summary);
 export function LinkedFanpageContent({celebrity,locale,view,returnTo,pageId,source='all'}:{celebrity:PublishedCelebrity;locale:AppLocale;view:'home'|'board'|'aside';returnTo:string;pageId?:string;source?:BoardFeedSource}){
@@ -25,5 +26,5 @@ export function LinkedFanpageContent({celebrity,locale,view,returnTo,pageId,sour
  const filterHref=(value:BoardFeedSource)=>`/pages/groups/${pageId}?${new URLSearchParams({locale,tab:'board',...(value==='all'?{}:{source:value})})}` as Route;
  if(view==='aside')return aside;
  if(view==='home')return <CreatorGroupHome celebrity={celebrity} locale={locale} channelId={chzzkChannelId(celebrity.socialLinks)} owned={owned} passportId={owned?.passport?.id}/>;
- return <div className={`${styles.creatorPostLayout} ${homeStyles.noTopGap}`}><FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={source} newsFilter={source==='official'?'notice':'all'} returnTo={returnTo} compact headingTitle={fanStories[locale]} beforeFeed={<PopularPosts slug={celebrity.slug} locale={locale}/>} intro='' allowMembers pinnedNotices={notices.items} pinnedPending={notices.pending} filterHref={filterHref}/>{aside}</div>;
+ return <div className={`${styles.creatorPostLayout} ${homeStyles.noTopGap}`}><FanPostFeed slug={celebrity.slug} creatorName={celebrity.name} locale={locale} source={source} newsFilter={source==='official'?'notice':'all'} returnTo={returnTo} compact headingTitle={fanStories[locale]} beforeFeed={<PopularPosts slug={celebrity.slug} locale={locale}/>} intro='' allowMembers pinnedNotices={notices.items} pinnedPending={notices.pending} filterHref={filterHref}/><BoardAdRail locale={locale}/></div>;
 }
