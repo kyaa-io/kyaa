@@ -5,8 +5,8 @@ import { createPublishedContentRepositoryFromEnvironment } from "@/server/conten
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import type { FeedDependencies } from "./feed";
 
-export function createFeedDependencies(): FeedDependencies {
-  const dependencies = createFanpageDependencies();
+export function createFeedDependencies(request?: Request): FeedDependencies {
+  const dependencies = createFanpageDependencies(request);
   const published = createPublishedContentRepositoryFromEnvironment();
   return {
     ...dependencies,

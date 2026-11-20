@@ -31,7 +31,7 @@ const returnTo=(link:HTMLElement)=>new URL(link.getAttribute("href")!,"https://k
 it("audit 7: lists public fans without calling the member APIs, and rows expose no profile action",async()=>{
  routes={"/public-people":{items:[{nickname:"공개 팬",avatarUrl:"/images/avatars/star-pink.webp",tier:"Silver",hearts:3,stamps:2,first_jjinfan_at:null},{nickname:"둘째 팬",avatarUrl:null,tier:null,hearts:0,stamps:0,first_jjinfan_at:null}],nextCursor:null}};
  render(<GroupMembers pageId={pageId} locale="ko" member={false} rankingsSlug="elina" inTab presentation={{creatorName:"엘리나",subtitles:{}}}/>);
- expect(await screen.findByText("공개 팬")).toBeVisible();expect(screen.getByText(levelLabel("ko","Silver"))).toBeVisible();expect(screen.getByLabelText(dukjilText("ko","missionHearts",[3]))).toBeVisible();
+ expect(await screen.findByText("공개 팬")).toBeVisible();expect(screen.getByRole("img",{name:levelLabel("ko","Silver")})).toBeVisible();expect(screen.getByLabelText(dukjilText("ko","missionHearts",[3]))).toBeVisible();
  expect(privateCalls()).toEqual([]);
  expect(screen.queryByRole("link",{name:/공개 팬/})).toBeNull();expect(screen.queryByText("프로필 보기")).toBeNull();expect(screen.queryByRole("button",{name:/DM/})).toBeNull();
 });

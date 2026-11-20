@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { publicAuthorTierSchema } from "@/features/rewards/domain/public-author-tier";
 import { publicAvatarUrlSchema } from "../../profile/domain/avatar";
 import { APP_LOCALES } from "@/i18n/locales";
 
@@ -7,7 +8,7 @@ export type TargetType = z.infer<typeof targetTypeSchema>;
 export const visibilitySchema = z.enum(["public", "members"]);
 const instant = z.iso.datetime({ offset: true });
 
-export const authorSchema = z.object({ nickname: z.string().min(1).max(80), avatarUrl: publicAvatarUrlSchema }).strict();
+export const authorSchema = z.object({ nickname: z.string().min(1).max(80), avatarUrl: publicAvatarUrlSchema, tier: publicAuthorTierSchema.optional() });
 export const assetSchema = z.object({ id: z.uuid(), width: z.number().int().positive(), height: z.number().int().positive() }).strict();
 export type ContentAsset = z.infer<typeof assetSchema>;
 export const postSchema = z.object({

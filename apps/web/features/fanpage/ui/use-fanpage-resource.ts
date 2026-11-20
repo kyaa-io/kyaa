@@ -1,4 +1,5 @@
 "use client";
+import { authorTierRequestHeaders } from "@/features/rewards/domain/public-author-tier";
 import { throwIfAborted } from "@/features/reliability/client/throw-if-aborted";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -49,7 +50,11 @@ export function useFanpageResource<T>(url: string | null, parse: (value: unknown
           const token = requestAuthenticated ? await tokenProvider.current() : null;
           throwIfAborted(signal);
           if (requestAuthenticated && !token) throw new Error("AUTHENTICATION_REQUIRED");
-          const response = await fetch(url, { cache: "no-store", signal, headers: token ? { Authorization: `Bearer ${token}` } : undefined });
+          const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined;
+          const headers = url.startsWith("/api/celebrities/") || url.startsWith("/api/posts/")
+            ? { ...authorTierRequestHeaders, ...authHeaders }
+            : authHeaders;
+          const response = await fetch(url, { cache: "no-store", signal, headers });
           const value: unknown = await response.json();
           if (!response.ok) throw new FanpageReadFailure(response.status, value as FanpageReadFailure["body"]);
           return value;

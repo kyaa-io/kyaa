@@ -8,8 +8,8 @@ import { translateText, translateTexts } from "@/server/content-translation/goog
 import { contentThumbnailPath, readContentThumbnail } from "./stored-thumbnail";
 import type { ContentDependencies } from "./routes";
 
-export function createContentDependencies(): ContentDependencies {
-  const deps = createFanpageDependencies(), env = loadServerEnv();
+export function createContentDependencies(request?: Request): ContentDependencies {
+  const deps = createFanpageDependencies(request), env = loadServerEnv();
   const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false },
     global: { fetch: (input, init) => fetch(input, { ...init, signal: init?.signal ? AbortSignal.any([init.signal, AbortSignal.timeout(60_000)]) : AbortSignal.timeout(60_000) }) },
   });

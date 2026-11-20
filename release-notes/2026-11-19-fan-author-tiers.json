@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "팬페이지 게시판의 글과 댓글, 찐팬 순위에서 이름 옆에 그 팬페이지의 패스포트 등급이 표시돼요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-19-fan-author-tier-board-390.png",
+    "release-notes/images/2026-11-19-fan-author-tier-board-1440.png",
+    "release-notes/images/2026-11-19-fan-author-tier-comments-390.png",
+    "release-notes/images/2026-11-19-fan-author-tier-comments-1440.png",
+    "release-notes/images/2026-11-19-fan-author-tier-leaderboard-390.png",
+    "release-notes/images/2026-11-19-fan-author-tier-leaderboard-1440.png"
+  ]
+}

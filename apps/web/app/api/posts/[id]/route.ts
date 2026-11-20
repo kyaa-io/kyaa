@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 async function handle(request: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
-    return await createContentHandlers(createContentDependencies()).post(request, params.id);
+    return await createContentHandlers(createContentDependencies(request)).post(request, params.id);
   } catch (error) { return contentFailure(error); }
 }
 const waveOriginalGET = handle;

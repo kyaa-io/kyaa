@@ -57,6 +57,7 @@ describe("sorted fan rows", () => {
   it("shows hearts, zero stamps, first heart date and no identifier-dependent profile action", () => {
     render(<GroupMembers pageId={page} locale="ko" member/>);
     expect(screen.getByText(fan.nickname)).toBeVisible(); expect(screen.getByLabelText("하트 2")).toBeVisible();
+    expect(screen.getByText(fan.nickname).parentElement).toContainElement(screen.getByRole("img", { name: "골드" }));
     expect(screen.getByRole("listitem")).toHaveTextContent("누적 스탬프 0");
     expect(screen.getByText(fanListTime(fan.first_jjinfan_at, "ko"))).toHaveAttribute("datetime", fan.first_jjinfan_at);
     expect(screen.queryByRole("button", { name: new RegExp(fan.nickname) })).toBeNull();

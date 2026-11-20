@@ -8,9 +8,10 @@ import { authorizeFanRequest } from "../fan-auth/fan-auth-gate";
 import { createSupabaseFanAuthRepository } from "../fan-auth/supabase-fan-auth-repository";
 import { loadServerEnv } from "../config/env";
 import type { FanpageDependencies } from "./routes";
+import { withAuthorTiers } from "./author-tiers";
 import { withWaveDisplayNames } from "../byus-day/wave-display-names";
 
-export function createFanpageDependencies(): FanpageDependencies {
+export function createFanpageDependencies(request?: Request): FanpageDependencies {
   const env = loadServerEnv();
   const config = { url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY };
   const database = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -28,7 +29,7 @@ export function createFanpageDependencies(): FanpageDependencies {
       const result = await rpc(name, args);
       const owner = name === "attend_creator" ? args.p_user : name === "post_fan_post_comment" ? args.p_app_user_id : ((name === "groups_dispatch" && args.p_operation === "join") || (name === "groups_content_dispatch" && args.p_operation === "comment")) ? args.p_actor : null;
       if (typeof owner === "string") await refreshLocalSignupEvent(database, owner);
-      return withWaveDisplayNames(rpc, name, args, result);
+      return withAuthorTiers(rpc, name, args, await withWaveDisplayNames(rpc, name, args, result), request);
     },
     authorize: (authorization) => authorizeFanRequest({ authorization, verifier, repository: fans }),
     authorizeAdmin: (authorization, correlationId) => authorizeAdminSession({ authorization: authorization ?? "", correlationId, verifier, repository: admins }),

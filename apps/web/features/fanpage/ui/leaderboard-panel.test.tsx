@@ -6,7 +6,7 @@ import { LeaderboardPanel } from "./leaderboard-panel";
 
 vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: false, getAccessToken: async () => null }) }));
 vi.mock("@/features/rankings/ui/jjinfan-gauge", () => ({ JjinfanGauge: () => <div data-testid="gathering" /> }));
-const rows = ["별빛팬", "봄날", "달빛"].map((nickname, index) => ({ profileId: `11111111-1111-4111-8111-${String(index + 1).padStart(12, "0")}`, rank: index + 1, nickname, avatarUrl: "/images/avatars/star-pink.webp", points: 7 }));
+const rows = ["별빛팬", "봄날", "달빛"].map((nickname, index) => ({ profileId: `11111111-1111-4111-8111-${String(index + 1).padStart(12, "0")}`, rank: index + 1, nickname, avatarUrl: "/images/avatars/star-pink.webp", points: 7, ...(index === 0 ? { tier: "Gold" } : {}) }));
 const data = { membershipCount: 100, fanCount: 110, available: true, asOf: "2026-10-09T00:00:00Z", rows, me: rows[1] };
 beforeEach(() => vi.unstubAllGlobals());
 
@@ -20,6 +20,8 @@ it("shows the ranking without gathering and keeps all three medal names accessib
   for (const medal of ["금메달", "은메달", "동메달"]) expect(within(table).getByText(medal)).toBeInTheDocument();
   expect(container.querySelectorAll('[data-medal]')).toHaveLength(3);
   expect(within(table).getAllByRole("row")).toHaveLength(4);
+  expect(within(table).getByText("별빛팬").parentElement).toContainElement(within(table).getByRole("img", { name: "골드" }));
+  expect(table.querySelectorAll("[data-author-tier]")).toHaveLength(1);
 });
 
 it("uses server-ranked category results and keeps the filter focused through loading", async () => {
@@ -28,7 +30,7 @@ it("uses server-ranked category results and keeps the filter focused through loa
   vi.stubGlobal("fetch", fetcher);
   render(<LeaderboardPanel slug="elina" locale="ko" />);
   await screen.findByRole("table");
-  const filter = screen.getByRole("button", { name: /^미션$/ });
+  const filter = screen.getByRole("button", { name: leaderboardActivityCopy.ko.categories.mission });
   filter.focus(); fireEvent.click(filter);
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith(expect.stringContaining("category=mission"), expect.anything()));
   expect(filter).toHaveFocus(); expect(filter).toHaveAttribute("aria-pressed", "true");

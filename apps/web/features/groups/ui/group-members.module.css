@@ -61,7 +61,6 @@
 .list .person { min-height: 64px; }
 .nameLine { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
 .nameLine strong { min-width: 0; }
-.tierTag { flex: none; }
 /* 포인트·보상 표시 원칙(사용자 11/14): 하트 칸은 고정 폭(7.5rem = 아이콘 30 + 간격 + 12,345 숫자), 하트가 칸의 왼쪽 끝이라 모든 행의 세로선이 같다. */
 .rowHearts { display: inline-flex; flex: none; inline-size: 7.5rem; justify-content: flex-start; align-items: center; gap: var(--space-1); font-size: var(--fan-heading-size); font-weight: var(--fan-section-weight); font-variant-numeric: tabular-nums; color: var(--color-ink); }
 
