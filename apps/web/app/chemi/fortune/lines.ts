@@ -107,7 +107,7 @@ const gradeNotes: Record<string, string> = {
 };
 
 function hourText(hour: { start: number; end: number } | null) {
-  return hour ? `오전 ${hour.start}시에서 ${hour.end}시 사이` : null;
+  return hour ? `${hour.start}시에서 ${hour.end}시 사이` : null;
 }
 
 export function fortuneEnterLine(

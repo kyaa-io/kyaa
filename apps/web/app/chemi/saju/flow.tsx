@@ -6,7 +6,8 @@
  * 공통 부품 대기: 대화 틀(장면·말풍선·고르기 띠)은 운세 구현(t3/chemi-w3-fortune-fix2)에 같은 모양이 있다.
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useReadingCopy, useSajuSceneCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -51,18 +52,18 @@ import sheetStyles from "./sheet.module.css";
 const steps = ["enter", "calc", "talk-1", "talk-2", "talk-3", "talk-4", "result"] as const;
 type Step = (typeof steps)[number];
 const views: readonly ResultView[] = ["first", "year", "month", "pair"];
-const talkChoice = ["맞아, 나 그래", "그럼 올해는?", "너랑은 어때?", "정리해서 보여 줘"] as const;
+const talkChoice = ["agree", "whatYear", "whatUs", "summarize"] as const;
 const art = "/chemi/saju";
 
 /** r: 첫 풀이 번호 · p: 궁합 풀이 번호 · w: 궁합 상대 번호 */
 type Nav = { step: Step; view: ResultView; character: SajuCharacterId; r: string | null; p: string | null; w: string | null };
 type Phase = "idle" | "calc" | "pairCalc" | "error" | "limit";
 type Failure = "auth" | "service" | "network";
-const failureTitle: Record<Failure, string> = {
-  auth: "로그인이 만료되었습니다.",
-  service: "사주를 불러오지 못했습니다.",
-  network: "연결이 끊겼습니다.",
-};
+const failureTitle = {
+  auth: "expired",
+  service: "sajuFailure",
+  network: "offline",
+} as const;
 type Sheet = null | "login" | "birth" | "topics" | "pairPick" | "pair";
 
 const talkOf = (step: Step) => {
@@ -70,8 +71,8 @@ const talkOf = (step: Step) => {
   return match ? (Number(match[1]) as 1 | 2 | 3 | 4) : null;
 };
 
-function readUrl(): Nav {
-  const params = new URLSearchParams(window.location.search);
+function readUrl(search = window.location.search): Nav {
+  const params = new URLSearchParams(search);
   const character = sajuCharacters.find((item) => item.id === params.get("c"));
   return {
     step: steps.find((item) => item === params.get("step")) ?? "enter",
@@ -105,9 +106,20 @@ function writeUrl(patch: Record<string, string | null>, mode: "push" | "replace"
       "",
       url,
     );
+  window.dispatchEvent(new Event("saju-navigation"));
 }
 
-const initialNav: Nav = { step: "enter", view: "first", character: "changha", r: null, p: null, w: null };
+function subscribeUrl(update: () => void) {
+  window.addEventListener("popstate", update);
+  window.addEventListener("saju-navigation", update);
+  return () => {
+    window.removeEventListener("popstate", update);
+    window.removeEventListener("saju-navigation", update);
+  };
+}
+
+const currentSearch = () => window.location.search;
+const serverSearch = () => "";
 
 export function SajuFlow({
   locale,
@@ -120,8 +132,10 @@ export function SajuFlow({
   /** 주소에 단계와 결과가 있어 저장된 결과를 불러오는 중이면 입장 화면 대신 불러오는 모양을 그린다. */
   restoring?: boolean;
 }) {
+  const text = useReadingCopy();
+  const sceneCopy = useSajuSceneCopy();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
-  const [nav, setNav] = useState<Nav>(initialNav);
+  const nav = readUrl(useSyncExternalStore(subscribeUrl, currentSearch, serverSearch));
   const [reading, setReading] = useState<SajuReading>();
   const [firsts, setFirsts] = useState<Partial<Record<SajuCharacterId, string>> | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
@@ -170,7 +184,7 @@ export function SajuFlow({
       mode,
       depth,
     );
-    setNav(next);
+
   }, []);
 
   /** 이 로그인으로 받은 오늘 보상. 새로 받은 값이면 축하를 띄운다. */
@@ -210,7 +224,7 @@ export function SajuFlow({
     const partner = profile?.partners.find((item) => item.id === url.w);
     const restored: Pair = {
       id: url.p,
-      name: partner?.nickname ?? "상대",
+      name: partner?.nickname ?? text("partner"),
       result,
       timeKnown: partner ? partner.timePrecision !== "unknown" : true,
     };
@@ -222,7 +236,7 @@ export function SajuFlow({
   useEffect(() => {
     const url = readUrl();
     navRef.current = url;
-    setNav(url);
+
     if (url.step === "enter" || url.step === "calc") {
       if (url.step === "calc") writeUrl({ step: null }, "replace", 0);
       setRestoring(false);
@@ -231,7 +245,7 @@ export function SajuFlow({
     if (!url.r) {
       writeUrl(clearedUrl, "replace", 0);
       navRef.current = toEnter(url);
-      setNav(navRef.current);
+
       setRestoring(false);
       return;
     }
@@ -239,7 +253,7 @@ export function SajuFlow({
     if (!authenticated) {
       writeUrl(clearedUrl, "replace", 0);
       navRef.current = toEnter(url);
-      setNav(navRef.current);
+
       setRestoring(false);
       return;
     }
@@ -255,14 +269,14 @@ export function SajuFlow({
           if (restored) setPair(restored);
           else {
             commit({ view: "first", p: null, w: null }, "replace");
-            showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+            showFanToast({ title: text("pairMissing") });
           }
         }
       } catch {
         writeUrl(clearedUrl, "replace", 0);
         navRef.current = toEnter(url);
-        setNav(navRef.current);
-        showFanToast({ title: "저장된 풀이가 아니라 처음 화면으로 돌아왔어요." });
+
+        showFanToast({ title: text("readingMissing") });
       } finally {
         setRestoring(false);
       }
@@ -360,14 +374,14 @@ export function SajuFlow({
       const current = navRef.current;
       // 시트·겹친 판을 닫으며 생긴 뒤로 가기는 주소가 같다. 닫히는 판은 공용 오버레이가 스스로 닫으므로
       // 여기서 시트를 지우지 않는다(겹친 판만 닫혀야 할 때 입력 시트까지 닫힌다). 진행 중인 요청도 끊지 않는다.
-      if (url.step === current.step && url.view === current.view && url.r === current.r && url.p === current.p) return;
+      if (url.step === current.step && url.view === current.view && url.r === current.r && url.p === current.p && url.character === current.character && url.w === current.w) return;
       abort.current?.abort();
       abort.current = null;
       restoreRetry.current = null;
       setPhase("idle");
       setRestoring(false);
       setSheet(null);
-      const reachable = Boolean(reading) && url.step !== "calc";
+      const reachable = Boolean(url.r) && url.step !== "calc";
       const next: Nav = url.step === "enter" || reachable ? url : toEnter(url);
       navRef.current = next;
       if (next.step !== url.step)
@@ -375,7 +389,7 @@ export function SajuFlow({
           { step: next.step === "enter" ? null : next.step, view: next.view === "first" ? null : next.view },
           "replace",
         );
-      setNav(next);
+
       // 다른 사주 기록으로 오면 그 기록의 풀이를 꺼낸다. 궁합 기록이면 그 궁합 풀이도 꺼낸다.
       const needReading = next.step !== "enter" && Boolean(next.r) && next.r !== reading?.readingId;
       const wantsPair = next.step === "result" && next.view === "pair";
@@ -415,7 +429,7 @@ export function SajuFlow({
             } catch (error) {
               if (controller.signal.aborted) throw error;
               commit({ view: "first", p: null, w: null }, "replace");
-              showFanToast({ title: "저장된 궁합이 아니라 사주 풀이로 돌아왔어요." });
+              showFanToast({ title: text("pairMissing") });
             }
           } catch {
             // 다른 이동이 이어받은 요청의 끝은 화면에 반영하지 않는다.
@@ -427,8 +441,8 @@ export function SajuFlow({
             }
             writeUrl(clearedUrl, "replace", 0);
             navRef.current = toEnter(next);
-            setNav(navRef.current);
-            showFanToast({ title: "저장된 풀이가 아니라 처음 화면으로 돌아왔어요." });
+
+            showFanToast({ title: text("readingMissing") });
           } finally {
             clearTimeout(timer);
             if (abort.current === controller) setRestoring(false);
@@ -461,7 +475,7 @@ export function SajuFlow({
         setSheet(null);
         setUnder14(true);
       } else {
-        setBirthError("저장하지 못했어요. 다시 시도해 주세요.");
+        setBirthError(text("saveFailed"));
       }
     } finally {
       setBirthBusy(false);
@@ -519,14 +533,14 @@ export function SajuFlow({
       if (!response.ok) throw Error();
       const card = await response.json();
       await navigator.clipboard.writeText(new URL(card.url, location.origin).href);
-      showFanToast({ title: "결과를 복사했어요", tone: "success" });
+      showFanToast({ title: text("copied"), tone: "success" });
       await fetch(`/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`, {
         method: "POST",
         headers,
         body: JSON.stringify({ via: "copy" }),
       }).catch(() => {});
     } catch {
-      showFanToast({ title: "복사하지 못했어요", tone: "error" });
+      showFanToast({ title: text("copyFailed"), tone: "error" });
     } finally {
       setSharing(false);
     }
@@ -540,7 +554,7 @@ export function SajuFlow({
       setPartners(profile.partners);
       setSheet(profile.partners.length ? "pairPick" : "pair");
     } catch {
-      showFanToast({ title: "상대 목록을 불러오지 못했어요", tone: "error" });
+      showFanToast({ title: text("partnerFailure"), tone: "error" });
     }
   }
 
@@ -608,8 +622,8 @@ export function SajuFlow({
       setBirthBusy(false);
       setBirthError(
         error instanceof ChemiRequestError && error.code === "CHEMI_PARTNER_FULL"
-          ? "저장한 상대가 가득 찼어요. 저장한 상대에서 골라 주세요."
-          : "저장하지 못했어요. 다시 시도해 주세요.",
+          ? text("partnerLimit")
+          : text("saveFailed"),
       );
     }
   }
@@ -620,9 +634,9 @@ export function SajuFlow({
     return (
       <div className={styles.under}>
         <FanText as="p" role="body">
-          만 14세 이상부터 이용할 수 있어요
+          <ReadingText id="age" />
         </FanText>
-        <FanAction href={back}>케미로 돌아가기</FanAction>
+        <FanAction href={back}>{text("chemiBack")}</FanAction>
       </div>
     );
 
@@ -658,12 +672,12 @@ export function SajuFlow({
           exp={exp}
           pair={activePair}
           sharing={sharing}
-          backHref={`/chemi/saju?c=${character}&locale=${locale}`}
+          backLabel={sceneCopy.back}
           onBack={() => window.history.back()}
           onShare={share}
           onTopics={() => setSheet("topics")}
           onGo={openView}
-          onScene={() => commit({ step: "enter", view: "first" }, "push")}
+          onScene={() => commit(toEnter(nav), "push")}
           onPair={() => void openPair()}
           onBirthTime={() => setSheet("birth")}
         />
@@ -684,11 +698,17 @@ export function SajuFlow({
         }
       : null;
   const tone = sajuTone(character);
+  const greeting = {
+    changha: ["helloChangha", "againChangha"],
+    elina: ["helloElina", "againElina"],
+    yuna: ["helloYuna", "againYuna"],
+    dosa: ["helloDosa", "againDosa"],
+  } as const;
   const entering = step === "enter" && !needBirth;
   const line =
     phase === "pairCalc" || phase === "limit"
       ? phase === "limit"
-        ? "오늘 무료 궁합은 다 봤어요. 내일 다시 볼 수 있어요."
+        ? text("dailyLimit")
         : tone.pairCalc(pairName)
       : step === "calc"
         ? tone.calc
@@ -697,28 +717,28 @@ export function SajuFlow({
           : needBirth
             ? tone.birth
             : again && entering
-              ? tone.again
-              : tone.hello;
+              ? text(greeting[character][1])
+              : text(greeting[character][0]);
 
   const wideArt = character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-v1.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
   /** 세로 그림 최애: 넓은 화면에서 그림을 통째로 왼쪽에 두고 남는 면은 공통 MediaFill 이 그 그림의 흐린 복사본으로 채운다. */
   const portrait = character !== "changha";
-  const primaryLabel = entering && !again ? "응, 봐 줘" : talk ? talkChoice[talk - 1] : null;
+  const primaryLabel = entering && !again ? sceneCopy.start : talk ? text(talkChoice[talk - 1]) : null;
 
   const turns = (cls: string, side = false) => (
     <>
       <FanAction
         variant="neutral"
         className={side ? `${cls} ${styles.prev}` : cls}
-        ariaLabel="이전 최애"
+        ariaLabel={text("prevStar")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         onClick={() => choose(index - 1)}
       />
       <FanAction
         variant="neutral"
         className={side ? `${cls} ${styles.next}` : cls}
-        ariaLabel="다음 최애"
+        ariaLabel={text("nextStar")}
         leadingIcon={<FanIcon icon={ChevronRight} />}
         onClick={() => choose(index + 1)}
       />
@@ -733,13 +753,13 @@ export function SajuFlow({
         <FanDialog
           open={sheet === "login"}
           onOpenChange={(open) => !open && setSheet(null)}
-          title="로그인"
+          title={text("login")}
           size="sm"
-          closeLabel="닫기"
-          primary={{ label: "로그인 후 계속", onClick: login }}
+          closeLabel={text("close")}
+          primary={{ label: text("loginContinue"), onClick: login }}
         >
           <FanText as="p" role="body">
-            사주를 보려면 로그인해 주세요.
+            <ReadingText id="sajuLogin" />
           </FanText>
         </FanDialog>
         <BirthSheet
@@ -763,8 +783,8 @@ export function SajuFlow({
         <FanSheet
           open={sheet === "pairPick"}
           onOpenChange={(open) => !open && setSheet(null)}
-          title="궁합 상대"
-          closeLabel="닫기"
+          title={text("pairPartner")}
+          closeLabel={text("close")}
         >
           <div className={sheetStyles.topics}>
             {partners.map((partner) => (
@@ -786,7 +806,7 @@ export function SajuFlow({
             <FanAction variant="text" className={sheetStyles.topicRow} onClick={() => setSheet("pair")}>
               <span className={sheetStyles.topicBody}>
                 <span className={sheetStyles.topicText}>
-                  <FanText role="item">새로 입력</FanText>
+                  <FanText role="item"><ReadingText id="newEntry" /></FanText>
                 </span>
                 <FanIcon icon={ChevronRight} />
               </span>
@@ -796,37 +816,37 @@ export function SajuFlow({
         <FanSheet
           open={sheet === "topics"}
           onOpenChange={(open) => !open && setSheet(null)}
-          title="더 깊이"
-          closeLabel="닫기"
+          title={sceneCopy.more}
+          closeLabel={text("close")}
         >
           <div className={sheetStyles.topics}>
             <FanText as="p" role="meta">
-              지금 흐름
+              <ReadingText id="current" />
             </FanText>
             {year && month && (
               <>
                 <FanAction variant="text" className={sheetStyles.topicRow} onClick={() => openView("year")}>
                   <span className={sheetStyles.topicBody}>
                     <span className={sheetStyles.topicText}>
-                      <FanText role="item">올해</FanText>
+                      <FanText role="item"><ReadingText id="year" /></FanText>
                       <FanText role="meta">{year.name} · {year.span.split(" · ")[0]}</FanText>
                     </span>
-                    <FanText role="meta">무료</FanText>
+                    <FanText role="meta"><ReadingText id="free" /></FanText>
                   </span>
                 </FanAction>
                 <FanAction variant="text" className={sheetStyles.topicRow} onClick={() => openView("month")}>
                   <span className={sheetStyles.topicBody}>
                     <span className={sheetStyles.topicText}>
-                      <FanText role="item">이달</FanText>
+                      <FanText role="item"><ReadingText id="month" /></FanText>
                       <FanText role="meta">{month.span}</FanText>
                     </span>
-                    <FanText role="meta">무료</FanText>
+                    <FanText role="meta"><ReadingText id="free" /></FanText>
                   </span>
                 </FanAction>
               </>
             )}
             <FanText as="p" role="meta">
-              둘이 함께
+              <ReadingText id="together" />
             </FanText>
             <FanAction
               variant="text"
@@ -838,8 +858,8 @@ export function SajuFlow({
             >
               <span className={sheetStyles.topicBody}>
                 <span className={sheetStyles.topicText}>
-                  <FanText role="item">궁합</FanText>
-                  <FanText role="meta">하루 1번 무료</FanText>
+                  <FanText role="item">{text("match")}</FanText>
+                  <FanText role="meta"><ReadingText id="dailyFree" /></FanText>
                 </span>
                 <FanIcon icon={ChevronRight} />
               </span>
@@ -857,14 +877,14 @@ export function SajuFlow({
           <FanAction
             variant="neutral"
             href={back}
-            ariaLabel="케미 탭으로 돌아가기"
+            ariaLabel={sceneCopy.exit}
             leadingIcon={<FanIcon icon={ChevronLeft} />}
             className={styles.round}
           />
         ) : (
           <FanAction
             variant="neutral"
-            ariaLabel="뒤로 가기"
+            ariaLabel={sceneCopy.back}
             leadingIcon={<FanIcon icon={ChevronLeft} />}
             className={styles.round}
             onClick={() => (phase === "error" && step === "result" ? setPhase("idle") : window.history.back())}
@@ -872,7 +892,7 @@ export function SajuFlow({
         )}
         {step === "enter" ? (
           <>
-            <div className={styles.pick} role="group" aria-label="최애">
+            <div className={styles.pick} role="group" aria-label={text("favorite")}>
               {sajuCharacters.map((item) => (
                 <FanAction
                   key={item.id}
@@ -895,7 +915,7 @@ export function SajuFlow({
             </FanText>
             {talk && (
               <FanAction variant="text" className={styles.skip} onClick={openResult}>
-                건너뛰기
+                <ReadingText id="skip" />
               </FanAction>
             )}
           </>
@@ -908,7 +928,7 @@ export function SajuFlow({
         {portrait && <MediaBackdrop src={wideArt} />}
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
-          <img src={mobileArt} alt={`${name}의 사주 장면`} />
+          <img src={mobileArt} alt={text("sajuSceneAlt", { name })} />
         </picture>
         {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
         {entering && again && reading && (
@@ -917,7 +937,7 @@ export function SajuFlow({
             className={styles.history}
             onClick={() => openView("first")}
           >
-            지난 풀이
+            {sceneCopy.history}
           </FanAction>
         )}
         {phase === "error" ? (
@@ -925,10 +945,10 @@ export function SajuFlow({
             <FanState
               inline
               kind={failure === "auth" ? "auth" : "error"}
-              title={failureTitle[failure]}
+              title={text(failureTitle[failure])}
               actions={
                 failure === "auth" ? (
-                  <FanAction onClick={login}>로그인</FanAction>
+                  <FanAction onClick={login}><ReadingText id="login" /></FanAction>
                 ) : (
                   <FanAction
                     onClick={() => {
@@ -939,7 +959,7 @@ export function SajuFlow({
                       else setPhase("idle");
                     }}
                   >
-                    다시 시도
+                    <ReadingText id="retry" />
                   </FanAction>
                 )
               }
@@ -949,21 +969,20 @@ export function SajuFlow({
           <div className={styles.controls}>
             {entering && phase === "idle" && (
               <div className={styles.title}>
-                <FanHeading as="h1">최애 사주</FanHeading>
+                <FanHeading as="h1">{sceneCopy.title}</FanHeading>
               </div>
             )}
             {phase === "limit" && (
               <FanAction variant="neutral" onClick={() => setPhase("idle")}>
-                돌아가기
-              </FanAction>
+                {text("return")}</FanAction>
             )}
             {entering && again && reading && phase === "idle" && (
               <div className={styles.choicesRow}>
                 <FanAction variant="neutral" onClick={() => setSheet("topics")}>
-                  더 깊이
+                  {sceneCopy.more}
                 </FanAction>
                 <FanAction variant="neutral" onClick={() => void openPair()}>
-                  궁합
+                  {sceneCopy.match}
                 </FanAction>
               </div>
             )}
@@ -971,7 +990,7 @@ export function SajuFlow({
               <div className={styles.choices}>
                 {entering && (
                   <FanAction variant="neutral" href={back}>
-                    다음에
+                    {sceneCopy.later}
                   </FanAction>
                 )}
                 <FanAction

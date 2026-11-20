@@ -1,4 +1,6 @@
 "use client";
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
@@ -54,6 +56,7 @@ export function FortuneResult({
   /** 저장된 결과를 불러오는 중. 요청은 부른 쪽이 하고, 여기서는 불러오는 모양만 그린다. */
   pending?: boolean;
 }) {
+  const uiText = useReadingCopy();
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [attempt, retry] = useState(0);
   const [reading, setReading] = useState<Reading>();
@@ -166,13 +169,13 @@ export function FortuneResult({
       await navigator.clipboard.writeText(
         new URL(card.url, location.origin).href,
       );
-      showFanToast({ title: "결과를 복사했어요", tone: "success" });
+      showFanToast({ title: uiText("copyDone"), tone: "success" });
       await fetch(
         `/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`,
         { method: "POST", headers, body: JSON.stringify({ via: "copy" }) },
       ).catch(() => {});
     } catch {
-      showFanToast({ title: "복사하지 못했어요", tone: "error" });
+      showFanToast({ title: uiText("copyFailed"), tone: "error" });
     } finally {
       setSharing(false);
     }
@@ -185,7 +188,7 @@ export function FortuneResult({
     <div className={styles.toolbar}>
       <FanAction
         href={back}
-        ariaLabel="뒤로 가기"
+        ariaLabel={uiText("back")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         className={styles.round}
       />
@@ -203,8 +206,8 @@ export function FortuneResult({
     return (
       <FanState
         kind="auth"
-        title="로그인하고 오늘의 운세를 확인하세요"
-        actions={<FanAction onClick={login}>로그인</FanAction>}
+        title={uiText("signInFortune")}
+        actions={<FanAction onClick={login}><ReadingText id="login" /></FanAction>}
       />
     );
   if (status === "loading" || status === "error") {
@@ -226,10 +229,10 @@ export function FortuneResult({
                 className={styles.failedHero}
                 inline
                 kind="error"
-                title="결과를 불러오지 못했습니다"
+                title={uiText("resultFailure")}
                 actions={
                   <FanAction size="sm" onClick={() => retry((n) => n + 1)}>
-                    다시 시도
+                    <ReadingText id="retry" />
                   </FanAction>
                 }
               />
@@ -251,7 +254,7 @@ export function FortuneResult({
       <section className={styles.layout}>
         {toolbar}
         <div className={styles.panel}>
-          <FanHeading as="h1">오늘의 운세</FanHeading>
+          <FanHeading as="h1"><ReadingTitle id="fortune" /></FanHeading>
           <FanState inline kind="info" title={line} />
         </div>
       </section>
@@ -260,24 +263,24 @@ export function FortuneResult({
     return (
       <FanState
         kind="empty"
-        title="오늘의 결과가 아직 없습니다"
-        action={{ href: back, label: "놀기로 돌아가기" }}
+        title={uiText("noResult")}
+        action={{ href: back, label: uiText("backPlay") }}
       />
     );
   const { result } = reading;
   const headline = reading.styled?.headline || result.grade.name;
   const top = (
     [
-      ["덕질", "fandom", result.fields.fandom],
-      ["사람", "people", result.fields.people],
-      ["일·학업", "work", result.fields.work],
-      ["건강·쉼", "rest", result.fields.rest],
+      [uiText("fandom"), "fandom", result.fields.fandom],
+      [uiText("people"), "people", result.fields.people],
+      [uiText("work"), "work", result.fields.work],
+      [uiText("health"), "rest", result.fields.rest],
     ] as const
   );
   const more = [
     ...top,
-    ["애정", "love", result.fields.love],
-    ["금전", "money", result.fields.money],
+    [uiText("love"), "love", result.fields.love],
+    [uiText("money"), "money", result.fields.money],
   ] as const;
   const best = Math.max(...top.map(([, , value]) => value));
   const bar = (label: string, value: number, key?: string) => (
@@ -314,9 +317,9 @@ export function FortuneResult({
   const actions = (
     <div className={styles.actions}>
       <FanAction disabled={sharing} onClick={share}>
-        자랑하기
+        <ReadingText id="share" />
       </FanAction>
-      <FanAction href={`/chemi?locale=${locale}`}>다른 주제</FanAction>
+      <FanAction href={`/chemi?locale=${locale}`}><ReadingText id="otherTopics" /></FanAction>
     </div>
   );
   return (
@@ -325,7 +328,7 @@ export function FortuneResult({
       <div className={styles.main}>
         <header className={styles.head}>
           <FanText as="p" role="meta">
-            {result.evidence.dayPillar}일 · {name}가 본 나의 오늘
+            {uiText("todayBy", { pillar: result.evidence.dayPillar, name })}
           </FanText>
           <FanHeading as="h1">{headline}</FanHeading>
           <picture className={styles.hero}>
@@ -348,16 +351,16 @@ export function FortuneResult({
             {points > 0 && (
               <EarnBadge locale={locale} points={points} variant="inline" />
             )}
-            {reading.reward?.stamp && <FanText role="meta">스탬프 1개</FanText>}
+            {reading.reward?.stamp && <FanText role="meta"><ReadingText id="stamp" /></FanText>}
             {Boolean(reading.reward?.exp) && (
-              <FanText role="meta">친밀 +{reading.reward?.exp}</FanText>
+              <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
             )}
-            {points > 0 && <FanText role="meta">{name} 몫</FanText>}
+            {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
           </div>
           <div className={styles.bars}>
             {top.map(([label, , value]) => bar(label, value))}
           </div>
-          <FanDisclosure label="분야별 풀이">
+          <FanDisclosure label={uiText("areas")}>
             <div className={styles.fields}>
               {more.map(([label, key, value]) => (
                 <div key={key}>
@@ -371,17 +374,17 @@ export function FortuneResult({
           </FanDisclosure>
         </section>
         <section className={`${styles.section} ${styles.flowSec}`}>
-          <FanHeading>오늘의 흐름</FanHeading>
+          <FanHeading><ReadingText id="todayFlow" /></FanHeading>
           <p>{flowNotes[result.grade.name]}</p>
         </section>
         <section className={`${styles.section} ${styles.timesSec}`}>
-          <FanHeading>시간대</FanHeading>
+          <FanHeading><ReadingText id="timeWindow" /></FanHeading>
           <div className={styles.times}>
             {(
               [
-                ["오전", "morning"],
-                ["오후", "afternoon"],
-                ["밤", "night"],
+                [uiText("morning"), "morning"],
+                [uiText("afternoon"), "afternoon"],
+                [uiText("night"), "night"],
               ] as const
             ).map(([label, key]) => (
               <div key={key}>
@@ -396,12 +399,12 @@ export function FortuneResult({
         </section>
         {(stage || spirit) && (
           <section className={`${styles.section} ${styles.starsSec}`}>
-            <FanHeading>오늘의 12운성 · 12신살</FanHeading>
+            <FanHeading><ReadingText id="cycle" /></FanHeading>
             <dl className={styles.stars}>
               {stage && (
                 <div>
                   <FanText as="dt" role="meta">
-                    12운성
+                    <ReadingText id="lifeStage" />
                   </FanText>
                   <dd>
                     <FanText as="strong" role="item">
@@ -416,7 +419,7 @@ export function FortuneResult({
               {spirit && (
                 <div>
                   <FanText as="dt" role="meta">
-                    12신살
+                    <ReadingText id="spirits" />
                   </FanText>
                   <dd>
                     <FanText as="strong" role="item">
@@ -432,16 +435,16 @@ export function FortuneResult({
           </section>
         )}
         <section className={`${styles.panel} ${styles.whyPanel}`}>
-          <FanDisclosure label="왜 이 점수일까">
+          <FanDisclosure label={uiText("whyScore")}>
             <dl className={styles.facts}>
               {Object.entries({
-                일진: result.evidence.dayPillar,
-                세운: result.evidence.yearPillar,
-                관계: result.evidence.relation,
-                십이운성: result.evidence.stage,
-                십신: result.evidence.tenGod,
-                용신: result.evidence.useful,
-                기준: result.evidence.timeBasis,
+                [uiText("tableDaypillar")]: result.evidence.dayPillar,
+                [uiText("tableYearpillar")]: result.evidence.yearPillar,
+                [uiText("tableRelation")]: result.evidence.relation,
+                [uiText("tableStage")]: result.evidence.stage,
+                [uiText("tableTengod")]: result.evidence.tenGod,
+                [uiText("tableUseful")]: result.evidence.useful,
+                [uiText("tableBasis")]: result.evidence.timeBasis,
               }).map(([label, value]) => (
                 <div key={label}>
                   <dt>{label}</dt>
@@ -452,19 +455,19 @@ export function FortuneResult({
               ))}
             </dl>
           </FanDisclosure>
-          <FanDisclosure label="오늘의 행운">
+          <FanDisclosure label={uiText("luck")}>
             <dl className={styles.facts}>
               {Object.entries({
-                색: result.luck.color,
-                숫자: result.luck.number,
-                방향: result.luck.direction,
-                물건: result.luck.item,
-                "행운 시간":
+                [uiText("tableColor")]: result.luck.color,
+                [uiText("tableNumber")]: result.luck.number,
+                [uiText("tableDirection")]: result.luck.direction,
+                [uiText("tableItem")]: result.luck.item,
+                [uiText("tableLuckyhour")]:
                   result.luck.luckyHour &&
-                  `${result.luck.luckyHour.start}~${result.luck.luckyHour.end}시`,
-                "쉬어 갈 시간":
+                  uiText("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),
+                [uiText("tableResthour")]:
                   result.luck.restHour &&
-                  `${result.luck.restHour.start}~${result.luck.restHour.end}시`,
+                  uiText("hourRange", { start: result.luck.restHour.start, end: result.luck.restHour.end }),
               }).map(
                 ([label, value]) =>
                   value != null && (
@@ -485,7 +488,7 @@ export function FortuneResult({
         <section className={styles.reaction}>
           <img src={`/chemi/fortune/avatar-${character}-v1.jpg`} alt="" />
           <FanText as="strong" role="item" className={styles.said}>
-            {name}의 한마디
+            {uiText("theirWords", { name })}
           </FanText>
           <FanText as="p" role="body">
             {sayLine}
@@ -496,20 +499,20 @@ export function FortuneResult({
               fullWidth
               href={`/chemi?locale=${locale}`}
             >
-              다른 운세 보기
+              <ReadingText id="otherFortunes" />
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
         </section>
         <DatePurchase key={character} character={character} locale={locale} />
-        <nav className={styles.nextList} aria-label="더 보기">
-          {["친구와 오늘", "지난 기록", "특별 부적 만들기"].map(
+        <nav className={styles.nextList} aria-label={uiText("more")}>
+          {[uiText("friends"), uiText("history"), uiText("charm")].map(
             (label) => (
               <FanAction
                 variant="text"
                 key={label}
                 className={styles.nextItem}
-                onClick={soon(`${withTopic(label)} 준비 중이에요`)}
+                onClick={soon(uiText("comingSoon", { subject: withTopic(label), label }))}
               >
                 <span className={styles.nextRow}>
                   <FanText role="item">{label}</FanText>
@@ -521,7 +524,7 @@ export function FortuneResult({
         </nav>
         <footer className={styles.legal}>
           <FanText as="p" role="meta">
-            재미로 보는 풀이입니다. 중요한 결정의 근거로 쓰지 마세요.
+            <ReadingText id="fun" />
           </FanText>
         </footer>
       </aside>

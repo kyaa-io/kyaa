@@ -1,4 +1,6 @@
 "use client";
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -16,6 +18,7 @@ export function DatePurchase({
   character: string;
   locale: string;
 }) {
+  const uiText = useReadingCopy();
   const { getAccessToken } = useByUsAuth();
   const [day, setDay] = useState("");
   const [busy, setBusy] = useState(false);
@@ -79,9 +82,9 @@ export function DatePurchase({
   }
   return (
     <section id="fortune-date" className={`${styles.panel} ${styles.purchase}`}>
-      <FanHeading as="h2">다른 날짜의 운세</FanHeading>
+      <FanHeading as="h2"><ReadingText id="anotherDate" /></FanHeading>
       <label>
-        운세를 볼 날짜
+        <ReadingText id="date" />
         <input
           type="date"
           value={day}
@@ -90,11 +93,11 @@ export function DatePurchase({
         />
       </label>
       {day === todayKst() && (
-        <FanText role="body">오늘의 풀이는 위에서 볼 수 있어요.</FanText>
+        <FanText role="body"><ReadingText id="above" /></FanText>
       )}
       {error && (
         <p role="alert">
-          운세를 불러오지 못했어요. 같은 날짜로 다시 확인해 주세요.
+          <ReadingText id="dateFailure" />
         </p>
       )}
       {saved && !saved.result.locked ? (
@@ -103,17 +106,17 @@ export function DatePurchase({
             {saved.kstDate.replaceAll("-", ".")} · {saved.result.grade.name}
           </FanText>
           <p>{flowNotes[saved.result.grade.name]}</p>
-          <p>운세 {saved.result.score}점</p>
-          <p>행운의 색 {saved.result.luck.color} · 행운의 숫자 {saved.result.luck.number}</p>
+          <p>{uiText("fortuneScore", { score: saved.result.score })}</p>
+          <p>{uiText("luckyPair", { color: saved.result.luck.color, number: saved.result.luck.number })}</p>
         </div>
       ) : quote ? (
         <div aria-live="polite">
           <p>
-            가격 {quote.price}P · 현재 잔액 {quote.balance}P
+            {uiText("priceBalance", { price: quote.price, balance: quote.balance })}
           </p>
           {quote.balance >= quote.price ? (
             <>
-              <p>구매 후 잔액 {quote.balance - quote.price}P</p>
+              <p>{uiText("afterPurchase", { balance: quote.balance - quote.price })}</p>
               <div className={`${styles.purchaseActions} ${styles.purchaseConfirm}`}>
                 <FanAction
                   variant="primary"
@@ -121,10 +124,10 @@ export function DatePurchase({
                   disabled={busy}
                   onClick={() => request(true)}
                 >
-                  {quote.price}P로 운세 열기
+                  {uiText("openPaid", { price: quote.price })}
                 </FanAction>
                 <FanAction variant="text" disabled={busy} onClick={() => reset("")}>
-                  취소
+                  <ReadingText id="cancel" />
                 </FanAction>
               </div>
             </>
@@ -143,7 +146,7 @@ export function DatePurchase({
           disabled={!day || busy}
           onClick={() => request(false)}
         >
-          {day === todayKst() ? "이 날짜의 구매 기록 확인" : "가격 확인"}
+          {day === todayKst() ? uiText("checkPurchase") : uiText("price")}
         </FanAction>
       )}
     </section>

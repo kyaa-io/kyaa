@@ -1,5 +1,7 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
@@ -57,6 +59,7 @@ export function TarotScreen({
   /** 결과 링크의 `r`. 날짜가 바뀐 뒤에도 그날 받은 결과를 다시 연다. */
   initialReading?: string | null;
 }) {
+  const uiText = useReadingCopy();
   const router = useRouter();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const auth: TarotAuth = { ready, authenticated, getAccessToken, login };
@@ -253,10 +256,10 @@ export function TarotScreen({
       <div className={styles.root}>
         <FanState
           kind="error"
-          title="연결이 끊겼습니다."
+          title={uiText("offline")}
           actions={
             <FanAction size="sm" onClick={() => setAttempt((value) => value + 1)}>
-              다시 시도
+              <ReadingText id="retry" />
             </FanAction>
           }
         />
@@ -276,7 +279,7 @@ export function TarotScreen({
   return (
     <div className={styles.root} data-chemi-immersive={result ? undefined : ""} data-step={step}>
       <div className={styles.chips}>
-        <FanIconButton aria-label="뒤로 가기" className={styles.back} onClick={back}>
+        <FanIconButton aria-label={uiText("back")} className={styles.back} onClick={back}>
           <FanIcon icon={ChevronLeft} size={16} />
         </FanIconButton>
         {step === "enter" ? (
@@ -288,7 +291,7 @@ export function TarotScreen({
         )}
         {step === "flip" || step === "talk2" || step === "talk3" ? (
           <FanAction className={styles.skip} variant="text" onClick={openResult}>
-            건너뛰기
+            <ReadingText id="skip" />
           </FanAction>
         ) : null}
       </div>

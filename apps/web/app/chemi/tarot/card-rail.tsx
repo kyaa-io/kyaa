@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -12,7 +13,7 @@ import styles from "./tarot.module.css";
 /** 가운데 카드에서 멀수록 흐려지는 불투명도(흐림 필터 없음). */
 const OPACITY = [1, 0.72, 0.5, 0.34, 0.22];
 const START = Math.floor(TAROT_DECK_SIZE / 2);
-const slotLabel = (index: number) => `${TAROT_DECK_SIZE}장 중 ${index + 1}번째 카드`;
+
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 /** 큰 카드 줄은 탁자에 놓이고, 덱 띠와 '아무거나 뽑기'는 대화 판 안(controlsHost)에 같은 상태로 그려진다. */
@@ -27,6 +28,8 @@ export function CardRail({
   reduced: boolean;
   controlsHost: HTMLElement | null;
 }) {
+  const uiText = useReadingCopy();
+  const slotLabel = (index: number) => uiText("deckSlot", { total: TAROT_DECK_SIZE, slot: index + 1 });
   const rail = useRef<HTMLUListElement>(null);
   const [current, setCurrent] = useState(START);
   const currentRef = useRef(START);
@@ -184,7 +187,7 @@ export function CardRail({
           className={styles.band}
           role="slider"
           tabIndex={0}
-          aria-label="카드 고르기"
+          aria-label={uiText("pickCard")}
           aria-valuemin={1}
           aria-valuemax={TAROT_DECK_SIZE}
           aria-valuenow={current + 1}
@@ -251,14 +254,14 @@ export function CardRail({
         <FanAction
           className={`${styles.turn} ${styles.cardPrev}`}
           variant="text"
-          ariaLabel="이전 카드"
+          ariaLabel={uiText("previousCard")}
           leadingIcon={<FanIcon icon={ChevronLeft} />}
           onClick={() => moveTo(currentRef.current - 1)}
         />
         <FanAction
           className={`${styles.turn} ${styles.cardNext}`}
           variant="text"
-          ariaLabel="다음 카드"
+          ariaLabel={uiText("nextCard")}
           leadingIcon={<FanIcon icon={ChevronRight} />}
           onClick={() => moveTo(currentRef.current + 1)}
         />

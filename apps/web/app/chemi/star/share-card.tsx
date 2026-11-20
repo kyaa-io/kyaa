@@ -1,5 +1,6 @@
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { FanText } from "@/components/fan-ui/fan-text";
-import { domainLabels, type StarDomain } from "./copy";
+import type { StarDomain } from "./copy";
 import { art } from "./parts";
 import { StarRating } from "./stars";
 import styles from "./share-card.module.css";
@@ -29,6 +30,7 @@ export function StarShareCard({
   bestStar: number;
   line: string;
 }) {
+  const uiText = useReadingCopy();
   return (
     <div className={styles.card} data-star-share-card="">
       <div className={styles.top}>
@@ -40,7 +42,7 @@ export function StarShareCard({
           <FanText as="p" role="item" className={styles.headline}>
             {headline}
           </FanText>
-          <StarRating value={overall} label={`총운 별점 5개 중 ${overall}개`} tone="light" />
+          <StarRating value={overall} label={uiText("overallStars", { count: overall })} tone="light" />
         </div>
       </div>
       <div className={styles.body}>
@@ -50,7 +52,7 @@ export function StarShareCard({
           </li>
           <li data-row="star">
             <FanText role="meta">
-              {domainLabels[best]} ★{bestStar}
+              {uiText(`star_${best}`)} ★{bestStar}
             </FanText>
           </li>
         </ul>

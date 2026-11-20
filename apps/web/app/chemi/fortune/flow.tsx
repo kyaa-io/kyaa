@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -45,21 +46,21 @@ import styles from "./scene.module.css";
 
 const art = "/chemi/fortune";
 const talkChoice = [
-  "좋다, 더 말해 줘",
-  "덕질은 어때?",
-  "그럼 뭘 챙길까?",
-  "오늘 운세 정리 보기",
+  "tellMore",
+  "whatFandom",
+  "whatBring",
+  "dailySummary",
 ] as const;
 const mobileTalkArt = ["portrait", "calm", "laugh", "care"] as const;
 
 type Phase = "idle" | "calc" | "error";
 /** 오류 안내를 가른다: 로그인 만료, 서비스 거절, 연결 끊김. */
 type Failure = "auth" | "service" | "network";
-const failureTitle: Record<Failure, string> = {
-  auth: "로그인이 만료되었습니다.",
-  service: "운세를 불러오지 못했습니다.",
-  network: "연결이 끊겼습니다.",
-};
+const failureTitle = {
+  auth: "expired",
+  service: "fortuneFailure",
+  network: "offline",
+} as const;
 type Sheet = null | "login" | "birth";
 
 function readUrl() {
@@ -98,13 +99,7 @@ function writeUrl(
     );
 }
 
-function participationText(participation: Participation) {
-  if (!participation) return null;
-  const prefix = { today: "오늘", week: "이번 주", all: "지금까지" }[
-    participation.period
-  ];
-  return `${prefix} ${participation.count.toLocaleString("ko-KR")}명이 봤어요`;
-}
+
 
 function seoulDate(
   locale: AppLocale,
@@ -122,6 +117,7 @@ export function FortuneFlow({
   /** 주소에 단계와 결과가 있어 저장된 결과를 불러오는 중이면 입장 화면 대신 불러오는 모양을 그린다. */
   restoring?: boolean;
 }) {
+  const text = useReadingCopy();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const [step, setStep] = useState<FortuneStep>("enter");
   const [character, setCharacter] = useState<FortuneCharacterId>("changha");
@@ -170,7 +166,7 @@ export function FortuneFlow({
       } catch {
         writeUrl({ step: null, r: null }, "replace");
         setStep("enter");
-        showFanToast({ title: "오늘의 운세 결과가 아니라 처음 화면으로 돌아왔어요." });
+        showFanToast({ title: text("fortuneMissing") });
       } finally {
         setRestoring(false);
       }
@@ -303,7 +299,7 @@ export function FortuneFlow({
         setSheet(null);
         setUnder14(true);
       } else {
-        setBirthError("저장하지 못했어요. 다시 시도해 주세요.");
+        setBirthError(text("saveFailed"));
       }
     } finally {
       setBirthBusy(false);
@@ -391,21 +387,21 @@ export function FortuneFlow({
       : null;
 
   // 입장에서는 '응, 봐 줘', 대화에서는 다음 말로 가는 강조 버튼 하나만 둔다.
-  const primaryLabel = entering ? "응, 봐 줘" : talk ? talkChoice[talk - 1] : null;
+  const primaryLabel = entering ? text("readFortune") : talk ? text(talkChoice[talk - 1]) : null;
 
   const turns = (cls: string, side = false) => (
     <>
       <FanAction
         variant="neutral"
         className={side ? `${cls} ${styles.prev}` : cls}
-        ariaLabel="이전 최애"
+        ariaLabel={text("prevStar")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         onClick={() => choose(index - 1)}
       />
       <FanAction
         variant="neutral"
         className={side ? `${cls} ${styles.next}` : cls}
-        ariaLabel="다음 최애"
+        ariaLabel={text("nextStar")}
         leadingIcon={<FanIcon icon={ChevronRight} />}
         onClick={() => choose(index + 1)}
       />
@@ -419,14 +415,14 @@ export function FortuneFlow({
           <FanAction
             variant="neutral"
             href={`/chemi?locale=${locale}`}
-            ariaLabel="케미 탭으로 돌아가기"
+            ariaLabel={text("chemiExit")}
             leadingIcon={<FanIcon icon={ChevronLeft} />}
             className={styles.round}
           />
         ) : (
           <FanAction
             variant="neutral"
-            ariaLabel="뒤로 가기"
+            ariaLabel={text("back")}
             leadingIcon={<FanIcon icon={ChevronLeft} />}
             className={styles.round}
             onClick={() => window.history.back()}
@@ -434,7 +430,7 @@ export function FortuneFlow({
         )}
         {step === "enter" ? (
           <>
-            <div className={styles.pick} role="group" aria-label="최애">
+            <div className={styles.pick} role="group" aria-label={text("favorite")}>
               {fortuneCharacters.map((c) => (
                 <FanAction
                   key={c.id}
@@ -468,7 +464,7 @@ export function FortuneFlow({
                 className={styles.skip}
                 onClick={openResult}
               >
-                건너뛰기
+                <ReadingText id="skip" />
               </FanAction>
             )}
           </>
@@ -477,22 +473,22 @@ export function FortuneFlow({
       <div className={styles.stage} data-portrait={character !== "changha" || undefined}>
         <picture className={styles.art}>
           <source media="(min-width: 48rem)" srcSet={wideArt} />
-          <img src={mobileArt} alt={`${name}의 구름 위 정자`} />
+          <img src={mobileArt} alt={text("cloudArt", { name })} />
         </picture>
         {step === "enter" && <span className={styles.turnStage}>{turns(styles.turn, true)}</span>}
         {phase === "error" ? (
           <FanState
             inline
             kind={failure === "auth" ? "auth" : "error"}
-            title={failureTitle[failure]}
+            title={text(failureTitle[failure])}
             actions={
               failure === "auth" ? (
                 <FanAction size="sm" onClick={login}>
-                  로그인
+                  <ReadingText id="login" />
                 </FanAction>
               ) : (
                 <FanAction size="sm" onClick={() => void run(character)}>
-                  다시 시도
+                  <ReadingText id="retry" />
                 </FanAction>
               )
             }
@@ -501,9 +497,9 @@ export function FortuneFlow({
           <div className={styles.controls}>
             {entering && (
               <div className={styles.title}>
-                <FanHeading as="h1">오늘의 운세</FanHeading>
-                {participationText(participation) && (
-                  <FanText role="meta">{participationText(participation)}</FanText>
+                <FanHeading as="h1"><ReadingTitle id="fortune" /></FanHeading>
+                {participation && (
+                  <FanText role="meta">{text(`${participation.period}Views`, { count: participation.count.toLocaleString(locale) })}</FanText>
                 )}
               </div>
             )}
@@ -515,7 +511,7 @@ export function FortuneFlow({
                 </div>
                 <FanText role="meta">
                   {seoulDate(locale, { month: "long", day: "numeric", weekday: "long" }, day)}{" "}
-                  · {result.evidence.dayPillar}일
+                  · {text("pillarDay", { pillar: result.evidence.dayPillar })}
                 </FanText>
                 {reading?.styled?.headline && (
                   <FanText role="item">{reading.styled.headline}</FanText>
@@ -526,8 +522,8 @@ export function FortuneFlow({
               <div className={styles.rows}>
                 {(
                   [
-                    ["덕질", result.fields.fandom],
-                    ["금전", result.fields.money],
+                    [text("fandom"), result.fields.fandom],
+                    [text("money"), result.fields.money],
                   ] as const
                 ).map(([label, value]) => (
                   <div className={styles.row} key={label}>
@@ -542,13 +538,13 @@ export function FortuneFlow({
               <dl className={styles.luck}>
                 {(
                   [
-                    ["색", result.luck.color],
-                    ["숫자", result.luck.number],
-                    ["방향", result.luck.direction],
+                    [text("color"), result.luck.color],
+                    [text("number"), result.luck.number],
+                    [text("direction"), result.luck.direction],
                     [
-                      "행운 시간",
+                      text("luckyTime"),
                       result.luck.luckyHour &&
-                        `${result.luck.luckyHour.start}~${result.luck.luckyHour.end}시`,
+                        text("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),
                     ],
                   ] as const
                 ).map(
@@ -570,8 +566,7 @@ export function FortuneFlow({
               <div className={styles.choices}>
                 {entering && (
                   <FanAction variant="neutral" href={`/chemi?locale=${locale}`}>
-                    다음에
-                  </FanAction>
+                    {text("later")}</FanAction>
                 )}
                 <FanAction
                   variant="primary"
@@ -607,13 +602,13 @@ export function FortuneFlow({
       <FanDialog
         open={sheet === "login"}
         onOpenChange={(open) => !open && setSheet(null)}
-        title="로그인"
+        title={text("login")}
         size="sm"
-        closeLabel="닫기"
-        primary={{ label: "로그인 후 계속", onClick: login }}
+        closeLabel={text("close")}
+        primary={{ label: text("loginContinue"), onClick: login }}
       >
         <FanText as="p" role="body">
-          운세를 보려면 로그인해 주세요.
+          <ReadingText id="fortuneLogin" />
         </FanText>
       </FanDialog>
       <BirthSheet

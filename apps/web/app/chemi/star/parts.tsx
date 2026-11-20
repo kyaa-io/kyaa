@@ -1,5 +1,7 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ChevronLeft } from "@/components/fan-ui/fan-icons";
@@ -19,11 +21,12 @@ export function Toolbar({
   back: string | (() => void);
   meta?: ReactNode;
 }) {
+  const uiText = useReadingCopy();
   return (
     <div className={styles.toolbar}>
       <FanAction
         {...(typeof back === "string" ? { href: back } : { onClick: back })}
-        ariaLabel="뒤로 가기"
+        ariaLabel={uiText("back")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         className={styles.round}
       />
@@ -68,7 +71,7 @@ export function Legal() {
   return (
     <footer className={styles.legal}>
       <FanText as="p" role="meta">
-        재미로 보는 풀이입니다. 중요한 결정의 근거로 쓰지 마세요.
+        <ReadingText id="fun" />
       </FanText>
     </footer>
   );

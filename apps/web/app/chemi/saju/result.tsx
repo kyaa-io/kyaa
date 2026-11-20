@@ -5,6 +5,8 @@
  * 390은 한 열(최애 한마디 + 큰 버튼이 탭바 위에 고정), 1024+는 본문 + 오른쪽 레일.
  * 질문하기·유료 주제는 M2 이므로 이 화면에는 자리를 두지 않는다.
  */
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import type { CSSProperties } from "react";
 import { ChevronLeft, ChevronRight, Droplet, Flame, Gem, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -63,7 +65,7 @@ export function SajuResult({
   exp,
   pair,
   sharing,
-  backHref,
+  backLabel,
   onBack,
   onShare,
   onTopics,
@@ -81,7 +83,7 @@ export function SajuResult({
   exp: number;
   pair?: Pair;
   sharing: boolean;
-  backHref: string;
+  backLabel?: string;
   onBack: () => void;
   onShare: () => void;
   onTopics: () => void;
@@ -91,6 +93,7 @@ export function SajuResult({
   /** 태어난 시간을 넣으면 열리는 칸에서 시간 입력으로 간다. */
   onBirthTime: () => void;
 }) {
+  const uiText = useReadingCopy();
   const name = sajuCharacters.find((item) => item.id === character)!.name;
   const locked = chart.locked.length > 0;
   const first = firstReading(chart, at);
@@ -124,11 +127,11 @@ export function SajuResult({
 
   const kicker =
     view === "pair" && pair
-      ? `${name}가 봐 준 궁합 · 나 × ${pair.name}`
-      : `${name}가 풀어 준 나의 ${{ first: "사주", year: "올해", month: "이달" }[view as "first"]}`;
+      ? uiText("pairTitle", { name, partner: pair.name })
+      : uiText("readingTitle", { name, topic: uiText(view === "year" ? "year" : view === "month" ? "month" : "sajuName") });
   const title =
     view === "first" ? first.headline : view === "year" ? year.title : view === "month" ? month.title : compat!.title;
-  const bondKicker = { first: `${name}와 나`, year: `올해 ${name}와 나`, month: `이달 ${name}와 나`, pair: "" }[view];
+  const bondKicker = { first: uiText("bondFirst", { name }), year: uiText("bondYear", { name }), month: uiText("bondMonth", { name }), pair: "" }[view];
   const bond = view === "first" ? first.bond : view === "year" ? year.bond : view === "month" ? month.bond : "";
 
   const bar = (label: string, value: number, top = false) => (
@@ -191,10 +194,10 @@ export function SajuResult({
     <FanState
       inline
       kind="info"
-      title="태어난 시간을 알면 열려요"
+      title={uiText("unlockTime")}
       actions={
         <FanAction size="sm" onClick={onBirthTime}>
-          태어난 시간 넣기
+          <ReadingText id="birthTime" />
         </FanAction>
       }
     />
@@ -218,10 +221,10 @@ export function SajuResult({
   const actions = (
     <div className={styles.actions}>
       {view === "first" ? (
-        <FanAction onClick={onScene}>장면 다시 보기</FanAction>
+        <FanAction onClick={onScene}><ReadingText id="replay" /></FanAction>
       ) : (
         <FanAction onClick={view === "pair" ? onPair : onTopics}>
-          {view === "pair" ? "다른 사람과" : "다른 주제"}
+          {view === "pair" ? uiText("otherPartner") : uiText("otherTopics")}
         </FanAction>
       )}
     </div>
@@ -231,9 +234,8 @@ export function SajuResult({
     <article data-saju-result={view} className={styles.layout}>
       <div className={styles.toolbar}>
         <FanAction
-          href={view === "first" ? backHref : undefined}
-          onClick={view === "first" ? undefined : onBack}
-          ariaLabel="뒤로 가기"
+          onClick={view === "first" ? onScene : onBack}
+          ariaLabel={backLabel ?? uiText("back")}
           leadingIcon={<FanIcon icon={ChevronLeft} />}
           className={styles.round}
         />
@@ -254,7 +256,7 @@ export function SajuResult({
               </FanText>
               {sajuOpeningStatus === "dev-sample" && (
                 <FanText as="p" role="meta" data-opening-status={sajuOpeningStatus}>
-                  DEV 견본 대사 · 본인 확인 전
+                  <ReadingText id="sample" />
                 </FanText>
               )}
               <dl className={`${styles.kv} ${styles.keywords}`} data-layout="cols">
@@ -278,7 +280,7 @@ export function SajuResult({
           )}
           {view === "pair" && pair && !pair.timeKnown && (
             <FanText as="p" role="meta">
-              {pair.name} 출생 시간 없이 봄
+              {uiText("pairNoTime", { name: pair.name })}
             </FanText>
           )}
           <picture className={styles.hero}>
@@ -292,7 +294,7 @@ export function SajuResult({
               {bondCard}
               <section className={`${styles.panel} ${styles.split}`}>
                 <div className={styles.block}>
-                  <FanHeading>타고난 기운</FanHeading>
+                  <FanHeading><ReadingText id="energy" /></FanHeading>
                   {locked ? (
                     lockedCard
                   ) : (
@@ -315,10 +317,10 @@ export function SajuResult({
             {!locked && (
               <div className={styles.cols}>
                 <section className={styles.section}>
-                  <FanHeading>타고난 성격</FanHeading>
+                  <FanHeading><ReadingText id="traits" /></FanHeading>
                   {kv([
-                    ["강점", first.strengthR],
-                    ["나다운 덕질", first.fandomR],
+                    [uiText("strength"), first.strengthR],
+                    [uiText("fanStyle"), first.fandomR],
                   ])}
                 </section>
                 <section className={styles.section}>
@@ -342,24 +344,24 @@ export function SajuResult({
                   </FanText>
                   {year.beforeSpring && (
                     <FanText as="p" role="meta">
-                      아직 입춘 전이라 지난해 기준으로 봤어요
+                      <ReadingText id="springNote" />
                     </FanText>
                   )}
-                  {stats([["올해 등급", year.grade]])}
+                  {stats([[uiText("yearGrade"), year.grade]])}
                   {stats(year.rate.map((item) => [item.label, item.level] as const))}
                 </div>
               </section>
             </div>
             <section className={styles.section}>
-              <FanHeading>열두 달</FanHeading>
-              {chips(year.months, { good: "좋은 달", rest: "여유 둘 달" })}
+              <FanHeading><ReadingText id="months" /></FanHeading>
+              {chips(year.months, { good: uiText("goodMonth"), rest: uiText("restMonth") })}
             </section>
             <section className={styles.section}>
               {kv(
                 [
-                  ["좋은 달", year.good],
-                  ["여유 둘 달", year.rest],
-                  ["도움 기운", year.help],
+                  [uiText("goodMonth"), year.good],
+                  [uiText("restMonth"), year.rest],
+                  [uiText("helpEnergy"), year.help],
                 ],
                 "cols",
               )}
@@ -382,15 +384,15 @@ export function SajuResult({
               </section>
             </div>
             <section className={styles.section}>
-              <FanHeading>주별 흐름</FanHeading>
-              {chips(month.weeks, { good: "힘 있는 주", rest: "쉬어 갈 주" })}
+              <FanHeading><ReadingText id="weekly" /></FanHeading>
+              {chips(month.weeks, { good: uiText("strongWeek"), rest: uiText("restWeek") })}
             </section>
             <section className={styles.section}>
               {kv(
                 [
-                  ["힘 있는 주", month.strong],
-                  ["쉬어 갈 주", month.rest],
-                  ["새 기운", month.nextTerm],
+                  [uiText("strongWeek"), month.strong],
+                  [uiText("restWeek"), month.rest],
+                  [uiText("freshEnergy"), month.nextTerm],
                 ],
                 "cols",
               )}
@@ -401,7 +403,7 @@ export function SajuResult({
         {view === "pair" && compat && pair && (
           <section className={`${styles.panel} ${styles.pairPanel}`}>
             <div className={styles.block}>
-              <FanHeading>나 × {pair.name}</FanHeading>
+              <FanHeading>{uiText("pairMe", { name: pair.name })}</FanHeading>
               <div className={styles.bars}>
                 {compat.rows.map((row) => (
                   <div className={styles.barRowWide} key={row.label}>
@@ -421,9 +423,9 @@ export function SajuResult({
             </div>
             {kv(
               [
-                ["둘의 기운", compat.powers],
-                ["부딪히는 곳", compat.clash],
-                ["같이 있을 때", compat.together],
+                [uiText("bothEnergy"), compat.powers],
+                [uiText("clash"), compat.clash],
+                [uiText("togetherWhen"), compat.together],
               ],
               "stack",
             )}
@@ -434,11 +436,11 @@ export function SajuResult({
         <div className={styles.dockSpace} aria-hidden="true" />
         <footer className={styles.legal}>
           <FanText as="p" role="meta">
-            운의 흐름을 참고로 보는 풀이예요. 정해진 미래가 아니에요.
+            <ReadingText id="outlookNote" />
           </FanText>
           {view === "pair" && (
             <FanText as="p" role="meta">
-              실제 두 사람의 관계를 단정하지 않아요.
+              <ReadingText id="relationshipNote" />
             </FanText>
           )}
         </footer>
@@ -457,20 +459,19 @@ export function SajuResult({
           </section>
           <div className={styles.cta}>
             <FanAction variant="primary" fullWidth disabled={sharing} onClick={onShare}>
-              자랑하기
+              <ReadingText id="share" />
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
         </div>
         {view === "first" && (
-          <nav className={styles.nextList} aria-label="더 깊이">
+          <nav className={styles.nextList} aria-label={uiText("deeper")}>
             <FanText as="p" role="item" className={styles.nextTitle}>
-              더 깊이
-            </FanText>
+              {uiText("deeper")}</FanText>
             {(
               [
-                ["올해", "무료", "year"],
-                ["이달", "무료", "month"],
+                [uiText("year"), uiText("free"), "year"],
+                [uiText("month"), uiText("free"), "month"],
               ] as const
             ).map(([label, tag, target]) => (
               <FanAction variant="text" key={label} className={styles.nextItem} onClick={() => onGo(target)}>
@@ -483,8 +484,8 @@ export function SajuResult({
             ))}
             <FanAction variant="text" className={styles.nextItem} onClick={onPair}>
               <span className={styles.nextRow}>
-                <FanText role="item">궁합</FanText>
-                <FanText role="meta">하루 1번 무료</FanText>
+                <FanText role="item">{uiText("match")}</FanText>
+                <FanText role="meta"><ReadingText id="dailyFree" /></FanText>
                 <FanIcon icon={ChevronRight} />
               </span>
             </FanAction>
@@ -496,10 +497,11 @@ export function SajuResult({
 }
 
 function Rewards({ locale, points, exp }: { locale: AppLocale; points: number; exp: number }) {
+  const uiText = useReadingCopy();
   return (
     <div className={styles.rewardRow}>
       {points > 0 && <EarnBadge locale={locale} points={points} variant="inline" />}
-      {exp > 0 && <FanText role="meta">친밀 +{exp}</FanText>}
+      {exp > 0 && <FanText role="meta">{uiText("affinityGain", { exp: exp })}</FanText>}
     </div>
   );
 }

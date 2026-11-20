@@ -1,6 +1,8 @@
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
+import enCatalog from "@/features/chemi/i18n/locales/en/chemi.json";
 import koCatalog from "@/features/chemi/i18n/locales/ko/chemi.json";
 import type { Chart } from "./chart";
 import { SajuFlow } from "./flow";
@@ -311,4 +313,26 @@ it("서로 다른 사주 기록 사이를 뒤로·앞으로 가면 그 주소의
     window.dispatchEvent(new PopStateEvent("popstate"));
   });
   await vi.waitFor(() => expect(api.calls.filter((c) => c.key === "GET /api/chemi/readings/first-1").length).toBeGreaterThanOrEqual(2));
+});
+
+it("새로 연 결과에서 선택 화면으로 돌아가면 결과 번호가 주소에서 사라진다", async () => {
+  server(baseRoutes);
+  await openResult("/chemi/saju?step=result&c=changha&r=first-1");
+  fireEvent.click(screen.getByRole("button", { name: "뒤로 가기" }));
+  expect(await screen.findByRole("heading", { name: "최애 사주" })).toBeVisible();
+  expect(window.location.search).toBe("?c=changha");
+});
+
+it("shows the saved-reading action and greeting in English", async () => {
+  server(baseRoutes);
+  window.history.replaceState(null, "", "/chemi/saju?locale=en");
+  render(
+    <ReadingCopyProvider value={enCatalog}>
+      <SajuFlow locale="en" birthCopy={koCatalog.myBirth} />
+    </ReadingCopyProvider>
+  );
+  expect(await screen.findByRole("button", { name: "Past reading" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "Star Saju" })).toBeVisible();
+  expect(screen.getByRole("link", { name: "Back to Chemi" })).toBeVisible();
+  expect(screen.getByText(enCatalog.readingUi.againChangha)).toBeVisible();
 });

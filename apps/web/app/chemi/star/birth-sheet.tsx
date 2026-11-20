@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadingBirthCopy, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { useState } from "react";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -12,7 +13,6 @@ import {
   type BirthGender,
   type BirthTime,
 } from "@/features/chemi/domain/birth-form";
-import ko from "@/features/chemi/i18n/locales/ko/chemi.json";
 import { BirthDateField, BirthTimeField, ChoiceField } from "@/features/chemi/ui/frame/birth-fields";
 import styles from "./scene.module.css";
 
@@ -24,17 +24,7 @@ export type BirthInput = {
   gender: BirthGender;
 };
 
-const copy = ko.myBirth;
-const calendars = [
-  { key: "solar" as const, label: copy.solar },
-  { key: "lunar" as const, label: copy.lunar },
-  { key: "lunar_leap" as const, label: copy.lunarLeap },
-];
-const genders = [
-  { key: "female" as const, label: copy.female },
-  { key: "male" as const, label: copy.male },
-  { key: "none" as const, label: copy.noGender },
-];
+
 
 /**
  * 별자리 운세 첫 생일 시트(생년월일·달력 → 태어난 시간 → 성별). 입력 칸·시간 휠·시진 띠는
@@ -53,6 +43,18 @@ export function BirthSheet({
   onClose: () => void;
   onSave: (input: BirthInput) => void;
 }) {
+  const text = useReadingCopy();
+  const copy = useReadingBirthCopy();
+  const calendars = [
+    { key: "solar" as const, label: copy.solar },
+    { key: "lunar" as const, label: copy.lunar },
+    { key: "lunar_leap" as const, label: copy.lunarLeap },
+  ];
+  const genders = [
+    { key: "female" as const, label: copy.female },
+    { key: "male" as const, label: copy.male },
+    { key: "none" as const, label: copy.noGender },
+  ];
   const [step, setStep] = useState(0);
   const [date, setDate] = useState("");
   const [calendar, setCalendar] = useState<BirthCalendar>("solar");
@@ -62,7 +64,7 @@ export function BirthSheet({
   const dateError = issue === "invalid" ? copy.invalidDate : issue === "under14" ? copy.under14 : null;
   const last = step === 2;
   const primary = {
-    label: last ? "저장하고 보기" : "다음",
+    label: last ? text("saveRead") : text("next"),
     disabled: step === 0 ? birthDateIssue(date, koreaToday()) !== null : false,
     loading: busy,
     onClick: () => {
@@ -74,13 +76,13 @@ export function BirthSheet({
     <FanSheet
       open={open}
       onOpenChange={(next) => !next && onClose()}
-      title="생일 정보"
-      closeLabel="닫기"
+      title={copy.firstTitle}
+      closeLabel={copy.close}
       primary={primary}
-      secondary={step > 0 ? { label: "이전", onClick: () => setStep(step - 1) } : undefined}
+      secondary={step > 0 ? { label: text("previous"), onClick: () => setStep(step - 1) } : undefined}
     >
       <div className={styles.field}>
-        <div className={styles.steps} role="img" aria-label={`3단계 중 ${step + 1}단계`}>
+        <div className={styles.steps} role="img" aria-label={text("stepOf").replace("{step}", String(step + 1))}>
           {[0, 1, 2].map((index) => (
             <i key={index} aria-current={index === step ? "step" : undefined} />
           ))}
@@ -100,7 +102,7 @@ export function BirthSheet({
               value={gender ?? "none"}
               onChange={(key) => setGender(key === "none" ? null : key)}
             />
-            <FanText role="meta">저장하면 생일 정보 수집·이용에 동의한 것으로 봐요.</FanText>
+            <FanText role="meta">{text("birthConsent")}</FanText>
           </>
         )}
         {error && (
