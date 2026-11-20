@@ -11,14 +11,14 @@ if (["passports", "raffle-layout"].includes(new URLSearchParams(location.search)
     if (url.pathname === "/api/passports") {
       const mode = new URLSearchParams(location.search).get("data") ?? "mixed";
       if (mode === "error") return Promise.resolve(Response.json({}, { status: 503 }));
-      const names = mode === "demo" ? ["KARA", "위나", "유나"] : ["RUN&MUSIC FESTIVAL", "위나", "유나", "제희", "박병호", "Aleksandra Wiśniewska-Kowalczyk"];
+      const names = mode === "demo" ? ["KARA", "위나", "유나"] : ["RUN&MUSIC FESTIVAL", "위나", "유나", "제희", "박병호", "Aleksandra Wiśniewska-Kowalczyk International Music Festival"];
       const passports = names.slice(0, mode === "one" ? 1 : undefined).map((name, index) => ({
         id: `11111111-1111-4111-8111-${String(index + 1).padStart(12, "0")}`,
         owner: { nickname: null },
         celebrity: { slug: `fixture-${index}`, name, image: { url: "/images/guest-home/kara-card.jpg", alt: name, position: "center" } },
         businessStatus: "issued", issuedAt: "2026-07-21T00:00:00.000Z",
         mint: { status: mode === "mixed" && index === 1 ? "queued" : mode === "mixed" && index === 2 ? "permanent_failure" : "minted", txHash: mode === "mixed" && (index === 1 || index === 2) ? null : `0x${"a".repeat(64)}`, tokenId: mode === "mixed" && (index === 1 || index === 2) ? null : "42" },
-        score: { points: index === 5 ? 1234567 : 1, level: "Bronze" },
+        score: { points: index === 5 ? 1234567 : 1, level: index === 5 ? "Diamond" : "Silver" },
         stampSummary: { knowledge: 1, reservation: 1, attendance: 0, survey: 0, total: 2 },
         display: { level: "Bronze", mintStatus: "Issued" },
       }));

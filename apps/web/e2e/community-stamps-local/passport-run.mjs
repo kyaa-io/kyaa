@@ -29,14 +29,22 @@ try {
         const footer = article.lastElementChild.getBoundingClientRect();
         const facts = article.querySelector('[class*="cardFacts"]').getBoundingClientRect();
         const title = article.querySelector('h2');
+        const titleRect = title.getBoundingClientRect();
+        const heading = title.parentElement.getBoundingClientRect();
+        const chip = title.nextElementSibling.getBoundingClientRect();
+        const titleFits = title.clientHeight <= 2 * parseFloat(getComputedStyle(title).lineHeight) + 1;
+        const chipAligned = titleRect.right <= chip.left
+          && Math.abs(chip.top - heading.top) <= 1
+          && Math.abs(chip.right - heading.right) <= 1;
         const numbers = [...article.querySelectorAll('[class*="cardFacts"] strong')].map(number => number.getBoundingClientRect().bottom);
-        return { top: rect.top, height: rect.height, width: rect.width, footer: footer.top, footerHeight: footer.height, facts: facts.top, stamps: numbers[0], titleFits: title.scrollHeight <= title.clientHeight + 1, overflow: article.scrollWidth > article.clientWidth + 1 };
+        return { top: rect.top, height: rect.height, width: rect.width, footer: footer.top, footerHeight: footer.height, facts: facts.top, stamps: numbers[0], titleFits, chipAligned, overflow: article.scrollWidth > article.clientWidth + 1 };
       }));
       await page.screenshot({ path: `${out}/${locale}-${width}.png`, fullPage: true });
       if (width === 1440) assert(cards.filter(card => Math.abs(card.top - cards[0].top) <= 1).length > 1, `${locale}: desktop must exercise a multi-card row`);
       for (const card of cards) {
         assert(card.width <= 380.5, `${locale}/${width}: card width stays bounded`);
         assert(card.footerHeight >= 44, `${locale}/${width}: reachable footer`);
+        assert(card.chipAligned, `${locale}/${width}: tier stays at the top right`);
         assert(card.titleFits && !card.overflow, `${locale}/${width}: content remains readable`);
         const row = cards.filter(other => Math.abs(other.top - card.top) <= 1);
         for (const peer of row) for (const metric of ['height', 'footer', 'facts', 'stamps']) {
