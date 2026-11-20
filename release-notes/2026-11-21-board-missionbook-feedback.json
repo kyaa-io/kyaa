@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "대표 피드백을 반영해 팬페이지 게시판 제목과 글쓰기 버튼을 이전 모습으로 맞추고, PC에서 광고가 없을 때는 게시글 목록을 이전처럼 가운데에 모았어요.",
+    "홈의 덕질미션북 그림이 카드 전체를 채워 빈 공간을 줄였어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-21-missionbook-full-bleed.png",
+    "release-notes/images/2026-11-21-missionbook-full-bleed-wide.png"
+  ]
+}

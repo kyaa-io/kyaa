@@ -24,13 +24,15 @@ import { bypassImageOptimization, homeHeroCampaignSizes, homeHeroSizes } from ".
 import styles from "./managed-home-banner.module.css";
 import carouselStyles from "../guest-home.module.css";
 
+const missionbookSizes = "(min-width: 1440px) 1360px, (min-width: 1024px) calc(100vw - 80px), (min-width: 768px) calc(100vw - 64px), calc(100vw - 32px)";
+
 function BannerArtwork({ banner, priority, creatorWelcome, campaign }: { banner: HomeBanner; priority: boolean; creatorWelcome: boolean; campaign: boolean }) {
   const [failed, setFailed] = useState(false);
   const mobile = banner.mobileImage ?? banner.desktopImage;
   const propsFor = (asset: typeof mobile) => getImageProps({
     src: asset.url, alt: banner.alt, unoptimized: bypassImageOptimization(asset.url), width: asset.width, height: asset.height,
     // PERF-r5: sized to the 4차 hero slot (952 at 1440, beside the aside from 1024), the campaign art to its 46% column.
-    sizes: campaign ? homeHeroCampaignSizes() : homeHeroSizes(),
+    sizes: banner.id === MISSIONBOOK_BANNER_ID ? missionbookSizes : campaign ? homeHeroCampaignSizes() : homeHeroSizes(),
   }).props;
   const desktopProps = propsFor(banner.desktopImage);
   const mobileProps = propsFor(mobile);
@@ -57,7 +59,7 @@ export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent 
   const creatorWelcome = banner.kind === "announcement" && banner.celebrityId !== null && banner.desktopImage.width === banner.desktopImage.height;
   const artwork = <BannerArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={priority} creatorWelcome={creatorWelcome} campaign={gggiCampaign} />;
   return <div className={styles.root} data-managed-home-banner={banner.id} data-signup-raffle={banner.id === SIGNUP_RAFFLE_BANNER_ID || undefined} data-creator-welcome={creatorWelcome} data-guide-art={guideArt || undefined} data-missionbook={missionbook || undefined} data-first-steps={banner.id === FIRST_STEPS_BANNER_ID || undefined} data-gggi-campaign={gggiCampaign || undefined}>
-    <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
+    <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={missionbook ? "missionbook" : ["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
       eyebrow={isAdminEventBanner(banner) ? <EventDayEyebrow locale={locale} /> : banner.category && ['event','group','fanpage'].includes(banner.category) || guideArt ? bannerCategoryLabel(banner.category ?? "guide", locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={missionbook ? <MissionbookLikeCount locale={locale} tone="banner" /> : banner.description}
       action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
