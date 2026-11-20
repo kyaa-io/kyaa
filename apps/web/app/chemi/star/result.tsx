@@ -18,7 +18,6 @@ import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import {
   bestDomain,
-  domainLabels,
   domainLine,
   domainLong,
   domains,
@@ -220,7 +219,7 @@ export function StarResult({
       <div className={styles.main}>
         <header className={styles.head}>
           <FanText as="p" role="meta">
-            {uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate)) })} · {sunName}
+            {uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate))})} · {sunName}
           </FanText>
           <div className={styles.titleRow}>
             <FanHeading as="h1">{overallHeadline[stars.overall - 1]}</FanHeading>
@@ -258,10 +257,10 @@ export function StarResult({
                   data-best={isBest || undefined}
                 >
                   <div className={styles.domainHead}>
-                    <FanText role="label">{domainLabels[key]}</FanText>
+                    <FanText role="label">{uiText(`star_${key}`)}</FanText>
                     <StarRating
                       value={stars[key]}
-                      label={uiText("ratedStars", { domain: domainLabels[key], count: stars[key] })}
+                      label={uiText("ratedStars", { domain: uiText(`star_${key}`), count: stars[key] })}
                     />
                     {isBest && (
                       <FanText role="label" className={styles.bright}>
@@ -322,7 +321,7 @@ export function StarResult({
                     <span className={styles.tag}>
                       <FanIcon icon={reason.up ? ChevronUp : ChevronDown} />
                       <FanText role="meta">
-                        {domainLabels[reason.domain]} {reason.up ? uiText("help") : uiText("pressure")}
+                        {uiText(`star_${reason.domain}`)} {reason.up ? uiText("help") : uiText("pressure")}
                       </FanText>
                     </span>
                   </div>
@@ -368,17 +367,17 @@ export function StarResult({
         title={uiText("share")}
         closeLabel={uiText("close")}
         responsive
-        secondary={canSend ? { label: uiText("copyLink"), onClick: () => void share("copy") } : undefined}
+        secondary={canSend ? { label: uiText("copyLink"), onClick: () => void share("copy")} : undefined}
         primary={
           canSend
-            ? { label: uiText("send"), loading: sharing, onClick: () => void share("send") }
-            : { label: uiText("copyLink"), loading: sharing, onClick: () => void share("copy") }
+            ? { label: uiText("send"), loading: sharing, onClick: () => void share("send")}
+            : { label: uiText("copyLink"), loading: sharing, onClick: () => void share("copy")}
         }
       >
         <StarShareCard
           character={character}
           name={name}
-          dateText={uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate)) })}
+          dateText={uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate))})}
           headline={overallHeadline[stars.overall - 1]!}
           overall={stars.overall}
           sign={sunName}

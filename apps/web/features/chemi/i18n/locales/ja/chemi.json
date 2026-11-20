@@ -394,6 +394,11 @@
     "allViews": "",
     "birthWheel": "",
     "cardDay": "",
-    "todayCardLabel": ""
+    "todayCardLabel": "",
+    "star_overall": "",
+    "star_love": "",
+    "star_people": "",
+    "star_money": "",
+    "star_work": ""
   }
 }

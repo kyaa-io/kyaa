@@ -394,6 +394,11 @@
     "allViews": "지금까지 {count}명이 봤어요",
     "birthWheel": "내 출생 차트 원판. {planets}",
     "cardDay": "{date}의 카드",
-    "todayCardLabel": "오늘 카드: {card}"
+    "todayCardLabel": "오늘 카드: {card}",
+    "star_overall": "총운",
+    "star_love": "애정",
+    "star_people": "사람",
+    "star_money": "돈",
+    "star_work": "일·공부"
   }
 }

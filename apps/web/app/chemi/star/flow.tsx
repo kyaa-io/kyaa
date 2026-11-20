@@ -593,10 +593,10 @@ export function StarFlow({
                 {domains.map((key) => (
                   <li data-row="star" className={styles.sceneRow} key={key}>
                     <div className={styles.sceneHead}>
-                      <FanText role="label">{domainLabels[key]}</FanText>
+                      <FanText role="label">{text(`star_${key}`)}</FanText>
                       <StarRating
                         value={stars[key]}
-                        label={text("ratedStars", { domain: domainLabels[key], count: stars[key] })}
+                        label={text("ratedStars", { domain: text(`star_${key}`), count: stars[key] })}
                       />
                     </div>
                     <FanText as="p" role="body">

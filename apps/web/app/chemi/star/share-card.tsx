@@ -1,6 +1,6 @@
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { FanText } from "@/components/fan-ui/fan-text";
-import { domainLabels, type StarDomain } from "./copy";
+import type { StarDomain } from "./copy";
 import { art } from "./parts";
 import { StarRating } from "./stars";
 import styles from "./share-card.module.css";
@@ -52,7 +52,7 @@ export function StarShareCard({
           </li>
           <li data-row="star">
             <FanText role="meta">
-              {domainLabels[best]} ★{bestStar}
+              {uiText(`star_${best}`)} ★{bestStar}
             </FanText>
           </li>
         </ul>

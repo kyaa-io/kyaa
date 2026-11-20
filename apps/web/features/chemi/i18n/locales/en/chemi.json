@@ -394,6 +394,11 @@
     "allViews": "{count} views so far",
     "birthWheel": "My birth chart. {planets}",
     "cardDay": "Card for {date}",
-    "todayCardLabel": "Today’s card: {card}"
+    "todayCardLabel": "Today’s card: {card}",
+    "star_overall": "Overall",
+    "star_love": "Love",
+    "star_people": "Relationships",
+    "star_money": "Money",
+    "star_work": "Work and study"
   }
 }
