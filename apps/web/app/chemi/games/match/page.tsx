@@ -1,3 +1,6 @@
+import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
+import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { notFound } from "next/navigation";
 import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
@@ -14,9 +17,21 @@ export default async function MatchPage({
 }) {
   if (!chemiEnabled()) notFound();
   const photos = getMatchPhotos();
-  if (!photos) notFound();
   const { locale: raw, share } = await searchParams;
   const locale = parseAppLocale(raw);
+  if (!photos) {
+    const { home } = (
+      await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)
+    ).default;
+    return (
+      <FanAppFrame locale={locale} currentPath="/chemi" mainId="chemi-main">
+        <FanContentContainer as="main" id="chemi-main" tabIndex={-1}>
+          <FanHeading as="h1">{home.pair}</FanHeading>
+          <FanText as="p" role="meta">{home.ready}</FanText>
+        </FanContentContainer>
+      </FanAppFrame>
+    );
+  }
   return (
     <MatchScreen
       locale={locale}

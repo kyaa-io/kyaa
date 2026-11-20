@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "케미가 열린 테스트 환경에서 짝 맞추기 화면에 들어갈 수 있어요.",
+    "게임에 쓸 사진이 준비되지 않았으면 준비 중 안내를 보여 드려요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/games/match",
+  "images": [
+    "release-notes/images/2026-11-21-chemi-match-dev-enable.png"
+  ]
+}

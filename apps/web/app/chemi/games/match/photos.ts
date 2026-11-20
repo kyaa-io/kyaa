@@ -35,7 +35,7 @@ const catalog = {
     cards: [
       "/images/groups/source-calendar/f9c838570dbcfc33.jpg",
       `${root}/yuna/hero-beach.jpg`,
-      "https://kyaa.io/api/content-assets/857c6367-6f97-40ff-ac11-b14cc2fb4e6e",
+      "/api/content-assets/857c6367-6f97-40ff-ac11-b14cc2fb4e6e",
       "/images/calendar/yuna-portrait.jpg",
     ],
   },
