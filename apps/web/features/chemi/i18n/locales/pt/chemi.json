@@ -405,6 +405,25 @@
     "star_money": "",
     "star_work": "",
     "pointsShort": "Faltam {points} P.",
-    "testTopup": "Recarga de teste"
+    "testTopup": "Recarga de teste",
+    "depthHigh": "Dê o primeiro passo",
+    "depthMid": "Siga seu ritmo",
+    "depthLow": "Faça uma pausa",
+    "depthChangha": "Minha dica",
+    "depthElina": "Vamos escolher juntos?",
+    "depthYuna": "Experimente uma ideia!",
+    "depthDosa": "Ideias de hoje",
+    "depthFandomA": "Ouvir de novo a primeira estrofe",
+    "depthFandomB": "Enviar o bis a um amigo",
+    "depthPeopleA": "Cumprimentar um colega no almoço",
+    "depthPeopleB": "Agradecer por mensagem de voz",
+    "depthWorkA": "Anotar uma pergunta antes da reunião",
+    "depthWorkB": "Resumir a aula em três linhas",
+    "depthRestA": "Olhar pela janela",
+    "depthRestB": "Caminhar após o almoço",
+    "depthLoveA": "Enviar a música daquela conversa",
+    "depthLoveB": "Convidar para um café no sábado",
+    "depthMoneyA": "Comparar o frete",
+    "depthMoneyB": "Rever assinaturas sem uso"
   }
 }

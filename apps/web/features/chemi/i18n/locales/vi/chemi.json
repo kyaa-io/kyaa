@@ -405,6 +405,25 @@
     "star_money": "",
     "star_work": "",
     "pointsShort": "Còn thiếu {points}P.",
-    "testTopup": "Nạp thử"
+    "testTopup": "Nạp thử",
+    "depthHigh": "Chủ động bước tới",
+    "depthMid": "Giữ nhịp quen thuộc",
+    "depthLow": "Cho mình phút nghỉ",
+    "depthChangha": "Gợi ý của mình nè",
+    "depthElina": "Mình cùng chọn nhé?",
+    "depthYuna": "Thử một việc nào!",
+    "depthDosa": "Gợi ý hôm nay",
+    "depthFandomA": "Nghe lại câu hát mở đầu",
+    "depthFandomB": "Gửi đoạn diễn thêm cho bạn",
+    "depthPeopleA": "Hỏi thăm đồng nghiệp lúc ăn trưa",
+    "depthPeopleB": "Gửi lời cảm ơn bằng tin nhắn thoại",
+    "depthWorkA": "Ghi một câu hỏi trước cuộc họp",
+    "depthWorkB": "Tóm tắt bài học trong ba dòng",
+    "depthRestA": "Nhìn ra ngoài cửa sổ",
+    "depthRestB": "Đi dạo sau bữa trưa",
+    "depthLoveA": "Gửi bài hát hai người từng nhắc",
+    "depthLoveB": "Rủ nhau đi cà phê cuối tuần",
+    "depthMoneyA": "So sánh phí giao hàng",
+    "depthMoneyB": "Xem lại các gói đăng ký ít dùng"
   }
 }
