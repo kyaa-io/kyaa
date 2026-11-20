@@ -51,7 +51,7 @@ export type Pair = {
 const hero = (character: SajuCharacterId) =>
   character === "changha"
     ? "/chemi/saju/saju-changha-wide-v1.webp"
-    : `/chemi/saju/saju-${character}-v1.webp`;
+    : `/chemi/saju/saju-${character}-wide-v2.webp`;
 
 const levelWidth = { 많이: 92, 보통: 56, 조금: 28 } as const;
 
