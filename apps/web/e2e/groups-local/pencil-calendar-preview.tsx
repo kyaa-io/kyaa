@@ -5,7 +5,7 @@ import {LiveCalendarScreen} from '../../features/live/ui/live-calendar-screen';
 import {LiveEventScreen} from '../../features/live/ui/live-event-screen';
 import {ScheduleDetail} from '../../features/schedules/ui/schedule-detail';
 import {GroupShell} from '../../features/groups/ui/group-shell';
-import Link from 'next/link';
+import Link from '../../components/fan-ui/hover-prefetch-link';
 import type {Route} from 'next';
 import {UsersRound,Plus} from 'lucide-react';
 import {GroupPageMenu} from '../../features/groups/ui/group-page-menu';
