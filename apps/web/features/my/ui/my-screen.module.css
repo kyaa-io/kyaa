@@ -20,8 +20,8 @@
 .tierBadge svg { width:20px; height:20px; flex-shrink:0; }
 .tierBadge span { overflow-wrap:anywhere; }
 .tierBadge[data-tier="Silver"] { color:var(--color-accent-ink); }
-.tierBadge[data-tier="Gold"] { color:oklch(43% .09 75); }
-.tierBadge[data-tier="Platinum"] { color:oklch(40% .08 195); }
+.tierBadge[data-tier="Gold"] { color:var(--color-tier-gold-ink); }
+.tierBadge[data-tier="Platinum"] { color:var(--color-tier-platinum-ink); }
 .tierBadge[data-tier="Diamond"] { color:var(--color-accent); }
 .tierBadge:focus-visible,.recentDisclosure summary:focus-visible { outline:3px solid var(--color-ink); outline-offset:3px; }
 .notificationLink { display:inline-flex; min-height:var(--min-target); align-items:center; justify-content:center; gap:var(--space-2); padding-inline:var(--space-3); border:1px solid var(--color-line); border-radius:var(--radius-pill); font-size:var(--fan-metadata-size); font-weight:var(--fan-item-title-weight); white-space:nowrap; }
@@ -419,3 +419,5 @@
   .pencilSummary { gap:var(--space-3); }
   .pencilSummary .pencilProfile { column-gap:var(--space-2); }
 }
+
+.homeRow[id] { scroll-margin-top: var(--fan-header-height); }

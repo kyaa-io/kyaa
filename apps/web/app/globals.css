@@ -56,6 +56,8 @@
   --color-accent-soft: #fff0f6;
   --color-accent-line: #f4c3d7;
   --color-accent-ink: #ad1457;
+  --color-tier-gold-ink: oklch(43% .09 75);
+  --color-tier-platinum-ink: oklch(40% .08 195);
   /* GGGI 캠페인 배너 아트 색(4차 배너 원본, UI 강조색이 아님). */
   --color-campaign-art: #073d33;
   --color-page-accent: var(--color-accent);
