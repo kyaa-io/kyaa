@@ -44,7 +44,7 @@ import { NoticeDetail } from "../../components/notice/notice-detail";
 import { sanitizeReturnTo } from "../../components/login-intent";
 import { boardHref, parseFanPageTab, resolveBoardSection, resolveBoardSource } from "../../features/fanpage/domain/board-navigation";
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import Link from "../../components/fan-ui/hover-prefetch-link";
 import noticeStyles from "../../components/notice/notice-detail.module.css";
 import { TikTokLiveFallbackFixture, tiktokPlaybackFixtureResponse } from "./tiktok-live-fixture";
 import { CelebrityDirectory } from "../../components/celebrity-directory";
