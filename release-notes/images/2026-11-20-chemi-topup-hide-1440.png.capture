@@ -1,1 +1,1 @@
-{"tool":"playwright","url":"http://localhost:3978/chemi/fortune?step=result&r=fortune-demo&c=changha","mode":"login","capturedAt":"2026-11-20T08:27:27.019Z","sha256":"6ad1b996f20f04855420d751bb4644d77f73f51e4951215c95ec44eb4454d2c4"}
+{"tool":"local-login","url":"http://localhost:3978/chemi/fortune","mode":"login","capturedAt":"2026-11-20T08:30:53.447Z","sha256":"e70349f16eed15ec0ebe60ce27595ccf4bb37df0fb786fe0dfdd65a088a63fd4"}
