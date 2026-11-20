@@ -3,12 +3,21 @@ import { z } from "zod";
 import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const bannerLocaleSchema = z.enum(["ko", "en"]);
-export const bannerSlotSchema = z.enum(["home_below_board", "home_between_events", "home_mid", "fanpage_below_gallery", "fanpage_second", "dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"]);
+export const bannerSlotSchema = z.enum(["member_event_popup", "home_below_board", "home_between_events", "home_mid", "fanpage_below_gallery", "fanpage_second", "dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"]);
 export type BannerSlot = z.infer<typeof bannerSlotSchema>;
-export type BannerSlotArea = "home" | "fanpage" | "dukjil";
-export const bannerSlotsByArea: Record<BannerSlotArea, readonly BannerSlot[]> = { home: ["home_below_board", "home_between_events", "home_mid"], fanpage: ["fanpage_below_gallery", "fanpage_second"], dukjil: ["dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"] };
+export type BannerSlotArea = "home" | "fanpage" | "dukjil" | "member-event";
+export const bannerSlotsByArea: Record<BannerSlotArea, readonly BannerSlot[]> = { "member-event": ["member_event_popup"], home: ["home_below_board", "home_between_events", "home_mid"], fanpage: ["fanpage_below_gallery", "fanpage_second"], dukjil: ["dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"] };
 export const bannerPlacementSchema = z.enum(["home", "groups", "both", ...bannerSlotSchema.options]);
 export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live", "guide", "ad"]);
+export function isMemberEventHref(value: string) {
+  return /^\/live\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ||
+    /^\/pages\/groups\/[0-9a-f-]{36}\/raffles\/[0-9a-f-]{36}$/.test(value);
+}
+
+const popupSchedule = {
+  startsAt: z.iso.datetime({ offset: true }).nullable().optional(),
+  endsAt: z.iso.datetime({ offset: true }).nullable().optional(),
+};
 const bannerMetadata = { placement: bannerPlacementSchema.optional(), category: bannerCategorySchema.optional() };
 
 // Guide banners are shown on the home slider and the discovery slider; the event card list leaves them out.
@@ -54,7 +63,7 @@ const writeLocalizationSchema = z.object({
   ...copyFields, desktopAssetId: z.uuid().nullable(), mobileAssetId: z.uuid().nullable(),
 }).strict();
 export const adminHomeBannerSchema = z.object({
-  ...bannerMetadata, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
+  ...bannerMetadata, ...popupSchedule, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
   publicationStatus: z.enum(["draft", "published"]), sortOrder: z.number().int(), revision: z.number().int().positive(),
   localizations: z.object({ ko: bannerLocalizationSchema, en: bannerLocalizationSchema }).strict(),
 }).strict();
@@ -63,17 +72,22 @@ export const homeBannerManagerDataSchema = z.object({
   celebrities: z.array(z.object({ id: z.uuid(), slug: z.string(), nameKo: z.string(), nameEn: z.string() }).strict()),
 }).strict();
 export const homeBannerSchema = z.object({
-  ...bannerMetadata, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
+  ...bannerMetadata, ...popupSchedule, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
   title: z.string().trim().min(1).max(160), description: copyFields.description,
   ctaLabel: z.string().trim().min(1).max(80), href: z.string().max(2048).refine(isBannerHref),
   alt: z.string().trim().min(1).max(300), desktopImage: assetSchema, mobileImage: assetSchema.nullable(),
 }).strict();
 export const homeBannerCommandSchema = z.discriminatedUnion("action", [
   z.object({
-    ...bannerMetadata, action: z.literal("save"), id: z.uuid().nullable(), expectedRevision: z.number().int().min(0),
+    ...bannerMetadata, ...popupSchedule, action: z.literal("save"), id: z.uuid().nullable(), expectedRevision: z.number().int().min(0),
     kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
     localizations: z.object({ ko: writeLocalizationSchema, en: writeLocalizationSchema }).strict(),
   }).strict().refine(v => v.kind !== "regular_live" || v.celebrityId !== null, "CREATOR_REQUIRED")
+    .refine(v => v.placement !== "member_event_popup" || (
+      v.kind === "announcement" && v.startsAt && v.endsAt &&
+      Date.parse(v.startsAt) < Date.parse(v.endsAt) &&
+      isMemberEventHref(v.localizations.ko.href) && v.localizations.ko.href === v.localizations.en.href
+    ), "INVALID_EVENT_POPUP")
     .refine(v => v.id !== null || v.expectedRevision === 0, "INVALID_REVISION"),
   z.object({ action: z.literal("publication"), id: z.uuid(), expectedRevision: z.number().int().positive(), publicationStatus: z.enum(["draft", "published"]) }).strict(),
   z.object({ action: z.literal("reorder"), items: z.array(z.object({ id: z.uuid(), expectedRevision: z.number().int().positive() }).strict()).max(500) }).strict()

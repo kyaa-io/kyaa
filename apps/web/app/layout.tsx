@@ -1,3 +1,4 @@
+import { MemberEventPopup } from "@/components/banner-slot/member-event-popup";
 import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
 import { defaultShareImage, SITE_URL, NO_INDEX, isPrivatePath, isRehearsalPath, openGraphLocale } from "@/seo/metadata";
 import type { Metadata, Viewport } from "next";
@@ -103,6 +104,7 @@ export default async function RootLayout({
           </Suspense>
           <Suspense fallback={null}><FanNavigationProgress /></Suspense>
           <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
+          <Suspense fallback={null}><MemberEventPopup /></Suspense>
           <FanToastProvider />
           <DeferredRootClients slot="after" />
         </AuthRoot>

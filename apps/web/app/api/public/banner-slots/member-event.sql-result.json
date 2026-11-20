@@ -1,0 +1,25 @@
+{
+  "member_event_popup": {
+    "id": "386c662c-07e0-4db5-b895-b9410b641a80",
+    "alt": "Demo",
+    "href": "/pages/groups/d8c7d99e-86a3-4130-8753-edb5364fdb6b/raffles/90dc36d1-654a-480a-a62a-f768c51c4dc8",
+    "kind": "announcement",
+    "title": "Demo",
+    "endsAt": "2026-11-20T02:57:18.708419+09:00",
+    "category": "event",
+    "ctaLabel": "Open",
+    "startsAt": "2026-11-20T00:57:18.708419+09:00",
+    "placement": "member_event_popup",
+    "celebrityId": null,
+    "description": "",
+    "mobileImage": null,
+    "desktopImage": {
+      "id": "b5b9d0ce-4aa4-4cc9-9acc-9b603c4652cd",
+      "url": "https://example.invalid/storage/v1/object/public/cms-assets/public-image-assets/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.webp",
+      "width": 1440,
+      "height": 360,
+      "mimeType": "image/webp",
+      "revision": 1
+    }
+  }
+}

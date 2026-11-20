@@ -172,6 +172,7 @@ export type AccessibleOverlayProps = {
   describedBy?: string;
   role?: "dialog" | "alertdialog";
   closeOnEscape?: boolean;
+  trackHistory?: boolean;
   closeOnBackdrop?: boolean;
   initialFocusRef?: RefObject<HTMLElement | null>;
   backdropClassName: string;
@@ -189,6 +190,7 @@ export function AccessibleOverlay({
   describedBy,
   role = "dialog",
   closeOnEscape = true,
+  trackHistory = true,
   closeOnBackdrop = true,
   initialFocusRef,
   backdropClassName,
@@ -208,7 +210,7 @@ export function AccessibleOverlay({
     closeRef.current = onClose;
   }, [onClose]);
 
-  useOverlayHistoryEntry(open, closeRef, navigatingRef);
+  useOverlayHistoryEntry(open && trackHistory, closeRef, navigatingRef);
 
   useLayoutEffect(() => {
     if (!open) return;
