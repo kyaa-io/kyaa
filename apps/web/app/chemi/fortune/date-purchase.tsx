@@ -29,6 +29,7 @@ export function DatePurchase({
   const [quote, setQuote] = useState<{
     price: number;
     balance: number;
+    topupPath?: string;
   }>();
   const [revisit, setRevisit] = useState(false);
   const [saved, setSaved] = useState<FortuneReading>();
@@ -36,6 +37,17 @@ export function DatePurchase({
     const day = new URLSearchParams(window.location.search).get("date");
     if (day && /^\d{4}-\d{2}-\d{2}$/.test(day)) setDay(day);
   }, []);
+  function topupHref(path: string) {
+    const back = new URL(window.location.href);
+    back.searchParams.set("date", day);
+    back.hash = "fortune-date";
+    const params = new URLSearchParams({
+      returnTo: back.pathname + back.search + back.hash,
+      date: day,
+      character,
+    });
+    return `${path}?${params}`;
+  }
   function reset(value: string) {
     setDay(value);
     setQuote(undefined);
@@ -129,6 +141,7 @@ export function DatePurchase({
             </>
           ) : (
             <DateShortage
+              topupHref={quote.topupPath ? topupHref(quote.topupPath) : undefined}
               shortBy={quote.price - quote.balance}
               locale={locale}
               busy={busy}
