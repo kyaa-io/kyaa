@@ -253,7 +253,8 @@ export function SajuResult({
 
   async function saveAdvice() {
     try {
-      await saveAdviceImage(hero(character), new Intl.DateTimeFormat(locale).format(at), sayLine);
+      const advice = view === "first" ? first.keywords[0].act : compat?.together ?? sayLine;
+      await saveAdviceImage(hero(character), new Intl.DateTimeFormat(locale).format(at), advice);
     } catch (error) {
       if (!(error instanceof DOMException && error.name === "AbortError")) {
         showFanToast({ title: uiText("retry"), tone: "error" });
