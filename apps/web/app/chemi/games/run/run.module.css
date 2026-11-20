@@ -66,9 +66,9 @@
 .hud img { width: var(--space-6); image-rendering: pixelated; }
 .hud [data-empty="true"] { opacity: .32; }
 .runner, .cone { position: absolute; image-rendering: pixelated; }
-.runner { left: calc(20% - var(--space-8)); bottom: var(--run-bottom); background-position-x: var(--run-frame); width: 64px; height: 64px; background-image: url("/chemi/run/changha-run.png"); }
+.runner { left: calc(50% - var(--space-8)); bottom: var(--run-bottom); background-position-x: var(--run-frame); width: 64px; height: 64px; background-image: url("/chemi/run/changha-run.png"); }
 .runner[data-hit="true"] { opacity: .55; }
-.cone { left: var(--run-obstacle); bottom: 18%; width: 28px; }
+.cone { left: 50%; bottom: var(--run-obstacle); width: 28px; transform: translateX(-50%); }
 .jump { position: absolute; inset: auto 12px var(--space-3); touch-action: none; }
 @media (min-width: 768px) {
   .shell { padding: var(--space-6); }

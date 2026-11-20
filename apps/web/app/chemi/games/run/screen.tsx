@@ -236,7 +236,7 @@ function Track({ ticket, jump, pause, resume, finish }: { ticket: Ticket; jump: 
       </FanAction>
     </div>
     <div className={styles.runner} data-hit={view.invincible} style={{ "--run-bottom": `${18 + view.height * 16}%`, "--run-frame": `${-64 * (Math.floor(view.tick / 6) % 7)}px` } as CSSProperties} />
-    {view.obstacle < 30 && <img className={styles.cone} src={`${art}/cone.png`} alt="" style={{ "--run-obstacle": `${20 + view.obstacle * 2.6}%` } as CSSProperties} />}
+    {view.obstacle < 30 && <img className={styles.cone} src={`${art}/cone.png`} alt="" style={{ "--run-obstacle": `${18 + view.obstacle * 2.2}%` } as CSSProperties} />}
     <div className={styles.jump} onPointerDown={(event) => {
       if (paused || view.done) return;
       event.currentTarget.setPointerCapture(event.pointerId);
