@@ -53,6 +53,7 @@ function readNoteEntries(base, head) {
   const changedFiles = git('diff', '--name-only', base, head).split('\n');
   const runtimeChanged = changedFiles.some(file =>
     /^(apps\/|sites\/kyaa-wave\/|scripts\/|supabase\/migrations\/|contracts\/src\/|\.github\/workflows\/|package(?:-lock)?\.json$|vercel\.json$)/.test(file) &&
+    file !== NOTICE_HOLDS_PATH && file !== 'scripts/deployment-notices.mjs' &&
     !/(?:\.(?:test|spec)\.|\.md$|(?:^|\/)(?:tests?|e2e|__tests__)\/)/.test(file));
   if (!notes.length && runtimeChanged) throw new Error('RELEASE_NOTE_REQUIRED');
   return notes;
@@ -110,7 +111,16 @@ export function noticeImages(notes) {
 
 export function checkNotes(base, head, pullRequest = false) {
   if (!SHA.test(base) || !SHA.test(head)) throw new Error('INVALID_COMMIT');
-  const notes = readNotes(pullRequest ? git('merge-base', base, head) : base, head);
+  const entries = readNoteEntries(pullRequest ? git('merge-base', base, head) : base, head);
+  const chemiEntries = entries.filter(({ file, note }) => file.includes('chemi') || /^\/chemi(?:\/|$)/.test(note.path));
+  if (chemiEntries.length) {
+    const holds = git('ls-tree', '--name-only', head, '--', NOTICE_HOLDS_PATH)
+      ? JSON.parse(git('show', head + ':' + NOTICE_HOLDS_PATH)) : {};
+    for (const { file } of chemiEntries) {
+      if (!holds['chemi-tab']?.includes(file)) throw new Error('CHEMI_NOTICE_HOLD_REQUIRED: ' + file);
+    }
+  }
+  const notes = entries.map(entry => entry.note);
   for (const note of notes) {
     const disclosure = '예시 데이터로 만든 로컬 화면입니다.';
     let local = false;

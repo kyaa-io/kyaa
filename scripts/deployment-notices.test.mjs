@@ -569,6 +569,35 @@ test('held notes skip the production room until their hold is removed, while DEV
   } finally { process.chdir(cwd); rmSync(dir, { recursive: true, force: true }); }
 });
 
+test('new Chemi notices require the chemi-tab hold by filename or route', () => {
+  const cwd = process.cwd(), dir = mkdtempSync(join(tmpdir(), 'chemi-notice-'));
+  const git = (...args) => execFileSync('git', args, { encoding: 'utf8' }).trim();
+  try {
+    process.chdir(dir);
+    git('init', '-q');
+    git('config', 'user.name', 'Test');
+    git('config', 'user.email', 'test@example.invalid');
+    git('commit', '--allow-empty', '-qm', 'base');
+    mkdirSync('scripts');
+    mkdirSync('release-notes');
+    for (const [filename, path] of [['chemi-news', '/'], ['reading', '/chemi/star'], ['home', '/chemi']]) {
+      const base = git('rev-parse', 'HEAD');
+      const file = 'release-notes/' + filename + '.json';
+      writeFileSync(file, JSON.stringify({ ...note, path }));
+      git('add', file);
+      git('commit', '-qm', 'add notice');
+      assert.throws(() => checkNotes(base, git('rev-parse', 'HEAD')), /CHEMI_NOTICE_HOLD_REQUIRED/);
+      writeFileSync(NOTICE_HOLDS_PATH, JSON.stringify({ 'chemi-tab': [file] }));
+      git('add', NOTICE_HOLDS_PATH);
+      git('commit', '-qm', 'hold notice');
+      assert.deepEqual(checkNotes(base, git('rev-parse', 'HEAD')), [{ ...note, path }]);
+    }
+  } finally {
+    process.chdir(cwd);
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('production notices default to the hold-aware note reader and the repository hold list resolves', () => {
   assert.match(notifyDeployment.toString(), /notes = productionNotes/);
   heldNoteFiles(execFileSync(process.env.GIT_EXECUTABLE || 'git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim());
