@@ -9,7 +9,7 @@ import { BadgeCheck, Inbox, ChevronRight, Check } from "lucide-react";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { ActionFeedback, useParticipationAction } from "@/features/schedules/ui/participation-ui";
 import { ParticipationAdmin, useAdminPage, useParticipationCreators, CreatorSelect, AdminListState, styles } from "./participation-controls";
-const application = z.object({ qualification:qualificationSchema.nullable().optional(),submissionRevision:z.number().int().min(1).default(1), id: z.uuid(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string(), description: z.string(), question: z.string().nullable(), status: z.enum(["submitted", "reviewing", "changes_requested", "approved", "rejected"]), reason: z.string().nullable(), created_at: z.string() });
+const application = z.object({ applicant:z.object({id:z.uuid(),nickname:z.string().nullable(),joinedAt:z.string()}).nullish(), qualification:qualificationSchema.nullable().optional(),submissionRevision:z.number().int().min(1).default(1), id: z.uuid(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string(), description: z.string(), question: z.string().nullable(), status: z.enum(["submitted", "reviewing", "changes_requested", "approved", "rejected"]), reason: z.string().nullable(), created_at: z.string() });
 const parse = (value: unknown) => z.object({ items: z.array(application), nextCursor: z.string().nullable() }).parse(value);
 const reviewResult = z.object({ id: z.uuid(), status: z.string(), pageId: z.uuid().nullable() });
 const copy = {
@@ -21,11 +21,17 @@ export function GroupApplicationManager({ locale,presentation }: { locale: "ko" 
  const c = copy[locale];
  return <ParticipationAdmin groupLayout className={groupStyles.applicationSurface} locale={locale} title={c.title} description={c.description}>{role => <Manager locale={locale} role={role} presentation={presentation} />}</ParticipationAdmin>;
 }
+function Applicant({item,locale}:{item:z.infer<typeof application>;locale:"ko"|"en"}) {
+ const user=item.applicant;
+ if (!user) return <small>{locale==="ko"?"신청자 · 기록 없음":"Applicant · No record"}</small>;
+ const joined=new Intl.DateTimeFormat(locale==="ko"?"ko-KR":"en-US",{dateStyle:"medium",timeStyle:"short"}).format(new Date(user.joinedAt));
+ return <small>{locale==="ko"?"신청자":"Applicant"} · <a href={`/admin/fans?fanId=${user.id}&lang=${locale}`}>{user.nickname || user.id}</a> · {locale==="ko"?"가입일":"Joined"} {joined}</small>;
+}
 function Manager({ locale, role,presentation }: { locale: "ko" | "en"; role: string;presentation?:GroupApplicationPresentation }) {
- const c = copy[locale], [filter, setFilter] = useState("pending"), [selectedId,setSelectedId]=useState<string>(), list = useAdminPage("/api/groups/admin/applications", parse), creators = useParticipationCreators();
+ const c = copy[locale], [filter, setFilter] = useState("pending"), [selectedId,setSelectedId]=useState<string | undefined>(()=>typeof window==="undefined"?undefined:new URLSearchParams(window.location.search).get("applicationId")??undefined), list = useAdminPage("/api/groups/admin/applications", parse), creators = useParticipationCreators();
  const visible=list.state.data.filter(item=>(filter==="completed") === ["approved","rejected"].includes(item.status)),selected=visible.find(item=>item.id===selectedId)??visible[0];
  return <><div className={groupStyles.applicationWorkbench}><section aria-label={c.title}><h1 className={groupStyles.applicationTitle}><span><Inbox size={24} aria-hidden="true"/></span>{locale==="ko"?"개설 신청":c.title}</h1><div className={groupStyles.applicationTabs}>{(["pending", "completed"] as const).map(status => <button type="button" key={status} aria-pressed={status===filter} onClick={()=>setFilter(status)}>{status==="pending"?(locale==="ko"?"대기":"Pending"):(locale==="ko"?"처리 완료":"Completed")}</button>)}</div>
- <ul className={groupStyles.applicationList}>{visible.map(item=><li key={item.id}><button type="button" aria-pressed={selected?.id===item.id} onClick={()=>setSelectedId(item.id)}><BadgeCheck size={24} aria-hidden="true"/><span><strong>{item.name}</strong><small>{c[item.kind]} · {c[item.status]}</small></span><ChevronRight size={18} aria-hidden="true"/></button></li>)}</ul><AdminListState locale={locale} resource={list}/></section>{selected&&<ul className={groupStyles.applicationDetail}><Review key={`${selected.id}:${selected.status}`} item={selected} role={role} locale={locale} creators={creators.state.status === "ready" ? creators.state.data : []} refresh={list.retry} reloadCreators={creators.retry} presentation={presentation?.[selected.id]}/></ul>}</div>
+ <ul className={groupStyles.applicationList}>{visible.map(item=><li key={item.id}><button type="button" aria-pressed={selected?.id===item.id} onClick={()=>setSelectedId(item.id)}><BadgeCheck size={24} aria-hidden="true"/><span><strong>{item.name}</strong><small>{c[item.kind]} · {c[item.status]}</small></span><ChevronRight size={18} aria-hidden="true"/></button><Applicant item={item} locale={locale}/></li>)}</ul><AdminListState locale={locale} resource={list}/></section>{selected&&<ul className={groupStyles.applicationDetail}><Review key={`${selected.id}:${selected.status}`} item={selected} role={role} locale={locale} creators={creators.state.status === "ready" ? creators.state.data : []} refresh={list.retry} reloadCreators={creators.retry} presentation={presentation?.[selected.id]}/></ul>}</div>
  {list.state.status === "ready" && list.state.data.length > 0 && !visible.length && <p role="status" className={styles.adminEmpty}>{locale === "ko" ? "해당 상태의 신청이 없습니다." : "No applications with this status."}</p>}</>;
 }
 function OperatingExperience({ item, locale }: { item: z.infer<typeof application>; locale: "ko" | "en" }) {
@@ -42,7 +48,7 @@ function Review({ item, role, locale, creators, refresh,reloadCreators,presentat
  // Autocomplete and typed names are plain text, so a fan page may have no published creator to link yet.
  const key=creatorNameKey(item.name),sameName=creators.find(creator=>creatorNameKey(creator.nameKo)===key||creatorNameKey(creator.nameEn)===key),linkable=sameName?.status==="published"?sameName:undefined;
  const clearValidation=(event:MouseEvent<HTMLButtonElement>)=>event.currentTarget.form?.querySelectorAll<HTMLTextAreaElement|HTMLSelectElement>("textarea,select").forEach(field=>field.setCustomValidity(""));
- return <li><h2 className={groupStyles.applicationDetailTitle}><BadgeCheck size={24} aria-hidden="true"/>{item.name} {ko?"개설 신청":"application"}</h2><dl className={groupStyles.applicationFacts}>
+ return <li><h2 className={groupStyles.applicationDetailTitle}><BadgeCheck size={24} aria-hidden="true"/>{item.name} {ko?"개설 신청":"application"}</h2><Applicant item={item} locale={locale}/><dl className={groupStyles.applicationFacts}>
  <div><dt>{ko?"신청 상태":"Application status"}</dt><dd>{c[item.status]}</dd></div>
  {presentation?.creatorName&&<div><dt>{ko?'연결할 크리에이터':'Linked creator'}</dt><dd>{presentation.creatorName}</dd></div>}{presentation?.materialsLabel&&<div><dt>{ko?'신청 자료':'Submitted materials'}</dt><dd>{presentation.materialsLabel}</dd></div>}{presentation?.relationship&&<div><dt>{ko?'검토 항목':'Review item'}</dt><dd>{presentation.relationship}</dd></div>}
  <div><dt>{ko?"페이지 유형":"Page type"}</dt><dd>{c[item.kind]}</dd></div>

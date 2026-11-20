@@ -728,3 +728,11 @@ it("keeps the CS branch dormant by default and rejects invalid independent confi
  await expect(runTelegramCsWorkerOnce(env)).resolves.toBe(0);
  await expect(runTelegramCsWorkerOnce({...env,telegram:{...env.telegram,csMode:"enabled",csToken:"bad",csChatId:"-123456"}})).rejects.toThrow("TELEGRAM_CS_CONFIG_INVALID");
 });
+
+it("renders the submitted page and applicant in a mixed CS batch", () => {
+  const text = renderTelegramAlertMessage([...csAlerts, {
+    ...alerts[0]!, kind:"page_application", actor_name:"예시 팬", actor_email:null,
+    application:{id:inquiryId,name:"한강 크루",kind:"hobby"},
+  }]);
+  for (const label of ["새 CS 문의 접수","한강 크루 · 취미","신청자: 예시 팬","/admin/groups?applicationId="+inquiryId]) expect(text).toContain(label);
+});

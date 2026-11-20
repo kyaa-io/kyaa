@@ -16,4 +16,4 @@ export const adminApplicationFixtures=[
  {kind:'fan',name:'아티스트 팬페이지',description:'아티스트의 음악과 일상을 함께 응원합니다.',status:'changes_requested',reason:'아티스트와의 관계를 확인할 자료를 보완해 주세요.'},
  {kind:'hobby',name:'한강 러닝 크루',description:'한강에서 함께 달리고 러닝 기록을 나눠요.',status:'approved',reason:null},
  {kind:'brand',name:'브랜드 페이지',description:'브랜드 소식과 행사를 소개합니다.',status:'rejected',reason:'신청 자료에서 운영 주체를 확인할 수 없습니다.'},
-].map((item,i)=>({...item,id:`f1710000-0000-4000-8000-00000000000${i+1}`,question:null,created_at:new Date(Date.UTC(2026,10,1)-(i+1)*60000).toISOString()}));
+].map((item,i)=>({...item,applicant:i===0?{id:'f1810000-0000-4000-8000-000000000001',nickname:'예시 팬',joinedAt:'2026-10-21T01:00:00Z'}:null,id:`f1710000-0000-4000-8000-00000000000${i+1}`,question:null,created_at:new Date(Date.UTC(2026,10,1)-(i+1)*60000).toISOString()}));
