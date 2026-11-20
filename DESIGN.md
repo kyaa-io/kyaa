@@ -2863,3 +2863,5 @@ D-C token ownership: `FanHeading variant="campaign"` owns the 18px/700 mobile an
 - 하단 법적 링크 줄에 `요금 안내`(`/pricing`)·`환불 정책`(`/refund`)을 더했고 줄이 넘치면 줄 바꿈한다(`.legalLinks` flex-wrap).
 - `/pricing`·`/refund`는 `/terms`와 같은 `LegalPage`(읽기 폭 760)를 쓴다. 문서 내용은 `components/legal-commerce-content.ts`(ko 원문 + en, 그 밖의 언어는 en 문서를 `lang="en"`으로 보임). 가격표는 `LegalSection.table`로 그린다: 768+에서는 열 42/26/32% 고정 표, 767 이하는 행마다 상품명 아래 `라벨 · 값` 줄로 쌓는다(`legal-page.module.css`). 값은 케미 가격표 확정본(기획서 12-1, 2026-11-18)을 그대로 옮겼고 케미 탭은 운영에서 꺼 둔 채라 결제는 출시와 함께 열린다는 한 줄만 둔다.
 - 알려진 한계: 요금·환불 문서의 ja 등 나머지 10개 언어 번역은 없다(en 표시). 시행일 `2026년 11월 18일`은 게시일로 정했으므로 실제 반영일이 다르면 바꾼다.
+
+2026-11-20 관리자 메뉴 개편으로 모임 심사 및 요약 화면도 AdminOperationsShell의 헤더·왼쪽 메뉴·모바일 메뉴를 사용한다. 모임 요약의 별도 왼쪽 메뉴는 제거하고 신청 목록과 방장 패스는 본문에 둔다. 이전 독립 셸 규칙을 이 범위에서 대체한다.

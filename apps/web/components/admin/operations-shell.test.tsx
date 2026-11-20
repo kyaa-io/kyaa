@@ -27,11 +27,11 @@ describe("AdminOperationsShell navigation", () => {
     ["/admin/celebrities", "크리에이터 관리"],
     ["/admin/celebrities/kara/quiz", "크리에이터 관리"],
     ["/admin/lives", "LIVE 관리"],
-    ["/admin/proof-review", "패스포트 인증 심사"],
+    ["/admin/proof-review", "스탬프 증빙 심사"],
     ["/admin/schedules", "일정 관리"],
     ["/admin/schedule-suggestions", "일정 제보"],
     ["/admin/fanpage-requests", "팬페이지 신청"],
-    ["/admin/content-reports", "신고 관리"],
+    ["/admin/content-reports", "콘텐츠 신고"],
     ["/admin/lives/live-1/survey", "LIVE 관리"],
     ["/admin/home-banners", "홈 배너"],
     ["/admin/benefits", "혜택·경품"],
@@ -119,11 +119,11 @@ describe("AdminOperationsShell navigation", () => {
   it("shows admin management only when an admin role is provided", () => {
     pathname = "/admin/administrators";
     const view = render(<AdminOperationsShell locale="ko" adminRole="admin"><p>content</p></AdminOperationsShell>);
-    expect(screen.getByRole("link", { name: "관리자 관리" })).toHaveAttribute("href", "/admin/administrators");
-    expect(screen.getByRole("link", { name: "관리자 관리" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("navigation", { name: "현재 위치" })).toHaveTextContent("관리자 관리");
+    expect(screen.getByRole("link", { name: "관리자 권한" })).toHaveAttribute("href", "/admin/administrators");
+    expect(screen.getByRole("link", { name: "관리자 권한" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("navigation", { name: "현재 위치" })).toHaveTextContent("관리자 권한");
 
     view.rerender(<AdminOperationsShell locale="ko" adminRole="operator"><p>content</p></AdminOperationsShell>);
-    expect(screen.queryByRole("link", { name: "관리자 관리" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "관리자 권한" })).not.toBeInTheDocument();
   });
 });

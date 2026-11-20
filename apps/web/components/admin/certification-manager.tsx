@@ -1,4 +1,5 @@
 "use client";
+import { adminReviewLabels } from "@/i18n/catalogs/components__admin__review-navigation";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import {
   Check,
@@ -363,13 +364,8 @@ function CertificationManager({
         <header>
           <p>{locale === "ko" ? "회원 인증" : "Member verification"}</p>
           <h1>
-            {locale === "ko" ? "인증 심사" : "Certification reviews"}
+            {adminReviewLabels[locale].missionReview}
           </h1>
-          <span>
-            {locale === "ko"
-              ? "팬이 제출한 이미지를 확인하고 인증 결과를 알려 주세요."
-              : "Review submitted images and let fans know the result."}
-          </span>
         </header>
         <div className={styles.toolbar}>
           <div className={styles.tabs} role="tablist" aria-label={locale === "ko" ? "인증 관리" : "Certification management"} onKeyDown={event => {
@@ -378,7 +374,7 @@ function CertificationManager({
             const next = event.key === "Home" ? "review" : event.key === "End" ? "missions" : tab === "review" ? "missions" : "review";
             setTab(next); document.getElementById(`${next}-tab`)?.focus();
           }}>
-            <button id="review-tab" aria-controls="review-panel" role="tab" aria-selected={tab === "review"} tabIndex={tab === "review" ? 0 : -1} type="button" disabled={pending || needsRefresh} onClick={() => setTab("review")}>{locale === "ko" ? "인증 심사" : "Reviews"}</button>
+            <button id="review-tab" aria-controls="review-panel" role="tab" aria-selected={tab === "review"} tabIndex={tab === "review" ? 0 : -1} type="button" disabled={pending || needsRefresh} onClick={() => setTab("review")}>{locale === "ko" ? "심사" : "Reviews"}</button>
             <button id="missions-tab" aria-controls="missions-panel" role="tab" aria-selected={tab === "missions"} tabIndex={tab === "missions" ? 0 : -1} type="button" disabled={pending || needsRefresh} onClick={() => setTab("missions")}>{locale === "ko" ? "미션 설정" : "Mission settings"}</button>
           </div>
           <button type="button" disabled={pending || loading} onClick={() => void refreshFromButton()}><RefreshCw aria-hidden="true" />{needsRefresh ? (locale === "ko" ? "최신 상태 불러오기" : "Load latest state") : (locale === "ko" ? "새로고침" : "Refresh")}</button>
