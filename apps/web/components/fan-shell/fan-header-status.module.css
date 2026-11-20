@@ -27,3 +27,21 @@
 }
 
 .trigger > span { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+.tier { color: var(--color-accent-ink); }
+.tier[data-header-tier="Gold"] { color: var(--color-tier-gold-ink); }
+.tier[data-header-tier="Platinum"] { color: var(--color-tier-platinum-ink); }
+.trigger > .tier { display: block; max-width: 8em; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 30rem) {
+  .trigger.trigger:has(.tier) {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-items: start;
+    align-content: center;
+    row-gap: 0;
+    padding-inline: var(--space-1);
+  }
+  .trigger:has(.tier) > .value:first-child { grid-column: span 2; }
+  .trigger:has(.tier) > [aria-hidden] { display: none; }
+  .trigger > .tier { max-width: 3em; }
+}

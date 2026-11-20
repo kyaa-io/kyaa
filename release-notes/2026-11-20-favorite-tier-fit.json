@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "휴대폰에서도 포인트 앞에 MY에서 선택한 대표 최애의 등급이 보여요.",
+    "긴 등급 이름은 자리에 맞춰 줄여 표시하고, 누르면 대표 최애의 패스포트로 이동해요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-20-favorite-tier-fit-390.png",
+    "release-notes/images/2026-11-20-favorite-tier-fit-1440.png"
+  ]
+}

@@ -11,7 +11,6 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () => state.auth, useGroupResource: () => state.wallet, GROUP_WALLET_CHANGED_EVENT: "wallet-changed" }));
 vi.mock("@/features/selected-bias/ui/use-selected-bias", () => ({ useSelectedBias: () => state.bias }));
-vi.mock("@/features/rewards/ui/fan-tier-badge", () => ({ FanTierBadge: () => <span data-testid="tier" /> }));
 vi.mock("next/navigation", () => ({ usePathname: () => "/benefits", useSearchParams: () => new URLSearchParams("locale=ko") }));
 import { FanHeaderStatus } from "./fan-header-status";
 
@@ -28,13 +27,28 @@ describe("header capsule", () => {
   it("is one link to MY and opens no panel", () => {
     render(<FanHeaderStatus locale="ko" />);
     const link = chip();
-    expect(link).toHaveAttribute("href", "/my?locale=ko");
+    expect(link).toHaveAttribute("href", "/my?locale=ko&passport=favorite-a#my-passport");
     expect(link).toHaveTextContent("1,260");
     expect(link.querySelector('img[src="/images/economy/point-coin.webp"]')).not.toBeNull();
     expect(link.querySelector('img[src="/images/dukjil-duo/glyph-heart-160.webp"]')).not.toBeNull();
     fireEvent.click(link);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(link).not.toHaveAttribute("aria-expanded");
+  });
+
+  it("shows the named favorite grade before points even with a higher passport", () => {
+    state.bias.options = [{ ...selected, slug: "other", tier: "Gold" }, selected];
+    render(<FanHeaderStatus locale="ko" />);
+    const label = screen.getByText("브론즈");
+    expect(label.nextElementSibling).toHaveTextContent("1,260");
+    expect(chip()).toHaveAccessibleName(/브론즈/);
+  });
+
+  it("omits the grade when no owned passport matches the favorite", () => {
+    state.bias.selected = null;
+    render(<FanHeaderStatus locale="ko" />);
+    expect(chip()).toHaveAttribute("href", "/my?locale=ko");
+    expect(chip().querySelector("[data-header-tier]")).toBeNull();
   });
 
   it("re-reads the wallet and the hearts when the wallet changes", () => {
@@ -61,7 +75,7 @@ describe("header capsule", () => {
     expect(chip()).toHaveTextContent("1,260");
     expect(screen.queryByText("모임에 가입해보세요")).not.toBeInTheDocument();
     expect(chip().querySelector('img[src*="join-community"]')).toBeNull();
-    expect(screen.queryByTestId("tier")).toBeNull();
+    expect(document.querySelector("[data-header-tier]")).toBeNull();
   });
 
   it.each([401, 403])("hides retained member data after a %i wallet response", status => {
@@ -89,10 +103,15 @@ describe("header capsule", () => {
     expect(chip()).toHaveAccessibleName(/포인트 1,234,567/);
   });
 
+  it.each([["ko", "브론즈"], ["en", "Bronze"], ["ja", "ブロンズ"]] as const)("displays the grade name in %s", (locale, grade) => {
+    render(<FanHeaderStatus locale={locale} />);
+    expect(screen.getByText(grade)).toBeInTheDocument();
+  });
+
   it.each(APP_LOCALES)("provides translated labels in %s", locale => {
     render(<FanHeaderStatus locale={locale} />);
     const c = headerStatusCopy(locale);
-    expect(screen.getByRole("link")).toHaveAttribute("href", `/my?locale=${locale}`);
+    expect(screen.getByRole("link")).toHaveAttribute("href", `/my?locale=${locale}&passport=favorite-a#my-passport`);
     expect(Object.values(c).every(value => value.length > 0)).toBe(true);
   });
 });

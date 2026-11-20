@@ -24,6 +24,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowRight, Bell, BookOpen, CalendarDays, Check, Gift, History, ListChecks, MessageSquare, Pencil, RotateCcw, Settings, Sparkles, Ticket } from "lucide-react";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useOwnedFanResource } from "../../../components/fan-ui/use-owned-fan-resource";
 import { fanLoginHref } from "@/components/login-href";
@@ -291,15 +292,23 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       collectionFrame.current = null;
     });
   }, [setRecentOpen]);
+  const requestedPassport = useSearchParams()?.get("passport") ?? null;
+  const targetPassport = summary.creators.find(({ celebrity, passport }) => passport && celebrity.slug === requestedPassport)?.celebrity.slug;
   useEffect(() => {
-    const followFragment = () => { if (window.location.hash === "#my-collection") openRecent(); };
+    const followFragment = () => {
+      if (window.location.hash === "#my-collection") openRecent();
+      if (window.location.hash === "#my-passport") {
+        if (targetPassport) onSelectSlug(targetPassport);
+        (document.getElementById("my-passport") ?? document.getElementById("my-creators"))?.scrollIntoView();
+      }
+    };
     followFragment();
     window.addEventListener("hashchange", followFragment);
     return () => {
       window.removeEventListener("hashchange", followFragment);
       if (collectionFrame.current !== null) cancelAnimationFrame(collectionFrame.current);
     };
-  }, [openRecent]);
+  }, [onSelectSlug, openRecent, targetPassport]);
 
   if (groupsEnabled) {
     const labels = { title: t.myPassport, detail: myHomeText(locale, "viewDetails"), noCreators: t.noCreators, findCreator: t.findCreator, loadError: w.error, retry: w.retry, creators: t.creators };
@@ -313,7 +322,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         </header>
         <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
         <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
-        <div className={styles.homeRow}>
+        <div id="my-passport" className={styles.homeRow}>
           <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
         </div>
       </div>

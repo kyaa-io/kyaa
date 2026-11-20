@@ -218,3 +218,15 @@
 /* 케미 오늘의 타로 뽑는 화면은 몰입 화면: 하단 탭과 푸터를 두지 않는다. */
 .frame:has([data-chemi-immersive]) { padding-bottom: 0; }
 .frame:has([data-chemi-immersive]) :is(.bottomNavigation, [data-fan-site-footer]) { display: none; }
+
+@media (max-width: 30rem) {
+  .groupsNavigation .headerInner:has([data-header-tier]) { grid-template-columns: auto 1fr; column-gap: var(--space-1); }
+  .headerInner:has([data-header-tier]) .brand,
+  .headerInner:has([data-header-tier]) .brand img { width: 72px; }
+}
+@media (min-width: 64rem) {
+  .groupsNavigation .headerInner:has([data-header-tier]) { grid-template-columns: minmax(72px, 1fr) max-content minmax(max-content, 1fr); column-gap: var(--space-2); }
+  .headerInner:has([data-header-tier]) .desktopNav { justify-self: center; gap: var(--space-1); }
+  .headerInner:has([data-header-tier]) .desktopNavItem { min-width: 0; padding-inline: var(--space-2); }
+  .headerInner:has([data-header-tier]) .actions { width: max-content; gap: var(--space-1); }
+}

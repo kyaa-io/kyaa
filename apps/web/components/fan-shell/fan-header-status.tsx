@@ -9,9 +9,8 @@ import { RollingNumber, useChangeFlash } from "@/components/fan-ui/rolling-numbe
 import { fanLoginHref } from "@/components/login-href";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
-import { useSelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
-import { fanStageLabel, fanTierEntryKey } from "@/features/rewards/domain/fan-stage";
-import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
+import { useSelectedBias, type SelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
+import { fanTierName } from "@/features/rewards/domain/fan-stage";
 import { walletSchema } from "@/server/group-wallet/domain";
 import type { AppLocale } from "@/i18n/locales";
 import { headerStatusCopy } from "./fan-header-status-copy";
@@ -20,6 +19,10 @@ import styles from "./fan-header-status.module.css";
 const parseWallet = (value: unknown) => walletSchema.parse(value);
 const dot = <span aria-hidden="true">·</span>;
 const compactNumber = (value: number, locale: AppLocale) => new Intl.NumberFormat(locale, value >= 10_000 ? { notation: "compact", maximumFractionDigits: 1 } : {}).format(value);
+
+function headerTier(bias: SelectedBias) {
+  return bias.status === "ready" ? bias.selected : null;
+}
 
 /** One header control; account changes remount it so the chip cannot follow another owner. */
 export function FanHeaderStatus({ locale }: { locale: AppLocale }) {
@@ -45,9 +48,11 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   const c = headerStatusCopy(locale);
   const w = walletCopy(locale);
   const loginHref = fanLoginHref(locale, `${pathname}${query ? `?${query}` : ""}`);
-  const current = bias.status === "ready" ? bias.selected : null;
-  const grade = current ? fanStageLabel(locale, { tier: current.tier, subdivision: current.stage?.subdivision ?? Number(fanTierEntryKey(current.tier).split("-").at(-1)) }) : "";
-  const hearts = current?.hearts;
+  const passport = headerTier(bias);
+  const tier = passport?.tier;
+  const myHref = `/my?locale=${locale}${passport ? `&passport=${encodeURIComponent(passport.slug)}#my-passport` : ""}`;
+  const grade = tier ? fanTierName(locale, tier) : "";
+  const hearts = passport?.hearts;
   const points = wallet.data?.points;
   useChangeFlash(chip, [grade || undefined, hearts, points]);
   // A stale authenticated session must never keep a previously read member balance/tier on screen.
@@ -58,9 +63,16 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   const summary = [c.status, grade, hearts === undefined ? "" : `${c.hearts} ${hearts.toLocaleString(locale)}`, `${w.points} ${points?.toLocaleString(locale) ?? "—"}`].filter(Boolean).join(" · ");
   const format = (value: number) => compactNumber(value, locale);
 
-  return <Link ref={chip} className={styles.trigger} href={`/my?locale=${locale}` as Route} data-header-status="" aria-label={summary}>
-    {current && <><FanTierBadge tier={current.tier} stageKey={current.stage?.key} locale={locale} size={16} />{dot}</>}
+  return <Link ref={chip} className={styles.trigger} href={myHref as Route} onNavigate={(event) => {
+    const currentPage = new URL(window.location.href);
+    if (!passport || currentPage.pathname !== "/my" || currentPage.hash !== "#my-passport"
+      || currentPage.searchParams.get("passport") !== passport.slug) return;
+    // Reopen the favorite even if the viewer selected another passport at this URL.
+    event.preventDefault();
+    window.dispatchEvent(new Event("hashchange"));
+  }} data-header-status="" aria-label={summary}>
     {hearts !== undefined && <><span className={styles.value}><RewardIcon kind="heart" alt="" width={16} height={16} /><RollingNumber value={hearts} format={format} /></span>{dot}</>}
+    {tier && <span className={styles.tier} data-header-tier={tier} title={grade}>{grade}</span>}
     <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? "—" : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }
