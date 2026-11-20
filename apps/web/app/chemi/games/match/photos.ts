@@ -41,7 +41,6 @@ const catalog = {
   },
 } as const satisfies Record<"changha" | "elina" | "yuna", MatchPhotos>;
 
-// Existing site photos are available for local visual review pending game-use terms.
 export function getMatchPhotos() {
-  return chemiEnabled() && process.env.NODE_ENV === "development" ? catalog : null;
+  return chemiEnabled() ? catalog : null;
 }

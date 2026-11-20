@@ -1,0 +1,77 @@
+.shell {
+  min-height: 100svh;
+  background: var(--color-chemi-run-background);
+  color: var(--color-chemi-run-text);
+  padding: var(--space-4);
+}
+.header {
+  max-width: 1120px;
+  margin: 0 auto var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.header a {
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-chemi-run-control);
+  color: inherit;
+  border: 1px solid var(--color-chemi-run-outline);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+}
+.header a { display: grid; place-items: center; min-width: 44px; }
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.course, .panel { background: var(--color-chemi-run-surface); border-radius: var(--radius-card); overflow: hidden; }
+.course > img { display: block; width: 100%; height: clamp(230px, 44svh, 540px); object-fit: cover; object-position: center 28%; }
+.characters { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: var(--space-4); }
+.characters > * { background: var(--color-chemi-run-control); padding: var(--space-2) var(--space-3); border-radius: var(--radius-small); }
+.panel { padding: var(--space-4); align-self: start; }
+.result { margin-bottom: var(--space-6); }
+.ranking { padding-inline-start: var(--space-6); margin-bottom: var(--space-4); }
+.ranking li { padding: var(--space-2) 0; min-height: 44px; border-bottom: 1px solid var(--color-chemi-run-divider); }
+.ranking li span { overflow-wrap: anywhere; }
+.ranking li strong { float: inline-end; margin-inline-start: var(--space-2); }
+.ranking [data-me="true"] { color: var(--color-chemi-run-accent); }
+.actions { display: grid; gap: var(--space-2); }
+.status { max-width: 1120px; margin: var(--space-3) auto; }
+.track {
+  margin: 0 auto var(--space-4);
+  width: min(100%, 516px);
+  height: clamp(460px, 77svh, 864px);
+  background: var(--color-chemi-run-course) url("/chemi/run/run-map-changha.jpg") center / cover;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+}
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-chemi-run-background);
+}
+.hud span { display: flex; gap: var(--space-1); }
+.hud img { width: var(--space-6); image-rendering: pixelated; }
+.hud [data-empty="true"] { opacity: .32; }
+.runner, .cone { position: absolute; image-rendering: pixelated; }
+.runner { left: calc(20% - var(--space-8)); bottom: var(--run-bottom); background-position-x: var(--run-frame); width: 64px; height: 64px; background-image: url("/chemi/run/changha-run.png"); }
+.runner[data-hit="true"] { opacity: .55; }
+.cone { left: var(--run-obstacle); bottom: 18%; width: 28px; }
+.jump { position: absolute; inset: auto 12px var(--space-3); touch-action: none; }
+@media (min-width: 768px) {
+  .shell { padding: var(--space-6); }
+  .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .panel { padding: var(--space-6); }
+  .runner { transform: scale(2); transform-origin: center bottom; }
+}
