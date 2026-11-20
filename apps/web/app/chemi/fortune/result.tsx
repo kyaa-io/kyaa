@@ -33,6 +33,7 @@ import {
   spiritNotes,
   stageNotes,
 } from "./result-copy";
+import { DatePurchase } from "./date-purchase";
 import styles from "./result.module.css";
 
 export function FortuneResult({
@@ -500,8 +501,9 @@ export function FortuneResult({
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
         </section>
+        <DatePurchase key={character} character={character} locale={locale} />
         <nav className={styles.nextList} aria-label="더 보기">
-          {["내일 운세", "친구와 오늘", "지난 기록", "특별 부적 만들기"].map(
+          {["친구와 오늘", "지난 기록", "특별 부적 만들기"].map(
             (label) => (
               <FanAction
                 variant="text"

@@ -47,7 +47,7 @@ const isHour = (value: unknown) =>
  * 화면이 읽는 필드(결과·행운·근거 상세까지)의 모양을 확인한다.
  * 하나라도 어긋나면 이 풀이는 그리지 않는다 — 문자열 자리에 객체가 오면 그리다 멈춘다.
  */
-function isFortuneResult(result: Record<string, any> | null | undefined) {
+export function isFortuneResult(result: Record<string, any> | null | undefined) {
   if (!result || result.locked !== false) return false;
   const { fields, periods, luck, evidence } = result;
   return (

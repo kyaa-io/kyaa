@@ -361,3 +361,42 @@
     grid-row: auto;
   }
 }
+
+.purchase {
+  order: 8;
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+.purchase label, .purchase div {
+  display: grid;
+  gap: var(--space-2);
+}
+.purchase p { margin: 0; }
+.purchase .purchaseActions {
+  align-items: center;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.purchase .purchaseActions > :first-child {
+  grid-column: 1 / -1;
+}
+/* Confirm and cancel share one row; the confirm button takes the wider share. */
+.purchase .purchaseConfirm {
+  grid-template-columns: 2fr 1fr;
+}
+.purchase .purchaseConfirm > :first-child {
+  grid-column: auto;
+}
+.purchase input {
+  min-height: var(--min-target);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-small);
+  padding-inline: var(--space-3);
+  font: inherit;
+  color: inherit;
+  max-width: 100%;
+}
+.purchase input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}

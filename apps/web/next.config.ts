@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import { publicImageRemotePatterns } from "./components/fan-ui/public-image-policy";
-import { gleamWidgetPaths, responseSecurityHeaders, withGleamWidget } from "./security-headers";
+import { gleamWidgetPaths, responseSecurityHeaders, tossPaymentPaths, withGleamWidget, withTossPayments } from "./security-headers";
 import { htmlLimitedBots } from "./seo/bots";
 
 // 환경 변수로 켜고 끄는 실험 설정은 한 객체로 합쳐 서로 덮어쓰지 않는다. 둘 다 없으면 `experimental`을 두지 않는다(기본 동작).
@@ -59,6 +59,13 @@ const nextConfig: NextConfig = {
         source,
         headers: responseSecurityHeaders.map((header) => header.key === "Content-Security-Policy"
           ? { ...header, value: withGleamWidget(header.value) }
+          : header),
+      })),
+      // The Toss Payments SDK (DEV test top-up) opens only on its own page.
+      ...[...tossPaymentPaths].map((source) => ({
+        source,
+        headers: responseSecurityHeaders.map((header) => header.key === "Content-Security-Policy"
+          ? { ...header, value: withTossPayments(header.value) }
           : header),
       })),
       {
