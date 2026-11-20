@@ -113,11 +113,14 @@
   list-style: none;
 }
 .domain {
+  padding: var(--space-3);
+  border: 1px solid transparent;
   display: grid;
   gap: var(--space-1);
 }
 .domainHead {
-  display: flex;
+  display: grid;
+  grid-template-columns: 3em max-content minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3);
 }
@@ -131,8 +134,7 @@
   text-wrap: pretty;
 }
 .domain[data-best] {
-  padding: var(--space-3);
-  border: 1px solid var(--color-accent-line);
+  border-color: var(--color-accent-line);
   border-radius: var(--radius-media);
 }
 .domain[data-best] p {
@@ -356,34 +358,6 @@
   }
   .overallRow {
     display: grid;
-  }
-  .domains {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0;
-  }
-  .domain,
-  .domain[data-best] {
-    align-content: start;
-    gap: var(--space-2);
-    padding: 0 var(--space-4);
-    border: 0;
-    border-radius: 0;
-    border-inline-start: 1px solid var(--color-line);
-  }
-  .domain:first-child {
-    padding-inline-start: 0;
-    border-inline-start: 0;
-  }
-  .domain[data-best] p {
-    color: var(--color-muted);
-  }
-  .domainHead {
-    display: grid;
-    justify-items: start;
-    gap: var(--space-1);
-  }
-  .domainHead .bright {
-    margin-inline-start: 0;
   }
   .desktopOnly {
     display: block;
