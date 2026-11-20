@@ -1,5 +1,7 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useMemo, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ChevronDown, ChevronUp } from "@/components/fan-ui/fan-icons";
@@ -60,6 +62,7 @@ export function StarResultSkeleton({
   failed?: boolean;
   onRetry?: () => void;
 }) {
+  const uiText = useReadingCopy();
   const name = starCharacters.find((c) => c.id === character)?.name ?? "창하";
   return (
     <section data-star-result="" className={styles.layout}>
@@ -74,10 +77,10 @@ export function StarResultSkeleton({
               className={styles.failedHero}
               inline
               kind="error"
-              title="결과를 불러오지 못했습니다"
+              title={uiText("resultFailure")}
               actions={
                 <FanAction size="sm" onClick={onRetry}>
-                  다시 시도
+                  <ReadingText id="retry" />
                 </FanAction>
               }
             />
@@ -114,6 +117,7 @@ export function StarResult({
   backHref: string;
   onChart: () => void;
 }) {
+  const uiText = useReadingCopy();
   const { authenticated, getAccessToken } = useByUsAuth();
   const [points, setPoints] = useState(reading.reward?.points ?? 0);
   const [sharing, setSharing] = useState(false);
@@ -200,7 +204,7 @@ export function StarResult({
   const canSend = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const shareAction = (
     <FanAction fullWidth onClick={() => setShareOpen(true)}>
-      자랑하기
+      <ReadingText id="share" />
     </FanAction>
   );
   const rows: readonly (StarDomain | "overall")[] = ["overall", ...domains];
@@ -209,11 +213,11 @@ export function StarResult({
   const chartCards = (
     <div className={styles.cards}>
       <div className={styles.card}>
-        <FanText role="meta">해</FanText>
+        <FanText role="meta"><ReadingText id="sun" /></FanText>
         <FanText role="item">{sunBare}</FanText>
       </div>
       <div className={styles.card}>
-        <FanText role="meta">달</FanText>
+        <FanText role="meta"><ReadingText id="moon" /></FanText>
         <FanText role="item">{moonBare}</FanText>
       </div>
     </div>
@@ -231,7 +235,7 @@ export function StarResult({
             <FanHeading as="h1">{overallHeadline[stars.overall - 1]}</FanHeading>
           </div>
           <FanText as="p" role="meta">
-            {result.timeKnown ? "태어난 시각으로 본 운세" : "태어난 시간 없이 본 운세"}
+            {result.timeKnown ? uiText("withTime") : uiText("noTime")}
           </FanText>
           <StarRating
             value={stars.overall}
@@ -247,7 +251,7 @@ export function StarResult({
         <section className={`${styles.panel} ${styles.domainPanel}`}>
           <div className={styles.rewardRow}>
             {points > 0 && <EarnBadge locale={locale} points={points} variant="inline" />}
-            {reading.reward?.stamp && <FanText role="meta">스탬프 1개</FanText>}
+            {reading.reward?.stamp && <FanText role="meta"><ReadingText id="stamp" /></FanText>}
             {Boolean(reading.reward?.exp) && (
               <FanText role="meta">친밀 +{reading.reward?.exp}</FanText>
             )}
@@ -270,7 +274,7 @@ export function StarResult({
                     />
                     {isBest && (
                       <FanText role="label" className={styles.bright}>
-                        오늘 가장 밝은 곳
+                        <ReadingText id="highlight" />
                       </FanText>
                     )}
                   </div>
@@ -288,11 +292,11 @@ export function StarResult({
         </section>
         <div className={`${styles.todaySec} ${styles.twoCol}`}>
           <section className={styles.section}>
-            <FanHeading>오늘</FanHeading>
+            <FanHeading><ReadingText id="today" /></FanHeading>
             <div className={styles.doDont}>
               <div>
                 <span className={styles.bright}>
-                  <FanHeading as="h3">할 것</FanHeading>
+                  <FanHeading as="h3"><ReadingText id="do" /></FanHeading>
                 </span>
                 <ul>
                   {todayDo[best].map((item) => (
@@ -303,7 +307,7 @@ export function StarResult({
                 </ul>
               </div>
               <div>
-                <FanHeading as="h3">안 할 것</FanHeading>
+                <FanHeading as="h3"><ReadingText id="avoid" /></FanHeading>
                 <ul>
                   {todayDont[worst].map((item) => (
                     <li data-row="star" key={item}>
@@ -315,7 +319,7 @@ export function StarResult({
             </div>
           </section>
           <section className={styles.section}>
-            <FanHeading>왜 그런지</FanHeading>
+            <FanHeading><ReadingText id="why" /></FanHeading>
             <ul className={styles.reasons}>
               {reasons.map((reason) => (
                 <li data-row="star" key={reason.title + reason.aspect}>
@@ -327,7 +331,7 @@ export function StarResult({
                     <span className={styles.tag}>
                       <FanIcon icon={reason.up ? ChevronUp : ChevronDown} />
                       <FanText role="meta">
-                        {domainLabels[reason.domain]} {reason.up ? "도움" : "부담"}
+                        {domainLabels[reason.domain]} {reason.up ? uiText("help") : uiText("pressure")}
                       </FanText>
                     </span>
                   </div>
@@ -351,16 +355,16 @@ export function StarResult({
           line={starSayLine(character, best, stars[best])}
           action={
             <FanAction variant="primary" fullWidth href={`/chemi?locale=${locale}`}>
-              다른 운세 보기
+              <ReadingText id="otherFortunes" />
             </FanAction>
           }
           extra={<div className={styles.desktopOnly}>{shareAction}</div>}
         />
         <section className={`${styles.section} ${styles.chartSec}`}>
           <div className={styles.sectionHead}>
-            <FanHeading>내 출생 차트</FanHeading>
+            <FanHeading><ReadingText id="chart" /></FanHeading>
             <FanAction variant="text" size="sm" onClick={onChart}>
-              전체 보기<span aria-hidden="true"> ›</span>
+              <ReadingText id="viewAll" /><span aria-hidden="true"> ›</span>
             </FanAction>
           </div>
           {chartCards}
@@ -370,14 +374,14 @@ export function StarResult({
       <FanDialog
         open={shareOpen}
         onOpenChange={setShareOpen}
-        title="자랑하기"
-        closeLabel="닫기"
+        title={uiText("share")}
+        closeLabel={uiText("close")}
         responsive
-        secondary={canSend ? { label: "링크 복사", onClick: () => void share("copy") } : undefined}
+        secondary={canSend ? { label: uiText("copyLink"), onClick: () => void share("copy") } : undefined}
         primary={
           canSend
-            ? { label: "보내기", loading: sharing, onClick: () => void share("send") }
-            : { label: "링크 복사", loading: sharing, onClick: () => void share("copy") }
+            ? { label: uiText("send"), loading: sharing, onClick: () => void share("send") }
+            : { label: uiText("copyLink"), loading: sharing, onClick: () => void share("copy") }
         }
       >
         <StarShareCard

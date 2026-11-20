@@ -1,3 +1,4 @@
+import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
 import {
   FanAppFrame,
@@ -20,8 +21,10 @@ export default async function FortunePage({
   const locale = parseAppLocale(params.locale);
   // 결과 주소를 새로 열면 저장된 결과를 불러오는 동안 입장 화면이 아니라 불러오는 모양을 보인다.
   const restoring = Boolean(params.r) && parseFortuneStep(params.step) !== "enter";
+  const catalog = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
   return (
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="fortune-main">
+      <ReadingCopyProvider value={{ home: catalog.home, sajuScene: catalog.sajuScene, readingUi: catalog.readingUi }}>
       <FanContentContainer as="main" id="fortune-main">
         {params.from ? (
           <FortuneResult key={params.from} locale={locale} from={params.from} />
@@ -29,6 +32,7 @@ export default async function FortunePage({
           <FortuneFlow locale={locale} restoring={restoring} />
         )}
       </FanContentContainer>
+      </ReadingCopyProvider>
     </FanAppFrame>
   );
 }

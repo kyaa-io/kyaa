@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -10,6 +11,7 @@ import styles from "./result.module.css";
 
 /** 친구가 자랑한 사주 카드. 줄이 없거나 지워졌으면 빈 상태로 케미 탭 길만 남긴다. */
 export function SajuShared({ locale, from }: { locale: AppLocale; from: string }) {
+  const uiText = useReadingCopy();
   const [state, setState] = useState<{ line: string } | "empty" | "loading" | "error">("loading");
   useEffect(() => {
     const controller = new AbortController();
@@ -40,8 +42,8 @@ export function SajuShared({ locale, from }: { locale: AppLocale; from: string }
     return (
       <FanState
         kind="empty"
-        title="볼 수 있는 사주 카드가 없습니다"
-        action={{ href: home, label: "케미로 가기" }}
+        title={uiText("noCard")}
+        action={{ href: home, label: uiText("chemi") }}
       />
     );
   return (
@@ -50,8 +52,7 @@ export function SajuShared({ locale, from }: { locale: AppLocale; from: string }
         <FanHeading as="h1">최애 사주</FanHeading>
         <FanState inline kind="info" title={state.line} />
         <FanAction variant="neutral" href={home}>
-          케미로 가기
-        </FanAction>
+          {uiText("chemi")}</FanAction>
       </div>
     </section>
   );

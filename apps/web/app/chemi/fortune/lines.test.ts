@@ -22,7 +22,7 @@ it("builds the same line for the same input and keeps each character's tone", ()
     "오늘은 82점, 좋은 날이야. 누가 먼저 손 내밀어 줄 수도 있어.",
   );
   expect(fortuneTalkLine("changha", 1, input)).toBe(fortuneTalkLine("changha", 1, input));
-  expect(fortuneTalkLine("dosa", 4, input)).toContain("오전 9시에서 11시 사이");
+  expect(fortuneTalkLine("dosa", 4, input)).toContain("9시에서 11시 사이");
   expect(fortuneTalkLine("elina", 3, { ...input, fandom: 60 })).toContain("천천히");
   expect(fortuneTalkLine("yuna", 4, { ...input, luckyHour: null })).not.toContain("시");
 });
@@ -42,4 +42,11 @@ it("sends a step without a reading back to the entrance", () => {
   expect(reachableFortuneStep("calc", true)).toBe("talk-1");
   expect(reachableFortuneStep("talk-3", true)).toBe("talk-3");
   expect(nextFortuneStep("talk-4")).toBe("result");
+});
+
+it.each([0, 11, 12, 13, 19, 23])("uses 24-hour time for a window beginning at %i", (start) => {
+  const end = (start + 2) % 24;
+  const line = fortuneTalkLine("changha", 4, { ...input, luckyHour: { start, end } });
+  expect(line).toContain(`${start}시에서 ${end}시 사이`);
+  expect(line).not.toMatch(/오전|오후/);
 });

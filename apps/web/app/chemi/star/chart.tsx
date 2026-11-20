@@ -1,5 +1,7 @@
 "use client";
 
+import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -56,6 +58,7 @@ export function StarChart({
   character: StarCharacterId;
   onBack: () => void;
 }) {
+  const uiText = useReadingCopy();
   const { natal, signs } = reading.result;
   const name = starCharacters.find((c) => c.id === character)?.name ?? "창하";
   const sunSign = signs.sun.length === 1 ? signs.sun[0]! : null;
@@ -65,7 +68,7 @@ export function StarChart({
       ? `${signNames[sunSign].bare}의 ${signTrait[sunSign]}, ${signNames[moonSign].bare}의 ${signTrait[moonSign]}`
       : sunSign
         ? `${signNames[sunSign].bare}의 ${signTrait[sunSign]}`
-        : "내 출생 차트";
+        : uiText("chart");
   const elements = elementCounts(natal);
   const dominant = [...elements].sort((a, b) => b.count - a.count)[0]!;
   const aspects = natalAspects(natal).slice(0, 4);
@@ -77,14 +80,14 @@ export function StarChart({
         back={onBack}
         meta={
           <FanText role="meta" as="span">
-            내 출생 차트
+            <ReadingText id="chart" />
           </FanText>
         }
       />
       <div className={styles.main}>
         <header className={styles.head}>
           <FanText as="p" role="meta">
-            {reading.result.timeKnown ? "열대 황도 기준 · 태어난 시각 반영" : "열대 황도 기준 · 태어난 시간 없이"}
+            {reading.result.timeKnown ? uiText("tropicalTime") : uiText("tropicalNoTime")}
           </FanText>
           <FanHeading as="h1">{summary}</FanHeading>
         </header>
@@ -92,18 +95,18 @@ export function StarChart({
           <ChartWheel planets={natal} />
           <div className={styles.cards}>
             <div className={styles.card}>
-              <FanText role="meta">해</FanText>
+              <FanText role="meta"><ReadingText id="sun" /></FanText>
               <FanText role="item">{signList(signs.sun, (s) => signNames[s].bare)}</FanText>
             </div>
             <div className={styles.card}>
-              <FanText role="meta">달 · 마음</FanText>
+              <FanText role="meta"><ReadingText id="moonMood" /></FanText>
               <FanText role="item">{signList(signs.moon, (s) => signNames[s].bare)}</FanText>
             </div>
           </div>
         </section>
         <div className={chart.split}>
           <section className={`${styles.section} ${styles.todaySec}`}>
-            <FanHeading>행성 10개</FanHeading>
+            <FanHeading><ReadingText id="planets" /></FanHeading>
             <ul className={chart.planets}>
               {natal.map((planet) => (
                 <li data-row="star" key={planet.body}>
@@ -118,15 +121,15 @@ export function StarChart({
           </section>
           <div className={chart.splitSide}>
             <section className={`${styles.section} ${styles.whySec}`}>
-              <FanHeading>원소 · 양식</FanHeading>
+              <FanHeading><ReadingText id="elements" /></FanHeading>
               <div className={chart.barGroups}>
-                {countBars(elements, "원소")}
-                {countBars(modalityCounts(natal), "양식")}
+                {countBars(elements, uiText("element"))}
+                {countBars(modalityCounts(natal), uiText("modality"))}
               </div>
             </section>
             {aspects.length > 0 && (
               <section className={`${styles.section} ${styles.chartSec}`}>
-                <FanHeading>타고난 각도</FanHeading>
+                <FanHeading><ReadingText id="angles" /></FanHeading>
                 <ul className={chart.aspects}>
                   {aspects.map((aspect) => (
                     <li data-row="star" key={`${aspect.a}${aspect.b}${aspect.angle}`}>
@@ -149,7 +152,7 @@ export function StarChart({
           line={said}
           action={
             <FanAction variant="primary" fullWidth href={`/chemi?locale=${locale}`}>
-              다른 운세 보기
+              <ReadingText id="otherFortunes" />
             </FanAction>
           }
         />

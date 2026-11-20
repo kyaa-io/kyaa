@@ -1,3 +1,4 @@
+import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
 import {
   FanAppFrame,
@@ -25,13 +26,15 @@ export default async function SajuPage({
   const restoring = Boolean(params.r) && params.step === "result";
   return (
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="saju-main">
+      <ReadingCopyProvider value={{ home: catalog.home, sajuScene: catalog.sajuScene, readingUi: catalog.readingUi }}>
       <FanContentContainer as="main" id="saju-main">
         {params.from ? (
           <SajuShared key={params.from} locale={locale} from={params.from} />
         ) : (
-          <SajuFlow locale={locale} birthCopy={birthCopy} restoring={restoring} />
+          <SajuFlow locale={locale} sceneCopy={{ ...catalog.sajuScene, title: catalog.home.saju || koCatalog.home.saju }} birthCopy={birthCopy} restoring={restoring} />
         )}
       </FanContentContainer>
+      </ReadingCopyProvider>
     </FanAppFrame>
   );
 }

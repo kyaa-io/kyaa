@@ -38,7 +38,6 @@ const show = (view: ResultView, extra: Partial<Parameters<typeof SajuResult>[0]>
       points={3}
       exp={20}
       sharing={false}
-      backHref="/chemi/saju"
       pair={{ id: "pair-1", name: "민지", result: { dayStems: ["병", "계"], combinations: [], clashes: [] }, timeKnown: false }}
       {...handlers}
       {...extra}
