@@ -132,3 +132,16 @@
   .banner[data-kind="mission"] .action > a { color: var(--color-accent) !important; }
   .banner[data-kind="mission"] :is(a, button):focus-visible { outline-color: var(--color-accent); }
 }
+
+/* 덕질미션북 그림을 슬라이드 전체에 채우고 제목과 행동을 겹친다. */
+.banner[data-kind="missionbook"] { color: var(--color-surface); }
+.banner[data-kind="missionbook"] .mobileBackdrop { display: none; }
+.banner[data-kind="missionbook"] .fullImage { inset: 0; width: 100%; }
+.banner[data-kind="missionbook"] .overlay { position: absolute; inset: 0; display: block; pointer-events: none; }
+.banner[data-kind="missionbook"] :is(.eyebrow, .description) { color: inherit; }
+@media (width >= 48rem) {
+  .banner[data-kind="missionbook"] .overlay {
+    /* design-lint-disable S1 -- 사진 위 제목·행동의 가독성 받침. */
+    background: linear-gradient(90deg, var(--color-home-hero-shade), transparent 80%);
+  }
+}
