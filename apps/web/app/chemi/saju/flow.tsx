@@ -6,6 +6,7 @@
  * 공통 부품 대기: 대화 틀(장면·말풍선·고르기 띠)은 운세 구현(t3/chemi-w3-fortune-fix2)에 같은 모양이 있다.
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
+import { ParticipationCount } from "../participation";
 import { useReadingCopy, useSajuSceneCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
@@ -964,6 +965,7 @@ export function SajuFlow({
             {entering && phase === "idle" && (
               <div className={styles.title}>
                 <FanHeading as="h1">{sceneCopy.title}</FanHeading>
+                <ParticipationCount locale={locale} />
               </div>
             )}
             {phase === "limit" && (
