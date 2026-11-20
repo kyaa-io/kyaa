@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "대표 피드백을 반영해 팬페이지 게시판의 전체 탭에서 공지를 맨 위에 최대 3개 모았어요. 첫 페이지의 나머지 자리는 자유글로 채우고, 다음 페이지부터는 자유글만 이어서 보여줘요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/kara",
+  "images": [
+    "release-notes/images/2026-11-21-board-notice-group-390.png",
+    "release-notes/images/2026-11-21-board-notice-group-1440.png"
+  ]
+}

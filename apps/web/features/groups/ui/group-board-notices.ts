@@ -6,7 +6,7 @@ import {groupPostsSchema} from '../domain/contracts';
 import {useGroupResource} from './use-group-resource';
 
 /** The posts API accepts limit 1-100 (default 30); a board shows at most this many operator notices above the feed. */
-export const BOARD_NOTICE_LIMIT=5;
+export const BOARD_NOTICE_LIMIT=3;
 const noticesSchema=groupPostsSchema.extend({items:z.array(groupPostsSchema.shape.items.element.extend({commentCount:z.number().int().nonnegative().optional()}))});
 const parseNotices=(value:unknown)=>noticesSchema.parse(value);
 
