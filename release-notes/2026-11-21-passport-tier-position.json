@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "내 팬 패스포트 목록에서 이름이 길어도 등급은 카드 오른쪽 위에 표시돼요. 이름은 두 줄까지 보이고, 더 길면 말줄임표가 붙어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/passports",
+  "images": [
+    "release-notes/images/2026-11-21-passport-tier-position.png"
+  ]
+}
