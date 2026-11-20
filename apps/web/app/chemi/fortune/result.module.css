@@ -400,3 +400,14 @@
   outline: 2px solid var(--color-focus);
   outline-offset: 2px;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .scorePanel { animation: fortuneEnter 200ms ease-out; }
+}
+@keyframes fortuneEnter {
+  from { transform: translateY(4px); opacity: .8; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scorePanel { animation: none; }
+}

@@ -27,6 +27,9 @@
     "release-notes/2026-11-19-chemi-record-lease.json",
     "release-notes/2026-11-19-chemi-saju.json",
     "release-notes/2026-11-19-chemi-star.json",
-    "release-notes/2026-11-19-chemi-tarot.json"
+    "release-notes/2026-11-19-chemi-tarot.json",
+    "release-notes/2026-11-20-chemi-smoke-fix.json",
+    "release-notes/2026-11-20-chemi-reading-english.json",
+    "release-notes/2026-11-20-chemi-fortune-detail.json"
   ]
 }
