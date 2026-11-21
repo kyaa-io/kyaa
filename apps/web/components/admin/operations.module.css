@@ -138,3 +138,22 @@
   .reportAlert { flex: 1 1 9em; max-width: none; word-break: keep-all; }
   .mobileNav { position: relative; top: 0; max-height: 75svh; }
 }
+
+.reviewNavigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.reviewNavigation a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-ink);
+}
+
+.reviewNavigation a[aria-current="page"] {
+  color: var(--color-accent-ink);
+  font-weight: var(--fan-item-title-weight);
+  text-decoration: underline;
+}

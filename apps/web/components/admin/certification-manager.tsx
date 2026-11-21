@@ -11,6 +11,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AdminAccessState } from "./admin-access-state";
+import { ReviewNavigation } from "./review-navigation";
 import { AdminOperationsShell } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
 import { membershipPlatformLabel, type MembershipPlatform } from "@/features/certification/domain/certification";
@@ -214,7 +215,7 @@ function CertificationManager({
       setMessageIsError(true);
       setMessage(
         locale === "ko"
-          ? "인증 운영 데이터를 불러오지 못했습니다."
+          ? "불러오지 못했습니다."
           : "Could not load certification operations.",
       );
       return false;
@@ -259,10 +260,10 @@ function CertificationManager({
       setMessage(
         postSucceeded
           ? locale === "ko"
-            ? "변경은 처리됐지만 최신 상태를 불러오지 못했습니다."
+            ? "저장했습니다. 새로고침해 주세요."
             : "The change was processed, but the latest state could not be loaded."
           : locale === "ko"
-          ? "처리하지 못했습니다. 버전과 필수 항목을 확인하세요."
+          ? "저장하지 못했습니다. 다른 관리자가 먼저 바꿨거나 빈 항목이 있어요."
           : "Could not complete the operation.",
       );
     } finally {
@@ -288,7 +289,7 @@ function CertificationManager({
     pendingRef.current = true;
     setPending(true);
     setMessageIsError(false);
-    setMessage(locale === "ko" ? "검토 결과를 처리 중입니다." : "Saving review.");
+    setMessage(locale === "ko" ? "심사 결과 저장 중…" : "Saving review.");
     const rejectionReason = decision === "reject" ? reason : undefined;
     const fingerprint = JSON.stringify({ decision, expectedRevision: item.revision, rejectionReason });
     const savedKey = reviewKeysRef.current.get(item.id);
@@ -315,15 +316,15 @@ function CertificationManager({
       reconcileMissionIdRef.current = null;
       setNeedsRefresh(false);
       setMessageIsError(false);
-      setMessage(locale === "ko" ? "검토 결과를 반영했습니다." : "Review saved.");
+      setMessage(locale === "ko" ? "심사 결과를 저장했습니다." : "Review saved.");
     } catch {
       setMessageIsError(true);
       setMessage(
         postSucceeded
           ? locale === "ko"
-            ? "변경은 처리됐지만 최신 상태를 불러오지 못했습니다."
+            ? "저장했습니다. 새로고침해 주세요."
             : "The change was processed, but the latest state could not be loaded."
-          : locale === "ko" ? "심사 결과를 확인하지 못했습니다. 최신 상태를 불러온 뒤 다시 확인해 주세요." : "The review result is uncertain. Refresh the latest state before continuing.",
+          : locale === "ko" ? "결과를 알 수 없어요. 새로고침 후 확인해 주세요." : "The review result is uncertain. Refresh the latest state before continuing.",
       );
     } finally {
       pendingRef.current = false;
@@ -362,11 +363,11 @@ function CertificationManager({
     <AdminOperationsShell locale={locale} adminRole={adminRole}>
       <main className={styles.page}>
         <header>
-          <p>{locale === "ko" ? "회원 인증" : "Member verification"}</p>
           <h1>
-            {adminReviewLabels[locale].missionReview}
+            {adminReviewLabels[locale].certifications}
           </h1>
         </header>
+        <ReviewNavigation locale={locale} />
         <div className={styles.toolbar}>
           <div className={styles.tabs} role="tablist" aria-label={locale === "ko" ? "인증 관리" : "Certification management"} onKeyDown={event => {
             if (pending || needsRefresh || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
@@ -377,12 +378,12 @@ function CertificationManager({
             <button id="review-tab" aria-controls="review-panel" role="tab" aria-selected={tab === "review"} tabIndex={tab === "review" ? 0 : -1} type="button" disabled={pending || needsRefresh} onClick={() => setTab("review")}>{locale === "ko" ? "심사" : "Reviews"}</button>
             <button id="missions-tab" aria-controls="missions-panel" role="tab" aria-selected={tab === "missions"} tabIndex={tab === "missions" ? 0 : -1} type="button" disabled={pending || needsRefresh} onClick={() => setTab("missions")}>{locale === "ko" ? "미션 설정" : "Mission settings"}</button>
           </div>
-          <button type="button" disabled={pending || loading} onClick={() => void refreshFromButton()}><RefreshCw aria-hidden="true" />{needsRefresh ? (locale === "ko" ? "최신 상태 불러오기" : "Load latest state") : (locale === "ko" ? "새로고침" : "Refresh")}</button>
+          <button type="button" disabled={pending || loading} onClick={() => void refreshFromButton()}><RefreshCw aria-hidden="true" />{needsRefresh ? (locale === "ko" ? "새로고침" : "Load latest state") : (locale === "ko" ? "새로고침" : "Refresh")}</button>
         </div>
         <p role={messageIsError ? "alert" : "status"} className={styles.message} data-error={messageIsError}>{message}</p>
         {tab === "review" ? <div id="review-panel" role="tabpanel" aria-labelledby="review-tab">
           <div className={styles.statusTabs} role="group" aria-label={locale === "ko" ? "심사 상태" : "Review status"}>{(["pending", "rejected", "approved"] as const).map(status => <button type="button" key={status} aria-pressed={reviewStatus === status} disabled={pending || needsRefresh || loading} onClick={() => { setQueue([]); setReviewStatus(status); }}>{reviewStatusLabel(status, locale)}</button>)}</div>
-          {loading ? <p className={styles.loadState}>{locale === "ko" ? "인증 자료를 불러오는 중입니다…" : "Loading submissions…"}</p> : loadError ? <p className={styles.loadState}>{locale === "ko" ? "자료를 불러오지 못했습니다. 새로고침해 주세요." : "Could not load submissions. Please refresh."}</p> : <CertificationReviewWorkspace key={reviewStatus} submissions={queue} locale={locale} status={reviewStatus} initialSelectedSubmissionId={reviewStatus === initialReviewStatus ? initialSubmissionId : undefined} busy={pending || needsRefresh} canWrite={canWrite} loadProof={loadProof} onReview={review} />}
+          {loading ? <p className={styles.loadState}>{locale === "ko" ? "불러오는 중…" : "Loading submissions…"}</p> : loadError ? <p className={styles.loadState}>{locale === "ko" ? "자료를 불러오지 못했습니다. 새로고침해 주세요." : "Could not load submissions. Please refresh."}</p> : <CertificationReviewWorkspace key={reviewStatus} submissions={queue} locale={locale} status={reviewStatus} initialSelectedSubmissionId={reviewStatus === initialReviewStatus ? initialSubmissionId : undefined} busy={pending || needsRefresh} canWrite={canWrite} loadProof={loadProof} onReview={review} />}
         </div> : <div id="missions-panel" role="tabpanel" aria-labelledby="missions-tab">
         <div className={styles.workspace}>
           <section className={styles.missions}>
@@ -405,10 +406,10 @@ function CertificationManager({
                 <span>
                   <strong>{locale === "ko" ? m.titleKo : m.titleEn}</strong>
                   <small>
-                    {m.celebritySlug}{m.membershipPlatform ? ` · ${membershipPlatformLabel(m.membershipPlatform)}` : ""} · {locale === "ko" ? "버전" : "v"} {m.revision}
+                    {m.celebritySlug}{m.membershipPlatform ? ` · ${membershipPlatformLabel(m.membershipPlatform)}` : ""} · {locale === "ko" ? "수정 횟수" : "v"} {m.revision}
                   </small>
                 </span>
-                <em data-status={m.status}>{locale === "ko" ? { active: "진행 중", draft: "초안", closed: "종료" }[m.status] : { active: "Active", draft: "Draft", closed: "Closed" }[m.status]}</em>
+                <em data-status={m.status}>{locale === "ko" ? { active: "진행 중", draft: "초안", closed: "끝내기" }[m.status] : { active: "Active", draft: "Draft", closed: "Closed" }[m.status]}</em>
               </button>
             ))}
             <AdminPagination {...missionPages} locale={locale} disabled={pending || needsRefresh || loading} />
@@ -424,7 +425,7 @@ function CertificationManager({
                   : "New mission"}
             </h2>
             <label>
-              <span>{locale === "ko" ? "인증 유형" : "Certification type"}</span>
+              <span>{locale === "ko" ? "인증 방식" : "Certification type"}</span>
               <select
                 value={form.membershipPlatform}
                 disabled={!canWrite || pending || needsRefresh || Boolean(form.id)}
@@ -435,14 +436,14 @@ function CertificationManager({
                     : { ...value, membershipPlatform: "" });
                 }}
               >
-                <option value="">{locale === "ko" ? "일반 수동 인증" : "Generic manual proof"}</option>
+                <option value="">{locale === "ko" ? "직접 심사 인증" : "Generic manual proof"}</option>
                 <option value="instagram">Instagram</option>
                 <option value="tiktok">TikTok</option>
                 <option value="youtube">YouTube</option>
               </select>
             </label>
             <label>
-              <span>{locale === "ko" ? "증빙 종류" : "Proof type"}</span>
+              <span>{locale === "ko" ? "올릴 자료 종류" : "Proof type"}</span>
               <select
                 value={form.proofType}
                 disabled={!canWrite || pending || needsRefresh || Boolean(form.membershipPlatform)}
@@ -453,7 +454,7 @@ function CertificationManager({
               </select>
             </label>
             <label>
-              <span>{locale === "ko" ? "증빙 플랫폼" : "Proof platform"}</span>
+              <span>{locale === "ko" ? "플랫폼" : "Proof platform"}</span>
               {form.proofType === "sns_post" ? (
                 <select required value={form.proofPlatform} disabled={!canWrite || pending || needsRefresh} onChange={(event) => setForm((value) => ({ ...value, proofPlatform: event.target.value }))}>
                   <option value="">{locale === "ko" ? "플랫폼 선택" : "Select a network"}</option>
@@ -472,7 +473,7 @@ function CertificationManager({
             <label><span>{locale === "ko" ? "크리에이터" : "Creator"}</span><select required value={form.celebrityId} disabled={!canWrite || pending || needsRefresh || Boolean(form.id)} onChange={event => setForm(value => ({ ...value, celebrityId: event.target.value }))}><option value="">{locale === "ko" ? "크리에이터 선택" : "Select a creator"}</option>{form.celebrityId && !creators.some(item => item.id === form.celebrityId) ? <option value={form.celebrityId}>{missions.find(item => item.id === form.id)?.celebritySlug || (locale === "ko" ? "선택한 크리에이터" : "Selected creator")}</option> : null}{creators.filter(item => item.id === form.celebrityId || `${item.slug} ${item.localizations?.ko?.name ?? ""} ${item.localizations?.en?.name ?? ""}`.toLowerCase().includes(creatorSearch.trim().toLowerCase())).map(item => <option key={item.id} value={item.id}>{(item.localizations?.[locale] ?? item.localizations?.ko ?? item.localizations?.en)?.name ?? item.slug} · @{item.slug}</option>)}</select>{creatorError ? <small>{locale === "ko" ? "크리에이터를 불러오지 못했습니다. 심사 탭으로 이동한 뒤 다시 열어 주세요." : "Could not load creators. Reopen this tab to retry."}</small> : null}</label>
             <div className={styles.grid}>
               {Object.entries({
-                category: locale === "ko" ? "카테고리" : "Category",
+                category: locale === "ko" ? "분류" : "Category",
                 titleKo: locale === "ko" ? "제목 (한국어)" : "Title (Korean)",
                 titleEn: locale === "ko" ? "제목 (영어)" : "Title (English)",
               }).map(([key, label]) => (
@@ -532,7 +533,7 @@ function CertificationManager({
                 />
               </label>
               <label>
-                <span>{locale === "ko" ? "응모권 수량" : "Ticket quantity"}</span>
+                <span>{locale === "ko" ? "응모권 수" : "Ticket quantity"}</span>
                 <input
                   required
                   type="number"
@@ -569,7 +570,7 @@ function CertificationManager({
                 />
               </label>
             ))}
-            <details className={styles.advanced}><summary>{locale === "ko" ? "미션 식별 정보" : "Mission identifiers"}</summary><p>{form.immutableKey}</p>{form.id ? <p>{form.id}</p> : null}</details>
+            <details className={styles.advanced}><summary>{locale === "ko" ? "미션 번호" : "Mission identifiers"}</summary><p>{form.immutableKey}</p>{form.id ? <p>{form.id}</p> : null}</details>
             <div className={styles.actions}>
               <button type="submit" disabled={!canWrite || pending || needsRefresh}>
                 <Save />
@@ -589,7 +590,7 @@ function CertificationManager({
                     }
                   >
                     <Check />
-                    {locale === "ko" ? "활성화" : "Activate"}
+                    {locale === "ko" ? "공개" : "Activate"}
                   </button>
                   <button
                     type="button"
@@ -603,7 +604,7 @@ function CertificationManager({
                     }
                   >
                     <X />
-                    {locale === "ko" ? "종료" : "Close"}
+                    {locale === "ko" ? "끝내기" : "Close"}
                   </button>
                 </>
               ) : null}

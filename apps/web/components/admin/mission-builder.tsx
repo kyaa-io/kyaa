@@ -85,7 +85,7 @@ export function MissionBuilder({ liveEventId }: { liveEventId: string }) {
       setMessage("미션 초안을 수정했습니다."); await loadStatistics();
     } catch { setMessage("미션 초안을 수정하지 못했습니다."); } finally { setSaving(false); }
   }
-  async function publish() { if (saving) return; setSaving(true); try { await command({ command: "publish", missionId: created }); setMessage("미션을 발행했습니다."); await loadStatistics(); } catch { setMessage("미션을 발행하지 못했습니다."); } finally { setSaving(false); } }
+  async function publish() { if (saving) return; setSaving(true); try { await command({ command: "publish", missionId: created }); setMessage("미션을 공개했어요."); await loadStatistics(); } catch { setMessage("미션을 발행하지 못했습니다."); } finally { setSaving(false); } }
   const incomplete = !titleKo || !titleEn || !visibleFrom || !visibleUntil || Date.parse(visibleFrom) >= Date.parse(visibleUntil) || questions.some(item => !item.textKo || !item.textEn || item.options.some(value => !value.labelKo || !value.labelEn || Boolean(value.mediaType) !== Boolean(value.mediaUrl) || (value.displayMode === "text") !== !value.mediaType) || Boolean(item.mediaType) !== Boolean(item.mediaUrl));
 
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale="ko" />;

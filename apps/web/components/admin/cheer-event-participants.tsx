@@ -28,7 +28,7 @@ export function CheerEventParticipants({ campaignId, locale }: { campaignId: str
     <button type="button" disabled={pending} onClick={() => void load()}>{ko ? "응원댓글 참여 내역 조회" : "View cheer comment entries"}</button>
     {data && <>
       <p>{ko ? `참여 ${data.total}명 · 총 추첨 가중치 ${data.totalWeight}` : `${data.total} participants · total draw weight ${data.totalWeight}`}</p>
-      <p>{ko ? "댓글은 계정당 한 번 참여하며, 해당 LIVE 예약자는 가중치 2로 계산됩니다." : "Each account enters once. Reservations for this LIVE have a draw weight of 2."}</p>
+      <p>{ko ? "계정당 댓글 한 건으로 응모할 수 있어요. 해당 LIVE 예약자는 추첨 기회가 2배예요." : "Each account enters once. Reservations for this LIVE have a draw weight of 2."}</p>
       <ol>{data.participants.map(row => <li key={row.appUserId}><code>{row.appUserId}</code> · <time dateTime={row.enteredAt}>{new Date(row.enteredAt).toLocaleString(locale)}</time> · {ko ? "가중치" : "Weight"} {row.weight}</li>)}</ol>
       {data.nextOffset !== null && <button type="button" disabled={pending} onClick={() => void load(data.nextOffset!)}>{ko ? "더 보기" : "Show more"}</button>}
     </>}

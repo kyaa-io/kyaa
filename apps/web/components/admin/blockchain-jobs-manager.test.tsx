@@ -42,7 +42,7 @@ describe("ADM-011 blockchain jobs", () => {
     query = "status=FAILED&jobId=11111111-1111-4111-8111-111111111111";
     rendered.rerender(<BlockchainJobsManager />);
     expect(screen.getByRole("combobox", { name: "상태" })).toHaveValue("FAILED");
-    expect(screen.getByRole("textbox", { name: "작업 ID" })).toHaveValue(
+    expect(screen.getByRole("textbox", { name: "작업 번호" })).toHaveValue(
       "11111111-1111-4111-8111-111111111111",
     );
     await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));

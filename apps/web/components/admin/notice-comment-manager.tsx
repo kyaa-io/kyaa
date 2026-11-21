@@ -30,7 +30,7 @@ export function NoticeCommentManager() {
       const response = await fetch(`/api/admin/notice-comments/${selected}`, { method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ reason }) });
       if (!response.ok) throw new Error();
       setSelected(null); setReason(""); setMessage("댓글을 숨겼습니다."); resource.retry();
-    } catch { setMessage("댓글을 숨기지 못했습니다. 권한과 연결을 확인해 주세요."); }
+    } catch { setMessage("숨기지 못했어요. 권한을 확인해 주세요."); }
     finally { setBusy(false); }
   }
   const pageBusy = resource.state.status === "loading" || busy;

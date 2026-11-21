@@ -14,7 +14,7 @@ it("lists the proofs waiting for a decision with the official tag to check, and 
   render(<ShareProofAdminPanel locale="ko" request={request as never} canWrite />);
   expect(await screen.findByText("@kyaa_app 태그 확인")).toBeInTheDocument();
   expect(request).toHaveBeenCalledWith("/api/admin/share-proofs?status=pending");
-  fireEvent.click(screen.getByRole("button", { name: "승인하고 지급" }));
+  fireEvent.click(screen.getByRole("button", { name: "승인·지급" }));
   await waitFor(() => expect(request).toHaveBeenCalledWith(`/api/admin/share-proofs/${ID}/review`, "POST", { decision: "accept", revision: 0 }));
   expect(await screen.findByRole("status")).toHaveTextContent("승인하고 10P를 지급했습니다.");
 });
@@ -31,7 +31,7 @@ it("cannot approve a post on a network whose official account is not confirmed",
   const tiktok = answer([row({ platform: "tiktok", url: "https://www.tiktok.com/@fan/video/7430000000000000555" })]) as never;
   render(<ShareProofAdminPanel locale="ko" request={tiktok} canWrite />);
   expect(await screen.findByText("공식 계정을 확인하지 못해 승인할 수 없습니다.")).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "승인하고 지급" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "승인·지급" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "반려" })).toBeEnabled();
 });
 
@@ -42,5 +42,5 @@ it("offers a payout retry for an accepted proof that was never paid, and no deci
   cleanup();
   render(<ShareProofAdminPanel locale="ko" request={waiting} canWrite={false} />);
   await screen.findByText("@kyaa_app 태그 확인");
-  expect(screen.queryByRole("button", { name: "승인하고 지급" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "승인·지급" })).toBeNull();
 });

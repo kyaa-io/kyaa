@@ -31,7 +31,7 @@ it("previews and confirms the snapshot then reuses the key after an uncertain re
  const confirm=vi.spyOn(window,"confirm").mockReturnValue(true);
  render(<AuthorizedBenefitManager/>);
  const button=await screen.findByRole("button",{name:"지금 참여 마감 후 현장 추첨"});
- fireEvent.click(button);await screen.findByText("혜택 데이터를 처리하지 못했습니다.");
+ fireEvent.click(button);await screen.findByText("저장하지 못했어요.");
  fireEvent.click(button);await waitFor(()=>expect(posts).toBe(2));
  const bodies=request.mock.calls.filter(([,init])=>init?.method==="POST").map(([,init])=>JSON.parse(String(init?.body)));
  expect(bodies[0]).toMatchObject({closeEntriesNow:true,expectedRevision:3});expect(bodies[1]).toEqual(bodies[0]);

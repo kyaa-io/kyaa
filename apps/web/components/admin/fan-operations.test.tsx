@@ -123,7 +123,7 @@ describe("FanOperations", () => {
       screen.getByRole("columnheader", { name: "패스포트 여정" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("columnheader", { name: "팬 점수" }),
+      screen.getByRole("columnheader", { name: "점수" }),
     ).toBeInTheDocument();
     const loadMore = screen.getByRole("button", { name: "다음 회원 불러오기" });
     expect(loadMore).toBeEnabled();
@@ -250,12 +250,12 @@ describe("FanOperations", () => {
     );
     const dialog = await screen.findByRole("dialog");
     const submit = within(dialog).getByRole("button", { name: "교정 기록" });
-    expect(within(dialog).getByText("패스포트 NFT")).toBeInTheDocument();
+    expect(within(dialog).getByText("디지털 패스포트")).toBeInTheDocument();
     expect(
       within(dialog).getByRole("heading", { name: "스탬프" }),
     ).toBeInTheDocument();
     expect(submit).toBeDisabled();
-    fireEvent.change(within(dialog).getByRole("spinbutton", { name: "조정값 (-100~100)" }), {
+    fireEvent.change(within(dialog).getByRole("spinbutton", { name: "조정 점수 (-100~100)" }), {
       target: { value: "10" },
     });
     fireEvent.change(within(dialog).getByRole("textbox", { name: "교정 사유" }), {
@@ -263,7 +263,7 @@ describe("FanOperations", () => {
     });
     expect(submit).toBeDisabled();
     fireEvent.click(
-      within(dialog).getByRole("checkbox", { name: /불변 원장과 감사 로그/ }),
+      within(dialog).getByRole("checkbox", { name: /기록은 지울 수 없음/ }),
     );
     expect(submit).toBeEnabled();
   });

@@ -27,22 +27,22 @@ describe("AdminOperationsShell navigation", () => {
     ["/admin/celebrities", "크리에이터 관리"],
     ["/admin/celebrities/kara/quiz", "크리에이터 관리"],
     ["/admin/lives", "LIVE 관리"],
-    ["/admin/proof-review", "스탬프 증빙 심사"],
+    ["/admin/certifications", "인증 심사"],
     ["/admin/schedules", "일정 관리"],
-    ["/admin/schedule-suggestions", "일정 제보"],
+    ["/admin/schedule-suggestions", "일정 제보 검토"],
     ["/admin/fanpage-requests", "팬페이지 신청"],
     ["/admin/content-reports", "콘텐츠 신고"],
     ["/admin/lives/live-1/survey", "LIVE 관리"],
     ["/admin/home-banners", "홈 배너"],
-    ["/admin/benefits", "혜택·경품"],
+    ["/admin/benefits", "경품"],
     ["/admin/dashboard", "상세 통계"],
     ["/admin/fans", "회원 관리"],
-    ["/admin/blockchain-jobs", "디지털 발급 내역"],
+    ["/admin/blockchain-jobs", "디지털 발급"],
     ["/admin/byus-day-rsvps", "kyaa wave 참가 신청"],
     ["/admin/kyaa-wave-draw", "kyaa wave 추첨"],
     ["/admin/system", "시스템 상태"],
-    ["/admin/notifications", "알림 전송"],
-    ["/admin/audit", "관리자 활동 기록"],
+    ["/admin/notifications", "알림 전송 현황"],
+    ["/admin/audit", "활동 기록"],
   ])("marks the owning navigation item current at %s", (route, label) => {
     pathname = route;
     render(<AdminOperationsShell locale="ko"><p>content</p></AdminOperationsShell>);
@@ -112,8 +112,8 @@ describe("AdminOperationsShell navigation", () => {
     expect(within(navigation).getByRole("link", { name: "Creator management" })).toHaveAttribute("href", "/admin/celebrities?lang=en");
     expect(within(navigation).getByRole("link", { name: "Home banners" })).toBeInTheDocument();
     expect(within(navigation).getByRole("link", { name: "System status" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "Issuance history" })).toBeInTheDocument();
-    expect(within(navigation).getByRole("link", { name: "Admin activity log" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Digital issuance" })).toBeInTheDocument();
+    expect(within(navigation).getByRole("link", { name: "Activity log" })).toBeInTheDocument();
   });
 
   it("shows admin management only when an admin role is provided", () => {

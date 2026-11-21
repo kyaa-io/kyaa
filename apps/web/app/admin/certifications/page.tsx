@@ -1,3 +1,16 @@
 import { Suspense } from "react";
 import { AuthorizedCertificationManager } from "@/components/admin/certification-manager";
-export default function AdminCertificationsPage(){return <Suspense fallback={null}><AuthorizedCertificationManager/></Suspense>}
+import { AuthorizedProofReview } from "@/components/admin/proof-review-screen";
+
+export default async function AdminCertificationsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const { view } = await searchParams;
+  return (
+    <Suspense fallback={null}>
+      {view === "stamps" ? <AuthorizedProofReview /> : <AuthorizedCertificationManager />}
+    </Suspense>
+  );
+}

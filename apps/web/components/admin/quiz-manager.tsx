@@ -127,7 +127,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
         <div>
           <Link href="/admin/celebrities" className={styles.backLink}>
             <ArrowLeft aria-hidden="true" />
-            {locale === "ko" ? "셀럽 목록" : "Celebrities"}
+            {locale === "ko" ? "크리에이터 목록" : "Celebrities"}
           </Link>
           <h1>{locale === "ko" ? "팬 퀴즈" : "Fan quiz"}</h1>
           <span>
@@ -247,7 +247,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
                 />
               </label>
               {learningEnabled && <label>
-                <span>{locale === "ko" ? "힌트 (선택 · 정답을 적지 마세요)" : "Hint (optional · do not reveal the answer)"}</span>
+                <span>{locale === "ko" ? "힌트 (선택, 정답 제외)" : "Hint (optional · do not reveal the answer)"}</span>
                 <textarea maxLength={1000} value={q.hint ?? ""} onChange={(event) => setQuestions((items) => items.map((item, i) => i === index ? { ...item, hint: event.target.value } : item))} />
               </label>}
               <div className={styles.quizOptions}>
@@ -383,7 +383,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
             onClick={() => void command({ action: "clone", quizId: quiz.id })}
           >
             <Copy aria-hidden="true" />
-            {locale === "ko" ? "새 버전으로 복제" : "Clone new version"}
+            {locale === "ko" ? "복사해서 새로 만들기" : "Clone new version"}
           </button>
         )}
         {canEdit && editable && (
@@ -407,7 +407,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
                   void command({ action: "publish", quizId: quiz.id })
                 }
               >
-                {locale === "ko" ? "이 버전 발행" : "Publish version"}
+                {locale === "ko" ? "이 퀴즈 공개" : "Publish version"}
               </button>
             )}
           </>

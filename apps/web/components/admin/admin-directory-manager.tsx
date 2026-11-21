@@ -34,11 +34,10 @@ const roles: readonly AdminRole[] = ["admin", "operator", "viewer"];
 
 const copy = {
   ko: {
-    eyebrow: "접근 권한", title: "관리자 권한", description: "운영 도구에 접근할 관리자를 추가하고 역할과 활성 상태를 관리합니다.",
-    addTitle: "관리자 추가", email: "이메일", emailPlaceholder: "admin@example.com", role: "역할", add: "관리자 추가", adding: "추가 중…",
+    title: "관리자 권한", addTitle: "관리자 추가", email: "이메일", emailPlaceholder: "admin@example.com", role: "역할", add: "관리자 추가", adding: "추가 중…",
     search: "이메일 검색", searchPlaceholder: "이메일로 검색", count: (visible: number, total: number) => `${total}명 중 ${visible}명`,
     status: "상태", active: "활성", inactive: "권한 해제", updated: "최근 변경", actions: "작업", saveRole: "역할 저장", saving: "저장 중…",
-    deactivate: "권한 해제", reactivate: "재활성화", self: "내 계정", selfHelp: "현재 로그인한 계정의 역할과 상태는 여기서 변경할 수 없습니다.",
+    deactivate: "권한 해제", reactivate: "재활성화", self: "내 계정", selfHelp: "내 계정은 바꿀 수 없어요.",
     loading: "관리자 명단을 불러오는 중입니다.", empty: "등록된 관리자가 없습니다.", emptySearch: "검색 결과가 없습니다.",
     emptyHelp: "위 양식에서 첫 관리자를 추가하세요.", emptySearchHelp: "다른 이메일로 검색해 보세요.", loadError: "관리자 명단을 불러오지 못했습니다.", retry: "다시 시도",
     added: "관리자를 추가했습니다.", roleSaved: "역할을 변경했습니다.", deactivated: "관리자 접근 권한을 해제했습니다.", reactivated: "관리자를 재활성화했습니다.",
@@ -57,8 +56,7 @@ const copy = {
     },
   },
   en: {
-    eyebrow: "Access control", title: "Admin management", description: "Add people who can access operations tools and manage their roles and access status.",
-    addTitle: "Add administrator", email: "Email", emailPlaceholder: "admin@example.com", role: "Role", add: "Add administrator", adding: "Adding…",
+    title: "Admin management", addTitle: "Add administrator", email: "Email", emailPlaceholder: "admin@example.com", role: "Role", add: "Add administrator", adding: "Adding…",
     search: "Search by email", searchPlaceholder: "Search email", count: (visible: number, total: number) => `${visible} of ${total}`,
     status: "Status", active: "Active", inactive: "Access revoked", updated: "Last updated", actions: "Actions", saveRole: "Save role", saving: "Saving…",
     deactivate: "Revoke access", reactivate: "Reactivate", self: "Your account", selfHelp: "You cannot change the role or status of the account you are currently using.",
@@ -243,7 +241,7 @@ function DirectoryContent({ locale, getAccessToken, onAccessDenied }: { locale: 
         : null;
 
   return <AdminOperationsShell locale={locale} adminRole="admin">
-    <header className={styles.heading}><div><p>{t.eyebrow}</p><h1>{t.title}</h1><span>{t.description}</span></div><ShieldCheck aria-hidden="true" /></header>
+    <header className={styles.heading}><div><h1>{t.title}</h1></div><ShieldCheck aria-hidden="true" /></header>
     <section className={styles.addPanel} aria-labelledby="add-administrator-title">
       <h2 id="add-administrator-title">{t.addTitle}</h2>
       <form onSubmit={add}>
