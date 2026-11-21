@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { entries } from "./contents";
@@ -41,6 +42,7 @@ export function HomeBanner({
     <section className={styles.banner} onFocus={() => setPaused(true)} onMouseEnter={() => setPaused(true)}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
+        <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-v1`} paused={paused} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
         <div className={styles.caption}>
           <FanHeading as="h1">{copy[id]}</FanHeading>
           {href ? (

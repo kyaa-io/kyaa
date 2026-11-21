@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
@@ -482,10 +483,15 @@ export function FortuneFlow({
         )}
       </div>
       <div className={styles.stage}>
-        <picture className={styles.art}>
-          <source media="(min-width: 48rem)" srcSet={wideArt} />
-          <img src={mobileArt} alt={text("cloudArt", { name })} />
-        </picture>
+        <div className={styles.art}>
+          <picture>
+            <source media="(min-width: 48rem)" srcSet={wideArt} />
+            <img src={mobileArt} alt={text("cloudArt", { name })} />
+          </picture>
+          {step === "enter" && (character === "elina" || character === "yuna") && (
+            <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
+          )}
+        </div>
         {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}
         {phase === "error" ? (
           <FanState
