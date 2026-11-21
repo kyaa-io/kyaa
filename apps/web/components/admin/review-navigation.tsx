@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "../fan-ui/hover-prefetch-link";
 import { adminReviewLabels } from "@/i18n/catalogs/components__admin__review-navigation";
 import styles from "./operations.module.css";
 
