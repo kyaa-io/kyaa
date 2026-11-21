@@ -114,8 +114,11 @@ function seoulDate(
 export function FortuneFlow({
   locale,
   restoring: restoringFromUrl = false,
+  paidPreview = false,
 }: {
   locale: AppLocale;
+  /** DEV 시험 모드에서만 결과의 날짜 지정(포인트)을 보인다. */
+  paidPreview?: boolean;
   /** 주소에 단계와 결과가 있어 저장된 결과를 불러오는 중이면 입장 화면 대신 불러오는 모양을 그린다. */
   restoring?: boolean;
 }) {
@@ -359,6 +362,7 @@ export function FortuneFlow({
         character={character}
         backHref={`/chemi/fortune?c=${character}&locale=${locale}`}
         onAsk={() => askGo({ step: "topic" })}
+        paidPreview={paidPreview}
       />
     );
 

@@ -18,8 +18,10 @@ vi.mock("@/components/fan-ui/reward-celebration", () => ({ celebrateReward: cele
 const calls: { path: string; method: string; body?: string }[] = [];
 let today: { readingId: string; kind: string; date: string }[] = [];
 let reward: Record<string, unknown> = {};
+let spread: { readingId: string | null } = { readingId: null };
 
 beforeEach(() => {
+  spread = { readingId: null };
   auth.authenticated = false;
   today = [];
   reward = {};
@@ -39,6 +41,7 @@ beforeEach(() => {
       if (path === "/api/chemi/readings")
         return Response.json({ readingId: "r1", replayed: false, reward, result: { cards: [{ card: 25, reversed: false }] } });
       if (path === "/api/chemi/rewards/today") return Response.json({ grants: [] });
+      if (path === "/api/chemi/tarot/spread") return Response.json(spread);
       const card = path.match(/\/api\/chemi\/tarot\/cards\/(\d+)$/);
       if (card) return Response.json(cards[Number(card[1])]);
       return Response.json({});
@@ -99,17 +102,33 @@ it("shows the saved card as a revisit for a member and settles the reward once",
   today = [{ readingId: "saved", kind: "daily", date: kstDate() }];
   reward = { exp: 10 };
   open();
-  const view = await screen.findByRole("button", { name: "오늘 카드 보기" });
-  expect(screen.getByText("또 왔네? 오늘 카드는 그대로야.")).toBeVisible();
+  // 다시 온 장면의 주 버튼은 세 장 배열(첫 1번 무료)이고, 오늘 카드는 탁자 위 카드를 눌러 연다.
+  const ask = await screen.findByRole("link", { name: /3장으로 물어보기/ });
+  expect(ask).toHaveAttribute("href", "/chemi/tarot/spread?locale=ko&c=changha");
+  expect(ask).toHaveTextContent("첫 1번 무료");
+  expect(screen.getByText("또 왔네? 이번엔 세 장으로 물어볼래?")).toBeVisible();
+  expect(screen.getByRole("button", { name: "도감" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "친구와" })).toBeVisible();
   expect(screen.getByText("XIII 죽음")).toBeVisible();
   expect(screen.getByText("역방향")).toBeVisible();
-  fireEvent.click(view);
+  fireEvent.click(screen.getByRole("link", { name: /오늘 카드: / }));
   expect(await screen.findByRole("heading", { name: "XIII 죽음" })).toBeVisible();
   await waitFor(() => expect(screen.getAllByText("패스포트 받고 +3P · 스탬프").length).toBeGreaterThan(0));
   const settles = calls.filter((call) => call.path === "/api/chemi/readings" && call.method === "POST");
   expect(settles).toHaveLength(1);
   expect(JSON.parse(settles[0].body!)).toMatchObject({ character: "changha", position: 0 });
   expect(celebrate).not.toHaveBeenCalled();
+});
+
+it("offers only a reopen once the free spread is used", async () => {
+  auth.authenticated = true;
+  today = [{ readingId: "saved", kind: "daily", date: kstDate() }];
+  spread = { readingId: "spread-1" };
+  open();
+  const again = await screen.findByRole("link", { name: "내 세 장 다시 보기" });
+  expect(again).not.toHaveTextContent("무료");
+  expect(screen.queryByText(/3장으로 물어보기/)).toBeNull();
+  expect(screen.getByText("세 장은 아까 본 그대로야.")).toBeVisible();
 });
 
 it("shows only what the server gave: no points, no made-up counts", async () => {

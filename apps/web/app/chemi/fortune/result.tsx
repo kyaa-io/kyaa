@@ -23,7 +23,7 @@ import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
-import { parseNewFortune, type FortuneReading as Reading } from "./reading";
+import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
 import {
   band,
   flowNotes,
@@ -36,6 +36,10 @@ import {
   stageNotes,
 } from "./result-copy";
 import { DatePurchase } from "./date-purchase";
+import { dayCardKind } from "./deep/copy";
+import { DayCardThumb } from "./deep/day-card";
+import deep from "./deep/deep.module.css";
+import { deepHref } from "./deep/screen";
 import styles from "./result.module.css";
 
 const exampleKeys = {
@@ -57,7 +61,10 @@ export function FortuneResult({
   backHref,
   onAsk,
   character = "changha",
+  paidPreview = false,
 }: {
+  /** 결제 연결 전에는 DEV 시험 모드에서만 날짜 지정(포인트)을 보인다. */
+  paidPreview?: boolean;
   character?: FortuneCharacterId;
   locale: AppLocale;
   from?: string;
@@ -328,6 +335,10 @@ export function FortuneResult({
       color: result.luck.color,
     });
   const soon = (title: string) => () => showFanToast({ title });
+  // 오늘 날짜의 결과에만 그날의 카드(기념 카드·응원 부적)와 내일·이번 주 줄을 건다.
+  const isToday = reading.kstDate === todayKst();
+  const cardKind = isToday ? dayCardKind(result.score) : null;
+  const deepTarget = { character, locale, readingId: reading.readingId };
   const actions = (
     <div className={styles.actions}>
       <FanAction disabled={sharing} onClick={share}>
@@ -360,6 +371,16 @@ export function FortuneResult({
           <div className={styles.score}>
             <FanNumber size="xl" locale={locale} value={result.score} />
             <FanHeading as="h2">{result.grade.name}</FanHeading>
+            {cardKind && (
+              <FanAction
+                variant="text"
+                className={deep.cardLink}
+                href={deepHref("card", deepTarget)}
+                trailingIcon={<DayCardThumb kind={cardKind} character={character} />}
+              >
+                <ReadingText id={cardKind} />
+              </FanAction>
+            )}
           </div>
           <div className={styles.rewardRow}>
             {points > 0 && (
@@ -514,8 +535,19 @@ export function FortuneResult({
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
         </section>
-        <DatePurchase key={character} character={character} locale={locale} />
+        {paidPreview && <DatePurchase key={character} character={character} locale={locale} />}
         <nav className={styles.nextList} aria-label={uiText("more")}>
+          {isToday &&
+            (["tomorrow", "week"] as const).map((view) => (
+              <FanAction variant="text" key={view} className={styles.nextItem} href={deepHref(view, deepTarget)}>
+                <span className={styles.nextRow}>
+                  <FanText role="item">
+                    <ReadingText id={view === "tomorrow" ? "deepTomorrow" : "deepWeek"} />
+                  </FanText>
+                  <FanIcon icon={ChevronRight} />
+                </span>
+              </FanAction>
+            ))}
           {[uiText("friends"), uiText("history"), uiText("charm")].map(
             (label) => (
               <FanAction

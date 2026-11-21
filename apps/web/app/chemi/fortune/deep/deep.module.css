@@ -1,0 +1,564 @@
+/* 운세 더 깊이(내일·이번 주)와 날마다 하나 나오는 카드(기념 카드·응원 부적). 승인 시안 CHEMI-DEEP-FEATURES-R2.
+   틀(도구 줄·판)은 result.module.css 를 쓰고 여기에는 새 부품의 배치만 둔다. 글자는 FanText·FanNumber 역할로만 쓴다.
+   카드 그림 자체(금테·손글씨·점수)는 card-image.ts 가 한 장으로 그린다. */
+.page {
+  --deep-bar: calc(var(--space-16) + var(--space-12));
+  --deep-trend: calc(var(--space-16) + var(--space-2));
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-3) var(--space-8);
+  align-items: start;
+}
+.main,
+.side {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+  align-content: start;
+}
+.side {
+  gap: var(--space-4);
+}
+.page h1,
+.page h2,
+.page p,
+.page dl,
+.page dd {
+  margin: 0;
+}
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+.head {
+  display: grid;
+  gap: var(--space-1);
+}
+.head picture {
+  margin-top: var(--space-2);
+}
+.heroArt img {
+  object-position: 50% 14%;
+}
+
+/* ── 카드 */
+.cardImage {
+  position: relative;
+  display: block;
+  width: min(calc(var(--space-16) * 4 + var(--space-2)), 100%);
+  height: auto;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-overlay);
+  object-fit: cover;
+}
+.thumb {
+  position: relative;
+  display: block;
+  flex: none;
+  width: var(--space-10);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-small);
+  rotate: 4deg;
+}
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
+}
+.thumbAmulet img + img {
+  position: absolute;
+  inset: 18% 16% auto;
+  width: 68%;
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+/* ── 운세 결과: 점수 줄 오른쪽 카드 입구 */
+.cardLink {
+  align-self: center;
+  gap: var(--space-1);
+  margin-left: auto;
+  padding: 0;
+  color: var(--color-accent-ink);
+}
+.cardLink .thumb {
+  margin-left: var(--space-2);
+}
+
+/* ── 내일: 오늘과 비교 */
+.scoreRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-muted);
+}
+.delta[data-up] {
+  color: var(--color-accent-ink);
+}
+.scoreRow .delta {
+  margin-left: auto;
+}
+.cmpList {
+  display: grid;
+  gap: var(--space-3);
+}
+.cmp {
+  display: grid;
+  grid-template-columns: var(--space-16) var(--space-8) minmax(0, 1fr) var(--space-12);
+  align-items: center;
+  gap: var(--space-3);
+}
+.cmp > :nth-child(2) {
+  justify-self: end;
+}
+.cmpBar {
+  position: relative;
+  display: block;
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+}
+.cmpBar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-ink) 70%, transparent);
+}
+.cmp[data-top] .cmpBar i {
+  background: var(--color-accent);
+}
+/* 오늘 값 자리의 눈금 */
+.cmpBar u {
+  position: absolute;
+  top: calc(var(--space-1) * -1);
+  left: var(--at);
+  width: 2px;
+  height: var(--space-4);
+  background: var(--color-ink);
+  translate: -50%;
+}
+.cmp .delta {
+  justify-self: end;
+}
+.pair {
+  display: grid;
+  gap: var(--space-4);
+}
+.pair > div {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  min-width: 0;
+}
+.pair > div + div {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-line);
+}
+.trend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  align-items: end;
+}
+.trend > div {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+}
+.trendCol {
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  gap: var(--space-1);
+  height: calc(var(--deep-trend) + var(--space-6));
+}
+.trendCol i {
+  width: var(--space-10);
+  height: calc(var(--deep-trend) * var(--v));
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-small);
+  background: var(--color-accent-line);
+}
+.trend [aria-current] .trendCol i {
+  background: var(--color-accent);
+}
+.trend [aria-current] > :last-child {
+  color: var(--color-accent-ink);
+}
+.times {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.time {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-accent-soft);
+  border-radius: var(--radius-media);
+  background: var(--color-accent-soft);
+}
+.time[data-best] {
+  border-color: var(--color-accent-line);
+}
+.time[data-best] > :nth-child(-n + 2) {
+  color: var(--color-accent-ink);
+}
+.luck {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+.luck div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* ── 이번 주: 7일 점수 막대 */
+.chart {
+  padding: var(--space-4) var(--space-3);
+}
+.bars {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.bars li > * {
+  display: grid;
+  grid-template-rows: var(--space-16) var(--deep-bar) auto auto;
+  justify-items: center;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.barTop {
+  display: grid;
+  align-content: end;
+  justify-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+}
+.barTop .thumb {
+  width: var(--space-5);
+}
+.bars li > * > i {
+  align-self: end;
+  width: 100%;
+  max-width: var(--space-10);
+  height: calc(var(--deep-bar) * var(--v));
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-small);
+  background: var(--color-accent-line);
+}
+.bars [data-level="5"] > i {
+  background: var(--color-accent);
+}
+.bars [data-level="3"] > i {
+  background: var(--color-accent-soft);
+}
+.bars [data-level="2"] > i {
+  background: var(--color-surface);
+}
+.bars li > * > :nth-child(3) {
+  margin-top: var(--space-2);
+}
+.bars [aria-current] > :nth-child(n + 3),
+.bars [aria-current] .barTop > :last-child {
+  color: var(--color-accent-ink);
+}
+.bars a:focus-visible,
+.dayList a:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--radius-small);
+}
+.heat {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: var(--space-1);
+  table-layout: fixed;
+}
+.heat th {
+  padding: 0;
+  text-align: left;
+}
+.heat thead th {
+  height: var(--min-target);
+  text-align: center;
+}
+.heat thead th:first-child {
+  width: var(--space-12);
+}
+.heat thead th > * {
+  display: block;
+}
+.heat td {
+  height: var(--space-10);
+  border: 1px solid var(--color-surface);
+  border-radius: var(--radius-small);
+  text-align: center;
+}
+.heat td[data-level="2"] {
+  border-color: var(--color-line);
+}
+.heat td[data-level="3"] {
+  background: var(--color-accent-soft);
+}
+.heat td[data-level="4"] {
+  background: var(--color-accent-line);
+}
+.heat td[data-level="5"] {
+  background: var(--color-accent);
+}
+.heat td[data-level="5"] > * {
+  color: var(--color-surface);
+}
+.twoCol {
+  display: grid;
+  gap: var(--space-6);
+}
+.dayList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.dayList li > * {
+  display: grid;
+  grid-template-columns: var(--space-12) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--space-16);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-line);
+  color: inherit;
+  text-decoration: none;
+}
+.dayList li:first-child > * {
+  border-top: 1px solid var(--color-line);
+}
+.dayList li > * > span:not(.badge, .thumb) {
+  display: grid;
+  gap: var(--space-1);
+}
+.dayList .thumb {
+  justify-self: center;
+}
+.dayList .grade {
+  color: var(--color-accent-ink);
+}
+.badge {
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  width: var(--space-10);
+  height: var(--space-10);
+  border-radius: var(--radius-small);
+  background: var(--color-accent-line);
+}
+.devHead {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── 카드 상세 */
+.stage {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.facts {
+  display: grid;
+}
+.facts div {
+  display: grid;
+  grid-template-columns: var(--space-16) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--space-4);
+  min-height: var(--min-target);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+.cardCta {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-2);
+}
+.sideActions {
+  display: flex;
+  gap: var(--space-2);
+}
+.sideActions > * {
+  flex: 1;
+}
+.mobileOnly {
+  display: flex;
+  gap: var(--space-2);
+}
+.mobileOnly > * {
+  flex: 1;
+}
+
+/* ── 한마디 + 주 버튼: 390은 탭바 위 고정, 1024+는 오른쪽 레일의 분홍 판 */
+.say {
+  display: grid;
+  grid-template-columns: var(--min-target) minmax(0, 1fr);
+  align-items: center;
+  gap: 0 var(--space-3);
+  padding: var(--space-2);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.say img {
+  grid-row: 1 / span 2;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+.say p {
+  grid-column: 2;
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.legal {
+  display: grid;
+  gap: var(--space-1);
+}
+
+@media (max-width: 63.99rem) {
+  .cta {
+    position: fixed;
+    z-index: var(--z-bottom-nav);
+    bottom: calc(var(--fan-bottom-nav-height, 4rem) + env(safe-area-inset-bottom));
+    inset-inline: 0;
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-line);
+    background: var(--color-surface);
+  }
+  .cta > a,
+  .cta > button {
+    justify-self: center;
+  }
+  .desktopOnly {
+    display: none;
+  }
+  /* 탭바 위에 고정된 한마디·주 버튼이 마지막 내용을 가리지 않게 그 높이만큼 비운다. */
+  .side::after {
+    content: "";
+    display: block;
+    height: calc(var(--space-16) + var(--space-16) + var(--space-4));
+  }
+  :global(body):has(.cta) :global([data-fan-toast-viewport]) {
+    bottom: calc(var(--fan-bottom-nav-height, 4rem) + env(safe-area-inset-bottom) + var(--space-16) + var(--space-16) + var(--space-6));
+  }
+}
+@media (min-width: 48rem) {
+  .page {
+    --deep-bar: calc(var(--space-16) + var(--space-16) + var(--space-10));
+  }
+  .bars {
+    gap: var(--space-4);
+  }
+  .bars li > * > i {
+    max-width: var(--space-16);
+  }
+  .chart {
+    padding: var(--space-6);
+  }
+  .twoCol {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-8);
+    align-items: start;
+  }
+  .pair {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: var(--space-6);
+  }
+  .pair > div + div {
+    padding-top: 0;
+    padding-left: var(--space-6);
+    border-top: 0;
+    border-left: 1px solid var(--color-line);
+  }
+  .times {
+    gap: var(--space-4);
+  }
+  .time {
+    padding: var(--space-4);
+  }
+  .luck {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 64rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) 22.5rem;
+    column-gap: var(--space-6);
+    padding-bottom: var(--space-8);
+  }
+  .toolbarRow {
+    grid-column: 1 / -1;
+  }
+  .side {
+    position: sticky;
+    top: var(--space-6);
+  }
+  .mobileOnly,
+  .mobileFacts {
+    display: none;
+  }
+  .side .facts div:last-child {
+    border-bottom: 0;
+  }
+  .cardImage {
+    width: 25rem;
+  }
+  .stage {
+    min-height: calc(100svh - 12.25rem);
+    padding: var(--space-10);
+  }
+  .cta {
+    display: grid;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border: 1px solid var(--color-accent-line);
+    border-radius: var(--radius-card);
+    background: var(--color-accent-soft);
+  }
+  .say {
+    align-items: start;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  .cardCta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .cardCta > :nth-child(2) {
+    display: none;
+  }
+}

@@ -21,7 +21,10 @@ import {
   tarotCharacter,
   type TarotCharacter,
 } from "@/features/chemi/tarot/script";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { CardRail } from "./card-rail";
+import spread from "./spread/spread.module.css";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import type { TarotDraw, TarotStep } from "./types";
 import styles from "./tarot.module.css";
@@ -44,6 +47,8 @@ type Props = {
   onAdvance: () => void;
   onResult: () => void;
   onRetry: () => void;
+  /** 세 장 배열 입구(다시 온 장면). used: 첫 무료 1번을 이미 썼다. */
+  spread?: { href: string; used: boolean };
 };
 
 
@@ -96,8 +101,12 @@ export function TarotStage(props: Props) {
     return null;
   })();
 
+  const spreadEntry = revisit ? props.spread : undefined;
+  const voice = ({ ban: "Ban", yo: "Yo", hao: "Hao" } as const)[person.voice];
+  const soon = (label: string) => () => showFanToast({ title: uiText("comingSoon", { subject: withTopic(label), label }) });
   let dialogLine: string;
-  if (entry) dialogLine = revisit ? lines.again : lines.hello;
+  if (spreadEntry) dialogLine = uiText(`${spreadEntry.used ? "saySpreadUsed" : "saySpreadAsk"}${voice}`);
+  else if (entry) dialogLine = revisit ? lines.again : lines.hello;
   else if (step === "think") dialogLine = lines.think;
   else if (step === "shuffle") dialogLine = lines.shuffle;
   else if (step === "pick") dialogLine = lines.pick;
@@ -207,11 +216,32 @@ export function TarotStage(props: Props) {
             </FanText>
           )}
         </section>
-        {primary ? (
+        {spreadEntry || primary ? (
           <div className={styles.choices}>
-            <FanAction variant="primary" onClick={primary.onClick}>
-              {primary.label}
+            <FanAction variant="primary" {...(spreadEntry ? { href: spreadEntry.href } : { onClick: primary!.onClick })}>
+              {spreadEntry ? (
+                <>
+                  <ReadingText id={spreadEntry.used ? "spreadAgain" : "spreadAsk"} />
+                  {spreadEntry.used ? null : (
+                    <FanTag tone="neutral" className={spread.count}>
+                      <ReadingText id="firstFree" />
+                    </FanTag>
+                  )}
+                </>
+              ) : (
+                primary!.label
+              )}
             </FanAction>
+            {spreadEntry ? (
+              <div className={spread.more}>
+                <FanAction onClick={soon(uiText("tarotBook"))}>
+                  <ReadingText id="tarotBook" />
+                </FanAction>
+                <FanAction onClick={soon(uiText("withFriend"))}>
+                  <ReadingText id="withFriend" />
+                </FanAction>
+              </div>
+            ) : null}
           </div>
         ) : null}
 

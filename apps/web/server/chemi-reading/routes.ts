@@ -22,6 +22,7 @@ import {
   scoreDay,
   birthMoonSigns,
 } from "@/server/chemi-engine/star";
+import { synastryConnections } from "@/server/chemi-engine/star/synastry";
 import { drawGuestTarot, drawMemberTarot } from "@/server/chemi-engine/tarot";
 
 const character = z.enum(["changha", "elina", "yuna", "dosa"]);
@@ -190,6 +191,8 @@ async function upgradeLegacyStar(
   return { ...saved, result: starDailyResult(profile.birth, saved.kstDate) };
 }
 
+const kstToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
+
 const statuses: Record<string, number> = {
   CHEMI_INVALID: 400,
   CHEMI_CONTENT_OFF: 409,
@@ -201,7 +204,7 @@ const statuses: Record<string, number> = {
   CHEMI_UNAVAILABLE: 503,
 };
 type Operation =
-  "pointDate" | "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
+  "fortuneDeep" | "tarotSpread" | "pointDate" | "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
 export async function rewardRoute(
   op: Operation,
   request: Request,
@@ -249,6 +252,34 @@ export async function rewardRoute(
         const result = computeDailyFortune({ ...calculateSaju(birthInput(profile.birth)), gender: profile.birth.gender ?? undefined }, input.day);
         if (!isFortuneResult(result)) throw Error("CHEMI_UNAVAILABLE");
         return deps.rpc("chemi_point_date", { ...args, p_result: result });
+      }
+      if (op === "fortuneDeep") {
+        // 내일·이번 주 운세(무료): 오늘부터 7일을 같은 계산식으로 본다. 저장하지 않는다.
+        const profile = z.object({ birth: birth.nullable() }).parse(await deps.rpc("chemi_read_profile", { p_user }));
+        if (!profile.birth) throw Error("CHEMI_BIRTH_REQUIRED");
+        const chart = { ...calculateSaju(birthInput(profile.birth)), gender: profile.birth.gender ?? undefined };
+        const today = kstToday();
+        return {
+          today,
+          days: Array.from({ length: 7 }, (_, offset) => {
+            const day = new Date(Date.parse(`${today}T00:00:00Z`) + offset * 86400000).toISOString().slice(0, 10);
+            return { day, result: computeDailyFortune(chart, day) };
+          }),
+        };
+      }
+      if (op === "tarotSpread") {
+        // 세 장 배열: 계정마다 첫 1번 무료. GET 은 이미 본 배열만 돌려주고, POST 는 고른 자리 세 곳으로 뽑아 저장한다.
+        const version = "tarot-v1";
+        if (request.method !== "POST")
+          return deps.rpc("chemi_tarot_spread", { p_user, p_character: "changha", p_result: null, p_version: version });
+        const input = z.object({
+          character,
+          positions: z.array(z.number().int().min(0).max(77)).length(3)
+            .refine((positions) => new Set(positions).size === 3),
+        }).parse(body);
+        const cards = input.positions.flatMap((position) =>
+          drawMemberTarot({ userId: p_user, kstDate: kstToday(), deckVersion: version, spread: "three", position, salt: process.env.CHEMI_TAROT_SALT }));
+        return deps.rpc("chemi_tarot_spread", { p_user, p_character: input.character, p_result: { cards }, p_version: version });
       }
       if (op === "visit") return deps.rpc("chemi_visit", { p_user });
       if (op === "list")
@@ -368,6 +399,11 @@ export async function rewardRoute(
             const natal = natalChart(b).planets;
             const other = natalChart(partner).planets;
             result = {
+              // 궁합 화면이 읽는 주요 각(합·육분·사각·삼각·충, 오차 6도 안). 시각을 모르는 쪽의 달은 뺀다.
+              connections: synastryConnections(
+                { planets: natal, moonKnown: timePrecision(b) === "exact" },
+                { planets: other, moonKnown: timePrecision(partner) === "exact" },
+              ),
               angles: natal.flatMap((a) =>
                 other.map((b) => ({
                   self: a.body,

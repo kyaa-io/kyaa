@@ -1,0 +1,201 @@
+/* 타로 세 장(과거·현재·미래). 틀은 tarot.module.css 의 장면·결과를 그대로 쓰고 새 부품만 둔다. */
+.meta {
+  margin-left: auto;
+  color: var(--color-muted);
+}
+.slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.slots li {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--color-muted);
+}
+.slots img,
+.slots i {
+  display: block;
+  width: var(--space-8);
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-small);
+}
+.slots i {
+  border: 1px dashed var(--color-muted);
+}
+.slots [aria-current] i {
+  border: 2px solid var(--color-accent);
+}
+.slots [aria-current] {
+  color: var(--color-accent-ink);
+}
+.slots [data-done] {
+  color: var(--color-ink);
+}
+.trio {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 35rem;
+}
+.trio figure {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  margin: 0;
+}
+.trio img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-small);
+  box-shadow: var(--shadow-overlay);
+}
+.trio [data-reversed] img {
+  rotate: 180deg;
+}
+.trio figcaption {
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.hero3 {
+  padding: var(--space-5) var(--space-3) var(--space-4);
+}
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+.todo {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.todo li {
+  display: grid;
+  grid-template-columns: var(--space-6) minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--space-2);
+}
+.no {
+  display: grid;
+  place-items: center;
+  width: var(--space-6);
+  height: var(--space-6);
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+.story {
+  display: grid;
+  margin: 0;
+}
+.story > div {
+  display: grid;
+  grid-template-columns: var(--space-10) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-line);
+}
+.story > div:last-child {
+  border-bottom: 1px solid var(--color-line);
+}
+.story dd {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+.cardName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+.actions > * {
+  flex: 1;
+}
+.count {
+  margin-left: var(--space-2);
+}
+.more {
+  display: flex;
+  flex-basis: 100%;
+  gap: var(--space-2);
+}
+.more > * {
+  flex: 1;
+}
+@media (min-width: 48rem) {
+  .hero3 {
+    padding: var(--space-10) var(--space-6) var(--space-8);
+  }
+  .trio {
+    gap: var(--space-8);
+  }
+  .slots {
+    max-width: 15rem;
+  }
+}
+.backLink {
+  flex: none;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+}
+.resultPage {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+  padding-bottom: var(--space-8);
+}
+.resultMain,
+.resultSide {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+  align-content: start;
+}
+.head {
+  display: grid;
+  gap: var(--space-1);
+}
+.head h1,
+.head p {
+  margin: 0;
+}
+@media (min-width: 64rem) {
+  .resultPage {
+    grid-template-columns: minmax(0, 1fr) 22.5rem;
+    column-gap: var(--space-6);
+  }
+}
+.resultMain > .hero3,
+.resultMain > .head {
+  order: 0;
+}
+.resultMain > * {
+  order: 1;
+}
+.resultMain > .head {
+  order: -2;
+}
+.resultMain > .hero3 {
+  order: -1;
+}

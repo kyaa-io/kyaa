@@ -5,7 +5,7 @@ import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useMemo, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { ChevronDown, ChevronUp } from "@/components/fan-ui/fan-icons";
+import { ChevronDown, ChevronRight, ChevronUp } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
@@ -370,6 +370,16 @@ export function StarResult({
           </div>
           {chartCards}
         </section>
+        <nav className={styles.matchLink}>
+          <FanAction variant="text" href={`/chemi/star/match?locale=${locale}&c=${character}`}>
+            <span>
+              <FanText role="item">
+                <ReadingText id="starMatch" />
+              </FanText>
+              <FanIcon icon={ChevronRight} />
+            </span>
+          </FanAction>
+        </nav>
         <Legal />
       </aside>
       <FanDialog

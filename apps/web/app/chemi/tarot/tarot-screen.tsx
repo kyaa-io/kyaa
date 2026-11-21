@@ -76,6 +76,8 @@ export function TarotScreen({
   const [slot, setSlot] = useState<number | null>(null);
   const [offline, setOffline] = useState(false);
   const [drawAttempt, setDrawAttempt] = useState(0);
+  // 세 장 배열을 이미 봤는지(첫 1번 무료). 모르는 동안에는 입구를 그리지 않는다.
+  const [spreadUsed, setSpreadUsed] = useState<boolean | null>(null);
   const member = authenticated;
   const shown = member ? (draw ?? today) : draw;
   const meaning = useTarotMeaning(shown?.card ?? null);
@@ -92,6 +94,18 @@ export function TarotScreen({
   useLayoutEffect(() => {
     authorize.current = headers;
   });
+
+  useEffect(() => {
+    if (!ready || !authenticated) return;
+    const controller = new AbortController();
+    void (async () => {
+      const response = await fetch("/api/chemi/tarot/spread", { headers: await authorize.current(), signal: controller.signal });
+      if (!response.ok) return;
+      const body = (await response.json()) as { readingId?: string | null };
+      if (!controller.signal.aborted) setSpreadUsed(Boolean(body.readingId));
+    })().catch(() => {});
+    return () => controller.abort();
+  }, [ready, authenticated]);
 
   // 오늘 이미 뽑은 카드(회원만): 목록 → 자세히. 서버가 같은 날 같은 카드를 지킨다.
   useEffect(() => {
@@ -329,6 +343,7 @@ export function TarotScreen({
           onAdvance={advance}
           onResult={step === "enter" ? () => go("result") : openResult}
           onRetry={() => (step === "lock" ? setDrawAttempt((value) => value + 1) : meaning.retry())}
+          spread={spreadUsed === null ? undefined : { href: `/chemi/tarot/spread?locale=${locale}&c=${character}`, used: spreadUsed }}
         />
       )}
     </div>
