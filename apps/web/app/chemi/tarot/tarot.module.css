@@ -1007,3 +1007,8 @@
   .result .said { order: 1; margin-top: 0; }
   .result .head { gap: var(--space-2); }
 }
+
+/* 장면 위 왼쪽의 둥근 뒤로 가기가 케미 목록으로 가므로 위쪽 글자 링크는 숨긴다(뒤로 가기 하나, L133). */
+:global(main):has(.chips) > :global([data-chemi-list-link]) {
+  display: none;
+}

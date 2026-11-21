@@ -2,7 +2,7 @@
  * 질문 답. 저장된 풀이 값(점수·일간·별점·카드)과 고른 주제로 최애 말투 문장을 만든다.
  * 같은 풀이·같은 질문이면 같은 답이 나온다. 풀이에 없는 사실(날짜·사람·금액)은 지어내지 않는다.
  */
-import { elementName, isChart, stemElement, type Element } from "@/app/chemi/saju/chart";
+import { branchElement, controls, elementCounts, elementName, generates, isChart, stemElement, type Element } from "@/app/chemi/saju/chart";
 import { TAROT_DECK } from "@/features/chemi/tarot/deck";
 import { askVoice as voice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
 
@@ -82,6 +82,45 @@ export function askBasis(content: AskContent, topic: AskTopic, result: any, ques
   if (content === "saju" && isChart(result)) {
     const stem = result.pillars.day!.heavenlyStem;
     const element = stemElement[stem];
+    const counts = elementCounts(result);
+    // 주제마다 사주에서 보는 자리가 다르다: 돈은 내가 다루는 기운, 일은 나를 다스리는 기운, 사람은 나와 같은 기운, 연애는 일지.
+    if (topic === "money" || topic === "work" || topic === "people") {
+      const target = topic === "money" ? controls[element] : topic === "people" ? element
+        : (Object.keys(controls) as Element[]).find((key) => controls[key] === element)!;
+      const count = counts[target] - (topic === "people" ? 1 : 0);
+      const name = elementName[target];
+      const head = { money: "돈은", work: "일은", people: "사람은" }[topic];
+      const same = topic === "people";
+      return {
+        good: count > 0,
+        line: count > 0
+          ? {
+              ban: `${head} ${same ? "너와 같은 " : ""}${name} 기운으로 봐. 네 사주에 ${count}개 ${same ? "더 " : ""}있어.`,
+              yo: `${head} ${same ? "나와 같은 " : ""}${name} 기운으로 봐요. 사주에 ${count}개 ${same ? "더 " : ""}있어요.`,
+              hao: `${head} ${same ? "그대와 같은 " : ""}${name} 기운으로 보오. 그대 사주에 ${count}개 ${same ? "더 " : ""}있소.`,
+            }
+          : {
+              ban: `${head} ${same ? "너와 같은 " : ""}${name} 기운으로 봐. 네 사주에는 ${same ? "더 " : ""}없어.`,
+              yo: `${head} ${same ? "나와 같은 " : ""}${name} 기운으로 봐요. 사주에는 ${same ? "더 " : ""}없어요.`,
+              hao: `${head} ${same ? "그대와 같은 " : ""}${name} 기운으로 보오. 그대 사주에는 ${same ? "더 " : ""}없소.`,
+            },
+      };
+    }
+    if (topic === "love") {
+      const branch = result.pillars.day!.earthlyBranch;
+      const seat = branchElement[branch];
+      // 일지의 기운이 일간과 같거나 서로 낳아 주면 편한 자리, 누르는 사이면 조심할 자리로 읽는다.
+      const good = seat === element || generates[seat] === element || generates[element] === seat;
+      const name = elementName[seat];
+      return {
+        good,
+        line: {
+          ban: `연애는 일지를 봐. 네 일지는 ${branch}, ${name} 기운이야.`,
+          yo: `연애는 일지를 봐요. 일지가 ${branch}, ${name} 기운이에요.`,
+          hao: `연애는 일지를 보오. 그대 일지는 ${branch}, ${name} 기운이오.`,
+        },
+      };
+    }
     const trait = `${elementName[element]} 기운, ${elementTrait[element]} 사람`;
     return {
       good: seed(question + stem) % 3 > 0,
@@ -190,8 +229,20 @@ export function answerAsk(input: { character: AskCharacter; content: AskContent;
   return `${read.line[tone]}\n${pick}`;
 }
 
+/** 이어 물은 말이 까닭을 묻는지, 조심할 것을 묻는지. 둘 다 아니면 덧붙이는 한 마디를 준다. */
+const followWhy = /왜|이유|어째서|근거|까닭/;
+const followCare = /조심|주의|피해야|피할|걱정|불안/;
+const because: Record<"good" | "care", Record<Voice, string>> = {
+  good: { ban: "흐름이 받쳐 줘서 해 보라고 한 거야.", yo: "흐름이 받쳐 줘서 해 보라고 한 거예요.", hao: "흐름이 받쳐 주니 해 보라 한 것이오." },
+  care: { ban: "흐름이 약해서 서두르지 말라고 한 거야.", yo: "흐름이 약해서 서두르지 말라고 한 거예요.", hao: "흐름이 약하니 서두르지 말라 한 것이오." },
+};
+const careLead: Record<Voice, string> = { ban: "조심할 건 하나야.", yo: "조심할 건 하나예요.", hao: "조심할 것은 하나요." };
+
 export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
   const tone = voice[input.character];
   const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
-  return more[read.good ? "good" : "care"][tone][seed(input.question) % 2];
+  const flow = read.good ? "good" : "care";
+  if (followWhy.test(input.question)) return `${read.line[tone]}\n${because[flow][tone]}`;
+  if (followCare.test(input.question)) return `${careLead[tone]}\n${advice[input.topic].care[tone][seed(input.question) % 2]}`;
+  return more[flow][tone][seed(input.question) % 2];
 }

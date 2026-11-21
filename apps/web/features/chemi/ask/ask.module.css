@@ -76,6 +76,34 @@
   opacity: 0.16;
 }
 
+/* 반응을 고르면 최애가 한 번 끄덕인다(표정 원화가 없어 그림 전체가 한 번 움직인다). */
+.root[data-beat] .art img {
+  animation: ask-nod calc(var(--motion-slow) * 3) var(--motion-easing) 1;
+}
+@keyframes ask-nod {
+  35% {
+    transform: translateY(var(--space-2));
+  }
+  70% {
+    transform: translateY(calc(var(--space-1) * -0.5));
+  }
+}
+/* 장면에 들어올 때 한 번: 어두운 데서 밝아진다. */
+.backdrop::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-ink);
+  opacity: 0;
+  pointer-events: none;
+  animation: ask-dawn calc(var(--motion-slow) * 4) var(--motion-easing) 1;
+}
+@keyframes ask-dawn {
+  from {
+    opacity: 0.5;
+  }
+}
+
 .top {
   display: flex;
   align-items: center;
@@ -211,7 +239,9 @@
   }
   .board,
   .reveal[data-shown] > *,
-  .dots i {
+  .dots i,
+  .backdrop::after,
+  .root[data-beat] .art img {
     animation: none;
   }
 }

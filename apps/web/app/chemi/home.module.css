@@ -114,7 +114,6 @@
   display: grid;
   align-content: start;
   justify-items: start;
-  min-block-size: calc(var(--rank-row) * 3);
 }
 .rankRow,
 .rankMine {
@@ -129,25 +128,25 @@
 .rankRow[data-me] {
   color: var(--color-accent-ink);
 }
-.rankRow[data-open] {
-  opacity: var(--fan-disabled-opacity);
-}
-.rankRow[data-open] .rankAvatar {
-  background: transparent;
-  border: thin solid var(--color-line);
+/* 기록이 세 줄에 못 미칠 때 남는 줄만큼의 게임 그림 */
+.rankArt {
+  display: block;
+  width: 100%;
+  block-size: calc(var(--rank-row) * var(--open));
+  object-fit: cover;
+  border-radius: var(--radius-small);
 }
 .rankMine {
   grid-template-columns: minmax(var(--space-6), auto) var(--rank-avatar) minmax(0, 1fr) auto;
   border-top: thin solid var(--color-line-subtle);
 }
-.rankMine[data-open] {
-  border-color: transparent;
-}
 .rankMine[data-first] {
   display: flex;
+  justify-content: space-between;
+  border-top: 0;
 }
 .rankMine[data-first] a {
-  translate: calc(var(--space-2) * -1) 0;
+  translate: var(--space-2) 0;
 }
 .rankMine > :last-child {
   color: var(--color-accent-ink);
@@ -243,7 +242,14 @@
   }
   .rankCard {
     flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
     gap: var(--space-3);
+  }
+  .rankArt {
+    flex: 1 1 auto;
+    min-block-size: calc(var(--rank-row) * var(--open));
+    block-size: 0;
   }
   .rankMine {
     min-height: calc(var(--rank-row) + var(--space-3));

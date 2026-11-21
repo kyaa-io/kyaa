@@ -56,9 +56,26 @@ describe("답", () => {
     expect(answerAsk({ character: "dosa", content: "fortune", topic: "month", question: "어떻소?", result: fortune })).toMatch(/^오늘 운세가 86점이오\./);
   });
   it("사주·별자리·타로: 저장된 풀이 값만 쓴다", () => {
-    expect(answerAsk({ character: "yuna", content: "saju", topic: "work", question: "이직할까?", result: chart })).toMatch(/^네 일간은 병\. 불 기운/);
+    expect(answerAsk({ character: "yuna", content: "saju", topic: "free", question: "이직할까?", result: chart })).toMatch(/^네 일간은 병\. 불 기운/);
     expect(answerAsk({ character: "changha", content: "star", topic: "money", question: "살까?", result: star })).toMatch(/^돈 별이 다섯 개 중 5개야\./);
     expect(answerAsk({ character: "elina", content: "tarot", topic: "love", question: "잘될까요?", result: tarot })).toMatch(/^오늘 카드는 태양, 거꾸로 나왔어요\./);
+  });
+  it("사주: 주제마다 보는 자리가 달라 첫 줄이 갈린다", () => {
+    const full = { ...chart, pillars: { year: { heavenlyStem: "경", earthlyBranch: "신" }, month: { heavenlyStem: "임", earthlyBranch: "자" }, day: chart.pillars.day, hour: null } };
+    const first = (topic: (typeof ASK_TOPICS)[number], character: "changha" | "elina" | "dosa" = "changha") =>
+      answerAsk({ character, content: "saju", topic, question: "어때?", result: full }).split("\n")[0];
+    expect(first("money")).toBe("돈은 쇠 기운으로 봐. 네 사주에 2개 있어.");
+    expect(first("work", "elina")).toBe("일은 물 기운으로 봐요. 사주에 2개 있어요.");
+    expect(first("people", "dosa")).toBe("사람은 그대와 같은 불 기운으로 보오. 그대 사주에 1개 더 있소.");
+    expect(first("love")).toBe("연애는 일지를 봐. 네 일지는 오, 불 기운이야.");
+    expect(answerAsk({ character: "changha", content: "saju", topic: "money", question: "어때?", result: chart })).toMatch(/^돈은 쇠 기운으로 봐\. 네 사주에는 없어\.\n/);
+    expect(new Set(ASK_TOPICS.map((topic) => first(topic))).size).toBe(5);
+  });
+  it("이어 묻기: 까닭을 물으면 근거를, 조심할 것을 물으면 조심할 일을 답한다", () => {
+    const input = { character: "elina", content: "fortune", topic: "love", result: fortune } as const;
+    expect(answerFollowup({ ...input, question: "왜 그렇게 나왔어요?" })).toBe("연애 운이 55점이에요.\n흐름이 약해서 서두르지 말라고 한 거예요.");
+    expect(answerFollowup({ ...input, question: "뭘 조심하면 돼요?" })).toMatch(/^조심할 건 하나예요\.\n.+요\.$/);
+    expect(answerFollowup({ ...input, question: "하나만 더 알려 줘요" })).toMatch(/^(하나만 더|덧붙이면)/);
   });
   it("같은 풀이·같은 질문이면 같은 답이고, 풀이가 비어도 답은 나온다", () => {
     const input = { character: "changha", content: "tarot", topic: "free", question: "뭘 조심할까?", result: tarot } as const;

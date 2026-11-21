@@ -29,6 +29,7 @@ type Photos = Record<
   {
     portrait: string;
     scene: string;
+    lobby?: string;
     cards: readonly string[];
   }
 >;
@@ -627,8 +628,14 @@ function Session({
                   ))}
                 </div>
                 <div className={styles.lobbyHero}>
-                  {scene}
-                  <p><b>{copy[character]}</b> · {["Magic Puzzle In-Game 1","Magic Puzzle In-Game 2","Cozy Puzzle In-Game 1"][characters.indexOf(character)]} · CC0</p>
+                  {art.lobby ? (
+                    <div className={styles.scene} data-tall="">
+                      <Image width={1440} height={550} sizes="100vw" alt="" src={art.scene} data-character={character} />
+                      <Image width={1440} height={1920} sizes="60vw" alt="" src={art.lobby} data-wide="" />
+                    </div>
+                  ) : scene}
+                  {/* 기획 08-1: 판 정보의 '음악' 줄. 이름표를 붙여 사진 설명으로 읽히지 않게 한다. */}
+                  <p><FanText role="meta">{copy.sound}</FanText> <FanText role="label">{["Magic Puzzle In-Game 1","Magic Puzzle In-Game 2","Cozy Puzzle In-Game 1"][characters.indexOf(character)]} · CC0</FanText></p>
                 </div>
                 {levelList}
                 <div className={styles.startAction}>

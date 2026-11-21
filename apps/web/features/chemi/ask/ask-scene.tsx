@@ -8,7 +8,7 @@
  * 남은 질문 수·차감·한도는 서버(/api/chemi/ask)가 정하고, 이 화면은 받은 값만 그린다.
  * 유료 구매 자리는 결제 수단이 붙기 전이라 두지 않는다.
  */
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
@@ -43,8 +43,9 @@ import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
 import {
-  askArt, askExamples, askLines, askLoop, askName, askPages, askReaction, askSubject, askVoice, ASK_REACTIONS, ASK_TOPICS,
-  type AskCharacter, type AskContent, type AskReaction, type AskTopic,
+  askArt, askExamples, askFollowups, askLines, askLoop, askName, askPages, askReaction, askRecall, askSubject, askVoice,
+  ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
+  type AskCharacter, type AskContent, type AskReaction, type AskRecall, type AskTopic,
 } from "./lines";
 import { askBack, askGo, type AskLocation } from "./location";
 import { SceneBackdrop } from "./scene-backdrop";
@@ -80,6 +81,14 @@ const topicKey = {
   love: "askTopicLove", work: "askTopicWork", money: "askTopicMoney", people: "askTopicPeople", month: "askTopicMonth", free: "askTopicFree",
 } as const;
 
+/** 가로 화면(1024px 이상)인지. 답 한 쪽에 담는 글자 수가 달라진다. */
+const WIDE = "(min-width: 64rem)";
+function watchWide(notify: () => void) {
+  const query = matchMedia(WIDE);
+  query.addEventListener("change", notify);
+  return () => query.removeEventListener("change", notify);
+}
+
 const kstToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now());
 const shortDate = (day: string) => `${day.slice(5, 7)}. ${day.slice(8, 10)}.`;
 
@@ -107,8 +116,11 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const [page, setPage] = useState({ of: "", index: 0 });
   // 최애가 말을 마친 줄. 그 줄의 선택지는 이때부터 보인다.
   const [said, setSaid] = useState("");
-  // 답을 들은 뒤 고른 반응. 그 답을 보는 동안만 남는다(서버에 보내지 않는다).
-  const [reacted, setReacted] = useState<{ of: string; kind: AskReaction } | null>(null);
+  // 답을 들은 뒤 고른 반응(서버에 보내지 않는다). 이어 묻기에서 그 반응에 맞는 말이 먼저 놓인다.
+  const [reacted, setReacted] = useState<{ thread: string; kind: AskReaction; complete: boolean } | null>(null);
+  // 다른 날 다시 왔을 때 지난 질문이 어떻게 됐는지 고른 답. 고르기 전에는 최애가 먼저 묻는다.
+  const [recall, setRecall] = useState<AskRecall | null>(null);
+  const wide = useSyncExternalStore(watchWide, () => matchMedia(WIDE).matches, () => false);
   const field = useRef<HTMLInputElement>(null);
   const panelBox = useRef<HTMLDivElement>(null);
 
@@ -125,9 +137,16 @@ export function AskScene({ locale, content, character, readingId, at }: {
     };
   }, []);
 
-  const name = askName[character];
-  const lines = askLines[askVoice[character]];
-  const art = askArt(content, character);
+  const shown =
+    at.step === "answer" || at.step === "follow"
+      ? (blocked?.threadId === at.thread ? blocked : state?.threads.find((item) => item.threadId === at.thread)) ?? null
+      : null;
+  // 지난 질문을 열면 그 질문을 받은 최애와 그 장면으로 답한다(다른 최애의 답을 지금 최애가 대신 말하지 않는다).
+  const who = shown?.character ?? character;
+  const where = shown?.content ?? content;
+  const name = askName[who];
+  const lines = askLines[askVoice[who]];
+  const art = askArt(where, who);
   // 토큰 함수가 그릴 때마다 새로 만들어져도 상태를 다시 읽지 않게 최신 함수만 기억해 둔다.
   const token = useRef(getAccessToken);
   useLayoutEffect(() => {
@@ -260,10 +279,6 @@ export function AskScene({ locale, content, character, readingId, at }: {
     askGo({ step: "topic" });
   };
 
-  const shown =
-    at.step === "answer" || at.step === "follow"
-      ? (blocked?.threadId === at.thread ? blocked : state?.threads.find((item) => item.threadId === at.thread)) ?? null
-      : null;
   // 답을 찾지 못하는 번호(지워졌거나 남의 것)로 열렸으면 주제 고르기로 돌린다.
   const lost = Boolean(state) && !draft && (at.step === "answer" || at.step === "follow") && !shown;
   useEffect(() => {
@@ -327,7 +342,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const line = (body: string, typing: boolean) => (
     <TypedLine key={lineKey(body)} text={body} typing={typing && said !== lineKey(body)} onDone={() => setSaid(lineKey(body))} />
   );
-  const mine = (question: string, tag: AskTopic | null) => (
+  const quoted = (question: string, tag: AskTopic | null) => (
     <div className={styles.mineRow}>
       {tag ? <FanTag tone="neutral">{text(topicKey[tag])}</FanTag> : null}
       <FanText as="p" role="body" className={styles.mine}>{question}</FanText>
@@ -375,7 +390,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
     panel = (
       <>
         <section className={`${styles.talk} ${styles.thread}`} aria-live="polite" aria-busy={!draft.failed}>
-          {mine(draft.question, draft.topic)}
+          {quoted(draft.question, draft.topic)}
           {speak(
             draft.failed ? (
               <p className={styles.sys} role="alert">
@@ -384,7 +399,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
               </p>
             ) : (
               <>
-                {line(lines.think(askSubject[content]), true)}
+                {line(lines.think(askSubject[where]), true)}
                 <span className={styles.dots} role="status" aria-label={text("askWriting", { name })}>
                   <i />
                   <i />
@@ -416,15 +431,16 @@ export function AskScene({ locale, content, character, readingId, at }: {
     const complete = Boolean(shown.followupAnswer);
     ending = !guarded && state.left === 0 && shown.date === today;
     const arrived = fresh?.startsWith(threadId) ?? false;
-    const react = reacted?.of === view ? reacted.kind : null;
+    // 이어 묻기 전에 고른 반응은 이어 물은 답이 온 뒤에는 다시 붙지 않는다(그 답에 새로 반응할 수 있다).
+    const react = reacted?.thread === threadId && reacted.complete === complete ? reacted.kind : null;
     const beats: { question: string | null; tag: AskTopic | null; body: string; key: string }[] = [
-      ...askPages(shown.answer).map((body) => ({ question: shown.question, tag: guarded ? null : shown.topic, body, key: threadId })),
+      ...askPages(shown.answer, wide).map((body) => ({ question: shown.question, tag: guarded ? null : shown.topic, body, key: threadId })),
       ...(shown.followupQuestion && shown.followupAnswer
-        ? askPages(shown.followupAnswer).map((body) => ({ question: shown.followupQuestion, tag: null, body, key: `${threadId}:follow` }))
+        ? askPages(shown.followupAnswer, wide).map((body) => ({ question: shown.followupQuestion, tag: null, body, key: `${threadId}:follow` }))
         : []),
-      ...(react ? [{ question: askReaction(react, character), tag: null, body: lines.react[react], key: `${threadId}:react` }] : []),
+      ...(react ? [{ question: askReaction(react, who), tag: null, body: lines.react[react], key: `${threadId}:react` }] : []),
       // 오늘 마지막 질문을 이어 묻기까지 다 썼으면 방금 받은 답 뒤에 작별 인사가 한 쪽 붙는다. 내일 알림을 신청하면 그 대답으로 바뀐다.
-      ...(ending && complete && arrived ? [{ question: null, tag: null, body: state.reminded ? lines.reminded : lines.rest, key: `${threadId}:rest` }] : []),
+      ...(ending && complete && arrived ? [{ question: null, tag: null, body: state.reminded ? lines.reminded : lines.rest[where], key: `${threadId}:rest` }] : []),
     ];
     const start = fresh === `${threadId}:follow` ? Math.max(0, beats.findIndex((item) => item.key === fresh)) : 0;
     const index = Math.min(page.of === view ? page.index : start, beats.length - 1);
@@ -460,7 +476,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
     panel = (
       <>
         <section className={`${styles.talk} ${styles.turn}`} aria-live="polite" onClick={forward}>
-          {beat.question ? mine(beat.question, beat.tag) : null}
+          {beat.question ? quoted(beat.question, beat.tag) : null}
           {speak(line(beat.body, typing), guarded ? text("askKept") : pager)}
           {shown.klass === "crisis" ? (
             <p className={styles.sys}>
@@ -478,12 +494,12 @@ export function AskScene({ locale, content, character, readingId, at }: {
                 size="sm"
                 className={styles.reply}
                 onClick={() => {
-                  setReacted({ of: view, kind });
+                  setReacted({ thread: threadId, kind, complete });
                   setFresh(`${threadId}:react`);
                   setPage({ of: view, index: beats.length });
                 }}
               >
-                {askReaction(kind, character)}
+                {askReaction(kind, who)}
               </FanAction>
             ))}
           </div>
@@ -514,7 +530,25 @@ export function AskScene({ locale, content, character, readingId, at }: {
   else if (shown && at.step === "follow")
     panel = (
       <>
-        <section className={styles.talk} aria-live="polite">{speak(line(lines.follow, true), shown.topic ? text(topicKey[shown.topic]) : undefined)}</section>
+        <section className={styles.talk} aria-live="polite" onClick={() => setSaid(lineKey(lines.follow))}>
+          {speak(line(lines.follow, true), shown.topic ? text(topicKey[shown.topic]) : undefined)}
+        </section>
+        <div className={`${styles.choices} ${styles.examples} ${styles.reveal}`} data-shown={saidAll(lines.follow, true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
+          {askFollowups(who, reacted?.thread === shown.threadId ? reacted.kind : null).map((example) => (
+            <FanAction
+              key={example}
+              variant="text"
+              className={styles.line}
+              aria-pressed={input === example}
+              onClick={() => {
+                setInput(example);
+                field.current?.focus();
+              }}
+            >
+              {example}
+            </FanAction>
+          ))}
+        </div>
         {composer}
       </>
     );
@@ -526,7 +560,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
             <FanIcon icon={CircleAlert} />
             <FanText role="item">{text("askLimit")}</FanText>
           </p>
-          {speak(<FanText as="p" role="body">{state.reminded ? lines.reminded : lines.rest}</FanText>)}
+          {speak(<FanText as="p" role="body">{state.reminded ? lines.reminded : lines.rest[content]}</FanText>)}
           {todays.length ? (
             <div className={styles.todays}>
               <FanText as="p" role="label">{text("askToday")}</FanText>
@@ -579,21 +613,46 @@ export function AskScene({ locale, content, character, readingId, at }: {
   else {
     // 같은 날 다시 오면 인사를 줄이고 선택지를 바로 보인다(기획 03-3 18). 이어 묻기가 남은 오늘 질문이 있으면 그 답으로 돌아가는 길이 주 버튼이다.
     const returning = todays.length > 0 && !thanked;
-    const greeting = thanked ? lines.shared : returning ? lines.again : lines.topic;
     const unfinished = todays.find((item) => item.status === "answered" && !item.followupAnswer);
+    // 다른 날 다시 오면 최애가 지난 질문부터 묻는다. 서버가 최근 30개만 주므로 30개가 찼으면 날 수는 말하지 않는다.
+    const mine = state.threads.filter((item) => item.character === character);
+    const earlier = returning || thanked ? undefined : mine.find((item) => item.date < today);
+    const days = state.threads.length < 30 ? new Set(mine.map((item) => item.date)).size + 1 : 0;
+    const asking = Boolean(earlier) && recall === null;
+    const greeting = thanked ? lines.shared
+      : returning ? lines.again
+      : asking ? lines.recall(days)
+      : earlier && recall !== "skip" && recall ? lines.recalled[recall]
+      : lines.topic;
     spoken = saidAll(greeting, !returning);
     panel = (
       <>
-        <section className={styles.talk} aria-live="polite" onClick={() => setSaid(lineKey(greeting))}>{speak(line(greeting, !returning))}</section>
-        <div className={`${styles.choices} ${styles.topics} ${styles.reveal}`} data-shown={spoken ? "" : undefined} role="group" aria-label={text("askTopics")}>
-          {ASK_TOPICS.map((item) => (
-            <FanAction key={item} variant="text" className={styles.cell} leadingIcon={<FanIcon icon={topicIcon[item]} />} onClick={() => askGo({ step: "write", topic: item })}>
-              {text(topicKey[item])}
-            </FanAction>
-          ))}
-        </div>
+        <section className={`${styles.talk} ${asking ? styles.turn : ""}`} aria-live="polite" onClick={() => setSaid(lineKey(greeting))}>
+          {asking && earlier ? quoted(earlier.question, earlier.topic) : null}
+          {speak(line(greeting, !returning))}
+        </section>
+        {asking ? (
+          <div className={`${styles.replies} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
+            {ASK_RECALLS.map((kind) => (
+              <FanAction key={kind} size="sm" className={styles.reply} onClick={() => setRecall(kind)}>
+                {askRecall(kind, character)}
+              </FanAction>
+            ))}
+          </div>
+        ) : (
+          <div className={`${styles.choices} ${styles.topics} ${styles.reveal}`} data-shown={spoken ? "" : undefined} role="group" aria-label={text("askTopics")}>
+            {ASK_TOPICS.map((item) => (
+              <FanAction key={item} variant="text" className={styles.cell} leadingIcon={<FanIcon icon={topicIcon[item]} />} onClick={() => askGo({ step: "write", topic: item })}>
+                {text(topicKey[item])}
+              </FanAction>
+            ))}
+          </div>
+        )}
       </>
     );
+    // 지난 질문이 아직이라고 했고 이어 묻기가 남아 있으면 그 질문을 이어 가는 길이 주 버튼이다.
+    if (earlier && recall === "notyet" && !earlier.followupAnswer)
+      main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => askGo({ step: "follow", thread: earlier.threadId }) };
     if (unfinished) main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => open(unfinished) };
   }
 
@@ -601,8 +660,8 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? (ending ? "close" : "speak") : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
-    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood}>
-      <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(content, character)} alt={name} />
+    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-beat={reacted && shown && view.startsWith("answer") && reacted.thread === shown.threadId && reacted.complete === Boolean(shown.followupAnswer) ? reacted.kind : undefined}>
+      <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name} />
       <div className={styles.top}>
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />

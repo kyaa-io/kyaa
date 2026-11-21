@@ -30,14 +30,14 @@ export const stemElement: Record<Stem, Element> = {
   갑: "wood", 을: "wood", 병: "fire", 정: "fire", 무: "earth",
   기: "earth", 경: "metal", 신: "metal", 임: "water", 계: "water",
 };
-const branchElement: Record<Branch, Element> = {
+export const branchElement: Record<Branch, Element> = {
   자: "water", 축: "earth", 인: "wood", 묘: "wood", 진: "earth", 사: "fire",
   오: "fire", 미: "earth", 신: "metal", 유: "metal", 술: "earth", 해: "water",
 };
 export const generates: Record<Element, Element> = {
   wood: "fire", fire: "earth", earth: "metal", metal: "water", water: "wood",
 };
-const controls: Record<Element, Element> = {
+export const controls: Record<Element, Element> = {
   wood: "earth", fire: "metal", earth: "water", metal: "wood", water: "fire",
 };
 
