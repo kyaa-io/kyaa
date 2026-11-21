@@ -1,0 +1,84 @@
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import ko from "@/features/chemi/i18n/locales/ko/chemi.json";
+import { APP_LOCALES } from "@/i18n/locales";
+import { getGrowthCopy } from "./copy";
+import { ChemiGrowth, type GrowthState } from "./growth";
+
+const auth = vi.hoisted(() => ({ ready: true, authenticated: true, getAccessToken: async () => "token", login: vi.fn() }));
+vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth }));
+
+const state: GrowthState = {
+  fresh: [],
+  full: ["star"],
+  minis: [
+    { character: "changha", exp: 490, level: 7, today: ["fortune"], album: [{ slot: 1, date: "2026-11-08" }, { slot: 2, date: "2026-11-14" }] },
+    { character: "elina", exp: 90, level: 3, today: [], album: [{ slot: 1, date: "2026-11-12" }] },
+    { character: "yuna", exp: 30, level: 1, today: [], album: [] },
+  ],
+};
+const respond = (body: unknown, ok = true) => vi.fn(async () => ({ ok, status: ok ? 200 : 503, json: async () => body }));
+const show = () => render(<ChemiGrowth locale="ko" home={ko.home} matchAvailable />);
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  auth.authenticated = true;
+});
+
+it("shows the raised mini, its level and today's remaining contents", async () => {
+  vi.stubGlobal("fetch", respond(state));
+  show();
+  expect(await screen.findByText("창하 친밀 Lv")).toBeTruthy();
+  expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe("490/640");
+  expect(screen.getByText("스타 Lv 15")).toBeTruthy();
+  expect(screen.getByText("2 / 6")).toBeTruthy();
+  expect(screen.getByText("받음")).toBeTruthy();
+  expect(screen.getByText("오늘 다 받음")).toBeTruthy();
+  expect(screen.getByRole("link", { name: "최애 사주 보기" }).getAttribute("href")).toBe("/chemi/saju?locale=ko");
+  expect(screen.queryByText("최애 런")).toBeNull();
+});
+
+it("starts raising a creator that is not raised yet", async () => {
+  const adopted = { ...state, minis: state.minis.map((mini) => mini.character === "yuna" ? { ...mini, album: [{ slot: 1, date: "2026-11-21" }] } : mini) };
+  const fetcher = vi.fn()
+    .mockResolvedValueOnce({ ok: true, json: async () => state })
+    .mockResolvedValueOnce({ ok: true, json: async () => adopted });
+  vi.stubGlobal("fetch", fetcher);
+  show();
+  fireEvent.click(await screen.findByRole("button", { name: "유나" }));
+  expect(screen.getByText("나 키워 줄 사람 어디 없나?")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "유나 키우기" }));
+  await waitFor(() => expect(screen.getByText("1 / 6")).toBeTruthy());
+  expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({ action: "adopt", character: "yuna" });
+});
+
+it("shows a signed-out visitor the room without values", () => {
+  auth.authenticated = false;
+  const fetcher = respond(state);
+  vi.stubGlobal("fetch", fetcher);
+  show();
+  expect(screen.getByText("예시 화면")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "로그인하고 키우기" })).toBeTruthy();
+  expect(screen.queryByRole("progressbar")).toBeNull();
+  expect(screen.queryByText(/친밀 \+/)).toBeNull();
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it("offers a retry when loading fails", async () => {
+  vi.stubGlobal("fetch", respond({}, false));
+  show();
+  expect(await screen.findByText(/불러오지 못했습니다/)).toBeTruthy();
+  expect(screen.getByRole("button", { name: "다시 시도" })).toBeTruthy();
+});
+
+it("has every key in every language", () => {
+  const keys = Object.keys(getGrowthCopy("ko"));
+  for (const locale of APP_LOCALES) {
+    const copy = getGrowthCopy(locale);
+    expect(Object.keys(copy)).toEqual(keys);
+    for (const value of Object.values(copy)) expect(value).not.toBe("");
+    for (const key of ["mini", "closeness", "adopt"] as const) expect(copy[key]).toContain("{name}");
+    expect(copy.gain).toContain("{n}");
+  }
+});
