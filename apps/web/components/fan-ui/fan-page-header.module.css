@@ -109,3 +109,16 @@
   .name { display: block; text-overflow: ellipsis; white-space: nowrap; }
   .meta { flex-wrap: nowrap; }
 }
+
+.header[data-fan-page-header="fan"] .identity { row-gap: var(--space-1); }
+.header[data-fan-page-header="fan"] .links { max-width: 100%; }
+@media (min-width: 48rem) {
+  .header[data-fan-page-header="fan"] .body { align-self: start; justify-content: flex-start; gap: var(--space-2); }
+  .header[data-fan-page-header="fan"] .body .name { inset-block-start: auto; }
+  .header[data-fan-page-header="fan"] .meta { flex-wrap: wrap; }
+}
+@media (max-width: 47.999rem) {
+  .header[data-fan-page-header="fan"] .identity { grid-template-rows: auto; }
+  .header[data-fan-page-header="fan"] .image { grid-row: 1; }
+  .header[data-fan-page-header="fan"] .body { display: flex; grid-area: 1 / 2; flex-direction: column; gap: var(--space-2); min-width: 0; }
+}

@@ -37,10 +37,9 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
 
 /**
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
- * 줄 순서(대표 11/16 21:22): 1줄 이름 + 내 팬 등급(유형 태그·배지는 팬페이지가 아닐 때만) / 2줄 SNS 아이콘과 '팬 N · 접속 · 방문' 한 줄 / 3줄 별 버튼·행동 / 맨 아래 소개 2줄 + 더 보기.
- * 사진 옆 칸에는 사진 높이 안에 드는 줄만 둔다(390: 이름·SNS 줄, 768+: 이름·SNS·행동 줄). 그 아래 줄은 사진 왼쪽 끝에서 시작한다(대표 11/17 00:36).
+ * 팬페이지는 사진 옆에 이름·SNS와 팬 수·행동을 묶고, 전폭 소개 아래에 방문 통계를 둔다.
  */
-export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, grade, links = [], utility, menu, stats, tabs, frameId }: Readonly<{
+export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
   image: FanPageImage;
   name: ReactNode;
   kind: FanPageKind;
@@ -61,13 +60,13 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
   menu?: ReactNode;
   /** 접속 한 줄. 값을 읽는 동안에도 같은 높이를 유지한다. */
   stats?: ReactNode;
+  visits?: ReactNode;
   tabs?: ReactNode;
   /** 탭을 바꿔도 같은 노드로 남는지 검사할 때 쓰는 표식. */
   frameId?: string;
 }>) {
   const plainName = typeof name === "string" ? name : "";
   const actions = Boolean(star || utility);
-  // SNS 로고와 '팬 N · 오늘 방문'은 이름 아래 한 줄(대표 11/16 21:22). SNS가 없으면 접속 값만 그 줄에 둔다.
   const linkNav = links.length > 0 ? <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind="social"><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav> : null;
   return <header className={styles.header} data-fan-page-header={kind} data-frame-id={frameId}>
     <div className={styles.identity}>
@@ -89,6 +88,7 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
       </div> : null}
       </div>
       {description ? <Description labels={descriptionLabels} action={descriptionAction}>{description}</Description> : null}
+      {visits}
     </div>
     {tabs ? <div className={styles.tabs}>{tabs}</div> : null}
   </header>;
