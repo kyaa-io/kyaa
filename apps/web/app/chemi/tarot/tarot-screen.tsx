@@ -15,6 +15,8 @@ import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { ChevronLeft } from "@/components/fan-ui/fan-icons";
 import type { AppLocale } from "@/i18n/locales";
 import { isTarotCharacter, tarotCharacter, type TarotCharacter } from "@/features/chemi/tarot/script";
+import { AskScene } from "@/features/chemi/ask/ask-scene";
+import { askGo, useAskLocation } from "@/features/chemi/ask/location";
 import { Pickband, TarotStage } from "./tarot-stage";
 import { TarotResult } from "./tarot-result";
 import { useTarotMeaning } from "./use-tarot-meaning";
@@ -60,6 +62,7 @@ export function TarotScreen({
   initialReading?: string | null;
 }) {
   const uiText = useReadingCopy();
+  const ask = useAskLocation();
   const router = useRouter();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const auth: TarotAuth = { ready, authenticated, getAccessToken, login };
@@ -276,6 +279,8 @@ export function TarotScreen({
 
   const person = tarotCharacter(character);
   const result = step === "result" && shown;
+  if (result && ask && member && shown.readingId)
+    return <AskScene locale={locale} content="tarot" character={character} readingId={shown.readingId} at={ask} />;
   return (
     <div className={styles.root} data-chemi-immersive={result ? undefined : ""} data-step={step}>
       <div className={styles.chips}>
@@ -304,6 +309,7 @@ export function TarotScreen({
           auth={auth}
           meaning={meaning}
           headers={headers}
+          onAsk={member && shown.readingId ? () => askGo({ step: "topic" }) : undefined}
         />
       ) : (
         <TarotStage

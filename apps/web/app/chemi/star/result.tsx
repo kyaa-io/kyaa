@@ -1,5 +1,6 @@
 "use client";
 
+import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useMemo, useState } from "react";
@@ -99,6 +100,7 @@ export function StarResult({
   character,
   backHref,
   onChart,
+  onAsk,
 }: {
   locale: AppLocale;
   reading: StarReading;
@@ -106,6 +108,7 @@ export function StarResult({
   /** 뒤로 가기를 눌렀을 때 갈 곳. */
   backHref: string;
   onChart: () => void;
+  onAsk: () => void;
 }) {
   const uiText = useReadingCopy();
   const { authenticated, getAccessToken } = useByUsAuth();
@@ -182,7 +185,7 @@ export function StarResult({
         method: "POST",
         headers,
         body: JSON.stringify({ via }),
-      }).catch(() => {});
+      }).then(response => showShareReward(response, uiText)).catch(() => {});
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       showFanToast({ title: uiText("copyFailed"), tone: "error" });
@@ -345,11 +348,18 @@ export function StarResult({
           name={name}
           line={starSayLine(character, best, stars[best])}
           action={
-            <FanAction variant="primary" fullWidth href={`/chemi?locale=${locale}`}>
-              <ReadingText id="otherFortunes" />
+            <FanAction variant="primary" fullWidth onClick={onAsk}>
+              <ReadingText id="askFromResult" />
             </FanAction>
           }
-          extra={<div className={styles.desktopOnly}>{shareAction}</div>}
+          extra={
+            <>
+              <div className={styles.desktopOnly}>{shareAction}</div>
+              <FanAction variant="text" size="sm" className={styles.wayOut} href={`/chemi?locale=${locale}`}>
+                <ReadingText id="otherFortunes" />
+              </FanAction>
+            </>
+          }
         />
         <section className={`${styles.section} ${styles.chartSec}`}>
           <div className={styles.sectionHead}>

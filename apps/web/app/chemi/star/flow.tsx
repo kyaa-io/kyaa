@@ -52,6 +52,8 @@ import {
   type Participation,
   type StarReading,
 } from "./reading";
+import { AskScene } from "@/features/chemi/ask/ask-scene";
+import { askGo, useAskLocation } from "@/features/chemi/ask/location";
 import { StarResult, StarResultSkeleton } from "./result";
 import { StarRating } from "./stars";
 import { Under14 } from "./under-14";
@@ -117,6 +119,7 @@ export function StarFlow({
   restoring?: boolean;
 }) {
   const text = useReadingCopy();
+  const ask = useAskLocation();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const [step, setStep] = useState<StarStep>("enter");
   const [character, setCharacter] = useState<StarCharacterId>("changha");
@@ -422,6 +425,8 @@ export function StarFlow({
         }
       />
     );
+  if (step === "result" && reading && ask)
+    return <AskScene locale={locale} content="star" character={character} readingId={reading.readingId} at={ask} />;
   if (step === "result" && reading)
     return (
       <StarResult
@@ -430,6 +435,7 @@ export function StarFlow({
         character={character}
         backHref={`/chemi/star?c=${character}&locale=${locale}`}
         onChart={openChart}
+        onAsk={() => askGo({ step: "topic" })}
       />
     );
   if (step === "chart" && reading)

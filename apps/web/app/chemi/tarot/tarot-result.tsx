@@ -33,6 +33,7 @@ export function TarotResult({
   auth,
   meaning,
   headers,
+  onAsk,
 }: {
   locale: AppLocale;
   character: TarotCharacter;
@@ -41,6 +42,8 @@ export function TarotResult({
   auth: TarotAuth;
   meaning: TarotMeaning;
   headers: () => Promise<Record<string, string>>;
+  /** 저장된 내 카드일 때만 준다: 이 결과로 질문하기. */
+  onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
   const person = tarotCharacter(character);
@@ -122,6 +125,11 @@ export function TarotResult({
       </p>
     )
   ) : null;
+  const askAction = onAsk ? (
+    <FanAction variant="primary" fullWidth onClick={onAsk}>
+      <ReadingText id="askFromResult" />
+    </FanAction>
+  ) : null;
   const failed = meaning.status === "error";
   const pair = failed ? null : (
     <div className={styles.pair}>
@@ -148,6 +156,7 @@ export function TarotResult({
           {pair}
           {rewardRow}
           {saveBox}
+          {askAction}
         </div>
 
         <section className={styles.mean} data-failed={failed || undefined}>
@@ -221,6 +230,7 @@ export function TarotResult({
           <div className={styles.asideReward}>
             {rewardRow}
             {saveBox}
+            {askAction}
           </div>
         </div>
         <section className={styles.keys} hidden={failed}>

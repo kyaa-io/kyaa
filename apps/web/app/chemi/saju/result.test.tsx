@@ -21,6 +21,7 @@ const chart: Chart = {
 const handlers = {
   onBack: vi.fn(),
   onShare: vi.fn(),
+  onAsk: vi.fn(),
   onTopics: vi.fn(),
   onGo: vi.fn(),
   onScene: vi.fn(),
@@ -44,12 +45,12 @@ const show = (view: ResultView, extra: Partial<Parameters<typeof SajuResult>[0]>
     />,
   );
 
-it("처음 풀이: 한 줄 제목·타고난 기운·성격·올해 흐름, 질문하기·가격은 없다", () => {
+it("처음 풀이: 한 줄 제목·타고난 기운·성격·올해 흐름, 가격은 없다", () => {
   const { container } = show("first");
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("한낮의 해처럼, 좋아하는 걸 숨기지 않는 사람");
   for (const label of ["타고난 기운", "타고난 성격", "올해 흐름", "강점", "조심할 것"])
     expect(screen.getByText(label)).toBeTruthy();
-  expect(container.textContent).not.toMatch(/질문하기|원\b|1,900|결제/);
+  expect(container.textContent).not.toMatch(/원\b|1,900|결제/);
   // 조심할 것은 제목 아래 키워드 한 곳에만 둔다.
   expect(screen.queryByText("조심할 점")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: /^올해/ }));
@@ -132,13 +133,13 @@ it("올해·이달·궁합에는 한마디와 키워드를 두지 않는다", ()
   }
 });
 
-it.each([
-  ["오늘 뭘 조심할까?", "서운한 일을 오래 담아 두는 것"],
-  ["내 장점을 어떻게 써볼까?", "좋아하는 마음을 바로 말로 꺼내는 것"],
-])("선택한 질문에 도사가 현재 풀이로 답한다 (%s)", (question, evidence) => {
-  show("first", { character: "dosa" });
-  fireEvent.click(screen.getByText("한 번 더 묻기"));
-  fireEvent.click(screen.getByRole("button", { name: question }));
-  expect(screen.getByRole("status").textContent).toContain(evidence);
-  expect(screen.getByRole("status").textContent).toMatch(/시오\./);
+it("주 버튼은 이 결과로 질문하기이고 자랑하기는 보조다. 궁합 풀이의 주 버튼은 자랑하기다", () => {
+  const { unmount } = show("first");
+  fireEvent.click(screen.getAllByRole("button", { name: "이 결과로 질문하기" })[0]);
+  expect(handlers.onAsk).toHaveBeenCalled();
+  fireEvent.click(screen.getAllByRole("button", { name: "자랑하기" })[0]);
+  expect(handlers.onShare).toHaveBeenCalled();
+  unmount();
+  show("pair");
+  expect(screen.queryByRole("button", { name: "이 결과로 질문하기" })).toBeNull();
 });

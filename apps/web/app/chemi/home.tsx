@@ -6,6 +6,7 @@ import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { HomeBanner } from "./home-banner";
 import { GameRankings, type GameRanking } from "./game-rankings";
 import { entries } from "./contents";
+import { ChemiGrowth } from "./growth/growth";
 import styles from "./home.module.css";
 
 export type HomeCopy =
@@ -29,12 +30,7 @@ export function ChemiHome({
   const [category, setCategory] = useState("all");
   const [bannerIndex, setBannerIndex] = useState(0);
   if (preview && growth)
-    return (
-      <div className={styles.row}>
-        <b>{copy.raise}</b>
-        <small>{copy.ready}</small>
-      </div>
-    );
+    return <ChemiGrowth locale={locale} home={copy} matchAvailable={matchAvailable} />;
   return (
     <div className={styles.home} data-ranked={preview && Boolean(rankings.length)}>
       <HomeBanner index={bannerIndex} setIndex={setBannerIndex} copy={copy} locale={locale} />

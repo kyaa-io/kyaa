@@ -3,11 +3,11 @@
 /**
  * 최애 사주 풀이 화면(승인 시안 03-2 결과·03-4 올해·이달·03-5 궁합).
  * 390은 한 열(최애 한마디 + 큰 버튼이 탭바 위에 고정), 1024+는 본문 + 오른쪽 레일.
- * 질문하기·유료 주제는 M2 이므로 이 화면에는 자리를 두지 않는다.
+ * 주 버튼은 이 결과로 질문하기(궁합 풀이는 자랑하기). 유료 주제는 결제가 붙기 전이라 자리를 두지 않는다.
  */
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
-import { useState, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import { ChevronLeft, ChevronRight, Droplet, Flame, Gem, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -57,37 +57,6 @@ const hero = (character: SajuCharacterId) =>
 
 const levelWidth = { 많이: 92, 보통: 56, 조금: 28 } as const;
 
-function FollowUp({ character, caution, strength }: {
-  character: SajuCharacterId;
-  caution: string;
-  strength: string;
-}) {
-  const [choice, choose] = useState<"askCaution" | "askStrength" | null>(null);
-  const replies = {
-    changha: [`${caution}은 오늘 조금 조심해 봐.`, `오늘은 ${strength}부터 살려 봐.`],
-    elina: [`오늘은 ${caution}을 조심해요.`, `오늘은 ${strength}부터 살려 봐요.`],
-    yuna: [`있지, 오늘은 ${caution}을 조심해.`, `오늘은 ${strength}부터 써 보자!`],
-    dosa: [`오늘은 ${caution}을 삼가시오.`, `오늘은 ${strength}부터 살려 보시오.`],
-  };
-  return (
-    <details onToggle={event => { if (!event.currentTarget.open) choose(null); }}>
-      <summary className={styles.questionToggle}><ReadingText id="askAgain" /></summary>
-      {choice ? (
-        <div role="status" className={styles.panel}>
-          <FanText as="p" role="label"><ReadingText id={choice} /></FanText>
-          <FanText as="p" role="body">{replies[character][choice === "askCaution" ? 0 : 1]}</FanText>
-        </div>
-      ) : (
-        <div className={styles.actions}>
-          {(["askCaution", "askStrength"] as const).map(question => (
-            <FanAction key={question} onClick={() => choose(question)}><ReadingText id={question} /></FanAction>
-          ))}
-        </div>
-      )}
-    </details>
-  );
-}
-
 export function SajuResult({
   locale,
   character,
@@ -101,6 +70,7 @@ export function SajuResult({
   backLabel,
   onBack,
   onShare,
+  onAsk,
   onTopics,
   onGo,
   onScene,
@@ -119,6 +89,7 @@ export function SajuResult({
   backLabel?: string;
   onBack: () => void;
   onShare: () => void;
+  onAsk: () => void;
   onTopics: () => void;
   onGo: (view: ResultView) => void;
   onScene: () => void;
@@ -266,6 +237,9 @@ export function SajuResult({
     <div className={styles.resultActions}>
       <FanAction onClick={saveAdvice}><ReadingText id="saveAdvice" /></FanAction>
       <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
+      {view !== "pair" && (
+        <FanAction disabled={sharing} onClick={onShare}><ReadingText id="share" /></FanAction>
+      )}
       {view === "first" ? (
         <FanAction onClick={onScene}><ReadingText id="replay" /></FanAction>
       ) : (
@@ -322,7 +296,6 @@ export function SajuResult({
                   </div>
                 ))}
               </dl>
-              <FollowUp key={character + first.stem} character={character} caution={first.cautionN} strength={first.strengthN} />
             </>
           )}
           {view === "pair" && pair && !pair.timeKnown && (
@@ -505,8 +478,8 @@ export function SajuResult({
             </FanText>
           </section>
           <div className={styles.cta}>
-            <FanAction variant="primary" fullWidth disabled={sharing} onClick={onShare}>
-              <ReadingText id="shareFriend" />
+            <FanAction variant="primary" fullWidth disabled={view === "pair" && sharing} onClick={view === "pair" ? onShare : onAsk}>
+              <ReadingText id={view === "pair" ? "shareFriend" : "askFromResult"} />
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
