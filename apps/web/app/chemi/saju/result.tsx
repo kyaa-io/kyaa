@@ -28,7 +28,7 @@ import {
   pairReading,
   yearReading,
 } from "./copy";
-import { sajuCharacters, sajuOpening, sajuOpeningStatus, sajuTone, type SajuCharacterId } from "./lines";
+import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
 
@@ -267,11 +267,6 @@ export function SajuResult({
               <FanText as="p" role="body" className={styles.opening}>
                 {sajuOpening(character, first.stem)}
               </FanText>
-              {sajuOpeningStatus === "dev-sample" && (
-                <FanText as="p" role="meta" data-opening-status={sajuOpeningStatus}>
-                  <ReadingText id="sample" />
-                </FanText>
-              )}
               <dl className={`${styles.kv} ${styles.keywords}`} data-layout="cols">
                 {first.keywords.map((item) => (
                   <div key={item.kind} data-keyword={item.kind}>

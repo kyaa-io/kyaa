@@ -456,3 +456,19 @@
   .scorePanel { animation: none; }
   .fieldChevron { transition-duration: .01ms; }
 }
+
+:global(main):has(.layout) > :global([data-chemi-list-link]) {
+  display: none;
+}
+
+@media (max-width: 63.99rem) {
+  .layout .reaction { order: 1; }
+}
+@media (min-width: 64rem) {
+  .layout > .side,
+  .layout > .main {
+    align-self: stretch;
+    grid-template-rows: auto;
+    align-content: space-between;
+  }
+}

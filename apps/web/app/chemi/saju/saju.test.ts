@@ -9,7 +9,7 @@ import {
   type Chart,
 } from "./chart";
 import { firstReading, godLuck, godNotes, monthReading, pairReading, stemKeywords, stemNotes, yearReading } from "./copy";
-import { sajuCharacters, sajuOpening, sajuOpeningStatus, sajuTalkLine, sajuTone } from "./lines";
+import { sajuCharacters, sajuOpening, sajuTalkLine, sajuTone } from "./lines";
 
 const at = (iso: string) => Date.parse(`${iso}T03:00:00Z`);
 const chart: Chart = {
@@ -195,7 +195,4 @@ describe("첫 풀이 키워드와 최애 한마디", () => {
     expect(godLuck.편재.from).toBe(1);
   });
 
-  it("인물 확인 전이라 DEV 캐릭터 견본으로 표시돼 있다", () => {
-    expect(sajuOpeningStatus).toBe("dev-sample");
-  });
 });

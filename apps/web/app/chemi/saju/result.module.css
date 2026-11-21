@@ -447,3 +447,24 @@
     bottom: var(--space-6);
   }
 }
+
+:global(main):has(.layout) > :global([data-chemi-list-link]) {
+  display: none;
+}
+
+@media (max-width: 63.99rem) {
+  .dock { display: contents; position: static; }
+  .layout .head { display: contents; }
+  .head > * { order: 1; }
+  .head .keywords, .head .hero { order: 2; }
+  .dock .reaction { order: 1; }
+  .layout { gap: var(--space-5); }
+  .dock .cta {
+    position: fixed;
+    z-index: var(--z-bottom-nav);
+    bottom: calc(var(--chemi-result-nav-height) + env(safe-area-inset-bottom));
+    inset-inline: 0;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+  }
+}

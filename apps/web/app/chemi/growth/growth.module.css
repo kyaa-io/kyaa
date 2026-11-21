@@ -221,7 +221,6 @@
   color: var(--color-muted);
 }
 .photo:has(img:not(.silhouette)) {
-  border: 0;
   background: var(--color-accent-soft);
 }
 .photo img {
@@ -262,7 +261,7 @@
 }
 @media (width >= 64rem) {
   .grow {
-    grid-template-columns: minmax(0, 520px) minmax(0, 1fr);
+    grid-template-columns: minmax(0, min(48%, 68svh)) minmax(0, 1fr);
     column-gap: var(--space-10);
     align-items: start;
   }
@@ -328,8 +327,7 @@
   .stage > :last-child:not(.room) {
     grid-column: 1;
   }
-  .room,
-  .side {
+  .room {
     grid-row: 2;
   }
   .room {
@@ -337,6 +335,7 @@
   }
   .side {
     grid-column: 2;
+    grid-row: 2 / span 2;
     align-content: space-between;
   }
   .stage > :last-child:not(.room) {

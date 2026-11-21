@@ -207,3 +207,14 @@
 }
 
 .slotLabel [data-fan-text="meta"] { white-space: nowrap; }
+
+@media (max-width: 63.99rem) {
+  .resultPage .resultMain,
+  .resultPage .resultSide,
+  .resultSide > div {
+    display: contents;
+  }
+  .resultSide .actions { order: 2; }
+  .resultMain > .hero3 { order: 1; }
+  .resultMain > .head { order: -1; }
+}

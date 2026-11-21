@@ -121,10 +121,9 @@ export const sajuTone = (id: SajuCharacterId) => tones[id];
  *   공개 캡션 원문(instagram.com/elina_4_22, 11/20 확인 8건)의 짧은 질문 첫마디·반말 끝맺음을 참고했다.
  * - 유나: "오늘의 ○○!"로 할 일을 먼저 밝히고 조건을 짧게 붙인다.
  * - 도사: 하오체로 이르고 일간 비유를 한 번 더 쓴다.
- * DEV 캐릭터 견본: 인물 쪽(JKENT) 확인 전. 실제 발언이 아니며, 공개 글은 말 거는 방식만 참고했다
+ * JKENT 내부 승인 대사. 공개 글은 말 거는 방식만 참고했다
  * (근거 board/tasks/CHEMI-SAJU-VOICE-1120/plan.md).
  */
-export const sajuOpeningStatus = "dev-sample" as const;
 const openings: Record<SajuCharacterId, Record<Stem, string>> = {
   changha: {
     갑: "하루 한 줄만 적어 둬. 그게 쌓이면 네 응원이 길이 될 거야.",

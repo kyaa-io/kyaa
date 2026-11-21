@@ -222,6 +222,21 @@ function SpreadResult({
   const failed = meanings.some((meaning) => meaning.status === "error");
   const sides = saved.cards.map((card, index) => meanings[index].card?.dir[card.reversed ? "down" : "up"]);
   const future = sides[2];
+  const [shareStatus, setShareStatus] = useState("");
+  async function shareCards() {
+    const summary = saved.cards.map((card, index) =>
+      `${text(positions[index])} · ${tarotTitle(card.card)} · ${text(card.reversed ? "reversed" : "upright")}`
+    ).join("\n");
+    try {
+      if (navigator.share) await navigator.share({ text: summary });
+      else {
+        await navigator.clipboard.writeText(summary);
+        setShareStatus(text("copied"));
+      }
+    } catch (error) {
+      if (!(error instanceof DOMException && error.name === "AbortError")) setShareStatus(text("copyFailed"));
+    }
+  }
   const date = saved.date
     ? new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(saved.date))
     : "";
@@ -320,10 +335,12 @@ function SpreadResult({
             </div>
             <DeepResultAsk name={person.name} reading={() => saved.readingId} />
             <div className={spread.actions}>
-              <FanAction href={home}>
+              <FanAction variant="text" onClick={shareCards}><ReadingText id="share" /></FanAction>
+              <FanAction variant="text" href={home}>
                 <ReadingText id="todayCard" />
               </FanAction>
             </div>
+            {shareStatus && <p role="status">{shareStatus}</p>}
           </div>
         </div>
       </article>
