@@ -2,7 +2,10 @@ import "server-only";
 import { createClient } from "@/server/data/client";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { raffleListSchema } from "@/features/benefit/domain/raffle";
-import { canonicalUrl, isRehearsalPath, type SeoLocale } from "@/seo/metadata";
+import { canonicalUrl, isEndedRegularLive, isRehearsalPath, type SeoLocale } from "@/seo/metadata";
+import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
+import { MISSIONBOOK_NOTICE_SLUG } from "@/features/home/domain/missionbook-likes";
+import { createHomeNoticeRepository } from "../home-notice/home-notice-repository";
 import { createPublicImageRoleReader } from "../media/public-image-reader";
 import { readUnlistedCreatorSlugs } from "../content/published-content-repository";
 
@@ -30,7 +33,7 @@ async function readAll<T>(query: () => PublicQuery, name: string): Promise<T[]> 
 
 type Creator = { slug: string; locale: "ko" | "en" } & Record<string, unknown>;
 type Parent = { slug: string; status: string; archived_at: string | null; [key: string]: unknown };
-type Live = { id: string; slug: string; live_type: string; brand_id: string | null; celebrities: Parent | Parent[]; brands: Parent | Parent[] | null } & Record<string, unknown>;
+type Live = { id: string; slug: string; live_type: string; brand_id: string | null; starts_at: string; ends_at: string | null; replay_published: boolean | null; replay_url: string | null; celebrities: Parent | Parent[]; brands: Parent | Parent[] | null } & Record<string, unknown>;
 type Benefit = { id: string; benefit_localizations: unknown[] } & Record<string, unknown>;
 function first<T>(value: T | T[] | null): T | null { return Array.isArray(value) ? value[0] ?? null : value; }
 
@@ -54,6 +57,8 @@ export async function loadPublicationContent(): Promise<PublicationPage[]> {
   ]);
   const active = new Set(activeCreators.map(row => row.slug).filter(slug => !unlisted.has(slug)));
   const images = createPublicImageRoleReader({ url, serviceRoleKey: key }, client);
+  const notices = createHomeNoticeRepository({ url, serviceRoleKey: key }, client);
+  const now = Date.now();
   const locales = await Promise.all((["ko", "en"] as const).map(async locale => {
     const [creatorRows, liveRows, benefits] = await Promise.all([
       readAll<Creator>(() => client.from("published_celebrities")
@@ -72,10 +77,13 @@ export async function loadPublicationContent(): Promise<PublicationPage[]> {
         .eq("celebrities.status", "published").is("celebrities.archived_at", null)
         .eq("benefit_localizations.locale", locale).order("id"), "benefit"),
     ]);
-    const creators = creatorRows.filter(row => active.has(row.slug) && isCreatorHandle(row.slug) && !isRehearsalPath(creatorHomeHref(row.slug)));
+    // The check-in-only event page shows everyone else a sign-in notice, so it is not a search result.
+    const creators = creatorRows.filter(row => active.has(row.slug) && row.slug !== WAVE_FANPAGE_SLUG && isCreatorHandle(row.slug) && !isRehearsalPath(creatorHomeHref(row.slug)));
     const lives = liveRows.filter(row => {
       const brand = first(row.brands);
-      return !isRehearsalPath(`/live/${row.slug}`) && ((row.live_type === "recurring" && row.brand_id === null) || (brand != null && brand.status === "published" && brand.archived_at === null));
+      return !isRehearsalPath(`/live/${row.slug}`) && first(row.celebrities)?.slug !== WAVE_FANPAGE_SLUG
+        && !isEndedRegularLive({ liveType: row.live_type, startsAt: row.starts_at, endsAt: row.ends_at, replay: row.replay_published === true && row.replay_url !== null }, now)
+        && ((row.live_type === "recurring" && row.brand_id === null) || (brand != null && brand.status === "published" && brand.archived_at === null));
     });
     const [creatorPhotos, livePhotos] = await Promise.all([
       images.readCelebrityPhotoSetsBySlug(creators.map(row => row.slug)),
@@ -93,7 +101,8 @@ export async function loadPublicationContent(): Promise<PublicationPage[]> {
       const parent = { ...creator, photos: creatorPhotos[creator.slug] ?? null };
       const catalog = { parent, raffles };
       pages.push({ path: creatorHomeHref(creator.slug), locale, content: { ...catalog, lives: publicLives.filter(row => first(row.celebrities)?.slug === creator.slug) } });
-      pages.push({ path: `/c/${creator.slug}/raffles`, locale, content: catalog });
+      // A gift list with no gift is an empty screen.
+      if (raffles.length) pages.push({ path: `/c/${creator.slug}/raffles`, locale, content: catalog });
       for (const raffle of raffles) {
         const benefit = raffle.benefitId ? benefitById.get(raffle.benefitId) : null;
         // The RPC pairs published campaigns with published benefits, and teasers
@@ -103,6 +112,16 @@ export async function loadPublicationContent(): Promise<PublicationPage[]> {
       }
     }
     for (const live of publicLives) pages.push({ path: `/live/${live.slug}`, locale, content: live });
+    const seenCursors = new Set<string>();
+    for (let cursor: string | null = null;;) {
+      const page = await notices.listPublished(locale, { limit: 20, cursor });
+      // The mission book notice opens the X event page instead of a page of its own.
+      for (const notice of page.items) if (notice.slug !== MISSIONBOOK_NOTICE_SLUG) pages.push({ path: `/notices/${notice.slug}`, locale, content: notice });
+      cursor = page.nextCursor;
+      if (!cursor) break;
+      if (seenCursors.has(cursor)) throw new Error("Sitemap notice query repeated");
+      seenCursors.add(cursor);
+    }
     return pages;
   }));
   return locales.flat();

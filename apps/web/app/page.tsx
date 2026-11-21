@@ -6,7 +6,7 @@ import { parseAppLocale } from "@/i18n/locales";
 import { settleHomeQuery } from "../components/home-query-stream";
 import { measureHomeQuery } from "@/server/analytics/home-query-metrics";
 import { createHomeBannerRepository } from "../server/content/home-banner-repository";
-import { publicMetadata, pageCopy } from "@/seo/metadata";
+import { contentPageMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
 import { StreamingGuestHome } from "../components/guest-home";
 import { loadServerEnv } from "../server/config/env";
@@ -24,7 +24,7 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ locale?: string | string[] }> }) {
   const locale = parseAppLocale((await searchParams).locale);
-  return publicMetadata({ path: "/", locale, ...pageCopy.home[locale] });
+  return contentPageMetadata({ path: "/", locale, ...pageCopy.home[locale] });
 }
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ locale?: string | string[] }> }) {

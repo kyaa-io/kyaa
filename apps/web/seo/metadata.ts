@@ -1,4 +1,4 @@
-import { APP_LOCALES, type AppLocale } from "@/i18n/locales";
+import { APP_LOCALES, toContentLocale, type AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/seo__metadata";
 import { additionalLocales } from "@/i18n/messages";
 import type { Metadata } from "next";
@@ -60,6 +60,22 @@ export function languageAlternates(path: string, locales: readonly SeoLocale[] =
   return Object.fromEntries(locales.map((locale) => [locale, canonicalUrl(path, locale)]));
 }
 
+/** Screens with no page content of their own for a signed-out reader: sign-in, old addresses that only move the reader on,
+ * and member panels that open empty. They stay out of search and carry no AdSense code
+ * (Google Publisher Policies, inventory value: no ads on screens "used for alerts, navigation or other behavioral purposes"). */
+export function isNoContentPath(path: string): boolean {
+  return /^\/(?:community|rankings|bias|benefits)\/?$/.test(path)
+    || /^\/(?:open-app|auth|email|groups\/invitations)(?:\/|$)/.test(path)
+    || /^\/c\/[^/]+(?:\/(?:leaderboard|proofs|lounge|certifications|schedule-suggestions)(?:\/.*)?)?$/.test(path)
+    || /^\/live\/[^/]+\/suggestions(?:\/|$)/.test(path);
+}
+
+/** A regular LIVE that ended more than a day ago and has no replay. Each one is the same schedule page with another date,
+ * so it stays reachable by link but is not offered to search. */
+export function isEndedRegularLive(live: { liveType?: string | null; startsAt: string; endsAt: string | null; replay: boolean }, now: number): boolean {
+  return live.liveType === "recurring" && !live.replay && Date.parse(live.endsAt ?? live.startsAt) + 86_400_000 < now;
+}
+
 export function isRehearsalPath(path: string): boolean {
   return /(?:^|[/-])(?:rehearsal|test|demo)(?:[/-]|$)/i.test(path);
 }
@@ -88,6 +104,8 @@ export function publicMetadata(input: {
   image?: string;
   imageAlt?: string;
   locales?: readonly SeoLocale[];
+  /** False for a public page that is too thin to be a search result (an ended regular LIVE, an empty gift list). Links on it are still followed. */
+  indexable?: boolean;
 }): Metadata {
   const { path, locale, title, description } = input;
   const url = canonicalUrl(path, locale);
@@ -97,12 +115,23 @@ export function publicMetadata(input: {
   return {
     title, description,
     alternates: { canonical: url, languages: languageAlternates(path, input.locales) },
-    robots: shareOrigin() !== SITE_URL || isPrivatePath(path) || isRehearsalPath(path) ? NO_INDEX : { index: true, follow: true, "max-image-preview": "large" },
+    robots: shareOrigin() !== SITE_URL || isPrivatePath(path) || isRehearsalPath(path) || isNoContentPath(path) ? NO_INDEX
+      : input.indexable === false ? { index: false, follow: true } : { index: true, follow: true, "max-image-preview": "large" },
     openGraph: { title, description, url, type: "website", siteName: "kyaa",
       locale: openGraphLocale(locale),
       alternateLocale: (input.locales ?? APP_LOCALES).filter((value) => value !== locale).map(openGraphLocale), images },
     twitter: { card: "summary_large_image", title, description, images },
   };
+}
+
+/** Languages the database content (creator pages, LIVE, notices, events) is written in. */
+export const CONTENT_SEO_LOCALES = ["ko", "en"] as const satisfies readonly SeoLocale[];
+
+/** Metadata of a page whose main content exists only in Korean and English. In the other ten interface languages only the
+ * menus change, so those addresses name the English page as canonical instead of entering search as ten more copies
+ * (Google Search Central, "Localized versions": pages are duplicates when the main content stays untranslated). */
+export function contentPageMetadata(input: Omit<Parameters<typeof publicMetadata>[0], "locales">): Metadata {
+  return publicMetadata({ ...input, locale: toContentLocale(input.locale), locales: CONTENT_SEO_LOCALES });
 }
 
 export const pageCopy = {

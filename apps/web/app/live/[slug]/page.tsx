@@ -4,7 +4,7 @@ import { toContentLocale, parseAppLocale } from "@/i18n/locales";
 import { notFound } from "next/navigation";
 import { LiveEventScreen } from "@/features/live/ui/live-event-screen";
 import { loadSeoLive } from "@/server/seo/public-content";
-import { publicMetadata } from "@/seo/metadata";
+import { isEndedRegularLive, publicMetadata } from "@/seo/metadata";
 import { resolvePhoto } from "@/features/media/domain/public-image";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,8 @@ export async function generateMetadata({ params, searchParams }: Props) {
   return publicMetadata({ path: `/live/${slug}`, locale, title: `${live.title} | kyaa`,
     description: `${live.celebrity.name} · ${schedule} KST · ${live.watch.provider}. ${live.description}`,
     image: photo.src, imageAlt: photo.alt ?? live.heroImage.alt,
-    locales: translated ? ["ko", "en"] : [toContentLocale(locale)] });
+    locales: translated ? ["ko", "en"] : [toContentLocale(locale)],
+    indexable: !isEndedRegularLive({ liveType: live.liveType, startsAt: live.startsAt, endsAt: live.endsAt, replay: live.watch.mode === "replay" }, Date.now()) });
 }
 
 export default async function LiveEventPage({ params, searchParams }: Props) {

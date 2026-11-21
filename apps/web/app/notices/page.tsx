@@ -3,7 +3,7 @@ import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app
 import type { HomeNoticePage } from "@/features/home/domain/home-notice";
 import { HomeNoticeListScreen, homeNoticePageCopy } from "@/features/home/ui/home-notice-pages";
 import { parseAppLocale, toContentLocale } from "@/i18n/locales";
-import { publicMetadata } from "@/seo/metadata";
+import { contentPageMetadata } from "@/seo/metadata";
 import { redirect } from "next/navigation";
 import { createPublicHomeNoticeRepository } from "@/server/home-notice/home-notice-dependencies";
 import { decodeHomeNoticeCursor } from "@/server/home-notice/home-notice-repository";
@@ -15,7 +15,7 @@ type Props = { searchParams: Promise<{ locale?: string | string[]; cursor?: stri
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const locale = parseAppLocale((await searchParams).locale);
   const { title } = homeNoticePageCopy[locale];
-  return publicMetadata({ path: "/notices", locale, title: `${title} | kyaa`, description: title });
+  return contentPageMetadata({ path: "/notices", locale, title: `${title} | kyaa`, description: title });
 }
 
 export default async function HomeNoticesPage({ searchParams }: Props) {

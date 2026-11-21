@@ -3,7 +3,7 @@ import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app
 import { homeGalleryCopy, type HomeGalleryPage } from "@/features/home/domain/home-gallery";
 import { HomeGalleryScreen } from "@/features/home/ui/home-gallery-page";
 import { parseAppLocale, toContentLocale } from "@/i18n/locales";
-import { publicMetadata } from "@/seo/metadata";
+import { contentPageMetadata } from "@/seo/metadata";
 import { redirect } from "next/navigation";
 import { createPublicHomeGalleryRepository } from "@/server/home-gallery/home-gallery-dependencies";
 import { decodeHomeGalleryCursor } from "@/server/home-gallery/home-gallery-repository";
@@ -14,7 +14,7 @@ type Props = { searchParams: Promise<{ locale?: string | string[]; cursor?: stri
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const locale = parseAppLocale((await searchParams).locale);
   const { title } = homeGalleryCopy[locale];
-  return publicMetadata({ path: "/gallery", locale, title: `${title} | kyaa`, description: title });
+  return contentPageMetadata({ path: "/gallery", locale, title: `${title} | kyaa`, description: title });
 }
 
 export default async function HomeGalleryPage({ searchParams }: Props) {

@@ -30,6 +30,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const locale = toContentLocale(parseAppLocale(query.locale));
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
+  if (slug === WAVE_FANPAGE_SLUG) return { title: `${celebrity.name} | kyaa`, robots: { index: false, follow: false } };
   const otherLocale = toContentLocale(locale) === "en" ? "ko" : "en";
   const translated = await loadSeoCreator(slug, otherLocale);
   const fallbackImage = slug === "changha" ? resolveCreatorHeroImage(slug, celebrity.image)?.src ?? celebrity.image.url : celebrity.image.url;

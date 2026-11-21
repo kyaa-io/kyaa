@@ -1,6 +1,6 @@
 import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
 import { NextRequest, NextResponse } from "next/server";
-import { isPrivatePath, isRehearsalPath } from "./seo/metadata";
+import { isNoContentPath, isPrivatePath, isRehearsalPath } from "./seo/metadata";
 import { isInstagramManagementPath, requestLocale } from "./components/locale-path";
 import { isAppLocale } from "./i18n/locales";
 import { adsenseEnabled, awsStorageContentSecurityPolicy, gleamWidgetPaths, privySignInEnabled } from "./security-headers";
@@ -65,7 +65,9 @@ export function proxy(request: NextRequest): NextResponse {
     requestHeaders.set("x-byus-pathname", request.nextUrl.pathname);
     // Always overwritten here, so a browser cannot send it in: the layout loads AdSense only when this says 1.
     const adsense = isAwsHosting() && adsenseEnabled(viewerOrigin);
-    requestHeaders.set("x-byus-adsense", adsense ? "1" : "0");
+    // The snippet goes only on screens that have page content: not on sign-in, member-only or pass-through screens.
+    const adsensePage = adsense && !isPrivatePath(request.nextUrl.pathname) && !isNoContentPath(request.nextUrl.pathname) && !isRehearsalPath(request.nextUrl.pathname);
+    requestHeaders.set("x-byus-adsense", adsensePage ? "1" : "0");
     // Resolve page queries internally, keeping the browser/share URL language-free.
     // Static resources retain their exact URLs; admin keeps its lang contract.
     const needsLocale = (isAdminPage || isInstagramManagementPath(request.nextUrl.pathname) ? requestedLocale !== "ko" && requestedLocale !== "en" : !isAppLocale(requestedLocale))

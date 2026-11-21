@@ -1,7 +1,7 @@
 import { APP_LOCALES } from "@/i18n/locales";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { canonicalUrl, DEFAULT_SHARE_IMAGE, defaultShareImage, isPrivatePath, openGraphLocale, pageCopy, publicMetadata, shareImageUrl, shareOrigin } from "./metadata";
+import { canonicalUrl, contentPageMetadata, isEndedRegularLive, isNoContentPath, DEFAULT_SHARE_IMAGE, defaultShareImage, isPrivatePath, openGraphLocale, pageCopy, publicMetadata, shareImageUrl, shareOrigin } from "./metadata";
 import { buildSitemap } from "./sitemap";
 import robots from "@/app/robots";
 import { htmlLimitedBots } from "./bots";
@@ -107,6 +107,34 @@ describe("public search and sharing metadata", () => {
   });
 });
 
+describe("screens with no content of their own", () => {
+  it.each(["/community", "/rankings", "/bias", "/benefits", "/open-app", "/c/elina", "/c/elina/leaderboard", "/c/elina/proofs", "/c/elina/lounge", "/live/ifew/suggestions", "/groups/invitations/abc"])("keeps %s out of search", (path) => {
+    expect(isNoContentPath(path)).toBe(true);
+    expect(publicMetadata({ path, locale: "ko", title: "t", description: "d" }).robots).toEqual({ index: false, follow: false });
+  });
+  it.each(["/", "/elina", "/c/elina/raffles", "/c/elina/notices/winners-2026", "/c/elina/community/11111111-1111-4111-8111-111111111111", "/bias/promotion", "/benefits/11111111-1111-4111-8111-111111111111", "/follow", "/live/ifew", "/guide", "/about"])("leaves %s as a content page", (path) => {
+    expect(isNoContentPath(path)).toBe(false);
+  });
+  it("offers a regular LIVE to search only until a day after it ends, unless it has a replay", () => {
+    const now = Date.parse("2026-11-21T00:00:00Z");
+    const regular = { liveType: "recurring", startsAt: "2026-11-01T00:00:00Z", endsAt: null, replay: false };
+    expect(isEndedRegularLive(regular, now)).toBe(true);
+    expect(isEndedRegularLive({ ...regular, replay: true }, now)).toBe(false);
+    expect(isEndedRegularLive({ ...regular, startsAt: "2026-11-20T12:00:00Z" }, now)).toBe(false);
+    expect(isEndedRegularLive({ ...regular, startsAt: "2026-11-23T00:00:00Z" }, now)).toBe(false);
+    expect(isEndedRegularLive({ ...regular, liveType: "general" }, now)).toBe(false);
+    expect(isEndedRegularLive({ ...regular, startsAt: "2026-11-19T00:00:00Z", endsAt: "2026-11-20T12:00:00Z" }, now)).toBe(false);
+  });
+  it("keeps a thin public page followable but unindexed", () => {
+    expect(publicMetadata({ path: "/c/elina/raffles", locale: "ko", title: "t", description: "d", indexable: false }).robots).toEqual({ index: false, follow: true });
+  });
+  it("names the English page as canonical when only the menus are in another language", () => {
+    const metadata = contentPageMetadata({ path: "/notices", locale: "ja", title: "t", description: "d" });
+    expect(metadata.alternates).toEqual({ canonical: "https://kyaa.io/notices?locale=en", languages: { ko: "https://kyaa.io/notices?locale=ko", en: "https://kyaa.io/notices?locale=en" } });
+    expect(contentPageMetadata({ path: "/notices", locale: "ko", title: "t", description: "d" }).alternates?.canonical).toBe("https://kyaa.io/notices?locale=ko");
+  });
+});
+
 describe("sitemap URL inclusion", () => {
   it("deduplicates, excludes personal/rehearsal URLs, includes ended URLs and only real language pairs", () => {
     const map = buildSitemap([
@@ -115,7 +143,11 @@ describe("sitemap URL inclusion", () => {
       { path: "/my", locale: "ko" }, { path: "/c/ifew/verify", locale: "ko" },
     ]);
     expect(map.some(({ url }) => url.includes("/pages/ifew-fan-guide"))).toBe(false);
-    expect(map).toHaveLength(9 * APP_LOCALES.length + 3);
+    // Ten Korean/English content pages (nine fixed and the directory), six pages translated into every language, and three content rows.
+    expect(map).toHaveLength(10 * 2 + 6 * APP_LOCALES.length + 3);
+    expect(map.some(({ url }) => url === "https://kyaa.io/?locale=ja" || url === "https://kyaa.io/pages/groups?locale=ja")).toBe(false);
+    expect(map.some(({ url }) => url.includes("/celebrities"))).toBe(false);
+    for (const path of ["/about", "/notices", "/events", "/privacy", "/terms", "/pricing", "/refund"]) expect(map.find(({ url }) => url === `https://kyaa.io${path}?locale=ko`)?.alternates?.languages).toEqual({ ko: `https://kyaa.io${path}?locale=ko`, en: `https://kyaa.io${path}?locale=en` });
     expect(new Set(map.map(({ url }) => url)).size).toBe(map.length);
     expect(map.some(({ url }) => url.includes("/pages/elina-fan-guide"))).toBe(false);
     expect(map.some(({ url }) => url === "https://kyaa.io/guide?locale=ko")).toBe(true);

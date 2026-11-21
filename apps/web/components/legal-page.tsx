@@ -6,6 +6,7 @@ import { FanLanguageSwitch } from "./fan-shell/fan-language-switch";
 import type { FanLocale } from "./fan-shell/fan-app-shell";
 import type { LegalDocumentContent, LegalDocumentId } from "./legal-content";
 import type { CommerceDocumentId } from "./legal-commerce-content";
+import type { AboutDocumentId } from "./about-content";
 import { legalLabels } from "./legal-content";
 import styles from "./legal-page.module.css";
 
@@ -15,7 +16,7 @@ export function LegalPage({
   locale,
 }: {
   document: LegalDocumentContent;
-  documentId: LegalDocumentId | CommerceDocumentId;
+  documentId: LegalDocumentId | CommerceDocumentId | AboutDocumentId;
   locale: FanLocale;
 }) {
   const labels = legalLabels[locale];
@@ -44,9 +45,9 @@ export function LegalPage({
     >
       <main className={styles.main} id="legal-document-main" tabIndex={-1}>
         <header className={styles.intro}>
-          <p>{labels.notice}</p>
+          {documentId !== "about" && <p>{labels.notice}</p>}
           <h1>{document.title}</h1>
-          <span>{effectiveDate}</span>
+          {effectiveDate && <span>{effectiveDate}</span>}
           <p>{document.description}</p>
         </header>
         <article className={styles.document} lang={document.lang}>

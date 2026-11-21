@@ -27,7 +27,9 @@ import styles from "./notice-detail.module.css";
 
 const parseNotice = (value: unknown) => { const item = noticeSchema.parse(value); return { ...item, body: parseNoticeDocument(item.body) }; };
 const parseRecent = (value: unknown) => z.object({ notices: z.array(noticeSchema.omit({ body: true })), nextCursor: z.string().nullable() }).parse(value);
-export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { slug: string; noticeSlug: string; locale: AppLocale; officialPostLabel?: string }) {
+export type InitialNotice = ReturnType<typeof parseNotice>;
+/** `initialNotice` is the public notice as a guest reads it, so the text is in the server HTML; the reader's own read replaces it. */
+export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel, initialNotice }: { slug: string; noticeSlug: string; locale: AppLocale; officialPostLabel?: string; initialNotice?: InitialNotice }) {
   const copy = contentCopy(locale), base = `/api/celebrities/${slug}/notices`;
   const requestedReturn = useSearchParams().get("returnTo"), safeReturn = sanitizeReturnTo(requestedReturn);
   const returnTo = requestedReturn && (safeReturn !== "/" || requestedReturn === "/") ? safeReturn : `${creatorHomeHref(slug)}?tab=notice&locale=${locale}`;
@@ -35,7 +37,7 @@ export function NoticeDetail({ slug, noticeSlug, locale, officialPostLabel }: { 
   const recent = useCommunityResource(`${base}?locale=${toContentLocale(locale)}&limit=6`, parseRecent);
   const format = (value: string) => new Intl.DateTimeFormat(locale, { calendar: "gregory", dateStyle: "long", timeStyle: "short", timeZone: "Asia/Seoul", hour12: locale !== "ko" }).format(new Date(value));
   const related = recent.state.status === "ready" ? recent.state.data.notices.filter(item => item.slug !== noticeSlug).slice(0, 5) : [];
-  const notice = detail.state.status === "ready" ? detail.state.data : null;
+  const notice = detail.state.status === "ready" ? detail.state.data : detail.state.status === "error" ? null : initialNotice ?? null;
   return <div className={`${styles.page} ${related.length ? styles.withRecent : styles.standalone}`}>
     <Link className={styles.back} href={returnTo as Route}><ArrowLeft aria-hidden="true" />{copy.back}</Link>
     {!notice ? detail.state.status === "error" ? <p role="alert">{copy.unavailable}<FanAction variant="text" onClick={detail.retry}>{copy.retry}</FanAction></p> : <div aria-busy="true"><FanSkeletonStatus locale={locale} /><FanSkeleton width="60%" height={32} /><FanSkeleton shape="block" height={160} /></div> :

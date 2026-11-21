@@ -162,6 +162,14 @@ describe("page locale proxy", () => {
     expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
     expect(response.headers.get("x-middleware-request-x-byus-pathname")).toBe(path);
   });
+  it("puts the AdSense snippet only on kyaa.io screens that have page content", () => {
+    vi.stubEnv("HOSTING_PROVIDER", "aws");
+    const flag = (url: string) => proxy(new NextRequest(url, { headers: { "x-forwarded-proto": "https", "x-forwarded-host": new URL(url).host, "x-byus-adsense": "1" } })).headers.get("x-middleware-request-x-byus-adsense");
+    for (const path of ["/", "/elina", "/guide", "/notices/guide-start-kyaa", "/c/elina/raffles", "/about"]) expect(flag(`https://kyaa.io${path}?locale=ko`)).toBe("1");
+    for (const path of ["/login", "/my", "/passports", "/community", "/c/elina/leaderboard", "/benefits", "/live/ifew-rehearsal"]) expect(flag(`https://kyaa.io${path}?locale=ko`)).toBe("0");
+    expect(flag("https://dev.kyaa.io/?locale=ko")).toBe("0");
+    vi.unstubAllEnvs();
+  });
   it("keeps public pages indexable", () => {
     const response = proxy(new NextRequest("https://byus.example/live/ifew?locale=en"));
     expect(response.headers.has("x-robots-tag")).toBe(false);
