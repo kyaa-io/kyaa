@@ -15,7 +15,7 @@ const submit = z.strictObject({
   threadId: z.string().uuid(), readingId: z.string().uuid(), character, content, topic: z.enum(ASK_TOPICS), question,
 });
 const followup = z.strictObject({ threadId: z.string().uuid(), question });
-const saved = z.object({ result: z.unknown() });
+const saved = z.object({ result: z.unknown(), kind: z.string().optional() });
 const thread = z.object({
   character, content, readingId: z.string().uuid().nullable(), topic: z.enum(ASK_TOPICS).nullable(),
 });
@@ -49,10 +49,10 @@ export function askRoute(op: "state" | "submit" | "followup", request: Request) 
         if (klass) return Response.json({ blocked: { klass, answer: guardReply(klass, asked.character) } }, { headers });
         const reading = asked.readingId
           ? saved.parse(await deps.rpc("chemi_reading_detail", { p_user, p_id: asked.readingId, p_character: asked.character }))
-          : { result: null };
+          : { result: null, kind: undefined };
         return Response.json(await deps.rpc("chemi_ask_followup", {
           p_user, p_id: body.threadId, p_question: body.question,
-          p_answer: answerFollowup({ ...asked, topic: asked.topic ?? "free", question: body.question, result: reading.result }),
+          p_answer: answerFollowup({ ...asked, topic: asked.topic ?? "free", question: body.question, result: reading.result, kind: reading.kind }),
         }), { headers });
       }
       const body = submit.parse(await boundedJson(input, 2048));
@@ -64,7 +64,7 @@ export function askRoute(op: "state" | "submit" | "followup", request: Request) 
         p_topic: body.topic, p_question: body.question,
         p_hash: createHash("sha256").update(JSON.stringify([body.readingId, body.character, body.topic, body.question])).digest("hex"),
         p_klass: klass,
-        p_answer: klass ? guardReply(klass, body.character) : answerAsk({ ...body, result: reading!.result }),
+        p_answer: klass ? guardReply(klass, body.character) : answerAsk({ ...body, result: reading!.result, kind: reading!.kind }),
       }), { headers });
     } catch (error) {
       return refusal(error);

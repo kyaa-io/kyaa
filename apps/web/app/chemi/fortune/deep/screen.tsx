@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanDisclosure } from "@/components/fan-ui/fan-collapsible";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -90,6 +91,7 @@ export function FortuneDeep(props: Props) {
   const { view, character, locale } = props;
   const text = useReadingCopy();
   const week = useFortuneWeek();
+  const ask = useDeepResultAsk(locale, "fortune", character);
   const name = fortuneCharacters.find((item) => item.id === character)?.name ?? "";
   const back = resultHref(props);
   const toolbar = (meta?: string) => (
@@ -105,6 +107,7 @@ export function FortuneDeep(props: Props) {
       )}
     </div>
   );
+  if (ask) return ask;
   if (week.status === "guest")
     return (
       <FanState
@@ -143,14 +146,7 @@ export function FortuneDeep(props: Props) {
     );
   const [today, tomorrow, after] = week.days;
   const short = (day: string) => `${Number(day.slice(5, 7))}/${Number(day.slice(8))}`;
-  // 주 버튼은 오늘 결과의 질문하기(L135). 오늘 결과 없이 들어온 주소면 내일·이번 주를 서로 잇는 버튼이 주 버튼이다.
   const other = view === "tomorrow" ? "week" : "tomorrow";
-  const askHref = props.readingId ? `${back}&ask=topic` : null;
-  const otherAction = (variant?: "primary") => (
-    <FanAction variant={variant} fullWidth={Boolean(variant)} href={deepHref(other, props)}>
-      <ReadingText id={other === "week" ? "deepWeek" : "deepTomorrow"} />
-    </FanAction>
-  );
   const side = (line: string, secondary: ReactNode) => (
     <aside className={styles.side}>
       <div className={styles.cta}>
@@ -163,13 +159,7 @@ export function FortuneDeep(props: Props) {
             {line}
           </FanText>
         </div>
-        {askHref ? (
-          <FanAction variant="primary" fullWidth href={askHref}>
-            <ReadingText id="askStart" />
-          </FanAction>
-        ) : (
-          otherAction("primary")
-        )}
+        <DeepResultAsk name={name} fixed={false} reading={() => week.saveContext(view, character, week.today)} />
         <div className={`${styles.sideActions} ${styles.desktopOnly}`}>{secondary}</div>
       </div>
       <footer className={styles.legal}>
@@ -184,7 +174,7 @@ export function FortuneDeep(props: Props) {
       <FanAction href={back}>
         <ReadingText id="todayFortune" />
       </FanAction>
-      {askHref ? otherAction() : null}
+      <FanAction href={deepHref(other, props)}><ReadingText id={other === "week" ? "deepWeek" : "deepTomorrow"} /></FanAction>
     </>
   );
 

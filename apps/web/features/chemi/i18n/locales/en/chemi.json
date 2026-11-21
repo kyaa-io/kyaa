@@ -392,6 +392,7 @@
     "askRemindFailed": "Couldn't set the reminder",
     "askToday": "Asked today",
     "askHistoryEmpty": "You haven't asked anything yet.",
+    "askFavorite": "Ask {name}",
     "askStart": "Ask a question",
     "askPaused": "Questions are paused. You can ask again from {time}.",
     "askCrisis": "Korea suicide prevention line 109 · Youth line 1388",

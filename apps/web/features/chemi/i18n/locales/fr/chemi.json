@@ -392,6 +392,7 @@
     "askRemindFailed": "Impossible de demander le rappel",
     "askToday": "Questions du jour",
     "askHistoryEmpty": "Vous n'avez encore posé aucune question.",
+    "askFavorite": "Poser une question à {name}",
     "askStart": "Poser une question",
     "askPaused": "Les questions sont en pause. Vous pourrez en poser à partir de {time}.",
     "askCrisis": "Ligne coréenne de prévention du suicide 109 · Ligne jeunesse 1388",

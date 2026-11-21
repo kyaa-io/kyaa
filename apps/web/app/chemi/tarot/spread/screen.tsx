@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -45,6 +46,7 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
   const [attempt, setAttempt] = useState(0);
   const [controlsHost, setControlsHost] = useState<HTMLElement | null>(null);
   const [reduced, setReduced] = useState(false);
+  const ask = useDeepResultAsk(locale, "tarot", character);
   const person = tarotCharacter(character);
   const voice = voiceKey[person.voice];
   const home = `/chemi/tarot?locale=${locale}&c=${character}`;
@@ -119,6 +121,7 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
     </div>
   );
 
+  if (ask) return ask;
   if (status === "guest")
     return (
       <FanState
@@ -315,6 +318,7 @@ function SpreadResult({
                 {future ? <FanText role="body">{future.react[person.voice]}</FanText> : failed ? null : <FanSkeleton width="80%" />}
               </span>
             </div>
+            <DeepResultAsk name={person.name} reading={() => saved.readingId} />
             <div className={spread.actions}>
               <FanAction href={home}>
                 <ReadingText id="todayCard" />

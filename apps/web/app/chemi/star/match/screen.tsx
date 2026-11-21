@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
@@ -18,7 +19,7 @@ import { matchCopy } from "./copy";
 import styles from "./match.module.css";
 
 type Connection = { mine: string; theirs: string; angle: number };
-type Match = { name: string; connections: Connection[] };
+type Match = { readingId: string; name: string; connections: Connection[] };
 type Failure = "dailyLimit" | "partnerFailure";
 
 const SOFT = [0, 60, 120];
@@ -56,6 +57,7 @@ export function MatchScreen({
   character: StarCharacterId;
   birthCopy: MyBirthCopy;
 }) {
+  const ask = useDeepResultAsk(locale, "star", character);
   const text = useReadingCopy();
   const copy = matchCopy(locale);
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
@@ -100,7 +102,7 @@ export function MatchScreen({
         return;
       }
       const rows: Connection[] = data.result.connections ?? legacyConnections(data.result.angles ?? []);
-      setMatch({ name: partnerName, connections: rows.filter((row) => row.mine in copy.planets && row.theirs in copy.planets) });
+      setMatch({ readingId: data.readingId, name: partnerName, connections: rows.filter((row) => row.mine in copy.planets && row.theirs in copy.planets) });
     } catch {
       setError("partnerFailure");
     } finally {
@@ -124,6 +126,7 @@ export function MatchScreen({
     }
   }
 
+  if (ask) return ask;
   if (ready && !authenticated)
     return (
       <FanState
@@ -222,6 +225,7 @@ export function MatchScreen({
             <FanText as="p" role="meta">
               <ReadingText id="relationshipNote" />
             </FanText>
+            <DeepResultAsk name={name} reading={() => match.readingId} />
             <div className={styles.actions}>
               <FanAction onClick={() => setMatch(null)}>
                 <ReadingText id="otherPartner" />

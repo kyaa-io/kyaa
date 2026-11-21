@@ -392,6 +392,7 @@
     "askRemindFailed": "通知を申し込めませんでした",
     "askToday": "今日聞いた質問",
     "askHistoryEmpty": "まだ質問がありません。",
+    "askFavorite": "{name}に聞く",
     "askStart": "質問する",
     "askPaused": "質問を停止しています。{time}からまた質問できます。",
     "askCrisis": "韓国自殺予防相談電話 109 · 青少年相談電話 1388",

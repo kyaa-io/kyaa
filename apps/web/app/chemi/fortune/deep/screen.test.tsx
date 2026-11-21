@@ -31,7 +31,10 @@ const result = (score: number) => ({
   luck: { color: "초록", number: 3, direction: "동", item: "나무 연필", luckyHour: { start: 9, end: 11 }, restHour: null },
 });
 function serve(scores: number[], extra: (path: string) => Response | undefined = () => undefined) {
-  const fetcher = vi.fn(async (path: string) => {
+  const fetcher = vi.fn(async (path: string, options?: RequestInit) => {
+    if (path.startsWith("/api/chemi/ask?")) return Response.json({ left: 1, threads: [] });
+    if (path === "/api/chemi/fortune/deep" && options?.method === "POST")
+      return Response.json({ readingId: "22222222-2222-4222-8222-222222222222" });
     if (path === "/api/chemi/fortune/deep")
       return Response.json({ today: TODAY, days: scores.map((score, index) => ({ day: dayAt(index), result: result(score) })) });
     return extra(path) ?? Response.json({});
@@ -57,10 +60,7 @@ it("compares tomorrow with today and hides a difference of zero", async () => {
   expect(screen.getByRole("heading", { name: "무난한 날" })).toBeVisible();
   expect(screen.getAllByLabelText("오늘보다 9점 낮음").length).toBeGreaterThan(1);
   expect(screen.getByText("오늘 올라온 기운이 내일부터 차분해져요.")).toBeVisible();
-  expect(screen.getByRole("link", { name: "질문하기" })).toHaveAttribute(
-    "href",
-    "/chemi/fortune?locale=ko&c=changha&step=result&r=11111111-1111-4111-8111-111111111111&ask=topic",
-  );
+  expect(screen.getByRole("button", { name: "창하에게 물어보기" })).toBeVisible();
   expect(screen.getAllByRole("link", { name: "이번 주 운세" })[0]).toHaveAttribute(
     "href",
     "/chemi/fortune/deep?locale=ko&c=changha&r=11111111-1111-4111-8111-111111111111&view=week",
@@ -75,8 +75,24 @@ it("compares tomorrow with today and hides a difference of zero", async () => {
   expect(await screen.findByText("내일도 오늘과 비슷하게 흘러가요.")).toBeVisible();
   expect(screen.queryByLabelText(/오늘보다/)).toBeNull();
   expect(screen.getByText("내일 건 미리 봐 뒀어요. 시간대부터 챙겨요.")).toBeVisible();
-  expect(screen.queryByRole("link", { name: "질문하기" })).toBeNull();
-  expect(screen.getByRole("link", { name: "이번 주 운세" })).toHaveAttribute("href", "/chemi/fortune/deep?locale=ko&c=elina&view=week");
+  expect(screen.getByRole("button", { name: "엘리나에게 물어보기" })).toBeVisible();
+  expect(screen.getAllByRole("link", { name: "이번 주 운세" })[0]).toHaveAttribute("href", "/chemi/fortune/deep?locale=ko&c=elina&view=week");
+});
+
+it("opens the weekly question with the saved weekly result", async () => {
+  const fetcher = serve([96, 78, 57, 71, 88, 82, 66]);
+  render(<FortuneDeep view="week" character="changha" locale="ko" paidPreview={false} />);
+  try {
+    fireEvent.click(await screen.findByRole("button", { name: "창하에게 물어보기" }));
+    await waitFor(() => expect(location.search).toContain("ask=topic"));
+    expect(location.search).toContain("ar=22222222-2222-4222-8222-222222222222");
+    expect(fetcher).toHaveBeenCalledWith("/api/chemi/fortune/deep", expect.objectContaining({
+      method: "POST", body: JSON.stringify({ view: "week", character: "changha", day: TODAY }),
+    }));
+  } finally {
+    cleanup();
+    history.replaceState({}, "", "/");
+  }
 });
 
 it("draws seven days, links only today and tomorrow, and keeps paid dates out before payment", async () => {
@@ -160,7 +176,7 @@ it("puts the day card and the free deeper rows on today's result only", async ()
   const card = await screen.findByRole("link", { name: /기념 카드/ });
   expect(card).toHaveAttribute("href", "/chemi/fortune/card?locale=ko&c=changha&r=22222222-2222-4222-8222-222222222222");
   expect(screen.getByRole("link", { name: "내일 운세" })).toHaveAttribute("href", expect.stringContaining("view=tomorrow"));
-  expect(screen.getByRole("link", { name: "이번 주 운세" })).toHaveAttribute("href", expect.stringContaining("view=week"));
+  expect(screen.getAllByRole("link", { name: "이번 주 운세" })[0]).toHaveAttribute("href", expect.stringContaining("view=week"));
   expect(screen.queryByLabelText("운세를 볼 날짜")).toBeNull();
   cleanup();
   render(<FortuneResult locale="ko" character="changha" initial={reading(94, dayAt(-1)) as never} paidPreview />);

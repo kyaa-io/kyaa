@@ -392,6 +392,7 @@
     "askRemindFailed": "未能申請提醒",
     "askToday": "今天問過的問題",
     "askHistoryEmpty": "還沒有提過問題。",
+    "askFavorite": "問問{name}",
     "askStart": "提問",
     "askPaused": "提問已暫停。{time}起可再次提問。",
     "askCrisis": "韓國自殺防治專線 109 · 青少年專線 1388",

@@ -392,6 +392,7 @@
     "askRemindFailed": "Không đăng ký nhắc được",
     "askToday": "Đã hỏi hôm nay",
     "askHistoryEmpty": "Bạn chưa hỏi câu nào.",
+    "askFavorite": "Hỏi {name}",
     "askStart": "Đặt câu hỏi",
     "askPaused": "Tạm dừng đặt câu hỏi. Bạn có thể hỏi lại từ {time}.",
     "askCrisis": "Đường dây phòng chống tự tử Hàn Quốc 109 · Đường dây thanh thiếu niên 1388",
