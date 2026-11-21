@@ -45,3 +45,10 @@
   .notice { padding-inline: var(--space-4); }
   .fresh { bottom: 96px; }
 }
+
+.byline { display: flex; align-items: baseline; gap: var(--space-2); min-width: 0; max-width: 100%; }
+.byline strong { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.stamp { flex: none; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bubbleRow .stamp { align-self: flex-end; }
+.dayLine { display: flex; align-items: center; gap: var(--space-3); }
+.dayLine::before, .dayLine::after { content: ""; flex: 1; height: 1px; background: var(--color-line-subtle); }
