@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import type { AppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
@@ -19,6 +19,7 @@ import { mediaCopy } from "@/features/group-social/media-preview";
 import { VIDEO_MAX_SECONDS } from "@/server/mobile-media/domain";
 import { GROUP_CHAT_MAX_LENGTH, groupChatSchema, type GroupChat } from "../domain/contracts";
 import { boardCopy } from "./board-copy";
+import { chatTimes } from "./chat-time";
 import { chatCopy } from "./chat-copy";
 import { groupsCopy } from "./copy";
 import { groupCommentCopy } from "./group-comment-copy";
@@ -114,6 +115,7 @@ export function GroupChatRoom({ pageId, locale, onOnlineCount }: { pageId: strin
   }, [ready, request, ownerKey, url, version]);
 
   const visible = room?.key === ownerKey ? room : undefined, items = visible?.items, last = items?.at(-1);
+  const times = useMemo(() => chatTimes(items ?? [], locale), [items, locale]);
   const canSend = Boolean(visible && !visible.restricted && visible.canSend);
 
   // 읽은 위치: 맨 아래를 보고 있을 때만 마지막 메시지까지 올린다.
@@ -188,9 +190,12 @@ export function GroupChatRoom({ pageId, locale, onOnlineCount }: { pageId: strin
       {!visible && <ChatSkeleton label={t.loading} />}
       {visible?.failed && <div role="alert" className={styles.failed}><FanText as="p" role="body">{t.error}</FanText>{!visible.restricted && <FanAction onClick={() => setVersion((value) => value + 1)}>{t.retry}</FanAction>}</div>}
       {visible && !visible.failed && !visible.items.length && <p>{roomEntryCopy(locale).empty}</p>}
-      {items?.map((item) => {
+      {items?.map((item, index) => {
+        const timing = times[index]!;
+        const stamp = timing.label && <FanText as="time" role="meta" className={styles.stamp} dateTime={item.createdAt}>{timing.label}</FanText>;
         const readCount = item.mine ? visible?.receipts.get(item.id) ?? 0 : 0;
         return <div key={item.id} className={styles.entry}>
+          {timing.heading && <div className={styles.dayLine}><FanText role="meta">{timing.heading}</FanText></div>}
           {item.id === divider && <div className={styles.unreadLine} data-unread-line="" role="separator"><FanText role="label">{c.unreadLine}</FanText></div>}
           <div className={`${roomStyles.roomMessage} ${styles.message}`} data-mine={item.mine || undefined} data-artist={item.artist || undefined}>
             {!item.mine && <span className={styles.avatar} data-online={item.online || undefined}>
@@ -198,18 +203,18 @@ export function GroupChatRoom({ pageId, locale, onOnlineCount }: { pageId: strin
               {item.online && <span className={styles.onlineDot} role="img" aria-label={c.online} />}
             </span>}
             <div className={roomStyles.roomMessageCopy}>
-              {!item.mine && <strong>{item.nickname}{item.artist && <FanTag tone="artist">{c.creator}</FanTag>}</strong>}
+              {!item.mine && <div className={styles.byline}><FanText as="strong" role="label">{item.nickname}</FanText>{item.artist && <FanTag tone="artist">{c.creator}</FanTag>}{stamp}</div>}
               <div className={styles.bubbleRow}>
                 <div className={styles.bubble}>
                   {item.body && <p>{item.body}</p>}
                   {item.asset && <div className={styles.media} data-kind={item.asset.kind} style={{ "--chat-media-ratio": `${item.asset.width} / ${item.asset.height}` } as CSSProperties}><AuthenticatedMedia asset={item.asset} play={item.asset.kind === "video"} locale={locale} alt={item.asset.kind === "video" ? media[2] : media[1]} /></div>}
                 </div>
+                {item.mine && stamp}
                 <FanMenu label={c.menu} align={item.mine ? "end" : "start"} trigger={<FanIconButton className={styles.more} aria-label={c.menu}><FanIcon icon={MoreHorizontal} size={20} /></FanIconButton>}>
                   {item.mine ? <FanMenu.Item destructive onSelect={() => setRemoving(item.id)}>{m.remove}</FanMenu.Item> : <FanMenu.Item onSelect={() => setReporting({ id: item.id, reason: "" })}>{b.report}</FanMenu.Item>}
                 </FanMenu>
               </div>
               {readCount > 0 && <FanText role="meta" className={styles.read}>{c.read} {readCount.toLocaleString(locale)}</FanText>}
-              <time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })}</time>
             </div>
           </div>
         </div>;
