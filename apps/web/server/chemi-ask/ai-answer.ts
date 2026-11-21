@@ -4,7 +4,7 @@ import { elementCounts, elementName, elements, isChart } from "@/app/chemi/saju/
 import { askLines, askName, askVoice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
 import { TAROT_DECK } from "@/features/chemi/tarot/deck";
 import { askAiReady, askAiText } from "./ai-provider";
-import { askBasis } from "./answer";
+import { askBasis, askEvidence } from "./answer";
 import { classifyAsk } from "./guard";
 
 /**
@@ -38,6 +38,8 @@ const voiceRule = {
 export function askFacts(input: Pick<AskAiInput, "content" | "topic" | "question" | "result" | "kind">): string[] {
   const result = input.result as any;
   const lines = [askBasis(input.content, input.topic, result, input.question, input.kind).line.yo];
+  const evidence = askEvidence(input.content, input.topic, result, input.kind);
+  if (evidence) lines.push(evidence.yo);
   const scores = (values: unknown) => Object.entries((values ?? {}) as Record<string, unknown>)
     .filter(([key, value]) => fieldName[key] && typeof value === "number").map(([key, value]) => `${fieldName[key]} ${value}`).join(", ");
   if (input.content === "fortune" && typeof result?.score === "number") {

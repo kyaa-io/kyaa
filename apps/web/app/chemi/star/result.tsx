@@ -20,8 +20,7 @@ import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import {
   bestDomain,
-  domainLine,
-  domainLong,
+  starDomainText,
   domains,
   overallHeadline,
   pickReasons,
@@ -199,8 +198,6 @@ export function StarResult({
   const canSend = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const shareAction = <ResultActions locale={locale} sharing={sharing} onShare={() => setShareOpen(true)} />;
   const rows: readonly (StarDomain | "overall")[] = ["overall", ...domains];
-  const lineOf = (key: StarDomain | "overall") =>
-    key === "overall" ? "" : domainLine[key][stars[key] - 1];
   const chartCards = (
     <div className={styles.cards}>
       <div className={styles.card}>
@@ -275,9 +272,7 @@ export function StarResult({
                   <FanText as="p" role="body">
                     {key === "overall"
                       ? overallHeadline[stars.overall - 1]
-                      : isBest
-                        ? domainLong[key][stars[key] - 1]
-                        : lineOf(key)}
+                      : starDomainText(key, stars[key], signOf)}
                   </FanText>
                 </li>
               );

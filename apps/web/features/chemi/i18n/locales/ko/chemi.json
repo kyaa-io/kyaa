@@ -158,6 +158,8 @@
     "back": "뒤로 가기"
   },
   "readingUi": {
+    "basis": "풀이 근거",
+    "pastFlow": "지난 흐름",
     "askAgain": "한 번 더 묻기",
     "askCaution": "오늘 뭘 조심할까?",
     "askStrength": "내 장점을 어떻게 써볼까?",

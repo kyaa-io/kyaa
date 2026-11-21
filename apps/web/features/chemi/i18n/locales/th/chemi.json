@@ -158,6 +158,8 @@
     "back": "กลับ"
   },
   "readingUi": {
+    "basis": "",
+    "pastFlow": "",
     "askAgain": "ถามอีกข้อ",
     "askCaution": "วันนี้ควรระวังอะไรบ้าง",
     "askStrength": "จะใช้จุดแข็งของฉันได้อย่างไร",

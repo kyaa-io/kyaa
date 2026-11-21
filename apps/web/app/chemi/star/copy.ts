@@ -398,3 +398,56 @@ export function starChartLine(character: StarCharacterId, element: string, count
     dosa: `${element} 원소가 ${count}개나 되오. 그래서 그런 모습이구려.`,
   }[character];
 }
+
+/** 별자리의 원소. 태어날 때 행성이 놓인 자리의 성격을 읽을 때 쓴다. */
+const signElement: Record<ZodiacSign, "fire" | "earth" | "air" | "water"> = {
+  aries: "fire", leo: "fire", sagittarius: "fire",
+  taurus: "earth", virgo: "earth", capricorn: "earth",
+  gemini: "air", libra: "air", aquarius: "air",
+  cancer: "water", scorpio: "water", pisces: "water",
+};
+/** 영역마다 보는 내 행성(서버 점수 규칙의 행성 배정과 같다)과 그 행성이 맡은 것. */
+const domainPlanet: Record<StarDomain, { body: string; role: string }> = {
+  love: { body: "Venus", role: "애정" },
+  people: { body: "Mercury", role: "말과 생각" },
+  money: { body: "Jupiter", role: "기회와 재물" },
+  work: { body: "Saturn", role: "책임과 일" },
+};
+const natalLine: Record<StarDomain, Record<"fire" | "earth" | "air" | "water", string>> = {
+  love: {
+    fire: "좋아하면 바로 표현하는 편이에요",
+    earth: "천천히 믿음이 쌓여야 마음을 여는 편이에요",
+    air: "말이 통해야 마음이 가는 편이에요",
+    water: "말보다 분위기와 마음 씀을 먼저 느끼는 편이에요",
+  },
+  people: {
+    fire: "생각나면 바로 말하는 편이에요",
+    earth: "확인한 것만 차분히 말하는 편이에요",
+    air: "여러 사람과 가볍게 잘 어울리는 편이에요",
+    water: "상대 기분을 읽고 말을 고르는 편이에요",
+  },
+  money: {
+    fire: "기회다 싶으면 크게 움직이는 편이에요",
+    earth: "모으고 불리는 데 운이 붙는 편이에요",
+    air: "사람과 정보에서 기회를 얻는 편이에요",
+    water: "마음이 가는 곳에 돈을 쓰는 편이에요",
+  },
+  work: {
+    fire: "앞장서서 책임을 지는 편이에요",
+    earth: "꾸준히 쌓아 결과를 내는 편이에요",
+    air: "생각을 구조로 정리하는 데 강한 편이에요",
+    water: "함께하는 사람까지 챙기며 일하는 편이에요",
+  },
+};
+
+/**
+ * 영역 한 칸의 풀이: 오늘 별점의 풀이(2~3문장) 뒤에, 태어날 때 그 영역을 맡은 행성이 놓인 별자리를 근거로 한 문장을 잇는다.
+ * `signOf`: 내 행성이 어느 별자리에 있는지.
+ */
+export function starDomainText(domain: StarDomain, stars: number, signOf: (body: string) => ZodiacSign | null) {
+  const today = domainLong[domain][stars - 1];
+  const planet = domainPlanet[domain];
+  const sign = signOf(planet.body);
+  if (!sign) return today;
+  return `${today} 내 ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}.`;
+}

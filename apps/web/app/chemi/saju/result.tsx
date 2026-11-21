@@ -18,6 +18,8 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { defaultShareVia, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
+import { ReadingBasis, ReadingDomains } from "@/features/chemi/ui/result/reading-depth";
+import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
@@ -28,6 +30,7 @@ import {
   pairReading,
   yearReading,
 } from "./copy";
+import { sajuBasis, sajuDomains } from "./depth";
 import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
@@ -118,9 +121,9 @@ export function SajuResult({
   const tone = sajuTone(character);
   const sayLine =
     view === "year"
-      ? year.line
+      ? year.line[askVoice[character]]
       : view === "month"
-        ? month.line
+        ? month.line[askVoice[character]]
         : compat && pair
           ? tone.pairReact(compat.line(pair.name))
           : tone.react({
@@ -197,6 +200,24 @@ export function SajuResult({
       ))}
     </div>
   );
+  // 풀이 근거(계산 값 + 쉬운 풀이)와 영역별 풀이. 궁합은 두 사람 값이라 여기서 다루지 않는다.
+  const depth =
+    view === "pair" ? null : (
+      <>
+        <ReadingBasis className={styles.section} title={uiText("basis")} rows={sajuBasis(chart, at, view)} />
+        <ReadingDomains
+          className={styles.section}
+          title={uiText("areas")}
+          items={sajuDomains(chart, at, view).map((item) => ({
+            key: item.key,
+            label: uiText(item.key),
+            meta: item.level,
+            basis: item.basis,
+            sentences: item.sentences,
+          }))}
+        />
+      </>
+    );
   const lockedCard = (
     <FanState
       inline
@@ -366,7 +387,8 @@ export function SajuResult({
               {kv(
                 [
                   [uiText("goodMonth"), year.good],
-                  [uiText("restMonth"), year.rest],
+                  ...(year.rest ? [[uiText("restMonth"), year.rest] as const] : []),
+                  ...(year.past ? [[uiText("pastFlow"), year.past] as const] : []),
                   [uiText("helpEnergy"), year.help],
                 ],
                 "cols",
@@ -396,7 +418,8 @@ export function SajuResult({
               {kv(
                 [
                   [uiText("strongWeek"), month.strong],
-                  [uiText("restWeek"), month.rest],
+                  ...(month.rest ? [[uiText("restWeek"), month.rest] as const] : []),
+                  ...(month.past ? [[uiText("pastFlow"), month.past] as const] : []),
                   [uiText("freshEnergy"), month.nextTerm],
                 ],
                 "cols",
@@ -436,6 +459,8 @@ export function SajuResult({
             )}
           </section>
         )}
+
+        {depth}
 
         <div className={styles.mobileActions}>{actions}</div>
         <div className={styles.dockSpace} aria-hidden="true" />

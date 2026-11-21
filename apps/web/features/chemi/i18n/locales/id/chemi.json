@@ -158,6 +158,8 @@
     "back": "Kembali"
   },
   "readingUi": {
+    "basis": "",
+    "pastFlow": "",
     "askAgain": "Tanya lagi",
     "askCaution": "Apa yang perlu kuwaspadai hari ini?",
     "askStrength": "Bagaimana cara memanfaatkan kelebihanku?",

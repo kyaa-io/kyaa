@@ -158,6 +158,8 @@
     "back": "戻る"
   },
   "readingUi": {
+    "basis": "",
+    "pastFlow": "",
     "askAgain": "もう一つ聞く",
     "askCaution": "今日は何に気をつければいい？",
     "askStrength": "自分の強みをどう生かせる？",
