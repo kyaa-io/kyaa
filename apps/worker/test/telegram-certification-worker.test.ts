@@ -65,15 +65,19 @@ describe("renderTelegramCertificationCaption", () => {
       appUserId: "ffffffff-ffff-4fff-8fff-ffffffffffff",
     } as TelegramCertificationClaim);
     expect(caption.length).toBeLessThanOrEqual(1024);
-    expect(caption).toContain("엘리나 공식 · 팬미팅 인증");
-    expect(caption).toContain("플랫폼: Weverse");
-    expect(caption).toContain("신청자: 별빛 팬");
-    expect(caption).toContain("2번째 제출");
-    expect(caption).toContain("보상: 활동 점수 30점 · 응모권 2장");
-    expect(caption).not.toMatch(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u);
+    expect(caption).toContain("멤버십 인증 심사 요청");
+    expect(caption).toContain("신청자 별***");
+    expect(caption).not.toContain("확인 부탁드립니다");
+    expect(caption).not.toContain("엘리나");
+    expect(caption).not.toContain("팬미팅");
     expect(caption).not.toContain("member@example.com");
     expect(caption).not.toContain("ffffffff-ffff-4fff-8fff-ffffffffffff");
-    expect(caption.endsWith("…")).toBe(true);
+  });
+
+  it("completely masks a one-grapheme nickname", () => {
+    const caption = renderTelegramCertificationCaption({ ...claim, applicantNickname: "👩‍👧" });
+    expect(caption).toContain("신청자 ***");
+    expect(caption).not.toContain("👩");
   });
 });
 
