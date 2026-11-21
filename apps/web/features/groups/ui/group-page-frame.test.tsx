@@ -166,6 +166,17 @@ it.each([["hobby", "ko", "인증", "팬·랭킹"], ["brand", "en", "Proofs", "Fa
   expect(labels).not.toContain(locale === "ko" ? "덕후인증" : "Fan proof");
 });
 
+it("puts a brand's official website first in the header icon row, counted as a website link, and leaves it out for other roles", () => {
+  const celebrity = (role: "brand" | "idol") => ({ slug: "mina", locale: "ko" as const, name: "Mina", summary: "", image: { url: "/mina.webp", alt: "Mina", position: "center" }, roles: [role], websiteUrl: "https://mina.example/", themes: [], socialLinks: [{ platform: "instagram" as const, url: "https://www.instagram.com/mina/" }], displayOrder: 0, fanCount: 0 });
+  Object.assign(state, { data: { ...detail, page: { ...detail.page, kind: "brand", celebrityId: "c", slug: "mina", name: "Mina" } } });
+  const brand = render(<GroupPageProvider slug="mina" locale="ko" celebrity={celebrity("brand")}><GroupPageHead /></GroupPageProvider>);
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("a[data-platform]"));
+  expect(links.map(link => [link.dataset.platform, link.href, link.dataset.outboundKind])).toEqual([["website", "https://mina.example/", "website"], ["instagram", "https://www.instagram.com/mina/", "social"]]);
+  brand.unmount();
+  render(<GroupPageProvider slug="mina" locale="ko" celebrity={celebrity("idol")}><GroupPageHead /></GroupPageProvider>);
+  expect(Array.from(document.querySelectorAll<HTMLAnchorElement>("a[data-platform]")).map(link => link.dataset.platform)).toEqual(["instagram"]);
+});
+
 const fanDetail = (extra: object) => ({ ...detail, page: { ...detail.page, kind: "fan" as const, celebrityId: "c", slug: "elina", name: "엘리나", ...extra } });
 
 it("shows the like count as the fan page's 팬 N and the member count on every other page", () => {
