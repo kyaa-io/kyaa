@@ -1,0 +1,14 @@
+/* 도트 글자: 케미 게임의 점수·판 위 한마디에만 쓴다(DESIGN.md 케미 최애 런). */
+.pixel { font-family: var(--font-chemi-dot); font-weight: var(--fan-item-title-weight); letter-spacing: 0; font-variant-numeric: tabular-nums; line-height: 1; }
+.score { font-size: var(--fan-chemi-score-size); }
+.result { font-size: var(--fan-chemi-result-size); }
+.say { font-size: var(--fan-chemi-say-size); }
+.float { font-size: var(--fan-section-size); }
+.sub { font-size: var(--fan-metadata-size); }
+/* 사진 같은 판 위에서도 읽히게 흰 외곽선을 두른다. */
+.say, .float { -webkit-text-stroke: 4px var(--color-surface); paint-order: stroke fill; }
+@media (width >= 64rem) {
+  .score { font-size: var(--fan-chemi-score-size-wide); }
+  .result { font-size: var(--fan-chemi-result-size-wide); }
+  .say { font-size: var(--fan-chemi-say-size-wide); }
+}

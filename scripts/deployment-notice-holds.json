@@ -58,7 +58,8 @@
     "release-notes/2026-11-21-chemi-immersive-chat.json",
     "release-notes/2026-11-21-chemi-scene-video.json",
     "release-notes/2026-11-21-chemi-ask-ai.json",
-    "release-notes/2026-11-21-chemi-immersive-chat-r2.json"
+    "release-notes/2026-11-21-chemi-immersive-chat-r2.json",
+    "release-notes/2026-11-21-chemi-run-benchmark.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
