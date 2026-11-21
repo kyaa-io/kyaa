@@ -5,6 +5,9 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { entries } from "./contents";
 import type { HomeCopy } from "./home";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { Pause, Play } from "@/components/fan-ui/fan-icons";
 import styles from "./home.module.css";
 
 const images = {
@@ -49,6 +52,9 @@ export function HomeBanner({
       </div>
       <div className={styles.dots}>
         {activities.map(({ id: key }, n) => <FanAction size="sm" key={key} type="button" ariaLabel={copy[key]} aria-pressed={n === index} onClick={() => { setPaused(true); setIndex(n); }}><span aria-hidden="true" /></FanAction>)}
+        <FanIconButton className={styles.pause} aria-label={paused ? copy.resume : copy.pause} onClick={() => setPaused(value => !value)}>
+          <FanIcon icon={paused ? Play : Pause} />
+        </FanIconButton>
       </div>
     </section>
   );

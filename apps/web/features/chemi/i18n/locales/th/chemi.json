@@ -30,7 +30,10 @@
     "resume": "เล่น",
     "filter": "ประเภทเนื้อหา",
     "creator": "ชางฮา",
-    "rankings": "อันดับประจำสัปดาห์"
+    "rankings": "อันดับประจำสัปดาห์",
+    "rankingOf": "อันดับ {game}",
+    "thisWeek": "สัปดาห์นี้",
+    "myRecord": "สถิติของฉัน"
   },
   "myBirth": {
     "title": "",

@@ -37,7 +37,7 @@ export function ChemiHome({
   return (
     <div className={styles.home} data-ranked={preview}>
       <HomeBanner copy={copy} activities={activities} index={activeIndex} setIndex={setActiveIndex} />
-      {preview && <WeeklyRankings copy={copy} locale={locale} />}
+      {preview && <WeeklyRankings copy={copy} locale={locale} matchAvailable={matchAvailable} />}
       <section>
         {preview && <FanTabs
           variant="chip"

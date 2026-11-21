@@ -30,7 +30,10 @@
     "resume": "Putar",
     "filter": "Jenis konten",
     "creator": "Changha",
-    "rankings": "Peringkat mingguan"
+    "rankings": "Peringkat mingguan",
+    "rankingOf": "Peringkat {game}",
+    "thisWeek": "Minggu ini",
+    "myRecord": "Rekor saya"
   },
   "myBirth": {
     "title": "",

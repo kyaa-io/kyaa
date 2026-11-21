@@ -30,7 +30,10 @@
     "resume": "Lecture",
     "filter": "Type de contenu",
     "creator": "Changha",
-    "rankings": "Classement hebdomadaire"
+    "rankings": "Classement hebdomadaire",
+    "rankingOf": "Classement {game}",
+    "thisWeek": "Cette semaine",
+    "myRecord": "Mon score"
   },
   "myBirth": {
     "title": "",

@@ -30,7 +30,10 @@
     "resume": "Reproducir",
     "filter": "Tipo de contenido",
     "creator": "Changha",
-    "rankings": "Clasificación semanal"
+    "rankings": "Clasificación semanal",
+    "rankingOf": "Ranking de {game}",
+    "thisWeek": "Esta semana",
+    "myRecord": "Mi marca"
   },
   "myBirth": {
     "title": "",

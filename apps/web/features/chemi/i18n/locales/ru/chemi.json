@@ -30,7 +30,10 @@
     "resume": "Продолжить",
     "filter": "Тип контента",
     "creator": "Чанха",
-    "rankings": "Рейтинг недели"
+    "rankings": "Рейтинг недели",
+    "rankingOf": "Рейтинг: {game}",
+    "thisWeek": "Эта неделя",
+    "myRecord": "Мой результат"
   },
   "myBirth": {
     "title": "",

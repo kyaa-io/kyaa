@@ -1,22 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FPS } from "@/features/chemi/games/engine";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { getMatchCopy } from "./games/match/copy";
 import { GameRankings, type GameRanking } from "./game-rankings";
 import type { HomeCopy } from "./home";
 
-const modes = [["pair", "match"], ["run", "run"]] as const;
+const allModes = [["pair", "match"], ["run", "run"]] as const;
 type Row = { place: number; nickname: string; ticks: number; score: number; isMe: boolean };
+type Props = { copy: HomeCopy; locale: string; matchAvailable: boolean };
 
-export function WeeklyRankings({ copy, locale }: { copy: HomeCopy; locale: string }) {
+export function WeeklyRankings(props: Props) {
   const auth = useByUsAuth();
-  return <RankingSession key={auth.user?.id ?? "guest"} auth={auth} copy={copy} locale={locale} />;
+  return <RankingSession key={auth.user?.id ?? "guest"} auth={auth} {...props} />;
 }
 
-function RankingSession({ auth, copy, locale }: { auth: ReturnType<typeof useByUsAuth>; copy: HomeCopy; locale: string }) {
+function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: ReturnType<typeof useByUsAuth> }) {
   const { ready, authenticated, getAccessToken } = auth;
+  const modes = useMemo(() => allModes.filter(([game]) => game !== "pair" || matchAvailable), [matchAvailable]);
   const [results, setResults] = useState<Partial<Record<"match" | "run", Row[] | "error">>>({});
   const [attempt, retry] = useState(0);
   const labels = getMatchCopy(locale);
@@ -42,7 +44,7 @@ function RankingSession({ auth, copy, locale }: { auth: ReturnType<typeof useByU
       });
     }
     return () => controller.abort();
-  }, [ready, authenticated, getAccessToken, attempt]);
+  }, [ready, authenticated, getAccessToken, attempt, modes]);
 
   const distance = new Intl.NumberFormat(locale, { style: "unit", unit: "meter" });
   const games: GameRanking[] = modes.map(([game, mode]) => {
@@ -50,6 +52,7 @@ function RankingSession({ auth, copy, locale }: { auth: ReturnType<typeof useByU
     const rows = Array.isArray(result) ? result : [];
     const format = (row: Row, index: number) => ({
       id: `${row.nickname}-${index}`,
+      isMe: row.isMe,
       place: row.place,
       name: row.nickname,
       change: 0,
@@ -59,14 +62,14 @@ function RankingSession({ auth, copy, locale }: { auth: ReturnType<typeof useByU
     const mine = rows.find((row) => row.isMe);
     return {
       game,
-      title: copy[game],
+      title: copy.rankingOf.replace("{game}", copy[game]),
       href: `/chemi/games/${mode}?locale=${locale}`,
       leaders: rows.slice(0, 3).map(format),
-      mine: mine ? { ...format(mine, -1), name: labels.me } : null,
+      mine: mine ? format(mine, -1) : null,
       status: result === "error" ? "error" : result === undefined ? "loading" : "ready",
     };
   });
-  return <GameRankings games={games} label={copy.rankings} empty={labels.emptyRanking}
-    error={labels.error} retryLabel={labels.retry} playLabel={labels.start} mineLabel={labels.me}
+  return <GameRankings games={games} label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord}
+    empty={labels.emptyRanking} error={labels.error} retryLabel={labels.retry}
     retry={() => { setResults({}); retry((value) => value + 1); }} />;
 }

@@ -30,7 +30,10 @@
     "resume": "Phát",
     "filter": "Loại nội dung",
     "creator": "Changha",
-    "rankings": "Bảng xếp hạng tuần"
+    "rankings": "Bảng xếp hạng tuần",
+    "rankingOf": "Xếp hạng {game}",
+    "thisWeek": "Tuần này",
+    "myRecord": "Thành tích của tôi"
   },
   "myBirth": {
     "title": "",
