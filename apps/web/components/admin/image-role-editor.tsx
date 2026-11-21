@@ -80,7 +80,7 @@ export function ImageRoleEditor({ ownerType, ownerId, locale, canEdit, getAccess
 
   const copy = useMemo(
     () => locale === "ko" ? {
-      title: "공개 이미지 역할",
+      title: "이미지 쓰임",
       description: "화면 비율에 맞는 사진과 노출 위치를 역할별로 지정합니다. 변경한 역할은 ‘적용’을 눌러야 반영됩니다.",
       loading: "이미지 역할을 불러오는 중입니다.",
       loadError: "이미지 역할을 불러오지 못했습니다.",
@@ -96,14 +96,14 @@ export function ImageRoleEditor({ ownerType, ownerId, locale, canEdit, getAccess
       approve: "이 원본과 위치로 크롭 승인",
       approvalNeeded: "영역을 채우려면 각 화면의 잘린 부분을 확인하고 승인하세요.",
       apply: "이 역할 적용",
-      remove: "이미지 연결 해제",
-      empty: "연결된 이미지가 없습니다. 파일을 올리거나 URL로 가져오세요.",
+      remove: "이미지 빼기",
+      empty: "이미지가 없어요.",
       applied: "이미지 역할을 적용했습니다.",
       failed: "변경사항을 적용하지 못했습니다.",
       conflict: "다른 관리자가 먼저 변경했습니다. 최신 값을 다시 불러왔습니다.",
       assetFailed: "이미지를 등록하지 못했습니다.",
       readonly: "Viewer 권한은 현재 설정만 볼 수 있습니다.",
-      revision: "설정 버전",
+      revision: "수정 횟수",
     } : {
       title: "Public image roles",
       description: "Assign a photo and framing for each display role. Select Apply to publish changes to a role.",

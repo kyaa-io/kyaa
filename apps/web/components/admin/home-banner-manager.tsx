@@ -39,11 +39,11 @@ const copy = {
     new: "새 배너", list: "배너 목록", empty: "등록된 배너가 없습니다.", regular: "정기 방송", announcement: "안내",
     creator: "크리에이터", chooseCreator: "크리에이터 선택", kind: "배너 종류", draft: "비공개", published: "공개",
     save: "초안 저장", saveChanges: "변경사항 저장", publish: "공개", unpublish: "비공개로 전환", up: "위로", down: "아래로",
-    readonly: "Viewer 권한은 조회만 가능합니다.", ko: "한국어", en: "English", titleField: "제목", descriptionField: "설명",
-    cta: "버튼 문구", href: "이동 링크", alt: "이미지 대체 텍스트", desktop: "데스크톱 이미지", mobile: "모바일 이미지 (선택 · 없으면 데스크톱 이미지 사용)",
+    readonly: "조회 전용 계정은 볼 수만 있어요.", ko: "한국어", en: "English", titleField: "제목", descriptionField: "설명",
+    cta: "버튼 문구", href: "이동 링크", alt: "이미지 대체 텍스트", desktop: "데스크톱 이미지", mobile: "모바일 이미지 (선택)",
     upload: "이미지 업로드", remove: "이미지 제거", noImage: "등록된 이미지 없음", saved: "배너를 저장했습니다.",
     reordered: "배너 순서를 변경했습니다.", publicationChanged: "공개 상태를 변경했습니다.", failure: "배너 데이터를 처리하지 못했습니다.",
-    uploadFailure: "이미지를 등록하지 못했습니다.", invalid: "저장할 수 없습니다. 셀럽별로 공개할 수 있는 정기 방송 배너는 최대 1개이며 입력 항목도 확인해 주세요.", issues: "공개 전에 다음 항목을 입력해 주세요.",
+    uploadFailure: "이미지를 등록하지 못했습니다.", invalid: "정기 LIVE 배너는 크리에이터마다 하나만 공개할 수 있어요.", issues: "공개 전에 다음 항목을 입력해 주세요.",
     conflict: "다른 관리자가 먼저 변경했습니다. 현재 입력은 보존했습니다. 서버 데이터를 다시 불러오면 현재 입력이 사라집니다.", reload: "서버 데이터 다시 불러오기",
   },
   en: {
@@ -237,7 +237,7 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
     <AdminOperationsShell locale={locale} adminRole={role}>
       <section className={styles.page} aria-labelledby="home-banner-heading">
         <header className={styles.header}>
-          <div><h1 id="home-banner-heading">{t.title}</h1><p>{t.description}</p></div>
+          <div><h1 id="home-banner-heading">{t.title}</h1></div>
           <button className={styles.button} type="button" disabled={!canWrite || busy} onClick={() => { setDraft(emptyDraft()); setAttemptedPublish(false); setMessage(""); setError(""); }}><Plus aria-hidden="true" />{t.new}</button>
         </header>
         {!canWrite && <p className={styles.readonly}>{t.readonly}</p>}

@@ -32,12 +32,11 @@ beforeEach(() => {
 
 describe("kyaa wave registration list", () => {
   it.each([
-    ["ko", "kyaa wave 참가 신청", "kyaa wave 참가 신청 명단을 확인하세요."],
-    ["en", "kyaa wave registrations", "View the people registered for kyaa wave."],
-  ] as const)("shows the event name in %s", async (locale, title, description) => {
+    ["ko", "kyaa wave 참가 신청"],
+    ["en", "kyaa wave registrations"],
+  ] as const)("shows the event name in %s", async (locale, title) => {
     render(<ByusDayRsvpManager locale={locale} />);
     expect(await screen.findByRole("heading", { level: 1, name: title })).toBeInTheDocument();
-    expect(screen.getByText(description)).toBeInTheDocument();
   });
 
   it.each(["ko", "en"] as const)("exports the entire roster despite search and pagination in %s", async locale => {
@@ -151,7 +150,7 @@ describe("separate private participation list", () => {
     participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }));
     render(<ByusDayRsvpManager locale="ko" />); await screen.findByText(participant.name);
     participationFetchMock.mockResolvedValueOnce(Response.json({}, { status: 403 }));
-    fireEvent.click(screen.getByRole("button", { name: "참여 명단 새로고침" }));
+    fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
     await screen.findByText("access:denied"); expect(screen.queryByText(participant.name)).not.toBeInTheDocument();
   });
 });

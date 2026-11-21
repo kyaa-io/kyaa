@@ -236,7 +236,7 @@ describe("CertificationReviewWorkspace", () => {
       onReview,
     });
 
-    expect(await screen.findByText("심사 내역")).toBeVisible();
+    expect(await screen.findByText("심사 기록")).toBeVisible();
     expect(screen.getByText(label)).toBeVisible();
     if (rejectionReason) expect(screen.getByText(rejectionReason)).toBeVisible();
     expect(screen.queryByRole("button", { name: "승인" })).not.toBeInTheDocument();

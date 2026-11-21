@@ -10,7 +10,7 @@ describe("recurring operator review",()=>{
  it("shows evidence and existing reservation count but no write controls to viewer",async()=>{
   vi.stubGlobal("fetch",vi.fn(async()=>Response.json(data)));
   render(<RecurringLivePanel locale="ko" role="viewer" getAccessToken={token}/>);
-  await screen.findByText("정기 규칙 확인");expect(screen.getByRole("link",{name:"공식 출처"})).toHaveAttribute("href","https://www.tiktok.com/@ifewknow");
+  await screen.findByText("정기 LIVE 확인");expect(screen.getByRole("link",{name:"공식 출처"})).toHaveAttribute("href","https://www.tiktok.com/@ifewknow");
   expect(screen.queryByRole("button",{name:"이 LIVE에 연결"})).not.toBeInTheDocument();expect(screen.queryByRole("button",{name:"규칙 승인"})).not.toBeInTheDocument();
  });
  it("requires explicit selection and reason before cancelling and preserves the review CAS",async()=>{

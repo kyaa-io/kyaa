@@ -207,7 +207,7 @@ export function SurveyBuilder({ liveEventId }: { liveEventId: string }) {
         e instanceof Error
           ? e.message
           : locale === "ko"
-            ? "요청을 처리하지 못했습니다."
+            ? "저장하지 못했어요."
             : "Request failed.",
       );
     } finally {

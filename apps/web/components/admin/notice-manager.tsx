@@ -153,7 +153,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     return () => window.removeEventListener("beforeunload", protectDraft);
   }, [dirty]);
   function confirmDiscard() {
-    return !dirty || window.confirm(locale === "ko" ? "저장하지 않은 변경사항이 있어요. 변경사항을 버리고 이동할까요?" : "You have unsaved changes. Discard them and continue?");
+    return !dirty || window.confirm(locale === "ko" ? "저장하지 않은 내용이 있어요. 나갈까요?" : "You have unsaved changes. Discard them and continue?");
   }
   function reset() {
     if (!confirmDiscard()) return;
@@ -196,7 +196,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   async function state(action: "publish" | "unpublish" | "archive") {
     if (!current) return;
     if (!beginOperation(locale === "ko" ? "공지 상태를 변경하는 중입니다." : "Updating Notice state.")) return;
-    const reason = action === "archive" ? prompt(locale === "ko" ? "보관 사유를 10자 이상 입력하세요." : "Enter an archive reason (10+ characters).") : undefined;
+    const reason = action === "archive" ? prompt(locale === "ko" ? "보관 사유를 10자 이상 적어 주세요." : "Enter an archive reason (10+ characters).") : undefined;
     if (action === "archive" && !reason) { endOperation(); setMessage(""); return; }
     let postSucceeded = false;
     try {
@@ -269,7 +269,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
         {listState === "ready" && pagination.items.map((item) => <button type="button" key={item.id} disabled={interactionLocked} aria-pressed={selectedId === item.id} onClick={() => { if (item.id !== selectedId && confirmDiscard()) setSelectedId(item.id); }}><strong>{item.localizations[locale].title || item.slug}</strong><span>{item.archivedAt ? (locale === "ko" ? "보관됨" : "Archived") : item.publicationStatus === "published" ? (locale === "ko" ? "공개됨" : "Published") : (locale === "ko" ? "초안" : "Draft")} · {locale === "ko" ? `수정 ${item.revision}` : `Revision ${item.revision}`}</span></button>)}{listState === "ready" && <AdminPagination {...pagination} locale={locale} disabled={interactionLocked} />}</div>
       <div className={styles.editor}>
         <div className={styles.language}><button type="button" disabled={interactionLocked} aria-pressed={language === "ko"} onClick={() => setLanguage("ko")}>KO</button><button type="button" disabled={interactionLocked} aria-pressed={language === "en"} onClick={() => setLanguage("en")}>EN</button></div>
-        <div className={styles.fields}><label><span>{locale === "ko" ? "주소 이름" : "URL name"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={(event) => setSlug(event.target.value)} /></label><label><span>{locale === "ko" ? "제목" : "Title"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={titles[language]} onChange={(event) => setTitles((value) => ({ ...value, [language]: event.target.value }))} /></label><label className={styles.pin}><input type="checkbox" disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} checked={pinned} onChange={(event) => setPinned(event.target.checked)} /><Pin />{locale === "ko" ? "상단 고정" : "Pin Notice"}</label></div>
+        <div className={styles.fields}><label><span>{locale === "ko" ? "주소" : "URL name"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={(event) => setSlug(event.target.value)} /></label><label><span>{locale === "ko" ? "제목" : "Title"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={titles[language]} onChange={(event) => setTitles((value) => ({ ...value, [language]: event.target.value }))} /></label><label className={styles.pin}><input type="checkbox" disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} checked={pinned} onChange={(event) => setPinned(event.target.checked)} /><Pin />{locale === "ko" ? "상단 고정" : "Pin Notice"}</label></div>
         {categories ? <div className={styles.fields}>
           <label><span>{locale === "ko" ? "구분" : "Category"}</span><select disabled={toolbarDisabled} value={category} onChange={event => setCategory(event.target.value)}>{categories.map(value => <option key={value} value={value}>{categoryLabels?.[value] ?? value}</option>)}</select></label>
           {linkable && <label><span>{locale === "ko" ? "연결 팬페이지" : "Linked fan page"}</span><select disabled={toolbarDisabled} value={linkedPageId ?? ""} onChange={event => setLinkedPageId(event.target.value || null)}>
@@ -281,7 +281,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
           <label><span>{locale === "ko" ? "글 구분" : "Post type"}</span><select disabled={toolbarDisabled} value={postType} onChange={event => setPostType(event.target.value as Notice["postType"])}><option value="notice">{locale === "ko" ? "공지" : "Notice"}</option><option value="artist_post">{isBrand ? locale === "ko" ? "브랜드 소식" : "Brand update" : locale === "ko" ? "아티스트 글" : "Artist post"}</option></select></label>
           <label><span>{locale === "ko" ? "공개 범위" : "Visibility"}</span><select disabled={toolbarDisabled} value={isBrand ? "public" : visibility} onChange={event => setVisibility(event.target.value as Notice["visibility"])}><option value="public">{locale === "ko" ? "전체 공개" : "Public"}</option>{!isBrand && <option value="members">{locale === "ko" ? "회원 공개" : "Members only"}</option>}</select></label>
         </div>}
-        <div className={styles.toolbar} aria-label={locale === "ko" ? "본문 서식" : "Body formatting"}>
+        <div className={styles.toolbar} aria-label={locale === "ko" ? "본문 형식" : "Body formatting"}>
           <button type="button" disabled={toolbarDisabled} onClick={() => editor?.chain().focus().toggleBold().run()} aria-label="Bold"><Bold /></button>
           <button type="button" disabled={toolbarDisabled} onClick={() => editor?.chain().focus().toggleItalic().run()} aria-label="Italic"><Italic /></button>
           <button type="button" disabled={toolbarDisabled} onClick={() => editor?.chain().focus().toggleUnderline().run()} aria-label="Underline"><UnderlineIcon /></button>
@@ -293,7 +293,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
         </div>
         <EditorContent editor={editor} className={styles.body} />
         <section className={styles.preview} aria-labelledby="notice-preview-title">
-          <h3 id="notice-preview-title">{locale === "ko" ? "공개 화면 미리보기" : "Public preview"}</h3>
+          <h3 id="notice-preview-title">{locale === "ko" ? "미리보기" : "Public preview"}</h3>
           <h4>{titles[language] || (language === "ko" ? "공지 제목" : "Notice title")}</h4>
           <NoticeBody document={bodies[language] as TiptapDocument} locale={language} adminPreview operatorChannelId={operatorChannelId} />
         </section>

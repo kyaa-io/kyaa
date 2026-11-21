@@ -339,18 +339,18 @@ function CelebrityCms({
             <label className={`${styles.searchField} ${localStyles.searchField}`}>
               <Search aria-hidden="true" />
               <span className={styles.srOnly}>
-                {locale === "ko" ? "이름 또는 주소 검색" : "Search name or slug"}
+                {locale === "ko" ? "이름·주소 검색" : "Search name or slug"}
               </span>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={
-                  locale === "ko" ? "이름 또는 주소 검색" : "Search name or slug"
+                  locale === "ko" ? "이름·주소 검색" : "Search name or slug"
                 }
               />
             </label>
             <label className={localStyles.statusField}>
-              <span>{locale === "ko" ? "공개 상태" : "Publication status"}</span>
+              <span>{locale === "ko" ? "상태" : "Publication status"}</span>
               <select
                 value={publicationFilter}
                 onChange={(event) =>
@@ -437,7 +437,7 @@ function CelebrityCms({
             </h2>
             <span>
               {locale === "ko"
-                ? "KO·EN 필수 정보를 모두 입력해야 저장할 수 있습니다."
+                ? "한국어·영어 필수 정보를 모두 입력해야 저장할 수 있어요."
                 : "Complete all required KO and EN fields before saving."}
             </span>
           </div>
@@ -493,7 +493,7 @@ function CelebrityCms({
               if (!draftIsValid) {
                 setMessage(
                   locale === "ko"
-                    ? "KO·EN 필수 정보와 주소 경로, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인하세요."
+                    ? "한국어·영어 필수 정보와 주소, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인해 주세요."
                     : "Check required KO and EN fields, slug, image, role, website and ticket links, theme, and channel formats.",
                 );
                 return;
@@ -528,7 +528,7 @@ function CelebrityCms({
               </label>
               <label>
                 <span>
-                  {lang === "ko" ? "이미지 대체 텍스트" : "Image alt"}
+                  {lang === "ko" ? "이미지 설명" : "Image alt"}
                 </span>
                 <input
                   required
@@ -558,7 +558,7 @@ function CelebrityCms({
                   </small>
                 </label>
                 <label>
-                  <span>{locale === "ko" ? "정렬 순서" : "Sort order"}</span>
+                  <span>{locale === "ko" ? "노출 순서" : "Sort order"}</span>
                   <input
                     type="number"
                     min="0"
@@ -573,7 +573,7 @@ function CelebrityCms({
                   />
                 </label>
                 <label>
-                  <span>{locale === "ko" ? "통합 팬 수" : "Total fans"}</span>
+                  <span>{locale === "ko" ? "전체 팬 수" : "Total fans"}</span>
                   <input
                     type="number"
                     min="0"
@@ -750,7 +750,7 @@ function CelebrityCms({
             </fieldset>
             <aside className={styles.cmsPreview}>
               <span>
-                {locale === "ko" ? "팬 화면 미리보기" : "Fan preview"}
+                {locale === "ko" ? "팬 화면 보기" : "Fan preview"}
               </span>
               {draft.imageUrl && (
                 <img
@@ -782,7 +782,7 @@ function CelebrityCms({
                     ? "필수 정보가 입력되어 저장할 수 있습니다."
                     : "Required information is complete and ready to save."
                   : locale === "ko"
-                    ? "KO·EN 필수 정보와 주소 경로, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인하세요."
+                    ? "한국어·영어 필수 정보와 주소, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인해 주세요."
                     : "Check required KO and EN fields, slug, image, role, website and ticket links, theme, and channel formats."}
               </p>
             )}
@@ -842,7 +842,7 @@ function CelebrityCms({
                       onClick={() => {
                         const reason = prompt(
                           locale === "ko"
-                            ? "보관 사유를 10자 이상 입력하세요."
+                            ? "보관 사유를 10자 이상 적어 주세요."
                             : "Enter an archive reason (10+ characters).",
                         );
                         if (reason)

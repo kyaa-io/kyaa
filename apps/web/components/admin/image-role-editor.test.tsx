@@ -46,7 +46,7 @@ describe("ImageRoleEditor", () => {
     fireEvent.click(within(landscape).getByRole("button", { name: /이 역할 적용/ }));
 
     await waitFor(() => expect(screen.getByText("이미지 역할을 적용했습니다.")).toBeInTheDocument());
-    expect(within(landscape).getByText("설정 버전 1")).toBeInTheDocument();
+    expect(within(landscape).getByText("수정 횟수 1")).toBeInTheDocument();
     const applyCall = fetchMock.mock.calls.find(([url, init]) => String(url) === "/api/admin/image-roles" && init?.method === "POST")!;
     const payload = JSON.parse(String(applyCall[1]?.body));
     expect(payload).toMatchObject({ ownerType: "celebrity", ownerId, role: "landscape", expectedRevision: 0 });
@@ -78,7 +78,7 @@ describe("ImageRoleEditor", () => {
     await waitFor(() => expect(screen.getByText("다른 관리자가 먼저 변경했습니다. 최신 값을 다시 불러왔습니다.")).toBeInTheDocument());
     expect(getCount).toBe(2);
     expect(screen.queryByText("이미지 역할을 적용했습니다.")).not.toBeInTheDocument();
-    expect(within(landscape).getByText("설정 버전 3")).toBeInTheDocument();
+    expect(within(landscape).getByText("수정 횟수 3")).toBeInTheDocument();
   });
 
   it("keeps every image-role control read-only for viewers", async () => {

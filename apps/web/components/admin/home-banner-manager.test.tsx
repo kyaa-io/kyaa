@@ -34,7 +34,7 @@ describe("HomeBannerManager", () => {
   it("keeps viewer access read-only while showing both locale assets", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json(fixture())));
     render(<HomeBannerManager locale="ko" role="viewer" />);
-    expect(await screen.findByText("Viewer 권한은 조회만 가능합니다.")).toBeInTheDocument();
+    expect(await screen.findByText("조회 전용 계정은 볼 수만 있어요.")).toBeInTheDocument();
     expect(screen.getAllByDisplayValue("카라").find((element) => element instanceof HTMLInputElement)).toBeDisabled();
     expect(screen.getByDisplayValue("카라 LIVE")).toBeDisabled();
     expect(screen.getAllByRole("img")).toHaveLength(2);
@@ -70,7 +70,7 @@ describe("HomeBannerManager", () => {
     vi.stubGlobal("fetch", fetcher);
     render(<HomeBannerManager locale="ko" role="operator" />);
     await waitFor(() => expect(fetcher).toHaveBeenCalled());
-    const mobileCards = screen.getAllByRole("region", { name: "모바일 이미지 (선택 · 없으면 데스크톱 이미지 사용)" });
+    const mobileCards = screen.getAllByRole("region", { name: "모바일 이미지 (선택)" });
     fireEvent.change(within(mobileCards[0]).getByLabelText("이미지 업로드"), { target: { files: [new File(["image"], "mobile.png", { type: "image/png" })] } });
     expect(screen.getByRole("button", { name: "새 배너" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "초안 저장" })).toBeDisabled();

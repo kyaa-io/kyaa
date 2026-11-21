@@ -15,12 +15,12 @@ type Locale = "ko" | "en";
 type RejectCode = (typeof INSTA_REJECT_CODES)[number];
 const TEXT = {
   ko: { title: "인스타 리포스트 확인", pending: "확인 대기", accepted: "승인됨", rejected: "반려됨", revoked: "회수됨", all: "전체", member: "회원", submitted: "제출",
-    hours: (n: number) => `${n}시간 지남`, feed: "피드", reel: "릴스", story: "스토리", capture: "캡처 보기", accept: "승인", reject: "반려", rejectAs: "반려 사유",
+    hours: (n: number) => `${n}시간 지남`, feed: "피드", reel: "릴스", story: "스토리", capture: "제출 이미지 보기", accept: "승인", reject: "반려", rejectAs: "반려 사유",
     no_hashtag: "해시태그 없음", private_account: "비공개 계정", duplicate: "중복", unrelated: "관련 없는 게시물", duplicateCount: (n: number) => `같은 게시물 ${n}명`,
     paid: (p: number) => `${p}P 지급`, point_cap: "오늘 지급 한도로 0P", month_cap: "이번 달 지급 한도로 0P", account_inactive: "계정 제한으로 0P", clawedBack: "스탬프 무효로 회수됨",
     reason: "회수 사유", revoke: "회수", empty: "리포스트가 없습니다.", more: "더 보기", failed: "처리하지 못했습니다.", captureFailed: "캡처를 열지 못했습니다.",
-    SELF_REVIEW_FORBIDDEN: "본인 리포스트는 확인할 수 없습니다.", REVIEW_FORBIDDEN: "이 리포스트를 확인할 권한이 없습니다.", REVIEW_STALE: "다른 확인이 먼저 반영됐습니다. 목록을 다시 불러왔습니다.",
-    SHARE_PROOF_NOT_ACCEPTED: "승인된 리포스트만 회수할 수 있습니다.", CLAWBACK_WINDOW_CLOSED: "승인 7일이 지나 회수할 수 없습니다.", REASON_REQUIRED: "회수 사유를 3자 이상 적어 주세요.",
+    SELF_REVIEW_FORBIDDEN: "본인 리포스트는 확인할 수 없습니다.", REVIEW_FORBIDDEN: "이 리포스트를 확인할 권한이 없습니다.", REVIEW_STALE: "다른 관리자가 먼저 처리했어요. 목록을 새로 불러왔어요.",
+    SHARE_PROOF_NOT_ACCEPTED: "승인된 리포스트만 회수할 수 있습니다.", CLAWBACK_WINDOW_CLOSED: "승인 후 7일이 지나 회수할 수 없어요.", REASON_REQUIRED: "회수 사유를 3자 이상 적어 주세요.",
     corrected: "회수했습니다.", review: "포인트를 이미 써서 포인트 환수 검토로 넘겼습니다.", stamp_voided: "스탬프를 무효 처리했습니다.", none: "회수할 지급이 없어 상태만 바꿨습니다.", replayed: "이미 회수된 리포스트입니다." },
   en: { title: "Instagram reposts", pending: "To review", accepted: "Approved", rejected: "Rejected", revoked: "Revoked", all: "All", member: "Member", submitted: "Submitted",
     hours: (n: number) => `${n}h ago`, feed: "Feed", reel: "Reel", story: "Story", capture: "View capture", accept: "Approve", reject: "Reject", rejectAs: "Reject reason",

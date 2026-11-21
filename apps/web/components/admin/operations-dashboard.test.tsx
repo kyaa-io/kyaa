@@ -148,7 +148,7 @@ describe("Admin operations surfaces", () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
     render(<AdminAnalytics />);
     fireEvent.click(screen.getByRole("button", { name: "분석 조회" }));
-    expect(screen.getByRole("alert")).toHaveTextContent("올바른 UUID");
+    expect(screen.getByRole("alert")).toHaveTextContent("번호와 시작·종료 시각");
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 

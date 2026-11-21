@@ -108,7 +108,7 @@ it("makes list scope and new-versus-edit mode explicit", async () => {
   expect(screen.getByRole("heading", { name: "새 크리에이터 등록" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "초안 저장" })).toBeDisabled();
   expect(await screen.findByText("1개 검색 결과 · 전체 1개")).toBeInTheDocument();
-  const status = screen.getByRole("combobox", { name: "공개 상태" });
+  const status = screen.getByRole("combobox", { name: "상태" });
   fireEvent.change(status, { target: { value: "published" } });
   expect(screen.getByText("조건에 맞는 크리에이터가 없습니다.")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "조건 지우기" }));
@@ -147,7 +147,7 @@ it("pages the full creator list and resets to the first page when filters change
   fireEvent.click(screen.getByRole("button", { name: "마지막 페이지" }));
   expect(screen.getByRole("button", { name: /크리에이터 40.*가수/ })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "다음 페이지" })).toBeDisabled();
-  fireEvent.change(screen.getByRole("textbox", { name: "이름 또는 주소 검색" }), { target: { value: "creator-0" } });
+  fireEvent.change(screen.getByRole("textbox", { name: "이름·주소 검색" }), { target: { value: "creator-0" } });
   expect(screen.getByRole("button", { name: /크리에이터 0.*가수/ })).toBeInTheDocument();
   expect(screen.getByText("전체 1건 중 1–1건")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "조건 지우기" }));

@@ -83,10 +83,7 @@ type FanDetail = {
 };
 const copy = {
   ko: {
-    eyebrow: "회원 운영",
     title: "회원 관리",
-    description:
-      "회원의 계정 상태와 패스포트 활동·혜택 기록을 확인합니다.",
     privacyTitle: "개인정보 조회 기준",
     privacy:
       "로그인 수단은 인증 서비스에 연결된 계정 기준입니다. 이메일은 권한이 있는 관리자만 조회할 수 있으며, 검색어 원문과 이메일은 감사 로그에 저장하지 않습니다.",
@@ -110,7 +107,7 @@ const copy = {
     sortRecent: "가입 최신순",
     sortName: "이름순",
     sortScore: "점수 높은순",
-    sortActivity: "활동 많은순",
+    sortActivity: "활동 많은 순",
     loadMore: "다음 회원 불러오기",
     loadingMore: "불러오는 중…",
     loadMoreError: "다음 회원을 불러오지 못했습니다. 다시 시도해 주세요.",
@@ -122,31 +119,28 @@ const copy = {
     journey: "패스포트 여정",
     noPassport: "패스포트 미발급",
     noPassportDescription: "아직 발급된 패스포트가 없습니다.",
-    score: "팬 점수",
+    score: "점수",
     activity: "활동",
     benefit: "혜택",
     detail: "회원 상세",
     close: "상세 닫기",
-    ledger: "팬 점수 원장",
+    ledger: "점수 기록",
     stamps: "스탬프",
     benefits: "혜택 상태",
     none: "기록 없음",
     adjust: "점수 교정",
     adjustHelp: "기존 팬 점수를 덮어쓰지 않고 +/- 원장 행을 영구 추가합니다.",
-    points: "조정값 (-100~100)",
+    points: "조정 점수 (-100~100)",
     reason: "교정 사유",
-    confirm: "이 교정이 불변 원장과 감사 로그에 영구 기록됨을 확인합니다.",
+    confirm: "기록은 지울 수 없음을 확인했어요.",
     submit: "교정 기록",
     saved: "교정이 기록되었습니다.",
     saveError: "교정을 기록하지 못했습니다.",
-    viewer: "Viewer는 팬 상태를 읽기만 할 수 있습니다.",
-    unavailable: "비활성 팬 또는 보관된 셀럽은 교정할 수 없습니다.",
+    viewer: "조회 전용 계정은 볼 수만 있어요.",
+    unavailable: "이용 중지 회원이나 보관된 크리에이터는 조정할 수 없어요.",
   },
   en: {
-    eyebrow: "Member operations",
     title: "Member management",
-    description:
-      "Review Passport journeys, issuance, and benefit states with minimum fan data.",
     privacyTitle: "Privacy and data access",
     privacy:
       "Login methods reflect accounts linked to the authentication service. Only authorized administrators can view email addresses. Raw search terms and email addresses are excluded from audit logs.",
@@ -436,9 +430,9 @@ export function FanOperations() {
   return (
     <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
       <header className={ops.pageHeading}>
-        <p>{t.eyebrow}</p>
+
         <h1>{t.title}</h1>
-        <span>{t.description}</span>
+
       </header>
       <details className={styles.privacyNote}>
         <summary>
@@ -787,7 +781,7 @@ function JourneyDetail({
           <dd>{current.score.points}</dd>
         </div>
         <div>
-          <dt>{locale === "ko" ? "패스포트 NFT" : "Passport NFT"}</dt>
+          <dt>{locale === "ko" ? "디지털 패스포트" : "Passport NFT"}</dt>
           <dd>{current.mintStatus}</dd>
         </div>
       </dl>

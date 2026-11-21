@@ -198,16 +198,16 @@ const copy = {
     campaigns: "혜택 캠페인",
     campaignSave: "캠페인 초안 저장",
     campaignPublish: "캠페인 발행",
-    campaignNoLimit: "혜택별 응모 한도 (비우면 제한 없음)",
+    campaignNoLimit: "경품별 응모 한도 (비우면 제한 없음)",
     draw: "추첨 실행",
     select: "선정",
     reject: "미선정",
-    used: "사용 처리",
-    readonly: "Viewer 권한은 조회만 가능합니다.",
+    used: "사용 완료로 표시",
+    readonly: "조회 전용 계정은 볼 수만 있어요.",
     secret:
-      "전달값과 코드는 저장 후 화면, 응답, 감사 로그에 다시 표시되지 않습니다.",
-    failure: "혜택 데이터를 처리하지 못했습니다.",
-    confirm: "이 작업은 이력에 영구 기록되며 되돌릴 수 없습니다. 계속할까요?",
+      "저장 후에는 코드를 다시 볼 수 없어요.",
+    failure: "저장하지 못했어요.",
+    confirm: "되돌릴 수 없어요. 계속할까요?",
   },
   en: {
     title: "Benefit manager",
@@ -434,7 +434,7 @@ function BenefitManager({
         const preview = await fetch(`/api/admin/benefit-campaigns/${campaignId}/participants?offset=0&limit=1`, { cache: "no-store", headers: { authorization: `Bearer ${token}` } });
         if (!preview.ok) throw new Error();
         const candidates = cheerEventParticipantsSchema.parse(await preview.json());
-        if (candidates.total === 0) { setError(locale === "ko" ? "현재 참여자가 없어 추첨할 수 없습니다." : "There are no participants to draw from yet."); return; }
+        if (candidates.total === 0) { setError(locale === "ko" ? "응모한 회원이 없어 추첨할 수 없어요." : "There are no participants to draw from yet."); return; }
         if (!window.confirm(locale === "ko" ? `${campaignLabel(target)}\n현재 참여자 ${candidates.total}명 · 총 추첨 가중치 ${candidates.totalWeight}\n지금 참여를 마감하고 현장 추첨할까요? 실행 시점의 참여자와 예약 가중치가 확정됩니다. 추첨은 되돌릴 수 없으며 결과 공개는 별도로 진행합니다.` : `${campaignLabel(target)}\n${candidates.total} participants · total draw weight ${candidates.totalWeight}\nClose entries now and draw? Participants and reservation weights will be finalized at execution. The draw cannot be undone. Results are published separately.`)) return;
       }
       const idempotencyKey = drawKeys.current[campaignId] ??= crypto.randomUUID();
@@ -547,7 +547,7 @@ function BenefitManager({
               <legend>{t.campaigns}</legend>
               <div className={styles.grid}>
                 <fieldset disabled={Boolean(campaign.id)}>
-                  <Select label={locale === "ko" ? "캠페인 유형" : "Campaign source"} value={campaign.source} set={(source) => setCampaign(c => ({ ...c, source: source as "live" | "creator" }))} options={[["live", "LIVE"], ["creator", locale === "ko" ? "팬페이지" : "Fanpage"]]} />
+                  <Select label={locale === "ko" ? "이벤트 종류" : "Campaign source"} value={campaign.source} set={(source) => setCampaign(c => ({ ...c, source: source as "live" | "creator" }))} options={[["live", "LIVE"], ["creator", locale === "ko" ? "팬페이지" : "Fanpage"]]} />
                   {campaign.source === "creator" ? <Select label={locale === "ko" ? "크리에이터" : "Creator"} value={campaign.celebrityId} set={(celebrityId) => setCampaign(c => ({ ...c, celebrityId }))} options={[["", "—"], ...data.celebrities.map(c => [c.id, locale === "ko" ? c.nameKo : c.nameEn] as [string, string])]} /> : null}
                 </fieldset>
                 {campaign.source === "live" ? <Field label="LIVE event ID" value={campaign.liveEventId} set={(liveEventId) => setCampaign((c) => ({ ...c, liveEventId }))} /> : null}
@@ -562,7 +562,7 @@ function BenefitManager({
                   <Field required={false} type="number" label={t.campaignNoLimit} value={item.perFanTicketLimit} set={(v) => setCampaignItem(index, "perFanTicketLimit", v)} />
                   <Field type="number" label="Winner quantity" value={item.winnerQuantity} set={(v) => setCampaignItem(index, "winnerQuantity", v)} />
                   <Select label="Fulfillment" value={item.fulfillmentMethod} set={(v) => setCampaignItem(index, "fulfillmentMethod", v)} options={[["digital", "Digital"], ["physical_shipping", "Physical shipping"], ["on_site_pickup", "On-site pickup"]]} />
-                  <Field required={false} label={locale === "ko" ? "티저 이미지 경로" : "Teaser image URL"} value={item.teaserImageUrl} set={(v) => setCampaignItem(index, "teaserImageUrl", v)} />
+                  <Field required={false} label={locale === "ko" ? "미리 공개 이미지 주소" : "Teaser image URL"} value={item.teaserImageUrl} set={(v) => setCampaignItem(index, "teaserImageUrl", v)} />
                 </div>
               ))}
               <div className={styles.actions}>

@@ -5,6 +5,7 @@ import { useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { AdminAccessState } from "./admin-access-state";
+import { ReviewNavigation } from "./review-navigation";
 import { AdminOperationsShell } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
 import { ProofReviewPanel, type ProofRequest } from "./proof-review-panel";
@@ -33,7 +34,8 @@ export function AuthorizedProofReview() {
   return (
     <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
       <section style={{ display: "grid", gap: 16, padding: 16 }}>
-        <h1>{adminReviewLabels[locale].stampReview}</h1>
+        <h1>{adminReviewLabels[locale].certifications}</h1>
+        <ReviewNavigation locale={locale} stamps />
         <ProofReviewPanel locale={locale} request={request} canWrite={session.admin.role !== "viewer"} />
         <ShareProofAdminPanel locale={locale} request={request} canWrite={session.admin.role !== "viewer"} />
         <InstaRepostAdminPanel locale={locale} request={request} requestImage={requestImage} canWrite={session.admin.role !== "viewer"} />

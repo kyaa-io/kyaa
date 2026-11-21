@@ -55,7 +55,7 @@ beforeEach(() => {
 describe("certification review workspace integration", () => {
   it.each([
     ["pending", "심사 대기"],
-    ["approved", "승인 완료"],
+    ["approved", "승인"],
   ] as const)("opens a valid %s deep link at the exact submission", async (status, statusLabel) => {
     const requestedId = "123e4567-e89b-42d3-a456-426614174000";
     auth.query = `lang=ko&status=${status}&submission=${requestedId}`;
@@ -142,7 +142,7 @@ describe("certification review workspace integration", () => {
   it("opens reviews first with evidence/context and keeps mission editing in settings", async () => {
     setup(); render(<AuthorizedCertificationManager />);
     expect(await screen.findByAltText("인증 이미지 1")).toBeVisible();
-    expect(screen.queryByLabelText("인증 유형")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("인증 방식")).not.toBeInTheDocument();
     expect(screen.getByText("다음 결제일 또는 유효기간")).toBeVisible();
     expect(screen.getByText("가입 화면입니다")).toBeVisible();
     expect(screen.getByRole("button", { name: "승인" })).toBeDisabled();
@@ -162,13 +162,13 @@ describe("certification review workspace integration", () => {
     fireEvent.click(await screen.findByRole("button", { name: /응원 인증/ }));
     let resolve!: (token: string) => void;
     auth.getAccessToken.mockImplementationOnce(() => new Promise(r => { resolve = r; }));
-    const activate = screen.getByRole("button", { name: "활성화" });
+    const activate = screen.getByRole("button", { name: "공개" });
     fireEvent.click(activate); fireEvent.click(activate);
     expect(activate).toBeDisabled(); expect(postCalls(fetcher)).toHaveLength(0);
     await act(async () => resolve("token"));
-    expect(await screen.findByRole("alert")).toHaveTextContent("변경은 처리됐지만");
+    expect(await screen.findByRole("alert")).toHaveTextContent("저장했습니다. 새로고침해 주세요.");
     expect(activate).toBeDisabled();
-    failGet = false; fireEvent.click(screen.getByRole("button", { name: "최신 상태 불러오기" }));
+    failGet = false; fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
     await waitFor(() => expect(activate).toBeEnabled());
     expect(postCalls(fetcher)).toHaveLength(1);
     fireEvent.click(activate);
@@ -185,10 +185,10 @@ describe("certification review workspace integration", () => {
     expect(screen.getByRole("button", { name: "승인" })).toBeDisabled();
     expect(postCalls(fetcher)).toHaveLength(0);
     await act(async () => resolve("token"));
-    expect(await screen.findByRole("alert")).toHaveTextContent("심사 결과를 확인하지 못했습니다");
+    expect(await screen.findByRole("alert")).toHaveTextContent("결과를 알 수 없어요");
     expect(screen.getByRole("button", { name: "보완 요청" })).toBeDisabled();
     expect(postCalls(fetcher)).toHaveLength(1);
-    fireEvent.click(screen.getByRole("button", { name: "최신 상태 불러오기" }));
+    fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
     await readyProof(); confirmApproval();
     await waitFor(() => expect(postCalls(fetcher)).toHaveLength(2));
     const bodies = postCalls(fetcher).map(([, init]) => JSON.parse(String(init?.body)));
@@ -199,7 +199,7 @@ describe("certification review workspace integration", () => {
     const fetcher = setup({ get: url => url.includes("certification-missions") ? Response.json({ missions: [mission] }) : Response.json({ submissions: [{ ...submission, status: url.endsWith("approved") ? "approved" : "pending", reviewedAt: "2026-09-10T01:00:00Z" }] }) });
     render(<AuthorizedCertificationManager />); await readyProof();
     fireEvent.click(screen.getByRole("button", { name: "승인 완료" }));
-    await screen.findByText("심사 내역");
+    await screen.findByText("심사 기록");
     expect(fetcher.mock.calls.some(([url]) => String(url).endsWith("status=approved"))).toBe(true);
     expect(screen.queryByRole("button", { name: "승인" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "보완 요청" })).not.toBeInTheDocument();
@@ -263,17 +263,17 @@ describe("certification review workspace integration", () => {
     fireEvent.click(screen.getByRole("tab", { name: "미션 설정" }));
     await screen.findByRole("option", { name: /크리에이터 · @star/ });
     fireEvent.change(screen.getByLabelText("크리에이터"), { target: { value: "creator-1" } });
-    fireEvent.change(screen.getByLabelText("인증 유형"), { target: { value: "youtube" } });
+    fireEvent.change(screen.getByLabelText("인증 방식"), { target: { value: "youtube" } });
     expect(screen.getByLabelText("팬 점수")).toHaveValue(1);
-    expect(screen.getByLabelText("응모권 수량")).toHaveValue(0);
+    expect(screen.getByLabelText("응모권 수")).toHaveValue(0);
     fireEvent.change(screen.getByLabelText("시작 일시"), { target: { value: "2026-09-10T00:00" } });
     fireEvent.change(screen.getByLabelText("종료 일시"), { target: { value: "2026-10-10T00:00" } });
     fireEvent.submit(screen.getByRole("button", { name: "초안 저장" }).closest("form")!);
     await screen.findByRole("alert");
     expect(saved).toMatchObject({ command: "save", membershipPlatform: "youtube", scorePoints: 1, ticketAmount: 0, celebrityId: "creator-1" });
     failGet = false;
-    fireEvent.click(screen.getByRole("button", { name: "최신 상태 불러오기" }));
-    const activate = await screen.findByRole("button", { name: "활성화" });
+    fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
+    const activate = await screen.findByRole("button", { name: "공개" });
     await waitFor(() => expect(activate).toBeEnabled());
     fireEvent.click(activate);
     await waitFor(() => expect(postCalls(fetcher)).toHaveLength(2));
@@ -288,16 +288,16 @@ describe("certification review workspace integration", () => {
     fireEvent.click(screen.getByRole("tab", { name: "미션 설정" }));
     await screen.findByRole("option", { name: /크리에이터 · @star/ });
     fireEvent.change(screen.getByLabelText("크리에이터"), { target: { value: "creator-1" } });
-    expect(screen.getByLabelText("증빙 플랫폼")).toBeDisabled();
-    fireEvent.change(screen.getByLabelText("증빙 종류"), { target: { value: "ticket" } });
-    fireEvent.change(screen.getByLabelText("증빙 플랫폼"), { target: { value: " Interpark " } });
+    expect(screen.getByLabelText("플랫폼")).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("올릴 자료 종류"), { target: { value: "ticket" } });
+    fireEvent.change(screen.getByLabelText("플랫폼"), { target: { value: " Interpark " } });
     fireEvent.change(screen.getByLabelText("시작 일시"), { target: { value: "2026-09-10T00:00" } });
     fireEvent.change(screen.getByLabelText("종료 일시"), { target: { value: "2026-10-10T00:00" } });
     fireEvent.submit(screen.getByRole("button", { name: "초안 저장" }).closest("form")!);
     await waitFor(() => expect(bodies).toHaveLength(1));
     expect(bodies[0]).toMatchObject({ command: "save", proofType: "ticket", proofPlatform: "Interpark" });
     expect(bodies[0]).not.toHaveProperty("membershipPlatform");
-    fireEvent.change(screen.getByLabelText("증빙 종류"), { target: { value: "" } });
+    fireEvent.change(screen.getByLabelText("올릴 자료 종류"), { target: { value: "" } });
     fireEvent.submit(screen.getByRole("button", { name: "초안 저장" }).closest("form")!);
     await waitFor(() => expect(bodies).toHaveLength(2));
     expect(bodies[1]).not.toHaveProperty("proofType");
@@ -312,10 +312,10 @@ describe("certification review workspace integration", () => {
     fireEvent.click(screen.getByRole("tab", { name: "미션 설정" }));
     await screen.findByRole("option", { name: /크리에이터 · @star/ });
     fireEvent.change(screen.getByLabelText("크리에이터"), { target: { value: "creator-1" } });
-    fireEvent.change(screen.getByLabelText("증빙 종류"), { target: { value: "sns_post" } });
+    fireEvent.change(screen.getByLabelText("올릴 자료 종류"), { target: { value: "sns_post" } });
     expect(screen.getByRole("option", { name: "SNS 올리기" })).toBeTruthy();
-    expect(Array.from((screen.getByLabelText("증빙 플랫폼") as HTMLSelectElement).options).map(option => option.value)).toEqual(["", "instagram", "tiktok", "x", "threads", "youtube"]);
-    fireEvent.change(screen.getByLabelText("증빙 플랫폼"), { target: { value: "threads" } });
+    expect(Array.from((screen.getByLabelText("플랫폼") as HTMLSelectElement).options).map(option => option.value)).toEqual(["", "instagram", "tiktok", "x", "threads", "youtube"]);
+    fireEvent.change(screen.getByLabelText("플랫폼"), { target: { value: "threads" } });
     fireEvent.change(screen.getByLabelText("시작 일시"), { target: { value: "2026-09-10T00:00" } });
     fireEvent.change(screen.getByLabelText("종료 일시"), { target: { value: "2026-10-10T00:00" } });
     fireEvent.submit(screen.getByRole("button", { name: "초안 저장" }).closest("form")!);
