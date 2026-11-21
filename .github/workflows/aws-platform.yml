@@ -323,7 +323,12 @@ jobs:
       - name: Check referenced public assets in target bucket
         run: |
           python3 -m unittest discover -s scripts -p test_check_public_assets.py
-          python3 scripts/check_public_assets.py work/aws-release/aws-release-config.json
+          release_sha=$(jq -er '.sourceSha' work/aws-release/aws-release.json)
+          if [[ "$(git rev-parse HEAD)" != "$release_sha" ]]; then
+            git worktree add --detach "$RUNNER_TEMP/public-asset-source" "$release_sha"
+            cd "$RUNNER_TEMP/public-asset-source"
+          fi
+          python3 "$GITHUB_WORKSPACE/scripts/check_public_assets.py" "$GITHUB_WORKSPACE/work/aws-release/aws-release-config.json"
       - name: Prepare all worker code updates
         if: env.PROMOTE_WORKERS == 'true'
         run: node scripts/aws-release-workers.mjs prepare
