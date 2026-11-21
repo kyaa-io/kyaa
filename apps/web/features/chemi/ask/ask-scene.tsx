@@ -216,7 +216,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
       else await navigator.clipboard.writeText(href);
       const done = await fetch(`/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`, { method: "POST", headers: authorization, body: JSON.stringify({ via }) });
       // 받은 것이 있으면 그것만 알린다. 없을 때만 복사했다고 알린다.
-      const rewarded = await showShareReward(done, text);
+      const rewarded = await showShareReward(done, text, name);
       if (!rewarded && via === "copy") showFanToast({ title: text("copyDone"), tone: "success" });
       setSheet(null);
       setThanked(true);

@@ -23,7 +23,7 @@ export default async function StarPage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="star-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="star-main">
-          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
+          <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
           <StarFlow locale={locale} restoring={restoring} />
         </FanContentContainer>
       </ReadingCopyProvider>

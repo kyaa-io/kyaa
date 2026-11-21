@@ -25,7 +25,7 @@ export default async function TarotPage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="tarot-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="tarot-main">
-          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
+          <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
           <TarotScreen
             locale={locale}
             initialCharacter={isTarotCharacter(params.c) ? params.c : "changha"}

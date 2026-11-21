@@ -201,3 +201,24 @@
     grid-template-columns: 1fr;
   }
 }
+@media (min-width: 64rem) {
+  .home[data-ranked="false"] .banner {
+    position: relative;
+    align-self: stretch;
+  }
+  .home[data-ranked="false"] .artwork {
+    position: absolute;
+    inset: 0;
+  }
+  .home[data-ranked="false"] .artwork img {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .home[data-ranked="false"] .caption {
+    padding-bottom: calc(var(--space-12) + var(--space-3));
+  }
+  .home[data-ranked="false"] .dots {
+    position: absolute;
+    inset: auto 0 var(--space-1);
+  }
+}

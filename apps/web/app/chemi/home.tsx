@@ -58,7 +58,7 @@ export function ChemiHome({
               const active = activities[activeIndex].id === id;
               const content = (
                 <>
-                  <img src={`/chemi/thumb-${id}-128.webp`} alt="" />
+                  <img src={`/chemi/thumb-${id}-128-v2.webp`} alt="" />
                   <b>{copy[id]}</b>
                 </>
               );

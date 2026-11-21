@@ -29,7 +29,7 @@ export default async function SajuPage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="saju-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="saju-main">
-          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
+          <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
           {params.from ? (
             <SajuShared key={params.from} locale={locale} from={params.from} />
           ) : (

@@ -6,7 +6,8 @@ export async function completeShare(
   shareId: string,
   via: "copy" | "send",
   headers: HeadersInit,
-  text: (key: RewardLabel) => string,
+  text: (key: RewardLabel, vars?: { name: string }) => string,
+  name: string,
 ) {
   // The copy or native share has already succeeded. Only announce confirmed grants.
   try {
@@ -17,7 +18,7 @@ export async function completeShare(
     const { reward } = await response.json();
     const labels = [];
     if (reward?.pass === 1) labels.push(text("shareAskBonus"));
-    if (reward?.exp === 5) labels.push(text("shareAffinityBonus"));
+    if (reward?.exp === 5) labels.push(text("shareAffinityBonus", { name }));
     if (labels.length) showFanToast({ title: labels.join(" · "), tone: "success" });
     return { pass: reward?.pass === 1 ? 1 : 0, exp: reward?.exp === 5 ? 5 : 0 };
   } catch {

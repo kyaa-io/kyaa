@@ -386,10 +386,12 @@ export function FortuneFlow({
         : fortuneEnterLine(character, null, needBirth ? "birth" : "enter");
 
   const wideArt =
-    character === "changha" ? `${art}/fortune-v1.webp` : `${art}/fortune-${character}-wide-v2.webp`;
+    character === "changha"
+      ? `${art}/${talk ? "fortune-v1" : "fortune-changha-banner-v2"}.webp`
+      : `${art}/fortune-${character}-wide-v2.webp`;
   const mobileArt =
     character === "changha"
-      ? `${art}/fortune-${talk ? mobileTalkArt[talk - 1] : "portrait"}-v1.webp`
+      ? `${art}/${talk ? `fortune-${mobileTalkArt[talk - 1]}-v1` : "fortune-portrait-v2"}.webp`
       : `${art}/fortune-${character}-v2.webp`;
   const face =
     character === "changha" && talk && talk > 1

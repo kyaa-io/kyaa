@@ -27,7 +27,7 @@ export default async function FortunePage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="fortune-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="fortune-main">
-          <FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction>
+          <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
           {params.from ? (
             <FortuneResult key={params.from} locale={locale} from={params.from} />
           ) : (
