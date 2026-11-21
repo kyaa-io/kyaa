@@ -177,7 +177,7 @@ describe("TelegramCertificationWorker", () => {
     }) };
     await expect(new TelegramCertificationWorker(q, storage, sender, chatId).runOnce()).resolves.toBe(1);
     expect(storage.download.mock.calls.map((call) => call[0])).toEqual(["proofs/first.webp", "proofs/second.png"]);
-    expect(sender.sendProof.mock.calls[0]![0]).toMatchObject({ caption: expect.stringContaining("엘리나"), callbackToken, replyToMessageId: null });
+    expect(sender.sendProof.mock.calls[0]![0]).toMatchObject({ caption: expect.stringContaining("신청자 별***"), callbackToken, replyToMessageId: null });
     expect(sender.sendProof.mock.calls[1]![0]).toMatchObject({ caption: null, callbackToken: null, adminUrl: null, replyToMessageId: 321 });
     expect(events).toEqual(["begin", `send:${firstUploadId}`, `record:${firstUploadId}`, "begin", `send:${secondUploadId}`, `record:${secondUploadId}`]);
     expect(q.begin.mock.calls.map((call) => call.slice(2))).toEqual([
