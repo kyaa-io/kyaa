@@ -171,6 +171,7 @@ function Session({
   const [publicRows, setPublicRows] = useState<Row[] | null>(null);
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [priorRank, setPriorRank] = useState<number | null>(null);
   const [result, setResult] = useState<Finish | null>(null);
   const [pendingFinish, setPendingFinish] = useState<Submission | null>(null);
   const [error, setError] = useState("");
@@ -318,6 +319,7 @@ function Session({
         throw e;
       }
       startKey.current.choice = "";
+      setPriorRank(lobby?.ranking.find(row => row.isMe)?.place ?? null);
       setTicket(next);
       setResult(null);
       setPendingFinish(null);
@@ -418,7 +420,7 @@ function Session({
       song.pause();
     };
   }, [sound, character, stage]);
-  function ring(enable: boolean) {
+  function ring(enable: boolean, frequency = 440) {
     if (!enable) return;
     try {
       audio.current ??= new AudioContext();
@@ -426,6 +428,7 @@ function Session({
       void context.resume().catch(() => {});
       const tone = context.createOscillator(),
         gain = context.createGain();
+      tone.frequency.value = frequency;
       gain.gain.setValueAtTime(0.035, context.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.09);
       tone.connect(gain).connect(context.destination);
@@ -568,7 +571,7 @@ function Session({
           )}
         </div>
       )}
-      <div className={styles.layout} data-playing={Boolean(active)}>
+      <div className={styles.layout} data-lobby={stage === "start" && !share} data-playing={Boolean(active)}>
         <section className={styles.content}>
           {stage === "start" &&
             (share ? (
@@ -597,8 +600,8 @@ function Session({
               </>
             ) : (
               <>
-                <FanHeading as="h2">{copy.choose}</FanHeading>
-                <div className={styles.choices}>
+
+                <div className={styles.choices} role="group" aria-label={copy.choose}>
                   {characters.map((c) => (
                     <FanAction
                       variant="text"
@@ -626,9 +629,11 @@ function Session({
                   <p><b>{copy[character]}</b> · {["Magic Puzzle In-Game 1","Magic Puzzle In-Game 2","Cozy Puzzle In-Game 1"][characters.indexOf(character)]} · CC0</p>
                 </div>
                 {levelList}
-                <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}>
-                  {copy[character]} · {copy.start}
-                </StageAction>
+                <div className={styles.startAction}>
+                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}>
+                    {copy[character]} · {copy.start}
+                  </StageAction>
+                </div>
                 {lobby?.previous && (
                   <p className={styles.detail}>
                     {copy.lastWeek} <b>{lobby.previous.place}</b>
@@ -645,7 +650,7 @@ function Session({
             <>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong></div>
               <progress aria-label={copy.time} data-urgent={active.remaining <= FPS * 10} value={active.remaining} max={LEVELS[active.stage-1].seconds * FPS} />
-              <dl className={styles.hud}>
+              <dl className={styles.hud} data-urgent={active.remaining <= FPS * 10}>
                 <div>
                   <FanText as="dt" role="meta">
                     {copy.time}
@@ -715,7 +720,9 @@ function Session({
                           ...(open ? [photo + 1] : []),
                         ].join(" ")}
                         onClick={() => {
-                          ring(sound);
+                          const isSecond = active.first >= 0;
+                          const paired = isSecond && active.layout[active.first] === photo;
+                          ring(sound, isSecond ? (paired ? 784 : 220) : 440);
                           tap(index);
                         }}
                       >
@@ -821,7 +828,7 @@ function Session({
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{view.score.toLocaleString(locale)}</strong></div>
               <p>{copy.pairs} +{view.pairs * 100} · CLEAR +{view.clearPoints} · {copy.time} +{view.timePoints} · {copy.accuracy} +{view.accuracyPoints}</p>
               <div className={styles.souvenir}>
-                {art.cards.slice(0, 2).map((src) => (
+                {faces.slice(0, 5).map((src) => (
                   <Image
                     width={360}
                     height={480}
@@ -852,6 +859,7 @@ function Session({
                       {copy.rank}
                     </FanText>
                     <dd className={numberStyles.xl}>
+                      {priorRank !== null && priorRank !== rows.find(r => r.isMe)?.place && <>{priorRank} → </>}
                       {rows.find((r) => r.isMe)?.place}
                     </dd>
                   </div>
@@ -882,6 +890,7 @@ function Session({
                   {isTrial ? copy.signIn : copy.playAgain}
                 </StageAction>
               )}
+              {result && !isTrial && <FanAction href={`/chemi?locale=${locale}`}>{copy.back}</FanAction>}
               {result?.shareId && (
                 <FanAction onClick={() => void shareResult()}>
                   {copied ? copy.copied : copy.share}
