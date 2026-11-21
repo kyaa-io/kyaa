@@ -279,9 +279,16 @@ export function createContentHandlers(deps: ContentDependencies) {
       const award = written.replayed ? null : await awardCommentDetailed(deps, p_app_user_id, id, written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: rewardKeyId(id) });
       return json({ ...written, ...await missionReward(deps, p_app_user_id, written, award) }, 201);
     }),
+    editComment: (request: Request, id: string) => run(async () => {
+      z.uuid().parse(id);
+      const p_app_user_id = await owner(request);
+      const { body } = createCommentSchema.pick({ body: true }).parse(await boundedJson(request, 8192));
+      await deps.rpc("edit_fan_post_comment", { p_app_user_id, p_comment_id: id, p_body: body });
+      return json({ edited: true });
+    }),
     removeComment: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);
-      await deps.rpc("remove_fan_post_comment", { p_app_user_id, p_comment_id: id }); return json({ removed: true });
+      await deps.rpc("delete_owned_fan_post_comment", { p_app_user_id, p_comment_id: id }); return json({ removed: true });
     }),
     like: (request: Request, id: string) => run(async () => {
       z.uuid().parse(id); const p_app_user_id = await owner(request);

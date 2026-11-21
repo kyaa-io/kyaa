@@ -93,6 +93,7 @@ const inputSchemas = {
   room: z.object({ name: z.string().trim().min(1).max(100), minimumTier: z.enum(["Member", "Bronze", "Silver", "Gold", "Platinum", "Diamond"]).default("Gold"), requestId }).strict(),
   message: z.object({ body: z.string().trim().max(2000), assetId: uuid.optional(), requestId }).strict().refine(value => Boolean(value.body || value.assetId)),
   settings: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().max(1000), question: z.string().trim().max(300).nullable(), anonymous: z.boolean(), imageAssetId:uuid.nullable().optional(), externalLinks: externalRoomLinksInput.optional(), requestId }).strict(),
+  "comment-edit": z.object({body:z.string().trim().min(1).max(2000)}).strict(),
   comment: z.object({body:z.string().trim().min(1).max(2000),parentId:uuid.nullable().optional(),assetIds:z.array(uuid).max(5).optional(),requestId}).strict(),
   reaction: z.object({liked:z.boolean(),requestId}).strict(),
   dislike: z.object({disliked:z.boolean(),requestId}).strict(),
@@ -106,7 +107,7 @@ const inputSchemas = {
   "set-presence-setting":z.object({enabled:z.boolean().optional(),notifyEnabled:z.boolean().optional()}).strict().refine(v=>v.enabled!==undefined||v.notifyEnabled!==undefined),
   review: z.object({expectedRevision:z.number().int().min(1).optional(), action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
 };
-export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-remove" | "reaction" | "dislike" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports" | "operator-members" | "operator-members-export" | "notice-broadcast-status" | "mission-stats";
+export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-edit" | "comment-remove" | "reaction" | "dislike" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports" | "operator-members" | "operator-members-export" | "notice-broadcast-status" | "mission-stats";
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const groupsUnavailable = () => Response.json({ error: { code: "GROUPS_UNAVAILABLE" } }, { status: 503, headers });
 const GROUP_POST_REQUEST_BYTES = RICH_DOCUMENT_MAX_BYTES + 32768;
@@ -179,16 +180,17 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if (["posts", "messages", "members", "comments", "applications", "admin-applications", "admin-reports", "page-reports"].includes(operation)) Object.assign(payload, { cursor: uuid.optional().parse(one(operation === "messages" ? "after" : "cursor")), limit: z.coerce.number().int().min(1).max(100).parse(one("limit") ?? 30) });
       if (operation === "own-reports") Object.assign(payload,{cursor:uuid.optional().parse(one("cursor")),limit:z.coerce.number().int().min(1).max(30).parse(one("limit")??30)});
       if (operation === "members") payload.search=z.string().trim().max(100).parse(one("search")??"");
-      if(operation === "comment-remove" && params.postId)payload.postId=uuid.parse(params.postId);
+      if((operation === "comment-remove" || operation === "comment-edit") && params.postId)payload.postId=uuid.parse(params.postId);
       if (operation === "post-detail" && z.enum(["rich"]).optional().parse(one("format"))) payload.format = "rich";
       // New keys only for a web that asks: the deployed web parses these responses without them.
       if (operation === "directory" && z.enum(["facts"]).optional().parse(one("fields"))) payload.fields = "facts";
-      if (operation === "comments" && z.enum(["replies"]).optional().parse(one("fields"))) payload.fields = "replies";
+      const commentFields = operation === "comments" ? z.enum(["replies","editable"]).optional().parse(one("fields")) : undefined;
+      if (commentFields === "replies") payload.fields = "replies";
       if (operation === "posts") Object.assign(payload,{search:z.string().max(100).parse(one("search")??""),category:z.enum(["all","notice","free"]).parse(one("category")??"all"),sort:z.enum(["recent","popular"]).parse(one("sort")??"recent")});
       if (["directory","resolve","detail"].includes(operation)) { const requested = one("locale"); if (requested !== undefined) payload.locale = z.enum(APP_LOCALES).parse(requested); }
       if (operation === "resolve") payload.slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(100).parse(params.slug);
       const content=["own-reports","applications","admin-applications","review","posts","post-detail","post","post-edit","post-remove","comments","comment","comment-remove","reaction","dislike","room-state","report","page-reports","page-resolve-report","admin-reports","resolve-report","report-evidence","artist-bind","artist-unbind","artist-bindings","presence","heartbeat","presence-setting","set-presence-setting","notifications","set-notifications","room-read","rooms","messages","message"].includes(operation);
-      const result = await deps.rpc(content?"groups_content_dispatch":"groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: params.id ? uuid.parse(params.id) : null, p_item_id: params.itemId ? uuid.parse(params.itemId) : null, p_input: payload, p_admin_id: admin?.allowlistId ?? null });
+      const result = await deps.rpc((commentFields === "editable" || operation === "comment-edit" || operation === "comment-remove")?"group_member_comments":content?"groups_content_dispatch":"groups_dispatch", { p_operation: operation, p_actor: owner, p_page_id: params.id ? uuid.parse(params.id) : null, p_item_id: params.itemId ? uuid.parse(params.itemId) : null, p_input: payload, p_admin_id: admin?.allowlistId ?? null });
       if(operation === "directory" && payload.sort === "visited") {
         const data=z.object({items:z.array(z.unknown()),totalCount:z.number().int().nonnegative(),nextCursor:visitedCursor.nullable()}).passthrough().parse(result);
         if(data.nextCursor && data.nextCursor.owner!==owner) throw new SyntaxError("cursor owner mismatch");

@@ -17,6 +17,15 @@ function request(method = "POST", body?: unknown, url = "https://byus.test/api/p
   return new Request(url, { method, headers: { ...(authenticated ? { authorization: "Bearer token" } : {}), "content-type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
 }
 describe("fan content trust boundary", () => {
+  it("edits only through the verified comment actor and rejects injected identity", async () => {
+    const d = dependencies(), api = createContentHandlers(d);
+    expect((await api.editComment(request("PATCH", {body:" new "}), id)).status).toBe(200);
+    expect(d.rpc).toHaveBeenCalledWith("edit_fan_post_comment", {p_app_user_id:owner,p_comment_id:id,p_body:"new"});
+    expect((await api.editComment(request("PATCH", {body:"new",appUserId:id}), id)).status).toBe(400);
+    d.authorize.mockRejectedValue(new AuthError("AUTHENTICATION_REQUIRED",401,"invalid"));
+    expect((await api.editComment(request("PATCH",{body:"new"}), id)).status).toBe(401);
+    expect(d.rpc).toHaveBeenCalledTimes(1);
+  });
   beforeEach(() => resetTranslationFailureHold());
   it("validates period ranking and uses the verified viewer",async()=>{
     const d=dependencies(),h=createContentHandlers(d);d.rpc.mockResolvedValue({items:[post]});

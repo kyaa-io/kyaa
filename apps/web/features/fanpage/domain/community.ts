@@ -43,7 +43,7 @@ export const leaderboardResponseSchema = leaderboardSchema.safeExtend({
 export type Leaderboard = z.infer<typeof leaderboardSchema>;
 export const commentSchema = z.object({
   id: z.uuid(), body: z.string().min(1).max(1000), nickname, avatarUrl: z.string(),
-  createdAt: z.iso.datetime({ offset: true }), isOwner: z.boolean(), isFriend: z.boolean().optional(), parentId: z.uuid().nullable().optional(),
+  createdAt: z.iso.datetime({ offset: true }), isOwner: z.boolean(), editedAt: z.string().nullable().optional(), isFriend: z.boolean().optional(), parentId: z.uuid().nullable().optional(),
   isOfficial: z.boolean().optional(), artist: z.boolean().optional(),
   parentNickname: nickname.nullable().optional(), reactions: z.array(z.object({
     emoji: z.enum(["heart", "thumbs_up", "clap", "laugh", "star"]),
