@@ -566,3 +566,9 @@
     background: none;
   }
 }
+
+.sideDetail { order: 3; }
+.sideDetail .luck { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 64rem) {
+  .sideDetail { order: 0; }
+}

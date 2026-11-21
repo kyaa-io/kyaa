@@ -146,7 +146,7 @@ export function FortuneDeep(props: Props) {
   const [today, tomorrow, after] = week.days;
   const short = (day: string) => `${Number(day.slice(5, 7))}/${Number(day.slice(8))}`;
   const other = view === "tomorrow" ? "week" : "tomorrow";
-  const side = (line: string, secondary: ReactNode) => (
+  const side = (line: string, secondary: ReactNode, detail: ReactNode) => (
     <aside className={styles.side}>
       <div className={styles.cta}>
         <div className={styles.say}>
@@ -161,6 +161,7 @@ export function FortuneDeep(props: Props) {
         <DeepResultAsk name={name} reading={() => week.saveContext(view, character, week.today)} />
         <div className={`${styles.sideActions} ${styles.desktopOnly}`}>{secondary}</div>
       </div>
+      <div className={styles.sideDetail}>{detail}</div>
       <footer className={styles.legal}>
         <FanText as="p" role="meta">
           <ReadingText id="fun" />
@@ -306,6 +307,10 @@ export function FortuneDeep(props: Props) {
               ))}
             </div>
           </section>
+
+          <div className={styles.mobileOnly}>{todayAction}</div>
+        </div>
+        {side(text(voiced("sayTomorrow", character)), todayAction, (
           <section className={styles.section}>
             <FanHeading>
               <ReadingText id="tomorrowLuck" />
@@ -333,9 +338,7 @@ export function FortuneDeep(props: Props) {
               )}
             </dl>
           </section>
-          <div className={styles.mobileOnly}>{todayAction}</div>
-        </div>
-        {side(text(voiced("sayTomorrow", character)), todayAction)}
+        ))}
       </article>
     );
   }
@@ -400,7 +403,7 @@ export function FortuneDeep(props: Props) {
             </ol>
           </div>
         </section>
-        <div className={styles.twoCol}>
+        <div>
           <section className={styles.section}>
             <FanHeading>
               <ReadingText id="weekFields" />
@@ -433,6 +436,21 @@ export function FortuneDeep(props: Props) {
               </tbody>
             </table>
           </section>
+
+        </div>
+        {props.paidPreview && (
+          <section className={styles.section}>
+            <div className={styles.devHead}>
+              <FanHeading>
+                <ReadingText id="byDate" />
+              </FanHeading>
+            </div>
+            <DatePurchase character={character} locale={locale} />
+          </section>
+        )}
+        <div className={styles.mobileOnly}>{todayAction}</div>
+      </div>
+      {side(text(voiced("sayWeek", character)), todayAction, (
           <section className={styles.section}>
             <FanHeading>
               <ReadingText id="weekNotable" />
@@ -473,20 +491,7 @@ export function FortuneDeep(props: Props) {
               })}
             </ol>
           </section>
-        </div>
-        {props.paidPreview && (
-          <section className={styles.section}>
-            <div className={styles.devHead}>
-              <FanHeading>
-                <ReadingText id="byDate" />
-              </FanHeading>
-            </div>
-            <DatePurchase character={character} locale={locale} />
-          </section>
-        )}
-        <div className={styles.mobileOnly}>{todayAction}</div>
-      </div>
-      {side(text(voiced("sayWeek", character)), todayAction)}
+        ))}
     </article>
   );
 }
