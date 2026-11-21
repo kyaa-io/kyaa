@@ -177,9 +177,19 @@ export async function collectSource(browser, source, options = {}) {
     try { page = await browser.read(canonicalPostUrl(source.platform, handle, sourceId)); }
     catch { unread.push({ sourceId, error: "READ_FAILED" }); continue; }
     if (isLoginWall(source.platform, page.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread: [], followers };
-    const result = source.platform === "tiktok"
+    let result = source.platform === "tiktok"
       ? extractTikTokPost(page.rehydration, { handle, sourceId })
       : extractInstagramPost(page.scripts, { handle, sourceId });
+    if (source.platform === "tiktok" && result.error === "STRUCTURE_CHANGED") {
+      try {
+        page = await browser.read(canonicalPostUrl(source.platform, handle, sourceId));
+      } catch {
+        unread.push({ sourceId, error: "READ_FAILED" });
+        continue;
+      }
+      if (isLoginWall(source.platform, page.finalUrl)) return { request: buildIngestRequest(source, [], "BLOCKED_LOGIN"), unread, followers };
+      result = extractTikTokPost(page.rehydration, { handle, sourceId });
+    }
     if (result.post) posts.push(result.post); else unread.push({ sourceId, error: result.error });
   }
   // Every listed post failing to parse means the page layout changed, not that there is nothing new.
