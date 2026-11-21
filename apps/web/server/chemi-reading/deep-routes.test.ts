@@ -63,6 +63,7 @@ it("draws three different cards for the chosen positions and saves them once", a
   const first = await (await spreadDraw(request({ character: "elina", positions: [3, 40, 77] }))).json();
   const again = await (await spreadDraw(request({ character: "elina", positions: [3, 40, 77] }))).json();
   expect(first.result.cards).toHaveLength(3);
+  expect(first.result.positions).toEqual([3, 40, 77]);
   expect(new Set(first.result.cards.map((card: { card: number }) => card.card)).size).toBe(3);
   expect(again.result).toEqual(first.result);
   expect(rpc).toHaveBeenLastCalledWith("chemi_tarot_spread", expect.objectContaining({ p_character: "elina", p_version: "tarot-v1" }));

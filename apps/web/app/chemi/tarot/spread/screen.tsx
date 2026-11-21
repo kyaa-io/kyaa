@@ -20,7 +20,7 @@ import { useTarotMeaning } from "../use-tarot-meaning";
 import spread from "./spread.module.css";
 
 type Card = { card: number; reversed: boolean };
-type Saved = { readingId: string; cards: Card[]; date: string };
+type Saved = { readingId: string; cards: Card[]; date: string; deckPositions?: number[] };
 const positions = ["past", "present", "future"] as const;
 const voiceKey = { ban: "Ban", yo: "Yo", hao: "Hao" } as const;
 
@@ -28,7 +28,11 @@ function parseSaved(body: any): Saved | null {
   const cards = body?.result?.cards;
   if (typeof body?.readingId !== "string" || !Array.isArray(cards) || cards.length !== 3) return null;
   if (!cards.every((item) => Number.isInteger(item?.card) && item.card >= 0 && item.card < TAROT_DECK_SIZE && typeof item.reversed === "boolean")) return null;
-  return { readingId: body.readingId, cards, date: String(body.kstDate ?? "") };
+  const deckPositions = body.result.positions;
+  const hasPositions = Array.isArray(deckPositions) && deckPositions.length === 3
+    && deckPositions.every((slot) => Number.isInteger(slot) && slot >= 0 && slot < TAROT_DECK_SIZE)
+    && new Set(deckPositions).size === 3;
+  return { readingId: body.readingId, cards, date: String(body.kstDate ?? ""), deckPositions: hasPositions ? deckPositions : undefined };
 }
 
 /** 세 장 타로: 계정마다 첫 1번 무료. 본 배열은 다시 열어도 같은 세 장이다. */
@@ -95,10 +99,8 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
     }
   }
   function pick(position: number) {
-    // 같은 자리를 다시 고르면 바로 옆 빈 자리의 카드로 본다.
-    let slot = position;
-    while (picked.includes(slot)) slot = (slot + 1) % TAROT_DECK_SIZE;
-    const all = [...picked, slot];
+    if (picked.includes(position)) return;
+    const all = [...picked, position];
     setPicked(all);
     if (all.length === 3) void draw(all);
   }
@@ -167,14 +169,17 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
           </picture>
         </div>
         <div className={styles.table} data-pick="">
-          <CardRail key={step} onPick={pick} randomLabel={text("randomCard")} reduced={reduced} controlsHost={controlsHost} />
+          <CardRail key={step} showPosition excluded={picked} onPick={pick} randomLabel={text("randomCard")} reduced={reduced} controlsHost={controlsHost} />
         </div>
         <div className={styles.panel}>
           <ol className={spread.slots} aria-label={text("spreadSlots")}>
             {positions.map((position, index) => (
               <li key={position} data-row="" data-done={index < picked.length || undefined} aria-current={index === picked.length ? "step" : undefined}>
                 {index < picked.length ? <img src={TAROT_BACK} alt={text("pickedCard")} /> : <i />}
-                <FanText role="label">{text(position)}</FanText>
+                <span className={spread.slotLabel}>
+                  <FanText role="label">{text(position)}</FanText>
+                  {index < picked.length && <FanText role="meta" aria-label={text("deckSlot", { slot: picked[index] + 1, total: TAROT_DECK_SIZE })}>{picked[index] + 1} / {TAROT_DECK_SIZE}</FanText>}
+                </span>
               </li>
             ))}
           </ol>
@@ -236,6 +241,9 @@ function SpreadResult({
                   <img src={tarotFace(card.card)} alt={TAROT_DECK[card.card][2]} />
                   <figcaption>
                     <FanText role="label">{text(positions[index])}</FanText>
+                    {saved.deckPositions && (
+                      <FanText role="meta">{text("deckSlot", { slot: saved.deckPositions[index] + 1, total: TAROT_DECK_SIZE })}</FanText>
+                    )}
                   </figcaption>
                 </figure>
               ))}

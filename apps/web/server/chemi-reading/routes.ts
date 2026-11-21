@@ -279,7 +279,7 @@ export async function rewardRoute(
         }).parse(body);
         const cards = input.positions.flatMap((position) =>
           drawMemberTarot({ userId: p_user, kstDate: kstToday(), deckVersion: version, spread: "three", position, salt: process.env.CHEMI_TAROT_SALT }));
-        return deps.rpc("chemi_tarot_spread", { p_user, p_character: input.character, p_result: { cards }, p_version: version });
+        return deps.rpc("chemi_tarot_spread", { p_user, p_character: input.character, p_result: { cards, positions: input.positions }, p_version: version });
       }
       if (op === "visit") return deps.rpc("chemi_visit", { p_user });
       if (op === "list")

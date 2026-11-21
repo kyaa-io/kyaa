@@ -17,6 +17,8 @@ describe("chemi language scaffold", () => {
     const catalog = load(locale);
     expect(keys(catalog)).toEqual(keys(load("ko")));
     expect(catalog.menu).toEqual({ home: "HOME", my: "MY" });
+    expect(catalog.readingUi.deckSlot).toContain("{slot}");
+    expect(catalog.readingUi.deckSlot).toContain("{total}");
     for (const key of ["fortuneHours", "fortuneMinutes", "gameHours", "gameMinutes"]) {
       if (catalog.date[key]) expect(catalog.date[key]).toContain("{count}");
     }

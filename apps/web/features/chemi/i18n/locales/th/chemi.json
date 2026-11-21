@@ -420,7 +420,7 @@
     "passportReward": "",
     "candleRoom": "",
     "nthCard": "",
-    "deckSlot": "",
+    "deckSlot": "ไพ่ใบที่ {slot} จาก {total} ใบ",
     "hourRange": "",
     "tableDaypillar": "",
     "tableYearpillar": "",

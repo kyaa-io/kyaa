@@ -420,7 +420,7 @@
     "passportReward": "",
     "candleRoom": "",
     "nthCard": "",
-    "deckSlot": "",
+    "deckSlot": "Карта {slot} из {total}",
     "hourRange": "",
     "tableDaypillar": "",
     "tableYearpillar": "",
