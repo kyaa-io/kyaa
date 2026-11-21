@@ -267,4 +267,37 @@ grant execute on function public.read_unified_creator_feed(
 ) to service_role;
 
 notify pgrst, 'reload schema';
+-- CREATE OR REPLACE preserves each RPC's original owner. Grant table access to
+-- those definers explicitly on installations where FORCE RLS applies to them.
+do $access$
+declare edge record; relation text; privilege text;
+begin
+  for edge in
+    select distinct p.proname, r.rolname, r.rolsuper or r.rolbypassrls as bypass
+    from pg_proc p join pg_roles r on r.oid=p.proowner
+    where p.pronamespace='public'::regnamespace and p.proname in
+      ('read_public_home_notices','read_home_notice_participation','read_unified_creator_feed','read_celebrity_notice_reaction')
+  loop
+    if edge.rolname in ('anon','authenticated','service_role') then raise exception 'Unsafe notice RPC owner'; end if;
+    if edge.bypass then continue; end if;
+    foreach relation in array case edge.proname
+      when 'read_public_home_notices' then array['home_notice_views','home_notice_comments','home_notice_reactions','app_users']
+      when 'read_home_notice_participation' then array['home_notice_views']
+      when 'read_unified_creator_feed' then array['celebrity_notice_views','celebrity_notice_likes','app_users']
+      else array['celebrity_notice_views'] end
+    loop
+      foreach privilege in array case when edge.proname in ('read_home_notice_participation','read_celebrity_notice_reaction')
+        then array['select','insert'] else array['select'] end
+      loop
+        execute format('grant %s on public.%I to %I',privilege,relation,edge.rolname);
+        if not exists(select 1 from pg_policies where schemaname='public' and tablename=relation
+          and policyname='notice_counts_'||privilege||'_'||edge.rolname) then
+          execute format('create policy %I on public.%I for %s to %I %s',
+            'notice_counts_'||privilege||'_'||edge.rolname,relation,privilege,edge.rolname,
+            case when privilege='insert' then 'with check (true)' else 'using (true)' end);
+        end if;
+      end loop;
+    end loop;
+  end loop;
+end $access$;
 commit;

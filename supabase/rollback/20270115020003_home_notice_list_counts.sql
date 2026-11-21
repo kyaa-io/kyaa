@@ -238,5 +238,11 @@ grant execute on function public.read_unified_creator_feed(
 ) to service_role;
 
 notify pgrst, 'reload schema';
+do $$ declare entry record; begin
+  for entry in select tablename,policyname from pg_policies where schemaname='public'
+    and tablename in ('home_notice_comments','home_notice_reactions','celebrity_notice_likes','app_users')
+    and policyname like 'notice\_counts\_select\_%'
+  loop execute format('drop policy %I on public.%I',entry.policyname,entry.tablename); end loop;
+end $$;
 drop table public.home_notice_views, public.celebrity_notice_views;
 commit;
