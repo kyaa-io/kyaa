@@ -273,13 +273,13 @@ do $access$
 declare edge record; relation text; privilege text;
 begin
   for edge in
-    select distinct p.proname, r.rolname, r.rolsuper or r.rolbypassrls as bypass
+    select distinct p.proname, r.rolname, r.rolsuper, r.rolbypassrls
     from pg_proc p join pg_roles r on r.oid=p.proowner
     where p.pronamespace='public'::regnamespace and p.proname in
       ('read_public_home_notices','read_home_notice_participation','read_unified_creator_feed','read_celebrity_notice_reaction')
   loop
     if edge.rolname in ('anon','authenticated','service_role') then raise exception 'Unsafe notice RPC owner'; end if;
-    if edge.bypass then continue; end if;
+    if edge.rolsuper then continue; end if;
     foreach relation in array case edge.proname
       when 'read_public_home_notices' then array['home_notice_views','home_notice_comments','home_notice_reactions','app_users']
       when 'read_home_notice_participation' then array['home_notice_views']
@@ -290,7 +290,7 @@ begin
         then array['select','insert'] else array['select'] end
       loop
         execute format('grant %s on public.%I to %I',privilege,relation,edge.rolname);
-        if not exists(select 1 from pg_policies where schemaname='public' and tablename=relation
+        if not edge.rolbypassrls and not exists(select 1 from pg_policies where schemaname='public' and tablename=relation
           and policyname='notice_counts_'||privilege||'_'||edge.rolname) then
           execute format('create policy %I on public.%I for %s to %I %s',
             'notice_counts_'||privilege||'_'||edge.rolname,relation,privilege,edge.rolname,
