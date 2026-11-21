@@ -143,8 +143,14 @@ export function FortuneDeep(props: Props) {
     );
   const [today, tomorrow, after] = week.days;
   const short = (day: string) => `${Number(day.slice(5, 7))}/${Number(day.slice(8))}`;
-  // 내일 화면의 주 버튼은 이번 주로, 이번 주 화면의 주 버튼은 내일로 잇는다.
+  // 주 버튼은 오늘 결과의 질문하기(L135). 오늘 결과 없이 들어온 주소면 내일·이번 주를 서로 잇는 버튼이 주 버튼이다.
   const other = view === "tomorrow" ? "week" : "tomorrow";
+  const askHref = props.readingId ? `${back}&ask=topic` : null;
+  const otherAction = (variant?: "primary") => (
+    <FanAction variant={variant} fullWidth={Boolean(variant)} href={deepHref(other, props)}>
+      <ReadingText id={other === "week" ? "deepWeek" : "deepTomorrow"} />
+    </FanAction>
+  );
   const side = (line: string, secondary: ReactNode) => (
     <aside className={styles.side}>
       <div className={styles.cta}>
@@ -157,9 +163,13 @@ export function FortuneDeep(props: Props) {
             {line}
           </FanText>
         </div>
-        <FanAction variant="primary" fullWidth href={deepHref(other, props)}>
-          <ReadingText id={other === "week" ? "deepWeek" : "deepTomorrow"} />
-        </FanAction>
+        {askHref ? (
+          <FanAction variant="primary" fullWidth href={askHref}>
+            <ReadingText id="askStart" />
+          </FanAction>
+        ) : (
+          otherAction("primary")
+        )}
         <div className={`${styles.sideActions} ${styles.desktopOnly}`}>{secondary}</div>
       </div>
       <footer className={styles.legal}>
@@ -170,9 +180,12 @@ export function FortuneDeep(props: Props) {
     </aside>
   );
   const todayAction = (
-    <FanAction href={back}>
-      <ReadingText id="todayFortune" />
-    </FanAction>
+    <>
+      <FanAction href={back}>
+        <ReadingText id="todayFortune" />
+      </FanAction>
+      {askHref ? otherAction() : null}
+    </>
   );
 
   if (view === "tomorrow") {

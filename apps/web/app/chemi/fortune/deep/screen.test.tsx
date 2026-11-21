@@ -57,7 +57,11 @@ it("compares tomorrow with today and hides a difference of zero", async () => {
   expect(screen.getByRole("heading", { name: "무난한 날" })).toBeVisible();
   expect(screen.getAllByLabelText("오늘보다 9점 낮음").length).toBeGreaterThan(1);
   expect(screen.getByText("오늘 올라온 기운이 내일부터 차분해져요.")).toBeVisible();
-  expect(screen.getByRole("link", { name: "이번 주 운세" })).toHaveAttribute(
+  expect(screen.getByRole("link", { name: "질문하기" })).toHaveAttribute(
+    "href",
+    "/chemi/fortune?locale=ko&c=changha&step=result&r=11111111-1111-4111-8111-111111111111&ask=topic",
+  );
+  expect(screen.getAllByRole("link", { name: "이번 주 운세" })[0]).toHaveAttribute(
     "href",
     "/chemi/fortune/deep?locale=ko&c=changha&r=11111111-1111-4111-8111-111111111111&view=week",
   );
@@ -71,6 +75,8 @@ it("compares tomorrow with today and hides a difference of zero", async () => {
   expect(await screen.findByText("내일도 오늘과 비슷하게 흘러가요.")).toBeVisible();
   expect(screen.queryByLabelText(/오늘보다/)).toBeNull();
   expect(screen.getByText("내일 건 미리 봐 뒀어요. 시간대부터 챙겨요.")).toBeVisible();
+  expect(screen.queryByRole("link", { name: "질문하기" })).toBeNull();
+  expect(screen.getByRole("link", { name: "이번 주 운세" })).toHaveAttribute("href", "/chemi/fortune/deep?locale=ko&c=elina&view=week");
 });
 
 it("draws seven days, links only today and tomorrow, and keeps paid dates out before payment", async () => {
