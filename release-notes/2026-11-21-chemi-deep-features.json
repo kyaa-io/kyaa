@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "오늘의 운세 결과에서 내일 운세와 이번 주 운세(앞으로 7일)를 무료로 볼 수 있어요.",
+    "아주 좋은 날에는 기념 카드가, 쉬어 가는 날에는 응원 부적이 나오고 사진으로 저장할 수 있어요.",
+    "타로를 다시 찾으면 과거·현재·미래 세 장으로 한 번 무료로 물어볼 수 있어요.",
+    "별자리 결과에서 저장한 사람과 별자리 궁합을 볼 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/fortune",
+  "images": [
+    "release-notes/images/2026-11-21-chemi-deep-features.png",
+    "release-notes/images/2026-11-21-chemi-deep-features-desktop.png"
+  ]
+}

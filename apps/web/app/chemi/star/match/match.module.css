@@ -1,0 +1,168 @@
+/* 별자리 궁합(승인 시안 05-4 궁합). 틀은 별자리 결과(result.module.css)의 도구 줄·판을 쓴다. */
+.page {
+  display: grid;
+  gap: var(--space-4);
+  padding-block: var(--space-3) var(--space-8);
+  align-items: start;
+}
+.main,
+.side {
+  display: grid;
+  gap: var(--space-6);
+  min-width: 0;
+  align-content: start;
+}
+.page h1,
+.page h2,
+.page p,
+.page dl,
+.page dd {
+  margin: 0;
+}
+.meta {
+  color: var(--color-muted);
+}
+.head {
+  display: grid;
+  gap: var(--space-1);
+}
+.panel {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+.ways {
+  display: grid;
+  gap: var(--space-3);
+}
+.way {
+  display: grid;
+  grid-template-columns: var(--space-16) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+}
+.way[data-top] > :first-child {
+  color: var(--color-accent-ink);
+}
+.meter {
+  display: flex;
+  gap: var(--space-1);
+}
+.meter i {
+  width: var(--space-5);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+}
+.meter i[data-on] {
+  background: var(--color-accent-line);
+}
+.way[data-top] .meter i[data-on] {
+  background: var(--color-accent);
+}
+.section {
+  display: grid;
+  gap: var(--space-3);
+}
+.links {
+  display: grid;
+}
+.links > div {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  min-height: var(--space-12);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-line);
+}
+.links > div:last-child {
+  border-bottom: 1px solid var(--color-line);
+}
+.links dd {
+  color: var(--color-muted);
+}
+.picker {
+  display: grid;
+  gap: var(--space-2);
+}
+.picker > button[aria-pressed] {
+  min-height: var(--space-12);
+  border-radius: var(--radius-media);
+}
+.partner {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.picker > button:not([aria-pressed]) {
+  justify-self: start;
+}
+.picker > button:last-child:not(:only-child) {
+  justify-self: stretch;
+  margin-top: var(--space-2);
+}
+.picker > button[aria-pressed="true"] {
+  border-color: var(--color-accent-line);
+  background: var(--color-accent-soft);
+}
+.free {
+  justify-self: start;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+.say {
+  display: grid;
+  grid-template-columns: var(--min-target) minmax(0, 1fr);
+  align-items: center;
+  gap: 0 var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.say img {
+  grid-row: 1 / span 2;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.say > :not(img) {
+  grid-column: 2;
+}
+.say .actions {
+  display: flex;
+  grid-column: 1 / -1;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.say .actions > * {
+  flex: 1;
+}
+@media (min-width: 64rem) {
+  .page {
+    grid-template-columns: minmax(0, 1fr) 22.5rem;
+    column-gap: var(--space-6);
+  }
+  .toolbarRow {
+    grid-column: 1 / -1;
+  }
+  .two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+  }
+  .panel {
+    padding: var(--space-6);
+  }
+  .picker {
+    max-width: 30rem;
+  }
+}

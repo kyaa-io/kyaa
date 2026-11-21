@@ -5,7 +5,7 @@ import {
   FanAppFrame,
   FanContentContainer,
 } from "@/components/fan-shell/fan-app-shell";
-import { chemiEnabled } from "@/features/chemi/domain/availability";
+import { chemiEnabled, chemiPreview } from "@/features/chemi/domain/availability";
 import { parseFortuneStep } from "@/features/chemi/domain/step";
 import { parseAppLocale } from "@/i18n/locales";
 import { FortuneFlow } from "./flow";
@@ -31,7 +31,7 @@ export default async function FortunePage({
           {params.from ? (
             <FortuneResult key={params.from} locale={locale} from={params.from} />
           ) : (
-            <FortuneFlow locale={locale} restoring={restoring} />
+            <FortuneFlow locale={locale} restoring={restoring} paidPreview={chemiPreview()} />
           )}
         </FanContentContainer>
       </ReadingCopyProvider>

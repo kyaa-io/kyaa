@@ -390,3 +390,23 @@
     align-items: start;
   }
 }
+
+/* 별자리 궁합으로 가는 줄(레일의 '더 보기' 줄과 같은 모양) */
+.matchLink {
+  display: grid;
+  border-block: 1px solid var(--color-line);
+}
+.matchLink > a {
+  justify-content: stretch;
+  min-height: calc(var(--space-12) + var(--space-1));
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  color: var(--color-ink);
+}
+.matchLink span {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+}
