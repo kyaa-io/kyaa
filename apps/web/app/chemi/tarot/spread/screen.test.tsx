@@ -9,8 +9,8 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({
 }));
 // 카드 줄은 승인된 고르기 화면의 것을 그대로 쓴다. 여기서는 고른 자리만 넘긴다.
 vi.mock("../card-rail", () => ({
-  CardRail: ({ onPick }: { onPick: (slot: number) => void }) => (
-    <button type="button" onClick={() => onPick(7)}>
+  CardRail: ({ onPick, excluded }: { onPick: (slot: number) => void; excluded: number[] }) => (
+    <button type="button" onClick={() => onPick(7 + excluded.length)}>
       고르기
     </button>
   ),
@@ -52,9 +52,9 @@ it("walks past, present and future, sends three different positions and shows th
   fireEvent.click(screen.getByRole("button", { name: "고르기" }));
   expect(screen.getByText("세 장 · 2/3")).toBeVisible();
   expect(screen.getAllByAltText("뽑은 카드")).toHaveLength(1);
+  expect(screen.getByText("8 / 78", { exact: true })).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "고르기" }));
   fireEvent.click(screen.getByRole("button", { name: "고르기" }));
-  // 같은 자리를 세 번 골라도 서로 다른 세 자리로 보낸다.
   await waitFor(() => expect(posts).toEqual([{ character: "changha", positions: [7, 8, 9] }]));
   expect(await screen.findByRole("heading", { level: 1, name: "정19 한 줄" })).toBeVisible();
   expect(screen.getByText("정17 풀이")).toBeVisible();

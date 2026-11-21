@@ -36,7 +36,9 @@ export async function POST(request: Request) {
       return reply({}, 400);
     const { authorize, rpc } = createFanpageDependencies(request);
     if (body.action === "ranking") {
-      return reply({ ranking: await rpc(`chemi_${mode}_ranking`, { p_viewer: null, p_friend: null }) });
+      const authorization = request.headers.get("authorization");
+      const viewer = authorization ? (await authorize(authorization)).appUserId : null;
+      return reply({ ranking: await rpc(`chemi_${mode}_ranking`, { p_viewer: viewer, p_friend: null }) });
     }
     if (body.action === "challenge" || body.action === "trial") {
       const result = await rpc(`chemi_${mode}_challenge`, { p_share: body.shareId, p_key: body.action === "trial" ? body.key : null });

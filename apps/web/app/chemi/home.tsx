@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { HomeBanner } from "./home-banner";
-import { GameRankings, type GameRanking } from "./game-rankings";
+import { WeeklyRankings } from "./weekly-rankings";
 import { entries } from "./contents";
 import { ChemiGrowth } from "./growth/growth";
 import styles from "./home.module.css";
@@ -17,7 +17,6 @@ export function ChemiHome({
   locale,
   growth,
   preview,
-  rankings = [],
   matchAvailable = false,
 }: {
   copy: HomeCopy;
@@ -25,7 +24,6 @@ export function ChemiHome({
   growth: boolean;
   preview: boolean;
   matchAvailable?: boolean;
-  rankings?: readonly GameRanking[];
 }) {
   const [category, setCategory] = useState("all");
   const [activeIndex, setActiveIndex] = useState(0);
@@ -37,9 +35,9 @@ export function ChemiHome({
   if (preview && growth)
     return <ChemiGrowth locale={locale} home={copy} matchAvailable={matchAvailable} />;
   return (
-    <div className={styles.home} data-ranked={preview && Boolean(rankings.length)}>
+    <div className={styles.home} data-ranked={preview}>
       <HomeBanner copy={copy} activities={activities} index={activeIndex} setIndex={setActiveIndex} />
-      {preview && rankings.length > 0 && <GameRankings label={copy.rankings} games={rankings} />}
+      {preview && <WeeklyRankings copy={copy} locale={locale} />}
       <section>
         {preview && <FanTabs
           variant="chip"

@@ -420,7 +420,7 @@
     "passportReward": "",
     "candleRoom": "",
     "nthCard": "",
-    "deckSlot": "",
+    "deckSlot": "Kartu ke-{slot} dari {total}",
     "hourRange": "",
     "tableDaypillar": "",
     "tableYearpillar": "",

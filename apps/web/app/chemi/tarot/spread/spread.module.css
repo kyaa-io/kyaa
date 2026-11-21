@@ -199,3 +199,11 @@
 .resultMain > .hero3 {
   order: -1;
 }
+
+.slotLabel {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.slotLabel [data-fan-text="meta"] { white-space: nowrap; }

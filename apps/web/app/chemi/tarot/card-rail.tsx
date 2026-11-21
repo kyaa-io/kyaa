@@ -3,6 +3,7 @@
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { createPortal } from "react-dom";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
@@ -22,17 +23,26 @@ export function CardRail({
   randomLabel,
   reduced,
   controlsHost,
+  showPosition = false,
+  excluded = [],
 }: {
   onPick: (slot: number) => void;
   randomLabel: string;
   reduced: boolean;
   controlsHost: HTMLElement | null;
+  showPosition?: boolean;
+  excluded?: readonly number[];
 }) {
   const uiText = useReadingCopy();
   const slotLabel = (index: number) => uiText("deckSlot", { total: TAROT_DECK_SIZE, slot: index + 1 });
   const rail = useRef<HTMLUListElement>(null);
-  const [current, setCurrent] = useState(START);
-  const currentRef = useRef(START);
+  const [initial] = useState(() => {
+    let slot = START;
+    while (excluded.includes(slot)) slot = (slot + 1) % TAROT_DECK_SIZE;
+    return slot;
+  });
+  const [current, setCurrent] = useState(initial);
+  const currentRef = useRef(initial);
   const [nudge, setNudge] = useState(false);
   const idle = useRef<ReturnType<typeof setTimeout>>(undefined);
   const nudges = useRef(0);
@@ -57,7 +67,7 @@ export function CardRail({
     if (!list) return currentRef.current;
     const step = offsetOf(1) - offsetOf(0);
     return step > 0 ? Math.max(0, Math.min(TAROT_DECK_SIZE - 1, Math.round((list.scrollLeft - offsetOf(0)) / step))) : currentRef.current;
-  }, [offsetOf]);
+  }, [initial, offsetOf]);
   const resting = useCallback(() => Math.abs((rail.current?.scrollLeft ?? 0) - offsetOf(nearest())) < 2, [nearest, offsetOf]);
 
   const paint = useCallback((index: number) => {
@@ -76,8 +86,8 @@ export function CardRail({
 
   // 화면이 열리며 줄을 가운데에 놓는다(움직임으로 치지 않는다).
   useIsoLayoutEffect(() => {
-    if (rail.current) rail.current.scrollLeft = offsetOf(START);
-  }, [offsetOf]);
+    if (rail.current) rail.current.scrollLeft = offsetOf(initial);
+  }, [initial, offsetOf]);
 
   // 2초 동안 아무것도 안 하면 가운데 카드가 한 번 들썩인다(세 번까지). 손을 대면 멈춘다.
   const restIdle = useCallback(() => {
@@ -98,7 +108,7 @@ export function CardRail({
     if (dragged.current || spinning.current) return;
     if (!resting()) return moveTo(nearest());
     if (index !== currentRef.current) return moveTo(index);
-    onPick(index);
+    if (!excluded.includes(index)) onPick(index);
   };
 
   const keys = (event: KeyboardEvent) => {
@@ -152,7 +162,8 @@ export function CardRail({
   // 아무거나 뽑기: 줄이 빠르게 돌다가 한 장에서 멈추고 그 카드로 정해진다.
   const random = () => {
     if (spinning.current) return;
-    const target = Math.floor(Math.random() * TAROT_DECK_SIZE);
+    const available = Array.from({ length: TAROT_DECK_SIZE }, (_, index) => index).filter((index) => !excluded.includes(index));
+    const target = available[Math.floor(Math.random() * available.length)];
     if (reduced) {
       moveTo(target, false);
       return onPick(target);
@@ -181,7 +192,9 @@ export function CardRail({
   };
 
   const controls = (
-    <div className={styles.pickRow}>
+    <>
+      {showPosition && <FanText as="p" role="label" className={styles.deckPosition}>{slotLabel(current)}</FanText>}
+      <div className={styles.pickRow}>
         <div
           ref={band}
           className={styles.band}
@@ -210,6 +223,7 @@ export function CardRail({
         </div>
         <FanAction onClick={random}>{randomLabel}</FanAction>
       </div>
+    </>
   );
 
   return (
@@ -238,6 +252,7 @@ export function CardRail({
                   data-card=""
                   className={styles.card}
                   aria-label={slotLabel(index)}
+                  aria-disabled={excluded.includes(index) || undefined}
                   aria-current={far === 0 ? "true" : undefined}
                   data-nudge={far === 0 && nudge ? "" : undefined}
                   tabIndex={far === 0 ? 0 : -1}
@@ -256,14 +271,14 @@ export function CardRail({
           variant="text"
           ariaLabel={uiText("previousCard")}
           leadingIcon={<FanIcon icon={ChevronLeft} />}
-          onClick={() => moveTo(currentRef.current - 1)}
+          onClick={() => moveTo(currentRef.current - 1, !showPosition)}
         />
         <FanAction
           className={`${styles.turn} ${styles.cardNext}`}
           variant="text"
           ariaLabel={uiText("nextCard")}
           leadingIcon={<FanIcon icon={ChevronRight} />}
-          onClick={() => moveTo(currentRef.current + 1)}
+          onClick={() => moveTo(currentRef.current + 1, !showPosition)}
         />
       </div>
       {controlsHost ? createPortal(controls, controlsHost) : null}

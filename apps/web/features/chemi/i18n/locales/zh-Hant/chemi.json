@@ -420,7 +420,7 @@
     "passportReward": "",
     "candleRoom": "",
     "nthCard": "",
-    "deckSlot": "",
+    "deckSlot": "第 {slot} 張牌，共 {total} 張",
     "hourRange": "",
     "tableDaypillar": "",
     "tableYearpillar": "",

@@ -10,9 +10,9 @@ vi.mock("@/server/fanpage/dependencies", () => ({
 import { POST } from "./route";
 
 const id = "a57e30ef-79dd-490b-87ba-5fe49e5e9712";
-function post(body: unknown) {
+function post(body: unknown, signedIn = true) {
   return POST(new Request("https://example.test/api/chemi/games", {
-    method: "POST", body: JSON.stringify(body), headers: { authorization: "Bearer fixture", "content-type": "application/json" },
+    method: "POST", body: JSON.stringify(body), headers: { ...(signedIn ? { authorization: "Bearer fixture" } : {}), "content-type": "application/json" },
   }));
 }
 beforeEach(() => {
@@ -54,8 +54,15 @@ it("does not persist unverified client scores", async () => {
 
 it("returns the pre-start ranking without viewer or friend identity", async () => {
   rpc.mockResolvedValue([]);
-  const response = await post({ action: "ranking", p_viewer:id });
+  const response = await post({ action: "ranking", p_viewer:id }, false);
   expect(await response.json()).toEqual({ ranking:[] });
   expect(authorize).not.toHaveBeenCalled();
   expect(rpc).toHaveBeenCalledWith("chemi_match_ranking", { p_viewer:null, p_friend:null });
+});
+
+it("uses the authenticated viewer for a personal rank", async () => {
+  rpc.mockResolvedValue([]);
+  const response = await post({ action: "ranking", p_viewer: "ignored" });
+  expect(response.status).toBe(200);
+  expect(rpc).toHaveBeenCalledWith("chemi_match_ranking", { p_viewer: id, p_friend: null });
 });
