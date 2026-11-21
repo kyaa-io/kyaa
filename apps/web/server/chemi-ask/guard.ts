@@ -8,7 +8,7 @@ import type { AskCharacter } from "@/features/chemi/ask/lines";
 const rules: readonly (readonly [AskKlass, RegExp])[] = [
   ["crisis", /죽고\s*싶|자살|자해|목숨을?\s*끊|사라지고\s*싶|살기\s*싫|suicide|kill myself|self[- ]?harm/i],
   ["harassment", /섹스|야한|벗어|가슴\s*만|성관계|씨발|시발|병신|좆|꺼져|닥쳐|\bfuck|\bsex\b|\bnude/i],
-  ["prompt", /프롬프트|시스템\s*메시지|지시문|명령을?\s*무시|규칙을?\s*무시|너\s*(ai|인공지능|챗봇)|ignore (all|previous|your)|system prompt|jailbreak/i],
+  ["prompt", /프롬프트|시스템\s*메시지|지시문|(명령|규칙|지시|지침|설정|앞의?\s*말|위의?\s*말)(을|를|은|는)?\s*(전부|모두|다)?\s*(무시|잊어|알려|보여|출력)|너\s*(ai|인공지능|챗봇)|(ai|인공지능|챗봇|gpt|제미나이|gemini)\s*(야|니|지|맞|인가|이야|이지|아니)|개발자\s*모드|역할극|인\s*척\s*해|지금부터\s*너는|ignore (all|previous|your|the)|disregard|system prompt|your (instructions|rules|prompt)|you are now|act as|pretend (to be|you)|developer mode|jailbreak|\bDAN\b/i],
   ["privacy", /(너|네|넌|니|창하|엘리나|유나|도사)[^.?!]{0,12}(여자\s*친구|남자\s*친구|여친|남친|애인|사귀|연애\s*중|결혼|집\s*주소|어디\s*살|전화\s*번호|전번|카톡\s*아이디|본명|실명|몇\s*살|나이가|수입|얼마\s*벌)/],
   ["third_party", /(남자\s*친구|여자\s*친구|남친|여친|엄마|아빠|친구|동생|언니|오빠|누나|형|상사|아이돌|연예인|걔|그\s*사람)[^.?!]{0,10}(사주|생일|생년월일|팔자|별자리)\s*(로|도|를|좀|봐|알려|풀)/],
   ["off_topic", /코드\s*(짜|작성)|코딩|숙제|과제\s*(해|대신)|번역해|레시피|날씨|주식\s*종목|로또\s*번호|수학\s*문제|요약해|write (code|an essay)|translate/i],

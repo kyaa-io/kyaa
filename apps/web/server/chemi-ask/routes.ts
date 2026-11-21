@@ -4,6 +4,8 @@ import { z } from "zod";
 import { boundedJson } from "@/server/certification/certification-http";
 import { chemiAuthenticatedHandler } from "@/server/chemi-profile/handlers";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
+import { aiAnswer } from "./ai-answer";
+import { askAiReady } from "./ai-provider";
 import { answerAsk, answerFollowup, ASK_TOPICS } from "./answer";
 import { classifyAsk, guardReply } from "./guard";
 
@@ -18,7 +20,9 @@ const followup = z.strictObject({ threadId: z.string().uuid(), question });
 const saved = z.object({ result: z.unknown(), kind: z.string().optional() });
 const thread = z.object({
   character, content, readingId: z.string().uuid().nullable(), topic: z.enum(ASK_TOPICS).nullable(),
+  question: z.string().nullish(), answer: z.string().nullish(), followupAnswer: z.string().nullish(),
 });
+const room = z.object({ left: z.number(), pausedUntil: z.string().nullish() });
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const STATUS: Record<string, number> = { CHEMI_LIMIT: 409, CHEMI_NOT_FOUND: 404, CHEMI_ASK_PAUSED: 429 };
@@ -28,6 +32,8 @@ function refusal(error: unknown) {
   if (!code) throw error;
   return Response.json({ error: { code } }, { status: STATUS[code], headers });
 }
+
+const open = (state: z.infer<typeof room>) => state.left > 0 && !state.pausedUntil;
 
 export function askRoute(op: "state" | "submit" | "followup", request: Request) {
   return chemiAuthenticatedHandler(async (input, deps, p_user) => {
@@ -50,21 +56,28 @@ export function askRoute(op: "state" | "submit" | "followup", request: Request) 
         const reading = asked.readingId
           ? saved.parse(await deps.rpc("chemi_reading_detail", { p_user, p_id: asked.readingId, p_character: asked.character }))
           : { result: null, kind: undefined };
+        const ask = { ...asked, topic: asked.topic ?? "free" as const, question: body.question, result: reading.result, kind: reading.kind };
+        // 이미 이어 물은 질문은 SQL 이 저장된 답을 돌려주거나 거절하므로 AI 를 부르지 않는다.
+        const written = asked.followupAnswer || !asked.question || !asked.answer ? null
+          : await aiAnswer({ ...ask, before: { question: asked.question, answer: asked.answer } }, deps.rpc, p_user);
         return Response.json(await deps.rpc("chemi_ask_followup", {
-          p_user, p_id: body.threadId, p_question: body.question,
-          p_answer: answerFollowup({ ...asked, topic: asked.topic ?? "free", question: body.question, result: reading.result, kind: reading.kind }),
+          p_user, p_id: body.threadId, p_question: body.question, p_answer: written ?? answerFollowup(ask),
         }), { headers });
       }
       const body = submit.parse(await boundedJson(input, 2048));
       const klass = classifyAsk(body.question);
       const reading = klass ? null
         : saved.parse(await deps.rpc("chemi_reading_detail", { p_user, p_id: body.readingId, p_character: body.character }));
+      // 다시 보낸 요청·남은 질문 없음·멈춤은 SQL 이 답을 쓰지 않으므로 AI 를 부르지 않는다.
+      const written = reading && askAiReady() && !(await deps.rpc("chemi_ask_thread", { p_user, p_id: body.threadId }))
+        && open(room.parse(await deps.rpc("chemi_ask_state", { p_user, p_reading: null, p_character: null })))
+        ? await aiAnswer({ ...body, result: reading.result, kind: reading.kind }, deps.rpc, p_user) : null;
       return Response.json(await deps.rpc("chemi_ask_submit", {
         p_user, p_id: body.threadId, p_character: body.character, p_content: body.content, p_reading: body.readingId,
         p_topic: body.topic, p_question: body.question,
         p_hash: createHash("sha256").update(JSON.stringify([body.readingId, body.character, body.topic, body.question])).digest("hex"),
         p_klass: klass,
-        p_answer: klass ? guardReply(klass, body.character) : answerAsk({ ...body, result: reading!.result, kind: reading!.kind }),
+        p_answer: klass ? guardReply(klass, body.character) : written ?? answerAsk({ ...body, result: reading!.result, kind: reading!.kind }),
       }), { headers });
     } catch (error) {
       return refusal(error);

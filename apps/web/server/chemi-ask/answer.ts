@@ -29,7 +29,8 @@ const elementTrait: Record<Element, string> = {
   wood: "한번 정하면 곧게 뻗는", fire: "마음이 먼저 달려가는", earth: "천천히 다지는", metal: "맺고 끊음이 분명한", water: "흐름을 읽고 맞춰 가는",
 };
 
-function basis(content: AskContent, topic: AskTopic, result: any, question: string, kind?: string): Basis {
+/** 규칙 문장과 AI 답이 같은 근거를 쓰도록 내보낸다. */
+export function askBasis(content: AskContent, topic: AskTopic, result: any, question: string, kind?: string): Basis {
   if (content === "fortune" && kind === "week" && Array.isArray(result?.days) && result.days.length) {
     const strongest = result.days.reduce((best: any, row: any) => row.result.score > best.result.score ? row : best);
     const date = strongest.day.slice(5).replace("-", "/");
@@ -184,13 +185,13 @@ const more: Record<"good" | "care", Record<Voice, readonly [string, string]>> = 
 
 export function answerAsk(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
   const tone = voice[input.character];
-  const read = basis(input.content, input.topic, input.result, input.question, input.kind);
+  const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
   const pick = advice[input.topic][read.good ? "good" : "care"][tone][seed(input.question) % 2];
   return `${read.line[tone]}\n${pick}`;
 }
 
 export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
   const tone = voice[input.character];
-  const read = basis(input.content, input.topic, input.result, input.question, input.kind);
+  const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
   return more[read.good ? "good" : "care"][tone][seed(input.question) % 2];
 }
