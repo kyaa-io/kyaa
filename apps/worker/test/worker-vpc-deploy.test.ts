@@ -50,6 +50,11 @@ describe("native worker platform VPC deployment",()=>{
  });
  it.each(scripts)('%s accepts absent roles but rejects IAM metadata access errors before mutation',script=>{
   const created=nativeDeploy(script,"dev",{dryRun:false,fault:"new-role"});expect(created.status,created.stderr).toBe(0);expect(created.calls.some(c=>c.operation==="create-role")).toBe(true);
+  // Check the production-only notification resources on this completed dev deployment.
+  if (script === "deploy-aws-notification-worker.sh") {
+   expect(created.calls.some(call => call.args.includes("byus-notification-worker-prod-ses-send"))).toBe(false);
+   expect(created.calls.some(call => call.args.includes("ByUs/Notifications"))).toBe(false);
+  }
   const denied=nativeDeploy(script,"dev",{dryRun:false,fault:"role-denied"});expect(denied.status).not.toBe(0);expect(mutations(denied.calls)).toEqual([]);
  });
  it.each(scripts.flatMap(script=>["account","stack-account","environment","missing-output","duplicate-subnet","unstable","subnet-vpc","subnet-owner","public-subnet","group-vpc"].map(fault=>[script,fault])))('%s rejects %s mismatch before any mutation',(script,fault)=>{
