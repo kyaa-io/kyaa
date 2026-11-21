@@ -13,7 +13,7 @@ it('connects the five review cards without duplicating the main navigation to ex
  expect(within(list).getByRole('link',{name:/모임 개설 신청/})).toHaveAttribute('href','/admin/groups');
  expect(within(list).getByRole('link',{name:/공식 행사 신청/})).toHaveAttribute('href','/admin/groups/official-events');
  expect(within(list).getByRole('link',{name:/행사 승인/})).toHaveAttribute('href','/admin/groups/event-approvals');
- expect(within(list).getByRole('link',{name:/신고 검토/})).toHaveAttribute('href','/admin/groups/reports');
+ expect(within(list).getByRole('link',{name:/모임 신고/})).toHaveAttribute('href','/admin/groups/reports');
 });
 it('preserves the selected administrator language when navigating',()=>{
  render(<GroupAdminOverview locale="en"/>);
