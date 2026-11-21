@@ -1,6 +1,7 @@
 {
   "telegram-certification": [
-    "release-notes/2026-11-21-telegram-certification-summary.json"
+    "release-notes/2026-11-21-telegram-certification-summary.json",
+    "release-notes/2026-11-21-dev-telegram-certification-review.json"
   ],
   "jjinfan": [
     "release-notes/2026-11-11-heart-donation-banner.json",
