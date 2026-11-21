@@ -27,7 +27,12 @@ export function ChemiHome({
   rankings?: readonly GameRanking[];
 }) {
   const [category, setCategory] = useState("all");
-  const [bannerIndex, setBannerIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activities = entries.map(([id, type, path]) => ({
+    id,
+    type,
+    href: type === "readings" || matchAvailable ? `${path}?locale=${locale}` : null,
+  }));
   if (preview && growth)
     return (
       <div className={styles.row}>
@@ -37,7 +42,7 @@ export function ChemiHome({
     );
   return (
     <div className={styles.home} data-ranked={preview && Boolean(rankings.length)}>
-      <HomeBanner index={bannerIndex} setIndex={setBannerIndex} copy={copy} locale={locale} />
+      <HomeBanner copy={copy} activities={activities} index={activeIndex} setIndex={setActiveIndex} />
       {preview && rankings.length > 0 && <GameRankings label={copy.rankings} games={rankings} />}
       <section>
         {preview && <FanTabs
@@ -51,27 +56,27 @@ export function ChemiHome({
           }))}
         />}
         <div className={styles.list}>
-          {entries
-            .filter(([id, type]) => (preview || type === "readings" || ((id === "pair" || id === "run") && matchAvailable)) && (category === "all" || category === type))
-            .map(([id, , readingPath]) => {
-              const path = id === "pair" && matchAvailable ? "/chemi/games/match" : id === "run" && matchAvailable ? "/chemi/games/run" : readingPath;
+          {activities
+            .filter(({ type, href }) => (preview || href) && (category === "all" || category === type))
+            .map(({ id, href }) => {
+              const active = activities[activeIndex].id === id;
               const content = (
                 <>
                   <img src={`/chemi/thumb-${id}-128.webp`} alt="" />
                   <b>{copy[id]}</b>
                 </>
               );
-              return path ? (
+              return href ? (
                 <Link
                   key={id}
                   className={styles.row}
-                  data-selected={id === entries[bannerIndex][0]}
-                  href={`${path}?locale=${locale}`}
+                  data-selected={active}
+                  href={href}
                 >
                   {content}
                 </Link>
               ) : (
-                <div key={id} className={styles.row} data-selected={id === entries[bannerIndex][0]}>
+                <div key={id} className={styles.row} data-selected={active}>
                   {content}
                   <small>{copy.ready}</small>
                 </div>

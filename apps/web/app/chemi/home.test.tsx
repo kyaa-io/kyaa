@@ -78,4 +78,13 @@ it("opens the enabled match game from the games tab and the runner", () => {
   fireEvent.click(screen.getByRole("button", { name: copy.games }));
   expect(screen.getByRole("link", { name: copy.pair })).toHaveAttribute("href", "/chemi/games/match?locale=ja");
   expect(screen.getByRole("link", { name: copy.run })).toHaveAttribute("href", "/chemi/games/run?locale=ja");
+  for (const name of [copy.pair, copy.run]) {
+    fireEvent.click(screen.getByRole("button", { name }));
+    const row = screen.getByRole("link", { name });
+    expect(row).toHaveAttribute("data-selected", "true");
+    expect(screen.getByRole("link", { name: copy.start })).toHaveAttribute(
+      "href",
+      row.getAttribute("href"),
+    );
+  }
 });
