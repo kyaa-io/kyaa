@@ -52,3 +52,9 @@
 .bubbleRow .stamp { align-self: flex-end; }
 .dayLine { display: flex; align-items: center; gap: var(--space-3); }
 .dayLine::before, .dayLine::after { content: ""; flex: 1; height: 1px; background: var(--color-line-subtle); }
+
+.message:not([data-mine]) > div { max-width: 100%; }
+.message:not([data-mine]) .bubbleRow { margin-inline-start: calc(var(--space-10) + var(--space-3)); max-width: calc(100% - var(--space-10) - var(--space-3)); }
+.byline { align-items: center; }
+.byline .profile { padding: 0; min-width: 44px; min-height: 44px; }
+.profile > span, .identity { display: inline-flex; align-items: center; gap: var(--space-3); min-width: 0; }
