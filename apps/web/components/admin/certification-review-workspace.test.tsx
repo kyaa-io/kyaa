@@ -137,8 +137,8 @@ describe("CertificationReviewWorkspace", () => {
       { id: "proof-a-2", width: 400, height: 600 },
     ] })] });
 
-    const main = await screen.findByAltText("인증 이미지 1");
-    const secondThumbnail = screen.getByAltText("인증 이미지 2 미리보기");
+    const main = await screen.findByAltText("제출 이미지 1");
+    const secondThumbnail = screen.getByAltText("제출 이미지 2 미리보기");
     const approve = screen.getByRole("button", { name: "승인" });
     expect(approve).toBeDisabled();
 
@@ -161,7 +161,7 @@ describe("CertificationReviewWorkspace", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("이미지를 불러오지 못했습니다");
     fireEvent.click(screen.getByRole("button", { name: "이미지 다시 불러오기" }));
 
-    const proof = await screen.findByAltText("인증 이미지 1");
+    const proof = await screen.findByAltText("제출 이미지 1");
     expect(loadProof).toHaveBeenCalledTimes(2);
     fireEvent.load(proof);
     await waitFor(() => expect(screen.getByRole("button", { name: "승인" })).toBeEnabled());
@@ -185,9 +185,9 @@ describe("CertificationReviewWorkspace", () => {
     ];
     setup({ submissions, loadProof });
 
-    expect(await screen.findByAltText("인증 이미지 1")).toHaveAttribute("src", "blob:proof-1");
+    expect(await screen.findByAltText("제출 이미지 1")).toHaveAttribute("src", "blob:proof-1");
     fireEvent.click(screen.getByRole("button", { name: /팬 B/ }));
-    expect(screen.queryByAltText("인증 이미지 1")).not.toBeInTheDocument();
+    expect(screen.queryByAltText("제출 이미지 1")).not.toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("이미지를 불러오는 중입니다");
     expect(loadProof.mock.calls[0][2].aborted).toBe(true);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:proof-1");
@@ -200,7 +200,7 @@ describe("CertificationReviewWorkspace", () => {
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
 
     await act(async () => { delayedOldC.resolve(proofC); await delayedOldC.promise; });
-    expect(await screen.findByAltText("인증 이미지 1")).toHaveAttribute("src", "blob:proof-2");
+    expect(await screen.findByAltText("제출 이미지 1")).toHaveAttribute("src", "blob:proof-2");
   });
 
   it("opens the enlarged viewer and supports next, previous, and close controls", async () => {
@@ -209,18 +209,18 @@ describe("CertificationReviewWorkspace", () => {
       { id: "proof-a-2", width: 500, height: 700 },
     ] })] });
 
-    await screen.findByAltText("인증 이미지 1");
+    await screen.findByAltText("제출 이미지 1");
     fireEvent.click(screen.getByRole("button", { name: "확대 보기" }));
-    const dialog = screen.getByRole("dialog", { name: "인증 이미지 확대" });
+    const dialog = screen.getByRole("dialog", { name: "제출 이미지 확대" });
     expect(dialog).toHaveAttribute("open");
-    expect(within(dialog).getByAltText("확대한 인증 이미지 1")).toHaveAttribute("src", "blob:proof-1");
+    expect(within(dialog).getByAltText("확대한 제출 이미지 1")).toHaveAttribute("src", "blob:proof-1");
     expect(within(dialog).getByRole("button", { name: "이전 이미지" })).toBeDisabled();
 
     fireEvent.click(within(dialog).getByRole("button", { name: "다음 이미지" }));
-    expect(within(dialog).getByAltText("확대한 인증 이미지 2")).toHaveAttribute("src", "blob:proof-2");
+    expect(within(dialog).getByAltText("확대한 제출 이미지 2")).toHaveAttribute("src", "blob:proof-2");
     expect(within(dialog).getByRole("button", { name: "다음 이미지" })).toBeDisabled();
     fireEvent.click(within(dialog).getByRole("button", { name: "이전 이미지" }));
-    expect(within(dialog).getByAltText("확대한 인증 이미지 1")).toBeVisible();
+    expect(within(dialog).getByAltText("확대한 제출 이미지 1")).toBeVisible();
     fireEvent.click(within(dialog).getByRole("button", { name: "확대 닫기" }));
     expect(dialog).not.toHaveAttribute("open");
   });

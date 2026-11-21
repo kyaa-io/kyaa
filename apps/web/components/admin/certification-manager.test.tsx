@@ -36,7 +36,7 @@ async function settings() {
   return screen.findByRole("button", { name: /응원 인증/ });
 }
 async function readyProof() {
-  fireEvent.load(await screen.findByAltText("인증 이미지 1"));
+  fireEvent.load(await screen.findByAltText("제출 이미지 1"));
   await waitFor(() => expect(screen.getByRole("button", { name: "승인" })).toBeEnabled());
 }
 function confirmApproval() {
@@ -141,7 +141,7 @@ describe("certification review workspace integration", () => {
 
   it("opens reviews first with evidence/context and keeps mission editing in settings", async () => {
     setup(); render(<AuthorizedCertificationManager />);
-    expect(await screen.findByAltText("인증 이미지 1")).toBeVisible();
+    expect(await screen.findByAltText("제출 이미지 1")).toBeVisible();
     expect(screen.queryByLabelText("인증 방식")).not.toBeInTheDocument();
     expect(screen.getByText("다음 결제일 또는 유효기간")).toBeVisible();
     expect(screen.getByText("가입 화면입니다")).toBeVisible();
@@ -208,7 +208,7 @@ describe("certification review workspace integration", () => {
 
   it("searches submissions without losing distinction between empty and error states", async () => {
     setup(); render(<AuthorizedCertificationManager />);
-    await screen.findByAltText("인증 이미지 1");
+    await screen.findByAltText("제출 이미지 1");
     fireEvent.change(screen.getByRole("textbox", { name: "제출 검색" }), { target: { value: "not-found" } });
     expect(screen.getByText("검색 결과가 없습니다")).toBeVisible();
     expect(screen.queryByText("표시할 제출이 없습니다")).not.toBeInTheDocument();
@@ -216,7 +216,7 @@ describe("certification review workspace integration", () => {
 
   it("keeps viewer history and images available while all mutations remain disabled", async () => {
     auth.role = "viewer"; setup(); render(<AuthorizedCertificationManager />);
-    fireEvent.load(await screen.findByAltText("인증 이미지 1"));
+    fireEvent.load(await screen.findByAltText("제출 이미지 1"));
     expect(screen.getByRole("button", { name: "승인" })).toBeDisabled();
     expect(screen.getByText("조회 권한으로 접속 중입니다.")).toBeVisible();
   });
@@ -227,7 +227,7 @@ describe("certification review workspace integration", () => {
     auth.email = "another@byus.test"; auth.userId = "actor-2";
     auth.getAccessToken.mockImplementation(() => new Promise(() => {}));
     rendered.rerender(<AuthorizedCertificationManager />);
-    expect(screen.queryByAltText("인증 이미지 1")).not.toBeInTheDocument();
+    expect(screen.queryByAltText("제출 이미지 1")).not.toBeInTheDocument();
     expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:proof-1");
   });
 
