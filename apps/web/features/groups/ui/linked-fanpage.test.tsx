@@ -10,7 +10,7 @@ vi.mock('./use-group-resource',()=>({GroupRequestError:class extends Error{},use
 vi.mock('./group-shell',async importOriginal=>({...await importOriginal<typeof import('./group-shell')>(),GroupShell:({children}:any)=><main>{children}</main>}));
 vi.mock('./linked-fanpage-content',()=>({LinkedFanpageContent:({view,celebrity}:any)=><section>{celebrity.slug} shared {view}</section>}));
 vi.mock('@/features/group-wallet/ui/wallet-screen',()=>({WalletAttendanceDialog:({onClose}:{onClose:()=>void})=><div role='dialog'><button onClick={onClose}>닫기</button></div>}));
-vi.mock('./group-presence',()=>({GroupPresence:()=>null}));
+vi.mock('./group-presence',()=>({GroupVisitLine:()=>null,GroupPresence:()=>null}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock('./group-members',()=>({GroupMembers:({member}:any)=><section>members:{String(member)}</section>}));
 vi.mock('./group-board',()=>({GroupBoard:({initialPostId}:any)=><section>legacy post:{initialPostId}</section>}));

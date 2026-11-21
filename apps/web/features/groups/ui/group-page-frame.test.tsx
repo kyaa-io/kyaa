@@ -22,7 +22,7 @@ vi.mock("./use-linked-fanpage", () => ({ useLinkedFanpage: () => ({ data: undefi
 vi.mock("./use-chat-unread", () => ({ useChatUnread: (pageId: string | null) => state.unread(pageId) }));
 vi.mock("./use-group-preload", () => ({ usePreloadGroupResource: () => state.preload }));
 vi.mock("./use-group-presence", async importOriginal => ({ ...await importOriginal<typeof import("./use-group-presence")>(), useOwnGroupPresence: () => ({ error: false, retry: vi.fn() }) }));
-vi.mock("./group-presence", () => ({ GroupPresence: ({ memberCount }: { memberCount?: number }) => <div>{memberCount}</div> }));
+vi.mock("./group-presence", () => ({ GroupVisitLine: () => null, GroupPresence: ({ memberCount }: { memberCount?: number }) => <div>{memberCount}</div> }));
 vi.mock("./proof-tab-label", () => ({ ProofTabLabel: ({ label }: { label: string }) => label }));
 vi.mock("./group-page-menu", () => ({ GroupPageMenu: () => null }));
 vi.mock("./group-shell", () => ({ GroupShell: ({ children }: { children: ReactNode }) => <main>{children}</main> }));

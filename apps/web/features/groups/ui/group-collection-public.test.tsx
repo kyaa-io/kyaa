@@ -18,7 +18,7 @@ vi.mock('next/navigation',()=>({usePathname:()=>'/studio',useSearchParams:()=>ne
 vi.mock('@/features/auth/client/cognito-auth',()=>({useByUsAuth:()=>({ready:true,authenticated:false,user:null,getAccessToken:async()=>null})}));
 vi.mock('@/components/byus-session-provider',()=>({useByUsSession:()=>({ready:true,ownerId:null,generation:0})}));
 vi.mock('./group-shell',async importOriginal=>({...await importOriginal<typeof import('./group-shell')>(),GroupShell:({children}:{children:React.ReactNode})=><main>{children}</main>,GroupAvatar:()=>null}));
-vi.mock('./group-presence',()=>({GroupPresence:()=>null}));
+vi.mock('./group-presence',()=>({GroupVisitLine:()=>null,GroupPresence:()=>null}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=>null,useCompactHeader:()=>false}));
 vi.mock('./group-bookmark-action',()=>({GroupBookmarkAction:()=>null}));
 vi.mock('./group-home-panels',()=>({GroupBrandHomeEvent:()=>null,GroupHomeGallery:()=>null}));

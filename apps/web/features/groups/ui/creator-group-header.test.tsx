@@ -9,7 +9,7 @@ vi.mock('next/navigation',()=>({useSearchParams:()=>new URLSearchParams(state.qu
 vi.mock('./use-group-resource',()=>({GroupRequestError:class extends Error{},useGroupRequest:()=>({request:vi.fn(),authenticated:state.authenticated,ready:state.ready,ownerKey:'local'}),useGroupResource:(url:string|null)=>{state.urls.push(url);return {data:url?state.data:undefined,error:state.error,failure:state.failure,loading:state.loading,ownerKey:'local',authenticated:state.authenticated,ready:state.ready,request:vi.fn(),retry:vi.fn()};}}));
 vi.mock('./use-group-preload',()=>({usePreloadGroupResource:()=>state.preload}));
 vi.mock('./use-group-presence',async importOriginal=>({...await importOriginal<typeof import('./use-group-presence')>(),useOwnGroupPresence:()=>({error:false,retry:vi.fn()})}));
-vi.mock('./group-presence',()=>({GroupPresence:({memberCount}:any)=><div data-testid='presence'>{memberCount}</div>}));
+vi.mock('./group-presence',()=>({GroupVisitLine:()=>null,GroupPresence:({memberCount}:any)=><div data-testid='presence'>{memberCount}</div>}));
 vi.mock('./proof-tab-label',()=>({ProofTabLabel:({label}:any)=>label}));
 vi.mock('./group-page-menu',()=>({GroupPageMenu:()=><button>page-menu</button>,useCompactHeader:()=>false}));
 vi.mock('./group-activities',()=>({GroupActivitiesPanel:({pageId}:any)=><div>activities:{pageId}</div>,GroupEventsList:()=>null,GroupCollections:()=>null}));
