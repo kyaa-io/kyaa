@@ -61,7 +61,7 @@ const relationName: Record<Relation, string> = { good: "합", rough: "충", plai
 const relationPlain = (unit: "해" | "달"): Record<Relation, string> => ({
   good: `일지와 손을 잡는 ${unit}라 일이 순하게 풀려요`,
   rough: `일지와 부딪치는 ${unit}라 자리와 관계가 한 번 흔들려요`,
-  plain: `일지와 부딪침이 없어 큰 변동이 적은 ${unit}예요`,
+  plain: `일지와 부딪침이 없어 큰 변동이 적은 ${unit === "해" ? "해예요" : "달이에요"}`,
 });
 
 /**
@@ -158,7 +158,6 @@ export function sajuBasis(chart: Chart, at: number, view: DepthView): BasisRow[]
         value: `${month.label} ${month.pillar}월 · ${month.god}`,
         plain: tenGodPlain[month.god],
       });
-    if (open) rows.push(helpRow);
     return rows;
   }
 

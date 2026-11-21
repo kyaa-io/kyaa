@@ -204,8 +204,9 @@ export function SajuResult({
   const depth =
     view === "pair" ? null : (
       <>
-        <ReadingBasis title={uiText("basis")} rows={sajuBasis(chart, at, view)} />
+        <ReadingBasis className={styles.section} title={uiText("basis")} rows={sajuBasis(chart, at, view)} />
         <ReadingDomains
+          className={styles.section}
           title={uiText("areas")}
           items={sajuDomains(chart, at, view).map((item) => ({
             key: item.key,

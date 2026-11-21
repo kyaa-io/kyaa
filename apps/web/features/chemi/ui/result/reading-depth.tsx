@@ -33,10 +33,11 @@ export function ReadingBasisRows({ rows }: { rows: readonly ReadingBasisRow[] })
   );
 }
 
-export function ReadingBasis({ title, rows }: { title: string; rows: readonly ReadingBasisRow[] }) {
+/** `className`: 놓이는 화면이 구역 순서를 CSS 로 정할 때 그 화면의 구역 클래스를 넘긴다. */
+export function ReadingBasis({ title, rows, className }: { title: string; rows: readonly ReadingBasisRow[]; className?: string }) {
   if (!rows.length) return null;
   return (
-    <section className={styles.section} data-reading-basis="">
+    <section className={`${styles.section} ${className ?? ""}`} data-reading-basis="">
       <FanHeading>{title}</FanHeading>
       <ReadingBasisRows rows={rows} />
     </section>
@@ -53,10 +54,10 @@ export type ReadingDomainItem = {
   sentences: readonly string[];
 };
 
-export function ReadingDomains({ title, items }: { title: string; items: readonly ReadingDomainItem[] }) {
+export function ReadingDomains({ title, items, className }: { title: string; items: readonly ReadingDomainItem[]; className?: string }) {
   if (!items.length) return null;
   return (
-    <section className={styles.section} data-reading-domains="">
+    <section className={`${styles.section} ${className ?? ""}`} data-reading-domains="">
       <FanHeading>{title}</FanHeading>
       <ul className={styles.list}>
         {items.map((item, index) => (

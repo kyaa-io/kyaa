@@ -19,7 +19,7 @@ import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { tarotBasis, tarotRowMore } from "@/features/chemi/tarot/depth";
-import { ReadingBasis } from "@/features/chemi/ui/result/reading-depth";
+import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
@@ -237,15 +237,16 @@ export function TarotResult({
         <section className={styles.sym} hidden={failed}>
           <FanHeading><ReadingText id="symbol" /></FanHeading>
           {meaning.card ? (
-            <FanText as="p" role="body">
-              {meaning.card.symbol}
-            </FanText>
+            <>
+              <FanText as="p" role="body">
+                {meaning.card.symbol}
+              </FanText>
+              <ReadingBasisRows rows={tarotBasis(draw.card, draw.reversed)} />
+            </>
           ) : (
             <Placeholder rows={3} />
           )}
         </section>
-
-        {!failed && <ReadingBasis title={uiText("basis")} rows={tarotBasis(draw.card, draw.reversed)} />}
 
         <footer className={styles.legal}>
           <FanText as="p" role="meta">
