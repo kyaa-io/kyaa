@@ -58,7 +58,7 @@ type Challenge = {
   ranking: Row[];
   available: boolean;
 };
-type Finish = { score: number; exp: number; shareId?: string };
+type Finish = { excitement?: number; titleStage?: number; score: number; exp: number; shareId?: string };
 type Props = {
   copy: MatchCopy;
   locale: string;
@@ -171,6 +171,7 @@ function Session({
   const [publicRows, setPublicRows] = useState<Row[] | null>(null);
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [equipped, setEquipped] = useState(false);
   const [priorRank, setPriorRank] = useState<number | null>(null);
   const [result, setResult] = useState<Finish | null>(null);
   const [pendingFinish, setPendingFinish] = useState<Submission | null>(null);
@@ -319,6 +320,7 @@ function Session({
         throw e;
       }
       startKey.current.choice = "";
+      setEquipped(false);
       setPriorRank(lobby?.ranking.find(row => row.isMe)?.place ?? null);
       setTicket(next);
       setResult(null);
@@ -872,6 +874,17 @@ function Session({
                   <b>+{result.exp} EXP</b>
                 </p>
               )}
+              {result?.titleStage && <div className={styles.detail}>
+                <b>{copy.round} {result.titleStage} · {copy.completed}</b>
+                <FanAction disabled={working || equipped} onClick={() => void action(async () => {
+                  await call({action: "equip", stage: result.titleStage});
+                  setEquipped(true);
+                })}>{equipped && <FanIcon icon={Check} size={16} />}{copy.equip}</FanAction>
+              </div>}
+              {result?.excitement !== undefined && <div className={styles.detail}>
+                <span>{copy[character]} · {copy.excitement} +{result.excitement}</span>
+                <FanAction href={`/chemi?tab=growth&locale=${locale}&character=${character}`}>{copy.room}</FanAction>
+              </div>}
               {pendingFinish && !working && (
                 <FanAction onClick={() => void submit(pendingFinish)}>
                   {copy.retry}

@@ -56,6 +56,10 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
   const [state, setState] = useState<GrowthState>();
   const [failed, setFailed] = useState(false);
   const [picked, setPicked] = useState<Character>();
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("character");
+    setPicked(CHARACTERS.find(character => character === requested));
+  }, []);
   const [busy, setBusy] = useState(false);
   const [hop, setHop] = useState(false);
   const [viewing, setViewing] = useState<number>();
