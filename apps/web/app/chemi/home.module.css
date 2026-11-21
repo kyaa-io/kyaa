@@ -17,6 +17,9 @@
   aspect-ratio: 9 / 4;
   object-fit: cover;
 }
+.artwork[data-content="tarot"] img {
+  object-position: center top;
+}
 .caption {
   composes: fade from "../../components/home-entry-cards/banner-overlay.module.css";
   position: absolute;
@@ -162,9 +165,24 @@
   min-width: calc(var(--space-12) - var(--space-1));
   min-height: calc(var(--space-12) - var(--space-1));
 }
-.dots button[aria-pressed="true"] {
-  background: var(--color-home-caption);
-  color: var(--color-surface);
+.dots button {
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+.dots button span[aria-hidden="true"] {
+  display: block;
+  width: var(--space-2);
+  height: var(--space-2);
+  background: var(--color-muted);
+  border-radius: var(--radius-pill);
+}
+.dots button[aria-pressed="true"] span[aria-hidden="true"] {
+  width: var(--space-5);
+  background: var(--color-accent);
+}
+.row[data-selected="true"] {
+  color: var(--color-accent-ink);
 }
 @media (min-width: 64rem) {
   .home[data-ranked="false"] {

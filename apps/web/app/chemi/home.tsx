@@ -27,6 +27,7 @@ export function ChemiHome({
   rankings?: readonly GameRanking[];
 }) {
   const [category, setCategory] = useState("all");
+  const [bannerIndex, setBannerIndex] = useState(0);
   if (preview && growth)
     return (
       <div className={styles.row}>
@@ -36,7 +37,7 @@ export function ChemiHome({
     );
   return (
     <div className={styles.home} data-ranked={preview && Boolean(rankings.length)}>
-      <HomeBanner copy={copy} locale={locale} />
+      <HomeBanner index={bannerIndex} setIndex={setBannerIndex} copy={copy} locale={locale} />
       {preview && rankings.length > 0 && <GameRankings label={copy.rankings} games={rankings} />}
       <section>
         {preview && <FanTabs
@@ -64,12 +65,13 @@ export function ChemiHome({
                 <Link
                   key={id}
                   className={styles.row}
+                  data-selected={id === entries[bannerIndex][0]}
                   href={`${path}?locale=${locale}`}
                 >
                   {content}
                 </Link>
               ) : (
-                <div key={id} className={styles.row}>
+                <div key={id} className={styles.row} data-selected={id === entries[bannerIndex][0]}>
                   {content}
                   <small>{copy.ready}</small>
                 </div>
