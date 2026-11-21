@@ -172,7 +172,7 @@ function ParticipationList({ locale, adminRole, getAccessToken }: { locale: Admi
     return () => controller.abort();
   }, [getAccessToken, cursor, revision]);
   return <section className={`${styles.panel} ${styles.participationPanel}`} aria-labelledby="participation-list-heading">
-    <div className={styles.panelHeading}><div><h2 id="participation-list-heading">{labels.title}</h2><p>{labels.description}</p></div>
+    <div className={styles.panelHeading}><div><h2 id="participation-list-heading">{labels.title}</h2></div>
       <button className={shared.secondaryButton} type="button" disabled={status === "loading"} onClick={() => { setCursor(null); setRevision(value => value + 1); }}>{locale === "ko" ? "참여 명단 새로고침" : "Refresh confirmations"}</button></div>
     {status === "unauthenticated" || status === "denied" ? <AdminAccessState status={status} locale={locale} />
       : status === "loading" ? <p role="status">{labels.loading}</p>
