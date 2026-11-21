@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "짝 맞추기에서 최애의 사진 카드를 뒤집어 다섯 단계에 도전할 수 있어요. 짝을 맞히면 점수가 오르고, 각 단계를 마치면 남은 시간과 정확도에 따라 점수를 더 받아요.",
+    "로컬 시험 계정으로 확인한 화면이에요."
+  ],
+  "path": "/chemi/games/match",
+  "images": [
+    "release-notes/images/2026-11-21-chemi-five-stages.png"
+  ]
+}

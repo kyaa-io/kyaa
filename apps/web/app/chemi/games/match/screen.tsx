@@ -724,6 +724,7 @@ function Session({
                             width={640}
                             height={800}
                             sizes="(min-width: 768px) 210px, 33vw"
+                            unoptimized={faces[photo].startsWith("/chemi/match/") || faces[photo].startsWith("/api/")}
                             src={faces[photo]}
                             alt=""
                           />
@@ -827,6 +828,7 @@ function Session({
                     sizes="(min-width: 768px) 166px, 30vw"
                     alt=""
                     key={src}
+                    unoptimized={src.startsWith("/chemi/match/")}
                     src={src}
                   />
                 ))}

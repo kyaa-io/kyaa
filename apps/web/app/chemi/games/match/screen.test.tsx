@@ -29,7 +29,7 @@ const copy = getMatchCopy("ko");
 const art = {
   portrait: "/portrait.jpg",
   scene: "/scene.jpg",
-  cards: ["/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg"],
+  cards: ["/1.jpg", "/2.jpg", "/3.jpg", "/4.jpg", "/5.jpg"],
 } as const;
 const photos = { changha: art, elina: art, yuna: art };
 
