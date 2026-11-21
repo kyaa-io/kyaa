@@ -55,7 +55,8 @@
     "release-notes/2026-11-21-chemi-entry-ranking-rail.json",
     "release-notes/2026-11-21-chemi-results-r4b.json",
     "release-notes/2026-11-21-chemi-five-stages.json",
-    "release-notes/2026-11-21-chemi-immersive-chat.json"
+    "release-notes/2026-11-21-chemi-immersive-chat.json",
+    "release-notes/2026-11-21-chemi-scene-video.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

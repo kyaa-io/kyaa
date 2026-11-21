@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
@@ -233,10 +234,13 @@ export function StarResult({
             size={20}
             tone="accent"
           />
-          <picture className={styles.hero}>
-            <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
-            <img src={`${art}/head-${character}-v1.webp`} alt="" />
-          </picture>
+          <div className={styles.hero}>
+            <picture>
+              <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
+              <img src={`${art}/head-${character}-v1.webp`} alt="" />
+            </picture>
+            {character === "dosa" && <SceneVideo src="/public-assets/cms-assets/chemi/video/chemi-bg-star-sky-loop-v1" objectPosition="center 20%" />}
+          </div>
         </header>
         <section className={`${styles.panel} ${styles.domainPanel}`}>
           <div className={styles.rewardRow}>
