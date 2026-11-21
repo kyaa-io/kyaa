@@ -80,12 +80,16 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
   }, [ready, authenticated, call]);
 
   if (failed)
-    return <FanState kind="error" title={copy.error} inline actions={<FanAction size="sm" onClick={() => void call()}>{copy.retry}</FanAction>} />;
+    return (
+      <div data-chemi-hide-dm="">
+        <FanState kind="error" title={copy.error} inline actions={<FanAction size="sm" onClick={() => void call()}>{copy.retry}</FanAction>} />
+      </div>
+    );
   const guest = ready && !authenticated;
   const data = guest ? sample : state;
   if (!data)
     return (
-      <div className={styles.grow} aria-busy="true">
+      <div className={styles.grow} data-chemi-hide-dm="" aria-busy="true">
         <FanSkeleton shape="block" width={240} height={36} />
         <FanSkeleton shape="block" className={styles.room} />
         <div className={styles.side}>
@@ -128,7 +132,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
   const openDate = viewing ? mini.album.find((item) => item.slot === viewing)?.date : undefined;
 
   return (
-    <div className={styles.grow}>
+    <div className={styles.grow} data-chemi-hide-dm="">
       <FanTabs
         variant="chip"
         className={styles.chips}
@@ -197,7 +201,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
             {rows.map((row) => (
               <li key={row.id} data-row="">
                 <Link href={row.href}>
-                  <img src={`/chemi/thumb-${row.id}-128.webp`} alt="" width={40} height={40} />
+                  <img src={`/chemi/thumb-${row.id}-128-v2.webp`} alt="" width={40} height={40} />
                   <FanText role="item">{home[row.id]}</FanText>
                   {guest ? null : row.got ? (
                     <FanText role="meta" className={styles.got}><FanIcon icon={Check} size={16} />{copy.got}</FanText>
@@ -227,7 +231,14 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
                     {photo ? (
                       <img src={`/chemi/grow/album-${mini.character}-${slot}-v1.webp`} alt="" width={600} height={900} loading="lazy" />
                     ) : (
-                      <FanIcon icon={got ? Check : LockKeyhole} size={20} />
+                      <>
+                        {!got && <img
+                          className={styles.silhouette}
+                          src={`/chemi/grow/mini-${mini.character}-${slot < 2 ? "baby" : slot < 4 ? "kid" : "star"}-v1.webp`}
+                          alt=""
+                        />}
+                        <FanIcon icon={got ? Check : LockKeyhole} size={20} />
+                      </>
                     )}
                   </span>
                   <FanText role={got ? "label" : "meta"}>{label}</FanText>

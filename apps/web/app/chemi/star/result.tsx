@@ -185,7 +185,7 @@ export function StarResult({
         method: "POST",
         headers,
         body: JSON.stringify({ via }),
-      }).then(response => showShareReward(response, uiText)).catch(() => {});
+      }).then(response => showShareReward(response, uiText, name)).catch(() => {});
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       showFanToast({ title: uiText("copyFailed"), tone: "error" });

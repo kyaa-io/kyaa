@@ -8,7 +8,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import styles from "./home.module.css";
 
 const images = {
-  fortune: "fortune/fortune-changha-banner.webp",
+  fortune: "fortune/fortune-changha-banner-v2.webp",
   saju: "saju/saju-changha-wide-v1.webp",
   zodiac: "star/hero-elina-l-v1.webp",
   tarot: "tarot/scene-yuna-l.webp",

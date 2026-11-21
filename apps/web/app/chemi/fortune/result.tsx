@@ -194,7 +194,7 @@ export function FortuneResult({
       await fetch(
         `/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`,
         { method: "POST", headers, body: JSON.stringify({ via: "copy" }) },
-      ).then(response => showShareReward(response, uiText)).catch(() => {});
+      ).then(response => showShareReward(response, uiText, name)).catch(() => {});
     } catch {
       showFanToast({ title: uiText("copyFailed"), tone: "error" });
     } finally {

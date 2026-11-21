@@ -5,12 +5,13 @@ import type { useReadingCopy } from "./reading-ui";
 export async function showShareReward(
   response: Response,
   text: ReturnType<typeof useReadingCopy>,
+  name: string,
 ) {
   if (!response.ok) return false;
   const { reward } = await response.json();
   const parts = [];
   if (reward?.pass === 1) parts.push(text("shareQuestionBonus"));
-  if (reward?.exp === 5) parts.push(text("shareAffinityBonus"));
+  if (reward?.exp === 5) parts.push(text("shareAffinityBonus", { name }));
   if (parts.length) showFanToast({ title: parts.join(" · "), tone: "success" });
   return parts.length > 0;
 }

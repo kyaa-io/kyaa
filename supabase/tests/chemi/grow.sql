@@ -14,19 +14,21 @@ begin
     or public.chemi_grow_level(249) <> 4 or public.chemi_grow_level(250) <> 5 or public.chemi_grow_level(2250) <> 15
     or public.chemi_grow_level(9000) <> 30 then raise exception 'level curve'; end if;
 
-  -- 키우기 전에 받은 친밀 EXP 는 쌓이지만 앨범은 열리지 않는다.
+  -- 첫 친밀을 받는 쓰기에서 앨범 첫 칸을 연다.
   insert into public.chemi_minis(user_id, character, exp_total) values (u, 'changha', 260), (u, 'dosa', 500);
+  if (select count(*) from public.chemi_album where user_id = u and slot = 1) <> 1
+    then raise exception 'first affinity must open slot one immediately'; end if;
   insert into public.chemi_exp_log(user_id, character, source, kst_date, exp) values
     (u, 'changha', 'fortune', d, 10), (u, 'elina', 'fortune', d, 10), (u, 'dosa', 'fortune', d, 10);
   s := public.chemi_grow_state(u);
-  if s#>>'{minis,0,exp}' <> '260' or s#>>'{minis,0,level}' <> '5' or s#>'{minis,0,album}' <> '[]'
+  if s#>>'{minis,0,exp}' <> '260' or s#>>'{minis,0,level}' <> '5' or jsonb_array_length(s#>'{minis,0,album}') <> 2
     or s#>'{minis,0,today}' <> '["fortune"]' or s->'full' <> '["fortune"]' or jsonb_array_length(s->'minis') <> 3
-    then raise exception 'before adopt %', s; end if;
+    then raise exception 'auto adopt %', s; end if;
 
-  -- 키우기 시작: 1칸과, 이미 닿은 Lv 5 의 2칸이 함께 열리고 기록 대기열에 한 번씩 들어간다.
+  -- 수동 키우기를 다시 요청해도 이미 열린 앨범과 기록은 중복되지 않는다.
   s := public.chemi_grow_adopt(u, 'changha');
   if jsonb_array_length(s#>'{minis,0,album}') <> 2 or s#>>'{minis,0,album,1,slot}' <> '2'
-    or s->'fresh' <> '[{"slot": 2, "character": "changha"}]' then raise exception 'adopt %', s; end if;
+    or s->'fresh' <> '[]' then raise exception 'adopt %', s; end if;
   s := public.chemi_grow_adopt(u, 'changha');
   if s->'fresh' <> '[]' or jsonb_array_length(s#>'{minis,0,album}') <> 2 then raise exception 'adopt replay %', s; end if;
   if (select count(*) from public.chemi_chain_records where user_id = u and kind = 'album') <> 2

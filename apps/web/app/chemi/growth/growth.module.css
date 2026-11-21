@@ -220,7 +220,7 @@
   background: var(--color-surface);
   color: var(--color-muted);
 }
-.photo:has(img) {
+.photo:has(img:not(.silhouette)) {
   border: 0;
   background: var(--color-accent-soft);
 }
@@ -308,5 +308,53 @@
   .mini img[data-hop="true"],
   .photo[data-fresh] {
     animation: none;
+  }
+}
+.stage > :last-child:not(.room) {
+  width: 100%;
+  max-width: none;
+}
+.silhouette {
+  display: none;
+}
+@media (width >= 64rem) {
+  .grow {
+    align-items: stretch;
+  }
+  .stage {
+    display: contents;
+  }
+  .room,
+  .stage > :last-child:not(.room) {
+    grid-column: 1;
+  }
+  .room,
+  .side {
+    grid-row: 2;
+  }
+  .room {
+    align-self: end;
+  }
+  .side {
+    grid-column: 2;
+    align-content: space-between;
+  }
+  .stage > :last-child:not(.room) {
+    grid-row: 3;
+  }
+  .photo:has(.silhouette) {
+    position: relative;
+    background: var(--color-accent-soft);
+  }
+  .photo .silhouette {
+    display: block;
+    position: absolute;
+    inset: 0;
+    object-fit: contain;
+    filter: brightness(0);
+    opacity: 0.12;
+  }
+  .photo:has(.silhouette) svg {
+    position: relative;
   }
 }

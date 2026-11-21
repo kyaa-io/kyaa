@@ -543,7 +543,7 @@ export function SajuFlow({
         await navigator.clipboard.writeText(url);
         showFanToast({ title: text("copied"), tone: "success" });
       }
-      await completeShare(card.shareId, via, headers, text);
+      await completeShare(card.shareId, via, headers, text, name);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       showFanToast({ title: text("copyFailed"), tone: "error" });
