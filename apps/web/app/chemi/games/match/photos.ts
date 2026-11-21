@@ -4,6 +4,8 @@ import { chemiEnabled } from "@/features/chemi/domain/availability";
 type MatchPhotos = {
   portrait: string;
   scene: string;
+  /** 넓은 화면 로비의 세로로 긴 사진 칸에 쓰는 원본. 가로 사진의 세로 해상도가 모자랄 때만 둔다. */
+  lobby?: string;
   cards: readonly string[];
 };
 
@@ -12,6 +14,7 @@ const catalog = {
   changha: {
     portrait: `${root}/changha/portrait-20261021.webp`,
     scene: `${root}/changha/hero-editorial-20260911.webp`,
+    lobby: `${root}/changha/portrait-20261021.webp`,
     cards: [
       "/chemi/match/c7.jpg",
       "/chemi/match/c3.jpg",

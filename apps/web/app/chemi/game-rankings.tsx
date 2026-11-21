@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -28,7 +28,7 @@ export type GameRanking = {
   mine: RecordRow | null;
 };
 
-const SLOTS = [1, 2, 3] as const;
+const SLOTS = 3;
 
 function RankingRow({ row }: { row: RecordRow }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -58,12 +58,13 @@ function RankingRow({ row }: { row: RecordRow }) {
   );
 }
 
-export function GameRankings({ games, label, weekLabel, mineLabel, empty, error, retry, retryLabel }: {
+export function GameRankings({ games, label, weekLabel, mineLabel, empty, start, error, retry, retryLabel }: {
   label: string;
   games: readonly GameRanking[];
   weekLabel?: string;
   mineLabel?: string;
   empty?: string;
+  start?: string;
   error?: string;
   retry?: () => void;
   retryLabel?: string;
@@ -79,33 +80,41 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, error,
               <FanHeading as="h3">{game.title}</FanHeading>
               {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${weekLabel}`}>{weekLabel}</FanSectionLink>}
             </header>
-            <div className={styles.leaders}>
-              {game.status === "loading" ? <FanSkeleton height={48} /> : game.status === "error" ? (
-                <>
-                  <FanText role="meta">{error}</FanText>
-                  <FanAction size="sm" onClick={retry}>{retryLabel}</FanAction>
-                </>
-              ) : SLOTS.map((place, index) => {
-                const row = game.leaders[index];
-                return row ? <RankingRow key={row.id} row={row} /> : (
-                  <div className={styles.rankRow} key={place} data-open="" aria-hidden="true">
-                    <FanText role="body">{place}</FanText>
-                    <span className={styles.rankAvatar} />
-                  </div>
-                );
-              })}
-            </div>
-            {inTop ? <div className={styles.rankMine} data-open="" aria-hidden="true" /> : game.mine ? (
-              <div className={styles.rankMine}>
-                <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
-                <span className={styles.rankAvatar} aria-hidden="true" />
-                <FanText role="body">{mineLabel}</FanText>
-                <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
+            {game.status === "loading" ? <div className={styles.leaders}><FanSkeleton height={48} /></div> : game.status === "error" ? (
+              <div className={styles.leaders}>
+                <FanText role="meta">{error}</FanText>
+                <FanAction size="sm" onClick={retry}>{retryLabel}</FanAction>
               </div>
             ) : (
-              <div className={styles.rankMine} data-first="">
-                {game.status !== "ready" ? null : game.href ? <FanSectionLink href={game.href}>{empty}</FanSectionLink> : <FanText role="meta">{empty}</FanText>}
-              </div>
+              <>
+                {game.leaders.length > 0 && (
+                  <div className={styles.leaders}>
+                    {game.leaders.map((row) => <RankingRow key={row.id} row={row} />)}
+                  </div>
+                )}
+                {/* 기록이 세 줄에 못 미치면 빈 순위 줄을 그리지 않고 남는 자리에 게임 그림을 둔다. */}
+                {game.leaders.length < SLOTS && (
+                  <img
+                    className={styles.rankArt}
+                    style={{ "--open": SLOTS - game.leaders.length } as CSSProperties}
+                    src={`/chemi/banner-${game.game === "pair" ? "match" : "run"}.webp`}
+                    alt=""
+                  />
+                )}
+                {!inTop && game.mine ? (
+                  <div className={styles.rankMine}>
+                    <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
+                    <span className={styles.rankAvatar} aria-hidden="true" />
+                    <FanText role="body">{mineLabel}</FanText>
+                    <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
+                  </div>
+                ) : game.leaders.length === 0 ? (
+                  <div className={styles.rankMine} data-first="">
+                    <FanText role="meta">{empty}</FanText>
+                    {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${start}`}>{start}</FanSectionLink>}
+                  </div>
+                ) : null}
+              </>
             )}
           </FanSurface>
         );

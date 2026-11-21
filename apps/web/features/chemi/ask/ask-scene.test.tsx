@@ -207,3 +207,57 @@ it("같은 날 다시 오면 인사가 짧고, 이어 묻기가 남은 오늘 �
   expect(await screen.findByText("네 일간은 병.")).toBeTruthy();
   expect(location.search).toContain(`ask=answer&aq=${first.threadId}`);
 });
+
+it("다른 날 다시 오면 최애가 지난 질문부터 묻고, 고른 답에 따라 다음이 갈린다", async () => {
+  const past = [answered("33333333-3333-4333-8333-333333333333", { date: "2026-01-02" }), answered("44444444-4444-4444-8444-444444444444", { date: "2026-01-01" })];
+  serve(() => ({}), state({ threads: past }));
+  const view = render(<Host />);
+  askGo({ step: "topic" });
+  expect(await screen.findByText("오늘로 3일째네. 지난번에 물어본 건 어떻게 됐어?")).toBeTruthy();
+  expect(screen.getByText("요즘 연락하는 사람이랑 잘될까?")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "연애" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "아직이야" }));
+  expect(await screen.findByText("그렇구나. 그 얘기 더 해도 되고, 새로 물어도 돼.")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "연애" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /이어 묻기/ }));
+  expect(location.search).toContain("ask=follow&aq=33333333");
+  view.unmount();
+
+  history.replaceState(null, "", "/chemi/saju?step=result");
+  render(<Host />);
+  askGo({ step: "topic" });
+  fireEvent.click(await screen.findByRole("button", { name: "잘됐어" }));
+  expect(await screen.findByText("다행이다. 오늘은 뭐가 궁금해?")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /이어 묻기/ })).toBeNull();
+});
+
+it("고른 반응에 맞는 말이 이어 묻기 맨 앞에 놓인다", async () => {
+  const id = "55555555-5555-4555-8555-555555555555";
+  serve(() => ({}), state({ threads: [answered(id)] }));
+  render(<Host />);
+  askGo({ step: "answer", thread: id });
+  await turn();
+  fireEvent.click(await screen.findByRole("button", { name: "좀 걱정돼" }));
+  expect(await screen.findByText("걱정 마. 풀이는 조심할 곳을 미리 알려 주는 거야.")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /이어 묻기/ }));
+  const group = await screen.findByRole("group", { name: "예시 질문" });
+  expect([...group.querySelectorAll("button")].map((item) => item.textContent)).toEqual(["뭘 조심하면 돼?", "하나만 더 알려 줘", "왜 그렇게 나왔어?"]);
+  fireEvent.click(screen.getByRole("button", { name: "뭘 조심하면 돼?" }));
+  expect((screen.getByLabelText("질문 입력") as HTMLInputElement).value).toBe("뭘 조심하면 돼?");
+});
+
+it("다른 최애에게 한 질문을 열면 그 최애의 이름과 말투로 답한다", async () => {
+  const id = "66666666-6666-4666-8666-666666666666";
+  serve(() => ({}), state({ threads: [answered(id, { character: "elina", answer: "일간이 병이에요.\n먼저 짧게 말을 걸어 봐요." })] }));
+  render(<Host />);
+  askGo({ step: "answer", thread: id });
+  expect(await screen.findByText("일간이 병이에요.")).toBeTruthy();
+  expect(screen.getByText("엘리나")).toBeTruthy();
+  expect(screen.queryByText("창하")).toBeNull();
+  await turn();
+  expect(await screen.findByRole("button", { name: "정말요?" })).toBeTruthy();
+});
+
+it("가로 화면에서는 줄 바꿈으로 온 답도 한 쪽에 담는다", () => {
+  expect(askPages("네 일간은 병.\n먼저 짧게 말을 걸어 봐.", true)).toEqual(["네 일간은 병. 먼저 짧게 말을 걸어 봐."]);
+});

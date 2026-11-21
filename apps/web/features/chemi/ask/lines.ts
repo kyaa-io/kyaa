@@ -11,6 +11,10 @@ type Voice = "ban" | "yo" | "hao";
 export const ASK_REACTIONS = ["thanks", "really", "worried"] as const;
 export type AskReaction = (typeof ASK_REACTIONS)[number];
 
+/** 다른 날 다시 와서 지난 질문이 어떻게 됐는지 답하는 말(저장하지 않음). skip 은 바로 새 질문으로 간다. */
+export const ASK_RECALLS = ["good", "notyet", "skip"] as const;
+export type AskRecall = (typeof ASK_RECALLS)[number];
+
 export const askVoice: Record<AskCharacter, Voice> = { changha: "ban", elina: "yo", yuna: "ban", dosa: "hao" };
 export const askName: Record<AskCharacter, string> = { changha: "창하", elina: "엘리나", yuna: "유나", dosa: "kyaa 도사" };
 
@@ -21,7 +25,12 @@ export const askLines: Record<Voice, {
   /** 답을 기다리는 동안의 한 마디(기획 03-6 06). 무엇을 다시 보는지는 콘텐츠가 정한다. */
   think: (what: string) => string;
   follow: string;
-  rest: string;
+  /** 다른 날 다시 왔을 때 지난 질문을 먼저 묻는 말. days 는 이 최애와 이야기한 날 수(오늘 포함, 모르면 0). */
+  recall: (days: number) => string;
+  /** 지난 질문이 어떻게 됐는지 들은 뒤의 대답. */
+  recalled: Record<Exclude<AskRecall, "skip">, string>;
+  /** 오늘 질문을 다 쓴 뒤의 작별 인사. 내일 새로 나오는 풀이를 함께 말한다. */
+  rest: Record<AskContent, string>;
   reminded: string;
   shared: string;
   /** 팬의 반응에 돌려주는 한 마디. 풀이에 없는 사실을 새로 말하지 않는다. */
@@ -33,7 +42,14 @@ export const askLines: Record<Voice, {
     again: "또 뭐 볼래?",
     think: (what) => `음, 네 ${what}부터 다시 볼게.`,
     follow: "더 궁금한 거 있어? 하나 더 말해 봐.",
-    rest: "오늘 이야기 재밌었어. 내일 또 와.",
+    recall: (days) => `${days > 1 ? `오늘로 ${days}일째네` : "왔네"}. 지난번에 물어본 건 어떻게 됐어?`,
+    recalled: { good: "다행이다. 오늘은 뭐가 궁금해?", notyet: "그렇구나. 그 얘기 더 해도 되고, 새로 물어도 돼." },
+    rest: {
+      saju: "오늘 이야기 재밌었어. 내일 또 와.",
+      fortune: "오늘 이야기 재밌었어. 내일 운세가 나오면 또 이야기하자.",
+      star: "오늘 이야기 재밌었어. 내일 별자리 운세가 나오면 또 이야기하자.",
+      tarot: "오늘 이야기 재밌었어. 내일은 새 카드로 또 이야기하자.",
+    },
     reminded: "응, 내일 기다릴게.",
     shared: "자랑해 줘서 고마워. 하나 더 물어봐.",
     react: {
@@ -55,7 +71,14 @@ export const askLines: Record<Voice, {
     again: "또 뭐 볼래요?",
     think: (what) => `음, ${what}부터 다시 볼게요.`,
     follow: "더 궁금한 게 있어요? 하나 더 말해 봐요.",
-    rest: "오늘 이야기 즐거웠어요. 내일 또 와요.",
+    recall: (days) => `${days > 1 ? `오늘로 ${days}일째네요` : "왔네요"}. 지난번에 물어본 건 어떻게 됐어요?`,
+    recalled: { good: "다행이에요. 오늘은 뭐가 궁금해요?", notyet: "그렇군요. 그 얘기 더 해도 되고, 새로 물어도 돼요." },
+    rest: {
+      saju: "오늘 이야기 즐거웠어요. 내일 또 와요.",
+      fortune: "오늘 이야기 즐거웠어요. 내일 운세가 나오면 또 이야기해요.",
+      star: "오늘 이야기 즐거웠어요. 내일 별자리 운세가 나오면 또 이야기해요.",
+      tarot: "오늘 이야기 즐거웠어요. 내일은 새 카드로 또 이야기해요.",
+    },
     reminded: "네, 내일 기다릴게요.",
     shared: "자랑해 줘서 고마워요. 하나 더 물어봐요.",
     react: {
@@ -77,7 +100,14 @@ export const askLines: Record<Voice, {
     again: "또 무엇을 보겠소?",
     think: (what) => `음, 그대의 ${what}부터 다시 보겠소.`,
     follow: "더 궁금한 것이 있소? 하나 더 말해 보시오.",
-    rest: "오늘 이야기 즐거웠소. 내일 또 오시오.",
+    recall: (days) => `${days > 1 ? `오늘로 ${days}일째구려` : "왔구려"}. 지난번에 물은 일은 어찌 되었소?`,
+    recalled: { good: "다행이오. 오늘은 무엇이 궁금하오?", notyet: "그렇구려. 그 이야기를 더 해도 좋고, 새로 물어도 좋소." },
+    rest: {
+      saju: "오늘 이야기 즐거웠소. 내일 또 오시오.",
+      fortune: "오늘 이야기 즐거웠소. 내일 운세가 나오면 또 이야기합시다.",
+      star: "오늘 이야기 즐거웠소. 내일 별자리 운세가 나오면 또 이야기합시다.",
+      tarot: "오늘 이야기 즐거웠소. 내일은 새 카드로 또 이야기합시다.",
+    },
     reminded: "좋소, 내일 기다리겠소.",
     shared: "자랑해 주어 고맙소. 하나 더 물으시오.",
     react: {
@@ -140,18 +170,43 @@ const reactions: Record<AskReaction, readonly [ban: string, yo: string]> = {
 };
 export const askReaction = (kind: AskReaction, character: AskCharacter) => reactions[kind][askVoice[character] === "ban" ? 0 : 1];
 
+const recalls: Record<AskRecall, readonly [ban: string, yo: string]> = {
+  good: ["잘됐어", "잘됐어요"],
+  notyet: ["아직이야", "아직이에요"],
+  skip: ["새로 물을래", "새로 물을래요"],
+};
+export const askRecall = (kind: AskRecall, character: AskCharacter) => recalls[kind][askVoice[character] === "ban" ? 0 : 1];
+
+/**
+ * 이어 묻기에서 누르면 입력칸에 채워지는 말. 방금 고른 반응에 맞는 말이 맨 앞에 온다
+ * ('정말요?' → 까닭, '조금 걱정돼요' → 조심할 것). 서버는 이 말에 따라 다른 답을 준다(answerFollowup).
+ */
+const followups: Record<AskReaction, readonly [ban: string, yo: string]> = {
+  really: ["왜 그렇게 나왔어?", "왜 그렇게 나왔어요?"],
+  worried: ["뭘 조심하면 돼?", "뭘 조심하면 돼요?"],
+  thanks: ["하나만 더 알려 줘", "하나만 더 알려 줘요"],
+};
+export function askFollowups(character: AskCharacter, first: AskReaction | null) {
+  const order = first ? [first, ...ASK_REACTIONS.filter((kind) => kind !== first)] : (["really", "worried", "thanks"] as const);
+  return order.map((kind) => followups[kind][askVoice[character] === "ban" ? 0 : 1]);
+}
+
 /** 한 쪽에 담는 글자 수. 대화 상자 세 줄(390px)에 들어간다. */
 const PAGE_LETTERS = 60;
+/** 가로 화면의 대화 상자(640px)는 한 줄이 길어 한 쪽에 두 배 남짓 담는다. */
+const WIDE_PAGE_LETTERS = 130;
 /**
  * 답을 쪽으로 나눈다. 줄 바꿈이 있으면 줄마다 한 쪽이고, 줄 바꿈 없이 한 문단으로 온 답(AI 답)은
  * 문장 끝에서 끊어 한 쪽에 60자 안팎으로 묶는다. 문장 하나가 60자를 넘으면 그 문장만 한 쪽이 된다.
  */
-export function askPages(answer: string) {
-  return answer.split("\n").flatMap((line) => {
+export function askPages(answer: string, wide = false) {
+  const letters = wide ? WIDE_PAGE_LETTERS : PAGE_LETTERS;
+  // 가로 화면에서는 줄 바꿈으로 온 답도 이어 붙여 한 쪽에 담는다.
+  return (wide ? [answer.replace(/\n+/g, " ")] : answer.split("\n")).flatMap((line) => {
     const pages: string[] = [];
     for (const sentence of line.match(/.+?[.!?…~]+(?:\s+|$)|.+$/g) ?? []) {
       const last = pages.at(-1);
-      if (last !== undefined && (last + sentence).trim().length <= PAGE_LETTERS) pages[pages.length - 1] = last + sentence;
+      if (last !== undefined && (last + sentence).trim().length <= letters) pages[pages.length - 1] = last + sentence;
       else pages.push(sentence);
     }
     return pages.map((page) => page.trim()).filter(Boolean);
