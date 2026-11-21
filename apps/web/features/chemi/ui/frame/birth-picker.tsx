@@ -14,18 +14,21 @@ const suffixed = (options: readonly WheelOption[], suffix: string) => options.ma
 
 type PickerProps<T> = Readonly<{ initial: T; copy: MyBirthCopy; onPick: (value: T) => void; onClose: () => void }>;
 
-/** 생년월일 휠(년·월·일). 입력 칸에 이미 있는 날짜에서 시작하고, 없으면 1995.01.01. 일 휠은 고른 달의 날 수를 따른다. */
-function DatePicker({ initial, copy, onPick, onClose }: PickerProps<string>) {
-  const start = (birthTextToIso(initial) ?? "1995-01-01").split("-").map(Number);
+/** 생일이 아닌 날짜를 고를 때의 휠 범위(운세를 볼 날짜): 판 제목 · 첫 해 · 해 수 · 비어 있을 때 시작 날짜(YYYY-MM-DD). */
+export type DateWheelRange = Readonly<{ title: string; fromYear: number; years: number; start: string }>;
+
+/** 날짜 휠(년·월·일). 입력 칸에 이미 있는 날짜에서 시작하고, 없으면 1995.01.01(범위를 주면 그 시작 날짜). 일 휠은 고른 달의 날 수를 따른다. */
+function DatePicker({ initial, copy, onPick, onClose, range: wheel }: PickerProps<string> & Readonly<{ range?: DateWheelRange }>) {
+  const start = (birthTextToIso(initial) ?? wheel?.start ?? "1995-01-01").split("-").map(Number);
   const [year, setYear] = useState(start[0]);
   const [month, setMonth] = useState(start[1]);
   const [day, setDay] = useState(start[2]);
   const days = daysInMonth(year, month);
   const shownDay = Math.min(day, days);
-  const years = useMemo(() => suffixed(range(1900, 127), copy.year), [copy.year]);
+  const years = useMemo(() => suffixed(range(wheel?.fromYear ?? 1900, wheel?.years ?? 127), copy.year), [copy.year, wheel?.fromYear, wheel?.years]);
   const months = useMemo(() => suffixed(range(1, 12), copy.month), [copy.month]);
   const dayOptions = useMemo(() => suffixed(range(1, days), copy.day), [days, copy.day]);
-  return <FanSheet open onOpenChange={(open) => { if (!open) onClose(); }} title={copy.fieldDate} closeLabel={copy.close}
+  return <FanSheet open onOpenChange={(open) => { if (!open) onClose(); }} title={wheel?.title ?? copy.fieldDate} closeLabel={copy.close}
     primary={{ label: copy.done, onClick: () => { onPick(`${year}.${pad(month)}.${pad(shownDay)}`); onClose(); } }}>
     <FanText as="div" role="body" className={styles.wheels}>
       <WheelColumn label={copy.year} options={years} value={year} onChange={setYear} autoFocus />
@@ -93,14 +96,14 @@ function PlacePicker({ copy, onPick, onClose }: Omit<PickerProps<string>, "initi
 }
 
 export type BirthPickerTarget =
-  | { kind: "date"; value: string; onPick: (text: string) => void }
+  | { kind: "date"; value: string; onPick: (text: string) => void; range?: DateWheelRange }
   | { kind: "time"; value: BirthTime; onPick: (time: BirthTime) => void }
   | { kind: "place"; onPick: (place: string) => void };
 
 /** 생년월일·시간·태어난 곳을 고르는 판. 입력 판 위에 겹쳐 열리고(390 바닥 시트 · 1024+ 서랍), 고르면 닫힌다. */
 export function BirthPicker({ target, copy, onClose }: Readonly<{ target: BirthPickerTarget | null; copy: MyBirthCopy; onClose: () => void }>) {
   if (!target) return null;
-  if (target.kind === "date") return <DatePicker initial={target.value} copy={copy} onPick={target.onPick} onClose={onClose} />;
+  if (target.kind === "date") return <DatePicker initial={target.value} copy={copy} onPick={target.onPick} onClose={onClose} range={target.range} />;
   if (target.kind === "time") return <TimePicker initial={target.value} copy={copy} onPick={target.onPick} onClose={onClose} />;
   return <PlacePicker copy={copy} onPick={target.onPick} onClose={onClose} />;
 }

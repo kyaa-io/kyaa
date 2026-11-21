@@ -230,11 +230,9 @@
 .choicesRow > * {
   flex: 1;
 }
+/* 지난 풀이: 고르기 띠 오른쪽 끝의 기록 아이콘 */
 .history {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-3);
-  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  margin-inline-start: auto;
 }
 @media (min-width: 48rem) {
   .page {

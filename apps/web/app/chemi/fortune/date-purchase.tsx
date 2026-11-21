@@ -1,11 +1,13 @@
 "use client";
-import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { useReadingBirthCopy, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { birthIsoToText, birthTextToIso, daysInMonth } from "@/features/chemi/domain/birth-form";
+import { BirthDateField } from "@/features/chemi/ui/frame/birth-fields";
 import { DateShortage } from "./date-shortage";
 import { parseNewFortune, todayKst, type FortuneReading } from "./reading";
 import { flowNotes } from "./result-copy";
@@ -13,6 +15,14 @@ import styles from "./result.module.css";
 
 // Standard price from chemi_point_date. The date-specific quote controls confirmation.
 export const DATE_READING_PRICE = 3;
+
+/** 숫자 8자리(YYYY.MM.DD)가 실제 있는 날짜면 YYYY-MM-DD, 아니면 null. */
+function dayOf(text: string) {
+  const iso = birthTextToIso(text);
+  if (!iso) return null;
+  const [year, month, date] = iso.split("-").map(Number);
+  return year >= 1900 && month >= 1 && month <= 12 && date >= 1 && date <= daysInMonth(year, month) ? iso : null;
+}
 
 export function DatePurchase({
   character,
@@ -22,8 +32,11 @@ export function DatePurchase({
   locale: string;
 }) {
   const uiText = useReadingCopy();
+  const birthCopy = useReadingBirthCopy();
   const { getAccessToken } = useByUsAuth();
-  const [day, setDay] = useState("");
+  // 날짜는 숫자 8자리 글(YYYY.MM.DD)로 쥐고, 다 채워진 실제 날짜일 때만 day 가 생긴다.
+  const [text, setText] = useState("");
+  const day = dayOf(text) ?? "";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const [quote, setQuote] = useState<{
@@ -35,7 +48,7 @@ export function DatePurchase({
   const [saved, setSaved] = useState<FortuneReading>();
   useEffect(() => {
     const day = new URLSearchParams(window.location.search).get("date");
-    if (day && /^\d{4}-\d{2}-\d{2}$/.test(day)) setDay(day);
+    if (day && /^\d{4}-\d{2}-\d{2}$/.test(day)) setText(birthIsoToText(day));
   }, []);
   function topupHref(path: string) {
     const back = new URL(window.location.href);
@@ -49,7 +62,7 @@ export function DatePurchase({
     return `${path}?${params}`;
   }
   function reset(value: string) {
-    setDay(value);
+    setText(value);
     setQuote(undefined);
     setRevisit(false);
     setSaved(undefined);
@@ -89,15 +102,15 @@ export function DatePurchase({
   return (
     <section id="fortune-date" className={`${styles.panel} ${styles.purchase}`}>
       <FanHeading as="h2">{uiText("anotherDate")} · {DATE_READING_PRICE}P</FanHeading>
-      <label>
-        <ReadingText id="date" />
-        <input
-          type="date"
-          value={day}
-          disabled={busy}
-          onChange={(event) => reset(event.target.value)}
-        />
-      </label>
+      <BirthDateField
+        label={uiText("date")}
+        value={text}
+        onChange={reset}
+        error={text.length === 10 && !day ? birthCopy.invalidDate : null}
+        copy={birthCopy}
+        disabled={busy}
+        wheel={{ title: uiText("date"), fromYear: Number(todayKst().slice(0, 4)) - 1, years: 3, start: todayKst() }}
+      />
       {day === todayKst() && (
         <FanText role="body"><ReadingText id="above" /></FanText>
       )}

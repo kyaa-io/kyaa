@@ -10,14 +10,17 @@ import { ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
+import { completeShare } from "@/features/chemi/ui/complete-share";
+import { ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
-import { kstDate, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
+import { kstDate, tarotShareUrl, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
 import styles from "./tarot.module.css";
 
 
@@ -51,6 +54,8 @@ export function TarotResult({
   const today = draw.date === kstDate();
   const [rewards, setRewards] = useState<Rewards | null>(null);
   const [keepSave, setKeepSave] = useState(true);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const celebrated = useRef(false);
   const authorize = useRef(headers);
   useLayoutEffect(() => {
@@ -98,6 +103,44 @@ export function TarotResult({
     celebrateReward({ locale, points: rewards.points, stamps: Number(Boolean(rewards.reward.stamp)) });
   }, [rewards, locale]);
 
+  /**
+   * 자랑하기. 저장된 내 카드는 공유 카드를 만들어 보상(이번 주 첫 공유)을 받고,
+   * 비회원의 카드는 서버에 남기지 않고 링크에 카드 번호와 방향만 담는다.
+   */
+  async function share(via: ShareVia) {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      let path = tarotShareUrl({ locale, character, card: draw.card, reversed: draw.reversed });
+      let done: (() => Promise<unknown>) | null = null;
+      if (member && draw.readingId) {
+        const authorization = await authorize.current();
+        const response = await fetch("/api/chemi/shares", {
+          method: "POST",
+          headers: authorization,
+          body: JSON.stringify({ readingId: draw.readingId, character }),
+        });
+        if (!response.ok) throw Error();
+        const card = (await response.json()) as { url: string; shareId: string };
+        path = `${card.url}&locale=${locale}`;
+        done = () => completeShare(card.shareId, via, authorization, uiText, person.name);
+      }
+      const url = new URL(path, location.origin).href;
+      if (via === "send") await navigator.share({ title: tarotTitle(draw.card), url });
+      else {
+        await navigator.clipboard.writeText(url);
+        showFanToast({ title: uiText("copyDone"), tone: "success" });
+      }
+      setShareOpen(false);
+      await done?.();
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      showFanToast({ title: uiText("copyFailed"), tone: "error" });
+    } finally {
+      setSharing(false);
+    }
+  }
+
   const alt = TAROT_DECK[draw.card][2];
   const direction = uiText(draw.reversed ? "reversed" : "upright");
   const content = meaning.card?.dir[draw.reversed ? "down" : "up"];
@@ -125,11 +168,7 @@ export function TarotResult({
       </p>
     )
   ) : null;
-  const askAction = onAsk ? (
-    <FanAction variant="primary" fullWidth onClick={onAsk}>
-      <ReadingText id="askFromResult" />
-    </FanAction>
-  ) : null;
+  const actions = <ResultActions locale={locale} sharing={sharing} onShare={() => setShareOpen(true)} />;
   const failed = meaning.status === "error";
   const pair = failed ? null : (
     <div className={styles.pair}>
@@ -139,7 +178,7 @@ export function TarotResult({
   );
 
   return (
-    <article className={styles.result} data-reversed={draw.reversed || undefined} data-result="">
+    <article className={styles.result} data-reversed={draw.reversed || undefined} data-result="" data-ask={onAsk ? "" : undefined}>
       <div className={styles.colMain}>
         <header className={styles.head}>
           <FanText as="p" role="meta">{`${uiText("cardDay", { date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(draw.date)) })}${slotLine}`}</FanText>
@@ -156,7 +195,6 @@ export function TarotResult({
           {pair}
           {rewardRow}
           {saveBox}
-          {askAction}
         </div>
 
         <section className={styles.mean} data-failed={failed || undefined}>
@@ -190,7 +228,6 @@ export function TarotResult({
               </>
             )}
           </div>
-          <div className={styles.pairSide}>{pair}</div>
         </section>
 
         <section className={styles.sym} hidden={failed}>
@@ -227,11 +264,19 @@ export function TarotResult({
               )}
             </span>
           </div>
+          <div className={styles.asidePair}>{pair}</div>
           <div className={styles.asideReward}>
             {rewardRow}
             {saveBox}
-            {askAction}
           </div>
+          {onAsk ? (
+            <div className={styles.cta}>
+              <FanAction variant="primary" fullWidth onClick={onAsk}>
+                <ReadingText id="askFromResult" />
+              </FanAction>
+            </div>
+          ) : null}
+          <div className={styles.asideActions}>{actions}</div>
         </div>
         <section className={styles.keys} hidden={failed}>
           <FanHeading><ReadingText id="keywords" /></FanHeading>
@@ -259,7 +304,17 @@ export function TarotResult({
           )}
         </section>
       </div>
-      <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
+      <div className={styles.mobileActions}>{actions}</div>
+      <ShareSheet open={shareOpen} onOpenChange={setShareOpen} sharing={sharing} onShare={(via) => void share(via)}>
+        <div className={styles.shareCard}>
+          <img src={tarotFace(draw.card)} alt="" data-reversed={draw.reversed || undefined} />
+          <span>
+            <FanText role="item">{tarotTitle(draw.card)}</FanText>
+            <FanText role="meta">{direction}</FanText>
+            {content ? <FanText role="body">{content.pair}</FanText> : null}
+          </span>
+        </div>
+      </ShareSheet>
     </article>
   );
 }

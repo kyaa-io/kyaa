@@ -71,11 +71,15 @@ it("opens the share card and copies the public URL; completion is recorded only 
   await waitFor(() => expect(fetcher.mock.calls.some(([path]) => String(path).includes("/done"))).toBe(true));
 });
 
-it("has one way out to the other fortunes, not two buttons to the same place", () => {
+it("keeps one secondary row under the ask button: share and other games, with no extra way out", () => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ grants: [] })));
   render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />);
   expect(screen.queryByRole("link", { name: "다른 주제" })).toBeNull();
-  expect(screen.getAllByRole("link", { name: "다른 운세 보기" })).toHaveLength(1);
+  expect(screen.queryByRole("link", { name: "다른 운세 보기" })).toBeNull();
+  // 같은 줄을 390(본문 끝)과 1024+(최애 한마디 판)에 한 번씩 둔다. 화면에는 하나만 보인다.
+  const rows = [...document.querySelectorAll("[data-result-actions]")];
+  expect(rows).toHaveLength(2);
+  for (const row of rows) expect([...row.children].map((item) => item.textContent)).toEqual(["자랑하기", "다른 놀이 보기"]);
 });
 
 it("tags each reason with a different area before repeating one", () => {

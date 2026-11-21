@@ -137,9 +137,20 @@ it("주 버튼은 이 결과로 질문하기이고 자랑하기는 보조다. �
   const { unmount } = show("first");
   fireEvent.click(screen.getAllByRole("button", { name: "이 결과로 질문하기" })[0]);
   expect(handlers.onAsk).toHaveBeenCalled();
+  // 보조 행동은 한 줄: 자랑하기 · 다른 놀이 보기. 저장과 장면 다시 보기는 자랑하기 판 안에 있다.
+  const row = document.querySelector("[data-result-actions]")!;
+  expect([...row.children].map((item) => item.textContent)).toEqual(["자랑하기", "다른 놀이 보기"]);
+  expect(screen.queryByRole("button", { name: "조언 이미지 저장" })).toBeNull();
   fireEvent.click(screen.getAllByRole("button", { name: "자랑하기" })[0]);
-  expect(handlers.onShare).toHaveBeenCalled();
+  expect(handlers.onShare).not.toHaveBeenCalled();
+  expect(screen.getByRole("button", { name: "조언 이미지 저장" })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "장면 다시 보기" }));
+  expect(handlers.onScene).toHaveBeenCalled();
+  fireEvent.click(screen.getAllByRole("button", { name: "자랑하기" })[0]);
+  fireEvent.click(screen.getByRole("button", { name: "링크 복사" }));
+  expect(handlers.onShare).toHaveBeenCalledWith("copy");
   unmount();
   show("pair");
   expect(screen.queryByRole("button", { name: "이 결과로 질문하기" })).toBeNull();
+  expect([...document.querySelector("[data-result-actions]")!.children].map((item) => item.textContent)).toEqual(["다른 사람과", "다른 놀이 보기"]);
 });

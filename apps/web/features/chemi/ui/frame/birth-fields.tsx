@@ -7,7 +7,7 @@ import { ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { bandInfo, exactTimeLabel, formatBirthDigits, type BirthTime } from "@/features/chemi/domain/birth-form";
 import type { MyBirthCopy } from "./birth-copy";
-import { BirthPicker, type BirthPickerTarget } from "./birth-picker";
+import { BirthPicker, type BirthPickerTarget, type DateWheelRange } from "./birth-picker";
 import styles from "./birth-frame.module.css";
 
 /** 시간 값을 칸에 보이는 글로. 모름은 비워 '선택'으로 보인다. */
@@ -17,21 +17,24 @@ export function timeLabel(time: BirthTime, copy: MyBirthCopy) {
   return null;
 }
 
-/** 생년월일: 숫자 8자리를 치면 점이 붙고, 비어 있는 동안(자리표시자)은 body 400, 값이 들어가면 item 700으로 바뀐다. '휠로 고르기'로 같은 값을 휠에서 고른다. 오류는 입력 아래 한 줄. */
-export function BirthDateField({ label, value, onChange, error, copy, autoFocus }: Readonly<{
+/** 생년월일: 숫자 8자리를 치면 점이 붙고, 비어 있는 동안(자리표시자)은 body 400, 값이 들어가면 item 700으로 바뀐다. '휠로 고르기'로 같은 값을 휠에서 고른다. 오류는 입력 아래 한 줄.
+ * 생일이 아닌 날짜(운세를 볼 날짜)는 `wheel`로 휠의 제목·해 범위를 준다. */
+export function BirthDateField({ label, value, onChange, error, copy, autoFocus, wheel, disabled }: Readonly<{
   label: string;
   value: string;
   onChange: (text: string) => void;
   error?: string | null;
   copy: MyBirthCopy;
   autoFocus?: boolean;
+  wheel?: DateWheelRange;
+  disabled?: boolean;
 }>) {
   const id = useId();
   const [picker, setPicker] = useState<BirthPickerTarget | null>(null);
   return <div className={styles.field}>
     <div className={styles.label}>
       <FanText role="label"><label htmlFor={id}>{label}</label></FanText>
-      <FanAction variant="text" size="sm" className={styles.linkAction} onClick={() => setPicker({ kind: "date", value, onPick: onChange })}><FanText role="meta">{copy.wheelButton}</FanText></FanAction>
+      <FanAction variant="text" size="sm" className={styles.linkAction} disabled={disabled} onClick={() => setPicker({ kind: "date", value, onPick: onChange, range: wheel })}><FanText role="meta">{copy.wheelButton}</FanText></FanAction>
     </div>
     <FanText as="div" role={value ? "item" : "body"}>
     <input
@@ -39,7 +42,8 @@ export function BirthDateField({ label, value, onChange, error, copy, autoFocus 
       className={styles.input}
       type="text"
       inputMode="numeric"
-      autoComplete="bday"
+      autoComplete={wheel ? "off" : "bday"}
+      disabled={disabled}
       maxLength={10}
       placeholder="YYYY.MM.DD"
       value={value}

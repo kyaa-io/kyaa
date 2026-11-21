@@ -10,12 +10,13 @@ import { isTarotCharacter } from "@/features/chemi/tarot/script";
 import { parseAppLocale } from "@/i18n/locales";
 import { isReadingId, isTarotStep } from "./types";
 import { TarotScreen } from "./tarot-screen";
+import { TarotShared } from "./tarot-shared";
 
 export const dynamic = "force-dynamic";
 export default async function TarotPage({
   searchParams,
 }: {
-  searchParams: Promise<{ locale?: string | string[]; c?: string; step?: string; r?: string }>;
+  searchParams: Promise<{ locale?: string | string[]; c?: string; step?: string; r?: string; from?: string; card?: string; rev?: string }>;
 }) {
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
@@ -26,12 +27,23 @@ export default async function TarotPage({
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="tarot-main">
           <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
-          <TarotScreen
-            locale={locale}
-            initialCharacter={isTarotCharacter(params.c) ? params.c : "changha"}
-            initialStep={isTarotStep(params.step) ? params.step : "enter"}
-            initialReading={params.step === "result" && isReadingId(params.r) ? params.r : null}
-          />
+          {params.from || params.card ? (
+            <TarotShared
+              key={params.from ?? params.card}
+              locale={locale}
+              from={params.from}
+              card={params.card && /^\d{1,2}$/.test(params.card) ? Number(params.card) : undefined}
+              reversed={params.rev === "1"}
+              character={isTarotCharacter(params.c) ? params.c : "changha"}
+            />
+          ) : (
+            <TarotScreen
+              locale={locale}
+              initialCharacter={isTarotCharacter(params.c) ? params.c : "changha"}
+              initialStep={isTarotStep(params.step) ? params.step : "enter"}
+              initialReading={params.step === "result" && isReadingId(params.r) ? params.r : null}
+            />
+          )}
         </FanContentContainer>
       </ReadingCopyProvider>
     </FanAppFrame>

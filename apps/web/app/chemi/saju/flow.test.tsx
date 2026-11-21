@@ -332,7 +332,30 @@ it("shows the saved-reading action and greeting in English", async () => {
     </ReadingCopyProvider>
   );
   expect(await screen.findByRole("button", { name: "Past reading" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "Ask a question" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "Star Saju" })).toBeVisible();
   expect(screen.getByRole("link", { name: "Back to Chemi" })).toBeVisible();
   expect(screen.getByText(enCatalog.readingUi.againChangha)).toBeVisible();
+});
+
+it("다시 온 장면의 주 버튼은 질문 주제 화면을 한 번에 열고, 지난 풀이는 기록 아이콘으로 연다", async () => {
+  server(baseRoutes);
+  window.history.replaceState(null, "", "/chemi/saju?c=changha");
+  render(<SajuFlow locale="ko" birthCopy={koCatalog.myBirth} />);
+  const before = window.history.length;
+  fireEvent.click(await screen.findByRole("button", { name: "질문하기" }));
+  const params = new URLSearchParams(window.location.search);
+  expect(params.get("step")).toBe("result");
+  expect(params.get("r")).toBe("first-1");
+  expect(params.get("ask")).toBe("topic");
+  // 기록은 한 칸만 쌓인다: 뒤로 가면 다시 온 장면이다.
+  expect(window.history.length).toBe(before + 1);
+  expect(window.history.state.chemiAsk).toBe(1);
+  cleanup();
+
+  window.history.replaceState(null, "", "/chemi/saju?c=changha");
+  render(<SajuFlow locale="ko" birthCopy={koCatalog.myBirth} />);
+  fireEvent.click(await screen.findByRole("button", { name: "지난 풀이" }));
+  expect(await screen.findByRole("button", { name: "이 결과로 질문하기" })).toBeVisible();
+  expect(new URLSearchParams(window.location.search).get("ask")).toBeNull();
 });

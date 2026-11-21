@@ -713,7 +713,8 @@
   gap: var(--space-3);
   min-width: 0;
 }
-.pairSide {
+.asidePair,
+.asideActions {
   display: none;
 }
 .lead {
@@ -806,11 +807,74 @@
 .asideReward {
   display: none;
 }
+.mobileActions {
+  order: 8;
+}
 .legal {
   display: grid;
   gap: var(--space-1);
   color: var(--color-muted);
-  order: 8;
+  order: 9;
+}
+/* 친구가 자랑한 카드(공유 착지): 어느 폭에서나 한 열, 최애 한마디 판에 '한 장 뽑을래' 하나 */
+.root .shared {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: min(100%, calc(var(--space-16) * 8));
+  margin-inline: auto;
+}
+.root .shared > * {
+  order: 0;
+  margin-top: 0;
+}
+.root .shared .said > a {
+  width: 100%;
+  max-width: none;
+}
+/* 자랑하기 판의 미리 보기: 카드 그림 + 이름 · 방향 · 오늘 최애와 나 한 줄 */
+.shareCard {
+  display: grid;
+  grid-template-columns: var(--space-16) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+}
+.shareCard img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius-small);
+}
+.shareCard img[data-reversed] {
+  rotate: 180deg;
+}
+.shareCard > span {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+/* 390: 이 결과로 질문하기는 하단 탭 위에 고정한다(사주·운세·별자리 결과와 같은 자리). */
+@media (max-width: 47.99rem) {
+  .result[data-ask] {
+    padding-bottom: calc(var(--min-target) + var(--space-8));
+  }
+  .cta {
+    position: fixed;
+    display: flex;
+    justify-content: center;
+    z-index: var(--z-bottom-nav);
+    bottom: calc(var(--fan-bottom-nav-height, 64px) + env(safe-area-inset-bottom));
+    inset-inline: 0;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+  }
+  :global(body):has(.cta) :global([data-fan-toast-viewport]) {
+    bottom: calc(
+      var(--fan-bottom-nav-height, 64px) + env(safe-area-inset-bottom) + var(--space-3) * 2 +
+        var(--min-target)
+    );
+  }
 }
 .save {
   display: grid;
@@ -879,29 +943,17 @@
     display: none;
   }
   .mean {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: var(--space-6);
     padding: var(--space-6);
     border: 1px solid var(--color-line);
     border-radius: var(--radius-card);
   }
-  .mean[data-failed] {
-    grid-template-columns: minmax(0, 1fr);
+  /* 오늘 최애와 나 한 줄은 최애 한마디 판 안에 놓는다(넓은 판에 한 줄만 남지 않게). */
+  .asidePair:not(:empty),
+  .asideActions {
+    display: block;
   }
-  .mean[data-failed] .pairSide {
+  .mobileActions {
     display: none;
-  }
-  .meanBody {
-    padding-inline-end: var(--space-6);
-    border-inline-end: 1px solid var(--color-line);
-  }
-  .mean[data-failed] .meanBody {
-    padding-inline-end: 0;
-    border-inline-end: 0;
-  }
-  .pairSide {
-    display: grid;
-    align-content: center;
   }
   .sym,
   .keys {
