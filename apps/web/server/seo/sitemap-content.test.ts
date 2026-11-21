@@ -77,3 +77,27 @@ it("leaves creators with an unlisted fan page out of discovery and fails closed 
   rpc.mockImplementation(async () => ({ data: null, error: { message: "denied" } }));
   await expect(loadSitemapContent()).rejects.toThrow("Unlisted creator query failed");
 });
+
+it("keeps scheduled recurring broadcasts while excluding ended broadcasts and the check-in creator", async () => {
+  vi.spyOn(Date, "now").mockReturnValue(Date.parse("2026-11-22T00:00:00+09:00"));
+  const recurring = { live_type: "recurring", brand_id: null, celebrities: { slug: "ifew" }, ends_at: null, replay_published: false, replay_url: null };
+  const rows: Record<string, unknown[]> = {
+    celebrities: [{ slug: "kyaa-wave-fanpage" }],
+    published_celebrities: [{ slug: "kyaa-wave-fanpage" }],
+    live_events: [
+      { ...recurring, slug: "regular-live-ended", starts_at: "2026-11-18T22:00:00+00:00" },
+      { ...recurring, slug: "regular-live-upcoming", starts_at: "2026-11-22T22:00:00+00:00" },
+    ],
+  };
+  from.mockImplementation((relation: string) => {
+    const data = rows[relation] ?? [];
+    const query = { select: () => query, eq: () => query, is: () => query, order: () => query, range: async () => ({ data, count: data.length, error: null }) };
+    return query;
+  });
+  try {
+    const pages = await loadSitemapContent();
+    expect(pages).toEqual(["ko", "en"].map(locale => ({ locale, path: "/live/regular-live-upcoming" })));
+  } finally {
+    vi.restoreAllMocks();
+  }
+});
