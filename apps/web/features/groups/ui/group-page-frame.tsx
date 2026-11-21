@@ -18,7 +18,7 @@ import { CreatorFanGrade, CreatorFanGradePlaceholder } from "./creator-fan-grade
 import { GroupArtistBadge } from "./group-artist-badge";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
-import { GroupPresence } from "./group-presence";
+import { GroupPresence, GroupVisitLine } from "./group-presence";
 import { CreatorEntryToast } from "./creator-entry-toast";
 import { pageHeadCopy } from "./page-head-copy";
 import { ReactionAction } from "@/features/reaction/ui/reaction-action";
@@ -69,7 +69,7 @@ export function GroupPageHead() {
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
   // 팬페이지의 '팬 N'은 홈 랭킹 크리에이터 누적 하트와 같은 값(좋아요 남긴 사람 수). 그 밖의 페이지는 가입자 수.
   const memberCount = g.page?.kind === "fan" && g.page.likeCount !== undefined ? g.page.likeCount : g.page?.memberCount;
-  const stats = <GroupPresence pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
+  const stats = <GroupPresence separateVisits={g.kind === "fan"} pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;
@@ -79,6 +79,7 @@ export function GroupPageHead() {
     name={name}
     kind={g.kind}
     locale={g.locale}
+    visits={g.kind === "fan" ? <GroupVisitLine data={g.presence?.data} locale={g.locale}/> : undefined}
     description={summary}
     descriptionLabels={pageHeadCopy(g.locale)}
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
