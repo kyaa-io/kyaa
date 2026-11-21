@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -189,6 +190,7 @@ export function TarotResult({
         </header>
         <div className={styles.hero} data-reversed={draw.reversed || undefined}>
           <img className={styles.cloth} src="/chemi/tarot/cloth-390.webp" alt="" />
+          <SceneVideo src="/chemi/video/chemi-bg-tarot-room-loop-v1" />
           <img className={styles.cardFace} src={tarotFace(draw.card)} alt={alt} />
         </div>
         <div className={styles.pairPanel}>
