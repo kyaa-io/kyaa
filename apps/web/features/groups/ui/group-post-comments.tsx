@@ -1,12 +1,12 @@
 "use client";
+import { OwnedCommentActions } from "@/features/fan-posts/ui/owned-comment-actions";
+import { EditedMark } from "@/features/fan-posts/ui/edited-mark";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { flushSync } from "react-dom";
-import { Ellipsis, ImagePlus } from "lucide-react";
+import { ImagePlus } from "lucide-react";
 import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
-import { FanMenu } from "@/components/fan-ui/fan-menu";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
@@ -27,22 +27,22 @@ import { GroupArtistMark } from "./group-artist-mark";
 import { GroupOperatorMark } from "./group-operator-mark";
 import { GroupPostAsset } from "./group-post-asset";
 import { interactionCopy } from "./interaction-copy";
-import { attachmentLabel, managementCopy, sendLabel } from "./management-copy";
+import { attachmentLabel, sendLabel } from "./management-copy";
 import { SourceStatePanel } from "./source-state-panel";
 import { useGroupResource } from "./use-group-resource";
 
 const assetsSchema = z.array(z.object({ id: z.uuid(), kind: z.enum(["image", "video"]), width: z.number().nullable().optional(), height: z.number().nullable().optional() })).optional();
-const commentsSchema = z.object({ items: z.array(z.object({ id: z.uuid(), body: z.string(), profileId: z.string().nullable(), nickname: z.string(), avatarUrl: z.string().nullable(), anonymous: z.boolean(), artist: z.boolean().optional(), operator: z.boolean().optional(), createdAt: z.string(), canDelete: z.boolean().optional(), parentId: z.uuid().nullable().optional(), assets: assetsSchema })), nextCursor: z.string().nullable() });
+const commentsSchema = z.object({ items: z.array(z.object({ id: z.uuid(), body: z.string(), profileId: z.string().nullable(), nickname: z.string(), avatarUrl: z.string().nullable(), anonymous: z.boolean(), artist: z.boolean().optional(), operator: z.boolean().optional(), createdAt: z.string(), isOwner: z.boolean().optional(), editedAt: z.string().nullable().optional(), parentId: z.uuid().nullable().optional(), assets: assetsSchema })), nextCursor: z.string().nullable() });
 const parseComments = (value: unknown) => commentsSchema.parse(value);
 
 /** Comments of a group post, in the same tinted area as the fan board. The write box comes first and grows when focused. */
 export function GroupPostComments({ pageId, postId, locale, commentCount, canWrite, onJoin, joinPending = false, joinLabel }: { joinLabel?: string; pageId: string; postId: string; locale: AppLocale; commentCount?: number; canWrite: boolean; onJoin?: () => void; joinPending?: boolean }) {
-  const t = groupsCopy(locale), b = boardCopy(locale), m = managementCopy(locale), c = interactionCopy(locale), upload = useWaveMediaUpload("group_post", 5), base = `/api/groups/${pageId}/posts/${postId}/comments`;
+  const t = groupsCopy(locale), b = boardCopy(locale), c = interactionCopy(locale), upload = useWaveMediaUpload("group_post", 5), base = `/api/groups/${pageId}/posts/${postId}/comments`;
   const [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<{ key: string; items: z.infer<typeof commentsSchema>["items"] }>({ key: "", items: [] }), r = useGroupResource(`${base}${cursor ? `?cursor=${cursor}` : ""}`, parseComments);
   const k = groupCommentCopy(locale);
   // The main box writes top-level comments only; a reply has its own box under the comment it answers.
   const [draft, setDraft] = useState(""), [reply, setReply] = useState<{ parentId: string; draft: string } | null>(null), [busy, setBusy] = useState<"comment" | "reply" | null>(null), request = useRef<{ signature: string; requestId: string } | undefined>(undefined);
-  const [removing, setRemoving] = useState<string | null>(null), [reporting, setReporting] = useState<{ id: string; reason: string } | null>(null), [actionBusy, setActionBusy] = useState(false);
+  const [reporting, setReporting] = useState<{ id: string; reason: string } | null>(null), [actionBusy, setActionBusy] = useState(false);
   const refresh = () => { setCursor(undefined); setPrevious({ key: "", items: [] }); r.retry(); };
   const send = async (kind: "comment" | "reply") => {
     const body = (kind === "reply" ? reply?.draft : draft)?.trim();
@@ -61,19 +61,12 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
   };
   const submit = (event: FormEvent) => { event.preventDefault(); void send("comment"); };
   const submitReply = (event: FormEvent) => { event.preventDefault(); void send("reply"); };
-  const remove = async () => {
-    if (!removing) return;
-    setActionBusy(true);
-    try { await r.request(`${base}/${removing}`, { method: "DELETE" }); setRemoving(null); refresh(); }
-    catch { showFanToast({ title: k.deleteFailed, tone: "error" }); } finally { setActionBusy(false); }
-  };
   const report = async () => {
     if (!reporting?.reason.trim()) return;
     setActionBusy(true);
     try { await r.request(`/api/groups/${pageId}/reports`, { method: "POST", body: JSON.stringify({ targetType: "comment", targetId: reporting.id, reason: reporting.reason.trim(), requestId: crypto.randomUUID() }) }); setReporting(null); showFanToast({ title: k.reportSent, tone: "success" }); }
     catch { showFanToast({ title: k.reportFailed, tone: "error" }); } finally { setActionBusy(false); }
   };
-  const copyText = (body: string) => { void navigator.clipboard?.writeText(body).then(() => showFanToast({ title: k.copied, tone: "success" }), () => undefined); };
   const comments = [...(previous.key === r.ownerKey ? previous.items : []), ...(r.data?.items ?? [])];
   const ordered = threadComments(comments.map(comment => ({ ...comment, parentId: comment.parentId ?? null })));
   const returnTo = `/pages/groups/${pageId}?locale=${locale}&tab=board&post=${postId}`;
@@ -117,15 +110,12 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
       : r.loading && !comments.length ? <FanSkeletonRows rows={2} variant="member" />
       : ordered.length > 0 && <ul className={detailStyles.commentList}>{ordered.map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
         <div className={detailStyles.commentMeta}><img src={comment.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" width={32} height={32} data-artist-avatar={comment.artist || undefined} /><strong>{comment.nickname}</strong>{comment.artist ? <GroupArtistMark locale={locale} /> : comment.operator ? <GroupOperatorMark locale={locale} /> : null}<RelativeTime value={comment.createdAt} locale={locale} absolute={(value, language) => new Date(value).toLocaleString(language, { dateStyle: "medium", timeStyle: "short" })} /></div>
-        <p>{comment.body}</p>
+        {comment.editedAt && <EditedMark locale={locale} />}{comment.isOwner ? <OwnedCommentActions url={`${base}/${comment.id}`} body={comment.body} locale={locale} refresh={refresh} maxLength={2000}><p>{comment.body}</p></OwnedCommentActions> : <p>{comment.body}</p>}
         {comment.assets?.map(asset => <GroupPostAsset className={detailStyles.commentAsset} key={asset.id} asset={asset} locale={locale} />)}
         <div className={detailStyles.commentActions}>
           {!comment.parentId && (canWrite ? <FanAction variant="text" aria-expanded={reply?.parentId === comment.id} onClick={() => toggleReply(comment.id)}>{c.reply}</FanAction> : !r.authenticated && <a className={detailStyles.commentAction} href={fanLoginHref(locale, returnTo)}>{c.reply}</a>)}
-          <FanMenu label={k.menu} trigger={<FanIconButton aria-label={k.menu}><Ellipsis size={18} aria-hidden="true" /></FanIconButton>}>
-            <FanMenu.Item onSelect={() => copyText(comment.body)}>{k.copy}</FanMenu.Item>
-            {r.authenticated && !comment.canDelete && <FanMenu.Item onSelect={() => setReporting({ id: comment.id, reason: "" })}>{b.report}</FanMenu.Item>}
-            {comment.canDelete && <FanMenu.Item destructive onSelect={() => setRemoving(comment.id)}>{m.remove}</FanMenu.Item>}
-          </FanMenu>
+          {!comment.isOwner && r.authenticated && <FanAction variant="text" onClick={() => setReporting({ id: comment.id, reason: "" })}>{b.report}</FanAction>}
+
         </div>
         {reply?.parentId === comment.id && <form className={`${detailStyles.commentForm} ${detailStyles.replyForm}`} data-expanded="" data-filled={reply.draft.length > 0 || undefined} onSubmit={submitReply}>
           <label className={detailStyles.srOnly} htmlFor={`${comment.id}-reply`}>{k.replyTo.replace("{0}", comment.nickname)}</label>
@@ -138,7 +128,6 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
         </form>}
       </li>)}</ul>}
     {r.data?.nextCursor && <FanAction variant="neutral" onClick={() => { setPrevious({ key: r.ownerKey, items: comments }); setCursor(r.data!.nextCursor ?? undefined); }}>{t.more}</FanAction>}
-    <FanDialog open={removing !== null} onOpenChange={open => { if (!open) setRemoving(null); }} alert size="sm" title={k.deleteTitle} closeLabel={fanUiText(locale, "close")} primary={{ label: m.remove, onClick: () => { void remove(); }, loading: actionBusy, variant: "danger" }} secondary={{ label: t.cancel, onClick: () => setRemoving(null) }}>{null}</FanDialog>
     <FanDialog open={reporting !== null} onOpenChange={open => { if (!open) setReporting(null); }} size="sm" title={b.report} closeLabel={fanUiText(locale, "close")} primary={{ label: b.report, onClick: () => { void report(); }, loading: actionBusy, disabled: !reporting?.reason.trim() }} secondary={{ label: t.cancel, onClick: () => setReporting(null) }}>
       <label className={detailStyles.commentLabel} htmlFor={`${postId}-report`}>{b.reason}</label>
       <textarea id={`${postId}-report`} className={detailStyles.reportReason} value={reporting?.reason ?? ""} onChange={event => setReporting(current => current && { ...current, reason: event.target.value })} maxLength={1000} rows={3} />

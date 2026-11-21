@@ -4,6 +4,7 @@ const state = vi.hoisted(() => ({ authenticated: true, fail: false, hasComment: 
 vi.mock("@/features/auth/client/auth-fallback", () => ({ usePrivy: () => ({ ready: true, authenticated: state.authenticated, getAccessToken: async () => "token" }) }));
 vi.mock("./use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { comments: state.hasComment ? [{ id: "home-cheer-comment", body: "응원해요", nickname: "팬", avatarUrl: "/avatar.png", createdAt: "2026-10-21T00:00:00Z", isOwner: true }] : [], total: state.hasComment ? 1 : 0, nextCursor: null } }, retry: vi.fn() }) }));
 vi.mock("@/features/content-safety/ui/content-actions", () => ({ ContentActions: () => null, ContentTranslation: () => null }));
+vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => ({ ready: true, ownerId: "me", generation: 1 }) }));
 const toast = vi.hoisted(() => ({ reward: vi.fn(), skip: vi.fn() }));
 vi.mock("@/features/fan-posts/ui/mission-reward-toast", () => ({ showMissionRewardToast: toast.reward }));
 vi.mock("@/features/fan-posts/ui/mission-skip-notice", () => ({ announceMissionSkip: toast.skip }));
@@ -36,9 +37,11 @@ describe("program comment context", () => {
   });
   it("notifies home mission refresh only after a successful deletion", async () => {
     state.hasComment = true;
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+
     const onPosted = vi.fn(), onChanged = vi.fn();
     render(<NoticeComments slug="kyaa-wave-fanpage" noticeSlug="wave-home-cheer" locale="ko" onPosted={onPosted} onChanged={onChanged} />);
+    fireEvent.click(screen.getByRole("button", { name: "댓글 메뉴" }));
+    fireEvent.click(await screen.findByRole("menuitem", { name: "삭제" }));
     state.fail = true; fireEvent.click(screen.getByRole("button", { name: "삭제" }));
     await screen.findByRole("alert"); expect(onChanged).not.toHaveBeenCalled();
     state.fail = false; fireEvent.click(screen.getByRole("button", { name: "삭제" }));

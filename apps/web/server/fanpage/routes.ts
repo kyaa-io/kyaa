@@ -122,8 +122,8 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         const limit = z.coerce.number().int().min(1).max(50).parse(url.searchParams.get("limit") ?? 20);
         const cursor = url.searchParams.get("cursor");
         const before = cursor ? decodeCursor(cursor) : null;
-        const replies = z.enum(["replies"]).optional().parse(url.searchParams.get("fields") ?? undefined) === "replies";
-        const result = await dependencies.rpc(replies ? "read_celebrity_notice_comments_replies" : "read_celebrity_notice_comments", {
+        const fields = z.enum(["replies", "editable"]).optional().parse(url.searchParams.get("fields") ?? undefined);
+        const result = await dependencies.rpc(fields === "editable" ? "read_editable_notice_comments" : fields === "replies" ? "read_celebrity_notice_comments_replies" : "read_celebrity_notice_comments", {
           p_slug: slug, p_notice_slug: noticeSlug, p_app_user_id: owner, p_limit: limit, p_before: before?.at ?? null, p_before_id: before?.id ?? null, p_locale: contentLocale,
         });
         if (!result) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
@@ -184,11 +184,20 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         return fanpageJson(parseResult(z.object({ liked: z.boolean(), likeCount: z.number().int().nonnegative() }).strict(), result));
       } catch (error) { return fanpageFailure(error); }
     },
+    async editComment(request: Request, id: string) {
+      try {
+        z.uuid().parse(id);
+        const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
+        const { body } = postCommentSchema.pick({ body: true }).parse(await readSmallJson(request));
+        await dependencies.rpc("edit_owned_notice_comment", { p_app_user_id: appUserId, p_comment_id: id, p_body: body });
+        return fanpageJson({ edited: true });
+      } catch (error) { return fanpageFailure(error); }
+    },
     async removeComment(request: Request, id: string) {
       try {
         z.uuid().parse(id);
         const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
-        await dependencies.rpc("remove_owned_notice_comment", { p_app_user_id: appUserId, p_comment_id: id });
+        await dependencies.rpc("delete_owned_notice_comment", { p_app_user_id: appUserId, p_comment_id: id });
         return fanpageJson({ removed: true });
       } catch (error) { return fanpageFailure(error); }
     },

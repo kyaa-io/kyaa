@@ -13,3 +13,11 @@ async function handle(request: Request, context: { params: Promise<{ id: string 
 const waveOriginalDELETE = handle;
 
 export const DELETE = withWaveAccess(waveOriginalDELETE);
+
+async function edit(request: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    const params = await context.params;
+    return await createContentHandlers(createContentDependencies()).editComment(request, params.id);
+  } catch (error) { return contentFailure(error); }
+}
+export const PATCH = withWaveAccess(edit);

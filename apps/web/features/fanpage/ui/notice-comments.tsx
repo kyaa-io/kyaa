@@ -1,11 +1,12 @@
 "use client";
+import { EditedMark } from "@/features/fan-posts/ui/edited-mark";
+import { OwnedCommentActions } from "@/features/fan-posts/ui/owned-comment-actions";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { WAVE_FANPAGE_SLUG } from "../domain/wave-programs";
 import { GroupArtistMark } from "@/features/groups/ui/group-artist-mark";
 import { waveActivityNameNote } from "@/i18n/catalogs/features__fanpage__wave-privacy";
 import { toContentLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/features__fanpage__ui__notice-comments";
-import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { translate } from "@/i18n/messages";
 import type { AppLocale } from "@/i18n/locales";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
@@ -35,31 +36,29 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
   const styles = preview ? previewStyles : detailStyles;
   const Heading = preview ? "h3" : "h2";
   const [cursor, setCursor] = useState<string | null>(null);
-  const resource = useCommunityResource(`/api/celebrities/${slug}/notices/${noticeSlug}/comments?locale=${toContentLocale(locale)}&limit=${preview ? 2 : 20}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, true, false, false, true);
+  const resource = useCommunityResource(`/api/celebrities/${slug}/notices/${noticeSlug}/comments?locale=${toContentLocale(locale)}&fields=editable&limit=${preview ? 2 : 20}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`, parseComments, true, false, false, true);
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const attempt = useRef<{ body: string; key: string } | null>(null);
   const submitting = useRef(false);
-  async function mutate(id?: string) {
+  async function mutate() {
     if (submitting.current) return;
     submitting.current = true; setBusy(true); setError("");
     try {
       const token = await getAccessToken();
       if (!token) throw new Error();
       const trimmed = body.trim();
-      if (!id && (!attempt.current || attempt.current.body !== trimmed)) attempt.current = { body: trimmed, key: crypto.randomUUID() };
-      const response = await fetch(id ? `/api/notice-comments/${id}` : `/api/celebrities/${slug}/notices/${noticeSlug}/comments`, {
-        method: id ? "DELETE" : "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
-        body: id ? undefined : JSON.stringify({ body: trimmed, idempotencyKey: attempt.current!.key }),
+      if (!attempt.current || attempt.current.body !== trimmed) attempt.current = { body: trimmed, key: crypto.randomUUID() };
+      const response = await fetch( `/api/celebrities/${slug}/notices/${noticeSlug}/comments`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
+        body: JSON.stringify({ body: trimmed, idempotencyKey: attempt.current!.key }),
       });
       if (!response.ok) { setError(response.status === 429 ? (locale === "ko" ? "댓글은 잠시 후 다시 남겨 주세요." : translate(locale, localizedMessages.m3050bc7116ad, "Please wait before posting again.")) : (locale === "ko" ? "저장하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m22c6a29029bd, "Couldn't save. Please try again."))); return; }
-      if (!id) {
         // The comment pays like a fan board comment: the answer says what was paid, or why nothing was.
         const posted: unknown = await response.json().catch(() => null), reward = registrationReward(posted);
         if (reward) { showMissionRewardToast(locale, "comment", reward); dukjil?.refresh(); } else announceMissionSkip(locale, "comment", posted);
         setBody(""); attempt.current = null; onPosted?.();
-      }
       onChanged?.();
       setCursor(null); resource.retry();
     } catch { setError(locale === "ko" ? "연결을 확인하고 다시 시도해 주세요." : translate(locale, localizedMessages.m0540c5d5c62d, "Check your connection and try again.")); }
@@ -70,7 +69,7 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
     {resource.refreshFailed && <p role="status">{locale === "ko" ? "댓글을 불러오지 못했어요." : translate(locale, localizedMessages.m75ec2fbb186d, "Couldn't load comments.")} <button type="button" onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m7be9e2b0e04a, "Retry")}</button></p>}
     <div id={preview ? undefined : "comments"}>
       {resource.state.status === "loading" ? <FanSkeletonRows rows={2} variant="member" /> : resource.state.status === "error" ? <p role="alert">{locale === "ko" ? "댓글을 불러오지 못했어요." : translate(locale, localizedMessages.m75ec2fbb186d, "Couldn't load comments.")} <button onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m7be9e2b0e04a, "Retry")}</button></p> : <>
-        {resource.state.data.comments.length > 0 && <ul className={styles.commentList}>{resource.state.data.comments.map((comment) => <li key={comment.id}><img src={comment.avatarUrl} width={preview ? 32 : 40} height={preview ? 32 : 40} alt="" data-artist-avatar={comment.artist || undefined} /><div><div className={styles.commentMeta}><strong>{comment.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<time dateTime={comment.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(comment.createdAt))}</time><ContentActions targetType="notice_comment" targetId={comment.id} locale={locale} canBlock={!comment.isOwner} onChanged={resource.retry} />{comment.isOwner && <button disabled={busy} onClick={() => { if (window.confirm(contentCopy(locale).deleteConfirm)) void mutate(comment.id); }}>{locale === "ko" ? "삭제" : translate(locale, localizedMessages.mf859bdd4bf81, "Delete")}</button>}</div><ContentTranslation sourceText={comment.body} targetType="notice_comment" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation></div></li>)}</ul>}
+        {resource.state.data.comments.length > 0 && <ul className={styles.commentList}>{resource.state.data.comments.map((comment) => <li key={comment.id}><img src={comment.avatarUrl} width={preview ? 32 : 40} height={preview ? 32 : 40} alt="" data-artist-avatar={comment.artist || undefined} /><div><div className={styles.commentMeta}><strong>{comment.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<time dateTime={comment.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(comment.createdAt))}</time>{comment.editedAt && <EditedMark locale={locale} />}{!comment.isOwner && <ContentActions targetType="notice_comment" targetId={comment.id} locale={locale} canBlock={!comment.isOwner} onChanged={resource.retry} />}</div>{comment.isOwner ? <OwnedCommentActions url={`/api/notice-comments/${comment.id}`} body={comment.body} locale={locale} refresh={() => { onChanged?.(); resource.retry(); }}><ContentTranslation sourceText={comment.body} targetType="notice_comment" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation></OwnedCommentActions> : <ContentTranslation sourceText={comment.body} targetType="notice_comment" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation>}</div></li>)}</ul>}
         {!preview && <div className={styles.pagination}>{cursor && <button onClick={() => setCursor(null)}>{locale === "ko" ? "최신 댓글" : translate(locale, localizedMessages.m787c23318977, "Newest")}</button>}{resource.state.data.nextCursor && <button onClick={() => { if (resource.state.status === "ready") setCursor(resource.state.data.nextCursor); }}>{locale === "ko" ? "이전 댓글" : translate(locale, localizedMessages.md95599a46ca8, "Older comments")}</button>}</div>}
       </>}
     </div>

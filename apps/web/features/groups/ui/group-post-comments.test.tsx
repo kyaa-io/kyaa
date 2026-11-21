@@ -3,9 +3,10 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const request = vi.fn();
+vi.mock("@/features/content-safety/ui/use-content-mutation", () => ({ useContentMutation: () => ({ request, busy: false }) }));
 const retry = vi.fn();
 const parent = { id: "11111111-1111-4111-8111-111111111111", body: "첫 댓글", profileId: null, nickname: "하늘", avatarUrl: null, anonymous: false, createdAt: "2026-11-07T00:00:00Z", canDelete: false, parentId: null, assets: [] };
-const mine = { ...parent, id: "22222222-2222-4222-8222-222222222222", body: "내 댓글", nickname: "나", canDelete: true };
+const mine = { ...parent, id: "22222222-2222-4222-8222-222222222222", body: "내 댓글", nickname: "나", isOwner: true };
 
 vi.mock("./use-group-resource", () => ({ useGroupResource: () => ({ data: { items: [parent, mine], nextCursor: null }, error: false, loading: false, authenticated: true, ownerKey: "me", retry, request }) }));
 vi.mock("@/features/content-safety/ui/use-wave-media-upload", () => ({ useWaveMediaUpload: () => ({ items: [], busy: false, ready: true, invalid: false, add: vi.fn(), retry: vi.fn(), remove: vi.fn(), markUsed: vi.fn() }) }));
@@ -66,22 +67,18 @@ describe("GroupPostComments", () => {
     expect((main as HTMLTextAreaElement).value).toBe("남는 글");
   });
 
-  it("every comment has a ⋯ menu: report for others, delete with a confirm dialog for own", async () => {
+  it("only my comment has an edit and delete menu", async () => {
     request.mockResolvedValue({});
     view();
     const menus = screen.getAllByRole("button", { name: "댓글 메뉴" });
-    expect(menus).toHaveLength(2);
+    expect(menus).toHaveLength(1);
+    expect(screen.getAllByRole("button", {name: "신고"})).toHaveLength(1);
     fireEvent.click(menus[0]);
-    const first = await screen.findByRole("menu");
-    expect(within(first).getByRole("menuitem", { name: "신고" })).toBeTruthy();
-    expect(within(first).queryByRole("menuitem", { name: "삭제" })).toBeNull();
-    fireEvent.keyDown(first, { key: "Escape" });
-    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
-    fireEvent.click(menus[1]);
+    expect(within(await screen.findByRole("menu")).getByRole("menuitem", {name:"수정"})).toBeTruthy();
     fireEvent.click(within(await screen.findByRole("menu")).getByRole("menuitem", { name: "삭제" }));
     const dialog = await screen.findByRole("alertdialog");
     expect(within(dialog).getByText("댓글을 삭제할까요?")).toBeTruthy();
     fireEvent.click(within(dialog).getByRole("button", { name: "삭제" }));
-    await waitFor(() => expect(request).toHaveBeenCalledWith(`/api/groups/${page}/posts/${post}/comments/${mine.id}`, { method: "DELETE" }));
+    await waitFor(() => expect(request).toHaveBeenCalledWith(`/api/groups/${page}/posts/${post}/comments/${mine.id}`, "DELETE", undefined));
   });
 });

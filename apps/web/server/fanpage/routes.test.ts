@@ -15,6 +15,13 @@ function request(path = "/api", body?: unknown, authenticated = true, method = "
   return new Request(`https://byus.kr${path}`, { method, headers: { ...(authenticated ? { authorization: "Bearer valid" } : {}), "content-type": "application/json" }, body: method === "GET" ? undefined : JSON.stringify(body) });
 }
 describe("fanpage server authority", () => {
+  it("edits a notice comment with the verified actor and a bounded body", async () => {
+    expect((await api.editComment(request("/api", {body:" new "}), commentId)).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("edit_owned_notice_comment",{p_app_user_id:owner,p_comment_id:commentId,p_body:"new"});
+    expect((await api.editComment(request("/api",{body:"new"},false),commentId)).status).toBe(401);
+    expect((await api.editComment(request("/api",{body:"x".repeat(1001)}),commentId)).status).toBe(400);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
   beforeEach(() => { vi.clearAllMocks(); });
   it("reads guest notice reactions and writes only the authenticated choice", async () => {
     const state = { reaction: "dislike", likeCount: 3, dislikeCount: null };
@@ -188,7 +195,7 @@ describe("fanpage server authority", () => {
   it("sends only the authenticated owner to comment removal", async () => {
     rpc.mockResolvedValueOnce(null);
     expect((await api.removeComment(request(`/api?appUserId=${other}`), commentId)).status).toBe(200);
-    expect(rpc).toHaveBeenCalledWith("remove_owned_notice_comment", { p_app_user_id: owner, p_comment_id: commentId });
+    expect(rpc).toHaveBeenCalledWith("delete_owned_notice_comment", { p_app_user_id: owner, p_comment_id: commentId });
   });
   it("preserves keyset cursors and owner-scoped comment projection", async () => {
     const comment = { id: commentId, body: "hello", nickname: "fan", avatarUrl: row.avatarUrl, createdAt: now, isOwner: true };

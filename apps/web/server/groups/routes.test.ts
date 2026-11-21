@@ -12,6 +12,14 @@ function setup() {
 }
 function req(path: string, input?: unknown, auth: string | null = "Bearer valid") { return new Request(`https://kyaa.test${path}`, { method: input === undefined ? "GET" : "POST", headers: { ...(auth ? { authorization: auth } : {}), "content-type": "application/json" }, body: input === undefined ? undefined : JSON.stringify(input) }); }
 describe("group boundaries", () => {
+  it("binds an edit to the authenticated group member, post and comment",async()=>{
+    const s=setup(), params={id:me,itemId:other,postId:me};
+    expect((await s.handler("comment-edit",req("/api",{body:" new "}),params)).status).toBe(200);
+    expect(s.rpc).toHaveBeenCalledWith("group_member_comments",expect.objectContaining({p_actor:me,p_page_id:me,p_item_id:other,p_input:{body:"new",postId:me}}));
+    expect((await s.handler("comment-edit",req("/api",{body:"new"},null),params)).status).toBe(401);
+    expect((await s.handler("comment-edit",req("/api",{body:"new",actorId:other}),params)).status).toBe(400);
+    expect(s.rpc).toHaveBeenCalledTimes(1);
+  });
  it("forwards a valid page language to name-reading operations only",async()=>{const s=setup();for(const operation of ["directory","detail"] as const){expect((await s.handler(operation,req("/api/groups?locale=ru",undefined,null),{id:me})).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({locale:"ru"})}));}expect((await s.handler("directory",req("/api/groups?locale=xx",undefined,null))).status).toBe(400);await s.handler("directory",req("/api/groups",undefined,null));expect(s.rpc.mock.lastCall?.[1].p_input).not.toHaveProperty("locale");});
  it("validates and forwards the artist role filter",async()=>{const s=setup();expect((await s.handler("directory",req("/api/groups?type=fan&artistRole=singer",undefined,null))).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({type:"fan",artistRole:"singer"})}));expect((await s.handler("directory",req("/api/groups?artistRole=unknown",undefined,null))).status).toBe(400);});
  it("accepts the hobby-and-brand directory filter",async()=>{const s=setup();expect((await s.handler("directory",req("/api/groups?type=nonfan&limit=20",undefined,null))).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({type:"nonfan"})}));expect((await s.handler("directory",req("/api/groups?type=other",undefined,null))).status).toBe(400);});

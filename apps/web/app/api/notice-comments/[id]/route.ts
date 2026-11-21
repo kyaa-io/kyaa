@@ -12,3 +12,11 @@ async function waveOriginalDELETE(request: Request, context: { params: Promise<{
 }
 
 export const DELETE = withWaveAccess(waveOriginalDELETE);
+
+async function edit(request: Request, context: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await context.params;
+    return await createFanpageHandlers(createFanpageDependencies()).editComment(request, id);
+  } catch (error) { return fanpageFailure(error); }
+}
+export const PATCH = withWaveAccess(edit);

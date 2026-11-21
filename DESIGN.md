@@ -177,6 +177,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `FanLockedValue` · `FanLockedRows` | 비로그인의 내 값 자리 | `rows` 2·3·5 | — |
 | `FanTag` | 유형·공지·인증 표시 | `tone` fan·artist·neutral·notice, `icon` | 숫자·설명 넣지 않음 |
 | `FanCount` · `FanDot` | 알림함 안 개수 / 헤더·탭바 새 소식 점 | `value` `max` / `label` | 지갑 잔액은 `FanNumber` |
+| 작성자 댓글 메뉴 | 팬페이지 게시판·모임 게시판·공지에서 내 댓글의 `FanMenu`에 수정·삭제를 둔다. 수정 중에는 본문 자리에 입력창과 저장·취소를 표시한다. 삭제는 `FanDialog`에서 확인한다. | 타인 댓글 신고와 관리자 숨김은 작성자 메뉴와 구분 |
 | `FanToast` | 그 자리에 결과가 안 보이는 곳의 결과 | `showFanToast({title, tone})` | 지급 성공은 `celebrateReward` |
 | `celebrateReward` · `FanRewardPop` | 포인트·스탬프 지급 연출(서버 확정 뒤 한 번) | `points` `stamps` `anchor` | 화면별 자체 연출 |
 | `EarnBadgeCorner` (`features/dukjil/ui/earn-badge.tsx`) | 포인트를 주는 모든 버튼의 오른쪽 위 노란 코인 배지(20) | `action` 또는 `points` | 같은 버튼 옆 `+NP` 글자 배지 |
