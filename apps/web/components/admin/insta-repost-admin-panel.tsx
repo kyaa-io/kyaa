@@ -14,7 +14,7 @@ import own from "./insta-repost-admin-panel.module.css";
 type Locale = "ko" | "en";
 type RejectCode = (typeof INSTA_REJECT_CODES)[number];
 const TEXT = {
-  ko: { title: "인스타 리포스트 심사", pending: "대기", accepted: "승인", rejected: "반려", revoked: "회수", all: "전체", member: "회원", submitted: "제출",
+  ko: { title: "인스타 리포스트 심사", pending: "대기", accepted: "승인 목록", rejected: "반려 목록", revoked: "회수 목록", all: "전체", member: "회원", submitted: "제출",
     hours: (n: number) => `${n}시간 지남`, feed: "피드", reel: "릴스", story: "스토리", capture: "제출 이미지 보기", accept: "승인", reject: "반려", rejectAs: "반려 사유",
     no_hashtag: "해시태그 없음", private_account: "비공개 계정", duplicate: "중복", unrelated: "관련 없는 게시물", duplicateCount: (n: number) => `같은 게시물 ${n}명`,
     paid: (p: number) => `${p}P 지급`, point_cap: "오늘 지급 한도로 0P", month_cap: "이번 달 지급 한도로 0P", account_inactive: "계정 제한으로 0P", clawedBack: "스탬프 무효로 회수됨",
