@@ -13,6 +13,10 @@ export const askName: Record<AskCharacter, string> = { changha: "창하", elina:
 
 export const askLines: Record<Voice, {
   topic: string;
+  /** 같은 날 다시 왔을 때의 짧은 인사(기획 03-3 18). */
+  again: string;
+  /** 답을 기다리는 동안의 한 마디(기획 03-6 06). 무엇을 다시 보는지는 콘텐츠가 정한다. */
+  think: (what: string) => string;
   follow: string;
   rest: string;
   reminded: string;
@@ -21,6 +25,8 @@ export const askLines: Record<Voice, {
 }> = {
   ban: {
     topic: "좋아, 뭐가 제일 궁금해?",
+    again: "또 뭐 볼래?",
+    think: (what) => `음, 네 ${what}부터 다시 볼게.`,
     follow: "더 궁금한 거 있어? 하나 더 말해 봐.",
     rest: "오늘 이야기 재밌었어. 내일 또 와.",
     reminded: "응, 내일 기다릴게.",
@@ -36,6 +42,8 @@ export const askLines: Record<Voice, {
   },
   yo: {
     topic: "좋아요, 뭐가 제일 궁금해요?",
+    again: "또 뭐 볼래요?",
+    think: (what) => `음, ${what}부터 다시 볼게요.`,
     follow: "더 궁금한 게 있어요? 하나 더 말해 봐요.",
     rest: "오늘 이야기 즐거웠어요. 내일 또 와요.",
     reminded: "네, 내일 기다릴게요.",
@@ -51,6 +59,8 @@ export const askLines: Record<Voice, {
   },
   hao: {
     topic: "좋소, 무엇이 가장 궁금하오?",
+    again: "또 무엇을 보겠소?",
+    think: (what) => `음, 그대의 ${what}부터 다시 보겠소.`,
     follow: "더 궁금한 것이 있소? 하나 더 말해 보시오.",
     rest: "오늘 이야기 즐거웠소. 내일 또 오시오.",
     reminded: "좋소, 내일 기다리겠소.",
@@ -65,6 +75,9 @@ export const askLines: Record<Voice, {
     },
   },
 };
+
+/** 답을 기다리는 말에 넣는 이름: 최애가 다시 펼쳐 보는 것. */
+export const askSubject: Record<AskContent, string> = { saju: "사주", fortune: "운세", star: "별자리", tarot: "카드" };
 
 /** 누르면 입력칸에 채워지는 예시. 반말로 답하는 최애에게는 반말, 나머지는 존댓말. */
 const examples: Record<AskTopic, readonly (readonly [ban: string, yo: string])[]> = {
@@ -122,4 +135,20 @@ export function askArt(content: AskContent, character: AskCharacter) {
     wide: character === "changha" ? "/chemi/saju/saju-changha-wide-v2.webp" : `/chemi/saju/saju-${character}-wide-v2.webp`,
     face,
   };
+}
+
+/**
+ * 장면 배경 반복 영상. 가로 원화와 같은 구도·비율로 만든 것만 있어서 가로 화면(1024px 이상)에서만 쓴다.
+ * 없는 조합은 그림만 보인다.
+ */
+const loops: Partial<Record<`${AskContent}-${AskCharacter}`, string>> = {
+  "saju-changha": "chemi-banner-saju-loop-v1",
+  "star-elina": "chemi-banner-zodiac-loop-v1",
+  "star-dosa": "chemi-bg-star-sky-loop-v1",
+  "tarot-yuna": "chemi-banner-tarot-loop-v1",
+  "tarot-dosa": "chemi-bg-tarot-room-loop-v1",
+};
+export function askLoop(content: AskContent, character: AskCharacter) {
+  const name = loops[`${content}-${character}`];
+  return name ? `/chemi/video/${name}.mp4` : null;
 }

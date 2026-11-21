@@ -33,10 +33,15 @@ function serve(handler: (url: string, body: any) => unknown, get: object = state
   }));
 }
 
+/** 답은 한 쪽에 한 줄: 다음 쪽으로 넘긴다. */
+const turn = async () => fireEvent.click(await screen.findByRole("button", { name: /^다음/ }));
+
 beforeEach(() => {
   calls = [];
   history.replaceState(null, "", "/chemi/saju?step=result");
   vi.stubGlobal("ResizeObserver", class { observe() {} disconnect() {} });
+  // 움직임 줄이기: 대사가 바로 다 나온다(글자가 하나씩 나오는 것은 typed-line.test.tsx 가 본다).
+  vi.stubGlobal("matchMedia", (query: string) => ({ matches: query.includes("reduce"), addEventListener() {}, removeEventListener() {} }));
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -54,7 +59,10 @@ it("주제를 고르면 최애가 되묻고, 예시를 눌러 보내면 답과 �
   expect(location.search).toContain("ask=write&at=love");
   fireEvent.click(screen.getByRole("button", { name: "요즘 연락하는 사람이랑 잘될까?" }));
   fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  expect(await screen.findByText("네 일간은 병.")).toBeTruthy();
+  await turn();
   expect(await screen.findByText("먼저 짧게 말을 걸어 봐.")).toBeTruthy();
+  expect(screen.queryByText("네 일간은 병.")).toBeNull();
   expect(calls[0]).toMatchObject({ url: "/api/chemi/ask", body: { readingId: reading, character: "changha", content: "saju", topic: "love", question: "요즘 연락하는 사람이랑 잘될까?" } });
   expect(location.search).toContain(`ask=answer&aq=${calls[0].body.threadId}`);
   expect(screen.getByLabelText("남은 질문 2개")).toBeTruthy();
@@ -72,6 +80,7 @@ it("답을 못 받으면 질문 수는 그대로이고 같은 번호로 다시 �
   expect(screen.getByLabelText("남은 질문 3개")).toBeTruthy();
   fail = false;
   fireEvent.click(screen.getByRole("button", { name: "다시 보내기" }));
+  await turn();
   await screen.findByText("먼저 짧게 말을 걸어 봐.");
   expect(calls[1].body.threadId).toBe(calls[0].body.threadId);
 });
@@ -106,6 +115,7 @@ it("질문을 다 쓰면 오늘 물어본 질문을 다시 열 수 있고, 살 �
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: "메일 인증을 마치면 알림을 받을 수 있어요", tone: "error" }));
   expect(calls[0]).toEqual({ url: "/api/chemi/reminders", body: { kind: "free_ask", content: "" } });
   fireEvent.click(screen.getByRole("button", { name: /요즘 연락하는 사람이랑 잘될까/ }));
+  await turn();
   expect(await screen.findByText("먼저 짧게 말을 걸어 봐.")).toBeTruthy();
   expect(location.search).toContain(`aq=${first.threadId}`);
 });
@@ -119,7 +129,10 @@ it("알림을 신청한 뒤에는 자랑하기가 주 버튼이고, 이어 물�
   expect(screen.getByText("응, 내일 기다릴게.")).toBeTruthy();
   expect(screen.getByRole("button", { name: /자랑하기.*질문 \+1/ })).toBeTruthy();
   askGo({ step: "answer", thread: done.threadId });
+  await turn();
+  await turn();
   expect(await screen.findByText("오늘 안에 움직여.")).toBeTruthy();
+  expect(screen.getByText("언제쯤?")).toBeTruthy();
   expect(screen.queryByRole("button", { name: /이어 묻기/ })).toBeNull();
   expect(screen.getByRole("button", { name: "다른 질문" })).toBeTruthy();
 });
@@ -130,4 +143,16 @@ it("찾을 수 없는 질문 번호로 열리면 주제 고르기로 돌아간�
   askGo({ step: "answer", thread: "33333333-3333-4333-8333-333333333333" });
   await screen.findByRole("group", { name: "주제" });
   expect(location.search).toContain("ask=topic");
+});
+
+it("같은 날 다시 오면 인사가 짧고, 이어 묻기가 남은 오늘 질문으로 돌아가는 주 버튼이 있다", async () => {
+  const first = answered("22222222-2222-4222-8222-222222222222");
+  serve(() => ({}), state({ left: 2, threads: [first] }));
+  render(<Host />);
+  askGo({ step: "topic" });
+  expect(await screen.findByText("또 뭐 볼래?")).toBeTruthy();
+  expect(screen.getByRole("group", { name: "주제" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /이어 묻기/ }));
+  expect(await screen.findByText("네 일간은 병.")).toBeTruthy();
+  expect(location.search).toContain(`ask=answer&aq=${first.threadId}`);
 });
