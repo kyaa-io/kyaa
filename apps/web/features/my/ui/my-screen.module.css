@@ -413,10 +413,10 @@
 
 
 /* Keep the profile and both summary cards on the same outer edges. */
-.pencilSummary { display:grid; grid-template-columns:minmax(0,1fr); min-width:0; gap:var(--space-4); }
+.pencilSummary { display:grid; grid-template-columns:minmax(0,1fr); min-width:0; gap:var(--space-2); }
 .pencilMy .pencilSummary .pencilProfile nav > a { justify-content:center; }
 @media (width < 48rem) {
-  .pencilSummary { gap:var(--space-3); }
+  .pencilSummary { gap:var(--space-2); }
   .pencilSummary .pencilProfile { column-gap:var(--space-2); }
 }
 

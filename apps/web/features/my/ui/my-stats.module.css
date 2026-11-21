@@ -1,4 +1,5 @@
 /* MY 숫자 카드: FanSurface 한 장 안에 세 칸을 헤어라인으로 나눈다(안쪽 여백은 카드가 정한다). 칸은 숫자 → 그림+이름, 가운데 정렬. 등급 칸은 눌러서 등급 안내를 연다(FB-N23). 글자는 FanNumber·FanText가 맡는다. */
+.surface[data-fan-surface-card] { padding-block:var(--space-2); }
 .row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin:0; }
 .cell { position:relative; display:grid; min-width:0; justify-items:center; row-gap:var(--space-1); padding-inline:var(--space-2); }
 .cell + .cell { border-inline-start:1px solid var(--color-line); }
