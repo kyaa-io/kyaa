@@ -24,6 +24,7 @@ import { pageHeadCopy } from "./page-head-copy";
 import { ReactionAction } from "@/features/reaction/ui/reaction-action";
 import { GroupShell } from "./group-shell";
 import { groupTabItems } from "./group-tab-links";
+import { useChatUnread } from "./use-chat-unread";
 import { proofTab } from "./home-copy";
 import { ProofTabLabel } from "./proof-tab-label";
 import { SourceStatePanel } from "./source-state-panel";
@@ -35,7 +36,9 @@ function useTabs(): FanTabItem[] {
   // 팬페이지만 '덕후인증' + 포인트 배지를 쓰고 '팬·랭킹' 탭을 두지 않는다. 취미·브랜드 모임은 '인증'과 '팬·랭킹' 그대로다. 팬 목록(?tab=members)은 머리의 '팬 N'에서 들어간다.
   const items = groupTabItems(g.locale, !hideMembers && g.kind !== "fan", g.kind === "fan");
   if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: g.kind === "fan" ? <ProofTabLabel label={proofTab[g.locale]} locale={g.locale} /> : g.locale === "ko" ? "인증" : "Proofs" });
-  return items.map((item) => ({ ...item, href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
+  // 채팅방 탭 이름 옆에 안 읽은 메시지 수. 채팅방을 보고 있는 동안에는 묻지 않는다.
+  const unread = useChatUnread(g.kind === "fan" && g.activeTab !== "rooms" ? g.page?.id ?? null : null);
+  return items.map((item) => ({ ...item, ...(item.key === "rooms" && unread ? { count: unread } : {}), href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
 }
 
 /** 머리·접속 띠·탭. 레이아웃 안에서 한 번만 마운트되어 탭을 바꿔도 같은 노드로 남는다. */

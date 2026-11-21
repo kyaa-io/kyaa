@@ -33,7 +33,7 @@ export function CreatorGroupActivities({locale}:{slug?:string;locale:AppLocale})
 }
 export function CreatorGroupRooms({slug,locale,initialRoomId}:{slug:string;locale:AppLocale;initialRoomId?:string}) {
  const g=useGroupPage(),t=groupsCopy(locale);
- // 팬페이지의 방 탭은 '채팅방(임시운영)' 하나다(대표 11/19 20:35). 비밀방은 그대로 닫혀 있다.
+ // 팬페이지의 방 탭은 '채팅방' 하나다(대표 11/19 20:35). 비밀방은 그대로 닫혀 있다.
  if (g.kind==='fan') return g.page?<GroupChatPanel key={g.ownerKey} pageId={g.page.id} locale={locale} roomHref={g.hrefFor('rooms')}/>:<section className={styles.panel}><FanHeading>{chatCopy(locale).title}</FanHeading><BodyState t={t} error={g.error} retry={g.refresh}/></section>;
  if (!SECRET_ROOMS_ENABLED) return <GroupRoomsPanel pageId="" locale={locale}/>;
  return g.page?<GroupRoomsPanel key={`${g.ownerKey}:${initialRoomId??""}`} initialRoomId={initialRoomId} pageId={g.page.id} locale={locale} slug={slug} imageUrl={g.page.imageUrl} onJoin={g.startJoin} joinPending={g.joinPending}/>:<section className={styles.panel}><h2>{t.rooms}</h2><BodyState t={t} error={g.error} retry={g.refresh}/></section>;

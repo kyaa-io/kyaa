@@ -10,7 +10,7 @@ const state = vi.hoisted(() => ({
 }));
 vi.mock("./use-group-resource", () => ({ useGroupRequest: () => state.auth, useGroupResource: () => state.resource }));
 vi.mock("./group-page-context", () => ({ useGroupPage: () => state.page, useOptionalGroupPage: () => state.page }));
-vi.mock("./group-rooms-panel", () => ({ RoomMessages: ({ chat }: { chat: { url: string; title: string; creatorLabel: string } }) => <div>messages:{chat.url}:{chat.creatorLabel}</div> }));
+vi.mock("./group-chat-room", () => ({ GroupChatRoom: ({ pageId, onOnlineCount }: { pageId: string; onOnlineCount: (count: number) => void }) => <button onClick={() => onOnlineCount(3)}>room:{pageId}</button> }));
 vi.mock("@/components/fan-ui/fan-toast", () => ({ showFanToast: state.toast, closeFanToast: vi.fn() }));
 vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => state.session }));
 vi.mock("@/components/fan-ui/fan-star-action", () => ({ FanStarAction: ({ label, href }: { label: string; href: string }) => <a href={href}>{label}</a> }));
@@ -22,7 +22,7 @@ import { useOnlineCreators } from "@/features/rankings/ui/use-online-creators";
 
 beforeEach(() => { state.auth = { ready: true, authenticated: true, ownerKey: "fan:1" }; state.resource = { loading: false, data: undefined, error: false, failure: undefined, retry: () => {} }; state.toast.mockReset(); window.localStorage.clear(); });
 
-describe("채팅방(임시운영) 패널", () => {
+describe("채팅방 패널", () => {
   it("로그인하지 않으면 로그인 조건과 로그인 버튼만", () => {
     state.auth = { ready: true, authenticated: false, ownerKey: "guest:0" };
     render(<GroupChatPanel pageId="page-1" locale="ko" roomHref="/elina?locale=ko&tab=rooms" />);
@@ -35,14 +35,16 @@ describe("채팅방(임시운영) 패널", () => {
     expect(screen.getByText("팬인증한 팬만 들어올 수 있습니다.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "팬인증하기" })).toHaveAttribute("href", "/verify");
   });
-  it("들어갈 수 있으면 채팅 주소와 크리에이터 표시로 대화를 연다", () => {
+  it("들어갈 수 있으면 대화를 열고, 접속 중인 사람 수를 머리에 적는다", () => {
     state.resource = { ...state.resource, data: { items: [], canSend: true, artist: false } };
     render(<GroupChatPanel pageId="page-1" locale="en" roomHref="/elina?locale=en&tab=rooms" />);
-    expect(screen.getByRole("heading", { name: "Chat (beta)" })).toBeInTheDocument();
-    expect(screen.getByText("messages:/api/groups/page-1/chat:Creator")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Chat" })).toBeInTheDocument();
+    expect(screen.queryByText("Online")).not.toBeInTheDocument();
+    act(() => screen.getByRole("button", { name: "room:page-1" }).click());
+    expect(screen.getByText(/Online/)).toHaveTextContent("Online 3");
   });
-  it("팬페이지 탭 이름은 채팅방(임시운영), 다른 모임은 그대로", () => {
-    expect(groupTabItems("ko", false, true).find((item) => item.key === "rooms")?.label).toBe("채팅방(임시운영)");
+  it("팬페이지 탭 이름은 채팅방, 다른 모임은 그대로", () => {
+    expect(groupTabItems("ko", false, true).find((item) => item.key === "rooms")?.label).toBe("채팅방");
     expect(groupTabItems("ko", true, false).find((item) => item.key === "rooms")?.label).toBe("비밀방");
   });
 });

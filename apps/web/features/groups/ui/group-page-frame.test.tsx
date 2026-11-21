@@ -11,6 +11,7 @@ const state = vi.hoisted(() => ({
   query: "locale=ko&tab=board", error: false, loading: false,
   failure: undefined as { status: number } | undefined,
   ownerKey: "guest", retry: vi.fn(), preload: vi.fn(), authenticated: false,
+  unread: vi.fn((_pageId: string | null) => 0),
 }));
 vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(state.query), usePathname: () => "/mina", useRouter: () => ({ replace: vi.fn(), push: vi.fn() }) }));
 vi.mock("next/link", () => ({ default: ({ prefetch, onNavigate: _onNavigate, scroll: _scroll, ...props }: any) => <a {...props} data-prefetch={prefetch === undefined ? "default" : String(prefetch)} /> }));
@@ -18,6 +19,7 @@ vi.mock("./use-group-resource", () => ({
   useGroupResource: () => ({ ...state, ready: true, authenticated: false, request: vi.fn() }),
 }));
 vi.mock("./use-linked-fanpage", () => ({ useLinkedFanpage: () => ({ data: undefined, error: false, retry: vi.fn() }) }));
+vi.mock("./use-chat-unread", () => ({ useChatUnread: (pageId: string | null) => state.unread(pageId) }));
 vi.mock("./use-group-preload", () => ({ usePreloadGroupResource: () => state.preload }));
 vi.mock("./use-group-presence", async importOriginal => ({ ...await importOriginal<typeof import("./use-group-presence")>(), useOwnGroupPresence: () => ({ error: false, retry: vi.fn() }) }));
 vi.mock("./group-presence", () => ({ GroupPresence: ({ memberCount }: { memberCount?: number }) => <div>{memberCount}</div> }));
@@ -137,6 +139,22 @@ it("places the proof tab immediately after the board on a fanpage route and leav
   expect([...links].slice(0, 3).map(link => link.textContent)).toEqual(["홈", "게시판", "덕후인증"]);
   expect(links[2].getAttribute("href")).toContain("tab=proofs");
   expect([...links].map(link => link.textContent)).not.toContain("팬·랭킹");
+});
+
+it("채팅방 탭 이름 옆에 안 읽은 메시지 수를 적고, 채팅방을 보는 동안과 팬페이지가 아닌 곳에서는 묻지 않는다", () => {
+  state.unread.mockImplementation(pageId => pageId ? 3 : 0);
+  const celebrity = { slug: "mina", locale: "ko", name: "Mina", summary: "", image: { url: "/mina.webp", alt: "Mina", position: "center" }, roles: ["idol"], themes: [], socialLinks: [], displayOrder: 0, fanCount: 0 } as const;
+  Object.assign(state, { data: { ...detail, page: { ...detail.page, kind: "fan", celebrityId: "c", slug: "mina", name: "Mina" } } });
+  const first = render(<GroupPageProvider slug="mina" locale="ko" celebrity={celebrity as never}><GroupPageHead /></GroupPageProvider>);
+  const room = () => [...[...document.querySelectorAll("nav[data-fan-tabs]")].at(-1)!.querySelectorAll("a")].find(link => link.getAttribute("href")?.includes("tab=rooms"))!;
+  expect(room().textContent).toBe("채팅방3");
+  expect(state.unread).toHaveBeenLastCalledWith(detail.page.id);
+  first.unmount();
+  Object.assign(state, { query: "locale=ko&tab=rooms" });
+  render(<GroupPageProvider slug="mina" locale="ko" celebrity={celebrity as never}><GroupPageHead /></GroupPageProvider>);
+  expect(room().textContent).toBe("채팅방");
+  expect(state.unread).toHaveBeenLastCalledWith(null);
+  state.unread.mockImplementation(() => 0);
 });
 
 it.each([["hobby", "ko", "인증", "팬·랭킹"], ["brand", "en", "Proofs", "Fans & ranking"]] as const)("keeps the plain proof tab and the members tab with no badge on a %s page", (kind, locale, proof, members) => {

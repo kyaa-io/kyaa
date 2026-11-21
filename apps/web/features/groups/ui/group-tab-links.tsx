@@ -9,7 +9,7 @@ import {chatCopy} from "./chat-copy";
 /** 모임·팬페이지가 함께 쓰는 탭 목록. 홈·게시판·방·캘린더 뒤에 멤버·랭킹을 붙인다. */
 export const groupTabs=['home','board','rooms','calendar'] as const;
 
-/** `chat`: 팬페이지는 방 탭이 '채팅방(임시운영)' 하나다(주소의 tab=rooms 는 그대로). */
+/** `chat`: 팬페이지는 방 탭이 '채팅방' 하나다(주소의 tab=rooms 는 그대로). */
 export function groupTabItems(locale:AppLocale,members=true,chat=false):FanTabItem[]{
  const t=groupsCopy(locale);
  return [...groupTabs.map(value=>({key:value as string,label:value==='calendar'?groupCalendarLabel[locale]:value==='rooms'&&chat?chatCopy(locale).title:t[value]})),...(members?[{key:'members',label:membersAndRank[locale]}]:[])];
