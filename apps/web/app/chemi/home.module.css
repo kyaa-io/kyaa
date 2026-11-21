@@ -17,7 +17,8 @@
   aspect-ratio: 9 / 4;
   object-fit: cover;
 }
-.artwork[data-content="tarot"] img {
+.artwork[data-content="tarot"] img,
+.artwork[data-content="zodiac"] img {
   object-position: center top;
 }
 .caption {
@@ -183,6 +184,10 @@
 }
 .row[data-selected="true"] {
   color: var(--color-accent-ink);
+}
+.row[data-selected="true"] b {
+  text-decoration: underline;
+  text-underline-offset: var(--space-1);
 }
 @media (min-width: 64rem) {
   .home[data-ranked="false"] {

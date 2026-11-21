@@ -8,6 +8,6 @@ export const entries = [
   ["saju", "readings", sajuPath],
   ["zodiac", "readings", starPath],
   ["tarot", "readings", tarotPath],
-  ["pair", "games", null],
-  ["run", "games", null],
+  ["pair", "games", "/chemi/games/match"],
+  ["run", "games", "/chemi/games/run"],
 ] as const;

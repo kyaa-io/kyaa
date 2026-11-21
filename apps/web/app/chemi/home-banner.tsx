@@ -1,46 +1,54 @@
 "use client";
 
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { entries } from "./contents";
 import type { HomeCopy } from "./home";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import styles from "./home.module.css";
 
+const images = {
+  fortune: "fortune/fortune-changha-banner.webp",
+  saju: "saju/saju-changha-wide-v1.webp",
+  zodiac: "star/hero-elina-l-v1.webp",
+  tarot: "tarot/scene-yuna-l.webp",
+  pair: "banner-match.webp",
+  run: "banner-run.webp",
+} satisfies Record<(typeof entries)[number][0], string>;
+
 export function HomeBanner({
+  activities,
   index,
   setIndex,
-  locale,
   copy,
 }: {
+  activities: readonly { id: keyof typeof images; href: string | null }[];
   index: number;
-  setIndex: React.Dispatch<React.SetStateAction<number>>;
-  locale: string;
+  setIndex: Dispatch<SetStateAction<number>>;
   copy: HomeCopy;
 }) {
   const [paused, setPaused] = useState(false);
-  const images = ["fortune/fortune-dosa-wide-v2.webp", "saju/saju-changha-wide-v1.webp", "star/hero-elina-l-v1.webp", "tarot/scene-yuna-l.webp", "banner-match.webp", "banner-run.webp"];
-  const [id, , path] = entries[index];
+  const { id, href } = activities[index];
   useEffect(() => {
     if (paused || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setIndex(value => (value + 1) % entries.length), 7000);
+    const timer = window.setInterval(() => setIndex(value => (value + 1) % activities.length), 7000);
     return () => window.clearInterval(timer);
-  }, [paused, setIndex]);
+  }, [activities.length, paused, setIndex]);
   return (
     <section className={styles.banner} onFocus={() => setPaused(true)} onMouseEnter={() => setPaused(true)}>
       <div className={styles.artwork} data-content={id}>
-      <img src={`/chemi/${images[index]}`} alt="" />
-      <div className={styles.caption}>
-        <div>
+        <img src={`/chemi/${images[id]}`} alt="" />
+        <div className={styles.caption}>
           <FanHeading as="h1">{copy[id]}</FanHeading>
+          {href ? (
+            <FanAction variant="primary" href={href}>{copy.start}</FanAction>
+          ) : (
+            <small>{copy.ready}</small>
+          )}
         </div>
-        {path ? <FanAction variant="primary" href={`${path}?locale=${locale}`}>
-          {copy.start}
-        </FanAction> : <small>{copy.ready}</small>}
-      </div>
       </div>
       <div className={styles.dots}>
-        {entries.map(([key], n) => <FanAction size="sm" key={key} type="button" ariaLabel={copy[key]} aria-pressed={n === index} onClick={() => { setPaused(true); setIndex(n); }}><span aria-hidden="true" /></FanAction>)}
+        {activities.map(({ id: key }, n) => <FanAction size="sm" key={key} type="button" ariaLabel={copy[key]} aria-pressed={n === index} onClick={() => { setPaused(true); setIndex(n); }}><span aria-hidden="true" /></FanAction>)}
       </div>
     </section>
   );
