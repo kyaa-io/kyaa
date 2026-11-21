@@ -17,7 +17,7 @@ import {
   VolumeX,
 } from "@/components/fan-ui/fan-icons";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { FPS } from "@/features/chemi/games/engine";
+import { FPS, LEVELS } from "@/features/chemi/games/engine";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
 import styles from "./match.module.css";
@@ -29,7 +29,7 @@ type Photos = Record<
   {
     portrait: string;
     scene: string;
-    cards: readonly [string, string, string, string];
+    cards: readonly string[];
   }
 >;
 type Stage = "start" | "play" | "pause" | "result" | "empty" | "reminder";
@@ -37,6 +37,7 @@ type Row = {
   nickname: string;
   character: Character;
   place: number;
+  score?: number;
   ticks: number;
   misses: number;
   isMe: boolean;
@@ -57,7 +58,7 @@ type Challenge = {
   ranking: Row[];
   available: boolean;
 };
-type Finish = { score: number; exp: number; shareId?: string };
+type Finish = { excitement?: number; titleStage?: number; score: number; exp: number; shareId?: string };
 type Props = {
   copy: MatchCopy;
   locale: string;
@@ -86,6 +87,15 @@ function StageAction({
       {children}
     </FanAction>
   );
+}
+
+function ClearDialog({ label, children }: { label: string; children: ReactNode }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    dialog.current?.showModal?.();
+  }, []);
+  return <dialog ref={dialog} className={styles.clearPanel} aria-label={label}
+    onCancel={event => event.preventDefault()}>{children}</dialog>;
 }
 
 function clock(ticks: number) {
@@ -135,7 +145,7 @@ function Rankings({
               )}
             </span>
             <FanText role="meta">{copy[row.character]}</FanText>
-            <b>{clock(row.ticks)}</b>
+            <b>{row.score?.toLocaleString() ?? clock(row.ticks)}</b>
           </li>
         ))}
       </ol>
@@ -161,6 +171,8 @@ function Session({
   const [publicRows, setPublicRows] = useState<Row[] | null>(null);
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [ticket, setTicket] = useState<Ticket | null>(null);
+  const [equipped, setEquipped] = useState(false);
+  const [priorRank, setPriorRank] = useState<number | null>(null);
   const [result, setResult] = useState<Finish | null>(null);
   const [pendingFinish, setPendingFinish] = useState<Submission | null>(null);
   const [error, setError] = useState("");
@@ -308,6 +320,8 @@ function Session({
         throw e;
       }
       startKey.current.choice = "";
+      setEquipped(false);
+      setPriorRank(lobby?.ranking.find(row => row.isMe)?.place ?? null);
       setTicket(next);
       setResult(null);
       setPendingFinish(null);
@@ -342,7 +356,7 @@ function Session({
       setLobby(await call<Lobby>({ action: "lobby" }));
     });
   }
-  const { view, tap } = useMatchRound(ticket, stage !== "play", submit);
+  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play", submit);
   useEffect(() => {
     if (!ticket || !["play", "pause"].includes(stage)) return;
     const visibility = () => {
@@ -395,7 +409,20 @@ function Session({
       window.removeEventListener("pageshow", restore);
     };
   }, [ticket, stage]);
-  function ring(enable: boolean) {
+  useEffect(() => {
+    if (!sound || stage !== "play") return;
+    const song = new Audio(`/chemi/match/${character}.mp3`);
+    song.loop = true;
+    song.volume = 0.35;
+    const play = () => { void song.play().catch(() => {}); };
+    play();
+    window.addEventListener("pointerdown", play, {once: true});
+    return () => {
+      window.removeEventListener("pointerdown", play);
+      song.pause();
+    };
+  }, [sound, character, stage]);
+  function ring(enable: boolean, frequency = 440) {
     if (!enable) return;
     try {
       audio.current ??= new AudioContext();
@@ -403,6 +430,7 @@ function Session({
       void context.resume().catch(() => {});
       const tone = context.createOscillator(),
         gain = context.createGain();
+      tone.frequency.value = frequency;
       gain.gain.setValueAtTime(0.035, context.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.09);
       tone.connect(gain).connect(context.destination);
@@ -480,14 +508,21 @@ function Session({
     share && stage === "start"
       ? (challenge?.ranking ?? [])
       : (lobby?.ranking ?? challenge?.ranking ?? publicRows ?? []);
+  const faces = [art, ...characters.filter(c => c !== character).map(c => photos[c])]
+    .flatMap(person => person.cards);
   const active = stage === "play" && view;
+  const levelList = <ol className={styles.levelList} aria-label={copy.round}>
+    {LEVELS.map(({columns, pairs, seconds}, i) => <li data-row="" key={pairs} aria-current={active && active.stage === i+1 ? "step" : undefined}>
+      <b>{[columns, Math.ceil(pairs*2/columns)].join("×")}</b><span>{clock(seconds * FPS)}</span>
+    </li>)}
+  </ol>;
   const isTrial = Boolean(share && !auth.authenticated);
   const scene = (
     <div className={styles.scene}>
       <Image
-        width={1040}
+        width={1440}
         height={550}
-        sizes="(min-width: 768px) 520px, 100vw"
+        sizes="(min-width: 768px) 50vw, 100vw"
         alt=""
         src={art.scene}
         data-character={character}
@@ -503,12 +538,12 @@ function Session({
     reminder: copy.reminder,
   }[stage];
   return (
-    <main className={styles.shell}>
+    <main className={styles.shell} data-stage={stage}>
       <header className={styles.header}>
         <FanIconButton type="button" aria-label={copy.back} onClick={back}>
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
-        <FanHeading as="h1">{title}</FanHeading>
+        <FanHeading as="h1">{active ? copy.round + " " + active.stage + " / 5" : title}</FanHeading>
         <FanIconButton
           type="button"
           disabled={working}
@@ -538,7 +573,7 @@ function Session({
           )}
         </div>
       )}
-      <div className={styles.layout} data-playing={Boolean(active)}>
+      <div className={styles.layout} data-lobby={stage === "start" && !share} data-playing={Boolean(active)}>
         <section className={styles.content}>
           {stage === "start" &&
             (share ? (
@@ -567,8 +602,8 @@ function Session({
               </>
             ) : (
               <>
-                <FanHeading as="h2">{copy.choose}</FanHeading>
-                <div className={styles.choices}>
+
+                <div className={styles.choices} role="group" aria-label={copy.choose}>
                   {characters.map((c) => (
                     <FanAction
                       variant="text"
@@ -577,18 +612,29 @@ function Session({
                       disabled={
                         working || !auth.ready || (auth.authenticated && !lobby)
                       }
-                      onClick={() => void start(c)}
+                      aria-pressed={character === c}
+                      onClick={() => setCharacter(c)}
                     >
                       <Image
                         width={348}
                         height={464}
-                        sizes="(min-width: 768px) 168px, 30vw"
+                        sizes="(min-width: 768px) 210px, 33vw"
                         alt=""
                         src={photos[c].portrait}
                       />
                       <FanText role="item">{copy[c]}</FanText>
                     </FanAction>
                   ))}
+                </div>
+                <div className={styles.lobbyHero}>
+                  {scene}
+                  <p><b>{copy[character]}</b> · {["Magic Puzzle In-Game 1","Magic Puzzle In-Game 2","Cozy Puzzle In-Game 1"][characters.indexOf(character)]} · CC0</p>
+                </div>
+                {levelList}
+                <div className={styles.startAction}>
+                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}>
+                    {copy[character]} · {copy.start}
+                  </StageAction>
                 </div>
                 {lobby?.previous && (
                   <p className={styles.detail}>
@@ -604,32 +650,34 @@ function Session({
             ))}
           {active && (
             <>
-              <dl className={styles.hud}>
+              <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong></div>
+              <progress aria-label={copy.time} data-urgent={active.remaining <= FPS * 10} value={active.remaining} max={LEVELS[active.stage-1].seconds * FPS} />
+              <dl className={styles.hud} data-urgent={active.remaining <= FPS * 10}>
                 <div>
                   <FanText as="dt" role="meta">
                     {copy.time}
                   </FanText>
-                  <dd className={numberStyles.xl}>{clock(active.tick)}</dd>
+                  <dd className={numberStyles.xl}>{clock(active.remaining)}</dd>
                 </div>
                 <div>
                   <FanText as="dt" role="meta">
                     {copy.pairs}
                   </FanText>
                   <dd className={numberStyles.xl}>
-                    {active.matched.toString(2).replace(/0/g, "").length / 2} /
-                    4
+                    {active.stagePairs} / {LEVELS[active.stage-1].pairs}
                   </dd>
                 </div>
                 <div>
                   <FanText as="dt" role="meta">
-                    {copy.misses}
+                    {copy.attempts}
                   </FanText>
-                  <dd className={numberStyles.xl}>{active.misses}</dd>
+                  <dd className={numberStyles.xl}>{active.attempts}</dd>
                 </div>
               </dl>
-              <div className={styles.board}>
-                {Array.from({ length: 9 }, (_, cell) => {
-                  if (cell === 4)
+              {levelList}
+              <div className={styles.board} data-columns={LEVELS[active.stage-1].columns}>
+                {Array.from({ length: active.layout.length + Number(active.stage === 1) }, (_, cell) => {
+                  if (active.stage === 1 && cell === 4)
                     return (
                       <div className={styles.middle} key="round">
                         <Image
@@ -639,10 +687,10 @@ function Session({
                           src={art.portrait}
                         />
                         <FanText role="meta">{copy.round}</FanText>
-                        <b>{active.stage} / 3</b>
+                        <b>{active.stage} / {LEVELS.length}</b>
                       </div>
                     );
-                  const index = cell < 4 ? cell : cell - 1;
+                  const index = active.stage === 1 && cell > 4 ? cell - 1 : cell;
                   const matched = Boolean(active.matched & (1 << index));
                   const open =
                     matched ||
@@ -674,24 +722,25 @@ function Session({
                           ...(open ? [photo + 1] : []),
                         ].join(" ")}
                         onClick={() => {
-                          ring(sound);
+                          const isSecond = active.first >= 0;
+                          const paired = isSecond && active.layout[active.first] === photo;
+                          ring(sound, isSecond ? (paired ? 784 : 220) : 440);
                           tap(index);
                         }}
                       >
                         {open ? (
                           <Image
-                            width={336}
-                            height={448}
-                            sizes="(min-width: 768px) 168px, 30vw"
-                            src={art.cards[photo]}
+                            width={640}
+                            height={800}
+                            sizes="(min-width: 768px) 210px, 33vw"
+                            unoptimized={faces[photo].startsWith("/chemi/match/") || faces[photo].startsWith("/api/")}
+                            src={faces[photo]}
                             alt=""
                           />
                         ) : (
-                          <img
-                            src="/images/guest-home/kyaa-wordmark.svg"
-                            alt=""
-                          />
+                          <span aria-hidden="true" />
                         )}
+                        {!open && <small className={styles.cardNumber}>{String(cell + 1).padStart(2, "0")}</small>}
                         {matched && (
                           <i>
                             <FanIcon icon={Check} size={16} />
@@ -702,6 +751,12 @@ function Session({
                   );
                 })}
               </div>
+              {active.cleared && <ClearDialog label={copy.completed}>
+                <FanHeading>{copy.round} {active.stage} · {copy.completed}</FanHeading>
+                <p>{copy.pairs} +{active.stagePairs * 100} · CLEAR +500 · {copy.time} +{Math.floor(active.remaining / FPS)*10} · {copy.accuracy} +{Math.floor(active.stagePairs ** 2 * 100 / active.attempts)}</p>
+                <StageAction onClick={nextLevel}>{copy.round} {active.stage+1} · {copy.start}</StageAction>
+                <FanAction onClick={finishLevel}>{copy.result}</FanAction>
+              </ClearDialog>}
             </>
           )}
           {stage === "pause" && (
@@ -770,16 +825,19 @@ function Session({
             <>
               <FanHeading as="h2">
                 {copy[character]} ·{" "}
-                {view.pairs === 12 ? copy.completed : copy.timeUp}
+                {view.cleared ? copy.completed : copy.timeUp}
               </FanHeading>
+              <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{view.score.toLocaleString(locale)}</strong></div>
+              <p>{copy.pairs} +{view.pairs * 100} · CLEAR +{view.clearPoints} · {copy.time} +{view.timePoints} · {copy.accuracy} +{view.accuracyPoints}</p>
               <div className={styles.souvenir}>
-                {art.cards.slice(0, 2).map((src) => (
+                {faces.slice(0, 5).map((src) => (
                   <Image
                     width={360}
                     height={480}
                     sizes="(min-width: 768px) 166px, 30vw"
                     alt=""
                     key={src}
+                    unoptimized={src.startsWith("/chemi/match/")}
                     src={src}
                   />
                 ))}
@@ -803,6 +861,7 @@ function Session({
                       {copy.rank}
                     </FanText>
                     <dd className={numberStyles.xl}>
+                      {priorRank !== null && priorRank !== rows.find(r => r.isMe)?.place && <>{priorRank} → </>}
                       {rows.find((r) => r.isMe)?.place}
                     </dd>
                   </div>
@@ -815,6 +874,17 @@ function Session({
                   <b>+{result.exp} EXP</b>
                 </p>
               )}
+              {result?.titleStage && <div className={styles.detail}>
+                <b>{copy.round} {result.titleStage} · {copy.completed}</b>
+                <FanAction disabled={working || equipped} onClick={() => void action(async () => {
+                  await call({action: "equip", stage: result.titleStage});
+                  setEquipped(true);
+                })}>{equipped && <FanIcon icon={Check} size={16} />}{copy.equip}</FanAction>
+              </div>}
+              {result?.excitement !== undefined && <div className={styles.detail}>
+                <span>{copy[character]} · {copy.excitement} +{result.excitement}</span>
+                <FanAction href={`/chemi?tab=growth&locale=${locale}&character=${character}`}>{copy.room}</FanAction>
+              </div>}
               {pendingFinish && !working && (
                 <FanAction onClick={() => void submit(pendingFinish)}>
                   {copy.retry}
@@ -833,6 +903,7 @@ function Session({
                   {isTrial ? copy.signIn : copy.playAgain}
                 </StageAction>
               )}
+              {result && !isTrial && <FanAction href={`/chemi?locale=${locale}`}>{copy.back}</FanAction>}
               {result?.shareId && (
                 <FanAction onClick={() => void shareResult()}>
                   {copied ? copy.copied : copy.share}

@@ -4,26 +4,28 @@ import { chemiEnabled } from "@/features/chemi/domain/availability";
 type MatchPhotos = {
   portrait: string;
   scene: string;
-  cards: readonly [string, string, string, string];
+  cards: readonly string[];
 };
 
 const root = "/images/celebrities";
 const catalog = {
   changha: {
     portrait: `${root}/changha/portrait-20261021.webp`,
-    scene: `${root}/changha/hero-desktop-20261021.webp`,
+    scene: `${root}/changha/hero-editorial-20260911.webp`,
     cards: [
-      `${root}/changha/profile-autumn-20261113.webp`,
-      `${root}/changha/hero-editorial-20260911.webp`,
-      `${root}/changha/portrait-20261021.webp`,
-      `${root}/changha/calendar-20261021.webp`,
+      "/chemi/match/c7.jpg",
+      "/chemi/match/c3.jpg",
+      "/chemi/match/c8.jpg",
+      "/chemi/match/c1.jpg",
+      "/chemi/match/c2.jpg",
+      "/chemi/match/c6.jpg",
     ],
   },
   elina: {
     portrait: `${root}/elina/guide-autumn-20260921.jpg`,
     scene: `${root}/elina/hero-beach.jpg`,
     cards: [
-      `${root}/elina/guide-blue-beret-20260912.webp`,
+      "/chemi/match/e1.jpg",
       `${root}/elina/hero-source.jpg`,
       `${root}/elina/hero-beach.jpg`,
       `${root}/elina/guide-autumn-20260921.jpg`,
@@ -37,6 +39,7 @@ const catalog = {
       `${root}/yuna/hero-beach.jpg`,
       "/api/content-assets/857c6367-6f97-40ff-ac11-b14cc2fb4e6e",
       "/images/calendar/yuna-portrait.jpg",
+      "/chemi/match/y1.jpg",
     ],
   },
 } as const satisfies Record<"changha" | "elina" | "yuna", MatchPhotos>;

@@ -9,12 +9,13 @@ import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 const shareId = z.string().regex(/^[a-f0-9]{32}$/);
 const game = z.enum(["match", "run"]);
 const command = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("equip"), stage: z.int().min(2).max(5) }),
   z.object({ action: z.literal("lobby") }),
   z.object({ action: z.literal("ranking") }),
   z.object({ action: z.literal("sound"), sound: z.boolean() }),
   z.object({ action: z.literal("start"), game: game, character: z.enum(["changha", "elina", "yuna"]), key: z.uuid(), extra: z.boolean() }),
   z.object({ action: z.literal("leave"), playId: z.uuid() }),
-  z.object({ action: z.literal("finish"), playId: z.uuid(), jumps: z.array(z.int()).max(600).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(600) }),
+  z.object({ action: z.literal("finish"), playId: z.uuid(), jumps: z.array(z.int()).max(600).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(1000) }),
   z.object({ action: z.literal("challenge"), shareId }),
   z.object({ action: z.literal("trial"), shareId, key: z.uuid() }),
 ]);
@@ -50,6 +51,9 @@ export async function POST(request: Request) {
       case "lobby":
       case "sound":
         return reply(await rpc(`chemi_${mode}_lobby`, { p_user, p_sound: body.action === "sound" ? body.sound : null }));
+      case "equip":
+        if (mode !== "match") return reply({}, 400);
+        return reply(await rpc("chemi_match_equip", {p_user, p_stage: body.stage}));
       case "leave":
         return reply(await rpc(`chemi_${mode}_leave`, { p_user, p_play: body.playId }));
       case "start": {
@@ -74,8 +78,8 @@ export async function POST(request: Request) {
         if (run) return reply(await rpc("chemi_run_finish", { p_user, p_play: body.playId, p_score: run.score,
           p_log: { ticks: run.tick, jumps: body.jumps ?? [] } }));
         if (!result) return reply({}, 422);
-        return reply(await rpc(`chemi_${mode}_finish`, { p_user, p_play: body.playId, p_score: result.score,
-          p_log: { ticks: result.tick, misses: result.misses, pairs: result.pairs, moves: body.moves } }));
+        return reply(await rpc("chemi_match_finish_stages", { p_user, p_play: body.playId, p_score: result.score,
+          p_log: { stage: result.stage, ticks: result.tick, misses: result.misses, pairs: result.pairs, moves: body.moves } }));
       }
     }
   } catch (e) {

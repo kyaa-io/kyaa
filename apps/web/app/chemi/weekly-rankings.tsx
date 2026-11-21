@@ -56,7 +56,7 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
       place: row.place,
       name: row.nickname,
       change: 0,
-      record: mode === "run" ? distance.format(row.score) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
+      record: mode === "run" ? distance.format(row.score) : row.score != null ? row.score.toLocaleString(locale) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
         .map((part) => String(part).padStart(2, "0")).join(":"),
     });
     const mine = rows.find((row) => row.isMe);
