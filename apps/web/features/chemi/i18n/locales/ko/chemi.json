@@ -368,6 +368,7 @@
     "shareAffinityBonus": "미니 {name} 친밀 +5",
     "askFromResult": "이 결과로 질문하기",
     "askLeft": "질문",
+    "askDays": "{count}일째",
     "askLeftLabel": "남은 질문 {count}개",
     "askHistory": "지난 질문",
     "askTopics": "주제",

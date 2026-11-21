@@ -34,7 +34,7 @@ function serve(handler: (url: string, body: any) => unknown, get: object = state
   }));
 }
 
-/** 답은 한 쪽에 한 줄: 다음 쪽으로 넘긴다. */
+/** 답이 여러 쪽이면 다음 쪽으로 넘긴다(짧은 답은 한 쪽에 다 나온다). */
 const turn = async () => fireEvent.click(await screen.findByRole("button", { name: /^다음/ }));
 
 beforeEach(() => {
@@ -60,10 +60,8 @@ it("주제를 고르면 최애가 되묻고, 예시를 눌러 보내면 답과 �
   expect(location.search).toContain("ask=write&at=love");
   fireEvent.click(screen.getByRole("button", { name: "요즘 연락하는 사람이랑 잘될까?" }));
   fireEvent.click(screen.getByRole("button", { name: "보내기" }));
-  expect(await screen.findByText("네 일간은 병.")).toBeTruthy();
-  await turn();
-  expect(await screen.findByText("먼저 짧게 말을 걸어 봐.")).toBeTruthy();
-  expect(screen.queryByText("네 일간은 병.")).toBeNull();
+  expect(await screen.findByText("네 일간은 병. 먼저 짧게 말을 걸어 봐.")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /^다음/ })).toBeNull();
   expect(calls[0]).toMatchObject({ url: "/api/chemi/ask", body: { readingId: reading, character: "changha", content: "saju", topic: "love", question: "요즘 연락하는 사람이랑 잘될까?" } });
   expect(location.search).toContain(`ask=answer&aq=${calls[0].body.threadId}`);
   expect(screen.getByLabelText("남은 질문 2개")).toBeTruthy();
@@ -81,8 +79,7 @@ it("답을 못 받으면 질문 수는 그대로이고 같은 번호로 다시 �
   expect(screen.getByLabelText("남은 질문 3개")).toBeTruthy();
   fail = false;
   fireEvent.click(screen.getByRole("button", { name: "다시 보내기" }));
-  await turn();
-  await screen.findByText("먼저 짧게 말을 걸어 봐.");
+  await screen.findByText("네 일간은 병. 먼저 짧게 말을 걸어 봐.");
   expect(calls[1].body.threadId).toBe(calls[0].body.threadId);
 });
 
@@ -116,8 +113,7 @@ it("질문을 다 쓰면 오늘 물어본 질문을 다시 열 수 있고, 살 �
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: "메일 인증을 마치면 알림을 받을 수 있어요", tone: "error" }));
   expect(calls[0]).toEqual({ url: "/api/chemi/reminders", body: { kind: "free_ask", content: "" } });
   fireEvent.click(screen.getByRole("button", { name: /요즘 연락하는 사람이랑 잘될까/ }));
-  await turn();
-  expect(await screen.findByText("먼저 짧게 말을 걸어 봐.")).toBeTruthy();
+  expect(await screen.findByText("네 일간은 병. 먼저 짧게 말을 걸어 봐.")).toBeTruthy();
   expect(location.search).toContain(`aq=${first.threadId}`);
 });
 
@@ -131,7 +127,6 @@ it("알림을 신청한 뒤에는 자랑하기가 주 버튼이고, 이어 물�
   expect(screen.getByRole("button", { name: /자랑하기.*질문 \+1/ })).toBeTruthy();
   askGo({ step: "answer", thread: done.threadId });
   await turn();
-  await turn();
   expect(await screen.findByText("오늘 안에 움직여.")).toBeTruthy();
   expect(screen.getByText("언제쯤?")).toBeTruthy();
   expect(screen.queryByRole("button", { name: /이어 묻기/ })).toBeNull();
@@ -140,13 +135,13 @@ it("알림을 신청한 뒤에는 자랑하기가 주 버튼이고, 이어 물�
   expect(screen.getByRole("button", { name: /자랑하기.*질문 \+1/ })).toBeTruthy();
 });
 
-it("한 문단으로 온 답은 문장 끝에서 쪽을 나누고, 줄 바꿈이 있는 답은 줄마다 한 쪽이다", () => {
-  expect(askPages("네 일간은 병.\n먼저 짧게 말을 걸어 봐.")).toEqual(["네 일간은 병.", "먼저 짧게 말을 걸어 봐."]);
+it("긴 답은 문장 끝에서 쪽을 나누고, 줄 바꿈으로 온 짧은 답은 이어 붙여 한 쪽에 담는다", () => {
+  expect(askPages("네 일간은 병.\n먼저 짧게 말을 걸어 봐.")).toEqual(["네 일간은 병. 먼저 짧게 말을 걸어 봐."]);
   const paragraph = "네 일간은 병화라서 마음을 숨기기 어려운 편이야. 이번 주는 금 기운이 약해서 말이 길어지면 뜻이 흐려져. 그러니까 먼저 짧게 안부만 물어봐. 답이 늦어도 재촉하지 마.";
   const pages = askPages(paragraph);
   expect(pages.join(" ")).toBe(paragraph);
   expect(pages.length).toBeGreaterThan(1);
-  for (const page of pages) expect(page.length).toBeLessThanOrEqual(60);
+  for (const page of pages) expect(page.length).toBeLessThanOrEqual(80);
   expect(askPages("3.5점이야.")).toEqual(["3.5점이야."]);
 });
 
@@ -155,9 +150,10 @@ it("답을 다 들으면 짧은 반응을 고를 수 있고, 최애가 한 마�
   serve(() => ({}), state({ left: 2, threads: [first] }));
   render(<Host />);
   askGo({ step: "answer", thread: first.threadId });
-  await turn();
   fireEvent.click(await screen.findByRole("button", { name: "진짜?" }));
   expect(await screen.findByText("진짜야. 네 풀이에 그렇게 나와 있어.")).toBeTruthy();
+  // 고른 반응은 주소에 남아 새로 고쳐도 이어진다.
+  expect(location.search).toContain("av=really");
   expect(screen.getByText("진짜?")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "고마워" })).toBeNull();
   expect(screen.getByRole("button", { name: /이어 묻기/ })).toBeTruthy();
@@ -170,7 +166,6 @@ it("오늘 마지막 질문을 이어 묻기까지 마치면 작별 인사로 �
   serve((url) => (url === "/api/chemi/reminders" ? {} : { thread: done, state: state({ left: 0, threads: [done] }) }), state({ left: 0, threads: [last] }));
   const { container } = render(<Host />);
   askGo({ step: "answer", thread: last.threadId });
-  await turn();
   // 이어 묻기가 남아 있으면 그것이 주 버튼이고, 갈 곳 없는 '다른 질문' 자리에는 내일 알림이 온다.
   expect(await screen.findByRole("button", { name: /이어 묻기/ })).toBeTruthy();
   expect(screen.queryByRole("button", { name: "다른 질문" })).toBeNull();
@@ -204,7 +199,7 @@ it("같은 날 다시 오면 인사가 짧고, 이어 묻기가 남은 오늘 �
   expect(await screen.findByText("또 뭐 볼래?")).toBeTruthy();
   expect(screen.getByRole("group", { name: "주제" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: /이어 묻기/ }));
-  expect(await screen.findByText("네 일간은 병.")).toBeTruthy();
+  expect(await screen.findByText("네 일간은 병. 먼저 짧게 말을 걸어 봐.")).toBeTruthy();
   expect(location.search).toContain(`ask=answer&aq=${first.threadId}`);
 });
 
@@ -215,6 +210,7 @@ it("다른 날 다시 오면 최애가 지난 질문부터 묻고, 고른 답에
   askGo({ step: "topic" });
   expect(await screen.findByText("오늘로 3일째네. 지난번에 물어본 건 어떻게 됐어?")).toBeTruthy();
   expect(screen.getByText("요즘 연락하는 사람이랑 잘될까?")).toBeTruthy();
+  expect(screen.getByLabelText("창하 3일째")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "연애" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "아직이야" }));
   expect(await screen.findByText("그렇구나. 그 얘기 더 해도 되고, 새로 물어도 돼.")).toBeTruthy();
@@ -236,7 +232,6 @@ it("고른 반응에 맞는 말이 이어 묻기 맨 앞에 놓인다", async ()
   serve(() => ({}), state({ threads: [answered(id)] }));
   render(<Host />);
   askGo({ step: "answer", thread: id });
-  await turn();
   fireEvent.click(await screen.findByRole("button", { name: "좀 걱정돼" }));
   expect(await screen.findByText("걱정 마. 풀이는 조심할 곳을 미리 알려 주는 거야.")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: /이어 묻기/ }));
@@ -244,6 +239,9 @@ it("고른 반응에 맞는 말이 이어 묻기 맨 앞에 놓인다", async ()
   expect([...group.querySelectorAll("button")].map((item) => item.textContent)).toEqual(["뭘 조심하면 돼?", "하나만 더 알려 줘", "왜 그렇게 나왔어?"]);
   fireEvent.click(screen.getByRole("button", { name: "뭘 조심하면 돼?" }));
   expect((screen.getByLabelText("질문 입력") as HTMLInputElement).value).toBe("뭘 조심하면 돼?");
+  // 주소로 다시 열어도 같은 순서다.
+  expect(location.search).toContain("ask=follow");
+  expect(location.search).toContain("av=worried");
 });
 
 it("다른 최애에게 한 질문을 열면 그 최애의 이름과 말투로 답한다", async () => {
@@ -251,10 +249,9 @@ it("다른 최애에게 한 질문을 열면 그 최애의 이름과 말투로 �
   serve(() => ({}), state({ threads: [answered(id, { character: "elina", answer: "일간이 병이에요.\n먼저 짧게 말을 걸어 봐요." })] }));
   render(<Host />);
   askGo({ step: "answer", thread: id });
-  expect(await screen.findByText("일간이 병이에요.")).toBeTruthy();
+  expect(await screen.findByText("일간이 병이에요. 먼저 짧게 말을 걸어 봐요.")).toBeTruthy();
   expect(screen.getByText("엘리나")).toBeTruthy();
   expect(screen.queryByText("창하")).toBeNull();
-  await turn();
   expect(await screen.findByRole("button", { name: "정말요?" })).toBeTruthy();
 });
 

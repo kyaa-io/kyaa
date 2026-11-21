@@ -368,6 +368,7 @@
     "shareAffinityBonus": "ミニ{name}の親密度 +5",
     "askFromResult": "この結果で質問する",
     "askLeft": "質問",
+    "askDays": "{count}日目",
     "askLeftLabel": "残りの質問 {count}回",
     "askHistory": "過去の質問",
     "askTopics": "テーマ",

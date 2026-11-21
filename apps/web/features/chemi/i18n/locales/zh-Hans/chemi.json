@@ -368,6 +368,7 @@
     "shareAffinityBonus": "迷你{name}亲密度 +5",
     "askFromResult": "用这个结果提问",
     "askLeft": "提问",
+    "askDays": "第 {count} 天",
     "askLeftLabel": "剩余提问 {count} 次",
     "askHistory": "过去的提问",
     "askTopics": "主题",

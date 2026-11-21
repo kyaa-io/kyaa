@@ -225,6 +225,8 @@
   .rotate { display: block; }
 }
 @media (width >= 64rem) {
+  /* 머리줄의 뒤로·소리 버튼은 본문과 같은 좌우 끝선에 선다. */
+  .nav { box-sizing: border-box; width: 100%; max-width: var(--shell-max-width); margin-inline: auto; padding-inline: var(--shell-inset); }
   .select {
     grid-template-columns: 160px minmax(0, 1fr) var(--rail-md);
     grid-template-rows: min(var(--fan-chemi-select-height), calc(100dvh - var(--space-12) - var(--space-16) - var(--space-2)));

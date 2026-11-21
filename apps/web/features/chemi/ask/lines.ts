@@ -191,26 +191,23 @@ export function askFollowups(character: AskCharacter, first: AskReaction | null)
   return order.map((kind) => followups[kind][askVoice[character] === "ban" ? 0 : 1]);
 }
 
-/** 한 쪽에 담는 글자 수. 대화 상자 세 줄(390px)에 들어간다. */
-const PAGE_LETTERS = 60;
+/** 한 쪽에 담는 글자 수. 대화 상자 다섯 줄(390px)에 들어간다: 근거 한 줄과 조언 두 문장이 한 쪽에 놓인다. */
+const PAGE_LETTERS = 80;
 /** 가로 화면의 대화 상자(640px)는 한 줄이 길어 한 쪽에 두 배 남짓 담는다. */
 const WIDE_PAGE_LETTERS = 130;
 /**
- * 답을 쪽으로 나눈다. 줄 바꿈이 있으면 줄마다 한 쪽이고, 줄 바꿈 없이 한 문단으로 온 답(AI 답)은
- * 문장 끝에서 끊어 한 쪽에 60자 안팎으로 묶는다. 문장 하나가 60자를 넘으면 그 문장만 한 쪽이 된다.
+ * 답을 쪽으로 나눈다. 줄 바꿈으로 온 답도 이어 붙여 문장 끝에서 끊고, 한 쪽에 80자(가로 화면 130자) 안팎으로 묶는다.
+ * 문장 하나가 그보다 길면 그 문장만 한 쪽이 된다. 짧은 답은 한 쪽에 다 들어가 누르지 않고 읽는다.
  */
 export function askPages(answer: string, wide = false) {
   const letters = wide ? WIDE_PAGE_LETTERS : PAGE_LETTERS;
-  // 가로 화면에서는 줄 바꿈으로 온 답도 이어 붙여 한 쪽에 담는다.
-  return (wide ? [answer.replace(/\n+/g, " ")] : answer.split("\n")).flatMap((line) => {
-    const pages: string[] = [];
-    for (const sentence of line.match(/.+?[.!?…~]+(?:\s+|$)|.+$/g) ?? []) {
-      const last = pages.at(-1);
-      if (last !== undefined && (last + sentence).trim().length <= letters) pages[pages.length - 1] = last + sentence;
-      else pages.push(sentence);
-    }
-    return pages.map((page) => page.trim()).filter(Boolean);
-  });
+  const pages: string[] = [];
+  for (const sentence of answer.replace(/\n+/g, " ").match(/.+?[.!?…~]+(?:\s+|$)|.+$/g) ?? []) {
+    const last = pages.at(-1);
+    if (last !== undefined && (last + sentence).trim().length <= letters) pages[pages.length - 1] = last + sentence;
+    else pages.push(sentence);
+  }
+  return pages.map((page) => page.trim()).filter(Boolean);
 }
 
 export const askExamples = (topic: AskTopic, character: AskCharacter) =>

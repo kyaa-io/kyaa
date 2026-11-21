@@ -45,7 +45,7 @@ import type { AppLocale } from "@/i18n/locales";
 import {
   askArt, askExamples, askFollowups, askLines, askLoop, askName, askPages, askReaction, askRecall, askSubject, askVoice,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
-  type AskCharacter, type AskContent, type AskReaction, type AskRecall, type AskTopic,
+  type AskCharacter, type AskContent, type AskRecall, type AskTopic,
 } from "./lines";
 import { askBack, askGo, type AskLocation } from "./location";
 import { SceneBackdrop } from "./scene-backdrop";
@@ -116,8 +116,6 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const [page, setPage] = useState({ of: "", index: 0 });
   // 최애가 말을 마친 줄. 그 줄의 선택지는 이때부터 보인다.
   const [said, setSaid] = useState("");
-  // 답을 들은 뒤 고른 반응(서버에 보내지 않는다). 이어 묻기에서 그 반응에 맞는 말이 먼저 놓인다.
-  const [reacted, setReacted] = useState<{ thread: string; kind: AskReaction; complete: boolean } | null>(null);
   // 다른 날 다시 왔을 때 지난 질문이 어떻게 됐는지 고른 답. 고르기 전에는 최애가 먼저 묻는다.
   const [recall, setRecall] = useState<AskRecall | null>(null);
   const wide = useSyncExternalStore(watchWide, () => matchMedia(WIDE).matches, () => false);
@@ -142,6 +140,8 @@ export function AskScene({ locale, content, character, readingId, at }: {
       ? (blocked?.threadId === at.thread ? blocked : state?.threads.find((item) => item.threadId === at.thread)) ?? null
       : null;
   // 지난 질문을 열면 그 질문을 받은 최애와 그 장면으로 답한다(다른 최애의 답을 지금 최애가 대신 말하지 않는다).
+  // 답을 들은 뒤 고른 반응은 주소에 있다(서버에 보내지 않는다). 이어 묻기에서 그 반응에 맞는 말이 먼저 놓인다.
+  const picked = at.step === "answer" || at.step === "follow" ? at.react ?? null : null;
   const who = shown?.character ?? character;
   const where = shown?.content ?? content;
   const name = askName[who];
@@ -288,6 +288,10 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const empty = state?.left === 0;
   const today = kstToday();
   const todays = state?.threads.filter((item) => item.date === today) ?? [];
+  // 이 최애와 이야기한 날 수(오늘 포함). 서버가 최근 30개만 주므로 30개가 찼으면 세지 않는다.
+  const days = state && state.threads.length < 30
+    ? new Set([...state.threads.filter((item) => item.character === character).map((item) => item.date), today]).size
+    : 0;
   const bonus = state?.shareBonus ?? { pass: false, exp: false };
   const canSend = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const shareAction = (
@@ -431,8 +435,8 @@ export function AskScene({ locale, content, character, readingId, at }: {
     const complete = Boolean(shown.followupAnswer);
     ending = !guarded && state.left === 0 && shown.date === today;
     const arrived = fresh?.startsWith(threadId) ?? false;
-    // 이어 묻기 전에 고른 반응은 이어 물은 답이 온 뒤에는 다시 붙지 않는다(그 답에 새로 반응할 수 있다).
-    const react = reacted?.thread === threadId && reacted.complete === complete ? reacted.kind : null;
+    // 이어 물은 답이 오면 주소의 반응이 지워져, 그 답에 새로 반응할 수 있다.
+    const react = picked;
     const beats: { question: string | null; tag: AskTopic | null; body: string; key: string }[] = [
       ...askPages(shown.answer, wide).map((body) => ({ question: shown.question, tag: guarded ? null : shown.topic, body, key: threadId })),
       ...(shown.followupQuestion && shown.followupAnswer
@@ -494,7 +498,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
                 size="sm"
                 className={styles.reply}
                 onClick={() => {
-                  setReacted({ thread: threadId, kind, complete });
+                  askGo({ step: "answer", thread: threadId, react: kind }, "replace");
                   setFresh(`${threadId}:react`);
                   setPage({ of: view, index: beats.length });
                 }}
@@ -517,7 +521,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
       main = ending ? restMain() : { label: text("askOther"), onClick: again };
       below = <div className={styles.row} data-single="">{ending && state.reminded ? reminded : shareAction}</div>;
     } else {
-      main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => askGo({ step: "follow", thread: threadId }) };
+      main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => askGo({ step: "follow", thread: threadId, react: react ?? undefined }) };
       const other = ending ? remindAction : <FanAction variant="text" className={styles.cell} onClick={again}>{text("askOther")}</FanAction>;
       below = (
         <div className={styles.row} data-single={other ? undefined : ""}>
@@ -534,7 +538,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
           {speak(line(lines.follow, true), shown.topic ? text(topicKey[shown.topic]) : undefined)}
         </section>
         <div className={`${styles.choices} ${styles.examples} ${styles.reveal}`} data-shown={saidAll(lines.follow, true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
-          {askFollowups(who, reacted?.thread === shown.threadId ? reacted.kind : null).map((example) => (
+          {askFollowups(who, picked).map((example) => (
             <FanAction
               key={example}
               variant="text"
@@ -617,7 +621,6 @@ export function AskScene({ locale, content, character, readingId, at }: {
     // 다른 날 다시 오면 최애가 지난 질문부터 묻는다. 서버가 최근 30개만 주므로 30개가 찼으면 날 수는 말하지 않는다.
     const mine = state.threads.filter((item) => item.character === character);
     const earlier = returning || thanked ? undefined : mine.find((item) => item.date < today);
-    const days = state.threads.length < 30 ? new Set(mine.map((item) => item.date)).size + 1 : 0;
     const asking = Boolean(earlier) && recall === null;
     const greeting = thanked ? lines.shared
       : returning ? lines.again
@@ -660,12 +663,18 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? (ending ? "close" : "speak") : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
-    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-beat={reacted && shown && view.startsWith("answer") && reacted.thread === shown.threadId && reacted.complete === Boolean(shown.followupAnswer) ? reacted.kind : undefined}>
+    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
       <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name} />
       <div className={styles.top}>
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
+        {days > 1 ? (
+          <span className={`${styles.count} ${styles.days}`} aria-label={`${askName[character]} ${text("askDays", { count: days })}`}>
+            <FanIcon icon={Heart} size={16} />
+            <FanText role="label" aria-hidden="true">{text("askDays", { count: days })}</FanText>
+          </span>
+        ) : null}
         {state ? (
           <span className={styles.count} aria-label={text("askLeftLabel", { count: state.left })}>
             <FanIcon icon={MessageCircle} size={16} />

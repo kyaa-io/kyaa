@@ -368,6 +368,7 @@
     "shareAffinityBonus": "ความสนิทกับมินิ {name} +5",
     "askFromResult": "ถามจากผลนี้",
     "askLeft": "คำถาม",
+    "askDays": "วันที่ {count}",
     "askLeftLabel": "เหลือคำถาม {count} ครั้ง",
     "askHistory": "คำถามที่ผ่านมา",
     "askTopics": "หัวข้อ",

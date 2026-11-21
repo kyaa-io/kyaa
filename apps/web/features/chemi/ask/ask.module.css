@@ -76,9 +76,17 @@
   opacity: 0.16;
 }
 
-/* 반응을 고르면 최애가 한 번 끄덕인다(표정 원화가 없어 그림 전체가 한 번 움직인다). */
+/* 반응을 고르면 최애가 그 말에 맞게 한 번 움직인다(표정 원화가 없어 그림 전체가 움직인다).
+ * 고마워 = 한 번 끄덕임, 진짜? = 두 번 끄덕임, 걱정돼 = 천천히 다가와 머문다. */
 .root[data-beat] .art img {
   animation: ask-nod calc(var(--motion-slow) * 3) var(--motion-easing) 1;
+}
+.root[data-beat="really"] .art img {
+  animation-name: ask-nod-twice;
+}
+.root[data-beat="worried"] .art img {
+  animation-name: ask-lean;
+  animation-duration: calc(var(--motion-slow) * 6);
 }
 @keyframes ask-nod {
   35% {
@@ -86,6 +94,22 @@
   }
   70% {
     transform: translateY(calc(var(--space-1) * -0.5));
+  }
+}
+@keyframes ask-nod-twice {
+  20%,
+  60% {
+    transform: translateY(var(--space-2));
+  }
+  40%,
+  80% {
+    transform: translateY(0);
+  }
+}
+@keyframes ask-lean {
+  30%,
+  70% {
+    transform: translateY(var(--space-3));
   }
 }
 /* 장면에 들어올 때 한 번: 어두운 데서 밝아진다. */
@@ -128,6 +152,9 @@
 }
 .count svg {
   color: var(--color-ink);
+}
+.days + .count {
+  margin-inline-start: 0;
 }
 .top:not(:has(.count)) .history {
   margin-inline-start: auto;
