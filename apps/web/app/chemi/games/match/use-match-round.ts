@@ -23,12 +23,14 @@ export function useMatchRound(
 ) {
   const [view, setView] = useState<ReturnType<typeof snapshot> | null>(null);
   const pending = useRef<number | undefined>(undefined);
+  const awaitingNext = useRef(false);
+  const nextLevel = () => { awaitingNext.current = false; };
   const pause = useRef(paused);
   const finish = useRef(onFinish);
   pause.current = paused;
   finish.current = onFinish;
   const tap = useCallback((index: number) => {
-    if (!pause.current && pending.current === undefined)
+    if (!pause.current && !awaitingNext.current && pending.current === undefined)
       pending.current = index;
   }, []);
 
@@ -44,9 +46,10 @@ export function useMatchRound(
     let last = performance.now();
     let fraction = 0;
     pending.current = undefined;
+    awaitingNext.current = false;
     setView(snapshot(sim));
     function frame(now: number) {
-      if (!pause.current) fraction += ((now - last) * FPS) / 1000;
+      if (!pause.current && !awaitingNext.current) fraction += ((now - last) * FPS) / 1000;
       else pending.current = undefined;
       last = now;
       const { first, second, matched, stage, tick: previousTick } = sim.state;
@@ -69,6 +72,11 @@ export function useMatchRound(
           else input = undefined;
         }
         sim.step(input);
+        if (sim.state.cleared && !sim.state.done) {
+          awaitingNext.current = true;
+          fraction = 0;
+          break;
+        }
       }
       const state = sim.state;
       if (
@@ -96,5 +104,5 @@ export function useMatchRound(
       cancelAnimationFrame(handle);
     };
   }, [ticket]);
-  return { view, tap };
+  return { view, tap, nextLevel };
 }

@@ -365,3 +365,76 @@
 .souvenir img[src*="hero-editorial-20260911"] {
   object-position: 65% center;
 }
+
+.stageLine {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.content progress {
+  width: 100%;
+  accent-color: var(--color-accent);
+}
+.cardNumber {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-variant-numeric: tabular-nums;
+}
+.clearPanel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
+
+.levelList {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+}
+.levelList li {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--color-line);
+  font-variant-numeric: tabular-nums;
+}
+.levelList [aria-current="step"],
+.choices [aria-pressed="true"] { color: var(--color-accent); }
+.card[data-open="false"] {
+  background: url("/chemi/match/argyle.svg") center / 48px 48px repeat;
+}
+.cardNumber {
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+.layout[data-playing="true"] .ranking { display: none; }
+@media (width < 48rem) {
+  .layout[data-playing="true"] .levelList { display: none; }
+}
+@media (width >= 48rem) {
+  .shell { max-width: 1248px; }
+  .layout[data-playing="true"] { display: block; }
+  .layout[data-playing="true"] .content {
+    grid-template-columns: minmax(240px, 360px) minmax(0,1fr);
+    align-content: start;
+    column-gap: var(--space-8);
+  }
+  .layout[data-playing="true"] .content > * { grid-column: 1; }
+  .layout[data-playing="true"] .board {
+    grid-column: 2;
+    grid-row: 1 / span 6;
+    justify-self: center;
+    width: min(100%, 580px);
+  }
+  .layout[data-playing="true"] .levelList { grid-template-columns: 1fr; }
+  .layout[data-playing="true"] .levelList li { display: flex; justify-content: space-between; }
+  .layout[data-playing="true"] .board > * { aspect-ratio: 1; }
+}
+
+.board[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.board[data-columns="5"] { grid-template-columns: repeat(5, minmax(0, 1fr)); }

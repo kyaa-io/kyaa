@@ -38,7 +38,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-it("plays all three seeded boards, reveals a miss, pauses and submits exactly one result", async () => {
+it("plays all five seeded boards, reveals a miss, pauses and submits exactly one result", async () => {
   const requests: Record<string, unknown>[] = [];
   const lobby = {
     sound: false,
@@ -74,8 +74,9 @@ it("plays all three seeded boards, reveals a miss, pauses and submits exactly on
     now += ((ticks + 0.01) * 1000) / FPS;
     act(() => frame?.(now));
   }
+  let currentStage = 1;
   function tap(i: number) {
-    const cell = i < 4 ? i + 1 : i + 2;
+    const cell = currentStage === 1 && i >= 4 ? i + 2 : i + 1;
     fireEvent.click(
       screen.getByRole("button", {
         name: new RegExp("^" + copy.card + " " + cell + " "),
@@ -88,13 +89,15 @@ it("plays all three seeded boards, reveals a miss, pauses and submits exactly on
   const choose = screen.getByRole("button", { name: copy.elina });
   await waitFor(() => expect(choose).toBeEnabled());
   fireEvent.click(choose);
+  fireEvent.click(screen.getByRole("button", {name: copy.elina + " · " + copy.start}));
   await screen.findByRole("button", { name: copy.pause });
   fireEvent.click(screen.getByRole("button", { name: copy.pause }));
   expect(
     screen.queryByRole("button", { name: new RegExp("^" + copy.card) }),
   ).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: copy.continuePlay }));
-  for (let stage = 1; stage <= 3; stage++) {
+  for (let stage = 1; stage <= 5; stage++) {
+    currentStage = stage;
     const deck = board(12, "match", stage);
     if (stage === 1) {
       tap(0);
@@ -104,12 +107,15 @@ it("plays all three seeded boards, reveals a miss, pauses and submits exactly on
       ).toHaveLength(2);
       advance(40);
     }
-    for (let photo = 0; photo < 4; photo++) {
+    for (let photo = 0; photo < deck.length / 2; photo++) {
       const indexes = deck.flatMap((n, i) => (n === photo ? [i] : []));
       tap(indexes[0]);
       tap(indexes[1]);
     }
-    if (stage < 3) advance(40);
+    if (stage < 5) {
+      fireEvent.click(screen.getByRole("button", { name: copy.round + " " + (stage+1) + " · " + copy.start }));
+      advance(1);
+    }
   }
   await screen.findByRole("button", { name: copy.share });
   expect(requests.filter((r) => r.action === "finish")).toHaveLength(1);
@@ -136,6 +142,7 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
   const choice = screen.getByRole("button", { name: copy.changha });
   await waitFor(() => expect(choice).toBeEnabled());
   fireEvent.click(choice);
+  fireEvent.click(screen.getByRole("button", {name: copy.changha + " · " + copy.start}));
   expect(requests.filter((r) => r.action === "start")).toHaveLength(0);
   const extra = await screen.findByRole("button", {
     name: copy.extraPlay + " · 10P",

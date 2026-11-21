@@ -4,19 +4,21 @@ import { chemiEnabled } from "@/features/chemi/domain/availability";
 type MatchPhotos = {
   portrait: string;
   scene: string;
-  cards: readonly [string, string, string, string];
+  cards: readonly string[];
 };
 
 const root = "/images/celebrities";
 const catalog = {
   changha: {
     portrait: `${root}/changha/portrait-20261021.webp`,
-    scene: `${root}/changha/hero-desktop-20261021.webp`,
+    scene: `${root}/changha/hero-editorial-20260911.webp`,
     cards: [
       `${root}/changha/profile-autumn-20261113.webp`,
       `${root}/changha/hero-editorial-20260911.webp`,
       `${root}/changha/portrait-20261021.webp`,
       `${root}/changha/calendar-20261021.webp`,
+      `${root}/changha/gggi-20261030.jpg`,
+      `${root}/changha/hero-desktop-20261021.webp`,
     ],
   },
   elina: {
@@ -37,6 +39,7 @@ const catalog = {
       `${root}/yuna/hero-beach.jpg`,
       "/api/content-assets/857c6367-6f97-40ff-ac11-b14cc2fb4e6e",
       "/images/calendar/yuna-portrait.jpg",
+      `${root}/yuna/hero-editorial-portrait-20260911.webp`,
     ],
   },
 } as const satisfies Record<"changha" | "elina" | "yuna", MatchPhotos>;
