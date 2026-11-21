@@ -2,6 +2,8 @@
 
 /**
  * 케미 질문하기(사주·운세·별자리·타로 결과에서 진입). 주제 고르기 → 질문 쓰기 → 최애 답 → 이어 묻기 1번.
+ * 화면 전체가 장면이다: 최애 그림(가로 화면은 반복 영상)이 배경을 채우고, 아래 대화 상자에 최애의 말이 한 줄씩 나온다.
+ * 최애가 말을 마친 뒤에 선택지가 나타나고, 답은 한 쪽씩 넘긴다(기획 03-6 07).
  * 남은 질문 수·차감·한도는 서버(/api/chemi/ask)가 정하고, 이 화면은 받은 값만 그린다.
  * 유료 구매 자리는 결제 수단이 붙기 전이라 두지 않는다.
  */
@@ -16,6 +18,7 @@ import {
   BriefcaseBusiness,
   CalendarDays,
   Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
@@ -38,8 +41,10 @@ import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
-import { askArt, askExamples, askLines, askName, askVoice, ASK_TOPICS, type AskCharacter, type AskContent, type AskTopic } from "./lines";
+import { askArt, askExamples, askLines, askLoop, askName, askSubject, askVoice, ASK_TOPICS, type AskCharacter, type AskContent, type AskTopic } from "./lines";
 import { askBack, askGo, type AskLocation } from "./location";
+import { SceneBackdrop } from "./scene-backdrop";
+import { canType, TypedLine } from "./typed-line";
 import styles from "./ask.module.css";
 
 type Thread = {
@@ -92,6 +97,12 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const [sheet, setSheet] = useState<"history" | "share" | null>(null);
   const [busy, setBusy] = useState<"remind" | "share" | null>(null);
   const [thanked, setThanked] = useState(false);
+  // 방금 받은 답(질문 번호, 이어 물은 답이면 :follow)만 글자가 하나씩 나온다. 지난 질문을 다시 열면 바로 보인다.
+  const [fresh, setFresh] = useState<string | null>(null);
+  // 답의 몇 번째 쪽을 보고 있는지. 질문이 바뀌면 처음으로 돌아간다.
+  const [page, setPage] = useState({ of: "", index: 0 });
+  // 최애가 말을 마친 줄. 그 줄의 선택지는 이때부터 보인다.
+  const [said, setSaid] = useState("");
   const field = useRef<HTMLInputElement>(null);
   const panelBox = useRef<HTMLDivElement>(null);
 
@@ -165,9 +176,12 @@ export function AskScene({ locale, content, character, readingId, at }: {
           threadId: next.threadId, character, content, readingId, topic: null, question: next.question, status: "blocked",
           klass: body.blocked.klass, answer: body.blocked.answer, followupQuestion: null, followupAnswer: null, date: kstToday(),
         });
+        setFresh(next.threadId);
         return askGo({ step: "answer", thread: next.threadId }, "replace");
       }
       if (body.thread?.status === "blocked") setBlocked(body.thread);
+      setFresh(next.followOf ? `${next.followOf}:follow` : next.threadId);
+      setPage({ of: "", index: 0 });
       askGo({ step: "answer", thread: next.followOf ?? next.threadId }, next.followOf ? "replace" : "push");
     } catch {
       setDraft({ ...next, failed: true });
@@ -231,6 +245,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const open = (thread: Thread) => {
     setSheet(null);
     setDraft(null);
+    setFresh(null);
     askGo({ step: "answer", thread: thread.threadId });
   };
   const again = () => {
@@ -260,17 +275,40 @@ export function AskScene({ locale, content, character, readingId, at }: {
       {bonus.pass ? <FanTag tone="fan">+1</FanTag> : null}
     </FanAction>
   );
-  const speak = (body: React.ReactNode, meta?: string) => (
+  // 지금 장면: 단계·질문이 바뀌면 대화 상자가 새로 등장한다.
+  const view = failed
+    ? "failed"
+    : !state
+      ? "loading"
+      : draft
+        ? `draft:${draft.threadId}:${draft.failed}`
+        : state.pausedUntil
+          ? "paused"
+          : shown && (at.step === "answer" || at.step === "follow")
+            ? `${at.step}:${shown.threadId}`
+            : empty
+              ? "empty"
+              : at.step === "write"
+                ? `write:${at.topic}`
+                : "topic";
+  const speak = (body: React.ReactNode, meta?: React.ReactNode) => (
     <div className={styles.speak}>
       <img className={styles.face} src={art.face} alt="" />
       <div className={styles.speakBody}>
         <p className={styles.who}>
           <FanText role="item">{name}</FanText>
-          {meta ? <FanText role="meta">{meta}</FanText> : null}
+          {typeof meta === "string" ? <FanText role="meta">{meta}</FanText> : meta}
         </p>
         {body}
       </div>
     </div>
+  );
+  /** 최애의 한 줄. typing 이면 글자가 하나씩 나오고, 다 나오면 이 줄의 선택지가 보인다. */
+  const lineKey = (body: string) => `${view}|${body}`;
+  /** 그 줄을 다 말했는지: 글자가 하나씩 나오는 줄이 아니면 처음부터 다 말한 것이다. */
+  const saidAll = (body: string, typing: boolean) => !typing || !canType() || said === lineKey(body);
+  const line = (body: string, typing: boolean) => (
+    <TypedLine key={lineKey(body)} text={body} typing={typing && said !== lineKey(body)} onDone={() => setSaid(lineKey(body))} />
   );
   const mine = (question: string, tag: AskTopic | null) => (
     <div className={styles.mineRow}>
@@ -278,7 +316,6 @@ export function AskScene({ locale, content, character, readingId, at }: {
       <FanText as="p" role="body" className={styles.mine}>{question}</FanText>
     </div>
   );
-  const paragraphs = (answer: string) => answer.split("\n").map((line) => <FanText as="p" role="body" key={line}>{line}</FanText>);
   const composer = (
     <form className={styles.composer} onSubmit={submit}>
       <input
@@ -301,6 +338,8 @@ export function AskScene({ locale, content, character, readingId, at }: {
   // 화면의 주 버튼은 하나: 상태마다 내용만 바꿔 한 자리에 그린다.
   let main: { label: string; onClick: () => void; icon?: typeof Mail; tag?: string; loading?: boolean } | null = null;
   let below: React.ReactNode = null;
+  // 최애가 말을 마쳐야 선택지가 보인다. 자리는 미리 잡아 두어 대화 상자가 밀리지 않는다.
+  let spoken = true;
   if (failed)
     panel = (
       <section className={styles.board}>
@@ -325,10 +364,14 @@ export function AskScene({ locale, content, character, readingId, at }: {
                 <FanText role="body">{text("askError")}</FanText>
               </p>
             ) : (
-              <span className={styles.waiting} role="status" aria-label={text("askWriting", { name })}>
-                <FanSkeleton width="100%" />
-                <FanSkeleton width="60%" />
-              </span>
+              <>
+                {line(lines.think(askSubject[content]), true)}
+                <span className={styles.dots} role="status" aria-label={text("askWriting", { name })}>
+                  <i />
+                  <i />
+                  <i />
+                </span>
+              </>
             ),
           )}
         </section>
@@ -348,27 +391,60 @@ export function AskScene({ locale, content, character, readingId, at }: {
       </section>
     );
   else if (shown && at.step === "answer") {
+    // 답은 한 쪽에 한 줄씩. 이어 물은 답이 있으면 그 질문과 답이 뒤에 이어진다.
+    const guarded = shown.status === "blocked";
+    const beats = [
+      ...shown.answer.split("\n").map((body) => ({ question: shown.question, tag: guarded ? null : shown.topic, body, key: shown.threadId })),
+      ...(shown.followupQuestion && shown.followupAnswer
+        ? shown.followupAnswer.split("\n").map((body) => ({ question: shown.followupQuestion ?? "", tag: null, body, key: `${shown.threadId}:follow` }))
+        : []),
+    ];
+    const start = fresh === `${shown.threadId}:follow` ? Math.max(0, beats.findIndex((item) => item.key === fresh)) : 0;
+    const index = Math.min(page.of === view ? page.index : start, beats.length - 1);
+    const beat = beats[index];
+    const last = index === beats.length - 1;
+    const typing = fresh === beat.key;
+    const settled = saidAll(beat.body, typing);
+    const forward = () => {
+      if (!settled) setSaid(lineKey(beat.body));
+      else if (!last) setPage({ of: view, index: index + 1 });
+    };
+    // 몇 쪽째인지는 이름 줄 오른쪽에: 다음 쪽이 있으면 누르는 버튼, 마지막 쪽이면 글자만.
+    const pager =
+      beats.length === 1 ? null : last ? (
+        <FanText role="meta">{`${index + 1}/${beats.length}`}</FanText>
+      ) : (
+        <FanAction
+          variant="text"
+          size="sm"
+          className={styles.pager}
+          ariaLabel={`${text("next")} ${index + 1}/${beats.length}`}
+          trailingIcon={<FanIcon icon={ChevronDown} size={16} />}
+          onClick={(event) => {
+            event.stopPropagation();
+            forward();
+          }}
+        >
+          {`${index + 1}/${beats.length}`}
+        </FanAction>
+      );
     panel = (
       <>
-        <section className={`${styles.board} ${styles.thread}`} aria-live="polite">
-          {mine(shown.question, shown.status === "blocked" ? null : shown.topic)}
-          {speak(paragraphs(shown.answer), shown.status === "blocked" ? text("askKept") : undefined)}
+        <section className={`${styles.board} ${styles.turn}`} aria-live="polite" onClick={forward}>
+          {mine(beat.question, beat.tag)}
+          {speak(line(beat.body, typing), guarded ? text("askKept") : pager)}
           {shown.klass === "crisis" ? (
             <p className={styles.sys}>
               <FanIcon icon={CircleAlert} />
               <FanText role="item">{text("askCrisis")}</FanText>
             </p>
           ) : null}
-          {shown.followupQuestion && shown.followupAnswer ? (
-            <>
-              {mine(shown.followupQuestion, null)}
-              {speak(paragraphs(shown.followupAnswer))}
-            </>
-          ) : null}
+          {guarded && pager ? <div className={styles.pagerRow}>{pager}</div> : null}
         </section>
       </>
     );
-    if (shown.status === "blocked") main = { label: text("askOtherAfterGuard"), onClick: again };
+    spoken = last && settled;
+    if (guarded) main = { label: text("askOtherAfterGuard"), onClick: again };
     else if (shown.followupAnswer) {
       main = { label: text("askOther"), onClick: again };
       below = <div className={styles.row} data-single="">{shareAction}</div>;
@@ -386,7 +462,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
   else if (shown && at.step === "follow")
     panel = (
       <>
-        <section className={styles.board} aria-live="polite">{speak(<FanText as="p" role="body">{lines.follow}</FanText>, shown.topic ? text(topicKey[shown.topic]) : undefined)}</section>
+        <section className={styles.board} aria-live="polite">{speak(line(lines.follow, true), shown.topic ? text(topicKey[shown.topic]) : undefined)}</section>
         {composer}
       </>
     );
@@ -439,8 +515,10 @@ export function AskScene({ locale, content, character, readingId, at }: {
   else if (at.step === "write")
     panel = (
       <>
-        <section className={styles.board} aria-live="polite">{speak(<FanText as="p" role="body">{lines.reask[at.topic]}</FanText>, text(topicKey[at.topic]))}</section>
-        <div className={styles.examples} role="group" aria-label={text("askExamples")}>
+        <section className={styles.board} aria-live="polite" onClick={() => setSaid(lineKey(lines.reask[at.topic]))}>
+          {speak(line(lines.reask[at.topic], true), text(topicKey[at.topic]))}
+        </section>
+        <div className={`${styles.examples} ${styles.reveal}`} data-shown={saidAll(lines.reask[at.topic], true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
           {askExamples(at.topic, character).map((example) => (
             <FanAction
               key={example}
@@ -459,23 +537,33 @@ export function AskScene({ locale, content, character, readingId, at }: {
         {composer}
       </>
     );
-  else
+  else {
+    // 같은 날 다시 오면 인사를 줄이고 선택지를 바로 보인다(기획 03-3 18). 이어 묻기가 남은 오늘 질문이 있으면 그 답으로 돌아가는 길이 주 버튼이다.
+    const returning = todays.length > 0 && !thanked;
+    const greeting = thanked ? lines.shared : returning ? lines.again : lines.topic;
+    const unfinished = todays.find((item) => item.status === "answered" && !item.followupAnswer);
+    spoken = saidAll(greeting, !returning);
     panel = (
       <>
-        <div className={styles.topics} role="group" aria-label={text("askTopics")}>
+        <div className={`${styles.topics} ${styles.reveal}`} data-shown={spoken ? "" : undefined} role="group" aria-label={text("askTopics")}>
           {ASK_TOPICS.map((item) => (
             <FanAction key={item} size="sm" className={styles.glass} leadingIcon={<FanIcon icon={topicIcon[item]} />} onClick={() => askGo({ step: "write", topic: item })}>
               {text(topicKey[item])}
             </FanAction>
           ))}
         </div>
-        <section className={styles.board} aria-live="polite">{speak(<FanText as="p" role="body">{thanked ? lines.shared : lines.topic}</FanText>)}</section>
+        <section className={styles.board} aria-live="polite" onClick={() => setSaid(lineKey(greeting))}>{speak(line(greeting, !returning))}</section>
       </>
     );
+    if (unfinished) main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => open(unfinished) };
+  }
 
+  // 장면의 거리: 최애가 듣거나 답할 때 그림이 얼굴 쪽으로 다가간다.
+  const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? "speak" : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
-    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step}>
+    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood}>
+      <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(content, character)} alt={name} />
       <div className={styles.top}>
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />
@@ -491,15 +579,11 @@ export function AskScene({ locale, content, character, readingId, at }: {
           <FanIcon icon={History} />
         </FanIconButton>
       </div>
-      <div className={styles.stage}>
-        <picture className={styles.art}>
-          <source media="(min-width: 64rem)" srcSet={art.wide} />
-          <img src={art.tall} alt={name} />
-        </picture>
-        <div className={styles.panel} ref={panelBox}>
+      <div className={styles.panel} ref={panelBox}>
+        <div className={styles.scene} key={view}>
           {panel}
           {main ? (
-            <div className={styles.actions}>
+            <div className={`${styles.actions} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
               <FanAction
                 variant="primary"
                 className={styles.main}

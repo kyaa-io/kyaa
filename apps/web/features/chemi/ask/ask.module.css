@@ -1,13 +1,20 @@
 /* 케미 질문하기 장면. 글자 크기·굵기는 FanText·FanAction·FanTag 역할이 정하고, 이 파일은 배치·면만 정한다.
- * 타로 뽑기 장면과 같은 몰입 화면이다: 위 줄(뒤로·남은 질문·지난 질문) 아래로 장면 그림이 화면 끝까지 차고, 대화판이 그림 아래쪽에 놓인다. */
+ * 화면 전체(100dvh)가 장면이다: 최애 그림이 배경을 채우고, 위에는 뒤로·남은 질문·지난 질문만, 아래에는 대화 상자와 선택지가 놓인다. */
 .root {
   /* 그림 위에 놓는 면: 흐림 없이 흰 면 88%(DESIGN §5 backdrop-filter 0) */
   --ask-glass: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  /* 선택지가 차례로 나타나는 간격(DESIGN §9 목록 시차 90ms) */
+  --ask-stagger: calc(var(--motion-fast) * 0.6);
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-bottom-nav);
+  isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  min-height: calc(100svh - var(--fan-header-height, var(--space-16)) - var(--space-4));
-  padding-block: var(--space-2);
+  justify-content: space-between;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--color-accent-soft);
 }
 :global(main):has(.root) > :global([data-chemi-list-link]) {
   display: none;
@@ -16,10 +23,54 @@
   margin: 0;
 }
 
+/* 배경: 그림이 먼저, 반복 영상은 재생이 시작되면 그 위에 나타난다. 최애가 듣거나 답할 때 얼굴 쪽으로 다가간다. */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.art,
+.loop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 22%;
+  transition: transform calc(var(--motion-slow) * 3) var(--motion-easing);
+}
+.art img,
+.loop {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 14%;
+}
+.loop {
+  opacity: 0;
+  transition:
+    opacity var(--motion-slow) var(--motion-easing),
+    transform calc(var(--motion-slow) * 3) var(--motion-easing);
+}
+.loop[data-playing] {
+  opacity: 1;
+}
+.root[data-mood="listen"] :is(.art, .loop) {
+  transform: scale(1.04);
+}
+.root[data-mood="think"] :is(.art, .loop) {
+  transform: scale(1.08);
+}
+.root[data-mood="speak"] :is(.art, .loop) {
+  transform: scale(1.12);
+}
+
 .top {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: calc(var(--space-3) + env(safe-area-inset-top)) var(--space-4) 0;
 }
 .root .round {
   border: 1px solid var(--color-control-line);
@@ -44,35 +95,42 @@
   margin-inline-start: auto;
 }
 
-.stage {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: calc(var(--space-16) * 7);
-  overflow: hidden;
-  border-radius: var(--radius-card);
-  background: var(--color-accent-soft);
-}
-.art {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-}
-.art img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 14%;
-}
-
 .panel {
+  padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
+}
+/* 단계나 질문이 바뀌면 대화 상자와 선택지가 아래에서 올라오며 나타난다. */
+.scene {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4);
+  animation: ask-rise var(--motion-slow) var(--motion-easing) both;
+}
+@keyframes ask-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2));
+  }
+}
+/* 선택지는 최애가 말을 마친 뒤에 하나씩 나타난다. 자리는 미리 잡혀 있어 대화 상자가 밀리지 않는다. */
+.reveal:not([data-shown]) {
+  visibility: hidden;
+}
+.reveal[data-shown] > * {
+  animation: ask-rise var(--motion-slow) var(--motion-easing) both;
+}
+.reveal[data-shown] > :nth-child(2) {
+  animation-delay: var(--ask-stagger);
+}
+.reveal[data-shown] > :nth-child(3) {
+  animation-delay: calc(var(--ask-stagger) * 2);
+}
+.reveal[data-shown] > :nth-child(4) {
+  animation-delay: calc(var(--ask-stagger) * 3);
+}
+.reveal[data-shown] > :nth-child(5) {
+  animation-delay: calc(var(--ask-stagger) * 4);
+}
+.reveal[data-shown] > :nth-child(6) {
+  animation-delay: calc(var(--ask-stagger) * 5);
 }
 .board {
   display: grid;
@@ -81,11 +139,69 @@
   border-radius: var(--radius-card);
   background: var(--ask-glass);
 }
-/* 답이 길면 대화판은 화면 절반까지만 크고 안에서 넘긴다. 행동 버튼은 늘 보인다. */
+/* 오늘 물어본 질문이 길어지면 대화판은 화면 절반까지만 크고 안에서 넘긴다. 행동 버튼은 늘 보인다. */
 .thread {
   max-height: 50svh;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+/* 답은 한 쪽에 한 줄: 대화 상자를 누르면 다음 쪽으로 넘어간다. */
+.turn {
+  cursor: pointer;
+}
+.root .pager {
+  color: var(--color-ink);
+}
+.pagerRow {
+  display: flex;
+  justify-content: flex-end;
+}
+/* 아직 나오지 않은 글자: 자리만 차지한다. */
+.unsaid {
+  opacity: 0;
+}
+/* 답을 기다리는 점 세 개 */
+.dots {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding-block: var(--space-1);
+}
+.dots i {
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: ask-dot calc(var(--motion-slow) * 6) var(--motion-easing) infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: var(--motion-slow);
+}
+.dots i:nth-child(3) {
+  animation-delay: calc(var(--motion-slow) * 2);
+}
+@keyframes ask-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .art,
+  .loop {
+    transition: none;
+  }
+  .root[data-mood] :is(.art, .loop) {
+    transform: none;
+  }
+  .scene,
+  .reveal[data-shown] > *,
+  .dots i {
+    animation: none;
+  }
 }
 
 .speak {
@@ -105,7 +221,7 @@
 }
 .who {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
 }
@@ -127,12 +243,6 @@
   width: var(--space-16);
   height: var(--space-16);
 }
-.waiting {
-  display: grid;
-  gap: var(--space-2);
-  padding-block: var(--space-1);
-}
-
 .mineRow {
   display: flex;
   align-items: center;
@@ -161,6 +271,8 @@
 .topics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* 글자가 두 줄이 되는 칩이 있어도 두 줄의 높이는 같다 */
+  grid-auto-rows: 1fr;
   gap: var(--space-2);
 }
 .topics > * {
@@ -376,17 +488,24 @@
 }
 
 @media (width >= 64rem) {
-  .root {
-    gap: var(--space-4);
-    padding-bottom: var(--space-8);
+  .top {
+    padding: var(--space-6) var(--space-8) 0;
   }
-  .art img {
+  .art img,
+  .loop {
     object-position: center 26%;
   }
+  .art,
+  .loop {
+    transform-origin: 50% 30%;
+  }
+  /* 대화 상자와 선택지는 가운데 640px 한 축(기획 03-3 01 PC) */
   .panel {
     box-sizing: border-box;
-    width: calc(var(--space-16) * 7 + var(--space-6));
-    padding: var(--space-8);
+    width: calc(var(--space-16) * 10);
+    max-width: 100%;
+    margin-inline: auto;
+    padding: 0 0 var(--space-8);
   }
   /* 대화판 폭이 넉넉해 주제 여섯 개를 세 칸 두 줄로 맞춘다 */
   .topics {
