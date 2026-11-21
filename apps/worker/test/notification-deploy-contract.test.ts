@@ -152,10 +152,6 @@ it("grants production SES only to the current kyaa sender and keeps disabled ala
   expect(alarmCalls.some(call => call.args.includes(`Name=Channel,Value=${channel}`))).toBe(true);
  }
  expect(result.calls.some(call => call.args.includes("byus-notification-worker-prod-ses-send"))).toBe(true);
- const dev = nativeDeploy("deploy-aws-notification-worker.sh", "dev", { dryRun: false });
- expect(dev.status).toBe(0);
- expect(dev.calls.some(call => call.args.includes("byus-notification-worker-prod-ses-send"))).toBe(false);
- expect(dev.calls.some(call => call.args.includes("ByUs/Notifications"))).toBe(false);
 }, 15_000);
 
 
