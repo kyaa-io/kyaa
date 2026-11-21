@@ -11,12 +11,13 @@ const evidence: FortuneEvidence = {
 const count = (text: string) => text.split(/(?<=[.!?])\s+/).length;
 
 describe("운세 근거와 분야별 풀이", () => {
-  it("근거 줄은 일진·십신·일지와의 관계·도움 기운을 용어와 쉬운 풀이로 적는다", () => {
+  it("근거 줄은 일진·십신·일지와의 관계·12운성·도움 기운을 용어와 쉬운 풀이로 적는다", () => {
     const rows = fortuneBasis(evidence);
-    expect(rows.map((row) => row.term)).toEqual(["일진", "일지와 일진", "도움 기운", "세운", "계산 기준"]);
+    expect(rows.map((row) => row.term)).toEqual(["일진", "일지와 일진", "12운성", "도움 기운", "세운", "계산 기준"]);
     expect(rows[0].value).toBe("경자일 · 편재");
     expect(rows[1].value).toBe("충");
-    expect(rows[2].value).toBe("나무");
+    expect(rows[2]).toEqual({ term: "12운성", value: "태", plain: "조용히 품는 자리예요" });
+    expect(rows[3].value).toBe("나무");
     expect(rows.every((row) => row.plain.length > 8)).toBe(true);
   });
   it("표에 없는 관계 이름은 합·충 없음으로 읽는다", () => {

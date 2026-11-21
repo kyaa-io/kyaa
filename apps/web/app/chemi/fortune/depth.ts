@@ -1,10 +1,10 @@
 /**
- * 오늘의 운세 근거 줄과 분야별 풀이. 서버가 계산해 준 값(일진·십신·일지와의 관계·도움 기운)만 쓰고,
+ * 오늘의 운세 근거 줄과 분야별 풀이. 서버가 계산해 준 값(일진·십신·일지와의 관계·12운성·도움 기운)만 쓰고,
  * 용어 옆에 쉬운 풀이를 붙인다. 같은 풀이면 같은 문장이 나온다. 풀이에 없는 날짜·사람·금액은 만들지 않는다.
  */
 import type { TenGod } from "../saju/chart";
 import { tenGodPlain, tenGodShort } from "../saju/terms";
-import { band, fieldNotes, flowNotes } from "./result-copy";
+import { band, fieldNotes, flowNotes, stageNotes } from "./result-copy";
 
 export type FortuneEvidence = {
   dayPillar: string;
@@ -35,13 +35,15 @@ const relationOf = (name: string) => (Object.hasOwn(relationPlain, name) ? name 
 const usefulName: Record<string, string> = { 목: "나무", 화: "불", 토: "흙", 금: "쇠", 수: "물" };
 const isTenGod = (name: string): name is TenGod => Object.hasOwn(tenGodPlain, name);
 
-/** '왜 이 점수일까'에 펼쳐 보이는 근거 줄. 12운성·12신살은 바로 위 구역에 따로 있어 여기서 되풀이하지 않는다. */
+/** '왜 이 점수일까'에 펼쳐 보이는 근거 줄(기획 04-3 07: 일진·십신·12운성·합충·용신, 용어 옆에 쉬운 말). 12운성의 긴 풀이는 바로 위 구역에 있어 이름과 자리만 적는다. */
 export function fortuneBasis(evidence: FortuneEvidence): BasisRow[] {
   const relation = relationOf(evidence.relation);
+  const stage = stageNotes[evidence.stage];
   const rows: BasisRow[] = [];
   if (isTenGod(evidence.tenGod))
     rows.push({ term: "일진", value: `${evidence.dayPillar}일 · ${evidence.tenGod}`, plain: tenGodPlain[evidence.tenGod] });
   rows.push({ term: "일지와 일진", value: relation === "없음" ? "합·충 없음" : relation, plain: relationPlain[relation] });
+  if (stage) rows.push({ term: "12운성", value: evidence.stage, plain: `${stage[0]}예요` });
   rows.push({
     term: "도움 기운",
     value: usefulName[evidence.useful] ?? evidence.useful,
