@@ -39,31 +39,41 @@
   transform-origin: 50% 22%;
   transition: transform calc(var(--motion-slow) * 3) var(--motion-easing);
 }
-.art img,
-.loop {
+.art img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center 14%;
 }
+/* 반복 영상은 가로 화면에서만. 좁은 화면에서는 자리가 없어 재생도 내려받기도 시작하지 않는다. */
 .loop {
-  opacity: 0;
-  transition:
-    opacity var(--motion-slow) var(--motion-easing),
-    transform calc(var(--motion-slow) * 3) var(--motion-easing);
+  display: none;
 }
-.loop[data-playing] {
-  opacity: 1;
-}
+/* 다가가기는 원화 해상도가 남는 만큼만(--ask-room, scene-backdrop.tsx 가 잰다). 남는 것이 없으면 1배 그대로다. */
 .root[data-mood="listen"] :is(.art, .loop) {
-  transform: scale(1.04);
+  transform: scale(min(1.04, var(--ask-room, 1)));
 }
 .root[data-mood="think"] :is(.art, .loop) {
-  transform: scale(1.08);
+  transform: scale(min(1.08, var(--ask-room, 1)));
 }
-.root[data-mood="speak"] :is(.art, .loop) {
-  transform: scale(1.12);
+.root:is([data-mood="speak"], [data-mood="close"]) :is(.art, .loop) {
+  transform: scale(min(1.12, var(--ask-room, 1)));
+}
+/* 장면 조명: 그림은 그대로 두고 그 위 면의 밝기만 바꾼다. 답을 기다릴 때 어두워졌다가 답이 나오면 밝아지고, 오늘 마지막 질문을 마치면 저녁처럼 조금 어두워진다. */
+.light {
+  position: absolute;
+  inset: 0;
+  background: var(--color-ink);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity calc(var(--motion-slow) * 3) var(--motion-easing);
+}
+.root[data-mood="think"] .light {
+  opacity: 0.28;
+}
+.root[data-mood="close"] .light {
+  opacity: 0.16;
 }
 
 .top {
@@ -89,7 +99,7 @@
   background: var(--color-surface);
 }
 .count svg {
-  color: var(--color-accent);
+  color: var(--color-ink);
 }
 .top:not(:has(.count)) .history {
   margin-inline-start: auto;
@@ -98,10 +108,14 @@
 .panel {
   padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom));
 }
-/* 단계나 질문이 바뀌면 대화 상자와 선택지가 아래에서 올라오며 나타난다. */
-.scene {
+/* 그림 위에 놓는 면은 대화 상자 하나다. 최애의 말·선택지·입력칸·버튼이 모두 이 안에 있다.
+ * 단계나 질문이 바뀌면 아래에서 올라오며 나타난다. */
+.board {
   display: grid;
   gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--ask-glass);
   animation: ask-rise var(--motion-slow) var(--motion-easing) both;
 }
 @keyframes ask-rise {
@@ -132,12 +146,9 @@
 .reveal[data-shown] > :nth-child(6) {
   animation-delay: calc(var(--ask-stagger) * 5);
 }
-.board {
+.talk {
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-4);
-  border-radius: var(--radius-card);
-  background: var(--ask-glass);
 }
 /* 오늘 물어본 질문이 길어지면 대화판은 화면 절반까지만 크고 안에서 넘긴다. 행동 버튼은 늘 보인다. */
 .thread {
@@ -170,7 +181,7 @@
   width: var(--space-2);
   height: var(--space-2);
   border-radius: 50%;
-  background: var(--color-accent);
+  background: var(--color-muted);
   animation: ask-dot calc(var(--motion-slow) * 6) var(--motion-easing) infinite;
 }
 .dots i:nth-child(2) {
@@ -191,13 +202,14 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .art,
-  .loop {
+  .loop,
+  .light {
     transition: none;
   }
   .root[data-mood] :is(.art, .loop) {
     transform: none;
   }
-  .scene,
+  .board,
   .reveal[data-shown] > *,
   .dots i {
     animation: none;
@@ -252,9 +264,9 @@
 .mine {
   max-width: 80%;
   padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
-  background: var(--color-accent-soft);
-  color: var(--color-accent-ink);
+  background: var(--color-surface);
   word-break: keep-all;
 }
 /* 앱이 알리는 한 줄(한도·오류·멈춤·상담 번호). 최애의 말이 아니다. */
@@ -265,43 +277,49 @@
 }
 .sys svg {
   flex: none;
-  color: var(--color-accent-ink);
 }
 
+/* 선택지는 대화 상자 안에서 최애의 말 아래에 선 하나로 나뉜다. 따로 떠 있는 면을 만들지 않는다. */
+.choices {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-line);
+}
 .topics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  /* 글자가 두 줄이 되는 칩이 있어도 두 줄의 높이는 같다 */
+  /* 글자가 두 줄이 되는 칸이 있어도 두 줄의 높이는 같다 */
   grid-auto-rows: 1fr;
-  gap: var(--space-2);
 }
-.topics > * {
+.root .cell {
   min-width: 0;
-  min-height: var(--min-target);
+  padding-inline: var(--space-1);
   white-space: normal;
   overflow-wrap: anywhere;
 }
+/* 예시 질문: 행 + 구분선 */
 .examples {
   display: grid;
-  gap: var(--space-2);
 }
-.root .glass {
-  border-color: transparent;
-  background: var(--ask-glass);
-  white-space: nowrap;
-}
-.root .example {
+.root .line {
   justify-content: flex-start;
-  padding-inline: var(--space-4);
+  width: 100%;
+  padding-inline: 0;
+  border-radius: 0;
   text-align: start;
   white-space: normal;
 }
-.root .example[aria-pressed="true"] {
-  background: var(--color-accent-soft);
-  color: var(--color-accent-ink);
+.root .line + .line {
+  border-top-color: var(--color-line);
 }
-.root .topics svg {
-  color: var(--color-accent-ink);
+/* 답을 들은 뒤 고르는 짧은 반응: 내 말이 놓이는 오른쪽에 흰 칩으로 */
+.replies {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.root .reply {
+  border-color: var(--color-control-line);
 }
 
 .composer {
@@ -364,9 +382,6 @@
   justify-content: center;
   gap: var(--space-1);
   min-height: var(--min-target);
-  border-radius: var(--radius-pill);
-  background: var(--ask-glass);
-  color: var(--color-accent-ink);
 }
 
 /* 오늘 물어본 질문·지난 질문: 행 + 구분선 */
@@ -491,9 +506,11 @@
   .top {
     padding: var(--space-6) var(--space-8) 0;
   }
-  .art img,
-  .loop {
+  .art img {
     object-position: center 26%;
+  }
+  .loop {
+    display: block;
   }
   .art,
   .loop {
@@ -506,11 +523,6 @@
     max-width: 100%;
     margin-inline: auto;
     padding: 0 0 var(--space-8);
-  }
-  /* 대화판 폭이 넉넉해 주제 여섯 개를 세 칸 두 줄로 맞춘다 */
-  .topics {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .speak {
     grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr);

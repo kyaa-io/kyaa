@@ -1,75 +1,52 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import styles from "./ask.module.css";
 
 /**
- * 화면 전체를 채우는 장면 배경. 그림이 먼저 보이고, 반복 영상은 재생이 시작된 뒤에만 그 위에 나타난다.
- * 영상은 가로 화면에서만 쓴다(가로 원화와 같은 구도로 만든 것만 있다). 움직임 줄이기·데이터 절약·느린 망·
- * 메모리 2GB 이하 기기·재생 실패에서는 그림만 남는다. 탭이 가려지면 멈춘다.
+ * 화면 전체를 채우는 장면 배경. 그림이 먼저 보이고, 반복 영상은 재생이 시작된 뒤에만 그 위에 나타난다(`SceneVideo`).
+ * 영상은 가로 화면에서만 쓴다(가로 원화와 같은 구도로 만든 것만 있다).
+ * 최애의 표정 원화가 없어서 장면의 분위기는 그림을 바꾸지 않고 조명 면의 밝기와 다가가는 거리로만 바꾼다.
  */
 export function SceneBackdrop({ tall, wide, loop, alt }: { tall: string; wide: string; loop: string | null; alt: string }) {
-  const video = useRef<HTMLVideoElement>(null);
-  const [allowed, setAllowed] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  const art = useRef<HTMLImageElement>(null);
 
+  // 다가가기는 원화 해상도 안에서만: 원화 한 픽셀이 화면 한 픽셀보다 커지지 않는 배율까지만 허용한다.
+  // 영상은 원화보다 해상도가 낮아서 영상을 쓰는 가로 화면에서는 다가가지 않는다.
   useEffect(() => {
-    if (!loop || typeof matchMedia !== "function") return;
-    const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-    const landscape = matchMedia("(min-width: 64rem)");
-    const device = navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string }; deviceMemory?: number };
-    const update = () =>
-      setAllowed(
-        landscape.matches &&
-          !reduced.matches &&
-          device.connection?.saveData !== true &&
-          !["slow-2g", "2g"].includes(device.connection?.effectiveType ?? "") &&
-          (device.deviceMemory ?? 8) > 2,
-      );
-    update();
-    reduced.addEventListener("change", update);
-    landscape.addEventListener("change", update);
+    const frame = box.current;
+    const image = art.current;
+    if (!frame || !image) return;
+    const measure = () => {
+      if (!image.naturalWidth || !frame.clientWidth) return;
+      const cover = Math.max(frame.clientWidth / image.naturalWidth, frame.clientHeight / image.naturalHeight);
+      const withLoop = Boolean(loop) && matchMedia("(min-width: 64rem)").matches;
+      const room = withLoop ? 1 : Math.max(1, Math.floor(1000 / (cover * devicePixelRatio)) / 1000);
+      frame.style.setProperty("--ask-room", String(room));
+    };
+    measure();
+    image.addEventListener("load", measure);
+    addEventListener("resize", measure);
     return () => {
-      reduced.removeEventListener("change", update);
-      landscape.removeEventListener("change", update);
+      image.removeEventListener("load", measure);
+      removeEventListener("resize", measure);
     };
-  }, [loop]);
+  }, [tall, wide, loop]);
 
-  useEffect(() => {
-    if (!allowed) return;
-    const onVisibility = () => {
-      if (document.hidden) video.current?.pause();
-      else void video.current?.play().catch(() => setAllowed(false));
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
-  }, [allowed]);
-
-  const shown = allowed && loop;
   return (
-    <div className={styles.backdrop}>
+    <div className={styles.backdrop} ref={box}>
       <picture className={styles.art}>
         <source media="(min-width: 64rem)" srcSet={wide} />
-        <img src={tall} alt={alt} />
+        <img ref={art} src={tall} alt={alt} />
       </picture>
-      {shown ? (
-        <video
-          ref={video}
-          className={styles.loop}
-          data-playing={playing ? "" : undefined}
-          src={loop}
-          poster={wide}
-          muted
-          loop
-          autoPlay
-          playsInline
-          preload="metadata"
-          aria-hidden="true"
-          tabIndex={-1}
-          onPlaying={() => setPlaying(true)}
-          onError={() => setAllowed(false)}
-        />
+      {loop ? (
+        <div className={styles.loop}>
+          <SceneVideo src={loop} objectPosition="center 26%" />
+        </div>
       ) : null}
+      <span className={styles.light} aria-hidden="true" />
     </div>
   );
 }
