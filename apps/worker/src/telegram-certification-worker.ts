@@ -294,25 +294,12 @@ function seoulTimestamp(value: string): string {
   }).format(new Date(value));
 }
 
-function rewardText(reward: TelegramCertificationReward): string {
-  const parts: string[] = [];
-  if (reward.scorePoints > 0) parts.push(`활동 점수 ${reward.scorePoints}점`);
-  if (reward.ticketAmount > 0) parts.push(`응모권 ${reward.ticketAmount}장`);
-  if (reward.stampCount > 0) parts.push(`멤버십 스탬프 ${reward.stampCount}개`);
-  return parts.length ? parts.join(" · ") : "추가 보상 없음";
-}
-
 export function renderTelegramCertificationCaption(claim: TelegramCertificationClaim): string {
-  const lines = [
-    "📸 새 인증 검토",
-    `${sanitize(claim.creatorName, 80)} · ${sanitize(claim.missionTitle, 120)}`,
-    ...(claim.membershipPlatform ? [`플랫폼: ${sanitize(claim.membershipPlatform, 64)}`] : []),
-    `신청자: ${sanitize(claim.applicantNickname, 80)}`,
-    `${claim.attemptNumber}번째 제출 · ${seoulTimestamp(claim.submittedAt)}`,
-    `보상: ${rewardText(claim.reward)}`,
-    `메모: ${claim.note ? sanitize(claim.note, 1_500) : "없음"}`,
-  ];
-  return sanitize(lines.join("\n"), CAPTION_LIMIT);
+  const [initial, second] = new Intl.Segmenter("ko", { granularity: "grapheme" })
+    .segment(sanitize(claim.applicantNickname, 80).trim());
+  const nickname = initial && second ? `${initial.segment}***` : "***";
+  const reviewType = claim.membershipPlatform ? "멤버십 인증" : "덕후인증";
+  return `${reviewType} 심사 요청 · ${seoulTimestamp(claim.submittedAt)} · 신청자 ${nickname}`;
 }
 
 export class TelegramDeliveryError extends Error {

@@ -1,3 +1,4 @@
+import { runDevTelegramCertificationOnce } from "./dev-telegram-certification.js";
 import { runCsReceipt } from "./cs-receipt.js";
 import { drainChemiMail } from "./chemi-mail-worker.js";
 import { createWorkerClient } from "./data-client.js";
@@ -130,11 +131,12 @@ export async function runNotificationWorkerOnce(
     runTelegramCsWorkerOnce(env),
     runTelegramCommandWorkerOnce(env),
     runTelegramCertificationWorkerOnce(env),
+    runDevTelegramCertificationOnce(env),
     env.GROUP_INVITATION_EMAIL_MODE === "ses_email" ? getSesClient().then(client=>runGroupInvitationEmailOnce(env,client,sesFeedbackFor(env,client))) : runGroupInvitationEmailOnce(env),
     env.NOTIFICATION_EXTERNAL_MODE === "ses_email" && env.NOTIFICATION_EXTERNAL_ENVIRONMENT === "prod"
       ? getSesClient().then(client => runCsReceipt(env, client, sesFeedbackFor(env, client))) : 0,
   ]);
-  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "groupRaffles", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications", "groupInvitationEmail", "csReceipt"];
+  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "groupRaffles", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications", "devTelegramCertifications", "groupInvitationEmail", "csReceipt"];
   const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";
   const deliveryModes = {
     Email: env.NOTIFICATION_EXTERNAL_MODE,

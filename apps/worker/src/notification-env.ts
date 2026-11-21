@@ -64,6 +64,8 @@ export type NotificationWorkerEnv = Omit<z.infer<typeof schema>, "NOTIFICATION_E
     csToken?: string | undefined;
     csChatId?: string | undefined;
     commandMode: string | undefined;
+    devCertificationToken?: string | undefined;
+    devCertificationChatId?: string | undefined;
     certificationReviewMode: string | undefined;
     token: string | undefined;
     chatId: string | undefined;
@@ -85,6 +87,8 @@ export function parseNotificationEnv(
     telegram: {
       mode: source.TELEGRAM_ALERT_MODE,
       alertToken: source.TELEGRAM_ALERT_BOT_TOKEN,
+      devCertificationToken: source.TELEGRAM_DEV_CERTIFICATION_BOT_TOKEN,
+      devCertificationChatId: source.TELEGRAM_DEV_CERTIFICATION_CHAT_ID,
       csMode: source.TELEGRAM_CS_MODE,
       csToken: source.TELEGRAM_CS_BOT_TOKEN,
       csChatId: source.TELEGRAM_CS_CHAT_ID,
