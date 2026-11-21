@@ -55,7 +55,7 @@ beforeEach(() => {
 describe("certification review workspace integration", () => {
   it.each([
     ["pending", "심사 대기"],
-    ["approved", "승인"],
+    ["approved", "승인 완료"],
   ] as const)("opens a valid %s deep link at the exact submission", async (status, statusLabel) => {
     const requestedId = "123e4567-e89b-42d3-a456-426614174000";
     auth.query = `lang=ko&status=${status}&submission=${requestedId}`;

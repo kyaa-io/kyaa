@@ -150,7 +150,7 @@ describe("separate private participation list", () => {
     participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }));
     render(<ByusDayRsvpManager locale="ko" />); await screen.findByText(participant.name);
     participationFetchMock.mockResolvedValueOnce(Response.json({}, { status: 403 }));
-    fireEvent.click(screen.getByRole("button", { name: "새로고침" }));
+    fireEvent.click(screen.getByRole("button", { name: "참여 명단 새로고침" }));
     await screen.findByText("access:denied"); expect(screen.queryByText(participant.name)).not.toBeInTheDocument();
   });
 });
