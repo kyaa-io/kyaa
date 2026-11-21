@@ -63,7 +63,7 @@ returns jsonb language sql stable security definer set search_path='' as $$
  with page as materialized (select public.read_celebrity_notice_comments(p_slug,p_notice_slug,p_app_user_id,p_before,p_before_id,p_limit,p_locale) r)
  select jsonb_set(r,'{comments}',coalesce((select jsonb_agg(item || jsonb_build_object('editedAt',c.edited_at) order by ord)
  from jsonb_array_elements(r->'comments') with ordinality entries(item,ord)
- join public.celebrity_notice_comments c on c.id=(item->>'id')::uuid),'[]'::jsonb)) from page
+ left join public.celebrity_notice_comments c on c.id=(item->>'id')::uuid),'[]'::jsonb)) from page
 $$;
 revoke all on function public.read_editable_notice_comments(text,text,uuid,timestamptz,uuid,integer,public.content_locale) from public,anon,authenticated;
 grant execute on function public.read_editable_notice_comments(text,text,uuid,timestamptz,uuid,integer,public.content_locale) to service_role;
