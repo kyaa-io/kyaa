@@ -15,6 +15,8 @@ import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { AuthenticatedMedia } from "@/features/content-safety/ui/authenticated-media";
 import { useWaveMediaUpload } from "@/features/content-safety/ui/use-wave-media-upload";
 import detailStyles from "@/features/fan-posts/ui/post-detail.module.css";
+import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/profile-modal";
+import { rankingsText } from "@/features/rankings/ui/rankings-copy";
 import { mediaCopy } from "@/features/group-social/media-preview";
 import { VIDEO_MAX_SECONDS } from "@/server/mobile-media/domain";
 import { GROUP_CHAT_MAX_LENGTH, groupChatSchema, type GroupChat } from "../domain/contracts";
@@ -72,6 +74,7 @@ function AttachmentPreview({ file, state, failed, retryLabel, removeLabel, disab
 export function GroupChatRoom({ pageId, locale, onOnlineCount }: { pageId: string; locale: AppLocale; onOnlineCount?: (count: number) => void }) {
   const t = groupsCopy(locale), c = chatCopy(locale), b = boardCopy(locale), k = groupCommentCopy(locale), m = managementCopy(locale), media = mediaCopy[locale];
   const url = `/api/groups/${pageId}/chat`, { request, ready, ownerKey } = useGroupRequest();
+  const [person, setPerson] = useState<ProfileModalPerson | null>(null);
   const [room, setRoom] = useState<Room>(), [divider, setDivider] = useState<string | null>(), [fresh, setFresh] = useState(false);
   const [draft, setDraft] = useState(""), [pending, setPending] = useState(false), [sendError, setSendError] = useState<"failed" | "limited">(), [tooLong, setTooLong] = useState(false), [version, setVersion] = useState(0);
   const [removing, setRemoving] = useState<string | null>(null), [reporting, setReporting] = useState<{ id: string; reason: string } | null>(null), [actionBusy, setActionBusy] = useState(false);
@@ -191,6 +194,13 @@ export function GroupChatRoom({ pageId, locale, onOnlineCount }: { pageId: strin
       {visible?.failed && <div role="alert" className={styles.failed}><FanText as="p" role="body">{t.error}</FanText>{!visible.restricted && <FanAction onClick={() => setVersion((value) => value + 1)}>{t.retry}</FanAction>}</div>}
       {visible && !visible.failed && !visible.items.length && <p>{roomEntryCopy(locale).empty}</p>}
       {items?.map((item, index) => {
+        const identity = <>
+          <span className={styles.avatar} data-online={item.online || undefined}>
+              <GroupImage locale={locale} src={item.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" className={roomStyles.roomMessageAvatar} width={40} height={40} />
+              {item.online && <span className={styles.onlineDot} role="img" aria-label={c.online} />}
+            </span>
+          <FanText as="strong" role="label">{item.nickname}</FanText>
+        </>;
         const timing = times[index]!;
         const stamp = timing.label && <FanText as="time" role="meta" className={styles.stamp} dateTime={item.createdAt}>{timing.label}</FanText>;
         const readCount = item.mine ? visible?.receipts.get(item.id) ?? 0 : 0;
@@ -198,12 +208,13 @@ export function GroupChatRoom({ pageId, locale, onOnlineCount }: { pageId: strin
           {timing.heading && <div className={styles.dayLine}><FanText role="meta">{timing.heading}</FanText></div>}
           {item.id === divider && <div className={styles.unreadLine} data-unread-line="" role="separator"><FanText role="label">{c.unreadLine}</FanText></div>}
           <div className={`${roomStyles.roomMessage} ${styles.message}`} data-mine={item.mine || undefined} data-artist={item.artist || undefined}>
-            {!item.mine && <span className={styles.avatar} data-online={item.online || undefined}>
-              <GroupImage locale={locale} src={item.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" className={roomStyles.roomMessageAvatar} width={40} height={40} />
-              {item.online && <span className={styles.onlineDot} role="img" aria-label={c.online} />}
-            </span>}
             <div className={roomStyles.roomMessageCopy}>
-              {!item.mine && <div className={styles.byline}><FanText as="strong" role="label">{item.nickname}</FanText>{item.artist && <FanTag tone="artist">{c.creator}</FanTag>}{stamp}</div>}
+              {!item.mine && <div className={styles.byline}>
+                {item.nickname.trim() && !item.artist
+                  ? <FanAction variant="text" className={styles.profile} ariaLabel={`${item.nickname} ${rankingsText(locale, "rkViewProfile")}`} onClick={() => setPerson({ profileId: item.profileId, nickname: item.nickname, avatarUrl: item.avatarUrl ?? null, pageId })}>{identity}</FanAction>
+                  : <span className={styles.identity}>{identity}</span>}
+                {item.artist && <FanTag tone="artist">{c.creator}</FanTag>}{stamp}
+              </div>}
               <div className={styles.bubbleRow}>
                 <div className={styles.bubble}>
                   {item.body && <p>{item.body}</p>}
@@ -230,6 +241,7 @@ export function GroupChatRoom({ pageId, locale, onOnlineCount }: { pageId: strin
       <input className={styles.input} aria-label={roomMessageLabel[locale]} placeholder={roomMessageLabel[locale]} value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={GROUP_CHAT_MAX_LENGTH} disabled={pending} enterKeyHint="send" autoComplete="off" />
       <FanAction type="submit" variant="primary" disabled={pending || (!draft.trim() && !upload) || Boolean(upload && !uploads.ready)}>{sendError ? t.retry : sendLabel[locale]}</FanAction>
     </form>}
+    {person && <ProfileModal person={person} locale={locale} onClose={() => setPerson(null)} />}
     <FanDialog open={removing !== null} onOpenChange={(open) => { if (!open) setRemoving(null); }} alert size="sm" title={c.deleteTitle} closeLabel={fanUiText(locale, "close")} primary={{ label: m.remove, onClick: () => { void remove(); }, loading: actionBusy, variant: "danger" }} secondary={{ label: t.cancel, onClick: () => setRemoving(null) }}>{null}</FanDialog>
     <FanDialog open={reporting !== null} onOpenChange={(open) => { if (!open) setReporting(null); }} size="sm" title={b.report} closeLabel={fanUiText(locale, "close")} primary={{ label: b.report, onClick: () => { void report(); }, loading: actionBusy, disabled: !reporting?.reason.trim() }} secondary={{ label: t.cancel, onClick: () => setReporting(null) }}>
       <label className={detailStyles.commentLabel} htmlFor={`${pageId}-chat-report`}>{b.reason}</label>
