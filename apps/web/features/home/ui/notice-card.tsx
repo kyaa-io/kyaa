@@ -1,3 +1,4 @@
+import { NoticeCounts } from "@/components/fan-ui/notice-counts";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { ReactNode } from "react";
@@ -24,7 +25,9 @@ export function NoticeCard({ locale, items, headingId, title, headAction, footer
         <Link className={styles.link} href={`${item.linkHref ?? `/notices/${item.slug}`}?locale=${locale}` as Route}>
           <span className={styles.category}>{homeNoticeCategoryLabels[locale][item.category]}</span>
           <span className={styles.title}>{item.title}</span>
-          <time className={styles.date} dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>
+          <span className={styles.date}><time dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>
+            <NoticeCounts locale={locale} views={item.viewCount} comments={item.commentCount} likes={item.likeCount} />
+          </span>
         </Link>
       </li>)}
     </ul>}

@@ -10,6 +10,9 @@ export const homeNoticeSummarySchema = z.object({
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   category: z.enum(homeNoticeCategories),
   pinned: z.boolean(),
+  viewCount: z.number().int().nonnegative().optional(),
+  likeCount: z.number().int().nonnegative().optional(),
+  commentCount: z.number().int().nonnegative().optional(),
   publishedAt: z.string().min(1),
   title: z.string().min(1).max(160),
   /** The linked fan page (creator handle) while it is still published and listed; otherwise the row opens the notice detail. */

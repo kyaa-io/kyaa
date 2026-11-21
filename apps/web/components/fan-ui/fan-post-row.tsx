@@ -9,6 +9,7 @@ import { useState, type ReactNode } from "react";
 
 import { EditedMark } from "@/features/fan-posts/ui/edited-mark";
 import type { AppLocale } from "@/i18n/locales";
+import { NoticeCounts } from "./notice-counts";
 import { FanTag } from "./fan-tag";
 import { fanUiText } from "./fan-ui-copy";
 import styles from "./fan-post-row.module.css";
@@ -70,15 +71,16 @@ export function FanPostRow({ href, locale, title, thumbnail, avatar, avatarArtis
       {notice && <FanTag tone="notice">{fanUiText(locale, "noticeTag")}</FanTag>}
       <Link href={href as Route} className={styles.title}>{title}</Link>
       {reactedBy && <span className={styles.reacted} role="img" aria-label={fanUiText(locale, "artistReacted", [reactedBy])} data-artist-reacted><Star size={16} aria-hidden="true" /></span>}
-      {commentCount !== undefined && commentCount > 0 && <span className={styles.count} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}><MessageCircle size={13} fill="currentColor" aria-hidden="true" />{count(commentCount)}</span>}
-      {typeof likes === "number" && likes > 0 && <span className={styles.count} data-count="likes" aria-label={fanUiText(locale, "likesLabel", [count(likes)])}><Heart size={13} fill="currentColor" aria-hidden="true" />{count(likes)}</span>}
+      {!notice && commentCount !== undefined && commentCount > 0 && <span className={styles.count} aria-label={fanUiText(locale, "commentsLabel", [count(commentCount)])}><MessageCircle size={13} fill="currentColor" aria-hidden="true" />{count(commentCount)}</span>}
+      {!notice && typeof likes === "number" && likes > 0 && <span className={styles.count} data-count="likes" aria-label={fanUiText(locale, "likesLabel", [count(likes)])}><Heart size={13} fill="currentColor" aria-hidden="true" />{count(likes)}</span>}
     </div>
     <div className={styles.meta}>
       {source && <Link href={source.href as Route} className={styles.source} title={source.label}>{source.label}</Link>}
       {author && <span className={styles.authorCell}><span className={styles.author} title={typeof author === "string" ? author : undefined}>{author}</span><AuthorTierBadge tier={authorTier} locale={locale} />{authorArtist && <FanTag tone="artist">{fanUiText(locale, "artistTag")}</FanTag>}</span>}
       {timeLabel && <time className={styles.time} dateTime={isoTime} suppressHydrationWarning>{timeLabel}</time>}
       {timeLabel && edited && <EditedMark locale={locale} />}
-      {density === "board" && (typeof views === "number" && visiblePostViews(views, likes) !== undefined ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
+      {notice && <NoticeCounts locale={locale} views={views} comments={commentCount} likes={likes} />}
+      {!notice && density === "board" && (typeof views === "number" && visiblePostViews(views, likes) !== undefined ? <span className={styles.number}>{fanUiText(locale, "viewsLabel", [count(views)])}</span> : <span className={styles.number} data-blank aria-hidden="true" />)}
     </div>
   </div>;
 }

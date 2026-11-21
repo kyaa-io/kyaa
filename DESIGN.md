@@ -161,7 +161,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `RollingNumber` | 바뀌는 숫자를 굴려 보이기(랭킹·헤더·접속 수) | `value`, `duration`, `easing`, `delay`, `initialFromZero` | 가짜 증가 금지(실제 값만). **예외 1곳**: 덕질미션북 좋아요 수는 화면에만 X 오픈 이벤트(`/follow`) 참여 수 + 10으로 보인다(홈 덕질미션북 배너·`/follow` 아래 덕질미션북 머리, 상수 `MISSIONBOOK_LIKE_DISPLAY_START`). 사유: 사용자 11/16 14:1x "UI에 보여줄 때는 0이 아니라 10부터 시작". 저장·집계·명단·어드민은 실제 수(미션북 좋아요는 `/follow` 이벤트 좋아요와 같은 하나, 1인 1회) |
 | `FanCellGauge` | 스탬프·하트·등급 칸 게이지 | `icon` `text` `label` `cells` `filled` | — |
 | `FanSurface` | 카드·목록 카드 | `appearance` card·list·plain, `tone`, `as` | 새 `FanCard` 만들지 않음 |
-| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `reactedBy` `density` home·board. 댓글·추천 수는 제목 옆(0이면 뺌), `reactedBy`(그 페이지 아티스트가 좋아요·댓글)면 제목 바로 뒤 금색 별 16 | 별 옆에 글자 붙이지 않음 |
+| `FanPostRow` | 글·공지·기사 목록 한 줄 | `title` `href` `thumbnail` `notice` `author` `time` `likes` `commentCount` `reactedBy` `density` home·board. 일반 글 댓글·추천 수는 제목 옆(0이면 뺌). 공지 행은 11/22 요청에 따라 날짜 줄에 조회·댓글·좋아요를 16px 아이콘과 메타 글자로 표시하며 집계된 0도 표시함, `reactedBy`(그 페이지 아티스트가 좋아요·댓글)면 제목 바로 뒤 금색 별 16 | 별 옆에 글자 붙이지 않음 |
 | `FanEntityCard` | 페이지(팬페이지·모임·취미·브랜드) 카드·행·타일 | `size` row·card·list·tile, `kind`, `memberCount`, `badge`, `newBadge` | — |
 | `FanPageHeader` | 팬페이지·모임 머리. 팬페이지는 이름 → SNS·팬 수 → 팬 인증·좋아요를 4–8px 간격으로 묶고, 소개 아래에 접속·오늘 방문을 13px 보조색으로 표시한다 | `image` `name` `kind` `star` `links`(크리에이터 SNS 뒤에 방 링크 오픈채팅·카페·디스코드·X·밴드, 최대 3, 11/13 방장 1차) `stats` `tabs` `menu` | — |
 | `useRoomLinkFields` (`features/groups/ui/room-link-fields.tsx`) | 모임 방 링크 입력 줄(최대 3). 붙여 넣으면 왼쪽에 종류 아이콘, 허용 밖 주소는 입력 아래 한 줄 오류 | `locale` `initial` → `{node, links, read}`. 한 줄 입력 48·알약, `링크 추가`는 `FanAction text sm` | 종류를 화면에서 정하지 않는다(서버가 호스트로 판별). 설명 문장 없음 |

@@ -12,7 +12,8 @@
 .link:hover .title { color: var(--color-accent); }
 .category { grid-area: category; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 18px; }
 .title { grid-area: title; color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 700; line-height: 24px; overflow-wrap: anywhere; }
-.date { grid-area: date; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 18px; }
+.date, .date > span { display: inline-flex; align-items: center; gap: var(--space-1); white-space: nowrap; }
+.date { gap: var(--space-2); grid-area: date; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 18px; }
 .all { display: flex; align-items: center; justify-content: center; gap: var(--space-1); min-height: 44px; border-top: 1px solid var(--color-line); color: var(--color-ink); font-size: var(--fan-badge-size); font-weight: 700; text-decoration: none; }
 .link:focus-visible, .headLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .all:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }

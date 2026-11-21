@@ -152,14 +152,15 @@ describe("FanPostRow", () => {
     expect(screen.queryByRole("img")).toBeNull();
   });
   it("shows the notice tag, the comment count and a source link beside the row link", () => {
-    render(<FanPostRow href="/p/1" locale="ko" title="공지 글" notice commentCount={8} source={{ label: "엘리나", href: "/elina?tab=board" }} density="home" views={12} />);
+    render(<FanPostRow href="/p/1" locale="ko" title="공지 글" notice commentCount={8} source={{ label: "엘리나", href: "/elina?tab=board" }} density="home" views={12} likes={0} />);
     expect(screen.getByText("공지")).toHaveAttribute("data-fan-tag", "notice");
     const comments = screen.getByLabelText("댓글 8");
     expect(comments).toHaveTextContent("8");
     expect(comments).not.toHaveTextContent("[8]");
     expect(comments.querySelector("svg")).not.toBeNull();
     expect(screen.getByRole("link", { name: "엘리나" })).toHaveAttribute("href", "/elina?tab=board");
-    expect(screen.queryByLabelText(/조회/)).toBeNull();
+    expect(screen.getByRole("img", { name: /조회.*12/ })).toHaveTextContent("12");
+    expect(screen.getByRole("img", { name: /좋아요.*0/ })).toHaveTextContent("0");
   });
 
   it("puts the verified artist tag next to the author, not inside the name", () => {
