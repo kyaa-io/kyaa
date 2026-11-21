@@ -404,6 +404,20 @@ test('CI OIDC trust uses the observed immutable repository identity and exact en
  c.runtimeEnvironment.CHEMI_TAB='1';assert.throws(()=>validateConfig(c,t),/CHEMI_TAB/);
  });
 
+ test('chemi ask AI is dev only and needs its service account secret', async () => {
+ const t=await loadTemplate('environment'),c=config();
+ const web=(r)=>r.Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web');
+ assert.equal(web(renderTemplate(c,t)).Environment.some(x=>x.Name==='CHEMI_ASK_AI'),false);
+ c.environment='dev';c.runtimeEnvironment.CHEMI_ASK_AI='true';
+ const listed=structuredClone(c);listed.runtimeSecretKeys=['SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY','PRIVY_APP_SECRET'];
+ assert.throws(()=>validateConfig(listed,t),/required key/);
+ assert(web(renderTemplate(c,t)).Secrets.some(x=>x.Name==='CHEMI_ASK_AI_GCP_KEY'&&JSON.stringify(x.ValueFrom).includes(':CHEMI_ASK_AI_GCP_KEY::')));
+ c.runtimeEnvironment.CHEMI_ASK_AI_MODEL='gpt-x';assert.throws(()=>validateConfig(c,t),/CHEMI_ASK_AI_MODEL/);
+ delete c.runtimeEnvironment.CHEMI_ASK_AI_MODEL;
+ const prod=config('environment','prod');prod.runtimeEnvironment.CHEMI_ASK_AI='true';assert.throws(()=>validateConfig(prod,t),/CHEMI_ASK_AI can be enabled only in dev/);
+ prod.runtimeEnvironment.CHEMI_ASK_AI='false';validateConfig(prod,t);
+ });
+
  test('groups cutover flag is explicit runtime configuration, disabled by omission', async () => {
  const t=await loadTemplate('environment'),c=config();
  assert.equal(renderTemplate(c,t).Resources.TaskDefinition.Properties.ContainerDefinitions.find(x=>x.Name==='web')?.Environment.some(x=>x.Name==='KYAA_GROUPS_ENABLED'),false);
