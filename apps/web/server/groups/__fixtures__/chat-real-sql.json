@@ -1,10 +1,203 @@
 {
-  "_source": "local byus 55433, 2026-11-20, migration 20270112030300 inside a rolled-back transaction (fixtures FB-1119-CHAT-PRESENCE-IMPL3)",
-  "emptyFan": {"items": [], "artist": false, "canSend": true},
-  "sendArtist": {"id": "d78c5088-5ae8-4af2-9c1a-cb6826c5da2c"},
-  "readFan": {"items": [{"id": "d78c5088-5ae8-4af2-9c1a-cb6826c5da2c", "body": "엘리나 왔어요", "artist": true, "nickname": "팬0106", "avatarUrl": "/images/avatars/star-pink.webp", "createdAt": "2026-11-20T12:02:33.501054+09:00", "profileId": "00904709-ba3c-49ea-956b-73dba84ce750"}, {"id": "58de5d36-9135-4ffb-b7bd-c90cb4e95a88", "body": "반가워요", "artist": false, "nickname": "별빛", "avatarUrl": "/images/avatars/star-pink.webp", "createdAt": "2026-11-20T12:02:33.503473+09:00", "profileId": "f1610000-0000-4000-8000-000000000001"}], "artist": false, "canSend": true},
-  "readArtist": {"items": [{"id": "58de5d36-9135-4ffb-b7bd-c90cb4e95a88", "body": "반가워요", "artist": false, "nickname": "별빛", "avatarUrl": "/images/avatars/star-pink.webp", "createdAt": "2026-11-20T12:02:33.503473+09:00", "profileId": "f1610000-0000-4000-8000-000000000001"}], "artist": true, "canSend": true},
-  "onlineNone": [],
-  "online": ["elina"],
-  "errors": {"nonFan": "GROUPS_FORBIDDEN:not_verified", "duplicate": "GROUPS_RATE_LIMITED", "sixthIn10s": "GROUPS_RATE_LIMITED", "over500": "GROUPS_INVALID_REQUEST", "anonymous": "GROUPS_FORBIDDEN"}
+ "_source": "local kyaa_local_login_1113 55433, 2026-11-21, migration 20270115020000 inside a rolled-back transaction (CHAT-ROOM-UPGRADE-1121). online·onlineNone·errors.duplicate·over500: 2026-11-20 fixtures (FB-1119-CHAT-PRESENCE-IMPL3).",
+ "emptyFan": {
+  "items": [],
+  "artist": false,
+  "canSend": true,
+  "removed": [],
+  "receipts": [],
+  "onlineCount": 0,
+  "firstUnreadId": null
+ },
+ "unreadNever": {
+  "unreadCount": 0
+ },
+ "sendText": {
+  "id": "d10fffa0-2ff8-4ef1-8848-229573c9295c"
+ },
+ "readMark": {
+  "read": true
+ },
+ "sendPhoto": {
+  "id": "339d0366-a7a9-481a-b4db-ad547a4f9cf6"
+ },
+ "unreadOne": {
+  "unreadCount": 1
+ },
+ "readFan": {
+  "items": [
+   {
+    "id": "d10fffa0-2ff8-4ef1-8848-229573c9295c",
+    "body": "먼저 왔어요",
+    "asset": null,
+    "artist": false,
+    "online": true,
+    "nickname": "Local2",
+    "avatarUrl": "/images/avatars/fairy-cream.webp",
+    "createdAt": "2026-11-21T19:10:37.209859+09:00",
+    "profileId": "11130000-0000-4000-8000-000000000002"
+   },
+   {
+    "id": "339d0366-a7a9-481a-b4db-ad547a4f9cf6",
+    "body": "리허설 사진이에요",
+    "asset": {
+     "id": "a5500000-0000-4000-8000-000000000001",
+     "kind": "image",
+     "width": 1200,
+     "height": 900
+    },
+    "artist": true,
+    "online": true,
+    "nickname": "Local3",
+    "avatarUrl": "/images/avatars/fairy-pink.webp",
+    "createdAt": "2026-11-21T19:10:37.213659+09:00",
+    "profileId": "11130000-0000-4000-8000-000000000003"
+   }
+  ],
+  "artist": false,
+  "canSend": true,
+  "removed": [],
+  "receipts": [
+   {
+    "id": "d10fffa0-2ff8-4ef1-8848-229573c9295c",
+    "readCount": 1
+   }
+  ],
+  "onlineCount": 2,
+  "firstUnreadId": "339d0366-a7a9-481a-b4db-ad547a4f9cf6"
+ },
+ "sendVideo": {
+  "id": "862ad41c-8c6d-4f80-99d5-88abe96b980f"
+ },
+ "unreadAfterSend": {
+  "unreadCount": 0
+ },
+ "readArtist": {
+  "items": [
+   {
+    "id": "d10fffa0-2ff8-4ef1-8848-229573c9295c",
+    "body": "먼저 왔어요",
+    "asset": null,
+    "artist": false,
+    "online": true,
+    "nickname": "Local2",
+    "avatarUrl": "/images/avatars/fairy-cream.webp",
+    "createdAt": "2026-11-21T19:10:37.209859+09:00",
+    "profileId": "11130000-0000-4000-8000-000000000002"
+   },
+   {
+    "id": "339d0366-a7a9-481a-b4db-ad547a4f9cf6",
+    "body": "리허설 사진이에요",
+    "asset": {
+     "id": "a5500000-0000-4000-8000-000000000001",
+     "kind": "image",
+     "width": 1200,
+     "height": 900
+    },
+    "artist": true,
+    "online": true,
+    "nickname": "Local3",
+    "avatarUrl": "/images/avatars/fairy-pink.webp",
+    "createdAt": "2026-11-21T19:10:37.213659+09:00",
+    "profileId": "11130000-0000-4000-8000-000000000003"
+   },
+   {
+    "id": "862ad41c-8c6d-4f80-99d5-88abe96b980f",
+    "body": "",
+    "asset": {
+     "id": "a5500000-0000-4000-8000-000000000002",
+     "kind": "video",
+     "width": 540,
+     "height": 960
+    },
+    "artist": false,
+    "online": true,
+    "nickname": "Local2",
+    "avatarUrl": "/images/avatars/fairy-cream.webp",
+    "createdAt": "2026-11-21T19:10:37.22531+09:00",
+    "profileId": "11130000-0000-4000-8000-000000000002"
+   }
+  ],
+  "artist": true,
+  "canSend": true,
+  "removed": [],
+  "receipts": [
+   {
+    "id": "339d0366-a7a9-481a-b4db-ad547a4f9cf6",
+    "readCount": 1
+   }
+  ],
+  "onlineCount": 2,
+  "firstUnreadId": "862ad41c-8c6d-4f80-99d5-88abe96b980f"
+ },
+ "mediaFanThumb": {
+  "contentType": "image/webp",
+  "storagePath": "t/photo.webp"
+ },
+ "mediaArtistVideo": {
+  "contentType": "video/mp4",
+  "storagePath": "t/clip"
+ },
+ "mediaStranger": null,
+ "mediaGuest": null,
+ "report": {
+  "reported": true
+ },
+ "reports": 1,
+ "remove": {
+  "removed": true
+ },
+ "assetAfterRemove": "cancelled:true",
+ "mediaAfterRemove": null,
+ "readAfterRemove": {
+  "items": [
+   {
+    "id": "862ad41c-8c6d-4f80-99d5-88abe96b980f",
+    "body": "",
+    "asset": {
+     "id": "a5500000-0000-4000-8000-000000000002",
+     "kind": "video",
+     "width": 540,
+     "height": 960
+    },
+    "artist": false,
+    "online": true,
+    "nickname": "Local2",
+    "avatarUrl": "/images/avatars/fairy-cream.webp",
+    "createdAt": "2026-11-21T19:10:37.22531+09:00",
+    "profileId": "11130000-0000-4000-8000-000000000002"
+   }
+  ],
+  "artist": false,
+  "canSend": true,
+  "removed": [
+   "339d0366-a7a9-481a-b4db-ad547a4f9cf6"
+  ],
+  "receipts": [
+   {
+    "id": "862ad41c-8c6d-4f80-99d5-88abe96b980f",
+    "readCount": 0
+   },
+   {
+    "id": "d10fffa0-2ff8-4ef1-8848-229573c9295c",
+    "readCount": 1
+   }
+  ],
+  "onlineCount": 2,
+  "firstUnreadId": null
+ },
+ "errors": {
+  "removeOthers": "GROUPS_NOT_FOUND",
+  "reportOwn": "GROUPS_NOT_FOUND",
+  "strangerRead": "GROUPS_FORBIDDEN:not_verified",
+  "strangerUnread": "GROUPS_FORBIDDEN:not_verified",
+  "foreignAsset": "GROUPS_INVALID_REQUEST",
+  "duplicate": "GROUPS_RATE_LIMITED",
+  "over500": "GROUPS_INVALID_REQUEST",
+  "nonFan": "GROUPS_FORBIDDEN:not_verified"
+ },
+ "online": [
+  "elina"
+ ],
+ "onlineNone": []
 }

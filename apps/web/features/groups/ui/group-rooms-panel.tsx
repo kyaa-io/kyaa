@@ -15,11 +15,10 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
-import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanStarAction } from "@/components/fan-ui/fan-star-action";
 import { useOptionalGroupPage } from "./group-page-context";
 import { fanLoginHref } from "@/components/login-href";
-import { groupRoomsSchema, groupMessagesSchema, GROUP_CHAT_MAX_LENGTH } from "../domain/contracts";
+import { groupRoomsSchema, groupMessagesSchema } from "../domain/contracts";
 import { GroupRequestError, useGroupRequest, useGroupResource } from "./use-group-resource";
 import { roomEntryCopy, roomMessageLabel, roomContextCopy } from "./room-entry-copy";
 import { roomStatusCopy } from "./room-status-copy";
@@ -34,10 +33,9 @@ import {tierDisplayName} from "@/features/passport/domain/passport-read-model";
 import roomStyles from "./group-rooms.module.css";
 const parseRooms=(x:unknown)=>groupRoomsSchema.parse(x),parseMessages=(x:unknown)=>groupMessagesSchema.parse(x),parsePublicRooms=(x:unknown)=>groupPublicRoomsSchema.parse(x);
 function RoomMessagesSkeleton({label}:{label:string}){return <div role="status" aria-busy="true" aria-label={label} className={roomStyles.roomMessagesLoading}>{[0,1,2].map(i=><div className={roomStyles.roomMessage} key={i} aria-hidden="true"><FanSkeleton shape="circle" width={40} height={40}/><div className={roomStyles.roomMessageCopy}><FanSkeleton width={96} height={16}/><FanSkeleton width={i===1?"40%":"70%"} height={20}/></div></div>)}</div>;}
-/** 방 대화. `chat`이면 팬페이지 '채팅방(임시운영)': 그 주소로 읽고 쓰며 글만 보낸다(500자), 크리에이터 표시 이름과 전송 제한 문구를 받는다. */
-export function RoomMessages({pageId,roomId,locale,readonly=false,chat}:{pageId:string;roomId?:string;locale:AppLocale;readonly?:boolean;chat?:{url:string;title:string;creatorLabel:string;rateLimited:string}}) {
-  const t=groupsCopy(locale),url=chat?.url??`/api/groups/${pageId}/rooms/${roomId}/messages`,auth=useGroupRequest(),{request,ready,ownerKey}=auth;
-  const [snapshot,setSnapshot]=useState<{key:string;items:ReturnType<typeof parseMessages>["items"];participants?:ReturnType<typeof parseMessages>["participants"];canSend?:boolean;failed:boolean;restricted?:boolean}>(),[draft,setDraft]=useState(""),[pending,setPending]=useState(false),[sendFailed,setSendFailed]=useState(false),[limited,setLimited]=useState(false),[version,setVersion]=useState(0),operation=useRef<{body:string;assetId?:string;requestId:string}|undefined>(undefined);
+export function RoomMessages({pageId,roomId,locale,readonly=false}:{pageId:string;roomId:string;locale:AppLocale;readonly?:boolean}) {
+  const t=groupsCopy(locale),url=`/api/groups/${pageId}/rooms/${roomId}/messages`,auth=useGroupRequest(),{request,ready,ownerKey}=auth;
+  const [snapshot,setSnapshot]=useState<{key:string;items:ReturnType<typeof parseMessages>["items"];participants?:ReturnType<typeof parseMessages>["participants"];canSend?:boolean;failed:boolean;restricted?:boolean}>(),[draft,setDraft]=useState(""),[pending,setPending]=useState(false),[sendFailed,setSendFailed]=useState(false),[version,setVersion]=useState(0),operation=useRef<{body:string;assetId?:string;requestId:string}|undefined>(undefined);
   const uploads=useWaveMediaUpload("group_post",1),upload=uploads.items[0],fileInput=useRef<HTMLInputElement>(null);
   useEffect(()=>{
     if(!ready)return;let active=true,inFlight=false,cursor:string|undefined,items:ReturnType<typeof parseMessages>["items"]=[],participants:ReturnType<typeof parseMessages>["participants"] = [],canSend:boolean|undefined;
@@ -52,24 +50,24 @@ export function RoomMessages({pageId,roomId,locale,readonly=false,chat}:{pageId:
     return()=>{active=false;controller.abort();clearInterval(timer);document.removeEventListener('visibilitychange',visibility);};
   },[ready,request,ownerKey,url,version]);
   const visible=snapshot?.key===ownerKey?snapshot:undefined,canSend=!visible?.restricted&&(visible?.canSend??!readonly);
-  const send=async(e:FormEvent)=>{e.preventDefault();if(pending||!canSend||(!draft.trim()&&!upload)||Boolean(upload&&!uploads.ready))return;const body=draft.trim(),assetId=upload?.media?.assetId;if(operation.current?.body!==body||operation.current?.assetId!==assetId)operation.current={body,...(assetId?{assetId}:{}),requestId:crypto.randomUUID()};setPending(true);try{await request(url,{method:'POST',body:JSON.stringify(operation.current)});setDraft('');if(upload)uploads.markUsed(upload.key);setSendFailed(false);setLimited(false);operation.current=undefined;setVersion(x=>x+1);}catch(error){setSendFailed(true);setLimited(error instanceof GroupRequestError&&error.status===429);if(error instanceof GroupRequestError&&[401,403,404].includes(error.status)){if(upload)uploads.remove(upload.key);setDraft('');setSnapshot({key:ownerKey,items:[],participants:[],canSend:false,failed:true,restricted:true});}}finally{setPending(false);}};
+  const send=async(e:FormEvent)=>{e.preventDefault();if(pending||!canSend||(!draft.trim()&&!upload)||Boolean(upload&&!uploads.ready))return;const body=draft.trim(),assetId=upload?.media?.assetId;if(operation.current?.body!==body||operation.current?.assetId!==assetId)operation.current={body,...(assetId?{assetId}:{}),requestId:crypto.randomUUID()};setPending(true);try{await request(url,{method:'POST',body:JSON.stringify(operation.current)});setDraft('');if(upload)uploads.markUsed(upload.key);setSendFailed(false);operation.current=undefined;setVersion(x=>x+1);}catch(error){setSendFailed(true);if(error instanceof GroupRequestError&&[401,403,404].includes(error.status)){if(upload)uploads.remove(upload.key);setDraft('');setSnapshot({key:ownerKey,items:[],participants:[],canSend:false,failed:true,restricted:true});}}finally{setPending(false);}};
   return <div className={roomStyles.roomConversationLayout}><section className={roomStyles.roomConversation}>
-    <div className={roomStyles.roomMessages} role="log" aria-label={chat?.title??t.rooms} aria-live="polite" tabIndex={0}>
+    <div className={roomStyles.roomMessages} role="log" aria-label={t.rooms} aria-live="polite" tabIndex={0}>
       {!visible&&<RoomMessagesSkeleton label={t.loading}/>}{visible?.failed&&<p role="alert">{t.error}</p>}
       {visible&&!visible.failed&&!visible.items.length&&<p>{roomEntryCopy(locale).empty}</p>}
       {visible?.items.map(item=><div className={roomStyles.roomMessage} data-mine={item.mine||undefined} data-artist={item.artist||undefined} key={item.id}>
         {!item.mine&&(item.avatarUrl?<GroupImage locale={locale} src={item.avatarUrl} alt='' className={roomStyles.roomMessageAvatar} width={40} height={40}/>:<span className={roomStyles.roomMessageAvatar} aria-hidden='true'><UserRound size={22}/></span>)}
-        <div className={roomStyles.roomMessageCopy}>{!item.mine&&<strong>{item.nickname}{item.artist&&(chat?<FanTag tone='artist'>{chat.creatorLabel}</FanTag>:<span className={roomStyles.roomArtist}><BadgeCheck size={16} aria-hidden='true'/>{roomContextCopy[locale][1]}</span>)}</strong>}{item.body&&<p>{item.body}</p>}{item.asset&&<div className={roomStyles.roomPhoto} style={{'--room-photo-max':`${item.asset.width}px`} as CSSProperties}><AuthenticatedMedia asset={item.asset} original locale={locale} alt={mediaCopy[locale][1]}/></div>}<time className={styles.meta} dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}</time></div>
+        <div className={roomStyles.roomMessageCopy}>{!item.mine&&<strong>{item.nickname}{item.artist&&<span className={roomStyles.roomArtist}><BadgeCheck size={16} aria-hidden='true'/>{roomContextCopy[locale][1]}</span>}</strong>}{item.body&&<p>{item.body}</p>}{item.asset&&<div className={roomStyles.roomPhoto} style={{'--room-photo-max':`${item.asset.width}px`} as CSSProperties}><AuthenticatedMedia asset={item.asset} original locale={locale} alt={mediaCopy[locale][1]}/></div>}<time className={styles.meta} dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}</time></div>
       </div>)}
     </div>
     {uploads.invalid&&<p role="alert" className={styles.error}>{t.error}</p>}
     {upload?.failed&&<div role="alert"><p>{t.error}</p><FanAction onClick={()=>uploads.retry(upload)}>{t.retry}</FanAction></div>}
-    {sendFailed&&<p className={styles.error} role="alert">{limited&&chat?chat.rateLimited:t.error}</p>}
+    {sendFailed&&<p className={styles.error} role="alert">{t.error}</p>}
     {!canSend?<SourceStatePanel sourceId={readonly?'aWY6S':undefined} title={roomStatusCopy(locale).readonly} role='status'/>:!visible?.restricted&&<form onSubmit={send} className={roomStyles.roomComposer}>
       {upload&&<div className={roomStyles.roomUpload}><span>{upload.file.name} · {upload.failed?t.error:uploads.ready?mediaCopy[locale][3]:t.loading}</span><FanAction variant="text" disabled={pending} ariaLabel={mediaCopy[locale][4]} onClick={()=>uploads.remove(upload.key)} leadingIcon={<X size={20} aria-hidden/>}/></div>}
-      {!chat&&<FanAction variant="text" disabled={pending||Boolean(upload)} ariaLabel={mediaCopy[locale][1]} onClick={()=>fileInput.current?.click()} leadingIcon={<ImagePlus size={20} aria-hidden/>}/>}
-      {!chat&&<input hidden type="file" ref={fileInput} accept="image/jpeg,image/png,image/webp" aria-label={mediaCopy[locale][1]} onChange={e=>{const file=e.target.files?.[0];if(file)uploads.add([file]);e.target.value="";}}/>}
-      <label className={styles.field}>{roomMessageLabel[locale]}<input className={styles.input} value={draft} onChange={e=>setDraft(e.target.value)} maxLength={chat?GROUP_CHAT_MAX_LENGTH:2000} disabled={pending} required={!upload}/></label>
+      <FanAction variant="text" disabled={pending||Boolean(upload)} ariaLabel={mediaCopy[locale][1]} onClick={()=>fileInput.current?.click()} leadingIcon={<ImagePlus size={20} aria-hidden/>}/>
+      <input hidden type="file" ref={fileInput} accept="image/jpeg,image/png,image/webp" aria-label={mediaCopy[locale][1]} onChange={e=>{const file=e.target.files?.[0];if(file)uploads.add([file]);e.target.value="";}}/>
+      <label className={styles.field}>{roomMessageLabel[locale]}<input className={styles.input} value={draft} onChange={e=>setDraft(e.target.value)} maxLength={2000} disabled={pending} required={!upload}/></label>
       <FanAction type="submit" variant="primary" disabled={pending||(!draft.trim()&&!upload)||Boolean(upload&&!uploads.ready)}>{sendFailed?t.retry:sendLabel[locale]}</FanAction>
     </form>}
   </section>{Boolean(visible?.participants?.length)&&<aside className={roomStyles.roomParticipants}><h3><UsersRound size={20} aria-hidden='true'/>{roomContextCopy[locale][0]}</h3>{visible!.participants!.map(person=><Link href={`/my/friends?locale=${locale}&profileId=${person.profileId}` as Route} key={person.profileId} className={roomStyles.roomParticipant}>{person.avatarUrl?<GroupImage src={person.avatarUrl} locale={locale} alt='' width={40} height={40} className={roomStyles.roomMessageAvatar}/>:<UserRound aria-hidden='true'/>}<span><strong>{person.nickname}</strong>{person.tier&&<span className={styles.meta}>{tierDisplayName(locale,person.tier)} · {roomEntryCopy(locale).verified}</span>}</span><span className={roomStyles.roomProfileAction}>{locale==='ko'?'프로필 보기':t.info}</span></Link>)}</aside>}</div>;
