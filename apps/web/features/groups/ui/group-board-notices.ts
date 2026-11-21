@@ -16,5 +16,5 @@ export function useGroupBoardNotices(pageId:string|undefined,locale:AppLocale,op
   const {all=true,keepSource=false}=options;
   const resource=useGroupResource(pageId?`/api/groups/${pageId}/posts?${new URLSearchParams({category:'notice',sort:'recent',...(all?{limit:String(BOARD_NOTICE_LIMIT)}:{})})}`:null,parseNotices);
   if(!pageId||resource.error||!resource.data)return {items:[],pending:Boolean(pageId)&&resource.loading};
-  return {pending:false,items:resource.data.items.map(item=>({id:item.id,title:item.title,author:item.nickname,date:item.createdAt,commentCount:item.commentCount,href:`/pages/groups/${pageId}?${new URLSearchParams({locale,tab:'board',...(keepSource?{source:'official'}:{}),post:item.id})}`}))};
+  return {pending:false,items:resource.data.items.map(item=>({id:item.id,title:item.title,author:item.nickname,date:item.createdAt,commentCount:item.commentCount,viewCount:item.viewCount,likeCount:item.likeCount,href:`/pages/groups/${pageId}?${new URLSearchParams({locale,tab:'board',...(keepSource?{source:'official'}:{}),post:item.id})}`}))};
 }

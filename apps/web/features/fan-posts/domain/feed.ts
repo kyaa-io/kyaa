@@ -14,6 +14,7 @@ export const fanPostFeedItemSchema = postSchema.extend({
 export const cheerFeedItemSchema = cheerCommentSchema.extend({ kind: z.literal("cheer") });
 export const noticeFeedItemSchema = noticeSchema.omit({ kind: true }).extend({
   kind: z.literal("notice"),
+  viewCount: z.number().int().nonnegative().optional(),
   noticeKind: z.enum(["standard", "welcome"]),
   commentCount: z.number().int().nonnegative(),
 });
