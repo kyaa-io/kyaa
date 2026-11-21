@@ -42,7 +42,7 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
         return;
       }
       if (!video.hasAttribute("src")) video.src = src + (video.canPlayType("video/mp4") ? ".mp4" : ".webm");
-      video.play().catch(() => { if (revision === attempt) setPlaying(false); });
+      video.play()?.catch(() => { if (revision === attempt) setPlaying(false); });
     };
     const start = () => {
       setPlaying(true);
