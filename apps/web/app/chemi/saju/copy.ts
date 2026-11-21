@@ -1,6 +1,7 @@
 /**
  * 사주 풀이 문장. 풀이 표(AS-TX)가 들어오기 전까지 승인 시안 03 의 말투로 만든 임시 문장이다.
  * 같은 사주표와 같은 시각이면 같은 문장이 나온다.
+ * 좋은 달·힘 있는 주는 아직 끝나지 않은 기간에서만 고르고, 이미 지난 기간은 '지난 흐름'으로만 말한다.
  */
 import {
   branchRelation,
@@ -26,6 +27,9 @@ import {
   type Stem,
   type TenGod,
 } from "./chart";
+
+/** 최애 말투 셋: 창하·유나 반말, 엘리나 요체, kyaa 도사 하오체. */
+export type Voiced = { ban: string; yo: string; hao: string };
 
 type StemNote = {
   /** 한낮의 해처럼 — 일간을 비유하는 말 */
@@ -247,7 +251,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "나란히 걷는 사람이 생기는 해",
     yearBond: "같이 뛰면 힘이 나는 해",
     monthTitle: "곁에서 같이 뛰는 달",
-    monthBond: "이번 주에 말이 잘 통해",
+    monthBond: "말이 잘 통하는 달",
     grade: "다지는 해",
     rate: ["좋음", "보통", "조심", "보통"],
     flow: ["혼자 하던 일을 나눠 맡기 좋아요", "비슷한 목표의 사람을 만나요", "남과 견주는 마음은 줄여 봐요"],
@@ -256,7 +260,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "내 몫을 단단히 지키는 해",
     yearBond: "서로 선을 지켜 주는 해",
     monthTitle: "욕심을 줄이고 챙기는 달",
-    monthBond: "이번 주는 말을 아껴요",
+    monthBond: "말을 아낄수록 편한 달",
     grade: "견디는 해",
     rate: ["보통", "보통", "조심", "보통"],
     flow: ["욕심내기보다 맡은 일부터 끝내요", "부탁은 선을 정하고 들어줘요", "지출과 약속을 한 번 더 세어 봐요"],
@@ -265,7 +269,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "하는 만큼 즐거움이 따라오는 해",
     yearBond: "응원이 잘 닿는 해",
     monthTitle: "좋아하는 걸 꾸준히 하는 달",
-    monthBond: "이번 주에 웃을 일이 많아",
+    monthBond: "같이 웃을 일이 많은 달",
     grade: "오르는 해",
     rate: ["좋음", "좋음", "보통", "좋음"],
     flow: ["좋아하는 일을 꾸준히 하면 결과가 나와요", "같이 먹고 웃는 자리가 늘어요", "여유가 생겨서 취미를 키우기 좋아요"],
@@ -274,7 +278,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "숨겨 둔 재주가 드러나는 해",
     yearBond: "응원이 잘 닿는 해",
     monthTitle: "하고 싶은 말이 터지는 달",
-    monthBond: "이번 주에 아이디어가 넘쳐",
+    monthBond: "아이디어를 주고받는 달",
     grade: "오르는 해",
     rate: ["좋음", "좋음", "보통", "조심"],
     flow: ["새로 시작한 일에 사람이 모이는 해예요", "솔직한 말이 눈에 띄어요, 말투만 부드럽게 해요", "하반기에 미뤄 둔 계획을 꺼내기 좋아요"],
@@ -283,7 +287,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "기회가 먼저 문을 두드리는 해",
     yearBond: "같이 움직이면 기회가 커지는 해",
     monthTitle: "발이 빨라지는 달",
-    monthBond: "이번 주에 연락이 많아",
+    monthBond: "연락이 잦아지는 달",
     grade: "움직이는 해",
     rate: ["좋음", "좋음", "좋음", "보통"],
     flow: ["여러 일이 한꺼번에 들어와요, 순서를 정해요", "새로운 사람과 만날 일이 많아요", "쓰는 만큼 들어오니 장바구니는 한 번 쉬어요"],
@@ -292,7 +296,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "차곡차곡 쌓은 것이 보이는 해",
     yearBond: "믿고 맡길 수 있는 해",
     monthTitle: "꾸준함이 돈이 되는 달",
-    monthBond: "이번 주는 약속이 잘 지켜져",
+    monthBond: "약속이 잘 지켜지는 달",
     grade: "다지는 해",
     rate: ["보통", "좋음", "좋음", "좋음"],
     flow: ["맡은 일을 성실히 하면 인정이 따라와요", "약속을 지키는 사람으로 믿음을 얻어요", "계획한 지출을 지키면 마음이 편해요"],
@@ -301,7 +305,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "시험대에서 단단해지는 해",
     yearBond: "서로 자극이 되는 해",
     monthTitle: "버틸수록 단단해지는 달",
-    monthBond: "이번 주는 쉬어 가는 게 좋아",
+    monthBond: "쉬어 가도 괜찮은 달",
     grade: "견디는 해",
     rate: ["조심", "보통", "보통", "조심"],
     flow: ["부담이 큰 일이 와도 끝까지 하면 실력이 늘어요", "무리한 부탁은 거절해도 괜찮아요", "잠을 먼저 챙기면 마음이 가라앉아요"],
@@ -310,7 +314,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "맡은 자리에서 인정받는 해",
     yearBond: "믿음이 쌓이는 해",
     monthTitle: "평판이 올라가는 달",
-    monthBond: "이번 주는 말이 잘 전해져",
+    monthBond: "말이 잘 전해지는 달",
     grade: "오르는 해",
     rate: ["좋음", "좋음", "보통", "보통"],
     flow: ["책임 있는 자리를 맡기 좋은 때예요", "윗사람과 관계가 풀리는 해예요", "규칙적인 하루가 마음을 안정시켜요"],
@@ -319,7 +323,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "배움이 방향을 바꾸는 해",
     yearBond: "생각이 비슷해지는 해",
     monthTitle: "머릿속이 깊어지는 달",
-    monthBond: "이번 주에 혼자 있는 시간이 필요해",
+    monthBond: "혼자 있는 시간도 지켜 주는 달",
     grade: "쉬어 가는 해",
     rate: ["보통", "보통", "조심", "조심"],
     flow: ["새로운 분야를 배우기 좋아요, 시작이 느려도 괜찮아요", "혼자 생각하는 시간이 길어져요", "생각이 많아지면 몸을 먼저 움직여요"],
@@ -328,7 +332,7 @@ export const godNotes: Record<TenGod, GodNote> = {
     yearTitle: "도움받아 안정을 찾는 해",
     yearBond: "기대어도 괜찮은 해",
     monthTitle: "든든한 사람이 곁에 오는 달",
-    monthBond: "이번 주에 응원이 많아",
+    monthBond: "응원이 많이 닿는 달",
     grade: "다지는 해",
     rate: ["좋음", "보통", "보통", "좋음"],
     flow: ["배운 걸 정리하고 자격을 갖추기 좋아요", "도와주는 사람을 만나요", "마음이 편해져 오래 미룬 일을 꺼내요"],
@@ -415,12 +419,18 @@ export type YearReading = {
   span: string;
   grade: string;
   rate: { label: string; level: Level }[];
-  months: { label: string; mark?: "good" | "rest"; current: boolean }[];
+  /** past: 이미 끝난 달. 좋은 달·여유 둘 달 표시는 남은 달에만 단다. */
+  months: { label: string; mark?: "good" | "rest"; current: boolean; past: boolean }[];
   good: string;
-  rest: string;
+  /** 남은 달이 하나뿐이거나 점수가 모두 같으면 없다. */
+  rest: string | null;
+  /** 남은 달보다 점수가 높았던 지난 달. 없으면 null. */
+  past: string | null;
   help: string;
-  line: string;
+  line: Voiced;
   beforeSpring: boolean;
+  /** 근거 줄에 쓰는 값: 고른 달의 월건과 십신. */
+  basis: { kind: "good" | "rest"; label: string; pillar: string; god: TenGod }[];
 };
 
 const animal: Record<Branch, string> = {
@@ -454,13 +464,37 @@ export function yearReading(chart: Chart, at: number): YearReading {
   const god = godNotes[tenGod(stem, season.yearPillar.heavenlyStem)];
   const months = monthsOfSeason(chart, at);
   const current = monthSpanAt(at).startAt;
-  const best = Math.max(...months.map((m) => m.score));
-  const worst = Math.min(...months.map((m) => m.score));
-  const goodMonths = months.filter((m) => m.score === best).slice(0, 2);
-  const restMonth = months.find((m) => m.score === worst)!;
+  // 권하는 달은 아직 끝나지 않은 달에서만 고른다. 지난 달은 지난 흐름으로만 적는다.
+  const left = months.filter((m) => m.span.endAt > at);
+  const best = Math.max(...left.map((m) => m.score));
+  const worst = Math.min(...left.map((m) => m.score));
+  const goodMonths = left.filter((m) => m.score === best).slice(0, 2);
+  const restMonth = worst < best ? left.find((m) => m.score === worst)! : null;
+  const gone = months.filter((m) => m.span.endAt <= at && m.score > best);
+  const top = Math.max(...gone.map((m) => m.score));
+  const pastMonths = gone.filter((m) => m.score === top).slice(0, 2);
   const seasonStart = kstParts(season.startAt);
   const seasonEnd = kstParts(season.endAt);
   const { year: today } = kstParts(at);
+  const names = (list: typeof months, joiner: string) => list.map((m) => monthLabel(m.at)).join(joiner);
+  const rest = restMonth ? monthLabel(restMonth.at) : null;
+  const line: Voiced = pastMonths.length
+    ? {
+        ban: `제일 좋던 ${names(pastMonths, "이랑 ")}은 지났어. 남은 달 중엔 ${names(goodMonths, "이랑 ")}이 좋아.`,
+        yo: `제일 좋던 ${names(pastMonths, "과 ")}은 지났어요. 남은 달 중엔 ${names(goodMonths, "과 ")}이 좋아요.`,
+        hao: `가장 좋던 ${names(pastMonths, "과 ")}은 지났소. 남은 달 중에는 ${names(goodMonths, "과 ")}이 좋소.`,
+      }
+    : {
+        ban: `${names(goodMonths, "이랑 ")}이 좋은 달이야.${rest ? ` ${rest}엔 일정 줄이고 나랑 쉬자.` : ""}`,
+        yo: `${names(goodMonths, "과 ")}이 좋은 달이에요.${rest ? ` ${rest}엔 일정을 줄이고 쉬어요.` : ""}`,
+        hao: `${names(goodMonths, "과 ")}이 좋은 달이오.${rest ? ` ${rest}에는 일정을 줄이고 쉬시오.` : ""}`,
+      };
+  const row = (kind: "good" | "rest", m: (typeof months)[number]) => ({
+    kind,
+    label: monthLabel(m.at),
+    pillar: pillarKorean(m.span.pillar),
+    god: tenGod(stem, m.span.pillar.heavenlyStem),
+  });
   return {
     title: god.yearTitle,
     bond: god.yearBond,
@@ -472,12 +506,15 @@ export function yearReading(chart: Chart, at: number): YearReading {
       label: String(m.span.month),
       mark: goodMonths.includes(m) ? "good" : m === restMonth ? "rest" : undefined,
       current: m.at === current,
+      past: m.span.endAt <= at,
     })),
-    good: goodMonths.map((m) => monthLabel(m.at)).join(" · "),
-    rest: `${monthLabel(restMonth.at)} · 일정을 넉넉하게`,
+    good: names(goodMonths, " · "),
+    rest: rest ? `${rest} · 일정을 넉넉하게` : null,
+    past: pastMonths.length ? names(pastMonths, " · ") : null,
     help: helping(chart),
-    line: `${goodMonths.map((m) => monthLabel(m.at)).join("이랑 ")}이 좋은 달이야. ${monthLabel(restMonth.at)}엔 일정 줄이고 나랑 쉬자.`,
+    line,
     beforeSpring: today !== season.year,
+    basis: [...goodMonths.map((m) => row("good", m)), ...(restMonth ? [row("rest", restMonth)] : [])],
   };
 }
 
@@ -488,12 +525,17 @@ export type MonthReading = {
   name: string;
   span: string;
   rate: { label: string; level: Level }[];
-  /** label 은 시작 날짜(11.14), range 는 시작~끝 */
-  weeks: { label: string; range: string; mark?: "good" | "rest"; current: boolean }[];
+  /** label 은 시작 날짜(11.14), range 는 시작~끝. past: 이미 끝난 주. 표시는 남은 주에만 단다. */
+  weeks: { label: string; range: string; mark?: "good" | "rest"; current: boolean; past: boolean }[];
   strong: string;
-  rest: string;
+  /** 남은 주가 하나뿐이거나 점수가 모두 같으면 없다. */
+  rest: string | null;
+  /** 남은 주보다 점수가 높았던 지난 주. 없으면 null. */
+  past: string | null;
   nextTerm: string;
-  line: string;
+  line: Voiced;
+  /** 근거 줄에 쓰는 값: 그 주 일진 가운데 일지와 합·충인 날 수. */
+  basis: { kind: "good" | "rest" | "past"; range: string; days: number; good: number; rough: number }[];
 };
 
 export function monthReading(chart: Chart, at: number): MonthReading {
@@ -501,13 +543,20 @@ export function monthReading(chart: Chart, at: number): MonthReading {
   const stem = dayStem(chart);
   const dayBr = dayBranch(chart);
   const god = godNotes[tenGod(stem, span.pillar.heavenlyStem)];
-  const scored: { label: string; range: string; score: number; current: boolean }[] = [];
+  type Week = { label: string; range: string; score: number; current: boolean; past: boolean; days: number; good: number; rough: number };
+  const scored: Week[] = [];
   const weekMs = 7 * 86400000;
   for (let start = span.startAt; start < span.endAt; start += weekMs) {
     let score = 0;
+    let days = 0;
+    let good = 0;
+    let rough = 0;
     for (let d = 0; d < 7 && start + d * 86400000 < span.endAt; d++) {
       const pillar = dayPillarAt(start + d * 86400000);
       const relation = branchRelation(dayBr, pillar.earthlyBranch);
+      days += 1;
+      if (relation === "good") good += 1;
+      if (relation === "rough") rough += 1;
       score += (relation === "good" ? 1 : relation === "rough" ? -1 : 0) + (godScore[tenGod(stem, pillar.heavenlyStem)] >= 2 ? 1 : 0);
     }
     const end = Math.min(start + weekMs, span.endAt);
@@ -516,18 +565,52 @@ export function monthReading(chart: Chart, at: number): MonthReading {
       range: `${seoulDateLabel(start)}~${seoulDateLabel(end - 86400000)}`,
       score,
       current: at >= start && at < end,
+      past: end <= at,
+      days,
+      good,
+      rough,
     });
   }
-  const best = scored.reduce((a, b) => (b.score > a.score ? b : a));
-  const worst = scored.reduce((a, b) => (b.score < a.score ? b : a));
+  // 권하는 주는 아직 끝나지 않은 주에서만 고른다. 지난 주는 지난 흐름으로만 적는다.
+  const left = scored.filter((week) => !week.past);
+  const best = left.reduce((a, b) => (b.score > a.score ? b : a));
+  const low = left.reduce((a, b) => (b.score < a.score ? b : a));
+  const worst = low.score < best.score ? low : null;
+  const gone = scored.filter((week) => week.past && week.score > best.score);
+  const pastBest = gone.length ? gone.reduce((a, b) => (b.score > a.score ? b : a)) : null;
   const weeks: MonthReading["weeks"] = scored.map((week) => ({
     label: week.label,
     range: week.range,
     mark: week === best ? "good" : week === worst ? "rest" : undefined,
     current: week.current,
+    past: week.past,
   }));
   const term = kstParts(span.endAt);
-  const tag = (week: (typeof scored)[number]) => (week.current ? `${week.range} · 이번 주` : week.range);
+  const tag = (week: Week) => (week.current ? `${week.range} · 이번 주` : week.range);
+  const row = (kind: "good" | "rest" | "past", week: Week) => ({
+    kind,
+    range: week.range,
+    days: week.days,
+    good: week.good,
+    rough: week.rough,
+  });
+  const line: Voiced = pastBest
+    ? {
+        ban: `제일 좋던 ${pastBest.range} 주는 지났어. 남은 날 중엔 ${best.current ? "이번 주가" : `${best.range} 주가`} 좋아.`,
+        yo: `제일 좋던 ${pastBest.range} 주는 지났어요. 남은 날 중엔 ${best.current ? "이번 주가" : `${best.range} 주가`} 좋아요.`,
+        hao: `가장 좋던 ${pastBest.range} 주는 지났소. 남은 날 중에는 ${best.current ? "이번 주가" : `${best.range} 주가`} 좋소.`,
+      }
+    : best.current
+      ? {
+          ban: "이번 주가 제일 힘 있어. 미뤄 둔 거 지금 해.",
+          yo: "이번 주가 제일 힘 있어요. 미뤄 둔 일은 지금 해요.",
+          hao: "이번 주가 가장 힘 있소. 미뤄 둔 일은 지금 하시오.",
+        }
+      : {
+          ban: `${best.range} 주가 제일 힘 있어. 미뤄 둔 건 그때 해.`,
+          yo: `${best.range} 주가 제일 힘 있어요. 미뤄 둔 일은 그때 해요.`,
+          hao: `${best.range} 주가 가장 힘 있소. 미뤄 둔 일은 그때 하시오.`,
+        };
   return {
     title: god.monthTitle,
     bond: god.monthBond,
@@ -536,9 +619,11 @@ export function monthReading(chart: Chart, at: number): MonthReading {
     rate: (["사람", "일", "돈", "연애"] as const).map((label, index) => ({ label, level: god.rate[index] })),
     weeks,
     strong: tag(best),
-    rest: tag(worst),
+    rest: worst ? tag(worst) : null,
+    past: pastBest ? pastBest.range : null,
     nextTerm: `${term.month}월 ${term.day}일 ${span.nextTerm}`,
-    line: best.current ? "이번 주가 제일 힘 있어. 미뤄 둔 거 지금 해." : `${best.range} 주가 제일 힘 있어. 미뤄 둔 건 그때 해.`,
+    line,
+    basis: [row("good", best), ...(worst ? [row("rest", worst)] : []), ...(pastBest ? [row("past", pastBest)] : [])],
   };
 }
 

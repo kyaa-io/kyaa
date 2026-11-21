@@ -23,12 +23,13 @@ import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { ResultActions } from "@/features/chemi/ui/result/result-actions";
+import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
+import { fortuneBasis, fortuneFieldDetail, fortuneFlow } from "./depth";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
 import {
   band,
   fieldNotes,
-  flowNotes,
   kstDate,
   kstDayStart,
   kstWeekday,
@@ -387,7 +388,7 @@ export function FortuneResult({
         </section>
         <section className={`${styles.section} ${styles.flowSec}`}>
           <FanHeading><ReadingText id="todayFlow" /></FanHeading>
-          <p>{flowNotes[result.grade.name]}</p>
+          <p>{fortuneFlow(result.grade.name, result.evidence)}</p>
         </section>
         <section className={`${styles.section} ${styles.timesSec}`}>
           <FanHeading><ReadingText id="timeWindow" /></FanHeading>
@@ -448,24 +449,7 @@ export function FortuneResult({
         )}
         <section className={`${styles.panel} ${styles.whyPanel}`}>
           <FanDisclosure label={uiText("whyScore")}>
-            <dl className={styles.facts}>
-              {Object.entries({
-                [uiText("tableDaypillar")]: result.evidence.dayPillar,
-                [uiText("tableYearpillar")]: result.evidence.yearPillar,
-                [uiText("tableRelation")]: result.evidence.relation,
-                [uiText("tableStage")]: result.evidence.stage,
-                [uiText("tableTengod")]: result.evidence.tenGod,
-                [uiText("tableUseful")]: result.evidence.useful,
-                [uiText("tableBasis")]: result.evidence.timeBasis,
-              }).map(([label, value]) => (
-                <div key={label}>
-                  <dt>{label}</dt>
-                  <FanText as="dd" role="label">
-                    {value}
-                  </FanText>
-                </div>
-              ))}
-            </dl>
+            <ReadingBasisRows rows={fortuneBasis(result.evidence)} />
           </FanDisclosure>
           <FanDisclosure label={uiText("luck")}>
             <dl className={styles.facts}>
@@ -518,6 +502,13 @@ export function FortuneResult({
             {fields.map(([label, key, value]) => {
               const [first, second] = exampleKeys[key];
               const note = key === highest || key === lowest ? fieldNotes[key][band(value)] : null;
+              const detail = fortuneFieldDetail(
+                key,
+                value,
+                result.evidence,
+                key === highest ? "highest" : key === lowest ? "lowest" : null,
+                note !== null,
+              );
               return (
                 <li data-row="" key={key}>
                   <FanCollapsible
@@ -538,6 +529,8 @@ export function FortuneResult({
                     )}
                   >
                     <div className={styles.fieldMore}>
+                      <FanText as="p" role="meta">{detail.basis}</FanText>
+                      <FanText as="p" role="body">{detail.text}</FanText>
                       <FanText as="p" role="label">{uiText(voiceKeys[character])}</FanText>
                       <ul>
                         <li data-row=""><FanText role="body">{uiText(first)}</FanText></li>

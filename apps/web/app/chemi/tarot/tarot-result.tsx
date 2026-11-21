@@ -18,6 +18,8 @@ import { ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/re
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
+import { tarotBasis, tarotRowMore } from "@/features/chemi/tarot/depth";
+import { ReadingBasis } from "@/features/chemi/ui/result/reading-depth";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
@@ -218,7 +220,7 @@ export function TarotResult({
                             {label}
                           </FanText>
                           <FanText as="dd" role="body">
-                            {text}
+                            {[text, tarotRowMore(draw.card, label)].filter(Boolean).join(" ")}
                           </FanText>
                         </div>
                       ))}
@@ -242,6 +244,8 @@ export function TarotResult({
             <Placeholder rows={3} />
           )}
         </section>
+
+        {!failed && <ReadingBasis title={uiText("basis")} rows={tarotBasis(draw.card, draw.reversed)} />}
 
         <footer className={styles.legal}>
           <FanText as="p" role="meta">

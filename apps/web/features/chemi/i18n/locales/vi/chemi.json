@@ -158,6 +158,8 @@
     "back": "Quay lại"
   },
   "readingUi": {
+    "basis": "",
+    "pastFlow": "",
     "askAgain": "Hỏi thêm một câu",
     "askCaution": "Hôm nay mình nên chú ý điều gì?",
     "askStrength": "Mình nên phát huy điểm mạnh thế nào?",

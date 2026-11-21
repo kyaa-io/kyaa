@@ -158,6 +158,8 @@
     "back": "Go back"
   },
   "readingUi": {
+    "basis": "What this reading is based on",
+    "pastFlow": "Already passed",
     "askAgain": "Ask one more question",
     "askCaution": "What should I watch out for today?",
     "askStrength": "How can I use my strengths?",

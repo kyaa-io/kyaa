@@ -158,6 +158,8 @@
     "back": "Retour"
   },
   "readingUi": {
+    "basis": "",
+    "pastFlow": "",
     "askAgain": "Poser une autre question",
     "askCaution": "À quoi dois-je faire attention aujourd’hui ?",
     "askStrength": "Comment utiliser mes points forts ?",

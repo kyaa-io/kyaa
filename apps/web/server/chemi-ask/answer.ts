@@ -3,7 +3,12 @@
  * 같은 풀이·같은 질문이면 같은 답이 나온다. 풀이에 없는 사실(날짜·사람·금액)은 지어내지 않는다.
  */
 import { branchElement, controls, elementCounts, elementName, generates, isChart, stemElement, type Element } from "@/app/chemi/saju/chart";
+import { sajuWhy } from "@/app/chemi/saju/depth";
+import { fortuneWhy } from "@/app/chemi/fortune/depth";
+import { aspectNames, bodyNames, targetName } from "@/app/chemi/star/copy";
+import { withParticle } from "@/app/chemi/star/particle";
 import { TAROT_DECK } from "@/features/chemi/tarot/deck";
+import { tarotBasis } from "@/features/chemi/tarot/depth";
 import { askVoice as voice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
 
 export { ASK_TOPICS } from "@/features/chemi/ask/lines";
@@ -133,6 +138,69 @@ export function askBasis(content: AskContent, topic: AskTopic, result: any, ques
   };
 }
 
+/**
+ * 풀이의 계산 근거 한 줄(결과 화면의 '풀이 근거'와 같은 값). '왜 그렇게 나왔어?'에 답할 때와 AI 답의 풀이 값에 쓴다.
+ * 사주는 지금 시각의 세운(이번 달 주제는 월운), 운세는 그날 일진의 십신, 별자리는 가장 센 행성 각도, 타로는 카드 종류와 방향.
+ */
+export function askEvidence(content: AskContent, topic: AskTopic, result: any, kind?: string, at: number = Date.now()): Record<Voice, string> | null {
+  /** 받침에 맞춘 맺음말: 비견이야·겁재야. */
+  const is = (word: string): Record<Voice, string> =>
+    withParticle(word, "은는").endsWith("은")
+      ? { ban: `${word}이야.`, yo: `${word}이에요.`, hao: `${word}이오.` }
+      : { ban: `${word}야.`, yo: `${word}예요.`, hao: `${word}요.` };
+  const gloss = (god: string, short: string) => ({
+    ban: `${withParticle(god, "은는")} '${short}'이라는 뜻이야.`,
+    yo: `${withParticle(god, "은는")} '${short}'이라는 뜻이에요.`,
+    hao: `${withParticle(god, "은는")} '${short}'이라는 뜻이오.`,
+  });
+  if (content === "saju" && isChart(result)) {
+    const why = sajuWhy(result, at, topic === "month");
+    const said = gloss(why.god, why.short);
+    return {
+      ban: `${why.unit} ${why.pillar}은 네 일간에게 ${is(why.god).ban} ${said.ban}`,
+      yo: `${why.unit} ${why.pillar}은 일간에게 ${is(why.god).yo} ${said.yo}`,
+      hao: `${why.unit} ${why.pillar}은 그대 일간에게 ${is(why.god).hao} ${said.hao}`,
+    };
+  }
+  if (content === "fortune" && kind !== "week" && result?.evidence) {
+    const why = fortuneWhy(result.evidence);
+    if (!why) return null;
+    const day = kind === "tomorrow" ? "내일" : "오늘";
+    const said = gloss(why.god, why.short);
+    return {
+      ban: `${day} 일진 ${withParticle(why.pillar, "은는")} 네 일간에게 ${is(why.god).ban} ${said.ban}`,
+      yo: `${day} 일진 ${withParticle(why.pillar, "은는")} 일간에게 ${is(why.god).yo} ${said.yo}`,
+      hao: `${day} 일진 ${withParticle(why.pillar, "은는")} 그대 일간에게 ${is(why.god).hao} ${said.hao}`,
+    };
+  }
+  if (content === "star" && kind !== "compat" && Array.isArray(result?.reasons) && result.reasons.length) {
+    const reason = result.reasons[0];
+    const body = bodyNames[reason.body] ?? reason.body;
+    const target = targetName(reason.target);
+    const aspect = aspectNames[reason.angle]?.name ?? "각";
+    const head = `오늘 ${withParticle(body, "이가")}`;
+    return {
+      ban: `${head} 네 ${withParticle(target, "과와")} ${aspect} 각도야.`,
+      yo: `${head} 내 ${withParticle(target, "과와")} ${aspect} 각도예요.`,
+      hao: `${head} 그대의 ${withParticle(target, "과와")} ${aspect} 각도요.`,
+    };
+  }
+  if (content === "tarot") {
+    const first = result?.cards?.[0] ?? result;
+    const card = TAROT_DECK[first?.card as number];
+    const kindRow = card ? tarotBasis(first.card, Boolean(first.reversed))[0] : null;
+    if (card && kindRow) {
+      const kindName = is(kindRow.value.replace(" · ", " "));
+      return {
+        ban: `${card[1]} 카드는 ${kindName.ban}`,
+        yo: `${card[1]} 카드는 ${kindName.yo}`,
+        hao: `${card[1]} 카드는 ${kindName.hao}`,
+      };
+    }
+  }
+  return null;
+}
+
 /** 주제 × 흐름(좋음·조심) × 말투. 한 칸에 두 줄을 두고 질문 글자로 하나를 고른다. */
 const advice: Record<AskTopic, Record<"good" | "care", Record<Voice, readonly [string, string]>>> = {
   love: {
@@ -238,11 +306,14 @@ const because: Record<"good" | "care", Record<Voice, string>> = {
 };
 const careLead: Record<Voice, string> = { ban: "조심할 건 하나야.", yo: "조심할 건 하나예요.", hao: "조심할 것은 하나요." };
 
-export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
+export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string; at?: number }) {
   const tone = voice[input.character];
   const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
   const flow = read.good ? "good" : "care";
-  if (followWhy.test(input.question)) return `${read.line[tone]}\n${because[flow][tone]}`;
+  if (followWhy.test(input.question)) {
+    const evidence = askEvidence(input.content, input.topic, input.result, input.kind, input.at);
+    return [read.line[tone], ...(evidence ? [evidence[tone]] : []), because[flow][tone]].join("\n");
+  }
   if (followCare.test(input.question)) return `${careLead[tone]}\n${advice[input.topic].care[tone][seed(input.question) % 2]}`;
   return more[flow][tone][seed(input.question) % 2];
 }
