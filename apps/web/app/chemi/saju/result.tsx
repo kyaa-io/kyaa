@@ -238,7 +238,7 @@ export function SajuResult({
       <FanAction onClick={saveAdvice}><ReadingText id="saveAdvice" /></FanAction>
       <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
       {view !== "pair" && (
-        <FanAction disabled={sharing} onClick={onShare}><ReadingText id="shareFriend" /></FanAction>
+        <FanAction disabled={sharing} onClick={onShare}><ReadingText id="share" /></FanAction>
       )}
       {view === "first" ? (
         <FanAction onClick={onScene}><ReadingText id="replay" /></FanAction>
