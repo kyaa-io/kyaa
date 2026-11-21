@@ -15,7 +15,7 @@ const command = z.discriminatedUnion("action", [
   z.object({ action: z.literal("sound"), sound: z.boolean() }),
   z.object({ action: z.literal("start"), game: game, character: z.enum(["changha", "elina", "yuna"]), key: z.uuid(), extra: z.boolean() }),
   z.object({ action: z.literal("leave"), playId: z.uuid() }),
-  z.object({ action: z.literal("finish"), playId: z.uuid(), jumps: z.array(z.int()).max(600).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(1000) }),
+  z.object({ action: z.literal("finish"), playId: z.uuid(), inputs: z.array(z.tuple([z.int(), z.int()])).max(6000).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(1000) }),
   z.object({ action: z.literal("challenge"), shareId }),
   z.object({ action: z.literal("trial"), shareId, key: z.uuid() }),
 ]);
@@ -27,7 +27,7 @@ function reply(data: unknown, status = 200) {
 export async function POST(request: Request) {
   if (!chemiEnabled()) return reply({}, 404);
   try {
-    const parsed = command.safeParse(await boundedJson(request, 16384).catch(() => null));
+    const parsed = command.safeParse(await boundedJson(request, 131072).catch(() => null));
     if (!parsed.success) return reply({}, 400);
     const body = parsed.data;
     const selected = game.default("match").safeParse(new URL(request.url).searchParams.get("game") ?? undefined);
@@ -70,13 +70,13 @@ export async function POST(request: Request) {
         let run;
         try {
           if (mode === "run") {
-            run = verifyRun(ticket.seed, body.ticks, body.jumps ?? [], body.score, Date.now() - Date.parse(ticket.issuedAt));
+            run = verifyRun(ticket.seed, body.ticks, body.inputs ?? [], body.score, Date.now() - Date.parse(ticket.issuedAt));
           } else result = verify(ticket.seed, body.ticks, body.moves, body.score, Date.now() - Date.parse(ticket.issuedAt));
         } catch {
           return reply({ error: "INVALID_REPLAY" }, 422);
         }
         if (run) return reply(await rpc("chemi_run_finish", { p_user, p_play: body.playId, p_score: run.score,
-          p_log: { ticks: run.tick, jumps: body.jumps ?? [] } }));
+          p_log: { ticks: run.tick, inputs: body.inputs ?? [] } }));
         if (!result) return reply({}, 422);
         return reply(await rpc("chemi_match_finish_stages", { p_user, p_play: body.playId, p_score: result.score,
           p_log: { stage: result.stage, ticks: result.tick, misses: result.misses, pairs: result.pairs, moves: body.moves } }));

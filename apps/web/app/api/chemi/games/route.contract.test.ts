@@ -66,3 +66,17 @@ it("uses the authenticated viewer for a personal rank", async () => {
   expect(response.status).toBe(200);
   expect(rpc).toHaveBeenCalledWith("chemi_match_ranking", { p_viewer: id, p_friend: null });
 });
+
+it("stores a run only at the score its presses replay to", async () => {
+  const { play } = await import("@/features/chemi/games/run-bot");
+  const { sim, inputs } = play(42, 600);
+  const { tick: ticks, score } = sim.state;
+  const run = (body: object) => POST(new Request("https://example.test/api/chemi/games?game=run", {
+    method: "POST", body: JSON.stringify(body), headers: { authorization: "Bearer fixture", "content-type": "application/json" },
+  }));
+  rpc.mockResolvedValue({ playId: id, seed: 42, issuedAt: new Date(Date.now() - 15000).toISOString() });
+  expect((await run({ action: "finish", playId: id, ticks, score: score + 1, inputs, moves: [] })).status).toBe(422);
+  expect(rpc).toHaveBeenCalledTimes(1);
+  expect((await run({ action: "finish", playId: id, ticks, score, inputs, moves: [] })).status).toBe(200);
+  expect(rpc).toHaveBeenLastCalledWith("chemi_run_finish", { p_user: id, p_play: id, p_score: score, p_log: { ticks, inputs } });
+});
