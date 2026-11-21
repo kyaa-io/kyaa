@@ -21,9 +21,9 @@ afterEach(() => { feedFixture.read = undefined; cleanup(); });
 const notices = (items: unknown[], all = true) => { groupResource.value = { data: { items, nextCursor: null }, error: false, loading: false }; return renderHook(() => useGroupBoardNotices(pageId, "ko", { all })).result.current.items; };
 
 it("reads active notices of the page from the existing posts API and links each to its detail", () => {
-  const rows = notices([notice]);
+  const rows = notices([{ ...notice, commentCount: 0, viewCount: 19, likeCount: 4 }]);
   expect(groupResource.url).toBe(`/api/groups/${pageId}/posts?category=notice&sort=recent&limit=3`);
-  expect(rows).toEqual([expect.objectContaining({ id: postId, title: "운영자 공지 제목", author: "운영자", href: `/pages/groups/${pageId}?locale=ko&tab=board&post=${postId}` })]);
+  expect(rows).toEqual([expect.objectContaining({ id: postId, commentCount: 0, viewCount: 19, likeCount: 4, title: "운영자 공지 제목", author: "운영자", href: `/pages/groups/${pageId}?locale=ko&tab=board&post=${postId}` })]);
 });
 
 it("returns nothing while loading, when empty, on failure and without a page id", () => {

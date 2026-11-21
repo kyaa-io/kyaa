@@ -7,6 +7,7 @@ import styles from "./notice-counts.module.css";
 export function NoticeCounts({ locale, views, comments, likes }: {
   locale: AppLocale; views?: number | null; comments?: number; likes?: number | null;
 }) {
+  if (views == null && comments == null && likes == null) return null;
   const counts = [[views, Eye, "viewsLabel"], [comments, MessageCircle, "commentsLabel"], [likes, Heart, "likesLabel"]] as const;
   return <span className={styles.counts}>{counts.map(([value, icon, label]) => {
     if (value == null) return null;

@@ -7,7 +7,12 @@ import {useGroupResource} from './use-group-resource';
 
 /** The posts API accepts limit 1-100 (default 30); a board shows at most this many operator notices above the feed. */
 export const BOARD_NOTICE_LIMIT=3;
-const noticesSchema=groupPostsSchema.extend({items:z.array(groupPostsSchema.shape.items.element.extend({commentCount:z.number().int().nonnegative().optional()}))});
+const optionalCount = z.number().int().nonnegative().optional();
+const noticesSchema = groupPostsSchema.extend({
+  items: z.array(groupPostsSchema.shape.items.element.extend({
+    commentCount: optionalCount, likeCount: optionalCount, viewCount: optionalCount,
+  })),
+});
 const parseNotices=(value:unknown)=>noticesSchema.parse(value);
 
 /** Active operator notices of a group page (group_posts, category notice). `all` caps the list at BOARD_NOTICE_LIMIT; the notice filter omits the limit so the API default (30) applies.
