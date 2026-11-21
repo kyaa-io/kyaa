@@ -16,8 +16,9 @@
     background: var(--color-surface);
   }
 
-  :global([data-tarot-spread="result"]:has([data-deep-result-ask])),
-  :global([data-star-match="result"]:has([data-deep-result-ask])) {
+  /* CSS 모듈은 로컬 클래스가 든 선택자만 받는다: 질문 버튼 줄(.fixed·.inPanel)로 고른다. */
+  :global([data-tarot-spread="result"]):has(:is(.fixed, .inPanel)),
+  :global([data-star-match="result"]):has(:is(.fixed, .inPanel)) {
     padding-bottom: calc(var(--space-16) + var(--space-4));
   }
 }
