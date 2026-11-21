@@ -38,7 +38,7 @@ const parseComments = (value: unknown) => commentsSchema.parse(value);
 /** Comments of a group post, in the same tinted area as the fan board. The write box comes first and grows when focused. */
 export function GroupPostComments({ pageId, postId, locale, commentCount, canWrite, onJoin, joinPending = false, joinLabel }: { joinLabel?: string; pageId: string; postId: string; locale: AppLocale; commentCount?: number; canWrite: boolean; onJoin?: () => void; joinPending?: boolean }) {
   const t = groupsCopy(locale), b = boardCopy(locale), c = interactionCopy(locale), upload = useWaveMediaUpload("group_post", 5), base = `/api/groups/${pageId}/posts/${postId}/comments`;
-  const [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<{ key: string; items: z.infer<typeof commentsSchema>["items"] }>({ key: "", items: [] }), r = useGroupResource(`${base}${cursor ? `?cursor=${cursor}` : ""}`, parseComments);
+  const [cursor, setCursor] = useState<string>(), [previous, setPrevious] = useState<{ key: string; items: z.infer<typeof commentsSchema>["items"] }>({ key: "", items: [] }), r = useGroupResource(`${base}?fields=editable${cursor ? `&cursor=${cursor}` : ""}`, parseComments);
   const k = groupCommentCopy(locale);
   // The main box writes top-level comments only; a reply has its own box under the comment it answers.
   const [draft, setDraft] = useState(""), [reply, setReply] = useState<{ parentId: string; draft: string } | null>(null), [busy, setBusy] = useState<"comment" | "reply" | null>(null), request = useRef<{ signature: string; requestId: string } | undefined>(undefined);

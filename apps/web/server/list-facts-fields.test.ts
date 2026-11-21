@@ -34,6 +34,8 @@ describe("group directory and comment facts", () => {
     const s = setup();
     expect((await s.handler("comments", req("/api?fields=replies"), { id: page, itemId: post })).status).toBe(200);
     expect(s.rpc).toHaveBeenLastCalledWith("groups_content_dispatch", expect.objectContaining({ p_operation: "comments", p_input: expect.objectContaining({ fields: "replies" }) }));
+    expect((await s.handler("comments", req("/api?fields=editable"), { id: page, itemId: post })).status).toBe(200);
+    expect(s.rpc).toHaveBeenLastCalledWith("group_member_comments", expect.objectContaining({ p_operation: "comments" }));
     expect((await s.handler("comments", req("/api"), { id: page, itemId: post })).status).toBe(200);
     expect(s.rpc.mock.lastCall?.[1].p_input).not.toHaveProperty("fields");
     expect((await s.handler("posts", req("/api?fields=replies"), { id: page })).status).toBe(200);
