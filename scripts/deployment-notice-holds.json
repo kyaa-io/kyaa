@@ -60,7 +60,8 @@
     "release-notes/2026-11-21-chemi-ask-ai.json",
     "release-notes/2026-11-21-chemi-immersive-chat-r2.json",
     "release-notes/2026-11-21-chemi-run-benchmark.json",
-    "release-notes/2026-11-22-chemi-fix-r6.json"
+    "release-notes/2026-11-22-chemi-fix-r6.json",
+    "release-notes/2026-11-22-chemi-fix-r7.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

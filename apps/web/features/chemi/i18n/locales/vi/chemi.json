@@ -368,6 +368,7 @@
     "shareAffinityBonus": "Độ thân thiết với Mini {name} +5",
     "askFromResult": "Hỏi về kết quả này",
     "askLeft": "Câu hỏi",
+    "askDays": "Ngày {count}",
     "askLeftLabel": "Còn {count} câu hỏi",
     "askHistory": "Câu hỏi đã hỏi",
     "askTopics": "Chủ đề",

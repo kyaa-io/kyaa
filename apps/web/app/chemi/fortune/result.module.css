@@ -373,6 +373,10 @@
   }
 }
 @media (min-width: 64rem) {
+  /* 오른쪽 열(최애 한마디·분야 6줄·다른 날짜·더 보기)과 아래 끝이 가깝도록 원화를 2:1 로 넉넉히 보인다. */
+  .hero img {
+    aspect-ratio: 2;
+  }
   .layout {
     grid-template-columns: minmax(0, 1fr) 22.5rem;
     column-gap: var(--space-6);
@@ -465,10 +469,13 @@
   .layout .reaction { order: 1; }
 }
 @media (min-width: 64rem) {
+  /* 두 열은 위에서부터 붙여 쌓는다(열 안을 벌려 끝선을 맞추지 않는다). 짧은 오른쪽 열은 머리줄 아래에 붙어 본문을 따라온다. */
   .layout > .side,
   .layout > .main {
-    align-self: stretch;
-    grid-template-rows: auto;
-    align-content: space-between;
+    align-self: start;
+  }
+  .layout > .side {
+    position: sticky;
+    top: calc(var(--fan-header-height) + var(--space-6));
   }
 }

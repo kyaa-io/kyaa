@@ -36,8 +36,8 @@ export type GrowthState = { minis: Mini[]; full: string[]; fresh: { character: C
 const SLOT_LEVELS = [5, 10, 15, 20, 30];
 /** 사진이 준비된 칸 수(Lv 20·30 사진은 다음 제작분). */
 const PHOTO_SLOTS = 4;
-/** 콘텐츠가 주는 친밀 EXP 와 기록 이름. DB `chemi_complete_reading`·`chemi_match_finish` 와 같아야 한다. */
-const EARN = { fortune: ["fortune", 10], saju: ["saju", 20], zodiac: ["star", 10], tarot: ["tarot", 10], pair: ["match", 10] } as const;
+/** 콘텐츠가 주는 친밀 EXP 와 기록 이름. DB `chemi_complete_reading`·`chemi_match_finish`·`chemi_run_finish` 와 같아야 한다. */
+const EARN = { fortune: ["fortune", 10], saju: ["saju", 20], zodiac: ["star", 10], tarot: ["tarot", 10], pair: ["match", 10], run: ["run", 10] } as const;
 
 const stageOf = (level: number): Stage => (level >= 15 ? "star" : level >= 5 ? "kid" : "baby");
 const fill = (text: string, values: Record<string, string | number>) =>
@@ -111,12 +111,13 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
   const next = 10 * (mini.level + 1) ** 2;
   const rows = entries.flatMap(([id, , readingPath]) => {
     if (!(id in EARN)) return [];
-    const path = id === "pair" ? (matchAvailable ? "/chemi/games/match" : null) : readingPath;
+    const game = id === "pair" || id === "run";
+    const path = game && !matchAvailable ? null : readingPath;
     if (!path) return [];
     const [source, exp] = EARN[id as keyof typeof EARN];
     const got = mini.today.includes(source);
     const href = `${path}?locale=${locale}${id === "tarot" ? `&c=${mini.character}` : ""}`;
-    return [{ id, href, exp, got, full: !got && data.full.includes(source), game: id === "pair" }];
+    return [{ id, href, exp, got, full: !got && data.full.includes(source), game }];
   });
   const todo = [...rows].sort((a, b) => b.exp - a.exp).find((row) => !row.got && !row.full);
   const adopt = async () => {

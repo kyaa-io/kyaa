@@ -122,7 +122,7 @@ function Rankings({
     <section className={styles.ranking} aria-label={copy.ranking}>
       <FanHeading as="h2">{copy.ranking}</FanHeading>
       {!rows.length && <p>{copy.emptyRanking}</p>}
-      <ol>
+      <ol data-lobby={full ? undefined : ""}>
         {[...displayed, ...(mineOutside ? [me] : [])].map((row, i) => (
           <li
             data-row=""
@@ -147,6 +147,12 @@ function Rankings({
             </span>
             <FanText role="meta">{copy[row.character]}</FanText>
             <b>{row.score?.toLocaleString() ?? clock(row.ticks)}</b>
+          </li>
+        ))}
+        {/* 로비의 랭킹은 늘 세 줄 높이다: 기록이 없는 순위는 숫자만 흐리게 둔다(최애 런 로비와 같다). */}
+        {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, i) => (
+          <li data-row="" key={`empty-${i}`} className={styles.vacant} aria-hidden="true">
+            <b>{displayed.length + i + 1}</b>
           </li>
         ))}
       </ol>
@@ -635,7 +641,7 @@ function Session({
                     </div>
                   ) : scene}
                   {/* 기획 08-1: 판 정보의 '음악' 줄. 이름표를 붙여 사진 설명으로 읽히지 않게 한다. */}
-                  <p><FanText role="meta">{copy.sound}</FanText> <FanText role="label">{["Magic Puzzle In-Game 1","Magic Puzzle In-Game 2","Cozy Puzzle In-Game 1"][characters.indexOf(character)]} · CC0</FanText></p>
+                  <p><FanText role="meta">{copy.sound}</FanText> <FanText role="label">{(locale === "ko" ? ["매직 퍼즐 1", "매직 퍼즐 2", "코지 퍼즐 1"] : ["Magic Puzzle 1", "Magic Puzzle 2", "Cozy Puzzle 1"])[characters.indexOf(character)]}</FanText></p>
                 </div>
                 {levelList}
                 <div className={styles.startAction}>

@@ -368,6 +368,7 @@
     "shareAffinityBonus": "Keakraban dengan Mini {name} +5",
     "askFromResult": "Tanya tentang hasil ini",
     "askLeft": "Pertanyaan",
+    "askDays": "Hari ke-{count}",
     "askLeftLabel": "Sisa {count} pertanyaan",
     "askHistory": "Pertanyaan sebelumnya",
     "askTopics": "Topik",

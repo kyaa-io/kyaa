@@ -1,16 +1,17 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { ASK_TOPICS, type AskTopic } from "./lines";
+import { ASK_REACTIONS, ASK_TOPICS, type AskReaction, type AskTopic } from "./lines";
 
 /**
  * 질문하기 단계는 주소에 둔다(L133): 뒤로 가기는 한 단계만 돌아가고, 새로 고쳐도 같은 단계가 열린다.
  * ask=topic(주제 고르기) · write(질문 쓰기, at=주제) · answer(답, aq=질문 번호) · follow(이어 묻기, aq=질문 번호)
+ * 답을 듣고 고른 반응은 av 에 둔다: 새로 고치거나 다시 열어도 그 반응과 그에 맞춘 이어 묻기 예시 순서가 남는다.
  */
 export type AskLocation =
   | { step: "topic" }
   | { step: "write"; topic: AskTopic }
-  | { step: "answer" | "follow"; thread: string };
+  | { step: "answer" | "follow"; thread: string; react?: AskReaction };
 
 const EVENT = "chemi-ask-navigation";
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -22,7 +23,10 @@ function parse(search: string): AskLocation | null {
   const topic = params.get("at") as AskTopic;
   if (step === "topic") return { step };
   if (step === "write" && ASK_TOPICS.includes(topic)) return { step, topic };
-  if ((step === "answer" || step === "follow") && uuid.test(thread)) return { step, thread };
+  if ((step === "answer" || step === "follow") && uuid.test(thread)) {
+    const react = ASK_REACTIONS.find((kind) => kind === params.get("av"));
+    return react ? { step, thread, react } : { step, thread };
+  }
   return null;
 }
 
@@ -43,11 +47,14 @@ export function useAskLocation() {
 /** 질문 단계로 간다. null 이면 질문 화면을 닫고 결과로 돌아간다. */
 export function askGo(next: AskLocation | null, mode: "push" | "replace" = "push") {
   const url = new URL(location.href);
-  for (const key of ["ask", "at", "aq"]) url.searchParams.delete(key);
+  for (const key of ["ask", "at", "aq", "av"]) url.searchParams.delete(key);
   if (next) {
     url.searchParams.set("ask", next.step);
     if (next.step === "write") url.searchParams.set("at", next.topic);
-    if (next.step === "answer" || next.step === "follow") url.searchParams.set("aq", next.thread);
+    if (next.step === "answer" || next.step === "follow") {
+      url.searchParams.set("aq", next.thread);
+      if (next.react) url.searchParams.set("av", next.react);
+    }
   }
   const depth = (history.state?.chemiAsk as number | undefined) ?? 0;
   if (mode === "push") history.pushState({ ...history.state, chemiAsk: depth + 1 }, "", url);
@@ -61,7 +68,7 @@ export function askGo(next: AskLocation | null, mode: "push" | "replace" = "push
  */
 export function askOpenWith(params: Record<string, string | null>, state: Record<string, unknown>) {
   const url = new URL(location.href);
-  for (const [key, value] of Object.entries({ ...params, at: null, aq: null }))
+  for (const [key, value] of Object.entries({ ...params, at: null, aq: null, av: null }))
     if (value === null) url.searchParams.delete(key);
     else url.searchParams.set(key, value);
   url.searchParams.set("ask", "topic");

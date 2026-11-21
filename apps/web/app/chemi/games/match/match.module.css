@@ -413,8 +413,10 @@
   color: var(--color-ink);
 }
 .layout[data-playing="true"] .ranking { display: none; }
+/* 390 플레이: 다섯 단계 표는 카드판 아래에 놓여 지금 단계를 알려 주고 화면 아래 빈 띠를 채운다. */
 @media (width < 48rem) {
-  .layout[data-playing="true"] .levelList { display: none; }
+  .layout[data-playing="true"] .levelList { order: 1; }
+  .layout[data-playing="true"] .levelList li { border-bottom: 0; border-top: 1px solid var(--color-line); }
 }
 @media (width >= 48rem) {
   .shell { max-width: 1248px; }
@@ -469,7 +471,7 @@
   .shell[data-stage="play"] .content { gap: var(--space-2); }
   .shell[data-stage="play"] .board > * { aspect-ratio: auto; }
   .shell[data-stage="play"] .board {
-    height: min(66dvh, 155vw);
+    height: min(calc(100dvh - 17rem), 165vw);
     grid-auto-rows: minmax(0, 1fr);
   }
 }
@@ -527,3 +529,18 @@
   .layout[data-lobby="true"] .startAction { grid-column: 3; }
 }
 .hud[data-urgent="true"] > :first-child { color: var(--color-error); }
+
+/* 뒷면 카드는 마우스가 올라가도 무늬를 지킨다(빈 카드·맞춘 카드처럼 보이지 않게). 올라간 카드는 테두리만 진해진다. */
+.card button[data-fan-action]:is(:hover, :active) { background: transparent; }
+@media (hover: hover) {
+  .card[data-open="false"]:hover { border-color: var(--color-ink); }
+}
+/* 로비 랭킹의 빈 순위: 순위 숫자만 흐리게 */
+.ranking .vacant { opacity: 0.32; }
+@media (width >= 48rem) {
+  /* 오른쪽 열은 대표 사진과 위아래 끝이 같다: 다섯 단계 표가 남는 높이를 나눠 갖고, 시작 버튼이 사진 아래 끝에 선다. */
+  .layout[data-lobby="true"] { grid-template-rows: auto minmax(0, 1fr) auto auto auto; }
+  .layout[data-lobby="true"] .levelList { align-self: stretch; grid-auto-rows: minmax(0, 1fr); }
+  .layout[data-lobby="true"] .levelList li { align-items: center; }
+  .layout[data-lobby="true"] .startAction { grid-row: 5; align-self: end; }
+}

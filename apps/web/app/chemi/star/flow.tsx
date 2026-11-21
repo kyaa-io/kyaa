@@ -398,6 +398,15 @@ export function StarFlow({
     setStep(next);
   }
 
+  /** 대화의 두 번째 선택지: 바로 다음 이야기를 건너뛰고 그다음 이야기를 먼저 듣는다(마지막 앞에서는 정리로 간다). */
+  function skipAhead() {
+    const talk = starTalkNumber(step);
+    if (!talk || talk >= 3) return openResult();
+    const next = `talk-${talk + 2}` as StarStep;
+    writeUrl({ step: next }, "push");
+    setStep(next);
+  }
+
   const result = reading?.result;
   const derived = useMemo(() => {
     if (!reading || !result) return null;
@@ -693,6 +702,11 @@ export function StarFlow({
                 >
                   {primaryLabel}
                 </FanAction>
+                {talk && talk < 4 && (
+                  <FanAction variant="neutral" onClick={skipAhead}>
+                    {text(talkChoice[talk as 1 | 2 | 3])}
+                  </FanAction>
+                )}
               </div>
             )}
           </div>

@@ -368,6 +368,7 @@
     "shareAffinityBonus": "Affinité avec Mini {name} +5",
     "askFromResult": "Poser une question sur ce résultat",
     "askLeft": "Questions",
+    "askDays": "Jour {count}",
     "askLeftLabel": "Il reste {count} questions",
     "askHistory": "Questions passées",
     "askTopics": "Thème",

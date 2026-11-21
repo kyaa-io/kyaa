@@ -368,6 +368,7 @@
     "shareAffinityBonus": "Близость с мини-{name} +5",
     "askFromResult": "Спросить об этом результате",
     "askLeft": "Вопросы",
+    "askDays": "День {count}",
     "askLeftLabel": "Осталось вопросов: {count}",
     "askHistory": "Прошлые вопросы",
     "askTopics": "Тема",

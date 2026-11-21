@@ -1012,3 +1012,11 @@
 :global(main):has(.chips) > :global([data-chemi-list-link]) {
   display: none;
 }
+
+@media (min-width: 64rem) {
+  /* 결과의 짧은 오른쪽 열은 머리줄 아래에 붙어 본문을 따라온다(본문 옆이 비지 않는다). */
+  .colAside {
+    position: sticky;
+    top: calc(var(--fan-header-height) + var(--space-6));
+  }
+}

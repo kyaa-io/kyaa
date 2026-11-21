@@ -36,7 +36,8 @@ it("shows the raised mini, its level and today's remaining contents", async () =
   expect(screen.getByText("받음")).toBeTruthy();
   expect(screen.getByText("오늘 다 받음")).toBeTruthy();
   expect(screen.getByRole("link", { name: "최애 사주 보기" }).getAttribute("href")).toBe("/chemi/saju?locale=ko");
-  expect(screen.queryByText("최애 런")).toBeNull();
+  // 최애 런도 하루 친밀을 준다(chemi_run_finish).
+  expect(screen.getByRole("link", { name: /최애 런/ }).getAttribute("href")).toBe("/chemi/games/run?locale=ko");
 });
 
 it("starts raising a creator that is not raised yet", async () => {
