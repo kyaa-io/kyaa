@@ -102,7 +102,7 @@ it("runs the image vote then quiz, using server reward values on the final resul
  expect(screen.getByRole("button", { name: "취향 고르기 완료" })).toBeDisabled();
  fireEvent.click(screen.getByRole("radio", { name: "하트" }));
  fireEvent.click(screen.getByRole("button", { name: "정답 확인하기" }));
- expect(await screen.findByRole("heading", { name: /덕질 두 가지.*모두 완료/ })).toHaveFocus();
+ await waitFor(() => expect(screen.getByRole("heading", { name: /덕질 두 가지.*모두 완료/ })).toHaveFocus());
  expect(screen.getByRole("status")).toHaveTextContent("정답이에요");
  expect([...document.querySelectorAll("img")].some(image => decodeURIComponent(image.src).includes("/images/credentials/v2/mission.png"))).toBe(true);
  expect(screen.getByText("+3")).toBeInTheDocument();
