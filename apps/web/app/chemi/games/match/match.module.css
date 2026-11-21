@@ -438,3 +438,59 @@
 
 .board[data-columns="4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .board[data-columns="5"] { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+.lobbyHero {
+  overflow: hidden;
+  border-radius: var(--radius-media);
+  color: var(--color-surface);
+  background: var(--color-ink);
+}
+.lobbyHero .scene { border-radius: 0; }
+.lobbyHero p { padding: var(--space-3) var(--space-4); }
+.stageLine {
+  align-items: baseline;
+  border-bottom: 2px solid var(--color-ink);
+  padding-bottom: var(--space-2);
+}
+.stageLine strong { font-variant-numeric: tabular-nums; }
+.content progress[data-urgent="true"] { accent-color: var(--color-danger); }
+@media (width < 48rem) {
+  .shell[data-stage="start"] .choices button > span { position: relative; }
+  .shell[data-stage="start"] .choices img { aspect-ratio: 4 / 3; }
+  .shell[data-stage="start"] .choices [data-fan-text] {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    color: var(--color-surface);
+    background: var(--color-ink);
+  }
+  .shell[data-stage="play"] .content { gap: var(--space-2); }
+  .shell[data-stage="play"] .board > * { aspect-ratio: auto; }
+  .shell[data-stage="play"] .board {
+    height: min(66dvh, 155vw);
+    grid-auto-rows: minmax(0, 1fr);
+  }
+}
+@media (width >= 48rem) {
+  .shell[data-stage="start"] .content {
+    grid-template-columns: 140px minmax(0, 1fr);
+    align-content: start;
+  }
+  .shell[data-stage="start"] .choices { grid-column: 1; grid-template-columns: 1fr; }
+  .lobbyHero { grid-column: 2; grid-row: 1 / span 4; align-self: stretch; }
+  .lobbyHero .scene { height: calc(100% - var(--space-12)); aspect-ratio: auto; }
+  .shell[data-stage="start"] .levelList { grid-column: 1 / -1; }
+}
+
+.clearPanel {
+  width: min(100%, 480px);
+  margin: auto;
+  border: 0;
+  border-radius: var(--radius-media);
+  padding: var(--space-4);
+  color: var(--color-ink);
+}
+.clearPanel::backdrop { background: color-mix(in srgb, var(--color-ink) 52%, transparent); }
+@media (width < 48rem) {
+  .clearPanel { margin: auto auto 0; padding-bottom: max(var(--space-4), env(safe-area-inset-bottom)); }
+}

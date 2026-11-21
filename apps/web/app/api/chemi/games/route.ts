@@ -14,7 +14,7 @@ const command = z.discriminatedUnion("action", [
   z.object({ action: z.literal("sound"), sound: z.boolean() }),
   z.object({ action: z.literal("start"), game: game, character: z.enum(["changha", "elina", "yuna"]), key: z.uuid(), extra: z.boolean() }),
   z.object({ action: z.literal("leave"), playId: z.uuid() }),
-  z.object({ action: z.literal("finish"), playId: z.uuid(), jumps: z.array(z.int()).max(600).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(600) }),
+  z.object({ action: z.literal("finish"), playId: z.uuid(), jumps: z.array(z.int()).max(600).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(1000) }),
   z.object({ action: z.literal("challenge"), shareId }),
   z.object({ action: z.literal("trial"), shareId, key: z.uuid() }),
 ]);

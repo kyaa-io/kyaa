@@ -39,6 +39,9 @@ afterEach(() => {
 });
 
 it("plays all five seeded boards, reveals a miss, pauses and submits exactly one result", async () => {
+  Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+    configurable: true, value(this: HTMLDialogElement) { this.open = true; },
+  });
   const requests: Record<string, unknown>[] = [];
   const lobby = {
     sound: false,

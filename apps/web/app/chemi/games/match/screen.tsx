@@ -89,6 +89,15 @@ function StageAction({
   );
 }
 
+function ClearDialog({ label, children }: { label: string; children: ReactNode }) {
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    dialog.current?.showModal?.();
+  }, []);
+  return <dialog ref={dialog} className={styles.clearPanel} aria-label={label}
+    onCancel={event => event.preventDefault()}>{children}</dialog>;
+}
+
 function clock(ticks: number) {
   const seconds = Math.floor(ticks / FPS);
   return [Math.floor(seconds / 60), seconds % 60]
@@ -343,7 +352,7 @@ function Session({
       setLobby(await call<Lobby>({ action: "lobby" }));
     });
   }
-  const { view, tap, nextLevel } = useMatchRound(ticket, stage !== "play", submit);
+  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play", submit);
   useEffect(() => {
     if (!ticket || !["play", "pause"].includes(stage)) return;
     const visibility = () => {
@@ -396,6 +405,19 @@ function Session({
       window.removeEventListener("pageshow", restore);
     };
   }, [ticket, stage]);
+  useEffect(() => {
+    if (!sound || stage !== "play") return;
+    const song = new Audio(`/chemi/match/${character}.mp3`);
+    song.loop = true;
+    song.volume = 0.35;
+    const play = () => { void song.play().catch(() => {}); };
+    play();
+    window.addEventListener("pointerdown", play, {once: true});
+    return () => {
+      window.removeEventListener("pointerdown", play);
+      song.pause();
+    };
+  }, [sound, character, stage]);
   function ring(enable: boolean) {
     if (!enable) return;
     try {
@@ -493,9 +515,9 @@ function Session({
   const scene = (
     <div className={styles.scene}>
       <Image
-        width={1040}
+        width={1440}
         height={550}
-        sizes="(min-width: 768px) 520px, 100vw"
+        sizes="(min-width: 768px) 50vw, 100vw"
         alt=""
         src={art.scene}
         data-character={character}
@@ -511,12 +533,12 @@ function Session({
     reminder: copy.reminder,
   }[stage];
   return (
-    <main className={styles.shell}>
+    <main className={styles.shell} data-stage={stage}>
       <header className={styles.header}>
         <FanIconButton type="button" aria-label={copy.back} onClick={back}>
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
-        <FanHeading as="h1">{title}</FanHeading>
+        <FanHeading as="h1">{active ? copy.round + " " + active.stage + " / 5" : title}</FanHeading>
         <FanIconButton
           type="button"
           disabled={working}
@@ -591,7 +613,7 @@ function Session({
                       <Image
                         width={348}
                         height={464}
-                        sizes="(min-width: 768px) 168px, 30vw"
+                        sizes="(min-width: 768px) 210px, 33vw"
                         alt=""
                         src={photos[c].portrait}
                       />
@@ -599,7 +621,10 @@ function Session({
                     </FanAction>
                   ))}
                 </div>
-                {scene}
+                <div className={styles.lobbyHero}>
+                  {scene}
+                  <p><b>{copy[character]}</b> · {["Magic Puzzle In-Game 1","Magic Puzzle In-Game 2","Cozy Puzzle In-Game 1"][characters.indexOf(character)]} · CC0</p>
+                </div>
                 {levelList}
                 <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}>
                   {copy[character]} · {copy.start}
@@ -618,8 +643,8 @@ function Session({
             ))}
           {active && (
             <>
-              <div className={styles.stageLine}>{copy.round} {active.stage} / {LEVELS.length} <strong>TOTAL SCORE · {active.score.toLocaleString(locale)}</strong></div>
-              <progress aria-label={copy.time} value={active.remaining} max={LEVELS[active.stage-1].seconds * FPS} />
+              <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong></div>
+              <progress aria-label={copy.time} data-urgent={active.remaining <= FPS * 10} value={active.remaining} max={LEVELS[active.stage-1].seconds * FPS} />
               <dl className={styles.hud}>
                 <div>
                   <FanText as="dt" role="meta">
@@ -696,9 +721,9 @@ function Session({
                       >
                         {open ? (
                           <Image
-                            width={336}
-                            height={448}
-                            sizes="(min-width: 768px) 168px, 30vw"
+                            width={640}
+                            height={800}
+                            sizes="(min-width: 768px) 210px, 33vw"
                             src={faces[photo]}
                             alt=""
                           />
@@ -716,11 +741,12 @@ function Session({
                   );
                 })}
               </div>
-              {active.cleared && <div className={styles.clearPanel} role="region" aria-label={copy.completed}>
+              {active.cleared && <ClearDialog label={copy.completed}>
                 <FanHeading>{copy.round} {active.stage} · {copy.completed}</FanHeading>
-                <p>{copy.pairs} +{active.stagePairs * 100} · CLEAR +500 · {copy.time} +{Math.floor(active.remaining / FPS)*10} · ◎ +{Math.floor(active.stagePairs ** 2 * 100 / active.attempts)}</p>
+                <p>{copy.pairs} +{active.stagePairs * 100} · CLEAR +500 · {copy.time} +{Math.floor(active.remaining / FPS)*10} · {copy.accuracy} +{Math.floor(active.stagePairs ** 2 * 100 / active.attempts)}</p>
                 <StageAction onClick={nextLevel}>{copy.round} {active.stage+1} · {copy.start}</StageAction>
-              </div>}
+                <FanAction onClick={finishLevel}>{copy.result}</FanAction>
+              </ClearDialog>}
             </>
           )}
           {stage === "pause" && (
@@ -791,7 +817,8 @@ function Session({
                 {copy[character]} ·{" "}
                 {view.cleared ? copy.completed : copy.timeUp}
               </FanHeading>
-              <strong>TOTAL SCORE · {view.score.toLocaleString(locale)}</strong>
+              <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{view.score.toLocaleString(locale)}</strong></div>
+              <p>{copy.pairs} +{view.pairs * 100} · CLEAR +{view.clearPoints} · {copy.time} +{view.timePoints} · {copy.accuracy} +{view.accuracyPoints}</p>
               <div className={styles.souvenir}>
                 {art.cards.slice(0, 2).map((src) => (
                   <Image

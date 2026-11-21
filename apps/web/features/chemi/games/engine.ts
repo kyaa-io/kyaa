@@ -25,7 +25,7 @@ export function board(seed: number, game: "match", stage = 1) {
 
 export function round(game: "match", seed: number) {
   const layout = board(seed, game);
-  const state = { tick: 0, stage: 1, misses: 0, pairs: 0, stagePairs: 0, attempts: 0, remaining: LEVELS[0].seconds * FPS, cleared: false, first: -1, second: -1, matched: 0, done: false, score: 0 };
+  const state = { tick: 0, stage: 1, misses: 0, pairs: 0, clearPoints: 0, timePoints: 0, accuracyPoints: 0, stagePairs: 0, attempts: 0, remaining: LEVELS[0].seconds * FPS, cleared: false, first: -1, second: -1, matched: 0, done: false, score: 0 };
   let revealUntil = 0;
   let lastTap = -6;
 
@@ -67,8 +67,12 @@ export function round(game: "match", seed: number) {
     state.cleared = state.stagePairs === LEVELS[state.stage - 1].pairs;
     state.done = (!state.cleared && state.remaining === 0) || (state.cleared && state.stage === LEVELS.length);
     if (state.cleared || state.done) {
-      state.score += Math.floor(state.stagePairs ** 2 * 100 / Math.max(1, state.attempts));
-      if (state.cleared) state.score += 500 + Math.floor(state.remaining / FPS) * 10;
+      state.accuracyPoints += Math.floor(state.stagePairs ** 2 * 100 / Math.max(1, state.attempts));
+      if (state.cleared) {
+        state.clearPoints += 500;
+        state.timePoints += Math.floor(state.remaining / FPS) * 10;
+      }
+      state.score = state.pairs * 100 + state.clearPoints + state.timePoints + state.accuracyPoints;
     }
   }
   return { layout, state, step };
@@ -90,6 +94,6 @@ export function verify(seed: number, ticks: number, moves: Move[], claimed: numb
     if (input !== undefined && input >= sim.layout.length) throw Error("INVALID_MOVE");
     sim.step(input);
   }
-  if (!sim.state.done || sim.state.score !== claimed) throw Error("INVALID_SCORE");
+  if ((!sim.state.done && !sim.state.cleared) || sim.state.score !== claimed) throw Error("INVALID_SCORE");
   return sim.state;
 }
