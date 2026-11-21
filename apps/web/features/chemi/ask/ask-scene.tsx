@@ -660,7 +660,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? (ending ? "close" : "speak") : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
-    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-beat={view.startsWith("answer") && reacted?.thread === shown?.threadId && reacted.complete === Boolean(shown?.followupAnswer) ? reacted.kind : undefined}>
+    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-beat={reacted && shown && view.startsWith("answer") && reacted.thread === shown.threadId && reacted.complete === Boolean(shown.followupAnswer) ? reacted.kind : undefined}>
       <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name} />
       <div className={styles.top}>
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
