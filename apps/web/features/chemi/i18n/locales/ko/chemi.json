@@ -30,7 +30,10 @@
     "resume": "재생",
     "filter": "콘텐츠 종류",
     "creator": "창하",
-    "rankings": "이번 주 랭킹"
+    "rankings": "이번 주 랭킹",
+    "rankingOf": "{game} 랭킹",
+    "thisWeek": "이번 주",
+    "myRecord": "내 기록"
   },
   "myBirth": {
     "title": "내 생일 정보",

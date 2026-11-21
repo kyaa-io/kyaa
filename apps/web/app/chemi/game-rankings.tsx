@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
-import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { FanSurface } from "@/components/fan-ui/fan-surface";
 import styles from "./home.module.css";
 
 type RecordRow = {
@@ -16,6 +17,7 @@ type RecordRow = {
   avatar?: string;
   change: number;
   record: string;
+  isMe?: boolean;
 };
 export type GameRanking = {
   game: "pair" | "run";
@@ -25,6 +27,8 @@ export type GameRanking = {
   leaders: readonly RecordRow[];
   mine: RecordRow | null;
 };
+
+const SLOTS = [1, 2, 3] as const;
 
 function RankingRow({ row }: { row: RecordRow }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -37,60 +41,75 @@ function RankingRow({ row }: { row: RecordRow }) {
     previous.current = row;
   }, [row]);
   return (
-    <div className={styles.rankRow} ref={ref}>
-      <strong data-flash-target="gain">{row.place}</strong>
+    <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
+      <FanText role="body" data-flash-target="gain">{row.place}</FanText>
       {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{Array.from(row.name)[0]}</span>}
       <div>
-        <b>{row.name}</b>
+        <FanText role="item">{row.name}</FanText>
         {row.change !== 0 && (
-          <small>
+          <FanText role="meta">
             {row.change > 0 ? "▲" : "▼"}
             {Math.abs(row.change)}
-          </small>
+          </FanText>
         )}
       </div>
-      <strong data-flash-target="value">{row.record}</strong>
+      <FanText role="body" data-flash-target="value">{row.record}</FanText>
     </div>
   );
 }
 
-export function GameRankings({ games, label, empty, error, retry, retryLabel, playLabel, mineLabel }: {
+export function GameRankings({ games, label, weekLabel, mineLabel, empty, error, retry, retryLabel }: {
   label: string;
   games: readonly GameRanking[];
+  weekLabel?: string;
+  mineLabel?: string;
   empty?: string;
   error?: string;
   retry?: () => void;
   retryLabel?: string;
-  playLabel?: string;
-  mineLabel?: string;
 }) {
-  const [active, setActive] = useState<GameRanking["game"]>(games[0]?.game ?? "pair");
   return (
-    <aside className={styles.rankingRail} aria-label={label}>
-      <FanHeading>{label}</FanHeading>
-      <div className={styles.rankingTabs}>
-        <FanTabs variant="chip" label={label} current={active}
-          items={games.map(({ game, title }) => ({ key: game, label: title, onSelect: () => setActive(game) }))} />
-      </div>
-      <div className={styles.rankings} tabIndex={0} role="region" aria-label={label}>
-        {games.map((game) => (
-          <section className={styles.rankCard} key={game.game} data-active={game.game === active} aria-busy={game.status === "loading"}>
-            <FanHeading as="h3">{game.title}</FanHeading>
-            {game.status === "loading" ? <FanSkeleton height={48} /> : game.status === "error" ? (
-              <FanText role="meta">{error}</FanText>
-            ) : game.leaders.length ? (
-              <div className={styles.leaders}>
-                {game.leaders.map((row) => <RankingRow key={row.id} row={row} />)}
-              </div>
-            ) : <FanText role="meta">{empty}</FanText>}
-            <div className={styles.rankMine}>
-              {game.mine ? <RankingRow row={game.mine} /> : game.leaders.length > 0 && <FanText role="meta">{mineLabel} · —</FanText>}
+    <aside className={styles.rankings} tabIndex={0} aria-label={label}>
+      {games.map((game) => {
+        const inTop = game.leaders.some((row) => row.isMe);
+        return (
+          <FanSurface className={styles.rankCard} key={game.game} aria-busy={game.status === "loading"}>
+            <header>
+              <img src={`/chemi/thumb-${game.game}-128-v2.webp`} alt="" />
+              <FanHeading as="h3">{game.title}</FanHeading>
+              {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${weekLabel}`}>{weekLabel}</FanSectionLink>}
+            </header>
+            <div className={styles.leaders}>
+              {game.status === "loading" ? <FanSkeleton height={48} /> : game.status === "error" ? (
+                <>
+                  <FanText role="meta">{error}</FanText>
+                  <FanAction size="sm" onClick={retry}>{retryLabel}</FanAction>
+                </>
+              ) : SLOTS.map((place, index) => {
+                const row = game.leaders[index];
+                return row ? <RankingRow key={row.id} row={row} /> : (
+                  <div className={styles.rankRow} key={place} data-open="" aria-hidden="true">
+                    <FanText role="body">{place}</FanText>
+                    <span className={styles.rankAvatar} />
+                  </div>
+                );
+              })}
             </div>
-            {game.status === "error" ? <FanAction onClick={retry}>{retryLabel}</FanAction>
-              : game.href && <FanAction href={game.href}>{playLabel}</FanAction>}
-          </section>
-        ))}
-      </div>
+            {inTop ? <div className={styles.rankMine} data-open="" aria-hidden="true" /> : game.mine ? (
+              <div className={styles.rankMine}>
+                <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
+                <span className={styles.rankAvatar} aria-hidden="true" />
+                <FanText role="body">{mineLabel}</FanText>
+                <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
+              </div>
+            ) : (
+              <div className={styles.rankMine} data-first="">
+                {game.status !== "ready" ? null : game.href ? <FanSectionLink href={game.href}>{empty}</FanSectionLink> : <FanText role="meta">{empty}</FanText>}
+              </div>
+            )}
+          </FanSurface>
+        );
+      })}
     </aside>
   );
 }

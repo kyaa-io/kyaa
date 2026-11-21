@@ -30,7 +30,10 @@
     "resume": "再生",
     "filter": "種類",
     "creator": "チャンハ",
-    "rankings": "週間ランキング"
+    "rankings": "週間ランキング",
+    "rankingOf": "{game}ランキング",
+    "thisWeek": "今週",
+    "myRecord": "自分の記録"
   },
   "myBirth": {
     "title": "",

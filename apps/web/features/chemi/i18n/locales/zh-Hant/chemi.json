@@ -30,7 +30,10 @@
     "resume": "播放",
     "filter": "內容類別",
     "creator": "昌河",
-    "rankings": "本週排名"
+    "rankings": "本週排名",
+    "rankingOf": "{game}排名",
+    "thisWeek": "本週",
+    "myRecord": "我的紀錄"
   },
   "myBirth": {
     "title": "",

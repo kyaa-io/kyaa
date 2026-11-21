@@ -21,7 +21,7 @@ it("filters the six activities and keeps the game rankings visible", () => {
   expect(screen.getAllByText(copy.pair).some((node) => node.closest("[data-selected]"))).toBe(true);
   expect(screen.getByRole("complementary")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: copy.readings }));
-  expect(screen.getAllByText(copy.pair).some((node) => node.closest("[data-selected]"))).toBe(false);
+  expect(screen.queryAllByText(copy.pair).some((node) => node.closest("[data-selected]"))).toBe(false);
   expect(screen.getByRole("link", { name: copy.fortune })).toBeVisible();
 });
 
@@ -51,6 +51,25 @@ it("flashes just the record when an existing player's score changes", () => {
     expect.any(HTMLElement),
     new Set(["value"]),
   );
+});
+
+it("shows my record once: highlighted in the top three, or on its own line below", () => {
+  const row = (place: number, name: string, isMe = false) => ({ id: name, place, name, change: 0, record: `0:4${place}`, isMe });
+  const game: GameRanking = { game: "pair", title: "짝 맞추기 랭킹", href: "/chemi/games/match", leaders: [row(1, "별", true)], mine: row(1, "별", true) };
+  const view = render(<GameRankings label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord} games={[game]} />);
+  expect(screen.getAllByText("0:41")).toHaveLength(1);
+  expect(screen.queryByText(copy.myRecord)).toBeNull();
+  expect(screen.getByRole("link", { name: `짝 맞추기 랭킹 ${copy.thisWeek}` })).toHaveAttribute("href", "/chemi/games/match");
+  view.rerender(<GameRankings label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord}
+    games={[{ ...game, leaders: [row(1, "별"), row(2, "달"), row(3, "해")], mine: row(8, "나", true) }]} />);
+  expect(screen.getByText(copy.myRecord).parentElement).toHaveTextContent("8내 기록0:48");
+});
+
+it("pauses and resumes the banner from the button inside it", () => {
+  render(<ChemiHome preview copy={copy} locale="ko" growth={false} />);
+  fireEvent.click(screen.getByRole("button", { name: copy.pause }));
+  fireEvent.click(screen.getByRole("button", { name: copy.resume }));
+  expect(screen.getByRole("button", { name: copy.pause })).toBeVisible();
 });
 
 it("keeps production on the fortune list even for a growth deep link", () => {

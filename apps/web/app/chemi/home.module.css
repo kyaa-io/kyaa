@@ -72,46 +72,93 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
-.rankingRail { display: grid; gap: var(--space-2); min-width: 0; }
-.rankingTabs { display: none; }
+
+/* 게임별 이번 주 랭킹: 390은 옆으로 넘기는 압축 카드, 1024부터 오른쪽 288 열에 세로로 쌓는다. */
 .rankings {
+  --rank-row: calc(var(--space-6) + var(--space-1));
+  --rank-avatar: var(--space-6);
   display: flex;
   gap: var(--space-3);
+  min-width: 0;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
 }
 .rankCard {
   display: grid;
-  grid-template-rows: auto 1fr auto auto;
+  align-content: start;
   gap: var(--space-2);
-  flex: 0 0 min(90%, 320px);
-  padding: var(--space-3);
-  border: thin solid var(--color-line);
-  border-radius: var(--radius-card);
+  flex: 0 0 min(84%, calc(var(--space-12) * 6 + var(--space-3)));
   scroll-snap-align: start;
-  min-block-size: 272px;
+}
+.rankCard header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
   min-width: 0;
 }
+.rankCard header img {
+  display: none;
+}
+.rankCard header h3 {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rankCard header a {
+  flex: none;
+  translate: var(--space-2) 0;
+}
+.leaders {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  min-block-size: calc(var(--rank-row) * 3);
+}
+.rankRow,
 .rankMine {
-  min-height: calc(var(--space-12) + var(--space-1));
-  align-content: center;
+  display: grid;
+  grid-template-columns: var(--space-6) var(--rank-avatar) minmax(0, 1fr) auto;
+  align-items: center;
+  justify-self: stretch;
+  gap: var(--space-2);
+  min-height: var(--rank-row);
+  font-variant-numeric: tabular-nums;
+}
+.rankRow[data-me] {
+  color: var(--color-accent-ink);
+}
+.rankRow[data-open] {
+  opacity: var(--fan-disabled-opacity);
+}
+.rankRow[data-open] .rankAvatar {
+  background: transparent;
+  border: thin solid var(--color-line);
+}
+.rankMine {
+  grid-template-columns: minmax(var(--space-6), auto) var(--rank-avatar) minmax(0, 1fr) auto;
+  border-top: thin solid var(--color-line-subtle);
+}
+.rankMine[data-open] {
+  border-color: transparent;
+}
+.rankMine[data-first] {
+  display: flex;
+}
+.rankMine[data-first] a {
+  translate: calc(var(--space-2) * -1) 0;
+}
+.rankMine > :last-child {
+  color: var(--color-accent-ink);
 }
 .rankAvatar {
   display: grid;
   place-items: center;
-  background: var(--color-line-subtle);
+  background: var(--color-accent-soft);
   border-radius: var(--radius-pill);
   width: 100%;
   aspect-ratio: 1;
-}
-.rankRow {
-  display: grid;
-  grid-template-columns: var(--space-8) calc(
-      var(--space-8) + var(--space-1)
-    ) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: calc(var(--space-12) + var(--space-1));
 }
 .rankRow img {
   width: 100%;
@@ -125,58 +172,138 @@
   align-items: center;
   gap: var(--space-1);
 }
-.rankRow b {
+.rankRow div > :first-child {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 @media (max-width: 63.99rem) {
-  .leaders {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-2);
+  .rankCard {
+    --fan-item-title-size: var(--fan-metadata-size);
+    --fan-body-size: var(--fan-metadata-size);
   }
-  .leaders .rankRow {
-    grid-template-columns: 2ch var(--space-8);
-    min-width: 0;
-    gap: var(--space-1);
+  .rankMine {
+    grid-template-columns: minmax(var(--space-6), auto) minmax(0, 1fr) auto;
+    min-height: calc(var(--min-target) + var(--space-1));
   }
-  .leaders .rankRow div,
-  .leaders .rankRow strong:last-child {
-    grid-column: 1/-1;
+  .rankMine .rankAvatar {
+    display: none;
   }
 }
+
+/* 랭킹이 열린 입구: 점과 일시정지는 배너 안 오른쪽 위. */
+.dots .pause {
+  background: var(--color-home-caption);
+  color: var(--color-surface);
+}
+.home[data-ranked="true"] .dots span[aria-hidden="true"] {
+  outline: thin solid var(--color-home-caption);
+}
+@media (hover: hover) and (pointer: fine) {
+  .dots .pause:hover:not(:disabled) {
+    background: var(--color-home-hero-shade);
+  }
+}
+.home[data-ranked="false"] .pause {
+  display: none;
+}
+.home[data-ranked="true"] .banner {
+  position: relative;
+}
+.home[data-ranked="true"] .dots {
+  position: absolute;
+  inset: var(--space-1) var(--space-1) auto auto;
+  gap: 0;
+  margin: 0;
+}
+.home[data-ranked="true"] .dots button:not([aria-pressed="true"]) span[aria-hidden="true"] {
+  background: var(--color-surface);
+}
+
 @media (min-width: 64rem) {
   .home {
-    grid-template-columns: minmax(0, 1fr) 288px;
-    grid-template-rows: auto 1fr;
+    grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 6);
     align-items: start;
     column-gap: var(--space-6);
   }
-  .home > section:last-child { grid-area: 1 / 2; }
+  .banner { width: 100%; }
   .home > .banner { grid-area: 1 / 1; }
-  .home .list { grid-template-columns: 1fr; }
-  .home[data-ranked="true"] .banner {
+  .home[data-ranked="true"] {
+    row-gap: var(--fan-section-gap);
+    grid-template-rows: auto 1fr;
+  }
+  .home[data-ranked="true"] > section:last-child { grid-area: 2 / 1; }
+  .rankings {
+    --rank-row: calc(var(--space-12) + var(--space-1));
+    --rank-avatar: calc(var(--space-8) + var(--space-1));
+    grid-area: 1 / 2 / 3 / 3;
+    align-self: stretch;
+    flex-direction: column;
+    overflow: visible;
+  }
+  .rankCard {
+    flex: 1 0 auto;
+    gap: var(--space-3);
+  }
+  .rankMine {
+    min-height: calc(var(--rank-row) + var(--space-3));
+    padding-top: var(--space-3);
+  }
+  .rankCard header {
+    padding-bottom: var(--space-2);
+    display: grid;
+    grid-template-columns: var(--space-16) minmax(0, 1fr);
+    column-gap: var(--space-3);
+    row-gap: 0;
+  }
+  .rankCard header img {
+    display: block;
     grid-row: 1 / 3;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: var(--radius-small);
+  }
+  .rankCard header h3 {
+    align-self: end;
+  }
+  .rankCard header a {
+    justify-self: start;
+    align-self: start;
+    translate: calc(var(--space-2) * -1) 0;
+  }
+  .rankRow,
+  .rankMine {
+    gap: var(--space-3);
+  }
+
+  .home[data-ranked="false"] {
+    grid-template-rows: auto;
+  }
+  .home[data-ranked="false"] > section:last-child { grid-area: 1 / 2; }
+  .home[data-ranked="false"] .list {
+    margin-top: 0;
+    grid-template-columns: 1fr;
+  }
+  .home[data-ranked="false"] .banner {
     position: relative;
     align-self: stretch;
-    min-block-size: 30rem;
   }
-  .home[data-ranked="true"] .artwork { position: absolute; inset: 0; }
-  .home[data-ranked="true"] .artwork img { height: 100%; aspect-ratio: auto; }
-  .home[data-ranked="true"] .caption { padding-bottom: calc(var(--space-12) + var(--space-3)); }
-  .home[data-ranked="true"] .dots {
+  .home[data-ranked="false"] .artwork {
+    position: absolute;
+    inset: 0;
+  }
+  .home[data-ranked="false"] .artwork img {
+    height: 100%;
+    aspect-ratio: auto;
+  }
+  .home[data-ranked="false"] .caption {
+    padding-bottom: calc(var(--space-12) + var(--space-3));
+  }
+  .home[data-ranked="false"] .dots {
     position: absolute;
     inset: auto 0 var(--space-1);
   }
-  .home[data-ranked="true"] .dots button:not([aria-pressed="true"]) span[aria-hidden="true"] { background: var(--color-surface); }
-  .home[data-ranked="true"] .row { padding-block: var(--space-1); }
-  .home[data-ranked="true"] .row img { width: var(--space-10); }
-  .rankingRail { grid-area: 2 / 2; }
-  .rankingTabs { display: block; }
-  .rankings { display: block; overflow: visible; }
-  .rankCard { min-block-size: 340px; }
-  .rankCard[data-active="false"] { display: none; }
 }
 .dots {
   display: flex;
@@ -211,38 +338,4 @@
 .row[data-selected="true"] b {
   text-decoration: underline;
   text-underline-offset: var(--space-1);
-}
-@media (min-width: 64rem) {
-  .home[data-ranked="false"] {
-    grid-template-rows: auto;
-    grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 6);
-    align-items: start;
-    column-gap: var(--space-6);
-  }
-  .banner { width: 100%; }
-  .home[data-ranked="false"] .list {
-    margin-top: 0;
-    grid-template-columns: 1fr;
-  }
-}
-@media (min-width: 64rem) {
-  .home[data-ranked="false"] .banner {
-    position: relative;
-    align-self: stretch;
-  }
-  .home[data-ranked="false"] .artwork {
-    position: absolute;
-    inset: 0;
-  }
-  .home[data-ranked="false"] .artwork img {
-    height: 100%;
-    aspect-ratio: auto;
-  }
-  .home[data-ranked="false"] .caption {
-    padding-bottom: calc(var(--space-12) + var(--space-3));
-  }
-  .home[data-ranked="false"] .dots {
-    position: absolute;
-    inset: auto 0 var(--space-1);
-  }
 }
