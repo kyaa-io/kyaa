@@ -7,6 +7,9 @@ export type AskTopic = (typeof ASK_TOPICS)[number];
 export type AskCharacter = "changha" | "elina" | "yuna" | "dosa";
 export type AskContent = "saju" | "fortune" | "star" | "tarot";
 type Voice = "ban" | "yo" | "hao";
+/** 답을 들은 뒤 팬이 고르는 짧은 반응(차감 없음, 저장하지 않음). */
+export const ASK_REACTIONS = ["thanks", "really", "worried"] as const;
+export type AskReaction = (typeof ASK_REACTIONS)[number];
 
 export const askVoice: Record<AskCharacter, Voice> = { changha: "ban", elina: "yo", yuna: "ban", dosa: "hao" };
 export const askName: Record<AskCharacter, string> = { changha: "창하", elina: "엘리나", yuna: "유나", dosa: "kyaa 도사" };
@@ -21,6 +24,8 @@ export const askLines: Record<Voice, {
   rest: string;
   reminded: string;
   shared: string;
+  /** 팬의 반응에 돌려주는 한 마디. 풀이에 없는 사실을 새로 말하지 않는다. */
+  react: Record<AskReaction, string>;
   reask: Record<AskTopic, string>;
 }> = {
   ban: {
@@ -31,6 +36,11 @@ export const askLines: Record<Voice, {
     rest: "오늘 이야기 재밌었어. 내일 또 와.",
     reminded: "응, 내일 기다릴게.",
     shared: "자랑해 줘서 고마워. 하나 더 물어봐.",
+    react: {
+      thanks: "응, 물어봐 줘서 나도 좋았어.",
+      really: "진짜야. 네 풀이에 그렇게 나와 있어.",
+      worried: "걱정 마. 풀이는 조심할 곳을 미리 알려 주는 거야.",
+    },
     reask: {
       love: "연애 이야기네. 요즘 누가 제일 마음에 걸려?",
       work: "일 이야기네. 요즘 어떤 일이 제일 마음에 걸려?",
@@ -48,6 +58,11 @@ export const askLines: Record<Voice, {
     rest: "오늘 이야기 즐거웠어요. 내일 또 와요.",
     reminded: "네, 내일 기다릴게요.",
     shared: "자랑해 줘서 고마워요. 하나 더 물어봐요.",
+    react: {
+      thanks: "네, 물어봐 줘서 저도 좋았어요.",
+      really: "진짜예요. 풀이에 그렇게 나와 있어요.",
+      worried: "걱정 마요. 풀이는 조심할 곳을 미리 알려 주는 거예요.",
+    },
     reask: {
       love: "연애 이야기네요. 요즘 누가 제일 마음에 걸려요?",
       work: "일 이야기네요. 요즘 어떤 일이 제일 마음에 걸려요?",
@@ -65,6 +80,11 @@ export const askLines: Record<Voice, {
     rest: "오늘 이야기 즐거웠소. 내일 또 오시오.",
     reminded: "좋소, 내일 기다리겠소.",
     shared: "자랑해 주어 고맙소. 하나 더 물으시오.",
+    react: {
+      thanks: "좋소, 물어 주어 나도 즐거웠소.",
+      really: "참말이오. 그대의 풀이에 그리 나와 있소.",
+      worried: "걱정 마시오. 풀이는 조심할 곳을 미리 일러 주는 것이오.",
+    },
     reask: {
       love: "연애 이야기구려. 요즘 누가 가장 마음에 걸리오?",
       work: "일 이야기구려. 요즘 어떤 일이 가장 마음에 걸리오?",
@@ -112,6 +132,32 @@ const examples: Record<AskTopic, readonly (readonly [ban: string, yo: string])[]
   ],
 };
 
+/** 반응 버튼의 글자. 예시 질문처럼 반말로 답하는 최애에게는 반말, 나머지는 존댓말. */
+const reactions: Record<AskReaction, readonly [ban: string, yo: string]> = {
+  thanks: ["고마워", "고마워요"],
+  really: ["진짜?", "정말요?"],
+  worried: ["좀 걱정돼", "조금 걱정돼요"],
+};
+export const askReaction = (kind: AskReaction, character: AskCharacter) => reactions[kind][askVoice[character] === "ban" ? 0 : 1];
+
+/** 한 쪽에 담는 글자 수. 대화 상자 세 줄(390px)에 들어간다. */
+const PAGE_LETTERS = 60;
+/**
+ * 답을 쪽으로 나눈다. 줄 바꿈이 있으면 줄마다 한 쪽이고, 줄 바꿈 없이 한 문단으로 온 답(AI 답)은
+ * 문장 끝에서 끊어 한 쪽에 60자 안팎으로 묶는다. 문장 하나가 60자를 넘으면 그 문장만 한 쪽이 된다.
+ */
+export function askPages(answer: string) {
+  return answer.split("\n").flatMap((line) => {
+    const pages: string[] = [];
+    for (const sentence of line.match(/.+?[.!?…~]+(?:\s+|$)|.+$/g) ?? []) {
+      const last = pages.at(-1);
+      if (last !== undefined && (last + sentence).trim().length <= PAGE_LETTERS) pages[pages.length - 1] = last + sentence;
+      else pages.push(sentence);
+    }
+    return pages.map((page) => page.trim()).filter(Boolean);
+  });
+}
+
 export const askExamples = (topic: AskTopic, character: AskCharacter) =>
   examples[topic].map((pair) => pair[askVoice[character] === "ban" ? 0 : 1]);
 
@@ -138,8 +184,8 @@ export function askArt(content: AskContent, character: AskCharacter) {
 }
 
 /**
- * 장면 배경 반복 영상. 가로 원화와 같은 구도·비율로 만든 것만 있어서 가로 화면(1024px 이상)에서만 쓴다.
- * 없는 조합은 그림만 보인다.
+ * 장면 배경 반복 영상(확장자 없는 주소, `SceneVideo` 가 mp4·webm 을 고른다). 가로 원화와 같은 구도·비율로 만든 것만 있어서
+ * 가로 화면(1024px 이상)에서만 쓴다. 세로 반복 영상은 없다. 없는 조합은 그림만 보인다.
  */
 const loops: Partial<Record<`${AskContent}-${AskCharacter}`, string>> = {
   "saju-changha": "chemi-banner-saju-loop-v1",
@@ -150,5 +196,5 @@ const loops: Partial<Record<`${AskContent}-${AskCharacter}`, string>> = {
 };
 export function askLoop(content: AskContent, character: AskCharacter) {
   const name = loops[`${content}-${character}`];
-  return name ? `/chemi/video/${name}.mp4` : null;
+  return name ? `/public-assets/cms-assets/chemi/video/${name}` : null;
 }

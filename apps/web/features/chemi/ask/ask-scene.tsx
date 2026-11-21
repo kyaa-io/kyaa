@@ -2,8 +2,9 @@
 
 /**
  * 케미 질문하기(사주·운세·별자리·타로 결과에서 진입). 주제 고르기 → 질문 쓰기 → 최애 답 → 이어 묻기 1번.
- * 화면 전체가 장면이다: 최애 그림(가로 화면은 반복 영상)이 배경을 채우고, 아래 대화 상자에 최애의 말이 한 줄씩 나온다.
- * 최애가 말을 마친 뒤에 선택지가 나타나고, 답은 한 쪽씩 넘긴다(기획 03-6 07).
+ * 화면 전체가 장면이다: 최애 그림(가로 화면은 반복 영상)이 배경을 채우고, 아래 대화 상자 하나에 최애의 말과 선택지가 함께 놓인다.
+ * 최애가 말을 마친 뒤에 선택지가 나타나고, 답은 한 쪽씩 넘긴다(기획 03-6 07). 답을 다 들으면 짧은 반응을 고를 수 있고,
+ * 오늘 마지막 질문을 마치면 최애가 작별 인사로 대화를 맺는다.
  * 남은 질문 수·차감·한도는 서버(/api/chemi/ask)가 정하고, 이 화면은 받은 값만 그린다.
  * 유료 구매 자리는 결제 수단이 붙기 전이라 두지 않는다.
  */
@@ -41,7 +42,10 @@ import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
-import { askArt, askExamples, askLines, askLoop, askName, askSubject, askVoice, ASK_TOPICS, type AskCharacter, type AskContent, type AskTopic } from "./lines";
+import {
+  askArt, askExamples, askLines, askLoop, askName, askPages, askReaction, askSubject, askVoice, ASK_REACTIONS, ASK_TOPICS,
+  type AskCharacter, type AskContent, type AskReaction, type AskTopic,
+} from "./lines";
 import { askBack, askGo, type AskLocation } from "./location";
 import { SceneBackdrop } from "./scene-backdrop";
 import { canType, TypedLine } from "./typed-line";
@@ -103,6 +107,8 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const [page, setPage] = useState({ of: "", index: 0 });
   // 최애가 말을 마친 줄. 그 줄의 선택지는 이때부터 보인다.
   const [said, setSaid] = useState("");
+  // 답을 들은 뒤 고른 반응. 그 답을 보는 동안만 남는다(서버에 보내지 않는다).
+  const [reacted, setReacted] = useState<{ of: string; kind: AskReaction } | null>(null);
   const field = useRef<HTMLInputElement>(null);
   const panelBox = useRef<HTMLDivElement>(null);
 
@@ -270,10 +276,21 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const bonus = state?.shareBonus ?? { pass: false, exp: false };
   const canSend = typeof navigator !== "undefined" && typeof navigator.share === "function";
   const shareAction = (
-    <FanAction className={styles.glass} leadingIcon={<FanIcon icon={Share2} />} onClick={() => setSheet("share")}>
+    <FanAction variant="text" className={styles.cell} leadingIcon={<FanIcon icon={Share2} />} onClick={() => setSheet("share")}>
       {text("share")}
-      {bonus.pass ? <FanTag tone="fan">+1</FanTag> : null}
+      {bonus.pass ? <FanTag tone="neutral">+1</FanTag> : null}
     </FanAction>
+  );
+  // 오늘 질문을 다 썼을 때의 행동: 내일 알림을 신청하고, 신청했으면 자랑하기가 주 버튼이 된다(소진 화면과 오늘 마지막 답이 함께 쓴다).
+  const restMain = () =>
+    state?.reminded
+      ? { label: text("share"), icon: Share2, tag: bonus.pass ? text("shareQuestionBonus") : undefined, onClick: () => setSheet("share") }
+      : { label: text("askRemind"), icon: Mail, loading: busy === "remind", onClick: () => void remind() };
+  const reminded = (
+    <span className={styles.status}>
+      <FanIcon icon={Check} size={16} />
+      <FanText role="label">{text("askReminded")}</FanText>
+    </span>
   );
   // 지금 장면: 단계·질문이 바뀌면 대화 상자가 새로 등장한다.
   const view = failed
@@ -312,7 +329,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
   );
   const mine = (question: string, tag: AskTopic | null) => (
     <div className={styles.mineRow}>
-      {tag ? <FanTag tone="fan">{text(topicKey[tag])}</FanTag> : null}
+      {tag ? <FanTag tone="neutral">{text(topicKey[tag])}</FanTag> : null}
       <FanText as="p" role="body" className={styles.mine}>{question}</FanText>
     </div>
   );
@@ -340,22 +357,24 @@ export function AskScene({ locale, content, character, readingId, at }: {
   let below: React.ReactNode = null;
   // 최애가 말을 마쳐야 선택지가 보인다. 자리는 미리 잡아 두어 대화 상자가 밀리지 않는다.
   let spoken = true;
+  // 오늘 마지막 질문의 답을 보고 있는지: 장면이 저녁처럼 조금 어두워진다.
+  let ending = false;
   if (failed)
     panel = (
-      <section className={styles.board}>
+      <section className={styles.talk}>
         <FanState kind="error" title={text("askLoadFailed")} actions={<FanAction size="sm" onClick={() => setAttempt((value) => value + 1)}>{text("retry")}</FanAction>} />
       </section>
     );
   else if (!state)
     panel = (
-      <section className={styles.board} aria-busy="true">
+      <section className={styles.talk} aria-busy="true">
         {speak(<FanSkeleton width="70%" />)}
       </section>
     );
   else if (draft) {
     panel = (
       <>
-        <section className={`${styles.board} ${styles.thread}`} aria-live="polite" aria-busy={!draft.failed}>
+        <section className={`${styles.talk} ${styles.thread}`} aria-live="polite" aria-busy={!draft.failed}>
           {mine(draft.question, draft.topic)}
           {speak(
             draft.failed ? (
@@ -381,7 +400,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
   }
   else if (state.pausedUntil)
     panel = (
-      <section className={styles.board}>
+      <section className={styles.talk}>
         <p className={styles.sys} role="status">
           <FanIcon icon={CircleAlert} />
           <FanText role="body">
@@ -391,19 +410,28 @@ export function AskScene({ locale, content, character, readingId, at }: {
       </section>
     );
   else if (shown && at.step === "answer") {
-    // 답은 한 쪽에 한 줄씩. 이어 물은 답이 있으면 그 질문과 답이 뒤에 이어진다.
+    // 답은 한 쪽씩. 이어 물은 답이 있으면 그 질문과 답이 뒤에 이어지고, 반응을 고르면 그 말과 최애의 한 마디가 붙는다.
     const guarded = shown.status === "blocked";
-    const beats = [
-      ...shown.answer.split("\n").map((body) => ({ question: shown.question, tag: guarded ? null : shown.topic, body, key: shown.threadId })),
+    const threadId = shown.threadId;
+    const complete = Boolean(shown.followupAnswer);
+    ending = !guarded && state.left === 0 && shown.date === today;
+    const arrived = fresh?.startsWith(threadId) ?? false;
+    const react = reacted?.of === view ? reacted.kind : null;
+    const beats: { question: string | null; tag: AskTopic | null; body: string; key: string }[] = [
+      ...askPages(shown.answer).map((body) => ({ question: shown.question, tag: guarded ? null : shown.topic, body, key: threadId })),
       ...(shown.followupQuestion && shown.followupAnswer
-        ? shown.followupAnswer.split("\n").map((body) => ({ question: shown.followupQuestion ?? "", tag: null, body, key: `${shown.threadId}:follow` }))
+        ? askPages(shown.followupAnswer).map((body) => ({ question: shown.followupQuestion, tag: null, body, key: `${threadId}:follow` }))
         : []),
+      ...(react ? [{ question: askReaction(react, character), tag: null, body: lines.react[react], key: `${threadId}:react` }] : []),
+      // 오늘 마지막 질문을 이어 묻기까지 다 썼으면 방금 받은 답 뒤에 작별 인사가 한 쪽 붙는다. 내일 알림을 신청하면 그 대답으로 바뀐다.
+      ...(ending && complete && arrived ? [{ question: null, tag: null, body: state.reminded ? lines.reminded : lines.rest, key: `${threadId}:rest` }] : []),
     ];
-    const start = fresh === `${shown.threadId}:follow` ? Math.max(0, beats.findIndex((item) => item.key === fresh)) : 0;
+    const start = fresh === `${threadId}:follow` ? Math.max(0, beats.findIndex((item) => item.key === fresh)) : 0;
     const index = Math.min(page.of === view ? page.index : start, beats.length - 1);
     const beat = beats[index];
     const last = index === beats.length - 1;
-    const typing = fresh === beat.key;
+    const farewell = beat.key === `${threadId}:rest`;
+    const typing = fresh === beat.key || farewell;
     const settled = saidAll(beat.body, typing);
     const forward = () => {
       if (!settled) setSaid(lineKey(beat.body));
@@ -428,10 +456,11 @@ export function AskScene({ locale, content, character, readingId, at }: {
           {`${index + 1}/${beats.length}`}
         </FanAction>
       );
+    spoken = last && settled;
     panel = (
       <>
-        <section className={`${styles.board} ${styles.turn}`} aria-live="polite" onClick={forward}>
-          {mine(beat.question, beat.tag)}
+        <section className={`${styles.talk} ${styles.turn}`} aria-live="polite" onClick={forward}>
+          {beat.question ? mine(beat.question, beat.tag) : null}
           {speak(line(beat.body, typing), guarded ? text("askKept") : pager)}
           {shown.klass === "crisis" ? (
             <p className={styles.sys}>
@@ -441,19 +470,42 @@ export function AskScene({ locale, content, character, readingId, at }: {
           ) : null}
           {guarded && pager ? <div className={styles.pagerRow}>{pager}</div> : null}
         </section>
+        {last && !guarded && !react && !farewell ? (
+          <div className={`${styles.replies} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
+            {ASK_REACTIONS.map((kind) => (
+              <FanAction
+                key={kind}
+                size="sm"
+                className={styles.reply}
+                onClick={() => {
+                  setReacted({ of: view, kind });
+                  setFresh(`${threadId}:react`);
+                  setPage({ of: view, index: beats.length });
+                }}
+              >
+                {askReaction(kind, character)}
+              </FanAction>
+            ))}
+          </div>
+        ) : null}
       </>
     );
-    spoken = last && settled;
+    const remindAction = state.reminded ? null : (
+      <FanAction variant="text" className={styles.cell} leadingIcon={<FanIcon icon={Mail} />} loading={busy === "remind"} onClick={() => void remind()}>
+        {text("askRemind")}
+      </FanAction>
+    );
     if (guarded) main = { label: text("askOtherAfterGuard"), onClick: again };
-    else if (shown.followupAnswer) {
-      main = { label: text("askOther"), onClick: again };
-      below = <div className={styles.row} data-single="">{shareAction}</div>;
+    else if (complete) {
+      // 오늘 질문이 남아 있으면 다른 질문으로, 다 썼으면 갈 곳이 없으니 내일 알림을 주 버튼으로 둔다.
+      main = ending ? restMain() : { label: text("askOther"), onClick: again };
+      below = <div className={styles.row} data-single="">{ending && state.reminded ? reminded : shareAction}</div>;
     } else {
-      const threadId = shown.threadId;
       main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => askGo({ step: "follow", thread: threadId }) };
+      const other = ending ? remindAction : <FanAction variant="text" className={styles.cell} onClick={again}>{text("askOther")}</FanAction>;
       below = (
-        <div className={styles.row}>
-          <FanAction className={styles.glass} onClick={again}>{text("askOther")}</FanAction>
+        <div className={styles.row} data-single={other ? undefined : ""}>
+          {other}
           {shareAction}
         </div>
       );
@@ -462,14 +514,14 @@ export function AskScene({ locale, content, character, readingId, at }: {
   else if (shown && at.step === "follow")
     panel = (
       <>
-        <section className={styles.board} aria-live="polite">{speak(line(lines.follow, true), shown.topic ? text(topicKey[shown.topic]) : undefined)}</section>
+        <section className={styles.talk} aria-live="polite">{speak(line(lines.follow, true), shown.topic ? text(topicKey[shown.topic]) : undefined)}</section>
         {composer}
       </>
     );
   else if (empty) {
     panel = (
       <>
-        <section className={`${styles.board} ${styles.thread}`} aria-live="polite">
+        <section className={`${styles.talk} ${styles.thread}`} aria-live="polite">
           <p className={styles.sys} role="status">
             <FanIcon icon={CircleAlert} />
             <FanText role="item">{text("askLimit")}</FanText>
@@ -496,34 +548,21 @@ export function AskScene({ locale, content, character, readingId, at }: {
         </section>
       </>
     );
-    main = state.reminded
-      ? { label: text("share"), icon: Share2, tag: bonus.pass ? text("shareQuestionBonus") : undefined, onClick: () => setSheet("share") }
-      : { label: text("askRemind"), icon: Mail, loading: busy === "remind", onClick: () => void remind() };
-    below = (
-      <div className={styles.row} data-single="">
-        {state.reminded ? (
-          <span className={styles.status}>
-            <FanIcon icon={Check} size={16} />
-            <FanText role="label">{text("askReminded")}</FanText>
-          </span>
-        ) : (
-          shareAction
-        )}
-      </div>
-    );
+    main = restMain();
+    below = <div className={styles.row} data-single="">{state.reminded ? reminded : shareAction}</div>;
   }
   else if (at.step === "write")
     panel = (
       <>
-        <section className={styles.board} aria-live="polite" onClick={() => setSaid(lineKey(lines.reask[at.topic]))}>
+        <section className={styles.talk} aria-live="polite" onClick={() => setSaid(lineKey(lines.reask[at.topic]))}>
           {speak(line(lines.reask[at.topic], true), text(topicKey[at.topic]))}
         </section>
-        <div className={`${styles.examples} ${styles.reveal}`} data-shown={saidAll(lines.reask[at.topic], true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
+        <div className={`${styles.choices} ${styles.examples} ${styles.reveal}`} data-shown={saidAll(lines.reask[at.topic], true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
           {askExamples(at.topic, character).map((example) => (
             <FanAction
               key={example}
-              size="sm"
-              className={`${styles.glass} ${styles.example}`}
+              variant="text"
+              className={styles.line}
               aria-pressed={input === example}
               onClick={() => {
                 setInput(example);
@@ -545,21 +584,21 @@ export function AskScene({ locale, content, character, readingId, at }: {
     spoken = saidAll(greeting, !returning);
     panel = (
       <>
-        <div className={`${styles.topics} ${styles.reveal}`} data-shown={spoken ? "" : undefined} role="group" aria-label={text("askTopics")}>
+        <section className={styles.talk} aria-live="polite" onClick={() => setSaid(lineKey(greeting))}>{speak(line(greeting, !returning))}</section>
+        <div className={`${styles.choices} ${styles.topics} ${styles.reveal}`} data-shown={spoken ? "" : undefined} role="group" aria-label={text("askTopics")}>
           {ASK_TOPICS.map((item) => (
-            <FanAction key={item} size="sm" className={styles.glass} leadingIcon={<FanIcon icon={topicIcon[item]} />} onClick={() => askGo({ step: "write", topic: item })}>
+            <FanAction key={item} variant="text" className={styles.cell} leadingIcon={<FanIcon icon={topicIcon[item]} />} onClick={() => askGo({ step: "write", topic: item })}>
               {text(topicKey[item])}
             </FanAction>
           ))}
         </div>
-        <section className={styles.board} aria-live="polite" onClick={() => setSaid(lineKey(greeting))}>{speak(line(greeting, !returning))}</section>
       </>
     );
     if (unfinished) main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => open(unfinished) };
   }
 
-  // 장면의 거리: 최애가 듣거나 답할 때 그림이 얼굴 쪽으로 다가간다.
-  const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? "speak" : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
+  // 장면의 분위기: 답을 기다릴 때 어두워졌다가 답이 나오면 밝아지고, 원화 해상도가 남는 화면에서는 얼굴 쪽으로 다가간다.
+  const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? (ending ? "close" : "speak") : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
     <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood}>
@@ -580,7 +619,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
         </FanIconButton>
       </div>
       <div className={styles.panel} ref={panelBox}>
-        <div className={styles.scene} key={view}>
+        <div className={styles.board} key={view}>
           {panel}
           {main ? (
             <div className={`${styles.actions} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>

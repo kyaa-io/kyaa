@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { AskScene } from "./ask-scene";
+import { askPages } from "./lines";
 import { askGo, useAskLocation } from "./location";
 
 const { toast } = vi.hoisted(() => ({ toast: vi.fn() }));
@@ -134,7 +135,57 @@ it("알림을 신청한 뒤에는 자랑하기가 주 버튼이고, 이어 물�
   expect(await screen.findByText("오늘 안에 움직여.")).toBeTruthy();
   expect(screen.getByText("언제쯤?")).toBeTruthy();
   expect(screen.queryByRole("button", { name: /이어 묻기/ })).toBeNull();
-  expect(screen.getByRole("button", { name: "다른 질문" })).toBeTruthy();
+  // 오늘 질문을 다 썼으니 갈 곳 없는 '다른 질문' 대신 자랑하기가 주 버튼이다.
+  expect(screen.queryByRole("button", { name: "다른 질문" })).toBeNull();
+  expect(screen.getByRole("button", { name: /자랑하기.*질문 \+1/ })).toBeTruthy();
+});
+
+it("한 문단으로 온 답은 문장 끝에서 쪽을 나누고, 줄 바꿈이 있는 답은 줄마다 한 쪽이다", () => {
+  expect(askPages("네 일간은 병.\n먼저 짧게 말을 걸어 봐.")).toEqual(["네 일간은 병.", "먼저 짧게 말을 걸어 봐."]);
+  const paragraph = "네 일간은 병화라서 마음을 숨기기 어려운 편이야. 이번 주는 금 기운이 약해서 말이 길어지면 뜻이 흐려져. 그러니까 먼저 짧게 안부만 물어봐. 답이 늦어도 재촉하지 마.";
+  const pages = askPages(paragraph);
+  expect(pages.join(" ")).toBe(paragraph);
+  expect(pages.length).toBeGreaterThan(1);
+  for (const page of pages) expect(page.length).toBeLessThanOrEqual(60);
+  expect(askPages("3.5점이야.")).toEqual(["3.5점이야."]);
+});
+
+it("답을 다 들으면 짧은 반응을 고를 수 있고, 최애가 한 마디로 받는다(서버에 보내지 않는다)", async () => {
+  const first = answered("22222222-2222-4222-8222-222222222222");
+  serve(() => ({}), state({ left: 2, threads: [first] }));
+  render(<Host />);
+  askGo({ step: "answer", thread: first.threadId });
+  await turn();
+  fireEvent.click(await screen.findByRole("button", { name: "진짜?" }));
+  expect(await screen.findByText("진짜야. 네 풀이에 그렇게 나와 있어.")).toBeTruthy();
+  expect(screen.getByText("진짜?")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "고마워" })).toBeNull();
+  expect(screen.getByRole("button", { name: /이어 묻기/ })).toBeTruthy();
+  expect(calls).toEqual([]);
+});
+
+it("오늘 마지막 질문을 이어 묻기까지 마치면 작별 인사로 맺고, 내일 알림을 신청하면 그 대답이 나온다", async () => {
+  const last = answered("22222222-2222-4222-8222-222222222222");
+  const done = { ...last, followupQuestion: "언제쯤?", followupAnswer: "오늘 안에 움직여." };
+  serve((url) => (url === "/api/chemi/reminders" ? {} : { thread: done, state: state({ left: 0, threads: [done] }) }), state({ left: 0, threads: [last] }));
+  const { container } = render(<Host />);
+  askGo({ step: "answer", thread: last.threadId });
+  await turn();
+  // 이어 묻기가 남아 있으면 그것이 주 버튼이고, 갈 곳 없는 '다른 질문' 자리에는 내일 알림이 온다.
+  expect(await screen.findByRole("button", { name: /이어 묻기/ })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "다른 질문" })).toBeNull();
+  expect(screen.getByRole("button", { name: "내일 알려 줘" })).toBeTruthy();
+  expect(container.querySelector("[data-mood=close]")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: /이어 묻기/ }));
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "언제쯤?" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  expect(await screen.findByText("오늘 안에 움직여.")).toBeTruthy();
+  await turn();
+  expect(await screen.findByText("오늘 이야기 재밌었어. 내일 또 와.")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "고마워" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "내일 알려 줘" }));
+  expect(await screen.findByText("응, 내일 기다릴게.")).toBeTruthy();
+  expect(screen.getByText("알림 신청함")).toBeTruthy();
 });
 
 it("찾을 수 없는 질문 번호로 열리면 주제 고르기로 돌아간다", async () => {
