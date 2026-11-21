@@ -4,12 +4,12 @@ import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
+import { ChevronDown, ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
-import { FanDisclosure } from "@/components/fan-ui/fan-collapsible";
+import { FanCollapsible, FanCollapsibleTrigger, FanDisclosure } from "@/components/fan-ui/fan-collapsible";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { FanNumber, FanGauge } from "@/components/fan-ui/fan-number";
+import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import {
@@ -22,10 +22,12 @@ import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import { withTopic } from "@/features/chemi/domain/korean-particle";
+import { ResultActions } from "@/features/chemi/ui/result/result-actions";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
 import {
   band,
+  fieldNotes,
   flowNotes,
   kstDate,
   kstDayStart,
@@ -50,7 +52,6 @@ const exampleKeys = {
   love: ["depthLoveA", "depthLoveB"],
   money: ["depthMoneyA", "depthMoneyB"],
 } as const;
-const summaryKeys = { high: "depthHigh", mid: "depthMid", low: "depthLow" } as const;
 const voiceKeys = { changha: "depthChangha", elina: "depthElina", yuna: "depthYuna", dosa: "depthDosa" } as const;
 
 export function FortuneResult({
@@ -290,20 +291,18 @@ export function FortuneResult({
     );
   const { result } = reading;
   const headline = reading.styled?.headline || result.grade.name;
-  const top = (
-    [
-      [uiText("fandom"), "fandom", result.fields.fandom],
-      [uiText("people"), "people", result.fields.people],
-      [uiText("work"), "work", result.fields.work],
-      [uiText("health"), "rest", result.fields.rest],
-    ] as const
-  );
-  const more = [
-    ...top,
+  const fields = [
+    [uiText("fandom"), "fandom", result.fields.fandom],
+    [uiText("people"), "people", result.fields.people],
+    [uiText("work"), "work", result.fields.work],
+    [uiText("health"), "rest", result.fields.rest],
     [uiText("love"), "love", result.fields.love],
     [uiText("money"), "money", result.fields.money],
   ] as const;
-  const best = Math.max(...top.map(([, , value]) => value));
+  // 요약 한 줄은 가장 높은 분야와 가장 낮은 분야에만 단다(점수가 같으면 앞 분야 하나).
+  const highest = fields.reduce((a, b) => (b[2] > a[2] ? b : a))[1];
+  const lowest = fields.reduce((a, b) => (b[2] < a[2] ? b : a))[1];
+  const best = Math.max(...Object.values(result.periods));
   const bar = (label: string, value: number, key?: string) => (
     <div className={styles.barRow} key={key ?? label}>
       <FanText role="meta">{label}</FanText>
@@ -339,14 +338,7 @@ export function FortuneResult({
   const isToday = reading.kstDate === todayKst();
   const cardKind = isToday ? dayCardKind(result.score) : null;
   const deepTarget = { character, locale, readingId: reading.readingId };
-  const actions = (
-    <div className={styles.actions}>
-      <FanAction disabled={sharing} onClick={share}>
-        <ReadingText id="share" />
-      </FanAction>
-      <FanAction href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
-    </div>
-  );
+  const actions = <ResultActions locale={locale} sharing={sharing} onShare={share} />;
   return (
     <article data-fortune-result="" className={styles.layout}>
       {toolbar}
@@ -391,21 +383,6 @@ export function FortuneResult({
               <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
             )}
             {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
-          </div>
-          <div className={styles.fields}>
-            {more.map(([label, key, value]) => {
-              const [first, second] = exampleKeys[key];
-              return (
-                <div key={key}>
-                  {bar(label, value, key)}
-                  <FanText as="p" role="body">{uiText(summaryKeys[band(value)])}</FanText>
-                  <FanDisclosure label={uiText("more")} meta={label}>
-                    <FanText as="p" role="label">{uiText(voiceKeys[character])}</FanText>
-                    <ul><li data-row="">{uiText(first)}</li><li data-row="">{uiText(second)}</li></ul>
-                  </FanDisclosure>
-                </div>
-              );
-            })}
           </div>
         </section>
         <section className={`${styles.section} ${styles.flowSec}`}>
@@ -534,6 +511,44 @@ export function FortuneResult({
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
+        </section>
+        <section className={`${styles.section} ${styles.fieldsSec}`}>
+          <FanHeading><ReadingText id="areas" /></FanHeading>
+          <ul className={styles.fields}>
+            {fields.map(([label, key, value]) => {
+              const [first, second] = exampleKeys[key];
+              const note = key === highest || key === lowest ? fieldNotes[key][band(value)] : null;
+              return (
+                <li data-row="" key={key}>
+                  <FanCollapsible
+                    trigger={({ triggerProps }) => (
+                      <FanCollapsibleTrigger className={styles.fieldRow} {...triggerProps}>
+                        <FanText role="label">{label}</FanText>
+                        <FanNumber locale={locale} value={value} />
+                        <span className={styles.bar} data-top={key === highest || undefined} aria-hidden="true">
+                          <i style={{ width: `${value}%` }} />
+                        </span>
+                        <FanIcon icon={ChevronDown} size={16} className={styles.fieldChevron} />
+                        {note && (
+                          <FanText role="meta" className={styles.fieldNote}>
+                            {note}
+                          </FanText>
+                        )}
+                      </FanCollapsibleTrigger>
+                    )}
+                  >
+                    <div className={styles.fieldMore}>
+                      <FanText as="p" role="label">{uiText(voiceKeys[character])}</FanText>
+                      <ul>
+                        <li data-row=""><FanText role="body">{uiText(first)}</FanText></li>
+                        <li data-row=""><FanText role="body">{uiText(second)}</FanText></li>
+                      </ul>
+                    </div>
+                  </FanCollapsible>
+                </li>
+              );
+            })}
+          </ul>
         </section>
         {paidPreview && <DatePurchase key={character} character={character} locale={locale} />}
         <nav className={styles.nextList} aria-label={uiText("more")}>

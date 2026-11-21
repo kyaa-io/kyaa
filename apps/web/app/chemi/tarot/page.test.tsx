@@ -36,3 +36,14 @@ it("passes the reading link only to the result step and only when it is a readin
   expect(await open({ step: "result", r: "x" })).toMatchObject({ initialReading: null });
   expect(await open({ step: "enter", r: id })).toMatchObject({ initialReading: null });
 });
+
+it("opens a shared card from a share id or a card number, without the drawing flow", async () => {
+  process.env.CHEMI_TAB = "true";
+  const open = async (params: Record<string, string>) => {
+    const page = await TarotPage({ searchParams: Promise.resolve(params) });
+    return (page.props.children.props.children.props.children[1] as { props: Record<string, unknown> }).props;
+  };
+  expect(await open({ card: "12", rev: "1", c: "yuna" })).toMatchObject({ card: 12, reversed: true, character: "yuna" });
+  expect(await open({ card: "x" })).toMatchObject({ card: undefined, reversed: false });
+  expect(await open({ from: "abc" })).toMatchObject({ from: "abc" });
+});

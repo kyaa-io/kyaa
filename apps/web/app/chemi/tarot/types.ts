@@ -46,3 +46,10 @@ export const tarotUrl = (params: { locale: string; character: TarotCharacter; st
   if (params.reading) query.set("r", params.reading);
   return `/chemi/tarot?${query}`;
 };
+
+/** 비회원 자랑하기 링크: 서버에 남기지 않고 카드 번호(card)와 방향(rev)만 담는다. */
+export const tarotShareUrl = (params: { locale: string; character: TarotCharacter; card: number; reversed: boolean }) => {
+  const query = new URLSearchParams({ locale: params.locale, c: params.character, card: String(params.card) });
+  if (params.reversed) query.set("rev", "1");
+  return `/chemi/tarot?${query}`;
+};

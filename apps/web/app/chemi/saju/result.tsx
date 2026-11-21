@@ -3,11 +3,12 @@
 /**
  * 최애 사주 풀이 화면(승인 시안 03-2 결과·03-4 올해·이달·03-5 궁합).
  * 390은 한 열(최애 한마디 + 큰 버튼이 탭바 위에 고정), 1024+는 본문 + 오른쪽 레일.
- * 주 버튼은 이 결과로 질문하기(궁합 풀이는 자랑하기). 유료 주제는 결제가 붙기 전이라 자리를 두지 않는다.
+ * 주 버튼은 이 결과로 질문하기(궁합 풀이는 친구에게 공유하기), 그 아래 보조 행동 한 줄(자랑하기 · 다른 놀이 보기).
+ * 조언 이미지 저장과 장면 다시 보기는 자랑하기 판 안에 있다. 유료 주제는 결제가 붙기 전이라 자리를 두지 않는다.
  */
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { ChevronLeft, ChevronRight, Droplet, Flame, Gem, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -16,6 +17,7 @@ import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { defaultShareVia, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
@@ -88,7 +90,7 @@ export function SajuResult({
   sharing: boolean;
   backLabel?: string;
   onBack: () => void;
-  onShare: () => void;
+  onShare: (via: ShareVia) => void;
   onAsk: () => void;
   onTopics: () => void;
   onGo: (view: ResultView) => void;
@@ -98,6 +100,7 @@ export function SajuResult({
   onBirthTime: () => void;
 }) {
   const uiText = useReadingCopy();
+  const [shareOpen, setShareOpen] = useState(false);
   const name = sajuCharacters.find((item) => item.id === character)!.name;
   const locked = chart.locked.length > 0;
   const first = firstReading(chart, at);
@@ -233,22 +236,12 @@ export function SajuResult({
     }
   }
 
-  const actions = (
-    <div className={styles.resultActions}>
-      <FanAction onClick={saveAdvice}><ReadingText id="saveAdvice" /></FanAction>
-      <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
-      {view !== "pair" && (
-        <FanAction disabled={sharing} onClick={onShare}><ReadingText id="share" /></FanAction>
-      )}
-      {view === "first" ? (
-        <FanAction onClick={onScene}><ReadingText id="replay" /></FanAction>
-      ) : (
-        <FanAction onClick={view === "pair" ? onPair : onTopics}>
-          {view === "pair" ? uiText("otherPartner") : uiText("otherTopics")}
-        </FanAction>
-      )}
-    </div>
-  );
+  const actions =
+    view === "pair" ? (
+      <ResultActions locale={locale} lead={<FanAction onClick={onPair}>{uiText("otherPartner")}</FanAction>} />
+    ) : (
+      <ResultActions locale={locale} sharing={sharing} onShare={() => setShareOpen(true)} />
+    );
 
   return (
     <article data-saju-result={view} className={styles.layout}>
@@ -311,7 +304,6 @@ export function SajuResult({
         {view === "first" && (
           <>
             <div className={styles.summary}>
-              {bondCard}
               <section className={`${styles.panel} ${styles.split}`}>
                 <div className={styles.block}>
                   <FanHeading><ReadingText id="energy" /></FanHeading>
@@ -355,7 +347,6 @@ export function SajuResult({
         {view === "year" && (
           <>
             <div className={styles.summary}>
-              {bondCard}
               <section className={`${styles.panel} ${styles.split}`}>
                 <div className={styles.block}>
                   <FanHeading>{year.name}</FanHeading>
@@ -392,7 +383,6 @@ export function SajuResult({
         {view === "month" && (
           <>
             <div className={styles.summary}>
-              {bondCard}
               <section className={`${styles.panel} ${styles.split}`}>
                 <div className={styles.block}>
                   <FanHeading>{month.name}</FanHeading>
@@ -478,12 +468,23 @@ export function SajuResult({
             </FanText>
           </section>
           <div className={styles.cta}>
-            <FanAction variant="primary" fullWidth disabled={view === "pair" && sharing} onClick={view === "pair" ? onShare : onAsk}>
+            <FanAction variant="primary" fullWidth disabled={view === "pair" && sharing} onClick={view === "pair" ? () => onShare(defaultShareVia()) : onAsk}>
               <ReadingText id={view === "pair" ? "shareFriend" : "askFromResult"} />
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
         </div>
+        {view !== "pair" && bondCard}
+        {(view === "year" || view === "month") && (
+          <nav className={styles.nextList} aria-label={uiText("deeper")}>
+            <FanAction variant="text" className={styles.nextItem} onClick={onTopics}>
+              <span className={styles.nextRow}>
+                <FanText role="item">{uiText("otherTopics")}</FanText>
+                <FanIcon icon={ChevronRight} />
+              </span>
+            </FanAction>
+          </nav>
+        )}
         {view === "first" && (
           <nav className={styles.nextList} aria-label={uiText("deeper")}>
             <FanText as="p" role="item" className={styles.nextTitle}>
@@ -512,6 +513,27 @@ export function SajuResult({
           </nav>
         )}
       </aside>
+      <ShareSheet
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        sharing={sharing}
+        onShare={(via) => {
+          setShareOpen(false);
+          onShare(via);
+        }}
+      >
+        <FanAction onClick={saveAdvice}><ReadingText id="saveAdvice" /></FanAction>
+        {view === "first" && (
+          <FanAction
+            onClick={() => {
+              setShareOpen(false);
+              onScene();
+            }}
+          >
+            <ReadingText id="replay" />
+          </FanAction>
+        )}
+      </ShareSheet>
     </article>
   );
 }

@@ -42,6 +42,7 @@ beforeEach(() => {
         return Response.json({ readingId: "r1", replayed: false, reward, result: { cards: [{ card: 25, reversed: false }] } });
       if (path === "/api/chemi/rewards/today") return Response.json({ grants: [] });
       if (path === "/api/chemi/tarot/spread") return Response.json(spread);
+      if (path === "/api/chemi/shares") return Response.json({ url: "/chemi/tarot?from=s1", shareId: "s1" });
       const card = path.match(/\/api\/chemi\/tarot\/cards\/(\d+)$/);
       if (card) return Response.json(cards[Number(card[1])]);
       return Response.json({});
@@ -169,4 +170,39 @@ it("goes back to the Chemi tab from the first step", async () => {
   open();
   fireEvent.click(await screen.findByRole("button", { name: "뒤로 가기" }));
   expect(push).toHaveBeenCalledWith("/chemi?locale=ko");
+});
+
+it("lets a guest share the card with only the card number in the link, saving nothing", async () => {
+  const writeText = vi.fn(async () => {});
+  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+  open("pick");
+  fireEvent.click(await screen.findByRole("button", { name: "아무거나 뽑기" }));
+  fireEvent.click(await screen.findByRole("button", { name: "1/3" }, { timeout: 4000 }));
+  fireEvent.click(await screen.findByRole("button", { name: "2/3" }));
+  fireEvent.click(await screen.findByRole("button", { name: "풀이 볼래" }));
+  await waitFor(() => expect(screen.getByRole("heading", { name: "완드 4" })).toBeVisible(), { timeout: 4000 });
+  expect(screen.queryByRole("button", { name: "이 결과로 질문하기" })).toBeNull();
+  fireEvent.click(screen.getAllByRole("button", { name: "자랑하기" })[0]);
+  fireEvent.click(await screen.findByRole("button", { name: "링크 복사" }));
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith(`${location.origin}/chemi/tarot?locale=ko&c=changha&card=25`));
+  expect(calls.some((call) => call.path.startsWith("/api/chemi/shares"))).toBe(false);
+});
+
+it("shares a member's saved card through a share card and keeps one ask button with one action row under it", async () => {
+  auth.authenticated = true;
+  today = [{ readingId: "saved", kind: "daily", date: kstDate() }];
+  const writeText = vi.fn(async () => {});
+  Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+  open("result");
+  await screen.findByRole("heading", { name: "XIII 죽음" });
+  expect(screen.getAllByRole("button", { name: "이 결과로 질문하기" })).toHaveLength(1);
+  const rows = [...document.querySelectorAll("[data-result-actions]")];
+  expect(rows).toHaveLength(2);
+  for (const row of rows) expect([...row.children].map((item) => item.textContent)).toEqual(["자랑하기", "다른 놀이 보기"]);
+  fireEvent.click(screen.getAllByRole("button", { name: "자랑하기" })[0]);
+  fireEvent.click(await screen.findByRole("button", { name: "링크 복사" }));
+  await waitFor(() => expect(writeText).toHaveBeenCalledWith(`${location.origin}/chemi/tarot?from=s1&locale=ko`));
+  const created = calls.find((call) => call.path === "/api/chemi/shares")!;
+  expect(JSON.parse(created.body!)).toEqual({ readingId: "saved", character: "changha" });
+  await waitFor(() => expect(calls.some((call) => call.path === "/api/chemi/shares/s1/done")).toBe(true));
 });

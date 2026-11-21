@@ -34,6 +34,7 @@ import {
   type StarCharacterId,
   type StarDomain,
 } from "./copy";
+import { ResultActions } from "@/features/chemi/ui/result/result-actions";
 import { withParticle } from "./particle";
 import { Legal, Reaction, Toolbar, art } from "./parts";
 import { signList, type StarReading } from "./reading";
@@ -195,11 +196,7 @@ export function StarResult({
   }
 
   const canSend = typeof navigator !== "undefined" && typeof navigator.share === "function";
-  const shareAction = (
-    <FanAction fullWidth onClick={() => setShareOpen(true)}>
-      <ReadingText id="share" />
-    </FanAction>
-  );
+  const shareAction = <ResultActions locale={locale} sharing={sharing} onShare={() => setShareOpen(true)} />;
   const rows: readonly (StarDomain | "overall")[] = ["overall", ...domains];
   const lineOf = (key: StarDomain | "overall") =>
     key === "overall" ? "" : domainLine[key][stars[key] - 1];
@@ -339,7 +336,6 @@ export function StarResult({
             </ul>
           </section>
         </div>
-      <FanAction variant="text" href={`/chemi?locale=${locale}`}><ReadingText id="otherGames" /></FanAction>
         <div className={styles.mobileActions}>{shareAction}</div>
       </div>
       <aside className={styles.side}>
@@ -352,14 +348,7 @@ export function StarResult({
               <ReadingText id="askFromResult" />
             </FanAction>
           }
-          extra={
-            <>
-              <div className={styles.desktopOnly}>{shareAction}</div>
-              <FanAction variant="text" size="sm" className={styles.wayOut} href={`/chemi?locale=${locale}`}>
-                <ReadingText id="otherFortunes" />
-              </FanAction>
-            </>
-          }
+          extra={<div className={styles.desktopOnly}>{shareAction}</div>}
         />
         <section className={`${styles.section} ${styles.chartSec}`}>
           <div className={styles.sectionHead}>

@@ -55,6 +55,20 @@ export function askGo(next: AskLocation | null, mode: "push" | "replace" = "push
   dispatchEvent(new Event(EVENT));
 }
 
+/**
+ * 다른 화면 단계와 질문 주제 화면을 기록 한 칸으로 함께 연다(다시 온 장면의 주 버튼 '질문하기').
+ * 뒤로 가면 누르기 전 화면이다. params 는 함께 바꿀 주소 값(null 이면 지움), state 는 그 화면이 기록에 두는 값이다.
+ */
+export function askOpenWith(params: Record<string, string | null>, state: Record<string, unknown>) {
+  const url = new URL(location.href);
+  for (const [key, value] of Object.entries({ ...params, at: null, aq: null }))
+    if (value === null) url.searchParams.delete(key);
+    else url.searchParams.set(key, value);
+  url.searchParams.set("ask", "topic");
+  history.pushState({ ...state, chemiAsk: 1 }, "", url);
+  dispatchEvent(new Event(EVENT));
+}
+
 /** 한 단계 뒤로. 이 화면이 쌓은 기록이 있으면 브라우저 뒤로 가기와 같은 길로 간다. */
 export function askBack() {
   if (history.state?.chemiAsk) history.back();

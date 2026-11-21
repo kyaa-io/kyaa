@@ -1,0 +1,19 @@
+/* 결과 보조 행동 한 줄: 두 버튼이 같은 폭으로 주 버튼과 좌우 끝을 맞춘다. */
+.row {
+  display: flex;
+  gap: var(--space-2);
+}
+.row > * {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: none;
+}
+/* 자랑하기 판 본문: 미리 보기 아래에 그 결과만의 행동이 한 줄씩 놓인다. */
+.sheet {
+  display: grid;
+  gap: var(--space-2);
+}
+.sheet > :is(a, button) {
+  width: 100%;
+  max-width: none;
+}

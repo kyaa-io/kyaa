@@ -7,11 +7,11 @@
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
 import { AskScene } from "@/features/chemi/ask/ask-scene";
-import { askGo, useAskLocation } from "@/features/chemi/ask/location";
+import { askGo, askOpenWith, useAskLocation } from "@/features/chemi/ask/location";
 import { ParticipationCount } from "../participation";
 import { useReadingCopy, useSajuSceneCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
+import { ChevronLeft, ChevronRight, History } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -19,6 +19,7 @@ import { FanDialog, FanSheet } from "@/components/fan-ui/fan-dialog";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { completeShare } from "@/features/chemi/ui/complete-share";
+import type { ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import {
@@ -514,6 +515,17 @@ export function SajuFlow({
     commit({ step: steps[steps.indexOf(step) + 1] }, "push");
   }
 
+  /** 다시 온 장면의 주 버튼: 받아 둔 풀이로 질문 주제 화면을 바로 연다. 기록 한 칸만 쌓아 뒤로 가면 이 장면이다. */
+  function openAsk() {
+    if (!reading) return;
+    navRef.current = { ...navRef.current, step: "result", view: "first", r: reading.readingId, p: null, w: null };
+    askOpenWith(
+      { step: "result", view: null, c: navRef.current.character, r: reading.readingId, p: null, w: null },
+      { sajuDepth: flowDepth() + 1 },
+    );
+    window.dispatchEvent(new Event("saju-navigation"));
+  }
+
   /** 입장에서 '더 깊이'를 누르면 이미 받아 둔 풀이로 올해·이달로 간다. */
   function openView(next: ResultView) {
     setSheet(null);
@@ -521,7 +533,7 @@ export function SajuFlow({
     commit({ step: "result", view: next, r: reading.readingId }, step === "result" ? "push" : "push");
   }
 
-  async function share() {
+  async function share(via: ShareVia) {
     if (!reading || sharing) return;
     setSharing(true);
     try {
@@ -537,7 +549,6 @@ export function SajuFlow({
       if (!response.ok) throw Error();
       const card = await response.json();
       const url = new URL(card.url, location.origin).href;
-      const via = typeof navigator.share === "function" ? "send" : "copy";
       if (via === "send") await navigator.share({ url });
       else {
         await navigator.clipboard.writeText(url);
@@ -732,7 +743,7 @@ export function SajuFlow({
   const wideArt =
     character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-wide-v2.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
-  const primaryLabel = entering ? (again ? (reading ? sceneCopy.history : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
+  const primaryLabel = entering ? (again ? (reading ? text("askStart") : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
 
   const turns = () => (
     <>
@@ -914,6 +925,15 @@ export function SajuFlow({
                 </FanAction>
               ))}
             </div>
+            {again && reading && (
+              <FanAction
+                variant="neutral"
+                ariaLabel={sceneCopy.history}
+                leadingIcon={<FanIcon icon={History} />}
+                className={`${styles.round} ${styles.history}`}
+                onClick={() => openView("first")}
+              />
+            )}
           </>
         ) : (
           <>
@@ -1000,7 +1020,7 @@ export function SajuFlow({
                 <FanAction
                   variant="primary"
                   disabled={entering && (!ready || (authenticated && firsts === null))}
-                  onClick={() => (entering ? (again ? openView("first") : start()) : advance())}
+                  onClick={() => (entering ? (again ? openAsk() : start()) : advance())}
                 >
                   {primaryLabel}
                 </FanAction>

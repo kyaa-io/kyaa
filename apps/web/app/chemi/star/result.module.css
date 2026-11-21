@@ -280,11 +280,6 @@
   display: none;
   grid-column: 1 / -1;
 }
-/* 다른 운세로 가는 길 하나: 최애 한마디 아래 글자 버튼 */
-.wayOut {
-  grid-column: 1 / -1;
-  justify-self: start;
-}
 .legal {
   color: var(--color-muted);
 }
@@ -374,6 +369,11 @@
     position: static;
     padding: 0;
   }
+  /* 주 버튼과 그 아래 보조 행동 줄의 좌우 끝을 맞춘다. */
+  .layout .side .cta > * {
+    width: 100%;
+    max-width: none;
+  }
   .reaction {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -394,6 +394,8 @@
 /* 별자리 궁합으로 가는 줄(레일의 '더 보기' 줄과 같은 모양) */
 .matchLink {
   display: grid;
+  /* 390: 내 출생 차트 아래, 보조 행동 줄 위(결과 위에는 케미 목록 링크만 둔다) */
+  order: 6;
   border-block: 1px solid var(--color-line);
 }
 .matchLink > a {
