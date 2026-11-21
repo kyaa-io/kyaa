@@ -5,7 +5,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { ShortsCatalog } from "@/features/home/ui/shorts-catalog";
 import { shortsTitle, shortsEmpty } from "@/features/home/ui/home-shorts-copy";
 import { parseAppLocale, toContentLocale } from "@/i18n/locales";
-import { publicMetadata } from "@/seo/metadata";
+import { contentPageMetadata } from "@/seo/metadata";
 import { createPublicHomeGalleryRepository } from "@/server/home-gallery/home-gallery-dependencies";
 import styles from "@/features/home/ui/home-gallery-page.module.css";
 
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<{ locale?: string | string[]; offset?: string | string[]; video?: string | string[] }> };
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const locale = parseAppLocale((await searchParams).locale), title = shortsTitle[locale];
-  return publicMetadata({ path: "/shorts", locale, title: `${title} | kyaa`, description: title });
+  return contentPageMetadata({ path: "/shorts", locale, title: `${title} | kyaa`, description: title });
 }
 export default async function ShortsPage({ searchParams }: Props) {
   const params = await searchParams, locale = parseAppLocale(params.locale);

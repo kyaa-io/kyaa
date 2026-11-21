@@ -6,7 +6,7 @@ import { FanPostDetail } from "@/features/fan-posts/ui/fan-post-detail";
 import { parseAppLocale, toContentLocale, type AppLocale } from "@/i18n/locales";
 import { postSlotTexts } from "@/features/fan-posts/domain/post-title-slots";
 import { postSchema } from "@/features/fan-posts/domain/content";
-import { publicMetadata, shareOrigin } from "@/seo/metadata";
+import { contentPageMetadata, shareOrigin } from "@/seo/metadata";
 import { createContentDependencies } from "@/server/fan-posts/dependencies";
 import { createContentHandlers } from "@/server/fan-posts/routes";
 import { loadSeoCreator } from "@/server/seo/public-content";
@@ -37,7 +37,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const [rawTitle, rawArticle] = postSlotTexts(post.body);
   const title = oneLine(rawTitle || rawArticle, 70) || creator?.name;
   if (!title) return {};
-  const metadata = publicMetadata({ path: `/c/${slug}/community/${post.id}`, locale, title, description: oneLine(rawArticle, 120) || title, image: creator?.image.url, imageAlt: title });
+  // The post text is drawn in the browser, so the server HTML of this page has no content for search; the link preview stays.
+  const metadata = contentPageMetadata({ path: `/c/${slug}/community/${post.id}`, locale, indexable: false, title, description: oneLine(rawArticle, 120) || title, image: creator?.image.url, imageAlt: title });
   const first = post.assets[0];
   if (!first) return metadata;
   const images = [{ url: `${shareOrigin()}/api/content-assets/${first.id}`, width: first.width, height: first.height, alt: title }];

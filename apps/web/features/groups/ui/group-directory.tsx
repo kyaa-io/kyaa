@@ -70,7 +70,7 @@ const parseList = (value:unknown)=>groupListSchema.parse(value);
 const SEARCH_DELAY_MS=300;
 const ROLE_FILTERS=['all','idol','singer','actor','creator','show_host'] as const;
 const searchTabs:Record<AppLocale,{artists:string;posts:string}>={ko:{artists:'아티스트',posts:'게시글'},en:{artists:'Artists',posts:'Posts'},ja:{artists:'アーティスト',posts:'投稿'},'zh-Hans':{artists:'艺人',posts:'帖子'},'zh-Hant':{artists:'藝人',posts:'貼文'},es:{artists:'Artistas',posts:'Publicaciones'},id:{artists:'Artis',posts:'Postingan'},vi:{artists:'Nghệ sĩ',posts:'Bài viết'},th:{artists:'ศิลปิน',posts:'โพสต์'},pt:{artists:'Artistas',posts:'Publicações'},fr:{artists:'Artistes',posts:'Publications'},ru:{artists:'Артисты',posts:'Публикации'}};
-export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=[]}:{locale:AppLocale;banners?:HomeBanner[];promoOrder?:readonly string[];initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
+export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=[],initialList}:{locale:AppLocale;banners?:HomeBanner[];promoOrder?:readonly string[];initialList?:GroupList;initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);
  const attendanceTrigger=useRef<HTMLAnchorElement|null>(null);
@@ -115,7 +115,9 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=
   // While another search or filter loads, keep the cards already on screen.
   const [shown,setShown]=useState<{query:string;ownerKey:string;data:GroupList}>();
   if(resource.data&&shown?.query!==listQuery)setShown({query:listQuery,ownerKey:resource.ownerKey,data:resource.data});
-  const listData=resource.data??(resource.loading&&shown?.ownerKey===resource.ownerKey?shown.data:undefined),refreshing=!resource.data&&Boolean(listData);
+  // The first guest page of the default list arrives with the HTML, so the directory reads before any script runs; the reader's own read replaces it.
+  const seed=!resource.data&&!resource.error&&!filtersActive&&sort==='recent'&&!initialOwned&&cursor===undefined?initialList:undefined;
+  const listData=resource.data??(resource.loading&&shown?.ownerKey===resource.ownerKey?shown.data:undefined)??seed,refreshing=!resource.data&&Boolean(listData)&&!seed;
   const items=[...(previous.ownerKey===resource.ownerKey?previous.items:[]),...(listData?.items??[])];
   const listedCount=listData?.totalCount??items.length;
   // The joined and bookmarked switch stays once shown, so turning it off moves nothing below.

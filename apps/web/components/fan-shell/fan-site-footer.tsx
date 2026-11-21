@@ -16,12 +16,10 @@ import type { FanLocale } from "./fan-app-shell";
 import { FanContentContainer } from "./fan-content-container";
 import styles from "./fan-site-footer.module.css";
 import { AnalyticsConsentLink } from "@/features/analytics/client/analytics-consent-link";
-import { HQ_COUNTRY, HQ_LOCALITY, HQ_NAME, HQ_REGION } from "@/seo/global-headquarters";
+import { HQ_CORPORATE_NUMBER, HQ_COUNTRY, HQ_LOCALITY, HQ_NAME, HQ_REGION, HQ_REPRESENTATIVE } from "@/seo/global-headquarters";
 import { KOREA_BUSINESS_INFO } from "./korea-business-info";
 
 const TELEGRAM_CHANNEL_URL = "https://t.me/Kyaa_Official";
-const HQ_CORPORATE_NUMBER = "8130900";
-const HQ_REPRESENTATIVE = "JAEYEONG KIM";
 const HQ_PLACE = `${HQ_LOCALITY}, ${HQ_REGION}, ${HQ_COUNTRY}`;
 
 // Brand marks from Simple Icons; Instagram reuses our existing local mark.
@@ -141,6 +139,8 @@ const copy = {
 // 새 사업자 정보·정책 링크 라벨. 한국어와 영어만 두고 다른 언어는 영어를 쓴다(소비자법 고지 문구).
 const businessCopy = {
   ko: {
+    about: "kyaa 소개",
+    aboutAria: "kyaa 소개 열기",
     pricing: "요금 안내",
     pricingAria: "요금 안내 열기",
     refund: "환불 정책",
@@ -154,6 +154,8 @@ const businessCopy = {
     verifyAria: "공정거래위원회 사업자정보 확인, 새 창",
   },
   en: {
+    about: "About kyaa",
+    aboutAria: "Open About kyaa",
     pricing: "Pricing",
     pricingAria: "Open Pricing",
     refund: "Refund Policy",
@@ -177,6 +179,7 @@ function FanFooterLegalLinks({ locale }: { locale: FanLocale }) {
   const b = businessCopy[locale === "ko" ? "ko" : "en"];
   return (
     <div className={styles.legalLinks}>
+      <Link href={fanHref("/about", locale)} aria-label={b.aboutAria}>{b.about}</Link>
       <Link className={styles.privacyLink} href={fanHref("/privacy", locale)} aria-label={locale === "ko" ? "개인정보처리방침 열기" : translate(locale, localizedMessages.mc2da954c6e18, "Open Privacy Policy")}>{t.privacy}</Link>
       <Link href={fanHref("/terms", locale)} aria-label={locale === "ko" ? "이용약관 열기" : translate(locale, localizedMessages.m9083a379799f, "Open Terms of Use")}>{t.terms}</Link>
       <Link href={fanHref("/pricing", locale)} aria-label={b.pricingAria}>{b.pricing}</Link>

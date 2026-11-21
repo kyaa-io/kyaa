@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-const { from, rpc } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn() }));
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from, rpc }) }));
+const { from, rpc, notices } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), notices: { items: [] as unknown[] } }));
+vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from, rpc: (name: string, ...args: unknown[]) => name === "read_public_home_notices" ? Promise.resolve({ data: { items: notices.items, hasMore: false }, error: null }) : rpc(name, ...args) }) }));
 vi.mock("../media/public-image-reader", () => ({ createPublicImageRoleReader: () => ({ readCelebrityPhotoSetsBySlug: async () => ({}), readLivePhotoSetsBySlug: async () => ({}) }) }));
 import { loadSitemapContent } from "./sitemap-content";
 

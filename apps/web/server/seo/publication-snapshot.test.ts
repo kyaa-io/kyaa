@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-const { from, rpc, imageReads } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), imageReads: vi.fn().mockResolvedValue({}) }));
+const { from, rpc, imageReads, notices } = vi.hoisted(() => ({ from: vi.fn(), rpc: vi.fn(), imageReads: vi.fn().mockResolvedValue({}), notices: { items: [] as unknown[] } }));
 // The unlisted-creator read is covered in sitemap-content.test.ts; here it answers "none" so rpc stays the raffle read.
-vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from, rpc: (name: string, ...args: unknown[]) => name === "list_unlisted_creator_slugs" ? Promise.resolve({ data: [], error: null }) : rpc(name, ...args) }) }));
+vi.mock("@supabase/supabase-js", () => ({ createClient: () => ({ from, rpc: (name: string, ...args: unknown[]) => name === "list_unlisted_creator_slugs" ? Promise.resolve({ data: [], error: null }) : name === "read_public_home_notices" ? Promise.resolve({ data: { items: notices.items, hasMore: false }, error: null }) : rpc(name, ...args) }) }));
 vi.mock("../media/public-image-reader", () => ({ createPublicImageRoleReader: () => ({ readCelebrityPhotoSetsBySlug: imageReads, readLivePhotoSetsBySlug: imageReads }) }));
 import { loadSearchPublicationSnapshot } from "./publication-snapshot";
 import { loadSitemapContent, loadPublicationContent } from "./sitemap-content";
@@ -21,7 +21,7 @@ afterEach(() => vi.unstubAllEnvs());
 beforeEach(() => {
   vi.stubEnv("SUPABASE_URL", "https://example.supabase.co");
   vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-only");
-  body = "Public delivery instructions"; removed = false; failed = false; hiddenCreator = false; draftCampaign = false; draftBenefit = false; liveRows = []; queries.length = 0;
+  body = "Public delivery instructions"; removed = false; failed = false; hiddenCreator = false; draftCampaign = false; draftBenefit = false; liveRows = []; queries.length = 0; notices.items = [];
   rpc.mockImplementation(async () => ({ data: { raffles: [{ id: "22222222-2222-4222-8222-222222222222", benefitId: id, title: "Gift", summary: "Gift summary", imageUrl: null, winnerQuantity: 1, status: "preparing", entryOpensAt: "2026-10-01T00:00:00Z", entryClosesAt: "2026-11-01T00:00:00Z", fulfillmentMethod: "digital", perFanTicketLimit: null }] }, error: null }));
   from.mockImplementation((relation: string) => {
     const read = { relation, columns: "", filters: {} as Record<string, unknown>, start: 0 };
@@ -55,7 +55,7 @@ it("shares the complete sitemap URL set and requires a localized public benefit 
   expect(content).toContainEqual({ path: `/c/artist/raffles/${id}`, locale: "ko" });
   expect(content).not.toContainEqual({ path: `/c/artist/raffles/${id}`, locale: "en" });
   const snapshot = await loadSearchPublicationSnapshot();
-  expect(Object.keys(snapshot).sort()).toEqual(buildSitemap(content).map(page => page.url).sort());
+  expect(Object.keys(snapshot).sort()).toEqual(buildSitemap(content, "/celebrities").map(page => page.url).sort());
   expect(Object.values(snapshot).every(value => /^[a-f0-9]{64}$/.test(value))).toBe(true);
 });
 
@@ -140,12 +140,34 @@ it("does not change hashes when only RPC clock-derived status changes", async ()
 
 it("tracks LIVE schedule and parent text changes in the event and creator projection", async () => {
   const celebrity = { slug: "artist", status: "published", archived_at: null, celebrity_localizations: [{ locale: "ko", name: "Artist" }] };
-  liveRows = [{ id: "recurring", slug: "recurring-event", live_type: "recurring", brand_id: null, brands: null, celebrities: celebrity, starts_at: "2026-10-01T00:00:00Z" }];
+  liveRows = [{ id: "recurring", slug: "recurring-event", live_type: "recurring", brand_id: null, brands: null, celebrities: celebrity, starts_at: "2099-10-01T00:00:00Z" }];
   const before = await loadSearchPublicationSnapshot();
-  liveRows[0].starts_at = "2026-10-02T00:00:00Z";
+  liveRows[0].starts_at = "2099-10-02T00:00:00Z";
   const schedule = await loadSearchPublicationSnapshot();
   expect(schedule["https://kyaa.io/live/recurring-event?locale=ko"]).not.toBe(before["https://kyaa.io/live/recurring-event?locale=ko"]);
   expect(schedule["https://kyaa.io/artist?locale=ko"]).not.toBe(before["https://kyaa.io/artist?locale=ko"]);
   celebrity.celebrity_localizations[0].name = "Updated artist";
   expect((await loadSearchPublicationSnapshot())["https://kyaa.io/live/recurring-event?locale=ko"]).not.toBe(schedule["https://kyaa.io/live/recurring-event?locale=ko"]);
+});
+
+it("leaves out screens with no content of their own: ended regular LIVE, empty gift lists and the check-in-only event page", async () => {
+  const celebrity = { slug: "artist", status: "published", archived_at: null };
+  liveRows = [
+    { id: "past", slug: "regular-past", live_type: "recurring", brand_id: null, brands: null, celebrities: celebrity, starts_at: "2026-10-01T00:00:00Z", ends_at: null, replay_published: false, replay_url: null },
+    { id: "replay", slug: "regular-replay", live_type: "recurring", brand_id: null, brands: null, celebrities: celebrity, starts_at: "2026-10-01T00:00:00Z", ends_at: null, replay_published: true, replay_url: "https://youtu.be/x" },
+    { id: "next", slug: "regular-next", live_type: "recurring", brand_id: null, brands: null, celebrities: celebrity, starts_at: "2099-10-01T00:00:00Z", ends_at: null, replay_published: false, replay_url: null },
+    { id: "wave", slug: "wave-live", live_type: "recurring", brand_id: null, brands: null, celebrities: { ...celebrity, slug: "kyaa-wave-fanpage" }, starts_at: "2099-10-01T00:00:00Z", ends_at: null, replay_published: false, replay_url: null },
+  ];
+  rpc.mockImplementation(async () => ({ data: { raffles: [] }, error: null }));
+  const paths = (await loadSitemapContent()).filter(page => page.locale === "ko").map(page => page.path);
+  expect(paths).toEqual(["/artist", "/live/regular-replay", "/live/regular-next"]);
+});
+
+it("lists published site notices, except the one that opens the X event page", async () => {
+  const notice = { id: "33333333-3333-4333-8333-333333333333", category: "guide", pinned: false, publishedAt: "2026-11-11T00:00:00Z" };
+  notices.items = [{ ...notice, slug: "guide-start-kyaa", title: "kyaa 이용 가이드" }, { ...notice, id: "44444444-4444-4444-8444-444444444444", slug: "dukjil-missionbook", title: "덕질미션북" }];
+  const content = await loadSitemapContent();
+  expect(content).toContainEqual({ path: "/notices/guide-start-kyaa", locale: "ko" });
+  expect(content.some(page => page.path.includes("dukjil-missionbook"))).toBe(false);
+  expect(Object.keys(await loadSearchPublicationSnapshot())).toContain("https://kyaa.io/notices/guide-start-kyaa?locale=en");
 });

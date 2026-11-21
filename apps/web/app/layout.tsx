@@ -1,6 +1,6 @@
 import { MemberEventPopup } from "@/components/banner-slot/member-event-popup";
 import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
-import { defaultShareImage, SITE_URL, NO_INDEX, isPrivatePath, isRehearsalPath, openGraphLocale } from "@/seo/metadata";
+import { defaultShareImage, SITE_URL, NO_INDEX, isNoContentPath, isPrivatePath, isRehearsalPath, openGraphLocale } from "@/seo/metadata";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
 import { Suspense } from "react";
@@ -49,7 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = parseAppLocale(requestHeaders.get("x-byus-locale"));
   return {
     metadataBase: new URL(SITE_URL),
-    ...((isPrivatePath(requestHeaders.get("x-byus-pathname") ?? "") || isRehearsalPath(requestHeaders.get("x-byus-pathname") ?? "")) ? { robots: NO_INDEX } : {}),
+    ...((isPrivatePath(requestHeaders.get("x-byus-pathname") ?? "") || isRehearsalPath(requestHeaders.get("x-byus-pathname") ?? "") || isNoContentPath(requestHeaders.get("x-byus-pathname") ?? "")) ? { robots: NO_INDEX } : {}),
     verification: {
       google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
       other: {

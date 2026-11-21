@@ -25,6 +25,7 @@ describe("FanSiteFooter", () => {
     expect(within(footer).getByRole("link", { name: "개인정보처리방침 열기" })).toHaveAttribute("href", "/privacy?locale=ko");
     expect(within(footer).getByRole("link", { name: "이용약관 열기" })).toHaveAttribute("href", "/terms?locale=ko");
     expect(within(footer).getByRole("link", { name: "요금 안내 열기" })).toHaveAttribute("href", "/pricing?locale=ko");
+    expect(within(footer).getByRole("link", { name: "kyaa 소개 열기" })).toHaveAttribute("href", "/about?locale=ko");
     expect(within(footer).getByRole("link", { name: "환불 정책 열기" })).toHaveAttribute("href", "/refund?locale=ko");
     const groups = footer.querySelectorAll('[role="group"][aria-label] [role="group"]');
     expect(groups).toHaveLength(2);

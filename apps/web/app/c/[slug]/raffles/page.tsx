@@ -17,10 +17,11 @@ export async function generateMetadata({ params, searchParams }: {
   const locale = toContentLocale(parseAppLocale(query.locale));
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
-  const translated = await loadSeoCreator(slug, locale === "ko" ? "en" : "ko");
+  if (slug === WAVE_FANPAGE_SLUG) return { title: "Kyaa Wave | kyaa", robots: { index: false, follow: false } };
+  const [translated, { raffles }] = await Promise.all([loadSeoCreator(slug, locale === "ko" ? "en" : "ko"), loadSeoRaffles(slug, locale)]);
   return publicMetadata({ path: `/c/${slug}/raffles`, locale,
     title: `${celebrity.name}${locale === "ko" ? "의 선물" : " Gifts"} | kyaa`, description: celebrity.summary,
-    locales: translated ? ["ko", "en"] : [locale] });
+    locales: translated ? ["ko", "en"] : [locale], indexable: raffles.length > 0 });
 }
 
 export default async function CreatorRafflesPage({ params, searchParams }: {

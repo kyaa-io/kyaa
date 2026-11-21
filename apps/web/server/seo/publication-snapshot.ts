@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { buildSitemap } from "@/seo/sitemap";
+import { groupsEnabled } from "@/features/groups/domain/availability";
 import { loadPublicationContent, publicationContentByUrl } from "./sitemap-content";
 
 // JSON object insertion order and database row ordering must not create updates.
@@ -17,7 +18,7 @@ export async function loadSearchPublicationSnapshot(): Promise<Record<string, st
   const content = publicationContentByUrl(pages);
   const publicRows = [...content].sort(([a], [b]) => a.localeCompare(b));
   const publicFingerprint = createHash("sha256").update(stableJson(publicRows)).digest("hex");
-  return Object.fromEntries(buildSitemap(pages).map(({ url }) => {
+  return Object.fromEntries(buildSitemap(pages, groupsEnabled() ? "/pages/groups" : "/celebrities").map(({ url }) => {
     // Static copy is compiled into many modules: notify once per deployment.
     // Include stable public rows so directories also change after CMS edits/deletes.
     const value = content.get(url) ?? { deployment: process.env.VERCEL_GIT_COMMIT_SHA ?? "local", publicFingerprint };
