@@ -6,8 +6,8 @@ const harness = await startHarness();
 let browser;
 try {
   browser = await chromium.launch();
-  for (const width of [390, 1440]) {
-    const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : 1050 } });
+  for (const width of [390, 1366, 1440]) {
+    const page = await browser.newPage({ viewport: { width, height: width === 390 ? 844 : width === 1366 ? 768 : 900 } });
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     const nickname = '별빛따라걷는팬친구';
@@ -55,6 +55,7 @@ try {
         }),
         pageWidth: document.documentElement.scrollWidth,
         profileHeight: profile.getBoundingClientRect().height,
+        cardBottom: passport.getBoundingClientRect().bottom,
         profileGap: profile.nextElementSibling.getBoundingClientRect().top - profile.getBoundingClientRect().bottom,
       };
     });
@@ -66,8 +67,11 @@ try {
     assert.equal(geometry.rows, 1);
     assert.equal(geometry.pageWidth, width);
     assert.equal(geometry.actionsBelow, width === 390);
-    if (width === 1440) assert.equal(geometry.profileHeight, 56);
-    assert.equal(geometry.profileGap, width === 390 ? 12 : 16);
+    if (width >= 1024) {
+      assert.equal(geometry.profileHeight, 56);
+      assert.ok(geometry.cardBottom <= page.viewportSize().height);
+    }
+    assert.equal(geometry.profileGap, 8);
     if (width === 390) {
       assert.ok(geometry.hidden > 0);
     }

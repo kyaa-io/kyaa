@@ -60,7 +60,7 @@ export function MyStats({ locale, passport, stamps }: { locale: AppLocale; passp
   }, [retry]);
   const [guideOpen, setGuideOpen] = useState(false);
   const points: Slot = wallet.data ? wallet.data.points : wallet.error ? "missing" : "loading";
-  return <><FanSurface as="div"><dl className={styles.row} data-block="my-stats">
+  return <><FanSurface as="div" className={styles.surface}><dl className={styles.row} data-block="my-stats">
     <Cell label={walletCopy(locale).points} icon={<RewardIcon kind="point" size={16} />}><Value locale={locale} slot={points} /></Cell>
     <Cell label={myHomeText(locale, "stampsLabel")} icon={<RewardIcon kind="stamp" size={16} />}><StampValue locale={locale} passport={passport} fallback={stamps} /></Cell>
     <Cell label={myHomeText(locale, "tierLabel")} onOpen={passport === "loading" ? undefined : () => setGuideOpen(true)} icon={passport && passport !== "loading" ? <FanTierBadge tier={passport.tier} stageKey={passport.stageProgress?.current.key} locale={locale} size={16} /> : <span className={styles.emptyTier} />}>
