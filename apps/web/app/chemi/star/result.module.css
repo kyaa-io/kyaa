@@ -412,3 +412,19 @@
   align-items: center;
   justify-content: space-between;
 }
+
+:global(main):has(.layout) > :global([data-chemi-list-link]) {
+  display: none;
+}
+
+@media (max-width: 63.99rem) {
+  .layout .reaction { order: 1; }
+}
+@media (min-width: 64rem) {
+  .layout > .side,
+  .layout > .main {
+    align-self: stretch;
+    grid-template-rows: auto;
+    align-content: space-between;
+  }
+}

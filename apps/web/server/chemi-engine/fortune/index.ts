@@ -94,7 +94,17 @@ export function computeDailyFortune(chart: Chart, readingDay: string | Date) {
   const score = clamp(Math.max(50 + (annual > 0 ? weights.annualFloorBonus : 0),
     weights.base + affinity(Math.floor(stem/2)) + affinity(branchElements[branch]) + weights.relation[tie] + weights.stage[stage]));
   const group = mod(Math.floor(stem/2)-self,5);
-  const field = (target: number) => clamp(score + weights.relation[tie] + (target === group ? weights.fieldBonus : 0));
+  const field = (target: number) => {
+    if (target < 0) return score;
+    // Compare the field's element with both the reading day and natal chart.
+    const element = (self + target) % 5;
+    const branchGroup = mod(branchElements[branch] - self, 5);
+    const natalCount = strength.filter(value => value === element).length;
+    const balance = strength.length / 5 - natalCount;
+    const adjustment = weights.fieldCycle[mod(target - group, 5)]
+      + weights.branchCycle[mod(target - branchGroup, 5)] + Math.round(balance);
+    return clamp(score + adjustment);
+  };
   const period = (b: number) => clamp(score + weights.relation[relation(natalBranch,b)] + affinity(branchElements[b]));
   const [color,number,direction,item] = luck[useful];
   return { locked: false, tableVersion: FORTUNE_TABLE_VERSION, score, grade: fortuneGrade(score),

@@ -10,7 +10,6 @@ import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight } from "@/components/fan-
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
-import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import type { AppLocale } from "@/i18n/locales";
@@ -159,7 +158,7 @@ export function FortuneDeep(props: Props) {
             {line}
           </FanText>
         </div>
-        <DeepResultAsk name={name} fixed={false} reading={() => week.saveContext(view, character, week.today)} />
+        <DeepResultAsk name={name} reading={() => week.saveContext(view, character, week.today)} />
         <div className={`${styles.sideActions} ${styles.desktopOnly}`}>{secondary}</div>
       </div>
       <footer className={styles.legal}>
@@ -346,6 +345,16 @@ export function FortuneDeep(props: Props) {
   const sorted = [...days].sort((a, b) => b.result.score - a.result.score);
   // 눈여겨볼 날: 가장 높은 날, 그다음 높은 날, 가장 낮은 날(같은 날은 한 번만).
   const notable = [...new Set([sorted[0], sorted[1], sorted[sorted.length - 1]])];
+  const usedDescriptions = new Set<string>();
+  const fieldTips = { fandom: "depthFandomA", people: "depthPeopleA", money: "depthMoneyA",
+    rest: "depthRestA", work: "depthWorkA", love: "depthLoveA" } as const;
+  const descriptions = notable.map(({ result }) => {
+    const ranked = [...fieldRows].sort(([, a], [, b]) => result.fields[b] - result.fields[a]);
+    const choices = [text(flowKey(result.score)), ...ranked.map(([, key]) => text(fieldTips[key]))];
+    const description = choices.find(choice => !usedDescriptions.has(choice)) ?? choices[0];
+    usedDescriptions.add(description);
+    return description;
+  });
   return (
     <article className={styles.page} data-fortune-deep="week">
       {toolbar(text("weekMeta", { from: short(days[0].day), to: short(days[6].day) }))}
@@ -429,7 +438,7 @@ export function FortuneDeep(props: Props) {
               <ReadingText id="weekNotable" />
             </FanHeading>
             <ol className={styles.dayList}>
-              {notable.map((row) => {
+              {notable.map((row, index) => {
                 const { score } = row.result;
                 const kind = dayCardKind(score);
                 const isToday = row.day === week.today;
@@ -454,7 +463,7 @@ export function FortuneDeep(props: Props) {
                           {text("scoreGrade", { score, grade: text(gradeKey(score)) })}
                         </FanText>
                         <FanText as="p" role="meta">
-                          {text(flowKey(score))}
+                          {descriptions[index]}
                         </FanText>
                       </span>
                       {href && <FanIcon icon={ChevronRight} />}
@@ -471,9 +480,6 @@ export function FortuneDeep(props: Props) {
               <FanHeading>
                 <ReadingText id="byDate" />
               </FanHeading>
-              <FanTag tone="neutral">
-                <ReadingText id="devTest" />
-              </FanTag>
             </div>
             <DatePurchase character={character} locale={locale} />
           </section>

@@ -36,6 +36,9 @@ it("checks 60 consecutive Korean dates for each of ten fixed natal charts", () =
       if (result.locked) throw new Error("six-character chart unexpectedly locked");
       expect(result.evidence.timeBasis).toBe("시간 모름으로 계산");
       expect(Object.keys(result.fields)).toHaveLength(6);
+      if (result.score >= 62 && result.score <= 86) {
+        expect(new Set(Object.values(result.fields)).size).toBeGreaterThanOrEqual(3);
+      }
       expect(Object.keys(result.periods)).toHaveLength(3);
       for (const value of [result.score,...Object.values(result.fields),...Object.values(result.periods)]) {
         expect(value).toBeGreaterThanOrEqual(50);

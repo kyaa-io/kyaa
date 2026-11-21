@@ -280,34 +280,7 @@ export function StarResult({
             })}
           </ul>
         </section>
-        <div className={`${styles.todaySec} ${styles.twoCol}`}>
-          <section className={styles.section}>
-            <FanHeading><ReadingText id="today" /></FanHeading>
-            <div className={styles.doDont}>
-              <div>
-                <span className={styles.bright}>
-                  <FanHeading as="h3"><ReadingText id="do" /></FanHeading>
-                </span>
-                <ul>
-                  {todayDo[best].map((item) => (
-                    <li data-row="star" key={item}>
-                      <FanText role="body">{item}</FanText>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <FanHeading as="h3"><ReadingText id="avoid" /></FanHeading>
-                <ul>
-                  {todayDont[worst].map((item) => (
-                    <li data-row="star" key={item}>
-                      <FanText role="body">{item}</FanText>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </section>
+        <div className={styles.todaySec}>
           <section className={styles.section}>
             <FanHeading><ReadingText id="why" /></FanHeading>
             <ul className={styles.reasons}>
@@ -350,6 +323,33 @@ export function StarResult({
           }
           extra={<div className={styles.desktopOnly}>{shareAction}</div>}
         />
+          <section className={`${styles.section} ${styles.todaySec}`}>
+            <FanHeading><ReadingText id="today" /></FanHeading>
+            <div className={styles.doDont}>
+              <div>
+                <span className={styles.bright}>
+                  <FanHeading as="h3"><ReadingText id="do" /></FanHeading>
+                </span>
+                <ul>
+                  {todayDo[best].map((item) => (
+                    <li data-row="star" key={item}>
+                      <FanText role="body">{item}</FanText>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <FanHeading as="h3"><ReadingText id="avoid" /></FanHeading>
+                <ul>
+                  {todayDont[worst].map((item) => (
+                    <li data-row="star" key={item}>
+                      <FanText role="body">{item}</FanText>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
         <section className={`${styles.section} ${styles.chartSec}`}>
           <div className={styles.sectionHead}>
             <FanHeading><ReadingText id="chart" /></FanHeading>

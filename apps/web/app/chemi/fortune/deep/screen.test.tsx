@@ -116,8 +116,16 @@ it("draws seven days, links only today and tomorrow, and keeps paid dates out be
   cleanup();
   serve([96, 78, 57, 71, 88, 82, 66]);
   render(<FortuneDeep view="week" character="changha" locale="ko" paidPreview />);
-  expect(await screen.findByText("DEV 시험")).toBeVisible();
-  expect(screen.getByLabelText("운세를 볼 날짜")).toBeVisible();
+  expect(await screen.findByLabelText("운세를 볼 날짜")).toBeVisible();
+  expect(screen.queryByText("DEV 시험")).toBeNull();
+});
+
+it("같은 등급의 날짜에도 서로 다른 조언을 보여 준다", async () => {
+  serve([83, 83, 83, 83, 83, 83, 83]);
+  const view = render(<FortuneDeep view="week" character="changha" locale="ko" paidPreview={false} />);
+  await screen.findByRole("heading", { name: "이번 주 운세" });
+  const advice = [...view.container.querySelectorAll("ol")].at(-1)!.querySelectorAll("li p");
+  expect(new Set([...advice].map(item => item.textContent)).size).toBe(3);
 });
 
 it("asks a guest to sign in instead of loading", async () => {

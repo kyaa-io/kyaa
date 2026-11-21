@@ -114,9 +114,9 @@ it("처음 풀이 제목 아래: 최애마다 다른 한마디, 같은 키워드
   expect(seen[2].keywords).toEqual(seen[0].keywords);
 });
 
-it("처음 풀이 한마디 아래에 DEV 견본 대사 표시, 다른 화면에는 없음", () => {
+it("승인된 사주 풀이에는 견본 표시가 없다", () => {
   const first = show("first");
-  expect(first.container.querySelector('[data-opening-status="dev-sample"]')?.textContent).toBe("DEV 견본 대사 · 본인 확인 전");
+  expect(first.queryByText("DEV 견본 대사 · 본인 확인 전")).toBeNull();
   first.unmount();
   for (const view of ["year", "month", "pair"] as const) {
     const { container, unmount } = show(view);
