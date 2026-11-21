@@ -1,0 +1,402 @@
+/* 케미 질문하기 장면. 글자 크기·굵기는 FanText·FanAction·FanTag 역할이 정하고, 이 파일은 배치·면만 정한다.
+ * 타로 뽑기 장면과 같은 몰입 화면이다: 위 줄(뒤로·남은 질문·지난 질문) 아래로 장면 그림이 화면 끝까지 차고, 대화판이 그림 아래쪽에 놓인다. */
+.root {
+  /* 그림 위에 놓는 면: 흐림 없이 흰 면 88%(DESIGN §5 backdrop-filter 0) */
+  --ask-glass: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: calc(100svh - var(--fan-header-height, var(--space-16)) - var(--space-4));
+  padding-block: var(--space-2);
+}
+.root :is(p, ul, figure) {
+  margin: 0;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.root .round {
+  border: 1px solid var(--color-control-line);
+  background: var(--color-surface);
+}
+.count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  box-sizing: border-box;
+  min-height: calc(var(--space-8) + var(--space-1));
+  margin-inline-start: auto;
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-control-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+.count svg {
+  color: var(--color-accent);
+}
+.top:not(:has(.count)) .history {
+  margin-inline-start: auto;
+}
+
+.stage {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: calc(var(--space-16) * 7);
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 14%;
+}
+
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+.board {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--ask-glass);
+}
+/* 답이 길면 대화판은 화면 절반까지만 크고 안에서 넘긴다. 행동 버튼은 늘 보인다. */
+.thread {
+  max-height: 50svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.speak {
+  display: grid;
+  grid-template-columns: var(--min-target) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+.speakBody {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.speakBody p {
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.who {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.face,
+.faceSmall,
+.faceLarge {
+  display: block;
+  flex: none;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.faceSmall {
+  width: var(--space-8);
+  height: var(--space-8);
+}
+.faceLarge {
+  width: var(--space-16);
+  height: var(--space-16);
+}
+.waiting {
+  display: grid;
+  gap: var(--space-2);
+  padding-block: var(--space-1);
+}
+
+.mineRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.mine {
+  max-width: 80%;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+  word-break: keep-all;
+}
+/* 앱이 알리는 한 줄(한도·오류·멈춤·상담 번호). 최애의 말이 아니다. */
+.sys {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.sys svg {
+  flex: none;
+  color: var(--color-accent-ink);
+}
+
+/* 주제 칩: 줄마다 좌우 끝까지 찬다(긴 이름이 두 줄로 꺾이지 않게 칸 수를 고정하지 않는다). */
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.topics > * {
+  flex: 1 1 auto;
+}
+.examples {
+  display: grid;
+  gap: var(--space-2);
+}
+.root .glass {
+  border-color: transparent;
+  background: var(--ask-glass);
+  white-space: nowrap;
+}
+.root .example {
+  justify-content: flex-start;
+  padding-inline: var(--space-4);
+  text-align: start;
+  white-space: normal;
+}
+.root .example[aria-pressed="true"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+}
+.root .topics svg {
+  color: var(--color-accent-ink);
+}
+
+.composer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline-start: var(--space-4);
+  border: 1px solid var(--color-control-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+.composer:focus-within {
+  outline: var(--focus-width) solid var(--color-ink);
+  outline-offset: calc(var(--focus-width) * -1);
+}
+.field {
+  flex: 1;
+  min-width: 0;
+  height: var(--min-target);
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+}
+.root .send {
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.actions {
+  display: grid;
+  gap: var(--space-2);
+}
+/* 장면 안의 주 버튼은 대화판과 좌우 끝을 맞춘다(폭 상한을 두지 않는다). */
+.root .main {
+  width: 100%;
+  max-width: none;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+.row[data-single] {
+  grid-template-columns: 1fr;
+}
+.actions :global([data-fan-tag]),
+.root .onMain {
+  margin-inline-start: var(--space-2);
+}
+.root .onMain {
+  background: var(--color-surface);
+  color: var(--color-accent-ink);
+}
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-height: var(--min-target);
+  border-radius: var(--radius-pill);
+  background: var(--ask-glass);
+  color: var(--color-accent-ink);
+}
+
+/* 오늘 물어본 질문·지난 질문: 행 + 구분선 */
+.todays {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-line);
+}
+/* 시트는 장면 밖(포털)에 그려지므로 여백을 여기서 직접 지운다 */
+.list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.list li + li {
+  border-top: 1px solid var(--color-line);
+}
+.list .rowLink {
+  display: flex;
+  width: 100%;
+  padding: 0;
+  border-radius: var(--radius-small);
+  color: var(--color-ink);
+  text-align: start;
+}
+.list .rowLink > span {
+  flex: 1;
+  min-width: 0;
+}
+.rowGrid {
+  display: grid;
+  text-align: start;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  width: 100%;
+  padding-block: var(--space-2);
+}
+.rowGrid.histRow {
+  padding-block: var(--space-3);
+}
+.rowGrid > svg {
+  color: var(--color-muted);
+}
+.histText {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.clip {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-6);
+  text-align: center;
+}
+
+/* 자랑하기 시트: 카드와 받을 것을 나란히 */
+.shareTop {
+  display: grid;
+  gap: var(--space-4);
+}
+.shareTop[data-bonus] {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.card {
+  display: grid;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+.card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: center 10%;
+}
+/* 받을 것이 없으면 카드 한 장을 가로로 눕힌다(그림 왼쪽, 말 오른쪽) */
+.shareTop:not([data-bonus]) .card {
+  grid-template-columns: calc(var(--space-16) * 2 + var(--space-4)) minmax(0, 1fr);
+  align-items: center;
+}
+.card figcaption {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+.card figcaption p,
+.empty p {
+  margin: 0;
+  word-break: keep-all;
+}
+.reward {
+  display: grid;
+  align-content: center;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.rewardLabel {
+  color: var(--color-accent-ink);
+}
+
+/* 390: 토스트는 대화판 위에 뜬다(버튼을 덮지 않는다). 1024+ 는 공통 자리(오른쪽 아래). */
+@media (width < 64rem) {
+  :global(body):has(.root) :global([data-fan-toast-viewport]) {
+    bottom: calc(var(--chemi-ask-panel, calc(var(--space-16) * 4)) + var(--space-2) + env(safe-area-inset-bottom));
+  }
+}
+
+@media (width >= 64rem) {
+  .root {
+    gap: var(--space-4);
+    padding-bottom: var(--space-8);
+  }
+  .art img {
+    object-position: center 26%;
+  }
+  .panel {
+    box-sizing: border-box;
+    width: calc(var(--space-16) * 7 + var(--space-6));
+    padding: var(--space-8);
+  }
+  /* 대화판 폭이 넉넉해 주제 여섯 개를 세 칸 두 줄로 맞춘다 */
+  .topics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .speak {
+    grid-template-columns: calc(var(--space-12) + var(--space-2)) minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+  .face {
+    width: calc(var(--space-12) + var(--space-2));
+    height: calc(var(--space-12) + var(--space-2));
+  }
+  .thread {
+    max-height: min(50svh, calc(var(--space-16) * 8));
+  }
+}

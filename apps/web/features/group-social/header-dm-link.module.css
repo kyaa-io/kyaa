@@ -1,3 +1,5 @@
 .floating { position: fixed; right: var(--space-4); bottom: calc(var(--space-16) + var(--space-4) + env(safe-area-inset-bottom)); width: 48px; height: 48px; border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-service-ink); box-shadow: var(--shadow-overlay); z-index: var(--z-bottom-nav); }
 .floating[hidden], :global(body:has([role="dialog"], dialog[open], [aria-modal="true"])) .floating { display: none; }
+/* 케미 몰입 장면(타로 뽑기·질문하기)은 장면이 화면 아래 끝까지 차서 떠 있는 버튼을 두지 않는다. */
+:global(body:has([data-chemi-immersive])) .floating { display: none; }
 @media (min-width: 1024px) { .floating { display: none; } }

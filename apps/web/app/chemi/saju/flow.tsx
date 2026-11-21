@@ -6,6 +6,8 @@
  * 공통 부품 대기: 대화 틀(장면·말풍선·고르기 띠)은 운세 구현(t3/chemi-w3-fortune-fix2)에 같은 모양이 있다.
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
+import { AskScene } from "@/features/chemi/ask/ask-scene";
+import { askGo, useAskLocation } from "@/features/chemi/ask/location";
 import { ParticipationCount } from "../participation";
 import { useReadingCopy, useSajuSceneCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -135,6 +137,7 @@ export function SajuFlow({
 }) {
   const text = useReadingCopy();
   const sceneCopy = useSajuSceneCopy();
+  const ask = useAskLocation();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const nav = readUrl(useSyncExternalStore(subscribeUrl, currentSearch, serverSearch));
   const [reading, setReading] = useState<SajuReading>();
@@ -662,6 +665,8 @@ export function SajuFlow({
     );
 
   const activePair = pair && pair.id === nav.p ? pair : undefined;
+  if (step === "result" && reading && ask && view !== "pair")
+    return <AskScene locale={locale} content="saju" character={character} readingId={reading.readingId} at={ask} />;
   if (step === "result" && reading && phase !== "pairCalc" && phase !== "limit" && phase !== "error")
     return (
       <>
@@ -678,6 +683,7 @@ export function SajuFlow({
           backLabel={sceneCopy.back}
           onBack={() => window.history.back()}
           onShare={share}
+          onAsk={() => askGo({ step: "topic" })}
           onTopics={() => setSheet("topics")}
           onGo={openView}
           onScene={() => commit(toEnter(nav), "push")}

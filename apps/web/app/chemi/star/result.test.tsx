@@ -25,7 +25,7 @@ afterEach(() => {
 
 it("shows the four areas with star names, the three reasons and the sun and moon signs", () => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ grants: [] })));
-  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />);
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("한 박자 쉬어 가는 날");
   // 별점은 글자 이름이 있다(총운은 1440 열에도 한 번 더 있다).
   expect(screen.getAllByRole("img", { name: "돈 별점 5개 중 4개" })).toHaveLength(1);
@@ -41,7 +41,7 @@ it("shows the four areas with star names, the three reasons and the sun and moon
 it("opens the full chart from the summary", () => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ grants: [] })));
   const onChart = vi.fn();
-  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={onChart} />);
+  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={onChart} onAsk={() => {}} />);
   fireEvent.click(screen.getByRole("button", { name: /전체 보기/ }));
   expect(onChart).toHaveBeenCalledOnce();
 });
@@ -55,7 +55,7 @@ it("opens the share card and copies the public URL; completion is recorded only 
   const copy = vi.fn().mockRejectedValueOnce(new Error("denied")).mockResolvedValueOnce(undefined);
   vi.stubGlobal("fetch", fetcher);
   Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: copy } });
-  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />);
   fireEvent.click(screen.getAllByRole("button", { name: "자랑하기" })[0]!);
   const dialog = await screen.findByRole("dialog");
   const card = dialog.querySelector("[data-star-share-card]")!;
@@ -73,7 +73,7 @@ it("opens the share card and copies the public URL; completion is recorded only 
 
 it("has one way out to the other fortunes, not two buttons to the same place", () => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json({ grants: [] })));
-  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />);
   expect(screen.queryByRole("link", { name: "다른 주제" })).toBeNull();
   expect(screen.getAllByRole("link", { name: "다른 운세 보기" })).toHaveLength(1);
 });
@@ -89,7 +89,7 @@ it("tags each reason with a different area before repeating one", () => {
       })),
     },
   } as unknown as StarReading;
-  render(<StarResult locale="ko" reading={many} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  render(<StarResult locale="ko" reading={many} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />);
   const why = screen.getByRole("heading", { name: "왜 그런지" }).closest("section")!;
   const tags = within(why).getAllByRole("listitem").map((item) => item.querySelector("[class*=tag]")?.textContent);
   expect(new Set(tags).size).toBe(3);
@@ -108,11 +108,11 @@ it("draws the wheel with all twelve signs and ten planets, and the chart section
 });
 
 it("says whether the birth time was used, on the result and on the chart", () => {
-  const unknown = render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  const unknown = render(<StarResult locale="ko" reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />);
   expect(screen.getByText("태어난 시간 없이 본 운세")).toBeTruthy();
   unknown.unmount();
   const exact = { ...reading, result: { ...reading.result, timeKnown: true } } as StarReading;
-  const result = render(<StarResult locale="ko" reading={exact} character="changha" backHref="/chemi/star" onChart={() => {}} />);
+  const result = render(<StarResult locale="ko" reading={exact} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />);
   expect(screen.getByText("태어난 시각으로 본 운세")).toBeTruthy();
   expect(screen.queryByText("태어난 시간 없이 본 운세")).toBeNull();
   result.unmount();

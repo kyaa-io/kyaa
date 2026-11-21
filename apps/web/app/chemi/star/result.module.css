@@ -280,6 +280,11 @@
   display: none;
   grid-column: 1 / -1;
 }
+/* 다른 운세로 가는 길 하나: 최애 한마디 아래 글자 버튼 */
+.wayOut {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
 .legal {
   color: var(--color-muted);
 }
