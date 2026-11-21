@@ -11,7 +11,7 @@ import styles from "./share-proof-admin-panel.module.css";
 type Locale = "ko" | "en";
 type RejectCode = (typeof SHARE_REJECT_CODES)[number];
 const TEXT = {
-  ko: { title: "SNS 공유 인증", pending: "확인 대기", accepted: "인정", rejected: "반려됨", revoked: "취소됨", all: "전체",
+  ko: { title: "SNS 공유 인증", pending: "대기", accepted: "승인", rejected: "반려", revoked: "취소", all: "전체",
     accept: "승인·지급", reject: "반려", rejectAs: "반려 사유", r_no_hashtag: "태그 없음", r_private_account: "비공개 계정", r_duplicate: "중복", r_unrelated: "관련 없는 게시물",
     tagOf: (handle: string) => `${handle} 태그 확인`, tagUnconfirmed: "공식 계정을 확인하지 못해 승인할 수 없습니다.", retryPay: "지급 다시 시도",
     approved: (points: number) => points > 0 ? `승인하고 ${points}P를 지급했습니다.` : "승인했어요. 오늘 지급 한도에 도달해 포인트는 지급되지 않았어요.", approvedUnpaid: "승인됐지만 포인트가 안 들어갔어요. 승인 탭에서 다시 지급해 주세요.", rejectedDone: "반려했습니다.",

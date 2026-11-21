@@ -106,7 +106,7 @@ describe("HomeBannerManager", () => {
     expect(bodies.map((body) => body.action)).toEqual(["save", "publication"]);
     expect(bodies[0].localizations).toMatchObject({ ko: { title: "새 정기 방송" } });
     expect(bodies[1]).toMatchObject({ publicationStatus: "published", expectedRevision: 2 });
-    fireEvent.click(screen.getByRole("button", { name: "비공개로 전환" }));
+    fireEvent.click(screen.getByRole("button", { name: "비공개로" }));
     await waitFor(() => expect(bodies).toHaveLength(3));
     expect(bodies[2]).toMatchObject({ action: "publication", publicationStatus: "draft", expectedRevision: 3 });
   });
@@ -168,7 +168,7 @@ it('saves placement and category with the banner in one command',async()=>{
  const fetcher=vi.fn(async()=>Response.json(data));vi.stubGlobal('fetch',fetcher);
  render(<HomeBannerManager locale="ko" role="admin"/>);
  await screen.findByDisplayValue('카라 LIVE');
- fireEvent.change(screen.getByRole('combobox',{name:'노출 위치'}),{target:{value:'groups'}});
+ fireEvent.change(screen.getByRole('combobox',{name:'표시 위치'}),{target:{value:'groups'}});
  fireEvent.change(screen.getByRole('combobox',{name:'분류'}),{target:{value:'group'}});
  fireEvent.click(screen.getByRole('button',{name:'초안 저장'}));
  await waitFor(()=>expect(fetcher).toHaveBeenCalledTimes(2));
@@ -181,7 +181,7 @@ it('offers 홈배너2 and 덕질배너1 as placements and saves the chosen slot'
  const fetcher=vi.fn(async()=>Response.json(data));vi.stubGlobal('fetch',fetcher);
  render(<HomeBannerManager locale="ko" role="admin"/>);
  await screen.findByDisplayValue('카라 LIVE');
- const select=screen.getByRole('combobox',{name:'노출 위치'});
+ const select=screen.getByRole('combobox',{name:'표시 위치'});
  expect(within(select).getByRole('option',{name:/홈배너2 · 랭킹 위 \(외부 광고, 모바일 716 x 320, PC 2720 x 480\)/})).toBeInTheDocument();
  expect(within(select).getByRole('option',{name:/덕질배너1 · 덕질 탭 가운데/})).toBeInTheDocument();
  expect(within(select).getByRole('option',{name:/덕질배너2 · 덕질 탭 PC 오른쪽 세로 \(720 x 1200\)/})).toBeInTheDocument();

@@ -260,7 +260,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const toolbarDisabled = interactionLocked || !editor?.isEditable;
 
   return <section className={styles.manager} aria-labelledby="notice-manager-title">
-    <header><div><p>{locale === "ko" ? "공지 관리" : "Notice management"}</p><h2 id="notice-manager-title">{celebrityName} {locale === "ko" ? "공지" : "Notices"}</h2></div>{canEdit && <button type="button" disabled={interactionLocked} onClick={reset}>{locale === "ko" ? "새 공지" : "New Notice"}</button>}</header>
+    <header><div><p>{locale === "ko" ? "홈 공지" : "Notice management"}</p><h2 id="notice-manager-title">{celebrityName} {locale === "ko" ? "공지" : "Notices"}</h2></div>{canEdit && <button type="button" disabled={interactionLocked} onClick={reset}>{locale === "ko" ? "새 공지" : "New Notice"}</button>}</header>
     <div className={styles.layout}>
       <div className={styles.list}><AdminListSearch value={query} onChange={setQuery} locale={locale} disabled={interactionLocked} />
         {listState === "loading" && !pending && <p role="status">{locale === "ko" ? "공지를 불러오는 중입니다." : "Loading notices."}</p>}

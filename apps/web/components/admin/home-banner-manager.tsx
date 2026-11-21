@@ -38,7 +38,7 @@ const copy = {
     title: "배너 관리", description: "홈과 모임 탐색에 표시할 배너와 이동 링크, 분류, 공개 순서를 관리합니다.",
     new: "새 배너", list: "배너 목록", empty: "등록된 배너가 없습니다.", regular: "정기 방송", announcement: "안내",
     creator: "크리에이터", chooseCreator: "크리에이터 선택", kind: "배너 종류", draft: "비공개", published: "공개",
-    save: "초안 저장", saveChanges: "변경사항 저장", publish: "공개", unpublish: "비공개로 전환", up: "위로", down: "아래로",
+    save: "초안 저장", saveChanges: "저장", publish: "공개", unpublish: "비공개로", up: "위로", down: "아래로",
     readonly: "조회 전용 계정은 볼 수만 있어요.", ko: "한국어", en: "English", titleField: "제목", descriptionField: "설명",
     cta: "버튼 문구", href: "이동 링크", alt: "이미지 대체 텍스트", desktop: "데스크톱 이미지", mobile: "모바일 이미지 (선택)",
     upload: "이미지 업로드", remove: "이미지 제거", noImage: "등록된 이미지 없음", saved: "배너를 저장했습니다.",
@@ -258,9 +258,9 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
           <section className={styles.panel}>
             <form className={styles.form} onSubmit={(event) => { event.preventDefault(); void save(); }}>
               <div className={styles.row}>
-                <label className={styles.field}>{locale === 'ko' ? '노출 위치' : 'Placement'}<select disabled={!canWrite} value={draft.placement ?? 'home'} onChange={event=>updateRoot({placement:event.target.value as Draft['placement']})}>{placementOptions.map(([value])=><option key={value} value={value}>{placementLabel(value, locale)}</option>)}</select></label>
+                <label className={styles.field}>{locale === 'ko' ? '표시 위치' : 'Placement'}<select disabled={!canWrite} value={draft.placement ?? 'home'} onChange={event=>updateRoot({placement:event.target.value as Draft['placement']})}>{placementOptions.map(([value])=><option key={value} value={value}>{placementLabel(value, locale)}</option>)}</select></label>
                 {draft.placement === "member_event_popup" && <>
-                  <label className={styles.field}>{locale === "ko" ? "이벤트 상세 경로" : "Event detail path"}
+                  <label className={styles.field}>{locale === "ko" ? "이벤트 상세 주소" : "Event detail path"}
                     <input disabled={!canWrite} maxLength={2048} placeholder="/live/…" value={draft.localizations.ko.href} onChange={event => {
                       const href = event.target.value;
                       updateRoot({ localizations: { ko: {...draft.localizations.ko, href}, en: {...draft.localizations.en, href} } });

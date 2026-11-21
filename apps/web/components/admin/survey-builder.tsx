@@ -28,14 +28,14 @@ type Question = SurveyQuestion & { clientId: string };
 const copy = {
   ko: {
     eyebrow: "라이브 운영",
-    title: "설문 빌더",
+    title: "설문 만들기",
     description:
       "공통 질문 4개와 선택 질문 최대 2개로 한국어·영어 설문을 구성합니다.",
     versions: "버전",
     newVersion: "새 초안",
-    clone: "복제",
+    clone: "복사",
     save: "초안 저장",
-    publish: "발행",
+    publish: "공개",
     close: "마감",
     archive: "보관",
     preview: "미리보기",
