@@ -42,7 +42,7 @@ export function HomeBanner({
     <section className={styles.banner} onFocus={() => setPaused(true)} onMouseEnter={() => setPaused(true)}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
-        <SceneVideo src={`/chemi/video/chemi-banner-${id}-loop-v1`} paused={paused} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
+        <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-v1`} paused={paused} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
         <div className={styles.caption}>
           <FanHeading as="h1">{copy[id]}</FanHeading>
           {href ? (

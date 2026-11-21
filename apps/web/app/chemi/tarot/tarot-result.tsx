@@ -190,7 +190,7 @@ export function TarotResult({
         </header>
         <div className={styles.hero} data-reversed={draw.reversed || undefined}>
           <img className={styles.cloth} src="/chemi/tarot/cloth-390.webp" alt="" />
-          <SceneVideo src="/chemi/video/chemi-bg-tarot-room-loop-v1" />
+          <SceneVideo src="/public-assets/cms-assets/chemi/video/chemi-bg-tarot-room-loop-v1" />
           <img className={styles.cardFace} src={tarotFace(draw.card)} alt={alt} />
         </div>
         <div className={styles.pairPanel}>

@@ -489,7 +489,7 @@ export function FortuneFlow({
             <img src={mobileArt} alt={text("cloudArt", { name })} />
           </picture>
           {step === "enter" && (character === "elina" || character === "yuna") && (
-            <SceneVideo src={`/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
+            <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
           )}
         </div>
         {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}

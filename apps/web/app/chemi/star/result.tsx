@@ -239,7 +239,7 @@ export function StarResult({
               <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
               <img src={`${art}/head-${character}-v1.webp`} alt="" />
             </picture>
-            {character === "dosa" && <SceneVideo src="/chemi/video/chemi-bg-star-sky-loop-v1" objectPosition="center 20%" />}
+            {character === "dosa" && <SceneVideo src="/public-assets/cms-assets/chemi/video/chemi-bg-star-sky-loop-v1" objectPosition="center 20%" />}
           </div>
         </header>
         <section className={`${styles.panel} ${styles.domainPanel}`}>
