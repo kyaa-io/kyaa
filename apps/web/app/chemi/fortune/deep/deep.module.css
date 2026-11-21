@@ -398,10 +398,13 @@
   padding: var(--space-3) 0;
   border-bottom: 1px solid var(--color-line);
 }
-.cardCta {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
+.cardSecondary {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
+}
+.cardSecondary > * {
+  flex: 1 0 auto;
 }
 .sideActions {
   display: flex;
@@ -448,7 +451,7 @@
 }
 
 @media (max-width: 63.99rem) {
-  .cta {
+  .cta:not(:has(.cardSecondary)) {
     position: fixed;
     z-index: var(--z-bottom-nav);
     bottom: calc(var(--fan-bottom-nav-height, 4rem) + env(safe-area-inset-bottom));
@@ -471,6 +474,13 @@
     content: "";
     display: block;
     height: calc(var(--space-16) + var(--space-16) + var(--space-4));
+  }
+  .side:has(.cardSecondary)::after {
+    height: calc(var(--space-16) + var(--space-4));
+  }
+  .cta:has(.cardSecondary) {
+    display: grid;
+    gap: var(--space-2);
   }
   :global(body):has(.cta) :global([data-fan-toast-viewport]) {
     bottom: calc(var(--fan-bottom-nav-height, 4rem) + env(safe-area-inset-bottom) + var(--space-16) + var(--space-16) + var(--space-6));
@@ -554,11 +564,5 @@
     padding: 0;
     border: 0;
     background: none;
-  }
-  .cardCta {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .cardCta > :nth-child(2) {
-    display: none;
   }
 }

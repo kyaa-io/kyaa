@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ChevronLeft, Download } from "@/components/fan-ui/fan-icons";
@@ -27,6 +28,7 @@ export function FortuneCard(props: Props) {
   const { character, locale } = props;
   const text = useReadingCopy();
   const week = useFortuneWeek();
+  const ask = useDeepResultAsk(locale, "fortune", character);
   const [busy, setBusy] = useState(false);
   const name = fortuneCharacters.find((item) => item.id === character)?.name ?? "";
   const back = resultHref(props);
@@ -43,6 +45,7 @@ export function FortuneCard(props: Props) {
       )}
     </div>
   );
+  if (ask) return ask;
   if (week.status === "guest")
     return (
       <FanState
@@ -144,19 +147,15 @@ export function FortuneCard(props: Props) {
               {text(voiced(keepsake ? "sayKeep" : "sayAmulet", character))}
             </FanText>
           </div>
-          <div className={styles.cardCta}>
+          <DeepResultAsk name={name} reading={() => week.saveContext(kind, character, today.day)} />
+          <div className={styles.cardSecondary}>
             <FanAction
-              variant="primary"
-              fullWidth
               disabled={busy}
               leadingIcon={<FanIcon icon={Download} />}
               onClick={() => run("save")}
             >
               <ReadingText id="saveCard" />
             </FanAction>
-            {share}
-          </div>
-          <div className={`${styles.sideActions} ${styles.desktopOnly}`}>
             {share}
             <FanAction href={back}>
               <ReadingText id="todayFortune" />

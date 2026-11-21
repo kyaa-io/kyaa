@@ -1,4 +1,5 @@
 import { chemiTopupEnabled } from "@/features/chemi/domain/availability";
+import { dayCardKind } from "@/app/chemi/fortune/deep/copy";
 import { isFortuneResult } from "@/app/chemi/fortune/reading";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
@@ -254,18 +255,30 @@ export async function rewardRoute(
         return deps.rpc("chemi_point_date", { ...args, p_result: result });
       }
       if (op === "fortuneDeep") {
-        // 내일·이번 주 운세(무료): 오늘부터 7일을 같은 계산식으로 본다. 저장하지 않는다.
+        // 화면을 보는 동안은 계산만 하고, 질문을 시작할 때만 그 결과를 저장한다.
         const profile = z.object({ birth: birth.nullable() }).parse(await deps.rpc("chemi_read_profile", { p_user }));
         if (!profile.birth) throw Error("CHEMI_BIRTH_REQUIRED");
         const chart = { ...calculateSaju(birthInput(profile.birth)), gender: profile.birth.gender ?? undefined };
         const today = kstToday();
-        return {
-          today,
-          days: Array.from({ length: 7 }, (_, offset) => {
-            const day = new Date(Date.parse(`${today}T00:00:00Z`) + offset * 86400000).toISOString().slice(0, 10);
-            return { day, result: computeDailyFortune(chart, day) };
-          }),
-        };
+        const days = Array.from({ length: 7 }, (_, offset) => {
+          const day = new Date(Date.parse(`${today}T00:00:00Z`) + offset * 86400000).toISOString().slice(0, 10);
+          return { day, result: computeDailyFortune(chart, day) };
+        });
+        if (request.method !== "POST") return { today, days };
+
+        const input = z.object({ character, day: z.iso.date(), view: z.enum(["tomorrow", "week", "keepsake", "amulet"]) }).parse(body);
+        if (input.day !== today) throw Error("CHEMI_UNAVAILABLE");
+        if ((input.view === "keepsake" || input.view === "amulet")
+          && (days[0].result.locked || dayCardKind(days[0].result.score) !== input.view)) {
+          throw Error("CHEMI_UNAVAILABLE");
+        }
+        const result = input.view === "week"
+          ? { days }
+          : input.view === "tomorrow" ? days[1].result : days[0].result;
+        return deps.rpc("chemi_save_deep_context", {
+          p_user, p_character: input.character, p_kind: input.view, p_day: today,
+          p_result: result, p_version: FORTUNE_TABLE_VERSION,
+        });
       }
       if (op === "tarotSpread") {
         // 세 장 배열: 계정마다 첫 1번 무료. GET 은 이미 본 배열만 돌려주고, POST 는 고른 자리 세 곳으로 뽑아 저장한다.

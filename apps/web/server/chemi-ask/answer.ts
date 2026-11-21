@@ -29,11 +29,30 @@ const elementTrait: Record<Element, string> = {
   wood: "한번 정하면 곧게 뻗는", fire: "마음이 먼저 달려가는", earth: "천천히 다지는", metal: "맺고 끊음이 분명한", water: "흐름을 읽고 맞춰 가는",
 };
 
-function basis(content: AskContent, topic: AskTopic, result: any, question: string): Basis {
+function basis(content: AskContent, topic: AskTopic, result: any, question: string, kind?: string): Basis {
+  if (content === "fortune" && kind === "week" && Array.isArray(result?.days) && result.days.length) {
+    const strongest = result.days.reduce((best: any, row: any) => row.result.score > best.result.score ? row : best);
+    const date = strongest.day.slice(5).replace("-", "/");
+    return {
+      good: strongest.result.score >= 70,
+      line: { ban: `이번 주에는 ${date} 점수가 가장 높아.`, yo: `이번 주에는 ${date} 점수가 가장 높아요.`, hao: `이번 주에는 ${date} 점수가 가장 높소.` },
+    };
+  }
+  if (content === "star" && kind === "compat") {
+    const count = (result?.connections ?? result?.angles ?? []).length;
+    const line = `궁합 풀이에서 확인한 연결은 ${count}개`;
+    return { good: count > 0, line: { ban: `${line}야.`, yo: `${line}예요.`, hao: `${line}요.` } };
+  }
+  if (content === "tarot" && kind === "tarot3" && result?.cards?.length === 3) {
+    const cards = result.cards.map(({ card, reversed }: { card: number; reversed: boolean }) =>
+      `${TAROT_DECK[card]?.[1]}(${reversed ? "역방향" : "정방향"})`).join(" → ");
+    return { good: !result.cards[2].reversed, line: { ban: `세 장은 ${cards} 순서야.`, yo: `세 장은 ${cards} 순서예요.`, hao: `세 장은 ${cards} 순서요.` } };
+  }
   if (content === "fortune" && typeof result?.score === "number") {
     const key = fortuneField[topic];
     const score: number = key ? result.fields?.[key] ?? result.score : result.score;
-    const name = key ? `${topicName[topic]} 운이` : "오늘 운세가";
+    const day = kind === "tomorrow" ? "내일" : "오늘";
+    const name = key ? `${kind === "tomorrow" ? "내일 " : ""}${topicName[topic]} 운이` : `${day} 운세가`;
     return {
       good: score >= 70,
       line: { ban: `${name} ${score}점이야.`, yo: `${name} ${score}점이에요.`, hao: `${name} ${score}점이오.` },
@@ -163,15 +182,15 @@ const more: Record<"good" | "care", Record<Voice, readonly [string, string]>> = 
   },
 };
 
-export function answerAsk(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown }) {
+export function answerAsk(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
   const tone = voice[input.character];
-  const read = basis(input.content, input.topic, input.result, input.question);
+  const read = basis(input.content, input.topic, input.result, input.question, input.kind);
   const pick = advice[input.topic][read.good ? "good" : "care"][tone][seed(input.question) % 2];
   return `${read.line[tone]}\n${pick}`;
 }
 
-export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown }) {
+export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
   const tone = voice[input.character];
-  const read = basis(input.content, input.topic, input.result, input.question);
+  const read = basis(input.content, input.topic, input.result, input.question, input.kind);
   return more[read.good ? "good" : "care"][tone][seed(input.question) % 2];
 }

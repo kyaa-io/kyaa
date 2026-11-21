@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "타로 세 장, 내일과 이번 주 운세, 별자리 궁합, 기념 카드와 응원 부적을 보고 나서 고른 최애에게 바로 물어볼 수 있어요. 질문은 방금 본 결과에 이어져요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/tarot/spread",
+  "images": [
+    "release-notes/images/2026-11-21-chemi-deep-ask-390.png",
+    "release-notes/images/2026-11-21-chemi-deep-ask-1440.png"
+  ]
+}

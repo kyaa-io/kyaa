@@ -136,6 +136,9 @@
 .say > :not(img) {
   grid-column: 2;
 }
+.say > [data-deep-result-ask] {
+  grid-column: 1 / -1;
+}
 .say .actions {
   display: flex;
   grid-column: 1 / -1;
@@ -146,6 +149,9 @@
   flex: 1;
 }
 @media (min-width: 64rem) {
+  .say > [data-deep-result-ask] {
+    margin-top: var(--space-3);
+  }
   .page {
     grid-template-columns: minmax(0, 1fr) 22.5rem;
     column-gap: var(--space-6);

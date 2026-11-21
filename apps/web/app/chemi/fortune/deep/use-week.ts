@@ -10,7 +10,7 @@ export type WeekState =
   | { status: "ready"; today: string; days: OpenDay[] };
 
 /** 오늘부터 7일의 운세. 내일·이번 주·오늘 카드가 같은 응답을 쓴다. */
-export function useFortuneWeek(): WeekState & { retry: () => void; login: () => void } {
+export function useFortuneWeek(): WeekState & { retry: () => void; login: () => void; saveContext: (view: "tomorrow" | "week" | "keepsake" | "amulet", character: string, day: string) => Promise<string> } {
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<WeekState>({ status: "loading" });
@@ -43,5 +43,17 @@ export function useFortuneWeek(): WeekState & { retry: () => void; login: () => 
     });
     return () => controller.abort();
   }, [ready, authenticated, user?.id, getAccessToken, attempt]);
-  return { ...state, retry: () => setAttempt((value) => value + 1), login };
+  async function saveContext(view: "tomorrow" | "week" | "keepsake" | "amulet", character: string, day: string) {
+    const response = await fetch("/api/chemi/fortune/deep", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${await getAccessToken()}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ view, character, day }),
+    });
+    if (!response.ok) throw Error("Unable to save the fortune context");
+    const { readingId } = await response.json();
+    if (typeof readingId !== "string") throw Error("Missing fortune context");
+    return readingId;
+  }
+
+  return { ...state, saveContext, retry: () => setAttempt((value) => value + 1), login };
 }

@@ -392,6 +392,7 @@
     "askRemindFailed": "Pengingat tidak dapat diajukan",
     "askToday": "Ditanyakan hari ini",
     "askHistoryEmpty": "Belum ada pertanyaan.",
+    "askFavorite": "Tanya {name}",
     "askStart": "Ajukan pertanyaan",
     "askPaused": "Pertanyaan dijeda. Kamu bisa bertanya lagi mulai {time}.",
     "askCrisis": "Layanan pencegahan bunuh diri Korea 109 · Layanan remaja 1388",

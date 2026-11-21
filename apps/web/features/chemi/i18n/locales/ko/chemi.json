@@ -392,6 +392,7 @@
     "askRemindFailed": "알림을 신청하지 못했어요",
     "askToday": "오늘 물어본 질문",
     "askHistoryEmpty": "아직 물어본 질문이 없습니다.",
+    "askFavorite": "{name}에게 물어보기",
     "askStart": "질문하기",
     "askPaused": "질문이 멈췄습니다. {time}부터 다시 물어볼 수 있습니다.",
     "askCrisis": "자살예방상담전화 109 · 청소년상담전화 1388",
