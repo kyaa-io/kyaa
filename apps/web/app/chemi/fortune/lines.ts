@@ -159,9 +159,7 @@ export function fortuneTalkLine(
 ) {
   const tone = tones[character];
   if (talk === 1) {
-    const note = headline
-      ? `${headline}.`
-      : ((tone.gradeNotes ?? gradeNotes)[input.grade] ?? "");
+    const note = tone.gradeNotes?.[input.grade] ?? (headline ? `${headline}.` : gradeNotes[input.grade] ?? "");
     return `${tone.scoreLine(input.score, input.grade)} ${note}`.trim();
   }
   if (talk === 2) return input.people >= 80 ? tone.people.high : tone.people.low;

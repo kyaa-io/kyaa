@@ -45,6 +45,15 @@ it("keeps kyaa 도사 in 하오체 for every grade and branch", () => {
   );
 });
 
+it("uses the character’s own grade explanation when a reading includes a casual headline", () => {
+  const headline = "잠깐 숨을 돌려 봐";
+  expect(fortuneTalkLine("elina", 1, input, headline)).toMatch(/몰라요\.$/);
+  expect(fortuneTalkLine("dosa", 1, input, headline)).not.toContain(headline);
+  for (const character of ["changha", "yuna"] as const) {
+    expect(fortuneTalkLine(character, 1, input, headline)).toContain(headline);
+  }
+});
+
 it("masks birth digits and rejects impossible dates", () => {
   expect(maskBirthDate("19950505abc")).toBe("1995.05.05");
   expect(maskBirthDate("1995")).toBe("1995");
