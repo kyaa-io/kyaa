@@ -41,6 +41,7 @@ import { FanState } from "@/components/fan-ui/fan-state";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { ReadingTitle, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
@@ -73,6 +74,10 @@ type Thread = {
 };
 type AskState = {
   left: number;
+  /** 무료·이용권을 다 쓴 뒤 포인트로 더 물을 수 있는 수와 값, 지금 잔액(chemi_ask_state). */
+  extraLeft?: number;
+  extraCost?: number;
+  points?: number;
   shareBonus: { pass: boolean; exp: boolean };
   reminded: boolean;
   pausedUntil: string | null;
@@ -122,7 +127,9 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   const [draft, setDraft] = useState<Draft | null>(null);
   const [blocked, setBlocked] = useState<Thread | null>(null);
   const [input, setInput] = useState("");
-  const [sheet, setSheet] = useState<"history" | "share" | null>(null);
+  const [sheet, setSheet] = useState<"history" | "share" | "extra" | null>(null);
+  // 포인트로 하나 더 묻기로 한 뒤 다음 질문 하나에만 켠다. 답을 받거나 실패하면 끈다.
+  const [extra, setExtra] = useState(false);
   const [busy, setBusy] = useState<"remind" | "share" | null>(null);
   const [thanked, setThanked] = useState(false);
   // 방금 받은 답(질문 번호, 이어 물은 답이면 :follow)만 글자가 하나씩 나온다. 지난 질문을 다시 열면 바로 보인다.
@@ -199,17 +206,20 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
         body: JSON.stringify(
           next.followOf
             ? { threadId: next.followOf, question: next.question }
-            : { threadId: next.threadId, readingId, character, content, topic: next.topic, question: next.question },
+            : { threadId: next.threadId, readingId, character, content, topic: next.topic, question: next.question, ...(extra ? { extra: true } : {}) },
         ),
       });
       const body = (await response.json()) as { thread?: Thread; state?: AskState; blocked?: { klass: string; answer: string }; error?: { code: string } };
-      if (response.status === 409 && body.error?.code === "CHEMI_LIMIT") {
+      if (response.status === 409 && (body.error?.code === "CHEMI_LIMIT" || body.error?.code === "INSUFFICIENT_POINTS")) {
+        if (body.error.code === "INSUFFICIENT_POINTS") showFanToast({ title: text("askExtraShort"), tone: "error" });
+        setExtra(false);
         setDraft(null);
         setAttempt((value) => value + 1);
         return askGo({ step: "topic" }, "replace");
       }
       if (!response.ok) throw Error(body.error?.code ?? "send");
       if (body.state) setState(body.state);
+      setExtra(false);
       setDraft(null);
       setInput("");
       if (body.blocked) {
@@ -318,7 +328,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
     if (lost) askGo({ step: "topic" }, "replace");
   }, [lost]);
 
-  const empty = state?.left === 0;
+  const empty = state?.left === 0 && !extra;
   const today = kstToday();
   const todays = state?.threads.filter((item) => item.date === today) ?? [];
   // 이 최애와 이야기한 날 수(오늘 포함). 서버가 최근 30개만 주므로 30개가 찼으면 세지 않는다.
@@ -334,6 +344,12 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
     </FanAction>
   );
   // 오늘 질문을 다 썼을 때의 행동: 내일 알림을 신청하고, 신청했으면 자랑하기가 주 버튼이 된다(소진 화면과 오늘 마지막 답이 함께 쓴다).
+  // 무료·이용권을 다 쓴 화면의 주 버튼: 포인트로 하나 더 물을 수 있으면 그것, 아니면 알림·자랑하기(사용자 결정 CHEMI-ASK-POINTS-1123 A).
+  const extraCost = state?.extraCost ?? 0;
+  const extraMain = () =>
+    state && (state.extraLeft ?? 0) > 0 && extraCost > 0
+      ? { label: text("askExtraCta", { cost: extraCost }), icon: Coins, onClick: () => setSheet("extra") }
+      : null;
   const restMain = () =>
     state?.reminded
       ? { label: text("share"), icon: Share2, tag: bonus.pass ? text("shareQuestionBonus") : undefined, onClick: () => setSheet("share") }
@@ -668,7 +684,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
     if (guarded) main = { label: text("askOtherAfterGuard"), onClick: again };
     else if (complete) {
       // 오늘 질문이 남아 있으면 다른 질문으로, 다 썼으면 갈 곳이 없으니 내일 알림을 주 버튼으로 둔다.
-      main = ending ? restMain() : { label: text("askOther"), onClick: again };
+      main = ending ? extraMain() ?? restMain() : { label: text("askOther"), onClick: again };
       below = <div className={styles.row} data-single="">{ending && state.reminded ? reminded : shareAction}</div>;
     } else {
       main = { label: text("askFollow"), tag: text("askFollowOnce"), onClick: () => askGo({ step: "follow", thread: threadId, react: react ?? undefined }) };
@@ -736,8 +752,15 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
         </section>
       </>
     );
-    main = restMain();
-    below = <div className={styles.row} data-single="">{state.reminded ? reminded : shareAction}</div>;
+    const paid = extraMain();
+    main = paid ?? restMain();
+    // 포인트로 더 물을 수 있으면 자랑하기가 주 버튼 옆(아래 줄)에, 알림은 그 옆에 남는다.
+    below = paid ? (
+      <div className={styles.row}>
+        {state.reminded ? reminded : <FanAction variant="text" className={styles.cell} leadingIcon={<FanIcon icon={Mail} />} loading={busy === "remind"} onClick={() => void remind()}>{text("askRemind")}</FanAction>}
+        {shareAction}
+      </div>
+    ) : <div className={styles.row} data-single="">{state.reminded ? reminded : shareAction}</div>;
   }
   else if (at.step === "write" || at.step === "result") {
     // 질문 쓰기: 주제를 골라 왔으면 주제 칩, 결과 화면에서 왔으면 '이 결과' 칩(기획 03-6 23·24·33). ×는 1단계로, 쓰던 글은 그대로.
@@ -946,6 +969,21 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
         )}
       </FanSheet>
 
+      <ExtraPlayDialog
+        open={sheet === "extra"}
+        onOpenChange={(next) => !next && setSheet(null)}
+        onConfirm={() => {
+          setSheet(null);
+          setExtra(true);
+          askGo({ step: "topic" });
+        }}
+        busy={false}
+        locale={locale}
+        points={state?.points}
+        cost={extraCost}
+        extraRemaining={state?.extraLeft ?? 0}
+        labels={{ title: text("askExtraTitle", { cost: extraCost }), extra: text("askExtraLabel"), pay: text("askExtraPay", { cost: extraCost }) }}
+      />
       <FanSheet
         open={sheet === "share"}
         onOpenChange={(next) => !next && setSheet(null)}

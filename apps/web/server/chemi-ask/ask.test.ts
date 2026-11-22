@@ -203,6 +203,19 @@ describe("질문 API", () => {
     expect(args).toMatchObject({ p_user: "user", p_id: thread, p_reading: reading, p_topic: "love", p_klass: null, p_answer: expect.stringMatching(/^연애 운이 55점이야/) });
     expect(args.p_hash).toMatch(/^[0-9a-f]{64}$/);
   });
+  it("포인트로 묻기: extra 를 SQL 에 넘기고, 잔액이 모자라면 게임 추가 판과 같은 INSUFFICIENT_POINTS 409", async () => {
+    rpc.mockImplementation(async (name: string) => (name === "chemi_reading_detail" ? { result: fortune } : { thread: {}, charged: true, paid: true }));
+    expect((await askRoute("submit", post("/api/chemi/ask", { ...question, extra: true }))).status).toBe(200);
+    expect(rpc.mock.calls.find(([name]) => name === "chemi_ask_submit")![1]).toMatchObject({ p_extra: true });
+    rpc.mockReset();
+    rpc.mockImplementation(async (name: string) => {
+      if (name === "chemi_reading_detail") return { result: fortune };
+      throw Error("GROUP_WALLET_INSUFFICIENT_BALANCE");
+    });
+    const response = await askRoute("submit", post("/api/chemi/ask", { ...question, extra: true }));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: { code: "INSUFFICIENT_POINTS" } });
+  });
   it("난감한 질문: 풀이를 읽지 않고 분류와 거절하는 말만 넘긴다", async () => {
     rpc.mockResolvedValue({ thread: { status: "blocked" }, charged: false });
     await askRoute("submit", post("/api/chemi/ask", { ...question, question: "창하 여자친구 있어?" }));

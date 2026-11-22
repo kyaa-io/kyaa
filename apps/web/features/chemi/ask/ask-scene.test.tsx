@@ -401,3 +401,31 @@ it("질문을 다 쓴 뒤 최애는 한도·내일 이야기를 하지 않고 �
     for (const line of [...Object.values(lines.rest), lines.reminded]) expect(line, who).not.toMatch(/내일|한도|다 썼|남은|질문 수|기다리/);
   }
 });
+
+it("무료를 다 쓴 화면: 주 버튼 '20P로 하나 더' → 공통 추가 판 창 → 고른 질문만 포인트로 보낸다(CHEMI-ASK-POINTS-1123)", async () => {
+  serve((_url, body) => ({ thread: answered(body.threadId, { question: body.question }), state: state({ left: 0, extraLeft: 2, extraCost: 20, points: 30 }) }),
+    state({ left: 0, extraLeft: 3, extraCost: 20, points: 50 }));
+  render(<Host />);
+  askGo({ step: "topic" });
+  const cta = await screen.findByRole("button", { name: "20P로 하나 더" });
+  expect(screen.getByRole("button", { name: /자랑하기/ })).toBeTruthy();
+  fireEvent.click(cta);
+  expect(await screen.findByText("20P로 질문 하나 더")).toBeTruthy();
+  expect(screen.getByText("50P → 30P")).toBeTruthy();
+  expect(screen.getByText("오늘 추가 질문")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "20P 쓰고 묻기" }));
+  fireEvent.click(await screen.findByRole("button", { name: "연애" }));
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "오늘 연락해도 될까?" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  await waitFor(() => expect(calls).toHaveLength(1));
+  expect(calls[0].body).toMatchObject({ question: "오늘 연락해도 될까?", extra: true });
+});
+
+it("포인트가 모자라면 창의 주 버튼이 꺼지고 모자란 만큼을 알려 준다", async () => {
+  serve(() => ({}), state({ left: 0, extraLeft: 3, extraCost: 20, points: 5 }));
+  render(<Host />);
+  askGo({ step: "topic" });
+  fireEvent.click(await screen.findByRole("button", { name: "20P로 하나 더" }));
+  expect(await screen.findByText("포인트가 15P 모자라요")).toBeTruthy();
+  expect((screen.getByRole("button", { name: "20P 쓰고 묻기" }) as HTMLButtonElement).disabled).toBe(true);
+});

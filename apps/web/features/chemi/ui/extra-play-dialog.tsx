@@ -16,10 +16,13 @@ export type ExtraPlayDialogProps = {
   points?: number;
   cost: number;
   extraRemaining: number;
+  /** 게임 말고 다른 곳(질문하기)에서 쓸 때 바꾸는 글자. 없으면 게임 추가 판 글자. */
+  labels?: { title: string; extra: string; pay: string };
 };
 
-export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra }: ExtraPlayDialogProps) {
-  const copy = getRunCopy(locale, cost);
+export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra, labels }: ExtraPlayDialogProps) {
+  const run = getRunCopy(locale, cost);
+  const copy = labels ? { ...run, extraTitle: labels.title, extraLabel: labels.extra, pay: labels.pay } : run;
   const number = new Intl.NumberFormat(locale);
   return <FanDialog open={open} onOpenChange={onOpenChange} title={copy.extraTitle} closeLabel={copy.close} size="sm" responsive
       secondary={{ label: copy.cancel, onClick: () => onOpenChange(false) }}
