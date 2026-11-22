@@ -66,7 +66,17 @@ export function celebrateReward({ locale, points = 0, stamps = 0, label, anchor,
   popBadge(total.points > 0 ? `+${total.points.toLocaleString(locale)}` : title, total.points > 0, anchor);
 }
 
-function popBadge(text: string, coin: boolean, anchor?: Element | null) {
+/** The other half of `celebrateReward`: points the fan just spent (게임 추가 판 10P). Same toast and coin badge, but "-10P" and the badge sinks
+ * instead of rising, so a spend never reads like a grant. Call it right after the server confirms the spend. */
+export function celebrateSpend({ locale, points, label, anchor }: Readonly<{ locale: AppLocale; points: number; label?: string; anchor?: Element | null }>) {
+  const p = Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
+  if (!p) return;
+  const amount = p.toLocaleString(locale);
+  showFanToast({ title: `-${amount}P`, description: label });
+  popBadge(`-${amount}`, true, anchor, true);
+}
+
+function popBadge(text: string, coin: boolean, anchor?: Element | null, spend = false) {
   if (typeof document === "undefined") return;
   document.querySelectorAll(`[data-reward-badge]`).forEach(node => node.remove());
   const badge = document.createElement("span");
@@ -75,6 +85,7 @@ function popBadge(text: string, coin: boolean, anchor?: Element | null) {
   // Screens and their tests already look for this name; it now marks the one shared badge.
   badge.setAttribute("data-testid", "point-reward-burst");
   badge.setAttribute("aria-hidden", "true");
+  if (spend) badge.dataset.spend = "";
   if (coin) {
     const image = document.createElement("img");
     image.src = POINT_COIN_SRC; image.width = 20; image.height = 20; image.alt = "";

@@ -12,6 +12,7 @@ import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
+import { celebrateSpend } from "@/components/fan-ui/reward-celebration";
 import { fill, getRunCopy, type RunCopy } from "./copy";
 import { ART_FILES, loadArt } from "./render";
 import { ResultStage } from "./result";
@@ -121,6 +122,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       setPaying(false);
       setTicket({ ...issued, trial });
       setStage("run");
+      if (paid && !trial) celebrateSpend({ locale, points: 10, label: copy.extraTitle });
     } catch (error) {
       if (error instanceof Error && !/^5/.test(error.message)) requestKey.current = null;
       setFailed(true);

@@ -122,7 +122,7 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   }
   await screen.findByRole("button", { name: copy.share });
   expect(requests.filter((r) => r.action === "finish")).toHaveLength(1);
-  expect(screen.getByText("+10 EXP")).toBeVisible();
+  expect(screen.getByRole("img", { name: "10" }).closest("b")).toHaveTextContent(/EXP$/);
 });
 
 it("waits for explicit 10P confirmation after the free games run out", async () => {

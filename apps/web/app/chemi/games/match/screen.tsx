@@ -7,6 +7,9 @@ import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanText } from "@/components/fan-ui/fan-text";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import type { ReactNode } from "react";
+import { RollingNumber } from "@/components/fan-ui/rolling-number";
+import { celebrateSpend } from "@/components/fan-ui/reward-celebration";
+import { parseAppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import {
@@ -91,13 +94,47 @@ function StageAction({
   );
 }
 
-function ClearDialog({ label, children }: { label: string; children: ReactNode }) {
+/** 라운드 완료: 공통 모달 면(fan-dialog) 위에 최애 장면 그림, 항목별 점수가 차례로 들어오고 기록이 그만큼 굴러 올라간다. 닫기 없이 두 버튼으로만 나간다. */
+function ClearDialog({ label, recordLabel, art, portrait, name, round, rounds, lines, score, locale, children }: {
+  label: string; recordLabel: string; art: string; portrait: string; name: string; round: number; rounds: number;
+  lines: readonly (readonly [string, number])[]; score: number; locale: string; children: ReactNode;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const gained = lines.reduce((sum, [, points]) => sum + points, 0);
+  const [shown, setShown] = useState(score - gained);
   useEffect(() => {
     dialog.current?.showModal?.();
-  }, []);
+    const timer = window.setTimeout(() => setShown(score), 90 * lines.length + 200);
+    return () => window.clearTimeout(timer);
+  }, [score, lines.length]);
+  const format = (n: number) => n.toLocaleString(locale);
   return <dialog ref={dialog} className={styles.clearPanel} aria-label={label}
-    onCancel={event => event.preventDefault()}>{children}</dialog>;
+    onCancel={event => event.preventDefault()}>
+    <div className={styles.clearArt}>
+      <Image width={1440} height={550} sizes="(min-width: 768px) 480px, 100vw" alt="" src={art} />
+      <Image className={styles.clearFace} width={112} height={112} alt={name} src={portrait} />
+    </div>
+    <div className={styles.clearHead}>
+      <FanHeading>{label}</FanHeading>
+      <FanText role="label" className={styles.clearRound}>{round} / {rounds}</FanText>
+    </div>
+    <ScoreLines lines={lines} locale={locale} />
+    <div className={styles.clearTotal}>
+      <FanText role="label">{recordLabel}</FanText>
+      <strong className={numberStyles.xl}><RollingNumber value={shown} format={format} /></strong>
+    </div>
+    {children}
+  </dialog>;
+}
+
+/** 점수 항목(찾은 짝·CLEAR·시간·정확도)을 한 줄씩: 이름 왼쪽, +점수 오른쪽. 줄은 90ms 시차로 들어온다. */
+function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, number])[]; locale: string }) {
+  return <dl className={styles.clearLines}>
+    {lines.map(([title, points]) => <div key={title}>
+      <FanText as="dt" role="meta">{title}</FanText>
+      <dd className={numberStyles.md}>+{points.toLocaleString(locale)}</dd>
+    </div>)}
+  </dl>;
 }
 
 function clock(ticks: number) {
@@ -337,6 +374,7 @@ function Session({
       setPendingFinish(null);
       setCopied(false);
       setStage("play");
+      if (extra && !trial) celebrateSpend({ locale: parseAppLocale(locale), points: 10, label: copy.extraPlay });
       if (trial && challenge) setChallenge({ ...challenge, available: false });
       if (!trial)
         setLobby(
@@ -767,11 +805,13 @@ function Session({
                   );
                 })}
               </div>
-              {active.cleared && <ClearDialog label={copy.completed}>
-                <FanHeading>{copy.round} {active.stage} · {copy.completed}</FanHeading>
-                <p>{copy.pairs} +{active.stagePairs * 100} · CLEAR +500 · {copy.time} +{Math.floor(active.remaining / FPS)*10} · {copy.accuracy} +{Math.floor(active.stagePairs ** 2 * 100 / active.attempts)}</p>
-                <StageAction onClick={nextLevel}>{copy.round} {active.stage+1} · {copy.start}</StageAction>
-                <FanAction onClick={finishLevel}>{copy.result}</FanAction>
+              {active.cleared && <ClearDialog label={copy.completed} recordLabel={copy.record} art={art.scene} portrait={art.portrait} name={copy[character]}
+                round={active.stage} rounds={LEVELS.length} score={active.score} locale={locale}
+                lines={[[copy.pairs, active.stagePairs * 100], ["CLEAR", 500], [copy.time, Math.floor(active.remaining / FPS) * 10], [copy.accuracy, Math.floor(active.stagePairs ** 2 * 100 / active.attempts)]]}>
+                <div className={styles.clearActions}>
+                  <StageAction onClick={nextLevel}>{copy.round} {active.stage+1} · {copy.start}</StageAction>
+                  <FanAction onClick={finishLevel}>{copy.result}</FanAction>
+                </div>
               </ClearDialog>}
             </>
           )}
@@ -844,7 +884,7 @@ function Session({
                 {view.cleared ? copy.completed : copy.timeUp}
               </FanHeading>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{view.score.toLocaleString(locale)}</strong></div>
-              <p>{copy.pairs} +{view.pairs * 100} · CLEAR +{view.clearPoints} · {copy.time} +{view.timePoints} · {copy.accuracy} +{view.accuracyPoints}</p>
+              <ScoreLines locale={locale} lines={[[copy.pairs, view.pairs * 100], ["CLEAR", view.clearPoints], [copy.time, view.timePoints], [copy.accuracy, view.accuracyPoints]]} />
               <div className={styles.souvenir}>
                 {faces.slice(0, 5).map((src) => (
                   <Image
@@ -885,9 +925,10 @@ function Session({
               </dl>
               {working && <p role="status">{copy.loading}</p>}
               {result && result.exp > 0 && (
-                <p className={styles.detail}>
-                  {copy.experience}
-                  <b>+{result.exp} EXP</b>
+                <p className={`${styles.detail} ${styles.gain}`}>
+                  <Image width={112} height={112} alt="" src={art.portrait} />
+                  <span>{copy[character]} · {copy.experience}</span>
+                  <b>+<RollingNumber value={result.exp} initialFromZero /> EXP</b>
                 </p>
               )}
               {result?.titleStage && <div className={styles.detail}>
