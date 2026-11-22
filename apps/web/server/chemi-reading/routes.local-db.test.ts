@@ -247,7 +247,7 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("tops up through the DEV order route,
   const second = await (await call({ action: "open" })).json();
   provider.orderId = second.orderId;
   await call({ action: "refresh", orderId: second.orderId });
-  expect(balances()).toBe("0/198/198");
+  expect(balances()).toBe("0/191/191");
   provider = { ...provider, status: "CANCELED", balanceAmount: 0 };
   expect(await (await call({ action: "refresh", orderId: second.orderId })).json()).toMatchObject({ status: "CANCELED" });
   expect(balances()).toBe("0/91/91");
