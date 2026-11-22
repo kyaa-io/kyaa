@@ -448,7 +448,7 @@ export function StarFlow({
         character={character}
         backHref={`/chemi/star?c=${character}&locale=${locale}`}
         onChart={openChart}
-        onAsk={() => askGo({ step: "topic" })}
+        onAsk={() => askGo({ step: "result" })}
       />
     );
   if (step === "chart" && reading)

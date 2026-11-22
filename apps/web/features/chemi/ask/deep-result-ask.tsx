@@ -29,7 +29,7 @@ export function DeepResultAsk({ name, reading, fixed = true }: {
     setBusy(true);
     setFailed(false);
     try {
-      askOpenWith({ ar: await reading() }, {});
+      askOpenWith({ ar: await reading() }, {}, "result");
     } catch {
       setFailed(true);
     } finally {

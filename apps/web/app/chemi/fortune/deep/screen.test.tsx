@@ -84,7 +84,7 @@ it("opens the weekly question with the saved weekly result", async () => {
   render(<FortuneDeep view="week" character="changha" locale="ko" paidPreview={false} />);
   try {
     fireEvent.click(await screen.findByRole("button", { name: "창하에게 물어보기" }));
-    await waitFor(() => expect(location.search).toContain("ask=topic"));
+    await waitFor(() => expect(location.search).toContain("ask=result"));
     expect(location.search).toContain("ar=22222222-2222-4222-8222-222222222222");
     expect(fetcher).toHaveBeenCalledWith("/api/chemi/fortune/deep", expect.objectContaining({
       method: "POST", body: JSON.stringify({ view: "week", character: "changha", day: TODAY }),
