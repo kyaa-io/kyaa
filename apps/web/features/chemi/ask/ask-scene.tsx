@@ -864,7 +864,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
       {/* PC 는 오른쪽 360px 판에 물어본 것을 늘 띄운다. 줄을 누르면 가운데가 그 질문으로 바뀐다(기획 03-6 PC 21, DF-ASK-014). */}
       {wide && state && !crisis ? (
         <aside className={styles.asked} aria-label={text("askHistory")}>
-          <FanText as="h2" role="label">{text("askHistory")}</FanText>
+          <FanText as="p" role="label">{text("askHistory")}</FanText>
           {state.threads.length ? (
             <ul className={styles.list}>
               {state.threads.map((item) => (

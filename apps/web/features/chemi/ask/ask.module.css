@@ -702,9 +702,6 @@
     border-radius: var(--radius-card);
     background: var(--ask-glass);
   }
-  .asked h2 {
-    margin: 0;
-  }
   .asked li[data-current] .rowLink {
     color: var(--color-accent-ink);
   }
