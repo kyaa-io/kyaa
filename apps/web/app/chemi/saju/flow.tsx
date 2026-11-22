@@ -201,6 +201,7 @@ export function SajuFlow({
         celebrateReward({
           locale,
           points: data.reward.points,
+          affinity: { amount: data.reward.exp ?? 0, text: `${sajuCharacters.find(item => item.id === id)?.name ?? name} ${text("affinityGain", { exp: data.reward.exp ?? 0 })}` },
           stamps: Number(Boolean(data.reward.stamp)),
         });
       const response = await fetch("/api/chemi/rewards/today", {

@@ -22,7 +22,7 @@ function show({ title, description, tone = "neutral", action, duration = DEFAULT
     timeout: duration,
     priority: tone === "error" ? "high" as const : "low" as const,
     type: tone,
-    data: { tone, dismissAt: tone === "success" && !action && duration > 0 ? Date.now() + duration : undefined },
+    data: { tone, dismissAt: !action ? Date.now() + (duration > 0 ? duration : DEFAULT_DURATION) : undefined },
     actionProps: action ? { children: action.label, onClick: action.onClick } : undefined,
   };
   const existing = openByTitle.get(title);
@@ -45,7 +45,7 @@ function FanToastList({ closeLabel }: { closeLabel: string }) {
 function FanToastItem({ toast, closeLabel }: { toast: Toast.Root.ToastObject<FanToastData>; closeLabel: string }) {
   const [focused, setFocused] = useState(false);
   const dismissAt = toast.data?.dismissAt;
-  // Reward notices expire even after touch hover/window blur; keyboard interaction keeps its time.
+  // Actionless notices expire even after touch hover/window blur; keyboard interaction keeps its time.
   useEffect(() => {
     if (!dismissAt || focused) return;
     const timer = window.setTimeout(() => manager.close(toast.id), Math.max(0, dismissAt - Date.now()));

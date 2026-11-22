@@ -1,8 +1,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import { readFileSync } from "node:fs";
 import { FortuneReturnLink } from "../points/topup/return-link";
-import { DatePurchase, DATE_READING_PRICE } from "./date-purchase";
+import { DatePurchase } from "./date-purchase";
 
 vi.mock("@/features/auth/client/cognito-auth", () => ({
   useByUsAuth: () => ({ getAccessToken: async () => "fixture" }),
@@ -13,11 +12,10 @@ afterEach(() => {
   history.replaceState({}, "", "/");
 });
 
-it("shows the standard price before a date is selected", () => {
-  const migration = readFileSync("../../supabase/migrations/20270113020000_chemi_point_date.sql", "utf8");
-  expect(migration).toContain(`price constant integer := ${DATE_READING_PRICE};`);
+it("shows the server price before a date is selected", async () => {
+  vi.stubGlobal("fetch", async () => Response.json({ price: 7 }));
   render(<DatePurchase character="dosa" locale="ko" />);
-  expect(screen.getByRole("heading").textContent).toContain(`${DATE_READING_PRICE}P`);
+  expect(await screen.findByRole("heading", { name: /7P/ })).toBeVisible();
 });
 
 it("shows activity earning when the production balance is short", async () => {
@@ -52,6 +50,7 @@ it("returns to the selected date and requires confirmation again after a DEV top
   const calls: { day: string; confirm: boolean }[] = [];
   let balance = 1;
   vi.stubGlobal("fetch", async (_url: string, options: RequestInit) => {
+    if (!options.body) return Response.json({ price: 3 });
     calls.push(JSON.parse(String(options.body)));
     return Response.json({
       balance,
@@ -95,6 +94,7 @@ it("returns to the selected date and requires confirmation again after a DEV top
 it("takes the date as eight digits with a wheel, never the browser date input", async () => {
   const calls: { day: string }[] = [];
   vi.stubGlobal("fetch", async (_url: string, options: RequestInit) => {
+    if (!options.body) return Response.json({ price: 3 });
     calls.push(JSON.parse(String(options.body)));
     return Response.json({ balance: 5, price: 3 });
   });

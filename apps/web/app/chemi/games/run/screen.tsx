@@ -8,7 +8,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { ChevronLeft, Volume2, VolumeX } from "@/components/fan-ui/fan-icons";
-import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
@@ -28,11 +28,11 @@ export function RunScreen(props: { locale: AppLocale; share: string | null }) {
 }
 
 function Session({ locale, share, auth }: { locale: AppLocale; share: string | null; auth: ReturnType<typeof useByUsAuth> }) {
-  const copy = useMemo(() => getRunCopy(locale), [locale]);
+  const [lobby, setLobby] = useState<Lobby>();
+  const copy = useMemo(() => getRunCopy(locale, lobby?.extraCost), [locale, lobby?.extraCost]);
   const names: Record<Character, string> = { changha: copy.changha, elina: copy.elina, yuna: copy.yuna };
   const number = new Intl.NumberFormat(locale);
   const [stage, setStage] = useState<Stage>("select");
-  const [lobby, setLobby] = useState<Lobby>();
   const [publicRows, setPublicRows] = useState<Rank[]>();
   const [challenge, setChallenge] = useState<Challenge>();
   const [ticket, setTicket] = useState<Ticket>();
@@ -105,6 +105,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     if (busy) return;
     if (!auth.authenticated && !trial) return auth.login();
     if (auth.authenticated && !lobby) return;
+    if (paid && !lobby?.extraCost) return;
     setBusy(true);
     setFailed(false);
     try {
@@ -114,7 +115,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
         : { action: "start", game: "run", character: "changha", key, extra: paid }, !trial);
       requestKey.current = null;
       setBefore({ place: lobby?.ranking.find((row) => row.isMe)?.place, best: lobby?.best ?? 0 });
-      setLobby((now) => now && { ...now, [paid ? "extraRemaining" : "freeRemaining"]: Math.max(0, now[paid ? "extraRemaining" : "freeRemaining"] - 1), points: now.points - (paid ? 10 : 0) });
+      setLobby((now) => now && { ...now, [paid ? "extraRemaining" : "freeRemaining"]: Math.max(0, now[paid ? "extraRemaining" : "freeRemaining"] - 1), points: now.points - (paid ? now.extraCost : 0) });
       setResult(undefined);
       setStats(undefined);
       setSubmission(undefined);
@@ -122,7 +123,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       setPaying(false);
       setTicket({ ...issued, trial });
       setStage("run");
-      if (paid && !trial) celebrateSpend({ locale, points: 10, label: copy.extraTitle });
+      if (paid && !trial && lobby) celebrateSpend({ locale, points: lobby.extraCost, label: copy.extraTitle });
     } catch (error) {
       if (error instanceof Error && !/^5/.test(error.message)) requestKey.current = null;
       setFailed(true);
@@ -215,18 +216,8 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       before={before} saving={busy && !result} trial={Boolean(ticket?.trial)} member={auth.authenticated} spent={spent} free={free} extra={extra}
       busy={busy} copied={copied} onAgain={again} onLogin={() => auth.login()} onShare={() => void shareResult()}
       onAllRanks={() => setAllRanks(true)} errorLine={errorLine} reminder={reminder} />}
-    <FanDialog open={paying} onOpenChange={setPaying} title={copy.extraTitle} closeLabel={copy.close} size="sm" responsive
-      secondary={{ label: copy.cancel, onClick: () => setPaying(false) }}
-      primary={{ label: copy.pay, onClick: () => void begin(true), disabled: busy || !lobby || lobby.points < 10 || extra <= 0, loading: busy }}>
-      {lobby && <dl className={styles.pay}>
-        <div><FanText as="dt" role="meta">{copy.pointLabel}</FanText><FanText as="dd" role="item">{number.format(lobby.points)}P → {number.format(Math.max(0, lobby.points - 10))}P</FanText></div>
-        <div><FanText as="dt" role="meta">{copy.extraLabel}</FanText><FanText as="dd" role="item">{3 - extra}/3 → {Math.min(3, 4 - extra)}/3</FanText></div>
-      </dl>}
-      {lobby && lobby.points < 10 && <p className={styles.short}>
-        <FanText role="meta">{fill(copy.short, { n: 10 - lobby.points })}</FanText>
-        <FanSectionLink href={`/my/wallet?view=attendance&locale=${locale}`}>{copy.earn}</FanSectionLink>
-      </p>}
-    </FanDialog>
+    <ExtraPlayDialog open={paying} onOpenChange={setPaying} onConfirm={() => void begin(true)}
+      busy={busy} locale={locale} points={lobby?.points} cost={lobby?.extraCost ?? 0} extraRemaining={extra} />
     <FanDialog open={allRanks} onOpenChange={setAllRanks} title={copy.ranking} closeLabel={copy.close} size="sm" responsive>
       <ol className={styles.allRanks}>
         {rows.map((row) => <li data-row="" key={row.place} data-me={row.isMe}>
