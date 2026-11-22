@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, type ReactNode } from "react";
 import { fillCopy, mergeMyBirthCopy } from "@/features/chemi/ui/frame/birth-copy";
+import en from "./locales/en/chemi.json";
 import ko from "./locales/ko/chemi.json";
 
 type Catalog = Pick<typeof ko, "home" | "sajuScene" | "readingUi" | "myBirth">;
@@ -10,7 +11,7 @@ const ReadingCatalog = createContext<Catalog>(ko);
 export function useReadingCopy() {
   const catalog = useContext(ReadingCatalog);
   return useCallback((key: keyof Catalog["readingUi"], values?: Record<string, string | number>) => {
-    const template = catalog.readingUi[key] || ko.readingUi[key];
+    const template = catalog.readingUi[key] || en.readingUi[key] || ko.readingUi[key];
     return values ? fillCopy(template, values) : template;
   }, [catalog]);
 }

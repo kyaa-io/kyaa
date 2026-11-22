@@ -484,7 +484,7 @@ export function StarFlow({
                   picked === "pair",
                   stars?.overall,
                 )
-              : starEnterLine(character, needBirth ? "birth" : "enter");
+              : needBirth ? starEnterLine(character, "birth") : text(`starEnter_${character}`);
 
   const primaryLabel = entering ? text("readHoroscope") : talk ? text(talkChoice[talk - 1]) : null;
 

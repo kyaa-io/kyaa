@@ -104,9 +104,8 @@
 }
 .rankCard header h3 {
   min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 .rankCard header a {
   flex: none;

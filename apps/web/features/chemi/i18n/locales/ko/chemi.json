@@ -367,7 +367,6 @@
     "theirWords": "{name}의 한마디",
     "sajuSceneAlt": "{name}의 사주 장면",
     "shareQuestionBonus": "질문 +1",
-    "shareAffinityBonus": "미니 {name} 친밀 +5",
     "askFromResult": "이 결과로 질문하기",
     "askLeft": "질문",
     "askDays": "{count}일째",
@@ -579,6 +578,14 @@
     "sayPick3Hao": "마지막 장이오. 앞날을 생각하며 고르시오.",
     "tarotBook": "도감",
     "withFriend": "친구와",
-    "starMatch": "별자리 궁합"
+    "starMatch": "별자리 궁합",
+    "fortuneEnter_changha": "구름 위까지 올라왔네. 오늘 운세 봐 줄까?",
+    "fortuneEnter_elina": "구름 위까지 올라왔네요. 오늘 운세 같이 볼까요?",
+    "fortuneEnter_yuna": "오늘 하늘 내가 읽어 줄게.",
+    "fortuneEnter_dosa": "구름 위까지 왔구려. 오늘 운세를 보겠소?",
+    "starEnter_changha": "오늘 밤하늘이 너한테 뭐라고 하는지 같이 볼래?",
+    "starEnter_elina": "오늘 밤하늘이 뭐라고 하는지 같이 볼까요?",
+    "starEnter_yuna": "오늘 밤하늘이 뭐라는지 같이 보자!",
+    "starEnter_dosa": "오늘 밤하늘이 무어라 이르는지 같이 보겠소?"
   }
 }
