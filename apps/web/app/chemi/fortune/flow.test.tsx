@@ -88,7 +88,7 @@ it("saves the reading once, then walks the four talk steps", async () => {
   expect(window.location.search).toContain("r=reading");
   expect(request.mock.calls.filter(([path]) => path === "/api/chemi/readings")).toHaveLength(1);
   fireEvent.click(screen.getByRole("button", { name: "좋다, 더 말해 줘" }));
-  expect(await screen.findByText("덕질은 어때?")).toBeVisible();
+  expect(await screen.findByText("오늘 영상 봐도 돼?")).toBeVisible();
   expect(window.location.search).toContain("step=talk-2");
 });
 
@@ -403,6 +403,6 @@ it("shows a loading shape, not the entrance, while a restored address loads", as
   expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
   await waitFor(() => expect(finish).not.toBe(undefined));
   await waitFor(() => finish(Response.json(stored())));
-  expect(await screen.findByText("덕질은 어때?")).toBeVisible();
+  expect(await screen.findByText("오늘 영상 봐도 돼?")).toBeVisible();
   expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
 });

@@ -136,8 +136,11 @@ describe("별자리 4/4 궁합 줄", () => {
     const { starPairLine } = await import("./copy");
     const calm = starPairLine("yuna", "쌍둥이", "물병", false, 2);
     expect(calm).toContain("물병이랑 쌍둥이");
-    expect(calm).not.toContain("완전 좋은 날");
-    expect(starPairLine("yuna", "쌍둥이", "물병", false, 5)).toContain("완전 좋은 날");
+    expect(calm).not.toContain("따라 해 보기 좋은 날");
+    expect(starPairLine("yuna", "쌍둥이", "물병", false, 5)).toContain("따라 해 보기 좋은 날");
     expect(starPairLine("changha", "게", "물병", false, 2)).toContain("물병과 게");
+    // 좋은 날의 맺음은 최애마다 자기 활동 분야로 다르다.
+    expect(starPairLine("changha", "게", "물병", false, 5)).toContain("내 영상이 유난히 잘 보이는 날");
+    expect(starPairLine("elina", "게", "물병", false, 5)).toContain("내 노래를 틀어 두기 좋은 날");
   });
 });

@@ -70,8 +70,10 @@ it("starts at the entry scene for a guest and walks to the thought step", async 
 it("changes the favorite on the entry scene and speaks in that voice", async () => {
   open();
   fireEvent.click(await screen.findByRole("button", { name: "엘리나" }));
-  expect(screen.getByText("왔네요. 오늘 카드 한 장 뽑아 볼래요?")).toBeVisible();
+  expect(screen.getByText("왔네. 오늘 카드 한 장 뽑아 볼래요?")).toBeVisible();
   expect(location.search).toContain("c=elina");
+  fireEvent.click(screen.getByRole("button", { name: "유나" }));
+  expect(screen.getByText("왔네. 오늘 카드, 내가 읽어 줄게.")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "kyaa 도사" }));
   expect(screen.getByText("왔구려. 오늘 카드 한 장 뽑아 보겠소?")).toBeVisible();
 });

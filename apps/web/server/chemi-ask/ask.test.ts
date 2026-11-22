@@ -52,7 +52,7 @@ describe("답", () => {
     const low = answerAsk({ character: "changha", content: "fortune", topic: "love", question: "잘될까?", result: fortune });
     expect(low).toMatch(/^연애 운이 55점이야\.\n/);
     const high = answerAsk({ character: "elina", content: "fortune", topic: "money", question: "사도 될까요?", result: fortune });
-    expect(high).toMatch(/^돈 운이 78점이에요\.\n.+요\.$/);
+    expect(high).toMatch(/^돈 운이 78점이에요\.\n.+요\.\n노래로 치면 지금이 첫 소절을 낼 때예요\.$/);
     expect(answerAsk({ character: "dosa", content: "fortune", topic: "month", question: "어떻소?", result: fortune })).toMatch(/^오늘 운세가 86점이오\./);
   });
   it("사주·별자리·타로: 저장된 풀이 값만 쓴다", () => {
@@ -71,6 +71,15 @@ describe("답", () => {
     expect(answerAsk({ character: "changha", content: "saju", topic: "money", question: "어때?", result: chart })).toMatch(/^돈은 쇠 기운으로 봐\. 네 사주에는 없어\.\n/);
     expect(new Set(ASK_TOPICS.map((topic) => first(topic))).size).toBe(5);
   });
+  it("세 최애는 같은 풀이에도 자기 활동 분야에 빗댄 한마디로 맺고, 도사는 풀이와 조언만 말한다", () => {
+    const last = (character: "changha" | "elina" | "yuna" | "dosa", result: unknown) =>
+      answerAsk({ character, content: "fortune", topic: "money", question: "살까?", result }).split("\n");
+    expect(last("changha", fortune).at(-1)).toBe("촬영으로 치면 지금이 카메라 돌릴 때야.");
+    expect(last("elina", fortune).at(-1)).toBe("노래로 치면 지금이 첫 소절을 낼 때예요.");
+    expect(last("yuna", fortune).at(-1)).toBe("화장으로 치면 지금이 포인트 색을 올릴 때야.");
+    expect(last("dosa", fortune)).toHaveLength(2);
+    expect(last("changha", { ...fortune, fields: { ...fortune.fields, money: 40 } }).at(-1)).toBe("촬영으로 치면 리허설을 한 번 더 할 때야.");
+  });
   it("이어 묻기: 까닭을 물으면 근거를, 조심할 것을 물으면 조심할 일을 답한다", () => {
     const input = { character: "elina", content: "fortune", topic: "love", result: fortune } as const;
     expect(answerFollowup({ ...input, question: "왜 그렇게 나왔어요?" })).toBe("연애 운이 55점이에요.\n흐름이 약해서 서두르지 말라고 한 거예요.");
@@ -80,7 +89,7 @@ describe("답", () => {
   it("같은 풀이·같은 질문이면 같은 답이고, 풀이가 비어도 답은 나온다", () => {
     const input = { character: "changha", content: "tarot", topic: "free", question: "뭘 조심할까?", result: tarot } as const;
     expect(answerAsk(input)).toBe(answerAsk(input));
-    for (const topic of ASK_TOPICS) expect(answerAsk({ ...input, topic, result: null }).split("\n")).toHaveLength(2);
+    for (const topic of ASK_TOPICS) expect(answerAsk({ ...input, topic, result: null }).split("\n")).toHaveLength(3);
     expect(answerFollowup({ ...input, question: "언제쯤?" })).toMatch(/\.$/);
   });
   it("최애는 돈·결제·한도를 말하지 않는다(L158)", () => {

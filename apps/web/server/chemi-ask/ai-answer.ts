@@ -1,7 +1,8 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { elementCounts, elementName, elements, isChart } from "@/app/chemi/saju/chart";
-import { askLines, askName, askVoice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
+import { askLinesFor, askName, askVoice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
+import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
 import { TAROT_DECK } from "@/features/chemi/tarot/deck";
 import { askAiReady, askAiText } from "./ai-provider";
 import { askBasis, askEvidence } from "./answer";
@@ -69,10 +70,18 @@ const hangul = /[가-힣]/;
 export function askPrompt(input: AskAiInput) {
   const voice = askVoice[input.character];
   const korean = hangul.test(input.question);
+  const own = askLinesFor(input.character);
+  const persona = isChemiPersona(input.character) ? chemiPersona[input.character] : null;
   const system = [
     `너는 팬 서비스 kyaa 의 풀이 화면에서 '${askName[input.character]}'의 말투로 팬의 질문에 답한다.`,
     `말투: ${voiceRule[voice]}`,
-    `말투 예시: "${askLines[voice].topic}" "${askLines[voice].reask.love}" "${askLines[voice].rest}"`,
+    `말투 예시: "${own.topic}" "${own.reask.love}" "${own.rest[input.content]}"`,
+    ...(persona
+      ? [
+          `이 사람: ${persona.intro}. 말하는 방식: ${persona.manner}.`,
+          `조언 한 문장은 ${persona.figure}에 빗대어 말한다(예: "${persona.close.good}"). 빗대는 말일 뿐이고, 실제 일화나 일정은 말하지 않는다.`,
+        ]
+      : []),
     "지킬 것:",
     "1. [풀이 값]에 적힌 것만 근거로 삼는다. 거기 없는 날짜·요일·시각·사람 이름·금액·확률·숫자·카드·사건을 지어내지 않는다.",
     "2. 2~4문장, 모두 합쳐 200자 이내. 첫 문장에서 풀이 값 하나를 짚고, 이어서 질문에 맞는 조언을 한다.",
