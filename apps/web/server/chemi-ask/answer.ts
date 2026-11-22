@@ -143,6 +143,11 @@ export function askBasis(content: AskContent, topic: AskTopic, result: any, ques
  * 사주는 지금 시각의 세운(이번 달 주제는 월운), 운세는 그날 일진의 십신, 별자리는 가장 센 행성 각도, 타로는 카드 종류와 방향.
  */
 export function askEvidence(content: AskContent, topic: AskTopic, result: any, kind?: string, at: number = Date.now()): Record<Voice, string> | null {
+  return evidenceOf(content, topic, result, kind, at)?.line ?? null;
+}
+
+type TenGodName = keyof typeof becauseGod;
+function evidenceOf(content: AskContent, topic: AskTopic, result: any, kind?: string, at: number = Date.now()): { line: Record<Voice, string>; god?: string } | null {
   /** 받침에 맞춘 맺음말: 비견이야·겁재야. */
   const is = (word: string): Record<Voice, string> =>
     withParticle(word, "은는").endsWith("은")
@@ -156,22 +161,22 @@ export function askEvidence(content: AskContent, topic: AskTopic, result: any, k
   if (content === "saju" && isChart(result)) {
     const why = sajuWhy(result, at, topic === "month");
     const said = gloss(why.god, why.short);
-    return {
+    return { god: why.god, line: {
       ban: `${why.unit} ${why.pillar}은 네 일간에게 ${is(why.god).ban} ${said.ban}`,
       yo: `${why.unit} ${why.pillar}은 일간에게 ${is(why.god).yo} ${said.yo}`,
       hao: `${why.unit} ${why.pillar}은 그대 일간에게 ${is(why.god).hao} ${said.hao}`,
-    };
+    } };
   }
   if (content === "fortune" && kind !== "week" && result?.evidence) {
     const why = fortuneWhy(result.evidence);
     if (!why) return null;
     const day = kind === "tomorrow" ? "내일" : "오늘";
     const said = gloss(why.god, why.short);
-    return {
+    return { god: why.god, line: {
       ban: `${day} 일진 ${withParticle(why.pillar, "은는")} 네 일간에게 ${is(why.god).ban} ${said.ban}`,
       yo: `${day} 일진 ${withParticle(why.pillar, "은는")} 일간에게 ${is(why.god).yo} ${said.yo}`,
       hao: `${day} 일진 ${withParticle(why.pillar, "은는")} 그대 일간에게 ${is(why.god).hao} ${said.hao}`,
-    };
+    } };
   }
   if (content === "star" && kind !== "compat" && Array.isArray(result?.reasons) && result.reasons.length) {
     const reason = result.reasons[0];
@@ -179,11 +184,11 @@ export function askEvidence(content: AskContent, topic: AskTopic, result: any, k
     const target = targetName(reason.target);
     const aspect = aspectNames[reason.angle]?.name ?? "각";
     const head = `오늘 ${withParticle(body, "이가")}`;
-    return {
+    return { line: {
       ban: `${head} 네 ${withParticle(target, "과와")} ${aspect} 각도야.`,
       yo: `${head} 내 ${withParticle(target, "과와")} ${aspect} 각도예요.`,
       hao: `${head} 그대의 ${withParticle(target, "과와")} ${aspect} 각도요.`,
-    };
+    } };
   }
   if (content === "tarot") {
     const first = result?.cards?.[0] ?? result;
@@ -191,11 +196,11 @@ export function askEvidence(content: AskContent, topic: AskTopic, result: any, k
     const kindRow = card ? tarotBasis(first.card, Boolean(first.reversed))[0] : null;
     if (card && kindRow) {
       const kindName = is(kindRow.value.replace(" · ", " "));
-      return {
+      return { line: {
         ban: `${card[1]} 카드는 ${kindName.ban}`,
         yo: `${card[1]} 카드는 ${kindName.yo}`,
         hao: `${card[1]} 카드는 ${kindName.hao}`,
-      };
+      } };
     }
   }
   return null;
@@ -306,13 +311,47 @@ const because: Record<"good" | "care", Record<Voice, string>> = {
 };
 const careLead: Record<Voice, string> = { ban: "조심할 건 하나야.", yo: "조심할 건 하나예요.", hao: "조심할 것은 하나요." };
 
+/**
+ * '왜'에 답할 때의 맺음: 근거로 댄 십신에서 결론을 끌어낸다(겁재 = 겨루는 기운이면 '먼저 말하는 쪽이 유리').
+ * 흐름이 좋을 때와 조심할 때의 두 줄.
+ */
+const groupBecause = {
+  peer: {
+    good: { ban: "비슷한 힘이 맞붙는 때라 먼저 말하는 쪽이 유리해. 그래서 해 보라고 한 거야.", yo: "비슷한 힘이 맞붙는 때라 먼저 말하는 쪽이 유리해요. 그래서 해 보라고 한 거예요.", hao: "비슷한 힘이 맞붙는 때라 먼저 말하는 쪽이 유리하오. 그래서 해 보라 한 것이오." },
+    care: { ban: "비슷한 힘이 맞붙는 때라 서두르면 부딪쳐. 그래서 한 박자 늦추라고 한 거야.", yo: "비슷한 힘이 맞붙는 때라 서두르면 부딪쳐요. 그래서 한 박자 늦추라고 한 거예요.", hao: "비슷한 힘이 맞붙는 때라 서두르면 부딪치오. 그래서 한 박자 늦추라 한 것이오." },
+  },
+  output: {
+    good: { ban: "가진 걸 밖으로 꺼내는 기운이라 보여 줄수록 풀려. 그래서 해 보라고 한 거야.", yo: "가진 걸 밖으로 꺼내는 기운이라 보여 줄수록 풀려요. 그래서 해 보라고 한 거예요.", hao: "가진 것을 밖으로 꺼내는 기운이라 보일수록 풀리오. 그래서 해 보라 한 것이오." },
+    care: { ban: "말과 행동이 앞서 나가기 쉬운 기운이야. 그래서 한마디 줄이라고 한 거야.", yo: "말과 행동이 앞서 나가기 쉬운 기운이에요. 그래서 한마디 줄이라고 한 거예요.", hao: "말과 행동이 앞서 나가기 쉬운 기운이오. 그래서 한마디 줄이라 한 것이오." },
+  },
+  wealth: {
+    good: { ban: "움직인 만큼 손에 잡히는 기운이야. 그래서 미루지 말라고 한 거야.", yo: "움직인 만큼 손에 잡히는 기운이에요. 그래서 미루지 말라고 한 거예요.", hao: "움직인 만큼 손에 잡히는 기운이오. 그래서 미루지 말라 한 것이오." },
+    care: { ban: "챙길 것이 한꺼번에 늘어 힘이 달리는 기운이야. 그래서 벌이지 말라고 한 거야.", yo: "챙길 것이 한꺼번에 늘어 힘이 달리는 기운이에요. 그래서 벌이지 말라고 한 거예요.", hao: "챙길 것이 한꺼번에 늘어 힘이 달리는 기운이오. 그래서 벌이지 말라 한 것이오." },
+  },
+  duty: {
+    good: { ban: "맡은 걸 해내면 인정받는 기운이야. 그래서 피하지 말라고 한 거야.", yo: "맡은 걸 해내면 인정받는 기운이에요. 그래서 피하지 말라고 한 거예요.", hao: "맡은 것을 해내면 인정받는 기운이오. 그래서 피하지 말라 한 것이오." },
+    care: { ban: "나를 누르는 힘이 센 때야. 그래서 무리하지 말라고 한 거야.", yo: "나를 누르는 힘이 센 때예요. 그래서 무리하지 말라고 한 거예요.", hao: "나를 누르는 힘이 센 때요. 그래서 무리하지 말라 한 것이오." },
+  },
+  resource: {
+    good: { ban: "뒤에서 받쳐 주는 기운이 있어. 그래서 믿고 가라고 한 거야.", yo: "뒤에서 받쳐 주는 기운이 있어요. 그래서 믿고 가라고 한 거예요.", hao: "뒤에서 받쳐 주는 기운이 있소. 그래서 믿고 가라 한 것이오." },
+    care: { ban: "생각이 많아지는 기운이야. 그래서 오늘 정하지 말라고 한 거야.", yo: "생각이 많아지는 기운이에요. 그래서 오늘 정하지 말라고 한 거예요.", hao: "생각이 많아지는 기운이오. 그래서 오늘 정하지 말라 한 것이오." },
+  },
+} satisfies Record<string, Record<"good" | "care", Record<Voice, string>>>;
+const becauseGod = {
+  비견: groupBecause.peer, 겁재: groupBecause.peer, 식신: groupBecause.output, 상관: groupBecause.output, 편재: groupBecause.wealth,
+  정재: groupBecause.wealth, 편관: groupBecause.duty, 정관: groupBecause.duty, 편인: groupBecause.resource, 정인: groupBecause.resource,
+};
+
 export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string; at?: number }) {
   const tone = voice[input.character];
   const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
   const flow = read.good ? "good" : "care";
   if (followWhy.test(input.question)) {
-    const evidence = askEvidence(input.content, input.topic, input.result, input.kind, input.at);
-    return [read.line[tone], ...(evidence ? [evidence[tone]] : []), because[flow][tone]].join("\n");
+    // 첫 답에서 이미 한 말(read.line)은 되풀이하지 않는다. 덧붙일 근거가 없을 때만 다시 짚는다.
+    const evidence = evidenceOf(input.content, input.topic, input.result, input.kind, input.at);
+    if (!evidence) return `${read.line[tone]}\n${because[flow][tone]}`;
+    const tail = evidence.god && Object.hasOwn(becauseGod, evidence.god) ? becauseGod[evidence.god as TenGodName][flow][tone] : because[flow][tone];
+    return `${evidence.line[tone]}\n${tail}`;
   }
   if (followCare.test(input.question)) return `${careLead[tone]}\n${advice[input.topic].care[tone][seed(input.question) % 2]}`;
   return more[flow][tone][seed(input.question) % 2];

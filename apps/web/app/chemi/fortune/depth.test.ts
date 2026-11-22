@@ -37,8 +37,24 @@ describe("운세 근거와 분야별 풀이", () => {
           expect(count(detail.text)).toBeGreaterThanOrEqual(2);
           expect(count(detail.text)).toBeLessThanOrEqual(4);
           expect(detail.text).not.toMatch(/[0-9]+월|[0-9]+일|[0-9,]+원/);
-          expect(detail.basis).toBe(`${score}점 · 일진 경자 ${tenGod}`);
+          expect(detail.basis.startsWith(`${score}점 · `)).toBe(true);
         }
+  });
+});
+
+describe("운세 분야 근거 줄", () => {
+  it("여섯 분야의 근거가 서로 다르고 서버 점수 규칙의 자리와 같다", () => {
+    const fields = ["fandom", "people", "work", "rest", "love", "money"] as const;
+    const basis = fields.map((field) => fortuneFieldDetail(field, 82, { ...evidence, tenGod: "정재", relation: "형" }, null, true).basis);
+    expect(new Set(basis).size).toBe(6);
+    expect(basis).toEqual([
+      "82점 · 식상 자리 · 식상이 일진 재성으로 흘러가는 날",
+      "82점 · 비겁 자리 · 비겁이 일진 재성과 맞서는 날",
+      "82점 · 관성 자리 · 일진 재성이 관성을 낳는 날",
+      "82점 · 인성 자리 · 일진 재성이 인성을 누르는 날",
+      "82점 · 배우자 자리 일지 · 일진과 형",
+      "82점 · 재성 자리 · 일진도 재성(정재)인 날",
+    ]);
   });
 });
 
@@ -55,7 +71,7 @@ describe("타로 근거", () => {
     expect(tarotBasis(78, false)).toEqual([]);
   });
   it("연애·일·돈 줄에만 무늬 문장을 덧붙인다", () => {
-    expect(tarotRowMore(36, "연애")).toBe("마음의 무늬라 느낀 것을 말로 건네면 닿아요.");
+    expect(tarotRowMore(36, "연애")).toBe("마음의 카드라 느낀 것을 말로 건네면 닿아요.");
     expect(tarotRowMore(36, "조언")).toBeNull();
   });
 });

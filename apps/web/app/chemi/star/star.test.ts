@@ -72,12 +72,24 @@ describe("star copy", () => {
   it("turns server reasons into the screen sentences", () => {
     const signOf = (target: string) => (fixture.result.natal.find((p) => p.body === target)?.sign as ZodiacSign) ?? null;
     const [moon, uranus] = fixture.result.reasons.map((reason) => reasonView(reason, signOf, fixture.kstDate));
-    expect(moon).toMatchObject({ title: "달과 내 달", aspect: "삼각", domain: "overall", up: false });
+    expect(moon).toMatchObject({ title: "달과 내 달", aspect: "삼각", domain: "overall", up: true });
     expect(moon!.when).toMatch(/^오늘 .+ \d+시쯤 가장 강해요$/);
     expect(uranus!.title).toBe("천왕성과 내 수성");
     expect(uranus!.when).toBe("12월 12일(토)까지");
-    expect(moon!.text).toBe("달은 네 달(게자리)과 한 발 멀어지고 있어요. 작은 일에 마음이 쓰일 수 있어요.");
+    expect(moon!.text).toBe("달은 네 달(게자리)과 부드럽게 이어지다 한 발 멀어지고 있어요. 받던 도움이 조금씩 옅어져요.");
     expect(uranus!.text).toBe("천왕성은 네 수성(쌍둥이자리)과 겹쳐서 부담을 줘요. 작은 일에 마음이 쓰일 수 있어요.");
+  });
+
+  it("labels help and pressure by the aspect, not by the score sign", () => {
+    const base = { body: "Venus", target: "Venus", hour: 9, exitDate: "2026-11-27" };
+    const view = (angle: number, applying: boolean, score: number) => reasonView({ ...base, angle, applying, score }, () => null, "2026-11-22");
+    expect(view(60, false, -0.4)).toMatchObject({ aspect: "육분", up: true, tone: "받던 도움이 조금씩 옅어져요." });
+    expect(view(120, true, 0.9)).toMatchObject({ up: true, tone: "마음을 꺼내기 쉬운 때예요." });
+    expect(view(90, false, 0.5)).toMatchObject({ aspect: "사각", up: false, tone: "눌리던 것이 조금씩 가벼워져요." });
+    expect(view(90, false, 0.5).text).toContain("부딪친 뒤 풀려 가요");
+    expect(view(180, true, -0.8)).toMatchObject({ up: false, tone: "말이 날카롭게 들릴 수 있어요." });
+    expect(view(0, true, 0.8).up).toBe(true);
+    expect(view(0, false, -0.8).up).toBe(false);
   });
 
   it("gives every character a line for every scene, without a creator sign for the dosa", () => {

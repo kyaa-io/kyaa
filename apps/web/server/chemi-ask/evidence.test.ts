@@ -34,7 +34,9 @@ describe("질문하기 근거 한 줄", () => {
   it("'왜 그렇게 나왔어?'에 근거 줄을 넣어 답하고, 같은 입력이면 같은 답이다", () => {
     const input = { character: "changha", content: "saju", topic: "month", question: "왜 그렇게 나왔어?", result: chart, at } as const;
     const answer = answerFollowup(input);
-    expect(answer.split("\n")).toHaveLength(3);
+    // 첫 답의 문장은 되풀이하지 않고, 근거로 댄 십신(상관 = 밖으로 꺼내는 기운)에서 결론을 끌어낸다.
+    expect(answer.split("\n")).toHaveLength(2);
+    expect(answer).toMatch(/(보여 줄수록 풀려|앞서 나가기 쉬운 기운이야)/);
     expect(answer).toContain("이달 기해월은 네 일간에게 상관이야.");
     expect(answerFollowup(input)).toBe(answer);
     // 까닭을 묻지 않은 말에는 근거 줄을 덧붙이지 않는다.

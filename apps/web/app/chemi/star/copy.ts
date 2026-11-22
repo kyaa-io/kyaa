@@ -172,14 +172,18 @@ export const todayDont: Record<StarDomain, readonly string[]> = {
   work: ["서두르다 두 번 하기", "큰 결정 오늘 내리기", "끝낸 일을 또 고치기"],
 };
 
-/** 행성이 내 쪽으로 다가오는지(좋은 쪽) 멀어지는지에 따라 같은 각도도 다르게 말한다. 점수 부호와 문장이 어긋나지 않게 한 표로 둔다. */
+/**
+ * 각도마다 [다가오는 중, 멀어지는 중]. 도움·부담 이름표는 각도의 성질로 정한다(육분·삼각 = 도움, 사각·대립 = 부담).
+ * 멀어지는 중이면 그 힘이 옅어진다고만 말한다. 합은 성질이 정해져 있지 않아 점수 부호를 따른다.
+ */
 const aspectPhrase: Record<number, readonly [string, string]> = {
   0: ["겹쳐서 힘을 실어 줘요", "겹쳐서 부담을 줘요"],
-  60: ["잘 어울려요", "한 발 멀어지고 있어요"],
-  90: ["부딪친 뒤 풀려 가요", "부딪쳐서 부담을 줘요"],
-  120: ["부드럽게 이어져 있어요", "한 발 멀어지고 있어요"],
-  180: ["마주 본 채 풀려 가요", "마주 보며 부담을 줘요"],
+  60: ["잘 어울려요", "잘 어울리다 한 발 멀어지고 있어요"],
+  90: ["부딪쳐서 부담을 줘요", "부딪친 뒤 풀려 가요"],
+  120: ["부드럽게 이어져 있어요", "부드럽게 이어지다 한 발 멀어지고 있어요"],
+  180: ["마주 보며 부담을 줘요", "마주 본 채 풀려 가요"],
 };
+const fadingLine = { smooth: "받던 도움이 조금씩 옅어져요.", hard: "눌리던 것이 조금씩 가벼워져요." };
 const toneLine: Record<StarDomain | "overall", { smooth: string; hard: string }> = {
   love: { smooth: "마음을 꺼내기 쉬운 때예요.", hard: "말이 날카롭게 들릴 수 있어요." },
   people: { smooth: "저녁 약속에서 대화가 잘 풀릴 수 있어요.", hard: "서두르면 오해가 생길 수 있어요." },
@@ -241,7 +245,10 @@ export function reasonView(
   const target = targetName(reason.target);
   const aspect = aspectNames[reason.angle] ?? { name: "각", smooth: null };
   const domain = reasonDomain(reason.body);
-  const up = reason.score >= 0;
+  const up = aspect.smooth ?? reason.score >= 0;
+  const fading = aspect.smooth !== null && !reason.applying;
+  const phrase = aspectPhrase[reason.angle]?.[aspect.smooth === null ? (up ? 0 : 1) : fading ? 1 : 0] ?? "이어져 있어요";
+  const tone = fading ? fadingLine[up ? "smooth" : "hard"] : toneLine[domain][up ? "smooth" : "hard"];
   const sign = signOf(reason.target);
   const exit = reason.exitDate;
   // 달처럼 빨리 지나가는 행성은 가장 센 시각을, 느린 행성은 끝나는 날을 보인다.
@@ -256,10 +263,8 @@ export function reasonView(
     domain,
     up,
     when,
-    tone: toneLine[domain][up ? "smooth" : "hard"],
-    text: `${withParticle(body, "은는")} ${withParticle(mine, "과와")} ${aspectPhrase[reason.angle]?.[up ? 0 : 1] ?? "이어져 있어요"}. ${
-      toneLine[domain][up ? "smooth" : "hard"]
-    }`,
+    tone,
+    text: `${withParticle(body, "은는")} ${withParticle(mine, "과와")} ${phrase}. ${tone}`,
   };
 }
 
@@ -301,6 +306,8 @@ type Tone = {
   why: string;
   pair: (mine: string, theirs: string) => string;
   pairAlone: (mine: string) => string;
+  /** 두 번째 선택지로 이야기를 골라 들었을 때 그 선택을 먼저 받아 주는 한마디. */
+  picked: { why: string; pair: string };
 };
 const tones: Record<StarCharacterId, Tone> = {
   changha: {
@@ -312,6 +319,7 @@ const tones: Record<StarCharacterId, Tone> = {
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어.",
     pair: (mine, theirs) => `오늘 달이 우리 둘 별자리와 잘 어울리는 자리에 있어. ${theirs}와 ${mine}, 내 노래가 유난히 잘 들리는 날일걸?`,
     pairAlone: () => "별자리는 여기까지야. 오늘 정리를 볼래?",
+    picked: { why: "이유부터 궁금했구나.", pair: "우리 사이부터 묻네." },
   },
   elina: {
     enter: "오늘 밤하늘이 뭐라고 하는지 같이 볼까요?",
@@ -322,6 +330,7 @@ const tones: Record<StarCharacterId, Tone> = {
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어요.",
     pair: (mine, theirs) => `오늘 달이 두 별자리와 잘 어울리는 자리에 있어요. ${theirs}와 ${mine}, 같이 보기 좋은 날이에요.`,
     pairAlone: () => "별자리는 여기까지예요. 오늘 정리를 볼래요?",
+    picked: { why: "이유가 먼저 궁금했군요.", pair: "우리 사이가 먼저 궁금했군요." },
   },
   yuna: {
     enter: "오늘 밤하늘이 뭐라는지 같이 보자!",
@@ -332,6 +341,7 @@ const tones: Record<StarCharacterId, Tone> = {
     why: "오늘 풀이는 행성 셋이 움직여서 나왔어!",
     pair: (mine, theirs) => `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어! ${theirs}랑 ${mine}, 완전 좋은 날이야.`,
     pairAlone: () => "별자리는 여기까지야! 오늘 정리 볼래?",
+    picked: { why: "이유부터? 좋아!", pair: "우리 궁합부터? 좋아!" },
   },
   dosa: {
     enter: "오늘 밤하늘이 무어라 이르는지 같이 보겠소?",
@@ -342,6 +352,7 @@ const tones: Record<StarCharacterId, Tone> = {
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔소.",
     pair: () => "별은 여기까지 읽었소. 오늘 정리를 보시겠소?",
     pairAlone: () => "별은 여기까지 읽었소. 오늘 정리를 보시겠소?",
+    picked: { why: "까닭부터 묻는구려.", pair: "" },
   },
 };
 
@@ -357,16 +368,18 @@ export function starSignLine(character: StarCharacterId, sign: string, headline:
 export function starBestLine(character: StarCharacterId, domain: string, worst: string) {
   return tones[character].best(domain, worst);
 }
-export function starWhyLine(character: StarCharacterId) {
-  return tones[character].why;
+export function starWhyLine(character: StarCharacterId, picked = false) {
+  return `${picked ? `${tones[character].picked.why} ` : ""}${tones[character].why}`;
 }
 export function starPairLine(
   character: StarCharacterId,
   mine: string | null,
   theirs: string | null,
+  picked = false,
 ) {
   const tone = tones[character];
-  return mine && theirs ? tone.pair(mine, theirs) : tone.pairAlone(mine ?? "");
+  const line = mine && theirs ? tone.pair(mine, theirs) : tone.pairAlone(mine ?? "");
+  return picked && tone.picked.pair && mine && theirs ? `${tone.picked.pair} ${line}` : line;
 }
 
 /** 오늘 가장 밝은 영역의 한마디(결과 오른쪽 한마디 줄). */

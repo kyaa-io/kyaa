@@ -122,6 +122,7 @@ export function StarFlow({
   const ask = useAskLocation();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const [step, setStep] = useState<StarStep>("enter");
+  const [picked, setPicked] = useState<"why" | "pair" | null>(null);
   const [character, setCharacter] = useState<StarCharacterId>("changha");
   const [reading, setReading] = useState<StarReading>();
   const [phase, setPhase] = useState<Phase>("idle");
@@ -402,6 +403,8 @@ export function StarFlow({
   function skipAhead() {
     const talk = starTalkNumber(step);
     if (!talk || talk >= 3) return openResult();
+    // 고른 이야기를 기억해, 최애가 그 선택을 받아 말한다.
+    setPicked(talk === 1 ? "why" : "pair");
     const next = `talk-${talk + 2}` as StarStep;
     writeUrl({ step: next }, "push");
     setStep(next);
@@ -471,12 +474,13 @@ export function StarFlow({
         : talk === 2 && best && worst
           ? starBestLine(character, domainLabels[best], domainLabels[worst])
           : talk === 3
-            ? starWhyLine(character)
+            ? starWhyLine(character, picked === "why")
             : talk === 4 && derived
               ? starPairLine(
                   character,
                   derived.sunBare,
                   creator ? signNames[creator].bare : null,
+                  picked === "pair",
                 )
               : starEnterLine(character, needBirth ? "birth" : "enter");
 

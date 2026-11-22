@@ -1,5 +1,6 @@
 "use client";
 
+import { rankName } from "@/features/chemi/games/rank-name";
 import { useEffect, useRef } from "react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
@@ -56,8 +57,8 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
   const line = (row: Rank | undefined, key: string, slot?: "near", place?: number) => row ? (
     <li data-row="" key={key} data-me={row.isMe} data-slot={slot && !row.isMe ? "near" : undefined} data-top={row.place <= 3}>
       <FanText role="label" className={styles.place}>{row.place}</FanText>
-      <FanText role="label" className={styles.avatar} aria-hidden="true">{Array.from(row.nickname || "·")[0]}<img src={`${ART}/face-${row.character}-v1.png`} alt="" /></FanText>
-      <FanText role="item" className={styles.who}>{row.nickname}{row.isMe && ` (${copy.me})`}</FanText>
+      <FanText role="label" className={styles.avatar} aria-hidden="true">{Array.from(rankName(row.nickname, locale))[0]}<img src={`${ART}/face-${row.character}-v1.png`} alt="" /></FanText>
+      <FanText role="item" className={styles.who}>{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`}</FanText>
       <FanText role="meta">{names[row.character]}</FanText>
       <FanText role="item">{number.format(row.score)}</FanText>
     </li>
@@ -77,7 +78,7 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
       </>}
     </ol>
     <footer>
-      {above && near && <FanText role="meta" className={styles.above}><span>{fill(copy.above, { name: above.nickname })}</span><b>{fill(copy.points, { n: number.format(above.score - me!.score) })}</b></FanText>}
+      {above && near && <FanText role="meta" className={styles.above}><span>{fill(copy.above, { name: rankName(above.nickname, locale) })}</span><b>{fill(copy.points, { n: number.format(above.score - me!.score) })}</b></FanText>}
       {footer && <FanText role="meta">{footer}</FanText>}
       {loaded && rows.length === 0 && <FanText role="meta">{copy.emptyRanking}</FanText>}
     </footer>

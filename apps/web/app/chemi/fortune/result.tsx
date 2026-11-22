@@ -64,7 +64,10 @@ export function FortuneResult({
   onAsk,
   character = "changha",
   paidPreview = false,
+  focus = null,
 }: {
+  /** 대화에서 두 번째 선택지로 고른 이야기. 그 칸(덕질 풀이·오늘의 행운)을 펼친 채로 연다. */
+  focus?: "fandom" | "luck" | null;
   /** 결제 연결 전에는 DEV 시험 모드에서만 날짜 지정(포인트)을 보인다. */
   paidPreview?: boolean;
   character?: FortuneCharacterId;
@@ -340,6 +343,8 @@ export function FortuneResult({
   const cardKind = isToday ? dayCardKind(result.score) : null;
   const deepTarget = { character, locale, readingId: reading.readingId };
   const actions = <ResultActions locale={locale} sharing={sharing} onShare={share} />;
+  const merged = headline === result.grade.name;
+  const rewarded = points > 0 || Boolean(reading.reward?.stamp) || Boolean(reading.reward?.exp);
   return (
     <article data-fortune-result="" className={styles.layout}>
       {toolbar}
@@ -348,7 +353,13 @@ export function FortuneResult({
           <FanText as="p" role="meta">
             {uiText("todayBy", { pillar: result.evidence.dayPillar, name })}
           </FanText>
-          <FanHeading as="h1">{headline}</FanHeading>
+          {/* 제목이 등급 이름이면 점수를 제목 옆에 두고, 아래 점수 칸에서 같은 말을 되풀이하지 않는다. */}
+          {merged ? (
+            <div className={styles.headScore}>
+              <FanNumber size="xl" locale={locale} value={result.score} />
+              <FanHeading as="h1">{headline}</FanHeading>
+            </div>
+          ) : <FanHeading as="h1">{headline}</FanHeading>}
           <picture className={styles.hero}>
             <img
               src={
@@ -360,10 +371,10 @@ export function FortuneResult({
             />
           </picture>
         </header>
-        <section className={`${styles.panel} ${styles.scorePanel}`}>
-          <div className={styles.score}>
-            <FanNumber size="xl" locale={locale} value={result.score} />
-            <FanHeading as="h2">{result.grade.name}</FanHeading>
+        {(!merged || cardKind || rewarded) && <section className={`${styles.panel} ${styles.scorePanel}`}>
+          {(!merged || cardKind) && <div className={styles.score}>
+            {!merged && <FanNumber size="xl" locale={locale} value={result.score} />}
+            {!merged && <FanHeading as="h2">{result.grade.name}</FanHeading>}
             {cardKind && (
               <FanAction
                 variant="text"
@@ -374,7 +385,7 @@ export function FortuneResult({
                 <ReadingText id={cardKind} />
               </FanAction>
             )}
-          </div>
+          </div>}
           <div className={styles.rewardRow}>
             {points > 0 && (
               <EarnBadge locale={locale} points={points} variant="inline" />
@@ -385,7 +396,7 @@ export function FortuneResult({
             )}
             {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
           </div>
-        </section>
+        </section>}
         <section className={`${styles.section} ${styles.flowSec}`}>
           <FanHeading><ReadingText id="todayFlow" /></FanHeading>
           <p>{fortuneFlow(result.grade.name, result.evidence)}</p>
@@ -451,7 +462,7 @@ export function FortuneResult({
           <FanDisclosure label={uiText("whyScore")}>
             <ReadingBasisRows rows={fortuneBasis(result.evidence)} />
           </FanDisclosure>
-          <FanDisclosure label={uiText("luck")}>
+          <FanDisclosure label={uiText("luck")} defaultOpen={focus === "luck"}>
             <dl className={styles.facts}>
               {Object.entries({
                 [uiText("tableColor")]: result.luck.color,
@@ -512,6 +523,7 @@ export function FortuneResult({
               return (
                 <li data-row="" key={key}>
                   <FanCollapsible
+                    defaultOpen={focus === key}
                     trigger={({ triggerProps }) => (
                       <FanCollapsibleTrigger className={styles.fieldRow} {...triggerProps}>
                         <FanText role="label">{label}</FanText>

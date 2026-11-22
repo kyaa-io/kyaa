@@ -131,9 +131,35 @@ export function fortuneFieldDetail(
   if (rank === "highest") sentences.push("여섯 분야 중 오늘 가장 높아요.");
   if (rank === "lowest") sentences.push("여섯 분야 중 오늘 가장 낮으니 힘을 덜 써요.");
   return {
-    basis: isTenGod(evidence.tenGod) ? `${score}점 · 일진 ${evidence.dayPillar} ${evidence.tenGod}` : `${score}점`,
+    basis: isTenGod(evidence.tenGod) ? `${score}점 · ${fieldBasis(field, evidence.tenGod, evidence.relation)}` : `${score}점`,
     text: sentences.join(" "),
   };
+}
+
+const groups: readonly Group[] = ["peer", "output", "wealth", "duty", "resource"];
+const groupName: Record<Group, string> = { peer: "비겁", output: "식상", wealth: "재성", duty: "관성", resource: "인성" };
+/** 분야가 보는 십신 자리. 서버 점수 규칙(chemi-engine/fortune 의 field)과 같은 배정이다. 애정은 성별에 따라 달라 일지(배우자 자리)로 적는다. */
+const fieldSeat: Record<Exclude<FortuneField, "love">, Group> = {
+  people: "peer", fandom: "output", money: "wealth", work: "duty", rest: "resource",
+};
+
+/** 분야마다 다른 근거 한 줄: 그 분야의 십신 자리와 오늘 일진 십신의 사이(같음·낳음·누름·맞섬·흘러감). */
+function fieldBasis(field: FortuneField, tenGod: TenGod, relation: string) {
+  if (field === "love") {
+    const tie = relationOf(relation);
+    return `배우자 자리 일지 · 일진과 ${tie === "없음" ? "합·충 없음" : tie}`;
+  }
+  const seat = groupName[fieldSeat[field]];
+  const today = groupName[groupOf[tenGod]];
+  const gap = (groups.indexOf(fieldSeat[field]) - groups.indexOf(groupOf[tenGod]) + 5) % 5;
+  const tie = [
+    `일진도 ${today}(${tenGod})인 날`,
+    `일진 ${today}이 ${seat}을 낳는 날`,
+    `일진 ${today}이 ${seat}을 누르는 날`,
+    `${seat}이 일진 ${today}과 맞서는 날`,
+    `${seat}이 일진 ${today}으로 흘러가는 날`,
+  ][gap];
+  return `${seat} 자리 · ${tie}`;
 }
 
 /** 질문하기에서 '왜'를 물었을 때 덧붙이는 근거(말투는 부르는 쪽이 고른다). */

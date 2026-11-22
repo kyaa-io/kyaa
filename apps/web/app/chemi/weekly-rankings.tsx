@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FPS } from "@/features/chemi/games/engine";
+import { rankName } from "@/features/chemi/games/rank-name";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { getMatchCopy } from "./games/match/copy";
 import { GameRankings, type GameRanking } from "./game-rankings";
@@ -55,7 +56,7 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
       id: `${row.nickname}-${index}`,
       isMe: row.isMe,
       place: row.place,
-      name: row.nickname,
+      name: rankName(row.nickname, locale),
       change: 0,
       record: mode === "run" ? points.format(row.score) : row.score != null ? row.score.toLocaleString(locale) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
         .map((part) => String(part).padStart(2, "0")).join(":"),

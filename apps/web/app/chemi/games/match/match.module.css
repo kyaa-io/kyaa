@@ -544,3 +544,7 @@
   .layout[data-lobby="true"] .levelList li { align-items: center; }
   .layout[data-lobby="true"] .startAction { grid-row: 5; align-self: end; }
 }
+/* PC 플레이: 기록 이름표와 값을 붙여 둔다(360px 줄 양끝으로 벌어지지 않게). */
+@media (width >= 48rem) {
+  .layout[data-playing="true"] .stageLine { justify-content: flex-start; gap: var(--space-3); }
+}
