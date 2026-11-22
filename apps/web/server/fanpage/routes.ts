@@ -130,8 +130,9 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         const body = parseResult(commentsSchema, result);
         const last = body.comments.at(-1);
         // The composer shows the name a new comment goes out under; only the first page carries it.
-        const author = owner && !cursor ? await dependencies.rpc("read_notice_comment_author", { p_app_user_id: owner, p_slug: slug, p_locale: contentLocale }) : null;
-        return fanpageJson({ ...body, nextCursor: body.comments.length === limit && last ? encodeCursor({ at: last.createdAt, id: last.id }) : null, ...(author ? { author: parseResult(commentAuthorSchema, author) } : {}) });
+        // Without it the list still loads and the composer posts under the account's own name.
+        const author = owner && !cursor ? commentAuthorSchema.safeParse(await dependencies.rpc("read_notice_comment_author", { p_app_user_id: owner, p_slug: slug, p_locale: contentLocale }).catch(() => null)) : null;
+        return fanpageJson({ ...body, nextCursor: body.comments.length === limit && last ? encodeCursor({ at: last.createdAt, id: last.id }) : null, ...(author?.success ? { author: author.data } : {}) });
       } catch (error) { return fanpageFailure(error); }
     },
     async postComment(request: Request, slug: string, noticeSlug: string) {

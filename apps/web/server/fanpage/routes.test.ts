@@ -217,6 +217,10 @@ describe("fanpage server authority", () => {
     expect(rpc.mock.calls.map(call => call[0])).not.toContain("read_notice_comment_author");
     rpc.mockImplementation(async (name: string) => name === "read_notice_comment_author" ? { name: "fan", official: null } : { total: 0, comments: [] });
     expect((await (await api.comments(request("/api", undefined, true, "GET"), "elina", "notice")).json()).author).toEqual({ name: "fan", official: null });
+    // A failed or unexpected author answer leaves the list readable and the composer personal.
+    rpc.mockImplementation(async (name: string) => { if (name === "read_notice_comment_author") throw new Error("FANPAGE_UNAVAILABLE"); return { total: 0, comments: [] }; });
+    const failed = await api.comments(request("/api", undefined, true, "GET"), "elina", "notice");
+    expect(failed.status).toBe(200); expect((await failed.json()).author).toBeUndefined();
     rpc.mockReset();
   });
   it("writes under the page name only through the authority-checked entry point", async () => {
