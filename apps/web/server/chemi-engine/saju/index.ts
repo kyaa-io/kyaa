@@ -3,7 +3,7 @@ import { calculateFourPillars, getSolarTermsOfYear, lunarToSolar, type BirthInfo
 import { HIDDEN_STEMS, TABLE_VERSION, lifeStage, spirit, BRANCH_COMBINATIONS, BRANCH_CLASHES } from "./tables";
 
 export const ENGINE_VERSION = "manseryeok@2.0.0";
-export const SAJU_OPTIONS = { dayBoundary: "jasi", trueSolarTime: { longitude: 126.978, applyEquationOfTime: true, applyHistoricalDst: true } } as const;
+export const SAJU_OPTIONS = { dayBoundary: "jasi", trueSolarTime: { longitude: 126.978, applyEquationOfTime: false, applyHistoricalDst: true } } as const;
 export type SajuInput = Omit<BirthInfo, "hour" | "minute" | "dayBoundary" | "trueSolarTime"> & { hour?: number | null; minute?: number | null };
 
 export function calculateSaju(input: SajuInput) {

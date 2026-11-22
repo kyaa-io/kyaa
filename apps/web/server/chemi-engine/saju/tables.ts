@@ -1,6 +1,7 @@
 import type { EarthlyBranch, HeavenlyStem } from "manseryeok";
 
-export const TABLE_VERSION = "chemi-saju-1";
+// chemi-saju-2: 균시차 끔(경도 보정만), 신강 지수·도움 기운을 app/chemi/saju/chart 의 공용 함수로 통일.
+export const TABLE_VERSION = "chemi-saju-2";
 // 본기 우선. 한국식 고정 관법; 자·묘·유는 본기만 사용한다.
 export const HIDDEN_STEMS: Record<EarthlyBranch, readonly HeavenlyStem[]> = {
   자: ["계"], 축: ["기", "계", "신"], 인: ["갑", "병", "무"], 묘: ["을"],
