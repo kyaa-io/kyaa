@@ -31,6 +31,9 @@ const reclaimed={
 } satisfies Record<string,Record<AppLocale,string>>;
 // Same names the ticket history screen already shows for these earning sources (ko/en inline, other locales from its catalog).
 const names={
+ dateReading:{'ko':'다른 날짜 운세','en':'Fortune for another date','ja':'別の日の運勢','zh-Hans':'其他日期的运势','zh-Hant':'其他日期的運勢','es':'Horóscopo de otra fecha','id':'Ramalan untuk tanggal lain','vi':'Vận may ngày khác','th':'ดวงชะตาวันอื่น','pt':'Horóscopo de outra data','fr':'Horoscope pour une autre date','ru':'Гороскоп на другую дату'},
+ playRefund:{'ko':'게임 추가 판 환불','en':'Extra round refund','ja':'追加プレイの返金','zh-Hans':'额外游戏局退款','zh-Hant':'額外遊戲局退款','es':'Reembolso de partida extra','id':'Pengembalian poin ronde tambahan','vi':'Hoàn điểm lượt chơi thêm','th':'คืนแต้มรอบเกมเพิ่มเติม','pt':'Reembolso da rodada extra','fr':'Remboursement de partie supplémentaire','ru':'Возврат за дополнительную игру'},
+ extraPlay:{'ko':'게임 추가 판','en':'Extra game round','ja':'ゲームの追加プレイ','zh-Hans':'额外游戏局','zh-Hant':'額外遊戲局','es':'Partida extra','id':'Ronde tambahan','vi':'Lượt chơi thêm','th':'รอบเกมเพิ่มเติม','pt':'Rodada extra','fr':'Partie supplémentaire','ru':'Дополнительная игра'},
  verification:{ko:'팬 인증',en:'Fan verification',...additionalLocales(l=>ticketNames.mcb885a4cb68b[l])},
  liveReservation:{ko:'LIVE 예약',en:'LIVE reservation',...additionalLocales(l=>ticketNames.m09bcaad5a36b[l])},
  liveAttendance:{ko:'LIVE 출석',en:'LIVE attendance',...additionalLocales(l=>ticketNames.m7ec41b9e944f[l])},
@@ -48,6 +51,9 @@ function activityName(locale:AppLocale,actionKey:string|null|undefined):string|n
  return actionKey&&GUIDE_ACTIVITIES.has(actionKey)?activityLabel(locale,actionKey as GuideActivityKey):null;
 }
 export function walletHistoryLabel(locale:AppLocale,sourceType:string,detail:WalletHistoryDetail={}):string|null {
+ if(sourceType==='chemi_game_extra')return names.extraPlay[locale];
+ if(sourceType==='chemi_game_refund')return names.playRefund[locale];
+ if(sourceType==='chemi_date')return names.dateReading[locale];
  if(sourceType==='dukjil_correction'){
   if(detail.correctionReason==='insta_repost_revoked')return b3.repostReclaimed[locale];
   if(detail.correctionReason==='content_hidden')return reclaimed.hidden[locale];
