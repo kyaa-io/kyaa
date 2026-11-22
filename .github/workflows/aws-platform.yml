@@ -19,7 +19,7 @@ on:
       promote_workers:
         description: Also update the four worker Lambdas in production (dev always updates them)
         type: boolean
-        default: false
+        default: true
 permissions:
   contents: read
 concurrency:
@@ -332,6 +332,14 @@ jobs:
       - name: Prepare all worker code updates
         if: env.PROMOTE_WORKERS == 'true'
         run: node scripts/aws-release-workers.mjs prepare
+      - name: Publish expected production worker hashes
+        if: env.RELEASE_ENV == 'prod' && env.PROMOTE_WORKERS == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: prod-worker-hashes-${{ steps.prepare.outputs.sha }}
+          path: work/aws-release/worker-backups/prepared.json
+          overwrite: true
+          if-no-files-found: error
       - name: Validate and deploy CloudFormation
         id: deploy_web
         run: |
