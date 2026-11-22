@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "케미 목록에 운세를 보는 방법과 게임 방법을 한 줄씩 표시해요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/2026-11-22-chemi-entry-list.png"
+  ]
+}

@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "Hasil hari ini",
     "descriptions": {
       "fortune": "Lihat keberuntungan hari ini",
       "saju": "Cek kecocokan tanggal lahir",

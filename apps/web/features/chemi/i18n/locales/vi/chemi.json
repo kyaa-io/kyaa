@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "Kết quả hôm nay",
     "descriptions": {
       "fortune": "Xem vận may hôm nay",
       "saju": "Xem độ hợp theo ngày sinh",

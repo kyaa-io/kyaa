@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "今日の結果",
     "descriptions": {
       "fortune": "今日の幸運をチェック",
       "saju": "生年月日で相性を見る",

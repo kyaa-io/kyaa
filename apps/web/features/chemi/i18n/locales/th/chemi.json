@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "ผลวันนี้",
     "descriptions": {
       "fortune": "ดูโชคประจำวัน",
       "saju": "ดูความเข้ากันจากวันเกิด",

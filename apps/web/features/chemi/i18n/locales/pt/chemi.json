@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "Resultado de hoje",
     "descriptions": {
       "fortune": "Descubra a sorte de hoje",
       "saju": "Compare as datas de nascimento",

@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "Результат дня",
     "descriptions": {
       "fortune": "Узнайте, что принесёт день",
       "saju": "Совместимость по дате рождения",

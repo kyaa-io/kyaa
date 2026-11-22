@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "今日結果",
     "descriptions": {
       "fortune": "查看今日好運",
       "saju": "按出生日期看緣分",

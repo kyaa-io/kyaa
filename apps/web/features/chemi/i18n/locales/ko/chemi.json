@@ -11,6 +11,7 @@
     "gameMinutes": "{count}분 뒤 무료 판이 다시 열려요"
   },
   "home": {
+    "todayResult": "오늘 결과 보기",
     "descriptions": {
       "fortune": "오늘의 행운을 확인해요",
       "saju": "생년월일로 보는 궁합",
