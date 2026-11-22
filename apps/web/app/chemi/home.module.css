@@ -190,35 +190,6 @@
   }
 }
 
-/* 랭킹이 열린 입구: 점과 일시정지는 배너 안 오른쪽 위. */
-.dots .pause {
-  background: var(--color-home-caption);
-  color: var(--color-surface);
-}
-.home[data-ranked="true"] .dots span[aria-hidden="true"] {
-  outline: thin solid var(--color-home-caption);
-}
-@media (hover: hover) and (pointer: fine) {
-  .dots .pause:hover:not(:disabled) {
-    background: var(--color-home-hero-shade);
-  }
-}
-.home[data-ranked="false"] .pause {
-  display: none;
-}
-.home[data-ranked="true"] .banner {
-  position: relative;
-}
-.home[data-ranked="true"] .dots {
-  position: absolute;
-  inset: var(--space-1) var(--space-1) auto auto;
-  gap: 0;
-  margin: 0;
-}
-.home[data-ranked="true"] .dots button:not([aria-pressed="true"]) span[aria-hidden="true"] {
-  background: var(--color-surface);
-}
-
 @media (min-width: 64rem) {
   .home {
     grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 6);
@@ -297,46 +268,53 @@
   }
   .home[data-ranked="false"] .artwork {
     position: absolute;
-    inset: 0;
+    inset: 0 0 var(--min-target);
   }
   .home[data-ranked="false"] .artwork img {
     height: 100%;
     aspect-ratio: auto;
   }
-  .home[data-ranked="false"] .caption {
-    padding-bottom: calc(var(--space-12) + var(--space-3));
-  }
   .home[data-ranked="false"] .dots {
     position: absolute;
-    inset: auto 0 var(--space-1);
+    inset: auto 0 0;
   }
 }
+/* 캐러셀 인디케이터(DESIGN 공통 컴포넌트·캐러셀): 배너 바로 아래 가운데 44 줄, 칸 8, 현재 24, 칸 사이 4. 일시정지는 같은 줄 간격 8. */
 .dots {
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  margin-top: var(--space-1);
+  min-height: var(--min-target);
 }
-.dots button {
-  border-radius: var(--radius-pill);
-  min-width: calc(var(--space-12) - var(--space-1));
-  min-height: calc(var(--space-12) - var(--space-1));
-}
-.dots button {
+.dots > button:not(.pause) {
+  width: auto;
+  min-width: 0;
+  min-height: var(--min-target);
+  padding: 0;
   background: transparent;
   border: 0;
-  padding: 0;
+  border-radius: var(--radius-pill);
+  box-shadow: none;
 }
 .dots button span[aria-hidden="true"] {
   display: block;
   width: var(--space-2);
   height: var(--space-2);
-  background: var(--color-muted);
+  background: var(--color-line);
   border-radius: var(--radius-pill);
+  transition: background-color var(--motion-slow) ease;
 }
 .dots button[aria-pressed="true"] span[aria-hidden="true"] {
-  width: var(--space-5);
-  background: var(--color-accent);
+  width: var(--space-6);
+  background: var(--color-ink);
+}
+.dots .pause {
+  margin-left: var(--space-1);
+}
+.dots .pause svg {
+  width: var(--space-4);
+  height: var(--space-4);
 }
 .row[data-selected="true"] {
   color: var(--color-accent-ink);

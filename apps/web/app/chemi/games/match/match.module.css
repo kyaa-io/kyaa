@@ -381,12 +381,6 @@
   right: 6px;
   font-variant-numeric: tabular-nums;
 }
-.clearPanel {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--color-surface);
-}
 
 .levelList {
   display: grid;
@@ -488,17 +482,106 @@
   .shell[data-stage="start"] .levelList { grid-column: 1 / -1; }
 }
 
+/* 라운드 완료 모달: 공통 모달 면(fan-dialog .panel·.dialog)과 같은 바탕·그림자·반경, 1024 미만은 바닥에 붙는 시트 모양. */
 .clearPanel {
-  width: min(100%, 480px);
-  margin: auto;
-  border: 0;
-  border-radius: var(--radius-media);
-  padding: var(--space-4);
-  color: var(--color-ink);
+  composes: panel dialog from "../../../../components/fan-ui/fan-dialog.module.css";
 }
-.clearPanel::backdrop { background: color-mix(in srgb, var(--color-ink) 52%, transparent); }
+.shell .clearPanel {
+  width: min(100% - var(--space-8), 400px);
+  max-width: none;
+  margin: auto;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+}
+.clearPanel[open] { animation: clearIn var(--motion-layout) var(--motion-easing); }
+.clearPanel::backdrop { background: var(--color-backdrop); }
+.clearArt {
+  position: relative;
+  flex: none;
+  height: calc(var(--space-16) * 2.5);
+}
+.clearArt > img:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+.clearFace {
+  position: absolute;
+  left: var(--space-5);
+  bottom: calc(var(--space-8) * -1);
+  width: var(--space-16);
+  height: var(--space-16);
+  border: 3px solid var(--color-surface);
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+  animation: clearPop var(--motion-reward) var(--motion-easing) both;
+}
+.clearHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-5) 0;
+}
+.clearHead h2 { margin: 0; }
+.clearRound {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+.shell .clearLines {
+  display: grid;
+  padding: 0;
+}
+.shell .clearPanel .clearLines { margin: var(--space-3) var(--space-5) 0; }
+.clearLines > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block: var(--space-2);
+  border-bottom: 1px solid var(--color-line-subtle);
+  animation: clearRow var(--motion-slow) var(--motion-easing) both;
+}
+.clearLines > div:nth-child(2) { animation-delay: 90ms; }
+.clearLines > div:nth-child(3) { animation-delay: 180ms; }
+.clearLines > div:nth-child(4) { animation-delay: 270ms; }
+.clearLines dd {
+  margin: 0;
+  color: var(--color-accent-ink);
+  font-variant-numeric: tabular-nums;
+}
+.clearPanel .clearTotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: var(--space-3) var(--space-5) 0;
+}
+.clearTotal strong { font-variant-numeric: tabular-nums; }
+.clearActions {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5) var(--space-5);
+}
+.clearActions > * { width: 100%; }
+@keyframes clearIn { from { opacity: 0; transform: translateY(var(--space-4)); } }
+@keyframes clearRow { from { opacity: 0; transform: translateY(var(--space-2)); } }
+@keyframes clearPop { from { opacity: 0; transform: scale(.6); } 70% { transform: scale(1.08); } }
+@media (prefers-reduced-motion: reduce) {
+  .clearPanel[open], .clearFace, .clearLines > div { animation: none; }
+}
 @media (width < 48rem) {
-  .clearPanel { margin: auto auto 0; padding-bottom: max(var(--space-4), env(safe-area-inset-bottom)); }
+  .shell .clearPanel {
+    width: 100%;
+    margin: auto 0 0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+  .clearActions { padding-bottom: max(var(--space-4), env(safe-area-inset-bottom)); }
 }
 
 .startAction > button { width: 100%; }
@@ -548,3 +631,9 @@
 @media (width >= 48rem) {
   .layout[data-playing="true"] .stageLine { justify-content: flex-start; gap: var(--space-3); }
 }
+
+/* 결과의 EXP 줄: 최애 얼굴 + 숫자가 0에서 굴러 올라간다(RollingNumber). */
+.gain { display: flex; align-items: center; gap: var(--space-3); }
+.gain img { width: var(--space-10); height: var(--space-10); border-radius: var(--radius-pill); object-fit: cover; }
+.gain span { flex: 1; min-width: 0; }
+.gain b { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }

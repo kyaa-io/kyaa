@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { registerFanToastHandler } from "./fan-toast";
 const toast = { shown: [] as unknown[], closed: [] as unknown[] };
 registerFanToastHandler({ show: options => { toast.shown.push(options); return `t${toast.shown.length}`; }, close: id => { toast.closed.push(id); } });
-import { celebrateReward, resetRewardCelebration, rewardSummary, REWARD_MERGE_MS } from "./reward-celebration";
+import { celebrateReward, celebrateSpend, resetRewardCelebration, rewardSummary, REWARD_MERGE_MS } from "./reward-celebration";
 
 beforeEach(() => { vi.useFakeTimers(); toast.shown.length = 0; toast.closed.length = 0; resetRewardCelebration(); document.body.innerHTML = ""; });
 afterEach(() => vi.useRealTimers());
@@ -39,5 +39,14 @@ it("shows a stamp-only grant in words and ignores empty or invalid grants", () =
   expect(document.querySelector("[data-reward-badge] img")).toBeNull();
   celebrateReward({ locale: "ko", points: Number.NaN });
   celebrateReward({ locale: "ko", points: -5 });
+  expect(toast.shown).toHaveLength(1);
+});
+
+it("writes a spend as a minus toast with a sinking coin badge", () => {
+  celebrateSpend({ locale: "ko", points: 10, label: "추가 판 시작" });
+  expect(toast.shown.at(-1)).toMatchObject({ title: "-10P", description: "추가 판 시작" });
+  const badge = document.querySelector<HTMLElement>("[data-reward-badge]")!;
+  expect([badge.textContent, badge.dataset.spend]).toEqual(["-10", ""]);
+  celebrateSpend({ locale: "ko", points: 0 });
   expect(toast.shown).toHaveLength(1);
 });

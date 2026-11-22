@@ -9,6 +9,14 @@
   80% { opacity: 1; transform: translate(-50%, -170%) scale(1); }
   100% { opacity: 0; transform: translate(-50%, -190%) scale(1); }
 }
+/* 쓴 포인트: 같은 코인 뱃지가 흰 면·잉크 글자로 바뀌고 아래로 가라앉는다. */
+.badge[data-spend] { background: var(--color-surface); color: var(--color-ink); animation-name: reward-sink; }
+@keyframes reward-sink {
+  0% { opacity: 0; transform: translate(-50%, -160%) scale(0.9); }
+  25% { opacity: 1; transform: translate(-50%, -120%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+}
 @media (prefers-reduced-motion: reduce) {
   .badge, .badge[data-reduced] { animation: reward-fade 1.8s linear both; transform: translate(-50%, -140%); }
 }
