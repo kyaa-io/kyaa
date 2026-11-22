@@ -47,26 +47,77 @@
   height: 100%;
   object-fit: cover;
 }
-.room .mini {
+/* 방 무대: 미니 최애 한 명이 바닥을 걷고·두리번거리고·앉는다(DESIGN.md §9 살아 있는 요소 — 화면 밖·탭 숨김·움직임 줄이기에서 정지).
+   움직이는 것은 transform·translate·opacity 뿐이다. 위치 단위는 방 폭(cqw). */
+.floor {
+  position: absolute;
+  inset: 0;
+  container-type: inline-size;
+  -webkit-tap-highlight-color: transparent;
+}
+.walker {
   position: absolute;
   bottom: 17%;
-  left: 50%;
+  left: 0;
   width: 36%;
+  translate: calc(var(--x) * 1cqw) 0;
+  transition: translate var(--walk) linear;
+  animation: mini-in var(--motion-slow) var(--motion-easing) both;
+}
+/* 글자 버튼(FanAction text)의 hover·active 면(--color-accent-soft)이 캐릭터 뒤 흰 사각형으로 보였다(피드백 9). 면을 그리지 않는다. */
+.walker .mini,
+.walker .mini:is(:hover, :active):not(:disabled) {
+  background: none;
+}
+.walker .mini {
+  display: block;
+  width: 100%;
   height: auto;
   min-height: 0;
   padding: 0;
+  border: 0;
   border-radius: var(--radius-small);
-  translate: -50% 0;
-  animation: mini-in var(--motion-slow) var(--motion-easing) both;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
+  transition: transform var(--motion-fast) var(--motion-easing);
 }
-.mini img {
+.walker[data-face="left"] .mini {
+  transform: scaleX(-1);
+}
+.body {
+  display: block;
+  transform-origin: 50% 100%;
+}
+.body img {
   display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 400 / 580;
+  pointer-events: none;
 }
-.mini img[data-hop="true"] {
-  animation: mini-hop var(--motion-slow) var(--motion-easing);
+.floor[data-moving] [data-mode="stand"] .body {
+  animation: mini-breathe 2400ms ease-in-out infinite;
+}
+[data-mode="walk"] .body {
+  animation: mini-step 360ms ease-in-out infinite;
+}
+[data-mode="look"] .mini {
+  animation: mini-look 1800ms steps(1, end) both;
+}
+[data-mode="sit"] .body {
+  transform: translateY(4%) scale(1.04, 0.92);
+  transition: transform var(--motion-slow) var(--motion-easing);
+}
+[data-mode="hop"] .body {
+  animation: mini-hop 420ms var(--motion-easing);
+}
+[data-mode="pet"] .body {
+  animation: mini-pet 500ms ease-in-out infinite alternate;
+}
+[data-mode="dizzy"] .body {
+  animation: mini-dizzy 900ms ease-in-out;
 }
 @keyframes mini-in {
   from {
@@ -74,9 +125,122 @@
     transform: translateY(var(--space-2));
   }
 }
+@keyframes mini-breathe {
+  50% {
+    transform: scale(1.01, 1.025);
+  }
+}
+@keyframes mini-step {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-4%) rotate(3deg);
+  }
+}
+@keyframes mini-look {
+  0%,
+  100% {
+    transform: scaleX(1);
+  }
+  35%,
+  70% {
+    transform: scaleX(-1);
+  }
+}
 @keyframes mini-hop {
-  40% {
-    transform: translateY(-9%);
+  45% {
+    transform: translateY(-14%) scale(0.98, 1.04);
+  }
+  80% {
+    transform: translateY(0) scale(1.05, 0.95);
+  }
+}
+@keyframes mini-pet {
+  to {
+    transform: scale(1.06, 0.94);
+  }
+}
+@keyframes mini-dizzy {
+  20%,
+  60% {
+    transform: rotate(-8deg);
+  }
+  40%,
+  80% {
+    transform: rotate(8deg);
+  }
+}
+.hearts {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  display: flex;
+  gap: var(--space-2);
+  color: var(--color-heart);
+  translate: -50% 0;
+  pointer-events: none;
+}
+/* 아기 단계 그림은 칸 아래쪽 절반에 있다(머리 위치가 다름). */
+[data-stage="baby"] .hearts {
+  top: 38%;
+}
+.hearts svg {
+  fill: currentcolor;
+}
+.hearts > * {
+  animation: heart-up 1200ms var(--motion-easing) infinite;
+}
+.hearts > :last-child {
+  animation-delay: 600ms;
+}
+@keyframes heart-up {
+  from {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--space-6) * -1));
+  }
+}
+/* 소품 반응: 찻잔 김·고양이 숨·램프 빛을 도트 세 칸으로 한 번 보여 준다. */
+.effect {
+  position: absolute;
+  top: calc(var(--py) * 1%);
+  left: calc(var(--px) * 1%);
+  display: flex;
+  gap: var(--space-1);
+  translate: -50% -100%;
+  pointer-events: none;
+}
+.effect i {
+  width: var(--space-3);
+  height: var(--space-3);
+  background: var(--color-surface);
+  opacity: 0;
+  animation: puff 1400ms var(--motion-easing) both;
+}
+.effect i:nth-child(2) {
+  animation-delay: 180ms;
+}
+.effect i:nth-child(3) {
+  animation-delay: 360ms;
+}
+.effect[data-prop="cat"] i {
+  background: var(--color-heart);
+}
+@keyframes puff {
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--space-8) * -1));
   }
 }
 .name,
@@ -111,6 +275,17 @@
   color: var(--color-ink);
   text-align: center;
   translate: -50% 0;
+  pointer-events: none;
+}
+.line > p {
+  margin: 0;
+  animation: line-in var(--motion-slow) var(--motion-easing) both;
+}
+@keyframes line-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-1));
+  }
 }
 .side {
   display: grid;
@@ -261,7 +436,7 @@
   background: var(--color-accent-soft);
 }
 .chips :focus-visible,
-.room .mini:focus-visible,
+.walker .mini:focus-visible,
 .album .card:focus-visible,
 .earn a:focus-visible {
   outline: var(--focus-width) solid var(--color-focus);
@@ -314,10 +489,18 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .room .mini,
-  .mini img[data-hop="true"],
+  .walker,
+  .walker .body,
+  .walker .mini,
+  .hearts > *,
+  .effect i,
+  .line > p,
   .photo[data-fresh] {
     animation: none;
+    transition: none;
+  }
+  .effect i {
+    opacity: 1;
   }
 }
 .stage > :last-child:not(.room) {
