@@ -15,6 +15,7 @@ insert into public.fan_posts(app_user_id,celebrity_id,body,visibility,idempotenc
 values('91900000-0000-4000-8000-000000000001','91900000-0000-4000-8000-000000000090','Wave draw fixture introduction','public',extensions.gen_random_uuid(),'fixture',clock_timestamp());
 do $$
 declare owner uuid:='91900000-0000-4000-8000-000000000001'; admin_id uuid:='91900000-0000-4000-8000-000000000081'; viewer uuid:='91900000-0000-4000-8000-000000000082'; outsider uuid:='91900000-0000-4000-8000-000000000083';
+ auto_id uuid:='91900000-0000-4000-8000-000000000079';
  prefs_request uuid:=extensions.gen_random_uuid(); execute_request uuid:=extensions.gen_random_uuid(); reveal_request uuid:=extensions.gen_random_uuid(); draw_id uuid; result jsonb; executed jsonb; revealed jsonb;
  candidate record; expected_key text; allocated jsonb:='{}'; loser uuid; winner uuid; signature text; i integer; ticket_count integer; audit_count integer; report_id uuid;
 begin
@@ -29,13 +30,16 @@ begin
  assert result->'result'->>'status'='pending' and result->'published'='[]'::jsonb and result->'draw'='null'::jsonb;
  assert public.save_owned_kyaa_wave_draw_preferences(owner,array['camera','meal','blue'],prefs_request)=result;
  perform pg_temp.expect_draw_error(format('select public.save_owned_kyaa_wave_draw_preferences(%L,array[''cap'',''meal'',''blue''],%L)',owner,prefs_request),'FAN_WEB_CONFLICT');
- for candidate in select app_user_id from public.kyaa_wave_participants where app_user_id<>owner loop
+ for candidate in select app_user_id from public.kyaa_wave_participants where app_user_id not in(owner,auto_id) loop
  perform public.save_owned_kyaa_wave_draw_preferences(candidate.app_user_id,array['camera','meal','blue'],extensions.gen_random_uuid()); end loop;
  assert (public.read_admin_kyaa_wave_draw(viewer,viewer)->>'entryCount')::integer=80;
  perform pg_temp.expect_draw_error(format('select public.execute_admin_kyaa_wave_draw(%L,%L,%L,%L)',viewer,viewer,extensions.gen_random_uuid(),execute_request),'FAN_WEB_FORBIDDEN');
  insert into public.content_reports(app_user_id,celebrity_id,target_type,target_id,target_revision,target_app_user_id,reason,idempotency_key)
  values(owner,'91900000-0000-4000-8000-000000000090','fan_post',extensions.gen_random_uuid(),1,'91900000-0000-4000-8000-000000000080','Fixture restriction',extensions.gen_random_uuid()) returning id into report_id;
  insert into public.app_user_moderation_restrictions(app_user_id,report_id,reason,actor_admin_id) values('91900000-0000-4000-8000-000000000080',report_id,'Fixture moderation restriction',admin_id);
+ result:=public.read_owned_kyaa_wave_draw(auto_id);
+ assert result->'entry'='null'::jsonb and result->'result'->>'status'='pending';
+ assert (public.read_admin_kyaa_wave_draw(viewer,viewer)->>'entryCount')::integer=79;
  select count(*) into audit_count from public.audit_logs;
  executed:=public.execute_admin_kyaa_wave_draw(admin_id,admin_id,extensions.gen_random_uuid(),execute_request);draw_id:=(executed->'draw'->>'id')::uuid;
  assert public.execute_admin_kyaa_wave_draw(admin_id,admin_id,extensions.gen_random_uuid(),execute_request)=executed;
@@ -44,7 +48,10 @@ begin
  assert (select tickets from public.kyaa_wave_draw_candidates where app_user_id=owner)>1,'completed introduction adds weight';
  assert (select min(tickets) from public.kyaa_wave_draw_candidates)<(select max(tickets) from public.kyaa_wave_draw_candidates),'varying weights exercised';
  assert not exists(select 1 from public.kyaa_wave_draw_candidates where app_user_id='91900000-0000-4000-8000-000000000080'),'restricted entrant excluded without stopping valid draw';
- assert (select count(*) from public.kyaa_wave_draw_candidates where prize_key is not null)=4,'Top3 stock exhausted';
+ assert (executed->>'entryCount')::integer=79;
+ assert (select array(select unnest(c.preferences) order by 1) from public.kyaa_wave_draw_candidates c where app_user_id=auto_id)
+     =array(select prize_key from public.kyaa_wave_draw_prizes order by prize_key),'all prizes ranked for automatic entrant';
+ assert (select count(*) from public.kyaa_wave_draw_candidates where prize_key in ('camera','meal','blue'))=4,'submitted Top3 stock exhausted';
  assert not exists(select 1 from public.kyaa_wave_draw_candidates c join public.kyaa_wave_draw_state s on s.id=c.draw_id where c.priority<>
  -ln((public.benefit_digest_uint256(extensions.digest(s.seed||pg_catalog.uuid_send(s.id)||pg_catalog.uuid_send(c.app_user_id),'sha256'))+1)/(power(2::numeric,256)+1))/c.tickets),'weighted priority exact';
  for candidate in select * from public.kyaa_wave_draw_candidates order by ordinal loop
@@ -82,6 +89,8 @@ begin
  assert exists(select 1 from public.kyaa_wave_draw_candidates where app_user_id=winner and prize_key='camera'),'disable preserves slot';
  assert public.kyaa_wave_draw_winners(null,10)->7->'winners'->0->>'nickname'='팬';
  perform public.reveal_admin_kyaa_wave_draw(admin_id,admin_id,extensions.gen_random_uuid(),draw_id,10,extensions.gen_random_uuid());
+ result:=public.read_owned_kyaa_wave_draw(auto_id);
+ assert result->'entry'='null'::jsonb and result->'result'=(select case when prize_key is null then jsonb_build_object('status','not_won') else jsonb_build_object('status','won','prizeKey',prize_key) end from public.kyaa_wave_draw_candidates where app_user_id=auto_id);
  assert public.read_owned_kyaa_wave_draw(loser)->'result'->>'status'='not_won';
  if owner<>winner then
  update public.fan_posts set hidden_at=clock_timestamp() where app_user_id=owner;
