@@ -410,25 +410,16 @@ const sayAsk: Record<StarDomain, { plain: string; polite: string; old: string }>
   money: { plain: "살 것부터 하나만 골라 볼래?", polite: "살 것을 하나만 골라 볼래요?", old: "살 것을 하나만 고르겠소?" },
   work: { plain: "제일 급한 일부터 열어 볼래?", polite: "제일 급한 일부터 열어 볼래요?", old: "가장 급한 일부터 열어 보겠소?" },
 };
-/** 최애가 자기 활동 분야에 빗대어 오늘 밤하늘을 정리하는 말(밝은 날 / 차분한 날). */
-const sayFigure: Record<Exclude<StarCharacterId, "dosa">, { bright: string; calm: string }> = {
-  changha: { bright: "조명이 다 켜진 세트장 같은 날이야.", calm: "오늘은 리허설하듯 천천히 맞춰 보자." },
-  elina: { bright: "별이랑 박자가 딱 맞는 날이에요.", calm: "노래로 치면 한 박자 쉬어 가는 마디예요." },
-  yuna: { bright: "하늘 톤이 맑아서 포인트 하나 올리기 좋아.", calm: "오늘은 바탕만 곱게 정리하자." },
-};
-/** 결과 화면 최애 한마디(2~3문장): 가장 밝은 영역 → 최애 소재로 오늘 흐름 → 되묻기. */
 export function starSayLine(character: StarCharacterId, domain: StarDomain, stars: number) {
   const name = domainLabels[domain];
   const ask = sayAsk[domain];
   const bright = stars >= 4;
-  if (character === "dosa")
-    return bright ? `${name} 별이 ${stars}개 밝소. ${ask.old}` : `${name} 별은 고요하오. 천천히 걸으시오.`;
-  const figure = sayFigure[character][bright ? "bright" : "calm"];
   const line = {
-    changha: bright ? `${name} 별점이 ${stars}개야. ${figure} ${ask.plain}` : `${name} 별은 차분해. ${figure}`,
-    elina: bright ? `${name} 별점이 ${stars}개예요. ${figure} ${ask.polite}` : `${name} 별은 차분해요. ${figure}`,
-    yuna: bright ? `${name} 별점 ${stars}개야. ${figure} ${ask.plain}` : `${name} 별은 조용해. ${figure}`,
-  };
+    changha: bright ? `${name} 별점이 ${stars}개야. ${ask.plain}` : `${name} 별은 차분해. 오늘은 천천히 가자.`,
+    elina: bright ? `${name} 별점이 ${stars}개예요. ${ask.polite}` : `${name} 별은 차분해요. 천천히 가요.`,
+    yuna: bright ? `${name} 별점 ${stars}개야. ${ask.plain}` : `${name} 별은 조용해. 오늘은 천천히 가자.`,
+    dosa: bright ? `${name} 별이 ${stars}개 밝소. ${ask.old}` : `${name} 별은 고요하오. 천천히 걸으시오.`,
+  } satisfies Record<StarCharacterId, string>;
   return line[character];
 }
 

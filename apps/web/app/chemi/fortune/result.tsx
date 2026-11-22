@@ -25,7 +25,7 @@ import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { ResultActions } from "@/features/chemi/ui/result/result-actions";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { fortuneBasis, fortuneFieldDetail, fortuneFlow } from "./depth";
-import { fortuneCharacters, fortuneResultWords, type FortuneCharacterId } from "./lines";
+import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
 import {
   band,
@@ -333,8 +333,7 @@ export function FortuneResult({
   const spirit = spiritNotes[result.evidence.spirit];
   const sayLine =
     reading.styled?.share?.line ??
-    fortuneResultWords(character, {
-      best: highest,
+    fortuneTalkLine(character, 4, {
       score: result.score,
       grade: result.grade.name,
       fandom: result.fields.fandom,

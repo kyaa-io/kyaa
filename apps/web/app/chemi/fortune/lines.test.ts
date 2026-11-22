@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { maskBirthDate, parseBirthDate } from "./birth-sheet";
-import { fortuneChoiceLabel, fortuneResultWords, fortuneTalkLine } from "./lines";
+import { fortuneChoiceLabel, fortuneTalkLine } from "./lines";
 import {
   nextFortuneStep,
   parseFortuneStep,
@@ -19,7 +19,7 @@ const input = {
 
 it("builds the same line for the same input and keeps each character's tone", () => {
   expect(fortuneTalkLine("changha", 1, input)).toBe(
-    "오늘은 82점, 좋은 날이야. 리허설 없이 바로 찍어도 되는 날이야.",
+    "오늘은 82점, 좋은 날이야. 하던 일이 술술 풀리는 날이야.",
   );
   expect(fortuneTalkLine("changha", 1, input)).toBe(fortuneTalkLine("changha", 1, input));
   expect(fortuneTalkLine("dosa", 4, input)).toContain("9시에서 11시 사이");
@@ -69,7 +69,7 @@ it("keeps kyaa 도사 in 하오체 for every grade and branch", () => {
 
 it("uses the character’s own grade explanation when a reading includes a casual headline", () => {
   const headline = "잠깐 숨을 돌려 봐";
-  expect(fortuneTalkLine("elina", 1, input, headline)).toMatch(/박자가 잘 맞는 날이라 하던 일이 술술 풀려요\.$/);
+  expect(fortuneTalkLine("elina", 1, input, headline)).toMatch(/하던 일이 술술 풀리는 날이에요\.$/);
   expect(fortuneTalkLine("elina", 1, input, headline)).not.toContain(headline);
   expect(fortuneTalkLine("dosa", 1, input, headline)).not.toContain(headline);
   for (const character of ["changha", "yuna"] as const) {
@@ -87,20 +87,6 @@ it("keeps favour advice on the lucky-hour line only so the four pages never disa
         expect(fortuneTalkLine(character, 4, day)).toMatch(/9시에서 11시 사이/);
         expect(fortuneTalkLine(character, 4, { ...day, luckyHour: null })).not.toMatch(/부탁|청하/);
       }
-});
-
-it("gives each creator a two-to-three sentence result line in their own field", () => {
-  const day = { ...input, best: "fandom" as const };
-  expect(fortuneResultWords("changha", day)).toBe(
-    "오늘 대본에서 제일 잘 나오는 장면은 덕질 쪽이야. 촬영으로 치면 지금이 카메라 돌릴 때야. 부탁할 거 있으면 9시에서 11시 사이에 해.",
-  );
-  expect(fortuneResultWords("elina", { ...day, score: 60 })).toBe(
-    "오늘 제일 높은 음은 덕질 쪽에서 나와요. 노래로 치면 숨을 한 번 고를 때예요. 부탁은 9시에서 11시 사이가 좋아요.",
-  );
-  expect(fortuneResultWords("yuna", { ...day, best: "money", luckyHour: null })).toBe(
-    "오늘 화장이 제일 잘 먹는 곳은 돈 쪽이야. 화장으로 치면 지금이 포인트 색을 올릴 때야. 초록색은 포인트로 하나만 챙겨.",
-  );
-  expect(fortuneResultWords("dosa", day)).toBe(fortuneTalkLine("dosa", 4, input));
 });
 
 it("masks birth digits and rejects impossible dates", () => {

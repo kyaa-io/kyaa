@@ -74,18 +74,6 @@ const TAROT_OWN: Partial<Record<TarotCharacter, Partial<(typeof TAROT_LINES)[Tar
 /** 뽑는 동안 그 최애가 하는 말. */
 export const tarotLines = (character: TarotCharacter) => ({ ...TAROT_LINES[tarotCharacter(character).voice], ...TAROT_OWN[character] });
 
-/**
- * 결과 화면 최애 한마디 끝에 붙는 문장(한국어 화면). 카드 반응(풀이 글의 react) 뒤에서
- * 그 최애의 활동 분야로 오늘 카드를 한 번 더 짚는다. kyaa 도사는 없다.
- */
-const TAROT_REACT_NOTE: Partial<Record<TarotCharacter, { up: string; down: string }>> = {
-  changha: { up: "촬영으로 치면 이 카드가 오늘의 첫 컷이야.", down: "촬영으로 치면 한 번 더 찍어 보자는 사인이야." },
-  elina: { up: "노래로 치면 이 카드가 오늘의 첫 소절이에요.", down: "노래로 치면 숨 한 번 고르고 다시 들어가요." },
-  yuna: { up: "화장으로 치면 이 카드가 오늘의 포인트 색이야.", down: "화장으로 치면 바탕부터 다시 고르라는 뜻이야." },
-};
-export const tarotReactNote = (character: TarotCharacter, reversed: boolean) =>
-  TAROT_REACT_NOTE[character]?.[reversed ? "down" : "up"] ?? null;
-
 export const tarotScene = (character: TarotCharacter, wide: boolean) => `/chemi/tarot/scene-${character}-${wide ? "l" : "p"}.webp`;
 export const tarotAvatar = (character: TarotCharacter) => `/chemi/tarot/avatar-${character}.jpg`;
 export const tarotFaceThumb = (character: TarotCharacter) => `/chemi/tarot/face-${character}.webp`;

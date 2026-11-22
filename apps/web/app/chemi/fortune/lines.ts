@@ -3,8 +3,6 @@
  * 창하는 촬영·대본, 엘리나는 노래·옷, 유나는 화장에 빗대어 말한다(features/chemi/persona.ts).
  * 점수·분야·행운 값만 끼우고, 같은 입력이면 같은 줄이 나온다.
  */
-import { chemiPersona, isChemiPersona, type ChemiPersonaId } from "@/features/chemi/persona";
-
 export const fortuneCharacters = [
   { id: "changha", name: "창하" },
   { id: "elina", name: "엘리나" },
@@ -50,10 +48,10 @@ const tones: Record<FortuneCharacterId, Tone> = {
     picked: { fandom: "영상부터 궁금했구나.", luck: "챙길 것부터 묻네. 좋아." },
     scoreLine: (score, grade) => `오늘은 ${score}점, ${grade}이야.`,
     gradeNotes: {
-      "쉬어 가는 날": "촬영 없는 날처럼 일정은 하나만 두는 건 어때?",
-      "조심하면 괜찮은 날": "대사 치기 전처럼 한 번만 더 보고 움직이면 돼.",
+      "쉬어 가는 날": "촬영 없는 날처럼 약속은 하나만 잡는 건 어때?",
+      "조심하면 괜찮은 날": "대사 치기 전처럼 말 한 번만 더 고르면 돼.",
       "무난한 날": "다시 찍을 것 없이 한 번에 넘어가는 날이지.",
-      "좋은 날": "리허설 없이 바로 찍어도 되는 날이야.",
+      "좋은 날": "하던 일이 술술 풀리는 날이야.",
       "아주 좋은 날": "첫 촬영에 오케이 나는 날이니까 망설이던 일부터 해 봐.",
     },
     people: {
@@ -75,10 +73,10 @@ const tones: Record<FortuneCharacterId, Tone> = {
     picked: { fandom: "노래가 제일 궁금했군요.", luck: "입을 것부터 볼까요?" },
     scoreLine: (score, grade) => `오늘은 ${score}점, ${grade}이에요.`,
     gradeNotes: {
-      "쉬어 가는 날": "노래 사이 숨 쉬는 마디처럼 일정은 하나만 둬요.",
-      "조심하면 괜찮은 날": "첫 음 내기 전처럼 한 번만 더 고르고 움직여.",
+      "쉬어 가는 날": "노래 사이 숨 쉬는 마디처럼 약속은 하나만 잡는 건 어때요?",
+      "조심하면 괜찮은 날": "첫 음 내기 전처럼 말 한 번만 더 고르면 돼.",
       "무난한 날": "늘 입던 옷처럼 편하게 흘러가는 날이지?",
-      "좋은 날": "박자가 잘 맞는 날이라 하던 일이 술술 풀려요.",
+      "좋은 날": "하던 일이 술술 풀리는 날이에요.",
       "아주 좋은 날": "첫 소절부터 잘 나오는 날이니까 망설이던 일부터 해 봐요.",
     },
     people: {
@@ -100,10 +98,10 @@ const tones: Record<FortuneCharacterId, Tone> = {
     picked: { fandom: "볼 것부터 묻네. 좋아.", luck: "포인트 색부터 볼게." },
     scoreLine: (score, grade) => `${score}점, ${grade}이야.`,
     gradeNotes: {
-      "쉬어 가는 날": "피부 쉬게 두는 날처럼 일정은 하나면 충분해.",
+      "쉬어 가는 날": "피부 쉬게 두는 날처럼 약속은 하나면 충분해.",
       "조심하면 괜찮은 날": "화장 고치기 전에 거울 보듯 답장은 한 번 더 읽고 보내.",
       "무난한 날": "매일 하던 화장처럼 하던 대로 하면 돼.",
-      "좋은 날": "화장이 한 번에 잘 먹는 날이라 하던 일도 술술 풀려.",
+      "좋은 날": "하던 일이 술술 풀리는 날이야.",
       "아주 좋은 날": "포인트 색 하나 더 올려도 되는 날이라 미뤄 둔 일 꺼내기 좋아.",
     },
     people: {
@@ -155,40 +153,6 @@ const gradeNotes: Record<string, string> = {
 
 function hourText(hour: { start: number; end: number } | null) {
   return hour ? `${hour.start}시에서 ${hour.end}시 사이` : null;
-}
-
-/** 결과 화면 '최애의 한마디'에서 가장 높은 분야를 부르는 말. */
-const fieldWords = {
-  fandom: "덕질",
-  people: "사람",
-  work: "일·공부",
-  rest: "컨디션",
-  love: "연애",
-  money: "돈",
-} as const;
-export type FortuneField = keyof typeof fieldWords;
-
-/** 최애가 자기 활동 분야에 빗대어 오늘 가장 높은 분야를 짚는 첫 문장. */
-const resultLeads: Record<ChemiPersonaId, (field: string) => string> = {
-  changha: (field) => `오늘 대본에서 제일 잘 나오는 장면은 ${field} 쪽이야.`,
-  elina: (field) => `오늘 제일 높은 음은 ${field} 쪽에서 나와요.`,
-  yuna: (field) => `오늘 화장이 제일 잘 먹는 곳은 ${field} 쪽이야.`,
-};
-
-/**
- * 결과 화면의 최애 한마디(2~3문장). 가장 높은 분야 → 오늘 흐름(persona.ts 맺음말) → 행운 시간이나 색.
- * 부탁 이야기는 대화 4쪽과 같은 행운 시간 줄에서만 한다. kyaa 도사는 대화 4쪽 줄을 그대로 쓴다.
- */
-export function fortuneResultWords(
-  character: FortuneCharacterId,
-  input: FortuneLineInput & { best: FortuneField },
-) {
-  const luck = tones[character].luck(hourText(input.luckyHour), input.color);
-  if (!isChemiPersona(character)) return luck;
-  const persona = chemiPersona[character];
-  const close = input.score >= 70 ? persona.close.good : persona.close.care;
-  const last = input.luckyHour ? luck.split(". ")[0] + "." : luck;
-  return `${resultLeads[character](fieldWords[input.best])} ${close} ${last}`;
 }
 
 export function fortuneEnterLine(

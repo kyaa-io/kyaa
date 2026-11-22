@@ -20,7 +20,7 @@ import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { tarotBasis, tarotRowMore } from "@/features/chemi/tarot/depth";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
-import { tarotCharacter, tarotFaceThumb, tarotReactNote, type TarotCharacter } from "@/features/chemi/tarot/script";
+import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import { kstDate, tarotShareUrl, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
@@ -265,7 +265,7 @@ export function TarotResult({
             <span>
               <FanText role="label">{person.name}</FanText>
               {content ? (
-                <FanText role="body">{[content.react[person.voice], locale === "ko" ? tarotReactNote(character, draw.reversed) : null].filter(Boolean).join(" ")}</FanText>
+                <FanText role="body">{content.react[person.voice]}</FanText>
               ) : failed ? null : (
                 <FanSkeleton width="80%" />
               )}
