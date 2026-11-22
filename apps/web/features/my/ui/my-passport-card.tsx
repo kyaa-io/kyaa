@@ -23,6 +23,7 @@ import { PassportIdentityArtwork } from "@/features/passport/ui/passport-identit
 import { GuestMissionBook, SLOT, openingPage } from "@/features/passport/ui/passport-mission-book";
 import { fanStageLabel, type FanStageProgress } from "@/features/rewards/domain/fan-stage";
 import { fanStageNextText } from "@/features/rewards/ui/fan-stage-next";
+import { fanTierBadgeSrc } from "@/features/rewards/ui/fan-tier-badge";
 import type { AppLocale } from "@/i18n/locales";
 import type { MySummary } from "../domain/my-summary";
 import { myHomeText } from "./my-home-copy";
@@ -116,7 +117,7 @@ export function PassportBookBody({ passportId, celebrity, tier, stageKey, tierNa
       <div className={styles.facts}>
         <h3>{myHomeText(locale, "passportRecord", [celebrity.name])}</h3>
         <p className={styles.tier}>
-          <Image unoptimized src={`/images/passport/tiers/ink-v1/${stageKey ?? `${tier.toLowerCase()}-1`}.webp`} width={32} height={32} alt="" aria-hidden="true" />
+          <Image unoptimized src={fanTierBadgeSrc(stageKey ?? `${tier.toLowerCase()}-1`)} width={32} height={32} alt="" aria-hidden="true" />
           <strong>{tierName}</strong><TierGuideInfo locale={locale}/>
         </p>
         <div className={styles.progress}>

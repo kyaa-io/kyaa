@@ -127,7 +127,7 @@ describe("passport fan screens", () => {
     expect(stageButton.closest("a")).toBeNull();
     fireEvent.click(stageButton);
     expect(screen.getByRole("tooltip")).toHaveTextContent("골드까지 12점");
-    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-2.webp"))).toBe(true);
+    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/medal-v2/silver-2.svg"))).toBe(true);
     expect(fetcher).toHaveBeenCalledWith("/api/passports?locale=ko&tierStages=1&firstLikeStamp=1", expect.any(Object));
   });
 
@@ -490,7 +490,7 @@ describe("passport fan screens", () => {
     expect(await screen.findByText("내 팬 등급 골드 2")).toBeInTheDocument();
     expect(screen.getByText("골드 3까지 15점")).toBeInTheDocument();
     expect(screen.getByRole("progressbar", { name: "다음 등급: 골드 3" })).toHaveAttribute("value", "40");
-    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/gold-2.webp"))).toBe(true);
+    expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/medal-v2/gold-2.svg"))).toBe(true);
     expect(fetcher.mock.calls.some(([url]) => String(url) === `/api/passports/${passport.id}?locale=ko&tierStages=1`)).toBe(true);
   });
 

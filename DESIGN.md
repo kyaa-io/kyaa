@@ -109,6 +109,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link`, `--color-artist-reaction(-ink)`(게시판 행 크리에이터 반응 별 한 곳 전용, 사용자 승인 11/13) | 강조색이 아니다. 지정된 자리만 |
 | 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-first-steps-shade`(첫 걸음 배너 390 글자 받침, accent-ink 30% + hero-shade), `--color-campaign-art` | 그 화면만 |
 | 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
+| 등급 배지 그림(`FanTierBadge`, `public/images/passport/tiers/medal-v2/*.svg`, 대표 11/23) | 배지 그림 안에서만. 면은 위→아래 두 색, 테두리·별 선·단계 점은 테두리색 | 브론즈 원 #E8A27A→#A9582B·#6B3214 / 실버 팔각 #FAFBFD→#A7B1BF·#4F5A6B / 골드 톱니 원 #FFE57A→#F0AE00·#9A6400 / 플래티넘 방패 #E9FBF8→#6FD1C8·#17706B / 다이아몬드 마름모 #D8F0FF→#8C9BFF·#3B3AA6(반짝임 1개). 같은 등급 안 단계는 별 아래 점 1~4개 |
 
 - 회색 채움 면 0: 칩·레일·카드·자리표시·스켈레톤·게이지 바탕은 흰 면 또는 `--color-accent-soft`.
 - 호버·눌림은 `--color-accent-soft` 또는 `scale(.97)`, 호버는 `@media (hover: hover) and (pointer: fine)` 안에서만.
@@ -237,7 +238,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 - 게시글 사진과 영상은 원본 비율을 유지하며 열 폭과 화면 높이의 70% 안에서 표시한다. 사진 전체 보기는 대화 상자의 가용 높이를 따른다.
 - PC는 PC 너비로 채운다. 읽는 본문만 720 띠, 나머지 빈 면은 레일(다른 글·배너)로 쓴다.
 - 360~1440 어느 폭에서도 가로 넘침·글자 잘림 0. 긴 번역은 잘라내지 않고 높이를 늘린다.
-- 상단 바 등급명: 로그인 상태 캡슐에서 하트 수 뒤·포인트 앞에, MY에서 고른 대표 최애의 패스포트 등급 이름을 현재 언어 글자로만 둔다(세부 단계·그림 없음). 대표 최애가 없거나 그 최애의 패스포트가 없으면 비운다. 글자는 `--fan-chip-size`·`--fan-action-weight`, 색은 `--color-accent-ink`이고 골드·플래티넘만 MY와 같은 등급 글자색(`--color-tier-gold-ink`·`--color-tier-platinum-ink`)이다. 누르면 MY에서 그 최애의 패스포트를 열고 해당 영역으로 이동한다.
+- 상단 바 등급명: 로그인 상태 캡슐에서 하트 수 뒤·포인트 앞에, MY에서 고른 대표 최애의 패스포트 등급을 `FanTierBadge` 16px + 현재 언어 등급 이름으로 둔다(배지 사이 4px, 세부 단계는 배지 안 점으로만). 대표 최애가 없으면 가장 높은 단계의 패스포트 등급을 쓰고(대표 11/23 191773), 패스포트가 하나도 없으면 비운다. 글자는 `--fan-chip-size`·`--fan-action-weight`, 색은 `--color-accent-ink`이고 골드·플래티넘만 MY와 같은 등급 글자색(`--color-tier-gold-ink`·`--color-tier-platinum-ink`)이다. 누르면 MY에서 그 최애의 패스포트를 열고 해당 영역으로 이동한다.
 - 상단 바 등급명 자리: 대표 최애 등급을 항상 포인트 앞에 둔다. 480px 이하는 로고 폭 72px, 하트는 윗줄, 등급과 포인트는 아랫줄이다. 등급명은 3em(그 밖의 폭은 8em)을 넘으면 말줄임하고 접근성 이름에는 전체 이름을 둔다. 1024px 이상에서는 오른쪽 버튼의 실제 너비를 먼저 확보하고 양쪽 열이 같은 폭이 되는 범위에서 탐색 탭을 가운데 둔다.
 - 측정: `node apps/web/scripts/measure-responsive.mjs`.
 

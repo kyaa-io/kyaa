@@ -9,8 +9,10 @@ import { RollingNumber, useChangeFlash } from "@/components/fan-ui/rolling-numbe
 import { fanLoginHref } from "@/components/login-href";
 import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
+import { defaultPassport } from "@/features/selected-bias/domain/selected-bias-pick";
 import { useSelectedBias, type SelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
 import { fanTierName } from "@/features/rewards/domain/fan-stage";
+import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
 import { walletSchema } from "@/server/group-wallet/domain";
 import type { AppLocale } from "@/i18n/locales";
 import { headerStatusCopy } from "./fan-header-status-copy";
@@ -19,8 +21,9 @@ import styles from "./fan-header-status.module.css";
 const parseWallet = (value: unknown) => walletSchema.parse(value);
 const compactNumber = (value: number, locale: AppLocale) => new Intl.NumberFormat(locale, value >= 10_000 ? { notation: "compact", maximumFractionDigits: 1 } : {}).format(value);
 
+/** The named favorite's passport; with none named, the highest-stage passport (대표 11/23 191773: the grade must show at the top right). */
 function headerTier(bias: SelectedBias) {
-  return bias.status === "ready" ? bias.selected : null;
+  return bias.status === "ready" ? bias.selected ?? defaultPassport(bias.options) : null;
 }
 
 /** One header control; account changes remount it so the chip cannot follow another owner. */
@@ -71,7 +74,7 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
     window.dispatchEvent(new Event("hashchange"));
   }} data-header-status="" aria-label={summary}>
     {hearts !== undefined && <span className={styles.value}><RewardIcon kind="heart" alt="" width={16} height={16} /><RollingNumber value={hearts} format={format} /></span>}
-    {tier && <span className={styles.tier} data-header-tier={tier} title={grade}>{grade}</span>}
+    {tier && <span className={styles.grade}><FanTierBadge tier={tier} stageKey={passport?.stage?.key} locale={locale} size={16} /><span className={styles.tier} data-header-tier={tier} title={grade}>{grade}</span></span>}
     <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? "—" : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }
