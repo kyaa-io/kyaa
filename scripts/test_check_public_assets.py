@@ -19,8 +19,10 @@ class AssetCheck(unittest.TestCase):
             seed = Path("cms-seed.sql")
             seed.write_text("'/public-assets/photo.png?size=2'")
             packaged = Path("apps/web/public/public-assets/banner.webm")
-            self.assertEqual(collect([app, seed, packaged]), [
-                "public-assets/banner.webm", "public-assets/photo.png",
+            data = Path("apps/web/banner.ts")
+            data.write_text('video: { desktop: "/public-assets/loop", mobile: null }')
+            self.assertEqual(collect([app, seed, packaged, data]), [
+                "public-assets/banner.webm", "public-assets/loop.mp4", "public-assets/loop.webm", "public-assets/photo.png",
                 "public-assets/video.mp4", "public-assets/video.webm"])
 
     def test_bucket(self):

@@ -10,5 +10,6 @@ export function gggiHomeBanner(locale: AppLocale): HomeBanner {
     href: "/gggi#gggi-event", alt: t.changha,
     desktopImage: { id: "8bf2f180-cb32-4f00-93e2-e84b570ad451", url: "/images/gggi/changha-autumn-banner-20261113.webp", width: 1080, height: 720, mimeType: "image/webp", revision: 4 },
     mobileImage: null,
+    video: { desktop: "/public-assets/cms-assets/home-banners/video/gggi-changha-loop-v1", mobile: null },
   };
 }

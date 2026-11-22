@@ -23,7 +23,7 @@ describe("home banner artwork fit", () => {
     expect(picture).toBeInTheDocument();
     expect(picture.querySelector("img")).toBeInTheDocument();
     // Check the CSS rule that actually selects this rendered image, including the guide override.
-    const selector = guide ? "[data-guide-art] .artwork img" : ".artwork img";
+    const selector = guide ? "[data-guide-art] :is(.artwork img, .motion video)" : ":is(.artwork img, .motion video)";
     const rule = css.split("}").find((part) => part.includes(selector) && part.includes(`object-fit:${fit}`));
     expect(rule).toBeDefined();
     expect(picture.querySelector("img")!.matches(guide ? `[data-guide-art] .${styles.artwork} img` : `.${styles.artwork} img`)).toBe(true);

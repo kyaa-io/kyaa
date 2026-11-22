@@ -35,6 +35,17 @@ describe("managed home banner", () => {
     expect(render(<ManagedHomeBanner banner={xMissionHomeBanner("ko")} locale="ko" />).container.querySelector("[data-event-day-eyebrow]")).toBeNull();
     expect(render(<ManagedHomeBanner banner={guide({ category: "announcement" })} locale="ko" />).container.querySelector("[data-event-day-eyebrow]")).toBeNull();
   });
+  it("lays the banner's muted loops over the still, one per width, and none on a banner without video", () => {
+    const { container } = render(<ManagedHomeBanner banner={missionbookHomeBanner("ko")} locale="ko" />);
+    const layers = [...container.querySelectorAll("[data-hero-full-image] [data-banner-video]")];
+    expect(layers.map(layer => layer.getAttribute("data-banner-video"))).toEqual(["desktop", "mobile"]);
+    for (const video of container.querySelectorAll("video")) {
+      expect(video.muted).toBe(true); expect(video).toHaveAttribute("playsinline"); expect(video).toHaveAttribute("preload", "none"); expect(video).toHaveAttribute("aria-hidden", "true");
+    }
+    expect(container.querySelector("[data-hero-full-image] picture img")).not.toBeNull();
+    expect(render(<ManagedHomeBanner banner={xMissionHomeBanner("ko")} locale="ko" />).container.querySelector('[data-hero-full-image] [data-banner-video="all"]')).not.toBeNull();
+    expect(render(<ManagedHomeBanner banner={guide()} locale="ko" />).container.querySelector("video")).toBeNull();
+  });
   it("keeps other banners on the live layout", () => {
     const { container } = render(<ManagedHomeBanner banner={guide({ category: "announcement" })} locale="ko" />);
     expect(container.querySelector("[data-guide-art]")).toBeNull();

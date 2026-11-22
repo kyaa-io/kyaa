@@ -11,5 +11,6 @@ export function signupRaffleHomeBanner(locale: AppLocale): HomeBanner {
     ctaLabel: text("enter"), href: "/s/raffle?utm_source=kyaa&utm_medium=home_banner&utm_campaign=signup_raffle", alt: text("homeBannerArt"),
     desktopImage: { id: "052ea25c-b933-4d66-8d73-f8233349086d", url: "/images/signup-raffle/home-c.webp", width: 1536, height: 1024, mimeType: "image/webp", revision: 2 },
     mobileImage: { id: "735a095a-5704-487c-9cd1-c4b73767ce7e", url: "/images/signup-raffle/home-c.webp", width: 1536, height: 1024, mimeType: "image/webp", revision: 2 },
+    video: { desktop: "/public-assets/cms-assets/home-banners/video/signup-raffle-loop-v1", mobile: null },
   };
 }

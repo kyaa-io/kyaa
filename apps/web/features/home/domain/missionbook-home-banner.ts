@@ -18,5 +18,6 @@ export function missionbookHomeBanner(locale: AppLocale): HomeBanner {
     alt: ko ? "덕질미션북" : "Fan mission book",
     desktopImage: { id: "247861a1-27b0-4e0a-9039-b5f8f7bc1c4a", url: WIDE, width: 1536, height: 1024, mimeType: "image/webp", revision: 2 },
     mobileImage: { id: "247861a1-27b0-4e0a-9039-b5f8f7bc1c4b", url: SQUARE, width: 1024, height: 1024, mimeType: "image/webp", revision: 2 },
+    video: { desktop: "/public-assets/cms-assets/home-banners/video/missionbook-wide-loop-v1", mobile: "/public-assets/cms-assets/home-banners/video/missionbook-square-loop-v1" },
   };
 }
