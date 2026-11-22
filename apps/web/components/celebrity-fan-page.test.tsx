@@ -200,7 +200,8 @@ describe("approved fanpage", () => {
     queryString = "tab=board&source=fans&locale=ko&compose=1";
     window.history.replaceState({}, "", `/kara?${queryString}#celebrity-content`);
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} groupsEnabled />);
-    expect(await screen.findByRole("heading", {name: "글쓰기"})).toBeInTheDocument();
+    // 게시판 목록은 그 탭에서 따로 받는다(next/dynamic).
+    expect(await screen.findByRole("heading", {name: "글쓰기"}, {timeout: 5000})).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", {name: "목록으로"}));
     expect(routerReplace).toHaveBeenCalledWith("/kara?tab=board&source=fans&locale=ko#celebrity-content", { scroll: false });
     queryString = "tab=home&locale=ko";
@@ -726,9 +727,11 @@ describe("approved fanpage", () => {
 
 
 describe("Wave brand program entry", () => {
-  it("shows the three program links only on Wave home", () => {
+  it("shows the three program links only on Wave home", async () => {
     const wave = { ...runmusic, slug: "kyaa-wave-fanpage", name: "Kyaa Wave" };
     const view = render(<CelebrityFanPage celebrity={wave} locale="ko" upcomingLive={null} />);
+    // Wave 홈은 그 페이지에서만 따로 받는다(next/dynamic).
+    await screen.findByRole("link", { name: "Kyaa Wave Quiz" }, { timeout: 5000 });
     expect(screen.queryByRole("link", { name: "공식 웹사이트, 새 창" })).toBeNull();
     expect(view.container.querySelector("[data-creator-hero=\"kyaa-wave-fanpage\"]")).toBeNull();
     expect(screen.getByRole("img", { name: "Dragon Hill Lodge" })).toHaveAttribute("width", "768");
