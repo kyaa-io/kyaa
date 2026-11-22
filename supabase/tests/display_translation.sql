@@ -22,6 +22,8 @@ begin
   if exists(select 1 from public.display_translations where app_user_id=a) then raise exception 'disabled account retained cache';end if;
   perform pg_temp.translation_error(format('select public.read_display_translation(%L,%L,%L,%L)',a,h,s,'ru'),'FAN_WEB_ACTIVE_ACCOUNT_REQUIRED');
   update public.app_users set status='active' where id=a;
+  -- The amounts below are written for these limits; translation_limits is the settings row the budget reads.
+  update public.translation_limits set user_requests_per_minute=10,user_daily_characters=10000,service_daily_characters=20000,service_monthly_characters=200000;
   delete from public.content_translation_requests;delete from public.display_translation_requests;
   perform public.reserve_content_translation_request(a,6000);perform public.reserve_display_translation_request(a,h,4000);
   perform pg_temp.translation_error(format('select public.reserve_content_translation_request(%L,1)',a),'TRANSLATION_RATE_LIMITED');

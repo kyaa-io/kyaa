@@ -120,6 +120,8 @@ begin
   perform public.remove_fan_post(owner_id,private_id);
   if public.read_content_asset(owner_id,asset_id) is not null then raise exception 'deleted parent asset leaked'; end if;
 
+  -- The amounts below are written for these limits; translation_limits is the settings row the budget reads.
+  update public.translation_limits set user_requests_per_minute=10,user_daily_characters=10000,service_daily_characters=20000,service_monthly_characters=200000;
   perform public.reserve_content_translation_request(other_id,10000);
   perform pg_temp.expect_error(format('select public.reserve_content_translation_request(%L,1)',other_id),'TRANSLATION_RATE_LIMITED');
   update public.content_translation_requests set app_user_id=null where app_user_id=other_id;

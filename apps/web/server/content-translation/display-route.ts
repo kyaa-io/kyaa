@@ -6,12 +6,16 @@ import { AuthError } from "@/features/auth/domain/auth-errors";
 import { boundedJson, CertificationBodyError, json } from "@/server/certification/certification-http";
 import { normalizedClientIp } from "@/server/inquiries/fanmeeting-route";
 import { requireSameAppOrigin } from "@/server/config/app-origin";
+import { reserveTranslation } from "./reserve";
 
 const textSchema = z.string().min(1).max(100_000).refine(text => !!text.trim());
+/** "personal": text only this reader sees (notifications, friend messages). It is cached per reader, never in the shared cache. */
+const scopeSchema = z.enum(["public", "personal"]).optional();
 const inputSchema = z.union([
-  z.object({ text: textSchema, targetLocale: z.enum(APP_LOCALES) }).strict(),
-  z.object({ texts: z.array(textSchema).min(1).max(128), targetLocale: z.enum(APP_LOCALES) }).strict(),
+  z.object({ text: textSchema, targetLocale: z.enum(APP_LOCALES), scope: scopeSchema }).strict(),
+  z.object({ texts: z.array(textSchema).min(1).max(128), targetLocale: z.enum(APP_LOCALES), scope: scopeSchema }).strict(),
 ]).refine(value => ("text" in value ? [value.text] : value.texts).reduce((sum, text) => sum + Array.from(text).length, 0) <= 20_000);
+const personalStoredSchema = z.object({ translatedText: z.string().min(1).max(100_000) }).passthrough().nullable();
 const storedSchema = z.array(z.object({ sourceHash: z.string(), translatedText: z.string().min(1).max(100_000), detectedSourceLocale: z.string().nullable().optional() }));
 /** Bump when the provider or its settings change: old cached translations then stop being used. */
 export const TRANSLATOR_VERSION = "google-v2-nmt-1";
@@ -56,6 +60,7 @@ export function createDisplayTranslationHandler(deps: DisplayTranslationDependen
       const identity = owner ? `user:${owner}`
         : `guest:${(deps.now?.() ?? new Date()).toISOString().slice(0, 10)}:${normalizedClientIp(request, deps.vercel, deps.aws)}`;
       const requesterHash = createHmac("sha256", deps.secret).update(`kyaa-display-translation-v1:${identity}`).digest("hex");
+      const personal = value.scope === "personal";
       const prepared = texts.map(text => prepareText(text, value.targetLocale));
       const checkAccount = async () => { if (owner) await deps.rpc("read_display_translation", { p_app_user_id: owner, p_requester_hash: requesterHash,
         p_source_hash: sourceHash(texts[0]), p_target_locale: value.targetLocale }); };
@@ -66,17 +71,24 @@ export function createDisplayTranslationHandler(deps: DisplayTranslationDependen
       let providerCalled = false;
       if (pending.size) {
         try {
-          const stored = storedSchema.parse(await deps.rpc("read_shared_translations", { p_source_hashes: [...pending.keys()], p_target_locale: value.targetLocale, p_translator_version: TRANSLATOR_VERSION }));
-          for (const row of stored) { if (pending.has(row.sourceHash)) { resolved.set(row.sourceHash, row.translatedText); pending.delete(row.sourceHash); } }
+          if (personal) {
+            for (const hash of [...pending.keys()]) {
+              const row = personalStoredSchema.parse(await deps.rpc("read_display_translation", { p_app_user_id: owner, p_requester_hash: requesterHash,
+                p_source_hash: hash, p_target_locale: value.targetLocale }));
+              if (row) { resolved.set(hash, row.translatedText); pending.delete(hash); }
+            }
+          } else {
+            const stored = storedSchema.parse(await deps.rpc("read_shared_translations", { p_source_hashes: [...pending.keys()], p_target_locale: value.targetLocale, p_translator_version: TRANSLATOR_VERSION }));
+            for (const row of stored) { if (pending.has(row.sourceHash)) { resolved.set(row.sourceHash, row.translatedText); pending.delete(row.sourceHash); } }
+          }
           if (pending.size) {
             const missing = [...pending.entries()];
-            const claimed = await deps.rpc("claim_shared_translation_requests", { p_source_hashes: missing.map(([hash]) => hash),
-              p_target_locale: value.targetLocale, p_translator_version: TRANSLATOR_VERSION });
-            if (claimed === false) return await fallback();
-            const identity = owner ? `user:${owner}`
-              : `guest:${(deps.now?.() ?? new Date()).toISOString().slice(0, 10)}:${normalizedClientIp(request, deps.vercel, deps.aws)}`;
-            const requesterHash = createHmac("sha256", deps.secret).update(`kyaa-display-translation-v1:${identity}`).digest("hex");
-            await deps.rpc("reserve_display_translation_request", { p_app_user_id: owner, p_requester_hash: requesterHash,
+            if (!personal) {
+              const claimed = await deps.rpc("claim_shared_translation_requests", { p_source_hashes: missing.map(([hash]) => hash),
+                p_target_locale: value.targetLocale, p_translator_version: TRANSLATOR_VERSION });
+              if (claimed === false) return await fallback();
+            }
+            await reserveTranslation(deps.rpc, "reserve_display_translation_request", { p_app_user_id: owner, p_requester_hash: requesterHash,
               p_character_count: missing.reduce((sum, [, text]) => sum + Array.from(text).length, 0) });
             providerCalled = true;
             // One provider request carries every uncached text of the page.
@@ -88,7 +100,12 @@ export function createDisplayTranslationHandler(deps: DisplayTranslationDependen
               const same = !!detectedSourceLocale && sameLanguage(detectedSourceLocale, value.targetLocale);
               return { sourceHash: hash, translatedText: translatedTextsSchema.parse([same ? text : translatedText])[0], detectedSourceLocale: detectedSourceLocale ?? null };
             });
-            await deps.rpc("save_shared_translations", { p_items: items, p_target_locale: value.targetLocale, p_translator_version: TRANSLATOR_VERSION });
+            if (personal) {
+              for (const item of items) await deps.rpc("save_display_translation", { p_app_user_id: owner, p_requester_hash: requesterHash,
+                p_source_hash: item.sourceHash, p_target_locale: value.targetLocale, p_translated_text: item.translatedText });
+            } else {
+              await deps.rpc("save_shared_translations", { p_items: items, p_target_locale: value.targetLocale, p_translator_version: TRANSLATOR_VERSION });
+            }
             items.forEach(item => resolved.set(item.sourceHash, item.translatedText));
           }
         } catch {
