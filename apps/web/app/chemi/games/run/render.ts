@@ -11,7 +11,7 @@ export const ART_FILES = {
   street: `${ART}/street-changha-v1.png`,
   far: `${ART}/street-changha-far-v1.png`,
 } as const;
-export const POSE = { ready: 0, win: 13 } as const;
+export const POSE = { ready: 24, win: 25 } as const;
 /** [x, y, w, h] inside props-v1.png */
 export const PROPS = {
   cone: [0, 0, 19, 22], barricade: [21, 0, 28, 26], crates: [51, 0, 38, 60], bar: [91, 0, 87, 22],
