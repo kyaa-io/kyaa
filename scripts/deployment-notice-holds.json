@@ -80,7 +80,8 @@
     "release-notes/2026-11-22-chemi-entry-a3.json",
     "release-notes/2026-11-22-chemi-ask-answers.json",
     "release-notes/2026-11-23-chemi-talk-persona.json",
-    "release-notes/2026-11-23-number-link-wrap.json"
+    "release-notes/2026-11-23-number-link-wrap.json",
+    "release-notes/2026-11-23-chemi-ask-points-tone.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
