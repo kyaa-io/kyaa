@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "최애 런에서 창하의 얼굴이 더 크게 보여요.",
+    "발을 번갈아 내딛는 달리기와 두 번째 점프, 몸을 낮춘 슬라이드, 부딪혔을 때의 표정이 여러 장면으로 이어져요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/games/run",
+  "images": [
+    "release-notes/images/2026-11-22-chemi-run-character.png"
+  ]
+}

@@ -6,12 +6,12 @@ import { PLAYER, type RunEntity, type runRound } from "@/features/chemi/games/ru
  */
 export const ART = "/chemi/run";
 export const ART_FILES = {
-  runner: `${ART}/changha-64-v1.png`,
+  runner: `${ART}/changha-64-v2.png`,
   props: `${ART}/props-v1.png`,
   street: `${ART}/street-changha-v1.png`,
   far: `${ART}/street-changha-far-v1.png`,
 } as const;
-export const POSE = { ready: 0, runA: 1, runB: 2, runC: 3, runD: 4, jump: 5, fall: 6, slide: 7, hit: 8, win: 9 } as const;
+export const POSE = { ready: 24, win: 25 } as const;
 /** [x, y, w, h] inside props-v1.png */
 export const PROPS = {
   cone: [0, 0, 19, 22], barricade: [21, 0, 28, 26], crates: [51, 0, 38, 60], bar: [91, 0, 87, 22],
@@ -94,10 +94,11 @@ export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldVi
     entity(ctx, art, e, x, ground, height, state.tick);
   }
   if (state.invincible && Math.floor(state.tick / 4) % 2) return;
-  const pose = hitFor > 0 ? POSE.hit
-    : state.sliding ? POSE.slide
-      : !state.grounded ? (state.velocity > 0 ? POSE.jump : POSE.fall)
-        : state.tick === 0 ? POSE.ready : POSE.runA + Math.floor(state.distance / 13) % 4;
+  const airPhase = state.velocity > 180 ? 0 : state.velocity > 0 ? 1 : state.velocity > -180 ? 2 : 3;
+  const pose = hitFor > 0 ? 20 + Math.min(3, Math.floor((24 - hitFor) / 6))
+    : state.sliding ? 16 + Math.floor(state.tick / 5) % 4
+      : !state.grounded ? (state.airJumps ? 12 : 8) + airPhase
+        : Math.floor(state.tick / 4) % 8;
   const center = origin + (PLAYER.left + PLAYER.right) / 2;
   ctx.drawImage(art.runner, pose * FRAME, 0, FRAME, FRAME, Math.round(center - FRAME / 2), Math.round(ground - state.height - FRAME + 1), FRAME, FRAME);
   if (state.shield) {
