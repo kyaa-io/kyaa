@@ -313,7 +313,6 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
     </div>
     <div className={styles.field} ref={field} data-art={artReady}>
       <canvas ref={canvas} role="img" aria-label={`${name} · ${copy.map}`} />
-      <div className={styles.streaks} aria-hidden="true"><i /><i /><i /></div>
       <div className={styles.effects} ref={effects} aria-hidden="true" />
       {say && <FanPixelText as="p" role="say" className={styles.say} key={say.id}>{say.text}</FanPixelText>}
       {keyboard && hint && stage === "play" && <p className={styles.keyHint} aria-hidden="true">

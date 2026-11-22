@@ -152,11 +152,6 @@
   touch-action: none;
 }
 .play[data-fever="true"] .field { border-color: var(--color-accent); outline: 2px solid var(--color-accent); outline-offset: -4px; }
-.streaks { display: none; }
-.play[data-fever="true"] .streaks { position: absolute; inset: 0; display: block; pointer-events: none; }
-.streaks i { position: absolute; inset: 22% 0 auto; height: 2px; background: var(--color-surface); opacity: .55; }
-.streaks i:nth-child(2) { top: 34%; }
-.streaks i:nth-child(3) { top: 46%; }
 .effects { position: absolute; inset: 0; pointer-events: none; }
 .float { position: absolute; white-space: nowrap; animation: run-float 650ms var(--motion-easing) forwards; }
 .say { position: absolute; inset: var(--space-8) 0 auto; margin: 0; text-align: center; pointer-events: none; animation: run-say var(--motion-fast) var(--motion-easing); }

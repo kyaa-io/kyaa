@@ -103,8 +103,10 @@ export const SONGS: Record<Character, Song> = { changha: CHANGHA, elina: ELINA, 
 /** The result reprise is the hook alone at this share of the running tempo. */
 const RESULT_TEMPO = 0.85;
 const RATE = 22050;
-/** Loudest sample after mixing; the effects keep room above it. */
-const PEAK = 0.22;
+/** Every song is matched to the same loudness (RMS) so switching 최애 never jumps in volume. */
+const LOUDNESS = 0.045;
+/** Never louder than this sample, so the effects keep room above the music. */
+const PEAK = 0.34;
 
 const NAMES: Record<string, number> = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
 function pitchOf(name: string) {
@@ -213,15 +215,17 @@ export function renderLoop(who: Character, scene: MusicScene, rate = RATE) {
       voice(at + s * step, step * hold, pitch, 0.42, "triangle");
     }
     const kicks = song.drums === "four" ? [0, 4, 8, 12] : song.drums === "skip" ? [0, 6, 8] : [0, 8];
-    for (const s of light ? [0, 8] : kicks) voice(at + s * step, 0.12, 0, song.drums === "soft" ? 0.35 : 0.5, "kick");
+    for (const s of light ? [0, 8] : kicks) voice(at + s * step, 0.12, 0, song.drums === "soft" ? 0.35 : 0.42, "kick");
     for (const s of [4, 12]) voice(at + s * step, 0.14, 0, song.drums === "soft" ? 0.08 : 0.16, "noise");
     const hats = song.drums === "four" ? [2, 6, 10, 14] : [0, 2, 4, 6, 8, 10, 12, 14];
     if (!light) for (const s of hats) voice(at + s * step, song.drums === "four" ? 0.07 : 0.03, 0, song.drums === "soft" ? 0.025 : 0.05, "noise");
   });
 
   let loudest = 0;
-  for (const value of out) loudest = Math.max(loudest, Math.abs(value));
-  if (loudest > 0) for (let i = 0; i < length; i++) out[i] *= PEAK / loudest;
+  let power = 0;
+  for (const value of out) { loudest = Math.max(loudest, Math.abs(value)); power += value * value; }
+  const gain = Math.min(LOUDNESS / Math.sqrt(power / length), PEAK / loudest);
+  for (let i = 0; i < length; i++) out[i] *= gain;
   return { samples: out, rate };
 }
 

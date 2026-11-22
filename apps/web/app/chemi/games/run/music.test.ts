@@ -37,16 +37,20 @@ describe("run songs", () => {
     expect(() => notesOf("C5 . .")).toThrow();
   });
 
-  it("wraps ringing notes to the start so the loop has no seam and stays under the effects", () => {
+  it("wraps ringing notes to the start so the loop has no seam, and plays every song at the same loudness", () => {
     for (const who of characters) for (const scene of ["run", "result"] as const) {
       const { samples } = renderLoop(who, scene, 8000);
       let peak = 0;
       let jump = 0;
+      let power = 0;
       for (let i = 1; i < samples.length; i++) {
         peak = Math.max(peak, Math.abs(samples[i]));
         jump = Math.max(jump, Math.abs(samples[i] - samples[i - 1]));
+        power += samples[i] * samples[i];
       }
-      expect(peak).toBeCloseTo(0.22, 5);
+      expect(peak).toBeLessThanOrEqual(0.34 + 1e-6);
+      expect(Math.sqrt(power / samples.length)).toBeGreaterThan(0.04);
+      expect(Math.sqrt(power / samples.length)).toBeLessThanOrEqual(0.0451);
       // The step from the last sample back to the first is no larger than steps inside the song.
       expect(Math.abs(samples[0] - samples.at(-1)!)).toBeLessThanOrEqual(jump);
     }

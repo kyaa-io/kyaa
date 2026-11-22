@@ -108,6 +108,14 @@ export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldVi
   ctx.fillStyle = "#cdb9ae";
   ctx.fillRect(0, 0, width, height);
   tile(ctx, art.street, reducedMotion ? 0 : state.distance * 0.24, width, height - art.street.height);
+  // Fever speed lines: dashes one cell high in the field's own dots, sliding left with the run.
+  if (state.fever > 0) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    const shift = reducedMotion ? 0 : (state.tick * 4) % 24;
+    for (const [row, lag] of [[0.22, 0], [0.34, 9], [0.46, 4]] as const) {
+      for (let x = -((shift + lag) % 24); x < width; x += 24) ctx.fillRect(x, Math.round(height * row), 14, 1);
+    }
+  }
   for (const e of entities) {
     if (e.gone) continue;
     const x = Math.round(e.x - state.distance + origin);
