@@ -177,7 +177,9 @@
 .veil h2 { color: inherit; }
 .veil .legend { display: grid; gap: var(--space-2); }
 .veil .legend > div { display: grid; grid-template-columns: var(--space-16) auto auto; align-items: center; justify-content: start; column-gap: var(--space-3); }
-.veil .legend dd { opacity: .86; }
+.veil .legend[data-keys="true"] > div { grid-template-columns: var(--space-16) auto auto auto; }
+.veil .keys kbd { border-color: var(--color-surface); }
+.veil .legend dd:not(.legendKeys) { opacity: .86; }
 .rotate { display: none; color: inherit; }
 .controls { display: grid; flex: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-4); touch-action: none; }
 .controls > div {
@@ -196,7 +198,40 @@
 .controls > div[data-held="true"] { border-color: var(--color-accent); background: var(--color-accent); color: var(--color-surface); }
 .controls .control { width: 100%; min-height: 0; padding: 0; border: 0; background: transparent; color: inherit; }
 .controls p { margin: 0; color: inherit; text-align: center; }
-.controls kbd { display: none; }
+/* 키캡: 마우스·트랙패드(pointer: fine)에서만 그린다(useKeyboardGuide). 흰 면·1px 선·반경 8, 입체 그림자 없음. */
+.keys { display: inline-flex; flex: none; align-items: center; gap: var(--space-1); color: inherit; }
+.keys kbd {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  min-width: var(--space-6);
+  height: var(--space-6);
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font: inherit;
+  white-space: nowrap;
+}
+.legendKeys { display: flex; }
+.controls .keys { margin-inline-end: var(--space-2); vertical-align: middle; }
+.keyHint {
+  position: absolute;
+  inset: var(--space-3) 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  width: max-content;
+  margin: 0 auto;
+  padding: var(--space-1) var(--space-4) var(--space-1) var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  pointer-events: none;
+  animation: run-hint 4000ms linear forwards;
+}
+.keyHint > span { display: inline-flex; align-items: center; gap: var(--space-2); }
+.keyHint kbd { border-color: var(--color-line); }
 
 /* 결과 */
 .result { display: grid; gap: var(--space-6); padding: var(--space-1) var(--space-4) var(--space-6); }
@@ -239,6 +274,7 @@
   .sideLegend { display: block; }
   .sideLegend .legend { grid-template-columns: none; justify-content: stretch; }
   .sideLegend .legend > div { grid-template-columns: var(--space-16) auto minmax(0, 1fr); min-height: var(--space-12); column-gap: var(--space-3); }
+  .sideLegend .legend[data-keys="true"] > div { grid-template-columns: var(--space-16) auto auto minmax(0, 1fr); }
   .sideLegend .legend > div + div { border-top: 1px solid var(--color-line-subtle); }
   .sideLegend .legend dd { justify-self: end; color: var(--color-muted); }
   .rank li { height: 52px; }
@@ -252,9 +288,9 @@
   .field { margin-inline: 0; }
   .veil .legend { grid-template-columns: repeat(2, auto); gap: var(--space-4) var(--space-12); }
   .veil .legend > div { --u: var(--chemi-dot-3); grid-template-columns: 96px auto auto; }
+  .veil .legend[data-keys="true"] > div { grid-template-columns: 96px auto auto auto; }
   .veil .legendIcon { width: 96px; height: var(--space-16); }
   .controls { padding: var(--space-3) 0 var(--space-6); }
-  .controls kbd { display: inline-block; margin-inline-end: var(--space-2); padding: 0 var(--space-2); border: 1px solid currentColor; border-radius: var(--radius-small); font: inherit; }
   .result {
     grid-template-columns: minmax(0, 720px) var(--rail-md);
     justify-content: center;
@@ -268,9 +304,11 @@
   .nextRow { grid-template-columns: minmax(0, 320px) auto auto; justify-content: start; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .float, .say, .field[data-hit="true"] canvas, .field[data-hit="true"] .flash { animation: none; }
+  .float, .say, .field[data-hit="true"] canvas, .field[data-hit="true"] .flash, .keyHint { animation: none; }
 }
 @keyframes run-float { to { opacity: 0; transform: translateY(-24px); } }
 @keyframes run-say { from { opacity: 0; transform: translateY(8px); } }
 @keyframes run-shake { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
+/* 키 띠는 3.7초 그대로 있다가 300ms 동안 사라진다. 움직임 줄이기에서는 4초 뒤 바로 빠진다. */
+@keyframes run-hint { 92% { opacity: 1; } to { opacity: 0; } }
 @keyframes run-flash { 20% { opacity: .28; } }
