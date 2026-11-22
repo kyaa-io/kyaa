@@ -79,11 +79,11 @@ function zoneLabel(zone: string, locale: AppLocale): string {
   try { return new Intl.DateTimeFormat(locale, { timeZone: zone, timeZoneName: "long" }).formatToParts(new Date()).find(part => part.type === "timeZoneName")?.value ?? zone; } catch { return zone; }
 }
 
-export function ScheduleFields({ locale, initial, errors = {} }: { locale: AppLocale; initial?: Partial<ScheduleInput>; errors?: ScheduleFieldErrors }) {
+export function ScheduleFields({ kindLabel, locale, initial, errors = {} }: { kindLabel?: string; locale: AppLocale; initial?: Partial<ScheduleInput>; errors?: ScheduleFieldErrors }) {
   const c = participationCopy(locale), zone = initial?.timeZone ?? "Asia/Seoul";
   const error = (name: keyof ScheduleFieldErrors) => ({ "aria-invalid": Boolean(errors[name]) || undefined, "aria-describedby": errors[name] ? `schedule-${name}-error` : undefined });
   return <>
-    <label>{c.event}<select name="kind" defaultValue={initial?.kind ?? "event"}>{(["broadcast", "concert", "birthday", "event"] as const).map(kind => <option value={kind} key={kind}>{c[kind]}</option>)}</select></label>
+    <label>{kindLabel ?? c.event}<select name="kind" defaultValue={initial?.kind ?? "event"}>{(["broadcast", "concert", "birthday", "event"] as const).map(kind => <option value={kind} key={kind}>{c[kind]}</option>)}</select></label>
     <label>{c.title}<input name="title" required maxLength={160} defaultValue={initial?.title} /></label>
     <label>{c.description}<textarea name="description" rows={3} maxLength={4000} defaultValue={initial?.description} /></label>
     <div className={styles.columns}><label>{c.start}<input name="startsAt" required type="datetime-local" lang={locale} defaultValue={initial?.startsAt ? localScheduleTime(initial.startsAt, zone) : ""} {...error("startsAt")} />{errors.startsAt && <span id="schedule-startsAt-error" className={styles.meta}>{errors.startsAt}</span>}</label><label>{c.end}<input name="endsAt" required type="datetime-local" lang={locale} defaultValue={initial?.endsAt ? localScheduleTime(initial.endsAt, zone) : ""} {...error("endsAt")} />{errors.endsAt && <span id="schedule-endsAt-error" className={styles.meta}>{errors.endsAt}</span>}</label></div>

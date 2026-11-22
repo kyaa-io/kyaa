@@ -8,7 +8,7 @@ import { OperatorFrame, operatorChannelName } from "./operator-shell";
 export function OperatorNotices({ channelId, locale }: { channelId: string; locale: "ko" | "en" }) {
   return <OperatorFrame locale={locale} channelId={channelId}>{(session, channel) => channel && <>
     <div className={styles.pageHeading}><p>{operatorChannelName(channel, locale)}</p><h1>{locale === "ko" ? "공지" : "Notices"}</h1></div>
-    <NoticeManager celebrityId={channel.id} celebrityName={operatorChannelName(channel, locale)} role={session.role} locale={locale} apiBase="/api/operator/channels" />
+    <NoticeManager channelOperator={session.kind === "operator"} celebrityId={channel.id} celebrityName={operatorChannelName(channel, locale)} role={session.role} locale={locale} apiBase="/api/operator/channels" />
   </>}</OperatorFrame>;
 }
 
