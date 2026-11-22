@@ -676,6 +676,7 @@
   border-radius: var(--radius-pill);
   background: var(--color-error);
   color: var(--color-surface);
+  white-space: nowrap;
 }
 @keyframes wrongShake {
   25% { transform: translateX(-4px); }
@@ -747,6 +748,7 @@
     grid-template-columns: minmax(0, 1fr) 320px;
     column-gap: var(--space-8);
     max-width: 880px;
+    margin-inline: auto;
   }
   .shell[data-stage="guide"] .rules { grid-column: 1; grid-row: 1 / span 2; }
   .shell[data-stage="guide"] .practiceLabel,
