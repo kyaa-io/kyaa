@@ -7,7 +7,8 @@ import { useByUsSession } from "@/components/byus-session-provider";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { useAppLocale } from "@/components/locale-provider";
 
-export const GROUP_WALLET_CHANGED_EVENT = "kyaa:group-wallet-changed";
+import { GROUP_WALLET_CHANGED_EVENT } from "./wallet-events";
+export { GROUP_WALLET_CHANGED_EVENT };
 
 export class GroupRequestError extends Error {
   constructor(readonly status: number, readonly code: string) { super(code); this.name = "GroupRequestError"; }

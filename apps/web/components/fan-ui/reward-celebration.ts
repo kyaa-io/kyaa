@@ -1,7 +1,7 @@
 "use client";
 import { REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 
-import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/use-group-resource";
+import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/wallet-events";
 import type { AppLocale } from "@/i18n/locales";
 import { closeFanToast, showFanToast } from "./fan-toast";
 import styles from "./reward-celebration.module.css";
