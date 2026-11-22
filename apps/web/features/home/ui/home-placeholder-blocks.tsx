@@ -102,7 +102,8 @@ export function GalleryImage({ photo, sizes }: { photo: HomeGalleryPhoto; sizes:
   const unoptimized = photo.image.url.startsWith("/api/content-assets/") || bypassImageOptimization(photo.image.url);
   const image = <Image className={styles.photoImage} src={photo.image.url} alt={photo.alt} width={photo.image.width} height={photo.image.height}
     sizes={sizes} loading="lazy" unoptimized={unoptimized} />;
-  return photo.sourceHref ? <Link className={styles.photoLink} href={photo.sourceHref as Route}>{image}</Link> : image;
+  const href = photo.sourceHref ?? (photo.creator ? `/c/${encodeURIComponent(photo.creator.slug)}` : undefined);
+  return href ? <Link className={styles.photoLink} href={href as Route}>{image}</Link> : image;
 }
 
 /** Same allocation, responsive column widths and per-image ratios as the loaded gallery. */

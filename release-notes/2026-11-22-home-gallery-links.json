@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 갤러리에서 크리에이터 사진이나 로고를 누르면 해당 팬페이지로 이동해요. SNS 사진은 원래 게시물에서 볼 수 있어요.", "공개 갤러리 데이터를 사용한 로컬 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-22-home-gallery-links.png"]
+}
