@@ -1,9 +1,19 @@
 import { describe, expect, it } from "vitest";
 import type { HomeGalleryPhoto } from "./home-gallery";
-import { diversifyGalleryPhotos, diversifyShorts } from "./home-gallery-order";
+import { diversifyGalleryPhotos, diversifyShorts, homeGalleryPostPhotos } from "./home-gallery-order";
 
 const photo = (id: string, slug?: string): HomeGalleryPhoto => ({ id, source: "official_sns", image: { url: "https://example.com/a.jpg", width: 4, height: 5 }, alt: id, ...(slug ? { creator: { slug, name: slug } } : {}) });
 const ids = (list: readonly HomeGalleryPhoto[]) => list.map(item => item.id);
+
+it("selects only original notice photos for the home gallery", () => {
+  const post = { ...photo("notice:1", "creator"), sourceHref: "/c/creator/notices/post" };
+  expect(homeGalleryPostPhotos([
+    { ...post, source: "cms_upload" },
+    { ...post, sourceHref: "/live/event" },
+    photo("missing-link", "creator"),
+    post,
+  ])).toEqual([post]);
+});
 
 describe("diversifyGalleryPhotos", () => {
   it("takes one photo per post first and puts the other cuts after everything else", () => {

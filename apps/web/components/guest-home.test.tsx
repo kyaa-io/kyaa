@@ -500,10 +500,10 @@ describe("streamed Home sections", () => {
     expect(view.container.querySelector(`[data-managed-home-banner="${bannerFixture.id}"]`)).not.toBeNull();
     expect(view.container.querySelector('[data-gallery-layout]')).toBeNull();
     await act(async () => { gallery.resolve({ items: photos as never, nextCursor: null }); });
-    expect(view.container.querySelectorAll('[data-gallery-reservation="mobile"] li')).toHaveLength(photos.length);
+    expect(view.container.querySelectorAll('[data-gallery-reservation="mobile"] li')).toHaveLength(photos.filter(photo => photo.source === "official_sns").length);
     await act(async () => { shorts.resolve([]); });
     expect(view.container.querySelector('[data-gallery-reservation]')).toBeNull();
-    expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.length);
+    expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.filter(photo => photo.source === "official_sns").length);
   });
 
   it("puts the read gallery photos and LIVE videos on the home; a failed read keeps placeholders without the empty text, zero rows show it", async () => {
@@ -512,7 +512,7 @@ describe("streamed Home sections", () => {
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...home.queries, homeBanners: settleHomeQuery(Promise.resolve([])), homeGallery: Promise.resolve({ status: "fulfilled", value: { items: photos as never, nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: shorts as never }) }} locale="ko" />); });
-    expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.length);
+    expect(view.container.querySelectorAll('[data-gallery-layout="mobile"] [data-row="photo"]')).toHaveLength(photos.filter(photo => photo.source === "official_sns").length);
     expect(view.container.querySelectorAll('[data-row="short"]')).toHaveLength(shorts.length);
     view.unmount();
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeBanners: settleHomeQuery(Promise.resolve([])), homeGallery: Promise.resolve({ status: "rejected" }), homeShorts: Promise.resolve({ status: "rejected" }) }} locale="ko" />); });

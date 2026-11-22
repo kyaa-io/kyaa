@@ -118,10 +118,7 @@ describe("home gallery block", () => {
     expect(official).toHaveAttribute("width", "1080");
     expect(official).toHaveAttribute("height", "1350");
     expect(official.closest("a")).toHaveAttribute("href", "/c/r8data-photo/notices/r8-ok1");
-    for (const tile of container.querySelectorAll("[data-gallery-layout] img")) {
-      const photo = photos.find(item => item.alt === tile.getAttribute("alt"))!;
-      expect(tile.closest("a")).toHaveAttribute("href", photo.sourceHref ?? `/c/${photo.creator!.slug}`);
-    }
+    expect(screen.getAllByRole("img", { name: "R8 사진 무대 사진" })[0]!.closest("a")).toBeNull();
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /전체 보기/ })).not.toBeInTheDocument();
   });

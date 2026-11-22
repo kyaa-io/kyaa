@@ -43,7 +43,7 @@ import { PromoBanner } from "@/components/banner-slot/promo-banner";
 import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
-import { diversifyGalleryPhotos } from "@/features/home/domain/home-gallery-order";
+import { homeGalleryPostPhotos } from "@/features/home/domain/home-gallery-order";
 import styles from "./guest-home.module.css";
 import { ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 
@@ -185,20 +185,18 @@ function StreamHomeNotices({ queries, locale }: Pick<StreamingHomeProps, "querie
 
 /** 정상 0건만 빈 상태 글을 보이고, 실패는 같은 자리표시를 글 없이 둔다(로딩도 같다). */
 function StreamHomeGallery({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
-  const photos = use(queries.homeGallery);
-  // Resolve dimensions only inside the gallery boundary. Until then its outer
-  // fallback uses the existing fixed reservation; Shorts cannot block the shell.
-  return <Suspense fallback={<HomeGalleryPlaceholder locale={locale} expectedPhotos={photos.status === "fulfilled" ? photos.value.items : undefined} state={photos.status === "fulfilled" ? "loading" : "error"} />}>
-    <StreamHomeGalleryContent queries={queries} locale={locale} photos={photos} />
+  const result = use(queries.homeGallery);
+  const posts = result.status === "fulfilled" ? homeGalleryPostPhotos(result.value.items) : [];
+  const photos = result.status === "fulfilled" ? posts.slice(0, 12) : "error";
+  const hasMore = result.status === "fulfilled" && (result.value.nextCursor !== null || posts.length > 12);
+  return <Suspense fallback={<HomeGalleryPlaceholder locale={locale} expectedPhotos={photos === "error" ? undefined : photos} state={photos === "error" ? "error" : "loading"} />}>
+    <StreamHomeGalleryContent queries={queries} locale={locale} photos={photos} hasMore={hasMore} />
   </Suspense>;
 }
 
-const HOME_GALLERY_PHOTOS = 12;
-function StreamHomeGalleryContent({ queries, locale, photos }: Pick<StreamingHomeProps, "queries" | "locale"> & { photos: Awaited<HomeQueries["homeGallery"]> }) {
+function StreamHomeGalleryContent({ queries, locale, photos, hasMore }: Pick<StreamingHomeProps, "queries" | "locale"> & Pick<Parameters<typeof HomeGallery>[0], "photos" | "hasMore">) {
   const shorts = use(queries.homeShorts);
-  // The read brings the newest 72; the block shows the 12 most varied (one per post, creators in turn).
-  const varied = photos.status === "fulfilled" ? diversifyGalleryPhotos(photos.value.items) : [];
-  return <HomeGallery locale={locale} photos={photos.status === "fulfilled" ? varied.slice(0, HOME_GALLERY_PHOTOS) : "error"} hasMore={photos.status === "fulfilled" && (photos.value.nextCursor !== null || varied.length > HOME_GALLERY_PHOTOS)}
+  return <HomeGallery locale={locale} photos={photos} hasMore={hasMore}
     shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;
 }
 

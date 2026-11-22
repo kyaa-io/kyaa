@@ -1,5 +1,12 @@
 import type { HomeGalleryPhoto } from "./home-gallery";
 
+/** Only original posts belong in the home photo selection. Filter before ranking and taking the first twelve. */
+export function homeGalleryPostPhotos(photos: readonly HomeGalleryPhoto[]) {
+  return diversifyGalleryPhotos(photos.filter(photo =>
+    photo.source === "official_sns" && /^\/c\/[a-z0-9-]+\/notices\/[a-z0-9-]+$/.test(photo.sourceHref ?? "")
+  ));
+}
+
 /**
  * The order the home gallery shows (사용자 2026-11-11 08:30 "갤러리 최대한 셀럽의 다양한 이미지"): newest first only decides the order *inside* one creator.
  * 0. 사용자 2026-11-15 19:0x: the first row holds each FEATURED_GALLERY_CREATORS creator's newest photo (a creator with none is skipped), then the rules below.
