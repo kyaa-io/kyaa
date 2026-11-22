@@ -57,6 +57,7 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
       isMe: row.isMe,
       place: row.place,
       name: rankName(row.nickname, locale),
+      initial: row.nickname?.trim() ? undefined : null,
       change: 0,
       record: mode === "run" ? points.format(row.score) : row.score != null ? row.score.toLocaleString(locale) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
         .map((part) => String(part).padStart(2, "0")).join(":"),

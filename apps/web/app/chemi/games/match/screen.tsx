@@ -19,6 +19,7 @@ import {
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FPS, LEVELS } from "@/features/chemi/games/engine";
 import { rankName } from "@/features/chemi/games/rank-name";
+import { RankInitial } from "@/features/chemi/games/rank-initial";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
 import styles from "./match.module.css";
@@ -140,7 +141,7 @@ function Rankings({
           >
             <b>{row.place}</b>
             <span className={styles.avatar} aria-hidden="true">
-              {Array.from(rankName(row.nickname, locale))[0]}
+              <RankInitial nickname={row.nickname} />
             </span>
             <span>
               {rankName(row.nickname, locale)}
@@ -150,12 +151,6 @@ function Rankings({
             </span>
             <FanText role="meta">{copy[row.character]}</FanText>
             <b>{row.score?.toLocaleString() ?? clock(row.ticks)}</b>
-          </li>
-        ))}
-        {/* 로비의 랭킹은 늘 세 줄 높이다: 기록이 없는 순위는 숫자만 흐리게 둔다(최애 런 로비와 같다). */}
-        {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, i) => (
-          <li data-row="" key={`empty-${i}`} className={styles.vacant} aria-hidden="true">
-            <b>{displayed.length + i + 1}</b>
           </li>
         ))}
       </ol>

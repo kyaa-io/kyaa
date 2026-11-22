@@ -29,6 +29,21 @@ export const zodiacSigns = [
 export type ZodiacSign = (typeof zodiacSigns)[number];
 
 /** 별자리 이름. 원판 바퀴 글자는 시안 05-3의 짧은 이름을 쓴다. */
+/** 별자리 기호(글자 모양으로 그린다). '나' 원 안에 쓴다. */
+export const signGlyphs: Record<ZodiacSign, string> = {
+  aries: "\u2648\uFE0E",
+  taurus: "\u2649\uFE0E",
+  gemini: "\u264A\uFE0E",
+  cancer: "\u264B\uFE0E",
+  leo: "\u264C\uFE0E",
+  virgo: "\u264D\uFE0E",
+  libra: "\u264E\uFE0E",
+  scorpio: "\u264F\uFE0E",
+  sagittarius: "\u2650\uFE0E",
+  capricorn: "\u2651\uFE0E",
+  aquarius: "\u2652\uFE0E",
+  pisces: "\u2653\uFE0E",
+};
 export const signNames: Record<ZodiacSign, { full: string; short: string; bare: string }> = {
   aries: { full: "양자리", short: "양", bare: "양" },
   taurus: { full: "황소자리", short: "황소", bare: "황소" },
@@ -256,7 +271,7 @@ export function reasonView(
     reason.body === "Moon" || exit <= today
       ? hourWords(reason.hour)
       : `${Number(exit.slice(5, 7))}월 ${Number(exit.slice(8, 10))}일(${kstWeekday(exit)})까지`;
-  const mine = sign ? `네 ${target}(${signNames[sign].full})` : `네 ${target}`;
+  const mine = sign ? `내 ${target}(${signNames[sign].full})` : `내 ${target}`;
   return {
     title: `${withParticle(body, "과와")} 내 ${target}`,
     aspect: aspect.name,
@@ -304,7 +319,8 @@ type Tone = {
   sign: (sign: string, headline: string) => string;
   best: (domain: string, worst: string) => string;
   why: string;
-  pair: (mine: string, theirs: string) => string;
+  /** calm: 오늘 총운 별이 셋 이하라 하루 전체를 좋다고 말하면 안 될 때. */
+  pair: (mine: string, theirs: string, calm: boolean) => string;
   pairAlone: (mine: string) => string;
   /** 두 번째 선택지로 이야기를 골라 들었을 때 그 선택을 먼저 받아 주는 한마디. */
   picked: { why: string; pair: string };
@@ -317,7 +333,8 @@ const tones: Record<StarCharacterId, Tone> = {
     sign: (sign, headline) => `넌 ${sign}야. 오늘은 ${headline}이야.`,
     best: (domain, worst) => `오늘은 ${domain} 별점이 제일 높아. ${worst}은 평소 정도야.`,
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어.",
-    pair: (mine, theirs) => `오늘 달이 우리 둘 별자리와 잘 어울리는 자리에 있어. ${theirs}와 ${mine}, 내 노래가 유난히 잘 들리는 날일걸?`,
+    pair: (mine, theirs, calm) =>
+      `오늘 달이 우리 둘 별자리와 잘 어울리는 자리에 있어. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "우리 사이는 잘 맞아. 하루는 천천히 가자." : "내 노래가 유난히 잘 들리는 날일걸?"}`,
     pairAlone: () => "별자리는 여기까지야. 오늘 정리를 볼래?",
     picked: { why: "이유부터 궁금했구나.", pair: "우리 사이부터 묻네." },
   },
@@ -328,7 +345,8 @@ const tones: Record<StarCharacterId, Tone> = {
     sign: (sign, headline) => `${sign}네요. 오늘은 ${headline}이에요.`,
     best: (domain, worst) => `오늘은 ${domain} 별점이 가장 높아요. ${worst}은 평소 정도예요.`,
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어요.",
-    pair: (mine, theirs) => `오늘 달이 두 별자리와 잘 어울리는 자리에 있어요. ${theirs}와 ${mine}, 같이 보기 좋은 날이에요.`,
+    pair: (mine, theirs, calm) =>
+      `오늘 달이 두 별자리와 잘 어울리는 자리에 있어요. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "사이는 잘 맞는 날이에요. 하루는 천천히 가요." : "같이 보기 좋은 날이에요."}`,
     pairAlone: () => "별자리는 여기까지예요. 오늘 정리를 볼래요?",
     picked: { why: "이유가 먼저 궁금했군요.", pair: "우리 사이가 먼저 궁금했군요." },
   },
@@ -339,7 +357,8 @@ const tones: Record<StarCharacterId, Tone> = {
     sign: (sign, headline) => `${sign}구나! 오늘은 ${headline}이야.`,
     best: (domain, worst) => `${domain} 별점이 제일 높아! ${worst}은 평소 정도야.`,
     why: "오늘 풀이는 행성 셋이 움직여서 나왔어!",
-    pair: (mine, theirs) => `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어! ${theirs}랑 ${mine}, 완전 좋은 날이야.`,
+    pair: (mine, theirs, calm) =>
+      `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어! ${withParticle(theirs, "이랑")} ${mine}, ${calm ? "사이는 잘 맞는 날이야. 하루는 천천히 가자!" : "완전 좋은 날이야."}`,
     pairAlone: () => "별자리는 여기까지야! 오늘 정리 볼래?",
     picked: { why: "이유부터? 좋아!", pair: "우리 궁합부터? 좋아!" },
   },
@@ -376,9 +395,11 @@ export function starPairLine(
   mine: string | null,
   theirs: string | null,
   picked = false,
+  /** 오늘 총운 별 수. 셋 이하면 '사이'만 좋다고 말한다. */
+  overall = 5,
 ) {
   const tone = tones[character];
-  const line = mine && theirs ? tone.pair(mine, theirs) : tone.pairAlone(mine ?? "");
+  const line = mine && theirs ? tone.pair(mine, theirs, overall <= 3) : tone.pairAlone(mine ?? "");
   return picked && tone.picked.pair && mine && theirs ? `${tone.picked.pair} ${line}` : line;
 }
 

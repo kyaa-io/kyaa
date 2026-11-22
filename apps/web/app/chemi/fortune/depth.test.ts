@@ -37,7 +37,8 @@ describe("운세 근거와 분야별 풀이", () => {
           expect(count(detail.text)).toBeGreaterThanOrEqual(2);
           expect(count(detail.text)).toBeLessThanOrEqual(4);
           expect(detail.text).not.toMatch(/[0-9]+월|[0-9]+일|[0-9,]+원/);
-          expect(detail.basis.startsWith(`${score}점 · `)).toBe(true);
+          expect(detail.basis).toMatch(/ 자리/);
+          expect(detail.basis).not.toContain(`${score}점`);
         }
   });
 });
@@ -48,12 +49,12 @@ describe("운세 분야 근거 줄", () => {
     const basis = fields.map((field) => fortuneFieldDetail(field, 82, { ...evidence, tenGod: "정재", relation: "형" }, null, true).basis);
     expect(new Set(basis).size).toBe(6);
     expect(basis).toEqual([
-      "82점 · 식상 자리 · 식상이 일진 재성으로 흘러가는 날",
-      "82점 · 비겁 자리 · 비겁이 일진 재성과 맞서는 날",
-      "82점 · 관성 자리 · 일진 재성이 관성을 낳는 날",
-      "82점 · 인성 자리 · 일진 재성이 인성을 누르는 날",
-      "82점 · 배우자 자리 일지 · 일진과 형",
-      "82점 · 재성 자리 · 일진도 재성(정재)인 날",
+      "식상 자리 · 식상이 일진 재성으로 흘러가는 날",
+      "비겁 자리 · 비겁이 일진 재성을 누르는 날",
+      "관성 자리 · 일진 재성이 관성을 낳는 날",
+      "인성 자리 · 일진 재성이 인성을 누르는 날",
+      "배우자 자리 일지 · 일진과 형",
+      "재성 자리 · 일진도 재성(정재)인 날",
     ]);
   });
 });

@@ -237,8 +237,16 @@
     transform: scale(0.92);
   }
 }
-.date {
+.date,
+.toGo {
   font-variant-numeric: tabular-nums;
+}
+/* 다음에 열릴 앨범 칸: 테두리를 주 색으로 두고 남은 친밀을 적어, 위 '다음 단계'와 이어 읽힌다. */
+.album [data-next] .photo {
+  border-color: var(--color-accent);
+}
+.toGo {
+  color: var(--color-accent-ink);
 }
 .viewer {
   display: grid;

@@ -35,6 +35,7 @@ import {
   starCharacters,
   starEnterLine,
   starPairLine,
+  signGlyphs,
   starSignLine,
   starWhyLine,
   worstDomain,
@@ -481,6 +482,7 @@ export function StarFlow({
                   derived.sunBare,
                   creator ? signNames[creator].bare : null,
                   picked === "pair",
+                  stars?.overall,
                 )
               : starEnterLine(character, needBirth ? "birth" : "enter");
 
@@ -658,8 +660,8 @@ export function StarFlow({
                 )}
                 {creator && <span className={styles.pairLine} aria-hidden="true" />}
                 <div className={styles.pairSide}>
-                  <FanText as="span" role="label" className={styles.pairMe}>
-                    <ReadingText id="me" />
+                  <FanText as="span" role="label" className={styles.pairMe} aria-hidden="true">
+                    {result?.signs.sun[0] ? signGlyphs[result.signs.sun[0]] : <ReadingText id="me" />}
                   </FanText>
                   <span>
                     <FanText as="strong" role="item">

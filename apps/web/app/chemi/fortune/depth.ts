@@ -131,7 +131,8 @@ export function fortuneFieldDetail(
   if (rank === "highest") sentences.push("여섯 분야 중 오늘 가장 높아요.");
   if (rank === "lowest") sentences.push("여섯 분야 중 오늘 가장 낮으니 힘을 덜 써요.");
   return {
-    basis: isTenGod(evidence.tenGod) ? `${score}점 · ${fieldBasis(field, evidence.tenGod, evidence.relation)}` : `${score}점`,
+    // 점수는 바로 위 칸 머리에 이미 보여 근거 줄에 되풀이하지 않는다.
+    basis: isTenGod(evidence.tenGod) ? fieldBasis(field, evidence.tenGod, evidence.relation) : null,
     text: sentences.join(" "),
   };
 }
@@ -143,7 +144,7 @@ const fieldSeat: Record<Exclude<FortuneField, "love">, Group> = {
   people: "peer", fandom: "output", money: "wealth", work: "duty", rest: "resource",
 };
 
-/** 분야마다 다른 근거 한 줄: 그 분야의 십신 자리와 오늘 일진 십신의 사이(같음·낳음·누름·맞섬·흘러감). */
+/** 분야마다 다른 근거 한 줄: 그 분야의 십신 자리와 오늘 일진 십신의 사이(같음·일진이 낳음·일진이 누름·자리가 누름·자리가 낳음). */
 function fieldBasis(field: FortuneField, tenGod: TenGod, relation: string) {
   if (field === "love") {
     const tie = relationOf(relation);
@@ -156,7 +157,7 @@ function fieldBasis(field: FortuneField, tenGod: TenGod, relation: string) {
     `일진도 ${today}(${tenGod})인 날`,
     `일진 ${today}이 ${seat}을 낳는 날`,
     `일진 ${today}이 ${seat}을 누르는 날`,
-    `${seat}이 일진 ${today}과 맞서는 날`,
+    `${seat}이 일진 ${today}을 누르는 날`,
     `${seat}이 일진 ${today}으로 흘러가는 날`,
   ][gap];
   return `${seat} 자리 · ${tie}`;
