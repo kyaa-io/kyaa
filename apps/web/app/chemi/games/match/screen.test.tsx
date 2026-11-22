@@ -6,7 +6,7 @@ import {
   waitFor,
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { board, FPS, verify } from "@/features/chemi/games/engine";
+import { board, FPS } from "@/features/chemi/games/engine";
 import { getMatchCopy } from "./copy";
 import { MatchScreen } from "./screen";
 
@@ -130,54 +130,6 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   expect(requests.filter((r) => r.action === "finish")).toHaveLength(1);
   expect(screen.getByRole("img", { name: "10" }).closest("b")).toHaveTextContent(/EXP$/);
 }, 20000);
-
-it("keeps the cleared rounds as the week's record when the player leaves mid-game", async () => {
-  vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 10, 22, 14));
-  const requests: Record<string, unknown>[] = [];
-  vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
-    const body = JSON.parse(String(init.body));
-    requests.push(body);
-    if (body.action === "lobby") return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, ranking: [] });
-    if (body.action === "start") return Response.json({ playId: "local-round", seed: 12, game: "match" });
-    if (body.action === "finish") return Response.json({ score: body.score, exp: 10, shareId: "local-share" });
-    if (body.action === "leave") return Response.json({ left: true });
-    throw Error(body.action);
-  });
-  let frame: FrameRequestCallback | undefined;
-  let now = 1000;
-  vi.spyOn(performance, "now").mockImplementation(() => now);
-  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { frame = callback; return 1; });
-  vi.stubGlobal("cancelAnimationFrame", () => { frame = undefined; });
-  const advance = (ticks: number) => { now += ((ticks + 0.01) * 1000) / FPS; act(() => frame?.(now)); };
-  const tap = (i: number) => {
-    fireEvent.click(screen.getByRole("button", { name: new RegExp("^" + copy.card + " " + (i >= 4 ? i + 2 : i + 1) + " ") }));
-    advance(1);
-    advance(6);
-  };
-  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
-  const choose = screen.getByRole("button", { name: copy.elina });
-  await waitFor(() => expect(choose).toBeEnabled());
-  fireEvent.click(choose);
-  fireEvent.click(screen.getByRole("button", { name: copy.start }));
-  await screen.findByRole("button", { name: copy.pause });
-  const deck = board(12, "match", 1);
-  for (let photo = 0; photo < deck.length / 2; photo++) {
-    const indexes = deck.flatMap((n, i) => (n === photo ? [i] : []));
-    tap(indexes[0]);
-    tap(indexes[1]);
-  }
-  fireEvent.click(screen.getByRole("button", { name: copy.round + " 2 · " + copy.start }));
-  advance(1);
-  fireEvent.click(screen.getByRole("button", { name: copy.pause }));
-  fireEvent.click(screen.getByRole("button", { name: copy.leave }));
-  await waitFor(() => expect(requests.filter((r) => r.action === "finish")).toHaveLength(1));
-  expect(requests.some((r) => r.action === "leave")).toBe(false);
-  expect(requests.find((r) => r.action === "finish")).toMatchObject({ playId: "local-round", score: expect.any(Number) });
-  const kept = requests.find((r) => r.action === "finish") as { ticks: number; moves: [number, number][]; score: number };
-  expect(kept.score).toBeGreaterThan(0);
-  // 서버가 같은 판정 함수로 다시 돌려 이 제출을 받아들인다(1라운드 완료).
-  expect(verify(12, kept.ticks, kept.moves, kept.score, 1e9).stage).toBe(1);
-});
 
 it("waits for explicit 10P confirmation after the free games run out", async () => {
   const requests: Record<string, unknown>[] = [];

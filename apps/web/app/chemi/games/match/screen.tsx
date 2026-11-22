@@ -516,7 +516,7 @@ function Session({
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [stage]);
-  const { view, tap, nextLevel, finishLevel, banked } = useMatchRound(ticket, stage !== "play", submit);
+  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play", submit);
   useEffect(() => {
     if (!ticket || !["play", "pause"].includes(stage)) return;
     const visibility = () => {
@@ -542,8 +542,6 @@ function Session({
       setStage("pause");
     };
     const abandon = () => {
-      // 다 맞춘 라운드가 있으면 그 점수로 판을 끝내 주간 기록에 남기고, 없으면 판을 버린다.
-      const kept = banked();
       if (accessToken.current)
         void fetch("/api/chemi/games", {
           method: "POST",
@@ -552,7 +550,7 @@ function Session({
             "content-type": "application/json",
             authorization: "Bearer " + accessToken.current,
           },
-          body: JSON.stringify(kept ?? { action: "leave", playId: ticket.playId }),
+          body: JSON.stringify({ action: "leave", playId: ticket.playId }),
         }).catch(() => {});
     };
     const restore = (event: PageTransitionEvent) => {
@@ -570,7 +568,7 @@ function Session({
       window.removeEventListener("pagehide", abandon);
       window.removeEventListener("pageshow", restore);
     };
-  }, [ticket, stage, banked]);
+  }, [ticket, stage]);
   useEffect(() => {
     if (!sound || stage !== "play") return;
     const song = new Audio(`/chemi/match/${character}.mp3`);
@@ -618,11 +616,6 @@ function Session({
     });
   }
   function leave() {
-    const kept = banked();
-    if (kept && auth.authenticated) {
-      void submit(kept);
-      return;
-    }
     void action(async () => {
       if (ticket && auth.authenticated)
         await call({ action: "leave", playId: ticket.playId });
