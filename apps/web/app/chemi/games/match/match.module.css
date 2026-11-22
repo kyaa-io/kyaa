@@ -650,6 +650,8 @@
   background: var(--color-line);
 }
 .levelList [aria-current="step"] .stepGrid i { background: var(--color-accent); }
+/* 판 그림 높이가 단계마다 달라도 시간 줄은 아래 끝을 맞춘다. */
+.levelList li { align-content: end; }
 .lobbyHero {
   color: var(--color-ink);
   background: none;
