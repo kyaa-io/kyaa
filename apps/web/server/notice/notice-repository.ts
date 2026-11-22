@@ -20,6 +20,7 @@ type AdminNoticeInput = Readonly<{
   expectedRevision?: number;
   celebrityId: string;
   slug: string;
+  sourcePublishedAt?: string;
   pinned: boolean;
   postType?: "notice" | "artist_post";
   visibility?: "public" | "members";
@@ -50,7 +51,7 @@ export class NoticeRepository {
     }
     let query = this.db
       .from("celebrity_notices")
-      .select("id,slug,notice_kind,pinned,published_at,celebrities!inner(slug,status,archived_at),celebrity_notice_localizations!inner(locale,title)")
+      .select("id,slug,notice_kind,pinned,display_published_at,celebrities!inner(slug,status,archived_at),celebrity_notice_localizations!inner(locale,title)")
       .eq("celebrities.slug", input.celebritySlug)
       .eq("celebrities.status", "published")
       .is("celebrities.archived_at", null)
@@ -61,7 +62,7 @@ export class NoticeRepository {
     // Order before pagination so a welcome notice cannot hide news on home.
     if (input.surface === "home") query = query.order("notice_kind", { ascending: true });
     query = query.order("pinned", { ascending: false })
-      .order("published_at", { ascending: false })
+      .order("display_published_at", { ascending: false })
       .order("id", { ascending: false })
       .range(offset, offset + limit);
     const { data, error } = await query;
@@ -71,7 +72,7 @@ export class NoticeRepository {
       slug: row.slug,
       pinned: row.pinned,
       kind: row.notice_kind,
-      publishedAt: row.published_at,
+      publishedAt: row.display_published_at,
       title: Array.isArray(row.celebrity_notice_localizations)
         ? row.celebrity_notice_localizations[0]?.title
         : row.celebrity_notice_localizations?.title,
@@ -91,7 +92,7 @@ export class NoticeRepository {
   }): Promise<PublicNoticeDetail | null> {
     const { data, error } = await this.db
       .from("celebrity_notices")
-      .select("slug,notice_kind,pinned,published_at,celebrities!inner(slug,status,archived_at),celebrity_notice_localizations!inner(locale,title,body_json)")
+      .select("slug,notice_kind,pinned,display_published_at,celebrities!inner(slug,status,archived_at),celebrity_notice_localizations!inner(locale,title,body_json)")
       .eq("slug", input.noticeSlug)
       .eq("celebrities.slug", input.celebritySlug)
       .eq("celebrities.status", "published")
@@ -112,14 +113,14 @@ export class NoticeRepository {
       body: parseNoticeDocument(localization.body_json),
       pinned: data.pinned,
       kind: data.notice_kind,
-      publishedAt: data.published_at!,
+      publishedAt: data.display_published_at!,
     };
   }
 
   async listAdmin(admin: NoticeActor, celebrityId: string) {
     const { data, error } = await this.db
       .from("celebrity_notices")
-      .select("id,celebrity_id,slug,publication_status,pinned,post_type,visibility,published_at,archived_at,archive_reason,revision,created_at,celebrity_notice_localizations(locale,title,body_json)")
+      .select("id,celebrity_id,slug,publication_status,pinned,post_type,visibility,published_at,source_published_at,archived_at,archive_reason,revision,created_at,celebrity_notice_localizations(locale,title,body_json)")
       .eq("celebrity_id", celebrityId)
       .order("created_at", { ascending: false });
     if (error) throw new NoticeRepositoryError(error.message);
@@ -130,7 +131,7 @@ export class NoticeRepository {
     if (admin.role === "viewer") throw new NoticeRepositoryError("viewer is read-only");
     const ko = { ...input.localizations.ko, body: parseNoticeDocument(input.localizations.ko.body) };
     const en = { ...input.localizations.en, body: parseNoticeDocument(input.localizations.en.body) };
-    const { data, error } = await this.db.rpc("save_admin_celebrity_notice", {
+    const { data, error } = await this.db.rpc(input.sourcePublishedAt ? "save_dated_celebrity_notice" : "save_admin_celebrity_notice", {
       p_actor_app_user_id: admin.appUserId,
       p_actor_admin_allowlist_id: admin.allowlistId,
       p_correlation_id: correlationId,
@@ -138,6 +139,7 @@ export class NoticeRepository {
       p_expected_revision: input.expectedRevision ?? null,
       p_celebrity_id: input.celebrityId,
       p_slug: input.slug,
+      ...(input.sourcePublishedAt ? { p_source_published_at: input.sourcePublishedAt } : {}),
       p_pinned: input.pinned,
       p_title_ko: ko.title.trim(),
       p_body_ko: ko.body,
@@ -147,6 +149,17 @@ export class NoticeRepository {
     });
     if (error) throw new NoticeRepositoryError(error.message);
     return { id: data };
+  }
+
+  async setSourceDate(admin: NoticeActor, correlationId: string, celebrityId: string, input: { id: string; expectedRevision: number; sourcePublishedAt: string }) {
+    if (admin.role === "viewer") throw new NoticeRepositoryError("viewer is read-only");
+    const { error } = await this.db.rpc("set_notice_source_date", {
+      p_actor_app_user_id: admin.appUserId, p_actor_admin_allowlist_id: admin.allowlistId,
+      p_correlation_id: correlationId, p_celebrity_id: celebrityId, p_notice_id: input.id,
+      p_expected_revision: input.expectedRevision, p_source_published_at: input.sourcePublishedAt,
+    });
+    if (error) throw new NoticeRepositoryError(error.message);
+    return { ok: true };
   }
 
   async noticeBelongsToChannel(noticeId: string, celebrityId: string) {
