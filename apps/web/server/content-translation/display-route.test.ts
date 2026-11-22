@@ -139,3 +139,49 @@ it("does not call the provider when another request owns the miss", async () => 
  await createDisplayTranslationHandler(d)(request({ text: "Hello world", targetLocale: "ru" }));
  expect(d.translate).not.toHaveBeenCalled();
 });
+it("keeps personal text out of the shared cache and caches it for that reader only", async () => {
+ const d = dependencies(); const original = d.rpc.getMockImplementation()!;
+ const personalRows = new Map<string, string>();
+ d.rpc.mockImplementation(async (name, args) => {
+  const key = `${args.p_requester_hash}|${args.p_source_hash}|${args.p_target_locale}`;
+  if (name === "save_display_translation") { personalRows.set(key, args.p_translated_text as string); return null; }
+  if (name === "read_display_translation") return personalRows.has(key) ? { translatedText: personalRows.get(key), cached: true } : null;
+  return original(name, args);
+ });
+ const handle = createDisplayTranslationHandler(d);
+ const personal = (ip: string) => request({ text: "Your friend replied", targetLocale: "ru", scope: "personal" }, { "x-byus-client-ip": ip });
+ expect(await (await handle(personal("192.0.2.1"))).json()).toEqual({ translatedText: "Привет", cached: false });
+ expect(await (await handle(personal("192.0.2.1"))).json()).toEqual({ translatedText: "Привет", cached: true });
+ expect(d.translate).toHaveBeenCalledTimes(1);
+ // Another reader with the same text is translated again: nothing personal is shared.
+ expect(await (await handle(personal("192.0.2.9"))).json()).toEqual({ translatedText: "Привет", cached: false });
+ expect(d.translate).toHaveBeenCalledTimes(2);
+ const names = d.rpc.mock.calls.map(c => c[0]);
+ expect(names).not.toContain("read_shared_translations");
+ expect(names).not.toContain("claim_shared_translation_requests");
+ expect(names).not.toContain("save_shared_translations");
+ // Public text from the same reader still uses the shared cache.
+ await handle(request({ text: "Your friend replied", targetLocale: "ru" }));
+ expect(d.rpc.mock.calls.map(c => c[0])).toContain("save_shared_translations");
+});
+it("rejects an unknown scope", async () => {
+ const d = dependencies();
+ expect((await createDisplayTranslationHandler(d)(request({ text: "Hello", targetLocale: "ru", scope: "everyone" }))).status).toBe(400);
+});
+it("records an exhausted limit once the budget refuses and still shows the source text", async () => {
+ const d = dependencies(); const original = d.rpc.getMockImplementation()!;
+ d.rpc.mockImplementation(async (name, args) => {
+  if (name === "reserve_display_translation_request") throw new Error("TRANSLATION_RATE_LIMITED");
+  return original(name, args);
+ });
+ const res = await createDisplayTranslationHandler(d)(request({ text: "Hello world", targetLocale: "ru" }));
+ expect(await res.json()).toEqual({ translatedText: "Hello world", cached: false, fallback: true });
+ expect(d.translate).not.toHaveBeenCalled();
+ expect(d.rpc.mock.calls.filter(c => c[0] === "record_translation_limit_block")).toEqual([["record_translation_limit_block", { p_character_count: 11 }]]);
+});
+it("does not record a limit for other reservation failures", async () => {
+ const d = dependencies(); const original = d.rpc.getMockImplementation()!;
+ d.rpc.mockImplementation(async (name, args) => name === "reserve_display_translation_request" ? Promise.reject(new Error("TRANSLATION_INVALID_INPUT")) : original(name, args));
+ await createDisplayTranslationHandler(d)(request({ text: "Hello world", targetLocale: "ru" }));
+ expect(d.rpc.mock.calls.map(c => c[0])).not.toContain("record_translation_limit_block");
+});

@@ -5,6 +5,7 @@ proof_dir="$root_dir/work/display-translation-concurrency"
 mkdir -p "$proof_dir"
 psql -X -v ON_ERROR_STOP=1 <<'SQL' >"$proof_dir/setup.log"
 do $$begin if current_database()<>'byus_clean' then raise exception 'disposable database required';end if;end$$;
+update public.translation_limits set user_requests_per_minute=10,user_daily_characters=10000,service_daily_characters=20000,service_monthly_characters=200000;
 delete from public.content_translation_requests;
 delete from public.display_translation_requests;
 insert into public.app_users(id,privy_user_id,verified_email) values

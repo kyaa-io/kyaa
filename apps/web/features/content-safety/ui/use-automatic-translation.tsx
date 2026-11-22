@@ -33,7 +33,7 @@ export function resetTranslationUnavailableForTest() {
   try { window.sessionStorage.removeItem(PAUSE_KEY); } catch { /* Nothing to clear. */ }
 }
 
-function requestTranslation(input: { force?: boolean; authenticated: boolean; getAccessToken: () => Promise<string | null>; key: string; locale: AppLocale; texts: readonly string[]; target?: Target }) {
+function requestTranslation(input: { force?: boolean; personal?: boolean; authenticated: boolean; getAccessToken: () => Promise<string | null>; key: string; locale: AppLocale; texts: readonly string[]; target?: Target }) {
   let pending = requests.get(input.key);
   if (!pending) {
     pending = (async () => {
@@ -46,7 +46,7 @@ function requestTranslation(input: { force?: boolean; authenticated: boolean; ge
         method: "POST", cache: "no-store", signal: AbortSignal.timeout(20_000),
         headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify(objectTarget ? { targetType: input.target!.targetType, targetId: input.target!.targetId, targetLocale: input.locale, locale: toContentLocale(input.locale), ...(input.target!.slots ? { slots: input.target!.slots } : {}) }
-          : input.texts.length === 1 ? { text: input.texts[0], targetLocale: input.locale } : { texts: input.texts, targetLocale: input.locale }),
+          : { ...(input.texts.length === 1 ? { text: input.texts[0] } : { texts: input.texts }), targetLocale: input.locale, ...(input.personal ? { scope: "personal" } : {}) }),
       });
       const raw: unknown = await response.json();
       if (!response.ok) {
@@ -79,12 +79,13 @@ function requestTranslation(input: { force?: boolean; authenticated: boolean; ge
   return pending;
 }
 
-export function useAutomaticTranslation({ texts, locale, target, enabled = true }: {
-  texts: readonly string[]; locale: AppLocale; target?: Target; enabled?: boolean;
+/** `personal`: text only this reader sees (their notifications, friend messages). The server keeps it out of the shared translation cache. */
+export function useAutomaticTranslation({ texts, locale, target, enabled = true, personal = false }: {
+  texts: readonly string[]; locale: AppLocale; target?: Target; enabled?: boolean; personal?: boolean;
 }): AutomaticTranslation {
   const auth = useByUsAuth(), session = useByUsSession(), copy = contentCopy(locale);
   const identity = `${auth.authenticated}:${session.ownerId ?? auth.user?.id ?? "guest"}:${session.generation}`;
-  const key = JSON.stringify([identity, locale, target ?? null, texts]);
+  const key = JSON.stringify([identity, locale, target ?? null, texts, personal]);
   const eligible = useMemo(() => texts.some(text => shouldOfferTranslation(text, locale)), [texts, locale]);
   const ready = auth.ready && (!auth.authenticated || session.ready);
   const [element, observeElement] = useState<HTMLElement | null>(null);
@@ -92,7 +93,7 @@ export function useAutomaticTranslation({ texts, locale, target, enabled = true 
   const [state, setState] = useState<Result>({ key });
   const [original, setOriginal] = useState<string | null>(null);
   const pressedFor = useRef<string | null>(null);
-  const load = useEffectEvent(() => requestTranslation({ authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target }));
+  const load = useEffectEvent(() => requestTranslation({ authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target, personal }));
   useEffect(() => {
     const node = element;
     if (!node || !enabled || !ready || !eligible) return;
@@ -115,7 +116,7 @@ export function useAutomaticTranslation({ texts, locale, target, enabled = true 
   const retry = async () => {
     pressedFor.current = key;
     setState({ key, busy: true });
-    try { const result = await requestTranslation({ force: true, authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target }); setState(previous => previous.key === key ? { key, texts: result } : previous); }
+    try { const result = await requestTranslation({ force: true, authenticated: auth.authenticated, getAccessToken: auth.getAccessToken, key, locale, texts, target, personal }); setState(previous => previous.key === key ? { key, texts: result } : previous); }
     catch (error) { setState(previous => previous.key === key ? { key, error: error instanceof Error && error.message === "TRANSLATION_RATE_LIMITED" ? copy.translationLimit : copy.translationFailed } : previous); }
   };
   const result = state.key === key ? state : null;
@@ -134,11 +135,11 @@ export function TranslationControl({ locale, translation }: { locale: AppLocale;
   </button>}{translation.error && <span role="alert" className={styles.error}>{translation.error}</span>}</>;
 }
 
-export function TranslatedText({ text, locale, children, className, controls = true, as: Tag = "span" }: {
-  text: string; locale: AppLocale; children?: ReactNode; className?: string; controls?: boolean | "after"; as?: "span" | "p" | "div" | "h1" | "h2" | "strong";
+export function TranslatedText({ text, locale, children, className, controls = true, personal = false, as: Tag = "span" }: {
+  text: string; locale: AppLocale; children?: ReactNode; className?: string; controls?: boolean | "after"; personal?: boolean; as?: "span" | "p" | "div" | "h1" | "h2" | "strong";
 }) {
   const texts = useMemo(() => [text], [text]);
-  const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale });
+  const { observeElement, ...translation } = useAutomaticTranslation({ texts, locale, personal });
   const heading = <Tag ref={observeElement} className={className} lang={translation.showing ? locale : undefined} title={!controls && translation.showing ? text : undefined}>
     {translation.showing ? translation.texts[0] : children ?? text}
     {controls === true && <TranslationControl locale={locale} translation={translation} />}
