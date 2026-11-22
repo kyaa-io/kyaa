@@ -24,7 +24,7 @@ import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
-import type { Chart } from "./chart";
+import { monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
 import {
   firstReading,
   monthReading,
@@ -37,6 +37,8 @@ import { ChartPanel, ElementBlock, NatureBlock, RelationBlock, StrengthBlock, Te
 import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
+
+const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.earthlyBranch, "pillar");
 
 export type ResultView = "first" | "year" | "month" | "pair";
 
@@ -202,6 +204,7 @@ export function SajuResult({
         )}
         <ReadingDomains
           className={styles.section}
+          openWide={view === "first"}
           title={uiText("areas")}
           items={sajuDomains(chart, at, view).map((item) => ({
             key: item.key,
@@ -478,8 +481,8 @@ export function SajuResult({
               {uiText("deeper")}</FanText>
             {(
               [
-                [uiText("year"), uiText("free"), "year"],
-                [uiText("month"), uiText("free"), "month"],
+                [uiText("year"), `${pillarHanja(seasonAt(at).yearPillar)} · ${uiText("free")}`, "year"],
+                [uiText("month"), `${pillarHanja(monthSpanAt(at).pillar)} · ${uiText("free")}`, "month"],
               ] as const
             ).map(([label, tag, target]) => (
               <FanAction variant="text" key={label} className={styles.nextItem} onClick={() => onGo(target)}>

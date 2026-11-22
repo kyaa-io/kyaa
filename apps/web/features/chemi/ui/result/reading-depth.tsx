@@ -4,6 +4,7 @@
  * 결과 화면의 풀이 근거 줄과 영역별 풀이(사주·운세·별자리·타로 공통).
  * 근거는 용어 · 계산 값 · 쉬운 풀이 한 줄씩, 영역별 풀이는 접어 두고 첫 칸만 펼쳐 둔다.
  */
+import { useSyncExternalStore } from "react";
 import { FanDisclosure } from "@/components/fan-ui/fan-collapsible";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -58,8 +59,56 @@ export type ReadingDomainItem = {
   sentences: readonly string[];
 };
 
-export function ReadingDomains({ title, items, className }: { title: string; items: readonly ReadingDomainItem[]; className?: string }) {
+const wideQuery = "(min-width: 64rem)";
+function subscribeWide(change: () => void) {
+  const query = window.matchMedia(wideQuery);
+  query.addEventListener("change", change);
+  return () => query.removeEventListener("change", change);
+}
+const isWide = () => window.matchMedia(wideQuery).matches;
+
+/**
+ * `openWide`: 1024px부터 접지 않고 다섯 줄을 모두 펼친다. 이름 바로 옆에 등급·근거·풀이를 붙여 PC 넓은 줄에 빈 띠를 남기지 않는다.
+ */
+export function ReadingDomains({
+  title,
+  items,
+  className,
+  openWide = false,
+}: {
+  title: string;
+  items: readonly ReadingDomainItem[];
+  className?: string;
+  openWide?: boolean;
+}) {
+  const wide = useSyncExternalStore(subscribeWide, isWide, () => false);
   if (!items.length) return null;
+  if (openWide && wide)
+    return (
+      <section className={`${styles.section} ${className ?? ""}`} data-reading-domains="">
+        <FanHeading>{title}</FanHeading>
+        <dl className={styles.rows}>
+          {items.map((item) => (
+            <div key={item.key}>
+              <FanText as="dt" role="item" className={styles.ink}>
+                {item.label}
+              </FanText>
+              <dd>
+                {item.meta && (
+                  <FanText as="strong" role="label">
+                    {item.meta}
+                  </FanText>
+                )}
+                {item.basis && <FanText role="meta">{item.basis}</FanText>}
+                <FanText as="p" role="body" className={styles.ink}>
+                  {item.sentences.join(" ")}
+                </FanText>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    );
   return (
     <section className={`${styles.section} ${className ?? ""}`} data-reading-domains="">
       <FanHeading>{title}</FanHeading>
