@@ -25,11 +25,11 @@ psql -Xq -v ON_ERROR_STOP=1 <<'SQL'
 update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,
   migration_evidence_sha256=repeat('a',64),rewards_start_on=current_date;
 SQL
-sql "select group_wallet_post('$u','fan_point',30,'group_support',gen_random_uuid())"
+sql "select group_wallet_post('$u','fan_point',60,'group_support',gen_random_uuid())"
 for used in 1 2; do
   if error=$(sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true)" 2>&1); then exit 1; fi
   [[ "$error" == *CHEMI_LIMIT* ]]
-  [[ $(sql "select group_wallet_balance('$u','fan_point')") == 30 ]]
+  [[ $(sql "select group_wallet_balance('$u','fan_point')") == 60 ]]
   sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',false)"
 done
 # Feature-only checkouts run the pre-approval assertion first.
@@ -48,7 +48,7 @@ extra() { sql "select chemi_issue_play('$u','$1','run','changha',true)"; }
 key=ab100000-0000-4000-8000-000000000003
 race "select chemi_issue_play('$u','$key','run','changha',true)"
 for _ in 1 2 3; do extra "$key" >/dev/null; done
-[[ $(sql "select group_wallet_balance('$u','fan_point')") == 20 ]]
+[[ $(sql "select group_wallet_balance('$u','fan_point')") == 40 ]]
 extra ab100000-0000-4000-8000-000000000004 & first=$!
 extra ab100000-0000-4000-8000-000000000005 & second=$!
 wait "$first"
@@ -61,7 +61,7 @@ expect_error() {
 }
 expect_error "select chemi_issue_play('$u','$key','run','elina',true)" CHEMI_REQUEST_KEY_REUSED
 expect_error "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true)" CHEMI_LIMIT
-[[ $(sql "select count(*) from mobile_fan_economy_ledger where app_user_id='$u' and source_type='chemi_game_extra' and amount=-10") == 3 ]]
+[[ $(sql "select count(*) from mobile_fan_economy_ledger where app_user_id='$u' and source_type='chemi_game_extra' and amount=-20") == 3 ]]
 sql "select chemi_complete_reading('$u','saju','compat','dosa',null,'a','{}','v1','v1')"
 sql "select chemi_complete_reading('$u','star','compat','dosa',null,'a','{}','v1','v1')"
 expect_error "select chemi_complete_reading('$u','star','compat','dosa',null,'b','{}','v1','v1')" CHEMI_PAYMENT_REQUIRED
@@ -171,7 +171,7 @@ race "select chemi_reading_context('$u','fortune','daily','','elina','$u')"
 [[ $(sql "select chemi_reading_context('$u','fortune','daily','','elina','$u')#>'{saved,reward}'") == '{}' ]]
 sql "select chemi_complete_reading('$u','star','daily','elina','$u','','{}','v1','v1')"
 [[ $(sql "select sum(points) from chemi_point_grants where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 3 ]]
-[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 20 ]]
+[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 40 ]]
 sql "select chemi_complete_reading('$u','tarot','daily','dosa','$other','','{}','v1','v1')"
 [[ $(sql "select points from chemi_point_grants where user_id='$u' and character='dosa' and kst_date=dukjil_kst_date()") == 0 ]]
 sql "begin; set local session_replication_role=replica;
@@ -186,5 +186,5 @@ for character in dosa changha elina yuna; do
   workers+=("$!")
 done
 for worker in "${workers[@]}"; do wait "$worker"; done
-[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and source='fortune' and kst_date=dukjil_kst_date()") == 30 ]]
+[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and source='fortune' and kst_date=dukjil_kst_date()") == 60 ]]
 echo "reward_race PASS"

@@ -10,9 +10,9 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({
 afterEach(() => vi.unstubAllGlobals());
 
 it.each([
-  [{ freeRemaining: 2, extraRemaining: 3, extraCost: 10 }, "무료 2판 남음"],
-  [{ freeRemaining: 0, extraRemaining: 3, extraCost: 10 }, "추가 판 10P"],
-  [{ freeRemaining: 0, extraRemaining: 0, extraCost: 10 }, "내일 다시"],
+  [{ freeRemaining: 2, extraRemaining: 3, extraCost: 20 }, "무료 2판 남음"],
+  [{ freeRemaining: 0, extraRemaining: 3, extraCost: 20 }, "추가 판 20P"],
+  [{ freeRemaining: 0, extraRemaining: 0, extraCost: 20 }, "내일 다시"],
 ])("shows a short chip for the account's lobby %o", async (lobby, label) => {
   vi.stubGlobal("fetch", vi.fn(async () => Response.json(lobby)));
   render(<GameStatusChip game="pair" copy={copy} />);

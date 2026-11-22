@@ -70,7 +70,7 @@ export function celebrateReward({ locale, points = 0, stamps = 0, affinity, labe
   else popBadge(total.points > 0 ? `+${total.points.toLocaleString(locale)}` : title, total.points > 0, anchor);
 }
 
-/** The other half of `celebrateReward`: points the fan just spent (게임 추가 판 10P). Same toast and coin badge, but "-10P" and the badge sinks
+/** The other half of `celebrateReward`: points the fan just spent (게임 추가 판). Same toast and coin badge, but the quoted debit and the badge sinks
  * instead of rising, so a spend never reads like a grant. Call it right after the server confirms the spend. */
 export function celebrateSpend({ locale, points, label, anchor }: Readonly<{ locale: AppLocale; points: number; label?: string; anchor?: Element | null }>) {
   const p = Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
