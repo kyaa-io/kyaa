@@ -5,7 +5,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { board, FPS } from "@/features/chemi/games/engine";
 import { getMatchCopy } from "./copy";
 import { MatchScreen } from "./screen";
@@ -33,7 +33,11 @@ const art = {
 } as const;
 const photos = { changha: art, elina: art, yuna: art };
 
+beforeEach(() => {
+  localStorage.setItem("chemi.match.guide", "1");
+});
 afterEach(() => {
+  localStorage.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -92,7 +96,7 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   const choose = screen.getByRole("button", { name: copy.elina });
   await waitFor(() => expect(choose).toBeEnabled());
   fireEvent.click(choose);
-  fireEvent.click(screen.getByRole("button", {name: copy.elina + " · " + copy.start}));
+  fireEvent.click(screen.getByRole("button", {name: new RegExp("^" + copy.elina + " · " + copy.start)}));
   await screen.findByRole("button", { name: copy.pause });
   fireEvent.click(screen.getByRole("button", { name: copy.pause }));
   expect(
@@ -147,7 +151,7 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
   const choice = screen.getByRole("button", { name: copy.changha });
   await waitFor(() => expect(choice).toBeEnabled());
   fireEvent.click(choice);
-  fireEvent.click(screen.getByRole("button", {name: copy.changha + " · " + copy.start}));
+  fireEvent.click(screen.getByRole("button", {name: new RegExp("^" + copy.changha + " · " + copy.start)}));
   expect(requests.filter((r) => r.action === "start")).toHaveLength(0);
   const extra = await screen.findByRole("button", {
     name: copy.extraPlay + " · 10P",
@@ -160,4 +164,34 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
     character: "changha",
     extra: true,
   });
+});
+
+it("shows the rules and a free 2x2 practice before the first game", async () => {
+  localStorage.clear();
+  const requests: Record<string, unknown>[] = [];
+  vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    requests.push(body);
+    if (body.action === "lobby")
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 10, ranking: [] });
+    throw Error(body.action);
+  });
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  const startButton = await screen.findByRole("button", { name: new RegExp("^" + copy.changha + " · " + copy.start) });
+  await waitFor(() => expect(startButton).toBeEnabled());
+  fireEvent.click(startButton);
+  expect(await screen.findByText(copy.rulePreview)).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: copy.skip })).toBeEnabled();
+  // 연습 판 [0,1,1,0]: 1·2번은 다른 사진(틀림), 1·4번과 2·3번이 짝이다.
+  const card = (n: number) => screen.getByRole("button", { name: new RegExp("^" + copy.card + " " + n + " ") });
+  fireEvent.click(card(1));
+  fireEvent.click(card(2));
+  expect(await screen.findAllByText(copy.wrong)).toHaveLength(2);
+  await waitFor(() => expect(screen.queryByText(copy.wrong)).toBeNull(), { timeout: 2000 });
+  fireEvent.click(card(1));
+  fireEvent.click(card(4));
+  fireEvent.click(card(2));
+  fireEvent.click(card(3));
+  expect(await screen.findByRole("button", { name: copy.changha + " · " + copy.start + " · " + copy.freePlays + " 3" })).toBeEnabled();
+  expect(requests.some(r => r.action === "start")).toBe(false);
 });

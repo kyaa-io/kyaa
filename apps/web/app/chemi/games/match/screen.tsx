@@ -8,7 +8,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanText } from "@/components/fan-ui/fan-text";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { celebrateSpend } from "@/components/fan-ui/reward-celebration";
 import { parseAppLocale } from "@/i18n/locales";
@@ -40,7 +40,24 @@ type Photos = Record<
     cards: readonly string[];
   }
 >;
-type Stage = "start" | "play" | "pause" | "result" | "empty" | "reminder";
+type Stage = "start" | "guide" | "play" | "pause" | "result" | "empty" | "reminder";
+const GUIDE_KEY = "chemi.match.guide";
+/** 처음 한 번만 방법 안내를 띄운다. 저장소를 못 쓰면 매번 띄운다. */
+function guideSeen() {
+  try { return localStorage.getItem(GUIDE_KEY) === "1"; } catch { return false; }
+}
+function markGuideSeen() {
+  try { localStorage.setItem(GUIDE_KEY, "1"); } catch { /* 다음에 다시 보여 준다 */ }
+}
+/** 무료 판은 한국 자정에 다시 채워진다. */
+function untilKstMidnight(now: number) {
+  const day = 86_400_000, offset = 9 * 3_600_000;
+  return (Math.floor((now + offset) / day) + 1) * day - offset - now;
+}
+function hms(ms: number) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  return [Math.floor(total / 3600), Math.floor(total / 60) % 60, total % 60].map(n => String(n).padStart(2, "0")).join(":");
+}
 type Row = {
   nickname: string;
   character: Character;
@@ -142,6 +159,74 @@ function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, numb
   </dl>;
 }
 
+/** 카드 한 장: 뒷면 무늬·앞면 사진·맞춤 표시·틀림 표시(빨간 테두리 + '틀림' 글자 + 짧은 흔들림). */
+function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLabel, onClick }: {
+  open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number;
+  disabled: boolean; wrongLabel: string; onClick: () => void;
+}) {
+  return (
+    <div className={styles.card} data-open={open} data-matched={matched} data-wrong={wrong || undefined}>
+      <FanAction variant="text" disabled={disabled} ariaLabel={label} onClick={onClick}>
+        {open ? (
+          <Image width={640} height={800} sizes="(min-width: 768px) 210px, 33vw"
+            unoptimized={src.startsWith("/chemi/match/") || src.startsWith("/api/")} src={src} alt="" />
+        ) : (
+          <span aria-hidden="true" />
+        )}
+        {!open && <small className={styles.cardNumber}>{String(number).padStart(2, "0")}</small>}
+        {matched && (
+          <i>
+            <FanIcon icon={Check} size={16} />
+          </i>
+        )}
+        {wrong && <FanText role="label" className={styles.wrongMark}>{wrongLabel}</FanText>}
+      </FanAction>
+    </div>
+  );
+}
+
+const PRACTICE = [0, 1, 1, 0] as const;
+
+/** 방법 안내의 2×2 연습 판: 판을 쓰지 않고 기록도 남지 않는다. */
+function Practice({ faces, copy, onDone }: { faces: readonly string[]; copy: MatchCopy; onDone: () => void }) {
+  const [open, setOpen] = useState<number[]>([]);
+  const [matched, setMatched] = useState(0);
+  const [wrong, setWrong] = useState(false);
+  const done = useRef(onDone);
+  done.current = onDone;
+  useEffect(() => {
+    if (!wrong) return;
+    const timer = window.setTimeout(() => { setOpen([]); setWrong(false); }, 800);
+    return () => window.clearTimeout(timer);
+  }, [wrong]);
+  function flip(index: number) {
+    if (open.length === 2 || open.includes(index) || matched & (1 << index)) return;
+    const next = [...open, index];
+    if (next.length < 2) return setOpen(next);
+    if (PRACTICE[next[0]] === PRACTICE[next[1]]) {
+      const all = matched | (1 << next[0]) | (1 << next[1]);
+      setMatched(all);
+      setOpen([]);
+      if (all === 0b1111) done.current();
+    } else {
+      setOpen(next);
+      setWrong(true);
+    }
+  }
+  return (
+    <div className={styles.practice} data-columns="2">
+      {PRACTICE.map((face, index) => {
+        const isMatched = Boolean(matched & (1 << index));
+        const isOpen = isMatched || open.includes(index);
+        return <MatchCard key={index} open={isOpen} matched={isMatched} wrong={wrong && open.includes(index)}
+          src={faces[face]} number={index + 1} wrongLabel={copy.wrong}
+          label={[copy.card, index + 1, isMatched ? copy.matched : isOpen ? copy.openCard : copy.closedCard].join(" ")}
+          disabled={isMatched || open.includes(index) || open.length === 2} onClick={() => flip(index)} />;
+      })}
+    </div>
+  );
+}
+
 function clock(ticks: number) {
   const seconds = Math.floor(ticks / FPS);
   return [Math.floor(seconds / 60), seconds % 60]
@@ -234,6 +319,8 @@ function Session({
   const [subscribed, setSubscribed] = useState(false);
   const [copied, setCopied] = useState(false);
   const [load, setLoad] = useState(0);
+  const [practiced, setPracticed] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
   const audio = useRef<AudioContext | null>(null);
   const inFlight = useRef(false);
   const accessToken = useRef<string | null>(null);
@@ -328,12 +415,18 @@ function Session({
       setWorking(false);
     }
   }
-  async function start(who: Character, extra = false) {
+  async function start(who: Character, extra = false, fromGuide = false) {
     if (!auth.authenticated && !share) {
       auth.login();
       return;
     }
     setCharacter(who);
+    if (fromGuide) markGuideSeen();
+    else if (!extra && !guideSeen()) {
+      setPracticed(false);
+      setStage("guide");
+      return;
+    }
     if (!share && !extra && lobby?.freeRemaining === 0) {
       setStage("empty");
       return;
@@ -414,6 +507,12 @@ function Session({
       setLobby(await call<Lobby>({ action: "lobby" }));
     });
   }
+  useEffect(() => {
+    if (stage !== "empty") return;
+    setNow(Date.now());
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [stage]);
   const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play", submit);
   useEffect(() => {
     if (!ticket || !["play", "pause"].includes(stage)) return;
@@ -534,6 +633,10 @@ function Session({
       setStage("empty");
       return;
     }
+    if (stage === "guide") {
+      setStage("start");
+      return;
+    }
     if (stage !== "start") {
       setTicket(null);
       setStage("start");
@@ -570,9 +673,16 @@ function Session({
     .flatMap(person => person.cards);
   const active = stage === "play" && view;
   const levelList = <ol className={styles.levelList} aria-label={copy.round}>
-    {LEVELS.map(({columns, pairs, seconds}, i) => <li data-row="" key={pairs} aria-current={active && active.stage === i+1 ? "step" : undefined}>
-      <b>{[columns, Math.ceil(pairs*2/columns)].join("×")}</b><span>{clock(seconds * FPS)}</span>
-    </li>)}
+    {LEVELS.map(({columns, pairs, seconds}, i) => {
+      const rows = Math.ceil(pairs * 2 / columns);
+      return <li data-row="" key={pairs} aria-current={active && active.stage === i+1 ? "step" : undefined}
+        aria-label={`${copy.round} ${i + 1} · ${columns}×${rows} · ${clock(seconds * FPS)}`}>
+        <span className={styles.stepGrid} style={{ "--columns": columns } as CSSProperties} aria-hidden="true">
+          {Array.from({ length: columns * rows }, (_, cell) => <i key={cell} />)}
+        </span>
+        <span aria-hidden="true">{clock(seconds * FPS)}</span>
+      </li>;
+    })}
   </ol>;
   const isTrial = Boolean(share && !auth.authenticated);
   const scene = (
@@ -587,8 +697,16 @@ function Session({
       />
     </div>
   );
+  const tallScene = art.lobby ? (
+    <div className={styles.scene} data-tall="">
+      <Image width={1440} height={550} sizes="100vw" alt="" src={art.scene} data-character={character} />
+      <Image width={1440} height={1920} sizes="60vw" alt="" src={art.lobby} data-wide="" />
+    </div>
+  ) : scene;
+  const myRow = rows.find(row => row.isMe);
   const title = {
     start: share ? copy.challenge : copy.title,
+    guide: copy.guideTitle,
     play: copy.title,
     result: copy.result,
     empty: copy.title,
@@ -688,12 +806,7 @@ function Session({
                   ))}
                 </div>
                 <div className={styles.lobbyHero}>
-                  {art.lobby ? (
-                    <div className={styles.scene} data-tall="">
-                      <Image width={1440} height={550} sizes="100vw" alt="" src={art.scene} data-character={character} />
-                      <Image width={1440} height={1920} sizes="60vw" alt="" src={art.lobby} data-wide="" />
-                    </div>
-                  ) : scene}
+                  {tallScene}
                   {/* 기획 08-1: 판 정보의 '음악' 줄. 이름표를 붙여 사진 설명으로 읽히지 않게 한다. */}
                   <p><FanText role="meta">{copy.sound}</FanText> <FanText role="label">{(locale === "ko" ? ["매직 퍼즐 1", "매직 퍼즐 2", "코지 퍼즐 1"] : ["Magic Puzzle 1", "Magic Puzzle 2", "Cozy Puzzle 1"])[characters.indexOf(character)]}</FanText></p>
                 </div>
@@ -702,22 +815,46 @@ function Session({
                   <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}>
                     {copy[character]} · {copy.start}{lobby && ` · ${copy.freePlays} ${lobby.freeRemaining}`}
                   </StageAction>
+                  <FanAction variant="text" onClick={() => { setPracticed(false); setStage("guide"); }}>{copy.howTo}</FanAction>
                 </div>
                 {lobby?.previous && (
                   <p className={styles.detail}>
                     {copy.lastWeek} <b>{lobby.previous.place}</b>
                   </p>
                 )}
-                {lobby && (
-                  <p className={styles.detail}>
-                    {copy.freePlays} <b>{lobby.freeRemaining} / 3</b>
-                  </p>
-                )}
               </>
             ))}
+          {stage === "guide" && (
+            <>
+              <ol className={styles.rules}>
+                {([[copy.rulePreview, copy.rulePreviewMeta], [copy.ruleFlip, copy.ruleFlipMeta], [copy.ruleScore, copy.ruleScoreMeta]] as const).map(([rule, meta], i) => (
+                  <li data-row="" key={rule}>
+                    <b>{i + 1}</b>
+                    <FanText role="item">{rule}</FanText>
+                    <FanText role="meta">{meta}</FanText>
+                  </li>
+                ))}
+              </ol>
+              <FanText role="label" className={styles.practiceLabel}>{copy.practice}</FanText>
+              <Practice faces={art.cards} copy={copy} onDone={() => setPracticed(true)} />
+              <div className={styles.startAction}>
+                {practiced ? (
+                  <StageAction disabled={working} onClick={() => void start(character, false, true)}>
+                    {copy[character]} · {copy.start}{lobby && ` · ${copy.freePlays} ${lobby.freeRemaining}`}
+                  </StageAction>
+                ) : (
+                  <FanAction disabled={working} onClick={() => void start(character, false, true)}>{copy.skip}</FanAction>
+                )}
+              </div>
+            </>
+          )}
           {active && (
             <>
-              <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong></div>
+              <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong>
+                <FanText role="label" className={styles.status} aria-live="polite" data-tone={active.preview ? "preview" : active.second >= 0 ? "wrong" : undefined}>
+                  {active.preview ? `${copy.memorize} · ${active.preview}` : active.second >= 0 ? copy.wrong : ""}
+                </FanText>
+              </div>
               <progress aria-label={copy.time} data-urgent={active.remaining <= FPS * 10} value={active.remaining} max={LEVELS[active.stage-1].seconds * FPS} />
               <dl className={styles.hud} data-urgent={active.remaining <= FPS * 10}>
                 <div>
@@ -760,61 +897,34 @@ function Session({
                   const index = active.stage === 1 && cell > 4 ? cell - 1 : cell;
                   const matched = Boolean(active.matched & (1 << index));
                   const open =
+                    active.preview > 0 ||
                     matched ||
                     active.first === index ||
                     active.second === index;
                   const photo = active.layout[index];
                   return (
-                    <div
-                      className={styles.card}
-                      data-open={open}
-                      data-matched={matched}
+                    <MatchCard
                       key={cell}
-                    >
-                      <FanAction
-                        variant="text"
-                        disabled={
-                          matched ||
-                          active.first === index ||
-                          active.second >= 0
-                        }
-                        ariaLabel={[
-                          copy.card,
-                          cell + 1,
-                          matched
-                            ? copy.matched
-                            : open
-                              ? copy.openCard
-                              : copy.closedCard,
-                          ...(open ? [photo + 1] : []),
-                        ].join(" ")}
-                        onClick={() => {
-                          const isSecond = active.first >= 0;
-                          const paired = isSecond && active.layout[active.first] === photo;
-                          ring(sound, isSecond ? (paired ? 784 : 220) : 440);
-                          tap(index);
-                        }}
-                      >
-                        {open ? (
-                          <Image
-                            width={640}
-                            height={800}
-                            sizes="(min-width: 768px) 210px, 33vw"
-                            unoptimized={faces[photo].startsWith("/chemi/match/") || faces[photo].startsWith("/api/")}
-                            src={faces[photo]}
-                            alt=""
-                          />
-                        ) : (
-                          <span aria-hidden="true" />
-                        )}
-                        {!open && <small className={styles.cardNumber}>{String(cell + 1).padStart(2, "0")}</small>}
-                        {matched && (
-                          <i>
-                            <FanIcon icon={Check} size={16} />
-                          </i>
-                        )}
-                      </FanAction>
-                    </div>
+                      open={open}
+                      matched={matched}
+                      wrong={active.second >= 0 && (active.first === index || active.second === index)}
+                      src={faces[photo]}
+                      number={cell + 1}
+                      wrongLabel={copy.wrong}
+                      disabled={active.preview > 0 || matched || active.first === index || active.second >= 0}
+                      label={[
+                        copy.card,
+                        cell + 1,
+                        matched ? copy.matched : open ? copy.openCard : copy.closedCard,
+                        ...(open ? [photo + 1] : []),
+                      ].join(" ")}
+                      onClick={() => {
+                        const isSecond = active.first >= 0;
+                        const paired = isSecond && active.layout[active.first] === photo;
+                        ring(sound, isSecond ? (paired ? 784 : 220) : 440);
+                        tap(index);
+                      }}
+                    />
                   );
                 })}
               </div>
@@ -846,25 +956,41 @@ function Session({
           )}
           {stage === "empty" && (
             <>
-              {scene}
+              {tallScene}
               <FanHeading as="h2">{copy.exhausted}</FanHeading>
-              {lobby && (
-                <p>
-                  {copy.extraPlays} {lobby.extraRemaining} / 3
-                </p>
-              )}
-              <StageAction
-                disabled={working || !lobby?.extraRemaining || !lobby.extraCost}
-                onClick={() => setPaying(true)}
-              >
-                {lobby?.extraRemaining
-                  ? copy.extraPlay + " · " + lobby.extraCost + "P"
-                  : copy.noMore}
-              </StageAction>
-              <p>{copy.ranking} · {copy.me} <b>{rows.find(row => row.isMe)?.place ?? "—"}</b></p>
-              <FanAction onClick={() => setStage("reminder")}>
-                {copy.tomorrow}
-              </FanAction>
+              <dl className={styles.facts}>
+                <div>
+                  <FanText as="dt" role="meta">{copy.nextFree}</FanText>
+                  <dd className={numberStyles.xl}>{hms(untilKstMidnight(now))}</dd>
+                </div>
+                <div>
+                  <FanText as="dt" role="meta">{copy.myRank}</FanText>
+                  <dd>{myRow ? <><b>{copy.place.replace("{n}", String(myRow.place))}</b> · {myRow.score?.toLocaleString(locale) ?? clock(myRow.ticks)}</> : copy.emptyRanking}</dd>
+                </div>
+                {lobby && (
+                  <div>
+                    <FanText as="dt" role="meta">{copy.extraPlays}</FanText>
+                    <dd><b>{lobby.extraRemaining} / 3</b></dd>
+                  </div>
+                )}
+              </dl>
+              <p className={styles.quote}>
+                <Image width={112} height={112} alt="" src={art.portrait} />
+                <span><b>{copy[character]}</b> {copy.todayDone}</span>
+              </p>
+              <div className={styles.startAction}>
+                {lobby?.extraRemaining && lobby.extraCost ? (
+                  <>
+                    <StageAction disabled={working} onClick={() => setPaying(true)}>
+                      {copy.extraPlay} · {lobby.extraCost}P
+                    </StageAction>
+                    <FanAction onClick={() => setStage("reminder")}>{copy.tomorrow}</FanAction>
+                  </>
+                ) : (
+                  <StageAction onClick={() => setStage("reminder")}>{copy.tomorrow}</StageAction>
+                )}
+                <FanAction variant="text" href={`/chemi?locale=${locale}`}>{copy.toChemi}</FanAction>
+              </div>
             </>
           )}
           {stage === "reminder" && (
@@ -984,7 +1110,7 @@ function Session({
           )}
         </section>
         {stage !== "empty" && stage !== "pause" &&
-          stage !== "reminder" &&
+          stage !== "reminder" && stage !== "guide" &&
           (rankingLoaded ? (
             <Rankings rows={rows} copy={copy} full={Boolean(active)} locale={locale} />
           ) : (
