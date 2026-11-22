@@ -1,3 +1,4 @@
+import { composeLoop, type MusicScene } from "./music";
 import type { RunEvent } from "@/features/chemi/games/run";
 
 /** Effects are synthesised, so the game ships no audio files. One switch turns all of them on or off. */
@@ -24,12 +25,39 @@ const TONES: Partial<Record<RunEvent["type"] | "start" | "over", readonly Tone[]
 export function createSound() {
   let context: AudioContext | undefined;
   let on = false;
+  let scene: MusicScene | null = null;
+  let source: AudioBufferSourceNode | undefined;
+  let master: GainNode | undefined;
+  const loops = new Map<MusicScene, AudioBuffer>();
+  function unlock() {
+    try {
+      context ??= new AudioContext();
+      if (!master) {
+        master = context.createGain();
+        master.gain.value = on ? 1 : 0;
+        master.connect(context.destination);
+      }
+      void context.resume().catch(() => {});
+    } catch { /* Audio output is optional. */ }
+  }
+  function syncMusic() {
+    source?.stop();
+    source?.disconnect();
+    source = undefined;
+    if (!context || !master || !scene || !on || document.hidden) return;
+    const loop = loops.get(scene) ?? composeLoop(context, scene);
+    loops.set(scene, loop);
+    source = context.createBufferSource();
+    source.buffer = loop;
+    source.loop = true;
+    source.connect(master);
+    source.start();
+  }
   function play(name: keyof typeof TONES) {
     const tones = TONES[name];
     if (!on || !tones) return;
     try {
-      context ??= new AudioContext();
-      void context.resume().catch(() => {});
+      if (!context || !master) return;
       let at = context.currentTime;
       for (const [from, to, seconds, shape, level = 0.04] of tones) {
         const tone = context.createOscillator();
@@ -39,7 +67,7 @@ export function createSound() {
         tone.frequency.exponentialRampToValueAtTime(to, at + seconds);
         gain.gain.setValueAtTime(level, at);
         gain.gain.exponentialRampToValueAtTime(0.001, at + seconds);
-        tone.connect(gain).connect(context.destination);
+        tone.connect(gain).connect(master);
         tone.start(at);
         tone.stop(at + seconds + 0.02);
         at += seconds;
@@ -50,8 +78,16 @@ export function createSound() {
   }
   return {
     play,
-    set(next: boolean) { on = next; },
-    close() { void context?.close().catch(() => {}); },
+    unlock,
+    music(next: MusicScene | null) { if (scene !== next) { scene = next; syncMusic(); } },
+    visibility: syncMusic,
+    set(next: boolean) {
+      if (on === next) return;
+      on = next;
+      if (master) master.gain.value = on ? 1 : 0;
+      syncMusic();
+    },
+    close() { scene = null; syncMusic(); void context?.close().catch(() => {}); context = undefined; master = undefined; loops.clear(); },
   };
 }
 export type RunSound = ReturnType<typeof createSound>;

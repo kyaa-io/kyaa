@@ -26,18 +26,23 @@ const FRAME = 64;
 const GROUND = 40;
 const PIT = ["#6b4a52", "#4a2f39", "#34212a", "#2b1a22"];
 
-let pending: Promise<Art> | undefined;
-export function loadArt(): Promise<Art> {
-  pending ??= Promise.all(Object.entries(ART_FILES).map(([name, src]) => new Promise<[string, HTMLImageElement]>((resolve, reject) => {
+const pending: Partial<Record<import("./shared").Character, Promise<Art>>> = {};
+export function loadArt(character: import("./shared").Character = "changha"): Promise<Art> {
+  pending[character] ??= Promise.all(Object.entries(ART_FILES).map(([name, src]) => new Promise<[string, HTMLImageElement]>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve([name, image]);
-    image.onerror = () => { pending = undefined; reject(Error("RUN_ART")); };
-    image.src = src;
+    image.onerror = () => { delete pending[character]; reject(Error("RUN_ART")); };
+    image.src = src.replace("changha", character);
   }))).then((loaded) => Object.fromEntries(loaded) as Art);
-  return pending;
+  return pending[character];
 }
 
 /** Cells between the left edge and the runner: a fifth of the way in on wide fields. */
+export function pixelScale(cssPixels: number) {
+  const dpr = window.devicePixelRatio || 1;
+  return Math.max(1, Math.round(cssPixels * dpr)) / dpr;
+}
+
 export function originOf(width: number) {
   return Math.max(0, Math.round(width * 0.2) - PLAYER.left - 7);
 }
@@ -78,7 +83,7 @@ function entity(ctx: CanvasRenderingContext2D, art: Art, e: RunEntity, x: number
 
 export type FieldView = { width: number; height: number };
 
-export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldView, sim: Pick<ReturnType<typeof runRound>, "state" | "entities">, hitFor: number) {
+export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldView, sim: Pick<ReturnType<typeof runRound>, "state" | "entities">, hitFor: number, reducedMotion: boolean) {
   const { state, entities } = sim;
   const { width, height } = view;
   const ground = height - GROUND;
@@ -86,14 +91,14 @@ export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldVi
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = "#cdb9ae";
   ctx.fillRect(0, 0, width, height);
-  tile(ctx, art.street, state.distance, width, height - art.street.height);
+  tile(ctx, art.street, reducedMotion ? 0 : state.distance * 0.24, width, height - art.street.height);
   for (const e of entities) {
     if (e.gone) continue;
     const x = Math.round(e.x - state.distance + origin);
     if (x > width + 8 || x + e.w < -40) continue;
     entity(ctx, art, e, x, ground, height, state.tick);
   }
-  if (state.invincible && Math.floor(state.tick / 4) % 2) return;
+  if (!reducedMotion && state.invincible && Math.floor(state.tick / 4) % 2) return;
   const airPhase = state.velocity > 180 ? 0 : state.velocity > 0 ? 1 : state.velocity > -180 ? 2 : 3;
   const pose = hitFor > 0 ? 20 + Math.min(3, Math.floor((24 - hitFor) / 6))
     : state.sliding ? 16 + Math.floor(state.tick / 5) % 4
@@ -108,12 +113,13 @@ export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldVi
 }
 
 /** Still picture for the choose and result screens: the far street, one pose, a few props. */
-export function drawScene(ctx: CanvasRenderingContext2D, art: Art, view: FieldView, pose: keyof typeof POSE, props: readonly (readonly [PropName, number])[], floor: number) {
+export function drawScene(ctx: CanvasRenderingContext2D, art: Art, view: FieldView, pose: keyof typeof POSE, props: readonly (readonly [PropName, number])[], floor: number, resultScene: boolean) {
   const { width, height } = view;
   ctx.imageSmoothingEnabled = false;
   ctx.fillStyle = "#e9a03b";
   ctx.fillRect(0, 0, width, height);
-  tile(ctx, art.far, 40, width, height - art.far.height + (20 - floor));
+  const backdrop = resultScene ? art.street : art.far;
+  tile(ctx, backdrop, 40, width, height - backdrop.height + ((resultScene ? GROUND : 20) - floor));
   const ground = height - floor;
   for (const [name, at] of props) prop(ctx, art, name, Math.round(width * at), ground + 1);
   ctx.drawImage(art.runner, POSE[pose] * FRAME, 0, FRAME, FRAME, Math.round(width * 0.46 - FRAME / 2), ground - FRAME + 1, FRAME, FRAME);

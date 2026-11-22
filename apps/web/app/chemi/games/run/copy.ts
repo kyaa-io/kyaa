@@ -124,8 +124,38 @@ const table: Record<AppLocale, readonly string[]> = {
     "Не хватает {n}P", "Заработать очки в фан-заданиях", "Напомнить завтра", "Завтра пришлём письмо", "Не удалось загрузить.", "Рекорд для вызова", "Закрыть", "{n} с", "На прошлой неделе {n}-е", "Забег окончен", "Рекорд", "Новая трасса · {date}"],
 };
 
-export function getRunCopy(locale: AppLocale, cost?: number): RunCopy {
-  return Object.fromEntries(keys.map((key, i) => [key, table[locale][i]!.replace("{cost}", cost?.toLocaleString(locale) ?? "—")])) as RunCopy;
+const otherCourses: Record<AppLocale, [string, string]> = {
+  "zh-Hans": ["樱花夜街", "落日海滨步道"], "zh-Hant": ["櫻花夜街", "落日海濱步道"],
+  ko: ["벚꽃 봄밤 거리", "노을 바닷길"], en: ["Cherry blossom night", "Sunset boardwalk"],
+  ja: ["夜桜の通り", "夕暮れの海辺"], es: ["Cerezos de noche", "Paseo al atardecer"],
+  id: ["Malam bunga sakura", "Senja di tepi laut"], vi: ["Phố anh đào về đêm", "Bờ biển hoàng hôn"],
+  th: ["ถนนซากุระยามค่ำ", "ริมทะเลยามเย็น"], pt: ["Cerejeiras à noite", "Orla ao pôr do sol"],
+  fr: ["Cerisiers de nuit", "Promenade au couchant"], ru: ["Ночная аллея сакуры", "Набережная на закате"],
+};
+
+const comboLines: Record<AppLocale, [string, string]> = {
+  "zh-Hans": ["连续{n}次！节奏刚刚好。", "连续{n}次！手指很灵活吧？"],
+  "zh-Hant": ["連續{n}次！節奏剛剛好。", "連續{n}次！手指很靈活吧？"],
+  ko: ["{n}번 연속! 박자가 딱 맞아요.", "{n}번 연속! 손끝이 가볍지?"],
+  en: ["{n} in a row! Right on beat.", "{n} in a row! Light fingers, huh?"],
+  ja: ["{n}回連続！リズムぴったりです。", "{n}回連続！指が軽いでしょ？"],
+  es: ["¡{n} seguidos! Justo al compás.", "¡{n} seguidos! Qué dedos tan ágiles."],
+  id: ["{n} kali beruntun! Pas dengan irama.", "{n} kali beruntun! Jari kita lincah, kan?"],
+  vi: ["{n} lần liên tiếp! Đúng nhịp rồi.", "{n} lần liên tiếp! Nhẹ tay ghê nhỉ?"],
+  th: ["{n} ครั้งติด! ตรงจังหวะพอดีเลยค่ะ", "{n} ครั้งติด! นิ้วเบาดีเนอะ"],
+  pt: ["{n} seguidas! Bem no ritmo.", "{n} seguidas! Que dedos leves, hein?"],
+  fr: ["{n} de suite ! En plein rythme.", "{n} de suite ! Quels doigts agiles !"],
+  ru: ["{n} подряд! Точно в ритм.", "{n} подряд! Ловкие пальцы, да?"],
+};
+
+export function getRunCopy(locale: AppLocale, cost?: number, character: import("./shared").Character = "changha"): RunCopy {
+  const copy = Object.fromEntries(keys.map((key, i) => [key, table[locale][i]!.replace("{cost}", cost?.toLocaleString(locale) ?? "—")])) as RunCopy;
+  if (character !== "changha") {
+    const index = character === "elina" ? 0 : 1;
+    copy.map = otherCourses[locale][index];
+    copy.combo = comboLines[locale][index];
+  }
+  return copy;
 }
 
 export function fill(text: string, values: Record<string, string | number>) {
