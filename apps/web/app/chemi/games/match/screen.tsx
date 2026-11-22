@@ -166,7 +166,7 @@ function Rankings({
   return (
     <section className={styles.ranking} aria-label={copy.ranking}>
       <FanHeading as="h2">{copy.ranking}</FanHeading>
-      {!rows.length && <p>{copy.emptyRanking}</p>}
+      {full && !rows.length && <p>{copy.emptyRanking}</p>}
       <ol data-lobby={full ? undefined : ""}>
         {[...displayed, ...(mineOutside ? [me] : [])].map((row, i) => (
           <li
@@ -192,6 +192,12 @@ function Rankings({
             </span>
             <FanText role="meta">{copy[row.character]}</FanText>
             <b>{row.score?.toLocaleString() ?? clock(row.ticks)}</b>
+          </li>
+        ))}
+        {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, index) => (
+          <li data-row="" key={`vacant-${index}`}>
+            <b>{displayed.length + index + 1}</b><span className={styles.avatar} aria-hidden="true" />
+            <span aria-label={copy.emptyRanking}>—</span><span /><b>0</b>
           </li>
         ))}
       </ol>
@@ -694,7 +700,7 @@ function Session({
                 {levelList}
                 <div className={styles.startAction}>
                   <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}>
-                    {copy[character]} · {copy.start}
+                    {copy[character]} · {copy.start}{lobby && ` · ${copy.freePlays} ${lobby.freeRemaining}`}
                   </StageAction>
                 </div>
                 {lobby?.previous && (
@@ -855,6 +861,7 @@ function Session({
                   ? copy.extraPlay + " · " + lobby.extraCost + "P"
                   : copy.noMore}
               </StageAction>
+              <p>{copy.ranking} · {copy.me} <b>{rows.find(row => row.isMe)?.place ?? "—"}</b></p>
               <FanAction onClick={() => setStage("reminder")}>
                 {copy.tomorrow}
               </FanAction>
@@ -976,7 +983,7 @@ function Session({
             </>
           )}
         </section>
-        {stage !== "pause" &&
+        {stage !== "empty" && stage !== "pause" &&
           stage !== "reminder" &&
           (rankingLoaded ? (
             <Rankings rows={rows} copy={copy} full={Boolean(active)} locale={locale} />
