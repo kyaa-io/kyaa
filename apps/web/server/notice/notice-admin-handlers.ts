@@ -16,6 +16,7 @@ const saveSchema = z.object({
   expectedRevision: z.number().int().positive().optional(),
   slug: noticeSlugSchema,
   pinned: z.boolean(),
+  sourcePublishedAt: z.string().datetime({ offset: true }).optional(),
   postType: z.enum(["notice", "artist_post"]).optional(),
   visibility: z.enum(["public", "members"]).optional(),
   localizations: z.object({
@@ -40,6 +41,7 @@ export type NoticeHandlerDeps = {
   repository: {
     listAdmin(actor: NoticeActor, celebrityId: string): Promise<unknown>;
     save(actor: NoticeActor, correlationId: string, input: never): Promise<unknown>;
+    setSourceDate?(actor: NoticeActor, correlationId: string, celebrityId: string, input: { id: string; expectedRevision: number; sourcePublishedAt: string }): Promise<unknown>;
     state(actor: NoticeActor, correlationId: string, input: never): Promise<unknown>;
     upload(actor: NoticeActor, input: { celebrityId: string; noticeId: string; file: File }): Promise<unknown>;
     noticeBelongsToChannel?(noticeId: string, celebrityId: string): Promise<boolean>;
@@ -83,6 +85,14 @@ export function createNoticeListHandlers(getDeps: () => NoticeHandlerDeps) {
         if (value && typeof value === "object" && "action" in value && value.action === "save") {
           const body = saveSchema.parse(value);
           return json(await deps.repository.save(session, c, { ...body, celebrityId } as never));
+        }
+        if (value && typeof value === "object" && "action" in value && value.action === "setSourceDate") {
+          const body = z.object({
+            id: z.string().uuid(), expectedRevision: z.number().int().positive(),
+            sourcePublishedAt: z.string().datetime({ offset: true }),
+          }).parse(value);
+          if (!deps.repository.setSourceDate) throw new Error("Date update unavailable");
+          return json(await deps.repository.setSourceDate(session, c, celebrityId, body));
         }
         const body = stateSchema.parse(value);
         if (session.kind === "operator" && !(await deps.repository.noticeBelongsToChannel?.(body.id, celebrityId))) {
