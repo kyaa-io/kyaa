@@ -173,7 +173,7 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("opens a quoted date with the compute
   sql(`insert into app_users(id,privy_user_id,verified_email) values('${user}','did:privy:${user}','${user}@example.invalid') on conflict do nothing;
     insert into chemi_profiles(user_id,birth_date,calendar,birth_time,time_precision,consent_version,consent_at)
     values('${user}','1995-05-05','solar','14:30','exact','test',now()) on conflict do nothing;
-    select group_wallet_post('${user}','fan_point',3,'chemi_reward',gen_random_uuid())`);
+    select group_wallet_post('${user}','fan_point',10,'chemi_reward',gen_random_uuid())`);
   const day = sql("select dukjil_kst_date()+3");
   const open = async (confirm: boolean) => {
     const response = await openDate(new Request("http://localhost", { method: "POST", headers: { authorization: "Bearer fixture" },
@@ -181,7 +181,7 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("opens a quoted date with the compute
     expect(response.status).toBe(200);
     return response.json();
   };
-  expect(await open(false)).toMatchObject({ price: 3 });
+  expect(await open(false)).toMatchObject({ price: 10 });
   const reading = await open(true);
   expect(reading).toMatchObject({ kstDate: day, result: { locked: false, score: expect.any(Number) } });
   expect(await open(true)).toMatchObject({ replayed: true, readingId: reading.readingId, balance: reading.balance });
@@ -211,7 +211,7 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("tops up through the DEV order route,
   const day = sql("select dukjil_kst_date()+5");
   const date = async (confirm: boolean) => (await openDate(new Request("http://localhost", { method: "POST", headers: { authorization: "Bearer fixture" }, body: JSON.stringify({ day, character: "dosa", confirm }) }))).json();
 
-  expect(await date(false)).toMatchObject({ price: 3, balance: 1 });
+  expect(await date(false)).toMatchObject({ price: 10, balance: 1 });
   expect(balances()).toBe("1/0/1");
   expect(await date(false)).not.toHaveProperty("topupPath");
   vi.stubEnv("CHEMI_TOPUP_ENABLED", "true");
@@ -228,19 +228,19 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("tops up through the DEV order route,
   await call({ action: "refresh", orderId: opened.orderId });
   expect(balances()).toBe("1/100/101");
 
-  expect(await date(false)).toMatchObject({ price: 3, balance: 101 });
+  expect(await date(false)).toMatchObject({ price: 10, balance: 101 });
   vi.stubEnv("CHEMI_TOPUP_ENABLED", "false");
   const bought = await date(true);
-  expect(bought).toMatchObject({ balance: 98, kstDate: day, result: { locked: false } });
-  expect(balances()).toBe("0/98/98");
+  expect(bought).toMatchObject({ balance: 91, kstDate: day, result: { locked: false } });
+  expect(balances()).toBe("0/91/91");
   expect(await date(true)).toMatchObject({ replayed: true, readingId: bought.readingId });
-  expect(balances()).toBe("0/98/98");
+  expect(balances()).toBe("0/91/91");
 
   provider = { ...provider, status: "CANCELED", balanceAmount: 0 };
   vi.stubEnv("CHEMI_TOPUP_ENABLED", "true");
   const refused = await call({ action: "refresh", orderId: opened.orderId });
   expect(refused.status).toBe(409);
-  expect(balances()).toBe("0/98/98");
+  expect(balances()).toBe("0/91/91");
 
   // A second order that is cancelled before any spending returns to the activity balance only.
   provider = { ...provider, status: "DONE", balanceAmount: 1000 };
@@ -250,5 +250,5 @@ it.skipIf(!process.env.CHEMI_LOCAL_ROUTES)("tops up through the DEV order route,
   expect(balances()).toBe("0/198/198");
   provider = { ...provider, status: "CANCELED", balanceAmount: 0 };
   expect(await (await call({ action: "refresh", orderId: second.orderId })).json()).toMatchObject({ status: "CANCELED" });
-  expect(balances()).toBe("0/98/98");
+  expect(balances()).toBe("0/91/91");
 });

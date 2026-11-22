@@ -129,7 +129,7 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   expect(screen.getByRole("img", { name: "10" }).closest("b")).toHaveTextContent(/EXP$/);
 });
 
-it("waits for explicit 10P confirmation after the free games run out", async () => {
+it("waits for explicit 20P confirmation after the free games run out", async () => {
   const requests: Record<string, unknown>[] = [];
   vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
     const body = JSON.parse(String(init.body));
@@ -139,8 +139,8 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
         sound: false,
         freeRemaining: 0,
         extraRemaining: 2,
-        points: 12,
-        extraCost: 10,
+        points: 22,
+        extraCost: 20,
         ranking: [],
       });
     if (body.action === "start")
@@ -154,11 +154,11 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
   fireEvent.click(screen.getByRole("button", {name: new RegExp("^" + copy.changha + " · " + copy.start)}));
   expect(requests.filter((r) => r.action === "start")).toHaveLength(0);
   const extra = await screen.findByRole("button", {
-    name: copy.extraPlay + " · 10P",
+    name: copy.extraPlay + " · 20P",
   });
   fireEvent.click(extra);
   expect(requests.some(r => r.action === "start")).toBe(false);
-  fireEvent.click(await screen.findByRole("button", { name: "10P 쓰고 시작" }));
+  fireEvent.click(await screen.findByRole("button", { name: "20P 쓰고 시작" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(copy.insufficient);
   expect(requests.find((r) => r.action === "start")).toMatchObject({
     character: "changha",
@@ -173,7 +173,7 @@ it("shows the rules and a free 2x2 practice before the first game", async () => 
     const body = JSON.parse(String(init.body));
     requests.push(body);
     if (body.action === "lobby")
-      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 10, ranking: [] });
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
     throw Error(body.action);
   });
   render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
