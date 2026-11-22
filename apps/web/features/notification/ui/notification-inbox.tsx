@@ -120,7 +120,7 @@ function Leading({ item }: { item: NotificationItem }) {
 }
 
 function Line({ text, translated, locale }: { text: string; translated: boolean; locale: AppLocale }) {
-  return translated ? <TranslatedText text={text} locale={locale} controls={false} className={styles.line1} /> : <span className={styles.line1}>{text}</span>;
+  return translated ? <TranslatedText text={text} locale={locale} controls={false} personal className={styles.line1} /> : <span className={styles.line1}>{text}</span>;
 }
 
 function Entry({ entry, locale, favoriteName, inbox, onNavigate }: { entry: InboxEntry; locale: AppLocale; favoriteName: string | null; inbox: Inbox; onNavigate?: () => void }) {

@@ -84,9 +84,9 @@ describe("comment reply counts", () => {
     const rpc = vi.fn().mockResolvedValue({ total: 0, comments: [] });
     const api = createFanpageHandlers({ rpc, authorize: vi.fn(async () => ({ appUserId: me })), authorizeAdmin: vi.fn() } as never);
     expect((await api.comments(req("/api?fields=replies"), "elina", "notice-one")).status).toBe(200);
-    expect(rpc).toHaveBeenLastCalledWith("read_celebrity_notice_comments_replies", expect.objectContaining({ p_slug: "elina", p_notice_slug: "notice-one" }));
+    expect(rpc).toHaveBeenCalledWith("read_celebrity_notice_comments_replies", expect.objectContaining({ p_slug: "elina", p_notice_slug: "notice-one" }));
     expect((await api.comments(req("/api"), "elina", "notice-one")).status).toBe(200);
-    expect(rpc).toHaveBeenLastCalledWith("read_celebrity_notice_comments", expect.anything());
+    expect(rpc).toHaveBeenCalledWith("read_celebrity_notice_comments", expect.anything());
   });
 });
 
