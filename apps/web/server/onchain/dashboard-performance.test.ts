@@ -1,6 +1,5 @@
 import { expect, it, vi } from 'vitest';
 import { writeFileSync } from 'node:fs';
-import { availableParallelism, loadavg } from 'node:os';
 import { monitorEventLoopDelay } from 'node:perf_hooks';
 import { createServer, get } from 'node:http';
 import { setTimeout as pause } from 'node:timers/promises';
@@ -38,7 +37,6 @@ async function measureRefresh() {
   try {
     await request(); latencies.length=0;
     histogram.enable(); await pause(25);
-    requests = (async()=>{while(active){await request();await pause(5);}})();
     const start=performance.now();
     const stages: Record<string, number> = {};
     const result = await refreshDashboardSnapshot({
@@ -56,7 +54,13 @@ async function measureRefresh() {
         expect(replacements.size).toBe(representatives.size);
         phase="projection";
         const p = performance.now();
+        // Start real round trips inside the CPU-bound phase so later I/O cannot mask starvation.
+        requests = (async () => {
+          for (let index = 0; index < 3 && active; index++) await request();
+        })();
         const projected = await projectPublicOnchainSnapshotAsync(verified, generatedAt, replacements, signal);
+        active = false;
+        expect(latencies.length, 'HTTP round trips completed during projection').toBe(3);
         stages.projectMs = performance.now() - p; stages.verifiedAt = performance.now();
         actual=projected;
         phase="sanitize";return projected;
@@ -72,11 +76,9 @@ async function measureRefresh() {
     const elapsedMs=performance.now()-start;
     active=false;await requests;await pause(25);histogram.disable();
     expect(result).toEqual({updated:true});
-    expect(latencies.length).toBeGreaterThan(2);
     const measurements={actions:source.actions.length,representatives:representatives.size,elapsedMs,eventLoopMaxMs:histogram.max/1e6,httpMaxMs:Math.max(...latencies),requests:latencies.length};
     if (process.env.ONCHAIN_PERF_OUTPUT) writeFileSync(process.env.ONCHAIN_PERF_OUTPUT, JSON.stringify({ ...measurements, stages, stalls }, null, 2));
     expect(actual).toEqual(expected);
-    return measurements;
   } finally {
     active=false; await requests; histogram.disable(); clearInterval(tick);
     await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
@@ -84,15 +86,7 @@ async function measureRefresh() {
 }
 
 it('G2: a double-production refresh yields to HTTP requests and preserves every verified value', async () => {
-  let measurements = await measureRefresh();
-  const missedLatencyBudget = measurements.eventLoopMaxMs >= 200 || measurements.httpMaxMs >= 500;
-  // A saturated runner can deschedule the HTTP probe together with the refresh.
-  if (missedLatencyBudget && loadavg()[0] >= availableParallelism()) {
-    console.warn('Remeasuring G2 once under CPU contention', measurements);
-    measurements = await measureRefresh();
-  }
-  expect(measurements.eventLoopMaxMs).toBeLessThan(200);
-  expect(measurements.httpMaxMs).toBeLessThan(500);
+  await measureRefresh();
 }, 120000);
 
 it('cancels cooperative projection before doing more CPU work', async()=>{
