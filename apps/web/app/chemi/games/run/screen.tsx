@@ -81,7 +81,13 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     }
   }, [auth.ready, auth.authenticated, call, share, sound]);
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => () => sound.close(), [sound]);
+  useEffect(() => {
+    document.addEventListener("visibilitychange", sound.visibility);
+    return () => { document.removeEventListener("visibilitychange", sound.visibility); sound.close(); };
+  }, [sound]);
+  useEffect(() => {
+    if (stage !== "run") sound.music(stage === "result" ? "result" : null);
+  }, [sound, stage]);
   useEffect(() => { void loadArt().catch(() => {}); }, []);
 
   // Back during a run opens the pause veil instead of leaving the page.
@@ -155,6 +161,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     }
   }
   function toggleSound() {
+    sound.unlock();
     const next = !soundOn;
     setSoundOn(next);
     sound.set(next);

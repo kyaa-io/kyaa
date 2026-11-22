@@ -155,12 +155,11 @@
 .streaks i { position: absolute; inset: 22% 0 auto; height: 2px; background: var(--color-surface); opacity: .55; }
 .streaks i:nth-child(2) { top: 34%; }
 .streaks i:nth-child(3) { top: 46%; }
-.effects, .flash { position: absolute; inset: 0; pointer-events: none; }
-.flash { background: var(--color-accent); opacity: 0; }
+.effects { position: absolute; inset: 0; pointer-events: none; }
 .float { position: absolute; white-space: nowrap; animation: run-float 650ms var(--motion-easing) forwards; }
 .say { position: absolute; inset: var(--space-8) 0 auto; margin: 0; text-align: center; pointer-events: none; animation: run-say var(--motion-fast) var(--motion-easing); }
-.field[data-hit="true"] canvas { animation: run-shake 300ms linear; }
-.field[data-hit="true"] .flash { animation: run-flash 300ms linear; }
+
+.field[data-hit="true"] { border-color: var(--color-accent); }
 .play[data-fever="true"] .say { color: var(--color-accent-ink); }
 .veil {
   position: absolute;
@@ -237,7 +236,11 @@
 /* 결과 */
 .result { display: grid; gap: var(--space-6); padding: var(--space-1) var(--space-4) var(--space-6); }
 .resultMain { display: grid; gap: var(--space-4); min-width: 0; }
-.hero { height: 152px; border-radius: var(--radius-card); }
+.scoreCard { overflow: hidden; border-radius: var(--radius-card); background: var(--color-ink); color: var(--color-surface); }
+.hero { height: 168px; }
+.scoreCard .sum { padding: var(--space-4); color: inherit; }
+.scoreCard .sum > * { color: inherit; }
+.scoreCard .recordBadge { color: var(--color-ink); background: var(--color-surface); border-radius: var(--radius-pill); padding: var(--space-1) var(--space-3); }
 .sum { display: flex; flex-direction: column; align-items: center; gap: var(--space-1); text-align: center; font-variant-numeric: tabular-nums; }
 .lines { margin: 0; border-top: 1px solid var(--color-line); }
 .lines > div { display: flex; align-items: center; gap: var(--space-3); min-height: 52px; border-bottom: 1px solid var(--color-line); }
@@ -299,17 +302,15 @@
     gap: var(--space-8);
     padding: var(--space-10) var(--shell-inset) var(--space-12);
   }
-  .hero { height: 328px; }
+  .hero { height: 208px; }
   .lines { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-8); }
   .lines .care { grid-column: 1 / -1; }
   .nextRow { grid-template-columns: minmax(0, 320px) auto auto; justify-content: start; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .float, .say, .field[data-hit="true"] canvas, .field[data-hit="true"] .flash, .keyHint { animation: none; }
+  .float, .say, .keyHint { animation: none; }
 }
 @keyframes run-float { to { opacity: 0; transform: translateY(-24px); } }
 @keyframes run-say { from { opacity: 0; transform: translateY(8px); } }
-@keyframes run-shake { 25% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 75% { transform: translateX(-2px); } }
 /* 키 띠는 3.7초 그대로 있다가 300ms 동안 사라진다. 움직임 줄이기에서는 4초 뒤 바로 빠진다. */
 @keyframes run-hint { 92% { opacity: 1; } to { opacity: 0; } }
-@keyframes run-flash { 20% { opacity: .28; } }

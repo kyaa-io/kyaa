@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanPixelText } from "@/components/fan-ui/fan-pixel-text";
@@ -12,6 +12,33 @@ import { Ranking, Scene, type Character, type Rank, type Result } from "./shared
 import { RUN_KEYCAPS, RUN_KEYS, runKeyTarget } from "./keys";
 import { Keys, useKeyboardGuide, type RunStats } from "./track";
 import styles from "./run.module.css";
+
+function ResultScore({ score, locale, pattern }: { score: number; locale: string; pattern: string }) {
+  const [shown, setShown] = useState(score);
+  useLayoutEffect(() => {
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    let frame = 0;
+    function finish() {
+      cancelAnimationFrame(frame);
+      setShown(score);
+    }
+    if (motion.matches) { finish(); return; }
+    setShown(0);
+    const start = performance.now();
+    function step(now: number) {
+      const t = Math.min(1, (now - start) / 600);
+      setShown(Math.round(score * (1 - (1 - t) ** 3)));
+      if (t < 1) frame = requestAnimationFrame(step);
+    }
+    frame = requestAnimationFrame(step);
+    motion.addEventListener("change", finish);
+    return () => { cancelAnimationFrame(frame); motion.removeEventListener("change", finish); };
+  }, [score]);
+  const format = (value: number) => fill(pattern, { n: value.toLocaleString(locale) });
+  return <FanPixelText as="strong" role="result" data-run-result="" aria-label={format(score)}>
+    <span aria-hidden="true">{format(shown)}</span>
+  </FanPixelText>;
+}
 
 /** Result screen: score first, then what changed (rank, title, affinity), then what to do next. */
 export function ResultStage({ character, copy, locale, names, rows, loaded, stats, result, before, saving, trial, member, spent, free, extra, busy, copied, onAgain, onLogin, onShare, onAllRanks, errorLine, reminder }: {
@@ -47,14 +74,15 @@ export function ResultStage({ character, copy, locale, names, rows, loaded, stat
   }, [canAgain, busy]);
   return <div className={styles.result}>
     <div className={styles.resultMain}>
-      <div className={styles.hero}><Scene character={character} pose={won ? "win" : "ready"} floor={12} label={names[character]} /></div>
+      <div className={styles.scoreCard}><div className={styles.hero}><Scene resultScene character={character} pose={won ? "win" : "ready"} floor={12} label={names[character]} /></div>
       <div className={styles.sum}>
         <FanText role="meta">{stats?.left ? copy.left : `${names[character]} · ${copy.map} · ${today}`}</FanText>
-        <FanPixelText as="strong" role="result" data-run-result="">{fill(copy.points, { n: number.format(score) })}</FanPixelText>
+        <ResultScore score={score} locale={locale} pattern={copy.points} />
         {stats && <FanText role="label">{fill(copy.stats, { m: number.format(stats.meters), n: stats.notes, c: stats.bestCombo, f: stats.fevers })}</FanText>}
         {saving ? <FanText role="meta" aria-live="polite">{copy.saving}</FanText>
-          : result && before.best > 0 && result.score > before.best ? <FanText role="meta">{fill(copy.best, { n: number.format(before.best) })}</FanText>
+          : result && !trial && result.score > before.best ? <FanText role="label" className={styles.recordBadge}>{before.best ? fill(copy.best, { n: number.format(before.best) }) : copy.newBest}</FanText>
             : result && before.best > 0 ? <FanText role="meta">{copy.newBest} {fill(copy.points, { n: number.format(before.best) })}</FanText> : null}
+      </div>
       </div>
       {errorLine}
       {result && !trial && <dl className={styles.lines}>

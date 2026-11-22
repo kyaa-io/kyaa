@@ -7,7 +7,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { fill, type RunCopy } from "./copy";
-import { ART, drawScene, loadArt, type PropName, type POSE } from "./render";
+import { ART, drawScene, pixelScale, loadArt, type PropName, type POSE } from "./render";
 import styles from "./run.module.css";
 
 export const characters = ["changha", "elina", "yuna"] as const;
@@ -20,7 +20,7 @@ export type Challenge = { score: number; nickname: string; available: boolean; r
 export type Stage = "select" | "run" | "result";
 export const SELECT_PROPS: readonly (readonly [PropName, number])[] = [["leaves", 0.04], ["cone", 0.7], ["mailbox", 0.82]];
 
-export function Scene({ character, pose, props = [], floor, label }: { character: Character; pose: keyof typeof POSE; props?: readonly (readonly [PropName, number])[]; floor: number; label: string }) {
+export function Scene({ resultScene = false, character, pose, props = [], floor, label }: { resultScene?: boolean; character: Character; pose: keyof typeof POSE; props?: readonly (readonly [PropName, number])[]; floor: number; label: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const node = canvas.current!;
@@ -29,19 +29,19 @@ export function Scene({ character, pose, props = [], floor, label }: { character
     function paint() {
       void loadArt(character).then((art) => {
         if (!active) return;
-        const scale = innerWidth >= 1024 ? 4 : 2;
+        const scale = pixelScale(innerWidth >= 1024 && !resultScene ? 4 : 2);
         node.width = Math.ceil(box.clientWidth / scale);
         node.height = Math.ceil(box.clientHeight / scale);
         node.style.width = `${node.width * scale}px`;
         node.style.height = `${node.height * scale}px`;
-        drawScene(node.getContext("2d")!, art, node, pose, props, floor);
+        drawScene(node.getContext("2d")!, art, node, pose, props, floor, resultScene);
         node.dataset.painted = "true";
       }).catch(() => {});
     }
     const observer = new ResizeObserver(paint);
     observer.observe(box);
     return () => { active = false; observer.disconnect(); };
-  }, [character, pose, props, floor]);
+  }, [character, pose, props, floor, resultScene]);
   return <canvas ref={canvas} role="img" aria-label={label} />;
 }
 
