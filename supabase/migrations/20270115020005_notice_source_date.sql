@@ -27,8 +27,8 @@ begin
   update public.celebrity_notices set source_published_at=p_source_published_at,revision=revision+1
     where id=p_notice_id and celebrity_id=p_celebrity_id and revision=p_expected_revision and archived_at is null;
   if not found then raise exception 'NOTICE_DATE_REVISION_CONFLICT'; end if;
-  insert into public.audit_logs(action,entity_type,entity_id,correlation_id,before_after_summary)
-    values('notice.source_date.updated','celebrity_notice',p_notice_id::text,p_correlation_id,jsonb_build_object('sourcePublishedAt',p_source_published_at));
+  insert into public.audit_logs(actor_app_user_id,actor_admin_allowlist_id,action,entity_type,entity_id,correlation_id,before_after_summary)
+    values(p_actor_app_user_id,p_actor_admin_allowlist_id,'notice.source_date.updated','celebrity_notice',p_notice_id::text,p_correlation_id,jsonb_build_object('sourcePublishedAt',p_source_published_at));
 end $$;
 
 create function public.save_dated_celebrity_notice(
@@ -57,6 +57,10 @@ begin
     execute format('revoke all on function %s from public,anon,authenticated',f);
     execute format('grant execute on function %s to service_role',f);
   end loop;
+  f:='public.sync_home_shortform_notice(uuid)'::regprocedure;
+  execute replace(pg_get_functiondef(f),
+    'coalesce((select p.source_published_at from public.sns_ingest_posts p where p.notice_id = n.id), n.published_at)',
+    'n.display_published_at');
   f:='public.read_fan_notices(uuid,text,public.content_locale,timestamptz,uuid,integer,boolean)'::regprocedure;
   execute replace(pg_get_functiondef(f),'published_at','display_published_at');
   for f in select oid::regprocedure from pg_proc where pronamespace='public'::regnamespace
@@ -66,5 +70,8 @@ begin
     execute replace(pg_get_functiondef(f),'n.published_at','n.display_published_at');
   end loop;
 end $$;
+create trigger home_shortform_source_date_sync after update of source_published_at on public.celebrity_notices
+  for each row when (old.source_published_at is distinct from new.source_published_at)
+  execute function public.home_shortform_notice_sync_trigger();
 notify pgrst,'reload schema';
 commit;
