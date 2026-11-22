@@ -22,16 +22,19 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
   CircleAlert,
   Coins,
   Heart,
   History,
   Mail,
   MessageCircle,
+  Phone,
   RotateCcw,
   Share2,
   Sparkles,
   UsersRound,
+  X,
 } from "@/components/fan-ui/fan-icons";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -39,11 +42,12 @@ import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
-import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
+import { ReadingTitle, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
 import {
-  askArt, askExamples, askFollowups, askLinesFor, askLoop, askName, askPages, askReaction, askRecall, askSubject, askVoice,
+  askArt, askExamples, askFollowups, askLinesFor, askLoop, askName, askPages, askReaction, askRecall, askResultExamples, askResultLine,
+  askSubject, askVoice,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
   type AskCharacter, type AskContent, type AskRecall, type AskTopic,
 } from "./lines";
@@ -89,15 +93,25 @@ function watchWide(notify: () => void) {
   return () => query.removeEventListener("change", notify);
 }
 
+/** 질문 글자 수(기획 03-6 22·23). 서버 routes.ts ASK_QUESTION_MAX 와 같다. 이 수부터 글자 수가 분홍이 된다. */
+const QUESTION_MAX = 200;
+const QUESTION_WARN = 180;
+/** 이 시간 안에 답이 오지 않으면 실패로 본다(기획 03-6 16). 서버가 잡아 둔 질문은 같은 번호로 다시 보내면 한 번만 센다. */
+const SEND_TIMEOUT_MS = 20_000;
+const contentTitle = { saju: "saju", fortune: "fortune", star: "zodiac", tarot: "tarot" } as const;
+type Evidence = { rows: { kind: "basis" | "why"; text: string }[]; hourless: boolean };
+
 const kstToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now());
 const shortDate = (day: string) => `${day.slice(5, 7)}. ${day.slice(8, 10)}.`;
 
-export function AskScene({ locale, content, character, readingId, at }: {
+export function AskScene({ locale, content, character, readingId, at, result }: {
   locale: AppLocale;
   content: AskContent;
   character: AskCharacter;
   readingId: string;
   at: AskLocation;
+  /** 결과 화면에서 온 질문의 '이 결과' 칩 뒤에 붙는 결과 이름(예: 82점). */
+  result?: string;
 }) {
   const text = useReadingCopy();
   const { ready, getAccessToken } = useByUsAuth();
@@ -119,7 +133,10 @@ export function AskScene({ locale, content, character, readingId, at }: {
   // 다른 날 다시 왔을 때 지난 질문이 어떻게 됐는지 고른 답. 고르기 전에는 최애가 먼저 묻는다.
   const [recall, setRecall] = useState<AskRecall | null>(null);
   const wide = useSyncExternalStore(watchWide, () => matchMedia(WIDE).matches, () => false);
-  const field = useRef<HTMLInputElement>(null);
+  const field = useRef<HTMLTextAreaElement>(null);
+  // 답 아래 '내 풀이 근거': 펼친 질문 번호와 받아 온 값. 펼칠 때 한 번만 읽는다.
+  const [opened, setOpened] = useState<string | null>(null);
+  const [evidence, setEvidence] = useState<Record<string, Evidence | "failed">>({});
   const panelBox = useRef<HTMLDivElement>(null);
 
   // 390 에서 토스트가 대화판과 버튼을 덮지 않게, 대화판 높이를 알려 토스트를 그 위에 띄운다.
@@ -167,11 +184,8 @@ export function AskScene({ locale, content, character, readingId, at }: {
     return () => controller.abort();
   }, [ready, readingId, character, headers, attempt]);
 
-  // 주제를 바꾸면 쓰던 글을 비우고 입력칸으로 간다.
-  const topic = at.step === "write" ? at.topic : null;
-  useEffect(() => {
-    setInput("");
-  }, [topic, at.step]);
+  // 주제를 바꾸거나 칩을 지워도 쓰던 글은 그대로 둔다(기획 03-6 24·33). 답을 받으면 비운다.
+  const topic = at.step === "write" ? at.topic : at.step === "result" ? "free" : null;
 
   async function send(next: Draft) {
     setDraft({ ...next, failed: false });
@@ -180,6 +194,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
       const response = await fetch(next.followOf ? "/api/chemi/ask/followup" : "/api/chemi/ask", {
         method: "POST",
         headers: await headers(),
+        signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
         body: JSON.stringify(
           next.followOf
             ? { threadId: next.followOf, question: next.question }
@@ -195,6 +210,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
       if (!response.ok) throw Error(body.error?.code ?? "send");
       if (body.state) setState(body.state);
       setDraft(null);
+      setInput("");
       if (body.blocked) {
         // 이어 묻기가 난감한 질문이면 답만 보여 주고 이어 묻기 1번은 그대로 남는다.
         setBlocked({
@@ -209,7 +225,23 @@ export function AskScene({ locale, content, character, readingId, at }: {
       setPage({ of: "", index: 0 });
       askGo({ step: "answer", thread: next.followOf ?? next.threadId }, next.followOf ? "replace" : "push");
     } catch {
+      // 끊김은 토스트로만 알리고 최애의 대사 자리는 비운다(기획 03-6 16). 쓰던 질문은 그대로 둔다.
       setDraft({ ...next, failed: true });
+      setInput(next.question);
+      showFanToast({ title: text("askError"), tone: "error" });
+    }
+  }
+
+  async function openEvidence(threadId: string) {
+    setOpened((value) => (value === threadId ? null : threadId));
+    if (evidence[threadId] && evidence[threadId] !== "failed") return;
+    try {
+      const response = await fetch(`/api/chemi/ask/evidence?t=${threadId}`, { headers: await headers() });
+      if (!response.ok) throw Error("evidence");
+      const body = (await response.json()) as Evidence;
+      setEvidence((value) => ({ ...value, [threadId]: body }));
+    } catch {
+      setEvidence((value) => ({ ...value, [threadId]: "failed" }));
     }
   }
 
@@ -326,7 +358,9 @@ export function AskScene({ locale, content, character, readingId, at }: {
               ? "empty"
               : at.step === "write"
                 ? `write:${at.topic}`
-                : "topic";
+                : at.step === "result"
+                  ? "write:result"
+                  : "topic";
   const speak = (body: React.ReactNode, meta?: React.ReactNode) => (
     <div className={styles.speak}>
       <img className={styles.face} src={art.face} alt="" />
@@ -352,21 +386,36 @@ export function AskScene({ locale, content, character, readingId, at }: {
       <FanText as="p" role="body" className={styles.mine}>{question}</FanText>
     </div>
   );
-  const composer = (
+  // 입력 판: 긴 질문은 여러 줄로 늘어나고, 글자 수는 180자부터 분홍, 200자에서 더 써지지 않는다(기획 03-6 22·23).
+  // Enter 는 보내기, Shift+Enter 는 줄 바꿈. 한글 조합 중의 Enter 는 보내지 않는다.
+  const composer = (chip?: React.ReactNode) => (
     <form className={styles.composer} onSubmit={submit}>
-      <input
+      {chip}
+      <textarea
         ref={field}
         className={styles.field}
         value={input}
-        maxLength={100}
+        rows={1}
+        maxLength={QUESTION_MAX}
         enterKeyHint="send"
         aria-label={text("askInput")}
         placeholder={text("askInput")}
         onChange={(event) => setInput(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+            event.preventDefault();
+            event.currentTarget.form?.requestSubmit();
+          }
+        }}
       />
-      <FanIconButton type="submit" className={styles.send} aria-label={text("send")} disabled={!input.trim()}>
-        <FanIcon icon={ArrowUp} />
-      </FanIconButton>
+      <div className={styles.sendRow}>
+        <FanText role="meta" className={styles.counter} data-warn={input.length >= QUESTION_WARN ? "" : undefined} aria-live="polite">
+          {`${input.length}/${QUESTION_MAX}`}
+        </FanText>
+        <FanIconButton type="submit" className={styles.send} aria-label={text("send")} disabled={!input.trim()}>
+          <FanIcon icon={ArrowUp} />
+        </FanIconButton>
+      </div>
     </form>
   );
 
@@ -397,27 +446,37 @@ export function AskScene({ locale, content, character, readingId, at }: {
       <>
         <section className={`${styles.talk} ${styles.thread}`} aria-live="polite" aria-busy={!draft.failed}>
           {quoted(draft.question, draft.topic)}
-          {speak(
-            draft.failed ? (
-              <p className={styles.sys} role="alert">
-                <FanIcon icon={CircleAlert} />
-                <FanText role="body">{text("askError")}</FanText>
-              </p>
-            ) : (
-              <>
-                {line(lines.think(askSubject[where]), true)}
-                <span className={styles.dots} role="status" aria-label={text("askWriting", { name })}>
-                  <i />
-                  <i />
-                  <i />
-                </span>
-              </>
-            ),
+          {/* 끊겼으면 최애의 대사 상자는 숨기고 토스트로만 알린다(기획 03-6 16). */}
+          {draft.failed ? null : speak(
+            <>
+              {line(lines.think(askSubject[where]), true)}
+              <span className={styles.dots} role="status" aria-label={text("askWriting", { name })}>
+                <i />
+                <i />
+                <i />
+              </span>
+            </>,
           )}
         </section>
       </>
     );
-    if (draft.failed) main = { label: text("askResend"), icon: RotateCcw, onClick: () => void send(draft) };
+    if (draft.failed) {
+      main = { label: text("askResend"), icon: RotateCcw, onClick: () => void send(draft) };
+      below = (
+        <div className={styles.row} data-single="">
+          <FanAction variant="text" className={styles.cell} onClick={() => {
+              setDraft(null);
+              askGo(
+                draft.followOf ? { step: "follow", thread: draft.followOf }
+                  : draft.topic && draft.topic !== "free" ? { step: "write", topic: draft.topic } : { step: "topic" },
+                "replace",
+              );
+            }}>
+            {text("later")}
+          </FanAction>
+        </div>
+      );
+    }
   }
   else if (state.pausedUntil)
     panel = (
@@ -430,6 +489,43 @@ export function AskScene({ locale, content, character, readingId, at }: {
         </p>
       </section>
     );
+  else if (shown && at.step === "answer" && shown.klass === "crisis") {
+    // 위기 신호: 최애의 말투·이름표·남은 수 없이 흰 판에 도움 전화만(기획 03-6 27). 한국어 화면이 아니면 나라별 상담 전화 찾기.
+    panel = (
+      <section className={styles.crisis} role="alert">
+        <FanText as="strong" role="item">{text("askCrisisTitle")}</FanText>
+        <FanText as="p" role="body">{text("askCrisisBody")}</FanText>
+        {locale === "ko" ? (
+          <div className={styles.calls}>
+            {([["askCrisis109", "109"], ["askCrisis1388", "1388"]] as const).map(([label, number]) => (
+              <FanAction key={number} href={`tel:${number}`} variant="neutral" fullWidth className={styles.call} leadingIcon={<FanIcon icon={Phone} />}>
+                <span className={styles.callText}>
+                  <FanText role="label">{text(label)}</FanText>
+                  <FanText as="strong" role="item">{number}</FanText>
+                </span>
+              </FanAction>
+            ))}
+          </div>
+        ) : (
+          <FanAction href="https://findahelpline.com" external leadingIcon={<FanIcon icon={Phone} />}>{text("askCrisisAbroad")}</FanAction>
+        )}
+        <FanAction variant="text" onClick={again}>{text("close")}</FanAction>
+      </section>
+    );
+  }
+  else if (shown && at.step === "answer" && shown.klass === "service") {
+    // 질문 수·가격 질문: 최애가 대사로 받지 않고 앱 안내 한 줄로 답한다(기획 12-3). 질문 수는 그대로다.
+    panel = (
+      <section className={`${styles.talk} ${styles.thread}`} aria-live="polite">
+        {quoted(shown.question, null)}
+        <p className={styles.sys} role="status">
+          <FanIcon icon={MessageCircle} />
+          <FanText role="body">{shown.answer}</FanText>
+        </p>
+      </section>
+    );
+    main = { label: text("askOtherAfterGuard"), onClick: again };
+  }
   else if (shown && at.step === "answer") {
     // 답은 한 쪽씩. 이어 물은 답이 있으면 그 질문과 답이 뒤에 이어지고, 반응을 고르면 그 말과 최애의 한 마디가 붙는다.
     const guarded = shown.status === "blocked";
@@ -485,13 +581,39 @@ export function AskScene({ locale, content, character, readingId, at }: {
         <section className={`${styles.talk} ${styles.turn}`} aria-live="polite" onClick={forward}>
           {beat.question ? quoted(beat.question, beat.tag) : null}
           {speak(line(beat.body, typing), guarded ? text("askKept") : pager)}
-          {shown.klass === "crisis" ? (
-            <p className={styles.sys}>
-              <FanIcon icon={CircleAlert} />
-              <FanText role="item">{text("askCrisis")}</FanText>
-            </p>
-          ) : null}
           {guarded && pager ? <div className={styles.pagerRow}>{pager}</div> : null}
+          {!guarded && last ? (
+            <div className={styles.basis} onClick={(event) => event.stopPropagation()}>
+              <FanAction
+                variant="text"
+                size="sm"
+                className={styles.basisToggle}
+                aria-expanded={opened === threadId}
+                trailingIcon={<FanIcon icon={opened === threadId ? ChevronUp : ChevronDown} size={16} />}
+                onClick={() => void openEvidence(threadId)}
+              >
+                {text("askEvidence")}
+              </FanAction>
+              {opened === threadId ? (
+                evidence[threadId] === "failed" ? (
+                  <FanText as="p" role="meta">{text("askLoadFailed")}</FanText>
+                ) : evidence[threadId] ? (
+                  <dl className={styles.basisList}>
+                    {(evidence[threadId] as Evidence).rows.map((row) => (
+                      <div key={row.kind}>
+                        <dt><FanText role="meta">{text(row.kind === "basis" ? "askEvidenceBasis" : "askEvidenceWhy")}</FanText></dt>
+                        <dd><FanText role="body">{row.text}</FanText></dd>
+                      </div>
+                    ))}
+                    {(evidence[threadId] as Evidence).hourless ? <FanText as="p" role="meta">{text("askEvidenceHourless")}</FanText> : null}
+                  </dl>
+                ) : (
+                  <FanSkeleton width="80%" />
+                )
+              ) : null}
+              <FanText as="p" role="meta" className={styles.note}>{text("outlookNote")}</FanText>
+            </div>
+          ) : null}
         </section>
         {last && !guarded && !react && !farewell ? (
           <div className={`${styles.replies} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
@@ -556,7 +678,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
             </FanAction>
           ))}
         </div>
-        {composer}
+        {composer()}
       </>
     );
   else if (empty) {
@@ -592,14 +714,35 @@ export function AskScene({ locale, content, character, readingId, at }: {
     main = restMain();
     below = <div className={styles.row} data-single="">{state.reminded ? reminded : shareAction}</div>;
   }
-  else if (at.step === "write")
+  else if (at.step === "write" || at.step === "result") {
+    // 질문 쓰기: 주제를 골라 왔으면 주제 칩, 결과 화면에서 왔으면 '이 결과' 칩(기획 03-6 23·24·33). ×는 1단계로, 쓰던 글은 그대로.
+    const said = at.step === "write" ? lines.reask[at.topic] : askResultLine(where, who);
+    const examples = at.step === "write" ? askExamples(at.topic, character) : askResultExamples(where, who, today);
+    const chip = (
+      <span className={styles.chip}>
+        {at.step === "result" ? (
+          <>
+            <FanText role="label" className={styles.chipLead}>{text("askResultChip")}</FanText>
+            <FanText role="label" className={styles.clip}>
+              <ReadingTitle id={contentTitle[where]} />
+              {result ? ` · ${result}` : ""}
+            </FanText>
+          </>
+        ) : (
+          <FanText role="label">{text(topicKey[at.topic])}</FanText>
+        )}
+        <FanIconButton className={styles.chipClear} aria-label={text("askResultClear")} onClick={() => askGo({ step: "topic" }, "replace")}>
+          <FanIcon icon={X} size={16} />
+        </FanIconButton>
+      </span>
+    );
     panel = (
       <>
-        <section className={styles.talk} aria-live="polite" onClick={() => setSaid(lineKey(lines.reask[at.topic]))}>
-          {speak(line(lines.reask[at.topic], true), text(topicKey[at.topic]))}
+        <section className={styles.talk} aria-live="polite" onClick={() => setSaid(lineKey(said))}>
+          {speak(line(said, true))}
         </section>
-        <div className={`${styles.choices} ${styles.examples} ${styles.reveal}`} data-shown={saidAll(lines.reask[at.topic], true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
-          {askExamples(at.topic, character).map((example) => (
+        <div className={`${styles.choices} ${styles.examples} ${styles.reveal}`} data-shown={saidAll(said, true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
+          {examples.map((example) => (
             <FanAction
               key={example}
               variant="text"
@@ -614,9 +757,10 @@ export function AskScene({ locale, content, character, readingId, at }: {
             </FanAction>
           ))}
         </div>
-        {composer}
+        {composer(chip)}
       </>
     );
+  }
   else {
     // 같은 날 다시 오면 인사를 줄이고 선택지를 바로 보인다(기획 03-3 18). 이어 묻기가 남은 오늘 질문이 있으면 그 답으로 돌아가는 길이 주 버튼이다.
     // '또 뭐 볼래?'는 오늘 이 최애에게 물은 적이 있을 때만 한다(다른 최애에게 물은 날 처음 만난 최애가 '또'라고 하지 않게).
@@ -665,21 +809,23 @@ export function AskScene({ locale, content, character, readingId, at }: {
 
   // 장면의 분위기: 답을 기다릴 때 어두워졌다가 답이 나오면 밝아지고, 원화 해상도가 남는 화면에서는 얼굴 쪽으로 다가간다.
   const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? (ending ? "close" : "speak") : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
+  // 위기 신호 답에서는 최애 그림을 가리고 남은 수를 숨긴다(기획 03-6 27).
+  const crisis = at.step === "answer" && shown?.klass === "crisis" && !draft;
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
-    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
+    <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-crisis={crisis ? "" : undefined} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
       <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name} />
       <div className={styles.top}>
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
-        {days > 1 ? (
+        {days > 1 && !crisis ? (
           <span className={`${styles.count} ${styles.days}`} aria-label={`${askName[character]} ${text("askDays", { count: days })}`}>
             <FanIcon icon={Heart} size={16} />
             <FanText role="label" aria-hidden="true">{text("askDays", { count: days })}</FanText>
           </span>
         ) : null}
-        {state ? (
+        {state && !crisis ? (
           <span className={styles.count} aria-label={text("askLeftLabel", { count: state.left })}>
             <FanIcon icon={MessageCircle} size={16} />
             <FanText role="label" aria-hidden="true">{text("askLeft")}</FanText>

@@ -367,7 +367,16 @@ export function FortuneFlow({
     return <FortuneResult pending locale={locale} character={character} backHref={`/chemi?locale=${locale}`} />;
 
   if (step === "result" && reading && ask)
-    return <AskScene locale={locale} content="fortune" character={character} readingId={reading.readingId} at={ask} />;
+    return (
+      <AskScene
+        locale={locale}
+        content="fortune"
+        character={character}
+        readingId={reading.readingId}
+        at={ask}
+        result={reading.result.locked ? undefined : text("scoreGrade", { score: reading.result.score, grade: reading.result.grade.name })}
+      />
+    );
   if (step === "result" && reading)
     return (
       <FortuneResult
@@ -375,7 +384,7 @@ export function FortuneFlow({
         initial={reading}
         character={character}
         backHref={`/chemi/fortune?c=${character}&locale=${locale}`}
-        onAsk={() => askGo({ step: "topic" })}
+        onAsk={() => askGo({ step: "result" })}
         paidPreview={paidPreview}
         focus={picked}
       />

@@ -109,6 +109,19 @@ describe("답 검사", () => {
     ["목록·기호", "연애 운이 55점이야.\n- 먼저 연락해 봐.", "format"],
     ["말투가 섞임", "연애 운이 55점이에요. 오늘은 서두르지 마세요.", "voice"],
   ])("%s → 떨어진다", (_, answer, fault) => expect(askAnswerFault(answer, love)).toBe(fault));
+  it("엘리나는 반존대: 마지막 문장만 반말로 맺어도 되고, 앞 문장 반말·합쇼체는 떨어진다(DF-ASK-005)", () => {
+    const elina = { ...love, character: "elina" as const };
+    expect(askAnswerFault("연애 운이 55점이에요. 오늘은 답을 재촉하지 않는 게 좋아요. 한 박자 쉬고 들어가도 괜찮아.", elina)).toBeNull();
+    expect(askAnswerFault("연애 운이 55점이야. 오늘은 답을 재촉하지 않는 게 좋아요.", elina)).toBe("voice");
+    expect(askAnswerFault("연애 운이 55점이에요. 오늘은 답을 재촉하지 마십시오. 기다리면 됩니다.", elina)).toBe("voice");
+    const { system } = askPrompt({ ...elina });
+    expect(system).toContain("반존대");
+  });
+  it("이어 묻기 지침은 앞 답과 같은 방향을 지키라고 한다", () => {
+    const { system } = askPrompt({ ...love, before: { question: "연락해도 될까?", answer: "오늘은 미뤄." } });
+    expect(system).toContain("같은 방향");
+    expect(askPrompt(love).system).not.toContain("같은 방향");
+  });
   it("팬이 먼저 말한 숫자·요일은 다시 말해도 된다", () => {
     expect(askAnswerFault("연애 운이 55점이야. 금요일 약속은 그대로 가도 돼.", { ...love, question: "금요일에 만나도 될까?" })).toBeNull();
   });

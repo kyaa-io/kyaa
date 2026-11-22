@@ -379,13 +379,13 @@
   border-color: var(--color-control-line);
 }
 
+/* 입력 판: 고른 주제·'이 결과' 칩, 여러 줄 입력, 글자 수와 보내기. 여러 줄 입력이라 반경은 미디어(12). */
 .composer {
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: var(--space-2);
-  padding-inline-start: var(--space-4);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border: 1px solid var(--color-control-line);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-media);
   background: var(--color-surface);
 }
 .composer:focus-within {
@@ -393,15 +393,46 @@
   outline-offset: calc(var(--focus-width) * -1);
 }
 .field {
-  flex: 1;
   min-width: 0;
-  height: var(--min-target);
-  padding: 0;
+  min-height: var(--min-target);
+  max-height: 30svh;
+  padding: var(--space-2) var(--space-2) 0 0;
   border: 0;
   outline: 0;
   background: none;
   color: var(--color-ink);
   font: inherit;
+  resize: none;
+  field-sizing: content;
+}
+.sendRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+.counter[data-warn] {
+  color: var(--color-accent-ink);
+}
+/* 고른 주제·'이 결과' 칩(기획 03-6 24·33): × 포함 44. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--space-2);
+  max-width: 100%;
+  min-height: var(--min-target);
+  padding-inline-start: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+}
+.chipLead {
+  flex: none;
+  color: var(--color-accent-ink);
+}
+.root .chipClear {
+  flex: none;
 }
 .root .send {
   background: var(--color-accent);
@@ -439,6 +470,55 @@
   justify-content: center;
   gap: var(--space-1);
   min-height: var(--min-target);
+}
+
+/* 답 아래 '내 풀이 근거'와 고지 한 줄(기획 03-6 08·10). 대화 상자 안, 답 아래에 선 하나로 나뉜다. */
+.basis {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-line);
+  cursor: auto;
+}
+.root .basisToggle {
+  justify-self: start;
+  padding-inline: 0;
+}
+.basisList {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+}
+.basisList dd {
+  margin: 0;
+}
+.note {
+  color: var(--color-muted);
+}
+/* 위기 신호(기획 03-6 27): 이름표·얼굴 없는 흰 판에 짧은 말과 전화 버튼 둘, 닫기. */
+.crisis {
+  display: grid;
+  gap: var(--space-3);
+}
+.calls {
+  display: grid;
+  gap: var(--space-2);
+}
+.root .call {
+  max-width: none;
+}
+.callText {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.root[data-crisis] .backdrop {
+  visibility: hidden;
+}
+.root[data-crisis] .board {
+  background: var(--color-surface);
 }
 
 /* 오늘 물어본 질문·지난 질문: 행 + 구분선 */

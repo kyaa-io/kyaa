@@ -695,7 +695,7 @@ export function SajuFlow({
           backLabel={sceneCopy.back}
           onBack={() => window.history.back()}
           onShare={share}
-          onAsk={() => askGo({ step: "topic" })}
+          onAsk={() => askGo({ step: "result" })}
           onTopics={() => setSheet("topics")}
           onGo={openView}
           onScene={() => commit(toEnter(nav), "push")}

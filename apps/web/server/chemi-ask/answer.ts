@@ -290,19 +290,128 @@ const more: Record<"good" | "care", Record<Voice, readonly [string, string]>> = 
     hao: ["하나만 더 이르자면, 망설이는 시간이 가장 아깝소. 오늘 안에 한 번은 움직이시오.", "덧붙이자면, 혼자 하지 말고 한 사람에게는 말해 두시오. 그것이 힘이 되오."],
   },
   care: {
-    ban: ["하나만 더 말하면, 지금 안 해도 놓치는 건 없어. 다음 풀이에서 다시 보자.", "덧붙이면, 잠을 먼저 챙겨. 피곤할 때 내린 답은 자주 틀려."],
-    yo: ["하나만 더 말하면, 지금 하지 않아도 놓치는 건 없어요. 다음 풀이에서 다시 봐요.", "덧붙이면, 잠을 먼저 챙겨요. 피곤할 때 내린 답은 자주 틀려요."],
-    hao: ["하나만 더 이르자면, 지금 하지 않아도 놓치는 것은 없소. 다음 풀이에서 다시 봅시다.", "덧붙이자면, 잠을 먼저 챙기시오. 피곤할 때 내린 답은 자주 틀리오."],
+    ban: ["하나만 더 말하면, 서두르지만 않으면 돼. 하던 걸 한 번 더 살피고 움직여.", "덧붙이면, 잠을 먼저 챙겨. 피곤할 때 내린 답은 자주 틀려."],
+    yo: ["하나만 더 말하면, 서두르지만 않으면 돼요. 하던 걸 한 번 더 살피고 움직여요.", "덧붙이면, 잠을 먼저 챙겨요. 피곤할 때 내린 답은 자주 틀려요."],
+    hao: ["하나만 더 이르자면, 서두르지만 않으면 되오. 하던 것을 한 번 더 살피고 움직이시오.", "덧붙이자면, 잠을 먼저 챙기시오. 피곤할 때 내린 답은 자주 틀리오."],
   },
 };
+
+/**
+ * 질문이 무엇을 하려는지. 주제 칸의 조언보다 먼저 쓴다('이직 준비 시작해도 될까?'에 면접 요령을 답하지 않게).
+ * 위에서부터 먼저 맞는 하나.
+ */
+const intents = [
+  ["contact", /연락|문자|카톡|디엠|\bdm\b|말\s*걸|고백|먼저\s*말/i],
+  ["exam", /면접|시험|발표|오디션|합격|붙을|붙어/],
+  ["change", /이직|퇴사|그만\s*둘|그만두|옮길|옮겨|바꿀까|바꿔도|시작해도|새로\s*(시작|배우)/],
+  ["spend", /사도\s*될|살까|사고\s*싶|돈\s*(을\s*)?(쓸|써)|써도\s*될|지출|큰돈|티켓값/],
+] as const;
+type Intent = (typeof intents)[number][0];
+const intentOf = (question: string): Intent | null => intents.find(([, pattern]) => pattern.test(question))?.[0] ?? null;
+const intentAdvice: Record<Intent, Record<"good" | "care", Record<Voice, string>>> = {
+  contact: {
+    good: {
+      ban: "먼저 연락해도 돼. 길게 말고 안부 한 줄로 시작해.",
+      yo: "먼저 연락해도 괜찮아요. 길게 말고 안부 한 줄로 시작해 봐요.",
+      hao: "먼저 연락해도 되오. 길지 않게 안부 한 줄로 시작하시오.",
+    },
+    care: {
+      ban: "오늘 먼저 연락하는 건 한 번 미뤄. 보내고 싶으면 짧게 쓰고 답을 재촉하지 마.",
+      yo: "오늘 먼저 연락하는 건 한 번 미뤄 봐요. 보내고 싶으면 짧게 쓰고 답을 재촉하지 않는 게 좋아요.",
+      hao: "오늘 먼저 연락하는 것은 한 번 미루시오. 보내고 싶으면 짧게 쓰고 답을 재촉하지 마시오.",
+    },
+  },
+  exam: {
+    good: {
+      ban: "준비한 만큼 나오는 흐름이야. 첫마디만 소리 내서 한 번 연습해 둬.",
+      yo: "준비한 만큼 나오는 흐름이에요. 첫마디만 소리 내서 한 번 연습해 둬요.",
+      hao: "준비한 만큼 나오는 흐름이오. 첫마디만 소리 내어 한 번 연습해 두시오.",
+    },
+    care: {
+      ban: "긴장하면 말이 빨라지기 쉬운 때야. 준비한 것 중 하나만 확실히 다시 봐.",
+      yo: "긴장하면 말이 빨라지기 쉬운 때예요. 준비한 것 중 하나만 확실히 다시 봐요.",
+      hao: "긴장하면 말이 빨라지기 쉬운 때요. 준비한 것 중 하나만 확실히 다시 보시오.",
+    },
+  },
+  change: {
+    good: {
+      ban: "준비를 시작하기엔 괜찮은 흐름이야. 오늘은 알아볼 것 하나만 정해서 시작해.",
+      yo: "준비를 시작하기엔 괜찮은 흐름이에요. 오늘은 알아볼 것 하나만 정해서 시작해 봐요.",
+      hao: "준비를 시작하기에 괜찮은 흐름이오. 오늘은 알아볼 것 하나만 정해 시작하시오.",
+    },
+    care: {
+      ban: "알아보는 건 시작해도 되지만 결정은 서두르지 마. 정하는 건 흐름이 오를 때 해.",
+      yo: "알아보는 건 시작해도 되지만 결정은 서두르지 않는 게 좋아요. 정하는 건 흐름이 오를 때 해요.",
+      hao: "알아보는 것은 시작해도 되나 결정은 서두르지 마시오. 정하는 것은 흐름이 오를 때 하시오.",
+    },
+  },
+  spend: {
+    good: {
+      ban: "꼭 필요했던 거라면 써도 괜찮아. 그 하나만 사고 나머지는 다음에 봐.",
+      yo: "꼭 필요했던 거라면 써도 괜찮아요. 그 하나만 사고 나머지는 다음에 봐요.",
+      hao: "꼭 필요했던 것이라면 써도 되오. 그 하나만 사고 나머지는 다음에 보시오.",
+    },
+    care: {
+      ban: "큰돈은 하루 미뤄. 내일 봐도 필요하면 그때 써.",
+      yo: "큰돈은 하루 미뤄 봐요. 내일 봐도 필요하면 그때 써요.",
+      hao: "큰돈은 하루 미루시오. 내일 보아도 필요하면 그때 쓰시오.",
+    },
+  },
+};
+
+/**
+ * 최애마다 맺는 말. 같은 소재(촬영·노래·화장)로 세 가지를 두고 질문마다 돌려 쓴다(같은 맺음이 줄줄이 나오지 않게).
+ * 엘리나는 반존대라 '~요' 답 끝의 맺음 한 줄은 반말이 섞인다(K-3729a7).
+ */
+const personaClose: Record<"changha" | "elina" | "yuna", Record<"good" | "care", readonly [string, string, string]>> = {
+  changha: {
+    good: [chemiPersona.changha.close.good, "대본 넘기듯 다음 장면으로 가 봐. 이번엔 한 번에 갈 수 있어.", "슛 들어가기 직전이 제일 떨리는 거야. 들어가면 괜찮아."],
+    care: [chemiPersona.changha.close.care, "컷 사인 나기 전엔 서두를 필요 없어. 대사 한 줄만 더 맞춰 봐.", "오늘은 테이크를 아끼는 날이야. 확실한 장면만 찍자."],
+  },
+  elina: {
+    good: [chemiPersona.elina.close.good, "박자 맞았으니까 그냥 들어가 봐.", "오늘 고른 옷처럼 마음 가는 쪽이 맞아."],
+    care: [chemiPersona.elina.close.care, "한 박자 쉬고 들어가도 괜찮아.", "오늘은 늘 입던 옷처럼 편한 쪽을 골라 봐요."],
+  },
+  yuna: {
+    good: [chemiPersona.yuna.close.good, "바탕이 잘 먹은 날이라 포인트 하나만 더하면 돼.", "톤이 맞는 날이야. 힘을 안 줘도 잘 보여."],
+    care: [chemiPersona.yuna.close.care, "덧바르기보다 한 번 지우고 다시 하는 게 나아.", "오늘은 진한 색보다 맑은 톤이 맞아."],
+  },
+};
+/** 주제 칸의 두 조언 중 무엇을 쓸지 최애마다 엇갈리게 한다(같은 질문을 넷에게 물어도 같은 글이 되지 않게). */
+const adviceTurn: Record<AskCharacter, number> = { changha: 0, elina: 1, yuna: 1, dosa: 0 };
+
+/** 한국어가 아닌 질문에는 그 말로 답한다(지원 언어 중 영어·일본어. 그 밖의 말은 영어). */
+const fieldWord = {
+  en: { love: "love", work: "work", money: "money", people: "people", month: "", free: "" },
+  ja: { love: "恋愛", work: "仕事", money: "金", people: "人間関係", month: "", free: "" },
+} as const;
+function foreignAnswer(question: string, input: { content: AskContent; topic: AskTopic; result: unknown; kind?: string }, flow: "good" | "care", follow: boolean) {
+  const ja = /[぀-ヿ]/.test(question);
+  const result = input.result as any;
+  const key = fortuneField[input.topic];
+  const score = input.content === "fortune" && input.kind !== "week" && typeof result?.score === "number"
+    ? (key ? result.fields?.[key] ?? result.score : result.score) as number : null;
+  const word = fieldWord[ja ? "ja" : "en"][input.topic];
+  if (ja) {
+    const head = score === null ? "あなたの結果をもう一度読んだよ。" : `今日の${word ? `${word}運` : "運勢"}は${score}点だよ。`;
+    const body = flow === "good" ? "流れは味方してるよ。今日は小さく一歩動いてみて。" : "今日はゆっくりでいいよ。大きな決断はあとに回そう。";
+    return follow ? body : `${head}\n${body}`;
+  }
+  const head = score === null ? "I read your result again." : `Your ${word ? `${word} ` : ""}score today is ${score}.`;
+  const body = flow === "good" ? "The flow is on your side. Take one small step today." : "Take it slow today. Leave the big decisions for later.";
+  return follow ? body : `${head}\n${body}`;
+}
 
 export function answerAsk(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
   const tone = voice[input.character];
   const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
   const flow = read.good ? "good" : "care";
-  const pick = advice[input.topic][flow][tone][seed(input.question) % 2];
+  if (!/[가-힣]/.test(input.question)) return foreignAnswer(input.question, input, flow, false);
+  const turn = seed(input.question);
+  const intent = intentOf(input.question);
+  const pick = intent ? intentAdvice[intent][flow][tone] : advice[input.topic][flow][tone][(turn + adviceTurn[input.character]) % 2];
   // 세 최애는 자기 활동 분야에 빗댄 한마디로 맺는다(도사는 없음).
-  const close = isChemiPersona(input.character) ? `\n${chemiPersona[input.character].close[flow]}` : "";
+  const close = isChemiPersona(input.character) ? `\n${personaClose[input.character][flow][turn % 3]}` : "";
   return `${read.line[tone]}\n${pick}${close}`;
 }
 
@@ -346,10 +455,45 @@ const becauseGod = {
   정재: groupBecause.wealth, 편관: groupBecause.duty, 정관: groupBecause.duty, 편인: groupBecause.resource, 정인: groupBecause.resource,
 };
 
-export function answerFollowup(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string; at?: number }) {
+/** 이어 물은 말이 방법을 묻는지, 때를 묻는지. */
+const followHow = /뭐라고|어떻게|무슨\s*말|어떤\s*말|뭐부터|뭘\s*먼저/;
+const followWhen = /언제|몇\s*시|며칠|날짜|요일|타이밍/;
+const howAnswer: Record<"good" | "care", Record<Voice, string>> = {
+  good: {
+    ban: "길게 고민하지 말고 제일 작은 것 하나부터 해. 연락이면 안부 한 줄, 일이면 금방 끝나는 일부터.",
+    yo: "길게 고민하지 말고 제일 작은 것 하나부터 해 봐요. 연락이면 안부 한 줄, 일이면 금방 끝나는 일부터요.",
+    hao: "길게 고민하지 말고 가장 작은 것 하나부터 하시오. 연락이면 안부 한 줄, 일이면 금방 끝나는 일부터 하시오.",
+  },
+  care: {
+    ban: "하고 싶은 말을 다 담지 마. 한 줄만 쓰고, 나머지는 상대 반응을 보고 꺼내.",
+    yo: "하고 싶은 말을 다 담지 않아도 돼요. 한 줄만 쓰고, 나머지는 반응을 보고 꺼내요.",
+    hao: "하고 싶은 말을 다 담지 마시오. 한 줄만 쓰고 나머지는 반응을 보고 꺼내시오.",
+  },
+};
+const whenAnswer: Record<"good" | "care", Record<Voice, string>> = {
+  good: {
+    ban: "오래 미룰 필요는 없어. 마음먹은 김에 이번 주 안에 해.",
+    yo: "오래 미룰 필요는 없어요. 마음먹은 김에 이번 주 안에 해 봐요.",
+    hao: "오래 미룰 까닭은 없소. 마음먹은 김에 이번 주 안에 하시오.",
+  },
+  care: {
+    ban: "오늘보다는 마음이 가라앉은 다음이 좋아. 서두르지 않아도 늦지 않아.",
+    yo: "오늘보다는 마음이 가라앉은 다음이 좋아요. 서두르지 않아도 늦지 않아요.",
+    hao: "오늘보다는 마음이 가라앉은 다음이 좋소. 서두르지 않아도 늦지 않소.",
+  },
+};
+
+export function answerFollowup(input: {
+  character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string; at?: number;
+  /** 앞선 질문과 답. 흐름(권함·조심)은 앞 질문으로 정해 앞 답과 반대로 말하지 않는다. */
+  before?: { question: string; answer: string };
+}) {
   const tone = voice[input.character];
-  const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
+  const read = askBasis(input.content, input.topic, input.result, input.before?.question ?? input.question, input.kind);
   const flow = read.good ? "good" : "care";
+  if (!/[가-힣]/.test(input.question)) return foreignAnswer(input.question, input, flow, true);
+  if (followHow.test(input.question)) return howAnswer[flow][tone];
+  if (followWhen.test(input.question)) return whenAnswer[flow][tone];
   if (followWhy.test(input.question)) {
     // 첫 답에서 이미 한 말(read.line)은 되풀이하지 않는다. 덧붙일 근거가 없을 때만 다시 짚는다.
     const evidence = evidenceOf(input.content, input.topic, input.result, input.kind, input.at);

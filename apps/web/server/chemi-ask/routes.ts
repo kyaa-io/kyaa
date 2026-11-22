@@ -6,13 +6,15 @@ import { chemiAuthenticatedHandler } from "@/server/chemi-profile/handlers";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { aiAnswer } from "./ai-answer";
 import { askAiReady } from "./ai-provider";
-import { answerAsk, answerFollowup, ASK_TOPICS } from "./answer";
+import { answerAsk, answerFollowup, askBasis, askEvidence, ASK_TOPICS } from "./answer";
 import { classifyAsk, guardReply } from "./guard";
 
 // 케미 질문하기 API. 차감·한도·중복 판단은 SQL(chemi_ask_*)이 사용자 잠금 아래에서 한다.
 const character = z.enum(["changha", "elina", "yuna", "dosa"]);
 const content = z.enum(["saju", "fortune", "star", "tarot"]);
-const question = z.string().trim().min(1).max(100);
+/** 질문 글자 수(기획 03-6 22·23). 표는 500자까지 받는다. */
+export const ASK_QUESTION_MAX = 200;
+const question = z.string().trim().min(1).max(ASK_QUESTION_MAX);
 const submit = z.strictObject({
   threadId: z.string().uuid(), readingId: z.string().uuid(), character, content, topic: z.enum(ASK_TOPICS), question,
 });
@@ -21,6 +23,7 @@ const saved = z.object({ result: z.unknown(), kind: z.string().optional() });
 const thread = z.object({
   character, content, readingId: z.string().uuid().nullable(), topic: z.enum(ASK_TOPICS).nullable(),
   question: z.string().nullish(), answer: z.string().nullish(), followupAnswer: z.string().nullish(),
+  status: z.string().optional(), date: z.string().optional(),
 });
 const room = z.object({ left: z.number(), pausedUntil: z.string().nullish() });
 
@@ -35,7 +38,7 @@ function refusal(error: unknown) {
 
 const open = (state: z.infer<typeof room>) => state.left > 0 && !state.pausedUntil;
 
-export function askRoute(op: "state" | "submit" | "followup", request: Request) {
+export function askRoute(op: "state" | "submit" | "followup" | "evidence", request: Request) {
   return chemiAuthenticatedHandler(async (input, deps, p_user) => {
     try {
       if (op === "state") {
@@ -45,6 +48,26 @@ export function askRoute(op: "state" | "submit" | "followup", request: Request) 
           p_reading: z.string().uuid().nullable().parse(params.get("r")),
           p_character: character.nullable().parse(params.get("c")),
         }), { headers });
+      }
+      if (op === "evidence") {
+        // 답 아래 '내 풀이 근거'(기획 03-6 08): 답에 쓴 풀이 값과 계산 근거. 답을 만든 날의 값으로 다시 계산한다.
+        const id = z.string().uuid().parse(new URL(input.url).searchParams.get("t"));
+        const found = await deps.rpc("chemi_ask_thread", { p_user, p_id: id });
+        if (!found) throw Error("CHEMI_NOT_FOUND");
+        const asked = thread.parse(found);
+        if (asked.status === "blocked" || !asked.readingId) return Response.json({ rows: [], hourless: false }, { headers });
+        const reading = saved.parse(await deps.rpc("chemi_reading_detail", { p_user, p_id: asked.readingId, p_character: asked.character }));
+        const topic = asked.topic ?? "free";
+        const at = asked.date ? Date.parse(`${asked.date}T12:00:00+09:00`) : Date.now();
+        const why = askEvidence(asked.content, topic, reading.result, reading.kind, at);
+        const result = reading.result as { timeKnown?: boolean } | null;
+        return Response.json({
+          rows: [
+            { kind: "basis", text: askBasis(asked.content, topic, reading.result, asked.question ?? "", reading.kind).line.yo },
+            ...(why ? [{ kind: "why", text: why.yo }] : []),
+          ],
+          hourless: asked.content === "saju" && result?.timeKnown === false,
+        }, { headers });
       }
       if (op === "followup") {
         const body = followup.parse(await boundedJson(input, 2048));
@@ -61,7 +84,7 @@ export function askRoute(op: "state" | "submit" | "followup", request: Request) 
         const written = asked.followupAnswer || !asked.question || !asked.answer ? null
           : await aiAnswer({ ...ask, before: { question: asked.question, answer: asked.answer } }, deps.rpc, p_user);
         return Response.json(await deps.rpc("chemi_ask_followup", {
-          p_user, p_id: body.threadId, p_question: body.question, p_answer: written ?? answerFollowup(ask),
+          p_user, p_id: body.threadId, p_question: body.question, p_answer: written ?? answerFollowup({ ...ask, before: asked.question && asked.answer ? { question: asked.question, answer: asked.answer } : undefined }),
         }), { headers });
       }
       const body = submit.parse(await boundedJson(input, 2048));

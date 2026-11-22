@@ -75,7 +75,11 @@ it("답을 못 받으면 질문 수는 그대로이고 같은 번호로 다시 �
   askGo({ step: "write", topic: "work" });
   fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "이직해도 될까?" } });
   fireEvent.click(screen.getByRole("button", { name: "보내기" }));
-  expect((await screen.findByRole("alert")).textContent).toBe("답을 받지 못해 질문 수는 그대로입니다.");
+  // 끊김은 토스트로만 알리고 최애의 대사 자리는 비운다(DF-ASK-009).
+  await screen.findByRole("button", { name: "다시 보내기" });
+  expect(toast).toHaveBeenCalledWith({ title: "답을 받지 못했어요. 질문 수는 그대로예요.", tone: "error" });
+  expect(screen.queryByText("창하")).toBeNull();
+  expect(screen.getByRole("button", { name: "다음에" })).toBeTruthy();
   expect(screen.getByLabelText("남은 질문 3개")).toBeTruthy();
   fail = false;
   fireEvent.click(screen.getByRole("button", { name: "다시 보내기" }));
@@ -85,6 +89,22 @@ it("답을 못 받으면 질문 수는 그대로이고 같은 번호로 다시 �
 
 it("난감한 질문은 거절하는 말과 '질문 수 그대로'를 보이고 주 버튼은 다른 질문 하기다", async () => {
   serve((_url, body) => ({
+    thread: answered(body.threadId, { status: "blocked", klass: "off_topic", question: body.question, answer: "그건 풀이로 답할 수 있는 게 아니야." }),
+    state: state(),
+  }));
+  render(<Host />);
+  askGo({ step: "write", topic: "free" });
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "숙제 해 줘" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  expect(await screen.findByText("질문 수 그대로")).toBeTruthy();
+  expect(screen.getByLabelText("남은 질문 3개")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /자랑하기|이어 묻기/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "다른 질문 하기" }));
+  await waitFor(() => expect(location.search).toContain("ask=topic"));
+});
+
+it("위기 신호는 최애 이름표·남은 수 없이 전화 버튼 둘과 닫기만 보인다(DF-ASK-003)", async () => {
+  serve((_url, body) => ({
     thread: answered(body.threadId, { status: "blocked", klass: "crisis", question: body.question, answer: "혼자 버티지 마." }),
     state: state(),
   }));
@@ -92,12 +112,76 @@ it("난감한 질문은 거절하는 말과 '질문 수 그대로'를 보이고 
   askGo({ step: "write", topic: "free" });
   fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "사라지고 싶어" } });
   fireEvent.click(screen.getByRole("button", { name: "보내기" }));
-  expect(await screen.findByText("질문 수 그대로")).toBeTruthy();
-  expect(screen.getByText("자살예방상담전화 109 · 청소년상담전화 1388")).toBeTruthy();
-  expect(screen.getByLabelText("남은 질문 3개")).toBeTruthy();
-  expect(screen.queryByRole("button", { name: /자랑하기|이어 묻기/ })).toBeNull();
-  fireEvent.click(screen.getByRole("button", { name: "다른 질문 하기" }));
+  expect(await screen.findByText("지금 많이 힘들구나")).toBeTruthy();
+  expect(screen.getByRole("link", { name: /109/ }).getAttribute("href")).toBe("tel:109");
+  expect(screen.getByRole("link", { name: /1388/ }).getAttribute("href")).toBe("tel:1388");
+  expect(screen.queryByText("창하")).toBeNull();
+  expect(screen.queryByText("질문 수 그대로")).toBeNull();
+  expect(screen.queryByLabelText(/남은 질문/)).toBeNull();
+  expect(screen.queryByRole("button", { name: /다른 질문/ })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "닫기" }));
   await waitFor(() => expect(location.search).toContain("ask=topic"));
+});
+
+it("질문 수·가격 질문은 최애가 아니라 안내 한 줄로 답한다(DF-ASK-002)", async () => {
+  serve((_url, body) => ({
+    thread: answered(body.threadId, { status: "blocked", klass: "service", question: body.question, answer: "질문은 하루 3개까지 무료예요. 질문 1개로 이어 묻기 1번까지 할 수 있어요." }),
+    state: state(),
+  }));
+  render(<Host />);
+  askGo({ step: "write", topic: "free" });
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "이거 얼마야? 환불돼?" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  expect(await screen.findByText("질문은 하루 3개까지 무료예요. 질문 1개로 이어 묻기 1번까지 할 수 있어요.")).toBeTruthy();
+  expect(screen.queryByText("창하")).toBeNull();
+  expect(screen.getByRole("button", { name: "다른 질문 하기" })).toBeTruthy();
+});
+
+it("결과 화면에서 오면 주제 고르기 없이 '이 결과' 칩과 결과 맞춤 예시가 붙은 입력 판이 열린다(DF-ASK-011)", async () => {
+  serve((_url, body) => ({ thread: answered(body.threadId, { topic: "free" }), state: state({ left: 2 }) }));
+  function ResultHost() {
+    const at = useAskLocation();
+    return at ? <AskScene locale="ko" content="fortune" character="changha" readingId={reading} at={at} result="82 · 좋은 날" /> : null;
+  }
+  render(<ResultHost />);
+  askGo({ step: "result" });
+  expect(await screen.findByText("방금 본 오늘 운세로 답해 줄게. 오늘 뭐 하려고?")).toBeTruthy();
+  expect(screen.getByText("이 결과")).toBeTruthy();
+  expect(screen.getByText(/82 · 좋은 날/)).toBeTruthy();
+  expect(screen.queryByRole("group", { name: "주제" })).toBeNull();
+  expect(screen.getByRole("group", { name: "예시 질문" }).querySelectorAll("button")).toHaveLength(3);
+  fireEvent.change(screen.getByLabelText("질문 입력"), { target: { value: "오늘 그 연락 해도 될까?" } });
+  fireEvent.click(screen.getByRole("button", { name: "결과 없이 묻기" }));
+  await waitFor(() => expect(location.search).toContain("ask=topic"));
+  // 칩을 지워도 쓰던 글은 남는다.
+  fireEvent.click(await screen.findByRole("button", { name: "연애" }));
+  expect((await screen.findByLabelText("질문 입력") as HTMLTextAreaElement).value).toBe("오늘 그 연락 해도 될까?");
+});
+
+it("입력 판은 여러 줄·200자이고 180자부터 글자 수가 강조된다(DF-ASK-010)", async () => {
+  serve(() => ({}));
+  render(<Host />);
+  askGo({ step: "write", topic: "work" });
+  const field = (await screen.findByLabelText("질문 입력")) as HTMLTextAreaElement;
+  expect(field.tagName).toBe("TEXTAREA");
+  expect(field.maxLength).toBe(200);
+  expect(screen.getByText("0/200").hasAttribute("data-warn")).toBe(false);
+  fireEvent.change(field, { target: { value: "가".repeat(180) } });
+  expect(screen.getByText("180/200").hasAttribute("data-warn")).toBe(true);
+});
+
+it("답 아래에 고지 한 줄과 '내 풀이 근거' 펼침이 있다(DF-ASK-012)", async () => {
+  const id = "33333333-3333-4333-8333-333333333333";
+  vi.stubGlobal("fetch", vi.fn(async (url: string) =>
+    String(url).includes("/evidence")
+      ? Response.json({ rows: [{ kind: "basis", text: "연애는 일지를 봐요. 일지가 오, 불 기운이에요." }], hourless: true })
+      : Response.json(state({ threads: [answered(id)] }))));
+  render(<Host />);
+  askGo({ step: "answer", thread: id });
+  expect(await screen.findByText("운의 흐름을 참고로 보는 풀이예요. 정해진 미래가 아니에요.")).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "내 풀이 근거" }));
+  expect(await screen.findByText("연애는 일지를 봐요. 일지가 오, 불 기운이에요.")).toBeTruthy();
+  expect(screen.getByText("태어난 시간 없이 본 풀이")).toBeTruthy();
 });
 
 it("질문을 다 쓰면 오늘 물어본 질문을 다시 열 수 있고, 살 수 있는 자리는 없다", async () => {
@@ -257,4 +341,22 @@ it("다른 최애에게 한 질문을 열면 그 최애의 이름과 말투로 �
 
 it("가로 화면에서는 줄 바꿈으로 온 답도 한 쪽에 담는다", () => {
   expect(askPages("네 일간은 병.\n먼저 짧게 말을 걸어 봐.", true)).toEqual(["네 일간은 병. 먼저 짧게 말을 걸어 봐."]);
+});
+
+it("답이 20초 안에 오지 않으면 끊긴 것으로 보고 다시 보내기를 보인다(DF-ASK-008)", async () => {
+  const controller = new AbortController();
+  const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValue(controller.signal);
+  vi.stubGlobal("fetch", vi.fn((_url: string, init?: RequestInit) =>
+    init?.method
+      ? new Promise((_, reject) => init.signal?.addEventListener("abort", () => reject(new DOMException("timeout", "TimeoutError"))))
+      : Promise.resolve(Response.json(state()))));
+  render(<Host />);
+  askGo({ step: "write", topic: "work" });
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "이직해도 될까?" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  await waitFor(() => expect(timeout).toHaveBeenCalledWith(20_000));
+  controller.abort();
+  expect(await screen.findByRole("button", { name: "다시 보내기" })).toBeTruthy();
+  expect(toast).toHaveBeenCalledWith({ title: "답을 받지 못했어요. 질문 수는 그대로예요.", tone: "error" });
+  timeout.mockRestore();
 });

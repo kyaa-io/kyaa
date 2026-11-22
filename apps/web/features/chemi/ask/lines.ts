@@ -238,6 +238,71 @@ export function askPages(answer: string, wide = false) {
 export const askExamples = (topic: AskTopic, character: AskCharacter) =>
   examples[topic].map((pair) => pair[askVoice[character] === "ban" ? 0 : 1]);
 
+/** 결과 화면에서 온 질문의 예시(기획 03-6 33): 결과 종류마다 6개, 날마다 3개를 돌려 보인다. */
+const resultExamples: Record<AskContent, readonly (readonly [ban: string, yo: string])[]> = {
+  saju: [
+    ["내 사주로 보면 나는 어떤 일이 잘 맞아?", "제 사주로 보면 어떤 일이 잘 맞아요?"],
+    ["올해 나한테 제일 중요한 건 뭐야?", "올해 저한테 제일 중요한 건 뭐예요?"],
+    ["나는 어떤 사람한테 끌려?", "저는 어떤 사람에게 끌려요?"],
+    ["내 사주에 모자란 기운은 어떻게 채워?", "제 사주에 모자란 기운은 어떻게 채워요?"],
+    ["이번 달은 뭐부터 붙잡을까?", "이번 달은 뭐부터 붙잡을까요?"],
+    ["돈은 어떻게 모으는 게 나한테 맞아?", "돈은 어떻게 모으는 게 저한테 맞아요?"],
+  ],
+  fortune: [
+    ["오늘 그 연락 해도 될까?", "오늘 그 연락 해도 될까요?"],
+    ["오늘 오후엔 뭘 조심해?", "오늘 오후엔 뭘 조심해요?"],
+    ["오늘 덕질은 뭐부터 할까?", "오늘 덕질은 뭐부터 할까요?"],
+    ["오늘 부탁할 일, 해도 될까?", "오늘 부탁할 일, 해도 될까요?"],
+    ["오늘 사려던 거 사도 될까?", "오늘 사려던 거 사도 될까요?"],
+    ["오늘 운을 살리려면 뭘 하면 좋아?", "오늘 운을 살리려면 뭘 하면 좋아요?"],
+  ],
+  star: [
+    ["이번 주 연애는 어때?", "이번 주 연애는 어때요?"],
+    ["오늘 별 흐름에서 조심할 건 뭐야?", "오늘 별 흐름에서 조심할 건 뭐예요?"],
+    ["오늘 먼저 말 걸어도 될까?", "오늘 먼저 말 걸어도 될까요?"],
+    ["일은 오늘 어떻게 풀어 갈까?", "일은 오늘 어떻게 풀어 갈까요?"],
+    ["오늘 돈 쓸 일, 괜찮을까?", "오늘 돈 쓸 일, 괜찮을까요?"],
+    ["나한테 오늘 힘이 되는 건 뭐야?", "저한테 오늘 힘이 되는 건 뭐예요?"],
+  ],
+  tarot: [
+    ["이 카드, 내 연애엔 무슨 뜻이야?", "이 카드, 제 연애엔 무슨 뜻이에요?"],
+    ["바라는 일, 언제쯤 될까?", "바라는 일, 언제쯤 될까요?"],
+    ["지금 내가 놓치는 건 뭐야?", "지금 제가 놓치는 건 뭐예요?"],
+    ["이 카드대로라면 뭘 먼저 해야 해?", "이 카드대로라면 뭘 먼저 해야 해요?"],
+    ["이 카드가 일에는 어떻게 읽혀?", "이 카드가 일에는 어떻게 읽혀요?"],
+    ["이 카드가 조심하라는 건 뭐야?", "이 카드가 조심하라는 건 뭐예요?"],
+  ],
+};
+/** day = 한국 날짜(YYYY-MM-DD). 같은 날에는 같은 3개. */
+export function askResultExamples(content: AskContent, character: AskCharacter, day: string) {
+  const list = resultExamples[content];
+  const start = Number(day.slice(8, 10)) % 2 ? 3 : 0;
+  return list.slice(start, start + 3).map((pair) => pair[askVoice[character] === "ban" ? 0 : 1]);
+}
+
+/** 결과 화면에서 바로 들어왔을 때 최애의 첫 마디: 방금 본 결과를 이어받아 묻는다. */
+const resultLines: Record<Voice, Record<AskContent, string>> = {
+  ban: {
+    saju: "방금 본 사주 그대로 펼쳐 놨어. 거기서 뭐가 제일 궁금해?",
+    fortune: "방금 본 오늘 운세로 답해 줄게. 오늘 뭐 하려고?",
+    star: "방금 본 별 흐름으로 답해 줄게. 뭐가 걸려?",
+    tarot: "방금 뽑은 카드로 답해 줄게. 바라는 거 하나 말해 봐.",
+  },
+  yo: {
+    saju: "방금 본 사주 그대로 펼쳐 놨어요. 거기서 뭐가 제일 궁금해요?",
+    fortune: "방금 본 오늘 운세로 답해 줄게요. 오늘 뭐 하려고요?",
+    star: "방금 본 별 흐름으로 답해 줄게요. 뭐가 걸려요?",
+    tarot: "방금 뽑은 카드로 답해 줄게요. 바라는 거 하나 말해 봐요.",
+  },
+  hao: {
+    saju: "방금 본 사주를 그대로 펼쳐 두었소. 무엇이 가장 궁금하오?",
+    fortune: "방금 본 오늘 운세로 답하겠소. 오늘 무엇을 하려 하오?",
+    star: "방금 본 별의 흐름으로 답하겠소. 무엇이 걸리오?",
+    tarot: "방금 뽑은 카드로 답하겠소. 바라는 것 하나를 말해 보시오.",
+  },
+};
+export const askResultLine = (content: AskContent, character: AskCharacter) => resultLines[askVoice[character]][content];
+
 /** 장면 그림(세로·가로)과 대화판 얼굴. 네 콘텐츠가 이미 쓰는 승인 원화를 그대로 쓴다. */
 export function askArt(content: AskContent, character: AskCharacter) {
   if (content === "tarot")

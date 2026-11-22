@@ -323,7 +323,7 @@ export function TarotScreen({
           auth={auth}
           meaning={meaning}
           headers={headers}
-          onAsk={member && shown.readingId ? () => askGo({ step: "topic" }) : undefined}
+          onAsk={member && shown.readingId ? () => askGo({ step: "result" }) : undefined}
         />
       ) : (
         <TarotStage
