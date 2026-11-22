@@ -1,4 +1,5 @@
 import { composeLoop, type MusicScene } from "./music";
+import type { Character } from "./shared";
 import type { RunEvent } from "@/features/chemi/games/run";
 
 /** Effects are synthesised, so the game ships no audio files. One switch turns all of them on or off. */
@@ -22,13 +23,15 @@ const TONES: Partial<Record<RunEvent["type"] | "start" | "over", readonly Tone[]
   over: [[392, 196, 0.3, "triangle"]],
 };
 
+type Playing = `${Character}:${MusicScene}`;
+
 export function createSound() {
   let context: AudioContext | undefined;
   let on = false;
-  let scene: MusicScene | null = null;
+  let scene: Playing | null = null;
   let source: AudioBufferSourceNode | undefined;
   let master: GainNode | undefined;
-  const loops = new Map<MusicScene, AudioBuffer>();
+  const loops = new Map<Playing, AudioBuffer>();
   function unlock() {
     try {
       context ??= new AudioContext();
@@ -36,6 +39,8 @@ export function createSound() {
         master = context.createGain();
         master.gain.value = on ? 1 : 0;
         master.connect(context.destination);
+        // A song chosen before the first tap starts now that the browser allows sound.
+        syncMusic();
       }
       void context.resume().catch(() => {});
     } catch { /* Audio output is optional. */ }
@@ -45,7 +50,8 @@ export function createSound() {
     source?.disconnect();
     source = undefined;
     if (!context || !master || !scene || !on || document.hidden) return;
-    const loop = loops.get(scene) ?? composeLoop(context, scene);
+    const [who, part] = scene.split(":") as [Character, MusicScene];
+    const loop = loops.get(scene) ?? composeLoop(context, who, part);
     loops.set(scene, loop);
     source = context.createBufferSource();
     source.buffer = loop;
@@ -79,7 +85,11 @@ export function createSound() {
   return {
     play,
     unlock,
-    music(next: MusicScene | null) { if (scene !== next) { scene = next; syncMusic(); } },
+    /** Each 최애 has their own song; the same call with the same pair keeps it playing without a restart. */
+    music(who: Character, next: MusicScene | null) {
+      const key = next && `${who}:${next}` as const;
+      if (scene !== key) { scene = key; syncMusic(); }
+    },
     visibility: syncMusic,
     set(next: boolean) {
       if (on === next) return;

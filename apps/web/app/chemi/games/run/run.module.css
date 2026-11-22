@@ -128,6 +128,8 @@
 .hudScore { display: flex; flex-direction: column; gap: var(--space-1); }
 .hudMid { display: flex; flex-direction: column; align-items: center; gap: var(--space-2); padding-bottom: var(--space-1); }
 .hearts { display: flex; gap: var(--space-1); }
+/* 보호막을 먹으면 하트 옆 방패가 세 단계로 작아지며 자리 잡는다(도트처럼 끊어서). */
+.shieldOn { display: inline-flex; animation: run-pop 300ms steps(3) both; }
 .noteCount { display: flex; align-items: center; gap: var(--space-1); --u: var(--chemi-dot-1); }
 .hudFever { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-2); padding-bottom: var(--space-1); white-space: nowrap; }
 .bar { display: block; overflow: hidden; width: 112px; height: var(--space-2); border: 1px solid var(--color-ink); border-radius: var(--radius-pill); background: var(--color-surface); }
@@ -308,9 +310,10 @@
   .nextRow { grid-template-columns: minmax(0, 320px) auto auto; justify-content: start; align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .float, .say, .keyHint { animation: none; }
+  .float, .say, .keyHint, .shieldOn { animation: none; }
 }
 @keyframes run-float { to { opacity: 0; transform: translateY(-24px); } }
 @keyframes run-say { from { opacity: 0; transform: translateY(8px); } }
+@keyframes run-pop { from { transform: scale(2); } }
 /* 키 띠는 3.7초 그대로 있다가 300ms 동안 사라진다. 움직임 줄이기에서는 4초 뒤 바로 빠진다. */
 @keyframes run-hint { 92% { opacity: 1; } to { opacity: 0; } }

@@ -86,8 +86,9 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     return () => { document.removeEventListener("visibilitychange", sound.visibility); sound.close(); };
   }, [sound]);
   useEffect(() => {
-    if (stage !== "run") sound.music(stage === "result" ? "result" : null);
-  }, [sound, stage]);
+    // The choose screen previews the picked 최애's running song; the run keeps it going from there.
+    if (stage !== "run") sound.music(character, stage === "result" ? "result" : "run");
+  }, [sound, stage, character]);
   useEffect(() => { void loadArt().catch(() => {}); }, []);
 
   // Back during a run opens the pause veil instead of leaving the page.
@@ -216,7 +217,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       <FanHeading as="h1">{copy.title}</FanHeading>
       <FanIconButton aria-label={copy.sound} aria-pressed={soundOn} onClick={toggleSound}><FanIcon icon={soundOn ? Volume2 : VolumeX} /></FanIconButton>
     </header>
-    {stage === "select" && <SelectStage character={character} pickDisabled={!auth.ready || busy || Boolean(requestKey.current)} onPick={setCharacter} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} footer={footer}
+    {stage === "select" && <SelectStage character={character} pickDisabled={!auth.ready || busy || Boolean(requestKey.current)} onPick={(who) => { sound.unlock(); setCharacter(who); }} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} footer={footer}
       challenge={challenge} spent={spent} startLabel={startLabel} startDisabled={!auth.ready || busy || (auth.authenticated && !lobby)}
       onStart={() => auth.authenticated && free <= 0 ? setPaying(true) : void begin()} onAllRanks={() => setAllRanks(true)}
       errorLine={errorLine} reminder={reminder} />}
