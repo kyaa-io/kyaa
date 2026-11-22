@@ -18,6 +18,8 @@ import { getMatchCopy } from "../games/match/copy";
 import { entries } from "../contents";
 import type { HomeCopy } from "../home";
 import { getGrowthCopy } from "./copy";
+import { getRoomLines } from "./room-lines";
+import { RoomStage } from "./room-stage";
 import styles from "./growth.module.css";
 
 const CHARACTERS = ["changha", "elina", "yuna"] as const;
@@ -61,7 +63,6 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
     setPicked(CHARACTERS.find(character => character === requested));
   }, []);
   const [busy, setBusy] = useState(false);
-  const [hop, setHop] = useState(false);
   const [viewing, setViewing] = useState<number>();
 
   const call = useCallback(async (character?: Character) => {
@@ -132,6 +133,8 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
       : todo
         ? { label: fill(todo.game ? copy.play : copy.go, { content: home[todo.id] }), props: { href: todo.href } }
         : null;
+  const lines = getRoomLines(locale, mini.character);
+  const lineKey = raised(mini) ? (stage === "baby" ? "lineBaby" : stage === "kid" ? "lineKid" : "lineStar") : "lineWait";
   const slotNames = [copy.slot1, copy.kid, "Lv 10", copy.star, "Lv 20", "Lv 30"];
   /** 앨범 칸이 열리는 친밀 Lv. 다음에 열릴 칸에는 그 Lv까지 남은 친밀을 적는다(친밀 Lv L 은 10·L² 부터). */
   const slotLevels = [1, 5, 10, 15, 20, 30];
@@ -161,28 +164,19 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
       <div className={styles.stage}>
         <div className={styles.room}>
           <img src={`/chemi/grow/room-${mini.character}-v1.webp`} alt="" width={1024} height={1024} />
-          <FanAction
-            key={`${mini.character}-${stage}`}
-            variant="text"
-            className={styles.mini}
-            ariaLabel={fill(copy.mini, { name })}
-            onClick={() => setHop(true)}
-          >
-            <img
-              src={`/chemi/grow/mini-${mini.character}-${stage}-v1.webp`}
-              alt=""
-              width={400}
-              height={580}
-              data-hop={hop}
-              onAnimationEnd={() => setHop(false)}
-            />
-          </FanAction>
+          <RoomStage
+            key={mini.character}
+            character={mini.character}
+            stage={stage}
+            locale={locale}
+            label={fill(copy.mini, { name })}
+            line={lines[lineKey] ?? copy[lineKey]}
+          />
           <div className={styles.name}>
             <FanText role="label">{fill(copy.mini, { name })}</FanText>
             <FanTag tone="neutral">{copy[stage]}</FanTag>
           </div>
           {guest && <FanTag tone="neutral" className={styles.sample}>{copy.sample}</FanTag>}
-          <FanText as="p" role="meta" className={styles.line}>{raised(mini) ? copy[stage === "baby" ? "lineBaby" : stage === "kid" ? "lineKid" : "lineStar"] : copy.lineWait}</FanText>
         </div>
         {primary && <FanAction variant="primary" fullWidth {...primary.props}>{primary.label}</FanAction>}
       </div>
