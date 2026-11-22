@@ -541,7 +541,7 @@ export function FortuneResult({
                     )}
                   >
                     <div className={styles.fieldMore}>
-                      <FanText as="p" role="meta">{detail.basis}</FanText>
+                      {detail.basis && <FanText as="p" role="meta">{detail.basis}</FanText>}
                       <FanText as="p" role="body">{detail.text}</FanText>
                       <FanText as="p" role="label">{uiText(voiceKeys[character])}</FanText>
                       <ul>

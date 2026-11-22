@@ -133,6 +133,9 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
         ? { label: fill(todo.game ? copy.play : copy.go, { content: home[todo.id] }), props: { href: todo.href } }
         : null;
   const slotNames = [copy.slot1, copy.kid, "Lv 10", copy.star, "Lv 20", "Lv 30"];
+  /** 앨범 칸이 열리는 친밀 Lv. 다음에 열릴 칸에는 그 Lv까지 남은 친밀을 적는다(친밀 Lv L 은 10·L² 부터). */
+  const slotLevels = [1, 5, 10, 15, 20, 30];
+  const nextSlot = guest ? null : slotLevels.findIndex((level, index) => level > mini.level && !mini.album.some((item) => item.slot === index + 1)) + 1 || null;
   const fresh = new Set(data.fresh.filter((item) => item.character === mini.character).map((item) => item.slot));
   const openDate = viewing ? mini.album.find((item) => item.slot === viewing)?.date : undefined;
 
@@ -248,10 +251,15 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
                   </span>
                   <FanText role={got ? "label" : "meta"}>{label}</FanText>
                   {got && <FanText role="meta" className={styles.date}>{got.date.replaceAll("-", ".")}</FanText>}
+                  {slot === nextSlot && raised(mini) && (
+                    <FanText role="meta" className={styles.toGo}>
+                      {fill(copy.toGo, { n: Math.max(0, 10 * slotLevels[index]! ** 2 - mini.exp).toLocaleString(locale) })}
+                    </FanText>
+                  )}
                 </span>
               );
               return (
-                <li key={slot} data-row="">
+                <li key={slot} data-row="" data-next={slot === nextSlot && raised(mini) ? "" : undefined}>
                   {photo ? (
                     <FanAction variant="text" className={styles.card} onClick={() => setViewing(slot)}>{face}</FanAction>
                   ) : (

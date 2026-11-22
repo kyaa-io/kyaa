@@ -376,6 +376,8 @@ export function AskScene({ locale, content, character, readingId, at }: {
   let below: React.ReactNode = null;
   // 최애가 말을 마쳐야 선택지가 보인다. 자리는 미리 잡아 두어 대화 상자가 밀리지 않는다.
   let spoken = true;
+  /** 답의 다음 쪽이 남아 있는 동안: 행동 줄은 마지막 쪽에서만 자리를 잡는다(앞쪽에 빈 칸을 남기지 않는다). */
+  let paging = false;
   // 오늘 마지막 질문의 답을 보고 있는지: 장면이 저녁처럼 조금 어두워진다.
   let ending = false;
   if (failed)
@@ -477,6 +479,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
         </FanAction>
       );
     spoken = last && settled;
+    paging = !last;
     panel = (
       <>
         <section className={`${styles.talk} ${styles.turn}`} aria-live="polite" onClick={forward}>
@@ -690,7 +693,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
       <div className={styles.panel} ref={panelBox}>
         <div className={styles.board} key={view}>
           {panel}
-          {main ? (
+          {main && !paging ? (
             <div className={`${styles.actions} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
               <FanAction
                 variant="primary"

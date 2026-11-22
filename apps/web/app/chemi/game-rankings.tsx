@@ -4,6 +4,8 @@ import { useEffect, useRef, type CSSProperties } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import { CircleUserRound } from "@/components/fan-ui/fan-icons";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
@@ -15,6 +17,8 @@ type RecordRow = {
   place: number;
   name: string;
   avatar?: string;
+  /** null 이면 닉네임이 없어 이름이 대체 이름이다: 원 안에 첫 글자 대신 사람 모양. */
+  initial?: null;
   change: number;
   record: string;
   isMe?: boolean;
@@ -43,7 +47,7 @@ function RankingRow({ row }: { row: RecordRow }) {
   return (
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
       <FanText role="body" data-flash-target="gain">{row.place}</FanText>
-      {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{Array.from(row.name)[0]}</span>}
+      {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
       <div>
         <FanText role="item">{row.name}</FanText>
         {row.change !== 0 && (

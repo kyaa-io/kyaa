@@ -1,6 +1,7 @@
 "use client";
 
 import { rankName } from "@/features/chemi/games/rank-name";
+import { RankInitial } from "@/features/chemi/games/rank-initial";
 import { useEffect, useRef } from "react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
@@ -57,7 +58,7 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
   const line = (row: Rank | undefined, key: string, slot?: "near", place?: number) => row ? (
     <li data-row="" key={key} data-me={row.isMe} data-slot={slot && !row.isMe ? "near" : undefined} data-top={row.place <= 3}>
       <FanText role="label" className={styles.place}>{row.place}</FanText>
-      <FanText role="label" className={styles.avatar} aria-hidden="true">{Array.from(rankName(row.nickname, locale))[0]}<img src={`${ART}/face-${row.character}-v1.png`} alt="" /></FanText>
+      <FanText role="label" className={styles.avatar} aria-hidden="true"><RankInitial nickname={row.nickname} /><img src={`${ART}/face-${row.character}-v1.png`} alt="" /></FanText>
       <FanText role="item" className={styles.who}>{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`}</FanText>
       <FanText role="meta">{names[row.character]}</FanText>
       <FanText role="item">{number.format(row.score)}</FanText>
@@ -69,7 +70,8 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
       {onAll && rows.length > 0 && <FanSectionLink onClick={onAll}>{copy.allRanks}</FanSectionLink>}
     </header>
     <ol>
-      {[0, 1, 2].map((i) => line(leaders[i], `top${i}`, undefined, loaded ? i + 1 : undefined))}
+      {/* 불러오는 동안만 세 줄 자리를 잡고, 불러온 뒤에는 기록이 있는 순위만 그린다(번호만 있는 빈 줄 금지). */}
+      {loaded ? leaders.map((row, i) => line(row, `top${i}`)) : [0, 1, 2].map((i) => line(undefined, `top${i}`))}
       {near && around.length > 0 && <>
         <li data-row="" data-gap="true" data-slot="near" aria-hidden="true">{me && me.place > 5 && <FanText role="meta">···</FanText>}</li>
         {line(around.find((row) => row.place === me!.place - 1), "near0", "near")}

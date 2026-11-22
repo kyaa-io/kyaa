@@ -105,7 +105,7 @@ it("질문을 다 쓰면 오늘 물어본 질문을 다시 열 수 있고, 살 �
   serve(() => new Response(JSON.stringify({ error: { code: "CHEMI_MAIL_UNVERIFIED" } }), { status: 409 }), state({ left: 0, threads: [first] }));
   const { container } = render(<Host />);
   askGo({ step: "topic" });
-  expect(await screen.findByText("오늘 질문을 모두 썼습니다.")).toBeTruthy();
+  expect(await screen.findByText("오늘 질문을 모두 썼어요.")).toBeTruthy();
   expect(screen.getByText("오늘 이야기 재밌었어. 내일 또 와.")).toBeTruthy();
   expect(screen.queryByRole("group", { name: "주제" })).toBeNull();
   expect(container.textContent).not.toMatch(/원\b|990|구매|결제/);

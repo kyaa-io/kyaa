@@ -76,8 +76,8 @@ describe("star copy", () => {
     expect(moon!.when).toMatch(/^오늘 .+ \d+시쯤 가장 강해요$/);
     expect(uranus!.title).toBe("천왕성과 내 수성");
     expect(uranus!.when).toBe("12월 12일(토)까지");
-    expect(moon!.text).toBe("달은 네 달(게자리)과 부드럽게 이어지다 한 발 멀어지고 있어요. 받던 도움이 조금씩 옅어져요.");
-    expect(uranus!.text).toBe("천왕성은 네 수성(쌍둥이자리)과 겹쳐서 부담을 줘요. 작은 일에 마음이 쓰일 수 있어요.");
+    expect(moon!.text).toBe("달은 내 달(게자리)과 부드럽게 이어지다 한 발 멀어지고 있어요. 받던 도움이 조금씩 옅어져요.");
+    expect(uranus!.text).toBe("천왕성은 내 수성(쌍둥이자리)과 겹쳐서 부담을 줘요. 작은 일에 마음이 쓰일 수 있어요.");
   });
 
   it("labels help and pressure by the aspect, not by the score sign", () => {
@@ -128,5 +128,16 @@ describe("star steps", () => {
     expect(nextStarStep("talk-3")).toBe("talk-4");
     expect(starTalkNumber("talk-4")).toBe(4);
     expect(starTalkNumber("result")).toBeNull();
+  });
+});
+
+describe("별자리 4/4 궁합 줄", () => {
+  it("받침에 맞춰 '이랑/랑'을 붙이고, 총운 별이 셋 이하면 하루 전체를 좋다고 하지 않는다", async () => {
+    const { starPairLine } = await import("./copy");
+    const calm = starPairLine("yuna", "쌍둥이", "물병", false, 2);
+    expect(calm).toContain("물병이랑 쌍둥이");
+    expect(calm).not.toContain("완전 좋은 날");
+    expect(starPairLine("yuna", "쌍둥이", "물병", false, 5)).toContain("완전 좋은 날");
+    expect(starPairLine("changha", "게", "물병", false, 2)).toContain("물병과 게");
   });
 });
