@@ -167,6 +167,10 @@
   justify-content: space-between;
   border-top: 0;
 }
+/* 내가 상위 세 줄 안이면 내 기록 줄 대신 같은 높이의 빈 자리 */
+.rankMine[data-spacer] {
+  border-top: 0;
+}
 .rankMine[data-first] a {
   translate: var(--space-2) 0;
 }
@@ -307,12 +311,12 @@
   justify-content: center;
   min-height: var(--min-target);
 }
-/* 점은 8px 이지만 누르는 폭은 24px 이상 */
+/* 점은 8px 이지만 누르는 자리는 44×44 */
 .dots > button:not(.pause) {
   width: auto;
-  min-width: 0;
+  min-width: var(--min-target);
   min-height: var(--min-target);
-  padding: 0 var(--space-2);
+  padding: 0;
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill);
@@ -340,7 +344,7 @@
 .row[data-selected="true"] {
   color: var(--color-accent-ink);
 }
-.row[data-selected="true"] b {
+.row[data-selected="true"] .rowCopy > :first-child {
   text-decoration: underline;
   text-underline-offset: var(--space-1);
 }

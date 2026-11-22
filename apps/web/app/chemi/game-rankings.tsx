@@ -99,7 +99,9 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, start,
                     return <RankingRow key={row.id} row={row} />;
                   })}
                 </div>
-                {game.mine ? (
+                {game.leaders.some((row) => row.isMe) ? (
+                  <div className={styles.rankMine} data-spacer="" aria-hidden="true" />
+                ) : game.mine ? (
                   <div className={styles.rankMine}>
                     <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
                     <span className={styles.rankAvatar} aria-hidden="true" />
