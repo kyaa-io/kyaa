@@ -1,5 +1,6 @@
 "use client";
 
+import { getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
 import { useEffect, useMemo, useState } from "react";
 import { FPS } from "@/features/chemi/games/engine";
 import { rankName } from "@/features/chemi/games/rank-name";
@@ -73,6 +74,6 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
     };
   });
   return <GameRankings games={games} label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord}
-    empty={labels.emptyRanking} start={copy.start} error={copy.rankingError} retryLabel={labels.retry}
+    empty={labels.emptyRanking} mineEmpty={getExtraPlayCopy(locale).myEmpty} start={copy.start} error={copy.rankingError} retryLabel={labels.retry}
     retry={() => { setResults({}); retry((value) => value + 1); }} />;
 }
