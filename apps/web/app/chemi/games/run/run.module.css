@@ -96,7 +96,6 @@
 .rank li[data-me="true"] { background: var(--color-accent-soft); color: var(--color-accent-ink); }
 .rank li[data-me="true"] span { color: inherit; }
 .rank li[data-gap="true"] { display: grid; grid-template-columns: none; justify-content: center; align-items: center; height: var(--space-6); }
-.vacantScore { grid-column: -2 / -1; justify-self: end; }
 .rank li[data-empty="true"] { opacity: var(--fan-disabled-opacity); }
 .rank li[data-slot="near"] { display: none; }
 .avatar {

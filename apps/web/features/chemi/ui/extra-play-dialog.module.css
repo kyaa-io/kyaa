@@ -1,6 +1,19 @@
+/* 추가 판 확인: 남은 추가 판 칸 → 포인트·남은 판의 전후 두 칸(DESIGN 케미 최애 런 '추가 판 확인'). */
+.body { display: grid; gap: var(--space-4); }
+.tickets { display: flex; align-items: center; justify-content: center; gap: var(--space-3); padding-block: var(--space-2); }
+.face { width: var(--space-12); height: var(--space-12); border-radius: 50%; object-fit: cover; }
+.cells { display: flex; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.cells li { display: grid; place-items: center; width: var(--space-12); height: var(--space-10); border: 1px solid var(--color-accent-line); border-radius: var(--radius-small); background: var(--color-accent-soft); color: var(--color-accent-ink); }
+.cells li[data-state="used"] { border-color: var(--color-line); background: var(--color-surface); color: var(--color-line); }
+/* 이번에 쓸 칸: 열릴 때 한 번 비워지며(600ms) 남은 칸과 쓴 칸 사이를 보여 준다. */
+.cells li[data-state="spend"] { border-color: var(--color-accent); animation: spend var(--motion-reward) var(--motion-easing) 450ms 1 both; }
+@keyframes spend { from { opacity: 1; transform: scale(1); } to { opacity: .4; transform: scale(.92); } }
+@media (prefers-reduced-motion: reduce) { .cells li[data-state="spend"] { animation: none; opacity: .4; } }
 .pay { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; border-block: 1px solid var(--color-line); }
-.pay > div { padding-block: var(--space-3); }
+.pay > div { display: grid; gap: var(--space-1); padding-block: var(--space-3); }
 .pay > div + div { padding-inline-start: var(--space-4); border-inline-start: 1px solid var(--color-line-subtle); }
 .pay dt { margin: 0; }
-.pay dd { margin: 0; font-variant-numeric: tabular-nums; }
-.short { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: var(--space-3) 0 0; }
+.pay dd { display: grid; gap: var(--space-1); margin: 0; font-variant-numeric: tabular-nums; }
+.before { text-decoration: line-through; }
+.value { color: var(--color-accent-ink); }
+.short { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); margin: 0; }

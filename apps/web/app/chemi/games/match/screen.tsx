@@ -25,6 +25,7 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FPS, LEVELS } from "@/features/chemi/games/engine";
 import { rankName } from "@/features/chemi/games/rank-name";
 import { RankInitial } from "@/features/chemi/games/rank-initial";
+import { fillCount, getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
 import styles from "./match.module.css";
@@ -289,6 +290,8 @@ function Rankings({
     </section>
   );
 }
+
+const DONE_LINE = { changha: "doneChangha", elina: "doneElina", yuna: "doneYuna" } as const;
 
 export function MatchScreen(props: Props) {
   const auth = useByUsAuth();
@@ -677,8 +680,11 @@ function Session({
       const rows = Math.ceil(pairs * 2 / columns);
       return <li data-row="" key={pairs} aria-current={active && active.stage === i+1 ? "step" : undefined}
         aria-label={`${copy.round} ${i + 1} · ${columns}×${rows} · ${clock(seconds * FPS)}`}>
-        <span className={styles.stepGrid} style={{ "--columns": columns } as CSSProperties} aria-hidden="true">
-          {Array.from({ length: columns * rows }, (_, cell) => <i key={cell} />)}
+        <span className={styles.stepName} aria-hidden="true">
+          <b>{i + 1}</b>
+          <span className={styles.stepGrid} style={{ "--columns": columns } as CSSProperties}>
+            {Array.from({ length: columns * rows }, (_, cell) => <i key={cell} />)}
+          </span>
         </span>
         <span aria-hidden="true">{clock(seconds * FPS)}</span>
       </li>;
@@ -704,6 +710,7 @@ function Session({
     </div>
   ) : scene;
   const myRow = rows.find(row => row.isMe);
+  const extraCopy = getExtraPlayCopy(locale, lobby?.extraCost ?? 0);
   const title = {
     start: share ? copy.challenge : copy.title,
     guide: copy.guideTitle,
@@ -716,7 +723,7 @@ function Session({
   return (
     <main className={styles.shell} data-stage={stage}>
       <ExtraPlayDialog open={paying} onOpenChange={setPaying} busy={working} locale={parseAppLocale(locale)}
-        points={lobby?.points} cost={lobby?.extraCost ?? 0} extraRemaining={lobby?.extraRemaining ?? 0}
+        points={lobby?.points} cost={lobby?.extraCost ?? 0} extraRemaining={lobby?.extraRemaining ?? 0} art={art.portrait}
         onConfirm={() => { setPaying(false); void start(character, true); }} />
       <header className={styles.header}>
         <FanIconButton type="button" aria-label={copy.back} onClick={back}>
@@ -812,8 +819,9 @@ function Session({
                 </div>
                 {levelList}
                 <div className={styles.startAction}>
-                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}>
-                    {copy[character]} · {copy.start}{lobby && ` · ${copy.freePlays} ${lobby.freeRemaining}`}
+                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}
+                    helperText={lobby ? `${copy.freePlays} ${lobby.freeRemaining}` : undefined}>
+                    {copy.start}
                   </StageAction>
                   <FanAction variant="text" onClick={() => { setPracticed(false); setStage("guide"); }}>{copy.howTo}</FanAction>
                 </div>
@@ -839,8 +847,9 @@ function Session({
               <Practice faces={art.cards} copy={copy} onDone={() => setPracticed(true)} />
               <div className={styles.startAction}>
                 {practiced ? (
-                  <StageAction disabled={working} onClick={() => void start(character, false, true)}>
-                    {copy[character]} · {copy.start}{lobby && ` · ${copy.freePlays} ${lobby.freeRemaining}`}
+                  <StageAction disabled={working} onClick={() => void start(character, false, true)}
+                    helperText={lobby ? `${copy.freePlays} ${lobby.freeRemaining}` : undefined}>
+                    {copy.start}
                   </StageAction>
                 ) : (
                   <FanAction disabled={working} onClick={() => void start(character, false, true)}>{copy.skip}</FanAction>
@@ -965,24 +974,26 @@ function Session({
                 </div>
                 <div>
                   <FanText as="dt" role="meta">{copy.myRank}</FanText>
-                  <dd>{myRow ? <><b>{copy.place.replace("{n}", String(myRow.place))}</b> · {myRow.score?.toLocaleString(locale) ?? clock(myRow.ticks)}</> : copy.emptyRanking}</dd>
+                  <dd>{myRow ? <><b>{copy.place.replace("{n}", String(myRow.place))}</b> · {myRow.score?.toLocaleString(locale) ?? clock(myRow.ticks)}</> : extraCopy.myEmpty}</dd>
                 </div>
                 {lobby && (
                   <div>
-                    <FanText as="dt" role="meta">{copy.extraPlays}</FanText>
-                    <dd><b>{lobby.extraRemaining} / 3</b></dd>
+                    <FanText as="dt" role="meta">{extraCopy.left}</FanText>
+                    <dd>{lobby.extraRemaining > 0
+                      ? <b>{fillCount(extraCopy.count, lobby.extraRemaining)}</b>
+                      : extraCopy.allUsed}</dd>
                   </div>
                 )}
               </dl>
               <p className={styles.quote}>
                 <Image width={112} height={112} alt="" src={art.portrait} />
-                <span><b>{copy[character]}</b> {copy.todayDone}</span>
+                <span><b>{copy[character]}</b> {copy[DONE_LINE[character]]}</span>
               </p>
               <div className={styles.startAction}>
                 {lobby?.extraRemaining && lobby.extraCost ? (
                   <>
                     <StageAction disabled={working} onClick={() => setPaying(true)}>
-                      {copy.extraPlay} · {lobby.extraCost}P
+                      {extraCopy.cta}
                     </StageAction>
                     <FanAction onClick={() => setStage("reminder")}>{copy.tomorrow}</FanAction>
                   </>

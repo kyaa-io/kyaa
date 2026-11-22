@@ -22,6 +22,8 @@ type RecordRow = {
   change: number;
   record: string;
   isMe?: boolean;
+  /** 기록이 없는 순위 자리: 빈 원 · 줄표 · 0(DESIGN 케미 홈). */
+  vacant?: true;
 };
 export type GameRanking = {
   game: "pair" | "run";
@@ -47,7 +49,7 @@ function RankingRow({ row }: { row: RecordRow }) {
   return (
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
       <FanText role="body" data-flash-target="gain">{row.place}</FanText>
-      {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
+      {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.vacant ? null : row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
       <div>
         <FanText role="item">{row.name}</FanText>
         {row.change !== 0 && (
@@ -62,12 +64,14 @@ function RankingRow({ row }: { row: RecordRow }) {
   );
 }
 
-export function GameRankings({ games, label, weekLabel, mineLabel, empty, start, error, retry, retryLabel }: {
+export function GameRankings({ games, label, weekLabel, mineLabel, empty, mineEmpty, start, error, retry, retryLabel }: {
   label: string;
   games: readonly GameRanking[];
   weekLabel?: string;
   mineLabel?: string;
   empty?: string;
+  /** 남의 기록은 있고 내 기록만 없을 때. 주어를 밝혀 1위 줄과 부딪히지 않게 한다. */
+  mineEmpty?: string;
   start?: string;
   error?: string;
   retry?: () => void;
@@ -94,7 +98,7 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, start,
                 <div className={styles.leaders}>
                   {Array.from({ length: SLOTS }, (_, index) => {
                     const row = game.leaders[index] ?? {
-                      id: `empty-${index}`, place: index + 1, name: "—", initial: null, change: 0, record: "0",
+                      id: `empty-${index}`, place: index + 1, name: "—", vacant: true, change: 0, record: "0",
                     };
                     return <RankingRow key={row.id} row={row} />;
                   })}
@@ -110,7 +114,7 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, start,
                   </div>
                 ) : (
                   <div className={styles.rankMine} data-first="">
-                    <FanText role="meta">{empty}</FanText>
+                    <FanText role="meta">{game.leaders.length && mineEmpty ? mineEmpty : empty}</FanText>
                     {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${start}`}>{start}</FanSectionLink>}
                   </div>
                 )}

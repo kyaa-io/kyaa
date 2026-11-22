@@ -20,6 +20,9 @@ const images = {
   run: "banner-run.webp",
 } satisfies Record<(typeof entries)[number][0], string>;
 
+/** 배너 반복 영상 판. v2 = 1080p 원본에서 다시 만든 움직임 큰 영상(11/23 사용자 '화질'·'동적인 느낌'). */
+const videoVersion = { fortune: "v2", saju: "v2", zodiac: "v2", tarot: "v1", pair: "v1", run: "v1" } satisfies Record<(typeof entries)[number][0], string>;
+
 export function HomeBanner({
   activities,
   index,
@@ -47,7 +50,7 @@ export function HomeBanner({
       onPointerUp={event => { if (event.pointerType !== "mouse") setPointerInside(false); }} onPointerCancel={() => setPointerInside(false)}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
-        <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-v1`} paused={resting} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
+        <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={resting} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
         <div className={styles.caption}>
           <div><span>{copy[type]}</span><div className={styles.faces}>{["changha", "elina", "yuna"].map(person => <img key={person} alt="" src={`/chemi/grow/face-${person}-v1.webp`} />)}</div><FanHeading as="h1">{copy[id]}</FanHeading></div>
           {href ? (
