@@ -125,6 +125,7 @@ const table: Record<AppLocale, readonly string[]> = {
 };
 
 const otherCourses: Record<AppLocale, [string, string]> = {
+  "zh-Hans": ["樱花夜街", "落日海滨步道"], "zh-Hant": ["櫻花夜街", "落日海濱步道"],
   ko: ["벚꽃 봄밤 거리", "노을 바닷길"], en: ["Cherry blossom night", "Sunset boardwalk"],
   ja: ["夜桜の通り", "夕暮れの海辺"], es: ["Cerezos de noche", "Paseo al atardecer"],
   id: ["Malam bunga sakura", "Senja di tepi laut"], vi: ["Phố anh đào về đêm", "Bờ biển hoàng hôn"],
@@ -133,6 +134,8 @@ const otherCourses: Record<AppLocale, [string, string]> = {
 };
 
 const comboLines: Record<AppLocale, [string, string]> = {
+  "zh-Hans": ["连续{n}次！节奏刚刚好。", "连续{n}次！手指很灵活吧？"],
+  "zh-Hant": ["連續{n}次！節奏剛剛好。", "連續{n}次！手指很靈活吧？"],
   ko: ["{n}번 연속! 박자가 딱 맞아요.", "{n}번 연속! 손끝이 가볍지?"],
   en: ["{n} in a row! Right on beat.", "{n} in a row! Light fingers, huh?"],
   ja: ["{n}回連続！リズムぴったりです。", "{n}回連続！指が軽いでしょ？"],
