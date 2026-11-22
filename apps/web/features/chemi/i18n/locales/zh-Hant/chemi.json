@@ -11,6 +11,19 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "今日結果",
+    "playsLeft": "免費剩 {n} 局",
+    "extraCost": "加局 {n}P",
+    "playsDone": "明天再來",
+    "rankingError": "無法載入排行榜。",
+    "descriptions": {
+      "fortune": "查看今日好運",
+      "saju": "按出生日期看緣分",
+      "zodiac": "查看今日星座運勢",
+      "tarot": "抽一張牌看今日運勢",
+      "pair": "找出相同的兩張照片",
+      "run": "跳過障礙物"
+    },
     "play": "遊玩",
     "growth": "成長",
     "raise": "培養偶像",

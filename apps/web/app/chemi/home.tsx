@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
+import { useTodayReadings } from "./use-today-readings";
+import { GameStatusChip } from "./game-status-chip";
 import { HomeBanner } from "./home-banner";
 import { WeeklyRankings } from "./weekly-rankings";
 import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
@@ -30,6 +32,7 @@ export function ChemiHome({
 }) {
   const [category, setCategory] = useState("all");
   const [activeIndex, setActiveIndex] = useState(0);
+  const readings = useTodayReadings();
   const activities = entries.map(([id, type, path]) => ({
     id,
     type,
@@ -57,27 +60,35 @@ export function ChemiHome({
             .filter(({ type, href }) => (preview || href) && (category === "all" || category === type))
             .map(({ id, href }) => {
               const active = activities[activeIndex].id === id;
+              const saved = readings?.find(row => row.content === EARN[id][0] && row.kind === (id === "saju" ? "first" : "daily"));
+              const destination = saved && href ? href + "&" + new URLSearchParams({ c: saved.character, step: "result", r: saved.readingId }) : href;
               const content = (
                 <>
                   <img src={`/chemi/thumb-${id}-128-v2.webp`} alt="" />
-                  <FanText role="item">{copy[id]}</FanText>
+                  <span id={`chemi-copy-${id}`} className={styles.rowCopy}>
+                    <FanText role="item">{copy[id]}</FanText>
+                    <FanText role="meta">{copy.descriptions[id]}</FanText>
+                  </span>
+                  {saved && <FanText role="label" className={styles.statusChip}>{copy.todayResult}</FanText>}
+                  {href && (id === "pair" || id === "run") && <GameStatusChip game={id} copy={copy} />}
                   {href && <AffinityBadge size="sm" amount={EARN[id][1]} label={getGrowthCopy(locale).gain.replace("{n}", String(EARN[id][1]))} />}
                 </>
               );
-              return href ? (
+              return destination ? (
                 <Link
                   key={id}
                   aria-label={copy[id]}
+                  aria-describedby={`chemi-copy-${id}`}
                   className={styles.row}
                   data-selected={active}
-                  href={href}
+                  href={destination}
                 >
                   {content}
                 </Link>
               ) : (
                 <div key={id} className={styles.row} data-selected={active}>
                   {content}
-                  <small>{copy.ready}</small>
+                  <FanText role="label">{copy.ready}</FanText>
                 </div>
               );
             })}

@@ -11,6 +11,19 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "Resultado de hoje",
+    "playsLeft": "{n} grátis",
+    "extraCost": "Extra {n}P",
+    "playsDone": "Volte amanhã",
+    "rankingError": "Não foi possível carregar o ranking.",
+    "descriptions": {
+      "fortune": "Descubra a sorte de hoje",
+      "saju": "Compare as datas de nascimento",
+      "zodiac": "Leia seu horóscopo de hoje",
+      "tarot": "Tire uma carta para hoje",
+      "pair": "Encontre os pares de fotos",
+      "run": "Pule os obstáculos"
+    },
     "play": "Jogar",
     "growth": "Crescimento",
     "raise": "Cuide do seu ídolo",

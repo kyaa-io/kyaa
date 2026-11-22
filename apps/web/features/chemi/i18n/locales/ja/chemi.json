@@ -11,6 +11,19 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "今日の結果",
+    "playsLeft": "無料 残り{n}回",
+    "extraCost": "追加 {n}P",
+    "playsDone": "また明日",
+    "rankingError": "ランキングを読み込めませんでした。",
+    "descriptions": {
+      "fortune": "今日の幸運をチェック",
+      "saju": "生年月日で相性を見る",
+      "zodiac": "星座で今日を占う",
+      "tarot": "カードで今日を占う",
+      "pair": "同じ写真を2枚探す",
+      "run": "障害物を飛び越える"
+    },
     "play": "遊ぶ",
     "growth": "成長",
     "raise": "推しを育てる",

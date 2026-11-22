@@ -75,7 +75,9 @@
     "release-notes/2026-11-22-chemi-run-fortune.json",
     "release-notes/2026-11-22-chemi-entry-a.json",
     "release-notes/2026-11-22-chemi-run-keys.json",
-    "release-notes/2026-11-22-chemi-reading-languages.json"
+    "release-notes/2026-11-22-chemi-reading-languages.json",
+    "release-notes/2026-11-22-chemi-entry-list.json",
+    "release-notes/2026-11-22-chemi-entry-a3.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

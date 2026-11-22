@@ -11,6 +11,19 @@
     "gameMinutes": "{count}분 뒤 무료 판이 다시 열려요"
   },
   "home": {
+    "todayResult": "오늘 결과 보기",
+    "playsLeft": "무료 {n}판 남음",
+    "extraCost": "추가 판 {n}P",
+    "playsDone": "내일 다시",
+    "rankingError": "랭킹을 불러오지 못했어요.",
+    "descriptions": {
+      "fortune": "오늘의 행운을 확인해요",
+      "saju": "생년월일로 보는 궁합",
+      "zodiac": "내 별자리로 보는 하루",
+      "tarot": "카드를 뽑아 보는 운세",
+      "pair": "같은 사진 두 장 찾기",
+      "run": "최애와 장애물 뛰어넘기"
+    },
     "play": "놀기",
     "growth": "성장",
     "raise": "최애 키우기",

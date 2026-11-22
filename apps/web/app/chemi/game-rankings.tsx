@@ -84,8 +84,8 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, start,
               <FanHeading as="h3">{game.title}</FanHeading>
               {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${weekLabel}`}>{weekLabel}</FanSectionLink>}
             </header>
-            {game.status === "loading" ? <div className={styles.leaders}><FanSkeleton height={48} /></div> : game.status === "error" ? (
-              <div className={styles.leaders}>
+            {game.status === "loading" ? <div className={styles.leaders} data-status="loading"><FanSkeleton height={48} /></div> : game.status === "error" ? (
+              <div className={styles.leaders} data-status="error">
                 <FanText role="meta">{error}</FanText>
                 <FanAction size="sm" onClick={retry}>{retryLabel}</FanAction>
               </div>
@@ -99,7 +99,9 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, start,
                     return <RankingRow key={row.id} row={row} />;
                   })}
                 </div>
-                {game.mine ? (
+                {game.leaders.some((row) => row.isMe) ? (
+                  <div className={styles.rankMine} data-spacer="" aria-hidden="true" />
+                ) : game.mine ? (
                   <div className={styles.rankMine}>
                     <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
                     <span className={styles.rankAvatar} aria-hidden="true" />

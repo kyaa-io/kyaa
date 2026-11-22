@@ -11,6 +11,19 @@
     "gameMinutes": ""
   },
   "home": {
+    "todayResult": "Today’s result",
+    "playsLeft": "{n} free left",
+    "extraCost": "Extra game {n}P",
+    "playsDone": "Back tomorrow",
+    "rankingError": "Couldn't load the ranking.",
+    "descriptions": {
+      "fortune": "Find today's lucky sign",
+      "saju": "Check your birth-date match",
+      "zodiac": "Read your daily horoscope",
+      "tarot": "Draw a card for today",
+      "pair": "Find matching photo pairs",
+      "run": "Jump over obstacles"
+    },
     "play": "Play",
     "growth": "Growth",
     "raise": "Raise your favorite",
