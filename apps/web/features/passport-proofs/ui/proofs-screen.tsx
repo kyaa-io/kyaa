@@ -189,7 +189,7 @@ export function ProofsScreen({ locale, slug }: Props) {
 
   return (
     <div className={styles.page}>
-      <h1>{proofsText(locale, linkedType === SNS_POST_PROOF ? "pfTitleSns" : "pfTitle")}</h1>
+      <h1>{proofsText(locale, (proofType ?? linkedType) === SNS_POST_PROOF ? "pfTitleSns" : "pfTitle")}</h1>
       {missions.state.status === "loading" ? <p className={styles.state}>{proofsText(locale, "pfLoading")}</p> : null}
       {missions.state.status === "error" && missions.state.auth ? <p className={styles.state}><GuestLoginAction locale={locale} returnTo={`/c/${slug}/proofs?locale=${locale}`} variant="primary" /></p> : null}
       {missions.state.status === "error" && !missions.state.auth ? <Failure locale={locale} retry={missions.retry} /> : null}
@@ -205,9 +205,10 @@ export function ProofsScreen({ locale, slug }: Props) {
             </label>
           ))}
         </fieldset>
+        {proofType ? <p className={styles.body} data-proof-lead>{proofsText(locale, proofType === SNS_POST_PROOF ? "pfLeadSns" : proofType === "membership" ? "pfLeadMembership" : "pfLeadPurchase")}</p> : null}
         <div className={styles.field}>
           <span className={styles.label}>{proofsText(locale, "pfImages")}</span>
-          <p className={styles.notice} role="note" data-proof-privacy-notice>{proofsText(locale, "pfMaskNotice")}</p>
+          <p className={styles.notice} role="note" data-proof-privacy-notice>{proofsText(locale, proofType === SNS_POST_PROOF ? "pfMaskNoticeSns" : "pfMaskNotice")}</p>
           {picked.length ? <p className={styles.label}>{proofsText(locale, "pfMaskHint")}</p> : null}
           <div className={styles.images}>
             {picked.map((item) => (

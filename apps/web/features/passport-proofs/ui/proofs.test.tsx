@@ -143,6 +143,15 @@ describe("ProofsScreen mission entry", () => {
     expect(((await screen.findByRole("radio", { name: "SNS 올리기" })) as HTMLInputElement).checked).toBe(true);
     expect(screen.getByRole("heading", { level: 1, name: "SNS 글 인증" })).toBeTruthy();
     expect(screen.queryByRole("checkbox", { name: "인증했어요 게시판에 공개" })).toBeNull();
+    // SNS-CERT-CLARITY-1123: the SNS type says what to upload, which mission book slot it fills and why to cover other people's accounts.
+    expect(screen.getByText("내 SNS에 최애 관련 글을 올리고 그 글을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 'SNS 올리기' 칸이 채워져요.")).toBeTruthy();
+    expect(screen.getByText("운영자가 캡처를 확인해요. 다른 사람의 계정·댓글은 가려서 올려 주세요")).toBeTruthy();
+    expect(screen.queryByText(/카드번호/)).toBeNull();
+    // Switching to membership changes the title, the line and the notice with it.
+    fireEvent.click(screen.getByRole("radio", { name: "멤버십" }));
+    expect(screen.getByRole("heading", { level: 1, name: "멤버십·구매 인증" })).toBeTruthy();
+    expect(screen.getByText("가입한 유료 멤버십 정보 화면을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 '덕후인증 도장' 칸이 채워져요.")).toBeTruthy();
+    expect(screen.getByText("운영자가 캡처를 확인해요. 이름·주소·카드번호·이메일은 가려서 올려 주세요")).toBeTruthy();
     linked.unmount();
     query.value = "";
     render(<ProofsScreen locale="ko" slug="mina" />);
@@ -186,7 +195,7 @@ describe("privacy cover step on the submit form (FB-N21)", () => {
     Object.assign(URL, { createObjectURL: () => "blob:proof", revokeObjectURL: () => {} });
     authState.authenticated = true;
     const { container } = render(<ProofsScreen locale="ko" slug="mina" />);
-    expect(await screen.findByText("이름·주소·카드번호 등 개인정보를 가려서 올려 주세요")).toBeTruthy();
+    expect(await screen.findByText("운영자가 캡처를 확인해요. 이름·주소·카드번호·이메일은 가려서 올려 주세요")).toBeTruthy();
     expect(screen.queryByLabelText("개인정보를 모두 가렸어요 (필수)")).toBeNull();
     const submit = () => screen.getByRole("button", { name: "제출" }) as HTMLButtonElement;
     fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["x"], "r.png", { type: "image/png" })] } });
@@ -226,7 +235,7 @@ describe("a lost submit response (PROOF-RETRY-1116)", () => {
     return { submits, uploadCount: () => uploads };
   };
   const fill = async (container: HTMLElement) => {
-    await screen.findByText("이름·주소·카드번호 등 개인정보를 가려서 올려 주세요");
+    await screen.findByText("운영자가 캡처를 확인해요. 이름·주소·카드번호·이메일은 가려서 올려 주세요");
     fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["x"], "a.png", { type: "image/png" }), new File(["y"], "b.png", { type: "image/png" })] } });
     fireEvent.click(screen.getByLabelText("개인정보 처리에 동의합니다 (필수)"));
     fireEvent.click(screen.getByLabelText("개인정보를 모두 가렸어요 (필수)"));
@@ -345,7 +354,7 @@ describe("a lost resubmit response (PROOF-RESUBMIT-IDEMP-1117)", () => {
   };
   const open = async (container: HTMLElement) => {
     fireEvent.click(await screen.findByRole("button", { name: "다시 제출" }));
-    await screen.findByText("이름·주소·카드번호 등 개인정보를 가려서 올려 주세요");
+    await screen.findByText("운영자가 캡처를 확인해요. 이름·주소·카드번호·이메일은 가려서 올려 주세요");
     fireEvent.change(container.querySelector("input[type=file]")!, { target: { files: [new File(["x"], "a.png", { type: "image/png" }), new File(["y"], "b.png", { type: "image/png" })] } });
     fireEvent.click(screen.getByLabelText("개인정보를 모두 가렸어요 (필수)"));
   };

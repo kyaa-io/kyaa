@@ -51,6 +51,10 @@ export const proofsSource = {
   pfStatMonth: { ko: "이번 달 인증 팬", en: "Fans this month" },
   pfMethods: { ko: "인증 방법", en: "Ways to verify" },
   pfMine: { ko: "내 인증", en: "My proofs" },
-  pfMaskNotice: { ko: "이름·주소·카드번호 등 개인정보를 가려서 올려 주세요", en: "Cover personal data such as your name, address and card number before uploading" },
+  pfMaskNotice: { ko: "운영자가 캡처를 확인해요. 이름·주소·카드번호·이메일은 가려서 올려 주세요", en: "An operator checks the screenshot. Cover your name, address, card number and email before uploading" },
+  pfMaskNoticeSns: { ko: "운영자가 캡처를 확인해요. 다른 사람의 계정·댓글은 가려서 올려 주세요", en: "An operator checks the screenshot. Cover other people's accounts and comments before uploading" },
+  pfLeadSns: { ko: "내 SNS에 최애 관련 글을 올리고 그 글을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 'SNS 올리기' 칸이 채워져요.", en: "Post about your favorite on your own social account, then upload a screenshot of that post. Once approved, the “SNS post” slot in your true-fan mission book is filled." },
+  pfLeadMembership: { ko: "가입한 유료 멤버십 정보 화면을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 '덕후인증 도장' 칸이 채워져요.", en: "Upload a screenshot of your paid membership details. Once approved, the “Fan proof stamp” slot in your true-fan mission book is filled." },
+  pfLeadPurchase: { ko: "구매·결제 내역 화면을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 '덕후인증 도장' 칸이 채워져요.", en: "Upload a screenshot of your purchase or payment record. Once approved, the “Fan proof stamp” slot in your true-fan mission book is filled." },
   pfMaskConfirm: { ko: "개인정보를 모두 가렸어요 (필수)", en: "I covered all personal data (required)" },
 } as const;
