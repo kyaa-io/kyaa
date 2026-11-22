@@ -63,8 +63,8 @@ export function Legend({ copy, layout }: { copy: RunCopy; layout: "veil" | "list
   </dl>;
 }
 
-export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSound, pauseRequest, onFinish }: {
-  ticket: Ticket; copy: RunCopy; locale: string; name: string; sound: RunSound; soundOn: boolean;
+export function Track({ character, ticket, copy, locale, name, sound, soundOn, onToggleSound, pauseRequest, onFinish }: {
+  character: import("./shared").Character; ticket: Ticket; copy: RunCopy; locale: string; name: string; sound: RunSound; soundOn: boolean;
   onToggleSound: () => void; pauseRequest: number; onFinish: (body: Submission, stats: RunStats) => void;
 }) {
   const [stage, setStage] = useState<Stage>("ready");
@@ -250,7 +250,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
     const observer = new ResizeObserver(resize);
     observer.observe(box);
     resize();
-    void loadArt().then((loaded) => { art = loaded; setArtReady(true); }).catch(() => {});
+    void loadArt(character).then((loaded) => { art = loaded; setArtReady(true); }).catch(() => {});
     addEventListener("keydown", key);
     addEventListener("keyup", key);
     addEventListener("resize", turned);
@@ -265,7 +265,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       removeEventListener("resize", turned);
       document.removeEventListener("visibilitychange", leave);
     };
-  }, [ticket, sound]);
+  }, [character, ticket, sound]);
 
   const nextTitle = RUN_TITLES.find((title) => title > hud.score);
   const previousTitle = [...RUN_TITLES].reverse().find((title) => title <= hud.score) ?? 0;

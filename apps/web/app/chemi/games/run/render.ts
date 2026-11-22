@@ -26,15 +26,15 @@ const FRAME = 64;
 const GROUND = 40;
 const PIT = ["#6b4a52", "#4a2f39", "#34212a", "#2b1a22"];
 
-let pending: Promise<Art> | undefined;
-export function loadArt(): Promise<Art> {
-  pending ??= Promise.all(Object.entries(ART_FILES).map(([name, src]) => new Promise<[string, HTMLImageElement]>((resolve, reject) => {
+const pending: Partial<Record<import("./shared").Character, Promise<Art>>> = {};
+export function loadArt(character: import("./shared").Character = "changha"): Promise<Art> {
+  pending[character] ??= Promise.all(Object.entries(ART_FILES).map(([name, src]) => new Promise<[string, HTMLImageElement]>((resolve, reject) => {
     const image = new Image();
     image.onload = () => resolve([name, image]);
-    image.onerror = () => { pending = undefined; reject(Error("RUN_ART")); };
-    image.src = src;
+    image.onerror = () => { delete pending[character]; reject(Error("RUN_ART")); };
+    image.src = src.replace("changha", character);
   }))).then((loaded) => Object.fromEntries(loaded) as Art);
-  return pending;
+  return pending[character];
 }
 
 /** Cells between the left edge and the runner: a fifth of the way in on wide fields. */

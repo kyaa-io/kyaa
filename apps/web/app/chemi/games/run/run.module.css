@@ -45,7 +45,8 @@
 .picks li[data-who="elina"] { --pick: var(--color-chemi-pick-elina); }
 .picks li[data-who="yuna"] { --pick: var(--color-chemi-pick-yuna); }
 .picks li[data-on="true"] { border-color: var(--color-ink); }
-.picks li[aria-disabled="true"] { opacity: var(--fan-disabled-opacity); }
+.picks .pickButton { width: 100%; height: 100%; padding: 0; position: absolute; inset: 0; z-index: 1; cursor: pointer; background: transparent; border: 0; }
+.pickButton:focus-visible { outline-offset: -4px; }
 .picks img { display: block; width: 100%; height: var(--space-12); object-fit: cover; object-position: 50% 30%; image-rendering: pixelated; }
 .pickName { padding: var(--space-1) 0; background: var(--color-ink); color: var(--color-surface); }
 .cursor {

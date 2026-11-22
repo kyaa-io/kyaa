@@ -14,8 +14,8 @@ import { Keys, useKeyboardGuide, type RunStats } from "./track";
 import styles from "./run.module.css";
 
 /** Result screen: score first, then what changed (rank, title, affinity), then what to do next. */
-export function ResultStage({ copy, locale, names, rows, loaded, stats, result, before, saving, trial, member, spent, free, extra, busy, copied, onAgain, onLogin, onShare, onAllRanks, errorLine, reminder }: {
-  copy: RunCopy; locale: string; names: Record<Character, string>; rows: Rank[]; loaded: boolean;
+export function ResultStage({ character, copy, locale, names, rows, loaded, stats, result, before, saving, trial, member, spent, free, extra, busy, copied, onAgain, onLogin, onShare, onAllRanks, errorLine, reminder }: {
+  character: Character; copy: RunCopy; locale: string; names: Record<Character, string>; rows: Rank[]; loaded: boolean;
   stats?: RunStats; result?: Result; before: { place?: number; best: number }; saving: boolean; trial: boolean; member: boolean;
   spent: boolean; free: number; extra: number; busy: boolean; copied: boolean;
   onAgain: () => void; onLogin: () => void; onShare: () => void; onAllRanks: () => void; errorLine: ReactNode; reminder: ReactNode;
@@ -47,9 +47,9 @@ export function ResultStage({ copy, locale, names, rows, loaded, stats, result, 
   }, [canAgain, busy]);
   return <div className={styles.result}>
     <div className={styles.resultMain}>
-      <div className={styles.hero}><Scene pose={won ? "win" : "ready"} floor={12} label={names.changha} /></div>
+      <div className={styles.hero}><Scene character={character} pose={won ? "win" : "ready"} floor={12} label={names[character]} /></div>
       <div className={styles.sum}>
-        <FanText role="meta">{stats?.left ? copy.left : `${names.changha} · ${copy.map} · ${today}`}</FanText>
+        <FanText role="meta">{stats?.left ? copy.left : `${names[character]} · ${copy.map} · ${today}`}</FanText>
         <FanPixelText as="strong" role="result" data-run-result="">{fill(copy.points, { n: number.format(score) })}</FanPixelText>
         {stats && <FanText role="label">{fill(copy.stats, { m: number.format(stats.meters), n: stats.notes, c: stats.bestCombo, f: stats.fevers })}</FanText>}
         {saving ? <FanText role="meta" aria-live="polite">{copy.saving}</FanText>
@@ -68,9 +68,9 @@ export function ResultStage({ copy, locale, names, rows, loaded, stats, result, 
           <dd><FanText role="label" className={styles.badge}>{fill(copy.titleName, { n: number.format(result.title) })}</FanText></dd>
         </div> : null}
         <div className={styles.care}>
-          <dt><img src={`${ART}/face-changha-v1.png`} alt="" /></dt>
-          <dd><FanText role="item">{result.exp > 0 ? fill(copy.care, { name: names.changha, n: result.exp }) : names.changha}</FanText>
-            <FanSectionLink href={`/chemi?tab=growth&locale=${locale}`}>{fill(copy.room, { name: names.changha })}</FanSectionLink></dd>
+          <dt><img src={`${ART}/face-${character}-v1.png`} alt="" /></dt>
+          <dd><FanText role="item">{result.exp > 0 ? fill(copy.care, { name: names[character], n: result.exp }) : names[character]}</FanText>
+            <FanSectionLink href={`/chemi?tab=growth&locale=${locale}`}>{fill(copy.room, { name: names[character] })}</FanSectionLink></dd>
         </div>
       </dl>}
       {result && <div className={styles.next}>

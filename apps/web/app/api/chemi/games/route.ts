@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const selected = game.default("match").safeParse(new URL(request.url).searchParams.get("game") ?? undefined);
     if (!selected.success) return reply({}, 400);
     const mode = selected.data;
-    if (body.action === "start" && (body.game !== mode || (mode === "run" && body.character !== "changha")))
+    if (body.action === "start" && body.game !== mode)
       return reply({}, 400);
     const { authorize, rpc } = createFanpageDependencies(request);
     if (body.action === "ranking") {

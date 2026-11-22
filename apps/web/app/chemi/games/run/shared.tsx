@@ -12,8 +12,7 @@ import styles from "./run.module.css";
 
 export const characters = ["changha", "elina", "yuna"] as const;
 export type Character = (typeof characters)[number];
-/** Only Changha's street exists so far; the others stay on the roster, unopened. */
-export const open: readonly Character[] = ["changha"];
+
 export type Rank = { place: number; nickname: string; character: Character; score: number; isMe: boolean };
 export type Lobby = { extraCost: number; freeRemaining: number; extraRemaining: number; ranking: Rank[]; sound: boolean; players: number; best: number; points: number; previous?: { place: number; score: number } | null };
 export type Result = { score: number; exp: number; shareId?: string; title?: number | null };
@@ -21,14 +20,14 @@ export type Challenge = { score: number; nickname: string; available: boolean; r
 export type Stage = "select" | "run" | "result";
 export const SELECT_PROPS: readonly (readonly [PropName, number])[] = [["leaves", 0.04], ["cone", 0.7], ["mailbox", 0.82]];
 
-export function Scene({ pose, props = [], floor, label }: { pose: keyof typeof POSE; props?: readonly (readonly [PropName, number])[]; floor: number; label: string }) {
+export function Scene({ character, pose, props = [], floor, label }: { character: Character; pose: keyof typeof POSE; props?: readonly (readonly [PropName, number])[]; floor: number; label: string }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const node = canvas.current!;
     const box = node.parentElement!;
     let active = true;
     function paint() {
-      void loadArt().then((art) => {
+      void loadArt(character).then((art) => {
         if (!active) return;
         const scale = innerWidth >= 1024 ? 4 : 2;
         node.width = Math.ceil(box.clientWidth / scale);
@@ -42,7 +41,7 @@ export function Scene({ pose, props = [], floor, label }: { pose: keyof typeof P
     const observer = new ResizeObserver(paint);
     observer.observe(box);
     return () => { active = false; observer.disconnect(); };
-  }, [pose, props, floor]);
+  }, [character, pose, props, floor]);
   return <canvas ref={canvas} role="img" aria-label={label} />;
 }
 
