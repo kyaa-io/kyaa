@@ -29,6 +29,9 @@ export function useMatchRound(
   const pending = useRef<number | undefined>(undefined);
   const endCleared = useRef<() => void>(() => {});
   const awaitingNext = useRef(false);
+  /** 마지막으로 다 맞춘 라운드까지의 제출 내용. 판 도중 나가도 이 점수는 주간 기록에 남긴다. */
+  const banked = useRef<Submission | null>(null);
+  const readBanked = useCallback(() => banked.current, []);
   const nextLevel = () => { awaitingNext.current = false; };
   const pause = useRef(paused);
   const finish = useRef(onFinish);
@@ -55,6 +58,7 @@ export function useMatchRound(
     let previewUntil = 0;
     pending.current = undefined;
     awaitingNext.current = false;
+    banked.current = null;
     setView(snapshot(sim));
     endCleared.current = () => {
       if (!awaitingNext.current) return;
@@ -108,6 +112,7 @@ export function useMatchRound(
         }
         sim.step(input);
         if (sim.state.cleared && !sim.state.done) {
+          banked.current = sim.state.score > 0 ? { action: "finish", playId, ticks: sim.state.tick, score: sim.state.score, moves: [...moves] } : null;
           awaitingNext.current = true;
           fraction = 0;
           break;
@@ -139,5 +144,5 @@ export function useMatchRound(
       cancelAnimationFrame(handle);
     };
   }, [ticket]);
-  return { view, tap, nextLevel, finishLevel: () => endCleared.current() };
+  return { view, tap, nextLevel, finishLevel: () => endCleared.current(), banked: readBanked };
 }

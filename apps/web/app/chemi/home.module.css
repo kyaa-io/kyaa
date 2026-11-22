@@ -59,25 +59,32 @@
   color: inherit;
   text-decoration: none;
 }
-.row img {
+.row > img {
+  flex: none;
   width: var(--space-12);
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: var(--radius-small);
 }
+/* 상태 글자(오늘 결과 보기·남은 판)는 설명 아래 줄에 강조 글자로 둔다. 회색 면 없음(§4). */
 .statusChip {
-  flex: none;
-  white-space: nowrap;
-  background: var(--color-line-subtle);
-  border-radius: var(--radius-small);
-  padding-inline: var(--space-2);
+  color: var(--color-accent-ink);
 }
 .rowCopy {
   display: grid;
   flex: 1;
   min-width: 0;
+  gap: var(--space-1);
 }
-.rowCopy > span {
+/* 제목은 한 줄 말줄임, 친밀 알약은 제목 끝에 붙여 줄이지 않는다. 설명은 잘라내지 않고 줄을 늘린다. */
+.rowTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.rowTitle > [data-fan-text="item"] {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -343,7 +350,7 @@
 .row[data-selected="true"] {
   color: var(--color-accent-ink);
 }
-.row[data-selected="true"] .rowCopy > :first-child {
+.row[data-selected="true"] .rowTitle > :first-child {
   text-decoration: underline;
   text-underline-offset: var(--space-1);
 }

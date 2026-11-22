@@ -7,6 +7,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { fill, type RunCopy } from "./copy";
+import { getMatchCopy } from "../match/copy";
 import { ART, drawScene, loadArt, type PropName, type POSE } from "./render";
 import styles from "./run.module.css";
 
@@ -65,7 +66,10 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
   ) : <li data-row="" key={key} data-empty="true" data-slot={slot} aria-hidden={place ? undefined : true}>
     {place && <>
       <FanText role="label" className={styles.place}>{place}</FanText>
-      <FanText role="item" className={styles.vacantScore}>{fill(copy.points, { n: number.format(0) })}</FanText>
+      <FanText role="label" className={styles.avatar} aria-hidden="true" />
+      <FanText role="item" className={styles.who}>—</FanText>
+      <FanText role="meta" />
+      <FanText role="item">{number.format(0)}</FanText>
     </>}
   </li>;
   return <section className={styles.rank} aria-label={copy.ranking} aria-busy={!loaded}>
@@ -85,7 +89,7 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
     <footer>
       {above && near && <FanText role="meta" className={styles.above}><span>{fill(copy.above, { name: rankName(above.nickname, locale) })}</span><b>{fill(copy.points, { n: number.format(above.score - me!.score) })}</b></FanText>}
       {footer && <FanText role="meta">{footer}</FanText>}
-      {loaded && rows.length === 0 && <FanText role="meta">{copy.emptyRanking}</FanText>}
+      {loaded && rows.length === 0 && <FanText role="meta">{getMatchCopy(locale).emptyRanking}</FanText>}
     </footer>
   </section>;
 }

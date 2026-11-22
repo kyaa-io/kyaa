@@ -41,7 +41,7 @@ export function ChemiHome({
   if (preview && growth)
     return <ChemiGrowth locale={locale} home={copy} matchAvailable={matchAvailable} />;
   return (
-    <div className={styles.home} data-ranked={preview}>
+    <div className={styles.home} data-ranked={preview} data-chemi-hide-dm="">
       <HomeBanner copy={copy} activities={activities} index={activeIndex} setIndex={setActiveIndex} />
       {preview && <WeeklyRankings copy={copy} locale={locale} matchAvailable={matchAvailable} />}
       <section>
@@ -66,12 +66,14 @@ export function ChemiHome({
                 <>
                   <img src={`/chemi/thumb-${id}-128-v2.webp`} alt="" />
                   <span id={`chemi-copy-${id}`} className={styles.rowCopy}>
-                    <FanText role="item">{copy[id]}</FanText>
+                    <span className={styles.rowTitle}>
+                      <FanText role="item">{copy[id]}</FanText>
+                      {href && <AffinityBadge size="sm" amount={EARN[id][1]} label={getGrowthCopy(locale).gain.replace("{n}", String(EARN[id][1]))} />}
+                    </span>
                     <FanText role="meta">{copy.descriptions[id]}</FanText>
+                    {saved && <FanText role="label" className={styles.statusChip}>{copy.todayResult}</FanText>}
+                    {href && (id === "pair" || id === "run") && <GameStatusChip game={id} copy={copy} />}
                   </span>
-                  {saved && <FanText role="label" className={styles.statusChip}>{copy.todayResult}</FanText>}
-                  {href && (id === "pair" || id === "run") && <GameStatusChip game={id} copy={copy} />}
-                  {href && <AffinityBadge size="sm" amount={EARN[id][1]} label={getGrowthCopy(locale).gain.replace("{n}", String(EARN[id][1]))} />}
                 </>
               );
               return destination ? (
