@@ -61,7 +61,7 @@ const relationName: Record<Relation, string> = { good: "합", rough: "충", plai
 const relationPlain = (unit: "해" | "달"): Record<Relation, string> => ({
   good: `일지와 손을 잡는 ${unit}라 일이 순하게 풀려요`,
   rough: `일지와 부딪치는 ${unit}라 자리와 관계가 한 번 흔들려요`,
-  plain: `일지와 부딪침이 없어 큰 변동이 적은 ${unit === "해" ? "해예요" : "달이에요"}`,
+  plain: `일지와 합도 충도 없어 큰 변동이 적은 ${unit === "해" ? "해예요" : "달이에요"}`,
 });
 
 /**
@@ -133,7 +133,7 @@ export function sajuBasis(chart: Chart, at: number, view: DepthView): BasisRow[]
           term: strong ? "신강" : "신약",
           value: strong ? "기운이 넉넉한 사주" : "도움이 필요한 사주",
           plain: strong
-            ? "나와 나를 돕는 기운이 절반을 넘어요. 힘을 밖으로 쓸 때 편해요"
+            ? "나와 나를 돕는 기운이 절반 이상이에요. 힘을 밖으로 쓸 때 편해요"
             : "나와 나를 돕는 기운이 절반에 못 미쳐요. 도움을 받을 때 힘이 나요",
         });
       rows.push(helpRow);

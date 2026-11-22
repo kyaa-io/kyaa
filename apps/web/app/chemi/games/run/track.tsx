@@ -295,15 +295,16 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
         {stage === "paused" && <FanAction onClick={() => finishNow.current(false)}>{copy.quit}</FanAction>}
       </div>}
     </div>
+    {/* 출발 준비 덮개가 장애물과 동작을 알려 주는 동안에는 버튼 아래 설명을 겹쳐 적지 않는다. */}
     <div className={styles.controls}>
       <div data-held={held.jump} onPointerDown={hold("jump", true)} onPointerUp={hold("jump", false)} onPointerCancel={hold("jump", false)}>
         <FanAction className={styles.control} leadingIcon={<FanIcon icon={ArrowUp} />}
-          helperText={<><kbd>Space</kbd>{copy.jumpHint}</>}
+          helperText={<><kbd>Space</kbd>{stage !== "ready" && copy.jumpHint}</>}
           onClick={(event) => { if (event.detail === 0) press(RUN_INPUT.jump); }}>{copy.jump}</FanAction>
       </div>
       <div data-held={held.slide} onPointerDown={hold("slide", true)} onPointerUp={hold("slide", false)} onPointerCancel={hold("slide", false)}>
         <FanAction className={styles.control} leadingIcon={<FanIcon icon={ArrowDown} />}
-          helperText={<><kbd>Shift</kbd>{copy.slideHint}</>}
+          helperText={<><kbd>Shift</kbd>{stage !== "ready" && copy.slideHint}</>}
           onClick={(event) => { if (event.detail === 0) press(RUN_INPUT.slideDown | RUN_INPUT.slideUp); }}>{copy.slide}</FanAction>
       </div>
     </div>

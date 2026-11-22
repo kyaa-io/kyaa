@@ -47,6 +47,11 @@
 .head p {
   color: var(--color-muted);
 }
+.headScore {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
 .hero {
   display: block;
   margin-top: var(--space-2);
@@ -80,6 +85,8 @@
 .flowSec {
   order: 5;
 }
+/* 긴 풀이 한 줄은 60~75자에서 끊는다(1440 왼쪽 열 전체 폭이면 약 100자). */
+.flowSec p { max-width: 40rem; }
 .timesSec {
   order: 6;
 }

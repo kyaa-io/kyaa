@@ -127,6 +127,7 @@ export function FortuneFlow({
   const ask = useAskLocation();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const [step, setStep] = useState<FortuneStep>("enter");
+  const [picked, setPicked] = useState<"fandom" | "luck" | null>(null);
   const [character, setCharacter] = useState<FortuneCharacterId>("changha");
   const [reading, setReading] = useState<FortuneReading>();
   const [phase, setPhase] = useState<Phase>("idle");
@@ -352,6 +353,8 @@ export function FortuneFlow({
   function skipAhead() {
     const talk = talkNumber(step);
     if (!talk || talk >= 3) return openResult();
+    // 고른 이야기를 기억한다: 최애가 그 선택을 받아 말하고, 결과에서 그 칸이 펼쳐진 채 열린다.
+    setPicked(talk === 1 ? "fandom" : "luck");
     const next = `talk-${talk + 2}` as FortuneStep;
     writeUrl({ step: next }, "push");
     setStep(next);
@@ -373,6 +376,7 @@ export function FortuneFlow({
         backHref={`/chemi/fortune?c=${character}&locale=${locale}`}
         onAsk={() => askGo({ step: "topic" })}
         paidPreview={paidPreview}
+        focus={picked}
       />
     );
 
@@ -392,7 +396,7 @@ export function FortuneFlow({
     step === "calc"
       ? fortuneCalcLine(character)
       : talk && lineInput
-        ? fortuneTalkLine(character, talk, lineInput, reading?.styled?.headline)
+        ? fortuneTalkLine(character, talk, lineInput, reading?.styled?.headline, picked)
         : fortuneEnterLine(character, null, needBirth ? "birth" : "enter");
 
   const wideArt =

@@ -1,5 +1,6 @@
 "use client";
 
+import { rankName } from "@/features/chemi/games/rank-name";
 import type { ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -34,7 +35,7 @@ export function SelectStage({ copy, locale, names, rows, loaded, footer, challen
       <div className={styles.strip}>
         <FanText role="item">{names.changha}</FanText>
         <FanText role="meta">{copy.map}</FanText>
-        {challenge && <FanText role="meta" className={styles.record}>{copy.record} · {challenge.nickname} {fill(copy.points, { n: number.format(challenge.score) })}</FanText>}
+        {challenge && <FanText role="meta" className={styles.record}>{copy.record} · {rankName(challenge.nickname, locale)} {fill(copy.points, { n: number.format(challenge.score) })}</FanText>}
       </div>
       <div className={styles.how}><Legend copy={copy} layout="list" /></div>
     </section>

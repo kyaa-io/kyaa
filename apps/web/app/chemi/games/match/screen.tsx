@@ -18,6 +18,7 @@ import {
 } from "@/components/fan-ui/fan-icons";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FPS, LEVELS } from "@/features/chemi/games/engine";
+import { rankName } from "@/features/chemi/games/rank-name";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
 import styles from "./match.module.css";
@@ -110,10 +111,12 @@ function Rankings({
   rows,
   copy,
   full,
+  locale,
 }: {
   rows: Row[];
   copy: MatchCopy;
   full: boolean;
+  locale: string;
 }) {
   const me = rows.find((row) => row.isFriend) ?? rows.find((row) => row.isMe);
   const displayed = full ? rows : rows.slice(0, 3);
@@ -137,10 +140,10 @@ function Rankings({
           >
             <b>{row.place}</b>
             <span className={styles.avatar} aria-hidden="true">
-              {Array.from(row.nickname)[0]}
+              {Array.from(rankName(row.nickname, locale))[0]}
             </span>
             <span>
-              {row.nickname}
+              {rankName(row.nickname, locale)}
               {(row.isMe || row.isFriend) && (
                 <small> · {row.isFriend ? copy.friend : copy.me}</small>
               )}
@@ -540,7 +543,7 @@ function Session({
     start: share ? copy.challenge : copy.title,
     play: copy.title,
     result: copy.result,
-    empty: copy.exhausted,
+    empty: copy.title,
     pause: copy.pause,
     reminder: copy.reminder,
   }[stage];
@@ -589,7 +592,7 @@ function Session({
                 <FanHeading as="h2">{copy.challenge}</FanHeading>
                 {challenge && (
                   <p>
-                    {challenge.nickname} · {copy.record}{" "}
+                    {rankName(challenge.nickname, locale)} · {copy.record}{" "}
                     {clock(challenge.ticks)}
                   </p>
                 )}
@@ -928,7 +931,7 @@ function Session({
         {stage !== "pause" &&
           stage !== "reminder" &&
           (rankingLoaded ? (
-            <Rankings rows={rows} copy={copy} full={Boolean(active)} />
+            <Rankings rows={rows} copy={copy} full={Boolean(active)} locale={locale} />
           ) : (
             <section aria-busy={!error} className={styles.ranking}>
               <FanHeading>{copy.ranking}</FanHeading>

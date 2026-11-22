@@ -77,7 +77,8 @@ it("copies the public share URL and records completion only after a successful c
   );
   render(<FortuneResult locale="ko" />);
   const [button] = await screen.findAllByRole("button", { name: "자랑하기" });
-  expect(screen.getAllByText("좋은 날")).toHaveLength(2);
+  // 제목이 등급 이름이면 점수 옆에 같은 말을 되풀이하지 않는다.
+  expect(screen.getAllByText("좋은 날")).toHaveLength(1);
   expect(screen.getByText("창하의 한마디")).toBeVisible();
   // 분야 점수는 한 판에 6줄이고, 요약은 가장 높은 분야(덕질 88)와 가장 낮은 분야(애정 75)에만 달린다.
   const rows = [...document.querySelectorAll("ul > li > [data-fan-collapsible] > button")];

@@ -1,5 +1,6 @@
 "use client";
 
+import { rankName } from "@/features/chemi/games/rank-name";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
@@ -228,7 +229,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       <ol className={styles.allRanks}>
         {rows.map((row) => <li data-row="" key={row.place} data-me={row.isMe}>
           <FanText role="label">{row.place}</FanText>
-          <FanText role="item">{row.nickname}{row.isMe && ` (${copy.me})`}</FanText>
+          <FanText role="item">{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`}</FanText>
           <FanText role="item">{number.format(row.score)}</FanText>
         </li>)}
       </ol>

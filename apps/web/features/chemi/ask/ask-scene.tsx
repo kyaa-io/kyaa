@@ -616,10 +616,11 @@ export function AskScene({ locale, content, character, readingId, at }: {
     );
   else {
     // 같은 날 다시 오면 인사를 줄이고 선택지를 바로 보인다(기획 03-3 18). 이어 묻기가 남은 오늘 질문이 있으면 그 답으로 돌아가는 길이 주 버튼이다.
-    const returning = todays.length > 0 && !thanked;
+    // '또 뭐 볼래?'는 오늘 이 최애에게 물은 적이 있을 때만 한다(다른 최애에게 물은 날 처음 만난 최애가 '또'라고 하지 않게).
+    const mine = state.threads.filter((item) => item.character === character);
+    const returning = mine.some((item) => item.date === today) && !thanked;
     const unfinished = todays.find((item) => item.status === "answered" && !item.followupAnswer);
     // 다른 날 다시 오면 최애가 지난 질문부터 묻는다. 서버가 최근 30개만 주므로 30개가 찼으면 날 수는 말하지 않는다.
-    const mine = state.threads.filter((item) => item.character === character);
     const earlier = returning || thanked ? undefined : mine.find((item) => item.date < today);
     const asking = Boolean(earlier) && recall === null;
     const greeting = thanked ? lines.shared
