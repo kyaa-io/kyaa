@@ -54,7 +54,6 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
   const leaders = rows.filter((row) => row.place <= 3);
   const around = me && me.place > 3 ? rows.filter((row) => row.place > 3 && Math.abs(row.place - me.place) <= 1) : [];
   const above = me && rows.find((row) => row.place === me.place - 1);
-  // 기록이 없는 순위는 숫자만 흐리게 둔다(막대를 그리면 불러오는 중처럼 보인다).
   const line = (row: Rank | undefined, key: string, slot?: "near", place?: number) => row ? (
     <li data-row="" key={key} data-me={row.isMe} data-slot={slot && !row.isMe ? "near" : undefined} data-top={row.place <= 3}>
       <FanText role="label" className={styles.place}>{row.place}</FanText>
@@ -63,15 +62,19 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
       <FanText role="meta">{names[row.character]}</FanText>
       <FanText role="item">{number.format(row.score)}</FanText>
     </li>
-  ) : <li data-row="" key={key} data-empty="true" data-slot={slot} aria-hidden="true">{place ? <FanText role="label" className={styles.place}>{place}</FanText> : null}</li>;
+  ) : <li data-row="" key={key} data-empty="true" data-slot={slot} aria-hidden={place ? undefined : true}>
+    {place && <>
+      <FanText role="label" className={styles.place}>{place}</FanText>
+      <FanText role="item" className={styles.vacantScore}>{fill(copy.points, { n: number.format(0) })}</FanText>
+    </>}
+  </li>;
   return <section className={styles.rank} aria-label={copy.ranking} aria-busy={!loaded}>
     <header>
       <FanHeading as="h2">{copy.ranking}</FanHeading>
       {onAll && rows.length > 0 && <FanSectionLink onClick={onAll}>{copy.allRanks}</FanSectionLink>}
     </header>
     <ol>
-      {/* 불러오는 동안만 세 줄 자리를 잡고, 불러온 뒤에는 기록이 있는 순위만 그린다(번호만 있는 빈 줄 금지). */}
-      {loaded ? leaders.map((row, i) => line(row, `top${i}`)) : [0, 1, 2].map((i) => line(undefined, `top${i}`))}
+      {[1, 2, 3].map((place) => line(loaded ? leaders.find((row) => row.place === place) : undefined, `top${place}`, undefined, loaded ? place : undefined))}
       {near && around.length > 0 && <>
         <li data-row="" data-gap="true" data-slot="near" aria-hidden="true">{me && me.place > 5 && <FanText role="meta">···</FanText>}</li>
         {line(around.find((row) => row.place === me!.place - 1), "near0", "near")}
