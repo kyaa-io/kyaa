@@ -1,5 +1,6 @@
 "use client";
 
+import { EARN } from "../contents";
 import { useCallback, useEffect, useState } from "react";
 import { Check, LockKeyhole } from "@/components/fan-ui/fan-icons";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -38,8 +39,7 @@ export type GrowthState = { minis: Mini[]; full: string[]; fresh: { character: C
 const SLOT_LEVELS = [5, 10, 15, 20, 30];
 /** 사진이 준비된 칸 수(Lv 20·30 사진은 다음 제작분). */
 const PHOTO_SLOTS = 4;
-/** 콘텐츠가 주는 친밀 EXP 와 기록 이름. DB `chemi_complete_reading`·`chemi_match_finish`·`chemi_run_finish` 와 같아야 한다. */
-const EARN = { fortune: ["fortune", 10], saju: ["saju", 20], zodiac: ["star", 10], tarot: ["tarot", 10], pair: ["match", 10], run: ["run", 10] } as const;
+
 
 const stageOf = (level: number): Stage => (level >= 15 ? "star" : level >= 5 ? "kid" : "baby");
 const fill = (text: string, values: Record<string, string | number>) =>

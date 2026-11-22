@@ -40,7 +40,7 @@ export default async function ChemiPage({
             { key: "play", label: copy.play, href: `/chemi?locale=${locale}` },
             {
               key: "growth",
-              label: copy.growth,
+              label: <><img alt="" width={24} height={24} src="/chemi/grow/mini-changha-baby-v1.webp" />{copy.growth}</>,
               href: `/chemi?tab=growth&locale=${locale}`,
             },
           ]}

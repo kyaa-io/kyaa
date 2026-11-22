@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -76,7 +76,7 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, start,
   return (
     <aside className={styles.rankings} tabIndex={0} aria-label={label}>
       {games.map((game) => {
-        const inTop = game.leaders.some((row) => row.isMe);
+
         return (
           <FanSurface className={styles.rankCard} key={game.game} aria-busy={game.status === "loading"}>
             <header>
@@ -91,33 +91,27 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, start,
               </div>
             ) : (
               <>
-                {game.leaders.length > 0 && (
-                  <div className={styles.leaders}>
-                    {game.leaders.map((row) => <RankingRow key={row.id} row={row} />)}
-                  </div>
-                )}
-                {/* 기록이 세 줄에 못 미치면 빈 순위 줄을 그리지 않고 남는 자리에 게임 그림을 둔다. */}
-                {game.leaders.length < SLOTS && (
-                  <img
-                    className={styles.rankArt}
-                    style={{ "--open": SLOTS - game.leaders.length } as CSSProperties}
-                    src={`/chemi/banner-${game.game === "pair" ? "match" : "run"}.webp`}
-                    alt=""
-                  />
-                )}
-                {!inTop && game.mine ? (
+                <div className={styles.leaders}>
+                  {Array.from({ length: SLOTS }, (_, index) => {
+                    const row = game.leaders[index] ?? {
+                      id: `empty-${index}`, place: index + 1, name: "—", initial: null, change: 0, record: "0",
+                    };
+                    return <RankingRow key={row.id} row={row} />;
+                  })}
+                </div>
+                {game.mine ? (
                   <div className={styles.rankMine}>
                     <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
                     <span className={styles.rankAvatar} aria-hidden="true" />
                     <FanText role="body">{mineLabel}</FanText>
                     <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
                   </div>
-                ) : game.leaders.length === 0 ? (
+                ) : (
                   <div className={styles.rankMine} data-first="">
                     <FanText role="meta">{empty}</FanText>
                     {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${start}`}>{start}</FanSectionLink>}
                   </div>
-                ) : null}
+                )}
               </>
             )}
           </FanSurface>

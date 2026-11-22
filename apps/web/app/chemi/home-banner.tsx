@@ -26,25 +26,30 @@ export function HomeBanner({
   setIndex,
   copy,
 }: {
-  activities: readonly { id: keyof typeof images; href: string | null }[];
+  activities: readonly { id: keyof typeof images; type: "games" | "readings"; href: string | null }[];
   index: number;
   setIndex: Dispatch<SetStateAction<number>>;
   copy: HomeCopy;
 }) {
   const [paused, setPaused] = useState(false);
-  const { id, href } = activities[index];
+  const [pointerInside, setPointerInside] = useState(false);
+  const [keyboardFocus, setKeyboardFocus] = useState(false);
+  const resting = paused || pointerInside || keyboardFocus;
+  const { id, href, type } = activities[index];
   useEffect(() => {
-    if (paused || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setIndex(value => (value + 1) % activities.length), 7000);
+    if (resting || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => setIndex(value => (value + 1) % activities.length), 6000);
     return () => window.clearInterval(timer);
-  }, [activities.length, paused, setIndex]);
+  }, [activities.length, index, resting, setIndex]);
   return (
-    <section className={styles.banner} onFocus={() => setPaused(true)} onMouseEnter={() => setPaused(true)}>
+    <section className={styles.banner} onFocus={event => setKeyboardFocus(event.target.matches(":focus-visible"))} onBlur={() => setKeyboardFocus(false)}
+      onPointerEnter={() => setPointerInside(true)} onPointerLeave={() => setPointerInside(false)}
+      onPointerUp={event => { if (event.pointerType !== "mouse") setPointerInside(false); }} onPointerCancel={() => setPointerInside(false)}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
-        <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-v1`} paused={paused} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
+        <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-v1`} paused={resting} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
         <div className={styles.caption}>
-          <FanHeading as="h1">{copy[id]}</FanHeading>
+          <div><span>{copy[type]}</span><div className={styles.faces}>{["changha", "elina", "yuna"].map(person => <img key={person} alt="" src={`/chemi/grow/face-${person}-v1.webp`} />)}</div><FanHeading as="h1">{copy[id]}</FanHeading></div>
           {href ? (
             <FanAction variant="primary" href={href}>{copy.start}</FanAction>
           ) : (
@@ -53,7 +58,7 @@ export function HomeBanner({
         </div>
       </div>
       <div className={styles.dots}>
-        {activities.map(({ id: key }, n) => <FanAction size="sm" key={key} type="button" ariaLabel={copy[key]} aria-pressed={n === index} onClick={() => { setPaused(true); setIndex(n); }}><span aria-hidden="true" /></FanAction>)}
+        {activities.map(({ id: key }, n) => <FanAction size="sm" key={key} type="button" ariaLabel={copy[key]} aria-pressed={n === index} onClick={() => { setIndex(n); }}><span aria-hidden="true" /></FanAction>)}
         <FanIconButton className={styles.pause} aria-label={paused ? copy.resume : copy.pause} onClick={() => setPaused(value => !value)}>
           <FanIcon icon={paused ? Play : Pause} />
         </FanIconButton>

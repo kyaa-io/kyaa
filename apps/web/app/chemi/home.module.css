@@ -4,6 +4,7 @@
   padding-block: var(--space-4);
 }
 .banner {
+  position: relative;
   width: min(100%, calc(var(--space-12) * 15 + var(--space-2)));
 }
 .artwork {
@@ -52,13 +53,14 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding-block: var(--space-3);
+  min-height: calc(var(--space-8) * 2 + var(--space-2));
+  padding-block: var(--space-2);
   border-bottom: thin solid var(--color-line-subtle);
   color: inherit;
   text-decoration: none;
 }
 .row img {
-  width: var(--space-16);
+  width: var(--space-12);
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: var(--radius-small);
@@ -268,7 +270,7 @@
   }
   .home[data-ranked="false"] .artwork {
     position: absolute;
-    inset: 0 0 var(--min-target);
+    inset: 0;
   }
   .home[data-ranked="false"] .artwork img {
     height: 100%;
@@ -276,11 +278,13 @@
   }
   .home[data-ranked="false"] .dots {
     position: absolute;
-    inset: auto 0 0;
+    inset: 0 var(--space-2) auto auto;
   }
 }
 /* 캐러셀 인디케이터(DESIGN 공통 컴포넌트·캐러셀): 배너 바로 아래 가운데 44 줄, 칸 8, 현재 24, 칸 사이 4. 일시정지는 같은 줄 간격 8. */
 .dots {
+  position: absolute;
+  inset: 0 var(--space-2) auto auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -323,3 +327,6 @@
   text-decoration: underline;
   text-underline-offset: var(--space-1);
 }
+
+.faces { display: flex; }
+.faces img { width: var(--space-6); height: var(--space-6); border-radius: 50%; }
