@@ -382,6 +382,8 @@
 /* 입력 판: 고른 주제·'이 결과' 칩, 여러 줄 입력, 글자 수와 보내기. 여러 줄 입력이라 반경은 미디어(12). */
 .composer {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
   border: 1px solid var(--color-control-line);
@@ -396,7 +398,7 @@
   min-width: 0;
   min-height: var(--min-target);
   max-height: 30svh;
-  padding: var(--space-2) var(--space-2) 0 0;
+  padding: var(--space-2) 0;
   border: 0;
   outline: 0;
   background: none;
@@ -404,6 +406,9 @@
   font: inherit;
   resize: none;
   field-sizing: content;
+}
+.composer > .chip {
+  grid-column: 1 / -1;
 }
 .sendRow {
   display: flex;
@@ -434,7 +439,8 @@
 .root .chipClear {
   flex: none;
 }
-.root .send {
+.root .send,
+.root .send:disabled {
   background: var(--color-accent);
   color: var(--color-surface);
 }

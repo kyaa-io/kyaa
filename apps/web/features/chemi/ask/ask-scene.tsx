@@ -382,7 +382,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   );
   const quoted = (question: string, tag: AskTopic | null) => (
     <div className={styles.mineRow}>
-      {tag ? <FanTag tone="neutral">{text(topicKey[tag])}</FanTag> : null}
+      {tag && tag !== "free" ? <FanTag tone="neutral">{text(topicKey[tag])}</FanTag> : null}
       <FanText as="p" role="body" className={styles.mine}>{question}</FanText>
     </div>
   );

@@ -125,6 +125,8 @@ describe("답", () => {
     const how = answerFollowup({ character: "changha", content: "fortune", topic: "love", question: "그럼 뭐라고 보내면 좋을까?", result: fortune, before });
     expect(how).toMatch(/한 줄/);
     expect(how).not.toMatch(/놓치는 건 없어|다음 풀이/);
+    const work = { question: "다음 달에 이직 준비를 시작해도 괜찮을까?", answer: "알아보는 건 시작해도 되지만 결정은 서두르지 마." };
+    expect(answerFollowup({ character: "changha", content: "fortune", topic: "work", question: "그럼 뭐부터 알아보면 돼?", result: fortune, before: work })).not.toMatch(/한 줄만 쓰고/);
     const when = answerFollowup({ character: "elina", content: "fortune", topic: "love", question: "그럼 언제 하면 돼요?", result: fortune, before });
     expect(when).toMatch(/가라앉은 다음/);
   });

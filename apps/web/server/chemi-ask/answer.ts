@@ -458,16 +458,31 @@ const becauseGod = {
 /** 이어 물은 말이 방법을 묻는지, 때를 묻는지. */
 const followHow = /뭐라고|어떻게|무슨\s*말|어떤\s*말|뭐부터|뭘\s*먼저/;
 const followWhen = /언제|몇\s*시|며칠|날짜|요일|타이밍/;
-const howAnswer: Record<"good" | "care", Record<Voice, string>> = {
-  good: {
-    ban: "길게 고민하지 말고 제일 작은 것 하나부터 해. 연락이면 안부 한 줄, 일이면 금방 끝나는 일부터.",
-    yo: "길게 고민하지 말고 제일 작은 것 하나부터 해 봐요. 연락이면 안부 한 줄, 일이면 금방 끝나는 일부터요.",
-    hao: "길게 고민하지 말고 가장 작은 것 하나부터 하시오. 연락이면 안부 한 줄, 일이면 금방 끝나는 일부터 하시오.",
+/** 방법을 물으면: 앞 질문이 연락이면 보낼 말, 그 밖은 시작할 일. */
+const howAnswer: Record<"contact" | "other", Record<"good" | "care", Record<Voice, string>>> = {
+  contact: {
+    good: {
+      ban: "안부 한 줄에 하고 싶은 말 하나만 붙여. 길게 쓸수록 부담이 돼.",
+      yo: "안부 한 줄에 하고 싶은 말 하나만 붙여 봐요. 길게 쓸수록 부담이 돼요.",
+      hao: "안부 한 줄에 하고 싶은 말 하나만 붙이시오. 길게 쓸수록 부담이 되오.",
+    },
+    care: {
+      ban: "하고 싶은 말을 다 담지 마. 한 줄만 쓰고, 나머지는 상대 반응을 보고 꺼내.",
+      yo: "하고 싶은 말을 다 담지 않아도 돼요. 한 줄만 쓰고, 나머지는 반응을 보고 꺼내요.",
+      hao: "하고 싶은 말을 다 담지 마시오. 한 줄만 쓰고 나머지는 반응을 보고 꺼내시오.",
+    },
   },
-  care: {
-    ban: "하고 싶은 말을 다 담지 마. 한 줄만 쓰고, 나머지는 상대 반응을 보고 꺼내.",
-    yo: "하고 싶은 말을 다 담지 않아도 돼요. 한 줄만 쓰고, 나머지는 반응을 보고 꺼내요.",
-    hao: "하고 싶은 말을 다 담지 마시오. 한 줄만 쓰고 나머지는 반응을 보고 꺼내시오.",
+  other: {
+    good: {
+      ban: "길게 고민하지 말고 제일 작은 것 하나부터 해. 금방 끝나는 일을 먼저 끝내면 다음이 쉬워져.",
+      yo: "길게 고민하지 말고 제일 작은 것 하나부터 해 봐요. 금방 끝나는 일을 먼저 끝내면 다음이 쉬워져요.",
+      hao: "길게 고민하지 말고 가장 작은 것 하나부터 하시오. 금방 끝나는 일을 먼저 끝내면 다음이 쉬워지오.",
+    },
+    care: {
+      ban: "한 번에 다 하려고 하지 마. 알아볼 것 하나만 적어 두고 그것부터 봐.",
+      yo: "한 번에 다 하려고 하지 않아도 돼요. 알아볼 것 하나만 적어 두고 그것부터 봐요.",
+      hao: "한 번에 다 하려 하지 마시오. 알아볼 것 하나만 적어 두고 그것부터 보시오.",
+    },
   },
 };
 const whenAnswer: Record<"good" | "care", Record<Voice, string>> = {
@@ -492,7 +507,7 @@ export function answerFollowup(input: {
   const read = askBasis(input.content, input.topic, input.result, input.before?.question ?? input.question, input.kind);
   const flow = read.good ? "good" : "care";
   if (!/[가-힣]/.test(input.question)) return foreignAnswer(input.question, input, flow, true);
-  if (followHow.test(input.question)) return howAnswer[flow][tone];
+  if (followHow.test(input.question)) return howAnswer[intentOf(input.before?.question ?? "") === "contact" ? "contact" : "other"][flow][tone];
   if (followWhen.test(input.question)) return whenAnswer[flow][tone];
   if (followWhy.test(input.question)) {
     // 첫 답에서 이미 한 말(read.line)은 되풀이하지 않는다. 덧붙일 근거가 없을 때만 다시 짚는다.
