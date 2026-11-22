@@ -223,7 +223,7 @@ it("질문을 다 쓰면 오늘 물어본 질문을 다시 열 수 있고, 살 �
   const { container } = render(<Host />);
   askGo({ step: "topic" });
   expect(await screen.findByText("오늘 질문을 모두 썼어요.")).toBeTruthy();
-  expect(screen.getByText("오늘 이야기 재밌었어. 내일 또 와.")).toBeTruthy();
+  expect(screen.getByText("네 사주로 이야기하니까 재밌었어. 물어봐 줘서 고마워.")).toBeTruthy();
   expect(screen.queryByRole("group", { name: "주제" })).toBeNull();
   expect(container.textContent).not.toMatch(/원\b|990|구매|결제/);
   fireEvent.click(screen.getByRole("button", { name: "내일 알려 줘" }));
@@ -240,7 +240,7 @@ it("알림을 신청한 뒤에는 자랑하기가 주 버튼이고, 이어 물�
   render(<Host />);
   askGo({ step: "topic" });
   expect(await screen.findByText("알림 신청함")).toBeTruthy();
-  expect(screen.getByText("응, 내일 기다릴게.")).toBeTruthy();
+  expect(screen.getByText("응, 오늘 이야기 잘 기억해 둘게.")).toBeTruthy();
   expect(screen.getByRole("button", { name: /자랑하기.*질문 \+1/ })).toBeTruthy();
   askGo({ step: "answer", thread: done.threadId });
   await turn();
@@ -293,10 +293,10 @@ it("오늘 마지막 질문을 이어 묻기까지 마치면 작별 인사로 �
   fireEvent.click(screen.getByRole("button", { name: "보내기" }));
   expect(await screen.findByText("오늘 안에 움직여.")).toBeTruthy();
   await turn();
-  expect(await screen.findByText("오늘 이야기 재밌었어. 내일 또 와.")).toBeTruthy();
+  expect(await screen.findByText("네 사주로 이야기하니까 재밌었어. 물어봐 줘서 고마워.")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "고마워" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "내일 알려 줘" }));
-  expect(await screen.findByText("응, 내일 기다릴게.")).toBeTruthy();
+  expect(await screen.findByText("응, 오늘 이야기 잘 기억해 둘게.")).toBeTruthy();
   expect(screen.getByText("알림 신청함")).toBeTruthy();
 });
 
@@ -392,4 +392,12 @@ it("답이 20초 안에 오지 않으면 끊긴 것으로 보고 다시 보내�
   expect(await screen.findByRole("button", { name: "다시 보내기" })).toBeTruthy();
   expect(toast).toHaveBeenCalledWith({ title: "답을 받지 못했어요. 질문 수는 그대로예요.", tone: "error" });
   timeout.mockRestore();
+});
+
+it("질문을 다 쓴 뒤 최애는 한도·내일 이야기를 하지 않고 오늘 이야기에 대한 소감만 한다(K-b528db)", async () => {
+  const { askLinesFor } = await import("./lines");
+  for (const who of ["changha", "elina", "yuna", "dosa"] as const) {
+    const lines = askLinesFor(who);
+    for (const line of [...Object.values(lines.rest), lines.reminded]) expect(line, who).not.toMatch(/내일|한도|다 썼|남은|질문 수|기다리/);
+  }
 });
