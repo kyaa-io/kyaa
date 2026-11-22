@@ -39,6 +39,7 @@ import { HomeHeartDonation } from "@/features/rankings/ui/home-heart-donation";
 import { HomeBelowRankingSlot } from "@/components/banner-slot/home-below-ranking-slot";
 import type { HeartDonationEvent } from "@/features/rankings/domain/heart-donation";
 import type { HomeTopBanner } from "@/server/config/heart-donation-event";
+import { PromoBanner } from "@/components/banner-slot/promo-banner";
 import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
@@ -106,9 +107,11 @@ function HomeContent({ locale, fanPageApplications, jjinfanGauge = false, heartD
       {jjinfanGauge ? <div className={styles.jjinfanStrip} data-banner-slot="home_top">{homeTop === "jjinfan100" ? <HomeBelowRankingSlot locale={locale} /> : <HomeHeartDonation locale={locale} event={heartDonation} />}</div> : null}
       {thinBanner}
       {fanPageApplications && (
-        <FanAction className={styles.fanPageApply} variant="secondary" href={`/pages/groups/apply?locale=${locale}&kind=fan`}>
-          {groupApplyText(locale, "fanPageApply")}
-        </FanAction>
+        <PromoBanner slot="fanpage_apply" className={styles.fanPageApply}
+          href={`/pages/groups/apply?locale=${locale}&kind=fan`}
+          title={groupApplyText(locale, "fanPageApply")}
+          artwork={{ mobile: "/images/guest-home/fanpage-apply-mobile.webp", desktop: "/images/guest-home/fanpage-apply-desktop.webp" }}
+        />
       )}
       <ObservedLiveStrip locale={locale} />
       {notices}

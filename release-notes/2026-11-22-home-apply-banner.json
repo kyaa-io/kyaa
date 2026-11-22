@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 랭킹 아래에 팬페이지 개설 신청 배너가 생겼어요. 그림이나 문구를 누르면 신청 화면으로 이동해요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-22-home-apply-banner.png"]
+}
