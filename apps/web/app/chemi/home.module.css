@@ -65,6 +65,15 @@
   object-fit: cover;
   border-radius: var(--radius-small);
 }
+.statusChip {
+  max-inline-size: 30%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: var(--color-line-subtle);
+  border-radius: var(--radius-small);
+  padding-inline: var(--space-2);
+}
 .rowCopy {
   display: grid;
   flex: 1;

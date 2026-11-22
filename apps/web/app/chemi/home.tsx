@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
+import { GameStatusChip } from "./game-status-chip";
 import { HomeBanner } from "./home-banner";
 import { WeeklyRankings } from "./weekly-rankings";
 import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
@@ -33,7 +34,7 @@ export function ChemiHome({
   const activities = entries.map(([id, type, path]) => ({
     id,
     type,
-    href: type === "readings" || matchAvailable ? `${path}?locale=${locale}` : null,
+    href: id !== "pair" || matchAvailable ? `${path}?locale=${locale}` : null,
   }));
   if (preview && growth)
     return <ChemiGrowth locale={locale} home={copy} matchAvailable={matchAvailable} />;
@@ -64,6 +65,7 @@ export function ChemiHome({
                     <FanText role="item">{copy[id]}</FanText>
                     <FanText role="meta">{copy.descriptions[id]}</FanText>
                   </span>
+                  {href && (id === "pair" || id === "run") && <GameStatusChip game={id} locale={locale} />}
                   {href && <AffinityBadge size="sm" amount={EARN[id][1]} label={getGrowthCopy(locale).gain.replace("{n}", String(EARN[id][1]))} />}
                 </>
               );
