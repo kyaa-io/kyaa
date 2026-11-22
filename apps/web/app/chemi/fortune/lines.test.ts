@@ -73,7 +73,7 @@ it("uses the character’s own grade explanation when a reading includes a casua
   expect(fortuneTalkLine("elina", 1, input, headline)).not.toContain(headline);
   expect(fortuneTalkLine("dosa", 1, input, headline)).not.toContain(headline);
   for (const character of ["changha", "yuna"] as const) {
-    expect(fortuneTalkLine(character, 1, input, headline)).toContain(headline);
+    expect(fortuneTalkLine(character, 1, input, headline)).not.toContain(headline);
   }
 });
 
