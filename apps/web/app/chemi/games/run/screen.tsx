@@ -28,11 +28,11 @@ export function RunScreen(props: { locale: AppLocale; share: string | null }) {
 }
 
 function Session({ locale, share, auth }: { locale: AppLocale; share: string | null; auth: ReturnType<typeof useByUsAuth> }) {
-  const copy = useMemo(() => getRunCopy(locale), [locale]);
+  const [lobby, setLobby] = useState<Lobby>();
+  const copy = useMemo(() => getRunCopy(locale, lobby?.extraCost), [locale, lobby?.extraCost]);
   const names: Record<Character, string> = { changha: copy.changha, elina: copy.elina, yuna: copy.yuna };
   const number = new Intl.NumberFormat(locale);
   const [stage, setStage] = useState<Stage>("select");
-  const [lobby, setLobby] = useState<Lobby>();
   const [publicRows, setPublicRows] = useState<Rank[]>();
   const [challenge, setChallenge] = useState<Challenge>();
   const [ticket, setTicket] = useState<Ticket>();
@@ -105,6 +105,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     if (busy) return;
     if (!auth.authenticated && !trial) return auth.login();
     if (auth.authenticated && !lobby) return;
+    if (paid && !lobby?.extraCost) return;
     setBusy(true);
     setFailed(false);
     try {
@@ -114,7 +115,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
         : { action: "start", game: "run", character: "changha", key, extra: paid }, !trial);
       requestKey.current = null;
       setBefore({ place: lobby?.ranking.find((row) => row.isMe)?.place, best: lobby?.best ?? 0 });
-      setLobby((now) => now && { ...now, [paid ? "extraRemaining" : "freeRemaining"]: Math.max(0, now[paid ? "extraRemaining" : "freeRemaining"] - 1), points: now.points - (paid ? 10 : 0) });
+      setLobby((now) => now && { ...now, [paid ? "extraRemaining" : "freeRemaining"]: Math.max(0, now[paid ? "extraRemaining" : "freeRemaining"] - 1), points: now.points - (paid ? now.extraCost : 0) });
       setResult(undefined);
       setStats(undefined);
       setSubmission(undefined);
@@ -122,7 +123,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       setPaying(false);
       setTicket({ ...issued, trial });
       setStage("run");
-      if (paid && !trial) celebrateSpend({ locale, points: 10, label: copy.extraTitle });
+      if (paid && !trial && lobby) celebrateSpend({ locale, points: lobby.extraCost, label: copy.extraTitle });
     } catch (error) {
       if (error instanceof Error && !/^5/.test(error.message)) requestKey.current = null;
       setFailed(true);
@@ -216,7 +217,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       busy={busy} copied={copied} onAgain={again} onLogin={() => auth.login()} onShare={() => void shareResult()}
       onAllRanks={() => setAllRanks(true)} errorLine={errorLine} reminder={reminder} />}
     <ExtraPlayDialog open={paying} onOpenChange={setPaying} onConfirm={() => void begin(true)}
-      busy={busy} locale={locale} points={lobby?.points} cost={10} extraRemaining={extra} />
+      busy={busy} locale={locale} points={lobby?.points} cost={lobby?.extraCost ?? 0} extraRemaining={extra} />
     <FanDialog open={allRanks} onOpenChange={setAllRanks} title={copy.ranking} closeLabel={copy.close} size="sm" responsive>
       <ol className={styles.allRanks}>
         {rows.map((row) => <li data-row="" key={row.place} data-me={row.isMe}>

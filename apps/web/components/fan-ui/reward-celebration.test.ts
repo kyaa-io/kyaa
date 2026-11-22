@@ -54,3 +54,11 @@ it("writes a spend as a minus toast with a sinking coin badge", () => {
   celebrateSpend({ locale: "ko", points: 0 });
   expect(toast.shown).toHaveLength(1);
 });
+
+it("keeps affinity and points in one notice when the point grant arrives later", () => {
+  celebrateReward({ locale: "ko", affinity: { amount: 10, text: "창하 친밀 +10" } });
+  celebrateReward({ locale: "ko", points: 3 });
+  expect(toast.closed).toEqual(["t1"]);
+  expect(toast.shown.at(-1)).toMatchObject({ title: "+3P · 창하 친밀 +10" });
+  expect(document.querySelector("[data-reward-badge] img")?.getAttribute("src")).toContain("heart");
+});

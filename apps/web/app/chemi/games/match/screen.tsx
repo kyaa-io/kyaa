@@ -1,5 +1,7 @@
 "use client";
 
+import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -50,6 +52,8 @@ type Row = {
   isFriend?: boolean;
 };
 type Lobby = {
+  extraCost: number;
+  points: number;
   ranking: Row[];
   freeRemaining: number;
   extraRemaining: number;
@@ -218,6 +222,7 @@ function Session({
   const [result, setResult] = useState<Finish | null>(null);
   const [pendingFinish, setPendingFinish] = useState<Submission | null>(null);
   const [error, setError] = useState("");
+  const [paying, setPaying] = useState(false);
   const [working, setWorking] = useState(false);
   const [sound, setSound] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
@@ -369,13 +374,17 @@ function Session({
       setPendingFinish(null);
       setCopied(false);
       setStage("play");
-      if (extra && !trial) celebrateSpend({ locale: parseAppLocale(locale), points: 10, label: copy.extraPlay });
+      if (extra && !trial && lobby) {
+        setPaying(false);
+        celebrateSpend({ locale: parseAppLocale(locale), points: lobby.extraCost, label: copy.extraPlay });
+      }
       if (trial && challenge) setChallenge({ ...challenge, available: false });
       if (!trial)
         setLobby(
           (prev) =>
             prev && {
               ...prev,
+              points: prev.points - (extra ? prev.extraCost : 0),
               [extra ? "extraRemaining" : "freeRemaining"]: Math.max(
                 0,
                 prev[extra ? "extraRemaining" : "freeRemaining"] - 1,
@@ -582,6 +591,9 @@ function Session({
   }[stage];
   return (
     <main className={styles.shell} data-stage={stage}>
+      <ExtraPlayDialog open={paying} onOpenChange={setPaying} busy={working} locale={parseAppLocale(locale)}
+        points={lobby?.points} cost={lobby?.extraCost ?? 0} extraRemaining={lobby?.extraRemaining ?? 0}
+        onConfirm={() => { setPaying(false); void start(character, true); }} />
       <header className={styles.header}>
         <FanIconButton type="button" aria-label={copy.back} onClick={back}>
           <FanIcon icon={ChevronLeft} />
@@ -836,11 +848,11 @@ function Session({
                 </p>
               )}
               <StageAction
-                disabled={working || !lobby?.extraRemaining}
-                onClick={() => void start(character, true)}
+                disabled={working || !lobby?.extraRemaining || !lobby.extraCost}
+                onClick={() => setPaying(true)}
               >
                 {lobby?.extraRemaining
-                  ? copy.extraPlay + " · 10P"
+                  ? copy.extraPlay + " · " + lobby.extraCost + "P"
                   : copy.noMore}
               </StageAction>
               <FanAction onClick={() => setStage("reminder")}>

@@ -147,6 +147,7 @@ export function FortuneResult({
         celebrateReward({
           locale,
           points: data.reward.points,
+          affinity: { amount: data.reward.exp ?? 0, text: `${name} ${uiText("affinityGain", { exp: data.reward.exp ?? 0 })}` },
           stamps: Number(Boolean(data.reward.stamp)),
         });
       const rewards = await fetch("/api/chemi/rewards/today", {

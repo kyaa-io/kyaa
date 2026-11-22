@@ -118,7 +118,8 @@ it("shows the saved card as a revisit for a member and settles the reward once",
   const settles = calls.filter((call) => call.path === "/api/chemi/readings" && call.method === "POST");
   expect(settles).toHaveLength(1);
   expect(JSON.parse(settles[0].body!)).toMatchObject({ character: "changha", position: 0 });
-  expect(celebrate).not.toHaveBeenCalled();
+  expect(celebrate).toHaveBeenCalledOnce();
+  expect(celebrate).toHaveBeenCalledWith(expect.objectContaining({ points: 0, affinity: { amount: 10, text: "창하 친밀 +10" } }));
 });
 
 it("offers only a reopen once the free spread is used", async () => {

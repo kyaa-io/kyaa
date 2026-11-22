@@ -101,9 +101,9 @@ export function TarotResult({
   }, [member, today, draw.card, draw.readingId, draw.settle, character]);
 
   useEffect(() => {
-    if (!rewards || celebrated.current || rewards.replayed || rewards.points <= 0) return;
+    if (!rewards || celebrated.current || rewards.replayed) return;
     celebrated.current = true;
-    celebrateReward({ locale, points: rewards.points, stamps: Number(Boolean(rewards.reward.stamp)) });
+    celebrateReward({ locale, points: rewards.points, affinity: { amount: rewards.reward.exp ?? 0, text: `${person.name} ${uiText("affinityGain", { exp: rewards.reward.exp ?? 0 })}` }, stamps: Number(Boolean(rewards.reward.stamp)) });
   }, [rewards, locale]);
 
   /**

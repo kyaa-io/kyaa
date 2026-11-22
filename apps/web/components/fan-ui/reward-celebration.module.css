@@ -22,3 +22,5 @@
 }
 .badge[data-reduced] { animation: reward-fade 1.8s linear both; transform: translate(-50%, -140%); }
 @keyframes reward-fade { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+
+.badge[data-affinity] { background: var(--color-accent-soft); color: var(--color-accent-ink); }

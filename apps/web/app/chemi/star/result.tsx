@@ -138,6 +138,7 @@ export function StarResult({
         celebrateReward({
           locale,
           points: reading.reward.points,
+          affinity: { amount: reading.reward.exp ?? 0, text: `${name} ${uiText("affinityGain", { exp: reading.reward.exp ?? 0 })}` },
           stamps: Number(Boolean(reading.reward.stamp)),
         });
       if (!authenticated) return;

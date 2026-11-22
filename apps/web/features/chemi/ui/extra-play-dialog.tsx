@@ -19,11 +19,11 @@ export type ExtraPlayDialogProps = {
 };
 
 export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra }: ExtraPlayDialogProps) {
-  const copy = getRunCopy(locale);
+  const copy = getRunCopy(locale, cost);
   const number = new Intl.NumberFormat(locale);
   return <FanDialog open={open} onOpenChange={onOpenChange} title={copy.extraTitle} closeLabel={copy.close} size="sm" responsive
       secondary={{ label: copy.cancel, onClick: () => onOpenChange(false) }}
-      primary={{ label: copy.pay, onClick: onConfirm, disabled: busy || points == null || points < cost || extra <= 0, loading: busy }}>
+      primary={{ label: copy.pay, onClick: onConfirm, disabled: busy || !(cost > 0) || points == null || points < cost || extra <= 0, loading: busy }}>
       {points != null && <dl className={styles.pay}>
         <div><FanText as="dt" role="meta">{copy.pointLabel}</FanText><FanText as="dd" role="item">{number.format(points)}P → {number.format(Math.max(0, points - cost))}P</FanText></div>
         <div><FanText as="dt" role="meta">{copy.extraLabel}</FanText><FanText as="dd" role="item">{3 - extra}/3 → {Math.min(3, 4 - extra)}/3</FanText></div>
