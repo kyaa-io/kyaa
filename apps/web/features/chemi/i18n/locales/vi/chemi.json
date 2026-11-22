@@ -609,6 +609,14 @@
     "starEnter_changha": "Muốn xem đêm nay bầu trời nhắn gì với cậu không?",
     "starEnter_elina": "Mình cùng nghe xem bầu trời đêm nay muốn nói gì nhé?",
     "starEnter_yuna": "Cùng đọc bầu trời đêm nay nào!",
-    "starEnter_dosa": "Có muốn cùng lắng nghe lời các vì sao đêm nay chăng?"
+    "starEnter_dosa": "Có muốn cùng lắng nghe lời các vì sao đêm nay chăng?",
+    "chartTitle": "Tám chữ của bạn",
+    "showDetail": "Chi tiết",
+    "hideDetail": "Thu gọn",
+    "strengthTitle": "Thân vượng · thân nhược",
+    "tenGodTitle": "Thập thần",
+    "relationTitle": "Hợp · xung",
+    "yearFlow": "Năm nay",
+    "hourLocked": "Trụ giờ sẽ mở khi bạn thêm giờ sinh"
   }
 }

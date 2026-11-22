@@ -54,6 +54,8 @@ export type Chart = {
   locked: string[];
   lockReason: string | null;
   solarTerm: { name: string; at: string } | null;
+  /** 서버가 기둥마다 함께 저장한 12운성·12신살(연지를 모르면 신살 없음). 옛 풀이에는 없을 수 있다. */
+  details?: Partial<Record<"year" | "month" | "day" | "hour", { lifeStage?: string; spirit?: string | null } | null>>;
 };
 
 export function isChart(value: unknown): value is Chart {
@@ -502,4 +504,59 @@ export function yearTable(chart: Chart, fromYear: number, count = 10): YearRow[]
       withDayBranch: branchRelation(dayBranch(chart), pillar.earthlyBranch),
     };
   });
+}
+
+/* ───────────── 명식표 표시용 한자(계산에는 쓰지 않는다) ───────────── */
+
+export const stemHanja: Record<Stem, string> = {
+  갑: "甲", 을: "乙", 병: "丙", 정: "丁", 무: "戊", 기: "己", 경: "庚", 신: "辛", 임: "壬", 계: "癸",
+};
+export const branchHanja: Record<Branch, string> = {
+  자: "子", 축: "丑", 인: "寅", 묘: "卯", 진: "辰", 사: "巳", 오: "午", 미: "未", 신: "申", 유: "酉", 술: "戌", 해: "亥",
+};
+export const elementHanja: Record<Element, string> = { wood: "木", fire: "火", earth: "土", metal: "金", water: "水" };
+/**
+ * 한글 글자를 한자로. 신(辛·申)처럼 천간·지지에 모두 있는 글자가 있어 어느 쪽인지 받는다.
+ * pillar 는 앞 글자가 천간, 뒤 글자가 지지인 간지다.
+ */
+export function toHanja(letters: string, kind: "stem" | "branch" | "pillar") {
+  return [...letters]
+    .map((letter, i) =>
+      kind === "stem" || (kind === "pillar" && i === 0) ? stemHanja[letter as Stem] : branchHanja[letter as Branch],
+    )
+    .join("");
+}
+
+export type FlowRelation = ChartRelation & {
+  /** 원국 쪽 기둥(흐름 글자를 뺀 자리) */
+  natal: PillarKey[];
+};
+/**
+ * 세운·월운 한 기둥이 원국과 맺는 합·충·형. chartRelations 를 그대로 쓴다:
+ * 원국 기둥 하나를 비운 자리에 흐름 기둥을 넣은 명식마다 계산해, 흐름 글자가 낀 관계만 모은다.
+ * 같은 무리의 삼합이 있으면 그 안의 반합은 뺀다.
+ */
+export function flowRelations(chart: Chart, flow: Pillar): FlowRelation[] {
+  const known = pillarKeys.filter((key) => chart.pillars[key]);
+  const empty = pillarKeys.find((key) => !chart.pillars[key]);
+  const trials: { slot: PillarKey; drop: PillarKey | null }[] = empty ? [{ slot: empty, drop: null }] : [];
+  for (const key of known) trials.push({ slot: key, drop: key });
+  const out = new Map<string, FlowRelation>();
+  for (const { slot, drop } of trials) {
+    const pillars = { ...chart.pillars, [slot]: flow };
+    for (const relation of chartRelations({ ...chart, pillars })) {
+      if (!relation.keys.includes(slot)) continue;
+      // 비운 자리(slot)가 원래 원국 기둥이면, 그 기둥 글자로 맺은 관계가 아니라 흐름 글자로 맺은 관계다.
+      const natal = relation.keys.filter((key) => key !== slot);
+      if (drop && natal.includes(drop)) continue;
+      const id = `${relation.kind}:${relation.letters}:${[...natal].sort().join(",")}`;
+      out.set(id, { ...relation, natal });
+    }
+  }
+  const list = [...out.values()];
+  return list.filter(
+    (relation) =>
+      relation.kind !== "반합" ||
+      !list.some((other) => other.kind === "삼합" && [...relation.letters].every((letter) => other.letters.includes(letter))),
+  );
 }

@@ -609,6 +609,14 @@
     "starEnter_changha": "今夜の空が君に何を伝えてるか、一緒に見てみる？",
     "starEnter_elina": "今夜の空からのメッセージ、一緒に見てみましょうか？",
     "starEnter_yuna": "今夜の空、一緒に読んでみよう！",
-    "starEnter_dosa": "今宵の星の言葉に耳を傾けてみようか。"
+    "starEnter_dosa": "今宵の星の言葉に耳を傾けてみようか。",
+    "chartTitle": "四柱八字",
+    "showDetail": "詳しく",
+    "hideDetail": "閉じる",
+    "strengthTitle": "身強・身弱",
+    "tenGodTitle": "十神の分布",
+    "relationTitle": "合・沖",
+    "yearFlow": "今年の流れ",
+    "hourLocked": "時柱は生まれた時間がわかると開きます"
   }
 }

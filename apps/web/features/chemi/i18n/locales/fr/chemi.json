@@ -609,6 +609,14 @@
     "starEnter_changha": "On regarde ce que le ciel veut te dire ce soir ?",
     "starEnter_elina": "Ça te dirait d’écouter ensemble le ciel de ce soir ?",
     "starEnter_yuna": "Allez, lisons le ciel ensemble !",
-    "starEnter_dosa": "Prêtons l’oreille au message des astres, veux-tu ?"
+    "starEnter_dosa": "Prêtons l’oreille au message des astres, veux-tu ?",
+    "chartTitle": "Vos huit caractères",
+    "showDetail": "Détails",
+    "hideDetail": "Masquer",
+    "strengthTitle": "Force du maître du jour",
+    "tenGodTitle": "Dix dieux",
+    "relationTitle": "Combinaisons et chocs",
+    "yearFlow": "Cette année",
+    "hourLocked": "Le pilier de l'heure s'ouvre avec votre heure de naissance"
   }
 }

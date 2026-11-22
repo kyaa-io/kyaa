@@ -9,11 +9,12 @@
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useState, type CSSProperties } from "react";
-import { ChevronLeft, ChevronRight, Droplet, Flame, Gem, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
+import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanState } from "@/components/fan-ui/fan-state";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanNumber } from "@/components/fan-ui/fan-number";
+import { FanHanja } from "@/components/fan-ui/fan-hanja";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
@@ -23,7 +24,7 @@ import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
-import type { Chart, Element } from "./chart";
+import { monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
 import {
   firstReading,
   monthReading,
@@ -31,18 +32,13 @@ import {
   yearReading,
 } from "./copy";
 import { sajuBasis, sajuDomains } from "./depth";
+import { dayLine } from "./first";
+import { ChartPanel, ElementBlock, NatureBlock, RelationBlock, StrengthBlock, TenGodBlock, YearFlowBlock } from "./first-blocks";
 import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
 
-/** 타고난 기운 줄 앞의 오행 그림. */
-const elementIcon: Record<Element, typeof Sprout> = {
-  wood: Sprout,
-  fire: Flame,
-  earth: Mountain,
-  metal: Gem,
-  water: Droplet,
-};
+const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.earthlyBranch, "pillar");
 
 export type ResultView = "first" | "year" | "month" | "pair";
 
@@ -105,8 +101,7 @@ export function SajuResult({
   const uiText = useReadingCopy();
   const [shareOpen, setShareOpen] = useState(false);
   const name = sajuCharacters.find((item) => item.id === character)!.name;
-  const locked = chart.locked.length > 0;
-  const first = firstReading(chart, at);
+  const first = { ...firstReading(chart, at), day: dayLine(chart) };
   const year = yearReading(chart, at);
   const month = monthReading(chart, at);
   const compat =
@@ -204,9 +199,12 @@ export function SajuResult({
   const depth =
     view === "pair" ? null : (
       <>
-        <ReadingBasis className={styles.section} title={uiText("basis")} rows={sajuBasis(chart, at, view)} />
+        {view !== "first" && (
+          <ReadingBasis className={styles.section} title={uiText("basis")} rows={sajuBasis(chart, at, view)} />
+        )}
         <ReadingDomains
           className={styles.section}
+          openWide={view === "first"}
           title={uiText("areas")}
           items={sajuDomains(chart, at, view).map((item) => ({
             key: item.key,
@@ -218,19 +216,6 @@ export function SajuResult({
         />
       </>
     );
-  const lockedCard = (
-    <FanState
-      inline
-      kind="info"
-      title={uiText("unlockTime")}
-      actions={
-        <FanAction size="sm" onClick={onBirthTime}>
-          <ReadingText id="birthTime" />
-        </FanAction>
-      }
-    />
-  );
-
   const bondCard =
     view !== "pair" ? (
       <section className={`${styles.panel} ${styles.bondPanel}`}>
@@ -285,9 +270,30 @@ export function SajuResult({
           <FanHeading as="h1">{title}</FanHeading>
           {view === "first" && (
             <>
+              <FanText as="p" role="label" className={styles.dayLine}>
+                <FanHanja role="inline">{first.day.hanja}</FanHanja> · {first.day.read}
+              </FanText>
               <FanText as="p" role="body" className={styles.opening}>
                 {sajuOpening(character, first.stem)}
               </FanText>
+            </>
+          )}
+          {view === "pair" && pair && !pair.timeKnown && (
+            <FanText as="p" role="meta">
+              {uiText("pairNoTime", { name: pair.name })}
+            </FanText>
+          )}
+          {view !== "first" && (
+            <picture className={styles.hero}>
+              <img src={hero(character)} alt="" />
+            </picture>
+          )}
+        </header>
+
+        {view === "first" && (
+          <>
+            <ChartPanel chart={chart} art={hero(character)} onBirthTime={onBirthTime} />
+            <div className={styles.firstLead}>
               <dl className={`${styles.kv} ${styles.keywords}`} data-layout="cols">
                 {first.keywords.map((item) => (
                   <div key={item.kind} data-keyword={item.kind}>
@@ -305,58 +311,22 @@ export function SajuResult({
                   </div>
                 ))}
               </dl>
-            </>
-          )}
-          {view === "pair" && pair && !pair.timeKnown && (
-            <FanText as="p" role="meta">
-              {uiText("pairNoTime", { name: pair.name })}
-            </FanText>
-          )}
-          <picture className={styles.hero}>
-            <img src={hero(character)} alt="" />
-          </picture>
-        </header>
-
-        {view === "first" && (
-          <>
-            <div className={styles.summary}>
-              <section className={`${styles.panel} ${styles.split}`}>
-                <div className={styles.block}>
-                  <FanHeading><ReadingText id="energy" /></FanHeading>
-                  {locked ? (
-                    lockedCard
-                  ) : (
-                    <div className={styles.bars}>
-                      {first.rows.map((row) => (
-                        <div className={styles.barRow} key={row.element}>
-                          <span className={styles.elementName}>
-                            <FanIcon icon={elementIcon[row.element]} size={16} />
-                            <FanText role="meta">{row.name}</FanText>
-                          </span>
-                          <FanNumber locale={locale} value={row.count} />
-                          {bar(row.name, Math.round((row.count / 4) * 100))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </section>
+              <picture className={`${styles.hero} ${styles.mobileHero}`}>
+                <img src={hero(character)} alt="" />
+              </picture>
             </div>
-            {!locked && (
-              <div className={styles.cols}>
-                <section className={styles.section}>
-                  <FanHeading><ReadingText id="traits" /></FanHeading>
-                  {kv([
-                    [uiText("strength"), first.strengthR],
-                    [uiText("fanStyle"), first.fandomR],
-                  ])}
-                </section>
-                <section className={styles.section}>
-                  <FanHeading>{first.flowTitle}</FanHeading>
-                  {kv(first.flow.map((item) => [item.label, item.text] as const))}
-                </section>
-              </div>
-            )}
+            <div className={styles.cols}>
+              <ElementBlock chart={chart} locale={locale} />
+              <NatureBlock chart={chart} />
+            </div>
+            <div className={styles.cols}>
+              <StrengthBlock chart={chart} locale={locale} />
+              <TenGodBlock chart={chart} />
+            </div>
+            <div className={styles.cols}>
+              <RelationBlock chart={chart} />
+              <YearFlowBlock chart={chart} at={at} />
+            </div>
           </>
         )}
 
@@ -511,8 +481,8 @@ export function SajuResult({
               {uiText("deeper")}</FanText>
             {(
               [
-                [uiText("year"), uiText("free"), "year"],
-                [uiText("month"), uiText("free"), "month"],
+                [uiText("year"), `${pillarHanja(seasonAt(at).yearPillar)} · ${uiText("free")}`, "year"],
+                [uiText("month"), `${pillarHanja(monthSpanAt(at).pillar)} · ${uiText("free")}`, "month"],
               ] as const
             ).map(([label, tag, target]) => (
               <FanAction variant="text" key={label} className={styles.nextItem} onClick={() => onGo(target)}>

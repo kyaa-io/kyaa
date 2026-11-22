@@ -42,7 +42,7 @@ const pillarName = (pillar: Pillar) => `${pillar.heavenlyStem}${pillar.earthlyBr
 
 /** 일간과 일지의 오행 사이. 일지는 가까운 사람과 속마음의 자리로 읽는다. */
 type Seat = "same" | "supports" | "spends" | "handles" | "presses";
-function seatOf(chart: Chart): Seat {
+export function seatOf(chart: Chart): Seat {
   const own = stemElement[dayStem(chart)];
   const seat = branchElement[dayBranch(chart)];
   if (seat === own) return "same";
@@ -50,7 +50,7 @@ function seatOf(chart: Chart): Seat {
   if (generates[own] === seat) return "spends";
   return controls[own] === seat ? "handles" : "presses";
 }
-const seatPlain: Record<Seat, string> = {
+export const seatPlain: Record<Seat, string> = {
   same: "일간과 같은 기운이라 겉과 속이 닮았어요",
   supports: "일간을 받쳐 주는 자리라 마음이 든든해요",
   spends: "내 기운을 쏟는 자리라 좋아하는 일에 힘을 다 써요",

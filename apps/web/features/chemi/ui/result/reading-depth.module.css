@@ -55,3 +55,6 @@
 .basis {
   color: var(--color-muted);
 }
+.rows .ink {
+  color: var(--color-ink);
+}
