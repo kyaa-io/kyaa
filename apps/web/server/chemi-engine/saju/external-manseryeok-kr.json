@@ -1,0 +1,405 @@
+{
+ "source": "https://manseryeok.kr/ 기본 보정(서울, 진태양시 경도 보정·균시차 없음, 통자시), 2026-11-23 조회",
+ "rows": [
+  {
+   "sample": 6,
+   "kind": "절입",
+   "query": "g=F&c=s&d=19620606&t=1332",
+   "corrected": "-32분 → 12:59",
+   "pillars": "임인 병오 을해 임오",
+   "luck": "역행 1"
+  },
+  {
+   "sample": 19,
+   "kind": "절입",
+   "query": "g=M&c=s&d=19361207&t=1541",
+   "corrected": "-32분 → 15:08",
+   "pillars": "병자 기해 계해 경신",
+   "luck": "순행 1"
+  },
+  {
+   "sample": 20,
+   "kind": "절입",
+   "query": "g=F&c=s&d=19361207&t=1543",
+   "corrected": "-32분 → 15:10",
+   "pillars": "병자 경자 계해 경신",
+   "luck": "역행 1"
+  },
+  {
+   "sample": 21,
+   "kind": "절입",
+   "query": "g=M&c=s&d=19610105&t=2212",
+   "corrected": "-2분 → 22:09",
+   "pillars": "경자 무자 무술 계해",
+   "luck": "순행 1"
+  },
+  {
+   "sample": 22,
+   "kind": "절입",
+   "query": "g=F&c=s&d=19610105&t=2214",
+   "corrected": "-2분 → 22:11",
+   "pillars": "경자 기축 무술 계해",
+   "luck": "역행 1"
+  },
+  {
+   "sample": 23,
+   "kind": "절입",
+   "query": "g=M&c=s&d=19490506&t=0636",
+   "corrected": "-92분 → 05:03",
+   "pillars": "기축 무진 병신 신묘",
+   "luck": "역행 10"
+  },
+  {
+   "sample": 42,
+   "kind": "밤11시",
+   "query": "g=F&c=s&d=20001203&t=2330",
+   "corrected": "-32분 → 22:57",
+   "pillars": "경진 정해 을미 정해",
+   "luck": "역행 9"
+  },
+  {
+   "sample": 48,
+   "kind": "밤11시",
+   "query": "g=F&c=s&d=20140606&t=2335",
+   "corrected": "-32분 → 23:02",
+   "pillars": "갑오 경오 기유 갑자",
+   "luck": "역행 1"
+  },
+  {
+   "sample": 49,
+   "kind": "밤11시",
+   "query": "g=M&c=s&d=20160603&t=2300",
+   "corrected": "-32분 → 22:27",
+   "pillars": "병신 계사 병진 기해",
+   "luck": "순행 1"
+  },
+  {
+   "sample": 50,
+   "kind": "밤11시",
+   "query": "g=F&c=s&d=20110331&t=2328",
+   "corrected": "-32분 → 22:55",
+   "pillars": "신묘 신묘 을유 정해",
+   "luck": "순행 2"
+  },
+  {
+   "sample": 51,
+   "kind": "밤11시",
+   "query": "g=M&c=s&d=19890307&t=2202",
+   "corrected": "-32분 → 21:29",
+   "pillars": "기사 정묘 병인 기해",
+   "luck": "역행 1"
+  },
+  {
+   "sample": 52,
+   "kind": "밤11시",
+   "query": "g=F&c=s&d=20060823&t=2335",
+   "corrected": "-32분 → 23:02",
+   "pillars": "병술 병신 을유 병자",
+   "luck": "역행 5"
+  },
+  {
+   "sample": 56,
+   "kind": "밤11시",
+   "query": "g=F&c=s&d=19830715&t=2336",
+   "corrected": "-32분 → 23:03",
+   "pillars": "계해 기미 을사 병자",
+   "luck": "순행 8"
+  },
+  {
+   "sample": 58,
+   "kind": "밤11시",
+   "query": "g=F&c=s&d=19861104&t=2328",
+   "corrected": "-32분 → 22:55",
+   "pillars": "병인 무술 임자 신해",
+   "luck": "역행 9"
+  },
+  {
+   "sample": 62,
+   "kind": "서머타임",
+   "query": "g=F&c=s&d=19490817&t=0634",
+   "corrected": "-92분 → 05:01",
+   "pillars": "기축 임신 기묘 정묘",
+   "luck": "순행 7"
+  },
+  {
+   "sample": 72,
+   "kind": "서머타임",
+   "query": "g=F&c=s&d=19880801&t=2034",
+   "corrected": "-92분 → 19:01",
+   "pillars": "무진 기미 무자 임술",
+   "luck": "역행 9"
+  },
+  {
+   "sample": 75,
+   "kind": "서머타임",
+   "query": "g=M&c=s&d=19500816&t=0453",
+   "corrected": "-92분 → 03:20",
+   "pillars": "경인 갑신 계미 갑인",
+   "luck": "순행 8"
+  },
+  {
+   "sample": 76,
+   "kind": "서머타임",
+   "query": "g=F&c=s&d=19510805&t=0923",
+   "corrected": "-92분 → 07:50",
+   "pillars": "신묘 을미 정축 갑진",
+   "luck": "순행 1"
+  },
+  {
+   "sample": 77,
+   "kind": "서머타임",
+   "query": "g=M&c=s&d=19550716&t=1410",
+   "corrected": "-62분 → 13:07",
+   "pillars": "을미 계미 무인 기미",
+   "luck": "역행 3"
+  },
+  {
+   "sample": 78,
+   "kind": "서머타임",
+   "query": "g=F&c=s&d=19560828&t=0952",
+   "corrected": "-62분 → 08:49",
+   "pillars": "병신 병신 정묘 갑진",
+   "luck": "역행 7"
+  },
+  {
+   "sample": 79,
+   "kind": "서머타임",
+   "query": "g=M&c=s&d=19570808&t=2022",
+   "corrected": "-62분 → 19:19",
+   "pillars": "정유 무신 임자 경술",
+   "luck": "역행 1"
+  },
+  {
+   "sample": 96,
+   "kind": "옛표준시",
+   "query": "g=F&c=s&d=19590115&t=0903",
+   "corrected": "-2분 → 09:00",
+   "pillars": "무술 을축 정유 을사",
+   "luck": "역행 3"
+  },
+  {
+   "sample": 99,
+   "kind": "옛표준시",
+   "query": "g=M&c=s&d=19590405&t=2123",
+   "corrected": "-2분 → 21:20",
+   "pillars": "기해 정묘 정사 신해",
+   "luck": "역행 10"
+  },
+  {
+   "sample": 100,
+   "kind": "옛표준시",
+   "query": "g=F&c=s&d=19580306&t=1646",
+   "corrected": "-2분 → 16:43",
+   "pillars": "무술 을묘 임오 무신",
+   "luck": "역행 1"
+  },
+  {
+   "sample": 101,
+   "kind": "옛표준시",
+   "query": "g=M&c=s&d=19551026&t=1803",
+   "corrected": "-2분 → 18:00",
+   "pillars": "을미 병술 경신 을유",
+   "luck": "역행 6"
+  },
+  {
+   "sample": 102,
+   "kind": "옛표준시",
+   "query": "g=F&c=s&d=19581122&t=0727",
+   "corrected": "-2분 → 07:24",
+   "pillars": "무술 계해 계묘 병진",
+   "luck": "역행 5"
+  },
+  {
+   "sample": 103,
+   "kind": "옛표준시",
+   "query": "g=M&c=s&d=19580101&t=0657",
+   "corrected": "-2분 → 06:54",
+   "pillars": "정유 임자 무인 을묘",
+   "luck": "역행 8"
+  },
+  {
+   "sample": 119,
+   "kind": "윤달",
+   "query": "g=M&c=s&d=19630525&t=1509",
+   "corrected": "-32분 → 14:36",
+   "pillars": "계묘 정사 무진 기미",
+   "luck": "역행 6"
+  },
+  {
+   "sample": 120,
+   "kind": "윤달",
+   "query": "g=F&c=s&d=19680916&t=0336",
+   "corrected": "-32분 → 03:03",
+   "pillars": "무신 신유 기축 병인",
+   "luck": "역행 3"
+  },
+  {
+   "sample": 121,
+   "kind": "윤달",
+   "query": "g=M&c=s&d=19740527&t=2253",
+   "corrected": "-32분 → 22:20",
+   "pillars": "갑인 기사 무진 계해",
+   "luck": "순행 3"
+  },
+  {
+   "sample": 122,
+   "kind": "윤달",
+   "query": "g=F&c=s&d=19761019&t=0136",
+   "corrected": "-32분 → 01:03",
+   "pillars": "병진 무술 갑진 을축",
+   "luck": "역행 4"
+  },
+  {
+   "sample": 123,
+   "kind": "윤달",
+   "query": "g=M&c=s&d=19820610&t=2347",
+   "corrected": "-32분 → 23:14",
+   "pillars": "임술 병오 을축 병자",
+   "luck": "순행 9"
+  },
+  {
+   "sample": 136,
+   "kind": "시경계",
+   "query": "g=F&c=s&d=19690217&t=0139",
+   "corrected": "-32분 → 01:06",
+   "pillars": "기유 병인 계해 계축",
+   "luck": "순행 6"
+  },
+  {
+   "sample": 147,
+   "kind": "시경계",
+   "query": "g=M&c=s&d=19981017&t=1924",
+   "corrected": "-32분 → 18:51",
+   "pillars": "무인 임술 정유 기유",
+   "luck": "순행 7"
+  },
+  {
+   "sample": 149,
+   "kind": "시경계",
+   "query": "g=M&c=s&d=19650119&t=0531",
+   "corrected": "-32분 → 04:58",
+   "pillars": "갑진 정축 계유 갑인",
+   "luck": "순행 5"
+  },
+  {
+   "sample": 150,
+   "kind": "시경계",
+   "query": "g=F&c=s&d=19711101&t=0336",
+   "corrected": "-32분 → 03:03",
+   "pillars": "신해 무술 경인 무인",
+   "luck": "순행 2"
+  },
+  {
+   "sample": 151,
+   "kind": "시경계",
+   "query": "g=M&c=s&d=20110822&t=0547",
+   "corrected": "-32분 → 05:14",
+   "pillars": "신묘 병신 기유 정묘",
+   "luck": "역행 5"
+  },
+  {
+   "sample": 152,
+   "kind": "시경계",
+   "query": "g=F&c=s&d=19870216&t=0117",
+   "corrected": "-32분 → 00:44",
+   "pillars": "정묘 임인 병신 무자",
+   "luck": "순행 6"
+  },
+  {
+   "sample": 153,
+   "kind": "시경계",
+   "query": "g=M&c=s&d=19790411&t=1342",
+   "corrected": "-32분 → 13:09",
+   "pillars": "기미 무진 무신 기미",
+   "luck": "역행 2"
+  },
+  {
+   "sample": 160,
+   "kind": "시경계",
+   "query": "g=F&c=s&d=19971118&t=0121",
+   "corrected": "-32분 → 00:48",
+   "pillars": "정축 신해 갑자 갑자",
+   "luck": "순행 6"
+  },
+  {
+   "sample": 175,
+   "kind": "무작위",
+   "query": "g=M&c=s&d=19520521&t=0529",
+   "corrected": "-32분 → 04:56",
+   "pillars": "임진 을사 정묘 임인",
+   "luck": "순행 5"
+  },
+  {
+   "sample": 182,
+   "kind": "무작위",
+   "query": "g=F&c=s&d=20060423&t=1713",
+   "corrected": "-32분 → 16:40",
+   "pillars": "병술 임진 임오 무신",
+   "luck": "역행 6"
+  },
+  {
+   "sample": 183,
+   "kind": "무작위",
+   "query": "g=M&c=s&d=19760601&t=1531",
+   "corrected": "-32분 → 14:58",
+   "pillars": "병진 계사 갑신 신미",
+   "luck": "순행 1"
+  },
+  {
+   "sample": 184,
+   "kind": "무작위",
+   "query": "g=F&c=s&d=19310526&t=1036",
+   "corrected": "-32분 → 10:03",
+   "pillars": "신미 계사 신사 계사",
+   "luck": "순행 4"
+  },
+  {
+   "sample": 185,
+   "kind": "무작위",
+   "query": "g=M&c=s&d=19330224&t=1553",
+   "corrected": "-32분 → 15:20",
+   "pillars": "계유 갑인 신유 병신",
+   "luck": "역행 7"
+  },
+  {
+   "sample": 186,
+   "kind": "무작위",
+   "query": "g=F&c=s&d=19680617&t=0458",
+   "corrected": "-32분 → 04:25",
+   "pillars": "무신 무오 무오 갑인",
+   "luck": "역행 4"
+  },
+  {
+   "sample": 187,
+   "kind": "무작위",
+   "query": "g=M&c=s&d=19861216&t=0651",
+   "corrected": "-32분 → 06:18",
+   "pillars": "병인 경자 갑오 정묘",
+   "luck": "순행 7"
+  },
+  {
+   "sample": 191,
+   "kind": "무작위",
+   "query": "g=M&c=s&d=19510724&t=0638",
+   "corrected": "-92분 → 05:05",
+   "pillars": "신묘 을미 을축 기묘",
+   "luck": "역행 5"
+  },
+  {
+   "sample": 194,
+   "kind": "무작위",
+   "query": "g=F&c=s&d=20180523&t=1130",
+   "corrected": "-32분 → 10:57",
+   "pillars": "무술 정사 을묘 신사",
+   "luck": "역행 6"
+  },
+  {
+   "sample": 196,
+   "kind": "무작위",
+   "query": "g=F&c=s&d=19950209&t=0340",
+   "corrected": "-32분 → 03:07",
+   "pillars": "을해 무인 신미 경인",
+   "luck": "순행 8"
+  }
+ ]
+}

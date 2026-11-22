@@ -2,6 +2,7 @@ import "server-only";
 
 import weights from "./weights.json";
 import { SunPosition } from "astronomy-engine";
+import { balanceElements, elements as elementKeys, type Chart as SajuChart } from "@/app/chemi/saju/chart";
 /** v55 04-3: persisted readings must retain their original table version. */
 export const FORTUNE_TABLE_VERSION = weights.version;
 export const FORTUNE_GRADES = [
@@ -75,15 +76,13 @@ export function computeDailyFortune(chart: Chart, readingDay: string | Date) {
   const master = index(stems,day.heavenlyStem);
   const natalBranch = index(branches,day.earthlyBranch);
   const self = Math.floor(master/2);
-  const resource = mod(self-1,5);
   const pillars = hour ? [day,year,month,hour] : [day,year,month];
   const natal = pillars.map(p => index(branches,p.earthlyBranch));
   const strength = pillars.flatMap((p,i) => [Math.floor(index(stems,p.heavenlyStem)/2),branchElements[natal[i]]]);
-  strength.push(branchElements[natal[2]]); // month branch carries seasonal weight
-  const strong = strength.filter(e => e === self || e === resource).length * 2 >= strength.length;
-  const useful = strong ? (self+3)%5 : resource;
-  const supportive = strong ? (self+2)%5 : self;
-  const adverse = strong ? self : (self+3)%5;
+  strength.push(branchElements[natal[2]]); // month branch carries seasonal weight (field balance)
+  // 도움·보조·부담 기운은 사주 화면과 같은 함수(신강 지수 기반 억부)로 고른다.
+  const lean = balanceElements({ pillars: { year, month, day, hour } } as SajuChart)!;
+  const [useful, supportive, adverse] = [lean.useful, lean.supportive, lean.adverse].map(e => elementKeys.indexOf(e));
   const affinity = (e: number) => e === useful ? weights.useful : e === supportive ? weights.supportive : e === adverse ? weights.adverse : 0;
   const stage = mod((branch-stageStart[master])*(master%2 ? -1 : 1),12);
   const tie = relation(natalBranch,branch,natal);
