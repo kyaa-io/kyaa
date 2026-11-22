@@ -23,3 +23,12 @@
 /* PromoBanner: no picture, so the card stays one column at every width. */
 .plain .copy { padding: var(--space-4); }
 @container (min-width: 560px) { .card.plain { grid-template-columns: minmax(0, 1fr); min-height: 0; } .plain .copy { padding: var(--space-4) var(--space-5); } .plain .action { margin-top: auto; } }
+
+.card.illustrated { position: relative; grid-template-columns: 1fr; align-items: center; min-height: 0; aspect-ratio: 3; }
+.backdrop, .backdrop img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; }
+.illustrated .copy { position: relative; width: 45%; box-sizing: border-box; }
+.illustrated .title { display: block; overflow: visible; }
+@media (min-width: 48rem) {
+  .card.illustrated { aspect-ratio: 17 / 3; }
+  .illustrated .copy { padding-inline: var(--space-8); }
+}
