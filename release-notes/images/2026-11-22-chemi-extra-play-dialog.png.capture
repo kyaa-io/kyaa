@@ -1,1 +1,1 @@
-{"tool": "playwright", "url": "http://localhost:3591/chemi/games/run?locale=ko", "mode": "login", "capturedAt": "2026-11-22T05:43:45.185788+00:00", "sha256": "e93230da9bd6f64db1e633e7b9ca071c7cc6dde899764da5d55bddb47287cb70"}
+{"tool":"local-login","url":"http://localhost:3591/g97-dialog","mode":"login","capturedAt":"2026-11-22T05:48:49.899Z","sha256":"f51c3b614facf62a62bc4cc0bcae3f26787d9eb0b4aceadd665ce0f482699f5f"}
