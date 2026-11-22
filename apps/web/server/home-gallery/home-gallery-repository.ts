@@ -18,7 +18,7 @@ export class HomeGalleryRepositoryError extends Error {}
 const iso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}(:\d{2})?)$/;
 const sortKeySchema = z.object({ rank: z.number().int().min(1).max(2147483647), at: z.string().regex(iso).refine(value => !Number.isNaN(Date.parse(value))), id: z.string().regex(/^[0-9A-Za-z:_-]{1,200}$/) }).strict();
 type SortKey = z.infer<typeof sortKeySchema>;
-/** read_public_home_gallery_page answer: the page plus the sort key of its last photo, which is what the next read continues after. */
+/** Gallery RPC answer: the page plus the sort key of its last photo, which is what the next read continues after. */
 const keyPageSchema = homeGalleryPageSchema.extend({ last: sortKeySchema.nullable() }).strict()
   .refine(page => (page.items.at(-1)?.id ?? null) === (page.last?.id ?? null));
 
@@ -53,7 +53,7 @@ export class HomeGalleryRepository {
   }
 
   private async readPage(locale: "ko" | "en", limit: number, from: { p_offset: number } | { p_after_rank: number; p_after_at: string; p_after_id: string }) {
-    const { data, error } = await this.db.rpc("read_public_home_gallery_page", { p_locale: locale, p_limit: limit, ...from });
+    const { data, error } = await this.db.rpc("read_public_gallery_post_photos", { p_include_groups: process.env.KYAA_GROUPS_ENABLED === "true", p_locale: locale, p_limit: limit, ...from });
     if (error) throw new HomeGalleryRepositoryError(error.message);
     return keyPageSchema.parse(data);
   }

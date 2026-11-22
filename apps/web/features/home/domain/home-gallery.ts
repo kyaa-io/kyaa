@@ -2,26 +2,29 @@ import { z } from "zod";
 import type { AppLocale } from "@/i18n/locales";
 import type { PhotoSet } from "@/features/media/domain/public-image";
 
-/**
- * Home gallery photos (read_public_home_gallery_photos, plan R8-DATA §4, narrowed 2026-11-09). Two sources only: an image of a
- * collected official SNS notice, or a CMS-uploaded image-role photo. `alt` is the notice's own image alt (original text) or the
- * alt the admin wrote; nothing is generated.
- */
-// SQL admits relative URLs only after read_content_asset(NULL, id) confirms anonymous access.
+// SQL authorizes each attachment for an anonymous reader before returning its private media route.
 // This schema validates URL shape, not authorization. Never accept arbitrary paths or query overrides.
 const homeGalleryImageUrlSchema = z.union([
   z.url({ protocol: /^https$/ }),
-  z.string().length(56).regex(/^\/api\/content-assets\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+  z.string().regex(/^\/api\/(?:content-assets|groups\/media)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
 ]);
+
+const uuidPath = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+export const fanPostPath = new RegExp(`^/c/[a-z0-9-]+/community/${uuidPath}$`);
+export const groupPostPath = new RegExp(`^/pages/groups/${uuidPath}\\?tab=board&post=${uuidPath}$`);
 
 export const homeGalleryPhotoSchema = z.object({
   id: z.string().min(1).max(200),
-  source: z.enum(["official_sns", "cms_upload"]),
+  source: z.enum(["official_sns", "cms_upload", "fan_post", "group_post"]),
   image: z.object({ url: homeGalleryImageUrlSchema, width: z.number().int().positive(), height: z.number().int().positive() }).strict(),
   alt: z.string().min(1).max(300),
   creator: z.object({ slug: z.string().min(1), name: z.string().min(1) }).strict().optional(),
-  sourceHref: z.string().regex(/^\/(c\/[a-z0-9-]+\/notices\/[a-z0-9-]+|live\/[a-z0-9-]+)$/).optional(),
-}).strict();
+  sourceHref: z.union([z.string().regex(/^\/(c\/[a-z0-9-]+\/notices\/[a-z0-9-]+|live\/[a-z0-9-]+)$/), z.string().regex(fanPostPath), z.string().regex(groupPostPath)]).optional(),
+}).strict().refine(photo => {
+  if (photo.source === "fan_post") return photo.image.url.startsWith("/api/content-assets/") && fanPostPath.test(photo.sourceHref ?? "");
+  if (photo.source === "group_post") return photo.image.url.startsWith("/api/groups/media/") && groupPostPath.test(photo.sourceHref ?? "");
+  return !photo.image.url.startsWith("/api/groups/media/");
+});
 export type HomeGalleryPhoto = z.infer<typeof homeGalleryPhotoSchema>;
 
 export const homeGalleryPageSchema = z.object({ items: z.array(homeGalleryPhotoSchema).max(24), hasMore: z.boolean() }).strict();

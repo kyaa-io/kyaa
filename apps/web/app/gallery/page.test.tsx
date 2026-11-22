@@ -36,9 +36,9 @@ describe("/gallery page", () => {
   it("continues after the sort key in the cursor it issued, and still reads a position cursor from before the change", async () => {
     state.rpc.mockResolvedValue({ data: empty, error: null });
     await open({ locale: "en", cursor: encodeHomeGalleryCursor(page.last!) });
-    expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_page", { p_locale: "en", p_limit: 24, p_after_rank: page.last!.rank, p_after_at: page.last!.at, p_after_id: page.last!.id });
+    expect(state.rpc).toHaveBeenLastCalledWith("read_public_gallery_post_photos", { p_include_groups: false, p_locale: "en", p_limit: 24, p_after_rank: page.last!.rank, p_after_at: page.last!.at, p_after_id: page.last!.id });
     await open({ locale: "en", cursor: Buffer.from(JSON.stringify({ o: 24 })).toString("base64url") });
-    expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_page", { p_locale: "en", p_limit: 24, p_offset: 24 });
+    expect(state.rpc).toHaveBeenLastCalledWith("read_public_gallery_post_photos", { p_include_groups: false, p_locale: "en", p_limit: 24, p_offset: 24 });
   });
   it("sends a cursor it did not issue back to the first page without reading", async () => {
     await expect(open({ locale: "en", cursor: "bm9wZQ" })).rejects.toThrow("NEXT_REDIRECT /gallery?locale=en");

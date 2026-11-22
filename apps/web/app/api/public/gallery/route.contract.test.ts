@@ -18,16 +18,16 @@ it("answers the real SQL page with a cursor made of the last photo's sort key an
   state.rpc.mockResolvedValue({ data: page, error: null });
   const res = await GET(new Request("https://byus.test/api/public/gallery?locale=en"));
   expect(res.status).toBe(200);
-  expect(res.headers.get("cache-control")).toMatch(/s-maxage=60/);
+  expect(res.headers.get("cache-control")).toBe("private, no-store");
   const body = await res.json();
   expect(body.items).toHaveLength(2);
   expect(body.nextCursor).toBe(key(page.last!));
   for (const item of body.items) expect(Object.keys(item).every(key => ["id", "source", "image", "alt", "creator", "sourceHref"].includes(key))).toBe(true);
-  expect(state.rpc).toHaveBeenCalledWith("read_public_home_gallery_page", { p_locale: "en", p_limit: 24, p_offset: 0 });
+  expect(state.rpc).toHaveBeenCalledWith("read_public_gallery_post_photos", { p_include_groups: false, p_locale: "en", p_limit: 24, p_offset: 0 });
   // the next read continues after that key, not at a position
   state.rpc.mockResolvedValue({ data: second, error: null });
   const next = await GET(new Request(`https://byus.test/api/public/gallery?cursor=${body.nextCursor}`));
-  expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_page", { p_locale: "ko", p_limit: 24, p_after_rank: page.last!.rank, p_after_at: page.last!.at, p_after_id: page.last!.id });
+  expect(state.rpc).toHaveBeenLastCalledWith("read_public_gallery_post_photos", { p_include_groups: false, p_locale: "ko", p_limit: 24, p_after_rank: page.last!.rank, p_after_at: page.last!.at, p_after_id: page.last!.id });
   expect((await next.json()).nextCursor).toBe(key(second.last!));
 });
 
@@ -35,7 +35,7 @@ it("still reads a position cursor issued before the change once, and continues b
   state.rpc.mockResolvedValue({ data: page, error: null });
   const res = await GET(new Request(`https://byus.test/api/public/gallery?cursor=${Buffer.from(JSON.stringify({ o: 24 })).toString("base64url")}`));
   expect(res.status).toBe(200);
-  expect(state.rpc).toHaveBeenLastCalledWith("read_public_home_gallery_page", { p_locale: "ko", p_limit: 24, p_offset: 24 });
+  expect(state.rpc).toHaveBeenLastCalledWith("read_public_gallery_post_photos", { p_include_groups: false, p_locale: "ko", p_limit: 24, p_offset: 24 });
   expect((await res.json()).nextCursor).toBe(key(page.last!));
 });
 
@@ -82,4 +82,17 @@ it.each([
 ])("rejects unsafe relative/unsupported RPC image URLs: %s", async (url) => {
   state.rpc.mockResolvedValue({ data: { ...page, items: [{ ...page.items[0], image: { ...page.items[0]!.image, url } }], last: { ...page.last, id: page.items[0]!.id } }, error: null });
   expect((await GET(new Request("https://byus.test/api/public/gallery"))).status).toBe(503);
+});
+
+it("requests group board photos only when the group routes are enabled", async () => {
+  vi.stubEnv("KYAA_GROUPS_ENABLED", "true");
+  try {
+    state.rpc.mockResolvedValue({ data: empty, error: null });
+    expect((await GET(new Request("https://byus.test/api/public/gallery"))).status).toBe(200);
+    expect(state.rpc).toHaveBeenCalledWith("read_public_gallery_post_photos", {
+      p_include_groups: true, p_locale: "ko", p_limit: 24, p_offset: 0,
+    });
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });

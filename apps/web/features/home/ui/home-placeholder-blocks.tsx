@@ -99,7 +99,7 @@ export function GalleryColumns({ columns, layout, caption, itemClassName }: { co
 
 export function GalleryImage({ photo, sizes }: { photo: HomeGalleryPhoto; sizes: string }) {
   // Content assets recheck visibility on every request (private, no-store). Do not put them in the shared optimizer cache.
-  const unoptimized = photo.image.url.startsWith("/api/content-assets/") || bypassImageOptimization(photo.image.url);
+  const unoptimized = (photo.image.url.startsWith("/api/content-assets/") || photo.image.url.startsWith("/api/groups/media/")) || bypassImageOptimization(photo.image.url);
   const image = <Image className={styles.photoImage} src={photo.image.url} alt={photo.alt} width={photo.image.width} height={photo.image.height}
     sizes={sizes} loading="lazy" unoptimized={unoptimized} />;
   return photo.sourceHref ? <Link className={styles.photoLink} href={photo.sourceHref as Route}>{image}</Link> : image;

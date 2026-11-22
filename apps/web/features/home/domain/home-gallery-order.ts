@@ -1,8 +1,10 @@
-import type { HomeGalleryPhoto } from "./home-gallery";
+import { fanPostPath, groupPostPath, type HomeGalleryPhoto } from "./home-gallery";
 
 /** Only original posts belong in the home photo selection. Filter before ranking and taking the first twelve. */
 export function homeGalleryPostPhotos(photos: readonly HomeGalleryPhoto[]) {
   return diversifyGalleryPhotos(photos.filter(photo =>
+    (photo.source === "fan_post" && fanPostPath.test(photo.sourceHref ?? "")) ||
+    (photo.source === "group_post" && groupPostPath.test(photo.sourceHref ?? "")) ||
     photo.source === "official_sns" && /^\/c\/[a-z0-9-]+\/notices\/[a-z0-9-]+$/.test(photo.sourceHref ?? "")
   ));
 }

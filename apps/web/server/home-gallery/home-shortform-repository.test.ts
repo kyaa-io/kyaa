@@ -138,14 +138,14 @@ describe("home gallery pool", () => {
     const page = await new HomeGalleryRepository({ rpc } as never).listPublishedPool("ko", { pages: 3 });
     expect(page.items).toHaveLength(72);
     expect(rpc.mock.calls.map(call => (call[1] as { p_offset: number }).p_offset).sort((a, b) => a - b)).toEqual([0, 24, 48]);
-    expect(rpc.mock.calls.every(call => call[0] === "read_public_home_gallery_page" && (call[1] as { p_offset: number; p_limit: number }).p_limit === 24)).toBe(true);
+    expect(rpc.mock.calls.every(call => call[0] === "read_public_gallery_post_photos" && (call[1] as { p_offset: number; p_limit: number }).p_limit === 24)).toBe(true);
     expect(decodeHomeGalleryCursor(page.nextCursor!)).toEqual({ after: { rank: 2147483647, at: "2026-11-17T01:02:03.123456+00:00", id: "n71:0" } });
   });
   it("continues after the sort key of a cursor, and refuses a cursor it did not issue", async () => {
     const rpc = vi.fn(async () => ({ data: { items: [photo(30)], hasMore: false, last: last(30) }, error: null }));
     const repo = new HomeGalleryRepository({ rpc } as never);
     expect(await repo.listPublished("en", { limit: 24, cursor: encodeHomeGalleryCursor(last(23)) })).toEqual({ items: [photo(30)], nextCursor: null });
-    expect(rpc).toHaveBeenCalledWith("read_public_home_gallery_page", { p_locale: "en", p_limit: 24, p_after_rank: 2147483647, p_after_at: "2026-11-17T01:02:03.123456+00:00", p_after_id: "n23:0" });
+    expect(rpc).toHaveBeenCalledWith("read_public_gallery_post_photos", { p_include_groups: false, p_locale: "en", p_limit: 24, p_after_rank: 2147483647, p_after_at: "2026-11-17T01:02:03.123456+00:00", p_after_id: "n23:0" });
     await expect(repo.listPublished("en", { limit: 24, cursor: "bm9wZQ" })).rejects.toThrow(/cursor/);
     expect(rpc).toHaveBeenCalledTimes(1);
   });
