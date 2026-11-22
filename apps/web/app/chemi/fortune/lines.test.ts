@@ -19,7 +19,7 @@ const input = {
 
 it("builds the same line for the same input and keeps each character's tone", () => {
   expect(fortuneTalkLine("changha", 1, input)).toBe(
-    "오늘은 82점, 좋은 날이야. 하던 일이 술술 풀리는 날이야.",
+    "오늘은 82점, 좋은 날이야. 하던 일이 술술 풀리는 날이야. 오늘은 내가 응원 제대로 해 줄게.",
   );
   expect(fortuneTalkLine("changha", 1, input)).toBe(fortuneTalkLine("changha", 1, input));
   expect(fortuneTalkLine("dosa", 4, input)).toContain("9시에서 11시 사이");
@@ -29,19 +29,19 @@ it("builds the same line for the same input and keeps each character's tone", ()
 
 it("gives the same result a different line and choices for each creator", () => {
   const calm = { ...input, score: 74, grade: "무난한 날", fandom: 60 };
-  expect(fortuneTalkLine("changha", 1, calm, "원문 제목")).toBe("오늘은 74점, 무난한 날이야. 다시 찍을 것 없이 한 번에 넘어가는 날이지.");
-  expect(fortuneTalkLine("elina", 1, calm, "원문 제목")).toBe("오늘은 74점, 무난한 날이에요. 늘 입던 옷처럼 편하게 흘러가는 날이지?");
-  expect(fortuneTalkLine("yuna", 1, calm, "원문 제목")).toBe("74점, 무난한 날이야. 매일 하던 화장처럼 하던 대로 하면 돼.");
+  expect(fortuneTalkLine("changha", 1, calm, "원문 제목")).toBe("오늘은 74점, 무난한 날이야. 평소처럼만 해도 충분히 잘하는 날이야. 알지?");
+  expect(fortuneTalkLine("elina", 1, calm, "원문 제목")).toBe("오늘은 74점, 무난한 날이에요. 편하게 흘러가는 날이에요. 밥 잘 챙겨 먹고 하던 대로 해요.");
+  expect(fortuneTalkLine("yuna", 1, calm, "원문 제목")).toBe("74점, 무난한 날이야. 특별한 건 없어. 하던 대로 하면 돼.");
   for (const talk of [1, 2, 3, 4] as const) {
     const lines = (["changha", "elina", "yuna"] as const).map((who) => fortuneTalkLine(who, talk, calm));
     expect(new Set(lines).size, `talk ${talk}`).toBe(3);
   }
-  expect(fortuneTalkLine("changha", 4, input)).toContain("초록색 소품");
-  expect(fortuneTalkLine("elina", 4, input)).toContain("옷에 초록색");
-  expect(fortuneTalkLine("yuna", 4, input)).toContain("초록색은 포인트로");
+  expect(fortuneTalkLine("changha", 4, input)).toContain("초록색 물건도 하나 챙기고");
+  expect(fortuneTalkLine("elina", 4, input)).toContain("초록색 물건 하나 챙겨요");
+  expect(fortuneTalkLine("yuna", 4, input)).toContain("초록색 물건 딱 하나만");
   expect(fortuneChoiceLabel("changha", "whatFandom")).toBe("오늘 영상 봐도 돼?");
-  expect(fortuneChoiceLabel("elina", "whatBring")).toBe("오늘 뭐 입을까?");
-  expect(fortuneChoiceLabel("yuna", "whatBring")).toBe("포인트 색은 뭐야?");
+  expect(fortuneChoiceLabel("elina", "whatBring")).toBe("뭐 챙길까?");
+  expect(fortuneChoiceLabel("yuna", "whatBring")).toBe("뭐 챙길까?");
   expect(fortuneChoiceLabel("dosa", "whatFandom")).toBeNull();
   expect(fortuneChoiceLabel("changha", "dailySummary")).toBeNull();
   // 유나는 느낌표 없이 담백하게, 엘리나는 한 대사 안에 존댓말과 반말을 섞는다.
@@ -69,7 +69,7 @@ it("keeps kyaa 도사 in 하오체 for every grade and branch", () => {
 
 it("uses the character’s own grade explanation when a reading includes a casual headline", () => {
   const headline = "잠깐 숨을 돌려 봐";
-  expect(fortuneTalkLine("elina", 1, input, headline)).toMatch(/하던 일이 술술 풀리는 날이에요\.$/);
+  expect(fortuneTalkLine("elina", 1, input, headline)).toMatch(/하던 일이 술술 풀리는 날이에요\. 오늘은 마음 편히 가도 돼\.$/);
   expect(fortuneTalkLine("elina", 1, input, headline)).not.toContain(headline);
   expect(fortuneTalkLine("dosa", 1, input, headline)).not.toContain(headline);
   for (const character of ["changha", "yuna"] as const) {
@@ -87,6 +87,14 @@ it("keeps favour advice on the lucky-hour line only so the four pages never disa
         expect(fortuneTalkLine(character, 4, day)).toMatch(/9시에서 11시 사이/);
         expect(fortuneTalkLine(character, 4, { ...day, luckyHour: null })).not.toMatch(/부탁|청하/);
       }
+});
+
+it("does not use job metaphors (shooting, singing, make-up) in any creator line", () => {
+  const job = /촬영|대본|카메라|리허설|노래|소절|가사|옷|화장|피부|톤|포인트 색|소품/;
+  const grades = ["쉬어 가는 날", "조심하면 괜찮은 날", "무난한 날", "좋은 날", "아주 좋은 날"];
+  for (const character of ["changha", "elina", "yuna"] as const)
+    for (const grade of grades)
+      for (const talk of [1, 2, 4] as const) expect(fortuneTalkLine(character, talk, { ...input, grade, people: 40 }), `${character} ${grade}`).not.toMatch(job);
 });
 
 it("masks birth digits and rejects impossible dates", () => {

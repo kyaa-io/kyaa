@@ -93,16 +93,16 @@ describe("답", () => {
     expect(answerAsk({ character: "changha", content: "saju", topic: "money", question: "어때?", result: chart })).toMatch(/^돈은 쇠 기운으로 봐\. 네 사주에는 없어\.\n/);
     expect(new Set(ASK_TOPICS.map((topic) => first(topic))).size).toBe(5);
   });
-  it("세 최애는 같은 풀이에도 자기 활동 분야에 빗댄 한마디로 맺고, 도사는 풀이와 조언만 말한다", () => {
+  it("세 최애는 같은 풀이에도 자기 태도로 한마디 맺고(직업 비유 없음), 도사는 풀이와 조언만 말한다", () => {
     const last = (character: "changha" | "elina" | "yuna" | "dosa", result: unknown, question = "어때?") =>
       answerAsk({ character, content: "fortune", topic: "money", question, result }).split("\n");
-    expect(last("changha", fortune).at(-1)).toMatch(/촬영|대본|슛|카메라/);
-    expect(last("elina", fortune).at(-1)).toMatch(/노래|박자|옷/);
-    expect(last("yuna", fortune).at(-1)).toMatch(/화장|바탕|톤|포인트/);
+    const closes = (["changha", "elina", "yuna"] as const).map((who) => last(who, fortune).at(-1));
+    expect(new Set(closes).size).toBe(3);
+    for (const line of closes) expect(line).not.toMatch(/촬영|대본|슛|카메라|리허설|테이크|노래|박자|소절|옷|화장|바탕|톤|포인트/);
+    expect(last("yuna", fortune).at(-1)).not.toMatch(/!/);
     expect(last("dosa", fortune)).toHaveLength(2);
-    expect(last("changha", { ...fortune, fields: { ...fortune.fields, money: 40 } }).at(-1)).toMatch(/리허설|컷|테이크/);
   });
-  it("같은 최애라도 질문마다 맺음이 돌아간다(DF-ASK-006: 창하 답이 전부 '촬영으로 치면')", () => {
+  it("같은 최애라도 질문마다 맺음이 돌아간다(DF-ASK-006: 창하 답 맺음이 전부 같던 것)", () => {
     const questions = ["어때?", "괜찮을까?", "어떻게 될까?", "잘될까?", "해도 돼?", "괜찮아?"];
     const closes = new Set(questions.map((question) => answerAsk({ character: "changha", content: "fortune", topic: "love", question, result: fortune }).split("\n").at(-1)));
     expect(closes.size).toBeGreaterThan(1);

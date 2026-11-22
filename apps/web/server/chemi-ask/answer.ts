@@ -360,21 +360,21 @@ const intentAdvice: Record<Intent, Record<"good" | "care", Record<Voice, string>
 };
 
 /**
- * 최애마다 맺는 말. 같은 소재(촬영·노래·화장)로 세 가지를 두고 질문마다 돌려 쓴다(같은 맺음이 줄줄이 나오지 않게).
- * 엘리나는 반존대라 '~요' 답 끝의 맺음 한 줄은 반말이 섞인다(K-3729a7).
+ * 최애마다 맺는 말. 같은 태도(창하 장난스러운 응원·엘리나 다정하게 챙김·유나 솔직하게 콕 집음)로 세 가지를 두고 질문마다 돌려 쓴다.
+ * 엘리나는 반존대라 맺음 한 줄은 반말이 섞인다(K-3729a7). 직업 비유는 쓰지 않는다(11/23 사용자 결정).
  */
 const personaClose: Record<"changha" | "elina" | "yuna", Record<"good" | "care", readonly [string, string, string]>> = {
   changha: {
-    good: [chemiPersona.changha.close.good, "대본 넘기듯 다음 장면으로 가 봐. 이번엔 한 번에 갈 수 있어.", "슛 들어가기 직전이 제일 떨리는 거야. 들어가면 괜찮아."],
-    care: [chemiPersona.changha.close.care, "컷 사인 나기 전엔 서두를 필요 없어. 대사 한 줄만 더 맞춰 봐.", "오늘은 테이크를 아끼는 날이야. 확실한 장면만 찍자."],
+    good: [chemiPersona.changha.close.good, "생각보다 잘될걸? 끝나면 자랑하러 와.", "떨리면 나 생각해. 그럼 좀 웃기지?"],
+    care: [chemiPersona.changha.close.care, "급할수록 천천히. 이건 진지하게 하는 말이야.", "오늘은 확실한 것만 하자. 나머진 나중에 같이 보자."],
   },
   elina: {
-    good: [chemiPersona.elina.close.good, "박자 맞았으니까 그냥 들어가 봐.", "오늘 고른 옷처럼 마음 가는 쪽이 맞아."],
-    care: [chemiPersona.elina.close.care, "한 박자 쉬고 들어가도 괜찮아.", "오늘은 늘 입던 옷처럼 편한 쪽을 골라 봐요."],
+    good: [chemiPersona.elina.close.good, "마음 가는 쪽으로 가 봐요. 내가 응원할게.", "잘하고 있어요. 너무 걱정하지 마."],
+    care: [chemiPersona.elina.close.care, "한 박자 쉬고 해도 괜찮아.", "오늘은 편한 쪽을 골라요. 그래도 돼."],
   },
   yuna: {
-    good: [chemiPersona.yuna.close.good, "바탕이 잘 먹은 날이라 포인트 하나만 더하면 돼.", "톤이 맞는 날이야. 힘을 안 줘도 잘 보여."],
-    care: [chemiPersona.yuna.close.care, "덧바르기보다 한 번 지우고 다시 하는 게 나아.", "오늘은 진한 색보다 맑은 톤이 맞아."],
+    good: [chemiPersona.yuna.close.good, "고민은 여기까지. 이제 하면 돼.", "솔직히 오늘은 네 편이야. 그냥 해."],
+    care: [chemiPersona.yuna.close.care, "지금 하면 후회하기 쉬워. 하루만 미뤄.", "욕심 하나만 내려놔. 그럼 보여."],
   },
 };
 /** 주제 칸의 두 조언 중 무엇을 쓸지 최애마다 엇갈리게 한다(같은 질문을 넷에게 물어도 같은 글이 되지 않게). */
@@ -458,7 +458,7 @@ export function answerAsk(input: { character: AskCharacter; content: AskContent;
   const turn = seed(input.question);
   const intent = intentOf(input.question);
   const pick = intent ? intentAdvice[intent][flow][tone] : advice[input.topic][flow][tone][(turn + adviceTurn[input.character]) % 2];
-  // 세 최애는 자기 활동 분야에 빗댄 한마디로 맺는다(도사는 없음).
+  // 세 최애는 자기 태도대로 한마디로 맺는다(도사는 없음).
   const close = isChemiPersona(input.character) ? `\n${personaClose[input.character][flow][turn % 3]}` : "";
   return `${read.line[tone]}\n${pick}${close}`;
 }

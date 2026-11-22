@@ -80,8 +80,8 @@ export function askPrompt(input: AskAiInput) {
     `말투 예시: "${own.topic}" "${own.reask.love}" "${own.rest[input.content]}"`,
     ...(persona
       ? [
-          `이 사람: ${persona.intro}. 말하는 방식: ${persona.manner}.`,
-          `조언 한 문장은 ${persona.figure}에 빗대어 말한다(예: "${persona.close.good}"). 빗대는 말일 뿐이고, 실제 일화나 일정은 말하지 않는다.`,
+          `팬을 대하는 태도: ${persona.manner}. 맺음 예시: "${persona.close.good}"`,
+          "조언 소재는 팬의 하루(공부·일·연애·돈·사람)다. 촬영·노래·화장 같은 직업 비유나 자기 일화·일정은 말하지 않는다.",
         ]
       : []),
     "지킬 것:",

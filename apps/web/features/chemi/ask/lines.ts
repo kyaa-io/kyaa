@@ -127,23 +127,23 @@ export const askLines: Record<Voice, {
 };
 
 /**
- * 최애마다 다른 대사. 말투 바탕(askLines) 위에 얹는다: 창하는 촬영·대본, 엘리나는 노래(반존대), 유나는 화장에 빗댄다
+ * 최애마다 다른 대사. 말투 바탕(askLines) 위에 얹는다: 창하는 장난스럽게 응원, 엘리나는 다정하게 챙김(반존대), 유나는 솔직하게 콕 집는다
  * (features/chemi/persona.ts).
  */
 const askOwn: Partial<Record<AskCharacter, Partial<(typeof askLines)[Voice]>>> = {
   changha: {
-    topic: "좋아, 어느 장면부터 볼까? 뭐가 제일 궁금해?",
-    think: (what) => `음, 대본 다시 넘기듯 네 ${what}부터 다시 볼게.`,
-    follow: "한 장면 더 볼까? 하나 더 말해 봐.",
+    topic: "좋아, 오늘은 뭐부터 털어놔 볼래? 다 들어 줄게.",
+    think: (what) => `음, 네 ${what}부터 다시 볼게. 잠깐만 기다려 봐.`,
+    follow: "하나 더 있지? 얼굴에 다 쓰여 있어. 말해 봐.",
   },
   elina: {
     topic: "좋아요, 뭐가 제일 궁금해? 천천히 말해 줘요.",
-    think: (what) => `음, 노래 다시 듣듯이 ${what}부터 다시 볼게요.`,
-    follow: "한 곡 더 듣는 마음으로 하나 더 말해 봐요.",
+    think: (what) => `음, ${what}부터 천천히 다시 볼게요.`,
+    follow: "더 궁금한 거 있으면 편하게 하나 더 말해 봐요.",
   },
   yuna: {
     topic: "좋아, 하나만 골라. 뭐가 제일 궁금해?",
-    think: (what) => `음, 바탕부터 다시 보듯 네 ${what}부터 볼게.`,
+    think: (what) => `음, 네 ${what}부터 짚어 볼게.`,
     follow: "더 궁금한 거 있으면 하나만 더 말해.",
   },
 };
