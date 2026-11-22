@@ -1,0 +1,5 @@
+{
+  "changes": ["PC에서 최애 런을 키보드로 할 수 있어요. Space·↑ 점프, Shift·↓ 슬라이드, P·Esc 멈춤이에요.", "고르기·출발 준비·멈춤 화면의 조작 목록에 누를 키가 함께 보여요.", "달리기를 시작하면 4초 동안 판 위에 키 안내가 떠요.", "결과 화면에서는 Enter로 다시 하기를 누를 수 있어요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/chemi/games/run",
+  "images": ["release-notes/images/2026-11-22-chemi-run-keys.png"]
+}

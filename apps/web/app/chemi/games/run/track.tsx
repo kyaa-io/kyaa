@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -11,6 +11,7 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { FPS } from "@/features/chemi/games/engine";
 import { FEVER_NOTES, FEVER_TICKS, RUN_INPUT, RUN_TITLES, runRound, type RunInput } from "@/features/chemi/games/run";
 import { fill, type RunCopy } from "./copy";
+import { readRunKey, RUN_KEYCAPS, RUN_PAUSE_SHORTCUT, runKeyAction } from "./keys";
 import { drawField, loadArt, originOf, PROPS, type Art, type PropName } from "./render";
 import type { RunSound } from "./sound";
 import styles from "./run.module.css";
@@ -19,6 +20,8 @@ export type Ticket = { playId: string; seed: number; trial?: boolean };
 export type Submission = { playId: string; ticks: number; inputs: RunInput[]; score: number };
 export type RunStats = { score: number; meters: number; notes: number; bestCombo: number; fevers: number; left: boolean };
 type Stage = "ready" | "play" | "paused" | "over";
+/** How long the key strip stays on the field after the first start. */
+const HINT_MS = 4000;
 
 /** One sprite from the props sheet, drawn at a whole-number scale so its dots match the field. */
 export function Prop({ name, label }: { name: PropName; label?: string }) {
@@ -27,15 +30,34 @@ export function Prop({ name, label }: { name: PropName; label?: string }) {
     style={{ "--x": x, "--w": w, "--h": h } as CSSProperties} />;
 }
 
+const FINE = "(pointer: fine)";
+/** True with a mouse or trackpad. Key guides show only then; touch keeps the buttons and the legend. */
+export function useKeyboardGuide() {
+  return useSyncExternalStore((change) => {
+    const query = matchMedia(FINE);
+    query.addEventListener("change", change);
+    return () => query.removeEventListener("change", change);
+  }, () => matchMedia(FINE).matches, () => false);
+}
+
+export function Keys({ caps }: { caps: readonly string[] }) {
+  return <FanText role="label" className={styles.keys}>
+    {caps.map((cap, i) => <kbd key={i}>{cap}</kbd>)}
+  </FanText>;
+}
+
 export function Legend({ copy, layout }: { copy: RunCopy; layout: "veil" | "list" }) {
-  const rows: readonly [PropName, string, string][] = [
-    ["cone", copy.jump, copy.jumpWhat], ["crateIcon", copy.double, copy.doubleWhat],
-    ["barIcon", copy.slide, copy.slideWhat], ["note", copy.notes, copy.notesWhat],
+  const keys = useKeyboardGuide();
+  // 2단 점프는 같은 키를 두 번: Space 키캡 두 개.
+  const rows: readonly [PropName, string, string, readonly string[]][] = [
+    ["cone", copy.jump, copy.jumpWhat, RUN_KEYCAPS.jump], ["crateIcon", copy.double, copy.doubleWhat, [RUN_KEYCAPS.jump[0], RUN_KEYCAPS.jump[0]]],
+    ["barIcon", copy.slide, copy.slideWhat, RUN_KEYCAPS.slide], ["note", copy.notes, copy.notesWhat, []],
   ];
-  return <dl className={styles.legend} data-layout={layout}>
-    {rows.map(([name, action, what]) => <div key={name}>
+  return <dl className={styles.legend} data-layout={layout} data-keys={keys}>
+    {rows.map(([name, action, what, caps]) => <div key={name}>
       <span className={styles.legendIcon}><Prop name={name} /></span>
       <FanText as="dt" role="item">{action}</FanText>
+      {keys && <dd className={styles.legendKeys}>{caps.length > 0 && <Keys caps={caps} />}</dd>}
       <FanText as="dd" role="meta">{what}</FanText>
     </div>)}
   </dl>;
@@ -50,6 +72,9 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
   const [say, setSay] = useState<{ text: string; id: number }>();
   const [held, setHeld] = useState({ jump: false, slide: false });
   const [artReady, setArtReady] = useState(false);
+  const [hint, setHint] = useState(false);
+  const keyboard = useKeyboardGuide();
+  const veil = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const effects = useRef<HTMLDivElement>(null);
@@ -74,6 +99,10 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
   useEffect(() => {
     if (pauseRequest && stageRef.current === "play") go("paused");
   }, [pauseRequest]);
+  // The veil's main button takes focus so Enter or Space starts or resumes without the mouse.
+  useEffect(() => {
+    if (stage === "ready" || stage === "paused") veil.current?.querySelector("button")?.focus({ preventScroll: true });
+  }, [stage]);
 
   useEffect(() => {
     const sim = runRound(ticket.seed);
@@ -179,26 +208,17 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       }
       if (art) drawField(context, art, node, sim, hitFor);
     }
-    function keyDown(event: KeyboardEvent) {
-      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
-      const onButton = event.target instanceof HTMLButtonElement || event.target instanceof HTMLAnchorElement;
-      if (["Space", "ArrowUp", "KeyW"].includes(event.code)) {
-        if (event.code === "Space" && onButton) return;
-        event.preventDefault();
-        if (stageRef.current === "ready") start();
-        else { press(RUN_INPUT.jump); setHeld((now) => ({ ...now, jump: true })); }
-      } else if (["ShiftLeft", "ShiftRight", "ArrowDown", "KeyS"].includes(event.code)) {
-        event.preventDefault();
-        press(RUN_INPUT.slideDown);
-        setHeld((now) => ({ ...now, slide: true }));
-      } else if (event.code === "KeyP") {
-        if (stageRef.current === "play") go("paused");
-        else if (stageRef.current === "paused") resume();
-      }
-    }
-    function keyUp(event: KeyboardEvent) {
-      if (["Space", "ArrowUp", "KeyW"].includes(event.code)) setHeld((now) => ({ ...now, jump: false }));
-      if (["ShiftLeft", "ShiftRight", "ArrowDown", "KeyS"].includes(event.code)) {
+    function key(event: KeyboardEvent) {
+      const action = runKeyAction(readRunKey(event), stageRef.current);
+      if (!action) return;
+      if (event.type === "keydown") event.preventDefault();
+      if (action === "start") start();
+      else if (action === "resume") resume();
+      else if (action === "pause") go("paused");
+      else if (action === "jump") { press(RUN_INPUT.jump); setHeld((now) => ({ ...now, jump: true })); }
+      else if (action === "jumpUp") setHeld((now) => ({ ...now, jump: false }));
+      else if (action === "slideDown") { press(RUN_INPUT.slideDown); setHeld((now) => ({ ...now, slide: true })); }
+      else {
         press(RUN_INPUT.slideUp);
         setHeld((now) => ({ ...now, slide: false }));
       }
@@ -214,11 +234,16 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       sound.play("start");
       last = performance.now();
       go("play");
+      setHint(true);
+      later(() => setHint(false), HINT_MS);
     }
+    // A slide key let go while paused never reached the round; stand up again so the runner is not stuck low.
     function resume() {
       last = performance.now();
       fraction = 0;
       go("play");
+      pending.current |= RUN_INPUT.slideUp;
+      setHeld({ jump: false, slide: false });
     }
     controls.current = { start, resume };
 
@@ -226,8 +251,8 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
     observer.observe(box);
     resize();
     void loadArt().then((loaded) => { art = loaded; setArtReady(true); }).catch(() => {});
-    addEventListener("keydown", keyDown);
-    addEventListener("keyup", keyUp);
+    addEventListener("keydown", key);
+    addEventListener("keyup", key);
     addEventListener("resize", turned);
     document.addEventListener("visibilitychange", leave);
     frameId = requestAnimationFrame(frame);
@@ -235,8 +260,8 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       cancelAnimationFrame(frameId);
       observer.disconnect();
       timers.forEach(clearTimeout);
-      removeEventListener("keydown", keyDown);
-      removeEventListener("keyup", keyUp);
+      removeEventListener("keydown", key);
+      removeEventListener("keyup", key);
       removeEventListener("resize", turned);
       document.removeEventListener("visibilitychange", leave);
     };
@@ -256,7 +281,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
 
   return <section className={styles.play} data-fever={feverOn} data-stage={stage}>
     <header className={styles.playTop}>
-      <FanIconButton aria-label={copy.pause} disabled={stage !== "play"} onClick={() => go("paused")}><FanIcon icon={Pause} /></FanIconButton>
+      <FanIconButton aria-label={copy.pause} aria-keyshortcuts={RUN_PAUSE_SHORTCUT} disabled={stage !== "play"} onClick={() => go("paused")}><FanIcon icon={Pause} /></FanIconButton>
       <FanText role="label">{name} · {copy.map}</FanText>
       <FanIconButton aria-label={copy.sound} aria-pressed={soundOn} onClick={onToggleSound}><FanIcon icon={soundOn ? Volume2 : VolumeX} /></FanIconButton>
     </header>
@@ -288,10 +313,19 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       <div className={styles.effects} ref={effects} aria-hidden="true" />
       <div className={styles.flash} aria-hidden="true" />
       {say && <FanPixelText as="p" role="say" className={styles.say} key={say.id}>{say.text}</FanPixelText>}
-      {(stage === "ready" || stage === "paused") && <div className={styles.veil}>
+      {keyboard && hint && stage === "play" && <p className={styles.keyHint} aria-hidden="true">
+        <span><Keys caps={RUN_KEYCAPS.jump.slice(0, 1)} /><FanText role="label">{copy.jump}</FanText></span>
+        <span><Keys caps={RUN_KEYCAPS.slide.slice(0, 1)} /><FanText role="label">{copy.slide}</FanText></span>
+        <span><Keys caps={RUN_KEYCAPS.pause.slice(0, 1)} /><FanText role="label">{copy.pause}</FanText></span>
+      </p>}
+      {(stage === "ready" || stage === "paused") && <div className={styles.veil} ref={veil} data-stage={stage}>
         <FanHeading as="h2">{stage === "ready" ? fill(copy.ready, { name }) : copy.paused}</FanHeading>
-        {stage === "ready" ? <Legend copy={copy} layout="veil" /> : <FanText className={styles.rotate} role="meta">{copy.rotate}</FanText>}
-        <FanAction variant="primary" onClick={() => stage === "ready" ? controls.current.start() : controls.current.resume()}>{stage === "ready" ? copy.go : copy.resume}</FanAction>
+        {stage === "ready" ? <Legend copy={copy} layout="veil" /> : <>
+          <FanText className={styles.rotate} role="meta">{copy.rotate}</FanText>
+          {keyboard && <Legend copy={copy} layout="veil" />}
+        </>}
+        <FanAction variant="primary" trailingIcon={keyboard && <Keys caps={stage === "ready" ? RUN_KEYCAPS.jump.slice(0, 1) : RUN_KEYCAPS.pause.slice(1)} />}
+          onClick={() => stage === "ready" ? controls.current.start() : controls.current.resume()}>{stage === "ready" ? copy.go : copy.resume}</FanAction>
         {stage === "paused" && <FanAction onClick={() => finishNow.current(false)}>{copy.quit}</FanAction>}
       </div>}
     </div>
@@ -299,12 +333,12 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
     <div className={styles.controls}>
       <div data-held={held.jump} onPointerDown={hold("jump", true)} onPointerUp={hold("jump", false)} onPointerCancel={hold("jump", false)}>
         <FanAction className={styles.control} leadingIcon={<FanIcon icon={ArrowUp} />}
-          helperText={<><kbd>Space</kbd>{stage !== "ready" && copy.jumpHint}</>}
+          helperText={<>{keyboard && <Keys caps={RUN_KEYCAPS.jump.slice(0, 1)} />}{stage !== "ready" && copy.jumpHint}</>}
           onClick={(event) => { if (event.detail === 0) press(RUN_INPUT.jump); }}>{copy.jump}</FanAction>
       </div>
       <div data-held={held.slide} onPointerDown={hold("slide", true)} onPointerUp={hold("slide", false)} onPointerCancel={hold("slide", false)}>
         <FanAction className={styles.control} leadingIcon={<FanIcon icon={ArrowDown} />}
-          helperText={<><kbd>Shift</kbd>{stage !== "ready" && copy.slideHint}</>}
+          helperText={<>{keyboard && <Keys caps={RUN_KEYCAPS.slide.slice(0, 1)} />}{stage !== "ready" && copy.slideHint}</>}
           onClick={(event) => { if (event.detail === 0) press(RUN_INPUT.slideDown | RUN_INPUT.slideUp); }}>{copy.slide}</FanAction>
       </div>
     </div>

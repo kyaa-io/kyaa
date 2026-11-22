@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanPixelText } from "@/components/fan-ui/fan-pixel-text";
@@ -9,7 +9,8 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { fill, type RunCopy } from "./copy";
 import { ART } from "./render";
 import { Ranking, Scene, type Character, type Rank, type Result } from "./shared";
-import type { RunStats } from "./track";
+import { RUN_KEYCAPS, RUN_KEYS, runKeyTarget } from "./keys";
+import { Keys, useKeyboardGuide, type RunStats } from "./track";
 import styles from "./run.module.css";
 
 /** Result screen: score first, then what changed (rank, title, affinity), then what to do next. */
@@ -25,6 +26,25 @@ export function ResultStage({ copy, locale, names, rows, loaded, stats, result, 
   const climbed = before.place && me && before.place > me.place ? before.place - me.place : 0;
   const score = result?.score ?? stats?.score ?? 0;
   const won = Boolean(stats && !stats.left && score >= before.best && score > 0);
+  const keyboard = useKeyboardGuide();
+  const next = useRef<HTMLDivElement>(null);
+  const canAgain = Boolean(result) && !(member && spent);
+  const again = useRef(() => {});
+  useEffect(() => { again.current = member ? onAgain : onLogin; });
+  // Enter plays again (or signs in) from anywhere on the page; a focused button or link keeps its own Enter.
+  useEffect(() => {
+    if (!canAgain || busy) return;
+    next.current?.querySelector("button")?.focus({ preventScroll: true });
+    const enter = (event: KeyboardEvent) => {
+      if (event.repeat || event.metaKey || event.ctrlKey || event.altKey) return;
+      if ((RUN_KEYS.confirm as readonly string[]).includes(event.code) && runKeyTarget(event.target) === "page") {
+        event.preventDefault();
+        again.current();
+      }
+    };
+    addEventListener("keydown", enter);
+    return () => removeEventListener("keydown", enter);
+  }, [canAgain, busy]);
   return <div className={styles.result}>
     <div className={styles.resultMain}>
       <div className={styles.hero}><Scene pose={won ? "win" : "ready"} floor={12} label={names.changha} /></div>
@@ -55,9 +75,9 @@ export function ResultStage({ copy, locale, names, rows, loaded, stats, result, 
       </dl>}
       {result && <div className={styles.next}>
         <FanHeading as="h2">{copy.next}</FanHeading>
-        <div className={styles.nextRow}>
+        <div className={styles.nextRow} ref={next}>
           {member && spent ? <><FanText as="p" role="item">{copy.done}</FanText>{reminder}</>
-            : <FanAction variant="primary" disabled={busy} onClick={member ? onAgain : onLogin}>
+            : <FanAction variant="primary" disabled={busy} onClick={member ? onAgain : onLogin} trailingIcon={keyboard && <Keys caps={RUN_KEYCAPS.confirm} />}>
               {!member ? copy.login : free > 0 ? fill(copy.again, { n: free }) : fill(copy.extraCta, { n: extra })}
             </FanAction>}
           {result.shareId && <FanAction onClick={onShare}>{copied ? copy.copied : copy.challenge}</FanAction>}
