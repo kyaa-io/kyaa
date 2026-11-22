@@ -83,7 +83,8 @@
     "release-notes/2026-11-22-chemi-ask-answers.json",
     "release-notes/2026-11-23-chemi-saju-time-basis.json",
     "release-notes/2026-11-22-chemi-point-prices.json",
-    "release-notes/2026-11-23-chemi-price-preview.json"
+    "release-notes/2026-11-23-chemi-price-preview.json",
+    "release-notes/2026-11-23-chemi-ask-retry.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
