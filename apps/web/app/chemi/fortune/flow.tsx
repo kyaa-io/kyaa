@@ -47,6 +47,7 @@ import { askGo, useAskLocation } from "@/features/chemi/ask/location";
 import { FortuneResult } from "./result";
 import { Under14 } from "./under-14";
 import styles from "./scene.module.css";
+import { chemiName } from "@/features/chemi/persona";
 
 const art = "/chemi/fortune";
 const talkChoice = [
@@ -147,7 +148,7 @@ export function FortuneFlow({
 
   const day = kstDayStart(reading?.kstDate);
   const index = fortuneCharacters.findIndex((c) => c.id === character);
-  const name = fortuneCharacters[index].name;
+  const name = chemiName(fortuneCharacters[index].id, locale);
 
   // 첫 진입: 주소의 단계·최애를 읽는다. 결과가 없으면 입장으로 돌린다.
   useEffect(() => {
@@ -480,7 +481,7 @@ export function FortuneFlow({
                 >
                   <img src={`${art}/avatar-${c.id}-v1.jpg`} alt="" />
                   <FanText role={c.id === character ? "label" : "meta"}>
-                    {c.name}
+                    {chemiName(c.id, locale)}
                   </FanText>
                 </FanAction>
               ))}

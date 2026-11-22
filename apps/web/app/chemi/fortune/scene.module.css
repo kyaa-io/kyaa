@@ -146,12 +146,15 @@
   display: grid;
   gap: var(--space-1);
 }
+/* 두 선택지가 한 줄에 다 들어가지 않으면 글을 접지 않고 다음 줄로 내린다. */
 .choices {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
 }
 .choices > * {
-  flex: 1;
+  flex: 1 0 auto;
+  white-space: nowrap;
 }
 .dialog {
   display: grid;

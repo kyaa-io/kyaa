@@ -19,6 +19,7 @@ import { getMatchCopy } from "../games/match/copy";
 import { entries } from "../contents";
 import type { HomeCopy } from "../home";
 import { getGrowthCopy } from "./copy";
+import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { getRoomLines } from "./room-lines";
 import { RoomStage } from "./room-stage";
 import styles from "./growth.module.css";
@@ -186,7 +187,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
             <div className={styles.levelHead}>
               <FanText role="item">{fill(copy.closeness, { name })} Lv</FanText>
               <FanNumber value={mini.level} size="lg" countUp locale={locale} />
-              <FanText role="meta" className={styles.exp}>{mini.exp.toLocaleString(locale)} / {next.toLocaleString(locale)}</FanText>
+              <FanText role="meta" className={styles.exp}>{mini.exp.toLocaleString(locale, { useGrouping: "always" })} / {next.toLocaleString(locale, { useGrouping: "always" })}</FanText>
             </div>
             <FanGauge value={mini.exp} max={next} label={fill(copy.closeness, { name })} />
             {stage !== "star" && (
@@ -205,12 +206,17 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
                 <Link href={row.href}>
                   <img src={`/chemi/thumb-${row.id}-128-v2.webp`} alt="" width={40} height={40} />
                   <FanText role="item">{home[row.id]}</FanText>
+                  {/* 받을 친밀·받은 표시는 입구 목록과 같은 알약(AffinityBadge)으로 보인다. */}
                   {guest ? null : row.got ? (
-                    <FanText role="meta" className={styles.got}><FanIcon icon={Check} size={16} />{copy.got}</FanText>
+                    <span className={styles.gain}>
+                      <AffinityBadge size="sm" amount={row.exp} label={`${fill(copy.gain, { n: row.exp })} · ${copy.got}`} doneLabel={copy.got} />
+                    </span>
                   ) : row.full ? (
                     <FanText role="meta" className={styles.got}>{copy.full}</FanText>
                   ) : (
-                    <FanText role="meta" className={styles.gain}>{fill(copy.gain, { n: row.exp })}</FanText>
+                    <span className={styles.gain}>
+                      <AffinityBadge size="sm" amount={row.exp} label={fill(copy.gain, { n: row.exp })} />
+                    </span>
                   )}
                 </Link>
               </li>

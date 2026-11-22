@@ -41,6 +41,7 @@ import { signList, type StarReading } from "./reading";
 import { StarShareCard } from "./share-card";
 import { StarRating } from "./stars";
 import styles from "./result.module.css";
+import { chemiName } from "@/features/chemi/persona";
 
 /** 저장된 결과를 불러오는 동안 보이는 모양. 요청은 부른 쪽이 한다. */
 export function StarResultSkeleton({
@@ -55,7 +56,7 @@ export function StarResultSkeleton({
   onRetry?: () => void;
 }) {
   const uiText = useReadingCopy();
-  const name = starCharacters.find((c) => c.id === character)?.name ?? "창하";
+  const name = chemiName(character, locale);
   return (
     <section data-star-result="" className={styles.layout}>
       <Toolbar name={name} back={`/chemi?locale=${locale}`} />
@@ -118,7 +119,7 @@ export function StarResult({
   const [sharing, setSharing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const { result } = reading;
-  const name = starCharacters.find((c) => c.id === character)?.name ?? "창하";
+  const name = chemiName(character, locale);
   const stars = result.stars;
   const best = bestDomain(stars);
   const worst = worstDomain(stars);

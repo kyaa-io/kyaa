@@ -48,3 +48,16 @@ export const chemiPersona: Record<
 };
 
 export const isChemiPersona = (id: string): id is ChemiPersonaId => Object.hasOwn(chemiPersona, id);
+
+/**
+ * 화면에 보이는 최애 이름표. 한국어 화면은 한글, 다른 언어는 로마자(감독 결정 11/22 — CREATOR-NAME-I18N-1122 와 같은 값).
+ * 대사 속 이름(한국어 원문)은 바꾸지 않는다.
+ */
+const chemiNames = {
+  changha: ["창하", "Changha"],
+  elina: ["엘리나", "Elina"],
+  yuna: ["유나", "Yuna"],
+  dosa: ["kyaa 도사", "kyaa Dosa"],
+} as const;
+export const chemiName = (id: string, locale: string): string =>
+  Object.hasOwn(chemiNames, id) ? chemiNames[id as keyof typeof chemiNames][locale === "ko" ? 0 : 1] : id;

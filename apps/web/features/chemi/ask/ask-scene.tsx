@@ -46,7 +46,7 @@ import { ReadingTitle, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
 import {
-  askArt, askExamples, askFollowups, askLinesFor, askLoop, askName, askPages, askReaction, askRecall, askResultExamples, askResultLine,
+  askArt, askExamples, askFollowups, askLinesFor, askLoop, askPages, askReaction, askRecall, askResultExamples, askResultLine,
   askSubject, askVoice,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
   type AskCharacter, type AskContent, type AskRecall, type AskTopic,
@@ -55,6 +55,7 @@ import { askBack, askGo, type AskLocation } from "./location";
 import { SceneBackdrop } from "./scene-backdrop";
 import { canType, TypedLine } from "./typed-line";
 import styles from "./ask.module.css";
+import { chemiName } from "@/features/chemi/persona";
 
 type Thread = {
   threadId: string;
@@ -161,7 +162,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   const picked = at.step === "answer" || at.step === "follow" ? at.react ?? null : null;
   const who = shown?.character ?? character;
   const where = shown?.content ?? content;
-  const name = askName[who];
+  const name = chemiName(who, locale);
   const lines = askLinesFor(who);
   const art = askArt(where, who);
   // 토큰 함수가 그릴 때마다 새로 만들어져도 상태를 다시 읽지 않게 최신 함수만 기억해 둔다.
@@ -529,6 +530,11 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   else if (shown && at.step === "answer") {
     // 답은 한 쪽씩. 이어 물은 답이 있으면 그 질문과 답이 뒤에 이어지고, 반응을 고르면 그 말과 최애의 한 마디가 붙는다.
     const guarded = shown.status === "blocked";
+    // 실제 인물·사생활 질문은 내 연애 질문으로, 무관·메타 질문은 이 풀이의 질문으로 돌린다. 괴롭힘·남의 사주는 돌리지 않는다.
+    const redirect = !guarded || state.left === 0 ? null
+      : shown.klass === "privacy" ? { examples: askExamples("love", who).slice(0, 2), to: { step: "write", topic: "love" } as const }
+      : shown.klass === "off_topic" || shown.klass === "prompt" ? { examples: askResultExamples(where, who, today).slice(0, 2), to: { step: "result" } as const }
+      : null;
     const threadId = shown.threadId;
     const complete = Boolean(shown.followupAnswer);
     ending = !guarded && state.left === 0 && shown.date === today;
@@ -615,6 +621,25 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
             </div>
           ) : null}
         </section>
+        {/* 무관·메타·실제 인물 질문 뒤에는 이 풀이로 답할 수 있는 질문 두 개를 고르게 한다. 누르면 입력 판에 들어가고 바로 보내지 않는다(기획 03-6 29·30·32, DF-ASK-015). */}
+        {last && redirect ? (
+          <div className={`${styles.choices} ${styles.examples} ${styles.reveal}`} data-shown={spoken ? "" : undefined} role="group" aria-label={text("askExamples")}>
+            {redirect.examples.map((example) => (
+              <FanAction
+                key={example}
+                variant="text"
+                className={styles.line}
+                onClick={() => {
+                  setBlocked(null);
+                  setInput(example);
+                  askGo(redirect.to);
+                }}
+              >
+                {example}
+              </FanAction>
+            ))}
+          </div>
+        ) : null}
         {last && !guarded && !react && !farewell ? (
           <div className={`${styles.replies} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
             {ASK_REACTIONS.map((kind) => (
@@ -698,7 +723,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
                   <li key={item.threadId} data-row="">
                     <FanAction variant="text" className={styles.rowLink} onClick={() => open(item)}>
                       <span className={styles.rowGrid}>
-                        <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={askName[item.character]} />
+                        <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={chemiName(item.character, locale)} />
                         <FanText role="body" className={styles.clip}>{item.question}</FanText>
                         <FanIcon icon={ChevronRight} size={16} />
                       </span>
@@ -820,7 +845,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
         {days > 1 && !crisis ? (
-          <span className={`${styles.count} ${styles.days}`} aria-label={`${askName[character]} ${text("askDays", { count: days })}`}>
+          <span className={`${styles.count} ${styles.days}`} aria-label={`${chemiName(character, locale)} ${text("askDays", { count: days })}`}>
             <FanIcon icon={Heart} size={16} />
             <FanText role="label" aria-hidden="true">{text("askDays", { count: days })}</FanText>
           </span>
@@ -836,6 +861,34 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
           <FanIcon icon={History} />
         </FanIconButton>
       </div>
+      {/* PC 는 오른쪽 360px 판에 물어본 것을 늘 띄운다. 줄을 누르면 가운데가 그 질문으로 바뀐다(기획 03-6 PC 21, DF-ASK-014). */}
+      {wide && state && !crisis ? (
+        <aside className={styles.asked} aria-label={text("askHistory")}>
+          <FanText as="h2" role="label">{text("askHistory")}</FanText>
+          {state.threads.length ? (
+            <ul className={styles.list}>
+              {state.threads.map((item) => (
+                <li key={item.threadId} data-row="" data-current={item.threadId === shown?.threadId ? "" : undefined}>
+                  <FanAction variant="text" className={styles.rowLink} aria-current={item.threadId === shown?.threadId ? "true" : undefined} onClick={() => open(item)}>
+                    <span className={`${styles.rowGrid} ${styles.histRow}`}>
+                      <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={chemiName(item.character, locale)} />
+                      <span className={styles.histText}>
+                        <FanText role="body" className={styles.clip}>{item.question}</FanText>
+                        <FanText role="meta">
+                          {shortDate(item.date)} · {chemiName(item.character, locale)}
+                          {item.followupAnswer ? "" : ` · ${text("askFollow")} ${text("askFollowOnce")}`}
+                        </FanText>
+                      </span>
+                    </span>
+                  </FanAction>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <FanText as="p" role="meta">{text("askHistoryEmpty")}</FanText>
+          )}
+        </aside>
+      ) : null}
       <div className={styles.panel} ref={panelBox}>
         <div className={styles.board} key={view}>
           {panel}
@@ -870,7 +923,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
               <li key={item.threadId} data-row="">
                 <FanAction variant="text" className={styles.rowLink} onClick={() => open(item)}>
                   <span className={`${styles.rowGrid} ${styles.histRow}`}>
-                    <img className={styles.face} src={askArt(item.content, item.character).face} alt={askName[item.character]} />
+                    <img className={styles.face} src={askArt(item.content, item.character).face} alt={chemiName(item.character, locale)} />
                     <span className={styles.histText}>
                       <FanText role="item" className={styles.clip}>{item.question}</FanText>
                       <FanText role="meta">

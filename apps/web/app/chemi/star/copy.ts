@@ -351,16 +351,16 @@ const tones: Record<StarCharacterId, Tone> = {
     picked: { why: "이유가 먼저 궁금했군요.", pair: "우리 사이가 먼저 궁금했군요." },
   },
   yuna: {
-    enter: "오늘 밤하늘이 뭐라는지 같이 보자!",
+    enter: "오늘 밤하늘이 뭐라는지 같이 보자.",
     birth: "별자리 운세 보려면 네 생일부터 알려 줘. 한 번만 하면 돼.",
     calc: "잠깐만, 색 고르듯 오늘 밤하늘을 하나씩 볼게.",
-    sign: (sign, headline) => `${sign}구나! 오늘은 ${headline}이야.`,
-    best: (domain, worst) => `${domain} 별점이 제일 높아! ${worst}은 평소 정도야.`,
-    why: "오늘 풀이는 행성 셋이 움직여서 나왔어!",
+    sign: (sign, headline) => `${sign}구나. 오늘은 ${headline}이야.`,
+    best: (domain, worst) => `${domain} 별점이 제일 높아. ${worst}은 평소 정도야.`,
+    why: "오늘 풀이는 행성 셋이 움직여서 나왔어.",
     pair: (mine, theirs, calm) =>
-      `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어! ${withParticle(theirs, "이랑")} ${mine}, ${calm ? "사이는 잘 맞는 날이야. 하루는 천천히 가자!" : "영상 보면서 같이 따라 해 보기 좋은 날이야."}`,
-    pairAlone: () => "별자리는 여기까지야! 오늘 정리 볼래?",
-    picked: { why: "이유부터? 좋아!", pair: "우리 궁합부터? 좋아!" },
+      `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어. ${withParticle(theirs, "이랑")} ${mine}, ${calm ? "사이는 잘 맞는 날이야. 하루는 천천히 가자." : "영상 보면서 같이 따라 해 보기 좋은 날이야."}`,
+    pairAlone: () => "별자리는 여기까지야. 오늘 정리 볼래?",
+    picked: { why: "이유부터 묻네. 좋아.", pair: "우리 궁합부터 묻네. 좋아." },
   },
   dosa: {
     enter: "오늘 밤하늘이 무어라 이르는지 같이 보겠소?",
@@ -410,16 +410,25 @@ const sayAsk: Record<StarDomain, { plain: string; polite: string; old: string }>
   money: { plain: "살 것부터 하나만 골라 볼래?", polite: "살 것을 하나만 골라 볼래요?", old: "살 것을 하나만 고르겠소?" },
   work: { plain: "제일 급한 일부터 열어 볼래?", polite: "제일 급한 일부터 열어 볼래요?", old: "가장 급한 일부터 열어 보겠소?" },
 };
+/** 최애가 자기 활동 분야에 빗대어 오늘 밤하늘을 정리하는 말(밝은 날 / 차분한 날). */
+const sayFigure: Record<Exclude<StarCharacterId, "dosa">, { bright: string; calm: string }> = {
+  changha: { bright: "조명이 다 켜진 세트장 같은 날이야.", calm: "오늘은 리허설하듯 천천히 맞춰 보자." },
+  elina: { bright: "별이랑 박자가 딱 맞는 날이에요.", calm: "노래로 치면 한 박자 쉬어 가는 마디예요." },
+  yuna: { bright: "하늘 톤이 맑아서 포인트 하나 올리기 좋아.", calm: "오늘은 바탕만 곱게 정리하자." },
+};
+/** 결과 화면 최애 한마디(2~3문장): 가장 밝은 영역 → 최애 소재로 오늘 흐름 → 되묻기. */
 export function starSayLine(character: StarCharacterId, domain: StarDomain, stars: number) {
   const name = domainLabels[domain];
   const ask = sayAsk[domain];
   const bright = stars >= 4;
+  if (character === "dosa")
+    return bright ? `${name} 별이 ${stars}개 밝소. ${ask.old}` : `${name} 별은 고요하오. 천천히 걸으시오.`;
+  const figure = sayFigure[character][bright ? "bright" : "calm"];
   const line = {
-    changha: bright ? `${name} 별점이 ${stars}개야. ${ask.plain}` : `${name} 별은 차분해. 오늘은 천천히 가자.`,
-    elina: bright ? `${name} 별점이 ${stars}개예요. ${ask.polite}` : `${name} 별은 차분해요. 천천히 가요.`,
-    yuna: bright ? `${name} 별점 ${stars}개야! ${ask.plain}` : `${name} 별은 조용해. 오늘은 천천히 가자!`,
-    dosa: bright ? `${name} 별이 ${stars}개 밝소. ${ask.old}` : `${name} 별은 고요하오. 천천히 걸으시오.`,
-  } satisfies Record<StarCharacterId, string>;
+    changha: bright ? `${name} 별점이 ${stars}개야. ${figure} ${ask.plain}` : `${name} 별은 차분해. ${figure}`,
+    elina: bright ? `${name} 별점이 ${stars}개예요. ${figure} ${ask.polite}` : `${name} 별은 차분해요. ${figure}`,
+    yuna: bright ? `${name} 별점 ${stars}개야. ${figure} ${ask.plain}` : `${name} 별은 조용해. ${figure}`,
+  };
   return line[character];
 }
 
@@ -428,7 +437,7 @@ export function starChartLine(character: StarCharacterId, element: string, count
   return {
     changha: `${element} 원소가 ${count}개나 돼. 그래서 그런 모습이구나.`,
     elina: `${element} 원소가 ${count}개예요. 그래서 그런 모습이었군요.`,
-    yuna: `${element} 원소가 ${count}개나 있어! 그래서 그랬구나.`,
+    yuna: `${element} 원소가 ${count}개나 있어. 그래서 그랬구나.`,
     dosa: `${element} 원소가 ${count}개나 되오. 그래서 그런 모습이구려.`,
   }[character];
 }

@@ -25,7 +25,7 @@ import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { ResultActions } from "@/features/chemi/ui/result/result-actions";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { fortuneBasis, fortuneFieldDetail, fortuneFlow } from "./depth";
-import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
+import { fortuneCharacters, fortuneResultWords, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
 import {
   band,
@@ -44,6 +44,7 @@ import { DayCardThumb } from "./deep/day-card";
 import deep from "./deep/deep.module.css";
 import { deepHref } from "./deep/screen";
 import styles from "./result.module.css";
+import { chemiName } from "@/features/chemi/persona";
 
 const exampleKeys = {
   fandom: ["depthFandomA", "depthFandomB"],
@@ -211,8 +212,7 @@ export function FortuneResult({
       setSharing(false);
     }
   }
-  const name =
-    fortuneCharacters.find((item) => item.id === character)?.name ?? "창하";
+  const name = chemiName(character, locale);
   const back = backHref ?? `/chemi?locale=${locale}`;
   const day = kstDayStart(reading?.kstDate);
   const toolbar = (
@@ -333,7 +333,8 @@ export function FortuneResult({
   const spirit = spiritNotes[result.evidence.spirit];
   const sayLine =
     reading.styled?.share?.line ??
-    fortuneTalkLine(character, 4, {
+    fortuneResultWords(character, {
+      best: highest,
       score: result.score,
       grade: result.grade.name,
       fandom: result.fields.fandom,

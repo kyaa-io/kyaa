@@ -13,9 +13,9 @@ export const fieldNotes: Record<string, Record<Band, string>> = {
     low: "오늘은 새로 파기보다 좋아하던 걸 다시 보는 게 편해요.",
   },
   people: {
-    high: "선배나 윗사람이 먼저 손을 내밀어요. 부탁은 오늘 꺼내세요.",
+    high: "선배나 윗사람이 먼저 손을 내밀어요. 반갑게 받아 주세요.",
     mid: "말이 잘 통하는 사람과 짧게 이야기해 보세요.",
-    low: "말을 조금 아끼세요. 급한 부탁은 내일로 미뤄도 돼요.",
+    low: "말을 조금 아끼세요. 오늘은 듣는 쪽이 편해요.",
   },
   work: {
     high: "배우고 정리하는 일이 잘 붙어요. 미뤄 둔 자료 정리에 좋아요.",
@@ -46,7 +46,7 @@ export const periodNotes: Record<"morning" | "afternoon" | "night", Record<Band,
     low: "서두르지 말고 준비부터 하세요",
   },
   afternoon: {
-    high: "사람을 만나거나 부탁하기 좋아요",
+    high: "사람을 만나 이야기하기 좋아요",
     mid: "집중이 흐려져요. 짧게 나눠서 하세요",
     low: "무리한 약속은 피하세요",
   },

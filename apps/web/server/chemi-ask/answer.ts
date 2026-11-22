@@ -385,20 +385,68 @@ const fieldWord = {
   en: { love: "love", work: "work", money: "money", people: "people", month: "", free: "" },
   ja: { love: "恋愛", work: "仕事", money: "金", people: "人間関係", month: "", free: "" },
 } as const;
-function foreignAnswer(question: string, input: { content: AskContent; topic: AskTopic; result: unknown; kind?: string }, flow: "good" | "care", follow: boolean) {
-  const ja = /[぀-ヿ]/.test(question);
+/** 외국어 답에서 카드 이름을 부르는 말. 한국어 덱 이름(features/chemi/tarot/deck.ts)을 영어·일본어로 옮긴다. */
+const majorNames = {
+  en: ["The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor", "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit", "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance", "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World"],
+  ja: ["愚者", "魔術師", "女教皇", "女帝", "皇帝", "教皇", "恋人", "戦車", "力", "隠者", "運命の輪", "正義", "吊るされた男", "死神", "節制", "悪魔", "塔", "星", "月", "太陽", "審判", "世界"],
+} as const;
+const suitNames = { 완드: ["Wands", "ワンド"], 컵: ["Cups", "カップ"], 소드: ["Swords", "ソード"], 펜타클: ["Pentacles", "ペンタクル"] } as const;
+const rankNames: Record<string, readonly [string, string]> = { "1": ["Ace", "エース"], 시종: ["Page", "ペイジ"], 기사: ["Knight", "ナイト"], 여왕: ["Queen", "クイーン"], 왕: ["King", "キング"] };
+function foreignCard(index: number, ja: boolean) {
+  if (index < 22) return majorNames[ja ? "ja" : "en"][index];
+  const [suit, rank] = (TAROT_DECK[index]?.[1] ?? "").split(" ") as [keyof typeof suitNames, string];
+  const suitName = suitNames[suit]?.[ja ? 1 : 0];
+  if (!suitName || !rank) return null;
+  const rankName = rankNames[rank]?.[ja ? 1 : 0] ?? rank;
+  return ja ? `${suitName}の${rankName}` : `${rankName} of ${suitName}`;
+}
+const foreignElement = {
+  en: { wood: "Wood", fire: "Fire", earth: "Earth", metal: "Metal", water: "Water" },
+  ja: { wood: "木", fire: "火", earth: "土", metal: "金", water: "水" },
+} as const;
+
+/** 외국어 답의 첫 줄: 한국어 답(askBasis)처럼 풀이에서 값 하나를 그대로 인용한다. 값을 못 찾으면 null. */
+function foreignHead(input: { content: AskContent; topic: AskTopic; result: unknown; kind?: string }, ja: boolean) {
   const result = input.result as any;
   const key = fortuneField[input.topic];
-  const score = input.content === "fortune" && input.kind !== "week" && typeof result?.score === "number"
-    ? (key ? result.fields?.[key] ?? result.score : result.score) as number : null;
   const word = fieldWord[ja ? "ja" : "en"][input.topic];
-  if (ja) {
-    const head = score === null ? "あなたの結果をもう一度読んだよ。" : `今日の${word ? `${word}運` : "運勢"}は${score}点だよ。`;
-    const body = flow === "good" ? "流れは味方してるよ。今日は小さく一歩動いてみて。" : "今日はゆっくりでいいよ。大きな決断はあとに回そう。";
-    return follow ? body : `${head}\n${body}`;
+  if (input.content === "fortune" && input.kind === "week" && Array.isArray(result?.days) && result.days.length) {
+    const strongest = result.days.reduce((best: any, row: any) => row.result.score > best.result.score ? row : best);
+    const date = strongest.day.slice(5).replace("-", "/");
+    return ja ? `今週いちばん点数が高いのは${date}だよ。` : `This week, ${date} has your highest score.`;
   }
-  const head = score === null ? "I read your result again." : `Your ${word ? `${word} ` : ""}score today is ${score}.`;
-  const body = flow === "good" ? "The flow is on your side. Take one small step today." : "Take it slow today. Leave the big decisions for later.";
+  if (input.content === "fortune" && typeof result?.score === "number") {
+    const score = (key ? result.fields?.[key] ?? result.score : result.score) as number;
+    const day = input.kind === "tomorrow";
+    return ja
+      ? `${day ? "明日" : "今日"}の${word ? `${word}運` : "運勢"}は${score}点だよ。`
+      : `Your ${word ? `${word} ` : ""}score ${day ? "tomorrow" : "today"} is ${score}.`;
+  }
+  if (input.content === "star" && input.kind !== "compat" && typeof result?.stars?.overall === "number") {
+    const stars = (key ? result.stars[key] ?? result.stars.overall : result.stars.overall) as number;
+    return ja ? `今日の${word || "全体"}の星は5つ中${stars}つだよ。` : `Your ${word || "overall"} stars today: ${stars} of 5.`;
+  }
+  if (input.content === "tarot") {
+    const first = input.kind === "tarot3" ? result?.cards?.[2] : result?.cards?.[0] ?? result;
+    const name = typeof first?.card === "number" ? foreignCard(first.card, ja) : null;
+    if (name)
+      return ja
+        ? `${input.kind === "tarot3" ? "最後のカード" : "今日のカード"}は「${name}」の${first.reversed ? "逆位置" : "正位置"}だよ。`
+        : `${input.kind === "tarot3" ? "Your last card" : "Today's card"} is ${name}, ${first.reversed ? "reversed" : "upright"}.`;
+  }
+  if (input.content === "saju" && isChart(result)) {
+    const element = stemElement[result.pillars.day!.heavenlyStem];
+    return ja ? `あなたの日主は${foreignElement.ja[element]}の気だよ。` : `Your day master is ${foreignElement.en[element]}.`;
+  }
+  return null;
+}
+
+function foreignAnswer(question: string, input: { content: AskContent; topic: AskTopic; result: unknown; kind?: string }, flow: "good" | "care", follow: boolean) {
+  const ja = /[぀-ヿ]/.test(question);
+  const head = foreignHead(input, ja) ?? (ja ? "あなたの結果をもう一度読んだよ。" : "I read your result again.");
+  const body = ja
+    ? flow === "good" ? "流れは味方してるよ。今日は小さく一歩動いてみて。" : "今日はゆっくりでいいよ。大きな決断はあとに回そう。"
+    : flow === "good" ? "The flow is on your side. Take one small step today." : "Take it slow today. Leave the big decisions for later.";
   return follow ? body : `${head}\n${body}`;
 }
 

@@ -638,6 +638,11 @@
   color: var(--color-accent-ink);
 }
 
+/* 물어본 것 판: PC 에서만 오른쪽에 늘 보인다. 모바일은 위 시계 단추의 시트로 연다. */
+.asked {
+  display: none;
+}
+
 /* 390: 토스트는 대화판 위에 뜬다(버튼을 덮지 않는다). 1024+ 는 공통 자리(오른쪽 아래). */
 @media (width < 64rem) {
   :global(body):has(.root) :global([data-fan-toast-viewport]) {
@@ -677,5 +682,34 @@
   }
   .thread {
     max-height: min(50svh, calc(var(--space-16) * 8));
+  }
+}
+@media (width >= 64rem) {
+  .asked {
+    position: absolute;
+    top: calc(var(--space-6) + var(--space-12) + var(--space-4));
+    right: var(--space-8);
+    z-index: 1;
+    display: grid;
+    align-content: start;
+    gap: var(--space-2);
+    box-sizing: border-box;
+    width: calc(var(--space-16) * 5 + var(--space-10));
+    max-height: calc(100dvh - var(--space-16) * 3);
+    padding: var(--space-4);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-radius: var(--radius-card);
+    background: var(--ask-glass);
+  }
+  .asked h2 {
+    margin: 0;
+  }
+  .asked li[data-current] .rowLink {
+    color: var(--color-accent-ink);
+  }
+  /* 기록이 늘 보이므로 위의 시계 단추는 숨긴다. */
+  .root .history {
+    display: none;
   }
 }

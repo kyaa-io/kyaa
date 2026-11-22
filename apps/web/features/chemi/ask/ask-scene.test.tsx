@@ -103,6 +103,39 @@ it("난감한 질문은 거절하는 말과 '질문 수 그대로'를 보이고 
   await waitFor(() => expect(location.search).toContain("ask=topic"));
 });
 
+it("무관한 질문 뒤에는 이 풀이로 답할 수 있는 질문 둘을 고르게 하고, 누르면 입력 판에 넣기만 한다(DF-ASK-015)", async () => {
+  serve((_url, body) => ({
+    thread: answered(body.threadId, { status: "blocked", klass: "off_topic", question: body.question, answer: "그건 풀이로 답할 수 있는 게 아니야." }),
+    state: state(),
+  }));
+  render(<Host />);
+  askGo({ step: "write", topic: "free" });
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "오늘 날씨 알려 줘" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  const group = await screen.findByRole("group", { name: "예시 질문" });
+  const choices = group.querySelectorAll("button");
+  expect(choices).toHaveLength(2);
+  const picked = choices[0].textContent!;
+  fireEvent.click(choices[0]);
+  await waitFor(() => expect(location.search).toContain("ask=result"));
+  expect((await screen.findByLabelText("질문 입력") as HTMLTextAreaElement).value).toBe(picked);
+  expect(calls).toHaveLength(1);
+});
+
+it("실제 인물 질문 뒤에는 내 연애 질문 둘로 돌린다", async () => {
+  serve((_url, body) => ({
+    thread: answered(body.threadId, { status: "blocked", klass: "privacy", question: body.question, answer: "나는 kyaa 속 창하야. 진짜 창하 이야기는 말 못 해." }),
+    state: state(),
+  }));
+  render(<Host />);
+  askGo({ step: "write", topic: "free" });
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "진짜 창하야?" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  const group = await screen.findByRole("group", { name: "예시 질문" });
+  fireEvent.click(group.querySelectorAll("button")[1]);
+  await waitFor(() => expect(location.search).toContain("at=love"));
+});
+
 it("위기 신호는 최애 이름표·남은 수 없이 전화 버튼 둘과 닫기만 보인다(DF-ASK-003)", async () => {
   serve((_url, body) => ({
     thread: answered(body.threadId, { status: "blocked", klass: "crisis", question: body.question, answer: "혼자 버티지 마." }),

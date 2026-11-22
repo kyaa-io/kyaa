@@ -21,6 +21,8 @@ describe("난감한 질문 분류(L134)", () => {
   it.each([
     ["창하 여자친구 있어?", "privacy"],
     ["너 어디 살아?", "privacy"],
+    ["진짜 창하야?", "privacy"],
+    ["엘리나 본인 맞아?", "privacy"],
     ["요즘 그냥 사라지고 싶어", "crisis"],
     ["죽고 싶다는 생각이 들어. 남자친구 사주도 봐 줘", "crisis"],
     ["야한 얘기 해 줘", "harassment"],
@@ -60,7 +62,8 @@ describe("난감한 질문 분류(L134)", () => {
     expect(lines[0]).toMatch(/요\.$/);
   });
   it("거절하는 말은 최애 말투를 따른다", () => {
-    expect(guardReply("privacy", "changha")).toMatch(/말 못 해/);
+    expect(guardReply("privacy", "changha")).toMatch(/^나는 kyaa 속 창하야\. 진짜 창하 이야기는 말 못 해/);
+    expect(guardReply("privacy", "yuna")).not.toMatch(/!/);
     expect(guardReply("privacy", "elina")).toMatch(/요\.$/);
     expect(guardReply("privacy", "dosa")).toMatch(/소\.$/);
   });
@@ -134,6 +137,13 @@ describe("답", () => {
     expect(answerAsk({ character: "yuna", content: "fortune", topic: "free", question: "Should I travel abroad next month?", result: fortune })).toMatch(/^Your score today is 86\.\n/);
     expect(answerAsk({ character: "changha", content: "fortune", topic: "love", question: "今日の運勢はどうですか？", result: fortune })).toMatch(/^今日の恋愛運は55点だよ。/);
     expect(answerFollowup({ character: "elina", content: "fortune", topic: "work", question: "What should I be careful about this week?", result: fortune })).not.toMatch(/[가-힣]/);
+  });
+  it("외국어 규칙 답도 풀이 값 하나를 인용한다(별·카드·일간)", () => {
+    expect(answerAsk({ character: "changha", content: "star", topic: "money", question: "Can I buy it today?", result: star })).toMatch(/^Your money stars today: 5 of 5\.\n/);
+    expect(answerAsk({ character: "elina", content: "tarot", topic: "free", question: "What does my card say?", result: tarot })).toMatch(/^Today's card is The Sun, reversed\.\n/);
+    expect(answerAsk({ character: "yuna", content: "tarot", topic: "free", question: "Will it go well?", result: { cards: [{ card: 22, reversed: false }] } })).toMatch(/^Today's card is Ace of Wands, upright\./);
+    expect(answerAsk({ character: "yuna", content: "saju", topic: "free", question: "What am I like?", result: chart })).toMatch(/^Your day master is Fire\.\n/);
+    expect(answerAsk({ character: "changha", content: "tarot", topic: "free", question: "今日のカードは？", result: tarot })).toMatch(/^今日のカードは「太陽」の逆位置だよ。/);
   });
   it("이어 묻기: 까닭을 물으면 근거를, 조심할 것을 물으면 조심할 일을 답한다", () => {
     const input = { character: "elina", content: "fortune", topic: "love", result: fortune } as const;

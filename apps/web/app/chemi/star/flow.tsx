@@ -59,6 +59,7 @@ import { StarResult, StarResultSkeleton } from "./result";
 import { StarRating } from "./stars";
 import { Under14 } from "./under-14";
 import styles from "./scene.module.css";
+import { chemiName } from "@/features/chemi/persona";
 
 const talkChoice = ["domains", "whyQuestion", "ourMatch", "starSummary"] as const;
 
@@ -147,7 +148,7 @@ export function StarFlow({
   const restore = useRef<AbortController | null>(null);
 
   const index = starCharacters.findIndex((c) => c.id === character);
-  const name = starCharacters[index].name;
+  const name = chemiName(starCharacters[index].id, locale);
 
   /**
    * 주소의 결과 id로 저장된 오늘 결과를 불러온다. 결과가 없거나 오늘 것이 아니면(404·모양 불일치) 입장으로 돌리고,
@@ -539,7 +540,7 @@ export function StarFlow({
                   onClick={() => choose(starCharacters.indexOf(c))}
                 >
                   <img src={`${art}/avatar-${c.id}-v1.jpg`} alt="" />
-                  <FanText role={c.id === character ? "label" : "meta"}>{c.name}</FanText>
+                  <FanText role={c.id === character ? "label" : "meta"}>{chemiName(c.id, locale)}</FanText>
                 </FanAction>
               ))}
             </div>
