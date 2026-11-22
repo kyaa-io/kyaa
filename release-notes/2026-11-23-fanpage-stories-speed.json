@@ -5,5 +5,8 @@
     "팬페이지를 처음 열 때 내려받는 화면 파일이 줄었어요. 게시판 화면 파일은 홈을 연 뒤에 미리 받아 둬요.",
     "글 목록의 내용과 순서는 달라지지 않아요."
   ],
-  "path": "/"
+  "path": "/changha",
+  "images": [
+    "release-notes/images/2026-11-23-fanpage-stories-speed.png"
+  ]
 }
