@@ -20,12 +20,16 @@ export function ReadingBasisRows({ rows }: { rows: readonly ReadingBasisRow[] })
             {row.term}
           </FanText>
           <dd>
-            <FanText as="strong" role="item">
-              {row.value}
-            </FanText>
-            <FanText as="span" role="meta">
-              {row.plain}
-            </FanText>
+            {row.value && (
+              <FanText as="strong" role="item">
+                {row.value}
+              </FanText>
+            )}
+            {row.plain && (
+              <FanText as="span" role="meta">
+                {row.plain}
+              </FanText>
+            )}
           </dd>
         </div>
       ))}

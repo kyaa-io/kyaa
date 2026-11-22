@@ -609,6 +609,14 @@
     "starEnter_changha": "Mau lihat pesan langit malam ini buatmu?",
     "starEnter_elina": "Bagaimana kalau kita simak pesan langit malam ini bersama?",
     "starEnter_yuna": "Yuk, baca langit malam ini bareng!",
-    "starEnter_dosa": "Bersediakah engkau menyimak pesan bintang malam ini?"
+    "starEnter_dosa": "Bersediakah engkau menyimak pesan bintang malam ini?",
+    "chartTitle": "Delapan aksara Anda",
+    "showDetail": "Detail",
+    "hideDetail": "Tutup",
+    "strengthTitle": "Kekuatan hari",
+    "tenGodTitle": "Sepuluh dewa",
+    "relationTitle": "Kombinasi & benturan",
+    "yearFlow": "Tahun ini",
+    "hourLocked": "Pilar jam terbuka setelah Anda menambahkan jam lahir"
   }
 }

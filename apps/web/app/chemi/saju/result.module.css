@@ -477,3 +477,18 @@
     top: calc(var(--fan-header-height) + var(--space-6));
   }
 }
+
+/* 사주 첫 풀이(시안 CHEMI-G97-N-1122): 제목 아래 일간 줄, 명식표 판 아래 세 칸·그림 묶음. */
+.head .dayLine {
+  color: var(--color-ink);
+}
+.firstLead {
+  order: 2;
+  display: grid;
+  gap: var(--space-3);
+}
+@media (min-width: 64rem) {
+  .mobileHero {
+    display: none;
+  }
+}

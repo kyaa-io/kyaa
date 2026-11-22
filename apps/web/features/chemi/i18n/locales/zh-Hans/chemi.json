@@ -609,6 +609,14 @@
     "starEnter_changha": "想一起看看今晚的星空要对你说什么吗？",
     "starEnter_elina": "我们一起听听今晚星空的悄悄话，好吗？",
     "starEnter_yuna": "一起看看今晚的星空吧！",
-    "starEnter_dosa": "可愿一同听听今夜的星语？"
+    "starEnter_dosa": "可愿一同听听今夜的星语？",
+    "chartTitle": "四柱八字",
+    "showDetail": "详细",
+    "hideDetail": "收起",
+    "strengthTitle": "身强・身弱",
+    "tenGodTitle": "十神分布",
+    "relationTitle": "合・冲",
+    "yearFlow": "今年运势",
+    "hourLocked": "知道出生时间后可查看时柱"
   }
 }

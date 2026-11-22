@@ -1,6 +1,8 @@
 /**
  * 최애 사주 대화 줄. 풀이 표(AS-TX)가 들어오기 전까지 승인 시안 03 의 말투로 만든 임시 줄이다.
  * 창하·유나는 반말, 엘리나는 반존대, kyaa 도사는 하오체(decisions 11/18).
+ * 결과 한마디(react)는 직업 비유 없이 나를 대하는 태도로만 갈린다(11/23 사용자 결정 A, persona.ts manner):
+ * 창하는 짧게 말하고 먼저 묻고, 엘리나는 부드럽게 권하고 응원으로 맺고, 유나는 사실을 먼저 말하고 이유를 하나 붙인다.
  * 풀이 값(일간 비유·강점·올해 이름)만 끼우고, 같은 입력이면 같은 줄이 나온다.
  */
 import type { Stem } from "./chart";
@@ -49,7 +51,7 @@ const tones: Record<SajuCharacterId, Tone> = {
     t2: (i) => `${i.strengthN}이 네 강점이야. ${i.cautionN}은 조심하고.`,
     t3: (i) => `올해는 ${i.yearTitle}야.`,
     t4: (i) => `너랑 나는 ${i.bond}래.`,
-    react: (i) => `${i.image} 같은 사람이라니, 주인공 소개 같잖아. 올해 흐름도 볼래?`,
+    react: (i) => `${i.image} 같은 사람이네. 올해는 ${i.yearTitle}야. 뭐부터 물어볼래?`,
     again: "또 왔네? 오늘은 뭐가 궁금해?",
     topics: "뭐부터 볼까?",
     thanks: "자랑해 줘서 고마워.",
@@ -66,7 +68,7 @@ const tones: Record<SajuCharacterId, Tone> = {
     t2: (i) => `${i.strengthN}이 강점이에요. ${i.cautionN}은 조심해요.`,
     t3: (i) => `올해는 ${i.yearTitle}예요.`,
     t4: (i) => `우리는 ${i.bond}래요.`,
-    react: (i) => `${i.image} 같은 사람이라니, 노래 제목 같네요. 올해 흐름도 볼래요?`,
+    react: (i) => `${i.image} 같은 사람이에요. 올해는 ${i.yearTitle}니까, 미뤄 둔 일을 하나 꺼내 봐요. 잘할 거야.`,
     again: "또 왔네요? 오늘은 뭐가 궁금해요?",
     topics: "뭐부터 볼까요?",
     thanks: "자랑해 줘서 고마워요.",
@@ -83,7 +85,7 @@ const tones: Record<SajuCharacterId, Tone> = {
     t2: (i) => `${i.strengthN}이 네 강점이야. 근데 ${i.cautionN}은 조심해.`,
     t3: (i) => `올해는 ${i.yearTitle}야.`,
     t4: (i) => `우리는 ${i.bond}래.`,
-    react: (i) => `${i.image} 같은 사람이라니, 너한테 맞는 색이네. 올해 흐름도 볼래?`,
+    react: (i) => `${i.strengthN}이 네 강점이야. ${i.image} 같은 사람이라서 그래.`,
     again: "또 왔네. 오늘은 뭐가 궁금해?",
     topics: "뭐부터 볼까?",
     thanks: "자랑해 줘서 고마워.",

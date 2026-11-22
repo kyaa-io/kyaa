@@ -1,0 +1,6 @@
+/* 사주 한자: 케미 사주 결과의 명식표·간지 칩·십신 글자에만 쓴다(DESIGN.md 7절). */
+.hanja { font-weight: var(--fan-body-weight); line-height: 1; letter-spacing: 0; }
+.glyph { font-size: var(--fan-number-size-wide); }
+.pair { font-size: var(--fan-number-size); }
+.letters { font-size: var(--fan-section-size); }
+.inline { font-size: inherit; }

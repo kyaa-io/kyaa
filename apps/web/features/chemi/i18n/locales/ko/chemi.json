@@ -609,6 +609,14 @@
     "starEnter_changha": "오늘 밤하늘이 너한테 뭐라고 하는지 같이 볼래?",
     "starEnter_elina": "오늘 밤하늘이 뭐라고 하는지 같이 볼까요?",
     "starEnter_yuna": "오늘 밤하늘이 뭐라는지 같이 보자!",
-    "starEnter_dosa": "오늘 밤하늘이 무어라 이르는지 같이 보겠소?"
+    "starEnter_dosa": "오늘 밤하늘이 무어라 이르는지 같이 보겠소?",
+    "chartTitle": "사주 여덟 글자",
+    "showDetail": "자세히",
+    "hideDetail": "접기",
+    "strengthTitle": "신강 · 신약",
+    "tenGodTitle": "십신 분포",
+    "relationTitle": "합 · 충",
+    "yearFlow": "올해 흐름",
+    "hourLocked": "시주는 시간을 알면 열려요"
   }
 }

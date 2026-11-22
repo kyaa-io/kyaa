@@ -1,0 +1,98 @@
+/* 명식표(DESIGN.md 케미 사주 결과 절). 열 머리 32 · 십신 28 · 글자 76 · 글자 76 · 십신 28, 펼친 줄 36씩. 글자는 FanText·FanHanja. */
+.sheet {
+  display: grid;
+  grid-template-columns: 2.5rem repeat(4, minmax(0, 1fr));
+  grid-template-rows: var(--space-8) 28px 76px 76px 28px;
+}
+.sheet[data-rows="7"] {
+  grid-template-rows: var(--space-8) 28px 76px 76px 28px 36px 36px;
+}
+.sheet[data-rows="8"] {
+  grid-template-rows: var(--space-8) 28px 76px 76px 28px 36px 36px 36px;
+}
+.col {
+  display: grid;
+  grid-row: 1 / -1;
+  grid-template-rows: subgrid;
+  min-width: 0;
+  text-align: center;
+}
+.col > * {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-width: 0;
+  border-top: 1px solid var(--color-line);
+}
+.col > :first-child {
+  border-top: 0;
+}
+.col > :nth-child(4) {
+  border-top-color: var(--color-line-subtle);
+}
+.rowName {
+  justify-items: start;
+  text-align: start;
+}
+.name {
+  color: var(--color-muted);
+}
+.god {
+  color: var(--color-ink);
+}
+.glyph {
+  gap: var(--space-2);
+}
+.read {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-muted);
+}
+.hidden {
+  grid-auto-flow: column;
+  justify-content: center;
+  color: var(--color-muted);
+}
+.main {
+  color: var(--color-ink);
+}
+/* 일주 열 = 나. 선 하나로만 구분한다(강조 판은 최애 한마디 한 곳뿐). */
+.col[data-me] {
+  border-radius: var(--radius-media);
+  outline: 1px solid var(--color-ink);
+  outline-offset: -1px;
+}
+.col[data-me] .name {
+  color: var(--color-ink);
+}
+.col[data-unknown] > * {
+  border-top-color: transparent;
+}
+.slot {
+  grid-row: 2 / -1;
+  align-self: stretch;
+  margin: var(--space-1);
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-small);
+  background: var(--color-surface);
+  color: var(--color-muted);
+}
+.sheet[data-open] .col > :nth-child(n + 6) {
+  animation: fade var(--motion-slow) var(--motion-easing) both;
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sheet[data-open] .col > :nth-child(n + 6) {
+    animation: none;
+  }
+}
+@media (min-width: 64rem) {
+  .sheet {
+    grid-template-columns: 3.5rem repeat(4, minmax(0, 1fr));
+  }
+}

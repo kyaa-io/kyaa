@@ -45,23 +45,48 @@ const show = (view: ResultView, extra: Partial<Parameters<typeof SajuResult>[0]>
     />,
   );
 
-it("처음 풀이: 한 줄 제목·타고난 기운·성격·올해 흐름, 가격은 없다", () => {
+it("처음 풀이: 한 줄 제목·명식표·오행·신강·십신·합충·올해 흐름, 가격은 없다", () => {
   const { container } = show("first");
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("한낮의 해처럼, 좋아하는 걸 숨기지 않는 사람");
-  for (const label of ["타고난 기운", "타고난 성격", "올해 흐름", "강점", "조심할 것"])
+  expect(container.textContent).toContain("丙火 · 병화 일간");
+  for (const label of ["사주 여덟 글자", "타고난 기운", "타고난 성격", "신강 · 신약", "십신 분포", "합 · 충", "올해 흐름", "강점", "조심할 것", "조심할 점"])
     expect(screen.getByText(label)).toBeTruthy();
+  expect(screen.getByRole("img", { name: "사주 여덟 글자. 시주 모름, 일주 병오, 월주 을묘, 연주 무인" })).toBeTruthy();
   expect(container.textContent).not.toMatch(/원\b|1,900|결제/);
-  // 조심할 것은 제목 아래 키워드 한 곳에만 둔다.
-  expect(screen.queryByText("조심할 점")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: /^올해/ }));
   expect(handlers.onGo).toHaveBeenCalledWith("year");
 });
 
-it("시간을 모르고 절기 날이면 잠긴 칸에 시간 넣기 길을 둔다", () => {
-  show("first", { chart: { ...chart, locked: ["personality", "fiveElements"], lockReason: "시간을 알면 열려요" } });
+it("명식표 자세히는 같은 화면 안에서 펼치고 접는다", () => {
+  const { container } = show("first");
+  const toggle = screen.getByRole("button", { name: /자세히/ });
+  expect(toggle.getAttribute("aria-expanded")).toBe("false");
+  expect(container.textContent).not.toContain("12운성");
+  fireEvent.click(toggle);
+  expect(screen.getByRole("button", { name: /접기/ }).getAttribute("aria-expanded")).toBe("true");
+  expect(container.textContent).toContain("12운성");
+  expect(container.textContent).toContain("계산 기준");
+  expect(handlers.onGo).not.toHaveBeenCalledWith("first");
+});
+
+it("시간을 모르고 절기 날이면 확실한 글자만 열고 네 블록은 자물쇠로 잠근다", () => {
+  const { container } = show("first", {
+    chart: {
+      ...chart,
+      pillars: { ...chart.pillars, month: null },
+      termBoundary: true,
+      locked: ["personality", "fiveElements", "majorLuck", "career"],
+      lockReason: "시간을 알면 열려요",
+      solarTerm: { name: "입춘", at: "2001-02-03T18:29:00.000Z" },
+    },
+  });
   fireEvent.click(screen.getByRole("button", { name: "태어난 시간 넣기" }));
   expect(handlers.onBirthTime).toHaveBeenCalled();
-  expect(screen.queryByText("타고난 성격")).toBeNull();
+  expect(screen.getByText("타고난 성격")).toBeTruthy();
+  expect(screen.getAllByRole("img", { name: "태어난 시간을 알면 열려요" })).toHaveLength(4);
+  // 잠긴 신강 자리에는 점수도 분모도 없다.
+  expect(container.textContent).not.toContain("/ 100");
+  expect(screen.queryByRole("button", { name: /자세히/ })).toBeNull();
 });
 
 it("올해·이달·궁합은 각자 제목과 다른 주제·다른 사람과 버튼을 가진다", () => {
@@ -99,7 +124,7 @@ it("궁합: 상대 이름과 시간 없이 봄 표시, 두 문장 고지", () =>
 it("처음 풀이 제목 아래: 최애마다 다른 한마디, 같은 키워드 세 칸", () => {
   const seen = (["changha", "elina", "yuna"] as const).map((character) => {
     const { container, unmount } = show("first", { character });
-    const opening = container.querySelector("header p:nth-of-type(2)")?.textContent;
+    const opening = container.querySelector("header p:nth-of-type(3)")?.textContent;
     const keywords = [...container.querySelectorAll("[data-keyword]")].map((row) => row.textContent);
     unmount();
     return { opening, keywords };

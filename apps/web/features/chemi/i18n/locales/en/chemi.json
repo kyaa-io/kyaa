@@ -609,6 +609,14 @@
     "starEnter_changha": "Want to see what tonight’s sky has to say to you?",
     "starEnter_elina": "Shall we see what the night sky has to tell us?",
     "starEnter_yuna": "Let’s read the night sky together!",
-    "starEnter_dosa": "Shall we heed the words of the night sky?"
+    "starEnter_dosa": "Shall we heed the words of the night sky?",
+    "chartTitle": "Your eight characters",
+    "showDetail": "Details",
+    "hideDetail": "Hide",
+    "strengthTitle": "Strong or weak",
+    "tenGodTitle": "Ten gods",
+    "relationTitle": "Combinations & clashes",
+    "yearFlow": "This year",
+    "hourLocked": "The hour pillar opens with your birth time"
   }
 }

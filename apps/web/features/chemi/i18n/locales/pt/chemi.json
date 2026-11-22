@@ -609,6 +609,14 @@
     "starEnter_changha": "Vamos ver o que o céu quer contar para você esta noite?",
     "starEnter_elina": "Que tal ouvirmos juntos o que o céu tem a dizer esta noite?",
     "starEnter_yuna": "Vamos ler o céu desta noite juntos!",
-    "starEnter_dosa": "Vamos ouvir o que anunciam os astros nesta noite?"
+    "starEnter_dosa": "Vamos ouvir o que anunciam os astros nesta noite?",
+    "chartTitle": "Seus oito caracteres",
+    "showDetail": "Detalhes",
+    "hideDetail": "Ocultar",
+    "strengthTitle": "Força do mestre do dia",
+    "tenGodTitle": "Dez deuses",
+    "relationTitle": "Combinações e choques",
+    "yearFlow": "Este ano",
+    "hourLocked": "O pilar da hora abre com seu horário de nascimento"
   }
 }
