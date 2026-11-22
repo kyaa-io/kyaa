@@ -53,12 +53,12 @@ it("flashes just the record when an existing player's score changes", () => {
   );
 });
 
-it("shows my record once: highlighted in the top three, or on its own line below", () => {
+it("keeps my record below the three places even when I rank first", () => {
   const row = (place: number, name: string, isMe = false) => ({ id: name, place, name, change: 0, record: `0:4${place}`, isMe });
   const game: GameRanking = { game: "pair", title: "짝 맞추기 랭킹", href: "/chemi/games/match", leaders: [row(1, "별", true)], mine: row(1, "별", true) };
   const view = render(<GameRankings label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord} games={[game]} />);
-  expect(screen.getAllByText("0:41")).toHaveLength(1);
-  expect(screen.queryByText(copy.myRecord)).toBeNull();
+  expect(screen.getAllByText("0:41")).toHaveLength(2);
+  expect(screen.getByText(copy.myRecord)).toBeVisible();
   expect(screen.getByRole("link", { name: `짝 맞추기 랭킹 ${copy.thisWeek}` })).toHaveAttribute("href", "/chemi/games/match");
   view.rerender(<GameRankings label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord}
     games={[{ ...game, leaders: [row(1, "별"), row(2, "달"), row(3, "해")], mine: row(8, "나", true) }]} />);

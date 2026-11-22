@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "@/components/fan-ui/hover-prefetch-link";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { HomeBanner } from "./home-banner";
 import { WeeklyRankings } from "./weekly-rankings";
-import { entries } from "./contents";
+import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
+import { getGrowthCopy } from "./growth/copy";
+import { EARN, entries } from "./contents";
 import { ChemiGrowth } from "./growth/growth";
 import styles from "./home.module.css";
 
@@ -57,12 +60,14 @@ export function ChemiHome({
               const content = (
                 <>
                   <img src={`/chemi/thumb-${id}-128-v2.webp`} alt="" />
-                  <b>{copy[id]}</b>
+                  <FanText role="item">{copy[id]}</FanText>
+                  {href && <AffinityBadge size="sm" amount={EARN[id][1]} label={getGrowthCopy(locale).gain.replace("{n}", String(EARN[id][1]))} />}
                 </>
               );
               return href ? (
                 <Link
                   key={id}
+                  aria-label={copy[id]}
                   className={styles.row}
                   data-selected={active}
                   href={href}
