@@ -16465,7 +16465,7 @@
   },
   "pfLeadSns": {
     "en": "Post about your favorite on your own social account, then upload a screenshot of that post. Once approved, the “SNS post” slot in your true-fan mission book is filled.",
-    "ko": "내 SNS에 최애 관련 글을 올리고 그 글을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 'SNS 올리기' 칸이 채워져요.",
+    "ko": "내 SNS에 최애 관련 글을 쓰고, 그 글을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 'SNS 올리기' 칸이 채워져요.",
     "source": "features/passport-proofs/ui/proofs-copy",
     "id": "features/passport-proofs/ui/proofs-copy:pfLeadSns"
   },

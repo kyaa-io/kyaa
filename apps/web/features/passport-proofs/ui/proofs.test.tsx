@@ -144,7 +144,7 @@ describe("ProofsScreen mission entry", () => {
     expect(screen.getByRole("heading", { level: 1, name: "SNS 글 인증" })).toBeTruthy();
     expect(screen.queryByRole("checkbox", { name: "인증했어요 게시판에 공개" })).toBeNull();
     // SNS-CERT-CLARITY-1123: the SNS type says what to upload, which mission book slot it fills and why to cover other people's accounts.
-    expect(screen.getByText("내 SNS에 최애 관련 글을 올리고 그 글을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 'SNS 올리기' 칸이 채워져요.")).toBeTruthy();
+    expect(screen.getByText("내 SNS에 최애 관련 글을 쓰고, 그 글을 캡처해 올려요. 승인되면 찐팬 덕질 기록의 'SNS 올리기' 칸이 채워져요.")).toBeTruthy();
     expect(screen.getByText("운영자가 캡처를 확인해요. 다른 사람의 계정·댓글은 가려서 올려 주세요")).toBeTruthy();
     expect(screen.queryByText(/카드번호/)).toBeNull();
     // Switching to membership changes the title, the line and the notice with it.
