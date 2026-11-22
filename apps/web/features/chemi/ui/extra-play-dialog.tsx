@@ -30,7 +30,7 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
       </dl>}
       {points != null && points < cost && <p className={styles.short}>
         <FanText role="meta">{fill(copy.short, { n: cost - points })}</FanText>
-        <FanSectionLink href={`/my/wallet?view=attendance&locale=${locale}`}>{copy.earn}</FanSectionLink>
+        <FanSectionLink href={`/benefits?locale=${locale}`}>{copy.earn}</FanSectionLink>
       </p>}
     </FanDialog>;
 }
