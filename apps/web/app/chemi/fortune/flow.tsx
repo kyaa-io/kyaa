@@ -25,6 +25,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { BirthSheet, type BirthInput } from "./birth-sheet";
 import {
   fortuneCalcLine,
+  fortuneChoiceLabel,
   fortuneCharacters,
   fortuneEnterLine,
   fortuneTalkLine,
@@ -413,7 +414,10 @@ export function FortuneFlow({
       : null;
 
   // 입장에서는 '응, 봐 줘', 대화에서는 다음 말로 가는 강조 버튼 하나만 둔다.
-  const primaryLabel = entering ? text("readFortune") : talk ? text(talkChoice[talk - 1]) : null;
+  // 대화 선택지는 한국어에서 최애마다 다르다(창하 영상·소품, 엘리나 노래·옷, 유나 볼 것·포인트 색).
+  const choiceLabel = (key: (typeof talkChoice)[number]) =>
+    (locale === "ko" ? fortuneChoiceLabel(character, key) : null) ?? text(key);
+  const primaryLabel = entering ? text("readFortune") : talk ? choiceLabel(talkChoice[talk - 1]) : null;
 
   const turns = () => (
     <>
@@ -626,7 +630,7 @@ export function FortuneFlow({
                 </FanAction>
                 {talk && talk < 4 && (
                   <FanAction variant="neutral" onClick={skipAhead}>
-                    {text(talkChoice[talk as 1 | 2 | 3])}
+                    {choiceLabel(talkChoice[talk as 1 | 2 | 3])}
                   </FanAction>
                 )}
               </div>

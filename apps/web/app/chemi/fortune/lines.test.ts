@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { maskBirthDate, parseBirthDate } from "./birth-sheet";
-import { fortuneTalkLine } from "./lines";
+import { fortuneChoiceLabel, fortuneTalkLine } from "./lines";
 import {
   nextFortuneStep,
   parseFortuneStep,
@@ -19,12 +19,34 @@ const input = {
 
 it("builds the same line for the same input and keeps each character's tone", () => {
   expect(fortuneTalkLine("changha", 1, input)).toBe(
-    "오늘은 82점, 좋은 날이야. 누가 먼저 손 내밀어 줄 수도 있어.",
+    "오늘은 82점, 좋은 날이야. 카메라가 먼저 찾아오듯 누가 먼저 손 내밀 수도 있어.",
   );
   expect(fortuneTalkLine("changha", 1, input)).toBe(fortuneTalkLine("changha", 1, input));
   expect(fortuneTalkLine("dosa", 4, input)).toContain("9시에서 11시 사이");
   expect(fortuneTalkLine("elina", 3, { ...input, fandom: 60 })).toContain("천천히");
   expect(fortuneTalkLine("yuna", 4, { ...input, luckyHour: null })).not.toContain("시");
+});
+
+it("gives the same result a different line and choices for each creator", () => {
+  const calm = { ...input, score: 74, grade: "무난한 날", fandom: 60 };
+  expect(fortuneTalkLine("changha", 1, calm, "원문 제목")).toBe("오늘은 74점, 무난한 날이야. 다시 찍을 것 없이 한 번에 넘어가는 날이지.");
+  expect(fortuneTalkLine("elina", 1, calm, "원문 제목")).toBe("오늘은 74점, 무난한 날이에요. 늘 입던 옷처럼 편하게 흘러가는 날이지?");
+  expect(fortuneTalkLine("yuna", 1, calm, "원문 제목")).toBe("74점, 무난한 날이야. 매일 하던 화장처럼 하던 대로 하면 돼.");
+  for (const talk of [1, 2, 3, 4] as const) {
+    const lines = (["changha", "elina", "yuna"] as const).map((who) => fortuneTalkLine(who, talk, calm));
+    expect(new Set(lines).size, `talk ${talk}`).toBe(3);
+  }
+  expect(fortuneTalkLine("changha", 4, input)).toContain("초록색 소품");
+  expect(fortuneTalkLine("elina", 4, input)).toContain("옷에 초록색");
+  expect(fortuneTalkLine("yuna", 4, input)).toContain("초록색은 포인트로");
+  expect(fortuneChoiceLabel("changha", "whatFandom")).toBe("오늘 영상 봐도 돼?");
+  expect(fortuneChoiceLabel("elina", "whatBring")).toBe("오늘 뭐 입을까?");
+  expect(fortuneChoiceLabel("yuna", "whatBring")).toBe("포인트 색은 뭐야?");
+  expect(fortuneChoiceLabel("dosa", "whatFandom")).toBeNull();
+  expect(fortuneChoiceLabel("changha", "dailySummary")).toBeNull();
+  // 유나는 느낌표 없이 담백하게, 엘리나는 한 대사 안에 존댓말과 반말을 섞는다.
+  for (const talk of [1, 2, 3, 4] as const) expect(fortuneTalkLine("yuna", talk, calm)).not.toContain("!");
+  expect(fortuneTalkLine("elina", 2, { ...calm, people: 40 })).toMatch(/봐요\. .+괜찮아\.$/);
 });
 
 it("keeps kyaa 도사 in 하오체 for every grade and branch", () => {

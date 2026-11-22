@@ -43,7 +43,7 @@ import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
 import {
-  askArt, askExamples, askFollowups, askLines, askLoop, askName, askPages, askReaction, askRecall, askSubject, askVoice,
+  askArt, askExamples, askFollowups, askLinesFor, askLoop, askName, askPages, askReaction, askRecall, askSubject, askVoice,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
   type AskCharacter, type AskContent, type AskRecall, type AskTopic,
 } from "./lines";
@@ -145,7 +145,7 @@ export function AskScene({ locale, content, character, readingId, at }: {
   const who = shown?.character ?? character;
   const where = shown?.content ?? content;
   const name = askName[who];
-  const lines = askLines[askVoice[who]];
+  const lines = askLinesFor(who);
   const art = askArt(where, who);
   // 토큰 함수가 그릴 때마다 새로 만들어져도 상태를 다시 읽지 않게 최신 함수만 기억해 둔다.
   const token = useRef(getAccessToken);

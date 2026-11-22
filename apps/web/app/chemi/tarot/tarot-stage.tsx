@@ -16,7 +16,7 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { TAROT_BACK, TAROT_DECK, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import {
   TAROT_CHARACTERS,
-  TAROT_LINES,
+  tarotLines,
   tarotAvatar,
   tarotCharacter,
   type TarotCharacter,
@@ -57,7 +57,7 @@ export function TarotStage(props: Props) {
   const uiText = useReadingCopy();
   const { step, character, shown, draw, slot, offline, meaning, reduced } = props;
   const person = tarotCharacter(character);
-  const lines = TAROT_LINES[person.voice];
+  const lines = tarotLines(character);
   const entry = step === "enter";
   const revisit = entry && shown;
   const talking = step === "flip" || step === "talk2" || step === "talk3";

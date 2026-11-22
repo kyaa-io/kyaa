@@ -68,7 +68,8 @@
     "release-notes/2026-11-22-chemi-fix-r9.json",
     "release-notes/2026-11-22-chemi-run-character.json",
     "release-notes/2026-11-22-chemi-extra-play-dialog.json",
-    "release-notes/2026-11-22-chemi-growth-room.json"
+    "release-notes/2026-11-22-chemi-growth-room.json",
+    "release-notes/2026-11-22-chemi-persona-lines.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
