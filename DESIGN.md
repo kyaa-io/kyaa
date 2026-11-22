@@ -2621,6 +2621,7 @@ At the user's request, registered Changha identity and hero images use the unedi
 
 ### 미디어 표시 (2026-11-10 S6, 사용자 PC QA #13·#15)
 
+- 홈 갤러리에서 원글 게시 후 48시간 미만인 사진에는 공통 `FanTag`로 `New`를 표시한다.
 - 홈 갤러리는 원글로 이동하는 공식 SNS 사진과 공개 팬 게시물 사진을 같은 규칙으로 고른다. 신고된 글과 비공개·숨김·삭제 글은 제외한다. CMS 크리에이터 대표 사진과 공연 이미지는 홈에서 제외한다.
 - 갤러리(홈 갤러리와 `/gallery`)는 같은 `allocateGalleryColumns`로 열을 정한다. 사진은 원본 비율 그대로이고 열 바닥을 맞춘 뒤, 각 열 안에서 이웃 사진이 같은 크기 그룹(목록 비율의 3분위수)이 되지 않게 섞는다. 열의 맨 위 사진(순위가 가장 높은 사진)은 고정이고 같은 그룹끼리는 순위 순서를 지킨다. 근거 `board/research/media-layout.md`.
 - 칸을 `contain`으로 통째로 채워야 하는 이미지·영상은 남는 여백을 그 이미지의 흐린 복사본으로 채운다. 공통 소유자는 `components/fan-ui/media-fill.tsx`(`MediaFill`, `mediaFillClass`, `MediaBackdrop`)다. 뒷면은 `alt=""`·`aria-hidden`이며 사진 자체는 자르지 않는다. 적용: 모임 격자 로고·배너 칸, 홈 쇼츠 표지, 이벤트 목록 그림. 승인 크롭·상품 배경·패스포트 장식에는 쓰지 않는다.

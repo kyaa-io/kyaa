@@ -52,8 +52,8 @@ export class HomeGalleryRepository {
     return { items: page.items, nextCursor: page.hasMore && page.last ? encodeHomeGalleryCursor(page.last) : null };
   }
 
-  private async readPage(locale: "ko" | "en", limit: number, from: { p_offset: number } | { p_after_rank: number; p_after_at: string; p_after_id: string }) {
-    const { data, error } = await this.db.rpc("read_public_gallery_post_photos", { p_include_groups: process.env.KYAA_GROUPS_ENABLED === "true", p_locale: locale, p_limit: limit, ...from });
+  private async readPage(locale: "ko" | "en", limit: number, from: { p_offset: number } | { p_after_rank: number; p_after_at: string; p_after_id: string }, markRecent = false) {
+    const { data, error } = await this.db.rpc("read_public_gallery_post_photos", { p_include_groups: process.env.KYAA_GROUPS_ENABLED === "true", p_locale: locale, p_limit: limit, ...(markRecent ? { p_mark_recent: true } : {}), ...from });
     if (error) throw new HomeGalleryRepositoryError(error.message);
     return keyPageSchema.parse(data);
   }
@@ -63,7 +63,7 @@ export class HomeGalleryRepository {
    * one or two creators). The pages are read in parallel by position; `nextCursor` continues after the last photo of the last page.
    */
   async listPublishedPool(locale: "ko" | "en", input: { pages: number }): Promise<HomeGalleryPage> {
-    const pages = await Promise.all(Array.from({ length: input.pages }, (_, index) => this.readPage(locale, 24, { p_offset: index * 24 })));
+    const pages = await Promise.all(Array.from({ length: input.pages }, (_, index) => this.readPage(locale, 24, { p_offset: index * 24 }, true)));
     const seen = new Set<string>();
     const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
     const last = pages.at(-1);

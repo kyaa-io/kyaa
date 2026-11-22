@@ -14,6 +14,7 @@ export const fanPostPath = new RegExp(`^/c/[a-z0-9-]+/community/${uuidPath}$`);
 export const groupPostPath = new RegExp(`^/pages/groups/${uuidPath}\\?tab=board&post=${uuidPath}$`);
 
 export const homeGalleryPhotoSchema = z.object({
+  isNew: z.literal(true).optional(),
   id: z.string().min(1).max(200),
   source: z.enum(["official_sns", "cms_upload", "fan_post", "group_post"]),
   image: z.object({ url: homeGalleryImageUrlSchema, width: z.number().int().positive(), height: z.number().int().positive() }).strict(),

@@ -55,3 +55,26 @@ $test$;
 SQL
 sq "select public.read_public_gallery_post_photos('ko',true,24)" >/dev/null
 echo 'PASS official, fan and group photos, public-only access, reports, deletions and group flag'
+
+# statement_timestamp() is fixed for the entire DO statement, including the RPC reads.
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+begin;
+do $test$
+declare
+  fp uuid := (select id from public.fan_posts where body='팬 게시판 사진 예시');
+  elapsed interval;
+  marked boolean;
+begin
+  foreach elapsed in array array[interval '-1 second',interval '0',interval '47 hours 59 minutes 59 seconds',interval '48 hours',interval '49 hours'] loop
+    update public.fan_posts set created_at=statement_timestamp()-elapsed where id=fp;
+    select (i ? 'isNew') into strict marked
+      from jsonb_array_elements(public.read_public_gallery_post_photos(true,'ko',true,24)->'items') i where i->>'source'='fan_post';
+    if marked <> (elapsed >= interval '0' and elapsed < interval '48 hours') then raise exception 'Unexpected New status for %', elapsed; end if;
+  end loop;
+  if exists(select 1 from jsonb_array_elements(public.read_public_gallery_post_photos('ko',true,24)->'items') i where i ? 'isNew') then
+    raise exception 'Unexpected badge on the original gallery response';
+  end if;
+end
+$test$;
+rollback;
+SQL
