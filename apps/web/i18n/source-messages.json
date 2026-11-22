@@ -17440,5 +17440,11 @@
     "ko": "로그인을 마치지 못했어요. 다시 시도해 주세요.",
     "source": "components/login-page",
     "id": "components/login-page:mkyaaCallbackFailed"
+  },
+  "m6c1f0a9d4e27": {
+    "en": "Post as",
+    "ko": "작성 이름",
+    "source": "features/fanpage/ui/notice-comments",
+    "id": "features/fanpage/ui/notice-comments:m6c1f0a9d4e27"
   }
 }
