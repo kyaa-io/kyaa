@@ -12,6 +12,10 @@
   },
   "home": {
     "todayResult": "Today’s result",
+    "playsLeft": "{n} free left",
+    "extraCost": "Extra game {n}P",
+    "playsDone": "Back tomorrow",
+    "rankingError": "Couldn't load the ranking.",
     "descriptions": {
       "fortune": "Find today's lucky sign",
       "saju": "Check your birth-date match",

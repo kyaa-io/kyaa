@@ -3,12 +3,12 @@
 import { useEffect, useState } from "react";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { getMatchCopy } from "./games/match/copy";
+import type { HomeCopy } from "./home";
 import styles from "./home.module.css";
 
 type Lobby = { freeRemaining: number; extraRemaining: number; extraCost: number };
 
-export function GameStatusChip({ game, locale }: { game: "pair" | "run"; locale: string }) {
+export function GameStatusChip({ game, copy }: { game: "pair" | "run"; copy: HomeCopy }) {
   const { authenticated, ready, user, getAccessToken } = useByUsAuth();
   const owner = user?.id;
   const [result, setResult] = useState<{ owner: string; lobby: Lobby }>();
@@ -32,9 +32,8 @@ export function GameStatusChip({ game, locale }: { game: "pair" | "run"; locale:
     return () => controller.abort();
   }, [ready, authenticated, owner, getAccessToken, game]);
   if (!authenticated || !result || result.owner !== owner) return null;
-  const copy = getMatchCopy(locale);
   const { freeRemaining, extraRemaining, extraCost } = result.lobby;
-  const label = freeRemaining > 0 ? `${copy.freePlays} ${freeRemaining}`
-    : extraRemaining > 0 ? `${copy.extraPlay} ${extraCost}P` : copy.noMore;
+  const label = freeRemaining > 0 ? copy.playsLeft.replace("{n}", String(freeRemaining))
+    : extraRemaining > 0 ? copy.extraCost.replace("{n}", String(extraCost)) : copy.playsDone;
   return <FanText role="label" className={styles.statusChip} title={label}>{label}</FanText>;
 }

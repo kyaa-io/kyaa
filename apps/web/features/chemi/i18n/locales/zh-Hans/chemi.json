@@ -12,6 +12,10 @@
   },
   "home": {
     "todayResult": "今日结果",
+    "playsLeft": "免费剩 {n} 局",
+    "extraCost": "加局 {n}P",
+    "playsDone": "明天再来",
+    "rankingError": "无法加载排行榜。",
     "descriptions": {
       "fortune": "查看今日好运",
       "saju": "按出生日期看缘分",

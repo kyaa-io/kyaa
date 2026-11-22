@@ -12,6 +12,10 @@
   },
   "home": {
     "todayResult": "ผลวันนี้",
+    "playsLeft": "ฟรีเหลือ {n}",
+    "extraCost": "เล่นเพิ่ม {n}P",
+    "playsDone": "พรุ่งนี้มาใหม่",
+    "rankingError": "โหลดอันดับไม่ได้",
     "descriptions": {
       "fortune": "ดูโชคประจำวัน",
       "saju": "ดูความเข้ากันจากวันเกิด",

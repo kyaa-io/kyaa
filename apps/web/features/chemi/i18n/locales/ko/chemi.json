@@ -12,6 +12,10 @@
   },
   "home": {
     "todayResult": "오늘 결과 보기",
+    "playsLeft": "무료 {n}판 남음",
+    "extraCost": "추가 판 {n}P",
+    "playsDone": "내일 다시",
+    "rankingError": "랭킹을 불러오지 못했어요.",
     "descriptions": {
       "fortune": "오늘의 행운을 확인해요",
       "saju": "생년월일로 보는 궁합",

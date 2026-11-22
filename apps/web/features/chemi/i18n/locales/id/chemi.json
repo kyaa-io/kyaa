@@ -12,6 +12,10 @@
   },
   "home": {
     "todayResult": "Hasil hari ini",
+    "playsLeft": "Gratis {n} lagi",
+    "extraCost": "Ekstra {n}P",
+    "playsDone": "Besok lagi",
+    "rankingError": "Peringkat tidak dapat dimuat.",
     "descriptions": {
       "fortune": "Lihat keberuntungan hari ini",
       "saju": "Cek kecocokan tanggal lahir",

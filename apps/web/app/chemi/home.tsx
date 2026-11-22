@@ -70,7 +70,7 @@ export function ChemiHome({
                     <FanText role="meta">{copy.descriptions[id]}</FanText>
                   </span>
                   {saved && <FanText role="label" className={styles.statusChip}>{copy.todayResult}</FanText>}
-                  {href && (id === "pair" || id === "run") && <GameStatusChip game={id} locale={locale} />}
+                  {href && (id === "pair" || id === "run") && <GameStatusChip game={id} copy={copy} />}
                   {href && <AffinityBadge size="sm" amount={EARN[id][1]} label={getGrowthCopy(locale).gain.replace("{n}", String(EARN[id][1]))} />}
                 </>
               );

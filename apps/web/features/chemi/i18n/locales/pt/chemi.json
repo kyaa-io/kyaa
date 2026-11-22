@@ -12,6 +12,10 @@
   },
   "home": {
     "todayResult": "Resultado de hoje",
+    "playsLeft": "{n} grátis",
+    "extraCost": "Extra {n}P",
+    "playsDone": "Volte amanhã",
+    "rankingError": "Não foi possível carregar o ranking.",
     "descriptions": {
       "fortune": "Descubra a sorte de hoje",
       "saju": "Compare as datas de nascimento",

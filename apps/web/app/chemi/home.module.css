@@ -66,10 +66,8 @@
   border-radius: var(--radius-small);
 }
 .statusChip {
-  max-inline-size: 30%;
-  overflow: hidden;
+  flex: none;
   white-space: nowrap;
-  text-overflow: ellipsis;
   background: var(--color-line-subtle);
   border-radius: var(--radius-small);
   padding-inline: var(--space-2);
@@ -97,6 +95,8 @@
 .rankings {
   --rank-row: calc(var(--space-6) + var(--space-1));
   --rank-avatar: var(--space-6);
+  --rank-mine: calc(var(--min-target) + var(--space-1));
+  --rank-gap: var(--space-2);
   display: flex;
   gap: var(--space-3);
   min-width: 0;
@@ -106,7 +106,7 @@
 .rankCard {
   display: grid;
   align-content: start;
-  gap: var(--space-2);
+  gap: var(--rank-gap);
   flex: 0 0 min(84%, calc(var(--space-12) * 6 + var(--space-3)));
   scroll-snap-align: start;
 }
@@ -135,6 +135,16 @@
   align-content: start;
   justify-items: start;
 }
+/* 불러오는 중·오류도 세 줄 + 내 줄과 같은 높이를 차지해 카드 높이가 바뀌지 않는다. */
+.leaders[data-status] {
+  min-block-size: calc(var(--rank-row) * 3 + var(--rank-gap) + var(--rank-mine));
+  align-content: center;
+  justify-items: center;
+  gap: var(--space-2);
+}
+.leaders[data-status="loading"] {
+  justify-items: stretch;
+}
 .rankRow,
 .rankMine {
   display: grid;
@@ -147,14 +157,6 @@
 }
 .rankRow[data-me] {
   color: var(--color-accent-ink);
-}
-/* 기록이 세 줄에 못 미칠 때 남는 줄만큼의 게임 그림 */
-.rankArt {
-  display: block;
-  width: 100%;
-  block-size: calc(var(--rank-row) * var(--open));
-  object-fit: cover;
-  border-radius: var(--radius-small);
 }
 .rankMine {
   grid-template-columns: minmax(var(--space-6), auto) var(--rank-avatar) minmax(0, 1fr) auto;
@@ -203,7 +205,7 @@
   }
   .rankMine {
     grid-template-columns: minmax(var(--space-6), auto) minmax(0, 1fr) auto;
-    min-height: calc(var(--min-target) + var(--space-1));
+    min-height: var(--rank-mine);
   }
   .rankMine .rankAvatar {
     display: none;
@@ -226,6 +228,8 @@
   .rankings {
     --rank-row: calc(var(--space-12) + var(--space-1));
     --rank-avatar: calc(var(--space-8) + var(--space-1));
+    --rank-mine: calc(var(--rank-row) + var(--space-3));
+    --rank-gap: var(--space-3);
     grid-area: 1 / 2 / 3 / 3;
     align-self: stretch;
     flex-direction: column;
@@ -235,15 +239,10 @@
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-  }
-  .rankArt {
-    flex: 1 1 auto;
-    min-block-size: calc(var(--rank-row) * var(--open));
-    block-size: 0;
+    gap: var(--rank-gap);
   }
   .rankMine {
-    min-height: calc(var(--rank-row) + var(--space-3));
+    min-height: var(--rank-mine);
     padding-top: var(--space-3);
   }
   .rankCard header {
@@ -306,14 +305,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-1);
   min-height: var(--min-target);
 }
+/* 점은 8px 이지만 누르는 폭은 24px 이상 */
 .dots > button:not(.pause) {
   width: auto;
   min-width: 0;
   min-height: var(--min-target);
-  padding: 0;
+  padding: 0 var(--space-2);
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill);

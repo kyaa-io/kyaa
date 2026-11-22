@@ -12,6 +12,10 @@
   },
   "home": {
     "todayResult": "Kết quả hôm nay",
+    "playsLeft": "Miễn phí: {n}",
+    "extraCost": "Lượt thêm {n}P",
+    "playsDone": "Mai chơi tiếp",
+    "rankingError": "Không tải được bảng xếp hạng.",
     "descriptions": {
       "fortune": "Xem vận may hôm nay",
       "saju": "Xem độ hợp theo ngày sinh",
