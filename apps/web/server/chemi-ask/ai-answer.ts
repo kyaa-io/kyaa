@@ -10,8 +10,9 @@ import { classifyAsk } from "./guard";
 
 /**
  * AI 답. 난감한 질문 분류(guard)를 통과한 질문만 여기로 온다.
- * 풀이 값과 최애 말투만 주고 2~4문장을 받는다. 검사에서 떨어지거나 실패·시간 초과·상한이면 null 을 돌려주고,
- * 부른 쪽이 규칙 문장(answer.ts)을 쓴다. 질문·답 글은 로그에 남기지 않는다(결과 종류만).
+ * 풀이 값과 최애 말투만 주고 2~4문장을 받는다. 검사에서 떨어지거나 실패·시간 초과면 떨어진 이유를 붙여 다시 부른다
+ * (최대 2번 더, 전체 8초 안). 모두 실패하거나 상한이면 null 을 돌려주고, 부른 쪽이 규칙 문장(answer.ts)을 쓴다.
+ * 질문·답 글은 로그에 남기지 않는다(결과 종류·다시 부른 수만).
  */
 export type AskAiInput = {
   character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string;
@@ -25,7 +26,14 @@ export const ASK_AI_USER_DAILY_CALLS = 20;
 /** 서비스 전체 하루 상한(호출 수·토큰). */
 export const ASK_AI_DAILY_CALLS = 2000;
 export const ASK_AI_DAILY_TOKENS = 3_000_000;
+/** 다시 부르기까지 포함한 전체 시간. 화면은 그동안 최애가 생각 중인 표시를 그대로 둔다(화면 제한 20초). */
 const TIMEOUT_MS = 8000;
+/** 한 번 부를 때 기다리는 최대 시간. 보통 1~1.5초라, 멈춘 호출 하나가 전체 시간을 다 쓰지 않게 끊는다. */
+const ATTEMPT_MS = 4000;
+/** 남은 시간이 이보다 짧으면 다시 부르지 않는다. */
+const ATTEMPT_MIN_MS = 1500;
+/** 처음 한 번 + 다시 부르기 2번. 하루 상한(ASK_AI_DAILY_CALLS)은 다시 부른 호출도 한 번씩 센다. */
+export const ASK_AI_ATTEMPTS = 3;
 
 const topicName: Record<AskTopic, string> = { love: "연애", work: "일", money: "돈", people: "관계", month: "이번 달", free: "자유 질문" };
 const fieldName: Record<string, string> = { love: "연애", work: "일", money: "돈", people: "관계", fandom: "덕질", rest: "쉼", overall: "전체" };
@@ -70,7 +78,19 @@ export function askFacts(input: Pick<AskAiInput, "content" | "topic" | "question
 
 const hangul = /[가-힣]/;
 
-export function askPrompt(input: AskAiInput) {
+/** 다시 부를 때 붙이는 고칠 점. 떨어진 이유마다 한 줄. */
+function retryNote(fault: string, input: AskAiInput) {
+  switch (fault) {
+    case "length": return "2~3문장, 모두 합쳐 150자 안쪽으로 끝까지 쓴다.";
+    case "format": return "목록·이모지·기호·따옴표·줄 바꿈 없이 문장만 쓴다.";
+    case "banned": return "결제·한도·AI·지침 이야기와 의료·법률·투자 단정 없이 풀이와 조언만 말한다.";
+    case "grounding": return "[풀이 값]과 팬의 말에 없는 숫자·날짜·요일·금액·카드·사람 이름은 하나도 쓰지 않는다.";
+    case "voice": return `모든 문장을 이 말투로 맺는다: ${voiceRule[voiceOf(input.character)]}`;
+    default: return null;
+  }
+}
+
+export function askPrompt(input: AskAiInput, fault?: string) {
   const korean = hangul.test(input.question);
   const own = askLinesFor(input.character);
   const persona = isChemiPersona(input.character) ? chemiPersona[input.character] : null;
@@ -98,6 +118,7 @@ export function askPrompt(input: AskAiInput) {
     `[주제] ${topicName[input.topic]}`,
     ...(input.before ? ["[앞선 대화]", `팬: ${input.before.question}`, `${askName[input.character]}: ${input.before.answer}`, "[이어 묻는 질문]"] : ["[질문]"]),
     input.question,
+    ...(fault && retryNote(fault, input) ? ["[다시 쓰기]", `앞서 쓴 답은 지킬 것을 어겨 쓰지 않았다. 이번에는 ${retryNote(fault, input)}`] : []),
   ].join("\n");
   return { system, user, korean };
 }
@@ -143,7 +164,8 @@ const CACHE_MS = 6 * 60 * 60 * 1000;
 const CACHE_SIZE = 500;
 export const clearAskAiCache = () => cache.clear();
 
-const log = (outcome: string) => console.info(JSON.stringify({ event: "chemi_ask_ai", outcome }));
+const log = (outcome: string, retries = 0) =>
+  console.info(JSON.stringify({ event: "chemi_ask_ai", outcome, ...(retries ? { retries } : {}) }));
 
 export async function aiAnswer(input: AskAiInput, rpc: Rpc, p_user: string): Promise<string | null> {
   if (!askAiReady()) return null;
@@ -152,21 +174,35 @@ export async function aiAnswer(input: AskAiInput, rpc: Rpc, p_user: string): Pro
   ])).digest("hex");
   const hit = cache.get(key);
   if (hit && hit.until > Date.now()) return log("cache"), hit.answer;
-  try {
-    const reserved = await rpc("chemi_ai_reserve", {
-      p_user, p_purpose: "ask", p_user_calls: ASK_AI_USER_DAILY_CALLS, p_day_calls: ASK_AI_DAILY_CALLS, p_day_tokens: ASK_AI_DAILY_TOKENS,
-    });
-    if (reserved !== true) return log("capped"), null;
-    const { system, user } = askPrompt(input);
-    const reply = await askAiText({ system, user, signal: AbortSignal.timeout(TIMEOUT_MS) });
-    await rpc("chemi_ai_record", { p_purpose: "ask", p_in: reply.tokensIn, p_out: reply.tokensOut }).catch(() => undefined);
-    const answer = reply.text.replace(/\s+/g, " ").trim();
-    const fault = askAnswerFault(answer, input);
-    if (fault) return log(`rejected_${fault}`), null;
-    if (cache.size >= CACHE_SIZE) cache.delete(cache.keys().next().value!);
-    cache.set(key, { answer, until: Date.now() + CACHE_MS });
-    return log("answered"), answer;
-  } catch (error) {
-    return log(error instanceof Error && error.name === "TimeoutError" ? "timeout" : "failed"), null;
+  const deadline = Date.now() + TIMEOUT_MS;
+  // 질문 차감은 부른 쪽이 답을 받은 뒤 SQL 에서 한 번만 한다. 여기서 다시 불러도 차감되지 않는다.
+  let fault: string | undefined;
+  let outcome = "failed";
+  let retries = 0;
+  for (let attempt = 0; attempt < ASK_AI_ATTEMPTS; attempt += 1) {
+    const left = deadline - Date.now();
+    if (attempt > 0 && left < ATTEMPT_MIN_MS) break;
+    retries = attempt;
+    try {
+      const reserved = await rpc("chemi_ai_reserve", {
+        p_user, p_purpose: "ask", p_user_calls: ASK_AI_USER_DAILY_CALLS, p_day_calls: ASK_AI_DAILY_CALLS, p_day_tokens: ASK_AI_DAILY_TOKENS,
+      });
+      if (reserved !== true) return log("capped", retries), null;
+      const { system, user } = askPrompt(input, fault);
+      const reply = await askAiText({ system, user, signal: AbortSignal.timeout(Math.min(left, ATTEMPT_MS)) });
+      await rpc("chemi_ai_record", { p_purpose: "ask", p_in: reply.tokensIn, p_out: reply.tokensOut }).catch(() => undefined);
+      const answer = reply.text.replace(/\s+/g, " ").trim();
+      fault = askAnswerFault(answer, input) ?? undefined;
+      if (!fault) {
+        if (cache.size >= CACHE_SIZE) cache.delete(cache.keys().next().value!);
+        cache.set(key, { answer, until: Date.now() + CACHE_MS });
+        return log(retries ? "answered_after_retry" : "answered", retries), answer;
+      }
+      outcome = `rejected_${fault}`;
+    } catch (error) {
+      fault = undefined;
+      outcome = (error as { name?: unknown } | null)?.name === "TimeoutError" ? "timeout" : "failed";
+    }
   }
+  return log(outcome, retries), null;
 }

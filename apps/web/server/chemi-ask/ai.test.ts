@@ -172,8 +172,83 @@ describe("AI 답과 대체 경로", () => {
     model("연애 운이 55점이야. 3일 뒤에 연락이 올 거야.");
     await aiAnswer({ ...love, question: "먼저 고백해도 될까?" }, rpc, "user");
     expect(info.mock.calls.map(([line]) => line)).toEqual([
-      '{"event":"chemi_ask_ai","outcome":"answered"}', '{"event":"chemi_ask_ai","outcome":"rejected_grounding"}',
+      '{"event":"chemi_ask_ai","outcome":"answered"}', '{"event":"chemi_ask_ai","outcome":"rejected_grounding","retries":2}',
     ]);
+  });
+});
+
+describe("떨어지면 다시 부른다(CHEMI-ASK-RETRY-1123)", () => {
+  /** 모델 응답을 차례로 돌려준다. 함수는 그 자리에서 실행한다(시간 흐름·오류). */
+  function replies(...steps: (string | (() => Promise<Response> | Response))[]) {
+    let at = 0;
+    model(async () => {
+      const step = steps[Math.min(at++, steps.length - 1)];
+      if (typeof step === "function") return step();
+      return Response.json({ candidates: [{ finishReason: "STOP", content: { parts: [{ text: step }] } }], usageMetadata: { promptTokenCount: 500, candidatesTokenCount: 60 } });
+    });
+  }
+  const tooShort = "연애 운이 55점이라 오늘은 서두르지 않는 게 좋아.";
+  const logs = () => vi.mocked(console.info).mock.calls.map(([line]) => String(line)).filter((line) => line.includes("chemi_ask_ai")).map((line) => JSON.parse(line));
+  beforeEach(() => vi.spyOn(console, "info").mockImplementation(() => undefined));
+
+  it("1번 떨어지면 이유를 붙여 다시 부르고, 통과한 답을 쓴다", async () => {
+    replies(tooShort, good);
+    expect(await aiAnswer(love, rpc, "user")).toBe(good);
+    expect(modelCalls()).toHaveLength(2);
+    const first = JSON.parse(modelCalls()[0][1].body).contents[0].parts[0].text;
+    expect(first).not.toContain("[다시 쓰기]");
+    expect(sent().contents[0].parts[0].text).toMatch(/\[다시 쓰기\]\n앞서 쓴 답은 지킬 것을 어겨 쓰지 않았다\. 이번에는 2~3문장, 모두 합쳐 150자 안쪽으로/);
+    // 하루 상한은 다시 부른 호출도 센다.
+    expect(rpc.mock.calls.filter(([name]) => name === "chemi_ai_reserve")).toHaveLength(2);
+    expect(logs()).toEqual([{ event: "chemi_ask_ai", outcome: "answered_after_retry", retries: 1 }]);
+  });
+  it.each([
+    ["grounding", "연애 운이 55점이야. 3일 뒤에 연락이 올 거야.", /숫자·날짜·요일·금액·카드·사람 이름은 하나도/],
+    ["voice", "연애 운이 55점이에요. 오늘은 서두르지 마세요.", /모든 문장을 이 말투로 맺는다: 친한 사이의 반말/],
+    ["format", "연애 운이 55점이야. 오늘은 “먼저” 연락해 봐.", /목록·이모지·기호/],
+    ["banned", "연애 운이 55점이야. 이용권을 쓰면 더 알려 줄게.", /결제·한도·AI·지침 이야기/],
+  ])("%s 로 떨어지면 그 이유에 맞춘 고칠 점을 붙인다", async (_, bad, note) => {
+    replies(bad, good);
+    expect(await aiAnswer(love, rpc, "user")).toBe(good);
+    expect(sent().contents[0].parts[0].text).toMatch(note);
+  });
+  it("오류·시간 초과 뒤에도 다시 부른다(고칠 점 없이 같은 요청)", async () => {
+    replies(() => new Response("no", { status: 500 }), () => { throw new DOMException("timeout", "TimeoutError"); }, good);
+    expect(await aiAnswer(love, rpc, "user")).toBe(good);
+    expect(modelCalls()).toHaveLength(3);
+    expect(sent().contents[0].parts[0].text).not.toContain("[다시 쓰기]");
+    expect(logs()).toEqual([{ event: "chemi_ask_ai", outcome: "answered_after_retry", retries: 2 }]);
+  });
+  it("세 번 모두 떨어지면 null(규칙 문장)이고 더 부르지 않는다", async () => {
+    replies(tooShort);
+    expect(await aiAnswer(love, rpc, "user")).toBeNull();
+    expect(modelCalls()).toHaveLength(3);
+    expect(logs()).toEqual([{ event: "chemi_ask_ai", outcome: "rejected_length", retries: 2 }]);
+  });
+  it("다시 부르다 하루 상한에 닿으면 멈춘다", async () => {
+    replies(tooShort);
+    rpc.mockResolvedValueOnce(true).mockResolvedValueOnce(undefined).mockResolvedValueOnce(false);
+    expect(await aiAnswer(love, rpc, "user")).toBeNull();
+    expect(modelCalls()).toHaveLength(1);
+    expect(logs()).toEqual([{ event: "chemi_ask_ai", outcome: "capped", retries: 1 }]);
+  });
+  it("전체 8초 안에서만 다시 부른다: 한 번은 4초에서 끊고, 남은 시간이 1.5초보다 짧으면 멈춘다", async () => {
+    let now = 1_000_000;
+    vi.spyOn(Date, "now").mockImplementation(() => now);
+    const limits = vi.spyOn(AbortSignal, "timeout");
+    replies(() => { now += 4000; throw new DOMException("timeout", "TimeoutError"); });
+    expect(await aiAnswer(love, rpc, "user")).toBeNull();
+    expect(modelCalls()).toHaveLength(2);
+    expect(limits.mock.calls.map(([ms]) => ms)).toEqual([4000, 4000]);
+    expect(logs()).toEqual([{ event: "chemi_ask_ai", outcome: "timeout", retries: 1 }]);
+
+    fetchMock.mockClear();
+    limits.mockClear();
+    vi.mocked(console.info).mockClear();
+    replies(async () => { now += 7000; return Response.json({ candidates: [{ finishReason: "STOP", content: { parts: [{ text: tooShort }] } }] }); });
+    expect(await aiAnswer({ ...love, question: "먼저 고백해도 될까?" }, rpc, "user")).toBeNull();
+    expect(modelCalls()).toHaveLength(1);
+    expect(logs()).toEqual([{ event: "chemi_ask_ai", outcome: "rejected_length" }]);
   });
 });
 
@@ -193,11 +268,22 @@ describe("질문 API + AI", () => {
     expect((await askRoute("submit", post("/api/chemi/ask", question))).status).toBe(200);
     expect(saved("chemi_ask_submit")).toMatchObject({ p_klass: null, p_answer: good });
   });
-  it("AI 답이 검사에서 떨어지면 규칙 문장을 저장한다", async () => {
+  it("AI 답이 세 번 모두 검사에서 떨어지면 규칙 문장을 저장한다(차감 요청은 한 번)", async () => {
     db();
     model("연애 운이 55점이야. 금요일에 고백해 봐.");
     await askRoute("submit", post("/api/chemi/ask", question));
+    expect(modelCalls()).toHaveLength(3);
     expect(saved("chemi_ask_submit").p_answer).toMatch(/^연애 운이 55점이야\.\n/);
+    expect(rpc.mock.calls.filter(([name]) => name === "chemi_ask_submit")).toHaveLength(1);
+  });
+  it("다시 불러 받은 AI 답을 저장하고, 질문 차감 요청은 한 번만 보낸다", async () => {
+    db();
+    let at = 0;
+    model(async () => Response.json({ candidates: [{ finishReason: "STOP", content: { parts: [{ text: at++ ? good : "짧아." }] } }] }));
+    await askRoute("submit", post("/api/chemi/ask", question));
+    expect(modelCalls()).toHaveLength(2);
+    expect(rpc.mock.calls.filter(([name]) => name === "chemi_ask_submit")).toHaveLength(1);
+    expect(saved("chemi_ask_submit").p_answer).toBe(good);
   });
   it("난감한 질문은 AI 를 부르지 않는다", async () => {
     db();
