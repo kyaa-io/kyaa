@@ -13,7 +13,7 @@ export function createPublicHomeGalleryHandler(getRepository: () => Pick<HomeGal
     const query = new Set(keys).size === keys.length ? publicQuerySchema.safeParse(Object.fromEntries(params)) : null;
     if (!query?.success) return Response.json({ error: { code: "INVALID_REQUEST" } }, { status: 400 });
     try {
-      return Response.json(await getRepository().listPublished(query.data.locale, { limit: 24, cursor: query.data.cursor ?? null }), { headers: publicContentCacheHeaders() });
+      return Response.json(await getRepository().listPublished(query.data.locale, { limit: 24, cursor: query.data.cursor ?? null }), { headers: { "cache-control": "private, no-store" } });
     } catch (error) {
       if (error instanceof HomeGalleryRepositoryError && /cursor/.test(error.message)) return Response.json({ error: { code: "INVALID_CURSOR" } }, { status: 400 });
       return Response.json({ error: { code: "HOME_GALLERY_UNAVAILABLE" } }, { status: 503 });
