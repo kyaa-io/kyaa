@@ -205,7 +205,7 @@ const statuses: Record<string, number> = {
   CHEMI_UNAVAILABLE: 503,
 };
 type Operation =
-  "fortuneDeep" | "tarotSpread" | "pointDate" | "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
+  "fortuneDeep" | "tarotSpread" | "pointDate" | "datePrice" | "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
 export async function rewardRoute(
   op: Operation,
   request: Request,
@@ -237,6 +237,7 @@ export async function rewardRoute(
         };
       }
       const deps = createFanpageDependencies();
+      if (op === "datePrice") return { price: z.number().int().nonnegative().parse(await deps.rpc("chemi_date_reading_price", {})) };
       if (op === "card") return deps.rpc("chemi_get_share", { p_share: id });
       const { appUserId: p_user } = await deps.authorize(auth);
       if (op === "pointDate") {
