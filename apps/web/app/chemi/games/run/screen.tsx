@@ -8,7 +8,7 @@ import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { ChevronLeft, Volume2, VolumeX } from "@/components/fan-ui/fan-icons";
-import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
@@ -215,18 +215,8 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       before={before} saving={busy && !result} trial={Boolean(ticket?.trial)} member={auth.authenticated} spent={spent} free={free} extra={extra}
       busy={busy} copied={copied} onAgain={again} onLogin={() => auth.login()} onShare={() => void shareResult()}
       onAllRanks={() => setAllRanks(true)} errorLine={errorLine} reminder={reminder} />}
-    <FanDialog open={paying} onOpenChange={setPaying} title={copy.extraTitle} closeLabel={copy.close} size="sm" responsive
-      secondary={{ label: copy.cancel, onClick: () => setPaying(false) }}
-      primary={{ label: copy.pay, onClick: () => void begin(true), disabled: busy || !lobby || lobby.points < 10 || extra <= 0, loading: busy }}>
-      {lobby && <dl className={styles.pay}>
-        <div><FanText as="dt" role="meta">{copy.pointLabel}</FanText><FanText as="dd" role="item">{number.format(lobby.points)}P → {number.format(Math.max(0, lobby.points - 10))}P</FanText></div>
-        <div><FanText as="dt" role="meta">{copy.extraLabel}</FanText><FanText as="dd" role="item">{3 - extra}/3 → {Math.min(3, 4 - extra)}/3</FanText></div>
-      </dl>}
-      {lobby && lobby.points < 10 && <p className={styles.short}>
-        <FanText role="meta">{fill(copy.short, { n: 10 - lobby.points })}</FanText>
-        <FanSectionLink href={`/my/wallet?view=attendance&locale=${locale}`}>{copy.earn}</FanSectionLink>
-      </p>}
-    </FanDialog>
+    <ExtraPlayDialog open={paying} onOpenChange={setPaying} onConfirm={() => void begin(true)}
+      busy={busy} locale={locale} points={lobby?.points} cost={10} extraRemaining={extra} />
     <FanDialog open={allRanks} onOpenChange={setAllRanks} title={copy.ranking} closeLabel={copy.close} size="sm" responsive>
       <ol className={styles.allRanks}>
         {rows.map((row) => <li data-row="" key={row.place} data-me={row.isMe}>
