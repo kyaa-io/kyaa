@@ -14,7 +14,9 @@ import { useRef, useState } from "react";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { z } from "zod";
 import { AuthIntentLink } from "@/components/auth-intent-link";
-import { commentsSchema } from "../domain/community";
+import { commentAuthorSchema, commentsSchema } from "../domain/community";
+import { FanSelectMenu } from "@/components/fan-ui/fan-select-menu";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { useCommunityResource } from "./use-community-resource";
 import { EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
@@ -25,7 +27,7 @@ import { ContentActions, ContentTranslation } from "@/features/content-safety/ui
 import previewStyles from "./fanpage.module.css";
 import detailStyles from "./notice-comments.module.css";
 
-const parseComments = (value: unknown) => commentsSchema.extend({ nextCursor: z.string().nullable() }).parse(value);
+const parseComments = (value: unknown) => commentsSchema.extend({ nextCursor: z.string().nullable(), author: commentAuthorSchema.optional() }).parse(value);
 export function NoticeComments({ slug, noticeSlug, locale, preview = false, welcome = false, returnTo, onPosted, onChanged }: { slug: string; noticeSlug: string; locale: AppLocale; preview?: boolean; welcome?: boolean; returnTo?: string; onPosted?: () => void; onChanged?: () => void }) {
   const auth = usePrivy();
   return <CommentsForOwner key={`${slug}:${noticeSlug}:${auth.user?.id ?? "guest"}`} {...{ slug, noticeSlug, locale, preview, welcome, returnTo, onPosted, onChanged }} />;
@@ -40,8 +42,13 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const attempt = useRef<{ body: string; key: string } | null>(null);
+  const [asOfficial, setAsOfficial] = useState(false);
+  const attempt = useRef<{ body: string; asOfficial: boolean; key: string } | null>(null);
   const submitting = useRef(false);
+  // The name a new comment goes out under. It keeps the last first page's answer while a later page loads.
+  const [author, setAuthor] = useState<z.infer<typeof commentAuthorSchema> | null>(null);
+  const loadedAuthor = resource.state.status === "ready" ? resource.state.data.author : undefined;
+  if (loadedAuthor && JSON.stringify(loadedAuthor) !== JSON.stringify(author)) setAuthor(loadedAuthor);
   async function mutate() {
     if (submitting.current) return;
     submitting.current = true; setBusy(true); setError("");
@@ -49,10 +56,11 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
       const token = await getAccessToken();
       if (!token) throw new Error();
       const trimmed = body.trim();
-      if (!attempt.current || attempt.current.body !== trimmed) attempt.current = { body: trimmed, key: crypto.randomUUID() };
+      const official = asOfficial && Boolean(author?.official);
+      if (!attempt.current || attempt.current.body !== trimmed || attempt.current.asOfficial !== official) attempt.current = { body: trimmed, asOfficial: official, key: crypto.randomUUID() };
       const response = await fetch( `/api/celebrities/${slug}/notices/${noticeSlug}/comments`, {
         method: "POST", headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
-        body: JSON.stringify({ body: trimmed, idempotencyKey: attempt.current!.key }),
+        body: JSON.stringify({ body: trimmed, idempotencyKey: attempt.current!.key, ...(official ? { asOfficial: true } : {}) }),
       });
       if (!response.ok) { setError(response.status === 429 ? (locale === "ko" ? "댓글은 잠시 후 다시 남겨 주세요." : translate(locale, localizedMessages.m3050bc7116ad, "Please wait before posting again.")) : (locale === "ko" ? "저장하지 못했어요. 다시 시도해 주세요." : translate(locale, localizedMessages.m22c6a29029bd, "Couldn't save. Please try again."))); return; }
         // The comment pays like a fan board comment: the answer says what was paid, or why nothing was.
@@ -69,11 +77,11 @@ function CommentsForOwner({ slug, noticeSlug, locale, preview, welcome, returnTo
     {resource.refreshFailed && <p role="status">{locale === "ko" ? "댓글을 불러오지 못했어요." : translate(locale, localizedMessages.m75ec2fbb186d, "Couldn't load comments.")} <button type="button" onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m7be9e2b0e04a, "Retry")}</button></p>}
     <div id={preview ? undefined : "comments"}>
       {resource.state.status === "loading" ? <FanSkeletonRows rows={2} variant="member" /> : resource.state.status === "error" ? <p role="alert">{locale === "ko" ? "댓글을 불러오지 못했어요." : translate(locale, localizedMessages.m75ec2fbb186d, "Couldn't load comments.")} <button onClick={resource.retry}>{locale === "ko" ? "다시 시도" : translate(locale, localizedMessages.m7be9e2b0e04a, "Retry")}</button></p> : <>
-        {resource.state.data.comments.length > 0 && <ul className={styles.commentList}>{resource.state.data.comments.map((comment) => <li key={comment.id}><img src={comment.avatarUrl} width={preview ? 32 : 40} height={preview ? 32 : 40} alt="" data-artist-avatar={comment.artist || undefined} /><div><div className={styles.commentMeta}><strong>{comment.nickname}</strong>{comment.artist && <GroupArtistMark locale={locale} />}<time dateTime={comment.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(comment.createdAt))}</time>{comment.editedAt && <EditedMark locale={locale} />}{!comment.isOwner && <ContentActions directReport targetType="notice_comment" targetId={comment.id} locale={locale} onChanged={resource.retry} />}</div>{comment.isOwner ? <OwnedCommentActions url={`/api/notice-comments/${comment.id}`} body={comment.body} locale={locale} refresh={() => { onChanged?.(); resource.retry(); }}><ContentTranslation sourceText={comment.body} targetType="notice_comment" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation></OwnedCommentActions> : <ContentTranslation sourceText={comment.body} targetType="notice_comment" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation>}</div></li>)}</ul>}
+        {resource.state.data.comments.length > 0 && <ul className={styles.commentList}>{resource.state.data.comments.map((comment) => <li key={comment.id}><img src={comment.avatarUrl} width={preview ? 32 : 40} height={preview ? 32 : 40} alt="" data-artist-avatar={comment.artist || comment.isOfficial || undefined} /><div><div className={styles.commentMeta}><strong>{comment.nickname}</strong>{(comment.artist || comment.isOfficial) && <GroupArtistMark locale={locale} />}<time dateTime={comment.createdAt}>{new Intl.DateTimeFormat(locale, { calendar: "gregory", month: "short", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date(comment.createdAt))}</time>{comment.editedAt && <EditedMark locale={locale} />}{!comment.isOwner && <ContentActions directReport targetType="notice_comment" targetId={comment.id} locale={locale} onChanged={resource.retry} />}</div>{comment.isOwner ? <OwnedCommentActions url={`/api/notice-comments/${comment.id}`} body={comment.body} locale={locale} refresh={() => { onChanged?.(); resource.retry(); }}><ContentTranslation sourceText={comment.body} targetType="notice_comment" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation></OwnedCommentActions> : <ContentTranslation sourceText={comment.body} targetType="notice_comment" targetId={comment.id} locale={locale}><p>{comment.body}</p></ContentTranslation>}</div></li>)}</ul>}
         {!preview && <div className={styles.pagination}>{cursor && <button onClick={() => setCursor(null)}>{locale === "ko" ? "최신 댓글" : translate(locale, localizedMessages.m787c23318977, "Newest")}</button>}{resource.state.data.nextCursor && <button onClick={() => { if (resource.state.status === "ready") setCursor(resource.state.data.nextCursor); }}>{locale === "ko" ? "이전 댓글" : translate(locale, localizedMessages.md95599a46ca8, "Older comments")}</button>}</div>}
       </>}
     </div>
-    {ready && authenticated ? <form className={styles.commentForm} onSubmit={(event) => { event.preventDefault(); void mutate(); }}><label htmlFor={`comment-${noticeSlug}`}>{locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.medde5c8acf8b, "Leave a comment")}</label><textarea id={`comment-${noticeSlug}`} value={body} onChange={(event) => setBody(event.target.value)} aria-describedby={[slug === WAVE_FANPAGE_SLUG ? `comment-note-${noticeSlug}` : null, error ? `comment-error-${noticeSlug}` : null].filter(Boolean).join(" ") || undefined} maxLength={1000} rows={preview ? 2 : 3} required disabled={busy} placeholder={locale === "ko" ? "함께 나누고 싶은 이야기를 남겨 주세요." : translate(locale, localizedMessages.macce2f00ffd7, "Share a thought with other fans.")} /><div>{slug === WAVE_FANPAGE_SLUG && <small id={`comment-note-${noticeSlug}`}>{waveActivityNameNote[locale]}</small>}<EarnBadgeCorner action="comment" locale={locale}><button type="submit" className={styles.darkButton} disabled={busy || !body.trim()}>{busy ? (locale === "ko" ? "저장 중…" : translate(locale, localizedMessages.md971c1d51fcb, "Saving…")) : (locale === "ko" ? "등록" : translate(locale, localizedMessages.m80d2b610a85f, "Post"))}</button></EarnBadgeCorner></div></form> : ready ? returnTo ? <Link className={styles.loginComment} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</Link> : <AuthIntentLink className={styles.loginComment} locale={locale} input={{ sourcePath: `/c/${slug}/notices/${noticeSlug}`, sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "celebrity", targetId: slug }}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</AuthIntentLink> : null}
+    {ready && authenticated ? <form className={styles.commentForm} onSubmit={(event) => { event.preventDefault(); void mutate(); }}><label htmlFor={`comment-${noticeSlug}`}>{locale === "ko" ? "댓글 남기기" : translate(locale, localizedMessages.medde5c8acf8b, "Leave a comment")}</label><textarea id={`comment-${noticeSlug}`} value={body} onChange={(event) => setBody(event.target.value)} aria-describedby={[slug === WAVE_FANPAGE_SLUG ? `comment-note-${noticeSlug}` : null, error ? `comment-error-${noticeSlug}` : null].filter(Boolean).join(" ") || undefined} maxLength={1000} rows={preview ? 2 : 3} required disabled={busy} placeholder={locale === "ko" ? "함께 나누고 싶은 이야기를 남겨 주세요." : translate(locale, localizedMessages.macce2f00ffd7, "Share a thought with other fans.")} /><div>{slug === WAVE_FANPAGE_SLUG ? <small id={`comment-note-${noticeSlug}`}>{waveActivityNameNote[locale]}</small> : author?.official ? <FanSelectMenu label={ko ? "작성 이름" : translate(locale, localizedMessages.m6c1f0a9d4e27, "Post as")} value={asOfficial ? "official" : "personal"} onValueChange={(value) => setAsOfficial(value === "official")} active={asOfficial} disabled={busy} options={[{ value: "personal", label: author.name }, { value: "official", label: author.official.name }]} /> : author ? <FanText role="meta">{author.name}</FanText> : null}<EarnBadgeCorner action="comment" locale={locale}><button type="submit" className={styles.darkButton} disabled={busy || !body.trim()}>{busy ? (locale === "ko" ? "저장 중…" : translate(locale, localizedMessages.md971c1d51fcb, "Saving…")) : (locale === "ko" ? "등록" : translate(locale, localizedMessages.m80d2b610a85f, "Post"))}</button></EarnBadgeCorner></div></form> : ready ? returnTo ? <Link className={styles.loginComment} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</Link> : <AuthIntentLink className={styles.loginComment} locale={locale} input={{ sourcePath: `/c/${slug}/notices/${noticeSlug}`, sourceQuery: `?locale=${locale}`, actionType: "OPEN_PASSPORT", targetType: "celebrity", targetId: slug }}>{locale === "ko" ? "로그인하고 댓글 남기기" : translate(locale, localizedMessages.ma981a032c0ac, "Sign in to comment")}</AuthIntentLink> : null}
 
     {error && <p id={`comment-error-${noticeSlug}`} role="alert">{error}</p>}
   </section>;

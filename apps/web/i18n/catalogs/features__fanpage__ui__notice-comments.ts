@@ -234,5 +234,17 @@ export const messages = {
     "fr": "Connectez-vous pour commenter",
     ru: "Войдите, чтобы оставить комментарий."
 
+  },
+  "m6c1f0a9d4e27": {
+    "ja": "投稿者名",
+    "zh-Hans": "发布名称",
+    "zh-Hant": "發布名稱",
+    "es": "Publicar como",
+    "id": "Posting sebagai",
+    "vi": "Đăng với tên",
+    "th": "โพสต์ในชื่อ",
+    "pt": "Publicar como",
+    "fr": "Publier en tant que",
+    ru: "Имя автора"
   }
 } satisfies Record<string, TranslatedMessage>;

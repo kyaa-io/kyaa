@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
-import { celebritySlugSchema, commentReactionResultSchema, commentReactionSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardResponseSchema, postCommentSchema } from "../../features/fanpage/domain/community";
+import { celebritySlugSchema, commentAuthorSchema, commentReactionResultSchema, commentReactionSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardResponseSchema, postCommentSchema } from "../../features/fanpage/domain/community";
 import type { AdminSession } from "../admin/admin-session-gate";
 import { awardDukjilActionDetailed, dukjilBodyParams, dukjilWriteReward } from "../dukjil/award";
 
@@ -41,7 +41,7 @@ async function optionalOwner(request: Request, dependencies: FanpageDependencies
 const cursorSchema = z.object({ at: z.iso.datetime({ offset: true }), id: z.uuid() }).strict();
 const adminCommentSchema = z.object({
   id: z.uuid(), body: z.string(), nickname: z.string(), celebritySlug: celebritySlugSchema,
-  noticeSlug: celebritySlugSchema, createdAt: z.iso.datetime({ offset: true }),
+  noticeSlug: celebritySlugSchema, createdAt: z.iso.datetime({ offset: true }), officialName: z.string().nullable().optional(),
 }).strict();
 function decodeCursor(value: string) {
   return cursorSchema.parse(JSON.parse(Buffer.from(z.string().max(240).parse(value), "base64url").toString("utf8")));
@@ -129,7 +129,9 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         if (!result) return fanpageJson({ error: { code: "FANPAGE_NOT_FOUND" } }, 404);
         const body = parseResult(commentsSchema, result);
         const last = body.comments.at(-1);
-        return fanpageJson({ ...body, nextCursor: body.comments.length === limit && last ? encodeCursor({ at: last.createdAt, id: last.id }) : null });
+        // The composer shows the name a new comment goes out under; only the first page carries it.
+        const author = owner && !cursor ? await dependencies.rpc("read_notice_comment_author", { p_app_user_id: owner, p_slug: slug, p_locale: contentLocale }) : null;
+        return fanpageJson({ ...body, nextCursor: body.comments.length === limit && last ? encodeCursor({ at: last.createdAt, id: last.id }) : null, ...(author ? { author: parseResult(commentAuthorSchema, author) } : {}) });
       } catch (error) { return fanpageFailure(error); }
     },
     async postComment(request: Request, slug: string, noticeSlug: string) {
@@ -137,9 +139,10 @@ export function createFanpageHandlers(dependencies: FanpageDependencies) {
         celebritySlugSchema.parse(slug); celebritySlugSchema.parse(noticeSlug);
         const { appUserId } = await dependencies.authorize(request.headers.get("authorization"));
         const input = postCommentSchema.parse(await readSmallJson(request));
-        const result = await dependencies.rpc(input.parentId ? "post_celebrity_notice_reply" : "post_celebrity_notice_comment", {
+        // Personal by default. The page's name is a separate entry point that checks the page's own authority.
+        const result = await dependencies.rpc(input.asOfficial ? "post_celebrity_notice_comment_as_official" : input.parentId ? "post_celebrity_notice_reply" : "post_celebrity_notice_comment", {
           p_app_user_id: appUserId, p_slug: slug, p_notice_slug: noticeSlug, p_body: input.body, p_idempotency_key: input.idempotencyKey,
-          ...(input.parentId ? { p_parent_id: input.parentId } : {}),
+          ...(input.parentId || input.asOfficial ? { p_parent_id: input.parentId ?? null } : {}),
         });
         const written = parseResult(z.object({ id: z.uuid(), replayed: z.boolean() }).strict(), result);
         // A replayed request pays nothing again; one comment per notice pays (oncePerTarget keys on the notice).
