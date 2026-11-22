@@ -60,14 +60,16 @@ export function ChemiHome({
               const content = (
                 <>
                   <img src={`/chemi/thumb-${id}-128-v2.webp`} alt="" />
-                  <FanText role="item">{copy[id]}</FanText>
+                  <span className={styles.rowCopy}>
+                    <FanText role="item">{copy[id]}</FanText>
+                    <FanText role="meta">{copy.descriptions[id]}</FanText>
+                  </span>
                   {href && <AffinityBadge size="sm" amount={EARN[id][1]} label={getGrowthCopy(locale).gain.replace("{n}", String(EARN[id][1]))} />}
                 </>
               );
               return href ? (
                 <Link
                   key={id}
-                  aria-label={copy[id]}
                   className={styles.row}
                   data-selected={active}
                   href={href}
@@ -77,7 +79,7 @@ export function ChemiHome({
               ) : (
                 <div key={id} className={styles.row} data-selected={active}>
                   {content}
-                  <small>{copy.ready}</small>
+                  <FanText role="label">{copy.ready}</FanText>
                 </div>
               );
             })}

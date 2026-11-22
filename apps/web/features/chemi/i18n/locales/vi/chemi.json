@@ -11,6 +11,14 @@
     "gameMinutes": ""
   },
   "home": {
+    "descriptions": {
+      "fortune": "Xem vận may hôm nay",
+      "saju": "Xem độ hợp theo ngày sinh",
+      "zodiac": "Đọc tử vi theo cung hôm nay",
+      "tarot": "Rút một lá bài cho hôm nay",
+      "pair": "Tìm các cặp ảnh giống nhau",
+      "run": "Nhảy qua chướng ngại vật"
+    },
     "play": "Chơi",
     "growth": "Phát triển",
     "raise": "Nuôi dưỡng thần tượng",

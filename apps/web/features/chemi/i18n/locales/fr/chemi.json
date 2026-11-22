@@ -11,6 +11,14 @@
     "gameMinutes": ""
   },
   "home": {
+    "descriptions": {
+      "fortune": "Découvrez votre chance du jour",
+      "saju": "Comparez vos dates de naissance",
+      "zodiac": "Lisez votre horoscope du jour",
+      "tarot": "Tirez une carte pour la journée",
+      "pair": "Retrouvez les paires de photos",
+      "run": "Sautez les obstacles"
+    },
     "play": "Jouer",
     "growth": "Progression",
     "raise": "Élever son idole",

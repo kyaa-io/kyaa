@@ -65,8 +65,17 @@
   object-fit: cover;
   border-radius: var(--radius-small);
 }
-.row small {
-  margin-inline-start: auto;
+.rowCopy {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.rowCopy > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowCopy > [data-fan-text="meta"] {
   color: var(--color-muted);
 }
 @media (min-width: 48rem) {

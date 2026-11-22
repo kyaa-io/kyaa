@@ -11,6 +11,14 @@
     "gameMinutes": ""
   },
   "home": {
+    "descriptions": {
+      "fortune": "Lihat keberuntungan hari ini",
+      "saju": "Cek kecocokan tanggal lahir",
+      "zodiac": "Baca ramalan zodiak hari ini",
+      "tarot": "Tarik kartu untuk hari ini",
+      "pair": "Cari pasangan foto",
+      "run": "Lompati rintangan"
+    },
     "play": "Main",
     "growth": "Pertumbuhan",
     "raise": "Rawat idolamu",

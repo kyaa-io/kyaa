@@ -11,6 +11,14 @@
     "gameMinutes": ""
   },
   "home": {
+    "descriptions": {
+      "fortune": "Find today's lucky sign",
+      "saju": "Check your birth-date match",
+      "zodiac": "Read your daily horoscope",
+      "tarot": "Draw a card for today",
+      "pair": "Find matching photo pairs",
+      "run": "Jump over obstacles"
+    },
     "play": "Play",
     "growth": "Growth",
     "raise": "Raise your favorite",

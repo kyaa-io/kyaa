@@ -11,6 +11,14 @@
     "gameMinutes": ""
   },
   "home": {
+    "descriptions": {
+      "fortune": "今日の幸運をチェック",
+      "saju": "生年月日で相性を見る",
+      "zodiac": "星座で今日を占う",
+      "tarot": "カードで今日を占う",
+      "pair": "同じ写真を2枚探す",
+      "run": "障害物を飛び越える"
+    },
     "play": "遊ぶ",
     "growth": "成長",
     "raise": "推しを育てる",

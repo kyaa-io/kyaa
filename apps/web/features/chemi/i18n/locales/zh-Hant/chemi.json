@@ -11,6 +11,14 @@
     "gameMinutes": ""
   },
   "home": {
+    "descriptions": {
+      "fortune": "查看今日好運",
+      "saju": "按出生日期看緣分",
+      "zodiac": "查看今日星座運勢",
+      "tarot": "抽一張牌看今日運勢",
+      "pair": "找出相同的兩張照片",
+      "run": "跳過障礙物"
+    },
     "play": "遊玩",
     "growth": "成長",
     "raise": "培養偶像",
