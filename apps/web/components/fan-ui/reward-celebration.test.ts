@@ -44,9 +44,13 @@ it("shows a stamp-only grant in words and ignores empty or invalid grants", () =
 
 it("writes a spend as a minus toast with a sinking coin badge", () => {
   celebrateSpend({ locale: "ko", points: 10, label: "추가 판 시작" });
-  expect(toast.shown.at(-1)).toMatchObject({ title: "-10P", description: "추가 판 시작" });
+  expect(toast.shown.at(-1)).toMatchObject({ title: "-10P", description: "추가 판 시작", duration: 2800 });
   const badge = document.querySelector<HTMLElement>("[data-reward-badge]")!;
   expect([badge.textContent, badge.dataset.spend]).toEqual(["-10", ""]);
+  vi.advanceTimersByTime(1799);
+  expect(badge.isConnected).toBe(true);
+  vi.advanceTimersByTime(1);
+  expect(badge.isConnected).toBe(false);
   celebrateSpend({ locale: "ko", points: 0 });
   expect(toast.shown).toHaveLength(1);
 });

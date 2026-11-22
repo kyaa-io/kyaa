@@ -72,7 +72,7 @@ export function celebrateSpend({ locale, points, label, anchor }: Readonly<{ loc
   const p = Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
   if (!p) return;
   const amount = p.toLocaleString(locale);
-  showFanToast({ title: `-${amount}P`, description: label });
+  showFanToast({ title: `-${amount}P`, description: label, duration: 2800 });
   popBadge(`-${amount}`, true, anchor, true);
 }
 
@@ -104,7 +104,7 @@ function popBadge(text: string, coin: boolean, anchor?: Element | null, spend = 
   const reduced = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) badge.dataset.reduced = "";
   document.body.append(badge);
-  window.setTimeout(() => badge.remove(), reduced ? BADGE_MS * 2 : BADGE_MS);
+  window.setTimeout(() => badge.remove(), spend || reduced ? BADGE_MS * 2 : BADGE_MS);
 }
 
 /** Tests only. */

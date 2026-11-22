@@ -9,7 +9,7 @@ export type FanToastOptions = Readonly<{
   description?: string;
   tone?: FanToastTone;
   action?: Readonly<{ label: string; onClick: () => void }>;
-  /** ms. 기본 4000, 0이면 사용자가 닫을 때까지. */
+  /** ms. 기본 4000, 행동 버튼이 있고 0이면 사용자가 닫을 때까지. */
   duration?: number;
 }>;
 
