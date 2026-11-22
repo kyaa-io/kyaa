@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
+import { resetDukjilCatalogCache } from "@/features/dukjil/ui/dukjil-provider";
 import { PassportCollectionScreen, PassportDetailScreen, StampDetailOverlay, StampDetailScreen } from "./passport-screens";
 
 const getAccessToken = vi.fn(async () => "access-token");
@@ -228,32 +229,42 @@ describe("passport fan screens", () => {
   });
 
   it("renders a pending First Reaction as one display stamp without a transaction link", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
-      passport: {
-        ...passport,
-        stamps: [],
-        activities: [],
-        stampSummary: { knowledge: 0, reservation: 0, attendance: 0, survey: 0, total: 0 },
-        progress: { currentScore: 15, currentLevel: "Silver", nextLevel: "Gold", nextThreshold: 50, remainingPoints: 35, percent: 30, maxed: false },
-        nextBenefit: null,
-        firstReaction: {
-          reactionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
-          stampId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2",
-          activityId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3",
-          reactionType: "FirstReaction",
-          mintStatus: "queued",
-          txHash: null,
-          issuedAt: "2026-07-19T00:00:00.000Z",
-        },
+    resetDukjilCatalogCache();
+    onTestFinished(resetDukjilCatalogCache);
+    const catalog = Promise.withResolvers<Response>();
+    const detail = {
+      ...passport,
+      stamps: [],
+      activities: [],
+      stampSummary: { knowledge: 0, reservation: 0, attendance: 0, survey: 0, total: 0 },
+      progress: { currentScore: 15, currentLevel: "Silver", nextLevel: "Gold", nextThreshold: 50, remainingPoints: 35, percent: 30, maxed: false },
+      nextBenefit: null,
+      firstReaction: {
+        reactionId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1",
+        stampId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2",
+        activityId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa3",
+        reactionType: "FirstReaction",
+        mintStatus: "queued",
+        txHash: null,
+        issuedAt: "2026-07-19T00:00:00.000Z",
       },
-    })));
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith(`/api/passports/${passport.id}?`)) return Response.json({ passport: detail });
+      if (url === "/api/community-stamps?creator=kara") return Response.json({ stamps: [], today: "2026-07-19" });
+      if (url === "/api/dukjil/catalog?locale=ko") return catalog.promise;
+      throw new Error(`Unexpected URL ${url}`);
+    }));
 
     render(<PassportDetailScreen id={passport.id} explorerBaseUrl={explorerBaseUrl} />);
 
     expect(await screen.findByRole("button", { name: "첫 좋아요" })).toBeInTheDocument();
     expect(screen.getByLabelText("첫 좋아요를 남긴 날")).toBeInTheDocument();
     expect(screen.queryByText("기록을 등록하고 있어요")).not.toBeInTheDocument();
+    catalog.resolve(Response.json({ version: null, rules: {}, missionBook: null }));
     expect(await screen.findByRole("link", { name: /^1\s*스탬프$/ })).toHaveAttribute("href", "#mission-book");
+
     fireEvent.click(screen.getByRole("button", { name: "첫 좋아요" }));
     expect(screen.getByText("기록을 등록하고 있어요")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /첫 좋아요 등록 기록/ })).not.toBeInTheDocument();
