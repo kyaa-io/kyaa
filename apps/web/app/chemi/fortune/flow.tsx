@@ -398,7 +398,7 @@ export function FortuneFlow({
       ? fortuneCalcLine(character)
       : talk && lineInput
         ? fortuneTalkLine(character, talk, lineInput, reading?.styled?.headline, picked)
-        : fortuneEnterLine(character, null, needBirth ? "birth" : "enter");
+        : needBirth ? fortuneEnterLine(character, null, "birth") : text(`fortuneEnter_${character}`);
 
   const wideArt =
     character === "changha"

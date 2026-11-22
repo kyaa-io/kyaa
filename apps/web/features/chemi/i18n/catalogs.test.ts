@@ -16,6 +16,17 @@ describe("chemi language scaffold", () => {
   for (const locale of APP_LOCALES) it(locale, () => {
     const catalog = load(locale);
     expect(keys(catalog)).toEqual(keys(load("ko")));
+    const required = ["readFortune", "later", "login", "fortuneLogin", "todayViews", "weekViews", "allViews"];
+    for (const scene of ["fortune", "star"]) {
+      for (const character of ["changha", "elina", "yuna", "dosa"]) {
+        required.push(`${scene}Enter_${character}`);
+      }
+    }
+    for (const key of required) {
+      expect(catalog.readingUi[key]?.trim(), `${locale}.${key}`).toBeTruthy();
+      if (locale !== "ko") expect(catalog.readingUi[key]).not.toMatch(/[가-힣]/);
+      if (key.endsWith("Views")) expect(catalog.readingUi[key]).toContain("{count}");
+    }
     expect(catalog.menu).toEqual({ home: "HOME", my: "MY" });
     expect(catalog.readingUi.deckSlot).toContain("{slot}");
     expect(catalog.readingUi.deckSlot).toContain("{total}");
