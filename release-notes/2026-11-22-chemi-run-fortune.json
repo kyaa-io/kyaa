@@ -1,0 +1,5 @@
+{
+  "changes": ["최애 런 이번 주 랭킹에 기록이 세 개보다 적으면 남은 순위에 0점이 표시돼요.", "오늘의 운세에서 엘리나의 입장 인사와 등급 설명이 존댓말로 바뀌었어요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/chemi/games/run",
+  "images": ["release-notes/images/2026-11-22-chemi-run-ranking.png"]
+}

@@ -67,7 +67,7 @@ const tones: Record<FortuneCharacterId, Tone> = {
     choice: { tellMore: "좋다, 더 말해 줘", whatFandom: "오늘 영상 봐도 돼?", whatBring: "소품은 뭘 챙겨?" },
   },
   elina: {
-    enter: (who) => `${who}구름 위까지 왔네? 오늘 운세 같이 볼까요?`,
+    enter: (who) => `${who}구름 위까지 올라왔네요. 오늘 운세 같이 볼까요?`,
     birth: (who) => `${who}운세를 보려면 생일이 필요해요. 한 번만 알려 줘요.`,
     calc: "생일은 기억해요. 잠깐만요, 가사 읽듯이 오늘 하늘을 볼게요.",
     picked: { fandom: "노래가 제일 궁금했군요.", luck: "입을 것부터 볼까요?" },
