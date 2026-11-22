@@ -1,9 +1,10 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import ko from "@/features/chemi/i18n/locales/ko/chemi.json";
 import { APP_LOCALES } from "@/i18n/locales";
 import { getGrowthCopy } from "./copy";
 import { ChemiGrowth, type GrowthState } from "./growth";
+import { getRoomLines } from "./room-lines";
 
 const auth = vi.hoisted(() => ({ ready: true, authenticated: true, getAccessToken: async () => "token", login: vi.fn() }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({ useByUsAuth: () => auth }));
@@ -23,6 +24,7 @@ const show = () => render(<ChemiGrowth locale="ko" home={ko.home} matchAvailable
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   auth.authenticated = true;
 });
 
@@ -81,5 +83,40 @@ it("has every key in every language", () => {
     for (const value of Object.values(copy)) expect(value).not.toBe("");
     for (const key of ["mini", "closeness", "adopt"] as const) expect(copy[key]).toContain("{name}");
     expect(copy.gain).toContain("{n}");
+  }
+});
+
+it("changes the mini's line on tap, pets on a long press and gets dizzy on rapid taps", async () => {
+  vi.stubGlobal("fetch", respond(state));
+  show();
+  const mini = await screen.findByRole("button", { name: "미니 창하" });
+  vi.useFakeTimers();
+  const tapLines: readonly string[] = getRoomLines("ko", "changha").tap;
+  fireEvent.click(mini);
+  expect(tapLines).toContain(mini.closest("[data-mode]")!.parentElement!.querySelector("p")!.textContent);
+  act(() => vi.advanceTimersByTime(3000));
+  fireEvent.pointerDown(mini, { button: 0 });
+  act(() => vi.advanceTimersByTime(500));
+  expect(screen.getByText("헤헤, 좀 더 해 줘.")).toBeTruthy();
+  fireEvent.pointerUp(mini);
+  // 쓰다듬기 뒤 손을 뗄 때 오는 click 은 톡 치기로 세지 않는다.
+  fireEvent.click(mini);
+  expect(screen.getByText("헤헤, 좀 더 해 줘.")).toBeTruthy();
+  for (let index = 0; index < 4; index += 1) fireEvent.click(mini);
+  expect(screen.getByText("어지러워… 살살 눌러 줘.")).toBeTruthy();
+});
+
+it("keeps Elina's half-formal tone in Korean", async () => {
+  vi.stubGlobal("fetch", respond(state));
+  show();
+  fireEvent.click(await screen.findByRole("button", { name: /^엘리나/ }));
+  expect(screen.getByText("여기가 우리 집이에요?")).toBeTruthy();
+});
+
+it("has every room line in every language", () => {
+  for (const locale of APP_LOCALES) {
+    const lines = getRoomLines(locale, "changha");
+    expect(lines.tap).toHaveLength(3);
+    for (const value of [...lines.tap, lines.pet, lines.dizzy, lines.cat, lines.tea, lines.lamp]) expect(value).not.toBe("");
   }
 });

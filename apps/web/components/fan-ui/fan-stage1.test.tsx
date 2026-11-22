@@ -254,11 +254,11 @@ describe("FanToast", () => {
     await waitFor(() => expect(viewport.textContent).not.toContain("키보드 출석 완료"));
   });
 
-  it("expires a reward toast even when window blur pauses library timers", async () => {
+  it.each(["neutral", "success", "error"] as const)("expires an actionless %s toast even when window blur pauses library timers", async tone => {
     render(<FanToastProvider />);
     await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")).not.toBeNull());
     fireEvent.blur(window);
-    act(() => { showFanToast({ title: "출석 완료", tone: "success", duration: 40 }); });
+    act(() => { showFanToast({ title: "출석 완료", tone, duration: 100 }); });
     await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")?.textContent).toContain("출석 완료"));
     await waitFor(() => expect(document.querySelector("[data-fan-toast-viewport]")?.textContent).not.toContain("출석 완료"));
     fireEvent.focus(window);

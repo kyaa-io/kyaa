@@ -15,7 +15,7 @@ export type Character = (typeof characters)[number];
 /** Only Changha's street exists so far; the others stay on the roster, unopened. */
 export const open: readonly Character[] = ["changha"];
 export type Rank = { place: number; nickname: string; character: Character; score: number; isMe: boolean };
-export type Lobby = { freeRemaining: number; extraRemaining: number; ranking: Rank[]; sound: boolean; players: number; best: number; points: number; previous?: { place: number; score: number } | null };
+export type Lobby = { extraCost: number; freeRemaining: number; extraRemaining: number; ranking: Rank[]; sound: boolean; players: number; best: number; points: number; previous?: { place: number; score: number } | null };
 export type Result = { score: number; exp: number; shareId?: string; title?: number | null };
 export type Challenge = { score: number; nickname: string; available: boolean; ranking?: Rank[] };
 export type Stage = "select" | "run" | "result";

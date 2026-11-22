@@ -9,6 +9,7 @@ import { aspectNames, bodyNames, targetName } from "@/app/chemi/star/copy";
 import { withParticle } from "@/app/chemi/star/particle";
 import { TAROT_DECK } from "@/features/chemi/tarot/deck";
 import { tarotBasis } from "@/features/chemi/tarot/depth";
+import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
 import { askVoice as voice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
 
 export { ASK_TOPICS } from "@/features/chemi/ask/lines";
@@ -298,8 +299,11 @@ const more: Record<"good" | "care", Record<Voice, readonly [string, string]>> = 
 export function answerAsk(input: { character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string }) {
   const tone = voice[input.character];
   const read = askBasis(input.content, input.topic, input.result, input.question, input.kind);
-  const pick = advice[input.topic][read.good ? "good" : "care"][tone][seed(input.question) % 2];
-  return `${read.line[tone]}\n${pick}`;
+  const flow = read.good ? "good" : "care";
+  const pick = advice[input.topic][flow][tone][seed(input.question) % 2];
+  // 세 최애는 자기 활동 분야에 빗댄 한마디로 맺는다(도사는 없음).
+  const close = isChemiPersona(input.character) ? `\n${chemiPersona[input.character].close[flow]}` : "";
+  return `${read.line[tone]}\n${pick}${close}`;
 }
 
 /** 이어 물은 말이 까닭을 묻는지, 조심할 것을 묻는지. 둘 다 아니면 덧붙이는 한 마디를 준다. */

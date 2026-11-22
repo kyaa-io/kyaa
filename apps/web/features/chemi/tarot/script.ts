@@ -1,7 +1,7 @@
 export type TarotCharacter = "changha" | "elina" | "yuna" | "dosa";
 export type TarotVoice = "ban" | "yo" | "hao";
 
-/** 입장 고르기 띠 순서. 말투는 COM-TX-01(반말 · 요체 · 하오체) 셋이고 창하·유나는 같은 반말 글을 쓴다. */
+/** 입장 고르기 띠 순서. 말투는 COM-TX-01(반말 · 요체 · 하오체) 셋이고, 세 최애는 그 위에 자기 대사(TAROT_OWN)를 얹는다. */
 export const TAROT_CHARACTERS: readonly { key: TarotCharacter; name: string; voice: TarotVoice }[] = [
   { key: "changha", name: "창하", voice: "ban" },
   { key: "elina", name: "엘리나", voice: "yo" },
@@ -47,6 +47,32 @@ export const TAROT_LINES: Record<TarotVoice, { hello: string; again: string; thi
     drawn: (name, reversed) => `${name} 카드가 ${reversed ? "거꾸로" : "똑바로"} 나왔소.`,
   },
 };
+
+/**
+ * 최애마다 다른 대사. 말투 바탕(TAROT_LINES) 위에 얹는다: 창하는 촬영, 엘리나는 노래에 빗대고(반존대),
+ * 유나는 맡아서 읽어 주고 색 고르기에 빗댄다(features/chemi/persona.ts).
+ */
+const TAROT_OWN: Partial<Record<TarotCharacter, Partial<(typeof TAROT_LINES)[TarotVoice]>>> = {
+  changha: {
+    shuffle: "촬영 전 리허설처럼 천천히 섞을게. 끌리는 거 있으면 그걸로 골라.",
+    lock: "좋아, 이 장면은 네가 고른 카드로 갈게.",
+  },
+  elina: {
+    hello: "왔네. 오늘 카드 한 장 뽑아 볼래요?",
+    shuffle: "노래 시작 전처럼 천천히 섞을게. 끌리는 게 있으면 그걸로 골라요.",
+    lock: "좋아요, 고른 카드로 첫 소절을 열게요.",
+  },
+  yuna: {
+    hello: "왔네. 오늘 카드, 내가 읽어 줄게.",
+    think: "궁금한 거 하나만 정해. 말 안 해도 돼.",
+    shuffle: "색 고르듯 천천히 섞을게. 끌리는 걸로 골라.",
+    lock: "좋아, 네가 고른 카드부터 볼게.",
+    drawn: (name, reversed) => `${name} 카드네. ${reversed ? "거꾸로" : "똑바로"} 나왔어.`,
+  },
+};
+
+/** 뽑는 동안 그 최애가 하는 말. */
+export const tarotLines = (character: TarotCharacter) => ({ ...TAROT_LINES[tarotCharacter(character).voice], ...TAROT_OWN[character] });
 
 export const tarotScene = (character: TarotCharacter, wide: boolean) => `/chemi/tarot/scene-${character}-${wide ? "l" : "p"}.webp`;
 export const tarotAvatar = (character: TarotCharacter) => `/chemi/tarot/avatar-${character}.jpg`;

@@ -1,5 +1,6 @@
 /**
  * 오늘의 운세 대화 줄. 풀이 표(AS-TX)가 들어오기 전까지 승인 시안(04-2)의 말투로 만든 임시 줄이다.
+ * 창하는 촬영·대본, 엘리나는 노래·옷, 유나는 화장에 빗대어 말한다(features/chemi/persona.ts).
  * 점수·분야·행운 값만 끼우고, 같은 입력이면 같은 줄이 나온다.
  */
 export const fortuneCharacters = [
@@ -20,6 +21,9 @@ export type FortuneLineInput = {
   color: string;
 };
 
+/** 최애마다 글자가 다른 대화 선택지. */
+export type FortuneChoice = "tellMore" | "whatFandom" | "whatBring";
+
 type Tone = {
   enter: (who: string) => string;
   birth: (who: string) => string;
@@ -30,68 +34,87 @@ type Tone = {
   luck: (hour: string | null, color: string) => string;
   /** 두 번째 선택지로 이야기를 골라 들었을 때 그 선택을 먼저 받아 주는 한마디. */
   picked: { fandom: string; luck: string };
-  /** 등급별 한 마디를 이 말투로 따로 둔 최애(없으면 공통 반말 줄). */
+  /** 등급별 한 마디. 세 최애는 자기 활동 분야(features/chemi/persona.ts)에 빗대어 말한다. */
   gradeNotes?: Record<string, string>;
+  /** 대화 선택지(팬이 최애에게 하는 말). 없으면 공통 글자(chemi.json)를 쓴다. */
+  choice?: Record<FortuneChoice, string>;
 };
 
 const tones: Record<FortuneCharacterId, Tone> = {
   changha: {
     enter: (who) => `${who}구름 위까지 올라왔네. 오늘 운세 봐 줄까?`,
     birth: (who) => `${who}운세 보려면 네 생일이 필요해. 한 번만 알려 줘.`,
-    calc: "네 생일은 지난번에 들었지. 잠깐, 오늘 하늘 좀 읽어 볼게.",
-    picked: { fandom: "덕질부터 궁금했구나.", luck: "챙길 것부터 묻네. 좋아." },
+    calc: "네 생일은 지난번에 들었지. 잠깐, 대본 읽듯이 오늘 하늘 좀 읽어 볼게.",
+    picked: { fandom: "영상부터 궁금했구나.", luck: "챙길 것부터 묻네. 좋아." },
     scoreLine: (score, grade) => `오늘은 ${score}점, ${grade}이야.`,
+    gradeNotes: {
+      "쉬어 가는 날": "촬영 없는 날처럼 약속은 하나만 잡는 건 어때?",
+      "조심하면 괜찮은 날": "대사 치기 전처럼 말 한 번만 더 고르면 돼.",
+      "무난한 날": "다시 찍을 것 없이 한 번에 넘어가는 날이지.",
+      "좋은 날": "카메라가 먼저 찾아오듯 누가 먼저 손 내밀 수도 있어.",
+      "아주 좋은 날": "첫 촬영에 오케이 나는 날이니까 망설이던 일부터 해 봐.",
+    },
     people: {
       high: "선배나 윗사람이 먼저 말 걸 수도 있어. 미뤄 둔 부탁 있으면 오늘 꺼내 봐.",
-      low: "사람들 사이에서는 말을 조금 아껴 봐. 급한 부탁은 내일로 미뤄도 돼.",
+      low: "사람들 사이에서는 대사를 줄이는 날이야. 급한 부탁은 내일로 미뤄도 돼.",
     },
     fandom: (score, high) =>
       high
-        ? `덕질은 ${score}점. 혼자 무대 영상 몰아 보기 딱이야. 대신 장바구니는 하루만 참자.`
-        : `덕질은 ${score}점. 오늘은 느긋하게 즐기자. 큰 결제는 내일로 미뤄 두고.`,
+        ? `덕질은 ${score}점. 놓친 영상 몰아 보기 딱이야. 좋았던 장면 하나만 골라 둘래?`
+        : `덕질은 ${score}점. 오늘은 짧은 영상 하나만 보자. 긴 건 내일 봐도 돼.`,
     luck: (hour, color) =>
-      `${hour ? `부탁할 거 있으면 ${hour}에 해. ` : ""}${color}색 물건도 하나 챙기고.`,
+      `${hour ? `부탁할 거 있으면 ${hour}에 해. ` : ""}${color}색 소품도 하나 챙기고.`,
+    choice: { tellMore: "좋다, 더 말해 줘", whatFandom: "오늘 영상 봐도 돼?", whatBring: "소품은 뭘 챙겨?" },
   },
   elina: {
     enter: (who) => `${who}구름 위까지 올라왔네요. 오늘 운세 같이 볼까요?`,
     birth: (who) => `${who}운세를 보려면 생일이 필요해요. 한 번만 알려 줘요.`,
-    calc: "생일은 기억해요. 잠깐만요, 오늘 하늘을 볼게요.",
-    picked: { fandom: "덕질이 제일 궁금했군요.", luck: "챙길 것부터 볼까요?" },
+    calc: "생일은 기억해요. 잠깐만요, 가사 읽듯이 오늘 하늘을 볼게요.",
+    picked: { fandom: "노래가 제일 궁금했군요.", luck: "입을 것부터 볼까요?" },
     scoreLine: (score, grade) => `오늘은 ${score}점, ${grade}이에요.`,
     gradeNotes: {
-      "쉬어 가는 날": "오늘은 조금 쉬어 가요.",
-      "조심하면 괜찮은 날": "한 번 더 살피면 무난히 지나갈 거예요.",
-      "무난한 날": "큰일 없이 편안하게 흘러갈 거예요.",
-      "좋은 날": "누군가 먼저 손을 내밀지도 몰라요.",
-      "아주 좋은 날": "하고 싶던 일을 오늘 시작해 봐요.",
+      "쉬어 가는 날": "노래 사이 숨 쉬는 마디처럼 약속은 하나만 잡는 건 어때요?",
+      "조심하면 괜찮은 날": "첫 음 내기 전처럼 말 한 번만 더 고르면 돼.",
+      "무난한 날": "늘 입던 옷처럼 편하게 흘러가는 날이지?",
+      "좋은 날": "박자가 잘 맞는 날이라 누가 먼저 손 내밀 수도 있어.",
+      "아주 좋은 날": "첫 소절부터 잘 나오는 날이니까 망설이던 일부터 해 봐요.",
     },
     people: {
-      high: "미뤄 둔 부탁이 있나요? 오늘 선배가 말을 걸면 꺼내 봐요.",
-      low: "사람 사이에서는 말을 아껴 봐요. 급한 부탁은 내일로 미뤄도 괜찮아요.",
+      high: "오늘은 선배가 먼저 말을 걸 수도 있어요. 미뤄 둔 부탁은 그때 꺼내 봐요.",
+      low: "사람 사이에서는 한 박자 쉬고 말해 봐요. 급한 부탁은 내일로 미뤄도 괜찮아.",
     },
     fandom: (score, high) =>
       high
-        ? `덕질은 ${score}점이에요. 오늘은 무대 영상을 보고, 장바구니는 내일 열까요?`
-        : `덕질은 ${score}점이에요. 오늘은 천천히 즐겨요. 큰 결제는 내일로 미뤄요.`,
+        ? `덕질은 ${score}점이에요. 좋아하는 노래를 크게 틀어 두기 좋은 날이에요. 같이 흥얼거려도 돼.`
+        : `덕질은 ${score}점이에요. 오늘은 한 곡만 천천히 들어요. 나머지는 내일 들어도 괜찮아.`,
     luck: (hour, color) =>
-      `${hour ? `부탁은 ${hour}가 좋아요. ` : ""}${color}색 물건도 챙겨요.`,
+      `${hour ? `부탁은 ${hour}가 좋아요. ` : ""}오늘 옷에 ${color}색을 하나 넣어 봐요.`,
+    choice: { tellMore: "좋아, 더 들려줘", whatFandom: "오늘 뭐 들을까?", whatBring: "오늘 뭐 입을까?" },
   },
   yuna: {
     enter: (who) => `${who}오늘 하늘 내가 읽어 줄게.`,
     birth: (who) => `${who}네 생일부터 알려 줘. 한 번만 하면 돼.`,
-    calc: "네 생일 기억나! 오늘 하늘은 내가 볼게.",
-    picked: { fandom: "역시 덕질부터지!", luck: "챙길 것부터? 좋아!" },
-    scoreLine: (score, grade) => `${score}점! ${grade}이야.`,
+    calc: "네 생일은 기억해. 피부 톤 보듯이 오늘 하늘을 하나씩 볼게.",
+    picked: { fandom: "볼 것부터 묻네. 좋아.", luck: "포인트 색부터 볼게." },
+    scoreLine: (score, grade) => `${score}점, ${grade}이야.`,
+    gradeNotes: {
+      "쉬어 가는 날": "피부 쉬게 두는 날처럼 약속은 하나면 충분해.",
+      "조심하면 괜찮은 날": "화장 고치기 전에 거울 보듯 답장은 한 번 더 읽고 보내.",
+      "무난한 날": "매일 하던 화장처럼 하던 대로 하면 돼.",
+      "좋은 날": "화장이 한 번에 잘 먹는 날이라 부탁은 먼저 꺼내도 돼.",
+      "아주 좋은 날": "포인트 색 하나 더 올려도 되는 날이라 미뤄 둔 일 꺼내기 좋아.",
+    },
     people: {
-      high: "선배가 먼저 말 걸면 그때 부탁해 봐. 미뤄 둔 거 있잖아.",
-      low: "오늘은 사람 만날 때 말을 아껴 봐. 급한 부탁은 내일 해도 돼.",
+      high: "윗사람이 먼저 말 걸 수 있는 날이야. 미뤄 둔 부탁은 그때 하면 돼.",
+      low: "오늘은 말을 덜어 내는 게 좋아. 급한 부탁은 내일 해도 돼.",
     },
     fandom: (score, high) =>
       high
-        ? `덕질 ${score}점! 오늘은 무대 영상 몰아 보자. 결제는 내일 해도 돼.`
-        : `덕질 ${score}점. 오늘은 천천히 보자. 큰 결제는 내일로 미루자.`,
+        ? `덕질은 ${score}점이야. 영상 보면서 하나 따라 해 보기 좋은 날이야. 마음에 든 건 저장해 둬.`
+        : `덕질은 ${score}점이야. 오늘은 하나만 골라서 봐. 고르는 데 1분이면 돼.`,
     luck: (hour, color) =>
-      `${hour ? `부탁은 ${hour}에 해 봐. ` : ""}${color}색도 하나 챙겨!`,
+      `${hour ? `부탁은 ${hour}에 하면 돼. ` : ""}${color}색은 포인트로 하나만 챙겨.`,
+    choice: { tellMore: "응, 더 읽어 줘", whatFandom: "오늘 뭐 볼까?", whatBring: "포인트 색은 뭐야?" },
   },
   dosa: {
     enter: (who) => `${who}구름 위까지 왔구려. 오늘 운세를 보겠소?`,
@@ -143,6 +166,12 @@ export function fortuneEnterLine(
       : `${nickname}, `
     : "";
   return tones[character][mode](who);
+}
+
+/** 한국어 화면에서 최애마다 다른 선택지 글자. 도사와 다른 언어는 null(공통 글자). */
+export function fortuneChoiceLabel(character: FortuneCharacterId, key: string) {
+  const choice = tones[character].choice;
+  return choice && Object.hasOwn(choice, key) ? choice[key as FortuneChoice] : null;
 }
 
 export function fortuneCalcLine(character: FortuneCharacterId) {

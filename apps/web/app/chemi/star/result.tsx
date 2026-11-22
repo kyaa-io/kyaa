@@ -4,7 +4,7 @@ import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ChevronDown, ChevronRight, ChevronUp } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -113,6 +113,7 @@ export function StarResult({
 }) {
   const uiText = useReadingCopy();
   const { authenticated, getAccessToken } = useByUsAuth();
+  const celebratedReading = useRef<string | null>(null);
   const [points, setPoints] = useState(reading.reward?.points ?? 0);
   const [sharing, setSharing] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
@@ -134,12 +135,15 @@ export function StarResult({
   useEffect(() => {
     const controller = new AbortController();
     async function load() {
-      if (!reading.replayed && reading.reward)
+      if (!reading.replayed && reading.reward && celebratedReading.current !== reading.readingId) {
+        celebratedReading.current = reading.readingId;
         celebrateReward({
           locale,
           points: reading.reward.points,
+          affinity: { amount: reading.reward.exp ?? 0, text: `${name} ${uiText("affinityGain", { exp: reading.reward.exp ?? 0 })}` },
           stamps: Number(Boolean(reading.reward.stamp)),
         });
+      }
       if (!authenticated) return;
       const response = await fetch("/api/chemi/rewards/today", {
         headers: { Authorization: `Bearer ${await getAccessToken()}` },

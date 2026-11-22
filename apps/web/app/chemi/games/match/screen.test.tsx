@@ -135,6 +135,8 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
         sound: false,
         freeRemaining: 0,
         extraRemaining: 2,
+        points: 12,
+        extraCost: 10,
         ranking: [],
       });
     if (body.action === "start")
@@ -151,6 +153,8 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
     name: copy.extraPlay + " · 10P",
   });
   fireEvent.click(extra);
+  expect(requests.some(r => r.action === "start")).toBe(false);
+  fireEvent.click(await screen.findByRole("button", { name: "10P 쓰고 시작" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(copy.insufficient);
   expect(requests.find((r) => r.action === "start")).toMatchObject({
     character: "changha",

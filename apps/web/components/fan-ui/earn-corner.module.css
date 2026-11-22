@@ -1,5 +1,5 @@
 /* 포인트 표시 한 가지 모양(EarnBadge): 노란 알약 · 동전 16 · `+N` 12/800. 값은 DESIGN.md "포인트 뱃지". */
-.pill { display: inline-flex; flex: none; align-items: center; gap: 2px; box-sizing: border-box; height: 20px; padding: 0 6px 0 2px; border-radius: 999px; background: var(--color-coin); color: var(--color-coin-ink); font-size: var(--fan-badge-size); line-height: 20px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-flex; flex: none; align-items: center; gap: 2px; box-sizing: border-box; height: 20px; padding: 0 6px 0 2px; border-radius: 999px; background: var(--earn-badge-background, var(--color-coin)); color: var(--earn-badge-ink, var(--color-coin-ink)); font-size: var(--fan-badge-size); line-height: 20px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pill img { display: block; flex: none; width: 16px; height: 16px; }
 /* 작게: 좁은 칸 안. */
 .small { gap: 1px; height: 16px; padding: 0 var(--space-1); line-height: 16px; }

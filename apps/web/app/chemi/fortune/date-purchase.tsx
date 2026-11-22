@@ -13,9 +13,6 @@ import { parseNewFortune, todayKst, type FortuneReading } from "./reading";
 import { flowNotes } from "./result-copy";
 import styles from "./result.module.css";
 
-// Standard price from chemi_point_date. The date-specific quote controls confirmation.
-export const DATE_READING_PRICE = 3;
-
 /** 숫자 8자리(YYYY.MM.DD)가 실제 있는 날짜면 YYYY-MM-DD, 아니면 null. */
 function dayOf(text: string) {
   const iso = birthTextToIso(text);
@@ -37,6 +34,7 @@ export function DatePurchase({
   // 날짜는 숫자 8자리 글(YYYY.MM.DD)로 쥐고, 다 채워진 실제 날짜일 때만 day 가 생긴다.
   const [text, setText] = useState("");
   const day = dayOf(text) ?? "";
+  const [standardPrice, setStandardPrice] = useState<number>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const [quote, setQuote] = useState<{
@@ -47,8 +45,15 @@ export function DatePurchase({
   const [revisit, setRevisit] = useState(false);
   const [saved, setSaved] = useState<FortuneReading>();
   useEffect(() => {
+    const controller = new AbortController();
+    void fetch("/api/chemi/fortune/date", { signal: controller.signal })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        if (!controller.signal.aborted && Number.isSafeInteger(data?.price) && data.price >= 0) setStandardPrice(data.price);
+      }).catch(() => {});
     const day = new URLSearchParams(window.location.search).get("date");
     if (day && /^\d{4}-\d{2}-\d{2}$/.test(day)) setText(birthIsoToText(day));
+    return () => controller.abort();
   }, []);
   function topupHref(path: string) {
     const back = new URL(window.location.href);
@@ -101,7 +106,7 @@ export function DatePurchase({
   }
   return (
     <section id="fortune-date" className={`${styles.panel} ${styles.purchase}`}>
-      <FanHeading as="h2">{uiText("anotherDate")} · {DATE_READING_PRICE}P</FanHeading>
+      <FanHeading as="h2">{uiText("anotherDate")}{standardPrice !== undefined && ` · ${standardPrice}P`}</FanHeading>
       <BirthDateField
         label={uiText("date")}
         value={text}

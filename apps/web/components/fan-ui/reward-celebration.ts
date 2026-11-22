@@ -1,6 +1,7 @@
 "use client";
 import { REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 
+import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/wallet-events";
 import type { AppLocale } from "@/i18n/locales";
 import { closeFanToast, showFanToast } from "./fan-toast";
 import styles from "./reward-celebration.module.css";
@@ -21,7 +22,7 @@ const POINT_COIN_SRC = REWARD_ICON_SRC.point;
  * - prefers-reduced-motion: no movement; the badge appears in place and fades, the toast is the same.
  * A full-screen stamp moment (D3) runs its own artwork and then calls this for the toast.
  */
-export type RewardCelebration = Readonly<{ locale: AppLocale; points?: number; stamps?: number; label?: string; anchor?: Element | null;
+export type RewardCelebration = Readonly<{ locale: AppLocale; points?: number; stamps?: number; affinity?: { amount: number; text: string }; label?: string; anchor?: Element | null;
   /** The amounts are already a running total of close grants (usePointRewardBurst merges on its own); replace instead of adding. */
   total?: boolean }>;
 
@@ -51,19 +52,22 @@ export function rewardSummary(locale: AppLocale, points = 0, stamps = 0) {
   return parts.join(" · ");
 }
 
-let merged: { points: number; stamps: number; at: number; toastId: string } | null = null;
+let merged: { points: number; stamps: number; affinity?: RewardCelebration["affinity"]; at: number; toastId: string } | null = null;
 
-export function celebrateReward({ locale, points = 0, stamps = 0, label, anchor, total: alreadyTotal = false }: RewardCelebration) {
+export function celebrateReward({ locale, points = 0, stamps = 0, affinity, label, anchor, total: alreadyTotal = false }: RewardCelebration) {
   const p = Number.isFinite(points) && points > 0 ? Math.floor(points) : 0, s = Number.isFinite(stamps) && stamps > 0 ? Math.floor(stamps) : 0;
-  if (!p && !s) return;
+  const gain = affinity && Number.isFinite(affinity.amount) && affinity.amount > 0 ? affinity : undefined;
+  if (!p && !s && !gain) return;
   const now = Date.now(), joined = merged && now - merged.at <= REWARD_MERGE_MS ? merged : null;
   const total = alreadyTotal ? { points: p, stamps: s } : { points: (joined?.points ?? 0) + p, stamps: (joined?.stamps ?? 0) + s };
   if (joined?.toastId) closeFanToast(joined.toastId);
-  const title = rewardSummary(locale, total.points, total.stamps);
+  const heart = gain ?? joined?.affinity;
+  const title = [rewardSummary(locale, total.points, total.stamps), heart?.text].filter(Boolean).join(" · ");
   const toastId = showFanToast({ title, description: label, tone: "success" });
-  merged = { ...total, at: now, toastId };
+  merged = { ...total, affinity: heart, at: now, toastId };
   // The badge is the point badge of the whole app (coin + "+20"); a stamp-only grant shows its words instead.
-  popBadge(total.points > 0 ? `+${total.points.toLocaleString(locale)}` : title, total.points > 0, anchor);
+  if (heart) popBadge(`+${heart.amount.toLocaleString(locale)}`, false, anchor, false, true);
+  else popBadge(total.points > 0 ? `+${total.points.toLocaleString(locale)}` : title, total.points > 0, anchor);
 }
 
 /** The other half of `celebrateReward`: points the fan just spent (게임 추가 판 10P). Same toast and coin badge, but "-10P" and the badge sinks
@@ -71,12 +75,13 @@ export function celebrateReward({ locale, points = 0, stamps = 0, label, anchor,
 export function celebrateSpend({ locale, points, label, anchor }: Readonly<{ locale: AppLocale; points: number; label?: string; anchor?: Element | null }>) {
   const p = Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
   if (!p) return;
+  window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
   const amount = p.toLocaleString(locale);
-  showFanToast({ title: `-${amount}P`, description: label });
+  showFanToast({ title: `-${amount}P`, description: label, duration: 2800 });
   popBadge(`-${amount}`, true, anchor, true);
 }
 
-function popBadge(text: string, coin: boolean, anchor?: Element | null, spend = false) {
+function popBadge(text: string, coin: boolean, anchor?: Element | null, spend = false, heart = false) {
   if (typeof document === "undefined") return;
   document.querySelectorAll(`[data-reward-badge]`).forEach(node => node.remove());
   const badge = document.createElement("span");
@@ -86,9 +91,10 @@ function popBadge(text: string, coin: boolean, anchor?: Element | null, spend = 
   badge.setAttribute("data-testid", "point-reward-burst");
   badge.setAttribute("aria-hidden", "true");
   if (spend) badge.dataset.spend = "";
-  if (coin) {
+  if (heart) badge.dataset.affinity = "";
+  if (coin || heart) {
     const image = document.createElement("img");
-    image.src = POINT_COIN_SRC; image.width = 20; image.height = 20; image.alt = "";
+    image.src = heart ? REWARD_ICON_SRC.heart : POINT_COIN_SRC; image.width = 20; image.height = 20; image.alt = "";
     badge.append(image);
   }
   const amount = document.createElement("span");
@@ -104,7 +110,7 @@ function popBadge(text: string, coin: boolean, anchor?: Element | null, spend = 
   const reduced = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduced) badge.dataset.reduced = "";
   document.body.append(badge);
-  window.setTimeout(() => badge.remove(), reduced ? BADGE_MS * 2 : BADGE_MS);
+  window.setTimeout(() => badge.remove(), spend || reduced ? BADGE_MS * 2 : BADGE_MS);
 }
 
 /** Tests only. */

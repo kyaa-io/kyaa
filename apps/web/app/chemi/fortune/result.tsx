@@ -2,7 +2,7 @@
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ChevronDown, ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -86,6 +86,7 @@ export function FortuneResult({
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [attempt, retry] = useState(0);
   const [reading, setReading] = useState<Reading>();
+  const celebratedReading = useRef<string | null>(null);
   const [points, setPoints] = useState(0);
   const [line, setLine] = useState("");
   const [status, setStatus] = useState("loading");
@@ -117,6 +118,7 @@ export function FortuneResult({
         Authorization: `Bearer ${await getAccessToken()}`,
         "Content-Type": "application/json",
       };
+      if (signal.aborted) return;
       let data: Reading;
       if (initial) data = initial;
       else {
@@ -143,12 +145,15 @@ export function FortuneResult({
       setReading(data);
       setPoints(data.reward?.points ?? 0);
       setStatus("result");
-      if (!data.replayed && data.reward)
+      if (!data.replayed && data.reward && celebratedReading.current !== data.readingId) {
+        celebratedReading.current = data.readingId;
         celebrateReward({
           locale,
           points: data.reward.points,
+          affinity: { amount: data.reward.exp ?? 0, text: `${name} ${uiText("affinityGain", { exp: data.reward.exp ?? 0 })}` },
           stamps: Number(Boolean(data.reward.stamp)),
         });
+      }
       const rewards = await fetch("/api/chemi/rewards/today", {
         headers,
         signal,

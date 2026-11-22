@@ -78,6 +78,17 @@ describe("프롬프트", () => {
   });
 });
 
+describe("최애 설정", () => {
+  it("세 최애의 프롬프트에는 팬페이지 소개와 빗댈 소재가 들어가고, 도사에는 없다", () => {
+    expect(askPrompt(love).system).toMatch(/이 사람: 브랜드 캠페인과 영상 콘텐츠에서 활동하는 크리에이터이자 배우/);
+    expect(askPrompt(love).system).toMatch(/촬영·대본·카메라에 빗대어/);
+    expect(askPrompt({ ...love, character: "elina" }).system).toMatch(/노래·박자·옷 고르기에 빗대어/);
+    expect(askPrompt({ ...love, character: "yuna" }).system).toMatch(/화장·피부 톤·포인트 색에 빗대어/);
+    expect(askPrompt({ ...love, character: "dosa" }).system).not.toMatch(/이 사람:/);
+    expect(askPrompt(love).system).toMatch(/실제 일화나 일정은 말하지 않는다/);
+  });
+});
+
 describe("답 검사", () => {
   it("풀이 값 안에서 말투를 지킨 2~4문장은 통과한다", () => {
     expect(askAnswerFault(good, love)).toBeNull();
