@@ -67,7 +67,8 @@
     "release-notes/2026-11-22-chemi-reading-depth.json",
     "release-notes/2026-11-22-chemi-fix-r9.json",
     "release-notes/2026-11-22-chemi-run-character.json",
-    "release-notes/2026-11-22-chemi-extra-play-dialog.json"
+    "release-notes/2026-11-22-chemi-extra-play-dialog.json",
+    "release-notes/2026-11-22-chemi-match-guide.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
