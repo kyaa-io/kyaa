@@ -70,7 +70,8 @@
     "release-notes/2026-11-22-chemi-extra-play-dialog.json",
     "release-notes/2026-11-22-chemi-growth-room.json",
     "release-notes/2026-11-22-chemi-persona-lines.json",
-    "release-notes/2026-11-22-chemi-game-art.json"
+    "release-notes/2026-11-22-chemi-game-art.json",
+    "release-notes/2026-11-22-chemi-match-guide.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

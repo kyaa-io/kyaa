@@ -12,8 +12,12 @@ export type Submission = {
   score: number;
 };
 
-function snapshot(sim: ReturnType<typeof round>) {
-  return { ...sim.state, layout: [...sim.layout] };
+/** 1·2·3라운드는 시계가 돌기 전에 카드 앞면을 3·4·5초 보여 준다(기획 08-1 05). 이번 주 랭킹과 섞이지 않게 다음 주간 마감(2026-11-23 0시 KST)부터 켠다. */
+export const PREVIEW_SECONDS = [3, 4, 5] as const;
+const PREVIEW_FROM = Date.UTC(2026, 10, 22, 15);
+
+function snapshot(sim: ReturnType<typeof round>, preview = 0) {
+  return { ...sim.state, layout: [...sim.layout], preview };
 }
 
 export function useMatchRound(
@@ -46,6 +50,9 @@ export function useMatchRound(
     let handle = 0;
     let last = performance.now();
     let fraction = 0;
+    const previewOn = Date.now() >= PREVIEW_FROM;
+    let previewStage = 0;
+    let previewUntil = 0;
     pending.current = undefined;
     awaitingNext.current = false;
     setView(snapshot(sim));
@@ -56,6 +63,27 @@ export function useMatchRound(
       finish.current({action: "finish", playId, ticks: sim.state.tick, score: sim.state.score, moves});
     };
     function frame(now: number) {
+      // 다음 라운드 배치는 첫 걸음에서 깔리므로, 미리 보기는 라운드 넘김 직후 판을 먼저 바꿔 둔 뒤 시작한다.
+      if (previewOn && !awaitingNext.current && previewStage !== sim.state.stage + Number(sim.state.cleared)) {
+        const stage = sim.state.stage + Number(sim.state.cleared);
+        previewStage = stage;
+        previewUntil = stage <= PREVIEW_SECONDS.length ? now + PREVIEW_SECONDS[stage - 1] * 1000 : 0;
+        if (previewUntil && sim.state.cleared) {
+          sim.step();
+        }
+      }
+      if (previewUntil > now && !pause.current) {
+        pending.current = undefined;
+        last = now;
+        setView(snapshot(sim, Math.ceil((previewUntil - now) / 1000)));
+        handle = requestAnimationFrame(frame);
+        return;
+      }
+      if (previewUntil && previewUntil <= now) {
+        previewUntil = 0;
+        setView(snapshot(sim));
+      }
+      if (previewUntil > now) previewUntil += now - last;
       if (!pause.current && !awaitingNext.current) fraction += ((now - last) * FPS) / 1000;
       else pending.current = undefined;
       last = now;
