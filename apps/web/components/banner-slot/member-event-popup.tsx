@@ -46,7 +46,7 @@ export function MemberEventPopup() {
   const pathname = usePathname();
   const enabled = ready && !/^\/(admin|operator|auth|login)(\/|$)/.test(pathname);
   const member = authenticated && !/^(pending|guest):/.test(ownerKey);
-  const promo = !/^\/(chemi|guide\/chemi)(\/|$)/.test(pathname);
+  const promo = pathname === "/";
   const lookup = enabled && (member || promo) ? JSON.stringify([ownerKey, locale, pathname]) : null;
   const [result, setResult] = useState<{ lookup: string; candidates: HomeBanner[] }>();
   const [active, setActive] = useState<{ banner: HomeBanner; key: string; lookup: string }>();

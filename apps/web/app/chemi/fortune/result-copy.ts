@@ -1,3 +1,5 @@
+import { branchHanja, branches, stemHanja, stems } from "../saju/chart";
+import type { Branch, Stem } from "../saju/chart";
 /**
  * 결과 화면의 풀이 문장. 풀이 표(AS-TX)가 들어오기 전까지 쓰는 임시 문장이며,
  * 점수 구간(높음 80+ / 보통 65~79 / 낮음)과 12운성·12신살 이름으로만 고른다.
@@ -138,4 +140,17 @@ export const restHeadline = "속도를 줄여야 오래 가는 날";
 export function dayHeadline(tenGod: string, grade: string) {
   if (grade === "쉬어 가는 날") return restHeadline;
   return tenGodHeadlines[tenGod] ?? null;
+}
+
+const romanizedStems = ["Gap", "Eul", "Byeong", "Jeong", "Mu", "Gi", "Gyeong", "Sin", "Im", "Gye"];
+const romanizedBranches = ["Ja", "Chuk", "In", "Myo", "Jin", "Sa", "O", "Mi", "Sin", "Yu", "Sul", "Hae"];
+
+export function localizedDayPillar(locale: string, pillar: string) {
+  if (locale === "ko") return pillar;
+  const [stem, branch] = Array.from(pillar) as [Stem, Branch];
+  const stemIndex = stems.indexOf(stem);
+  const branchIndex = branches.indexOf(branch);
+  if (stemIndex < 0 || branchIndex < 0) return pillar;
+  if (locale === "ja" || locale.startsWith("zh")) return stemHanja[stem] + branchHanja[branch];
+  return `${romanizedStems[stemIndex]}-${romanizedBranches[branchIndex].toLowerCase()}`;
 }

@@ -68,9 +68,17 @@ export function FanToastViewport() {
   // A native modal <dialog> sits in the browser's top layer above any z-index and makes everything outside it inert, so while one is
   // open the toast layer is drawn inside it (visible and clickable); otherwise in <body> above every z-indexed modal (261107-2 r4).
   const modal = useOpenNativeModal();
+  const [sceneAnchor, setSceneAnchor] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const sync = () => setSceneAnchor(document.querySelector<HTMLElement>("[data-saju-toast-anchor]"));
+    const observer = new MutationObserver(sync);
+    observer.observe(document.body, { childList: true, subtree: true });
+    sync();
+    return () => observer.disconnect();
+  }, []);
   return <Toast.Provider toastManager={manager} limit={MAX_VISIBLE} timeout={DEFAULT_DURATION}>
-    <Toast.Portal container={modal ?? undefined}>
-      <Toast.Viewport className={styles.viewport} data-fan-toast-viewport="">
+    <Toast.Portal container={modal ?? sceneAnchor ?? undefined}>
+      <Toast.Viewport className={styles.viewport} data-fan-toast-viewport="" data-scene-anchor={!modal && sceneAnchor ? "" : undefined}>
         <FanToastList closeLabel={closeLabel} />
       </Toast.Viewport>
     </Toast.Portal>

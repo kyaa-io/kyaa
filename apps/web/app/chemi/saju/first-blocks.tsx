@@ -6,7 +6,7 @@
  * 1024px부터 두 블록씩 짝지어 두 열, 390은 한 열이다(배치는 result.module.css 의 .cols).
  */
 import { useId, useState, type CSSProperties, type ReactNode } from "react";
-import { Droplet, Flame, Gem, LockKeyhole, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
+import { ChevronDown, Droplet, Flame, Gem, LockKeyhole, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -329,6 +329,7 @@ export function TenGodBlock({ chart }: { chart: Chart }) {
   return (
     <details className={styles.section}>
       <summary className={styles.disclosure}>
+        <FanIcon icon={ChevronDown} size={16} className={styles.disclosureIcon} />
         <FanHeading><ReadingText id="tenGodTitle" /></FanHeading>
         <FanText role="meta">{view.groups.map(({ group, count }) => `${group} ${count}`).join(" · ")}</FanText>
       </summary>
@@ -401,6 +402,7 @@ export function RelationBlock({ chart }: { chart: Chart }) {
   return (
     <details className={styles.section}>
       <summary className={styles.disclosure}>
+        <FanIcon icon={ChevronDown} size={16} className={styles.disclosureIcon} />
         <FanHeading><ReadingText id="relationTitle" /></FanHeading>
         <FanText role="meta">
           {rows.length ? [...new Set(rows.map((row) => row.kind))]

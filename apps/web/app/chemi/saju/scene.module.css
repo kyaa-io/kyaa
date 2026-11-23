@@ -7,6 +7,7 @@
   padding-block: var(--space-3) var(--space-4);
 }
 .chips {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -269,3 +270,5 @@
 :global(main):has(.chips) > :global([data-chemi-list-link]) {
   display: none;
 }
+
+.toastAnchor { position: absolute; inset: 100% 0 auto; }

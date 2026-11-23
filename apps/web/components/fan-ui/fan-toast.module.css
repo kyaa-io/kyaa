@@ -71,3 +71,10 @@
 }
 
 :global(body:has([data-chemi-run])) .toast { background: var(--color-ink); }
+.viewport[data-scene-anchor] {
+  position: absolute;
+  inset: 0 var(--space-4) auto;
+  width: auto;
+  flex-direction: column;
+}
+.viewport[data-scene-anchor] .toast { background: var(--color-ink); }

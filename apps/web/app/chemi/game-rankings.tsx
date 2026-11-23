@@ -1,5 +1,7 @@
 "use client";
 
+import { VacantRank } from "@/features/chemi/games/vacant-rank";
+
 import { useEffect, useRef } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -36,10 +38,6 @@ export type GameRanking = {
 
 const SLOTS = 3;
 
-export function EmptyRankingRow({ place }: { place: number }) {
-  return <RankingRow row={{ id: `empty-${place}`, place, name: "—", vacant: true, change: 0, record: "0" }} />;
-}
-
 function RankingRow({ row }: { row: RecordRow }) {
   const ref = useRef<HTMLDivElement>(null);
   const previous = useRef(row);
@@ -52,18 +50,20 @@ function RankingRow({ row }: { row: RecordRow }) {
   }, [row]);
   return (
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
-      <FanText role="body" data-flash-target="gain">{row.place}</FanText>
-      {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.vacant ? null : row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
-      <div>
-        <FanText role="item">{row.name}</FanText>
-        {row.change !== 0 && (
-          <FanText role="meta">
-            {row.change > 0 ? "▲" : "▼"}
-            {Math.abs(row.change)}
-          </FanText>
-        )}
-      </div>
-      <FanText role="body" data-flash-target="value">{row.record}</FanText>
+      {row.vacant ? <VacantRank place={row.place} avatarClassName={styles.rankAvatar} /> : <>
+        <FanText role="body" data-flash-target="gain">{row.place}</FanText>
+        {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
+        <div>
+          <FanText role="item">{row.name}</FanText>
+          {row.change !== 0 && (
+            <FanText role="meta">
+              {row.change > 0 ? "▲" : "▼"}
+              {Math.abs(row.change)}
+            </FanText>
+          )}
+        </div>
+        <FanText role="body" data-flash-target="value">{row.record}</FanText>
+      </>}
     </div>
   );
 }
@@ -101,8 +101,10 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, mineEm
               <>
                 <div className={styles.leaders}>
                   {Array.from({ length: SLOTS }, (_, index) => {
-                    const row = game.leaders[index];
-                    return row ? <RankingRow key={row.id} row={row} /> : <EmptyRankingRow key={index} place={index + 1} />;
+                    const row = game.leaders[index] ?? {
+                      id: `empty-${index}`, place: index + 1, name: "—", vacant: true, change: 0, record: "0",
+                    };
+                    return <RankingRow key={row.id} row={row} />;
                   })}
                 </div>
                 {game.leaders.some((row) => row.isMe) ? (

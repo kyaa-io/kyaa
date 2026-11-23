@@ -76,7 +76,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
             <div className={styles.cardCopy}>
               <FanHeading as="h3"><a href={`${href}?locale=${locale}`}>{names[key]}</a></FanHeading>
               <FanText role="body">{names.descriptions[key]}</FanText>
-              <FanText role="meta">+{EARN[key][1]} EXP</FanText>
+              <FanText role="meta">{locale === "ko" ? "친밀" : "Affinity"} +{EARN[key][1]}</FanText>
             </div>
           </article>)}
         </div>
