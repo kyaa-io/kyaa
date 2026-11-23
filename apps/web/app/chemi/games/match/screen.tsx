@@ -33,6 +33,7 @@ import { RankInitial } from "@/features/chemi/games/rank-initial";
 import { fillCount, getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
+import { EmptyRankingRow } from "../../game-rankings";
 import styles from "./match.module.css";
 
 const characters = ["changha", "elina", "yuna"] as const;
@@ -214,8 +215,8 @@ function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, numb
 }
 
 /** 카드 한 장: 뒷면 무늬·앞면 사진·맞춤 표시·틀림 표시(빨간 테두리 + '틀림' 글자 + 짧은 흔들림). */
-function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLabel, onClick, onReady }: {
-  open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number;
+function MatchCard({ open, matched, wrong, src, label, number, faceNumber, disabled, wrongLabel, onClick, onReady }: {
+  open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number; faceNumber?: number;
   disabled: boolean; wrongLabel: string; onClick: () => void; onReady?: (src: string) => void;
 }) {
   // 뒤집힌 카드도 사진을 미리 받아 둔다(보이지 않게). 미리 보기가 시작될 때 이미 떠 있어야 한다(DF-GAME-002).
@@ -225,6 +226,7 @@ function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLa
         <Image width={640} height={800} sizes="(min-width: 768px) 210px, 33vw" loading="eager"
           unoptimized={src.startsWith("/chemi/match/") || src.startsWith("/api/")} src={src} alt=""
           onLoad={() => onReady?.(src)} onError={() => onReady?.(src)} />
+        {open && faceNumber && <small className={styles.cardNumber}>{faceNumber}</small>}
         {!open && <small className={styles.cardNumber}>{String(number).padStart(2, "0")}</small>}
         {matched && (
           <i>
@@ -339,8 +341,7 @@ function Rankings({
         ))}
         {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, index) => (
           <li data-row="" key={`vacant-${index}`}>
-            <b>{displayed.length + index + 1}</b><span className={styles.avatar} aria-hidden="true" />
-            <FanText role="meta">{copy.emptyRanking}</FanText>
+            <EmptyRankingRow place={displayed.length + index + 1} />
           </li>
         ))}
       </ol>
@@ -499,9 +500,9 @@ function Session({
       setWorking(false);
     }
   }
-  /** 이 최애로 하는 판의 사진 순서: 고른 최애 사진 먼저, 나머지 두 최애 사진이 뒤에. */
   function facesFor(who: Character) {
-    return [photos[who], ...characters.filter(c => c !== who).map(c => photos[c])].flatMap(person => person.cards);
+    const cards = photos[who].cards;
+    return Array.from({ length: LEVELS[LEVELS.length - 1].pairs }, (_, i) => cards[i % cards.length]);
   }
   const cardReady = useCallback((src: string) => {
     setReady((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
@@ -798,11 +799,11 @@ function Session({
         aria-label={`${copy.round} ${i + 1} · ${fill(copy.goal, { n: pairs, s: seconds })}`}>
         <span className={styles.stepName} aria-hidden="true">
           <b>{i + 1}</b>
-          <span className={styles.stepGrid} style={{ "--columns": columns } as CSSProperties}>
+          {!active && <span className={styles.stepGrid} style={{ "--columns": columns } as CSSProperties}>
             {Array.from({ length: columns * rows }, (_, cell) => <i key={cell} />)}
-          </span>
+          </span>}
         </span>
-        <span aria-hidden="true">{locale === "ko" ? <><FanNumUnit>{`${pairs}쌍`}</FanNumUnit> · <FanNumUnit>{`${seconds}초`}</FanNumUnit></> : fill(copy.goal, { n: pairs, s: seconds })}</span>
+        {!active && <span className={styles.levelGoal} aria-hidden="true"><FanNumUnit>{pairs}{copy.pairUnit}</FanNumUnit><FanNumUnit>{seconds}{copy.secondUnit}</FanNumUnit></span>}
       </li>;
     })}
   </ol>;
@@ -942,8 +943,8 @@ function Session({
                   {/* 기획 08-1: 판 정보의 '음악' 줄. 이름표를 붙여 사진 설명으로 읽히지 않게 한다. */}
                   <p><FanIcon icon={Music2} size={16} /><FanText role="meta">{locale === "ko" ? "배경음악" : copy.sound} ·</FanText> <FanText role="label">{(locale === "ko" ? ["매직 퍼즐 1", "매직 퍼즐 2", "코지 퍼즐 1"] : ["Magic Puzzle 1", "Magic Puzzle 2", "Cozy Puzzle 1"])[characters.indexOf(character)]}</FanText></p>
                 </div>
-                <FanHeading as="h2">{locale === "ko" ? `${LEVELS.length}라운드` : `${copy.round} · ${LEVELS.length}`}</FanHeading>
-                {levelList}
+                <section className={styles.roundTable}><FanHeading as="h2">{locale === "ko" ? `${LEVELS.length}라운드` : `${copy.round} · ${LEVELS.length}`}</FanHeading>
+                {levelList}</section>
                 <div className={styles.startAction}>
                   <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}
                     helperText={lobby ? `${copy.freePlays} ${lobby.freeRemaining}` : undefined}>
@@ -1045,6 +1046,7 @@ function Session({
                       matched={matched}
                       wrong={active.second >= 0 && (active.first === index || active.second === index)}
                       src={faces[photo]}
+                      faceNumber={LEVELS[active.stage - 1].pairs > photos[character].cards.length ? photo + 1 : undefined}
                       onReady={cardReady}
                       number={cell + 1}
                       wrongLabel={copy.wrong}
@@ -1174,9 +1176,9 @@ function Session({
                   <FanAction onClick={() => void submit(pendingFinish)}>{copy.retry}</FanAction>
                 </div>
               )}
-              <ScoreLines locale={locale} lines={[[copy.pairs, view.pairs * 100], [copy.clearBonus, view.clearPoints], [copy.time, view.timePoints], [copy.accuracy, view.accuracyPoints]]} />
+              {view.score === 0 ? <FanText role="body">{copy.zeroScore}</FanText> : <ScoreLines locale={locale} lines={[[copy.pairs, view.pairs * 100], [copy.clearBonus, view.clearPoints], [copy.time, view.timePoints], [copy.accuracy, view.accuracyPoints]]} />}
               <div className={styles.souvenir}>
-                {faces.slice(0, 5).map((src) => (
+                {photos[character].cards.slice(0, 5).map((src) => (
                   <Image
                     width={360}
                     height={480}

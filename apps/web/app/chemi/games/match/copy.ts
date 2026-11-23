@@ -3,6 +3,7 @@ import { parseAppLocale, type AppLocale } from "@/i18n/locales";
 
 const copy = {
   "ko": {
+    pairUnit: "쌍", secondUnit: "초", zeroScore: "맞춘 짝이 없어 0점이에요. 다음 판에는 같은 사진 두 장을 찾아보세요.",
     title: "짝 맞추기",
     back: "뒤로",
     sound: "소리",
@@ -91,6 +92,7 @@ const copy = {
     prevEnded: "이전 판은 끝났어요",
   },
   "en": {
+    pairUnit: " pairs", secondUnit: "s", zeroScore: "No pairs matched. Try again and look for two matching cards.",
     title: "Match pairs",
     back: "Back",
     sound: "Sound",
@@ -179,6 +181,7 @@ const copy = {
     prevEnded: "Your last game ended",
   },
   "ja": {
+    pairUnit: "組", secondUnit: "秒", zeroScore: "ペアがそろわなかったので0点です。次は同じ写真を2枚探しましょう。",
     title: "絵合わせ",
     back: "戻る",
     sound: "サウンド",
@@ -267,6 +270,7 @@ const copy = {
     prevEnded: "前のプレイは終了しました",
   },
   "zh-Hans": {
+    pairUnit: "对", secondUnit: "秒", zeroScore: "没有配成对子，所以是0分。再试一次，找出两张相同的牌。",
     title: "配对游戏",
     back: "返回",
     sound: "声音",
@@ -355,6 +359,7 @@ const copy = {
     prevEnded: "上一局已结束",
   },
   "zh-Hant": {
+    pairUnit: "對", secondUnit: "秒", zeroScore: "沒有配成對子，所以是0分。再試一次，找出兩張相同的牌。",
     title: "配對遊戲",
     back: "返回",
     sound: "音效",
@@ -443,6 +448,7 @@ const copy = {
     prevEnded: "上一局已結束",
   },
   "es": {
+    pairUnit: " parejas", secondUnit: " s", zeroScore: "No formaste ninguna pareja. Busca dos cartas iguales en la próxima partida.",
     title: "Emparejar",
     back: "Volver",
     sound: "Sonido",
@@ -531,6 +537,7 @@ const copy = {
     prevEnded: "Tu partida anterior terminó",
   },
   "id": {
+    pairUnit: " pasang", secondUnit: " dtk", zeroScore: "Belum ada pasangan yang cocok. Coba lagi dan cari dua kartu yang sama.",
     title: "Cari pasangan",
     back: "Kembali",
     sound: "Suara",
@@ -619,6 +626,7 @@ const copy = {
     prevEnded: "Permainan sebelumnya sudah berakhir",
   },
   "vi": {
+    pairUnit: " cặp", secondUnit: " giây", zeroScore: "Bạn chưa ghép được cặp nào. Hãy chơi lại và tìm hai lá giống nhau.",
     title: "Ghép đôi",
     back: "Quay lại",
     sound: "Âm thanh",
@@ -707,6 +715,7 @@ const copy = {
     prevEnded: "Ván trước đã kết thúc",
   },
   "th": {
+    pairUnit: " คู่", secondUnit: " วิ", zeroScore: "ยังจับคู่ไม่ได้ ลองอีกครั้งแล้วหาไพ่สองใบที่เหมือนกัน",
     title: "จับคู่",
     back: "ย้อนกลับ",
     sound: "เสียง",
@@ -795,6 +804,7 @@ const copy = {
     prevEnded: "เกมก่อนหน้าจบแล้ว",
   },
   "pt": {
+    pairUnit: " pares", secondUnit: " s", zeroScore: "Você não formou pares. Tente outra vez e encontre duas cartas iguais.",
     title: "Jogo de pares",
     back: "Voltar",
     sound: "Som",
@@ -883,6 +893,7 @@ const copy = {
     prevEnded: "Sua partida anterior terminou",
   },
   "fr": {
+    pairUnit: " paires", secondUnit: " s", zeroScore: "Aucune paire trouvée. Rejouez et cherchez deux cartes identiques.",
     title: "Jeu de paires",
     back: "Retour",
     sound: "Son",
@@ -971,6 +982,7 @@ const copy = {
     prevEnded: "Ta partie précédente est terminée",
   },
   "ru": {
+    pairUnit: " пар", secondUnit: " с", zeroScore: "Вы не нашли ни одной пары. Сыграйте ещё раз и найдите две одинаковые карты.",
     title: "Найди пару",
     back: "Назад",
     sound: "Звук",

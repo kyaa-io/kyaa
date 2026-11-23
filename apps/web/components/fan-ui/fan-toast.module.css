@@ -69,3 +69,5 @@
   .toast { transition-duration: .01ms; }
   .toast[data-starting-style] { transform: none; }
 }
+
+:global(body:has([data-chemi-run])) .toast { background: var(--color-ink); }

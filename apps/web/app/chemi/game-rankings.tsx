@@ -36,6 +36,10 @@ export type GameRanking = {
 
 const SLOTS = 3;
 
+export function EmptyRankingRow({ place }: { place: number }) {
+  return <RankingRow row={{ id: `empty-${place}`, place, name: "—", vacant: true, change: 0, record: "0" }} />;
+}
+
 function RankingRow({ row }: { row: RecordRow }) {
   const ref = useRef<HTMLDivElement>(null);
   const previous = useRef(row);
@@ -97,10 +101,8 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, mineEm
               <>
                 <div className={styles.leaders}>
                   {Array.from({ length: SLOTS }, (_, index) => {
-                    const row = game.leaders[index] ?? {
-                      id: `empty-${index}`, place: index + 1, name: "—", vacant: true, change: 0, record: "0",
-                    };
-                    return <RankingRow key={row.id} row={row} />;
+                    const row = game.leaders[index];
+                    return row ? <RankingRow key={row.id} row={row} /> : <EmptyRankingRow key={index} place={index + 1} />;
                   })}
                 </div>
                 {game.leaders.some((row) => row.isMe) ? (

@@ -12,7 +12,7 @@ import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { AppLocale } from "@/i18n/locales";
-import { celebrateSpend } from "@/components/fan-ui/reward-celebration";
+import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/wallet-events";
 import { fill, getRunCopy, type RunCopy } from "./copy";
 import { ART_FILES, loadArt } from "./render";
 import { ResultStage } from "./result";
@@ -46,7 +46,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const [result, setResult] = useState<Result>();
   const [before, setBefore] = useState<{ place?: number; best: number }>({ best: 0 });
   const [submission, setSubmission] = useState<Submission>();
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<"load" | "finish" | "share" | "remind" | "start" | null>(null);
   const [busy, setBusy] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [paying, setPaying] = useState(false);
@@ -74,7 +74,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   }, []);
   const load = useCallback(async () => {
     if (!auth.ready) return;
-    setFailed(false);
+    setFailed(null);
     try {
       if (auth.authenticated) {
         const data = await call<Lobby>({ action: "lobby" }, true, undefined, LOBBY_TIMEOUT_MS);
@@ -84,7 +84,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       } else setPublicRows((await call<{ ranking: Rank[] }>({ action: "ranking" }, false, undefined, LOBBY_TIMEOUT_MS)).ranking);
       if (share) setChallenge(await call<Challenge>({ action: "challenge", shareId: share }).catch(() => undefined));
     } catch {
-      setFailed(true);
+      setFailed("load");
     }
   }, [auth.ready, auth.authenticated, call, share, sound]);
   useEffect(() => { void load(); }, [load]);
@@ -122,7 +122,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     if (auth.authenticated && !lobby) return;
     if (paid && !lobby?.extraCost) return;
     setBusy(true);
-    setFailed(false);
+    setFailed(null);
     // The extra-run sheet leaves its history entry with a back step when it closes; close it before the run's back guard is listening.
     setPaying(false);
     try {
@@ -137,13 +137,13 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       setStats(undefined);
       setSubmission(undefined);
       setCopied(false);
-      setTicket({ ...issued, trial });
+      setTicket({ ...issued, trial, spentPoints: paid && !trial ? lobby?.extraCost : undefined });
       setRerun(stage === "result");
       setStage("run");
-      if (paid && !trial && lobby) celebrateSpend({ locale, points: lobby.extraCost, label: copy.extraTitle });
+      if (paid && !trial) window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
     } catch (error) {
       if (error instanceof Error && !/^5/.test(error.message)) requestKey.current = null;
-      setFailed(true);
+      setFailed("start");
       if (auth.authenticated) void load();
     } finally {
       setBusy(false);
@@ -154,7 +154,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     setSubmission(body);
     setStage("result");
     setBusy(true);
-    setFailed(false);
+    setFailed(null);
     try {
       if (ticket?.trial) {
         setResult({ score: body.score, exp: 0 });
@@ -165,7 +165,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       }
       setSubmission(undefined);
     } catch {
-      setFailed(true);
+      setFailed("finish");
     } finally {
       setBusy(false);
     }
@@ -185,13 +185,14 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   }
   async function shareResult() {
     if (!result?.shareId) return;
+    setFailed(null);
     const url = new URL(location.href);
     url.searchParams.set("share", result.shareId);
     try {
       if (navigator.share) await navigator.share({ title: copy.title, url: url.href });
       else { await navigator.clipboard.writeText(url.href); setCopied(true); }
     } catch (error) {
-      if (!(error instanceof DOMException && error.name === "AbortError")) setFailed(true);
+      if (!(error instanceof DOMException && error.name === "AbortError")) setFailed("share");
     }
   }
   function again() {
@@ -209,20 +210,30 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const spent = Boolean(lobby && free <= 0 && extra <= 0);
   const footer = [lobby && lobby.players > 0 ? fill(copy.players, { n: number.format(lobby.players) }) : "",
     lobby?.previous ? fill(copy.lastWeek, { n: lobby.previous.place }) : ""].filter(Boolean).join(" · ");
-  const reminder = reminders && <FanAction disabled={busy || reminded} onClick={async () => {
-    try { await call({ kind: "tomorrow" }, true, "/api/chemi/reminders"); setReminded(true); } catch { setFailed(true); }
-  }}>{reminded ? copy.reminded : copy.remind}</FanAction>;
+  async function remind() {
+    setFailed(null);
+    try { await call({ kind: "tomorrow" }, true, "/api/chemi/reminders"); setReminded(true); } catch { setFailed("remind"); }
+  }
+  const reminder = reminders && <FanAction disabled={busy || reminded} onClick={remind}>{reminded ? copy.reminded : copy.remind}</FanAction>;
+  const failureSubject = failed === "share" ? copy.challenge : failed === "remind" ? copy.remind : failed === "finish" ? copy.score : failed === "start" ? copy.go : copy.ranking;
+  function retryFailed() {
+    if (failed === "finish" && submission) void finish(submission);
+    else if (failed === "share") void shareResult();
+    else if (failed === "remind") void remind();
+    else if (failed === "start") again();
+    else void load();
+  }
   const errorLine = failed && <div className={styles.error} role="alert">
-    <FanText role="meta">{copy.error}</FanText>
-    <FanAction size="sm" disabled={busy} onClick={() => submission ? void finish(submission) : void load()}>{copy.retry}</FanAction>
+    <FanText role="meta">{failureSubject} · {copy.error}</FanText>
+    <FanAction size="sm" disabled={busy} onClick={retryFailed}>{copy.retry}</FanAction>
   </div>;
 
-  if (stage === "run" && ticket) return <main className={styles.shell} lang={locale} data-stage="run">
+  if (stage === "run" && ticket) return <main data-chemi-run="" className={styles.shell} lang={locale} data-stage="run">
     <Track character={character} key={ticket.playId} ticket={ticket} copy={copy} locale={locale} name={names[character]} sound={sound} soundOn={soundOn}
       onToggleSound={toggleSound} pauseRequest={pauseRequest} rerun={rerun} onFinish={(body, played) => void finish(body, played)} />
   </main>;
 
-  return <main className={styles.shell} lang={locale} data-stage={stage}>
+  return <main data-chemi-run="" className={styles.shell} lang={locale} data-stage={stage}>
     <header className={styles.nav}>
       <FanIconButton aria-label={copy.back} onClick={back}><FanIcon icon={ChevronLeft} /></FanIconButton>
       <FanHeading as="h1">{copy.title}</FanHeading>

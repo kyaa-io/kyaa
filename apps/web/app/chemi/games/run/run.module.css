@@ -319,3 +319,5 @@
 @keyframes run-pop { from { transform: scale(2); } }
 /* 키 띠는 3.7초 그대로 있다가 300ms 동안 사라진다. 움직임 줄이기에서는 4초 뒤 바로 빠진다. */
 @keyframes run-hint { 92% { opacity: 1; } to { opacity: 0; } }
+
+.scoreLine { display: flex; align-items: center; gap: var(--space-2); }
