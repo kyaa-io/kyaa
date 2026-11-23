@@ -8,7 +8,7 @@
  * 남은 질문 수·차감·한도는 서버(/api/chemi/ask)가 정하고, 이 화면은 받은 값만 그린다.
  * 유료 구매 자리는 결제 수단이 붙기 전이라 두지 않는다.
  */
-import { expressionFor, FortuneExpression } from "@/features/chemi/ui/fortune-expression";
+import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -49,7 +49,7 @@ import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
 import {
-  askArt, askExamples, askFollowups, askLinesFor, askLoop, askPages, askReaction, askRecall, askResultExamples, askResultLine,
+  askArt, askExamples, askFollowups, askLinesFor, askLoop, askPages, askReaction, askReactionExpression, askRecall, askResultExamples, askResultLine,
   askSubject, askVoice,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
   type AskCharacter, type AskContent, type AskRecall, type AskTopic,
@@ -447,6 +447,8 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   let paging = false;
   // 오늘 마지막 질문의 답을 보고 있는지: 장면이 저녁처럼 조금 어두워진다.
   let ending = false;
+  // 지금 쪽이 팬이 고른 반응에 최애가 답하는 쪽인지: 그 반응에 맞는 표정으로 바뀐다.
+  let reacting = false;
   if (failed)
     panel = (
       <section className={styles.talk}>
@@ -573,6 +575,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
     const last = index === beats.length - 1;
     const farewell = beat.key === `${threadId}:rest`;
     const typing = fresh === beat.key || farewell;
+    reacting = beat.key === `${threadId}:react`;
     const settled = saidAll(beat.body, typing);
     const forward = () => {
       if (!settled) setSaid(lineKey(beat.body));
@@ -861,9 +864,15 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? (ending ? "close" : "speak") : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
   // 위기 신호 답에서는 최애 그림을 가리고 남은 수를 숨긴다(기획 03-6 27).
   const crisis = at.step === "answer" && shown?.klass === "crisis" && !draft;
-  const expression = view.startsWith("follow") ? expressionFor.followup
-    : view.startsWith("answer") && shown?.status === "answered" && !shown.klass ? expressionFor.choicePraise
-    : expressionFor.arrival;
+  // 표정: 답은 웃음, 고른 반응에 답하는 쪽과 그 뒤 이어 묻기는 반응별 표(askReactionExpression), 반응 없는 이어 묻기는 놀람.
+  // 답을 기다리는 동안·안전 안내·질문 수 안내는 기본. 답과 상관없는 장면(주제 고르기·입력)에서는 표정 판을 쓰지 않는다.
+  const expression = crisis ? null
+    : view.startsWith("draft") ? expressionFor.wait
+    : view.startsWith("follow") ? (picked ? askReactionExpression[picked] : expressionFor.followup)
+    : !view.startsWith("answer") ? null
+    : shown?.status !== "answered" || shown.klass ? expressionFor.wait
+    : reacting && picked ? askReactionExpression[picked]
+    : expressionFor.answer;
   const historyDate = (item: Thread) => {
     const matches = state?.threads.filter((thread) => thread.date === item.date && thread.question === item.question) ?? [];
     const order = matches.length - matches.findIndex((thread) => thread.threadId === item.threadId);
@@ -873,7 +882,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   return (
     <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-crisis={crisis ? "" : undefined} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
       <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name}
-        expression={where === "fortune" ? <FortuneExpression character={who} expression={expression} /> : undefined} />
+        expression={<SceneExpression scene={where} character={who} portrait={art.tall} expression={expression} wide="64" />} />
       <div className={styles.top}>
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft } from "@/components/fan-ui/fan-icons";
@@ -472,6 +473,11 @@ export function StarFlow({
   const worst = stars ? worstDomain(stars) : null;
   const entering = step === "enter" && !needBirth;
   const creator = starCharacters[index].sign;
+  // 1은 첫 별점(놀람), 2는 좋은 분야와 낮은 분야·3은 행성 흐름(기본), 4는 둘 사이 궁합(웃음).
+  const expression = !talk || !stars || phase !== "idle" ? null
+    : talk === 1 ? expressionFor.firstReveal
+    : talk === 4 ? expressionFor.bond
+    : expressionFor.low;
   const line =
     step === "calc"
       ? starCalcLine(character)
@@ -550,10 +556,13 @@ export function StarFlow({
         )}
       </div>
       <div className={styles.stage}>
-        <picture className={styles.art}>
-          <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
-          <img src={`${art}/hero-${character}-p-v1.webp`} alt={text("nightArt", { name })} />
-        </picture>
+        <div className={styles.art}>
+          <picture>
+            <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
+            <img src={`${art}/hero-${character}-p-v1.webp`} alt={text("nightArt", { name })} />
+          </picture>
+          <SceneExpression scene="star" character={character} portrait={`${art}/hero-${character}-p-v1.webp`} expression={expression} />
+        </div>
         {phase === "error" ? (
           <div className={styles.controls}>
             <FanState

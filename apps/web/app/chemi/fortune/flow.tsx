@@ -1,6 +1,6 @@
 "use client";
 
-import { expressionFor, FortuneExpression } from "@/features/chemi/ui/fortune-expression";
+import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -406,11 +406,12 @@ export function FortuneFlow({
 
   const talk = talkNumber(step);
   const result = reading && !reading.result.locked ? reading.result : null;
-  const expression = !talk ? expressionFor.arrival
-    : picked ? expressionFor.choicePraise
-    : result && result.score >= 80 ? expressionFor.goodResult
-    : result && result.score < 60 ? expressionFor.unexpectedResult
-    : expressionFor.arrival;
+  // 창하는 2~4단계마다 다른 원화(차분·웃음·챙김)가 이미 있어, 같은 구도의 원화를 쓰는 첫 단계에만 표정을 겹친다.
+  const expression = !talk || !result || (character === "changha" && talk > 1) ? null
+    : talk === 1 ? expressionFor.firstReveal
+    : talk === 2 ? (result.fields.people >= 80 ? expressionFor.good : expressionFor.low)
+    : talk === 3 ? (result.fields.fandom >= 80 ? expressionFor.good : expressionFor.low)
+    : expressionFor.luck;
   const lineInput = result && {
     score: result.score,
     grade: result.grade.name,
@@ -520,7 +521,12 @@ export function FortuneFlow({
             <source media="(min-width: 48rem)" srcSet={wideArt} />
             <img src={mobileArt} alt={text("cloudArt", { name })} />
           </picture>
-          <FortuneExpression character={character} expression={expression} />
+          <SceneExpression
+            scene="fortune"
+            character={character}
+            portrait={character === "changha" ? `${art}/fortune-portrait-v1.webp` : mobileArt}
+            expression={expression}
+          />
           {step === "enter" && (character === "elina" || character === "yuna") && (
             <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
           )}
