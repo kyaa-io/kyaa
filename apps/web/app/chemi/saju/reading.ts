@@ -13,6 +13,8 @@ export type SajuReading<Result = Chart> = {
 };
 
 export type PairResult = {
+  charts?: { self: Chart["pillars"]; partner: Chart["pillars"] };
+  relations?: { selfKey: keyof Chart["pillars"]; partnerKey: keyof Chart["pillars"]; kind: "합" | "충" }[];
   dayStems: [Stem, Stem];
   combinations: unknown[];
   clashes: unknown[];

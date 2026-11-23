@@ -713,3 +713,14 @@ export function pairReading(a: Stem, b: Stem, combinations: number, clashes: num
     line: (name) => `${table.line} ${name} 얘기 더 해 볼래?`,
   };
 }
+
+/** 궁합 기록에 두 명식이 있는 경우의 분야별 풀이. */
+export function pairJudgments(self: Stem, partner: Stem, combinations: number, clashes: number) {
+  const a = stemElement[self], b = stemElement[partner];
+  const nourishing = generates[a] === b || generates[b] === a;
+  return [
+    { label: "마음", level: a === b || nourishing ? "좋음" : "보통" },
+    { label: "생활", level: combinations > 0 ? "좋음" : "보통" },
+    { label: "갈등", level: clashes > 0 ? "조심" : "보통" },
+  ];
+}

@@ -448,11 +448,32 @@ export async function rewardRoute(
             ]) =>
               (mine.includes(a) && theirs.includes(b)) ||
               (mine.includes(b) && theirs.includes(a));
+            const keys = ["day", "month", "year", "hour"] as const;
+            const relations = keys.flatMap((selfKey) =>
+              keys.flatMap((partnerKey) => {
+                const a = chart.pillars[selfKey]?.earthlyBranch;
+                const b = other.pillars[partnerKey]?.earthlyBranch;
+                if (!a || !b) return [];
+                const matches = ([x, y]: readonly [string, string]) =>
+                  (a === x && b === y) || (a === y && b === x);
+                const kind = BRANCH_COMBINATIONS.some(matches)
+                  ? "합"
+                  : BRANCH_CLASHES.some(matches)
+                    ? "충"
+                    : null;
+                return kind ? [{ selfKey, partnerKey, kind }] : [];
+              }),
+            );
+            const priority = (r: (typeof relations)[number]) =>
+              r.selfKey === r.partnerKey && r.selfKey === "day"
+                ? 0
+                : r.selfKey === r.partnerKey && r.selfKey === "month"
+                  ? 1
+                  : 2;
             result = {
-              dayStems: [
-                chart.pillars.day.heavenlyStem,
-                other.pillars.day.heavenlyStem,
-              ],
+              charts: { self: chart.pillars, partner: other.pillars },
+              relations: relations.sort((a, b) => priority(a) - priority(b)),
+              dayStems: [chart.pillars.day.heavenlyStem, other.pillars.day.heavenlyStem],
               combinations: BRANCH_COMBINATIONS.filter(across),
               clashes: BRANCH_CLASHES.filter(across),
             };

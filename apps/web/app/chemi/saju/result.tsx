@@ -24,11 +24,12 @@ import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
-import { monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
+import { controls, pillarKeys, branchHanja, tenGod, stemElement, branchElement, elementName, elements, generates, monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
 import {
   firstReading,
   monthReading,
   pairReading,
+  pairJudgments,
   yearReading,
 } from "./copy";
 import { sajuBasis, sajuDomains } from "./depth";
@@ -40,6 +41,150 @@ import styles from "./result.module.css";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.earthlyBranch, "pillar");
+
+const positions = { hour: "시", day: "일", month: "월", year: "연" };
+
+function PairEvidence({ result, name }: { result: PairResult; name: string }) {
+  const charts = result.charts;
+  if (!charts) return null;
+  const [a, b] = result.dayStems;
+  const ea = stemElement[a],
+    eb = stemElement[b];
+  const owners = [
+    ["나", charts.self],
+    [name, charts.partner],
+  ] as const;
+  const counts = owners.map(([, pillars]) =>
+    Object.values(pillars).flatMap((p) =>
+      p ? [stemElement[p.heavenlyStem], branchElement[p.earthlyBranch]] : [],
+    ),
+  );
+  const direction =
+    ea === eb
+      ? "두 일간의 오행이 같아요."
+      : generates[ea] === eb
+        ? "내 기운이 상대의 기운을 낳아요."
+        : generates[eb] === ea
+          ? "상대의 기운이 내 기운을 낳아요."
+          : controls[ea] === eb
+            ? "내 기운이 상대의 기운을 눌러요."
+            : "상대의 기운이 내 기운을 눌러요.";
+  return (
+    <div className={styles.block} data-pair-evidence>
+      <style jsx>{`
+        [data-pair-evidence] { grid-column: 1 / -1; }
+        .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+        .charts table { width: 100%; table-layout: fixed; text-align: center; overflow-wrap: anywhere; }
+        [data-day] { border: 1px solid currentColor; }
+      `}</style>
+      <FanHeading>두 사람의 명식</FanHeading>
+      <div className="charts">
+        {owners.map(([owner, pillars], index) => (
+          <table key={index}>
+            <caption>
+              <FanText role="label">{owner}</FanText>
+            </caption>
+            <thead>
+              <tr>
+                {pillarKeys.map((k) => (
+                  <th key={k}>
+                    <FanText role="meta">{positions[k]}주</FanText>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {pillarKeys.map((k) => (
+                  <td key={k} data-day={k === "day" || undefined}>
+                    {pillars[k] ? (
+                      <>
+                        <FanHanja role="glyph">
+                          {pillarHanja(pillars[k]!)[0]}
+                        </FanHanja><br />
+                        <FanHanja role="glyph">{pillarHanja(pillars[k]!)[1]}</FanHanja>
+                        <br />
+                        <FanText role="meta">
+                          {pillars[k]!.heavenlyStem}
+                          {pillars[k]!.earthlyBranch}
+                        </FanText>
+                      </>
+                    ) : (
+                      <FanText role="meta">모름</FanText>
+                    )}
+                  </td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        ))}
+      </div>
+      {owners.some(([, pillars]) => !pillars.month) && (
+        <FanText as="p" role="meta">
+          절기가 바뀌는 날에는 태어난 시간에 따라 월주가 달라져요. 모르는 칸은 풀이에서 뺐어요.
+        </FanText>
+      )}
+      <FanHeading>일간 관계</FanHeading>
+      <FanText as="p" role="body">
+        {a}({elementName[ea]}) · {b}({elementName[eb]}) — {direction} 상대 일간의 십신은 ‘{tenGod(a, b)}’로
+        읽어요.
+        {["갑기", "을경", "병신", "정임", "무계"].some((pair) => pair === a + b || pair === b + a) &&
+          " 두 일간은 천간합을 이뤄요."}
+      </FanText>
+      <FanHeading>오행 보완</FanHeading>
+      <table>
+        <caption>확인된 글자에 담긴 오행</caption>
+        <thead>
+          <tr>
+            <th>명식</th>
+            {elements.map((e) => (
+              <th key={e}>{elementName[e]}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {owners.map(([owner], i) => (
+            <tr key={i}>
+              <th>{owner}</th>
+              {elements.map((e) => (
+                <td key={e}>{counts[i].filter((value) => value === e).length}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {owners.map(([owner], i) => {
+        const other = owners[1 - i][0];
+        const missing = elements.filter((e) => !counts[i].includes(e) && counts[1 - i].includes(e));
+        return (
+          missing.length > 0 && (
+            <FanText key={i} as="p" role="body">
+              {owner} 쪽에 보이지 않는 {missing.map((e) => elementName[e]).join("·")} 기운이 {other} 쪽에
+              있어요.
+            </FanText>
+          )
+        );
+      })}
+      <FanHeading>지지 합·충</FanHeading>
+      {result.relations?.length ? (
+        result.relations.map((r) => {
+          const self = charts.self[r.selfKey]!.earthlyBranch,
+            partner = charts.partner[r.partnerKey]!.earthlyBranch;
+          return (
+            <FanText as="p" role="body" key={r.selfKey + r.partnerKey}>
+              내 {positions[r.selfKey]}지 {self}({branchHanja[self]}) · 상대 {positions[r.partnerKey]}지{" "}
+              {partner}({branchHanja[partner]}) — {r.kind}
+            </FanText>
+          );
+        })
+      ) : (
+        <FanText as="p" role="item">
+          확인된 지지 사이에는 육합이나 충이 없어요.
+        </FanText>
+      )}
+    </div>
+  );
+}
 
 export type ResultView = "first" | "year" | "month" | "pair";
 
@@ -401,24 +546,41 @@ export function SajuResult({
 
         {view === "pair" && compat && pair && (
           <section className={`${styles.panel} ${styles.pairPanel}`}>
+            <PairEvidence result={pair.result} name={pair.name} />
             <div className={styles.block}>
               <FanHeading>{uiText("pairMe", { name: pair.name })}</FanHeading>
               <div className={styles.bars}>
-                {compat.rows.map((row) => (
-                  <div className={styles.barRowWide} key={row.label}>
-                    <FanText role={row.top ? "label" : "meta"} className={styles.topLabel} data-top={row.top || undefined}>
-                      {row.label}
-                    </FanText>
-                    <FanText role="item">{row.level}</FanText>
-                    {bar(row.label, levelWidth[row.level], row.top)}
-                  </div>
-                ))}
+                {pair.result.charts
+                  ? pairJudgments(
+                      ...pair.result.dayStems,
+                      pair.result.combinations.length,
+                      pair.result.clashes.length,
+                    ).map((row) => (
+                      <div className={styles.barRowWide} key={row.label}>
+                        <FanText role="label">{row.label}</FanText>
+                        <FanText role="item">{row.level}</FanText>
+                      </div>
+                    ))
+                  : compat.rows.map((row) => (
+                      <div className={styles.barRowWide} key={row.label}>
+                        <FanText
+                          role={row.top ? "label" : "meta"}
+                          className={styles.topLabel}
+                          data-top={row.top || undefined}
+                        >
+                          {row.label}
+                        </FanText>
+                        <FanText role="item">{row.level}</FanText>
+                        {bar(row.label, levelWidth[row.level], row.top)}
+                      </div>
+                    ))}
               </div>
-              {compat.notes.map((note) => (
-                <FanText as="p" role="meta" className={styles.pairNote} key={note.label}>
-                  {note.label} · {note.text}
-                </FanText>
-              ))}
+              {!pair.result.charts &&
+                compat.notes.map((note) => (
+                  <FanText as="p" role="meta" className={styles.pairNote} key={note.label}>
+                    {note.label} · {note.text}
+                  </FanText>
+                ))}
             </div>
             {kv(
               [
