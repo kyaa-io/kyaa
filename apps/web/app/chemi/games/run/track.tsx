@@ -1,5 +1,6 @@
 "use client";
 
+import { SpentPoints } from "@/features/chemi/games/spent-points";
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -307,7 +308,7 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
       <div className={styles.hudScore}>
         <FanText role="meta">{copy.score}</FanText>
         <div className={styles.scoreLine}><FanPixelText as="strong" role="score" data-run-score="">{number.format(hud.score)}</FanPixelText>
-        {showSpend && <FanText role="label"><span role="status">−{ticket.spentPoints}P</span></FanText>}</div>
+        {showSpend && <SpentPoints points={ticket.spentPoints ?? 0} />}</div>
         <FanPixelText role="sub">{number.format(hud.meters)}m · LV.{hud.level}</FanPixelText>
       </div>
       <div className={styles.hudMid}>

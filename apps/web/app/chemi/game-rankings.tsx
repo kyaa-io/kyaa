@@ -38,7 +38,7 @@ export type GameRanking = {
 
 const SLOTS = 3;
 
-function RankingRow({ row }: { row: RecordRow }) {
+function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const previous = useRef(row);
   useEffect(() => {
@@ -50,7 +50,7 @@ function RankingRow({ row }: { row: RecordRow }) {
   }, [row]);
   return (
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
-      {row.vacant ? <VacantRank place={row.place} avatarClassName={styles.rankAvatar} /> : <>
+      {row.vacant ? <VacantRank label={vacantLabel} place={row.place} avatarClassName={styles.rankAvatar} /> : <>
         <FanText role="body" data-flash-target="gain">{row.place}</FanText>
         {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
         <div>
@@ -68,13 +68,14 @@ function RankingRow({ row }: { row: RecordRow }) {
   );
 }
 
-export function GameRankings({ games, label, weekLabel, mineLabel, empty, mineEmpty, start, error, retry, retryLabel }: {
+export function GameRankings({ games, label, weekLabel, mineLabel, vacantLabel = "미등록", empty, mineEmpty, start, error, retry, retryLabel }: {
   label: string;
   games: readonly GameRanking[];
   weekLabel?: string;
   mineLabel?: string;
   empty?: string;
-  /** 남의 기록은 있고 내 기록만 없을 때. 주어를 밝혀 1위 줄과 부딪히지 않게 한다. */
+  vacantLabel?: string;
+  /** 남의 기록은 있고 내 기록만 없을 때. */
   mineEmpty?: string;
   start?: string;
   error?: string;
@@ -85,12 +86,13 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, mineEm
     <aside className={styles.rankings} tabIndex={0} aria-label={label}>
       {games.map((game) => {
 
+        const firstPlay = game.status === "ready" && !game.mine;
         return (
           <FanSurface className={styles.rankCard} key={game.game} aria-busy={game.status === "loading"}>
             <header>
               <img src={`/chemi/thumb-${game.game}-128-v2.webp`} alt="" />
               <FanHeading as="h3">{game.title}</FanHeading>
-              {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${weekLabel}`}>{weekLabel}</FanSectionLink>}
+              {game.href && <FanSectionLink href={game.href} ariaLabel={firstPlay ? [game.title, game.leaders.length ? mineEmpty : empty, start].filter(Boolean).join(" · ") : `${game.title} ${weekLabel}`}>{firstPlay ? start : weekLabel}</FanSectionLink>}
             </header>
             {game.status === "loading" ? <div className={styles.leaders} data-status="loading"><FanSkeleton height={48} /></div> : game.status === "error" ? (
               <div className={styles.leaders} data-status="error">
@@ -104,22 +106,15 @@ export function GameRankings({ games, label, weekLabel, mineLabel, empty, mineEm
                     const row = game.leaders[index] ?? {
                       id: `empty-${index}`, place: index + 1, name: "—", vacant: true, change: 0, record: "0",
                     };
-                    return <RankingRow key={row.id} row={row} />;
+                    return <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />;
                   })}
                 </div>
-                {game.leaders.some((row) => row.isMe) ? (
-                  <div className={styles.rankMine} data-spacer="" aria-hidden="true" />
-                ) : game.mine ? (
+                {game.mine && !game.leaders.some((row) => row.isMe) && (
                   <div className={styles.rankMine}>
                     <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
                     <span className={styles.rankAvatar} aria-hidden="true" />
                     <FanText role="body">{mineLabel}</FanText>
                     <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
-                  </div>
-                ) : (
-                  <div className={styles.rankMine} data-first="">
-                    <FanText role="meta">{game.leaders.length && mineEmpty ? mineEmpty : empty}</FanText>
-                    {game.href && <FanSectionLink href={game.href} ariaLabel={`${game.title} ${start}`}>{start}</FanSectionLink>}
                   </div>
                 )}
               </>
