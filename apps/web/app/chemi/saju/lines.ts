@@ -68,7 +68,7 @@ const tones: Record<SajuCharacterId, Tone> = {
     t2: (i) => `${i.strengthN}이 강점이에요. ${i.cautionN}은 조심해요.`,
     t3: (i) => `올해는 ${i.yearTitle}예요.`,
     t4: (i) => `우리는 ${i.bond}래요.`,
-    react: (i) => `${i.image} 같은 사람이에요. 올해는 ${i.yearTitle}니까, 미뤄 둔 일을 하나 꺼내 봐요. 잘할 거야.`,
+    react: (i) => `${i.image} 같은 사람이에요. 올해는 ${i.yearTitle}니까, 미뤄 둔 일을 하나 꺼내 봐요. 잘할 거예요.`,
     again: "또 왔네요? 오늘은 뭐가 궁금해요?",
     topics: "뭐부터 볼까요?",
     thanks: "자랑해 줘서 고마워요.",

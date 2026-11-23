@@ -262,6 +262,7 @@ export type ReasonView = {
   when: string;
   /** 근거 한 줄 풀이(영역과 오르내림에 맞는 말). */
   tone: string;
+  shortText: string;
   text: string;
 };
 
@@ -313,14 +314,16 @@ export function reasonView(
     : character ? reasonSpeech(baseTone, character) : baseTone;
   const owner = character === "dosa" ? "그대의" : character ? "네" : "내";
   const mine = sign ? `${owner} ${target}(${signNames[sign].full})` : `${owner} ${target}`;
+  const shortText = character ? reasonSpeech(phrase, character) : phrase;
   return {
+    shortText,
     title: `${withParticle(body, "과와")} 내 ${target}`,
     aspect: aspect.name,
     domain,
     up,
     when: character ? reasonSpeech(when, character) : when,
     tone,
-    text: `${withParticle(body, "은는")} ${withParticle(mine, "과와")} ${character ? reasonSpeech(phrase, character) : phrase}. ${tone}`,
+    text: `${withParticle(body, "은는")} ${withParticle(mine, "과와")} ${shortText}. ${tone}`,
   };
 }
 

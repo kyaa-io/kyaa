@@ -423,11 +423,11 @@ export function StarFlow({
     const signOf = (target: string) =>
       result.natal.find((planet) => planet.body === target)?.sign ?? null;
     return {
-      reasons: pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate)),
+      reasons: pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate, character)),
       sunName: signList(result.signs.sun, (sign) => signNames[sign].full),
       sunBare: signList(result.signs.sun, (sign) => signNames[sign].bare),
     };
-  }, [reading, result]);
+  }, [reading, result, character]);
 
   if (under14) return <Under14 locale={locale} />;
 
@@ -637,7 +637,7 @@ export function StarFlow({
                       <FanText role="meta">{reason.when}</FanText>
                     </div>
                     <FanText as="p" role="meta">
-                      {reason.tone}
+                      {reason.shortText}
                     </FanText>
                   </li>
                 ))}
