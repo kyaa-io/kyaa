@@ -4,15 +4,18 @@ import type { ReactNode } from "react";
 import type { ByUsAuth } from "./auth-fallback";
 const sdk = vi.hoisted(() => ({ ready: true, authenticated: true, user: { id: "did:privy:fan", linkedAccounts: [] }, getAccessToken: vi.fn(async () => "privy"), logout: vi.fn(async () => {}) }));
 vi.mock("@/components/locale-provider", () => ({ useAppLocale: () => ({ locale: "ko" }) }));
-vi.mock("./privy-backend.island", () => ({ AuthBootProvider: ({ children }: { children: ReactNode }) => children, usePrivy: () => sdk, useUser: () => ({ refreshUser: vi.fn() }), useCreateWallet: () => ({ createWallet: vi.fn() }), useLogin: () => ({ login: vi.fn() }), useLoginWithOAuth: () => ({ initOAuth: vi.fn(), loading: false }) }));
+const oauth = vi.hoisted(() => ({ callbacks: undefined as { onError(code: string): void } | undefined }));
+vi.mock("./privy-backend.island", () => ({ AuthBootProvider: ({ children }: { children: ReactNode }) => children, usePrivy: () => sdk, useUser: () => ({ refreshUser: vi.fn() }), useCreateWallet: () => ({ createWallet: vi.fn() }), useLogin: () => ({ login: vi.fn() }), useLoginWithOAuth: (callbacks: typeof oauth.callbacks) => { oauth.callbacks = callbacks; return { initOAuth: vi.fn(), loading: false }; } }));
 vi.mock("@/features/auth/client/privy-provider-boundary", () => ({ IslandPrivyProvider: ({ children }: { children: ReactNode }) => children }));
 vi.mock("./privy-mirrors", () => ({ PrivyMirrors: () => null }));
 vi.mock("./privy-avatar-session-bridge", () => ({ PrivyAvatarSessionBridge: ({ children }: { children: ReactNode }) => children }));
 vi.mock("./fan-session-keeper", () => ({ FanSessionKeeper: () => null }));
 import Root from "./privy-root.island";
 import { useByUsAuth } from "./cognito-auth";
+import { usePrivyBridge } from "./privy-bridge";
+let bridge: ReturnType<typeof usePrivyBridge>;
 let auth: ByUsAuth;
-function Consumer() { auth = useByUsAuth(); return null; }
+function Consumer() { auth = useByUsAuth(); bridge = usePrivyBridge(); return null; }
 const mount = () => render(<Root appId="app" appleLoginEnabled={false} testAccountLoginEnabled={false}><Consumer /></Root>);
 const hint = (pid = sdk.user.id) => localStorage.setItem("kyaa:fan-session", JSON.stringify({ pid, exp: Date.now() + 3600_000, at: Date.now() }));
 beforeEach(() => { localStorage.clear(); sdk.getAccessToken.mockClear(); });
@@ -20,3 +23,14 @@ it("preserves the original getter when there is no session hint", () => { mount(
 it("returns the cookie marker immediately without asking Privy", async () => { hint(); mount(); await expect(auth.getAccessToken()).resolves.toBe("kyaa-session"); expect(sdk.getAccessToken).not.toHaveBeenCalled(); await expect(auth.getPrivyAccessToken()).resolves.toBe("privy"); });
 it("ignores another account's hint", () => { hint("did:privy:someone-else"); mount(); expect(auth.getAccessToken).toBe(sdk.getAccessToken); });
 it("updates the getter after the keeper issues a hint", async () => { mount(); act(() => { hint(); window.dispatchEvent(new Event("kyaa:fan-session-changed")); }); await expect(auth.getAccessToken()).resolves.toBe("kyaa-session"); expect(sdk.getAccessToken).not.toHaveBeenCalled(); });
+
+it("distinguishes explicit login cancellation from provider failures", () => {
+  mount();
+  const onError = vi.fn();
+  const unsubscribe = bridge!.subscribeOAuth({ onComplete: vi.fn(), onError });
+  oauth.callbacks!.onError("exited_auth_flow");
+  oauth.callbacks!.onError("oauth_user_denied");
+  oauth.callbacks!.onError("oauth_unexpected");
+  expect(onError.mock.calls).toEqual([["cancelled"], ["cancelled"], ["provider_error"]]);
+  unsubscribe();
+});

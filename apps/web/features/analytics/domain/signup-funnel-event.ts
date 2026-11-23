@@ -29,7 +29,7 @@ export const signupTriggerSchema = z.enum(["provider", "session_restore", "retry
 export type SignupTrigger = z.infer<typeof signupTriggerSchema>;
 export const signupStageSchema = z.enum(["oauth", "user", "wallet", "token", "session", "ready", "reauthentication"]);
 export type SignupStage = z.infer<typeof signupStageSchema>;
-export const signupReasonSchema = z.enum(["none", "timeout", "provider_error", "session_error", "verified_email_required", "reauthentication_required", "unknown"]);
+export const signupReasonSchema = z.enum(["none", "timeout", "cancelled", "provider_error", "session_error", "verified_email_required", "reauthentication_required", "unknown"]);
 export type SignupReason = z.infer<typeof signupReasonSchema>;
 
 export const walletDiagnosticShape = {

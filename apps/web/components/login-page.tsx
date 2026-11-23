@@ -254,7 +254,7 @@ export function LoginPage({
       }
     }
     if (privy) {
-      if (provider === "kakao" || oauthGuard.getSnapshot() !== "idle") return;
+      if (provider === "kakao" || oauthStarting || oauthGuard.getSnapshot() !== "idle") return;
       setError(null);
       setOauthStarting(true);
       const measurement = signupFunnelTracker.beginLogin(provider, "provider", toContentLocale(locale));
@@ -281,9 +281,9 @@ export function LoginPage({
   useEffect(() => privy?.subscribeOAuth({
     // The OAuth result can arrive on the return page before Privy reports `authenticated`.
     onComplete: (userId) => { void synchronizeSession(userId); },
-    onError: () => {
+    onError: (reason = "provider_error") => {
       const measurement = loginMeasurementRef.current ?? signupFunnelTracker.pendingLogin();
-      if (measurement?.trigger === "provider" && !measurement.failed && !measurement.succeeded) signupFunnelTracker.result(measurement, "failed", "oauth", "provider_error");
+      if (measurement?.trigger === "provider" && !measurement.failed && !measurement.succeeded) signupFunnelTracker.result(measurement, "failed", "oauth", reason);
       setOauthStarting(false);
       setError(privyLoginErrorMessage);
     },
