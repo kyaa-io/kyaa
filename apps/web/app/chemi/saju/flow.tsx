@@ -53,6 +53,7 @@ import { SajuResult, type Pair, type ResultView } from "./result";
 import resultStyles from "./result.module.css";
 import styles from "./scene.module.css";
 import sheetStyles from "./sheet.module.css";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const steps = ["enter", "calc", "talk-1", "talk-2", "talk-3", "talk-4", "result"] as const;
 type Step = (typeof steps)[number];
@@ -172,7 +173,7 @@ export function SajuFlow({
   const { step, view, character } = nav;
   const talk = talkOf(step);
   const index = sajuCharacters.findIndex((item) => item.id === character);
-  const name = sajuCharacters[index].name;
+  const name = creatorName(character, locale);
   const chart = reading?.result;
   const again = Boolean(firsts?.[character]);
 
@@ -203,7 +204,7 @@ export function SajuFlow({
         celebrateReward({
           locale,
           points: data.reward.points,
-          affinity: { amount: data.reward.exp ?? 0, text: `${sajuCharacters.find(item => item.id === id)?.name ?? name} ${text("affinityGain", { exp: data.reward.exp ?? 0 })}` },
+          affinity: { amount: data.reward.exp ?? 0, text: `${creatorName(id, locale)} ${text("affinityGain", { exp: data.reward.exp ?? 0 })}` },
           stamps: Number(Boolean(data.reward.stamp)),
         });
       const response = await fetch("/api/chemi/rewards/today", {
@@ -924,7 +925,7 @@ export function SajuFlow({
                   onClick={() => choose(sajuCharacters.indexOf(item))}
                 >
                   <img src={`${art}/avatar-${item.id}-v1.jpg`} alt="" />
-                  <FanText role={item.id === character ? "label" : "meta"}>{item.name}</FanText>
+                  <FanText role={item.id === character ? "label" : "meta"}>{creatorName(item.id, locale)}</FanText>
                 </FanAction>
               ))}
             </div>

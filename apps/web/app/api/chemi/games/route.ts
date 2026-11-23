@@ -15,6 +15,7 @@ const command = z.discriminatedUnion("action", [
   z.object({ action: z.literal("sound"), sound: z.boolean() }),
   z.object({ action: z.literal("start"), game: game, character: z.enum(["changha", "elina", "yuna"]), key: z.uuid(), extra: z.boolean() }),
   z.object({ action: z.literal("leave"), playId: z.uuid() }),
+  z.object({ action: z.literal("cancel"), key: z.uuid() }),
   z.object({ action: z.literal("finish"), playId: z.uuid(), inputs: z.array(z.tuple([z.int(), z.int()])).max(6000).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(1000) }),
   z.object({ action: z.literal("challenge"), shareId }),
   z.object({ action: z.literal("trial"), shareId, key: z.uuid() }),
@@ -56,6 +57,9 @@ export async function POST(request: Request) {
         return reply(await rpc("chemi_match_equip", {p_user, p_stage: body.stage}));
       case "leave":
         return reply(await rpc(`chemi_${mode}_leave`, { p_user, p_play: body.playId }));
+      case "cancel":
+        // 시작 응답을 받기 전에 떠난 판: 쓰지 않은 것으로 돌린다(발급 30초 안, 한 번도 끝내지 않은 판만).
+        return reply(await rpc("chemi_cancel_play", { p_user, p_game: mode, p_request_key: body.key }));
       case "start": {
         const ticket = await rpc("chemi_issue_play", {
           p_user, p_game: mode, p_request_key: body.key, p_character: body.character, p_extra: body.extra,

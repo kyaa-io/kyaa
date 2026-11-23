@@ -11,13 +11,14 @@ import { JJINFAN_BANNER_CREATORS, jjinfanBannerHref } from "@/features/rankings/
 import { jjinfanBannerCopy } from "@/features/rankings/ui/jjinfan-banner-copy";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./jjinfan-banner.module.css";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 export function HomeBelowRankingSlot({ locale }: { locale: AppLocale }) {
   const t = jjinfanBannerCopy[locale];
   const banners: HomeBanner[] = JJINFAN_BANNER_CREATORS.map((creator, index) => ({
     id: creator.slug, kind: "announcement", celebrityId: null, category: "fanpage",
-    title: locale === "ko" ? creator.ko : creator.en, description: "", ctaLabel: t.join,
-    href: jjinfanBannerHref(creator.slug, locale), alt: locale === "ko" ? creator.ko : creator.en,
+    title: creatorName(creator.slug, locale, locale === "ko" ? creator.ko : creator.en), description: "", ctaLabel: t.join,
+    href: jjinfanBannerHref(creator.slug, locale), alt: creatorName(creator.slug, locale, locale === "ko" ? creator.ko : creator.en),
     desktopImage: { id: creator.slug, url: `/images/jjinfan100/${creator.slug}.webp`, width: index === 0 ? 1067 : 1080, height: index === 0 ? 1600 : 1080, mimeType: "image/webp", revision: 1 }, mobileImage: null,
   }));
   return <div data-banner-slot="home-below-ranking"><LiveHeroCarousel homeBanners={banners} locale={locale} elinaGuide={null} compact renderBanner={(banner) =>

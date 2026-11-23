@@ -47,4 +47,10 @@ describe("locale navigation", () => {
     expect(withLocalePath('/my?locale=en', 'ru')).toBe('/my?locale=ru');
     expect(requestLocale('/', 'de', null, 'ja-JP', 'fr')).toBe('fr');
   });
+  it('opens the signup raffle in English unless a language was chosen', () => {
+    expect(requestLocale('/s/raffle', null, null, 'ko-KR')).toBe('en');
+    expect(requestLocale('/s/raffle', 'ko', null, 'en-US')).toBe('ko');
+    expect(requestLocale('/s/raffle', null, null, 'en-US', 'ko')).toBe('ko');
+    expect(requestLocale('/s', null, null, 'ko-KR')).toBe('ko');
+  });
 });

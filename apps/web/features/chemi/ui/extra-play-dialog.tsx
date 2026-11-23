@@ -23,13 +23,16 @@ export type ExtraPlayDialogProps = {
   extraRemaining: number;
   /** 고른 최애의 얼굴(정사각). 있으면 표 위에 둔다. */
   art?: string;
+  /** 게임 말고 다른 곳(질문하기)에서 쓸 때 바꾸는 글자. 없으면 게임 추가 판 글자. */
+  labels?: { title: string; extra: string; pay: string };
 };
 
 const DAILY_EXTRA = 3;
 
-/** 추가 판 확인(짝 맞추기·최애 런 공통). 남은 추가 판 칸 3개 중 이번에 쓸 칸을 한 번 비우고, 포인트는 쓴 뒤 값으로 한 번 굴린다. */
-export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra, art }: ExtraPlayDialogProps) {
-  const copy = getExtraPlayCopy(locale, cost);
+/** 추가 판 확인(짝 맞추기·최애 런·질문하기 공통). 남은 추가 판 칸 3개 중 이번에 쓸 칸을 한 번 비우고, 포인트는 쓴 뒤 값으로 한 번 굴린다. */
+export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra, art, labels }: ExtraPlayDialogProps) {
+  const base = getExtraPlayCopy(locale, cost);
+  const copy = labels ? { ...base, title: labels.title, left: labels.extra, confirm: labels.pay } : base;
   const number = new Intl.NumberFormat(locale);
   const after = points == null ? null : Math.max(0, points - cost);
   const [shown, setShown] = useState(points ?? 0);
@@ -56,9 +59,13 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
         {points != null && <dl className={styles.pay}>
           <div>
             <FanText as="dt" role="meta">{copy.points}</FanText>
-            <dd>
-              <FanText role="meta" className={styles.before}>{number.format(points)}P</FanText>
-              <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}P`} duration={600} /></span>
+            {/* 모자라면 빠질 것처럼 보이는 전후 값 대신 지금 값만 둔다(DF-GAME-007). */}
+            <dd>{short
+              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}P</span>
+              : <>
+                <FanText role="meta" className={styles.before}>{number.format(points)}P</FanText>
+                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}P`} duration={600} /></span>
+              </>}
             </dd>
           </div>
           <div>

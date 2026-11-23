@@ -6,13 +6,14 @@ import { CreatorFanIdentity } from "./creator-fan-identity";
 describe("official creator identity", () => {
   it.each(APP_LOCALES)("keeps artist and fandom marks distinct in %s", locale => {
     const view = render(<CreatorFanIdentity slug="nchive" name="엔카이브" locale={locale} />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("NCHIVE엔카이브");
+    // 한국어 화면만 한글 이름을 함께 보인다(CREATOR-NAME-I18N-1122).
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(locale === "ko" ? "NCHIVE엔카이브" : "NCHIVE");
     const fandom = screen.getByRole("link", { name: /SAVE · 세이브/ });
     expect(fandom).toHaveAttribute("href", "https://x.com/nchiveofficial/status/1750805783091229003");
     expect(fandom).toHaveAttribute("rel", "noopener noreferrer");
     expect(view.container.querySelector("svg image")).toHaveAttribute("href", "/images/celebrities/nchive/save-announcement.jpg");
     view.rerender(<CreatorFanIdentity slug="wena" name="위나" locale={locale} />);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("We;Na위나");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(locale === "ko" ? "We;Na위나" : "We;Na");
     expect(screen.getByRole("link", { name: /mymean · 마이민/ })).toHaveAttribute("href", "https://www.instagram.com/p/Cgi79qPJVt-/");
     expect(view.container.querySelector("svg image")).toBeNull();
   });
@@ -22,7 +23,11 @@ describe("official creator identity", () => {
     expect(screen.getByRole("heading")).toHaveTextContent("창하CHANGHA");
     expect(view.container.querySelector("dl")).toBeNull();
     view.rerender(<CreatorFanIdentity slug="elina" name="Elina" locale="en" />);
-    expect(screen.getByRole("heading")).toHaveTextContent("Elina Karimova엘리나");
+    expect(screen.getByRole("heading").textContent).toBe("Elina Karimova");
+    view.rerender(<CreatorFanIdentity slug="changha" name="Changha" locale="ja" />);
+    expect(screen.getByRole("heading").textContent).toBe("CHANGHAチャンハ");
+    view.rerender(<CreatorFanIdentity slug="yuna" name="Yuna" locale="ru" />);
+    expect(screen.getByRole("heading").textContent).toBe("Yuna KarimovaЮна");
     expect(view.container.querySelector("img")).toBeNull();
   });
 

@@ -7,9 +7,17 @@ import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { FanSurface } from "@/components/fan-ui/fan-surface";
 import { useOptionalGroupPage } from "@/features/groups/ui/group-page-context";
 import type { AppLocale } from "@/i18n/locales";
-import { openPageLikeEvent, pageLikeEventTitle } from "../domain/page-like-event";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
+import { openPageLikeEvent } from "../domain/page-like-event";
 import { ReactionAction } from "./reaction-action";
 import styles from "./event-like-card.module.css";
+
+/** 이벤트 이름: 배너 제목과 같은 `이름 × Kyaa`. 이름은 사이트 공통 표기(creatorName). */
+const eventSlugs: readonly string[] = ["elina", "changha", "yuna"];
+
+export function pageLikeEventTitle(slug: string, locale: AppLocale): string | undefined {
+  return eventSlugs.includes(slug) ? `${creatorName(slug, locale)} × Kyaa` : undefined;
+}
 
 /**
  * 팬페이지 홈의 이벤트 좋아요 카드. 그 크리에이터의 좋아요 이벤트 창이 열려 있는 동안만 머리 아래·갤러리 위에 보인다.

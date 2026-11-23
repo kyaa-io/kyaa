@@ -34,10 +34,11 @@ import {
 import { sajuBasis, sajuDomains } from "./depth";
 import { dayLine } from "./first";
 import { ChartPanel, ElementBlock, NatureBlock, RelationBlock, StrengthBlock, TenGodBlock, YearFlowBlock } from "./first-blocks";
-import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
+import { sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.earthlyBranch, "pillar");
 
@@ -102,7 +103,7 @@ export function SajuResult({
   const uiText = useReadingCopy();
   const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const [shareOpen, setShareOpen] = useState(false);
-  const name = sajuCharacters.find((item) => item.id === character)!.name;
+  const name = creatorName(character, locale);
   const first = { ...firstReading(chart, at), day: dayLine(chart) };
   const year = yearReading(chart, at);
   const month = monthReading(chart, at);

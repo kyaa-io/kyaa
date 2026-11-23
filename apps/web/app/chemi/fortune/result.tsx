@@ -45,6 +45,7 @@ import deep from "./deep/deep.module.css";
 import { deepHref } from "./deep/screen";
 import styles from "./result.module.css";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const exampleKeys = {
   fandom: ["depthFandomA", "depthFandomB"],
@@ -213,8 +214,7 @@ export function FortuneResult({
       setSharing(false);
     }
   }
-  const name =
-    fortuneCharacters.find((item) => item.id === character)?.name ?? "창하";
+  const name = creatorName(character, locale);
   const back = backHref ?? `/chemi?locale=${locale}`;
   const day = kstDayStart(reading?.kstDate);
   const toolbar = (

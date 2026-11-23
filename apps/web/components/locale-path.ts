@@ -44,6 +44,8 @@ export function requestLocale(pathname: string, requested: string | null, callba
   }
   const browserPreference = parse(preference);
   if (browserPreference) return browserPreference;
+  // The signup raffle is promoted to overseas fans (X): first visits open in English, not the browser language (CEO 2026-11-23).
+  if (pathname === "/s/raffle") return "en";
 
   const candidates = (acceptLanguage ?? "").split(",").flatMap((entry, index) => {
     const [tag, ...parameters] = entry.trim().split(";");

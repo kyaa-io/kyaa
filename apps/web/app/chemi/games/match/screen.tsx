@@ -7,6 +7,8 @@ import Image from "next/image";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanText } from "@/components/fan-ui/fan-text";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import type { CSSProperties, ReactNode } from "react";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
@@ -51,6 +53,36 @@ function guideSeen() {
 function markGuideSeen() {
   try { localStorage.setItem(GUIDE_KEY, "1"); } catch { /* 다음에 다시 보여 준다 */ }
 }
+/**
+ * 시작을 누른 뒤 판을 받기 전(key) 또는 판 도중(playId)에 페이지가 바뀌었는지 같은 탭 안에서만 기억한다.
+ * 다시 들어오면 받기 전이면 그 판을 돌려받고(무료 판 그대로), 판 도중이면 그 판을 끝내고 알린다.
+ */
+const PENDING_KEY = "chemi.match.pending";
+type Pending = { key: string } | { playId: string };
+function readPending(): Pending | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    return raw ? (JSON.parse(raw) as Pending) : null;
+  } catch {
+    return null;
+  }
+}
+function writePending(value: Pending | null) {
+  try {
+    if (value) sessionStorage.setItem(PENDING_KEY, JSON.stringify(value));
+    else sessionStorage.removeItem(PENDING_KEY);
+  } catch { /* 저장소를 못 쓰면 떠날 때 보내는 요청만 남는다 */ }
+}
+/** 페이지가 닫히는 중에도 끝까지 가는 요청(시작 취소·판 끝내기). */
+function sendOnExit(token: string | null, body: object) {
+  if (!token) return;
+  void fetch("/api/chemi/games", {
+    method: "POST",
+    keepalive: true,
+    headers: { "content-type": "application/json", authorization: "Bearer " + token },
+    body: JSON.stringify(body),
+  }).catch(() => {});
+}
 /** 무료 판은 한국 자정에 다시 채워진다. */
 function untilKstMidnight(now: number) {
   const day = 86_400_000, offset = 9 * 3_600_000;
@@ -87,6 +119,21 @@ type Challenge = {
   ranking: Row[];
   available: boolean;
 };
+/** 화면에 보이는 오류 한 가지. 문구는 copy 의 같은 이름 키. */
+type ErrorKind = "error" | "insufficient" | "authExpired" | "saveFailed";
+function errorKind(e: unknown, fallback: ErrorKind = "error"): ErrorKind {
+  const code = String(e);
+  if (code.includes("INSUFFICIENT")) return "insufficient";
+  if (code.includes("AUTH_EXPIRED")) return "authExpired";
+  return fallback;
+}
+/** 응답이 20초 안에 오지 않으면 실패로 보고 다시 시도를 보인다(운세 흐름의 제한과 같은 결). */
+const REQUEST_TIMEOUT = 20_000;
+/** 라운드마다 미리 보기 전에 판 사진을 기다리는 최대 시간. 넘으면 받은 만큼으로 센다. */
+const PRELOAD_LIMIT = 8_000;
+function fill(text: string, values: Record<string, string | number>) {
+  return text.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ""));
+}
 type Finish = { excitement?: number; titleStage?: number; score: number; exp: number; shareId?: string };
 type Props = {
   copy: MatchCopy;
@@ -98,11 +145,13 @@ type Props = {
 function StageAction({
   children,
   disabled,
+  loading,
   helperText,
   onClick,
 }: {
   children: ReactNode;
   disabled?: boolean;
+  loading?: boolean;
   helperText?: string;
   onClick: () => void;
 }) {
@@ -110,6 +159,7 @@ function StageAction({
     <FanAction
       variant="primary"
       disabled={disabled}
+      loading={loading}
       onClick={onClick}
       helperText={helperText}
     >
@@ -162,19 +212,17 @@ function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, numb
 }
 
 /** 카드 한 장: 뒷면 무늬·앞면 사진·맞춤 표시·틀림 표시(빨간 테두리 + '틀림' 글자 + 짧은 흔들림). */
-function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLabel, onClick }: {
+function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLabel, onClick, onReady }: {
   open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number;
-  disabled: boolean; wrongLabel: string; onClick: () => void;
+  disabled: boolean; wrongLabel: string; onClick: () => void; onReady?: (src: string) => void;
 }) {
+  // 뒤집힌 카드도 사진을 미리 받아 둔다(보이지 않게). 미리 보기가 시작될 때 이미 떠 있어야 한다(DF-GAME-002).
   return (
     <div className={styles.card} data-open={open} data-matched={matched} data-wrong={wrong || undefined}>
       <FanAction variant="text" disabled={disabled} ariaLabel={label} onClick={onClick}>
-        {open ? (
-          <Image width={640} height={800} sizes="(min-width: 768px) 210px, 33vw"
-            unoptimized={src.startsWith("/chemi/match/") || src.startsWith("/api/")} src={src} alt="" />
-        ) : (
-          <span aria-hidden="true" />
-        )}
+        <Image width={640} height={800} sizes="(min-width: 768px) 210px, 33vw" loading="eager"
+          unoptimized={src.startsWith("/chemi/match/") || src.startsWith("/api/")} src={src} alt=""
+          onLoad={() => onReady?.(src)} onError={() => onReady?.(src)} />
         {!open && <small className={styles.cardNumber}>{String(number).padStart(2, "0")}</small>}
         {matched && (
           <i>
@@ -191,6 +239,12 @@ const PRACTICE = [0, 1, 1, 0] as const;
 
 /** 방법 안내의 2×2 연습 판: 판을 쓰지 않고 기록도 남지 않는다. */
 function Practice({ faces, copy, onDone }: { faces: readonly string[]; copy: MatchCopy; onDone: () => void }) {
+  // 실제 판처럼 처음에 앞면을 잠깐 보여 준다(안내 1번과 같게).
+  const [peek, setPeek] = useState(true);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setPeek(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, []);
   const [open, setOpen] = useState<number[]>([]);
   const [matched, setMatched] = useState(0);
   const [wrong, setWrong] = useState(false);
@@ -219,11 +273,11 @@ function Practice({ faces, copy, onDone }: { faces: readonly string[]; copy: Mat
     <div className={styles.practice} data-columns="2">
       {PRACTICE.map((face, index) => {
         const isMatched = Boolean(matched & (1 << index));
-        const isOpen = isMatched || open.includes(index);
+        const isOpen = peek || isMatched || open.includes(index);
         return <MatchCard key={index} open={isOpen} matched={isMatched} wrong={wrong && open.includes(index)}
           src={faces[face]} number={index + 1} wrongLabel={copy.wrong}
           label={[copy.card, index + 1, isMatched ? copy.matched : isOpen ? copy.openCard : copy.closedCard].join(" ")}
-          disabled={isMatched || open.includes(index) || open.length === 2} onClick={() => flip(index)} />;
+          disabled={peek || isMatched || open.includes(index) || open.length === 2} onClick={() => flip(index)} />;
       })}
     </div>
   );
@@ -316,7 +370,10 @@ function Session({
   const [priorRank, setPriorRank] = useState<number | null>(null);
   const [result, setResult] = useState<Finish | null>(null);
   const [pendingFinish, setPendingFinish] = useState<Submission | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ErrorKind | "">("");
+  /** 판 사진 중 받은 것. 라운드의 사진이 다 오거나 제한 시간이 지나면 그 라운드의 미리 보기를 센다. */
+  const [ready, setReady] = useState<ReadonlySet<string>>(() => new Set());
+  const [forced, setForced] = useState(0);
   const [paying, setPaying] = useState(false);
   const [working, setWorking] = useState(false);
   const [sound, setSound] = useState(false);
@@ -325,9 +382,12 @@ function Session({
   const [copied, setCopied] = useState(false);
   const [load, setLoad] = useState(0);
   const [practiced, setPracticed] = useState(false);
+  const [ended, setEnded] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const audio = useRef<AudioContext | null>(null);
   const inFlight = useRef(false);
+  /** 판을 받았지만 첫 라운드 사진을 아직 기다리는 동안의 시작 키. 이때 떠나면 판을 돌려받는다. */
+  const pendingKey = useRef<string | null>(null);
   const accessToken = useRef<string | null>(null);
   const startKey = useRef({ choice: "", key: "" });
   const tokenGetter = useRef(auth.getAccessToken);
@@ -340,17 +400,28 @@ function Session({
     ): Promise<T> => {
       const token = anonymous ? null : await tokenGetter.current();
       if (!anonymous) accessToken.current = token;
-      const response = await fetch(path, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          ...(token ? { authorization: "Bearer " + token } : {}),
-        },
-        body: JSON.stringify(body),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(String(data.error ?? response.status));
-      return data;
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+      try {
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(token ? { authorization: "Bearer " + token } : {}),
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        const data = await response.json().catch(() => ({}));
+        const code = String(data.error ?? response.status);
+        // 로그인이 풀리면 다시 시도로는 풀리지 않는다. 케미가 직접 거절한 403(CHEMI_*)은 로그인 문제가 아니다.
+        if (response.status === 401 || (response.status === 403 && !code.startsWith("CHEMI_")))
+          throw new Error("AUTH_EXPIRED");
+        if (!response.ok) throw new Error(code);
+        return data;
+      } finally {
+        window.clearTimeout(timer);
+      }
     },
     [],
   );
@@ -370,33 +441,41 @@ function Session({
             setCharacter(data.character);
           }
         })
-        .catch(() => {
-          if (active) setError(copy.error);
+        .catch((e) => {
+          if (active) setError(errorKind(e));
         });
     if (!auth.authenticated && !share) {
       void call<{ ranking: Row[] }>({ action: "ranking" }, undefined, true)
         .then((data) => {
           if (active) setPublicRows(data.ranking);
         })
-        .catch(() => {
-          if (active) setError(copy.error);
+        .catch((e) => {
+          if (active) setError(errorKind(e));
         });
     }
-    if (auth.authenticated)
-      void call<Lobby>({ action: "lobby" })
+    if (auth.authenticated) {
+      const pending = readPending();
+      if (pending && "playId" in pending) setEnded(true);
+      const settled = pending
+        ? call("key" in pending ? { action: "cancel", key: pending.key } : { action: "leave", playId: pending.playId })
+            .then(() => writePending(null), () => {})
+        : Promise.resolve();
+      void settled
+        .then(() => call<Lobby>({ action: "lobby" }))
         .then((data) => {
           if (active) {
             setLobby(data);
             setSound(data.sound);
           }
         })
-        .catch(() => {
-          if (active) setError(copy.error);
+        .catch((e) => {
+          if (active) setError(errorKind(e));
         });
+    }
     return () => {
       active = false;
     };
-  }, [auth.ready, auth.authenticated, call, share, load, copy.error]);
+  }, [auth.ready, auth.authenticated, call, share, load]);
   useEffect(
     () => () => {
       void audio.current?.close().catch(() => {});
@@ -404,7 +483,7 @@ function Session({
     [],
   );
 
-  async function action(work: () => Promise<void>) {
+  async function action(work: () => Promise<void>, fallback: ErrorKind = "error") {
     if (inFlight.current) return;
     inFlight.current = true;
     setWorking(true);
@@ -412,14 +491,19 @@ function Session({
     try {
       await work();
     } catch (e) {
-      setError(
-        String(e).includes("INSUFFICIENT") ? copy.insufficient : copy.error,
-      );
+      setError(errorKind(e, fallback));
     } finally {
       inFlight.current = false;
       setWorking(false);
     }
   }
+  /** 이 최애로 하는 판의 사진 순서: 고른 최애 사진 먼저, 나머지 두 최애 사진이 뒤에. */
+  function facesFor(who: Character) {
+    return [photos[who], ...characters.filter(c => c !== who).map(c => photos[c])].flatMap(person => person.cards);
+  }
+  const cardReady = useCallback((src: string) => {
+    setReady((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
+  }, []);
   async function start(who: Character, extra = false, fromGuide = false) {
     if (!auth.authenticated && !share) {
       auth.login();
@@ -436,11 +520,21 @@ function Session({
       setStage("empty");
       return;
     }
+    setEnded(false);
     await action(async () => {
       const choice = who + ":" + extra;
       if (startKey.current.choice !== choice)
         startKey.current = { choice, key: crypto.randomUUID() };
       const trial = Boolean(share && !auth.authenticated);
+      const key = startKey.current.key;
+      // 판을 받기 전에 페이지가 닫히면 그 판은 쓰지 않은 것으로 돌린다(K-7578e3 중복 차감 없음).
+      const cancelOnExit = (event: PageTransitionEvent) => {
+        if (!event.persisted) sendOnExit(accessToken.current, { action: "cancel", key });
+      };
+      if (!trial) {
+        writePending({ key });
+        window.addEventListener("pagehide", cancelOnExit);
+      }
       let next: Ticket;
       try {
         next = await call<Ticket>(
@@ -459,17 +553,25 @@ function Session({
       } catch (e) {
         if (String(e).includes("CHEMI_LIMIT")) {
           startKey.current.choice = "";
+          writePending(null);
           if (trial) {
             setChallenge((prev) => prev && { ...prev, available: false });
             return;
           }
+          window.removeEventListener("pagehide", cancelOnExit);
           setStage("empty");
           if (auth.authenticated)
             setLobby(await call<Lobby>({ action: "lobby" }));
           return;
         }
+        window.removeEventListener("pagehide", cancelOnExit);
         throw e;
       }
+      window.removeEventListener("pagehide", cancelOnExit);
+      // 사진을 받는 동안(미리 보기 전)에는 시작 키를 그대로 둔다: 이때 떠나면 판을 돌려받는다.
+      if (!trial) pendingKey.current = key;
+      setForced(0);
+      setReady(new Set());
       startKey.current.choice = "";
       setEquipped(false);
       setPriorRank(lobby?.ranking.find(row => row.isMe)?.place ?? null);
@@ -498,6 +600,7 @@ function Session({
     });
   }
   async function submit(body: Submission) {
+    writePending(null);
     setPendingFinish(body);
     setStage("result");
     if (!auth.authenticated) {
@@ -510,7 +613,7 @@ function Session({
       setResult(data);
       setPendingFinish(null);
       setLobby(await call<Lobby>({ action: "lobby" }));
-    });
+    }, "saveFailed");
   }
   useEffect(() => {
     if (stage !== "empty") return;
@@ -518,7 +621,24 @@ function Session({
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [stage]);
-  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play", submit);
+  // 이번 라운드 사진이 다 올 때까지(최대 8초) 시계와 미리 보기를 세지 않는다.
+  const [roundStage, setRoundStage] = useState(1);
+  const roundPhotos = facesFor(character).slice(0, LEVELS[roundStage - 1].pairs);
+  const photosReady = forced >= roundStage || roundPhotos.every((src) => ready.has(src));
+  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play" || !photosReady, submit);
+  const viewStage = view?.stage ?? 1;
+  useEffect(() => setRoundStage(viewStage), [viewStage]);
+  useEffect(() => {
+    if (!ticket || photosReady) return;
+    const timer = window.setTimeout(() => setForced(roundStage), PRELOAD_LIMIT);
+    return () => window.clearTimeout(timer);
+  }, [ticket, roundStage, photosReady]);
+  // 첫 라운드 사진이 다 오면 그때부터 판이 시작된 것으로 본다(이전에 떠나면 판을 돌려받음).
+  useEffect(() => {
+    if (!ticket || !photosReady || !pendingKey.current) return;
+    pendingKey.current = null;
+    writePending({ playId: ticket.playId });
+  }, [ticket, photosReady]);
   useEffect(() => {
     if (!ticket || !["play", "pause"].includes(stage)) return;
     const visibility = () => {
@@ -543,18 +663,9 @@ function Session({
       );
       setStage("pause");
     };
-    const abandon = () => {
-      if (accessToken.current)
-        void fetch("/api/chemi/games", {
-          method: "POST",
-          keepalive: true,
-          headers: {
-            "content-type": "application/json",
-            authorization: "Bearer " + accessToken.current,
-          },
-          body: JSON.stringify({ action: "leave", playId: ticket.playId }),
-        }).catch(() => {});
-    };
+    const abandon = () => sendOnExit(accessToken.current, pendingKey.current
+      ? { action: "cancel", key: pendingKey.current }
+      : { action: "leave", playId: ticket.playId });
     const restore = (event: PageTransitionEvent) => {
       if (event.persisted) {
         setTicket(null);
@@ -621,6 +732,7 @@ function Session({
     void action(async () => {
       if (ticket && auth.authenticated)
         await call({ action: "leave", playId: ticket.playId });
+      writePending(null);
       setTicket(null);
       setStage("start");
     });
@@ -662,7 +774,7 @@ function Session({
       }
     } catch (e) {
       if (!(e instanceof DOMException && e.name === "AbortError"))
-        setError(copy.error);
+        setError("error");
     }
   }
   const art = photos[character];
@@ -674,8 +786,7 @@ function Session({
     share && stage === "start"
       ? (challenge?.ranking ?? [])
       : (lobby?.ranking ?? challenge?.ranking ?? publicRows ?? []);
-  const faces = [art, ...characters.filter(c => c !== character).map(c => photos[c])]
-    .flatMap(person => person.cards);
+  const faces = facesFor(character);
   const active = stage === "play" && view;
   const levelList = <ol className={styles.levelList} aria-label={copy.round}>
     {LEVELS.map(({columns, pairs, seconds}, i) => {
@@ -732,29 +843,33 @@ function Session({
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
         <FanHeading as="h1">{active ? copy.round + " " + active.stage + " / 5" : title}</FanHeading>
-        <FanIconButton
-          type="button"
-          disabled={working}
-          aria-label={copy.sound}
-          aria-pressed={sound}
-          onClick={toggleSound}
-        >
-          <FanIcon icon={sound ? Volume2 : VolumeX} />
-        </FanIconButton>
-        {active && (
+        <span className={styles.tools}>
           <FanIconButton
             type="button"
-            aria-label={copy.pause}
-            onClick={() => setStage("pause")}
+            disabled={working}
+            aria-label={copy.sound}
+            aria-pressed={sound}
+            onClick={toggleSound}
           >
-            <FanIcon icon={Pause} />
+            <FanIcon icon={sound ? Volume2 : VolumeX} />
           </FanIconButton>
-        )}
+          {active && (
+            <FanIconButton
+              type="button"
+              aria-label={copy.pause}
+              onClick={() => setStage("pause")}
+            >
+              <FanIcon icon={Pause} />
+            </FanIconButton>
+          )}
+        </span>
       </header>
-      {error && (
+      {error && stage !== "result" && (
         <div role="alert" className={styles.error}>
-          {error}{" "}
-          {stage === "start" && (
+          <FanText role="item">{copy[error]}</FanText>
+          {error === "authExpired" ? (
+            <FanAction onClick={() => auth.login()}>{copy.signIn}</FanAction>
+          ) : stage === "start" && (
             <FanAction onClick={() => setLoad((v) => v + 1)}>
               {copy.retry}
             </FanAction>
@@ -790,7 +905,12 @@ function Session({
               </>
             ) : (
               <>
-
+                {ended && lobby && (
+                  <p role="status" className={styles.ended}>
+                    <FanText role="item">{copy.prevEnded}</FanText>
+                    <FanText role="meta">{copy.freePlays} {lobby.freeRemaining}</FanText>
+                  </p>
+                )}
                 <div className={styles.choices} role="group" aria-label={copy.choose}>
                   {characters.map((c) => (
                     <FanAction
@@ -821,7 +941,7 @@ function Session({
                 </div>
                 {levelList}
                 <div className={styles.startAction}>
-                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}
+                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => void start(character)}
                     helperText={lobby ? `${copy.freePlays} ${lobby.freeRemaining}` : undefined}>
                     {copy.start}
                   </StageAction>
@@ -863,7 +983,8 @@ function Session({
             <>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong>
                 <FanText role="label" className={styles.status} aria-live="polite" data-tone={active.preview ? "preview" : active.second >= 0 ? "wrong" : undefined}>
-                  {active.preview ? `${copy.memorize} · ${active.preview}` : active.second >= 0 ? copy.wrong : ""}
+                  {active.preview ? `${copy.memorize} · ${active.preview}` : active.second >= 0 ? copy.wrong
+                    : fill(copy.goal, { n: LEVELS[active.stage - 1].pairs, s: LEVELS[active.stage - 1].seconds })}
                 </FanText>
               </div>
               <progress aria-label={copy.time} data-urgent={active.remaining <= FPS * 10} value={active.remaining} max={LEVELS[active.stage-1].seconds * FPS} />
@@ -920,6 +1041,7 @@ function Session({
                       matched={matched}
                       wrong={active.second >= 0 && (active.first === index || active.second === index)}
                       src={faces[photo]}
+                      onReady={cardReady}
                       number={cell + 1}
                       wrongLabel={copy.wrong}
                       disabled={active.preview > 0 || matched || active.first === index || active.second >= 0}
@@ -941,7 +1063,12 @@ function Session({
               </div>
               {active.cleared && <ClearDialog label={copy.completed} recordLabel={copy.record} art={art.scene} portrait={art.portrait} name={copy[character]}
                 round={active.stage} rounds={LEVELS.length} score={active.score} locale={locale}
-                lines={[[copy.pairs, active.stagePairs * 100], ["CLEAR", 500], [copy.time, Math.floor(active.remaining / FPS) * 10], [copy.accuracy, Math.floor(active.stagePairs ** 2 * 100 / active.attempts)]]}>
+                lines={[[copy.pairs, active.stagePairs * 100], [copy.clearBonus, 500], [copy.time, Math.floor(active.remaining / FPS) * 10], [copy.accuracy, Math.floor(active.stagePairs ** 2 * 100 / active.attempts)]]}>
+                {active.stage < LEVELS.length && (
+                  <FanText as="p" role="meta" className={styles.nextGoal}>
+                    {fill(copy.nextGoal, { n: LEVELS[active.stage].pairs, s: LEVELS[active.stage].seconds })}
+                  </FanText>
+                )}
                 <div className={styles.clearActions}>
                   <StageAction onClick={nextLevel}>{copy.round} {active.stage+1} · {copy.start}</StageAction>
                   <FanAction onClick={finishLevel}>{copy.result}</FanAction>
@@ -1037,7 +1164,13 @@ function Session({
                 {view.cleared ? copy.completed : copy.timeUp}
               </FanHeading>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{view.score.toLocaleString(locale)}</strong></div>
-              <ScoreLines locale={locale} lines={[[copy.pairs, view.pairs * 100], ["CLEAR", view.clearPoints], [copy.time, view.timePoints], [copy.accuracy, view.accuracyPoints]]} />
+              {pendingFinish && !working && (
+                <div role="alert" className={styles.saveFail}>
+                  <FanText role="item">{copy[error === "authExpired" ? "authExpired" : "saveFailed"]}</FanText>
+                  <FanAction onClick={() => void submit(pendingFinish)}>{copy.retry}</FanAction>
+                </div>
+              )}
+              <ScoreLines locale={locale} lines={[[copy.pairs, view.pairs * 100], [copy.clearBonus, view.clearPoints], [copy.time, view.timePoints], [copy.accuracy, view.accuracyPoints]]} />
               <div className={styles.souvenir}>
                 {faces.slice(0, 5).map((src) => (
                   <Image
@@ -1076,13 +1209,20 @@ function Session({
                   </div>
                 )}
               </dl>
-              {working && <p role="status">{copy.loading}</p>}
-              {result && result.exp > 0 && (
-                <p className={`${styles.detail} ${styles.gain}`}>
+              {working && <FanSkeletonRows rows={1} ariaLabel={copy.loading} />}
+              {result && auth.authenticated && (
+                // 친밀 한 줄: 최애 런 결과와 같은 이름·자리(K-df2f2e 게임 = 신남).
+                <div className={`${styles.detail} ${styles.gain}`}>
                   <Image width={112} height={112} alt="" src={art.portrait} />
-                  <span>{copy[character]} · {copy.experience}</span>
-                  <b>+<RollingNumber value={result.exp} initialFromZero /> EXP</b>
-                </p>
+                  <span>
+                    <FanText role="item">{fill(copy.care, { name: copy[character] })}</FanText>
+                    {result.excitement !== undefined && (
+                      <FanText role="meta">{copy.excitement} +{result.excitement}</FanText>
+                    )}
+                  </span>
+                  <FanText role="item" className={styles.gainValue}>{result.exp > 0 ? `+${result.exp.toLocaleString(locale)}` : copy.received}</FanText>
+                  <FanSectionLink href={`/chemi?tab=growth&locale=${locale}&character=${character}`}>{fill(copy.roomOf, { name: copy[character] })}</FanSectionLink>
+                </div>
               )}
               {result?.titleStage && <div className={styles.detail}>
                 <b>{copy.round} {result.titleStage} · {copy.completed}</b>
@@ -1091,15 +1231,7 @@ function Session({
                   setEquipped(true);
                 })}>{equipped && <FanIcon icon={Check} size={16} />}{copy.equip}</FanAction>
               </div>}
-              {result?.excitement !== undefined && <div className={styles.detail}>
-                <span>{copy[character]} · {copy.excitement} +{result.excitement}</span>
-                <FanAction href={`/chemi?tab=growth&locale=${locale}&character=${character}`}>{copy.room}</FanAction>
-              </div>}
-              {pendingFinish && !working && (
-                <FanAction onClick={() => void submit(pendingFinish)}>
-                  {copy.retry}
-                </FanAction>
-              )}
+
               {result && (
                 <StageAction
                   onClick={() => {
@@ -1128,8 +1260,8 @@ function Session({
             <Rankings rows={rows} copy={copy} full={Boolean(active)} locale={locale} />
           ) : (
             <section aria-busy={!error} className={styles.ranking}>
-              <FanHeading>{copy.ranking}</FanHeading>
-              {!error && <p role="status">{copy.loading}</p>}
+              <FanHeading as="h2">{copy.ranking}</FanHeading>
+              {!error && <FanSkeletonRows rows={3} ariaLabel={copy.loading} />}
             </section>
           ))}
       </div>

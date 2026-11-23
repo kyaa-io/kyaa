@@ -80,3 +80,11 @@ it("stores a run only at the score its presses replay to", async () => {
   expect((await run({ action: "finish", playId: id, ticks, score, inputs, moves: [] })).status).toBe(200);
   expect(rpc).toHaveBeenLastCalledWith("chemi_run_finish", { p_user: id, p_play: id, p_score: score, p_log: { ticks, inputs } });
 });
+
+it("cancels an unseen play by its start key for the signed-in owner only", async () => {
+  rpc.mockResolvedValue({ refunded: true });
+  const response = await post({ action: "cancel", key: id, p_user: "ignored" });
+  expect(await response.json()).toEqual({ refunded: true });
+  expect(rpc).toHaveBeenCalledWith("chemi_cancel_play", { p_user: id, p_game: "match", p_request_key: id });
+  expect((await post({ action: "cancel" })).status).toBe(400);
+});

@@ -46,7 +46,7 @@ const tones: Record<SajuCharacterId, Tone> = {
   changha: {
     hello: "사주가 궁금한가?",
     birth: "좋아. 언제 태어났는지 알려 줘.",
-    calc: "잠깐만, 대본 펼치듯 네 사주 펼쳐 볼게.",
+    calc: "잠깐만, 네 사주 펼쳐 볼게. 재밌는 거 나오면 놀린다?",
     t1: (i) => `넌 ${i.image} 같은 사람이야. ${i.trait} 사람이지.`,
     t2: (i) => `${i.strengthN}이 네 강점이야. ${i.cautionN}은 조심하고.`,
     t3: (i) => `올해는 ${i.yearTitle}야.`,
@@ -63,7 +63,7 @@ const tones: Record<SajuCharacterId, Tone> = {
   elina: {
     hello: "사주 보러 왔어요? 같이 볼까?",
     birth: "좋아요. 언제 태어났는지 알려 줄래요?",
-    calc: "잠깐만요, 가사 읽듯이 사주를 펼쳐 볼게요.",
+    calc: "잠깐만요, 사주를 천천히 펼쳐 볼게요.",
     t1: (i) => `${i.image} 같은 사람이에요. ${i.trait} 사람이죠?`,
     t2: (i) => `${i.strengthN}이 강점이에요. ${i.cautionN}은 조심해요.`,
     t3: (i) => `올해는 ${i.yearTitle}예요.`,
@@ -80,7 +80,7 @@ const tones: Record<SajuCharacterId, Tone> = {
   yuna: {
     hello: "사주 궁금해? 내가 봐 줄게.",
     birth: "좋아. 생일부터 알려 줘.",
-    calc: "잠깐만. 피부 톤 보듯이 하나씩 볼게.",
+    calc: "잠깐만. 하나씩 짚어 볼게.",
     t1: (i) => `넌 ${i.image} 같은 사람이야. ${i.trait} 사람이잖아.`,
     t2: (i) => `${i.strengthN}이 네 강점이야. 근데 ${i.cautionN}은 조심해.`,
     t3: (i) => `올해는 ${i.yearTitle}야.`,

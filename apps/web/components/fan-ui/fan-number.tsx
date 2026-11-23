@@ -68,8 +68,9 @@ export type FanNumberProps = Readonly<{
 export function FanNumber({ value, unit, size = "md", countUp = false, pulseOnChange = false, locale, icon, className }: FanNumberProps) {
   const shown = useCountUp(value, countUp);
   const [pulse, endPulse] = usePulse(value, pulseOnChange);
-  const formatted = shown.toLocaleString(locale);
-  const final = value.toLocaleString(locale);
+  // 네 자리 수도 묶음 표시를 넣어 언어마다 표기가 섞이지 않게 한다(es 기본값은 '3906'·'38.429'로 갈린다).
+  const formatted = shown.toLocaleString(locale, { useGrouping: "always" });
+  const final = value.toLocaleString(locale, { useGrouping: "always" });
   const counting = shown !== value;
   // 카운트업 중에만 최종 값 폭을 잡아 옆 요소가 흔들리지 않게 한다. 멈춘 값은 글자 폭 그대로(앞 빈칸 없음).
   return <span className={[styles.number, styles[size], className ?? ""].filter(Boolean).join(" ")} data-number-role="asset" data-pulse={pulse ? "true" : undefined} onAnimationEnd={pulse ? endPulse : undefined}>

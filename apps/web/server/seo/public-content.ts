@@ -7,11 +7,14 @@ import type { SeoLocale } from "@/seo/metadata";
 import { createRaffleDependencies } from "@/server/raffle/raffle-dependencies";
 import { createBenefitRepositoryFromEnvironment } from "@/server/g4/benefit-repository";
 import { loadServerEnv } from "@/server/config/env";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 // Request-scoped only: anonymous content is shared between metadata and page,
 // never between users or across a publication change.
-export const loadSeoCreator = cache(async (slug: string, locale: SeoLocale) =>
-  createPublishedContentRepositoryFromEnvironment().findBySlug(toContentLocale(locale), slug));
+export const loadSeoCreator = cache(async (slug: string, locale: SeoLocale) => {
+  const creator = await createPublishedContentRepositoryFromEnvironment().findBySlug(toContentLocale(locale), slug);
+  return creator && { ...creator, name: creatorName(creator.slug, locale, creator.name) };
+});
 
 export const loadSeoRaffles = cache(async (slug: string, locale: SeoLocale) =>
   createRaffleDependencies().list({ celebritySlug: slug, locale: toContentLocale(locale), now: new Date() }));

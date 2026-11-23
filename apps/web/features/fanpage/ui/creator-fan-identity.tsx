@@ -4,6 +4,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { translate } from "@/i18n/messages";
 import { messages } from "@/i18n/catalogs/components__celebrity-fan-page";
 import { creatorIdentity } from "../domain/creator-identities";
+import { creatorName } from "../domain/creator-names";
 import styles from "./fanpage.module.css";
 
 const fandomLabels: Record<AppLocale, string> = {
@@ -17,11 +18,13 @@ export function CreatorFanIdentity({ slug, name, locale }: { slug: string; name:
   const identity = creatorIdentity(slug);
   if (!identity) return <h1 id="celebrity-heading">{name}</h1>;
   const primary = identity.logo || locale !== "ko" ? identity.en : identity.ko;
-  const secondary = primary === identity.ko ? identity.en : identity.ko;
+  // 한국어 화면은 한글·영문을 함께, 다른 언어 화면은 공식 영문 아래에 그 언어 표기만 둔다(한글을 보이지 않음).
+  const local = creatorName(slug, locale);
+  const secondary = locale === "ko" ? (primary === identity.ko ? identity.en : identity.ko) : local.toLowerCase() !== primary.toLowerCase() && /[^\p{Script=Latin}\s\p{P}]/u.test(local) ? local : null;
   return <div className={styles.artistIdentity}>
     <div className={styles.artistName}>
       {identity.logo && <Image className={styles.artistLogo} src={identity.logo} alt="" width={80} height={80} />}
-      <h1 id="celebrity-heading">{primary}<span>{secondary}</span></h1>
+      <h1 id="celebrity-heading">{primary}{secondary && <span>{secondary}</span>}</h1>
     </div>
     {identity.fandom && <dl className={styles.fandom}>
       <dt>{fandomLabels[locale]}</dt>

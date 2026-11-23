@@ -40,4 +40,6 @@ it('matches approved prizes, steps and date without unconfirmed time or rewards'
   expect(screen.getByText(/응모만 하면 추첨 대상/)).toBeTruthy();
   expect(screen.getByText(/Fan Passport \+1 \+ 커뮤니티 가입 \+1/)).toBeTruthy();
   expect(screen.getByText(/친구 1명당 당첨 기회 \+3\(인원 제한 없음/)).toBeTruthy();
+  // 대표 2026-11-23(X 홍보): 참여 방법이 키 비주얼 바로 아래 첫 구역이다
+  expect(view.container.querySelector('[data-block]')?.getAttribute('data-block')).toBe('raffle-enter');
 });

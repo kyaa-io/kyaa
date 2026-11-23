@@ -93,7 +93,12 @@
     "release-notes/2026-11-23-chemi-tarot-guest-english.json",
     "release-notes/2026-11-23-chemi-run-again.json",
     "release-notes/2026-11-23-points-terms-privacy.json",
-    "release-notes/2026-11-23-refund-points-open.json"
+    "release-notes/2026-11-23-refund-points-open.json",
+    "release-notes/2026-11-23-creator-name-i18n.json",
+    "release-notes/2026-11-23-chemi-talk-persona.json",
+    "release-notes/2026-11-23-number-link-wrap.json",
+    "release-notes/2026-11-23-chemi-ask-points-tone.json",
+    "release-notes/2026-11-23-chemi-match-plays.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

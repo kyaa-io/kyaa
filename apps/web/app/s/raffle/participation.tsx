@@ -42,6 +42,10 @@ function useRaffle() { const value = useContext(RaffleContext); if (!value) thro
 const inviteKey = 'kyaa:raffle:invite';
 const storedInvite = () => { try { return raffleInviteCode(window.localStorage.getItem(inviteKey)); } catch { return undefined; } };
 const storeInvite = (code?: string) => { try { if (code) window.localStorage.setItem(inviteKey, code); else window.localStorage.removeItem(inviteKey); } catch { /* 저장소 없음 */ } };
+/** 비로그인으로 응모를 누르면 로그인·가입에서 돌아왔을 때 그대로 응모한다(① 응모 → ② 가입·로그인, 대표 2026-11-23). 한 번 읽으면 지운다. */
+const enterKey = 'kyaa:raffle:enter';
+const takeEnterIntent = () => { try { const wants = window.sessionStorage.getItem(enterKey) === '1'; window.sessionStorage.removeItem(enterKey); return wants; } catch { return false; } };
+const keepEnterIntent = () => { try { window.sessionStorage.setItem(enterKey, '1'); } catch { /* 저장소 없음: 돌아와서 한 번 더 누른다 */ } };
 type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; invite?: 'registered' | 'refused' | 'pending' };
 const count = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
 
@@ -78,9 +82,12 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     void (async () => {
       try {
         let result = await request('GET');
-        if (result.entered && received.current) result = await request('POST');
+        const wants = takeEnterIntent();
+        if (!result.entered && wants) { if (live) setPending(true); result = { ...await request('POST'), entered: true }; }
+        else if (result.entered && received.current) result = await request('POST');
         if (live) apply(result);
       } catch { /* 상태를 못 읽으면 응모 전 화면 그대로 둔다. 응모 버튼은 여러 번 눌러도 한 번만 기록된다 */ }
+      if (live) setPending(false);
       try { const mine = await communityStampAction(getAccessToken, 'invite-code', {}, value => communityInviteSchema.parse(value)); if (live) setInviteCode(raffleInviteCode(mine.code)); } catch { /* 코드가 없으면 일반 주소를 공유한다 */ }
     })();
     return () => { live = false; };
@@ -111,7 +118,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     if (closed) return;
     // 개발 서버의 ?preview=in: 로그인·API 없이 응모 순간(요청 중 → 완료 → 도장)만 보여 준다. 운영 빌드에는 preview 값이 오지 않는다.
     if (p === 'in') { setPending(true); window.setTimeout(() => { setPending(false); setEntered(true); }, 400); return; }
-    if (!auth.authenticated) { auth.login(); return; }
+    if (!auth.authenticated) { keepEnterIntent(); auth.login(); return; }
     setPending(true); setError(false);
     try { apply({ ...await request('POST'), entered: true }); }
     catch { setError(true); }
@@ -127,10 +134,10 @@ const passportHref = (locale: AppLocale) => `/passports?locale=${locale}`;
 const communityHref = (locale: AppLocale) => `/pages/groups?locale=${locale}`;
 /** 응모 버튼: 페이지에서 유일한 분홍 면(primary 1개). 히어로와 모바일 하단 고정 줄이 같은 버튼을 쓴다. 요청 중에는 공통 loading.
  * 응모 뒤에는 누를 수 없는 버튼(비활성 .4, 흰 글자 1.99:1)이 아니라 공통 `FanActionStatus`: 흰 면·잉크 글자·완료 체크(`--color-success`)를 같은 자리·같은 크기로. */
-function RaffleEnterAction() {
+function RaffleEnterAction({ size }: { size?: 'lg' }) {
   const r = useRaffle();
-  if (r.entered) return <FanActionStatus leadingIcon={<FanIcon icon={Check} className={styles.doneCheck} />}>{r.t('entered')}</FanActionStatus>;
-  return <FanAction type="button" variant="primary" fullWidth loading={r.pending} disabled={!r.ready} onClick={r.enter}>{r.t('enterCta')}</FanAction>;
+  if (r.entered) return <FanActionStatus size={size} leadingIcon={<FanIcon icon={Check} className={styles.doneCheck} />}>{r.t('entered')}</FanActionStatus>;
+  return <FanAction type="button" variant="primary" size={size} fullWidth loading={r.pending} disabled={!r.ready} onClick={r.enter}>{r.t('enterCta')}</FanAction>;
 }
 
 /** 마감까지 남은 시간을 `D-17`과 `21:04:09`로 나눈다. 하루가 안 남으면 `D-DAY`. */
@@ -167,13 +174,13 @@ export function RaffleEnterBlock() {
   const r = useRaffle();
   if (r.closed) return r.result ? <RaffleResultEntry locale={r.locale} result={r.result} /> : <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
   return <div className={styles.enter} data-raffle-hero-action>
-    {/* 버튼 하나로 끝나는지 헷갈린다는 대표 지적(2026-11-13): 두 걸음을 번호로. 응모하면 1번에 체크 */}
-    <ol className={styles.steps}>
-      <li data-row="raffle-step" data-done={r.entered || undefined}><FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">{r.entered ? <FanIcon icon={Check} size={16} /> : 1}</FanDisplay><FanDisplay role="strong">{r.t(r.signedIn ? 'step1' : 'step1Guest')}</FanDisplay></li>
-      <li data-row="raffle-step"><FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">2</FanDisplay><FanDisplay role="strong">{r.t('step2')}</FanDisplay></li>
-    </ol>
+    {/* 페이지 첫 행동(대표 2026-11-23 X 홍보): 큰 응모 버튼(56) 바로 아래 두 걸음 ① 응모 누르기 ② 가입·로그인. 끝낸 걸음은 체크 */}
     <div className={styles.enterActions}>
-      <div className={styles.enterCta}><RaffleEnterAction /></div>
+      <div className={styles.enterCta}><RaffleEnterAction size="lg" /></div>
+      <ol className={styles.steps}>
+        <RaffleStep order={1} done={r.entered} label={r.t('stepEnter')} />
+        <RaffleStep order={2} done={r.signedIn} label={r.t(r.signedIn ? 'stepLoggedIn' : 'stepLogin')} />
+      </ol>
       {/* 응모 바로 옆(모바일은 바로 아래)의 보조 행동. 응모 뒤에는 이 칸에서 누를 수 있는 유일한 버튼이라 다음 행동이 된다 */}
       <RaffleShare />
     </div>
@@ -194,6 +201,10 @@ export function RaffleEnterBlock() {
       : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
   </div>;
 }
+
+const RaffleStep = ({ order, done, label }: { order: number; done: boolean; label: string }) => <li data-row="raffle-step" data-done={done || undefined}>
+  <FanDisplay role="strong" className={styles.stepMark} aria-hidden="true">{done ? <FanIcon icon={Check} size={16} /> : order}</FanDisplay><FanDisplay role="strong">{label}</FanDisplay>
+</li>;
 
 const DoneMark = ({ label }: { label: string }) => <FanDisplay role="caption" as="p" className={styles.doneMark}><FanIcon icon={Check} size={16} className={styles.doneCheck} />{label}</FanDisplay>;
 

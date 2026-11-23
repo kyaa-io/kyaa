@@ -425,7 +425,7 @@ describe("streamed Home sections", () => {
     expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
   });
 
-  it("orders pinned banners missionbook → signup raffle → X event → first steps → GGGI → CMS, in the finished carousel", async () => {
+  it("orders pinned banners signup raffle → missionbook → X event → first steps → GGGI → CMS, in the finished carousel", async () => {
     const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
     const raffle = SIGNUP_RAFFLE_BANNER_ID;
     const home = pendingHome();
@@ -433,7 +433,7 @@ describe("streamed Home sections", () => {
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle firstSteps />); });
     expect(ids(view)).toEqual([]);
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
-    expect(ids(view)).toEqual([missionbook, raffle, xEvent, FIRST_STEPS_BANNER_ID, gggi, bannerFixture.id]);
+    expect(ids(view)).toEqual([raffle, missionbook, xEvent, FIRST_STEPS_BANNER_ID, gggi, bannerFixture.id]);
     expect(ids(view).filter(id => id === raffle || id === xEvent)).toHaveLength(2);
     view.unmount();
     const off = pendingHome();

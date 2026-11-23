@@ -29,7 +29,7 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
   const text = (key: Parameters<typeof signupRaffleText>[1], count?: number) => signupRaffleText(locale, key, count);
   const t = (key: SignupRaffleLongformKey, count?: number) => raffleLongformText(locale, key, count);
   return <RaffleProvider locale={locale} closed={closed} closesAt={closesAt} now={now} preview={preview} invite={invite}>
-    {/* v5.2 상세페이지 흐름: 키 비주얼(무슨 이벤트·얼마·몇 명·언제까지) → 경품 카드 | 참여 방법(필수) → 당첨 확률 올리기 → 더 즐기기(선택) → 안내. 응모 버튼은 하단 고정 줄로 늘 보인다 */}
+    {/* v5.3 상세페이지 흐름: 키 비주얼(무슨 이벤트·얼마·몇 명·언제까지) → 참여 방법(필수, 큰 응모 버튼) → 경품 카드 → 당첨 확률 올리기 → 더 즐기기(선택) → 안내. 응모 버튼은 하단 고정 줄로 늘 보인다 */}
     <FanPrintDesk className={styles.keyVisual} src={art('key-visual-tall')} wideSrc={art('key-visual-wide')} wideFrom="48rem" width={1131} height={1391} eager>
       {/* 왼쪽 정렬로 쌓이는 줄은 모두 optical: 첫 글자 잉크가 같은 세로선에서 시작한다(DESIGN.md 7-2 큰 글자 줄 왼쪽 광학 정렬) */}
       <header className={styles.keyText}>
@@ -42,6 +42,15 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
     </FanPrintDesk>
 
     <div className={styles.body}>
+      {/* 참여 방법(필수)은 키 비주얼 바로 아래 첫 구역(대표 2026-11-23 X 홍보: 들어오자마자 큰 응모 버튼). 응모 버튼 + 두 걸음 + 친구에게 공유 + 마감까지 남은 시간 + 1인 1응모. 응모하면 이 자리에 도장이 찍힌다 */}
+      <section className={styles.section} data-block="raffle-enter" aria-labelledby="raffle-enter">
+        <div className={styles.sectionHead}>
+          <FanHeading as="h2" id="raffle-enter"><FanDisplay role="heading">{t('how')}</FanDisplay></FanHeading>
+          <FanDisplay role="caption" as="p" className={styles.muted}>{t('required')}</FanDisplay>
+        </div>
+        <RaffleEnterBlock />
+      </section>
+
       {/* 경품: 카드 네 묶음은 three.js로 떠 있다(준비 전·대체 상태는 같은 자리의 DOM 카드). 금액은 카드에, 인원은 카드 아래에 */}
       <section className={styles.prize} data-block="raffle-prize" aria-labelledby="raffle-prize">
         <div className={styles.sectionHead}><FanHeading as="h2" id="raffle-prize"><FanDisplay role="heading">{t('prizes')}</FanDisplay></FanHeading></div>
@@ -52,15 +61,6 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
           </li>)}</FanPrintReveal>
           <RaffleCardFloat />
         </FanPrintDesk>
-      </section>
-
-      {/* 참여 방법(필수): 응모 버튼 + 친구에게 공유(보조 버튼) + 마감까지 남은 시간(1초마다) + 1인 1응모. 응모하면 이 자리에 도장이 찍힌다 */}
-      <section className={styles.section} data-block="raffle-enter" aria-labelledby="raffle-enter">
-        <div className={styles.sectionHead}>
-          <FanHeading as="h2" id="raffle-enter"><FanDisplay role="heading">{t('how')}</FanDisplay></FanHeading>
-          <FanDisplay role="caption" as="p" className={styles.muted}>{t('required')}</FanDisplay>
-        </div>
-        <RaffleEnterBlock />
       </section>
 
       {/* 당첨 확률 올리기: 페이지에서 하나뿐인 옅은 분홍 면. 행마다 그 행동의 스탬프 그림 */}
