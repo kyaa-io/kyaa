@@ -7,7 +7,7 @@ import { raffleOddsText } from '@/i18n/catalogs/signup-raffle-longform';
 
 const closesAt = Date.parse('2026-11-30T23:59:59.999+09:00'), now = Date.parse('2026-11-13T02:00:00+09:00');
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(now); });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); auth.authenticated = false; window.localStorage.clear(); cleanup(); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); auth.authenticated = false; window.localStorage.clear(); window.sessionStorage.clear(); auth.login.mockClear(); cleanup(); });
 
 it('splits the time left into D-day and a fixed-width clock', () => {
   expect(raffleCountdown(closesAt - now)).toEqual({ day: 'D-17', clock: '21:59:59', urgent: false });
@@ -84,12 +84,10 @@ it('keeps a friend\'s invite code through sign-in and sends it with the entry on
   expect(auth.login).toHaveBeenCalled();
   expect(window.localStorage.getItem('kyaa:raffle:invite')).toBe(friendCode);
   first.unmount();
-  // 가입하고 돌아옴(주소에 코드 없음): 응모할 때 적어 둔 코드를 함께 보낸다
+  // 가입하고 돌아옴(주소에 코드 없음): 다시 누르지 않아도 응모하고, 적어 둔 코드를 함께 보낸다
   auth.authenticated = true;
   const calls = server({ entered: false, passportReceived: false, communityJoined: false, chances: 0, friends: 0 });
   render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
-  await settle();
-  fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
   await settle();
   const post = calls.find(call => call.method === 'POST' && call.url === '/api/signup-event/entry')!;
   expect(JSON.parse(post.body!)).toEqual({ invite: friendCode });
@@ -168,7 +166,8 @@ it('rounds small odds to one decimal', () => {
 it('numbers the two steps and checks the first one after entering', () => {
   const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} preview="in"><RaffleEnterBlock /></RaffleProvider>);
   const steps = () => [...view.container.querySelectorAll('[data-row="raffle-step"]')];
-  expect(steps().map(step => step.textContent)).toEqual(['1래플 응모하기를 한 번 누르면 참여 완료', '2아래 활동으로 당첨 기회 더 받기(선택)']);
+  expect(steps().map(step => step.textContent)).toEqual(['1래플 응모하기 누르기', '로그인 완료']);
+  expect(steps()[1]!.hasAttribute('data-done')).toBe(true);
   fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
   act(() => { vi.advanceTimersByTime(500); });
   expect(steps()[0]!.hasAttribute('data-done')).toBe(true);
@@ -181,7 +180,32 @@ it('shows the same ticking clock large in the key visual', () => {
   expect(timer.textContent).toBe('D-1721:59:59');
 });
 
-it('tells a signed-out fan to sign in first in step 1', () => {
+it('shows a signed-out fan the two steps: enter, then sign up or log in', () => {
+  const view = render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  expect([...view.container.querySelectorAll('[data-row="raffle-step"]')].map(step => step.textContent)).toEqual(['1Tap Enter the raffle', "2Sign up or log in and you're entered"]);
+  expect(view.container.querySelector('button.lg, button')?.textContent).toBe('Enter the raffle');
+});
+
+it('enters right after coming back from sign-up when the fan tapped Enter signed out', async () => {
   const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
-  expect(view.container.querySelector('[data-row="raffle-step"]')?.textContent).toBe('1로그인한 뒤 래플 응모하기를 한 번 누르면 참여 완료');
+  fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
+  expect(auth.login).toHaveBeenCalledTimes(1);
+  expect(window.sessionStorage.getItem('kyaa:raffle:enter')).toBe('1');
+  view.unmount();
+  auth.authenticated = true;
+  const calls = server({ entered: false, passportReceived: false, communityJoined: false });
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  await settle();
+  expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET', 'POST']);
+  expect(screen.getByText('응모 완료')).toBeTruthy();
+  expect(window.sessionStorage.getItem('kyaa:raffle:enter')).toBeNull();
+});
+
+it('does not enter a signed-in fan who never tapped Enter', async () => {
+  auth.authenticated = true;
+  const calls = server({ entered: false, passportReceived: false, communityJoined: false });
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  await settle();
+  expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET']);
+  expect(screen.getByRole('button', { name: '래플 응모하기' })).toBeTruthy();
 });

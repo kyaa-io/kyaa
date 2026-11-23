@@ -139,7 +139,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 최소 터치 | 44 | `--min-target` |
 | primary 버튼 | 44(390) / 48(1024+), 최대 폭 320 | `--fan-action-primary-height` `--fan-action-max-width` |
 | 작은 버튼 `size="sm"` | 보이는 36, 누르는 영역 44 | `FanAction` |
-| 큰 주 버튼 `size="lg"` | 높이 56, 글자 16, 아이콘 22, 폭 상한 없이 부모 폭을 채움. 화면 첫 행동인 이벤트 좋아요 카드에만(11/19 사용자 "좋아요 버튼 크게") | `--fan-action-lg-height` `--fan-action-lg-icon-size` |
+| 큰 주 버튼 `size="lg"` | 높이 56, 글자 16, 아이콘 22, 폭 상한 없이 부모 폭을 채움. 화면 첫 행동인 이벤트 좋아요 카드(11/19 사용자 "좋아요 버튼 크게")와 래플 응모 버튼(`/s/raffle` 참여 방법, 대표 11/23 "버튼을 크게")에만 | `--fan-action-lg-height` `--fan-action-lg-icon-size` |
 | 칩 | 보이는 36, 누르는 영역 44(::after) | `--fan-chip-height` |
 | 머리 칩(팬 인증·좋아요·별) | 28, 누르는 영역 44 | `FanStarAction` |
 | 밑줄 탭 / 세그먼트 / 태그 | 48 / 40 / 22 | `FanTabs`, `FanTag` |
