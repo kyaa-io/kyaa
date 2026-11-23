@@ -244,6 +244,9 @@ const copy = {
 } as const;
 
 export type SignupRaffleKey = keyof typeof copy.ko;
+/** 경품 1명 줄의 단수형("1 winners" 고침). 나머지 언어는 수 표기에 단복수 구분이 없거나 그대로 맞는다. */
+const prizeCountOne: Partial<Record<AppLocale, string>> = { en: "1 winner", es: "1 ganador", fr: "1 gagnant", pt: "1 vencedor" };
 export function signupRaffleText(locale: AppLocale, key: SignupRaffleKey, count?: number): string {
+  if (key === "prizeCount" && count === 1 && prizeCountOne[locale]) return prizeCountOne[locale];
   return copy[locale][key].replace("{0}", String(count ?? ""));
 }

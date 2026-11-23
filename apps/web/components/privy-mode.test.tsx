@@ -94,6 +94,42 @@ describe("privy mode", () => {
         expect(bridge.openEmailLogin).toHaveBeenCalledOnce();
       } finally { agent.mockRestore(); }
     });
+  // RAFFLE-FUNNEL-CHECK-1123: inside X the "Google · Safari ↗" link did nothing (X ignores x-safari-https://). It is replaced by
+  // the copy-link notice, and the copied sign-in link keeps the raffle's ?enter=1 so entry continues in the browser.
+  it("shows the open-in-browser notice and copy link in place of the dead Google link inside X", async () => {
+    const assign = vi.fn();
+    vi.stubGlobal("location", { ...window.location, assign, origin: "https://kyaa.io", href: "https://kyaa.io/login" });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
+    navigation.query = "returnTo=%2Fs%2Fraffle%3Fenter%3D1&locale=en";
+    const agent = vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Twitter for iPhone");
+    try {
+      render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
+      expect(screen.queryByRole("button", { name: /Safari/ })).toBeNull();
+      expect(screen.getByRole("status")).toHaveTextContent("Choose ‘Open in browser’ in the app menu");
+      fireEvent.click(screen.getByRole("button", { name: "Copy sign-in link" }));
+      await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+      const link = new URL(String(writeText.mock.calls[0]?.[0]));
+      expect(link.origin + link.pathname).toBe("https://kyaa.io/login");
+      const back = new URL(link.searchParams.get("returnTo") ?? "", "https://kyaa.io");
+      expect(back.pathname).toBe("/s/raffle");
+      expect(back.searchParams.get("enter")).toBe("1");
+      expect(assign).not.toHaveBeenCalled();
+    } finally { agent.mockRestore(); }
+  });
+  it("keeps the Google hand-off link where it works and adds the notice after a tap", () => {
+    const assign = vi.fn();
+    vi.stubGlobal("location", { ...window.location, assign, origin: "https://kyaa.io", href: "https://kyaa.io/login" });
+    Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText: vi.fn().mockResolvedValue(undefined) } });
+    const agent = vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 KAKAOTALK 11.0.0");
+    try {
+      render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
+      expect(screen.queryByRole("button", { name: "로그인 링크 복사" })).toBeNull();
+      fireEvent.click(screen.getByRole("button", { name: /Google · Safari/ }));
+      expect(String(assign.mock.calls[0]?.[0])).toMatch(/^kakaotalk:\/\/web\/openExternal\?url=/);
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+    } finally { agent.mockRestore(); }
+  });
   it("starts Apple in Privy", async () => {
     render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
     fireEvent.click(screen.getByRole("button", { name: /Apple로 계속하기/ }));

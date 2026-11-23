@@ -36,6 +36,9 @@
 .enterActions { display: grid; gap: var(--space-2); width: 100%; max-width: calc(var(--rail-narrow) + var(--space-8)); }
 .enterCta { position: relative; display: grid; justify-items: center; min-width: 0; }
 /* 응모 결과 줄(v5.3): 도장 40 + 내 당첨 기회. 도장은 버튼 밖으로 걸치지 않고 이 줄 안에서 한 번 내려앉는다 */
+/* 앱 안 브라우저 안내(비로그인만): 응모 버튼 바로 아래 한 줄 + 링크 복사. 면·카드 없이 글자와 공통 보조 버튼만 */
+.inApp { display: grid; justify-items: center; gap: var(--space-2); text-align: center; word-break: keep-all; }
+.inAppLink { width: 100%; min-width: 0; min-height: var(--min-target); box-sizing: border-box; padding: var(--space-2); border: 1px solid var(--color-muted); border-radius: var(--radius-small); background: var(--color-surface); color: inherit; font: inherit; }
 .enterResult { display: flex; align-items: center; justify-content: center; gap: var(--space-3); min-height: var(--space-12); }
 .enterStamp { flex: none; width: var(--space-10); rotate: -6deg; }
 .enterChances { display: flex; align-items: baseline; gap: var(--space-2); }

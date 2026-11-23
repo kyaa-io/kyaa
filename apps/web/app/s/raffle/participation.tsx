@@ -12,6 +12,7 @@ import { communityInviteSchema } from '@/features/community-stamps/domain/commun
 import { communityStampAction } from '@/features/community-stamps/ui/use-community-stamps';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
 import { FanAction, FanActionStatus } from '@/components/fan-ui/fan-action';
+import { requiresGoogleBrowserHandoff } from '@/components/login-browser-policy';
 import type { RaffleCapsuleResult } from '@/features/capsule-machine/raffle-result-capsule';
 import { RaffleResultEntry } from './result-entry';
 import { signupRaffleResultSchema } from '@/server/signup-event/result';
@@ -45,7 +46,22 @@ const storeInvite = (code?: string) => { try { if (code) window.localStorage.set
 /** 비로그인으로 응모를 누르면 로그인·가입에서 돌아왔을 때 그대로 응모한다(① 응모 → ② 가입·로그인, 대표 2026-11-23). 한 번 읽으면 지운다. */
 const enterKey = 'kyaa:raffle:enter';
 const takeEnterIntent = () => { try { const wants = window.sessionStorage.getItem(enterKey) === '1'; window.sessionStorage.removeItem(enterKey); return wants; } catch { return false; } };
-const keepEnterIntent = () => { try { window.sessionStorage.setItem(enterKey, '1'); } catch { /* 저장소 없음: 돌아와서 한 번 더 누른다 */ } };
+const keepEnterIntent = () => { try { window.sessionStorage.setItem(enterKey, '1'); } catch { /* 저장소 없음: 주소의 ?enter=1이 남는다 */ } };
+/** 앱 안 브라우저(X 등)에서 Safari·Chrome으로 옮기면 sessionStorage는 따라가지 않는다. 그래서 응모 의도를 주소(?enter=1)에도 싣는다:
+ * 로그인 뒤 돌아올 주소와 '링크 복사' 주소가 같은 값이다(감사 RAFFLE-FUNNEL-CHECK-1123 2번). 해시와 개발 미리보기 값은 뺀다. */
+export const raffleEnterHref = (href: string) => { const url = new URL(href); url.searchParams.delete('preview'); url.searchParams.set('enter', '1'); url.hash = ''; return url.href; };
+const markEnterInAddress = () => { try { window.history.replaceState(window.history.state, '', raffleEnterHref(window.location.href)); } catch { /* sessionStorage 쪽이 남는다 */ } };
+/** 주소의 ?enter=1을 읽으면 바로 지운다(한 번만, 새로고침·뒤로 가기로 다시 응모하지 않게). */
+const takeEnterFromAddress = () => {
+  try {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('enter')) return false;
+    const wants = url.searchParams.get('enter') === '1';
+    url.searchParams.delete('enter');
+    window.history.replaceState(window.history.state, '', url.href);
+    return wants;
+  } catch { return false; }
+};
 type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; invite?: 'registered' | 'refused' | 'pending' };
 const count = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
 
@@ -80,13 +96,18 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     if (p || closed || !auth.ready || !auth.authenticated) return;
     let live = true;
     void (async () => {
+      // 둘 다 읽어서 지운다(같은 탭의 sessionStorage, 다른 브라우저로 넘어온 주소의 ?enter=1)
+      const fromSession = takeEnterIntent(), fromAddress = takeEnterFromAddress();
+      const wants = fromSession || fromAddress;
       try {
         let result = await request('GET');
-        const wants = takeEnterIntent();
         if (!result.entered && wants) { if (live) setPending(true); result = { ...await request('POST'), entered: true }; }
         else if (result.entered && received.current) result = await request('POST');
         if (live) apply(result);
-      } catch { /* 상태를 못 읽으면 응모 전 화면 그대로 둔다. 응모 버튼은 여러 번 눌러도 한 번만 기록된다 */ }
+      } catch {
+        // 응모하러 돌아왔는데 실패하면 조용히 두지 않고 오류 줄(다시 시도)을 보인다. 그 밖에는 응모 전 화면 그대로. 응모 버튼은 여러 번 눌러도 한 번만 기록된다
+        if (live && wants) setError(true);
+      }
       if (live) setPending(false);
       try { const mine = await communityStampAction(getAccessToken, 'invite-code', {}, value => communityInviteSchema.parse(value)); if (live) setInviteCode(raffleInviteCode(mine.code)); } catch { /* 코드가 없으면 일반 주소를 공유한다 */ }
     })();
@@ -118,7 +139,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     if (closed) return;
     // 개발 서버의 ?preview=in: 로그인·API 없이 응모 순간(요청 중 → 완료 → 도장)만 보여 준다. 운영 빌드에는 preview 값이 오지 않는다.
     if (p === 'in') { setPending(true); window.setTimeout(() => { setPending(false); setEntered(true); }, 400); return; }
-    if (!auth.authenticated) { keepEnterIntent(); auth.login(); return; }
+    if (!auth.authenticated) { keepEnterIntent(); markEnterInAddress(); auth.login(); return; }
     setPending(true); setError(false);
     try { apply({ ...await request('POST'), entered: true }); }
     catch { setError(true); }
@@ -177,6 +198,7 @@ export function RaffleEnterBlock() {
     {/* 페이지 첫 행동(대표 2026-11-23 X 홍보): 큰 응모 버튼(56) 바로 아래 두 걸음 ① 응모 누르기 ② 가입·로그인. 끝낸 걸음은 체크 */}
     <div className={styles.enterActions}>
       <div className={styles.enterCta}><RaffleEnterAction size="lg" /></div>
+      <RaffleInAppGuide />
       <ol className={styles.steps}>
         <RaffleStep order={1} done={r.entered} label={r.t('stepEnter')} />
         <RaffleStep order={2} done={r.signedIn} label={r.t(r.signedIn ? 'stepLoggedIn' : 'stepLogin')} />
@@ -199,6 +221,27 @@ export function RaffleEnterBlock() {
             : <p className={styles.enterStatus} data-state="entered"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>}
         </div>
       : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
+  </div>;
+}
+
+/** 앱 안 브라우저(X·Instagram·Facebook·TikTok·카카오톡 등, 로그인 화면과 같은 판별)에서는 Google 로그인이 막히고 X는 Safari로 넘기기도 무시한다.
+ * 비로그인에게 응모 버튼 바로 아래에 필수 안내 한 줄 + 링크 복사(?enter=1이 붙어 브라우저에서 로그인하면 바로 응모된다). */
+function RaffleInAppGuide() {
+  const r = useRaffle();
+  const [inApp, setInApp] = useState(false);
+  const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle');
+  useEffect(() => {
+    const standalone = (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches === true;
+    setInApp(requiresGoogleBrowserHandoff(navigator.userAgent, standalone));
+  }, []);
+  if (!inApp || !r.ready || r.signedIn || r.entered) return null;
+  const href = () => raffleEnterHref(window.location.href);
+  return <div className={styles.inApp} data-raffle-inapp>
+    <FanDisplay role="body" as="p">{r.t('inAppGuide')}</FanDisplay>
+    <FanAction type="button" variant="secondary" size="sm" onClick={async () => {
+      try { await navigator.clipboard.writeText(href()); setCopy('copied'); } catch { setCopy('failed'); }
+    }}>{copy === 'copied' ? r.t('copied') : r.t('copyLink')}</FanAction>
+    {copy === 'failed' ? <input className={styles.inAppLink} aria-label={r.t('copyLink')} readOnly value={href()} onFocus={event => event.currentTarget.select()} /> : null}
   </div>;
 }
 

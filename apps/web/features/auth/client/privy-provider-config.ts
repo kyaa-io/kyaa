@@ -3,6 +3,7 @@
 // its own copy for the direct tree; privy-provider-config.test.tsx holds the two equal (plan-b §0-7).
 import type { PrivyClientConfig } from "@privy-io/react-auth";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__privy-provider";
+import { messages as loginPageMessages } from "@/i18n/catalogs/components__login-page";
 import type { AppLocale } from "@/i18n/locales";
 import { translate } from "@/i18n/messages";
 
@@ -32,9 +33,8 @@ export function privyProviderConfig({ locale, authProvider, appleLoginEnabled, t
         ? appleLoginEnabled
           ? locale === "ko" ? "Google, Apple 또는 Privy Test Account 이메일로 로그인하세요." : translate(locale, localizedMessages.m9bbd915ffa25, "Sign in with Google, Apple or your Privy Test Account email.")
           : locale === "ko" ? "Google 계정 또는 Privy Test Account 이메일로 로그인하세요." : translate(locale, localizedMessages.m842d64f75fa5, "Sign in with Google or your Privy Test Account email.")
-        : appleLoginEnabled
-          ? locale === "ko" ? "Google 또는 Apple 계정으로 로그인하고 최애와 함께한 순간을 기록하세요." : translate(locale, localizedMessages.mfad7525856e8, "Sign in with Google or Apple to keep a record of moments with your favorites.")
-          : locale === "ko" ? "Google 계정으로 로그인하고 최애와 함께한 순간을 기록하세요." : translate(locale, localizedMessages.mfaf03be529aa, "Sign in with Google to keep a record of moments with your favorites."),
+        // Privy's own window opens for the in-app email code sign-in and the operator login (fan Google/Apple start headless), so it names no method.
+        : locale === "ko" ? "최애와 함께한 순간을 기록하세요." : translate(locale, loginPageMessages.m25a4dd3e23d7, "Keep a record of moments with your favorites."),
     },
     embeddedWallets: {
       ethereum: { createOnLogin: authProvider === "cognito" ? "off" : "all-users" },
