@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { board, FPS } from "@/features/chemi/games/engine";
@@ -20,9 +21,10 @@ const auth = vi.hoisted(() => ({
 vi.mock("@/features/auth/client/cognito-auth", () => ({
   useByUsAuth: () => auth,
 }));
+// jsdom 은 사진을 받지 않으므로, 붙는 즉시 다 받은 것으로 알린다(미리 받기가 제한 시간까지 기다리지 않게).
 vi.mock("next/image", () => ({
-  default: ({ src, alt }: { src: string; alt: string }) => (
-    <img src={src} alt={alt} />
+  default: ({ src, alt, onLoad }: { src: string; alt: string; onLoad?: () => void }) => (
+    <img src={src} alt={alt} ref={(node) => { if (node && onLoad) queueMicrotask(onLoad); }} />
   ),
 }));
 const copy = getMatchCopy("ko");
@@ -129,7 +131,8 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   }
   await screen.findByRole("button", { name: copy.share });
   expect(requests.filter((r) => r.action === "finish")).toHaveLength(1);
-  expect(screen.getByRole("img", { name: "10" }).closest("b")).toHaveTextContent(/EXP$/);
+  expect(screen.getByText(copy.care.replace("{name}", copy.elina))).toBeInTheDocument();
+  expect(screen.getByText("+10")).toBeInTheDocument();
 }, 20000);
 
 it("waits for explicit 20P confirmation after the free games run out", async () => {
@@ -185,6 +188,9 @@ it("shows the rules and a free 2x2 practice before the first game", async () => 
   expect(screen.getByRole("button", { name: copy.skip })).toBeEnabled();
   // 연습 판 [0,1,1,0]: 1·2번은 다른 사진(틀림), 1·4번과 2·3번이 짝이다.
   const card = (n: number) => screen.getByRole("button", { name: new RegExp("^" + copy.card + " " + n + " ") });
+  // 처음 2초는 앞면을 보여 주고 누를 수 없다.
+  expect(card(1)).toBeDisabled();
+  await waitFor(() => expect(card(1)).toBeEnabled(), { timeout: 3000 });
   fireEvent.click(card(1));
   fireEvent.click(card(2));
   expect(await screen.findAllByText(copy.wrong)).toHaveLength(2);
@@ -255,4 +261,78 @@ it("remembers the start key until the game arrives, then the game itself", async
   await screen.findByRole("button", { name: copy.pause });
   expect(JSON.parse(seen[0] ?? "{}")).toHaveProperty("key");
   expect(JSON.parse(sessionStorage.getItem("chemi.match.pending") ?? "{}")).toEqual({ playId: "local-round" });
+});
+
+it("tells an expired sign-in apart from a server error in the lobby (DF-STATE-008)", async () => {
+  vi.stubGlobal("fetch", async () => Response.json({ error: "AUTH_REQUIRED" }, { status: 401 }));
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent(copy.authExpired);
+  fireEvent.click(screen.getByRole("button", { name: copy.signIn }));
+  expect(auth.login).toHaveBeenCalled();
+  expect(screen.queryByRole("button", { name: copy.retry })).toBeNull();
+});
+
+it("gives up on a silent lobby after 20 seconds and offers a retry (DF-STATE-007)", async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  try {
+    vi.stubGlobal("fetch", (_path: string, init: RequestInit) => new Promise((_, reject) => {
+      init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+    }));
+    render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+    await act(async () => { await vi.advanceTimersByTimeAsync(19_000); });
+    expect(screen.queryByRole("alert")).toBeNull();
+    await act(async () => { await vi.advanceTimersByTimeAsync(1_500); });
+    expect(screen.getByRole("alert")).toHaveTextContent(copy.error);
+    expect(screen.getByRole("button", { name: copy.retry })).toBeInTheDocument();
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("says the record is not saved yet and keeps the retry beside it (DF-GAME-006)", async () => {
+  vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 10, 22, 14));
+  Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
+    configurable: true, value(this: HTMLDialogElement) { this.open = true; },
+  });
+  let failFinish = true;
+  vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.action === "lobby") return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, ranking: [] });
+    if (body.action === "start") return Response.json({ playId: "local-round", seed: 12, game: "match" });
+    if (body.action === "finish")
+      return failFinish ? Response.json({ error: "CHEMI_UNAVAILABLE" }, { status: 503 }) : Response.json({ score: body.score, exp: 0 });
+    throw Error(body.action);
+  });
+  let frame: FrameRequestCallback | undefined;
+  let now = 1000;
+  vi.spyOn(performance, "now").mockImplementation(() => now);
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { frame = callback; return 1; });
+  vi.stubGlobal("cancelAnimationFrame", () => { frame = undefined; });
+  const advance = (ticks: number) => { now += ((ticks + 0.01) * 1000) / FPS; act(() => frame?.(now)); };
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  await waitFor(() => expect(screen.getByRole("button", { name: copy.start })).toBeEnabled());
+  fireEvent.click(screen.getByRole("button", { name: copy.start }));
+  await screen.findByRole("button", { name: copy.pause });
+  advance(1);
+  expect(screen.getByText(copy.goal.replace("{s}", "30").replace("{n}", "4"))).toBeInTheDocument();
+  const deck = board(12, "match", 1);
+  for (let photo = 0; photo < 4; photo++) {
+    for (const i of deck.flatMap((n, k) => (n === photo ? [k] : []))) {
+      fireEvent.click(screen.getByRole("button", { name: new RegExp("^" + copy.card + " " + (i >= 4 ? i + 2 : i + 1) + " ") }));
+      advance(1);
+      advance(6);
+    }
+  }
+  expect(screen.getByText(copy.clearBonus)).toBeInTheDocument();
+  expect(screen.queryByText("CLEAR")).toBeNull();
+  expect(screen.getByText(copy.nextGoal.replace("{n}", "6").replace("{s}", "45"))).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: copy.result }));
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent(copy.saveFailed);
+  expect(alert).not.toHaveTextContent(copy.error);
+  failFinish = false;
+  fireEvent.click(within(alert).getByRole("button", { name: copy.retry }));
+  expect(await screen.findByText(copy.received)).toBeInTheDocument();
+  expect(screen.queryByText(copy.saveFailed)).toBeNull();
 });

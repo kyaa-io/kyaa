@@ -7,6 +7,8 @@ import Image from "next/image";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanText } from "@/components/fan-ui/fan-text";
+import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
+import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import type { CSSProperties, ReactNode } from "react";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
@@ -116,6 +118,21 @@ type Challenge = {
   ranking: Row[];
   available: boolean;
 };
+/** 화면에 보이는 오류 한 가지. 문구는 copy 의 같은 이름 키. */
+type ErrorKind = "error" | "insufficient" | "authExpired" | "saveFailed";
+function errorKind(e: unknown, fallback: ErrorKind = "error"): ErrorKind {
+  const code = String(e);
+  if (code.includes("INSUFFICIENT")) return "insufficient";
+  if (code.includes("AUTH_EXPIRED")) return "authExpired";
+  return fallback;
+}
+/** 응답이 20초 안에 오지 않으면 실패로 보고 다시 시도를 보인다(운세 흐름의 제한과 같은 결). */
+const REQUEST_TIMEOUT = 20_000;
+/** 미리 보기 전에 사진을 받아 두는 최대 시간. 넘으면 받은 만큼으로 시작한다. */
+const PRELOAD_LIMIT = 8_000;
+function fill(text: string, values: Record<string, string | number>) {
+  return text.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ""));
+}
 type Finish = { excitement?: number; titleStage?: number; score: number; exp: number; shareId?: string };
 type Props = {
   copy: MatchCopy;
@@ -127,11 +144,13 @@ type Props = {
 function StageAction({
   children,
   disabled,
+  loading,
   helperText,
   onClick,
 }: {
   children: ReactNode;
   disabled?: boolean;
+  loading?: boolean;
   helperText?: string;
   onClick: () => void;
 }) {
@@ -139,6 +158,7 @@ function StageAction({
     <FanAction
       variant="primary"
       disabled={disabled}
+      loading={loading}
       onClick={onClick}
       helperText={helperText}
     >
@@ -190,6 +210,12 @@ function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, numb
   </dl>;
 }
 
+/** 카드 앞면 사진의 속성. 미리 받아 두는 숨은 사진도 같은 속성이라 같은 주소를 받는다. */
+function cardImage(src: string) {
+  return { width: 640, height: 800, sizes: "(min-width: 768px) 210px, 33vw", src,
+    unoptimized: src.startsWith("/chemi/match/") || src.startsWith("/api/") };
+}
+
 /** 카드 한 장: 뒷면 무늬·앞면 사진·맞춤 표시·틀림 표시(빨간 테두리 + '틀림' 글자 + 짧은 흔들림). */
 function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLabel, onClick }: {
   open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number;
@@ -199,8 +225,7 @@ function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLa
     <div className={styles.card} data-open={open} data-matched={matched} data-wrong={wrong || undefined}>
       <FanAction variant="text" disabled={disabled} ariaLabel={label} onClick={onClick}>
         {open ? (
-          <Image width={640} height={800} sizes="(min-width: 768px) 210px, 33vw"
-            unoptimized={src.startsWith("/chemi/match/") || src.startsWith("/api/")} src={src} alt="" />
+          <Image {...cardImage(src)} alt="" />
         ) : (
           <span aria-hidden="true" />
         )}
@@ -220,6 +245,12 @@ const PRACTICE = [0, 1, 1, 0] as const;
 
 /** 방법 안내의 2×2 연습 판: 판을 쓰지 않고 기록도 남지 않는다. */
 function Practice({ faces, copy, onDone }: { faces: readonly string[]; copy: MatchCopy; onDone: () => void }) {
+  // 실제 판처럼 처음에 앞면을 잠깐 보여 준다(안내 1번과 같게).
+  const [peek, setPeek] = useState(true);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setPeek(false), 2000);
+    return () => window.clearTimeout(timer);
+  }, []);
   const [open, setOpen] = useState<number[]>([]);
   const [matched, setMatched] = useState(0);
   const [wrong, setWrong] = useState(false);
@@ -248,11 +279,11 @@ function Practice({ faces, copy, onDone }: { faces: readonly string[]; copy: Mat
     <div className={styles.practice} data-columns="2">
       {PRACTICE.map((face, index) => {
         const isMatched = Boolean(matched & (1 << index));
-        const isOpen = isMatched || open.includes(index);
+        const isOpen = peek || isMatched || open.includes(index);
         return <MatchCard key={index} open={isOpen} matched={isMatched} wrong={wrong && open.includes(index)}
           src={faces[face]} number={index + 1} wrongLabel={copy.wrong}
           label={[copy.card, index + 1, isMatched ? copy.matched : isOpen ? copy.openCard : copy.closedCard].join(" ")}
-          disabled={isMatched || open.includes(index) || open.length === 2} onClick={() => flip(index)} />;
+          disabled={peek || isMatched || open.includes(index) || open.length === 2} onClick={() => flip(index)} />;
       })}
     </div>
   );
@@ -345,7 +376,9 @@ function Session({
   const [priorRank, setPriorRank] = useState<number | null>(null);
   const [result, setResult] = useState<Finish | null>(null);
   const [pendingFinish, setPendingFinish] = useState<Submission | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ErrorKind | "">("");
+  const [warm, setWarm] = useState<readonly string[]>([]);
+  const warming = useRef<{ left: Set<string>; done: () => void } | null>(null);
   const [paying, setPaying] = useState(false);
   const [working, setWorking] = useState(false);
   const [sound, setSound] = useState(false);
@@ -369,17 +402,28 @@ function Session({
     ): Promise<T> => {
       const token = anonymous ? null : await tokenGetter.current();
       if (!anonymous) accessToken.current = token;
-      const response = await fetch(path, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          ...(token ? { authorization: "Bearer " + token } : {}),
-        },
-        body: JSON.stringify(body),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(String(data.error ?? response.status));
-      return data;
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+      try {
+        const response = await fetch(path, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            ...(token ? { authorization: "Bearer " + token } : {}),
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+        const data = await response.json().catch(() => ({}));
+        const code = String(data.error ?? response.status);
+        // 로그인이 풀리면 다시 시도로는 풀리지 않는다. 케미가 직접 거절한 403(CHEMI_*)은 로그인 문제가 아니다.
+        if (response.status === 401 || (response.status === 403 && !code.startsWith("CHEMI_")))
+          throw new Error("AUTH_EXPIRED");
+        if (!response.ok) throw new Error(code);
+        return data;
+      } finally {
+        window.clearTimeout(timer);
+      }
     },
     [],
   );
@@ -399,16 +443,16 @@ function Session({
             setCharacter(data.character);
           }
         })
-        .catch(() => {
-          if (active) setError(copy.error);
+        .catch((e) => {
+          if (active) setError(errorKind(e));
         });
     if (!auth.authenticated && !share) {
       void call<{ ranking: Row[] }>({ action: "ranking" }, undefined, true)
         .then((data) => {
           if (active) setPublicRows(data.ranking);
         })
-        .catch(() => {
-          if (active) setError(copy.error);
+        .catch((e) => {
+          if (active) setError(errorKind(e));
         });
     }
     if (auth.authenticated) {
@@ -426,14 +470,14 @@ function Session({
             setSound(data.sound);
           }
         })
-        .catch(() => {
-          if (active) setError(copy.error);
+        .catch((e) => {
+          if (active) setError(errorKind(e));
         });
     }
     return () => {
       active = false;
     };
-  }, [auth.ready, auth.authenticated, call, share, load, copy.error]);
+  }, [auth.ready, auth.authenticated, call, share, load]);
   useEffect(
     () => () => {
       void audio.current?.close().catch(() => {});
@@ -441,7 +485,7 @@ function Session({
     [],
   );
 
-  async function action(work: () => Promise<void>) {
+  async function action(work: () => Promise<void>, fallback: ErrorKind = "error") {
     if (inFlight.current) return;
     inFlight.current = true;
     setWorking(true);
@@ -449,13 +493,34 @@ function Session({
     try {
       await work();
     } catch (e) {
-      setError(
-        String(e).includes("INSUFFICIENT") ? copy.insufficient : copy.error,
-      );
+      setError(errorKind(e, fallback));
     } finally {
       inFlight.current = false;
       setWorking(false);
     }
+  }
+  /** 이 최애로 하는 판의 사진 순서: 고른 최애 사진 먼저, 나머지 두 최애 사진이 뒤에. */
+  function facesFor(who: Character) {
+    return [photos[who], ...characters.filter(c => c !== who).map(c => photos[c])].flatMap(person => person.cards);
+  }
+  /** 사진을 숨은 칸에 먼저 받아 둔다. 다 받거나 제한 시간이 지나면 끝난다. */
+  function preload(srcs: readonly string[]) {
+    return new Promise<void>((resolve) => {
+      const finish = () => {
+        window.clearTimeout(timer);
+        warming.current = null;
+        resolve();
+      };
+      const timer = window.setTimeout(finish, PRELOAD_LIMIT);
+      warming.current = { left: new Set(srcs), done: finish };
+      setWarm(srcs);
+    });
+  }
+  function warmed(src: string) {
+    const current = warming.current;
+    if (!current) return;
+    current.left.delete(src);
+    if (!current.left.size) current.done();
   }
   async function start(who: Character, extra = false, fromGuide = false) {
     if (!auth.authenticated && !share) {
@@ -511,16 +576,21 @@ function Session({
             setChallenge((prev) => prev && { ...prev, available: false });
             return;
           }
+          window.removeEventListener("pagehide", cancelOnExit);
           setStage("empty");
           if (auth.authenticated)
             setLobby(await call<Lobby>({ action: "lobby" }));
           return;
         }
-        throw e;
-      } finally {
         window.removeEventListener("pagehide", cancelOnExit);
+        throw e;
       }
+      // 미리 보기가 세는 동안 카드가 다 보이게, 1라운드 사진을 먼저 받고 판을 연다. 받는 동안 떠나도 판은 돌려받는다.
+      const cards = facesFor(who);
+      await preload(cards.slice(0, LEVELS[0].pairs));
+      window.removeEventListener("pagehide", cancelOnExit);
       if (!trial) writePending({ playId: next.playId });
+      setWarm(cards);
       startKey.current.choice = "";
       setEquipped(false);
       setPriorRank(lobby?.ranking.find(row => row.isMe)?.place ?? null);
@@ -562,7 +632,7 @@ function Session({
       setResult(data);
       setPendingFinish(null);
       setLobby(await call<Lobby>({ action: "lobby" }));
-    });
+    }, "saveFailed");
   }
   useEffect(() => {
     if (stage !== "empty") return;
@@ -704,7 +774,7 @@ function Session({
       }
     } catch (e) {
       if (!(e instanceof DOMException && e.name === "AbortError"))
-        setError(copy.error);
+        setError("error");
     }
   }
   const art = photos[character];
@@ -716,8 +786,7 @@ function Session({
     share && stage === "start"
       ? (challenge?.ranking ?? [])
       : (lobby?.ranking ?? challenge?.ranking ?? publicRows ?? []);
-  const faces = [art, ...characters.filter(c => c !== character).map(c => photos[c])]
-    .flatMap(person => person.cards);
+  const faces = facesFor(character);
   const active = stage === "play" && view;
   const levelList = <ol className={styles.levelList} aria-label={copy.round}>
     {LEVELS.map(({columns, pairs, seconds}, i) => {
@@ -774,29 +843,39 @@ function Session({
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
         <FanHeading as="h1">{active ? copy.round + " " + active.stage + " / 5" : title}</FanHeading>
-        <FanIconButton
-          type="button"
-          disabled={working}
-          aria-label={copy.sound}
-          aria-pressed={sound}
-          onClick={toggleSound}
-        >
-          <FanIcon icon={sound ? Volume2 : VolumeX} />
-        </FanIconButton>
-        {active && (
+        <span className={styles.tools}>
           <FanIconButton
             type="button"
-            aria-label={copy.pause}
-            onClick={() => setStage("pause")}
+            disabled={working}
+            aria-label={copy.sound}
+            aria-pressed={sound}
+            onClick={toggleSound}
           >
-            <FanIcon icon={Pause} />
+            <FanIcon icon={sound ? Volume2 : VolumeX} />
           </FanIconButton>
-        )}
+          {active && (
+            <FanIconButton
+              type="button"
+              aria-label={copy.pause}
+              onClick={() => setStage("pause")}
+            >
+              <FanIcon icon={Pause} />
+            </FanIconButton>
+          )}
+        </span>
       </header>
-      {error && (
+      {/* 판 사진을 미리 받는 숨은 칸(화면에 보이지 않음). */}
+      <div className={styles.warm} aria-hidden="true">
+        {warm.map((src) => (
+          <Image key={src} {...cardImage(src)} alt="" loading="eager" onLoad={() => warmed(src)} onError={() => warmed(src)} />
+        ))}
+      </div>
+      {error && stage !== "result" && (
         <div role="alert" className={styles.error}>
-          {error}{" "}
-          {stage === "start" && (
+          <FanText role="item">{copy[error]}</FanText>
+          {error === "authExpired" ? (
+            <FanAction onClick={() => auth.login()}>{copy.signIn}</FanAction>
+          ) : stage === "start" && (
             <FanAction onClick={() => setLoad((v) => v + 1)}>
               {copy.retry}
             </FanAction>
@@ -868,7 +947,7 @@ function Session({
                 </div>
                 {levelList}
                 <div className={styles.startAction}>
-                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} onClick={() => void start(character)}
+                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => void start(character)}
                     helperText={lobby ? `${copy.freePlays} ${lobby.freeRemaining}` : undefined}>
                     {copy.start}
                   </StageAction>
@@ -910,7 +989,8 @@ function Session({
             <>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong>
                 <FanText role="label" className={styles.status} aria-live="polite" data-tone={active.preview ? "preview" : active.second >= 0 ? "wrong" : undefined}>
-                  {active.preview ? `${copy.memorize} · ${active.preview}` : active.second >= 0 ? copy.wrong : ""}
+                  {active.preview ? `${copy.memorize} · ${active.preview}` : active.second >= 0 ? copy.wrong
+                    : fill(copy.goal, { n: LEVELS[active.stage - 1].pairs, s: LEVELS[active.stage - 1].seconds })}
                 </FanText>
               </div>
               <progress aria-label={copy.time} data-urgent={active.remaining <= FPS * 10} value={active.remaining} max={LEVELS[active.stage-1].seconds * FPS} />
@@ -988,7 +1068,12 @@ function Session({
               </div>
               {active.cleared && <ClearDialog label={copy.completed} recordLabel={copy.record} art={art.scene} portrait={art.portrait} name={copy[character]}
                 round={active.stage} rounds={LEVELS.length} score={active.score} locale={locale}
-                lines={[[copy.pairs, active.stagePairs * 100], ["CLEAR", 500], [copy.time, Math.floor(active.remaining / FPS) * 10], [copy.accuracy, Math.floor(active.stagePairs ** 2 * 100 / active.attempts)]]}>
+                lines={[[copy.pairs, active.stagePairs * 100], [copy.clearBonus, 500], [copy.time, Math.floor(active.remaining / FPS) * 10], [copy.accuracy, Math.floor(active.stagePairs ** 2 * 100 / active.attempts)]]}>
+                {active.stage < LEVELS.length && (
+                  <FanText as="p" role="meta" className={styles.nextGoal}>
+                    {fill(copy.nextGoal, { n: LEVELS[active.stage].pairs, s: LEVELS[active.stage].seconds })}
+                  </FanText>
+                )}
                 <div className={styles.clearActions}>
                   <StageAction onClick={nextLevel}>{copy.round} {active.stage+1} · {copy.start}</StageAction>
                   <FanAction onClick={finishLevel}>{copy.result}</FanAction>
@@ -1084,7 +1169,13 @@ function Session({
                 {view.cleared ? copy.completed : copy.timeUp}
               </FanHeading>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{view.score.toLocaleString(locale)}</strong></div>
-              <ScoreLines locale={locale} lines={[[copy.pairs, view.pairs * 100], ["CLEAR", view.clearPoints], [copy.time, view.timePoints], [copy.accuracy, view.accuracyPoints]]} />
+              {pendingFinish && !working && (
+                <div role="alert" className={styles.saveFail}>
+                  <FanText role="item">{copy[error === "authExpired" ? "authExpired" : "saveFailed"]}</FanText>
+                  <FanAction onClick={() => void submit(pendingFinish)}>{copy.retry}</FanAction>
+                </div>
+              )}
+              <ScoreLines locale={locale} lines={[[copy.pairs, view.pairs * 100], [copy.clearBonus, view.clearPoints], [copy.time, view.timePoints], [copy.accuracy, view.accuracyPoints]]} />
               <div className={styles.souvenir}>
                 {faces.slice(0, 5).map((src) => (
                   <Image
@@ -1123,13 +1214,20 @@ function Session({
                   </div>
                 )}
               </dl>
-              {working && <p role="status">{copy.loading}</p>}
-              {result && result.exp > 0 && (
-                <p className={`${styles.detail} ${styles.gain}`}>
+              {working && <FanSkeletonRows rows={1} ariaLabel={copy.loading} />}
+              {result && auth.authenticated && (
+                // 친밀 한 줄: 최애 런 결과와 같은 이름·자리(K-df2f2e 게임 = 신남).
+                <div className={`${styles.detail} ${styles.gain}`}>
                   <Image width={112} height={112} alt="" src={art.portrait} />
-                  <span>{copy[character]} · {copy.experience}</span>
-                  <b>+<RollingNumber value={result.exp} initialFromZero /> EXP</b>
-                </p>
+                  <span>
+                    <FanText role="item">{fill(copy.care, { name: copy[character] })}</FanText>
+                    {result.excitement !== undefined && (
+                      <FanText role="meta"> · {copy.excitement} +{result.excitement}</FanText>
+                    )}
+                  </span>
+                  <FanText role="item" className={styles.gainValue}>{result.exp > 0 ? `+${result.exp.toLocaleString(locale)}` : copy.received}</FanText>
+                  <FanSectionLink href={`/chemi?tab=growth&locale=${locale}&character=${character}`}>{fill(copy.roomOf, { name: copy[character] })}</FanSectionLink>
+                </div>
               )}
               {result?.titleStage && <div className={styles.detail}>
                 <b>{copy.round} {result.titleStage} · {copy.completed}</b>
@@ -1138,15 +1236,7 @@ function Session({
                   setEquipped(true);
                 })}>{equipped && <FanIcon icon={Check} size={16} />}{copy.equip}</FanAction>
               </div>}
-              {result?.excitement !== undefined && <div className={styles.detail}>
-                <span>{copy[character]} · {copy.excitement} +{result.excitement}</span>
-                <FanAction href={`/chemi?tab=growth&locale=${locale}&character=${character}`}>{copy.room}</FanAction>
-              </div>}
-              {pendingFinish && !working && (
-                <FanAction onClick={() => void submit(pendingFinish)}>
-                  {copy.retry}
-                </FanAction>
-              )}
+
               {result && (
                 <StageAction
                   onClick={() => {
@@ -1175,8 +1265,8 @@ function Session({
             <Rankings rows={rows} copy={copy} full={Boolean(active)} locale={locale} />
           ) : (
             <section aria-busy={!error} className={styles.ranking}>
-              <FanHeading>{copy.ranking}</FanHeading>
-              {!error && <p role="status">{copy.loading}</p>}
+              <FanHeading as="h2">{copy.ranking}</FanHeading>
+              {!error && <FanSkeletonRows rows={3} ariaLabel={copy.loading} />}
             </section>
           ))}
       </div>
