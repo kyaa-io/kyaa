@@ -88,7 +88,8 @@
     "release-notes/2026-11-23-chemi-ask-safety.json",
     "release-notes/2026-11-23-chemi-run-shield-music.json",
     "release-notes/2026-11-23-chemi-saju-chart.json",
-    "release-notes/2026-11-23-chemi-games-extra-play.json"
+    "release-notes/2026-11-23-chemi-games-extra-play.json",
+    "release-notes/2026-11-23-chemi-run-again.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
