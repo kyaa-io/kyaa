@@ -216,8 +216,8 @@ function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, numb
 }
 
 /** 카드 한 장: 뒷면 무늬·앞면 사진·맞춤 표시·틀림 표시(빨간 테두리 + '틀림' 글자 + 짧은 흔들림). */
-function MatchCard({ open, matched, wrong, src, label, number, faceNumber, variant, disabled, wrongLabel, onClick, onReady }: {
-  open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number; faceNumber?: number; variant: number;
+function MatchCard({ open, matched, wrong, src, label, number, faceNumber, variant = 0, disabled, wrongLabel, onClick, onReady }: {
+  open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number; faceNumber?: number; variant?: number;
   disabled: boolean; wrongLabel: string; onClick: () => void; onReady?: (src: string) => void;
 }) {
   // 뒤집힌 카드도 사진을 미리 받아 둔다(보이지 않게). 미리 보기가 시작될 때 이미 떠 있어야 한다(DF-GAME-002).

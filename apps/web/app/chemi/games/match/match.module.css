@@ -842,3 +842,7 @@
 }
 .card[data-variant="2"]::before { border-left-style: dashed; border-color: var(--color-accent); }
 .card[data-variant="3"]::before { border-left-style: dotted; border-color: var(--color-accent-ink); }
+@media (width >= 48rem) {
+  .roundTable .stepName { flex-direction: row; align-items: end; }
+  .layout[data-lobby="true"] .roundTable .levelList li { align-items: end; }
+}
