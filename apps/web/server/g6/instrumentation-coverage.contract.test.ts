@@ -10,6 +10,7 @@ const signupMigration = readFileSync(resolve(root, "supabase/migrations/20260911
 const signupClient = readFileSync(resolve(process.cwd(), "features/analytics/client/signup-funnel-tracker.ts"), "utf8");
 const client = readFileSync(resolve(process.cwd(), "features/analytics/client/product-event-client.ts"), "utf8");
 const handoff = readFileSync(resolve(process.cwd(), "components/landing-browser-dialog.tsx"), "utf8");
+const impressions = readFileSync(resolve(process.cwd(), "features/analytics/client/observe-ad-impressions.ts"), "utf8");
 const outbound = readFileSync(resolve(process.cwd(), "features/analytics/client/outbound-link-tracker.tsx"), "utf8");
 const live = readFileSync(resolve(process.cwd(), "features/live/ui/live-event-screen.tsx"), "utf8");
 const creator = readFileSync(resolve(process.cwd(), "components/celebrity-fan-page.tsx"), "utf8");
@@ -20,7 +21,7 @@ const share = readFileSync(resolve(process.cwd(), "features/analytics/client/sha
 
 describe("Phase 6 instrumentation coverage", () => {
   it("covers every v1 name through a client surface or committed server projection", () => {
-    const inventory = [client, handoff, outbound, live, creator, benefit, migration, signupMigration, signupClient, funnelMigration, pageView, share].join("\n");
+    const inventory = [client, handoff, outbound, impressions, live, creator, benefit, migration, signupMigration, signupClient, funnelMigration, pageView, share].join("\n");
     for (const name of PRODUCT_EVENT_NAMES) expect(inventory).toContain(name);
   });
   it("projects ticket events only after a ledger insert with the ledger row as stable source", () => {

@@ -1,0 +1,5 @@
+{
+  "changes": ["관리자 방문 통계에서 비피오와 칠사 광고가 몇 번 보였고 몇 번 클릭됐는지 월별로 확인하고 내려받을 수 있어요.", "광고가 화면에 절반 이상 1초 동안 보이면 같은 탭에서 한 번만 노출로 세요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/admin/traffic",
+  "images": ["release-notes/images/2026-11-23-banner-month-390.png", "release-notes/images/2026-11-23-banner-month-1440.png"]
+}

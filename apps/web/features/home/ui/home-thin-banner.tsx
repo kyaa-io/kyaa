@@ -21,7 +21,7 @@ export function ThinBanner({ banner, locale, size = "thin" }: { banner: HomeBann
     <img src={size === "side" ? undefined : mobile.url} width={mobile.width} height={mobile.height} alt={banner.alt || banner.title} loading="lazy" decoding="async" />
   </picture>;
   const mark = ad ? <FanTag tone="neutral" className={styles.tag}>{bannerCategoryLabel("ad", locale)}</FanTag> : null;
-  return <div className={size === "mid" ? `${styles.strip} ${styles.stripMid}` : size === "side" ? `${styles.strip} ${styles.stripSide}` : styles.strip} data-home-thin-banner data-banner-id={banner.id} data-banner-size={size}>
+  return <div className={size === "mid" ? `${styles.strip} ${styles.stripMid}` : size === "side" ? `${styles.strip} ${styles.stripSide}` : styles.strip} data-home-thin-banner data-banner-id={banner.id} data-ad-banner={banner.category === "ad" ? banner.id : undefined} data-banner-size={size}>
     {external
       ? <a className={styles.link} href={href} target="_blank" rel={ad ? "sponsored noopener noreferrer" : "noopener noreferrer"} data-outbound-placement="content" data-outbound-kind="external">{picture}{mark}</a>
       : <Link className={styles.link} href={href as Route}>{picture}{mark}</Link>}
