@@ -223,8 +223,11 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     else if (failed === "start") again();
     else void load();
   }
+  const failureMessage = locale === "ko" && failed === "finish" ? "이번 판의 점수를 저장하지 못했어요."
+    : locale === "ko" && failed === "load" ? "이번 주 순위를 불러오지 못했어요."
+    : `${failureSubject} · ${copy.error}`;
   const errorLine = failed && <div className={styles.error} role="alert">
-    <FanText role="meta">{failureSubject} · {copy.error}</FanText>
+    <FanText role="meta">{failureMessage}</FanText>
     <FanAction size="sm" disabled={busy} onClick={retryFailed}>{copy.retry}</FanAction>
   </div>;
 
