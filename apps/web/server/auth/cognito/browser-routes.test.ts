@@ -81,6 +81,14 @@ it("starts Kakao only when Cognito Kakao login is enabled",async()=>{
  const response=await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=kakao"));
  expect(response.status).toBe(303);expect(new URL(response.headers.get("location")!).searchParams.get("identity_provider")).toBe("Kakao");
 });
+it("asks Google for the account picker on every start and leaves Apple unchanged", async () => {
+ const google=new URL((await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=google"))).headers.get("location")!);
+ expect(google.searchParams.get("identity_provider")).toBe("Google");
+ expect(google.searchParams.get("prompt")).toBe("select_account");
+ expect(google.searchParams.has("login_hint")).toBe(false);
+ const apple=new URL((await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=apple"))).headers.get("location")!);
+ expect(apple.searchParams.has("prompt")).toBe(false);
+});
 it("starts authorization while global legacy inventory is incomplete", async () => {
  mock.rpc.mockResolvedValue({data:false,error:null});
  const response=await start(new Request("https://kyaa.io/api/auth/cognito/start?provider=apple"));
