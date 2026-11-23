@@ -17,6 +17,7 @@ export function SelectStage({ character, pickDisabled, onPick, copy, locale, nam
   challenge?: Challenge; waiting: boolean; spent: boolean; startLabel: string; startDisabled: boolean; onStart: () => void; onAllRanks: () => void;
   errorLine: ReactNode; reminder: ReactNode;
 }) {
+  const [action, remaining] = startLabel.split(" · ");
   const number = new Intl.NumberFormat(locale);
   // One course a day, the same for everyone, changing at midnight in Korea.
   const today = new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date());
@@ -49,7 +50,7 @@ export function SelectStage({ character, pickDisabled, onPick, copy, locale, nam
         {waiting ? !errorLine && <FanSkeleton shape="block" className={styles.ctaSkeleton} /> : spent ? <>
           <FanText as="p" role="item">{copy.done}</FanText>
           {reminder}
-        </> : <FanAction variant="primary" fullWidth disabled={startDisabled} onClick={onStart}>{startLabel}</FanAction>}
+        </> : <>{remaining && <FanText as="p" role="meta">{remaining}</FanText>}<FanAction variant="primary" fullWidth disabled={startDisabled} onClick={onStart}>{action}</FanAction></>}
       </div>
     </div>
   </div>;

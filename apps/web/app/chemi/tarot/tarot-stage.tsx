@@ -9,7 +9,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
-import { ChevronDown, ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
+import { ChevronDown } from "@/components/fan-ui/fan-icons";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -144,12 +144,7 @@ export function TarotStage(props: Props) {
           <img src={`/chemi/tarot/scene-${character}-p.webp`} alt={uiText("candleRoom", { name: person.name })} />
         </picture>
       </div>
-      {entry ? (
-        <>
-          <FanAction className={`${styles.turn} ${styles.prev}`} variant="text" ariaLabel={uiText("prevStar")} leadingIcon={<FanIcon icon={ChevronLeft} />} onClick={() => turn(-1)} />
-          <FanAction className={`${styles.turn} ${styles.next}`} variant="text" ariaLabel={uiText("nextStar")} leadingIcon={<FanIcon icon={ChevronRight} />} onClick={() => turn(1)} />
-        </>
-      ) : null}
+
 
       <div className={styles.table} data-pick={step === "pick" || undefined}>
         {revisit ? (

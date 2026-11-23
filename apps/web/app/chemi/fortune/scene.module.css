@@ -70,8 +70,8 @@
   height: var(--min-target);
   border-radius: 50%;
   object-fit: cover;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
+  outline: 1px solid transparent;
+  outline-offset: 1px;
 }
 .pickItem[aria-pressed="true"] {
   color: var(--color-accent-ink);

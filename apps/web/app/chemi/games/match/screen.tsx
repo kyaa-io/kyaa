@@ -19,6 +19,7 @@ import { FanIcon } from "@/components/fan-ui/fan-icon";
 import {
   Check,
   ChevronLeft,
+  Music2,
   Pause,
   Volume2,
   VolumeX,
@@ -338,7 +339,7 @@ function Rankings({
         {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, index) => (
           <li data-row="" key={`vacant-${index}`}>
             <b>{displayed.length + index + 1}</b><span className={styles.avatar} aria-hidden="true" />
-            <span aria-label={copy.emptyRanking}>—</span><span /><b>0</b>
+            <FanText role="meta">{copy.emptyRanking}</FanText>
           </li>
         ))}
       </ol>
@@ -787,19 +788,20 @@ function Session({
       ? (challenge?.ranking ?? [])
       : (lobby?.ranking ?? challenge?.ranking ?? publicRows ?? []);
   const faces = facesFor(character);
+  const paidStart = lobby?.freeRemaining === 0 && lobby.extraRemaining > 0 && lobby.extraCost > 0;
   const active = stage === "play" && view;
   const levelList = <ol className={styles.levelList} aria-label={copy.round}>
     {LEVELS.map(({columns, pairs, seconds}, i) => {
       const rows = Math.ceil(pairs * 2 / columns);
       return <li data-row="" key={pairs} aria-current={active && active.stage === i+1 ? "step" : undefined}
-        aria-label={`${copy.round} ${i + 1} · ${columns}×${rows} · ${clock(seconds * FPS)}`}>
+        aria-label={`${copy.round} ${i + 1} · ${fill(copy.goal, { n: pairs, s: seconds })}`}>
         <span className={styles.stepName} aria-hidden="true">
           <b>{i + 1}</b>
           <span className={styles.stepGrid} style={{ "--columns": columns } as CSSProperties}>
             {Array.from({ length: columns * rows }, (_, cell) => <i key={cell} />)}
           </span>
         </span>
-        <span aria-hidden="true">{clock(seconds * FPS)}</span>
+        <span aria-hidden="true">{locale === "ko" ? `${pairs}쌍 · ${seconds}초` : fill(copy.goal, { n: pairs, s: seconds })}</span>
       </li>;
     })}
   </ol>;
@@ -937,15 +939,16 @@ function Session({
                 <div className={styles.lobbyHero}>
                   {tallScene}
                   {/* 기획 08-1: 판 정보의 '음악' 줄. 이름표를 붙여 사진 설명으로 읽히지 않게 한다. */}
-                  <p><FanText role="meta">{copy.sound}</FanText> <FanText role="label">{(locale === "ko" ? ["매직 퍼즐 1", "매직 퍼즐 2", "코지 퍼즐 1"] : ["Magic Puzzle 1", "Magic Puzzle 2", "Cozy Puzzle 1"])[characters.indexOf(character)]}</FanText></p>
+                  <p><FanIcon icon={Music2} size={16} /><FanText role="meta">{locale === "ko" ? "배경음악" : copy.sound} ·</FanText> <FanText role="label">{(locale === "ko" ? ["매직 퍼즐 1", "매직 퍼즐 2", "코지 퍼즐 1"] : ["Magic Puzzle 1", "Magic Puzzle 2", "Cozy Puzzle 1"])[characters.indexOf(character)]}</FanText></p>
                 </div>
+                <FanHeading as="h2">{locale === "ko" ? `${LEVELS.length}라운드` : `${copy.round} · ${LEVELS.length}`}</FanHeading>
                 {levelList}
                 <div className={styles.startAction}>
-                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => void start(character)}
+                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}
                     helperText={lobby ? `${copy.freePlays} ${lobby.freeRemaining}` : undefined}>
-                    {copy.start}
+                    {paidStart ? (locale === "ko" ? `${lobby.extraCost}P로 한 판` : extraCopy.cta) : copy.start}
                   </StageAction>
-                  <FanAction variant="text" onClick={() => { setPracticed(false); setStage("guide"); }}>{copy.howTo}</FanAction>
+                  <FanAction variant="secondary" onClick={() => { setPracticed(false); setStage("guide"); }}>{copy.howTo}</FanAction>
                 </div>
                 {lobby?.previous && (
                   <p className={styles.detail}>

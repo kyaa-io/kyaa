@@ -3,7 +3,7 @@
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
+import { ChevronLeft } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -160,7 +160,6 @@ export function FortuneFlow({
   const voiced = useMemo(() => reading && voicedReading(reading, character), [reading, character]);
 
   const day = kstDayStart(reading?.kstDate);
-  const index = fortuneCharacters.findIndex((c) => c.id === character);
   const name = creatorName(character, locale);
 
   // 첫 진입: 주소의 단계·최애를 읽는다. 결과가 없으면 입장으로 돌린다.
@@ -446,24 +445,7 @@ export function FortuneFlow({
     (locale === "ko" ? fortuneChoiceLabel(character, key) : null) ?? text(key);
   const primaryLabel = entering ? text("readFortune") : talk ? choiceLabel(talkChoice[talk - 1]) : null;
 
-  const turns = () => (
-    <>
-      <FanAction
-        variant="neutral"
-        className={`${styles.turn} ${styles.prev}`}
-        ariaLabel={text("prevStar")}
-        leadingIcon={<FanIcon icon={ChevronLeft} />}
-        onClick={() => choose(index - 1)}
-      />
-      <FanAction
-        variant="neutral"
-        className={`${styles.turn} ${styles.next}`}
-        ariaLabel={text("nextStar")}
-        leadingIcon={<FanIcon icon={ChevronRight} />}
-        onClick={() => choose(index + 1)}
-      />
-    </>
-  );
+
 
   return (
     <div className={styles.page} data-fortune-flow={step}>
@@ -536,7 +518,6 @@ export function FortuneFlow({
             <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
           )}
         </div>
-        {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}
         {phase === "error" ? (
           <FanState
             inline
