@@ -44,7 +44,7 @@ import { DayCardThumb } from "./deep/day-card";
 import deep from "./deep/deep.module.css";
 import { deepHref } from "./deep/screen";
 import styles from "./result.module.css";
-import { chemiName } from "@/features/chemi/persona";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const exampleKeys = {
   fandom: ["depthFandomA", "depthFandomB"],
@@ -212,7 +212,7 @@ export function FortuneResult({
       setSharing(false);
     }
   }
-  const name = chemiName(character, locale);
+  const name = creatorName(character, locale);
   const back = backHref ?? `/chemi?locale=${locale}`;
   const day = kstDayStart(reading?.kstDate);
   const toolbar = (

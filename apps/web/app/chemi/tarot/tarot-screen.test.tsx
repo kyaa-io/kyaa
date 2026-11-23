@@ -1,17 +1,21 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import cards from "@/content/chemi/tarot/cards.json";
+import cardsEn from "@/content/chemi/tarot/cards.en.json";
+import enCatalog from "@/features/chemi/i18n/locales/en/chemi.json";
+import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { TarotScreen } from "./tarot-screen";
 import { kstDate } from "./types";
 
-const { auth, push, celebrate } = vi.hoisted(() => ({
+const { auth, push, celebrate, login } = vi.hoisted(() => ({
   auth: { authenticated: false },
   push: vi.fn(),
   celebrate: vi.fn(),
+  login: vi.fn(),
 }));
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push }), useSearchParams: () => new URLSearchParams(location.search) }));
 vi.mock("@/features/auth/client/cognito-auth", () => ({
-  useByUsAuth: () => ({ ready: true, authenticated: auth.authenticated, login: vi.fn(), user: null, getAccessToken: async () => "token" }),
+  useByUsAuth: () => ({ ready: true, authenticated: auth.authenticated, login, user: null, getAccessToken: async () => "token" }),
 }));
 vi.mock("@/components/fan-ui/reward-celebration", () => ({ celebrateReward: celebrate }));
 
@@ -19,9 +23,12 @@ const calls: { path: string; method: string; body?: string }[] = [];
 let today: { readingId: string; kind: string; date: string }[] = [];
 let reward: Record<string, unknown> = {};
 let spread: { readingId: string | null } = { readingId: null };
+let listStatus = 200;
 
 beforeEach(() => {
   spread = { readingId: null };
+  listStatus = 200;
+  login.mockClear();
   auth.authenticated = false;
   today = [];
   reward = {};
@@ -36,15 +43,19 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (path: string, init?: RequestInit) => {
       calls.push({ path, method: init?.method ?? "GET", body: init?.body as string | undefined });
-      if (path.startsWith("/api/chemi/readings?")) return Response.json(today);
+      if (path.startsWith("/api/chemi/readings?")) return listStatus === 200 ? Response.json(today) : Response.json({ error: { code: "UNAUTHORIZED" } }, { status: listStatus });
       if (path.startsWith("/api/chemi/readings/")) return Response.json({ result: { cards: [{ card: 13, reversed: true }] } });
-      if (path === "/api/chemi/readings")
-        return Response.json({ readingId: "r1", replayed: false, reward, result: { cards: [{ card: 25, reversed: false }] } });
+      if (path === "/api/chemi/readings" && !auth.authenticated)
+        return Response.json({ readingId: null, replayed: false, reward: {}, result: { card: 25, reversed: false }, claim: "25.0.20261123.signed" });
+      if (path === "/api/chemi/readings") {
+        const body = JSON.parse(String(init?.body)) as { claim?: string };
+        return Response.json({ readingId: "r1", replayed: false, reward, result: { cards: [{ card: body.claim ? 40 : 25, reversed: false }] } });
+      }
       if (path === "/api/chemi/rewards/today") return Response.json({ grants: [] });
       if (path === "/api/chemi/tarot/spread") return Response.json(spread);
       if (path === "/api/chemi/shares") return Response.json({ url: "/chemi/tarot?from=s1", shareId: "s1" });
-      const card = path.match(/\/api\/chemi\/tarot\/cards\/(\d+)$/);
-      if (card) return Response.json(cards[Number(card[1])]);
+      const card = path.match(/\/api\/chemi\/tarot\/cards\/(\d+)\?locale=([\w-]+)$/);
+      if (card) return Response.json((card[2] === "ko" ? cards : cardsEn)[Number(card[1])]);
       return Response.json({});
     }),
   );
@@ -55,8 +66,10 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const open = (step: "enter" | "pick" | "result" = "enter", initialReading: string | null = null) =>
-  render(<TarotScreen locale="ko" initialCharacter="changha" initialStep={step} initialReading={initialReading} />);
+const open = (step: "enter" | "pick" | "result" = "enter", initialReading: string | null = null, initialClaim: string | null = null) =>
+  render(<TarotScreen locale="ko" initialCharacter="changha" initialStep={step} initialReading={initialReading} initialClaim={initialClaim} />);
+
+const hangul = /[\uac00-\ud7a3]/;
 
 it("starts at the entry scene for a guest and walks to the thought step", async () => {
   open();
@@ -208,4 +221,59 @@ it("shares a member's saved card through a share card and keeps one ask button w
   const created = calls.find((call) => call.path === "/api/chemi/shares")!;
   expect(JSON.parse(created.body!)).toEqual({ readingId: "saved", character: "changha" });
   await waitFor(() => expect(calls.some((call) => call.path === "/api/chemi/shares/s1/done")).toBe(true));
+});
+
+it("speaks English from entry to result for an English guest, with no Korean left on screen", async () => {
+  history.replaceState(null, "", "/chemi/tarot?locale=en");
+  render(<ReadingCopyProvider value={enCatalog}><TarotScreen locale="en" initialCharacter="yuna" initialStep="enter" /></ReadingCopyProvider>);
+  expect(await screen.findByText("You're here. I'll read today's card for you.")).toBeVisible();
+  expect(screen.getByRole("button", { name: "Yuna" })).toHaveAttribute("aria-pressed", "true");
+  expect(document.querySelector("[data-step]")!.textContent).not.toMatch(hangul);
+  history.replaceState(null, "", "/chemi/tarot?locale=en&c=yuna&step=pick");
+  cleanup();
+  render(<ReadingCopyProvider value={enCatalog}><TarotScreen locale="en" initialCharacter="yuna" initialStep="pick" /></ReadingCopyProvider>);
+  fireEvent.click(await screen.findByRole("button", { name: "Pick a random card" }));
+  expect(await screen.findByText("It's Four of Wands. It came up upright.", {}, { timeout: 4000 })).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "1/3" }));
+  expect(await screen.findByText(cardsEn[25].dir.up.talk.ban[0])).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "2/3" }));
+  fireEvent.click(await screen.findByRole("button", { name: "See my reading" }));
+  await waitFor(() => expect(screen.getByRole("heading", { name: "Four of Wands" })).toBeVisible(), { timeout: 4000 });
+  await screen.findByText(cardsEn[25].dir.up.lead);
+  expect(screen.getByText("Love")).toBeVisible();
+  expect(screen.getByText("Card type")).toBeVisible();
+  expect(document.querySelector("[data-result]")!.textContent).not.toMatch(hangul);
+});
+
+it("keeps the guest's card through sign-in: the return address carries the card's claim", async () => {
+  open("pick");
+  fireEvent.click(await screen.findByRole("button", { name: "아무거나 뽑기" }));
+  fireEvent.click(await screen.findByRole("button", { name: "건너뛰기" }, { timeout: 4000 }));
+  await waitFor(() => expect(screen.getByRole("heading", { name: "완드 4" })).toBeVisible(), { timeout: 4000 });
+  fireEvent.click(screen.getAllByRole("button", { name: "로그인하고 저장" })[0]);
+  expect(login).toHaveBeenCalledOnce();
+  const url = new URL(location.href);
+  expect(url.searchParams.get("step")).toBe("result");
+  expect(url.searchParams.get("claim")).toBe("25.0.20261123.signed");
+});
+
+it("saves the claimed card as the member's first card of the day after sign-in", async () => {
+  auth.authenticated = true;
+  history.replaceState(null, "", "/chemi/tarot?locale=ko&c=changha&step=result&claim=40.0.20261123.signed");
+  open("result", null, "40.0.20261123.signed");
+  expect(await screen.findByRole("heading", { name: "컵 5" })).toBeVisible();
+  const post = calls.find((call) => call.path === "/api/chemi/readings" && call.method === "POST")!;
+  expect(JSON.parse(post.body!)).toMatchObject({ content: "tarot", kind: "daily", claim: "40.0.20261123.signed" });
+  expect(new URL(location.href).searchParams.has("claim")).toBe(false);
+  expect(screen.queryByText("저장 안 됨")).toBeNull();
+});
+
+it("asks to sign in again when the session has expired instead of a retry loop", async () => {
+  auth.authenticated = true;
+  listStatus = 401;
+  open();
+  expect(await screen.findByText("로그인이 만료되었습니다.")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "로그인" }));
+  expect(login).toHaveBeenCalledOnce();
+  expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
 });

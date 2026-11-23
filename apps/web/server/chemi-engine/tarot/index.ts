@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac, randomInt } from "node:crypto";
+import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 
 export const TAROT_SALT_SECRET_NAME = "CHEMI_TAROT_SALT";
 export type TarotCard = { card: number; reversed: boolean };
@@ -57,4 +57,32 @@ function draw(next: (bound: number) => number, count: number): TarotCard[] {
 /** Guest daily draw has no identity, cookies, cache, DB or other persistence. */
 export function drawGuestTarot(): TarotCard {
   return draw(randomInt, 1)[0];
+}
+
+/**
+ * 비회원이 뽑은 카드의 증표. 기기에는 아무것도 남기지 않고, 로그인으로 돌아오는 주소에만 실려
+ * 로그인한 뒤 그날의 첫 카드로 같은 카드를 저장하게 한다. 서버 소금값으로 서명해 카드를 고쳐 쓸 수 없다.
+ * 소금값이 없으면 증표를 만들지 않는다(그때는 로그인하면 새로 뽑는다).
+ */
+export function signGuestTarot(card: TarotCard, kstDate: string, salt: string | undefined): string | null {
+  if (!salt || salt.length < 32) return null;
+  const body = `${card.card}.${card.reversed ? 1 : 0}.${kstDate.replaceAll("-", "")}`;
+  return `${body}.${guestMac(body, salt)}`;
+}
+
+/** 증표를 확인해 그날(kstDate)의 카드면 돌려준다. 다른 날 · 고친 값 · 소금값 없음은 null. */
+export function readGuestTarot(claim: string | undefined, kstDate: string, salt: string | undefined): TarotCard | null {
+  if (!claim || !salt || salt.length < 32) return null;
+  const match = /^(\d{1,2})\.([01])\.(\d{8})\.([A-Za-z0-9_-]{43})$/.exec(claim);
+  if (!match || match[3] !== kstDate.replaceAll("-", "")) return null;
+  const card = Number(match[1]);
+  if (card > 77) return null;
+  const expected = Buffer.from(guestMac(`${match[1]}.${match[2]}.${match[3]}`, salt));
+  const given = Buffer.from(match[4]);
+  if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
+  return { card, reversed: match[2] === "1" };
+}
+
+function guestMac(body: string, salt: string) {
+  return createHmac("sha256", salt).update(`guest-tarot|${body}`).digest("base64url");
 }

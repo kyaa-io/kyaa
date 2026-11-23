@@ -37,7 +37,7 @@ import { ChartPanel, ElementBlock, NatureBlock, RelationBlock, StrengthBlock, Te
 import { sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
-import { chemiName } from "@/features/chemi/persona";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.earthlyBranch, "pillar");
 
@@ -101,7 +101,7 @@ export function SajuResult({
 }) {
   const uiText = useReadingCopy();
   const [shareOpen, setShareOpen] = useState(false);
-  const name = chemiName(character, locale);
+  const name = creatorName(character, locale);
   const first = { ...firstReading(chart, at), day: dayLine(chart) };
   const year = yearReading(chart, at);
   const month = monthReading(chart, at);

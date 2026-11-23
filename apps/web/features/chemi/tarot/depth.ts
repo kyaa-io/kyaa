@@ -3,6 +3,7 @@
  * 카드마다 쓴 풀이 글(content/chemi/tarot/cards.json)에 덧붙이는 문장이고, 같은 카드·같은 방향이면 같은 문장이 나온다.
  */
 import { TAROT_DECK } from "./deck";
+import { tarotLang } from "./script";
 
 type Suit = "major" | "wands" | "cups" | "swords" | "pentacles";
 
@@ -41,8 +42,9 @@ function suitOf(id: number): { suit: Suit; rank: number } {
 
 export type TarotBasisRow = { term: string; value: string; plain: string };
 
-export function tarotBasis(id: number, reversed: boolean): TarotBasisRow[] {
+export function tarotBasis(id: number, reversed: boolean, locale: string = "ko"): TarotBasisRow[] {
   if (!TAROT_DECK[id]) return [];
+  if (tarotLang(locale) === "en") return tarotBasisEn(id, reversed);
   const { suit, rank } = suitOf(id);
   const rows: TarotBasisRow[] = [];
   if (suit === "major") {
@@ -99,5 +101,87 @@ const suitDomain: Record<Suit, Record<"연애" | "일" | "돈", string>> = {
 
 export function tarotRowMore(id: number, label: string) {
   if (!TAROT_DECK[id]) return null;
-  return (suitDomain[suitOf(id).suit] as Record<string, string | undefined>)[label] ?? null;
+  const domain = /^[A-Za-z]/.test(label) ? suitDomainEn : suitDomain;
+  return (domain[suitOf(id).suit] as Record<string, string | undefined>)[label] ?? null;
 }
+
+/* 영어 화면의 근거 줄과 덧붙이는 문장. 영어 풀이 글(cards.en.json)의 줄 이름은 Love · Work · Money · Advice 다. */
+const suitsEn: Record<Exclude<Suit, "major">, { name: string; element: string; plain: string }> = {
+  wands: { name: "Wands", element: "Fire", plain: "A card of drive and action" },
+  cups: { name: "Cups", element: "Water", plain: "A card of feelings and relationships" },
+  swords: { name: "Swords", element: "Air", plain: "A card of thoughts and words" },
+  pentacles: { name: "Pentacles", element: "Earth", plain: "A card of money, body and daily life" },
+};
+const stepsEn = [
+  "the place of beginning",
+  "the place of choosing and finding balance",
+  "the place of first results and teamwork",
+  "the place of settling and pausing",
+  "the place of clashing and shaking",
+  "the place of recovering and sharing",
+  "the place of looking back and being tested",
+  "the place of moving and practicing",
+  "the place of being almost there",
+  "the place of finishing and moving on",
+] as const;
+const courtEn = [
+  ["Page", "The learner. It speaks of new news and first tries"],
+  ["Knight", "The mover. It speaks of the strength to push forward"],
+  ["Queen", "The carer. It speaks of strength ripened within"],
+  ["King", "The leader. It speaks of the strength to take charge and decide"],
+] as const;
+const ordinal = (n: number) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
+
+function tarotBasisEn(id: number, reversed: boolean): TarotBasisRow[] {
+  const { suit, rank } = suitOf(id);
+  const rows: TarotBasisRow[] = [];
+  if (suit === "major") {
+    rows.push({
+      term: "Card type",
+      value: `Major Arcana ${rank}`,
+      plain: "One of only 22 big-picture cards. It points to the theme you're going through, more than the events of the day",
+    });
+  } else {
+    const info = suitsEn[suit];
+    rows.push({ term: "Card type", value: `Minor Arcana · ${info.name} (${info.element})`, plain: info.plain });
+    if (rank < 10)
+      rows.push({ term: "Number", value: String(rank + 1), plain: `The ${ordinal(rank + 1)} of ten steps: ${stepsEn[rank]}` });
+    else rows.push({ term: "Figure", value: courtEn[rank - 10][0], plain: courtEn[rank - 10][1] });
+  }
+  rows.push({
+    term: "Direction",
+    value: reversed ? "Reversed" : "Upright",
+    plain: reversed
+      ? "The meaning is delayed or turns inward. It doesn't make it a bad card"
+      : "The meaning shows as it is",
+  });
+  return rows;
+}
+
+const suitDomainEn: Record<Suit, Record<"Love" | "Work" | "Money", string>> = {
+  major: {
+    Love: "As a big-picture card, it looks at where the relationship is heading rather than today alone.",
+    Work: "As a big-picture card, it checks your direction more than the task at hand.",
+    Money: "As a big-picture card, it looks at how you treat money more than today's spending.",
+  },
+  wands: {
+    Love: "As a card of action, whoever moves first shapes the flow.",
+    Work: "As a card of drive, you gain the strength to start.",
+    Money: "As a fast card, spending speeds up too.",
+  },
+  cups: {
+    Love: "As a card of feeling, putting what you feel into words reaches them.",
+    Work: "As a card of feeling, the mood with the people you work with decides the result.",
+    Money: "As a card of feeling, your wallet opens with your mood.",
+  },
+  swords: {
+    Love: "As a card of thought, the weight of a single word grows.",
+    Work: "As a card of judgment, it's good for sorting things out and deciding.",
+    Money: "As a card of weighing things up, compare and calculate before you move.",
+  },
+  pentacles: {
+    Love: "As a card of daily life, steady small acts of care carry your heart.",
+    Work: "As a card of building, visible results pile up bit by bit.",
+    Money: "As a card of money and body, checking the real numbers gives you the answer.",
+  },
+};

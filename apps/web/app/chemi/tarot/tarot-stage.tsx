@@ -13,7 +13,7 @@ import { ChevronDown, ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
-import { TAROT_BACK, TAROT_DECK, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
+import { TAROT_BACK, tarotAlt, tarotFace, tarotName, tarotTitle } from "@/features/chemi/tarot/deck";
 import {
   TAROT_CHARACTERS,
   tarotLines,
@@ -28,9 +28,10 @@ import spread from "./spread/spread.module.css";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import type { TarotDraw, TarotStep } from "./types";
 import styles from "./tarot.module.css";
+import type { AppLocale } from "@/i18n/locales";
 
 type Props = {
-  locale: string;
+  locale: AppLocale;
   step: TarotStep;
   character: TarotCharacter;
   /** 회원이 오늘 이미 뽑은 카드. 있으면 입장 장면이 '다시 온 장면'이다. */
@@ -56,8 +57,8 @@ type Props = {
 export function TarotStage(props: Props) {
   const uiText = useReadingCopy();
   const { step, character, shown, draw, slot, offline, meaning, reduced } = props;
-  const person = tarotCharacter(character);
-  const lines = tarotLines(character);
+  const person = tarotCharacter(character, props.locale);
+  const lines = tarotLines(character, props.locale);
   const entry = step === "enter";
   const revisit = entry && shown;
   const talking = step === "flip" || step === "talk2" || step === "talk3";
@@ -114,8 +115,7 @@ export function TarotStage(props: Props) {
   else dialogLine = "";
   const talkLine = (() => {
     if (!draw) return "";
-    const [, name] = TAROT_DECK[draw.card];
-    if (step === "flip") return lines.drawn(name, draw.reversed);
+    if (step === "flip") return lines.drawn(tarotName(draw.card, props.locale), draw.reversed);
     if (meaning.status !== "ready") return "";
     const direction = meaning.card.dir[draw.reversed ? "down" : "up"];
     return direction.talk[person.voice][step === "talk2" ? 0 : 1];
@@ -157,13 +157,13 @@ export function TarotStage(props: Props) {
             className={styles.onTable}
             data-reversed={shown.reversed || undefined}
             href={`#`}
-            aria-label={uiText("todayCardLabel", { card: tarotTitle(shown.card) })}
+            aria-label={uiText("todayCardLabel", { card: tarotTitle(shown.card, props.locale) })}
             onClick={(event) => {
               event.preventDefault();
               props.onResult();
             }}
           >
-            <img src={tarotFace(shown.card)} alt={TAROT_DECK[shown.card][2]} />
+            <img src={tarotFace(shown.card)} alt={tarotAlt(shown.card, props.locale)} />
           </Link>
         ) : null}
         {step === "think" || step === "shuffle" ? (
@@ -175,7 +175,7 @@ export function TarotStage(props: Props) {
         ) : null}
         {step === "pick" ? <CardRail onPick={props.onPick} randomLabel={uiText("randomCard")} reduced={reduced} controlsHost={controlsHost} /> : null}
         {step === "lock" ? <LockedRail slot={slot ?? 1} cardRef={lockedEl} /> : null}
-        {talking && draw ? <Flip draw={draw} turning={step === "flip" && !reduced} areaRef={areaEl} flipRef={flipEl} /> : null}
+        {talking && draw ? <Flip locale={props.locale} draw={draw} turning={step === "flip" && !reduced} areaRef={areaEl} flipRef={flipEl} /> : null}
       </div>
 
       <div className={styles.panel}>
@@ -185,8 +185,8 @@ export function TarotStage(props: Props) {
                 <ParticipationCount locale={props.locale} />
           </div>
         ) : null}
-        {revisit ? <NameRow draw={shown} trailing={uiText("todayCard")} /> : null}
-        {talking && draw ? <NameRow draw={draw} trailing={draw.slot ? uiText("nthCard", { slot: draw.slot }) : null} /> : null}
+        {revisit ? <NameRow locale={props.locale} draw={shown} trailing={uiText("todayCard")} /> : null}
+        {talking && draw ? <NameRow locale={props.locale} draw={draw} trailing={draw.slot ? uiText("nthCard", { slot: draw.slot }) : null} /> : null}
         {step === "lock" ? (
           <div className={styles.picked}>
             <LockedBand slot={slot ?? 1} />
@@ -261,12 +261,12 @@ export function TarotStage(props: Props) {
   );
 }
 
-function NameRow({ draw, trailing }: { draw: TarotDraw; trailing: string | null }) {
+function NameRow({ locale, draw, trailing }: { locale: string; draw: TarotDraw; trailing: string | null }) {
   const uiText = useReadingCopy();
   return (
     <div className={styles.nameRow}>
       <FanText as="p" role="item">
-        {tarotTitle(draw.card)}
+        {tarotTitle(draw.card, locale)}
       </FanText>
       <FanTag tone="fan">{uiText(draw.reversed ? "reversed" : "upright")}</FanTag>
       {trailing ? (
@@ -317,23 +317,23 @@ function LockedBand({ slot }: { slot: number }) {
 }
 
 /** 뒤집힌 카드: 0.6초에 한 번 뒤집힌다. 역방향은 그림만 거꾸로 놓인다. */
-function Flip({ draw, turning, areaRef, flipRef }: { draw: TarotDraw; turning: boolean; areaRef: RefObject<HTMLDivElement | null>; flipRef: RefObject<HTMLDivElement | null> }) {
+function Flip({ locale, draw, turning, areaRef, flipRef }: { locale: string; draw: TarotDraw; turning: boolean; areaRef: RefObject<HTMLDivElement | null>; flipRef: RefObject<HTMLDivElement | null> }) {
   return (
     <div ref={areaRef} className={styles.drawn}>
       <div ref={flipRef} className={styles.flip} data-turning={turning || undefined} data-reversed={draw.reversed || undefined}>
         <img className={styles.rear} src={TAROT_BACK} alt="" />
-        <img className={styles.face} src={tarotFace(draw.card)} alt={TAROT_DECK[draw.card][2]} />
+        <img className={styles.face} src={tarotFace(draw.card)} alt={tarotAlt(draw.card, locale)} />
       </div>
     </div>
   );
 }
 
 /** 입장·다시 온 장면의 최애 고르기 띠: 실제 사진 아바타 + 이름. 고른 최애는 핑크 고리와 굵은 이름. */
-export function Pickband({ character, onSelect }: { character: TarotCharacter; onSelect: (key: TarotCharacter) => void }) {
+export function Pickband({ locale, character, onSelect }: { locale: string; character: TarotCharacter; onSelect: (key: TarotCharacter) => void }) {
   const uiText = useReadingCopy();
   return (
     <div className={styles.pickband} role="group" aria-label={uiText("favorite")}>
-      {TAROT_CHARACTERS.map((item) => (
+      {TAROT_CHARACTERS.map(({ key }) => tarotCharacter(key, locale)).map((item) => (
         <FanIconButton key={item.key} aria-label={item.name} aria-pressed={item.key === character} onClick={() => onSelect(item.key)}>
           <img src={tarotAvatar(item.key)} alt="" />
           <FanText role={item.key === character ? "label" : "meta"}>{item.name}</FanText>

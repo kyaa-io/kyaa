@@ -8,7 +8,7 @@ import { defaultHeartDonationEvent, type HeartDonationEvent } from "../domain/he
 import { seeAllLabel } from "@/features/groups/ui/group-directory";
 import { challengeHref } from "./home-challenges";
 import { challengeEndDate } from "./jjinfan-gauge";
-import { heartDonationTitle } from "./heart-donation-copy";
+import { heartDonationCreator, heartDonationTitle } from "./heart-donation-copy";
 import { HeartDonationSteps } from "./heart-donation-steps";
 import { jjinfanHearts, useFeaturedChallenge } from "./jjinfan-featured";
 import { rankingsText } from "./rankings-copy";
@@ -30,7 +30,7 @@ export function HeartDonationDetail({ locale, event = defaultHeartDonationEvent 
       <FanText role="body" as="p">{rankingsText(locale, "hdPitch")}</FanText>
       {meta ? <FanText role="meta" as="p" className={styles.meta}>{meta}</FanText> : null}
     </div>
-    <HeartDonationSteps locale={locale} slug={item?.slug ?? event.creatorSlug} creator={item?.name || event.creatorName || rankingsText(locale, "hdCreatorDefault")} />
+    <HeartDonationSteps locale={locale} slug={item?.slug ?? event.creatorSlug} creator={item?.name || heartDonationCreator(locale, event)} />
     <div className={styles.block}>
       <FanHeading>{rankingsText(locale, "hdRecipientTitle")}</FanHeading>
       {event.recipient ? <FanText role="body" as="p" data-recipient="set">{event.recipient}</FanText> : <FanText role="body" as="p" data-pending="recipient">{rankingsText(locale, "hdRecipientPending")}</FanText>}

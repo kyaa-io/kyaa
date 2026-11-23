@@ -11,13 +11,16 @@ type Props = {
   className?: string;
 };
 
+/** Tier badge artwork (medal-v2, 11/23): one colour and silhouette per tier, stage dots inside. */
+export const fanTierBadgeSrc = (key: string) => `/images/passport/tiers/medal-v2/${key}.svg`;
+
 export function FanTierBadge({ tier, stageKey, locale, size, adjacentLabel = true, className }: Props) {
   const key = stageKey ?? fanTierEntryKey(tier);
   const label = fanStageLabel(locale, { tier, subdivision: Number(key.split("-").at(-1)) });
   return <Image
     className={className}
     unoptimized
-    src={`/images/passport/tiers/ink-v1/${key}.webp`}
+    src={fanTierBadgeSrc(key)}
     width={size}
     height={size}
     alt={adjacentLabel ? "" : `${label} fan tier`}
