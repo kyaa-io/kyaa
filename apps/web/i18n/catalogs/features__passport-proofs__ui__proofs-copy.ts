@@ -614,16 +614,16 @@ export const messages = {
     "ru": "Мои подтверждения"
   },
   "pfMaskNotice": {
-    "ja": "氏名・住所・カード番号などの個人情報を隠してからアップロードしてください",
-    "zh-Hans": "请遮盖姓名、地址、卡号等个人信息后再上传",
-    "zh-Hant": "請遮蓋姓名、地址、卡號等個人資料後再上傳",
-    "es": "Tapa tus datos personales (nombre, dirección, número de tarjeta) antes de subir",
-    "id": "Tutupi data pribadi seperti nama, alamat, dan nomor kartu sebelum mengunggah",
-    "vi": "Hãy che thông tin cá nhân như tên, địa chỉ, số thẻ trước khi tải lên",
-    "th": "โปรดปิดข้อมูลส่วนบุคคล เช่น ชื่อ ที่อยู่ หมายเลขบัตร ก่อนอัปโหลด",
-    "pt": "Cubra dados pessoais como nome, endereço e número do cartão antes de enviar",
-    "fr": "Masquez vos données personnelles (nom, adresse, numéro de carte) avant l'envoi",
-    "ru": "Перед загрузкой закройте личные данные: имя, адрес, номер карты"
+    "ja": "運営者がスクショを確認します。氏名・住所・カード番号・メールアドレスは隠してアップロードしてください",
+    "zh-Hans": "运营人员会查看截图。请遮盖姓名、地址、卡号、邮箱后再上传",
+    "zh-Hant": "營運人員會查看截圖。請遮蓋姓名、地址、卡號、電子郵件後再上傳",
+    "es": "Un operador revisa la captura. Tapa tu nombre, dirección, número de tarjeta y correo antes de subirla",
+    "id": "Operator akan memeriksa tangkapan layar. Tutupi nama, alamat, nomor kartu, dan email sebelum mengunggah",
+    "vi": "Người vận hành sẽ xem ảnh chụp. Hãy che tên, địa chỉ, số thẻ, email trước khi tải lên",
+    "th": "ผู้ดูแลจะตรวจภาพหน้าจอ โปรดปิดชื่อ ที่อยู่ หมายเลขบัตร และอีเมลก่อนอัปโหลด",
+    "pt": "Um operador confere a captura. Cubra nome, endereço, número do cartão e e-mail antes de enviar",
+    "fr": "Un opérateur vérifie la capture. Masquez nom, adresse, numéro de carte et e-mail avant l'envoi",
+    "ru": "Скриншот проверяет оператор. Закройте имя, адрес, номер карты и e-mail перед загрузкой"
   },
   "pfMaskConfirm": {
     "ja": "個人情報をすべて隠しました(必須)",
@@ -636,5 +636,53 @@ export const messages = {
     "pt": "Cobri todos os dados pessoais (obrigatório)",
     "fr": "J'ai masqué toutes les données personnelles (obligatoire)",
     "ru": "Я закрыл все личные данные (обязательно)"
+  },
+  "pfMaskNoticeSns": {
+    "ja": "運営者がスクショを確認します。他の人のアカウントやコメントは隠してアップロードしてください",
+    "zh-Hans": "运营人员会查看截图。请遮盖他人的账号和评论后再上传",
+    "zh-Hant": "營運人員會查看截圖。請遮蓋他人的帳號和留言後再上傳",
+    "es": "Un operador revisa la captura. Tapa las cuentas y comentarios de otras personas antes de subirla",
+    "id": "Operator akan memeriksa tangkapan layar. Tutupi akun dan komentar orang lain sebelum mengunggah",
+    "vi": "Người vận hành sẽ xem ảnh chụp. Hãy che tài khoản và bình luận của người khác trước khi tải lên",
+    "th": "ผู้ดูแลจะตรวจภาพหน้าจอ โปรดปิดบัญชีและคอมเมนต์ของผู้อื่นก่อนอัปโหลด",
+    "pt": "Um operador confere a captura. Cubra contas e comentários de outras pessoas antes de enviar",
+    "fr": "Un opérateur vérifie la capture. Masquez les comptes et commentaires d'autres personnes avant l'envoi",
+    "ru": "Скриншот проверяет оператор. Закройте чужие аккаунты и комментарии перед загрузкой"
+  },
+  "pfLeadSns": {
+    "ja": "自分のSNSに推しについて投稿し、その投稿のスクショをアップロードします。承認されると、本物のファンのミッションブック「SNS投稿」欄が埋まります。",
+    "zh-Hans": "在自己的社交平台发布关于本命的帖子，再上传该帖子的截图。审核通过后，铁粉任务册的「社交平台发帖」格会被填上。",
+    "zh-Hant": "在自己的社群發布關於本命的貼文，再上傳該貼文的截圖。審核通過後，鐵粉任務冊的「社群發文」格會被填上。",
+    "es": "Publica algo sobre tu favorito en tu propia red social y sube una captura de esa publicación. Al aprobarse, se completa la casilla «Publicar en redes» de tu libro de misiones de fan de verdad.",
+    "id": "Unggah postingan tentang idolamu di akun medsosmu sendiri, lalu unggah tangkapan layar postingan itu. Setelah disetujui, kolom “Unggah di medsos” di buku misi penggemar sejati akan terisi.",
+    "vi": "Đăng bài về thần tượng trên mạng xã hội của bạn, rồi tải lên ảnh chụp màn hình bài đó. Khi được duyệt, ô “Đăng mạng xã hội” trong sổ nhiệm vụ fan chính hiệu sẽ được điền.",
+    "th": "โพสต์เรื่องเมนของคุณบนโซเชียลของตัวเอง แล้วอัปโหลดภาพหน้าจอโพสต์นั้น เมื่ออนุมัติแล้ว ช่อง “โพสต์โซเชียล” ในสมุดภารกิจแฟนตัวจริงจะถูกเติม",
+    "pt": "Publique algo sobre seu favorito na sua própria rede social e envie uma captura dessa publicação. Após a aprovação, o espaço “Postar nas redes” do seu livro de missões de fã de verdade é preenchido.",
+    "fr": "Publiez un post sur votre favori depuis votre propre compte, puis envoyez une capture de ce post. Une fois approuvée, la case « Publier sur les réseaux » de votre carnet de missions de vrai fan est remplie.",
+    "ru": "Опубликуйте пост о своём кумире в своей соцсети и загрузите скриншот этого поста. После одобрения заполнится ячейка «Пост в соцсети» в книге миссий настоящего фаната."
+  },
+  "pfLeadMembership": {
+    "ja": "加入中の有料メンバーシップ情報の画面をスクショしてアップロードします。承認されると、本物のファンのミッションブック「オタク認証スタンプ」欄が埋まります。",
+    "zh-Hans": "上传已开通的付费会员信息页面截图。审核通过后，铁粉任务册的「粉丝认证印章」格会被填上。",
+    "zh-Hant": "上傳已加入的付費會員資訊畫面截圖。審核通過後，鐵粉任務冊的「粉絲認證印章」格會被填上。",
+    "es": "Sube una captura de la pantalla de tu membresía de pago. Al aprobarse, se completa la casilla «Sello de prueba fan» de tu libro de misiones de fan de verdad.",
+    "id": "Unggah tangkapan layar info membership berbayar yang kamu ikuti. Setelah disetujui, kolom “Stempel bukti fan” di buku misi penggemar sejati akan terisi.",
+    "vi": "Tải lên ảnh chụp màn hình thông tin gói thành viên trả phí bạn đã đăng ký. Khi được duyệt, ô “Con dấu xác minh fan” trong sổ nhiệm vụ fan chính hiệu sẽ được điền.",
+    "th": "อัปโหลดภาพหน้าจอข้อมูลสมาชิกแบบชำระเงินที่คุณสมัคร เมื่ออนุมัติแล้ว ช่อง “ตราประทับยืนยันแฟน” ในสมุดภารกิจแฟนตัวจริงจะถูกเติม",
+    "pt": "Envie uma captura da tela da sua assinatura paga. Após a aprovação, o espaço “Carimbo de prova de fã” do seu livro de missões de fã de verdade é preenchido.",
+    "fr": "Envoyez une capture de l'écran de votre abonnement payant. Une fois approuvée, la case « Tampon de preuve fan » de votre carnet de missions de vrai fan est remplie.",
+    "ru": "Загрузите скриншот данных вашей платной подписки. После одобрения заполнится ячейка «Штамп фан-подтверждения» в книге миссий настоящего фаната."
+  },
+  "pfLeadPurchase": {
+    "ja": "購入・決済履歴の画面をスクショしてアップロードします。承認されると、本物のファンのミッションブック「オタク認証スタンプ」欄が埋まります。",
+    "zh-Hans": "上传购买或付款记录页面截图。审核通过后，铁粉任务册的「粉丝认证印章」格会被填上。",
+    "zh-Hant": "上傳購買或付款紀錄畫面截圖。審核通過後，鐵粉任務冊的「粉絲認證印章」格會被填上。",
+    "es": "Sube una captura de tu historial de compra o pago. Al aprobarse, se completa la casilla «Sello de prueba fan» de tu libro de misiones de fan de verdad.",
+    "id": "Unggah tangkapan layar riwayat pembelian atau pembayaran. Setelah disetujui, kolom “Stempel bukti fan” di buku misi penggemar sejati akan terisi.",
+    "vi": "Tải lên ảnh chụp màn hình lịch sử mua hoặc thanh toán. Khi được duyệt, ô “Con dấu xác minh fan” trong sổ nhiệm vụ fan chính hiệu sẽ được điền.",
+    "th": "อัปโหลดภาพหน้าจอประวัติการซื้อหรือการชำระเงิน เมื่ออนุมัติแล้ว ช่อง “ตราประทับยืนยันแฟน” ในสมุดภารกิจแฟนตัวจริงจะถูกเติม",
+    "pt": "Envie uma captura do seu histórico de compra ou pagamento. Após a aprovação, o espaço “Carimbo de prova de fã” do seu livro de missões de fã de verdade é preenchido.",
+    "fr": "Envoyez une capture de votre historique d'achat ou de paiement. Une fois approuvée, la case « Tampon de preuve fan » de votre carnet de missions de vrai fan est remplie.",
+    "ru": "Загрузите скриншот истории покупки или оплаты. После одобрения заполнится ячейка «Штамп фан-подтверждения» в книге миссий настоящего фаната."
   }
 } satisfies Record<string, TranslatedMessage>;
