@@ -172,7 +172,6 @@ export function SajuFlow({
 
   const { step, view, character } = nav;
   const talk = talkOf(step);
-  const index = sajuCharacters.findIndex((item) => item.id === character);
   const name = creatorName(character, locale);
   const chart = reading?.result;
   const again = Boolean(firsts?.[character]);
@@ -749,24 +748,7 @@ export function SajuFlow({
   const mobileArt = `${art}/saju-${character}-v1.webp`;
   const primaryLabel = entering ? (again ? (reading ? (askOpen ? text("askStart") : sceneCopy.history) : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
 
-  const turns = () => (
-    <>
-      <FanAction
-        variant="neutral"
-        className={`${styles.turn} ${styles.prev}`}
-        ariaLabel={text("prevStar")}
-        leadingIcon={<FanIcon icon={ChevronLeft} />}
-        onClick={() => choose(index - 1)}
-      />
-      <FanAction
-        variant="neutral"
-        className={`${styles.turn} ${styles.next}`}
-        ariaLabel={text("nextStar")}
-        leadingIcon={<FanIcon icon={ChevronRight} />}
-        onClick={() => choose(index + 1)}
-      />
-    </>
-  );
+
 
   function renderSheets() {
     const year = chart ? yearReading(chart, now) : null;
@@ -957,7 +939,6 @@ export function SajuFlow({
           <source media="(min-width: 48rem)" srcSet={wideArt} />
           <img src={mobileArt} alt={text("sajuSceneAlt", { name })} />
         </picture>
-        {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}
         {phase === "error" ? (
           <div className={styles.controls}>
             <FanState

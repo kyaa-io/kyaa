@@ -2,7 +2,7 @@
 
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
+import { ChevronLeft } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -497,24 +497,7 @@ export function StarFlow({
 
   const primaryLabel = entering ? text("readHoroscope") : talk ? text(talkChoice[talk - 1]) : null;
 
-  const turns = () => (
-    <>
-      <FanAction
-        variant="neutral"
-        className={`${styles.turn} ${styles.prev}`}
-        ariaLabel={text("prevStar")}
-        leadingIcon={<FanIcon icon={ChevronLeft} />}
-        onClick={() => choose(index - 1)}
-      />
-      <FanAction
-        variant="neutral"
-        className={`${styles.turn} ${styles.next}`}
-        ariaLabel={text("nextStar")}
-        leadingIcon={<FanIcon icon={ChevronRight} />}
-        onClick={() => choose(index + 1)}
-      />
-    </>
-  );
+
 
   return (
     <div className={styles.page} data-star-flow={step}>
@@ -571,7 +554,6 @@ export function StarFlow({
           <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
           <img src={`${art}/hero-${character}-p-v1.webp`} alt={text("nightArt", { name })} />
         </picture>
-        {step === "enter" && <span className={styles.turnStage}>{turns()}</span>}
         {phase === "error" ? (
           <div className={styles.controls}>
             <FanState

@@ -77,8 +77,8 @@
   height: var(--min-target);
   border-radius: 50%;
   object-fit: cover;
-  outline: 2px solid transparent;
-  outline-offset: 2px;
+  outline: 1px solid transparent;
+  outline-offset: 1px;
 }
 .root .pickband > button[aria-pressed="true"] {
   color: var(--color-accent-ink);
@@ -400,7 +400,7 @@
 }
 .card:focus-visible {
   outline: var(--focus-width) solid var(--color-surface);
-  outline-offset: 2px;
+  outline-offset: 1px;
 }
 @media (min-width: 48rem) {
   .rail {
