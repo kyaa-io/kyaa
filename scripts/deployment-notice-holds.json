@@ -113,7 +113,8 @@
     "release-notes/2026-11-24-chemi-r4d-ask-reading.json",
     "release-notes/2026-11-24-chemi-expression-scenes.json",
     "release-notes/2026-11-24-chemi-r5b-ask-history.json",
-    "release-notes/2026-11-24-chemi-r5c.json"
+    "release-notes/2026-11-24-chemi-r5c.json",
+    "release-notes/2026-11-24-chemi-match-round-layout.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

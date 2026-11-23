@@ -75,6 +75,6 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
     };
   });
   return <GameRankings games={games} label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord}
-    empty={labels.emptyRanking} mineEmpty={getExtraPlayCopy(locale).myEmpty} start={copy.start} error={copy.rankingError} retryLabel={labels.retry}
+    vacantLabel={labels.vacant} empty={labels.emptyRanking} mineEmpty={getExtraPlayCopy(locale).myEmpty} start={copy.start} error={copy.rankingError} retryLabel={labels.retry}
     retry={() => { setResults({}); retry((value) => value + 1); }} />;
 }

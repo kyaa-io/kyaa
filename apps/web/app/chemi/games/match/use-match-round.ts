@@ -64,7 +64,7 @@ export function useMatchRound(
     };
     function frame(now: number) {
       // 다음 라운드 배치는 첫 걸음에서 깔리므로, 미리 보기는 라운드 넘김 직후 판을 먼저 바꿔 둔 뒤 시작한다.
-      if (previewOn && !awaitingNext.current && previewStage !== sim.state.stage + Number(sim.state.cleared)) {
+      if (previewOn && !pause.current && !awaitingNext.current && previewStage !== sim.state.stage + Number(sim.state.cleared)) {
         const stage = sim.state.stage + Number(sim.state.cleared);
         previewStage = stage;
         previewUntil = stage <= PREVIEW_SECONDS.length ? now + PREVIEW_SECONDS[stage - 1] * 1000 : 0;
