@@ -933,6 +933,7 @@ export function SajuFlow({
             )}
           </>
         )}
+        {talk && <div className={styles.toastAnchor} data-saju-toast-anchor="" />}
       </div>
       <div className={styles.stage}>
         <picture className={styles.art}>

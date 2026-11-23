@@ -99,9 +99,11 @@
 }
 
 /* 게임별 이번 주 랭킹: 390은 옆으로 넘기는 압축 카드, 1024부터 오른쪽 288 열에 세로로 쌓는다. */
-.rankings {
+.rankings, .rankRow {
   --rank-row: calc(var(--space-6) + var(--space-1));
   --rank-avatar: var(--space-6);
+}
+.rankings {
   --rank-mine: calc(var(--min-target) + var(--space-1));
   --rank-gap: var(--space-2);
   display: flex;
@@ -235,9 +237,11 @@
     grid-template-rows: auto 1fr;
   }
   .home[data-ranked="true"] > section:last-child { grid-area: 2 / 1; }
-  .rankings {
+  .rankings, .rankRow {
     --rank-row: calc(var(--space-12) + var(--space-1));
     --rank-avatar: calc(var(--space-8) + var(--space-1));
+  }
+  .rankings {
     --rank-mine: calc(var(--rank-row) + var(--space-3));
     --rank-gap: var(--space-3);
     grid-area: 1 / 2 / 3 / 3;
@@ -308,9 +312,8 @@
     inset: auto 0 0;
   }
 }
-/* 캐러셀 인디케이터(DESIGN 공통 컴포넌트·캐러셀): 배너 바로 아래 가운데 44 줄, 칸 8, 현재 24, 칸 사이 8. 일시정지는 같은 줄 간격 8. */
+/* 캐러셀 인디케이터(DESIGN 공통 컴포넌트·캐러셀): 배너 바로 아래 가운데 44 줄, 표시 점 8, 현재 24, 실제 버튼 44. */
 .dots {
-  gap: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -318,28 +321,16 @@
 }
 /* 점은 8px 이지만 누르는 자리는 44×44 */
 .dots > button:not(.pause) {
-  position: relative;
-  width: auto;
-  min-width: 0;
+  display: grid;
+  place-items: center;
+  width: var(--min-target);
+  min-width: var(--min-target);
   min-height: var(--min-target);
   padding: 0;
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill);
   box-shadow: none;
-}
-.dots > button:not(.pause)::before {
-  content: "";
-  position: absolute;
-  width: var(--min-target);
-  height: var(--min-target);
-}
-.dots > button:not(.pause) > span {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  min-height: var(--min-target);
 }
 .dots button span[aria-hidden="true"] {
   display: block;

@@ -345,14 +345,16 @@ details.section:not([open]) {
   border-style: dashed;
 }
 .disclosure {
-  display: list-item;
+  display: block;
+  position: relative;
+  padding-inline-end: var(--space-6);
   min-height: var(--min-target);
   cursor: pointer;
 }
 .disclosure h2 {
   display: inline;
 }
-.disclosure > span {
+.disclosure > span:not(.disclosureIcon) {
   display: block;
   margin-block-start: var(--space-1);
 }
@@ -434,3 +436,11 @@ details.section:not([open]) {
     column-gap: var(--space-8);
   }
 }
+
+.disclosure::-webkit-details-marker { display: none; }
+.disclosure .disclosureIcon {
+  position: absolute;
+  inset-block-start: var(--space-1);
+  inset-inline-end: 0;
+}
+details[open] > .disclosure .disclosureIcon { transform: rotate(180deg); }

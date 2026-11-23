@@ -61,7 +61,7 @@ const chemiBanner = {
 const calendar = buildLiveCalendarMonth({ month: "2026-09", events: lives.map(({live}) => ({ id: live.id, slug: live.slug, startsAt: live.startsAt, effectiveStatus: live.effectiveStatus, title: live.title, celebrity: { name: creator.name, image: creator.image.url }, reservationState: null, hasBenefit: null })) });
 document.documentElement.lang = locale;
 const changhaImage = { url: "/images/guest-home/changha-card.jpg", alt: "창하", position: "center 32%" };
-createRoot(document.getElementById("root")!).render(location.pathname === "/event-popup-preview" || location.pathname === "/live/elina-week-0" ? <LocaleProvider initialLocale={locale}>
+createRoot(document.getElementById("root")!).render(location.pathname === "/event-popup-preview" || location.pathname === "/live/elina-week-0" || scenario === "chemi" ? <LocaleProvider initialLocale={locale}>
   {location.pathname === "/live/elina-week-0" ? <LiveEventScreen slug="elina-week-0" locale={locale} initialData={popupLive} /> : <>
     <GuestHome celebrities={[creator]} homeBanners={[scenario === "chemi" ? chemiBanner : banner]} locale={locale} />
     {query.has("result") && <PageNoticeModal locale={locale} storageKey="raffle-results:elina:1" title="래플 결과 안내" actionHref="/my/raffles" actionLabel="결과 보기" />}

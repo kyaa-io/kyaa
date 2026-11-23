@@ -226,7 +226,7 @@ export function monthSpanAt(at: number): MonthSpan {
 export type PillarKey = "year" | "month" | "day" | "hour";
 /** 명식표 순서(오른쪽부터 년·월·일·시를 왼쪽부터 시·일·월·년으로). */
 export const pillarKeys: readonly PillarKey[] = ["hour", "day", "month", "year"];
-const presentPillars = (chart: Chart) =>
+const presentPillars = (chart: Pick<Chart, "pillars">) =>
   pillarKeys.flatMap((key) => (chart.pillars[key] ? [{ key, pillar: chart.pillars[key]! }] : []));
 
 /**
@@ -271,7 +271,7 @@ function toPercent(values: Record<Element, number>): Record<Element, number> {
  * 오행 비율(%). 천간은 한 글자 1, 지지는 1 을 지장간 비중대로 나눈다.
  * 예: 축(丑)은 흙 0.6 · 물 0.3 · 쇠 0.1.
  */
-export function elementRatio(chart: Chart): Record<Element, number> {
+export function elementRatio(chart: Pick<Chart, "pillars">): Record<Element, number> {
   const sum: Record<Element, number> = { wood: 0, fire: 0, earth: 0, metal: 0, water: 0 };
   for (const { pillar } of presentPillars(chart)) {
     sum[stemElement[pillar.heavenlyStem]] += 1;

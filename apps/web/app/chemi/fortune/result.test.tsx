@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { FortuneResult } from "./result";
 
@@ -225,5 +225,5 @@ it("shows the passport row when today's 3P is held for a missing passport (DF-FO
   render(<FortuneResult locale="ko" character="elina" />);
   const row = await screen.findByRole("link", { name: /패스포트 받고 \+3P · 스탬프/ });
   expect(row).toHaveAttribute("href", "/c/elina?locale=ko");
-  expect(row).toHaveTextContent("친밀 +10");
+  expect(within(row).getByRole("img", { name: "친밀 +10" })).toHaveTextContent("+10");
 });

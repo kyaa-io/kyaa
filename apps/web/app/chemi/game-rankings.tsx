@@ -1,5 +1,7 @@
 "use client";
 
+import { VacantRank } from "@/features/chemi/games/vacant-rank";
+
 import { useEffect, useRef } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -48,18 +50,20 @@ function RankingRow({ row }: { row: RecordRow }) {
   }, [row]);
   return (
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
-      <FanText role="body" data-flash-target="gain">{row.place}</FanText>
-      {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.vacant ? null : row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
-      <div>
-        <FanText role="item">{row.name}</FanText>
-        {row.change !== 0 && (
-          <FanText role="meta">
-            {row.change > 0 ? "▲" : "▼"}
-            {Math.abs(row.change)}
-          </FanText>
-        )}
-      </div>
-      <FanText role="body" data-flash-target="value">{row.record}</FanText>
+      {row.vacant ? <VacantRank place={row.place} avatarClassName={styles.rankAvatar} /> : <>
+        <FanText role="body" data-flash-target="gain">{row.place}</FanText>
+        {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
+        <div>
+          <FanText role="item">{row.name}</FanText>
+          {row.change !== 0 && (
+            <FanText role="meta">
+              {row.change > 0 ? "▲" : "▼"}
+              {Math.abs(row.change)}
+            </FanText>
+          )}
+        </div>
+        <FanText role="body" data-flash-target="value">{row.record}</FanText>
+      </>}
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { drawField, pixelScale, loadArt, originOf, PROPS, SHIELD_FX_TICKS, type 
 import type { RunSound } from "./sound";
 import styles from "./run.module.css";
 
-export type Ticket = { playId: string; seed: number; trial?: boolean };
+export type Ticket = { playId: string; seed: number; spentPoints?: number; trial?: boolean };
 export type Submission = { playId: string; ticks: number; inputs: RunInput[]; score: number };
 export type RunStats = { score: number; meters: number; notes: number; bestCombo: number; fevers: number; left: boolean };
 type Stage = "ready" | "play" | "paused" | "over";
@@ -73,6 +73,12 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
   const [say, setSay] = useState<{ text: string; id: number }>();
   const [held, setHeld] = useState({ jump: false, slide: false });
   const [artReady, setArtReady] = useState(false);
+  const [showSpend, setShowSpend] = useState(Boolean(ticket.spentPoints));
+  useEffect(() => {
+    if (!ticket.spentPoints) return;
+    const timer = window.setTimeout(() => setShowSpend(false), 2800);
+    return () => window.clearTimeout(timer);
+  }, [ticket.spentPoints]);
   const [hint, setHint] = useState(false);
   const keyboard = useKeyboardGuide();
   const veil = useRef<HTMLDivElement>(null);
@@ -243,8 +249,10 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
       sound.play("start");
       last = performance.now();
       go("play");
-      setHint(true);
-      later(() => setHint(false), HINT_MS);
+      later(() => {
+        setHint(true);
+        later(() => setHint(false), HINT_MS);
+      }, 3000);
     }
     // A slide key let go while paused never reached the round; stand up again so the runner is not stuck low.
     function resume() {
@@ -298,7 +306,8 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
     <div className={styles.hud}>
       <div className={styles.hudScore}>
         <FanText role="meta">{copy.score}</FanText>
-        <FanPixelText as="strong" role="score" data-run-score="">{number.format(hud.score)}</FanPixelText>
+        <div className={styles.scoreLine}><FanPixelText as="strong" role="score" data-run-score="">{number.format(hud.score)}</FanPixelText>
+        {showSpend && <FanText role="label"><span role="status">−{ticket.spentPoints}P</span></FanText>}</div>
         <FanPixelText role="sub">{number.format(hud.meters)}m · LV.{hud.level}</FanPixelText>
       </div>
       <div className={styles.hudMid}>

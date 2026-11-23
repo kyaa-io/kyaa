@@ -1,4 +1,6 @@
 "use client";
+
+import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useRef, useState } from "react";
@@ -34,6 +36,7 @@ import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./rea
 import {
   band,
   dayHeadline,
+  localizedDayPillar,
   fieldNotes,
   kstDate,
   kstDayStart,
@@ -249,7 +252,7 @@ export function FortuneResult({
       </FanText>
       {status === "result" && (
         <FanText as="time" role="meta">
-          {kstDate(day)} ({kstWeekday("ko", day)})
+          {kstDate(day)} ({kstWeekday(locale, day)})
         </FanText>
       )}
     </div>
@@ -374,7 +377,7 @@ export function FortuneResult({
     points > 0 && !received && <EarnBadge key="points" locale={locale} points={points} variant="inline" />,
     reading.reward?.stamp && <FanText key="stamp" role="meta"><ReadingText id="stamp" /></FanText>,
     Boolean(reading.reward?.exp) && (
-      <FanText key="exp" role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
+      <AffinityBadge key="exp" amount={reading.reward?.exp ?? 0} label={uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })} />
     ),
     points > 0 && !received && <FanText key="share" role="meta">{uiText("shareOf", { name })}</FanText>,
     received && <FanText key="received" role="meta">{uiText("receivedToday", { name })}</FanText>,
@@ -386,7 +389,7 @@ export function FortuneResult({
           {uiText("passportReward", { points: CHEMI_PASSPORT_DAILY_POINTS })}
         </FanText>
         {Boolean(reading.reward?.exp) && (
-          <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
+          <AffinityBadge amount={reading.reward?.exp ?? 0} label={uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })} />
         )}
       </span>
     </FanAction>
@@ -410,7 +413,7 @@ export function FortuneResult({
       <div className={styles.main}>
         <header className={styles.head}>
           <FanText as="p" role="meta">
-            {uiText("todayBy", { pillar: result.evidence.dayPillar, name })}
+            {uiText("todayBy", { pillar: localizedDayPillar(locale, result.evidence.dayPillar), name })}
           </FanText>
           {/* 점수·등급 다음 줄에 오늘을 한 줄로 말하는 제목(04-3 · 01). 제목이 등급 이름뿐이면 점수 옆에 둔다. */}
           {merged ? (

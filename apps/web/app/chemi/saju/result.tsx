@@ -26,7 +26,7 @@ import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
-import { controls, pillarKeys, branchHanja, tenGod, stemElement, branchElement, elementName, elements, generates, monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
+import { controls, pillarKeys, branchHanja, elementRatio, tenGod, stemElement, branchElement, elementName, elements, generates, monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
 import {
   firstReading,
   monthReading,
@@ -134,11 +134,11 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
           " 두 일간은 천간합을 이뤄요."}
       </FanText>
       <FanHeading>오행 보완</FanHeading>
-      <FanText as="p" role="meta">확인된 글자에 담긴 오행</FanText>
+      <FanText as="p" role="meta">지장간을 포함한 오행 비율</FanText>
       <div className={styles.cols}>
-        {owners.map(([owner], index) => {
-          const letters = counts[index];
-          const values = elements.map((element) => letters.filter((value) => value === element).length);
+        {owners.map(([owner, pillars], index) => {
+          const ratio = elementRatio({ pillars });
+          const values = elements.map((element) => ratio[element]);
           const top = values.indexOf(Math.max(...values));
           return (
             <section key={index} className={styles.block}>
@@ -146,8 +146,8 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
               <ElementRows locale={locale} rows={elements.map((element, i) => ({
                 element,
                 name: elementName[element],
-                count: values[i],
-                percent: letters.length ? Math.round(values[i] / letters.length * 1000) / 10 : 0,
+                count: counts[index].filter((value) => value === element).length,
+                percent: values[i],
                 top: i === top && values[i] > 0,
               }))} />
             </section>

@@ -130,8 +130,7 @@
   transform-origin: right center;
 }
 .hud dt,
-.middle small,
-.ranking small {
+.middle small {
   color: var(--color-muted);
 }
 .hud dd {
@@ -253,6 +252,8 @@
 
   overflow-wrap: anywhere;
 }
+.ranking li[data-vacant] > :first-child { text-align: center; }
+.ranking li[data-vacant] > :last-child { grid-column: -2; text-align: end; }
 .ranking li b {
   font-variant-numeric: tabular-nums;
 }
@@ -811,4 +812,12 @@
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-card);
   background: var(--color-accent-soft);
+}
+
+.roundTable, .levelGoal { display: grid; }
+.roundTable { gap: var(--space-2); }
+.ranking li:has(> div:only-child) { display: block; }
+@media (width >= 48rem) {
+  .layout[data-lobby="true"] .roundTable { grid-column: 3; grid-row: 2; align-self: stretch; grid-template-rows: auto 1fr; }
+  .layout[data-lobby="true"] .roundTable .levelList { grid-column: 1; }
 }
