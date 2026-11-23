@@ -453,28 +453,28 @@ const domainPlanet: Record<StarDomain, { body: string; role: string }> = {
 };
 const natalLine: Record<StarDomain, Record<"fire" | "earth" | "air" | "water", string>> = {
   love: {
-    fire: "좋아하면 바로 표현하는 편이에요",
-    earth: "천천히 믿음이 쌓여야 마음을 여는 편이에요",
-    air: "말이 통해야 마음이 가는 편이에요",
-    water: "말보다 분위기와 마음 씀을 먼저 느끼는 편이에요",
+    fire: "좋아하면 바로 표현하는 편",
+    earth: "천천히 믿음이 쌓여야 마음을 여는 편",
+    air: "말이 통해야 마음이 가는 편",
+    water: "말보다 분위기와 마음 씀을 먼저 느끼는 편",
   },
   people: {
-    fire: "생각나면 바로 말하는 편이에요",
-    earth: "확인한 것만 차분히 말하는 편이에요",
-    air: "여러 사람과 가볍게 잘 어울리는 편이에요",
-    water: "상대 기분을 읽고 말을 고르는 편이에요",
+    fire: "생각나면 바로 말하는 편",
+    earth: "확인한 것만 차분히 말하는 편",
+    air: "여러 사람과 가볍게 잘 어울리는 편",
+    water: "상대 기분을 읽고 말을 고르는 편",
   },
   money: {
-    fire: "기회다 싶으면 크게 움직이는 편이에요",
-    earth: "모으고 불리는 데 운이 붙는 편이에요",
-    air: "사람과 정보에서 기회를 얻는 편이에요",
-    water: "마음이 가는 곳에 돈을 쓰는 편이에요",
+    fire: "기회다 싶으면 크게 움직이는 편",
+    earth: "모으고 불리는 데 운이 붙는 편",
+    air: "사람과 정보에서 기회를 얻는 편",
+    water: "마음이 가는 곳에 돈을 쓰는 편",
   },
   work: {
-    fire: "앞장서서 책임을 지는 편이에요",
-    earth: "꾸준히 쌓아 결과를 내는 편이에요",
-    air: "생각을 구조로 정리하는 데 강한 편이에요",
-    water: "함께하는 사람까지 챙기며 일하는 편이에요",
+    fire: "앞장서서 책임을 지는 편",
+    earth: "꾸준히 쌓아 결과를 내는 편",
+    air: "생각을 구조로 정리하는 데 강한 편",
+    water: "함께하는 사람까지 챙기며 일하는 편",
   },
 };
 
@@ -483,13 +483,14 @@ const natalLine: Record<StarDomain, Record<"fire" | "earth" | "air" | "water", s
  * `signOf`: 내 행성이 어느 별자리에 있는지.
  */
 export function starDomainText(domain: StarDomain, stars: number, signOf: (body: string) => ZodiacSign | null, character?: StarCharacterId) {
-  const today = domainLong[domain][stars - 1];
   const planet = domainPlanet[domain];
   const sign = signOf(planet.body);
-  if (!character) return sign ? `${today} 내 ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}.` : today;
-  const basis = sign ? `내 ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}.` : "";
-  const line = character === "dosa" ? starDosa[domain][stars - 1] : chemiPersona[character].star[domain][stars - 1];
-  return basis ? `${line} ${basis}` : line;
+  const today = !character ? domainLong[domain][stars - 1]
+    : character === "dosa" ? starDosa[domain][stars - 1] : chemiPersona[character].star[domain][stars - 1];
+  if (!sign) return today;
+  const subject = character === "dosa" ? "그대의" : character ? "네" : "내";
+  const ending = character === "dosa" ? "이오" : character === "elina" || !character ? "이에요" : "이야";
+  return `${today} ${subject} ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}${ending}.`;
 }
 
 const starDosa: Record<StarDomain, readonly string[]> = {
