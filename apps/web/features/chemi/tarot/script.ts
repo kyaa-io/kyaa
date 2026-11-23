@@ -1,3 +1,5 @@
+import type { AppLocale } from "@/i18n/locales";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 export type TarotCharacter = "changha" | "elina" | "yuna" | "dosa";
 export type TarotVoice = "ban" | "yo" | "hao";
 /** 타로 글의 언어. 한국어 밖의 언어는 영어 글을 보여 준다(운영 오픈 점검표 Q4-A: 한국어·영어만 맞추고 나머지 9개 언어는 영어). */
@@ -5,20 +7,20 @@ export type TarotLang = "ko" | "en";
 export const tarotLang = (locale: string | null | undefined): TarotLang => (locale === "ko" ? "ko" : "en");
 
 /** 입장 고르기 띠 순서. 말투는 COM-TX-01(반말 · 요체 · 하오체) 셋이고, 세 최애는 그 위에 자기 대사(TAROT_OWN)를 얹는다. */
-export const TAROT_CHARACTERS: readonly { key: TarotCharacter; name: string; nameEn: string; voice: TarotVoice }[] = [
-  { key: "changha", name: "창하", nameEn: "Changha", voice: "ban" },
-  { key: "elina", name: "엘리나", nameEn: "Elina", voice: "yo" },
-  { key: "yuna", name: "유나", nameEn: "Yuna", voice: "ban" },
-  { key: "dosa", name: "kyaa 도사", nameEn: "kyaa Dosa", voice: "hao" },
+export const TAROT_CHARACTERS: readonly { key: TarotCharacter; name: string; voice: TarotVoice }[] = [
+  { key: "changha", name: "창하", voice: "ban" },
+  { key: "elina", name: "엘리나", voice: "yo" },
+  { key: "yuna", name: "유나", voice: "ban" },
+  { key: "dosa", name: "kyaa 도사", voice: "hao" },
 ];
 
 export const isTarotCharacter = (value: string | null | undefined): value is TarotCharacter =>
   TAROT_CHARACTERS.some((character) => character.key === value);
 
-/** 최애 한 명. name 은 화면 언어의 이름이다. */
+/** 최애 한 명. name 은 화면 언어의 이름이다(creatorName: 일본어·태국어·러시아어는 음역, 그 밖 라틴 표기, ko 는 한국어). 말투(voice)만 볼 때는 locale 을 생략한다. */
 export const tarotCharacter = (key: TarotCharacter, locale: string = "ko") => {
   const character = TAROT_CHARACTERS.find((item) => item.key === key)!;
-  return tarotLang(locale) === "ko" ? character : { ...character, name: character.nameEn };
+  return locale === "ko" ? character : { ...character, name: creatorName(key, locale as AppLocale) };
 };
 
 /** 뽑는 동안 최애가 하는 말. 입장·떠올리기·섞기·고르기·확정·이미 뽑은 날. 카드를 읽어 주는 말은 풀이 글(content/chemi/tarot)에 있다. */

@@ -21,6 +21,7 @@ import { signList, type StarReading } from "./reading";
 import { ChartWheel } from "./wheel";
 import styles from "./result.module.css";
 import chart from "./chart.module.css";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 function countBars(rows: { name: string; count: number }[], label: string) {
   return (
@@ -60,7 +61,7 @@ export function StarChart({
 }) {
   const uiText = useReadingCopy();
   const { natal, signs } = reading.result;
-  const name = starCharacters.find((c) => c.id === character)?.name ?? "창하";
+  const name = creatorName(character, locale);
   const sunSign = signs.sun.length === 1 ? signs.sun[0]! : null;
   const moonSign = signs.moon.length === 1 ? signs.moon[0]! : null;
   const summary =

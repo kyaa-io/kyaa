@@ -16,20 +16,8 @@ export const passportIssuedEventWindows = {
 
 export type PageLikeEventWindow = (typeof pageLikeEventWindows)[keyof typeof pageLikeEventWindows];
 
-/** 이벤트 이름: 배너 제목과 같은 `이름 × Kyaa`. 한국어 말고는 영문 이름을 쓴다. */
-const eventNames: Readonly<Record<string, { ko: string; en: string }>> = {
-  elina: { ko: "엘리나", en: "Elina" },
-  changha: { ko: "창하", en: "Changha" },
-  yuna: { ko: "유나", en: "Yuna" },
-};
-
 /** 지금(`now`) 이 크리에이터의 좋아요 이벤트 창이 열려 있으면 그 창, 아니면 undefined. */
 export function openPageLikeEvent(slug: string, now: Date | number): PageLikeEventWindow | undefined {
   const at = typeof now === "number" ? now : now.getTime();
   return Object.values(pageLikeEventWindows).find((window) => window.slug === slug && Date.parse(window.from) <= at && at < Date.parse(window.to));
-}
-
-export function pageLikeEventTitle(slug: string, locale: string): string | undefined {
-  const name = eventNames[slug];
-  return name ? `${locale === "ko" ? name.ko : name.en} × Kyaa` : undefined;
 }

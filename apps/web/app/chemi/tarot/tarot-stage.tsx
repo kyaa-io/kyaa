@@ -28,9 +28,10 @@ import spread from "./spread/spread.module.css";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import type { TarotDraw, TarotStep } from "./types";
 import styles from "./tarot.module.css";
+import type { AppLocale } from "@/i18n/locales";
 
 type Props = {
-  locale: string;
+  locale: AppLocale;
   step: TarotStep;
   character: TarotCharacter;
   /** 회원이 오늘 이미 뽑은 카드. 있으면 입장 장면이 '다시 온 장면'이다. */
