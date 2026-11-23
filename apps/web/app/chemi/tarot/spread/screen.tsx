@@ -12,11 +12,12 @@ import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
-import { TAROT_BACK, TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
+import { TAROT_BACK, TAROT_DECK_SIZE, tarotAlt, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import { CardRail } from "../card-rail";
 import styles from "../tarot.module.css";
+import { loginExpired } from "../types";
 import { useTarotMeaning } from "../use-tarot-meaning";
 import spread from "./spread.module.css";
 
@@ -40,14 +41,14 @@ function parseSaved(body: any): Saved | null {
 export function TarotSpread({ locale, character }: { locale: AppLocale; character: TarotCharacter }) {
   const text = useReadingCopy();
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
-  const [status, setStatus] = useState<"loading" | "guest" | "pick" | "saving" | "result" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "guest" | "pick" | "saving" | "result" | "error" | "expired">("loading");
   const [picked, setPicked] = useState<number[]>([]);
   const [saved, setSaved] = useState<Saved | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [controlsHost, setControlsHost] = useState<HTMLElement | null>(null);
   const [reduced, setReduced] = useState(false);
   const ask = useDeepResultAsk(locale, "tarot", character);
-  const person = tarotCharacter(character);
+  const person = tarotCharacter(character, locale);
   const voice = voiceKey[person.voice];
   const home = `/chemi/tarot?locale=${locale}&c=${character}`;
 
@@ -72,6 +73,7 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
         headers: { Authorization: `Bearer ${await getAccessToken()}` },
         signal: controller.signal,
       });
+      if (await loginExpired(response)) return setStatus("expired");
       if (!response.ok) throw Error();
       const body = await response.json();
       if (controller.signal.aborted) return;
@@ -92,6 +94,7 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
         headers: { Authorization: `Bearer ${await getAccessToken()}`, "Content-Type": "application/json" },
         body: JSON.stringify({ character, positions: all }),
       });
+      if (await loginExpired(response)) return setStatus("expired");
       const found = response.ok ? parseSaved(await response.json()) : null;
       if (!found) throw Error();
       setSaved(found);
@@ -122,6 +125,16 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
   );
 
   if (ask) return ask;
+  if (status === "expired")
+    return (
+      <div className={styles.root}>
+        <FanState
+          kind="auth"
+          title={text("expired")}
+          actions={<FanAction variant="primary" onClick={login}><ReadingText id="login" /></FanAction>}
+        />
+      </div>
+    );
   if (status === "guest")
     return (
       <FanState
@@ -217,15 +230,15 @@ function SpreadResult({
   home: string;
 }) {
   const text = useReadingCopy();
-  const person = tarotCharacter(character);
-  const meanings = [useTarotMeaning(saved.cards[0].card), useTarotMeaning(saved.cards[1].card), useTarotMeaning(saved.cards[2].card)];
+  const person = tarotCharacter(character, locale);
+  const meanings = [useTarotMeaning(saved.cards[0].card, locale), useTarotMeaning(saved.cards[1].card, locale), useTarotMeaning(saved.cards[2].card, locale)];
   const failed = meanings.some((meaning) => meaning.status === "error");
   const sides = saved.cards.map((card, index) => meanings[index].card?.dir[card.reversed ? "down" : "up"]);
   const future = sides[2];
   const [shareStatus, setShareStatus] = useState("");
   async function shareCards() {
     const summary = saved.cards.map((card, index) =>
-      `${text(positions[index])} · ${tarotTitle(card.card)} · ${text(card.reversed ? "reversed" : "upright")}`
+      `${text(positions[index])} · ${tarotTitle(card.card, locale)} · ${text(card.reversed ? "reversed" : "upright")}`
     ).join("\n");
     try {
       if (navigator.share) await navigator.share({ text: summary });
@@ -256,7 +269,7 @@ function SpreadResult({
             <div className={spread.trio}>
               {saved.cards.map((card, index) => (
                 <figure key={positions[index]} data-reversed={card.reversed || undefined}>
-                  <img src={tarotFace(card.card)} alt={TAROT_DECK[card.card][2]} />
+                  <img src={tarotFace(card.card)} alt={tarotAlt(card.card, locale)} />
                   <figcaption>
                     <FanText role="label">{text(positions[index])}</FanText>
                     {saved.deckPositions && (
@@ -306,7 +319,7 @@ function SpreadResult({
                       <dd>
                         <span className={spread.cardName}>
                           <FanText as="strong" role="item">
-                            {tarotTitle(card.card)}
+                            {tarotTitle(card.card, locale)}
                           </FanText>
                           <FanTag tone={card.reversed ? "neutral" : "fan"}>{text(card.reversed ? "reversed" : "upright")}</FanTag>
                         </span>

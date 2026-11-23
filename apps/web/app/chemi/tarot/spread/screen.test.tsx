@@ -31,8 +31,8 @@ beforeEach(() => {
         posts.push(JSON.parse(init.body as string));
         return Response.json(saved);
       }
-      if (path === "/api/chemi/tarot/spread") return Response.json(state);
-      const card = path.match(/cards\/(\d+)$/);
+      if (path === "/api/chemi/tarot/spread") return state === "expired" ? Response.json({ error: { code: "UNAUTHORIZED" } }, { status: 401 }) : Response.json(state);
+      const card = path.match(/cards\/(\d+)\?locale=/);
       if (card) return Response.json({ id: Number(card[1]), dir: { up: side(`정${card[1]}`), down: side(`역${card[1]}`) } });
       return Response.json({});
     }),
@@ -77,4 +77,13 @@ it("asks a guest to sign in", async () => {
   render(<TarotSpread locale="ko" character="changha" />);
   fireEvent.click(await screen.findByRole("button", { name: "로그인" }));
   expect(session.login).toHaveBeenCalled();
+});
+
+it("asks to sign in again when the session has expired", async () => {
+  state = "expired";
+  render(<TarotSpread locale="ko" character="changha" />);
+  expect(await screen.findByText("로그인이 만료되었습니다.")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "로그인" }));
+  expect(session.login).toHaveBeenCalled();
+  expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
 });

@@ -17,7 +17,7 @@ import { completeShare } from "@/features/chemi/ui/complete-share";
 import { ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
-import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
+import { TAROT_DECK_SIZE, tarotAlt, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { tarotBasis, tarotRowMore } from "@/features/chemi/tarot/depth";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
@@ -39,6 +39,7 @@ export function TarotResult({
   auth,
   meaning,
   headers,
+  onLoginSave,
   onAsk,
 }: {
   locale: AppLocale;
@@ -48,11 +49,13 @@ export function TarotResult({
   auth: TarotAuth;
   meaning: TarotMeaning;
   headers: () => Promise<Record<string, string>>;
+  /** 비회원의 '로그인하고 저장'. 없으면 바로 로그인한다. */
+  onLoginSave?: () => void;
   /** 저장된 내 카드일 때만 준다: 이 결과로 질문하기. */
   onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
-  const person = tarotCharacter(character);
+  const person = tarotCharacter(character, locale);
   // 지난 날의 결과 링크로 열었으면 오늘 받은 것을 이 카드의 보상으로 보여 주지 않는다.
   const today = draw.date === kstDate();
   const [rewards, setRewards] = useState<Rewards | null>(null);
@@ -129,7 +132,7 @@ export function TarotResult({
         done = () => completeShare(card.shareId, via, authorization, uiText, person.name);
       }
       const url = new URL(path, location.origin).href;
-      if (via === "send") await navigator.share({ title: tarotTitle(draw.card), url });
+      if (via === "send") await navigator.share({ title: tarotTitle(draw.card, locale), url });
       else {
         await navigator.clipboard.writeText(url);
         showFanToast({ title: uiText("copyDone"), tone: "success" });
@@ -144,7 +147,7 @@ export function TarotResult({
     }
   }
 
-  const alt = TAROT_DECK[draw.card][2];
+  const alt = tarotAlt(draw.card, locale);
   const direction = uiText(draw.reversed ? "reversed" : "upright");
   const content = meaning.card?.dir[draw.reversed ? "down" : "up"];
   const slotLine = draw.slot ? ` · ${uiText("deckSlot", { total: TAROT_DECK_SIZE, slot: draw.slot })}` : "";
@@ -158,7 +161,7 @@ export function TarotResult({
           <FanText role="meta"><ReadingText id="saveHint" /></FanText>
         </p>
         <div className={styles.saveActions}>
-          <FanAction onClick={auth.login}><ReadingText id="loginSave" /></FanAction>
+          <FanAction onClick={onLoginSave ?? auth.login}><ReadingText id="loginSave" /></FanAction>
           <FanAction variant="text" onClick={() => setKeepSave(false)}>
             <ReadingText id="withoutSaving" />
           </FanAction>
@@ -186,7 +189,7 @@ export function TarotResult({
         <header className={styles.head}>
           <FanText as="p" role="meta">{`${uiText("cardDay", { date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(draw.date)) })}${slotLine}`}</FanText>
           <div className={styles.nameRow}>
-            <FanHeading as="h1">{tarotTitle(draw.card)}</FanHeading>
+            <FanHeading as="h1">{tarotTitle(draw.card, locale)}</FanHeading>
             <FanTag tone="fan">{direction}</FanTag>
           </div>
         </header>
@@ -241,7 +244,7 @@ export function TarotResult({
               <FanText as="p" role="body">
                 {meaning.card.symbol}
               </FanText>
-              <ReadingBasisRows rows={tarotBasis(draw.card, draw.reversed)} />
+              <ReadingBasisRows rows={tarotBasis(draw.card, draw.reversed, locale)} />
             </>
           ) : (
             <Placeholder rows={3} />
@@ -316,7 +319,7 @@ export function TarotResult({
         <div className={styles.shareCard}>
           <img src={tarotFace(draw.card)} alt="" data-reversed={draw.reversed || undefined} />
           <span>
-            <FanText role="item">{tarotTitle(draw.card)}</FanText>
+            <FanText role="item">{tarotTitle(draw.card, locale)}</FanText>
             <FanText role="meta">{direction}</FanText>
             {content ? <FanText role="body">{content.pair}</FanText> : null}
           </span>
