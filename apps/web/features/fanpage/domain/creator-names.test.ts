@@ -3,7 +3,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { getMatchCopy } from "@/app/chemi/games/match/copy";
 import { getRunCopy } from "@/app/chemi/games/run/copy";
 import { tarotCharacter } from "@/features/chemi/tarot/script";
-import { pageLikeEventTitle } from "@/features/reaction/domain/page-like-event";
+import { pageLikeEventTitle } from "@/features/reaction/ui/event-like-card";
 import { creatorName, creatorNameSlugs } from "./creator-names";
 
 const hangul = /[가-힣]/;
