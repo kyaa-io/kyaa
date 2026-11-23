@@ -30,9 +30,11 @@ describe("X app browser", () => {
   it.each(["iosX", "androidX"] as const)("requires handoff for %s", (name) => {
     expect(requiresGoogleBrowserHandoff(agents[name])).toBe(true);
   });
-  it("hands iOS X to Safari and Android X to the browser by intent", () => {
-    expect(planGoogleLogin(agents.iosX, loginUrl)).toEqual({ kind: "external", url: "x-safari-https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve" });
-    expect(planGoogleLogin(agents.androidX, loginUrl).kind).toBe("external");
+  // X drops x-safari-https:// and intent:// silently (0 of 118 hand-offs arrived, 2026-11-23), so it gets the manual notice.
+  it.each(["iosX", "androidX"] as const)("gives %s the manual notice instead of a hand-off the app ignores", (name) => {
+    expect(externalBrowserUrl(agents[name], loginUrl)).toBeNull();
+    expect(planGoogleLogin(agents[name], loginUrl)).toEqual({ kind: "notice" });
+    expect(landingHandoff(agents[name], new URL(loginUrl))).toEqual({ target: null, fallback: null });
   });
   it.each(["iosInstagram", "iosKakao", "androidKakao"] as const)("keeps %s handoff", (name) => {
     expect(requiresGoogleBrowserHandoff(agents[name])).toBe(true);
@@ -118,7 +120,7 @@ describe("embedded browsers without a dedicated rule", () => {
 describe("landing handoff", () => {
   it.each([
     [agents.iosInstagram, "instagram://extbrowser/"], [agents.iosKakao, "kakaotalk://web/openExternal"],
-    [agents.iosX, "x-safari-https://"], [agents.iosFacebook, "x-safari-https://"],
+    [agents.iosFacebook, "x-safari-https://"],
     ["iPhone TikTok", "x-safari-https://"], ["iPhone Line/15", "https://kyaa.io/login?"],
   ])("preserves the landing and source for %s", (ua, prefix) => {
     const {target} = landingHandoff(ua,new URL(loginUrl));
@@ -126,7 +128,7 @@ describe("landing handoff", () => {
     expect(decodeURIComponent(target!)).toContain("kyaa_browser=");
   });
   it("offers a package-free fallback for Android", () => {
-    const plan = landingHandoff(agents.androidX,new URL(loginUrl));
+    const plan = landingHandoff(agents.androidInstagram,new URL(loginUrl));
     expect(plan.target).toContain("package=com.android.chrome");
     expect(plan.fallback).not.toContain("package=");
   });

@@ -27,6 +27,9 @@ export function externalBrowserUrl(userAgent: string, loginUrl: string): string 
     return null;
   }
   if (url.protocol !== "https:" || url.username || url.password) return null;
+  // The X app drops both x-safari-https:// (iOS) and intent:// (Android) without a prompt or an error the page can see:
+  // 0 of 118 hand-offs arrived in 7 days (2026-11-23). X gets the manual "··· → Open in browser" notice instead.
+  if (isXBrowser(userAgent)) return null;
   const target = `${url.host}${url.pathname}${url.search}`;
   // KakaoTalk's own link for opening a page in the phone's browser, the same on iOS and Android.
   if (/KAKAOTALK/i.test(userAgent)) return `kakaotalk://web/openExternal?url=${encodeURIComponent(url.href)}`;

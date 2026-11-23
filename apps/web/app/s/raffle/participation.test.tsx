@@ -209,3 +209,139 @@ it('does not enter a signed-in fan who never tapped Enter', async () => {
   expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET']);
   expect(screen.getByRole('button', { name: '래플 응모하기' })).toBeTruthy();
 });
+
+// RAFFLE-FUNNEL-CHECK-1123: X 앱 안 브라우저에서는 로그인이 끝나지 않고, 브라우저를 옮기면 sessionStorage의 응모 의도가 사라졌다.
+describe('in-app browser and entry intent in the address (?enter=1)', () => {
+  const xApp = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Twitter for iPhone';
+  const safari = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+  const at = (path: string) => window.history.replaceState(null, '', path);
+  const asAgent = (ua: string) => vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(ua);
+  afterEach(() => { vi.restoreAllMocks(); at('/'); });
+  const block = (locale: 'en' | 'ko' = 'en') => render(<RaffleProvider locale={locale} closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+
+  it.each([
+    ['X', xApp], ['Instagram', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 Instagram 350.0.2.15.84'],
+    ['Facebook', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 [FBAN/FBIOS;FBAV/500.0]'],
+    ['TikTok', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 musical_ly_36.5.0 BytedanceWebview/d8a21c6'],
+    ['KakaoTalk', 'Mozilla/5.0 (Linux; Android 14; SM-S918N; wv) AppleWebKit/537.36 Chrome/130.0 Mobile Safari/537.36 KAKAOTALK/11.0.0'],
+  ])('tells a signed-out fan in the %s app to open the browser, right under the Enter button', (_name, ua) => {
+    asAgent(ua);
+    const view = block();
+    const guide = view.container.querySelector('[data-raffle-inapp]')!;
+    expect(guide.textContent).toContain('Open in your browser to enter: tap ··· (top right) → Open in browser');
+    expect(guide.previousElementSibling?.textContent).toBe('Enter the raffle');
+    expect(screen.getByRole('button', { name: 'Copy link' })).toBeTruthy();
+  });
+
+  it('copies the raffle link with ?enter=1, keeping the invite code and dropping the hash', async () => {
+    asAgent(xApp);
+    const writeText = vi.fn(async (_text: string) => {});
+    Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText } });
+    at(`/s/raffle?invite=${friendCode}#prizes`);
+    block();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+    await settle();
+    const url = new URL(writeText.mock.calls[0]![0]);
+    expect(url.pathname).toBe('/s/raffle');
+    expect(Object.fromEntries(url.searchParams)).toEqual({ invite: friendCode, enter: '1' });
+    expect(url.hash).toBe('');
+    expect(screen.getByRole('button', { name: 'Link copied' })).toBeTruthy();
+  });
+
+  it('shows a selectable link when the clipboard is blocked', async () => {
+    asAgent(xApp);
+    Object.defineProperty(window.navigator, 'clipboard', { configurable: true, value: { writeText: vi.fn(async () => { throw new Error('denied'); }) } });
+    at('/s/raffle');
+    block();
+    fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
+    await settle();
+    expect((screen.getByRole('textbox', { name: 'Copy link' }) as HTMLInputElement).value).toMatch(/\/s\/raffle\?enter=1$/);
+  });
+
+  it('shows the Korean guide too, and nothing in an ordinary browser or once signed in', async () => {
+    asAgent(xApp);
+    const ko = block('ko');
+    expect(ko.container.querySelector('[data-raffle-inapp]')?.textContent).toContain('브라우저에서 열어 응모하세요: 오른쪽 위 ··· → 브라우저에서 열기');
+    ko.unmount();
+    vi.restoreAllMocks(); asAgent(safari);
+    const plain = block();
+    expect(plain.container.querySelector('[data-raffle-inapp]')).toBeNull();
+    plain.unmount();
+    vi.restoreAllMocks(); asAgent(xApp);
+    auth.authenticated = true;
+    server({ entered: false, passportReceived: false, communityJoined: false });
+    const signedIn = block();
+    await settle();
+    expect(signedIn.container.querySelector('[data-raffle-inapp]')).toBeNull();
+  });
+
+  it('puts ?enter=1 in the address before sending a signed-out fan to sign in, so the login return carries it', () => {
+    at('/s/raffle?locale=en');
+    block();
+    fireEvent.click(screen.getByRole('button', { name: 'Enter the raffle' }));
+    expect(auth.login).toHaveBeenCalledOnce();
+    expect(window.location.pathname + window.location.search).toBe('/s/raffle?locale=en&enter=1');
+    expect(window.sessionStorage.getItem('kyaa:raffle:enter')).toBe('1');
+  });
+
+  it('enters once when a signed-in fan arrives with ?enter=1 from another browser, then strips the param', async () => {
+    auth.authenticated = true;
+    at('/s/raffle?enter=1&locale=en');
+    const calls = server({ entered: false, passportReceived: false, communityJoined: false });
+    const first = block();
+    await settle();
+    expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET', 'POST']);
+    expect(screen.getByText("You're in")).toBeTruthy();
+    expect(window.location.search).toBe('?locale=en');
+    // 다시 열어도(새로고침·뒤로 가기) 또 응모하지 않는다
+    first.unmount();
+    calls.length = 0;
+    block();
+    await settle();
+    expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET']);
+  });
+
+  it('does not post again for a fan who already entered, and still strips the param', async () => {
+    auth.authenticated = true;
+    at('/s/raffle?enter=1');
+    const calls = server({ entered: true, passportReceived: false, communityJoined: false, chances: 1 });
+    block();
+    await settle();
+    expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET']);
+    expect(window.location.search).toBe('');
+  });
+
+  it('does nothing for a signed-out visitor with ?enter=1 and keeps the param for after sign-in', async () => {
+    at('/s/raffle?enter=1');
+    const calls = server({ entered: false });
+    block();
+    await settle();
+    expect(calls).toEqual([]);
+    expect(window.location.search).toBe('?enter=1');
+    expect(screen.getByRole('button', { name: 'Enter the raffle' })).toBeTruthy();
+  });
+
+  it('shows the error row with Try again when the automatic entry fails', async () => {
+    auth.authenticated = true;
+    at('/s/raffle?enter=1');
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.includes('invite-code')) return json({ code: mine, redeemed: false, redemptionState: 'none' });
+      return init?.method === 'POST' ? { ok: false, json: async () => ({}) } : json({ entered: false });
+    }));
+    block();
+    await settle();
+    expect(screen.getByRole('alert').textContent).toContain('Could not enter');
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeTruthy();
+    expect(window.location.search).toBe('');
+  });
+
+  it('keeps the sessionStorage path working in the same tab', async () => {
+    window.sessionStorage.setItem('kyaa:raffle:enter', '1');
+    auth.authenticated = true;
+    at('/s/raffle');
+    const calls = server({ entered: false, passportReceived: false, communityJoined: false });
+    block();
+    await settle();
+    expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET', 'POST']);
+  });
+});

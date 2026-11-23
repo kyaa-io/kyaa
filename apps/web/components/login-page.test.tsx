@@ -422,9 +422,15 @@ describe("login page (Cognito)", () => {
       stubHttps(iosX);
       window.sessionStorage.setItem("byus.event-source.v1", JSON.stringify({ slug: "changha", tag: { source: "x", campaign: "changha-onboarding-1118", content: "official" }, recorded: false }));
       query = "returnTo=%2Fchangha%3Flocale%3Dko%23first-reaction&locale=ko";
+      const writeText = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
       render(<LoginPage appleLoginEnabled />);
+      // X ignores x-safari-https://, so tapping Google starts nothing and the copy-link notice carries the address.
       fireEvent.click(screen.getByRole("button", { name: /Google/ }));
-      const handed = new URL(String(assign.mock.calls[0]?.[0]).replace("x-safari-https://", "https://"));
+      expect(assign).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "로그인 링크 복사" }));
+      await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+      const handed = new URL(String(writeText.mock.calls[0]?.[0]));
       const returnTo = new URL(handed.searchParams.get("returnTo") ?? "", "https://kyaa.io");
       expect(returnTo.pathname + returnTo.hash).toBe("/changha#first-reaction");
       expect(Object.fromEntries(returnTo.searchParams)).toMatchObject({ utm_source: "x", utm_campaign: "changha-onboarding-1118", utm_content: "official" });

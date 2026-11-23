@@ -171,6 +171,8 @@ export function LoginPage({
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
   const iosInstagram = useSyncExternalStore(subscribeToBrowserPolicy, getIosInstagramSnapshot, getServerBrowserHandoffSnapshot);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  // Privy in-app mode: set once the Google hand-off was tried, so the copy-link notice shows if the app ignores it.
+  const [handoffTried, setHandoffTried] = useState(false);
   // Set while the browser leaves for Cognito; a second tap must not start another authorization.
   const [oauthStarting, setOauthStarting] = useState(false);
   const [reauthenticationStarting, setReauthenticationStarting] = useState(false);
@@ -235,6 +237,7 @@ export function LoginPage({
         setLinkCopyState("idle");
         setError(null);
         // The copy-link notice stays visible in in-app browsers, so a failed hand-off never leaves the user stuck.
+        setHandoffTried(true);
         if (plan.kind === "external") {
           if (iosInstagram) {
           // Copy inside the tap so the link is already on the clipboard if the app ignores the hand-off.
@@ -450,6 +453,8 @@ export function LoginPage({
   });
   const inAppPrivy = embeddedBrowser && privy;
   const appleFirst = embeddedBrowser && /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // Apps with no working hand-off (X) get the notice in place of a Google link that would do nothing.
+  const googleHandoff = Boolean(inAppPrivy) && planGoogleLogin(navigator.userAgent, handoffLoginUrl(), isStandalone()).kind === "external";
   const emailCodeButton = inAppPrivy && <FanAction variant="secondary" type="button"
     disabled={!ready || authenticated || oauthStarting} onClick={() => {
       loginMeasurementRef.current = signupFunnelTracker.beginLogin("email", "provider", toContentLocale(locale));
@@ -643,9 +648,10 @@ export function LoginPage({
           </button>
         )}
         {appleFirst && emailCodeButton}
-        {inAppPrivy && <FanAction type="button" variant="text" onClick={() => startOAuthLogin("google")}>
+        {inAppPrivy && googleHandoff && <FanAction type="button" variant="text" onClick={() => startOAuthLogin("google")}>
           Google · {/Android/i.test(navigator.userAgent) ? "Chrome" : "Safari"} ↗
         </FanAction>}
+        {inAppPrivy && (!googleHandoff || handoffTried) && browserHandoffNotice}
         {!privy && <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />}
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
     </div>
