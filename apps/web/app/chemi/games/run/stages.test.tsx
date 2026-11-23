@@ -33,7 +33,7 @@ it("writes the affinity line as name · 친밀 with the gain on the right, or �
   const { rerender } = render(<ResultStage {...props} result={{ score: 900, exp: 10 }} />);
   expect(screen.getByText("창하 · 친밀")).toBeInTheDocument();
   expect(screen.getByText("+10")).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /다시 달리기 · 남은 판 1/ })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /다시 하기 · 남은 판 1/ })).toBeInTheDocument();
   rerender(<ResultStage {...props} result={{ score: 900, exp: 0 }} />);
   expect(screen.getByText("오늘 받음")).toBeInTheDocument();
 });
