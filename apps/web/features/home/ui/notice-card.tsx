@@ -1,4 +1,6 @@
-import { NoticeCounts } from "@/components/fan-ui/notice-counts";
+import { FanPostCounts } from "@/components/fan-ui/fan-post-row";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
+import { visiblePostViews } from "@/components/fan-ui/post-view-count";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { ReactNode } from "react";
@@ -24,9 +26,9 @@ export function NoticeCard({ locale, items, headingId, title, headAction, footer
       {items.map(item => <li key={item.id} className={styles.row} data-row="notice">
         <Link className={styles.link} href={`${item.linkHref ?? `/notices/${item.slug}`}?locale=${locale}` as Route}>
           <span className={styles.category}>{homeNoticeCategoryLabels[locale][item.category]}</span>
-          <span className={styles.title}>{item.title}</span>
+          <span className={styles.titleLine}><span className={styles.title}>{item.title}</span><FanPostCounts locale={locale} comments={item.commentCount} likes={item.likeCount} /></span>
           <span className={styles.date}><time dateTime={item.publishedAt}>{formatHomeNoticeDate(item.publishedAt, locale)}</time>
-            <NoticeCounts locale={locale} views={item.viewCount} comments={item.commentCount} likes={item.likeCount} />
+            {visiblePostViews(item.viewCount, item.likeCount) !== undefined && <span>{fanUiText(locale, "viewsLabel", [item.viewCount!.toLocaleString(locale)])}</span>}
           </span>
         </Link>
       </li>)}
