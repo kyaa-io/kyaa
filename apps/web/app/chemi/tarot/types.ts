@@ -53,3 +53,18 @@ export const tarotShareUrl = (params: { locale: string; character: TarotCharacte
   if (params.reversed) query.set("rev", "1");
   return `/chemi/tarot?${query}`;
 };
+
+/**
+ * 로그인이 풀렸는지. 401, 또는 케미가 직접 돌려준 거절(CHEMI_*)이 아닌 403.
+ * 운세·사주·별자리 흐름의 isAuthFailure(app/chemi/fortune/reading.ts)와 같은 판정이고, 다시 시도해도 풀리지 않아 로그인 버튼을 보여 준다.
+ */
+export async function loginExpired(response: Response) {
+  if (response.status === 401) return true;
+  if (response.status !== 403) return false;
+  const body = (await response.clone().json().catch(() => null)) as { error?: { code?: string } } | null;
+  return !body?.error?.code?.startsWith("CHEMI_");
+}
+
+/** 비회원 결과에서 로그인하러 갈 때 돌아올 주소: 결과 단계와 뽑은 카드의 증표(claim)를 싣는다. 기기에는 남기지 않는다. */
+export const tarotClaimUrl = (params: { locale: string; character: TarotCharacter; claim: string }) =>
+  `${tarotUrl({ locale: params.locale, character: params.character, step: "result" })}&${new URLSearchParams({ claim: params.claim })}`;

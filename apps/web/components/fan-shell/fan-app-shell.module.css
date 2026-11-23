@@ -231,4 +231,4 @@
   .headerInner:has([data-header-tier]) .actions { width: max-content; gap: var(--space-1); }
 }
 
-.groupsNavigation .actions [data-header-status] img[data-reward-kind] { width: 16px; height: 16px; }
+.groupsNavigation .actions [data-header-status] :is(img[data-reward-kind], img[src*="/tiers/"]) { width: 16px; height: 16px; }

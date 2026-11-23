@@ -4,7 +4,7 @@ import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -25,6 +25,8 @@ import {
   BEFORE_DRAW,
   isTarotStep,
   kstDate,
+  loginExpired,
+  tarotClaimUrl,
   tarotUrl,
   type TarotAuth,
   type TarotDraw,
@@ -54,12 +56,15 @@ export function TarotScreen({
   initialCharacter,
   initialStep,
   initialReading = null,
+  initialClaim = null,
 }: {
   locale: AppLocale;
   initialCharacter: TarotCharacter;
   initialStep: TarotStep;
   /** 결과 링크의 `r`. 날짜가 바뀐 뒤에도 그날 받은 결과를 다시 연다. */
   initialReading?: string | null;
+  /** 비회원 때 뽑은 카드의 증표. 로그인하고 돌아오면 그날 첫 카드로 같은 카드를 저장한다. */
+  initialClaim?: string | null;
 }) {
   const uiText = useReadingCopy();
   const ask = useAskLocation();
@@ -69,7 +74,9 @@ export function TarotScreen({
   const reduced = useMedia("(prefers-reduced-motion: reduce)");
   const [character, setCharacter] = useState(initialCharacter);
   const [step, setStep] = useState<TarotStep>(initialStep);
-  const [boot, setBoot] = useState<"loading" | "ready" | "error">("loading");
+  const [boot, setBoot] = useState<"loading" | "ready" | "error" | "expired">("loading");
+  // 비회원이 뽑은 카드의 증표(서버 서명). 로그인하러 갈 때 돌아올 주소에만 싣는다.
+  const [claim, setClaim] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [today, setToday] = useState<TarotDraw | null>(null);
   const [draw, setDraw] = useState<TarotDraw | null>(null);
@@ -80,7 +87,7 @@ export function TarotScreen({
   const [spreadUsed, setSpreadUsed] = useState<boolean | null>(null);
   const member = authenticated;
   const shown = member ? (draw ?? today) : draw;
-  const meaning = useTarotMeaning(shown?.card ?? null);
+  const meaning = useTarotMeaning(shown?.card ?? null, locale);
 
   // 최신 값을 기록 이벤트(popstate)와 시간 지연 콜백이 읽는다.
   const latest = useRef({ shown, member, character, slot });
@@ -88,6 +95,10 @@ export function TarotScreen({
     latest.current = { shown, member, character, slot };
   });
   const fold = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 접기 이동(history.go)이 끝나 Next 가 그 기록을 다 되살린 뒤에 결과를 연다. popstate 안에서 바로 기록을 쓰면
+  // Next 의 popstate 처리보다 먼저 돌아(자식 효과가 먼저 등록됨) 문서가 통째로 다시 열리고 비회원 카드가 사라졌다(DF-STATE-004).
+  const folded = useRef(false);
+  const search = useSearchParams().toString();
 
   const headers = useCallback(async () => ({ Authorization: `Bearer ${await getAccessToken()}`, "Content-Type": "application/json" }), [getAccessToken]);
   const authorize = useRef(headers);
@@ -124,11 +135,30 @@ export function TarotScreen({
       // 결과 링크로 열면 날짜 제한 없이 찾아 그 읽기의 날짜를 쓴다. 내 읽기가 아니면 오늘 카드로 되돌아간다.
       const range = initialReading ? "" : `&from=${day}&to=${day}`;
       const list = await fetch(`/api/chemi/readings?content=tarot${range}`, { headers: authorization, signal });
+      if (await loginExpired(list)) throw new Error("expired");
       if (!list.ok) throw new Error("list");
       const items = ((await list.json()) as { readingId: string; kind: string; date: string }[]).filter((item) => item.kind === "daily");
       const saved = items.find((item) => item.readingId === initialReading) ?? items.find((item) => item.date === day);
       if (!saved) {
         if (!signal.aborted) setToday(null);
+        if (initialClaim) {
+          // 로그인 전에 뽑은 카드를 오늘의 첫 카드로 저장한다. 서버가 증표를 확인하고, 다른 날·고친 증표면 평소처럼 뽑는다.
+          const response = await fetch("/api/chemi/readings", {
+            method: "POST",
+            headers: authorization,
+            signal,
+            body: JSON.stringify({ content: "tarot", kind: "daily", character: latest.current.character, position: 0, claim: initialClaim }),
+          });
+          if (await loginExpired(response)) throw new Error("expired");
+          const data = (await response.json()) as { result?: Reading; readingId?: string | null; replayed?: boolean; reward?: TarotDraw["reward"] };
+          const card = firstCard(data.result);
+          if (!response.ok || !card) throw new Error("claim");
+          if (signal.aborted) return;
+          const next: TarotDraw = { ...card, slot: null, date: day, readingId: data.readingId ?? null, replayed: Boolean(data.replayed), reward: data.reward ?? {}, settle: false };
+          latest.current = { ...latest.current, shown: next };
+          setDraw(next);
+          history.replaceState(history.state, "", tarotUrl({ locale, character: latest.current.character, step: "result", reading: next.readingId }));
+        }
         return;
       }
       const detail = await fetch(`/api/chemi/readings/${saved.readingId}`, { headers: authorization, signal });
@@ -139,8 +169,10 @@ export function TarotScreen({
         setToday({ ...card, slot: null, date: saved.date, readingId: saved.readingId, replayed: true, reward: {}, settle: saved.date === day });
     })()
       .then(() => !signal.aborted && setBoot("ready"))
-      .catch(() => !signal.aborted && setBoot("error"));
+      .catch((error: unknown) => !signal.aborted && setBoot(error instanceof Error && error.message === "expired" ? "expired" : "error"));
     return () => controller.abort();
+    // 증표는 처음 열린 주소의 값이라 한 번만 쓴다.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, authenticated, attempt, initialReading]);
 
   const go = useCallback(
@@ -167,9 +199,7 @@ export function TarotScreen({
     history.replaceState({ tarot: history.state?.tarot ?? 0 }, "");
     const onPop = () => {
       if (fold.current) {
-        clearTimeout(fold.current);
-        fold.current = null;
-        go("result");
+        folded.current = true;
         return;
       }
       const params = new URLSearchParams(location.search);
@@ -181,6 +211,15 @@ export function TarotScreen({
     addEventListener("popstate", onPop);
     return () => removeEventListener("popstate", onPop);
   }, [go, normalize]);
+
+  // 접기 이동이 끝나 주소가 입장 장면으로 돌아오면 결과를 연다.
+  useEffect(() => {
+    if (!folded.current || new URLSearchParams(location.search).has("step")) return;
+    folded.current = false;
+    if (fold.current) clearTimeout(fold.current);
+    fold.current = null;
+    go("result");
+  }, [search, go]);
 
   // 처음 열린 단계가 갈 수 없는 단계면(새로 고침·직접 열기) 고친다. 오늘 카드를 알기 전에는 고치지 않는다.
   useEffect(() => {
@@ -214,7 +253,11 @@ export function TarotScreen({
         signal: controller.signal,
         body: JSON.stringify({ content: "tarot", kind: "daily", character, position: slot - 1 }),
       });
-      const data = (await response.json()) as { result?: Reading; readingId?: string | null; replayed?: boolean; reward?: TarotDraw["reward"] };
+      if (member && (await loginExpired(response))) {
+        if (!controller.signal.aborted) setBoot("expired");
+        return;
+      }
+      const data = (await response.json()) as { result?: Reading; readingId?: string | null; replayed?: boolean; reward?: TarotDraw["reward"]; claim?: string | null };
       const card = firstCard(data.result);
       if (!response.ok || !card) throw new Error("draw");
       const wait = reduced ? 0 : Math.max(0, 900 - (Date.now() - started));
@@ -231,6 +274,7 @@ export function TarotScreen({
       };
       latest.current = { ...latest.current, shown: next };
       setDraw(next);
+      setClaim(member ? null : (data.claim ?? null));
       go("flip", { replace: true });
     })().catch(() => !controller.signal.aborted && setOffline(true));
     return () => controller.abort();
@@ -259,6 +303,7 @@ export function TarotScreen({
     // 되돌아가는 기록 이동이 끝나면(popstate) 결과를 연다. 이동 신호가 끝내 안 오면 3초 뒤 그 자리에서 연다.
     fold.current = setTimeout(() => {
       fold.current = null;
+      folded.current = false;
       go("result");
     }, 3000);
     history.go(-index);
@@ -268,6 +313,20 @@ export function TarotScreen({
     else if (step === "talk2") go("talk3");
   };
 
+  if (boot === "expired")
+    return (
+      <div className={styles.root}>
+        <FanState
+          kind="auth"
+          title={uiText("expired")}
+          actions={
+            <FanAction variant="primary" onClick={login}>
+              <ReadingText id="login" />
+            </FanAction>
+          }
+        />
+      </div>
+    );
   if (boot === "error")
     return (
       <div className={styles.root}>
@@ -323,6 +382,11 @@ export function TarotScreen({
           auth={auth}
           meaning={meaning}
           headers={headers}
+          onLoginSave={() => {
+            // 돌아올 주소에 결과 단계와 카드 증표를 실어, 로그인한 뒤 같은 카드를 저장하고 결과로 온다.
+            if (claim) history.replaceState(history.state, "", tarotClaimUrl({ locale, character, claim }));
+            login();
+          }}
           onAsk={member && shown.readingId ? () => askGo({ step: "result" }) : undefined}
         />
       ) : (

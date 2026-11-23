@@ -12,7 +12,7 @@ const serve = (share: unknown) =>
   vi.stubGlobal(
     "fetch",
     vi.fn(async (path: string) => {
-      const card = path.match(/\/api\/chemi\/tarot\/cards\/(\d+)$/);
+      const card = path.match(/\/api\/chemi\/tarot\/cards\/(\d+)\?locale=ko$/);
       if (card) return Response.json(cards[Number(card[1])]);
       return Response.json(share);
     }),

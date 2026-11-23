@@ -434,7 +434,7 @@ describe("approved fanpage", () => {
     const view = render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} />);
     expect(await screen.findByText("실버 1")).toBeInTheDocument();
     expect(screen.getAllByText("실버 2까지 7점").length).toBeGreaterThan(0);
-    expect([...view.container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/ink-v1/silver-1.webp"))).toBe(true);
+    expect([...view.container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/medal-v2/silver-1.svg"))).toBe(true);
     expect(screen.getByRole("progressbar", { name: "팬 등급 진행도" })).toHaveAttribute("value", "53");
   });
   it("clears the previous owner's identity immediately during account changes", async () => {

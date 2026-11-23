@@ -40,12 +40,23 @@ describe("header capsule", () => {
     state.bias.options = [{ ...selected, slug: "other", tier: "Gold" }, selected];
     render(<FanHeaderStatus locale="ko" />);
     const label = screen.getByText("브론즈");
-    expect(label.nextElementSibling).toHaveTextContent("1,260");
+    expect(label.parentElement?.nextElementSibling).toHaveTextContent("1,260");
+    expect(label.previousElementSibling?.getAttribute("src")).toContain("/images/passport/tiers/medal-v2/bronze-1.svg");
     expect(chip()).toHaveAccessibleName(/브론즈/);
   });
 
-  it("omits the grade when no owned passport matches the favorite", () => {
+  it("shows the highest passport grade when no favorite is named", () => {
+    const gold = { ...selected, slug: "other", tier: "Gold", stage: { key: "gold-2", tier: "Gold", subdivision: 2 } } satisfies SelectedBiasOption;
     state.bias.selected = null;
+    state.bias.options = [selected, gold];
+    render(<FanHeaderStatus locale="ko" />);
+    expect(chip()).toHaveAttribute("href", "/my?locale=ko&passport=other#my-passport");
+    expect(chip().querySelector("[data-header-tier]")).toHaveTextContent("골드");
+    expect(chip().querySelector('img[src*="/tiers/medal-v2/gold-2.svg"]')).not.toBeNull();
+  });
+
+  it("omits the grade without any passport", () => {
+    state.bias = { ...state.bias, status: "empty", selected: null, options: [] };
     render(<FanHeaderStatus locale="ko" />);
     expect(chip()).toHaveAttribute("href", "/my?locale=ko");
     expect(chip().querySelector("[data-header-tier]")).toBeNull();
