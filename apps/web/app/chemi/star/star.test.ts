@@ -153,3 +153,13 @@ describe("별자리 첫 대사 별명", () => {
     expect(starEnterLine("yuna")).toBe("오늘 밤하늘이 뭐라는지 콕 집어 줄게.");
   });
 });
+
+describe("대사에서 부르는 이름", () => {
+  it("8자가 넘으면 앞 7자 + '…', 빈 이름은 부르지 않는다", async () => {
+    const { chemiCallName } = await import("@/features/chemi/use-chemi-nickname");
+    expect(chemiCallName("별빛토끼")).toBe("별빛토끼");
+    expect(chemiCallName("열두글자짜리긴별명입니다")).toBe("열두글자짜리긴…");
+    expect(chemiCallName("12345678")).toBe("12345678");
+    expect(chemiCallName("  ")).toBeNull();
+  });
+});
