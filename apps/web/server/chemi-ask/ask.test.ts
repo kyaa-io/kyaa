@@ -173,6 +173,7 @@ describe("질문 API", () => {
   const question = { threadId: thread, readingId: reading, character: "changha", content: "fortune", topic: "love", question: "잘될까?" };
   beforeEach(() => {
     vi.stubEnv("CHEMI_TAB", "true");
+    vi.stubEnv("APP_ENV", "dev");
     authorize.mockResolvedValue({ appUserId: "user" });
   });
   afterEach(() => {
@@ -183,6 +184,12 @@ describe("질문 API", () => {
   it("탭이 꺼져 있으면 아무것도 부르지 않고 404", async () => {
     vi.stubEnv("CHEMI_TAB", "false");
     expect((await askRoute("state", new Request("https://example.test/api/chemi/ask"))).status).toBe(404);
+    expect(authorize).not.toHaveBeenCalled();
+  });
+  it("운영 조합(APP_ENV=prod)에서는 탭이 켜져 있어도 질문 API 네 갈래 모두 404", async () => {
+    vi.stubEnv("APP_ENV", "prod");
+    for (const op of ["state", "submit", "followup", "evidence"] as const)
+      expect((await askRoute(op, new Request("https://example.test/api/chemi/ask", { method: op === "state" || op === "evidence" ? "GET" : "POST" }))).status).toBe(404);
     expect(authorize).not.toHaveBeenCalled();
   });
   it("로그인이 없으면 401", async () => {

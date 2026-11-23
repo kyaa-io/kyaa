@@ -25,6 +25,7 @@ import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import { kstDate, tarotShareUrl, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
 import styles from "./tarot.module.css";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 
 
 
@@ -40,7 +41,7 @@ export function TarotResult({
   meaning,
   headers,
   onLoginSave,
-  onAsk,
+  onAsk: askHandler,
 }: {
   locale: AppLocale;
   character: TarotCharacter;
@@ -55,6 +56,7 @@ export function TarotResult({
   onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
+  const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const person = tarotCharacter(character, locale);
   // 지난 날의 결과 링크로 열었으면 오늘 받은 것을 이 카드의 보상으로 보여 주지 않는다.
   const today = draw.date === kstDate();

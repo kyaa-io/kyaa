@@ -19,12 +19,13 @@ it("answers 404 while CHEMI_TAB is not exactly true", async () => {
   }
 });
 
-it("fills untranslated copy from Korean and keeps the production mix to fortune and saju", async () => {
+it("fills untranslated copy from Korean and shows the partner card and star line on production too", async () => {
   process.env.CHEMI_TAB = "true";
+  process.env.APP_ENV = "prod";
   const launch = screenOf(await MyBirthPage({ searchParams: Promise.resolve({ locale: "ja" }) }));
   expect((launch.copy as Record<string, string>).title).toBe("내 생일 정보");
-  expect(launch.launch).toBe(true);
-  expect((launch.uses as { id: string }[]).map((use) => use.id)).toEqual(["saju", "fortune"]);
+  expect(launch.launch).toBe(false);
+  expect((launch.uses as { id: string }[]).map((use) => use.id)).toEqual(["saju", "fortune", "star"]);
 });
 
 it("adds the star horoscope and the partner card on dev", async () => {

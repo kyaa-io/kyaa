@@ -3,7 +3,7 @@ import {
   FanAppFrame,
   FanContentContainer,
 } from "@/components/fan-shell/fan-app-shell";
-import { chemiEnabled } from "@/features/chemi/domain/availability";
+import { chemiEnabled, chemiPreview } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
 
 import { chemiTabLabel } from "@/features/chemi/ui/copy";
@@ -23,7 +23,8 @@ export default async function ChemiPage({
   const { home: copy } = (
     await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)
   ).default;
-  const preview = process.env.APP_ENV ? process.env.APP_ENV === "dev" : process.env.VERCEL_ENV === "preview" || process.env.NODE_ENV === "development";
+  // 운영 조합은 입구 주간 랭킹만 숨긴다. 성장 탭·분류 칩은 운영에서도 연다.
+  const preview = chemiPreview();
   const growth = params.tab === "growth";
   return (
     <FanAppFrame locale={locale} currentPath="/chemi" mainId="chemi-main">
@@ -33,7 +34,7 @@ export default async function ChemiPage({
         tabIndex={-1}
         data-chemi-tab=""
       >
-        {preview && <FanTabs
+        <FanTabs
           label={chemiTabLabel(locale)}
           current={growth ? "growth" : "play"}
           items={[
@@ -44,7 +45,7 @@ export default async function ChemiPage({
               href: `/chemi?tab=growth&locale=${locale}`,
             },
           ]}
-        />}
+        />
         <ChemiHome matchAvailable={Boolean(getMatchPhotos())} preview={preview} copy={copy} locale={locale} growth={growth} />
       </FanContentContainer>
     </FanAppFrame>

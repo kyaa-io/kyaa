@@ -24,6 +24,7 @@ const LOBBY_TIMEOUT_MS = 20_000;
 import { createSound } from "./sound";
 import { Track, type RunStats, type Submission, type Ticket } from "./track";
 import styles from "./run.module.css";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 
 export function RunScreen(props: { locale: AppLocale; share: string | null }) {
   const auth = useByUsAuth();
@@ -52,6 +53,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const [allRanks, setAllRanks] = useState(false);
   const [copied, setCopied] = useState(false);
   const [reminded, setReminded] = useState(false);
+  const { reminders } = useChemiFeatures();
   const [pauseRequest, setPauseRequest] = useState(0);
   const sound = useMemo(createSound, []);
   const requestKey = useRef<string | null>(null);
@@ -207,7 +209,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const spent = Boolean(lobby && free <= 0 && extra <= 0);
   const footer = [lobby && lobby.players > 0 ? fill(copy.players, { n: number.format(lobby.players) }) : "",
     lobby?.previous ? fill(copy.lastWeek, { n: lobby.previous.place }) : ""].filter(Boolean).join(" · ");
-  const reminder = <FanAction disabled={busy || reminded} onClick={async () => {
+  const reminder = reminders && <FanAction disabled={busy || reminded} onClick={async () => {
     try { await call({ kind: "tomorrow" }, true, "/api/chemi/reminders"); setReminded(true); } catch { setFailed(true); }
   }}>{reminded ? copy.reminded : copy.remind}</FanAction>;
   const errorLine = failed && <div className={styles.error} role="alert">

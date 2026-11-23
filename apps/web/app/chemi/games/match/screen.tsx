@@ -24,6 +24,7 @@ import {
   VolumeX,
 } from "@/components/fan-ui/fan-icons";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { FPS, LEVELS } from "@/features/chemi/games/engine";
 import { rankName } from "@/features/chemi/games/rank-name";
 import { RankInitial } from "@/features/chemi/games/rank-initial";
@@ -377,6 +378,7 @@ function Session({
   const [working, setWorking] = useState(false);
   const [sound, setSound] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
+  const { reminders } = useChemiFeatures();
   const [copied, setCopied] = useState(false);
   const [load, setLoad] = useState(0);
   const [practiced, setPracticed] = useState(false);
@@ -1122,12 +1124,12 @@ function Session({
                     <StageAction disabled={working} onClick={() => setPaying(true)}>
                       {extraCopy.cta}
                     </StageAction>
-                    <FanAction onClick={() => setStage("reminder")}>{copy.tomorrow}</FanAction>
+                    {reminders && <FanAction onClick={() => setStage("reminder")}>{copy.tomorrow}</FanAction>}
                   </>
-                ) : (
+                ) : reminders ? (
                   <StageAction onClick={() => setStage("reminder")}>{copy.tomorrow}</StageAction>
-                )}
-                <FanAction variant="text" href={`/chemi?locale=${locale}`}>{copy.toChemi}</FanAction>
+                ) : null}
+                <FanAction variant={reminders || (lobby?.extraRemaining && lobby.extraCost) ? "text" : "primary"} href={`/chemi?locale=${locale}`}>{copy.toChemi}</FanAction>
               </div>
             </>
           )}

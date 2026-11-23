@@ -38,14 +38,14 @@ export function ChemiHome({
     type,
     href: type === "readings" || matchAvailable ? `${path}?locale=${locale}` : null,
   }));
-  if (preview && growth)
+  if (growth)
     return <ChemiGrowth locale={locale} home={copy} matchAvailable={matchAvailable} />;
   return (
     <div className={styles.home} data-ranked={preview} data-chemi-hide-dm="">
       <HomeBanner copy={copy} activities={activities} index={activeIndex} setIndex={setActiveIndex} />
       {preview && <WeeklyRankings copy={copy} locale={locale} matchAvailable={matchAvailable} />}
       <section>
-        {preview && <FanTabs
+        <FanTabs
           variant="chip"
           label={copy.filter}
           current={category}
@@ -54,7 +54,7 @@ export function ChemiHome({
             label: copy[key],
             onSelect: () => setCategory(key),
           }))}
-        />}
+        />
         <div className={styles.list}>
           {activities
             .filter(({ type, href }) => (preview || href) && (category === "all" || category === type))

@@ -72,12 +72,12 @@ it("pauses and resumes the banner from the button inside it", () => {
   expect(screen.getByRole("button", { name: copy.pause })).toBeVisible();
 });
 
-it("keeps production on the fortune list even for a growth deep link", () => {
-  render(<ChemiHome copy={copy} locale="ko" growth preview={false} />);
-  expect(screen.getByRole("link", { name: copy.start })).toBeVisible();
-  expect(screen.queryByText(copy.games)).toBeNull();
-  expect(screen.queryByText(copy.pair)).toBeNull();
-  expect(screen.queryByText(copy.raise)).toBeNull();
+it("opens growth and the category chips on production but keeps the weekly rankings dev-only", () => {
+  const view = render(<ChemiHome copy={copy} locale="ko" growth preview={false} />);
+  expect(screen.queryByRole("link", { name: copy.start })).toBeNull();
+  view.rerender(<ChemiHome copy={copy} locale="ko" growth={false} preview={false} />);
+  expect(screen.getByRole("button", { name: copy.games })).toBeVisible();
+  expect(screen.queryByText(copy.rankings)).toBeNull();
 });
 
 it.each([true, false])("shows the open fortune first (preview=%s)", (preview) => {
