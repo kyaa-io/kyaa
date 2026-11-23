@@ -21,7 +21,6 @@ import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { WaveNavigation } from "@/features/fanpage/ui/wave-navigation";
 import { WaveFriends } from "@/features/fanpage/ui/wave-friends";
 import { waveMissionsCopy } from "@/i18n/catalogs/features__fanpage__wave-missions";
-import { WaveProgramsHome } from "@/features/fanpage/ui/wave-programs";
 import { toContentLocale } from "@/i18n/locales";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__celebrity-fan-page";
@@ -29,6 +28,7 @@ import { additionalLocales, translate } from "@/i18n/messages";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "./fan-ui/hover-prefetch-link";
 import type { Route } from "next";
@@ -76,16 +76,19 @@ import type { ContentLocale, PublishedCelebrity, PublishedCelebrityLive } from "
 import styles from "@/features/fanpage/ui/fanpage.module.css";
 import { CreatorRolesText } from "./fan-ui/creator-roles";
 import { FanAction } from "./fan-ui/fan-action";
-import { FanSkeleton, FanSkeletonStatus } from "./fan-ui/fan-skeleton";
+import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "./fan-ui/fan-skeleton";
 import { ElinaMissionEntry } from "@/features/live/ui/elina-mission-entry";
 import { ElinaAttendanceEntry } from "@/features/live/ui/elina-attendance-entry";
 import { FanTicketGuide } from "@/features/tickets/ui/fan-ticket-guide";
 import { useByUsSession } from "./byus-session-provider";
-import { FanPostFeed } from "@/features/fan-posts/ui/fan-post-feed";
 import { CreatorMediaPanel, type CreatorMediaSelection } from "@/features/media/ui/creator-media-panel";
 import { FAN_PAGE_TABS, boardHref, fanPageHref, parseFanPageTab, resolveBoardSection, resolveBoardSource, type BoardFeedSource, type BoardSection, type FanPageTab } from "@/features/fanpage/domain/board-navigation";
 import { fanPageNavigationCopy } from "@/i18n/catalogs/features__fanpage__navigation";
 import { fanPageBrandCopy } from "@/i18n/catalogs/features__fanpage__brand";
+// 게시판 목록(글 본문 렌더러 Tiptap 포함)과 wave 홈은 그 탭에서만 받는다. 팬페이지 홈으로 넘어올 때 내려받는 JS를 줄인다.
+const loadFanPostFeed = () => import("@/features/fan-posts/ui/fan-post-feed");
+const FanPostFeed = dynamic(() => loadFanPostFeed().then(module => module.FanPostFeed), { loading: () => <FanSkeletonRows rows={5} variant="post" /> });
+const WaveProgramsHome = dynamic(() => import("@/features/fanpage/ui/wave-programs").then(module => module.WaveProgramsHome), { loading: () => <FanSkeletonRows rows={3} variant="post" /> });
 export { flattenLiveCatalog } from "@/features/fanpage/domain/live-catalog";
 
 export type CelebrityFanTab = FanPageTab | "friends" | "community" | "media" | "notice" | "live" | "raffles" | "benefits";
@@ -152,6 +155,13 @@ function CelebrityFanPageBody({ celebrity, locale, upcomingLive, initialCheerEve
       nav.scrollLeft += item.left - bounds.left - (nav.clientWidth - active.clientWidth) / 2;
     }
   }, [tab, locale]);
+  // 홈이 다 그려진 뒤 한가할 때 게시판 조각을 미리 받아 둔다. `전체 보기`가 골격 없이 바로 열린다.
+  useEffect(() => {
+    const preload = () => { void loadFanPostFeed().catch(() => {}); };
+    if (typeof window.requestIdleCallback === "function") { const id = window.requestIdleCallback(preload, { timeout: 4000 }); return () => window.cancelIdleCallback(id); }
+    const id = window.setTimeout(preload, 2000);
+    return () => window.clearTimeout(id);
+  }, []);
   useEffect(() => {
     if (window.location.hash === "#cheers") untypedRouter(router).replace(boardHref(celebrity.slug, locale, { source: "fans" }), { scroll: false });
   }, [celebrity.slug, locale, router]);
