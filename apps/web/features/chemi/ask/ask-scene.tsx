@@ -8,6 +8,7 @@
  * 남은 질문 수·차감·한도는 서버(/api/chemi/ask)가 정하고, 이 화면은 받은 값만 그린다.
  * 유료 구매 자리는 결제 수단이 붙기 전이라 두지 않는다.
  */
+import { expressionFor, FortuneExpression } from "@/features/chemi/ui/fortune-expression";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -860,10 +861,14 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   const mood = view.startsWith("draft") ? "think" : view.startsWith("answer") ? (ending ? "close" : "speak") : view.startsWith("write") || view.startsWith("follow") ? "listen" : "idle";
   // 위기 신호 답에서는 최애 그림을 가리고 남은 수를 숨긴다(기획 03-6 27).
   const crisis = at.step === "answer" && shown?.klass === "crisis" && !draft;
+  const expression = view.startsWith("follow") ? expressionFor.followup
+    : view.startsWith("answer") && shown?.status === "answered" && !shown.klass ? expressionFor.choicePraise
+    : expressionFor.arrival;
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
     <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-crisis={crisis ? "" : undefined} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
-      <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name} />
+      <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name}
+        expression={where === "fortune" ? <FortuneExpression character={who} expression={expression} /> : undefined} />
       <div className={styles.top}>
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />

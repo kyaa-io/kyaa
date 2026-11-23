@@ -1,5 +1,6 @@
 "use client";
 
+import { expressionFor, FortuneExpression } from "@/features/chemi/ui/fortune-expression";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -405,6 +406,11 @@ export function FortuneFlow({
 
   const talk = talkNumber(step);
   const result = reading && !reading.result.locked ? reading.result : null;
+  const expression = !talk ? expressionFor.arrival
+    : picked ? expressionFor.choicePraise
+    : result && result.score >= 80 ? expressionFor.goodResult
+    : result && result.score < 60 ? expressionFor.unexpectedResult
+    : expressionFor.arrival;
   const lineInput = result && {
     score: result.score,
     grade: result.grade.name,
@@ -514,6 +520,7 @@ export function FortuneFlow({
             <source media="(min-width: 48rem)" srcSet={wideArt} />
             <img src={mobileArt} alt={text("cloudArt", { name })} />
           </picture>
+          <FortuneExpression character={character} expression={expression} />
           {step === "enter" && (character === "elina" || character === "yuna") && (
             <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
           )}

@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import styles from "./ask.module.css";
 
 /**
  * 화면 전체를 채우는 장면 배경. 그림이 먼저 보이고, 반복 영상은 재생이 시작된 뒤에만 그 위에 나타난다(`SceneVideo`).
  * 영상은 가로 화면에서만 쓴다(가로 원화와 같은 구도로 만든 것만 있다).
- * 최애의 표정 원화가 없어서 장면의 분위기는 그림을 바꾸지 않고 조명 면의 밝기와 다가가는 거리로만 바꾼다.
  */
-export function SceneBackdrop({ tall, wide, loop, alt }: { tall: string; wide: string; loop: string | null; alt: string }) {
+export function SceneBackdrop({ tall, wide, loop, alt, expression }: { tall: string; wide: string; loop: string | null; alt: string; expression?: ReactNode }) {
   const box = useRef<HTMLDivElement>(null);
   const art = useRef<HTMLImageElement>(null);
 
@@ -37,10 +36,13 @@ export function SceneBackdrop({ tall, wide, loop, alt }: { tall: string; wide: s
 
   return (
     <div className={styles.backdrop} ref={box}>
-      <picture className={styles.art}>
-        <source media="(min-width: 64rem)" srcSet={wide} />
-        <img ref={art} src={tall} alt={alt} />
-      </picture>
+      <div className={styles.art}>
+        <picture>
+          <source media="(min-width: 64rem)" srcSet={wide} />
+          <img ref={art} src={tall} alt={alt} />
+        </picture>
+        {expression}
+      </div>
       {loop ? (
         <div className={styles.loop}>
           <SceneVideo src={loop} objectPosition="center 26%" />
