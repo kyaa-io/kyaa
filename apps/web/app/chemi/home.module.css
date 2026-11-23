@@ -297,7 +297,7 @@
   }
   .home[data-ranked="false"] .artwork {
     position: absolute;
-    inset: 0;
+    inset: 0 0 var(--min-target);
   }
   .home[data-ranked="false"] .artwork img {
     height: 100%;
@@ -305,13 +305,12 @@
   }
   .home[data-ranked="false"] .dots {
     position: absolute;
-    inset: 0 var(--space-2) auto auto;
+    inset: auto 0 0;
   }
 }
-/* 캐러셀 인디케이터(DESIGN 공통 컴포넌트·캐러셀): 배너 바로 아래 가운데 44 줄, 칸 8, 현재 24, 칸 사이 4. 일시정지는 같은 줄 간격 8. */
+/* 캐러셀 인디케이터(DESIGN 공통 컴포넌트·캐러셀): 배너 바로 아래 가운데 44 줄, 칸 8, 현재 24, 칸 사이 8. 일시정지는 같은 줄 간격 8. */
 .dots {
-  position: absolute;
-  inset: 0 var(--space-2) auto auto;
+  gap: var(--space-2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -319,14 +318,28 @@
 }
 /* 점은 8px 이지만 누르는 자리는 44×44 */
 .dots > button:not(.pause) {
+  position: relative;
   width: auto;
-  min-width: var(--min-target);
+  min-width: 0;
   min-height: var(--min-target);
   padding: 0;
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill);
   box-shadow: none;
+}
+.dots > button:not(.pause)::before {
+  content: "";
+  position: absolute;
+  width: var(--min-target);
+  height: var(--min-target);
+}
+.dots > button:not(.pause) > span {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-height: var(--min-target);
 }
 .dots button span[aria-hidden="true"] {
   display: block;
@@ -347,13 +360,5 @@
   width: var(--space-4);
   height: var(--space-4);
 }
-.row[data-selected="true"] {
-  color: var(--color-accent-ink);
-}
-.row[data-selected="true"] .rowTitle > :first-child {
-  text-decoration: underline;
-  text-underline-offset: var(--space-1);
-}
-
 .faces { display: flex; }
 .faces img { width: var(--space-6); height: var(--space-6); border-radius: 50%; }

@@ -741,6 +741,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
                       <span className={styles.rowGrid}>
                         <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
                         <FanText role="body" className={styles.clip}>{item.question}</FanText>
+                        <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
                         <FanIcon icon={ChevronRight} size={16} />
                       </span>
                     </FanAction>
@@ -897,6 +898,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
                       <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
                       <span className={styles.histText}>
                         <FanText role="body" className={styles.clip}>{item.question}</FanText>
+                        <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
                         <FanText role="meta">
                           {shortDate(item.date)} · {creatorName(item.character, locale)}
                           {item.followupAnswer ? "" : ` · ${text("askFollow")} ${text("askFollowOnce")}`}
@@ -949,6 +951,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
                     <img className={styles.face} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
                     <span className={styles.histText}>
                       <FanText role="item" className={styles.clip}>{item.question}</FanText>
+                      <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
                       <FanText role="meta">
                         {shortDate(item.date)}
                         {item.topic ? ` · ${text(topicKey[item.topic])}` : ""}
