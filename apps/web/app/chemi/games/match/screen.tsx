@@ -9,6 +9,7 @@ import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
+import { FanNumUnit } from "@/components/fan-ui/fan-num-unit";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import type { CSSProperties, ReactNode } from "react";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
@@ -801,7 +802,7 @@ function Session({
             {Array.from({ length: columns * rows }, (_, cell) => <i key={cell} />)}
           </span>
         </span>
-        <span aria-hidden="true">{locale === "ko" ? `${pairs}쌍 · ${seconds}초` : fill(copy.goal, { n: pairs, s: seconds })}</span>
+        <span aria-hidden="true">{locale === "ko" ? <><FanNumUnit>{`${pairs}쌍`}</FanNumUnit> · <FanNumUnit>{`${seconds}초`}</FanNumUnit></> : fill(copy.goal, { n: pairs, s: seconds })}</span>
       </li>;
     })}
   </ol>;
