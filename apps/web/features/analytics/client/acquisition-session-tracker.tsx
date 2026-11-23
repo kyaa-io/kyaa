@@ -38,7 +38,12 @@ export function AcquisitionSessionTracker() {
         window.sessionStorage.setItem(ENTRY_EVALUATED_KEY, "1");
         const landing = acquisitionLanding(pathname);
         if (!landing) return;
+        const campaign = searchParams.get("utm_campaign")?.toLowerCase();
+        const kol = /^\/s\/raffle\/?$/.test(pathname) && searchParams.get("utm_source") === "x"
+          && searchParams.get("utm_medium") === "kol" && campaign && /^[a-z0-9_]{1,15}$/.test(campaign)
+          ? campaign : undefined;
         touch = {
+          kol,
           channel: classifyAcquisitionChannel({
             searchParams,
             referrer: document.referrer,
@@ -75,6 +80,7 @@ export function AcquisitionSessionTracker() {
             idempotencyKey: `acquisition:identified:${touch.eventNonce}`,
             occurredAt: touch.occurredAt,
             properties: {
+              ...(touch.kol && { kol: touch.kol }),
               channel: touch.channel,
               landing: touch.landing,
               attribution: "session_first_touch",
