@@ -97,7 +97,8 @@ export function ResultStage({ character, copy, locale, names, rows, loaded, stat
         </div> : null}
         <div className={styles.care}>
           <dt><img src={`${ART}/face-${character}-v1.png`} alt="" /></dt>
-          <dd><FanText role="item">{result.exp > 0 ? fill(copy.care, { name: names[character], n: result.exp }) : names[character]}</FanText>
+          <dd><FanText role="item">{fill(copy.care, { name: names[character] })}</FanText>
+            <FanText role="item" className={styles.gain}>{result.exp > 0 ? `+${number.format(result.exp)}` : copy.received}</FanText>
             <FanSectionLink href={`/chemi?tab=growth&locale=${locale}`}>{fill(copy.room, { name: names[character] })}</FanSectionLink></dd>
         </div>
       </dl>}

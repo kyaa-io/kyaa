@@ -4,6 +4,7 @@ import { rankName } from "@/features/chemi/games/rank-name";
 import { RankInitial } from "@/features/chemi/games/rank-initial";
 import { useEffect, useRef } from "react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { fill, type RunCopy } from "./copy";
@@ -46,8 +47,8 @@ export function Scene({ resultScene = false, character, pose, props = [], floor,
   return <canvas ref={canvas} role="img" aria-label={label} />;
 }
 
-export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer }: {
-  rows: Rank[]; loaded: boolean; copy: RunCopy; locale: string; names: Record<Character, string>; near: boolean; onAll?: () => void; footer?: string;
+export function Ranking({ rows, loaded, loading = false, copy, locale, names, near, onAll, footer }: {
+  rows: Rank[]; loaded: boolean; loading?: boolean; copy: RunCopy; locale: string; names: Record<Character, string>; near: boolean; onAll?: () => void; footer?: string;
 }) {
   const number = new Intl.NumberFormat(locale);
   const me = rows.find((row) => row.isMe);
@@ -70,8 +71,9 @@ export function Ranking({ rows, loaded, copy, locale, names, near, onAll, footer
       <FanText role="meta" />
       <FanText role="item">{number.format(0)}</FanText>
     </>}
+    {!place && loading && <FanSkeleton className={styles.rowSkeleton} />}
   </li>;
-  return <section className={styles.rank} aria-label={copy.ranking} aria-busy={!loaded}>
+  return <section className={styles.rank} aria-label={copy.ranking} aria-busy={loading}>
     <header>
       <FanHeading as="h2">{copy.ranking}</FanHeading>
       {onAll && rows.length > 0 && <FanSectionLink onClick={onAll}>{copy.allRanks}</FanSectionLink>}

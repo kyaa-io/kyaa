@@ -62,6 +62,8 @@
 .scene { height: 152px; }
 .course { position: absolute; inset: var(--space-2) var(--space-2) auto auto; padding: var(--space-1) var(--space-3); border-radius: var(--radius-pill); background: var(--color-surface); color: var(--color-ink); }
 .scene canvas, .hero canvas, .field canvas { position: absolute; inset: auto auto 0 0; display: block; image-rendering: pixelated; }
+/* 그림이 오기 전에도 판 크기를 차지해 첫 그리기 때 위로 튀지 않는다(1440 직접 진입 밀림). */
+.scene canvas, .hero canvas { width: 100%; height: 100%; }
 .strip { display: flex; align-items: baseline; gap: var(--space-2); padding: var(--space-3) var(--space-4) var(--space-1); }
 .strip span { color: inherit; }
 .strip .record { margin-inline-start: auto; }
@@ -98,6 +100,8 @@
 .rank li[data-gap="true"] { display: grid; grid-template-columns: none; justify-content: center; align-items: center; height: var(--space-6); }
 .rank li[data-empty="true"] { opacity: var(--fan-disabled-opacity); }
 .rank li[data-slot="near"] { display: none; }
+.rank li:has(.rowSkeleton) { opacity: 1; }
+.rowSkeleton { grid-column: 1 / -1; }
 .avatar {
   position: relative;
   display: grid;
@@ -117,6 +121,8 @@
 .side { display: grid; gap: var(--space-3); }
 .cta { display: grid; gap: var(--space-2); justify-items: stretch; --fan-action-max-width: none; }
 .cta p { margin: 0; text-align: center; }
+/* 시작 버튼(44, 1024px부터 48)과 같은 높이. */
+.ctaSkeleton { height: var(--min-target); }
 .error { display: flex; align-items: center; justify-content: center; gap: var(--space-2); }
 
 /* 달리기 */
@@ -244,6 +250,7 @@
 .lines dd { display: flex; flex: 1; align-items: center; justify-content: space-between; gap: var(--space-2); min-width: 0; margin: 0; font-variant-numeric: tabular-nums; }
 .up { color: var(--color-accent-ink); }
 .badge { padding: var(--space-1) var(--space-3); border: 1px solid var(--color-ink); border-radius: var(--radius-pill); white-space: nowrap; }
+.gain { margin-inline-start: auto; color: var(--color-accent-ink); }
 .care img { display: block; width: var(--space-10); height: var(--space-10); border-radius: var(--radius-small); image-rendering: pixelated; }
 .next { display: grid; gap: var(--space-3); }
 .nextRow { display: grid; gap: var(--space-2); --fan-action-max-width: none; }
@@ -270,6 +277,7 @@
   .scene { flex: 1; height: auto; }
   .strip { padding: var(--space-4) var(--space-6); }
   .how { display: none; }
+  .ctaSkeleton { height: var(--space-12); }
   .side { grid-template-rows: auto minmax(0, 1fr) auto; align-content: start; }
   .sideLegend { display: block; }
   .sideLegend .legend { grid-template-columns: none; justify-content: stretch; }

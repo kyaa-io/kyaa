@@ -3,6 +3,7 @@
 import { rankName } from "@/features/chemi/games/rank-name";
 import type { ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { fill, type RunCopy } from "./copy";
 import { ART } from "./render";
@@ -11,9 +12,9 @@ import { Legend } from "./track";
 import styles from "./run.module.css";
 
 /** Choose screen: roster, map preview, this week's ranking and the one start button. */
-export function SelectStage({ character, pickDisabled, onPick, copy, locale, names, rows, loaded, footer, challenge, spent, startLabel, startDisabled, onStart, onAllRanks, errorLine, reminder }: {
-  character: Character; pickDisabled: boolean; onPick: (who: Character) => void; copy: RunCopy; locale: string; names: Record<Character, string>; rows: Rank[]; loaded: boolean; footer: string;
-  challenge?: Challenge; spent: boolean; startLabel: string; startDisabled: boolean; onStart: () => void; onAllRanks: () => void;
+export function SelectStage({ character, pickDisabled, onPick, copy, locale, names, rows, loaded, loading, footer, challenge, waiting, spent, startLabel, startDisabled, onStart, onAllRanks, errorLine, reminder }: {
+  character: Character; pickDisabled: boolean; onPick: (who: Character) => void; copy: RunCopy; locale: string; names: Record<Character, string>; rows: Rank[]; loaded: boolean; loading: boolean; footer: string;
+  challenge?: Challenge; waiting: boolean; spent: boolean; startLabel: string; startDisabled: boolean; onStart: () => void; onAllRanks: () => void;
   errorLine: ReactNode; reminder: ReactNode;
 }) {
   const number = new Intl.NumberFormat(locale);
@@ -41,11 +42,11 @@ export function SelectStage({ character, pickDisabled, onPick, copy, locale, nam
       <div className={styles.how}><Legend copy={copy} layout="list" /></div>
     </section>
     <div className={styles.side}>
-      <Ranking rows={rows} loaded={loaded} copy={copy} locale={locale} names={names} near onAll={onAllRanks} footer={footer} />
+      <Ranking rows={rows} loaded={loaded} loading={loading} copy={copy} locale={locale} names={names} near onAll={onAllRanks} footer={footer} />
       <div className={styles.sideLegend}><Legend copy={copy} layout="list" /></div>
       <div className={styles.cta}>
         {errorLine}
-        {spent ? <>
+        {waiting ? !errorLine && <FanSkeleton shape="block" className={styles.ctaSkeleton} /> : spent ? <>
           <FanText as="p" role="item">{copy.done}</FanText>
           {reminder}
         </> : <FanAction variant="primary" fullWidth disabled={startDisabled} onClick={onStart}>{startLabel}</FanAction>}
