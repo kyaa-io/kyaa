@@ -78,6 +78,11 @@
 .domainPanel {
   order: 2;
 }
+@media (min-width: 48rem) {
+  .domainPanel {
+    padding: var(--space-6);
+  }
+}
 .reaction {
   order: 3;
 }
