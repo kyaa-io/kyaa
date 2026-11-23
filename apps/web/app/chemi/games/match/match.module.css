@@ -833,7 +833,8 @@
 .freeCount { display: block; margin-bottom: var(--space-2); }
 .resultActions { display: contents; }
 .zeroActions { display: flex; align-items: center; gap: var(--space-2); }
-.zeroActions > * { min-width: 0; flex: 1 1 auto; }
+.zeroActions > * { min-width: 0; flex: 0 1 auto; }
+.zeroActions > :first-child { flex: 1 1 0; }
 .roundTable .levelGoal { display: flex; align-items: baseline; flex-wrap: nowrap; column-gap: var(--space-1); }
 
 .card[data-variant="1"]::before, .card[data-variant="2"]::before, .card[data-variant="3"]::before {
