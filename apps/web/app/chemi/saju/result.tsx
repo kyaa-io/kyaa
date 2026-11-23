@@ -71,11 +71,11 @@ function PairEvidence({ result, name }: { result: PairResult; name: string }) {
             : "상대의 기운이 내 기운을 눌러요.";
   return (
     <div className={styles.block} data-pair-evidence>
-      <style jsx>{`
+      <style>{`
         [data-pair-evidence] { grid-column: 1 / -1; }
-        .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
-        .charts table { width: 100%; table-layout: fixed; text-align: center; overflow-wrap: anywhere; }
-        [data-day] { border: 1px solid currentColor; }
+        [data-pair-evidence] .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); }
+        [data-pair-evidence] .charts table { width: 100%; table-layout: fixed; text-align: center; overflow-wrap: anywhere; }
+        [data-pair-evidence] [data-day] { border: 1px solid currentColor; }
       `}</style>
       <FanHeading>두 사람의 명식</FanHeading>
       <div className="charts">
