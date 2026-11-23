@@ -23,7 +23,7 @@ const application=z.object({qualification:qualificationSchema.nullable().optiona
 type Application=z.infer<typeof application>;
 const parse=(v:unknown)=>z.object({items:z.array(application),nextCursor:z.string().nullable()}).parse(v);
 const statusView:Record<Application['status'],{label:GroupApplyCopyKey;tone:'fan'|'neutral'|'notice'}>={submitted:{label:'statusReviewing',tone:'neutral'},reviewing:{label:'statusReviewing',tone:'neutral'},changes_requested:{label:'statusChanges',tone:'notice'},approved:{label:'statusApproved',tone:'fan'},rejected:{label:'statusRejected',tone:'neutral'}};
-const resubmitLabel:Record<AppLocale,string>={ko:'보완하여 다시 신청',en:'Resubmit',ja:'再申請','zh-Hans':'重新申请','zh-Hant':'重新申請',es:'Reenviar',id:'Ajukan ulang',vi:'Gửi lại',th:'ส่งใหม่',pt:'Reenviar',fr:'Renvoyer',ru:'Подать снова'};
+const resubmitLabel:Record<AppLocale,string>={ko:'보완하여 다시 신청',get mn() { return this.en; }, en:'Resubmit',ja:'再申請','zh-Hans':'重新申请','zh-Hant':'重新申請',es:'Reenviar',id:'Ajukan ulang',vi:'Gửi lại',th:'ส่งใหม่',pt:'Reenviar',fr:'Renvoyer',ru:'Подать снова'};
 /** Beside the application form the list stays out of the way until there is something in it. `standalone` is the 내 신청 screen and always answers. */
 export function GroupApplicationHistory({locale,standalone=false}:{locale:AppLocale;standalone?:boolean}){
  const t=groupsCopy(locale),[cursor,setCursor]=useState<string>(),[prior,setPrior]=useState<{key:string;items:Application[]}>({key:'',items:[]}),r=useGroupResource(`/api/groups/applications${cursor?`?cursor=${cursor}`:''}`,parse);

@@ -13,6 +13,6 @@ const source = {
 } as const;
 
 export function headerStatusCopy(locale: AppLocale) {
-  const text = (key: keyof typeof source) => locale === "ko" || locale === "en" ? source[key][locale] : messages[key][locale];
+  const text = (key: keyof typeof source) => locale === "mn" ? source[key].en : locale === "ko" || locale === "en" ? source[key][locale] : messages[key][locale];
   return { status: text("headerStatusStatus"), hearts: text("headerStatusHearts") };
 }

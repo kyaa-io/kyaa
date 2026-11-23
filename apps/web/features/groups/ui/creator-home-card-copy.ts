@@ -2,6 +2,7 @@ import type { AppLocale } from '@/i18n/locales';
 type Card = readonly [schedule: string, calendar: string, joinTitle: string];
 const copy: Record<AppLocale, Card> = {
  ko: ['다가오는 일정', '캘린더 크게 보기', '가입한 팬이 할 수 있는 일'],
+ get mn() { return this.en; },
  en: ['Upcoming schedule', 'View calendar', 'What joined fans can do'],
  ja: ['今後のスケジュール', 'カレンダーを大きく見る', '参加したファンができること'],
  'zh-Hans': ['即将到来的日程', '查看大日历', '已加入的粉丝可以做什么'],

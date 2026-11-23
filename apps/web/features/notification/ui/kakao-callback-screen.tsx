@@ -40,6 +40,7 @@ const copy = {
     retry: "설정에서 다시 연결하기",
     settings: "설정으로 돌아가기",
   },
+  get mn() { return this.en; },
   en: {
     loading: "Checking your Kakao connection.",
     success: "Kakao is connected.",

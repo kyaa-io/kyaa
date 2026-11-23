@@ -21,6 +21,7 @@ const copy = {
     "error": "응모하지 못했어요. 기간과 로그인 상태를 확인해 주세요.",
     "art": "분홍 하트와 리본"
   },
+  get mn() { return this.en; },
   "en": {
     "title": "KYAA Raffle",
     "homeBannerTitle": "New Member Event",

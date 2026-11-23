@@ -99,6 +99,7 @@ export const fanmeetingContent = {
     note: "아직 정해지지 않은 내용은 비워두셔도 괜찮습니다.",
     footer: "Kyaa. Every Fan Moment Counts.    ·    미국 팬미팅",
   },
+  get mn() { return this.en; },
   en: {
     hero: "Bring your fanmeeting\nto the U.S.",
     desc: "Plan your fanmeeting with kyaa and our U.S. event partner, from fan engagement to venues, production, and on-site operations.",

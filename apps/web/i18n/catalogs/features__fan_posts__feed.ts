@@ -3,6 +3,7 @@ import type { AppLocale } from "../locales";
 type FeedCopy = { feed: string; fanBoard: string; all: string; official: string; fans: string; filters: string; sourceError: string; cursorExpired: string; refresh: string; readPost: string; removeFilter: string };
 const copies: Record<AppLocale, FeedCopy> = {
   ko: { feed: "피드", fanBoard: "팬게시판", all: "전체", official: "최애 공식", fans: "팬 글", filters: "글 종류", sourceError: "CHZZK 소식을 불러오지 못했어요. 다른 글은 계속 볼 수 있어요.", cursorExpired: "새로운 글이 있어요. 최신 피드를 다시 불러와 주세요.", refresh: "최신 피드 보기", readPost: "글 전체 보기", removeFilter: "세부 필터 해제" },
+  get mn() { return this.en; },
   en: { feed: "Feed", fanBoard: "Fan board", all: "All", official: "Official", fans: "Fan posts", filters: "Post type", sourceError: "CHZZK updates couldn’t load. Other posts are still available.", cursorExpired: "The feed has changed. Reload the latest posts to continue.", refresh: "Latest posts", readPost: "Read full post", removeFilter: "Clear topic filter" },
   ja: { feed: "フィード", fanBoard: "ファン掲示板", all: "すべて", official: "公式", fans: "ファンの投稿", filters: "投稿の種類", sourceError: "CHZZKの情報を読み込めませんでした。ほかの投稿は引き続きご覧いただけます。", cursorExpired: "投稿が更新されました。最新のフィードを読み込んでください。", refresh: "最新の投稿を見る", readPost: "投稿をすべて読む", removeFilter: "詳細フィルターを解除" },
   "zh-Hans": { feed: "动态", fanBoard: "粉丝社区", all: "全部", official: "官方动态", fans: "粉丝帖子", filters: "帖子类型", sourceError: "暂时无法加载CHZZK动态，其他帖子仍可浏览。", cursorExpired: "动态已更新，请重新加载最新帖子。", refresh: "查看最新帖子", readPost: "查看全文", removeFilter: "清除详细筛选" },

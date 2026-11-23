@@ -6,6 +6,7 @@ import styles from "../../../components/login-page.module.css";
 import pageStyles from "./cognito-auth-pages.module.css";
 const messages={
   ko:["앱으로 돌아가지 못했어요. 앱에서 로그인을 다시 시작해 주세요.","앱으로 돌아가고 있어요."],
+  get mn() { return this.en; },
   en:["Couldn't return to the app. Restart sign-in in the app.","Returning to the app…"],
   ja:["アプリに戻れませんでした。アプリからログインをやり直してください。","アプリに戻っています…"],
   "zh-Hans":["无法返回应用，请在应用中重新登录。","正在返回应用…"],

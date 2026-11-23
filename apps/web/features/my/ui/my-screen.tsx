@@ -93,6 +93,7 @@ const copy = {
     missionLoading: "다음 활동을 확인하는 중이에요.", missionError: "다음 활동을 불러오지 못했어요.", manualReward: "승인 후 지급",
     highestTier: "최고 등급을 달성했어요.", toNextTier: "까지",
   },
+  get mn() { return this.en; },
   en: {
     title: "MY", profileSummary: "My fan activity",
     
@@ -141,31 +142,31 @@ const copy = {
 const parseSummaryResponse = (body: unknown) => mySummarySchema.parse((body as { summary: unknown }).summary);
 
 export const rewardStatusCopy: Record<MyReward["status"], Record<AppLocale, string>> = {
-  information_required: { ko: "정보 입력 필요", en: "Information required" ,
+  information_required: { ko: "정보 입력 필요", get mn() { return this.en; }, en: "Information required" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mb4717a21fc23[translationLocale]))
 },
-  ready: { ko: "준비 완료", en: "Ready" ,
+  ready: { ko: "준비 완료", get mn() { return this.en; }, en: "Ready" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mf66ef64ed395[translationLocale]))
 },
-  shipping_preparing: { ko: "배송 준비 중", en: "Preparing shipment" ,
+  shipping_preparing: { ko: "배송 준비 중", get mn() { return this.en; }, en: "Preparing shipment" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m8386f0ad3416[translationLocale]))
 },
-  shipping_in_transit: { ko: "배송 중", en: "In transit" ,
+  shipping_in_transit: { ko: "배송 중", get mn() { return this.en; }, en: "In transit" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mf240ac8e77d3[translationLocale]))
 },
-  shipping_completed: { ko: "배송 완료", en: "Delivered" ,
+  shipping_completed: { ko: "배송 완료", get mn() { return this.en; }, en: "Delivered" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m8cb597538f65[translationLocale]))
 },
-  pickup_available: { ko: "수령 가능", en: "Ready for pickup" ,
+  pickup_available: { ko: "수령 가능", get mn() { return this.en; }, en: "Ready for pickup" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m9739df7093cb[translationLocale]))
 },
-  pickup_completed: { ko: "수령 완료", en: "Picked up" ,
+  pickup_completed: { ko: "수령 완료", get mn() { return this.en; }, en: "Picked up" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m5a526af5f90c[translationLocale]))
 },
-  digital_delivered: { ko: "지급 완료", en: "Delivered" ,
+  digital_delivered: { ko: "지급 완료", get mn() { return this.en; }, en: "Delivered" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m7b4b672e09ae[translationLocale]))
 },
-  not_selected: { ko: "미선정", en: "Not selected" ,
+  not_selected: { ko: "미선정", get mn() { return this.en; }, en: "Not selected" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m675176b0d466[translationLocale]))
 },
 };

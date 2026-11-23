@@ -5,6 +5,7 @@ type Copy = { like: string; dislike: string; dislikeCount: string; placeholder: 
 
 const copy: Record<AppLocale, Copy> = {
   ko: { like: "좋아요", dislike: "싫어요", dislikeCount: "싫어요 {0}", placeholder: "댓글 쓰기", post: "등록", gate: "이 페이지 패스포트가 있어야 댓글을 쓸 수 있어요", gateAction: "인증하기" },
+  get mn() { return this.en; },
   en: { like: "Like", dislike: "Dislike", dislikeCount: "Dislikes: {0}", placeholder: "Write a comment", post: "Post", gate: "You need this page's Passport to comment", gateAction: "Verify" },
   ja: { like: "いいね", dislike: "よくないね", dislikeCount: "よくないね {0}", placeholder: "コメントを書く", post: "投稿", gate: "コメントするにはこのページのパスポートが必要です", gateAction: "認証する" },
   "zh-Hans": { like: "赞", dislike: "踩", dislikeCount: "踩 {0}", placeholder: "写评论", post: "发布", gate: "需要本页面的护照才能评论", gateAction: "去认证" },

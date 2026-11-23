@@ -2,6 +2,7 @@ import type {AppLocale} from '@/i18n/locales';
 const ko = {title:'모임 설문',comments:'추가 의견 · 선택',placeholder:'자유롭게 의견을 남겨주세요.',error:'제출하지 못했어요. 입력한 내용은 유지돼요.',submit:'응답 제출'};
 const copy: Record<AppLocale, typeof ko> = {
  ko,
+ get mn() { return this.en; },
  en:{title:'Group survey',comments:'Additional comments · optional',placeholder:'Share any additional comments.',error:'Unable to submit. Your answers are still here.',submit:'Submit response'},
  ja:{title:'グループアンケート',comments:'追加のご意見 · 任意',placeholder:'ご意見を自由にお書きください。',error:'送信できませんでした。入力した回答は保持されています。',submit:'回答を送信'},
  'zh-Hans':{title:'小组问卷',comments:'补充意见 · 选填',placeholder:'请留下您的意见。',error:'提交失败。已保留您填写的回答。',submit:'提交回答'},

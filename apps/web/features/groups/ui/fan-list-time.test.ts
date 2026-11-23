@@ -23,7 +23,7 @@ describe("fan list title time", () => {
   it.each(APP_LOCALES)("keeps a short localized label and locale date separators in %s", locale => {
     expect(Object.values(fanListCopy(locale))).toHaveLength(3);
     expect(fanListCopy(locale).since).not.toContain("{0}");
-    const dates = { ko: "11. 08.", en: "11/08", ja: "11/08", "zh-Hans": "11/08", "zh-Hant": "11/08", es: "8/11", id: "08/11", vi: "08-11", th: "08/11", pt: "08/11", fr: "08/11", ru: "08.11" };
+    const dates = { ko: "11. 08.", get mn() { return this.en; }, en: "11/08", ja: "11/08", "zh-Hans": "11/08", "zh-Hant": "11/08", es: "8/11", id: "08/11", vi: "08-11", th: "08/11", pt: "08/11", fr: "08/11", ru: "08.11" };
     expect(fanListTime("2026-11-08T04:47:00Z", locale, now)).toBe(`${dates[locale]} 13:47`);
   });
 });

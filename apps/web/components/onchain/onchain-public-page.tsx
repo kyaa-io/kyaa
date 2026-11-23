@@ -87,6 +87,7 @@ const copy = {
     updating: "집계 중",
     unavailableValue: "—",
   },
+  get mn() { return this.en; },
   en: {
     eyebrow: "PUBLIC ONCHAIN RECORDS",
     title: "kyaa onchain records",
@@ -239,37 +240,37 @@ const copy = {
 } as const;
 
 const roleCopy: Record<(typeof officialAddresses)[number]["role"], Record<AppLocale, string>> = {
-  actionHub: { ko: "ActionHub 프록시", en: "ActionHub proxy" ,
+  actionHub: { ko: "ActionHub 프록시", get mn() { return this.en; }, en: "ActionHub proxy" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mf8cbb8e9aea4[translationLocale]))
 },
-  passport: { ko: "Passport 발급 계약", en: "Passport issuance contract" ,
+  passport: { ko: "Passport 발급 계약", get mn() { return this.en; }, en: "Passport issuance contract" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m062833399ce9[translationLocale]))
 },
-  stamp: { ko: "Stamp 발급 계약", en: "Stamp issuance contract" ,
+  stamp: { ko: "Stamp 발급 계약", get mn() { return this.en; }, en: "Stamp issuance contract" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m376c3fb1bc1e[translationLocale]))
 },
-  implementation: { ko: "ActionHub 구현", en: "ActionHub implementation" ,
+  implementation: { ko: "ActionHub 구현", get mn() { return this.en; }, en: "ActionHub implementation" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mf67982d45fdc[translationLocale]))
 },
-  codec: { ko: "행동 데이터 코덱", en: "Action data codec" ,
+  codec: { ko: "행동 데이터 코덱", get mn() { return this.en; }, en: "Action data codec" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m779775f649c1[translationLocale]))
 },
-  registry: { ko: "공개 컨텍스트 레지스트리", en: "Public context registry" ,
+  registry: { ko: "공개 컨텍스트 레지스트리", get mn() { return this.en; }, en: "Public context registry" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m5e416abdb93e[translationLocale]))
 },
-  eas: { ko: "EAS 계약", en: "EAS contract" ,
+  eas: { ko: "EAS 계약", get mn() { return this.en; }, en: "EAS contract" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m61fcf8adb733[translationLocale]))
 },
-  schema: { ko: "EAS 스키마 레지스트리", en: "EAS schema registry" ,
+  schema: { ko: "EAS 스키마 레지스트리", get mn() { return this.en; }, en: "EAS schema registry" ,
   ...additionalLocales((translationLocale) => (localizedMessages.me16ab778ae9b[translationLocale]))
 },
-  timelock: { ko: "거버넌스 타임록", en: "Governance timelock" ,
+  timelock: { ko: "거버넌스 타임록", get mn() { return this.en; }, en: "Governance timelock" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m39f247bdbb77[translationLocale]))
 },
-  admin: { ko: "관리자 지갑", en: "Admin wallet" ,
+  admin: { ko: "관리자 지갑", get mn() { return this.en; }, en: "Admin wallet" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mb4b80502e2c8[translationLocale]))
 },
-  writer: { ko: "행동 기록 지갑", en: "Action writer wallet" ,
+  writer: { ko: "행동 기록 지갑", get mn() { return this.en; }, en: "Action writer wallet" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m9f4c961d059a[translationLocale]))
 },
 };

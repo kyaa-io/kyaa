@@ -74,6 +74,7 @@ const copy = {
     representative: "대표자",
     registrationNumber: "사업자등록번호",
   },
+  get mn() { return this.en; },
   en: {
     tagline: "Keep a record of moments with your favorites.",
     explore: "Explore",

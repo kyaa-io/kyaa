@@ -1,6 +1,7 @@
 import type {AppLocale} from '@/i18n/locales';
 const values:Record<AppLocale,readonly string[]>={
  ko:['모임 알림 설정','설정할 모임','모임 공지 받기','일정·행사 소식 받기','당첨·수령 알림 받기','활동·적립 알림 받기','설정 저장','알림 설정을 저장하지 못했어요. 선택한 내용은 유지돼요.','다시 저장','알림 설정을 저장했어요.'],
+ get mn() { return this.en; },
  en:['Group notification settings','Group','Group notices','Schedule and event news','Winner and collection updates','Activity and reward updates','Save settings','Could not save notification settings. Your choices are kept.','Save again','Notification settings saved.'],
  ja:['グループ通知設定','設定するグループ','グループのお知らせ','予定・イベント情報','当選・受け取りのお知らせ','活動・ポイント獲得のお知らせ','設定を保存','通知設定を保存できませんでした。選択内容は保持されています。','再保存','通知設定を保存しました。'],
  'zh-Hans':['群组通知设置','选择群组','接收群组公告','接收日程和活动消息','接收中奖和领取通知','接收活动和积分通知','保存设置','未能保存通知设置。已保留您的选择。','重新保存','通知设置已保存。'],

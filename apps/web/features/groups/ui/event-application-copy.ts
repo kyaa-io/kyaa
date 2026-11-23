@@ -1,6 +1,7 @@
 import type{AppLocale}from'@/i18n/locales';
 export const eventApplicationCopy:Record<AppLocale,readonly[string,string,string,string,string]>={
  ko:['참가 신청','참가자','주최자에게 전할 말 · 선택','신청하기','팬'],
+ get mn() { return this.en; },
  en:['Join event','Participant','Message to the organizer · optional','Apply','Fan'],
  ja:['参加申込','参加者','主催者へのメッセージ・任意','申し込む','ファン'],
  'zh-Hans':['报名参加','参加者','给主办方留言 · 选填','报名','粉丝'],

@@ -1,6 +1,7 @@
 import type { AppLocale } from "@/i18n/locales";
 const rows: Record<AppLocale, readonly [string, string, string, string, string]> = {
   ko: ["창하와 위나의 TikTok LIVE를 보고 응원댓글을 남겨 주세요. 방송 여부는 TikTok에서 확인할 수 있어요.", "LIVE 보러 가기", "나영석 PD님께 감사평 남기기", "나영석 PD님께 전하고 싶은 감사평을 글로 남겨 주세요. 사진이나 영상은 선택해서 첨부할 수 있어요.", "감사평을 적어 주세요."],
+  get mn() { return this.en; },
   en: ["Watch Changha and WENA on TikTok LIVE and leave a cheer. Check TikTok to see whether they are live.", "Watch LIVE", "Leave a thank-you for producer Na Young-seok", "Write a thank-you message for producer Na Young-seok. You can optionally attach photos or a video.", "Write your thank-you message."],
   ja: ["チャンハとWENAのTikTok LIVEを見て応援コメントを残しましょう。配信状況はTikTokで確認できます。", "LIVEを見る", "ナ・ヨンソクPDへ感謝のメッセージ", "ナ・ヨンソクPDへの感謝を文章で伝えてください。写真または動画は任意で添付できます。", "感謝のメッセージを書いてください。"],
   "zh-Hans": ["观看Changha和WENA的TikTok LIVE并留言应援。请在TikTok确认是否正在直播。", "观看LIVE", "给罗暎锡PD写感谢留言", "请写下想对罗暎锡PD说的感谢话语。照片或视频可选择添加。", "请写下感谢留言。"],

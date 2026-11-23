@@ -17,6 +17,7 @@ type Copy = { title: (name: string) => string; fallbackName: string; action: str
 // Passport and "close" follow the wording the other passport-gate lines already use in each language.
 const copy: Record<AppLocale, Copy> = {
   ko: { title: name => `${name} 패스포트가 필요해요`, fallbackName: "이 아티스트", action: "패스포트 만들러 가기", close: "닫기" },
+  get mn() { return this.en; },
   en: { title: name => `${name} Passport required`, fallbackName: "This artist", action: "Create a Passport", close: "Close" },
   ja: { title: name => `${name}のパスポートが必要です`, fallbackName: "このアーティスト", action: "パスポートを作る", close: "閉じる" },
   "zh-Hans": { title: name => `需要${name}的护照`, fallbackName: "该艺人", action: "去创建护照", close: "关闭" },

@@ -67,6 +67,12 @@ export function getNicknameFormatMessage(reason: NicknameFormatReason | null, lo
       newline: "닉네임은 한 줄로 입력해 주세요.",
       unsupported: "사용할 수 없는 문자가 포함되어 있어요. 해당 문자를 지워 주세요.",
     },
+    mn: {
+      empty: "Enter a display name.",
+      too_long: "Your display name must be 32 characters or fewer.",
+      newline: "Keep your display name on one line.",
+      unsupported: "Remove the unsupported characters from your display name.",
+    },
     en: {
       empty: "Enter a display name.",
       too_long: "Your display name must be 32 characters or fewer.",

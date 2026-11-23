@@ -4,6 +4,7 @@ import type {GroupEarningEntry} from '../domain/earnings';
 type Labels = readonly [title:string,result:string,scope:string,currentGroup:string,all:string,activity:string,processed:string,unknown:string,back:string,empty:string,unavailable:string,noReason:string,correctionNoReason:string,detail:string,tickets:string,legacyTickets:string,mission:string,participation:string,legacyActivity:string,raffle:string];
 const labels:Record<AppLocale,Labels>={
  ko:['모임 적립 내역','참여·적립 결과','조회 범위','현재 모임','전체 활동','활동 상세','처리 시각','정보 없음','적립 내역으로','아직 적립 내역이 없어요. 모임 덕질에서 참여할 활동을 찾아보세요.','이 내역을 확인할 수 없어요.','사유 미제공','정정 사유 미제공','상세','응모권','기존 무료 응모권','덕질 참여','활동 참여','이전 활동','추첨 응모'],
+ get mn() { return this.en; },
  en:['Group earnings','Participation & earnings result','Scope','Current group','All activities','Activity details','Processed at','No information','Back to earnings','No earnings yet. Find activities to join in this group.','This record is unavailable.','No reason provided','No correction reason provided','Details','tickets','legacy free tickets','Mission participation','Activity participation','Previous activity','Raffle entry'],
  ja:['グループの獲得履歴','参加・獲得結果','表示範囲','現在のグループ','すべての活動','活動の詳細','処理日時','情報なし','獲得履歴へ','獲得履歴はまだありません。グループで参加できる活動を探してみましょう。','この履歴は確認できません。','理由の記載なし','訂正理由の記載なし','詳細','応募券','従来の無料応募券','ミッション参加','活動参加','過去の活動','抽選応募'],
  'zh-Hans':['群组奖励记录','参与及奖励结果','查看范围','当前群组','全部活动','活动详情','处理时间','暂无信息','返回奖励记录','暂无奖励记录。去群组活动中寻找想参与的活动吧。','无法查看此记录。','未提供原因','未提供更正原因','详情','抽奖券','原有免费抽奖券','任务参与','活动参与','历史活动','抽奖报名'],
@@ -19,6 +20,7 @@ const labels:Record<AppLocale,Labels>={
 type StatusLabels=readonly [pending:string,rejected:string,credited:string,noReward:string,review:string,corrected:string,entered:string,refunded:string];
 const statuses:Record<AppLocale,StatusLabels>={
  ko:['확인 중 · 지급 전','반려 · 지급 전','적립 완료','참여 완료 · 지급 없음','정정 검토 중','적립 정정','응모 완료','응모권 반환'],
+ get mn() { return this.en; },
  en:['Under review · not paid','Rejected · not paid','Credited','Completed · no reward','Correction under review','Earnings corrected','Entry confirmed','Tickets refunded'],
  ja:['確認中・支給前','却下・支給前','獲得済み','参加完了・報酬なし','訂正審査中','獲得額を訂正','応募完了','応募券返還'],
  'zh-Hans':['审核中 · 未发放','已拒绝 · 未发放','已到账','参与完成 · 无奖励','更正审核中','奖励已更正','报名成功','抽奖券已退回'],
@@ -32,7 +34,7 @@ const statuses:Record<AppLocale,StatusLabels>={
  ru:['На проверке · не выплачено','Отклонено · не выплачено','Начислено','Завершено · без награды','Корректировка на проверке','Награда скорректирована','Участие подтверждено','Билеты возвращены'],
 };
 const failures:Record<AppLocale,readonly [string,string]>={
- ko:['내역을 불러오지 못했어요.','다시 불러오기'],en:['Could not load the history.','Reload'],ja:['履歴を読み込めませんでした。','再読み込み'],
+ ko:['내역을 불러오지 못했어요.','다시 불러오기'],get mn() { return this.en; }, en:['Could not load the history.','Reload'],ja:['履歴を読み込めませんでした。','再読み込み'],
  'zh-Hans':['无法加载记录。','重新加载'],'zh-Hant':['無法載入紀錄。','重新載入'],es:['No se pudo cargar el historial.','Volver a cargar'],
  id:['Riwayat tidak dapat dimuat.','Muat ulang'],vi:['Không tải được lịch sử.','Tải lại'],th:['ไม่สามารถโหลดประวัติได้','โหลดใหม่'],
  pt:['Não foi possível carregar o histórico.','Recarregar'],fr:['Impossible de charger l’historique.','Recharger'],ru:['Не удалось загрузить историю.','Загрузить снова'],

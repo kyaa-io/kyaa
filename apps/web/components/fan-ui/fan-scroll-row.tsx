@@ -6,7 +6,7 @@ import type { AppLocale } from "@/i18n/locales";
 import styles from "./fan-scroll-row.module.css";
 
 const labels: Record<AppLocale, [string, string]> = {
-  ko: ["이전", "다음"], en: ["Previous", "Next"], ja: ["前へ", "次へ"], "zh-Hans": ["上一页", "下一页"], "zh-Hant": ["上一頁", "下一頁"],
+  ko: ["이전", "다음"], get mn() { return this.en; }, en: ["Previous", "Next"], ja: ["前へ", "次へ"], "zh-Hans": ["上一页", "下一页"], "zh-Hant": ["上一頁", "下一頁"],
   es: ["Anterior", "Siguiente"], id: ["Sebelumnya", "Berikutnya"], vi: ["Trước", "Tiếp"], th: ["ก่อนหน้า", "ถัดไป"], pt: ["Anterior", "Seguinte"], fr: ["Précédent", "Suivant"], ru: ["Назад", "Вперёд"],
 };
 

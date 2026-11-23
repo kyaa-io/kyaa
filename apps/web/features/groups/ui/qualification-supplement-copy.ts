@@ -1,6 +1,7 @@
 import type {AppLocale} from '@/i18n/locales';
 const copy:Record<AppLocale,readonly [string,string,string,string,string,string,string,string,string,string]>={
 ko:['신청 검토·보완','접수 상태','보완 요청','보완 설명','보완 증빙','자료 선택','승인 이후','승인된 권한에 따라 운영 메뉴를 이용할 수 있어요.','보완 자료 제출','추가로 확인할 내용을 적어주세요.'],
+get mn() { return this.en; },
 en:['Review and supplement','Application status','Requested changes','Additional explanation','Supporting evidence','Choose images','After approval','You can use the management menu according to your approved permissions.','Submit supplement','Add information needed for verification.'],
 ja:['申請の確認・補足','受付状況','補足依頼','補足説明','補足資料','資料を選択','承認後','承認された権限に応じて運営メニューを利用できます。','補足資料を提出','追加で確認が必要な内容を入力してください。'],
 'zh-Hans':['申请审核与补充','申请状态','补充要求','补充说明','补充材料','选择材料','批准后','您可以根据获批权限使用管理菜单。','提交补充材料','请填写需要进一步核实的内容。'],

@@ -11,6 +11,7 @@ import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import styles from './popular-posts.module.css';
 const labels:Record<AppLocale,readonly [string,string,string,string]>={
  ko:['오늘의 인기글','일간','주간','월간'],
+ get mn() { return this.en; },
  en:['Popular posts','Daily','Weekly','Monthly'],
  ja:['人気の投稿','日間','週間','月間'],
  'zh-Hans':['热门帖子','日榜','周榜','月榜'],
@@ -25,6 +26,7 @@ const labels:Record<AppLocale,readonly [string,string,string,string]>={
 };
 const titles:Record<AppLocale,readonly [string,string,string]>={
  ko:['오늘의 인기글','이번 주의 인기글','이번 달의 인기글'],
+ get mn() { return this.en; },
  en:["Today's popular posts","This week's popular posts","This month's popular posts"],
  ja:['今日の人気の投稿','今週の人気の投稿','今月の人気の投稿'],
  'zh-Hans':['今日热门帖子','本周热门帖子','本月热门帖子'],

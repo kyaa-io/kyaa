@@ -2,6 +2,7 @@ import type { AppLocale } from "../locales";
 
 const copy = {
   ko: ["커뮤니티", "현장에서 담은 사진부터 최애에게 전하고 싶은 이야기까지. 팬들과 함께 나눠요.", "최애 선택", "팬 게시판", "함께하는 팬", "팬 인증", "팬 요청", "팬페이지", "최근 함께한 팬", "아직 함께하는 팬이 없어요. 첫 이야기를 남겨 보세요.", "참여할 커뮤니티를 준비하고 있어요.", "명"],
+  get mn() { return this.en; },
   en: ["Community", "From photos you took at the venue to stories about your favorite. Share them with fellow fans.", "Choose a favorite", "Fan posts", "Fans", "Fan verification", "Fan requests", "Fan page", "Recently joined fans", "No fans here yet. Start the first conversation.", "Communities are being prepared.", " fans"],
   ja: ["コミュニティ", "現場で撮った写真も、推しへの想いも。ファン同士でシェアしましょう。", "推しを選択", "ファン掲示板", "ファン", "ファン認証", "ファンのリクエスト", "ファンページ", "最近参加したファン", "まだファンがいません。最初の投稿をしてみましょう。", "コミュニティを準備しています。", "人"],
   "zh-Hans": ["社区", "从现场拍摄的照片到关于偶像的故事，与粉丝们一起分享。", "选择艺人", "粉丝帖子", "粉丝", "真爱粉认证", "粉丝请求", "粉丝主页", "最近加入的粉丝", "还没有粉丝。来发布第一条内容吧。", "社区正在筹备中。", "人"],
@@ -23,6 +24,7 @@ const compactCopy = {
     "전체",
     "사진/영상만 보기"
   ],
+  get mn() { return this.en; },
   "en": [
     "Hot communities",
     "By fan count",

@@ -113,7 +113,7 @@ it.each(APP_LOCALES)("renders the home contract in %s", async locale => {
   expect(screen.getByRole("heading", { name: rankingsText(locale, "rkHomeTitle") })).toBeInTheDocument();
   expect(screen.queryByLabelText(rankingsText(locale, "rkDayGain", ["+0"]))).toBeNull();
   for (const key of ["rkHomeTitle", "rkHomeFans", "rkHomeLocked", "rkDayGain"] as const) {
-    if (locale !== "ko" && locale !== "en") expect(messages[key][locale]).toBeTruthy();
+    if (locale !== "ko" && locale !== "en" && locale !== "mn") expect(messages[key][locale]).toBeTruthy();
   }
 });
 

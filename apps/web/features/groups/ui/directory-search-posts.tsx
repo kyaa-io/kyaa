@@ -12,6 +12,7 @@ const schema=z.object({items:z.array(z.object({source:z.enum(['fan','group','not
 const parse=(value:unknown)=>schema.parse(value);
 const copy:Record<AppLocale,{empty:string;error:string;retry:string;loading:string}>={
  ko:{empty:'검색 결과가 없어요.',error:'게시글을 불러오지 못했어요.',retry:'다시 시도',loading:'게시글 검색 중'},
+ get mn() { return this.en; },
  en:{empty:'No results.',error:'Could not load posts.',retry:'Try again',loading:'Searching posts'},
  ja:{empty:'検索結果がありません。',error:'投稿を読み込めませんでした。',retry:'再試行',loading:'投稿を検索中'},
  'zh-Hans':{empty:'没有搜索结果。',error:'无法加载帖子。',retry:'重试',loading:'正在搜索帖子'},

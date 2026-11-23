@@ -15,6 +15,7 @@ type EventDayCopy = { label: string; hour: string; minute: string; join: string;
 
 const copy: Record<AppLocale, EventDayCopy> = {
   ko: { label: "오늘 하루 이벤트", hour: "시간", minute: "분", join: " ", left: (time) => `${time} 남음`, close: "닫기" },
+  get mn() { return this.en; },
   en: { label: "One-day event today", hour: "h", minute: "m", join: " ", left: (time) => `${time} left`, close: "Close" },
   ja: { label: "今日だけのイベント", hour: "時間", minute: "分", join: "", left: (time) => `残り${time}`, close: "閉じる" },
   "zh-Hans": { label: "今日限定活动", hour: "小时", minute: "分钟", join: "", left: (time) => `剩余${time}`, close: "关闭" },
@@ -52,6 +53,7 @@ export function eventStripClosedCookie(bannerId: string): string {
 
 const liveEventLabels: Record<AppLocale, string> = {
   ko: "이벤트 중",
+  get mn() { return this.en; },
   en: "LIVE EVENT",
   ja: "イベント開催中",
   "zh-Hans": "活动进行中",

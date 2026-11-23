@@ -88,12 +88,15 @@ function loginSessionCopy({
   error: string | null;
 }): { title: string; description?: string } {
   if (error === APPLE_REAUTHENTICATION_REQUIRED) {
-    return ({ ko: { title: "계정을 다시 확인해 주세요.", description: "Apple 계정 연결이 변경되었어요. 기존 계정으로 인증하면 계속할 수 있어요." }, en: { title: "Verify your account again.", description: "Your Apple account connection has changed. Verify with your existing account to continue." }, ...additionalLocales((translationLocale) => ({ title: localizedMessages.m9bd003de190a[translationLocale], description: localizedMessages.m2962318754ff[translationLocale] })) })[locale];
+    return ({ ko: { title: "계정을 다시 확인해 주세요.", description: "Apple 계정 연결이 변경되었어요. 기존 계정으로 인증하면 계속할 수 있어요." }, mn: { title: "Verify your account again.", description: "Your Apple account connection has changed. Verify with your existing account to continue." }, en: { title: "Verify your account again.", description: "Your Apple account connection has changed. Verify with your existing account to continue." }, ...additionalLocales((translationLocale) => ({ title: localizedMessages.m9bd003de190a[translationLocale], description: localizedMessages.m2962318754ff[translationLocale] })) })[locale];
   }
   if (error === VERIFIED_EMAIL_REQUIRED) {
     return ({ ko: {
           title: "이 계정에서 확인된 이메일을 찾을 수 없어요.",
           description: "로그아웃한 뒤 이메일 공유가 가능한 계정으로 다시 로그인해 주세요.",
+        }, mn: {
+          title: "We couldn't find a verified email for this account.",
+          description: "Sign out, then choose an account that can share a verified email.",
         }, en: {
           title: "We couldn't find a verified email for this account.",
           description: "Sign out, then choose an account that can share a verified email.",
@@ -103,15 +106,18 @@ function loginSessionCopy({
         })) })[locale];
   }
   if (error === LOGIN_READINESS_TIMEOUT) {
-    return ({ ko: { title: "로그인 준비가 오래 걸리고 있어요.", description: "다시 확인하면 이 화면에서 로그인을 이어갈 수 있어요." }, en: { title: "Sign-in is taking longer than expected.", description: "Check again to continue signing in from this screen." }, ...additionalLocales((translationLocale) => ({ title: localizedMessages.mbca39c0aeeae[translationLocale], description: localizedMessages.ma8df20d6ade0[translationLocale] })) })[locale];
+    return ({ ko: { title: "로그인 준비가 오래 걸리고 있어요.", description: "다시 확인하면 이 화면에서 로그인을 이어갈 수 있어요." }, mn: { title: "Sign-in is taking longer than expected.", description: "Check again to continue signing in from this screen." }, en: { title: "Sign-in is taking longer than expected.", description: "Check again to continue signing in from this screen." }, ...additionalLocales((translationLocale) => ({ title: localizedMessages.mbca39c0aeeae[translationLocale], description: localizedMessages.ma8df20d6ade0[translationLocale] })) })[locale];
   }
   if (error === SESSION_SYNCHRONIZATION_TIMEOUT) {
-    return ({ ko: { title: "로그인 연결이 오래 걸리고 있어요.", description: "현재 계정을 유지한 채 다시 시도해 주세요." }, en: { title: "Finishing sign-in is taking longer than expected.", description: "Try again with the account you’re currently using." }, ...additionalLocales((translationLocale) => ({ title: localizedMessages.m3f9f50c0c146[translationLocale], description: localizedMessages.m3e60a6698eaa[translationLocale] })) })[locale];
+    return ({ ko: { title: "로그인 연결이 오래 걸리고 있어요.", description: "현재 계정을 유지한 채 다시 시도해 주세요." }, mn: { title: "Finishing sign-in is taking longer than expected.", description: "Try again with the account you’re currently using." }, en: { title: "Finishing sign-in is taking longer than expected.", description: "Try again with the account you’re currently using." }, ...additionalLocales((translationLocale) => ({ title: localizedMessages.m3f9f50c0c146[translationLocale], description: localizedMessages.m3e60a6698eaa[translationLocale] })) })[locale];
   }
   if (error) {
     return ({ ko: {
           title: "로그인 정보를 안전하게 연결하지 못했어요.",
           description: "잠시 후 다시 시도해 주세요.",
+        }, mn: {
+          title: "We couldn't finish signing you in.",
+          description: "Please try again in a moment.",
         }, en: {
           title: "We couldn't finish signing you in.",
           description: "Please try again in a moment.",

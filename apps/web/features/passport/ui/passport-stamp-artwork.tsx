@@ -23,7 +23,7 @@ function pointUnit(locale: AppLocale, points: number): string {
   const plural = new Intl.PluralRules(locale).select(points);
   const singular = plural === "one";
   return {
-    ko: "점", en: singular ? "point" : "points", ja: "点",
+    ko: "점", get mn() { return this.en; }, en: singular ? "point" : "points", ja: "点",
     "zh-Hans": "分", "zh-Hant": "分", es: singular ? "punto" : "puntos",
     id: "poin", vi: "điểm", th: "คะแนน",
     pt: singular ? "ponto" : "pontos", fr: singular ? "point" : "points",

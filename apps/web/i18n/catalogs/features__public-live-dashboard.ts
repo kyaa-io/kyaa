@@ -35,6 +35,7 @@ const rows: Record<AppLocale, readonly string[]> = {
     "심사 반려",
     "인증 심사"
   ],
+  get mn() { return this.en; },
   "en": [
     "Participation, made together",
     "Explore public totals for fan activities and support.",

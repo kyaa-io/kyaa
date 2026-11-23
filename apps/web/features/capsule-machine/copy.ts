@@ -5,6 +5,7 @@ type Key = typeof keys[number];
 // {n}: a number, {name}: a prize name.
 const values: Record<AppLocale, readonly string[]> = {
   ko: ["준비 중", "진행 중", "1회", "응모권 {n}장", "{n}개", "남은 경품", "내 응모권", "{name} 당첨", "이번에는 당첨되지 않았어요.", "10회 중 {n}개 당첨", "{name} {n}개", "수령 방법 확인", "닫기", "한 번 더 뽑기", "결과 바로 보기", "레어", "캡슐 뽑기를 불러오지 못했어요."],
+  get mn() { return this.en; },
   en: ["Coming soon", "Open", "Per draw", "Tickets: {n}", "{n}", "Prizes left", "My tickets", "You won {name}", "No prize this time.", "{n} of 10 won", "{name} ×{n}", "How to claim", "Close", "Draw again", "Skip to results", "Rare", "Couldn’t load the capsule draw."],
   ja: ["準備中", "開催中", "1回", "応募券{n}枚", "{n}個", "残りの賞品", "自分の応募券", "{name}が当選", "今回ははずれでした。", "10回中{n}個当選", "{name} {n}個", "受け取り方法を確認", "閉じる", "もう一度引く", "結果をすぐ見る", "レア", "カプセルくじを読み込めませんでした。"],
   "zh-Hans": ["准备中", "进行中", "每次", "{n}张抽奖券", "{n}个", "剩余奖品", "我的抽奖券", "抽中{name}", "这次没有中奖。", "10次中{n}个中奖", "{name} {n}个", "查看领取方式", "关闭", "再抽一次", "直接查看结果", "稀有", "无法加载胶囊抽奖。"],

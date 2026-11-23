@@ -24,6 +24,7 @@ const table: Record<AppLocale, readonly string[]> = {
     "{name} · 친밀", "{name} 방 보기", "다음에 뭐 할까?", "다시 하기 · 남은 판 {n}", "{cost}P로 1판 더 · 오늘 {n}번 남음", "오늘 판을 모두 썼어요", "친구에게 도전", "링크를 복사했어요", "케미로",
     "바로 위 {name}까지", "기록 확인 중", "다시 시도", "{cost}P로 1판 더", "포인트", "오늘 추가 판", "그만하기", "{cost}P 쓰고 시작",
     "포인트가 {n}P 모자라요", "덕질 미션에서 모으기", "내일 알려 줘", "내일 메일로 알려 드릴게요", "불러오지 못했어요.", "도전 기록", "닫기", "{n}초", "지난주 {n}위", "판이 끝났어요", "최고 기록", "{date} 새 코스", "오늘 받음"],
+  get mn() { return this.en; },
   en: ["Favorite Run", "Back", "Sound", "Pause", "Changha", "Elina", "Yuna", "Autumn city street",
     "Jump", "Low things", "Double jump", "Tall things · pits", "Slide", "Overhead", "20 notes = Fever", "2× score for 7 s",
     "This week's ranking", "Full ranking", "me", "No records yet.", "{n} ran today", "Start with {name} · {n} runs left", "Sign in to start", "Start 1 trial run",
@@ -127,7 +128,7 @@ const table: Record<AppLocale, readonly string[]> = {
 
 const otherCourses: Record<AppLocale, [string, string]> = {
   "zh-Hans": ["樱花夜街", "落日海滨步道"], "zh-Hant": ["櫻花夜街", "落日海濱步道"],
-  ko: ["벚꽃 봄밤 거리", "노을 바닷길"], en: ["Cherry blossom night", "Sunset boardwalk"],
+  ko: ["벚꽃 봄밤 거리", "노을 바닷길"], get mn() { return this.en; }, en: ["Cherry blossom night", "Sunset boardwalk"],
   ja: ["夜桜の通り", "夕暮れの海辺"], es: ["Cerezos de noche", "Paseo al atardecer"],
   id: ["Malam bunga sakura", "Senja di tepi laut"], vi: ["Phố anh đào về đêm", "Bờ biển hoàng hôn"],
   th: ["ถนนซากุระยามค่ำ", "ริมทะเลยามเย็น"], pt: ["Cerejeiras à noite", "Orla ao pôr do sol"],
@@ -138,6 +139,7 @@ const comboLines: Record<AppLocale, [string, string]> = {
   "zh-Hans": ["连续{n}次！节奏刚刚好。", "连续{n}次！手指很灵活吧？"],
   "zh-Hant": ["連續{n}次！節奏剛剛好。", "連續{n}次！手指很靈活吧？"],
   ko: ["{n}번 연속! 박자가 딱 맞아요.", "{n}번 연속! 손끝이 가볍지?"],
+  get mn() { return this.en; },
   en: ["{n} in a row! Right on beat.", "{n} in a row! Light fingers, huh?"],
   ja: ["{n}回連続！リズムぴったりです。", "{n}回連続！指が軽いでしょ？"],
   es: ["¡{n} seguidos! Justo al compás.", "¡{n} seguidos! Qué dedos tan ágiles."],

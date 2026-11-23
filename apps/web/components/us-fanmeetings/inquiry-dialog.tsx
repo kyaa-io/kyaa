@@ -16,22 +16,22 @@ type InquiryKind = "fanmeeting" | "creator" | "partner";
 
 const emptyDraft: Draft = { name: "", company: "", email: "", message: "", consent: false, topic: "other" };
 const partnerTopics = [
-  { value: "other", ko: "아직 정하지 못했어요 / 기타", en: "Not sure yet / other" ,
+  { value: "other", ko: "아직 정하지 못했어요 / 기타", get mn() { return this.en; }, en: "Not sure yet / other" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m9e14252a235a[translationLocale]))
 },
-  { value: "commerce", ko: "커머스 · 공동구매", en: "Commerce & group buying" ,
+  { value: "commerce", ko: "커머스 · 공동구매", get mn() { return this.en; }, en: "Commerce & group buying" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mfb5e13068657[translationLocale]))
 },
-  { value: "live", ko: "라이브커머스", en: "Live shopping" ,
+  { value: "live", ko: "라이브커머스", get mn() { return this.en; }, en: "Live shopping" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m2c49adf846ca[translationLocale]))
 },
-  { value: "merchandise", ko: "굿즈 · IP 협업", en: "Merchandise & IP collaborations" ,
+  { value: "merchandise", ko: "굿즈 · IP 협업", get mn() { return this.en; }, en: "Merchandise & IP collaborations" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m341e939671dd[translationLocale]))
 },
-  { value: "advertising", ko: "광고 · 브랜디드 콘텐츠", en: "Advertising & branded content" ,
+  { value: "advertising", ko: "광고 · 브랜디드 콘텐츠", get mn() { return this.en; }, en: "Advertising & branded content" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m32ce99e80b6d[translationLocale]))
 },
-  { value: "benefits", ko: "팬 혜택 · 이벤트", en: "Fan benefits & events" ,
+  { value: "benefits", ko: "팬 혜택 · 이벤트", get mn() { return this.en; }, en: "Fan benefits & events" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mc93f57c5d6e9[translationLocale]))
 },
 ] as const;
@@ -55,6 +55,7 @@ const copy = {
       TIMEOUT: "응답이 지연되고 있어요. 같은 내용으로 다시 시도해 주세요.",
     },
   },
+  get mn() { return this.en; },
   en: {
     title: "Tell us about your U.S. fanmeeting",
     description: "Share what you know so far. Our team will review it and reply by email.",
@@ -105,6 +106,7 @@ const inquiryDetails = {
       companyPlaceholder: "팬들에게 알려진 이름을 입력해 주세요",
       messagePlaceholder: "활동 채널 링크, 소개, 팬들과 해보고 싶은 활동을 알려주세요.",
     },
+    get mn() { return this.en; },
     en: {
       title: "Plan activities with your fans",
       description: "Tell us about your channels and what you would like to do with your fans.",
@@ -128,6 +130,7 @@ const inquiryDetails = {
       company: "회사 / 브랜드명", companyPlaceholder: "회사 또는 브랜드명을 입력해 주세요",
       messagePlaceholder: "제품·콘텐츠 소개, 함께하고 싶은 대상이나 팬층, 판매·게시 채널, 일정·예산·제공 조건 중 정해진 내용을 알려주세요.",
     },
+    get mn() { return this.en; },
     en: {
       title: "Partnership proposal",
       description: "Introduce your brand or project and the collaboration you have in mind.",

@@ -8,7 +8,7 @@ import { creatorName } from "../domain/creator-names";
 import styles from "./fanpage.module.css";
 
 const fandomLabels: Record<AppLocale, string> = {
-  ko: "팬덤", en: "Fandom", ja: "ファンダム", "zh-Hans": "粉丝名", "zh-Hant": "粉絲名",
+  ko: "팬덤", get mn() { return this.en; }, en: "Fandom", ja: "ファンダム", "zh-Hans": "粉丝名", "zh-Hant": "粉絲名",
   es: "Fandom", id: "Fandom", vi: "Cộng đồng fan", th: "แฟนด้อม", pt: "Fandom", fr: "Fandom",
   ru: "Фандом",
 

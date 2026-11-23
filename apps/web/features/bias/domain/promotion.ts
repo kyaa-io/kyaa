@@ -41,7 +41,20 @@ kyaa에서 라이브 출석도 기록하고 예쁜 스탬프도 꼭 받아가세
 ${url}`,
 live: `제 팬페이지는 ${shortUrl}예요.
 라이브 일정과 참여할 수 있는 활동을 확인하고,
-좋아요와 출석으로 함께해 주세요!`}, en: {url,
+좋아요와 출석으로 함께해 주세요!`}, mn: {url,
+shortUrl,
+general: `Hi, everyone! My LIVE fan page is now open on kyaa!
+Check out my weekly LIVE schedule,
+and be sure to enjoy a variety of benefits by leaving a like 💜 and checking in!
+${url}`,
+bio: `Check my LIVE schedule and more updates on kyaa!
+${url}`,
+story: `See you at my LIVE soon 💜
+Log your LIVE check-ins on kyaa and be sure to collect the cute stamps!
+${url}`,
+live: `My fan page is ${shortUrl}.
+Check my LIVE schedule and ways to join in,
+and join me with likes and check-ins!`}, en: {url,
 shortUrl,
 general: `Hi, everyone! My LIVE fan page is now open on kyaa!
 Check out my weekly LIVE schedule,

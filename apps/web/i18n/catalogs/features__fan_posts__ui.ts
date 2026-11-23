@@ -58,6 +58,7 @@ export const contentMessages = {
     "offline": "인터넷 연결이 끊겨 처리하지 못했어요. 연결을 확인하고 다시 시도해 주세요.",
     "signInAgain": "다시 로그인"
   },
+  get mn() { return this.en; },
   "en": {
     "community": "Fan community",
     "writePost": "Write a post",

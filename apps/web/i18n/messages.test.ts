@@ -126,6 +126,7 @@ describe("localized messages", () => {
   it("reorders placeholders without interpreting values as replacement syntax or markup", () => {
     const messages = additionalLocales(() => "{1}: {0} / {0}");
     expect(translate("ja", messages, "{0}: {1}", ["$& <tag>", "名前"])).toBe("名前: $& <tag> / $& <tag>");
+    expect(translate("mn", messages, "{0}: {1}", ["A", "B"])).toBe("A: B");
     expect(translate("en", messages, "{0}: {1}", ["A", "B"])).toBe("A: B");
   });
 
@@ -144,7 +145,7 @@ describe("localized messages", () => {
       // features/quiz/ui/quiz-result-screen.tsx의 en 원문(같은 이유).
       quizLearnMore: { en: "Learn more" },
     };
-    const expectedLocales = APP_LOCALES.filter(locale => locale !== "ko" && locale !== "en");
+    const expectedLocales = APP_LOCALES.filter(locale => locale !== "ko" && locale !== "en" && locale !== "mn");
     const placeholders = (text: string) => (text.match(/\{(?:\d+|[A-Za-z]\w*)\}/g) ?? []).sort();
     const seen = new Set<string>();
     for (const filename of readdirSync(directory).filter(name => name.endsWith(".ts") && !fanWebCatalogs.has(name))) {

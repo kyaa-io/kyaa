@@ -1,6 +1,7 @@
 import type {AppLocale} from '@/i18n/locales';
 const copy:Record<AppLocale,readonly string[]>={
  ko:['상품 URL','상품 정보 불러오기','상품 정보를 불러오지 못했어요','상품 정보를 직접 입력해 주세요.','상품명','상품명을 입력하세요','이미지 URL','이미지 URL을 입력하세요','입력한 상품 정보 저장'],
+ get mn() { return this.en; },
  en:['Product URL','Load product information','Could not load product information','Enter the product information manually.','Product name','Enter the product name','Image URL','Enter the image URL','Save entered product information'],
  ja:['商品URL','商品情報を読み込む','商品情報を読み込めませんでした','商品情報を直接入力してください。','商品名','商品名を入力','画像URL','画像URLを入力','入力した商品情報を保存'],
  'zh-Hans':['商品URL','加载商品信息','无法加载商品信息','请手动输入商品信息。','商品名称','输入商品名称','图片URL','输入图片URL','保存输入的商品信息'],

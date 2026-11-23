@@ -26,6 +26,7 @@ export const gggiCopy: Record<AppLocale, GggiCopy> = {
     title: "창하와 함께 GGGI 응원하기",
     board: "응원 글 남기기", changha: "창하",
   },
+  get mn() { return this.en; },
   en: {
     entryHelp: "Like the page to enter automatically. One entry per account.",
     details: "View event details",

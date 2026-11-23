@@ -5,7 +5,7 @@ import styles from "./role-badge.module.css";
 export type PageRole = "artist" | "operator";
 
 const labels: Record<AppLocale, Record<PageRole, string>> = {
-  ko: { artist: "아티스트", operator: "운영자" }, en: { artist: "Artist", operator: "Operator" }, ja: { artist: "アーティスト", operator: "運営" },
+  ko: { artist: "아티스트", operator: "운영자" }, get mn() { return this.en; }, en: { artist: "Artist", operator: "Operator" }, ja: { artist: "アーティスト", operator: "運営" },
   "zh-Hans": { artist: "艺人", operator: "运营" }, "zh-Hant": { artist: "藝人", operator: "營運" }, es: { artist: "Artista", operator: "Equipo" },
   id: { artist: "Artis", operator: "Pengelola" }, vi: { artist: "Nghệ sĩ", operator: "Quản lý" }, th: { artist: "ศิลปิน", operator: "ผู้ดูแล" },
   pt: { artist: "Artista", operator: "Equipe" }, fr: { artist: "Artiste", operator: "Équipe" }, ru: { artist: "Артист", operator: "Команда" },

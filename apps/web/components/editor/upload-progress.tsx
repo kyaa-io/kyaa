@@ -20,6 +20,7 @@ export type UploadRow = {
 
 const words: Record<AppLocale, { processing: string; done: string }> = {
   ko: { processing: "준비하는 중", done: "올렸어요" },
+  get mn() { return this.en; },
   en: { processing: "Processing", done: "Uploaded" },
   ja: { processing: "準備中", done: "アップロードしました" },
   "zh-Hans": { processing: "处理中", done: "已上传" },

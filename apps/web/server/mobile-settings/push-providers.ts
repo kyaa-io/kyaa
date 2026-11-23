@@ -2,7 +2,7 @@ import "server-only";
 import * as http2 from "node:http2";
 import { createPrivateKey, sign } from "node:crypto";
 
-export type MobilePushLocale="ko"|"en"|"ja"|"zh-Hans"|"zh-Hant"|"es"|"id"|"vi"|"th"|"pt"|"fr"|"ru";
+export type MobilePushLocale="ko"|"en"|"ja"|"zh-Hans"|"zh-Hant"|"es"|"id"|"vi"|"th"|"pt"|"fr"|"ru"|"mn";
 export type MobilePushMessage={platform:"ios"|"android";pushToken:string;locale:MobilePushLocale;payload:{type:"notification_available";notificationId:string;category:string}};
 export class MobilePushProviderError extends Error{
  constructor(readonly code:string,readonly retryable:boolean,readonly invalidToken=false){super(code);this.name="MobilePushProviderError";}
@@ -13,7 +13,7 @@ function required(value:string|undefined,pattern:RegExp){return Boolean(value&&p
 function normalizePrivateKey(value:string){return value.replace(/\\n/g,"\n");}
 function jwt(header:Record<string,string>,claims:Record<string,string|number>,privateKey:string,ec=false){const encoded=`${Buffer.from(JSON.stringify(header)).toString("base64url")}.${Buffer.from(JSON.stringify(claims)).toString("base64url")}`;const signature=sign("sha256",Buffer.from(encoded),{key:createPrivateKey(normalizePrivateKey(privateKey)),...(ec?{dsaEncoding:"ieee-p1363" as const}:{})});return`${encoded}.${signature.toString("base64url")}`;}
 const genericCopy:Record<MobilePushLocale,{title:string;body:string}>={
- ko:{title:"새 알림이 있어요",body:"앱에서 확인해 주세요."},en:{title:"New notification",body:"Open the app to view it."},
+ ko:{title:"새 알림이 있어요",body:"앱에서 확인해 주세요."},mn: {title:"New notification",body:"Open the app to view it."}, en:{title:"New notification",body:"Open the app to view it."},
  ja:{title:"新しいお知らせがあります",body:"アプリで確認してください。"},"zh-Hans":{title:"有新通知",body:"请在应用中查看。"},"zh-Hant":{title:"有新通知",body:"請在應用程式中查看。"},
  es:{title:"Tienes una notificación nueva",body:"Abre la app para verla."},id:{title:"Ada notifikasi baru",body:"Buka aplikasi untuk melihatnya."},
  vi:{title:"Bạn có thông báo mới",body:"Mở ứng dụng để xem."},th:{title:"มีการแจ้งเตือนใหม่",body:"เปิดแอปเพื่อดู"},

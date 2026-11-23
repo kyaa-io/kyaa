@@ -206,6 +206,7 @@ const copy = {
     account: "계정",
     backToSettings: "설정으로 돌아가기",
   },
+  get mn() { return this.en; },
   en: {
     logout: "Log out",
     loggingOut: "Logging out…",

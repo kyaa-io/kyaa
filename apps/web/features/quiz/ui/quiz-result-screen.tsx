@@ -82,6 +82,7 @@ const copy = {
     cooldown: "3번 연속 실패했어요. 서버 시간을 기준으로 1분 뒤 다시 시도해 주세요.",
     retryError: "새 퀴즈를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.",
   },
+  get mn() { return this.en; },
   en: {
     favorite: "your favorite creator",
     loginTitle: "Sign in required",

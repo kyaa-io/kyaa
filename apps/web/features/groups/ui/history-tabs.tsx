@@ -8,6 +8,7 @@ export type HistoryTab = "ledger" | "participation";
 /** Short tab names: [적립·사용, 참여]. The long names stay as panel headings. */
 const tabNames: Record<AppLocale, readonly [string, string]> = {
   ko: ["적립·사용", "참여"],
+  get mn() { return this.en; },
   en: ["Earned & used", "Entries"],
   ja: ["獲得・利用", "参加"],
   "zh-Hans": ["收支", "参与"],

@@ -14,6 +14,7 @@ import styles from './group-event-source.module.css';
 export const eventSaveReceipt=z.union([z.object({event:groupEventSchema}),z.object({id:z.uuid()})]);
 const statuses:Record<AppLocale,readonly [string,string,string,string,string,string,string]>={
  ko:['일정 공개·취소','일정 공개','행사 후기·참여 확인','후기 등록됨','후기 미등록','참석 확인됨','참석 미확인'],
+ get mn() { return this.en; },
  en:['Publish or cancel event','Publish event','Event review and attendance','Review saved','No review yet','Attendance confirmed','Attendance unconfirmed'],
  ja:['イベント公開・中止','イベントを公開','感想・参加確認','感想登録済み','感想未登録','参加確認済み','参加未確認'],
  'zh-Hans':['活动公开与取消','公开活动','活动评价与出席确认','评价已保存','尚未评价','出席已确认','出席未确认'],
