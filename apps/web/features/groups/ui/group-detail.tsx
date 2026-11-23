@@ -1,4 +1,5 @@
 "use client";
+import { usesFanPageNavigation } from "./fan-page-navigation";
 import { FanSkeletonRows } from "@/components/fan-ui/fan-skeleton";
 import { LinkedFanpageContent } from "./linked-fanpage-content";
 import { GroupCalendarPanel } from "./group-calendar";
@@ -41,8 +42,8 @@ function GroupDetailBody({locale,pageId,calendarMonth,initialPostId,initialRoomI
       {tab==='manage'&&detail.membership&&detail.membership.role!=='member'&&<GroupManagement key={`${g.ownerKey}:${detail.membership.role}`} detail={detail} locale={locale} refresh={g.refresh}/>}
       {(tab==='board'||tab==='news')&&<GroupBoard key={g.ownerKey} detail={detail} locale={locale} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} initialPostId={initialPostId} initialBoardState={initialBoardState} listHref={creator&&tab==='board'?`/pages/groups/${pageId}?locale=${locale}&tab=board${boardSource==='all'?'':`&source=${boardSource}`}`:undefined}/>}
       {tab==='members'&&<GroupMembers key={`${g.ownerKey}:${pageId}`} pageId={pageId} rankingsSlug={page.slug} locale={locale} member={Boolean(detail.membership)} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} inTab presentation={{creatorName:page.name,subtitles:{},}}/>}
-      {tab==='rooms'&&page.kind==='fan'&&<GroupChatPanel key={g.ownerKey} pageId={pageId} locale={locale} roomHref={href('rooms')}/>}
-      {tab==='rooms'&&page.kind!=='fan'&&<GroupRoomsPanel key={`${g.ownerKey}:${initialRoomId??''}:${detail.membership?'member':'guest'}`} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} pageId={pageId} locale={locale} slug={page.slug} imageUrl={page.imageUrl} initialRoomId={initialRoomId}/>}
+      {tab==='rooms'&&usesFanPageNavigation(page.kind,page.slug)&&<GroupChatPanel key={g.ownerKey} pageId={pageId} locale={locale} roomHref={href('rooms')}/>}
+      {tab==='rooms'&&!usesFanPageNavigation(page.kind,page.slug)&&<GroupRoomsPanel key={`${g.ownerKey}:${initialRoomId??''}:${detail.membership?'member':'guest'}`} onJoin={startJoin} joinPending={pending} joinLabel={joinLabel} pageId={pageId} locale={locale} slug={page.slug} imageUrl={page.imageUrl} initialRoomId={initialRoomId}/>}
       {tab==='activities'&&<GroupActivitiesPanel pageId={pageId} locale={locale} pageName={page.name}/>}
       {tab==='events'&&<GroupEventsList pageId={pageId} locale={locale}/>}
       {tab==='collection'&&<GroupCollections key={`${g.ownerKey}:${pageId}`} pageId={pageId} locale={locale} pageName={page.name}/>}

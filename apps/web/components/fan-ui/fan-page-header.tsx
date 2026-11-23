@@ -39,10 +39,11 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
  * 팬페이지는 사진 옆에 이름·SNS와 팬 수·행동을 묶고, 전폭 소개 아래에 방문 통계를 둔다.
  */
-export function FanPageHeader({ image, name, kind, locale, description, descriptionLabels, descriptionAction, star, badge, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
+export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", locale, description, descriptionLabels, descriptionAction, star, badge, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
   image: FanPageImage;
   name: ReactNode;
   kind: FanPageKind;
+  fanLayout?: boolean;
   locale: AppLocale;
   /** 외부 원문은 고치지 않고 그대로 넘긴다. 없으면 줄을 그리지 않는다. */
   description?: ReactNode;
@@ -68,7 +69,7 @@ export function FanPageHeader({ image, name, kind, locale, description, descript
   const plainName = typeof name === "string" ? name : "";
   const actions = Boolean(star || utility);
   const linkNav = links.length > 0 ? <nav className={styles.links} aria-label={plainName || undefined}>{links.map((link) => <a key={`${link.kind}:${link.href}`} href={link.href} target="_blank" rel="noopener noreferrer" aria-label={link.kind} data-platform={link.kind} data-outbound-kind={link.kind === "website" ? "website" : "social"}><img src={iconOf(link.kind)} width={20} height={20} alt="" /></a>)}</nav> : null;
-  return <header className={styles.header} data-fan-page-header={kind} data-frame-id={frameId}>
+  return <header className={styles.header} data-fan-page-header={kind} data-fan-layout={fanLayout || undefined} data-frame-id={frameId}>
     <div className={styles.identity}>
       <FanPageImageSlot image={image} name={plainName} locale={locale} size={{ mobile: 96, desktop: 128 }} className={styles.image} priority />
       <div className={styles.body}>

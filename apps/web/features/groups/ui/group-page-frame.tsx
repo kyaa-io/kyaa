@@ -1,4 +1,5 @@
 "use client";
+import { usesFanPageNavigation } from "./fan-page-navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { LockKeyhole } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -33,11 +34,11 @@ import styles from "./groups.module.css";
 function useTabs(): FanTabItem[] {
   const g = useGroupPage();
   const hideMembers = g.routeSlug !== null && g.error;
-  // 팬페이지만 '덕후인증' + 포인트 배지를 쓰고 '팬·랭킹' 탭을 두지 않는다. 취미·브랜드 모임은 '인증'과 '팬·랭킹' 그대로다. 팬 목록(?tab=members)은 머리의 '팬 N'에서 들어간다.
-  const items = groupTabItems(g.locale, !hideMembers && g.kind !== "fan", g.kind === "fan");
-  if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: g.kind === "fan" ? <ProofTabLabel label={proofTab[g.locale]} locale={g.locale} /> : g.locale === "ko" ? "인증" : "Proofs" });
+  const fanNavigation = usesFanPageNavigation(g.kind, g.routeSlug ?? g.page?.slug);
+  const items = groupTabItems(g.locale, !hideMembers && !fanNavigation, fanNavigation);
+  if (g.routeSlug !== null) items.splice(2, 0, { key: "proofs", label: fanNavigation ? <ProofTabLabel label={proofTab[g.locale]} locale={g.locale} /> : g.locale === "ko" ? "인증" : "Proofs" });
   // 채팅방 탭 이름 옆에 안 읽은 메시지 수. 채팅방을 보고 있는 동안에는 묻지 않는다.
-  const unread = useChatUnread(g.kind === "fan" && g.activeTab !== "rooms" ? g.page?.id ?? null : null);
+  const unread = useChatUnread(fanNavigation && g.activeTab !== "rooms" ? g.page?.id ?? null : null);
   return items.map((item) => ({ ...item, ...(item.key === "rooms" && unread ? { count: unread } : {}), href: g.hrefFor(item.key), onSelect: () => g.selectTab(item.key), onPreload: () => g.preloadTab(item.key) }));
 }
 
@@ -69,7 +70,8 @@ export function GroupPageHead() {
   const tabs = name ? <FanTabs id={g.celebrity ? "celebrity-content" : undefined} label={name} current={g.activeTab} items={items} /> : <FanTabs label={t.groups} current={g.activeTab} items={items} />;
   // 팬페이지의 '팬 N'은 홈 랭킹 크리에이터 누적 하트와 같은 값(좋아요 남긴 사람 수). 그 밖의 페이지는 가입자 수.
   const memberCount = g.page?.kind === "fan" && g.page.likeCount !== undefined ? g.page.likeCount : g.page?.memberCount;
-  const stats = <GroupPresence separateVisits={g.kind === "fan"} pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
+  const fanNavigation = usesFanPageNavigation(g.kind, g.routeSlug ?? g.page?.slug);
+  const stats = <GroupPresence linkMembers={fanNavigation} separateVisits={fanNavigation} pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;
@@ -79,7 +81,8 @@ export function GroupPageHead() {
     name={name}
     kind={g.kind}
     locale={g.locale}
-    visits={g.kind === "fan" ? <GroupVisitLine data={g.presence?.data} locale={g.locale}/> : undefined}
+    fanLayout={fanNavigation}
+    visits={fanNavigation ? <GroupVisitLine data={g.presence?.data} locale={g.locale}/> : undefined}
     description={summary}
     descriptionLabels={pageHeadCopy(g.locale)}
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
