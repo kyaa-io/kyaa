@@ -17,6 +17,7 @@ import { runGroupRafflesDueOnce } from "./group-raffles-due.js";
 import { runRunmusicDueOnce } from "./runmusic-due.js";
 import { runRaffleRecipientRemindersOnce } from "./raffle-recipient-reminders.js";
 import {runGroupInvitationEmailOnce} from "./group-invitation-email-worker.js";
+import { runChannelOperatorInvitationEmailOnce } from "./channel-operator-invitation-email.js";
 import { runBusinessInquiryOnce } from "./business-inquiry-worker.js";
 import { SupabaseKakaoNotificationQueue } from "./adapters/supabase-kakao-notification-queue.js";
 import { KakaoNotificationWorker } from "./kakao-notification-worker.js";
@@ -135,13 +136,16 @@ export async function runNotificationWorkerOnce(
     env.GROUP_INVITATION_EMAIL_MODE === "ses_email" ? getSesClient().then(client=>runGroupInvitationEmailOnce(env,client,sesFeedbackFor(env,client))) : runGroupInvitationEmailOnce(env),
     env.NOTIFICATION_EXTERNAL_MODE === "ses_email" && env.NOTIFICATION_EXTERNAL_ENVIRONMENT === "prod"
       ? getSesClient().then(client => runCsReceipt(env, client, sesFeedbackFor(env, client))) : 0,
+    env.OPERATOR_INVITATION_EMAIL_MODE === "ses_email"
+      ? getSesClient().then(client => runChannelOperatorInvitationEmailOnce(env, client, sesFeedbackFor(env, client))) : 0,
   ]);
-  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "groupRaffles", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications", "devTelegramCertifications", "groupInvitationEmail", "csReceipt"];
+  const queues = ["fan", "businessInquiry", "raffleReminders", "runmusic", "groupRaffles", "kakao", "telegramAlerts", "telegramCs", "telegramCommands", "telegramCertifications", "devTelegramCertifications", "groupInvitationEmail", "csReceipt", "operatorInvitationEmail"];
   const modeStatus = (mode: string | undefined) => mode === "enabled" ? "enabled" : mode === undefined || mode === "disabled" ? "disabled" : "invalid";
   const deliveryModes = {
     Email: env.NOTIFICATION_EXTERNAL_MODE,
     BusinessInquiry: env.BUSINESS_INQUIRY_MODE,
     GroupInvitationEmail: env.GROUP_INVITATION_EMAIL_MODE,
+    OperatorInvitationEmail: env.OPERATOR_INVITATION_EMAIL_MODE,
     Kakao: env.KAKAO_ALIMTALK_MODE,
     TelegramAlerts: modeStatus(env.telegram.mode),
     TelegramCommands: modeStatus(env.telegram.commandMode),
