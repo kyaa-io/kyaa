@@ -19,7 +19,7 @@ it('adds nothing for approved or older events',()=>{
  const older=render(<EventApprovalStatus locale='ko'/>);expect(older.container).toBeEmptyDOMElement();
 });
 it('has every label in all twelve languages',()=>{
- expect(APP_LOCALES).toHaveLength(12);
+ expect(APP_LOCALES).toHaveLength(13);
  for(const locale of APP_LOCALES){const copy=eventApprovalCopy[locale];expect(copy.pending&&copy.rejected&&copy.reason&&copy.notFound,locale).toBeTruthy();}
  expect(new Set(APP_LOCALES.map(locale=>eventApprovalCopy[locale].pending)).size).toBeGreaterThan(9);
 });
