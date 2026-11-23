@@ -5,19 +5,21 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { headerStatusCopy } from "./fan-header-status-copy";
 
 const state = vi.hoisted(() => ({
+  pathname: "/benefits",
   auth: { authenticated: true, ownerKey: "member:0", ready: true },
   bias: {} as SelectedBias,
   wallet: { data: { points: 1260 } as { points: number } | undefined, error: false, failure: undefined as { status: number } | undefined, retry: vi.fn() },
 }));
 vi.mock("@/features/groups/ui/use-group-resource", () => ({ useGroupRequest: () => state.auth, useGroupResource: () => state.wallet, GROUP_WALLET_CHANGED_EVENT: "wallet-changed" }));
 vi.mock("@/features/selected-bias/ui/use-selected-bias", () => ({ useSelectedBias: () => state.bias }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/benefits", useSearchParams: () => new URLSearchParams("locale=ko") }));
+vi.mock("next/navigation", () => ({ usePathname: () => state.pathname, useSearchParams: () => new URLSearchParams("locale=ko") }));
 import { FanHeaderStatus } from "./fan-header-status";
 
 const selected = { slug: "favorite-a", name: "Current favorite", tier: "Bronze", hearts: 0, image: "", passportId: "passport-a", stage: null } satisfies SelectedBiasOption;
 const chip = () => screen.getByRole("link", { name: /내 팬 활동/ });
 
 beforeEach(() => {
+  state.pathname = "/benefits";
   state.auth = { authenticated: true, ownerKey: "member:0", ready: true };
   state.bias = { status: "ready", selected, unverified: null, options: [selected], select: vi.fn(), retry: vi.fn() };
   state.wallet = { data: { points: 1260 }, error: false, failure: undefined, retry: vi.fn() };
@@ -34,6 +36,19 @@ describe("header capsule", () => {
     fireEvent.click(link);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(link).not.toHaveAttribute("aria-expanded");
+  });
+
+  it("shows one tier badge and points without the heart balance on home", () => {
+    state.pathname = "/";
+    state.bias.selected = { ...selected, tier: "Gold", hearts: 17 };
+    state.wallet.data = { points: 987654321 };
+    render(<FanHeaderStatus locale="ko" />);
+    const link = chip();
+    expect(link).toHaveAccessibleName(/골드.*포인트 987,654,321/);
+    expect(link).not.toHaveAccessibleName(/하트/);
+    expect(link).not.toHaveTextContent("골드");
+    expect(link.querySelectorAll("img")).toHaveLength(2);
+    expect(link.querySelector('img[src*="/tiers/medal-v2/gold-1.svg"]')).not.toBeNull();
   });
 
   it("shows the named favorite grade before points even with a higher passport", () => {

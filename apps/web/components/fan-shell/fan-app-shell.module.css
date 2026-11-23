@@ -232,3 +232,28 @@
 }
 
 .groupsNavigation .actions [data-header-status] :is(img[data-reward-kind], img[src*="/tiers/"]) { width: 16px; height: 16px; }
+
+@media (min-width: 64rem) {
+  .groupsNavigation .headerInner:has([data-home-status]) {
+    grid-template-columns: minmax(72px, 1fr) max-content minmax(max-content, 1fr);
+  }
+  .groupsNavigation .headerInner:has([data-home-status]) .desktopNav {
+    gap: var(--space-3);
+  }
+  .groupsNavigation .headerInner:has([data-home-status]) .desktopNavItem {
+    min-width: 0;
+    padding-inline: var(--space-2);
+  }
+  .groupsNavigation .headerInner:has([data-home-status]) .actions {
+    gap: var(--space-1);
+  }
+}
+
+@media (min-width: 75rem) {
+  .groupsNavigation .headerInner:has([data-home-status]) {
+    column-gap: var(--space-6);
+  }
+  .groupsNavigation .headerInner:has([data-home-status]) .desktopNav {
+    gap: var(--space-6);
+  }
+}
