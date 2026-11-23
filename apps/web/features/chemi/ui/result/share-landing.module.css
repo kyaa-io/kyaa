@@ -135,8 +135,3 @@
 .score p {
   margin: 0;
 }
-/* 주 버튼은 카드와 좌우 끝을 맞춘다. */
-.cta > * {
-  width: 100%;
-  max-width: none;
-}
