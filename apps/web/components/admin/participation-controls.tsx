@@ -1,5 +1,5 @@
 "use client";
-import { operatorEditor } from "@/i18n/catalogs/operator-editor";
+import { operatorEditor } from "@/i18n/catalogs/components__admin__operator-editor";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
 import { z } from "zod";

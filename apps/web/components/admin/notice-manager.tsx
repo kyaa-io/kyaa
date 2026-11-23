@@ -1,7 +1,7 @@
 "use client";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor } from "@tiptap/react";
-import { operatorEditor } from "@/i18n/catalogs/operator-editor";
+import { operatorEditor } from "@/i18n/catalogs/components__admin__operator-editor";
 import Image from "@tiptap/extension-image";
 import { Archive, Bold, ImagePlus, Italic, Link2, List, ListOrdered, Pin, Save, Underline as UnderlineIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
