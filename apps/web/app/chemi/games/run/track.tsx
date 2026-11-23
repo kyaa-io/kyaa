@@ -63,11 +63,12 @@ export function Legend({ copy, layout }: { copy: RunCopy; layout: "veil" | "list
   </dl>;
 }
 
-export function Track({ character, ticket, copy, locale, name, sound, soundOn, onToggleSound, pauseRequest, onFinish }: {
-  character: import("./shared").Character; ticket: Ticket; copy: RunCopy; locale: string; name: string; sound: RunSound; soundOn: boolean;
+export function Track({ character, ticket, copy, locale, name, sound, soundOn, onToggleSound, pauseRequest, onFinish, rerun = false }: {
+  character: import("./shared").Character; ticket: Ticket; rerun?: boolean; copy: RunCopy; locale: string; name: string; sound: RunSound; soundOn: boolean;
   onToggleSound: () => void; pauseRequest: number; onFinish: (body: Submission, stats: RunStats) => void;
 }) {
-  const [stage, setStage] = useState<Stage>("ready");
+  // "Run again" from the result goes straight to running; the ready veil is for the first run of a visit.
+  const [stage, setStage] = useState<Stage>(rerun ? "play" : "ready");
   const [hud, setHud] = useState({ score: 0, meters: 0, level: 1, hearts: 3, notes: 0, feverNotes: 0, fever: 0, shield: false });
   const [say, setSay] = useState<{ text: string; id: number }>();
   const [held, setHeld] = useState({ jump: false, slide: false });
@@ -78,7 +79,7 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
   const field = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const effects = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<Stage>("ready");
+  const stageRef = useRef<Stage>(rerun ? "play" : "ready");
   const pending = useRef(0);
   const finishNow = useRef<(left: boolean) => void>(() => {});
   const controls = useRef({ start() {}, resume() {} });
@@ -97,8 +98,12 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
     if (stageRef.current === "play") pending.current |= mask;
   }
 
+  // Only a back press made during this run pauses it; a count left from an earlier run does not.
+  const seenPause = useRef(pauseRequest);
   useEffect(() => {
-    if (pauseRequest && stageRef.current === "play") go("paused");
+    if (pauseRequest === seenPause.current) return;
+    seenPause.current = pauseRequest;
+    if (stageRef.current === "play") go("paused");
   }, [pauseRequest]);
   // The veil's main button takes focus so Enter or Space starts or resumes without the mouse.
   useEffect(() => {
@@ -250,6 +255,7 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
       setHeld({ jump: false, slide: false });
     }
     controls.current = { start, resume };
+    if (rerun) start();
 
     const observer = new ResizeObserver(resize);
     observer.observe(box);
@@ -269,7 +275,7 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
       removeEventListener("resize", turned);
       document.removeEventListener("visibilitychange", leave);
     };
-  }, [character, ticket, sound]);
+  }, [character, ticket, sound, rerun]);
 
   const nextTitle = RUN_TITLES.find((title) => title > hud.score);
   const previousTitle = [...RUN_TITLES].reverse().find((title) => title <= hud.score) ?? 0;

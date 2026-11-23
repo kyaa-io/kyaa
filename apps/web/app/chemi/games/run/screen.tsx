@@ -18,6 +18,9 @@ import { ART_FILES, loadArt } from "./render";
 import { ResultStage } from "./result";
 import { SelectStage } from "./select";
 import type { Challenge, Character, Lobby, Rank, Result, Stage } from "./shared";
+
+/** A lobby that has not answered by then shows the error line and its retry instead of waiting with no numbers. */
+const LOBBY_TIMEOUT_MS = 20_000;
 import { createSound } from "./sound";
 import { Track, type RunStats, type Submission, type Ticket } from "./track";
 import styles from "./run.module.css";
@@ -37,6 +40,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const [publicRows, setPublicRows] = useState<Rank[]>();
   const [challenge, setChallenge] = useState<Challenge>();
   const [ticket, setTicket] = useState<Ticket>();
+  const [rerun, setRerun] = useState(false);
   const [stats, setStats] = useState<RunStats>();
   const [result, setResult] = useState<Result>();
   const [before, setBefore] = useState<{ place?: number; best: number }>({ best: 0 });
@@ -54,10 +58,11 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const getter = useRef(auth.getAccessToken);
   getter.current = auth.getAccessToken;
 
-  const call = useCallback(async <T,>(body: object, member = false, path = "/api/chemi/games?game=run"): Promise<T> => {
+  const call = useCallback(async <T,>(body: object, member = false, path = "/api/chemi/games?game=run", timeout?: number): Promise<T> => {
     const token = member ? await getter.current() : null;
     const response = await fetch(path, {
       method: "POST",
+      signal: timeout ? AbortSignal.timeout(timeout) : undefined,
       headers: { "content-type": "application/json", ...(token ? { authorization: "Bearer " + token } : {}) },
       body: JSON.stringify(body),
     });
@@ -70,11 +75,11 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     setFailed(false);
     try {
       if (auth.authenticated) {
-        const data = await call<Lobby>({ action: "lobby" }, true);
+        const data = await call<Lobby>({ action: "lobby" }, true, undefined, LOBBY_TIMEOUT_MS);
         setLobby(data);
         setSoundOn(data.sound);
         sound.set(data.sound);
-      } else setPublicRows((await call<{ ranking: Rank[] }>({ action: "ranking" })).ranking);
+      } else setPublicRows((await call<{ ranking: Rank[] }>({ action: "ranking" }, false, undefined, LOBBY_TIMEOUT_MS)).ranking);
       if (share) setChallenge(await call<Challenge>({ action: "challenge", shareId: share }).catch(() => undefined));
     } catch {
       setFailed(true);
@@ -116,6 +121,8 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     if (paid && !lobby?.extraCost) return;
     setBusy(true);
     setFailed(false);
+    // The extra-run sheet leaves its history entry with a back step when it closes; close it before the run's back guard is listening.
+    setPaying(false);
     try {
       const key = requestKey.current ??= crypto.randomUUID();
       const issued = await call<Ticket>(trial
@@ -128,8 +135,8 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       setStats(undefined);
       setSubmission(undefined);
       setCopied(false);
-      setPaying(false);
       setTicket({ ...issued, trial });
+      setRerun(stage === "result");
       setStage("run");
       if (paid && !trial && lobby) celebrateSpend({ locale, points: lobby.extraCost, label: copy.extraTitle });
     } catch (error) {
@@ -191,6 +198,8 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     else setPaying(true);
   }
 
+  // Signed in but the lobby has not answered: no count or price is known yet, so the button waits as a placeholder.
+  const waiting = auth.authenticated && !lobby;
   const startLabel = !auth.ready ? copy.go : !auth.authenticated
     ? (trial ? copy.trial : copy.login)
     : free > 0 ? fill(copy.start, { name: names[character], n: free })
@@ -208,7 +217,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
 
   if (stage === "run" && ticket) return <main className={styles.shell} lang={locale} data-stage="run">
     <Track character={character} key={ticket.playId} ticket={ticket} copy={copy} locale={locale} name={names[character]} sound={sound} soundOn={soundOn}
-      onToggleSound={toggleSound} pauseRequest={pauseRequest} onFinish={(body, played) => void finish(body, played)} />
+      onToggleSound={toggleSound} pauseRequest={pauseRequest} rerun={rerun} onFinish={(body, played) => void finish(body, played)} />
   </main>;
 
   return <main className={styles.shell} lang={locale} data-stage={stage}>
@@ -217,8 +226,8 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       <FanHeading as="h1">{copy.title}</FanHeading>
       <FanIconButton aria-label={copy.sound} aria-pressed={soundOn} onClick={toggleSound}><FanIcon icon={soundOn ? Volume2 : VolumeX} /></FanIconButton>
     </header>
-    {stage === "select" && <SelectStage character={character} pickDisabled={!auth.ready || busy || Boolean(requestKey.current)} onPick={(who) => { sound.unlock(); setCharacter(who); }} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} footer={footer}
-      challenge={challenge} spent={spent} startLabel={startLabel} startDisabled={!auth.ready || busy || (auth.authenticated && !lobby)}
+    {stage === "select" && <SelectStage character={character} pickDisabled={!auth.ready || busy || Boolean(requestKey.current)} onPick={(who) => { sound.unlock(); setCharacter(who); }} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} loading={!loaded && !failed} footer={footer}
+      challenge={challenge} waiting={waiting} spent={spent} startLabel={startLabel} startDisabled={!auth.ready || busy || (auth.authenticated && !lobby)}
       onStart={() => auth.authenticated && free <= 0 ? setPaying(true) : void begin()} onAllRanks={() => setAllRanks(true)}
       errorLine={errorLine} reminder={reminder} />}
     {stage === "result" && <ResultStage character={character} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} stats={stats} result={result}
