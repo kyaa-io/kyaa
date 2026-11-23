@@ -336,7 +336,7 @@
   color: inherit;
   text-decoration: none;
 }
-.earn img {
+.earn a > img {
   width: var(--space-10);
   height: var(--space-10);
   border-radius: var(--radius-small);
@@ -466,7 +466,7 @@
     height: 100%;
     min-height: 0;
   }
-  .earn img {
+  .earn a > img {
     grid-row: span 2;
   }
   .earn a > :nth-child(2) {
