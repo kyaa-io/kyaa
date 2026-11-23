@@ -26,4 +26,6 @@ it("blocks the spend and points to missions when points are short", () => {
   render(<ExtraPlayDialog open onOpenChange={() => {}} onConfirm={() => {}} busy={false} locale="ko" points={5} cost={20} extraRemaining={3} />);
   expect(screen.getByRole("button", { name: "20P 쓰고 시작" })).toBeDisabled();
   expect(screen.getByText("포인트가 15P 모자라요")).toBeInTheDocument();
+  // 모자라면 '5P → 0P'처럼 빠질 것 같은 전후 값 대신 지금 값만(DF-GAME-007).
+  expect(screen.getAllByText(/^\d+P$/).map((node) => node.textContent)).toEqual(["5P"]);
 });
