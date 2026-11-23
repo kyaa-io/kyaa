@@ -129,8 +129,7 @@ function PairEvidence({ result, name }: { result: PairResult; name: string }) {
       )}
       <FanHeading>일간 관계</FanHeading>
       <FanText as="p" role="body">
-        {a}({elementName[ea]}) · {b}({elementName[eb]}) — {direction} 상대 일간의 십신은 ‘{tenGod(a, b)}’{directionParticle(tenGod(a, b))}
-        읽어요.
+        {a}({elementName[ea]}) · {b}({elementName[eb]}) — {direction} 상대 일간의 십신은 ‘{tenGod(a, b)}’{directionParticle(tenGod(a, b))} 읽어요.
         {["갑기", "을경", "병신", "정임", "무계"].some((pair) => pair === a + b || pair === b + a) &&
           " 두 일간은 천간합을 이뤄요."}
       </FanText>
