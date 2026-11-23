@@ -130,8 +130,7 @@
   transform-origin: right center;
 }
 .hud dt,
-.middle small,
-.ranking small {
+.middle small {
   color: var(--color-muted);
 }
 .hud dd {
@@ -253,6 +252,8 @@
 
   overflow-wrap: anywhere;
 }
+.ranking li[data-vacant] > :first-child { text-align: center; }
+.ranking li[data-vacant] > :last-child { grid-column: -2; text-align: end; }
 .ranking li b {
   font-variant-numeric: tabular-nums;
 }

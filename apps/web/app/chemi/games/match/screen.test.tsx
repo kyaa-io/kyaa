@@ -108,6 +108,13 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
   const choose = screen.getByRole("button", { name: copy.elina });
   await waitFor(() => expect(choose).toBeEnabled());
+  const ranking = await screen.findByRole("region", { name: copy.ranking });
+  const vacant = within(ranking).getAllByRole("listitem");
+  expect(vacant).toHaveLength(3);
+  for (const row of vacant) {
+    expect(within(row).getByText("—")).toBeVisible();
+    expect(within(row).getByText("0")).toBeVisible();
+  }
   fireEvent.click(choose);
   fireEvent.click(screen.getByRole("button", {name: copy.start}));
   await screen.findByRole("button", { name: copy.pause });

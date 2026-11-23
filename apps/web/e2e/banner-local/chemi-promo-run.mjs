@@ -28,9 +28,19 @@ try {
       let eventAvailable = member;
       await page.route("**/api/public/banner-slots?area=member-event&*", route => route.fulfill({ json: { slots: eventAvailable ? { member_event_popup: event } : {} } }));
       await page.route("**/api/public/banner-slots?area=chemi-promo&*", route => route.fulfill({ json: { slots: { chemi_promo_popup: popup } } }));
-      const url = harness.baseURL + "/event-popup-preview?scenario=chemi&locale=ko";
-      await page.goto(url);
+      const url = harness.baseURL + "/?scenario=chemi&locale=ko";
       const dialog = page.getByRole("dialog", { name: popup.title });
+      let promoRequests = 0;
+      page.on("request", request => {
+        if (request.url().includes("area=chemi-promo")) promoRequests++;
+      });
+      for (const excluded of ["/my/wallet", "/login", "/pricing", "/guide/chemi", "/chemi"]) {
+        await page.goto(harness.baseURL + excluded + "?scenario=chemi&locale=ko");
+        await expect(page.locator("main").first()).toBeVisible();
+        await expect(dialog).toHaveCount(0);
+        assert.equal(promoRequests, 0);
+      }
+      await page.goto(url);
       if (member) {
         await expect(page.getByRole("dialog", { name: event.title })).toBeVisible();
         await expect(dialog).toHaveCount(0);

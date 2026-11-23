@@ -1,5 +1,7 @@
 "use client";
 
+import { VacantRank } from "@/features/chemi/games/vacant-rank";
+
 import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -330,7 +332,7 @@ function Rankings({
             <span>
               {rankName(row.nickname, locale)}
               {(row.isMe || row.isFriend) && (
-                <small> · {row.isFriend ? copy.friend : copy.me}</small>
+                <FanText role="meta"> · {row.isFriend ? copy.friend : copy.me}</FanText>
               )}
             </span>
             <FanText role="meta">{copy[row.character]}</FanText>
@@ -338,9 +340,8 @@ function Rankings({
           </li>
         ))}
         {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, index) => (
-          <li data-row="" key={`vacant-${index}`}>
-            <b>{displayed.length + index + 1}</b><span className={styles.avatar} aria-hidden="true" />
-            <FanText role="meta">{copy.emptyRanking}</FanText>
+          <li data-row="" data-vacant="" key={`vacant-${index}`}>
+            <VacantRank place={displayed.length + index + 1} avatarClassName={styles.avatar} />
           </li>
         ))}
       </ol>
