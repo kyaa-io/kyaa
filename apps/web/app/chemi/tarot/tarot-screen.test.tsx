@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import cards from "@/content/chemi/tarot/cards.json";
 import cardsEn from "@/content/chemi/tarot/cards.en.json";
@@ -180,6 +180,25 @@ it("falls back to today's card when the linked reading is not the member's", asy
   open("result", "someone-else");
   await screen.findByRole("heading", { name: "XIII 죽음" });
   expect(calls.some((call) => call.path === "/api/chemi/readings/mine")).toBe(true);
+});
+
+it("opens the result from a restored flip and puts the entry scene behind it", async () => {
+  auth.authenticated = true;
+  today = [{ readingId: "saved", kind: "daily", date: kstDate() }];
+  const address = "/chemi/tarot?locale=ko&c=changha&step=flip&r=saved";
+  history.replaceState(null, "", address);
+  const scene = <TarotScreen locale="ko" initialCharacter="changha" initialStep="flip" initialReading="saved" />;
+  render(scene);
+
+  fireEvent.click(await screen.findByRole("button", { name: "1/3" }));
+  fireEvent.click(await screen.findByRole("button", { name: "2/3" }));
+  fireEvent.click(await screen.findByRole("button", { name: "풀이 볼래" }));
+  expect(await screen.findByRole("heading", { name: "XIII 죽음" })).toBeVisible();
+  expect(location.search).toContain("step=result");
+
+  act(() => history.back());
+  await waitFor(() => expect(location.search).not.toContain("step="));
+  expect(screen.queryByRole("heading", { name: "XIII 죽음" })).toBeNull();
 });
 
 it("goes back to the Chemi tab from the first step", async () => {

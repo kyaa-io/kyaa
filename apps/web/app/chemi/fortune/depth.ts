@@ -568,6 +568,10 @@ const rankLine: Record<Voice, { highest: string; lowest: string }> = {
   dosa: { highest: "여섯 분야 가운데 오늘 가장 높소.", lowest: "여섯 분야 가운데 오늘 가장 낮으니 힘을 덜 쓰시오." },
 };
 
+export function fortuneFieldNote(field: FortuneField, score: number, voice: Voice) {
+  return (voice === "plain" ? fieldNotes : fieldBand[voice])[field][band(score)];
+}
+
 /**
  * 분야 한 칸을 펼쳤을 때의 풀이. 점수 구간 문장 + 오늘 십신이 그 분야에 주는 문장 + 여섯 분야 중 자리.
  * `shown`: 머리 줄에 이미 보인 점수 구간 문장은 되풀이하지 않는다.
@@ -581,7 +585,7 @@ export function fortuneFieldDetail(
 ) {
   const voice = voiceOf(evidence);
   const sentences: string[] = [];
-  if (!shown) sentences.push(voice === "plain" ? fieldNotes[field][band(score)] : fieldBand[voice][field][band(score)]);
+  if (!shown) sentences.push(fortuneFieldNote(field, score, voice));
   if (isTenGod(evidence.tenGod)) sentences.push(groupField[voice][groupOf[evidence.tenGod]][field]);
   if (rank) sentences.push(rankLine[voice][rank]);
   return {

@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "별자리 대화 세 번째 장면에서 행성의 움직임에 따라 다른 설명을 들을 수 있어요.",
+    "오늘의 운세 분야별 한 줄을 선택한 최애의 말투로 읽을 수 있고, 사주에서 엘리나의 한마디는 “잘할 거예요”로 끝나요.",
+    "타로 결과에서 친밀 보상이 하트 배지로 표시돼요. 저장된 카드를 뒤집는 화면을 다시 열어도 ‘풀이 볼래’를 누르면 결과가 나와요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/2026-11-24-chemi-r5c-star-talk-390.png",
+    "release-notes/images/2026-11-24-chemi-r5c-tarot-reward-390.png",
+    "release-notes/images/2026-11-24-chemi-r5c-fortune-fields-390.png",
+    "release-notes/images/2026-11-24-chemi-r5c-saju-talk-390.png"
+  ]
+}

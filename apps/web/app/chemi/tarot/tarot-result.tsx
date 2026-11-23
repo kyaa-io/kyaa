@@ -13,6 +13,7 @@ import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
+import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { completeShare } from "@/features/chemi/ui/complete-share";
 import { useMobileResultAction, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
@@ -368,14 +369,14 @@ function RewardRow({ character, name, rewards, locale }: { character: TarotChara
   const parts: ReactNode[] = [];
   if (points > 0 && !replayed) parts.push(<EarnBadge key="points" locale={locale} points={points} variant="inline" />);
   if (reward.stamp) parts.push(<FanText key="stamp" role="meta"><ReadingText id="stamp" /></FanText>);
-  if (reward.exp) parts.push(<FanText key="exp" role="meta">{uiText("affinityGain", { exp: reward.exp })}</FanText>);
+  if (reward.exp) parts.push(<AffinityBadge key="exp" size="sm" amount={reward.exp} label={`${name} ${uiText("affinityGain", { exp: reward.exp })}`} />);
   if (reward.week) parts.push(<FanText key="week" role="meta">{uiText("weekDays", { days: reward.week })}</FanText>);
   if (replayed && points > 0 && parts.length === 0) parts.push(<FanText key="received" role="meta">{uiText("receivedToday", { name })}</FanText>);
   if (points <= 0 && character !== "dosa")
     return (
       <Link className={styles.rewardRow} data-link="" href={`/c/${character}`}>
         <FanText className={styles.go} role="label">{uiText("passportReward", { points: CHEMI_PASSPORT_DAILY_POINTS })}</FanText>
-        {reward.exp ? <FanText role="meta">{uiText("affinityGain", { exp: reward.exp })}</FanText> : null}
+        {reward.exp ? <AffinityBadge size="sm" amount={reward.exp} label={`${name} ${uiText("affinityGain", { exp: reward.exp })}`} /> : null}
         <FanIcon icon={ChevronRight} size={16} className={styles.goArrow} />
       </Link>
     );
