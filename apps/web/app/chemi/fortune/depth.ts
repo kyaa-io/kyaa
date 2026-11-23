@@ -239,9 +239,9 @@ const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, st
       low: "오해 생기기 쉬워. 중요한 말은 내일 하자.",
     },
     money: {
-      high: "작은 이득이 따라와. 그래도 큰 결제는 하루만 참아.",
+      high: "작은 이득이 따라와. 그래도 큰돈 쓰는 건 하루만 참아.",
       mid: "들어올 돈보다 나갈 돈이 먼저 보여. 장바구니는 하루 재워 둬.",
-      low: "충동 결제 조심해. 오늘은 지갑 닫는 쪽이 이득이야.",
+      low: "충동구매 조심해. 오늘은 지갑 닫는 쪽이 이득이야.",
     },
   },
   elina: {
@@ -271,9 +271,9 @@ const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, st
       low: "오해가 생기기 쉬워요. 중요한 말은 내일 해도 괜찮아.",
     },
     money: {
-      high: "작은 이득이 따라와요. 그래도 큰 결제는 하루만 기다려요.",
+      high: "작은 이득이 따라와요. 그래도 큰 지출은 하루만 기다려요.",
       mid: "들어올 돈보다 나갈 돈이 먼저 보여요. 장바구니는 하루 두고 봐요.",
-      low: "충동 결제는 조심해요. 오늘은 지갑을 닫아 두는 게 이득이야.",
+      low: "충동구매는 조심해요. 오늘은 지갑을 닫아 두는 게 이득이야.",
     },
   },
   yuna: {
@@ -303,9 +303,9 @@ const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, st
       low: "오해 생기기 쉬운 날이야. 중요한 말은 내일 해.",
     },
     money: {
-      high: "작은 이득이 있어. 그래도 큰 결제는 하루 묵혀.",
+      high: "작은 이득이 있어. 그래도 큰 지출은 하루 묵혀.",
       mid: "나갈 돈이 먼저 보이는 날이야. 장바구니는 하루 묵혀.",
-      low: "충동 결제 조심해. 오늘은 지갑 닫는 게 이득이야.",
+      low: "충동구매 조심해. 오늘은 지갑 닫는 게 이득이야.",
     },
   },
   dosa: {
@@ -335,9 +335,9 @@ const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, st
       low: "오해가 생기기 쉽소. 중요한 말은 내일로 미루시오.",
     },
     money: {
-      high: "작은 이득이 따르오. 그래도 큰 결제는 하루 묵혀 두시오.",
+      high: "작은 이득이 따르오. 그래도 큰 지출은 하루 묵혀 두시오.",
       mid: "들어올 돈보다 나갈 돈이 먼저 보이오. 장바구니는 하루 묵혀 두시오.",
-      low: "충동 결제를 조심하시오. 오늘은 지갑을 닫아 두는 편이 이득이오.",
+      low: "충동구매를 조심하시오. 오늘은 지갑을 닫아 두는 편이 이득이오.",
     },
   },
 };
@@ -401,7 +401,7 @@ const groupField: Record<Voice, Record<Group, Record<FortuneField, string>>> = {
       work: "아이디어 꺼내고 손으로 만드는 일이 잘 돼.",
       rest: "맛있는 거 먹고 수다 떨면 풀려.",
       love: "마음을 말로 꺼내기 쉬운 날이야.",
-      money: "기분 따라 쓰기 쉬우니까 결제 전에 나 한 번 떠올려.",
+      money: "기분 따라 쓰기 쉬우니까 사기 전에 나 한 번 떠올려.",
     },
     wealth: {
       fandom: "굿즈랑 티켓처럼 살 게 눈에 쏙쏙 들어와.",
@@ -485,7 +485,7 @@ const groupField: Record<Voice, Record<Group, Record<FortuneField, string>>> = {
       work: "아이디어 내고 손으로 만드는 일이 잘 돼.",
       rest: "잘 먹고 얘기하면 풀려.",
       love: "마음을 말로 꺼내기 쉬운 날이야.",
-      money: "기분 따라 쓰기 쉬우니까 결제 버튼 앞에서 한 번 멈춰.",
+      money: "기분 따라 쓰기 쉬우니까 사기 전에 한 번 멈춰.",
     },
     wealth: {
       fandom: "굿즈랑 티켓처럼 살 게 눈에 잘 들어와.",

@@ -129,7 +129,7 @@ const tones: Record<FortuneCharacterId, Tone> = {
     fandom: (score, high) =>
       high
         ? `덕질은 ${score}점이오. 무대 영상을 즐기되 장바구니는 내일까지 두시오.`
-        : `덕질은 ${score}점이오. 오늘은 천천히 즐기시오. 큰 결제는 내일로 미루시오.`,
+        : `덕질은 ${score}점이오. 오늘은 천천히 즐기시오. 큰 지출은 내일로 미루시오.`,
     luck: (hour, color) =>
       `${hour ? `${hour}가 청하기 좋소. ` : ""}${color}빛 물건도 챙기시오.`,
     gradeNotes: {

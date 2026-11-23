@@ -90,6 +90,8 @@ describe("최애마다 다른 운세 본문(DF-FORT-001)", () => {
     expect(all("yuna").some((text) => text.includes("!"))).toBe(false);
     for (const voice of ["changha", "yuna"] as const) expect(sentences(voice).every((line) => !/요[.?]$/.test(line))).toBe(true);
     for (const voice of voices) expect(all(voice).join(" ")).not.toMatch(/촬영|대본|대사|카메라|노래|가사|악보|화장|피부|테이크/);
+    // 최애는 결제·가격·환불 같은 돈·시스템 이야기를 대사로 하지 않는다(K-b528db).
+    for (const voice of voices) expect(all(voice).join(" ")).not.toMatch(/결제|가격|환불|이용권/);
   });
 });
 
