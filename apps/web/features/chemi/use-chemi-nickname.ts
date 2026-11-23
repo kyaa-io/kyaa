@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 
 /** 대사에서 부르는 이름: kyaa 닉네임 그대로, 8자가 넘으면 앞 7자 + '…'(기획 04-2 · 03, 05-2 · 03). 빈 이름은 null. */
@@ -16,6 +16,11 @@ export function chemiCallName(nickname: string) {
 export function useChemiNickname() {
   const { ready, authenticated, getAccessToken } = useByUsAuth();
   const [nickname, setNickname] = useState<string | null>(null);
+  // getAccessToken 은 렌더마다 새 함수일 수 있어, 그때마다 요청을 끊고 다시 보내지 않게 최신 값만 들고 있는다.
+  const token = useRef(getAccessToken);
+  useEffect(() => {
+    token.current = getAccessToken;
+  });
   useEffect(() => {
     if (!ready || !authenticated) {
       setNickname(null);
@@ -24,7 +29,7 @@ export function useChemiNickname() {
     const controller = new AbortController();
     void (async () => {
       const response = await fetch("/api/me/profile", {
-        headers: { Authorization: `Bearer ${await getAccessToken()}` },
+        headers: { Authorization: `Bearer ${await token.current()}` },
         cache: "no-store",
         signal: controller.signal,
       });
@@ -34,6 +39,6 @@ export function useChemiNickname() {
       if (!controller.signal.aborted) setNickname(typeof name === "string" ? chemiCallName(name) : null);
     })().catch(() => {});
     return () => controller.abort();
-  }, [ready, authenticated, getAccessToken]);
+  }, [ready, authenticated]);
   return nickname;
 }
