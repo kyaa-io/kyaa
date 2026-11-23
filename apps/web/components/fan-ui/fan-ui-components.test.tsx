@@ -159,8 +159,14 @@ describe("FanPostRow", () => {
     expect(comments).not.toHaveTextContent("[8]");
     expect(comments.querySelector("svg")).not.toBeNull();
     expect(screen.getByRole("link", { name: "엘리나" })).toHaveAttribute("href", "/elina?tab=board");
-    expect(screen.getByRole("img", { name: /조회.*12/ })).toHaveTextContent("12");
-    expect(screen.getByRole("img", { name: /좋아요.*0/ })).toHaveTextContent("0");
+    expect(comments.parentElement).toBe(screen.getByRole("link", { name: "공지 글" }).parentElement);
+    expect(screen.queryByLabelText(/좋아요/)).toBeNull();
+    expect(screen.queryByText(/조회/)).toBeNull();
+  });
+  it("gives a notice row on the board the same counts as a post: pink beside the title, views in the meta line (11/23)", () => {
+    render(<FanPostRow href="/p/1" locale="ko" title="공지 글" notice commentCount={3} density="board" views={12} likes={2} />);
+    expect(screen.getByLabelText("좋아요 2").parentElement).toBe(screen.getByRole("link", { name: "공지 글" }).parentElement);
+    expect(screen.getByText("조회 12")).toBeInTheDocument();
   });
 
   it("puts the verified artist tag next to the author, not inside the name", () => {

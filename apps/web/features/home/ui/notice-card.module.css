@@ -11,9 +11,15 @@
 .link { display: grid; min-width: 0; box-sizing: border-box; grid-template-areas: "category" "title" "date"; grid-template-columns: minmax(0, 1fr); align-content: center; padding-block: var(--space-2); color: inherit; text-decoration: none; }
 .link:hover .title { color: var(--color-accent); }
 .category { grid-area: category; color: var(--color-accent); font-size: var(--fan-metadata-size); font-weight: 700; line-height: 18px; }
-.title { grid-area: title; color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 700; line-height: 24px; overflow-wrap: anywhere; }
+/* 제목 옆 댓글·좋아요는 게시판 글 행(`FanPostCounts`)과 같은 분홍 아이콘+숫자, 조회는 날짜 줄에 `날짜 · 조회 N`(대표 11/23). */
+.titleLine { grid-area: title; display: flex; align-items: center; gap: var(--space-1); min-width: 0; }
+/* 홈 `.page svg`(20px)보다 앞서 게시판 행과 같은 13px로 둔다. */
+.titleLine > span > svg { flex: none; width: 13px; height: 13px; }
+.title { color: var(--color-ink); font-size: var(--fan-body-size); font-weight: 700; line-height: 24px; overflow-wrap: anywhere; }
 .date, .date > span { display: inline-flex; align-items: center; gap: var(--space-1); white-space: nowrap; }
-.date { gap: var(--space-2); grid-area: date; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 18px; }
+/* 조회 칸은 inline-flex(간격 4)라 점 뒤 여백을 따로 두지 않는다. 게시판 메타 줄과 같은 4·4. */
+.date > * + *::before { content: "·"; }
+.date { grid-area: date; color: var(--color-muted); font-size: var(--fan-metadata-size); font-variant-numeric: tabular-nums; line-height: 18px; }
 .all { display: flex; align-items: center; justify-content: center; gap: var(--space-1); min-height: 44px; border-top: 1px solid var(--color-line); color: var(--color-ink); font-size: var(--fan-badge-size); font-weight: 700; text-decoration: none; }
 .link:focus-visible, .headLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .all:focus-visible { outline: 2px solid var(--color-focus); outline-offset: -2px; }
