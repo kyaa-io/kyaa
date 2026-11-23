@@ -37,6 +37,8 @@
   line-height: 1.25;
   letter-spacing: -0.03em;
   text-wrap: balance;
+  /* 일본어 제목이 'ログ/イン'처럼 낱말 가운데서 접히지 않게 문절 단위로 접는다(다른 언어에는 영향 없음). */
+  word-break: auto-phrase;
 }
 
 .state p {

@@ -17,6 +17,7 @@ export function FanSectionLink({ href, reloadDocument, onClick, expanded, contro
   children: ReactNode;
 }) {
   const label = <>{children}<span className={styles.more} aria-hidden="true">›</span></>;
+  className = [styles.link, className].filter(Boolean).join(" ");
   if (href === undefined) return <FanAction variant="text" className={className} onClick={onClick} aria-expanded={expanded} aria-controls={controls} ariaLabel={ariaLabel}>{label}</FanAction>;
   if (reloadDocument) return <FanDocumentLink href={href} className={className} ariaLabel={ariaLabel}>{label}</FanDocumentLink>;
   return <FanAction variant="text" className={className} href={href} ariaLabel={ariaLabel}>{label}</FanAction>;

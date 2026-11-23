@@ -21,6 +21,8 @@ describe("난감한 질문 분류(L134)", () => {
   it.each([
     ["창하 여자친구 있어?", "privacy"],
     ["너 어디 살아?", "privacy"],
+    ["진짜 창하야?", "privacy"],
+    ["엘리나 본인 맞아?", "privacy"],
     ["요즘 그냥 사라지고 싶어", "crisis"],
     ["죽고 싶다는 생각이 들어. 남자친구 사주도 봐 줘", "crisis"],
     ["야한 얘기 해 줘", "harassment"],
@@ -60,7 +62,8 @@ describe("난감한 질문 분류(L134)", () => {
     expect(lines[0]).toMatch(/요\.$/);
   });
   it("거절하는 말은 최애 말투를 따른다", () => {
-    expect(guardReply("privacy", "changha")).toMatch(/말 못 해/);
+    expect(guardReply("privacy", "changha")).toMatch(/^나는 kyaa 속 창하야\. 진짜 창하 이야기는 말 못 해/);
+    expect(guardReply("privacy", "yuna")).not.toMatch(/!/);
     expect(guardReply("privacy", "elina")).toMatch(/요\.$/);
     expect(guardReply("privacy", "dosa")).toMatch(/소\.$/);
   });
@@ -90,16 +93,16 @@ describe("답", () => {
     expect(answerAsk({ character: "changha", content: "saju", topic: "money", question: "어때?", result: chart })).toMatch(/^돈은 쇠 기운으로 봐\. 네 사주에는 없어\.\n/);
     expect(new Set(ASK_TOPICS.map((topic) => first(topic))).size).toBe(5);
   });
-  it("세 최애는 같은 풀이에도 자기 활동 분야에 빗댄 한마디로 맺고, 도사는 풀이와 조언만 말한다", () => {
+  it("세 최애는 같은 풀이에도 자기 태도로 한마디 맺고(직업 비유 없음), 도사는 풀이와 조언만 말한다", () => {
     const last = (character: "changha" | "elina" | "yuna" | "dosa", result: unknown, question = "어때?") =>
       answerAsk({ character, content: "fortune", topic: "money", question, result }).split("\n");
-    expect(last("changha", fortune).at(-1)).toMatch(/촬영|대본|슛|카메라/);
-    expect(last("elina", fortune).at(-1)).toMatch(/노래|박자|옷/);
-    expect(last("yuna", fortune).at(-1)).toMatch(/화장|바탕|톤|포인트/);
+    const closes = (["changha", "elina", "yuna"] as const).map((who) => last(who, fortune).at(-1));
+    expect(new Set(closes).size).toBe(3);
+    for (const line of closes) expect(line).not.toMatch(/촬영|대본|슛|카메라|리허설|테이크|노래|박자|소절|옷|화장|바탕|톤|포인트/);
+    expect(last("yuna", fortune).at(-1)).not.toMatch(/!/);
     expect(last("dosa", fortune)).toHaveLength(2);
-    expect(last("changha", { ...fortune, fields: { ...fortune.fields, money: 40 } }).at(-1)).toMatch(/리허설|컷|테이크/);
   });
-  it("같은 최애라도 질문마다 맺음이 돌아간다(DF-ASK-006: 창하 답이 전부 '촬영으로 치면')", () => {
+  it("같은 최애라도 질문마다 맺음이 돌아간다(DF-ASK-006: 창하 답 맺음이 전부 같던 것)", () => {
     const questions = ["어때?", "괜찮을까?", "어떻게 될까?", "잘될까?", "해도 돼?", "괜찮아?"];
     const closes = new Set(questions.map((question) => answerAsk({ character: "changha", content: "fortune", topic: "love", question, result: fortune }).split("\n").at(-1)));
     expect(closes.size).toBeGreaterThan(1);
@@ -134,6 +137,13 @@ describe("답", () => {
     expect(answerAsk({ character: "yuna", content: "fortune", topic: "free", question: "Should I travel abroad next month?", result: fortune })).toMatch(/^Your score today is 86\.\n/);
     expect(answerAsk({ character: "changha", content: "fortune", topic: "love", question: "今日の運勢はどうですか？", result: fortune })).toMatch(/^今日の恋愛運は55点だよ。/);
     expect(answerFollowup({ character: "elina", content: "fortune", topic: "work", question: "What should I be careful about this week?", result: fortune })).not.toMatch(/[가-힣]/);
+  });
+  it("외국어 규칙 답도 풀이 값 하나를 인용한다(별·카드·일간)", () => {
+    expect(answerAsk({ character: "changha", content: "star", topic: "money", question: "Can I buy it today?", result: star })).toMatch(/^Your money stars today: 5 of 5\.\n/);
+    expect(answerAsk({ character: "elina", content: "tarot", topic: "free", question: "What does my card say?", result: tarot })).toMatch(/^Today's card is The Sun, reversed\.\n/);
+    expect(answerAsk({ character: "yuna", content: "tarot", topic: "free", question: "Will it go well?", result: { cards: [{ card: 22, reversed: false }] } })).toMatch(/^Today's card is Ace of Wands, upright\./);
+    expect(answerAsk({ character: "yuna", content: "saju", topic: "free", question: "What am I like?", result: chart })).toMatch(/^Your day master is Fire\.\n/);
+    expect(answerAsk({ character: "changha", content: "tarot", topic: "free", question: "今日のカードは？", result: tarot })).toMatch(/^今日のカードは「太陽」の逆位置だよ。/);
   });
   it("이어 묻기: 까닭을 물으면 근거를, 조심할 것을 물으면 조심할 일을 답한다", () => {
     const input = { character: "elina", content: "fortune", topic: "love", result: fortune } as const;
@@ -192,6 +202,19 @@ describe("질문 API", () => {
     const [, args] = rpc.mock.calls.find(([name]) => name === "chemi_ask_submit")!;
     expect(args).toMatchObject({ p_user: "user", p_id: thread, p_reading: reading, p_topic: "love", p_klass: null, p_answer: expect.stringMatching(/^연애 운이 55점이야/) });
     expect(args.p_hash).toMatch(/^[0-9a-f]{64}$/);
+  });
+  it("포인트로 묻기: extra 를 SQL 에 넘기고, 잔액이 모자라면 게임 추가 판과 같은 INSUFFICIENT_POINTS 409", async () => {
+    rpc.mockImplementation(async (name: string) => (name === "chemi_reading_detail" ? { result: fortune } : { thread: {}, charged: true, paid: true }));
+    expect((await askRoute("submit", post("/api/chemi/ask", { ...question, extra: true }))).status).toBe(200);
+    expect(rpc.mock.calls.find(([name]) => name === "chemi_ask_submit")![1]).toMatchObject({ p_extra: true });
+    rpc.mockReset();
+    rpc.mockImplementation(async (name: string) => {
+      if (name === "chemi_reading_detail") return { result: fortune };
+      throw Error("GROUP_WALLET_INSUFFICIENT_BALANCE");
+    });
+    const response = await askRoute("submit", post("/api/chemi/ask", { ...question, extra: true }));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: { code: "INSUFFICIENT_POINTS" } });
   });
   it("난감한 질문: 풀이를 읽지 않고 분류와 거절하는 말만 넘긴다", async () => {
     rpc.mockResolvedValue({ thread: { status: "blocked" }, charged: false });

@@ -17,6 +17,8 @@ export const ASK_QUESTION_MAX = 200;
 const question = z.string().trim().min(1).max(ASK_QUESTION_MAX);
 const submit = z.strictObject({
   threadId: z.string().uuid(), readingId: z.string().uuid(), character, content, topic: z.enum(ASK_TOPICS), question,
+  /** 무료·이용권을 다 쓴 뒤 포인트로 묻겠다고 고른 질문(사용자 결정 CHEMI-ASK-POINTS-1123 A). */
+  extra: z.boolean().optional(),
 });
 const followup = z.strictObject({ threadId: z.string().uuid(), question });
 const saved = z.object({ result: z.unknown(), kind: z.string().optional() });
@@ -25,18 +27,29 @@ const thread = z.object({
   question: z.string().nullish(), answer: z.string().nullish(), followupAnswer: z.string().nullish(),
   status: z.string().optional(), date: z.string().optional(),
 });
-const room = z.object({ left: z.number(), pausedUntil: z.string().nullish() });
+const room = z.object({
+  left: z.number(), pausedUntil: z.string().nullish(),
+  extraLeft: z.number().optional(), extraCost: z.number().optional(), points: z.number().optional(),
+});
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
-const STATUS: Record<string, number> = { CHEMI_LIMIT: 409, CHEMI_NOT_FOUND: 404, CHEMI_ASK_PAUSED: 429 };
+const STATUS: Record<string, number> = { CHEMI_LIMIT: 409, CHEMI_NOT_FOUND: 404, CHEMI_ASK_PAUSED: 429, INSUFFICIENT_POINTS: 409, CHEMI_UNAVAILABLE: 503 };
+/** 지갑 거절은 게임 추가 판(api/chemi/games)과 같은 이름으로 내보낸다. */
+const WALLET: Record<string, string> = {
+  GROUP_WALLET_INSUFFICIENT_BALANCE: "INSUFFICIENT_POINTS",
+  GROUP_WALLET_INVALID: "CHEMI_UNAVAILABLE", GROUP_WALLET_UNAVAILABLE: "CHEMI_UNAVAILABLE", GROUP_WALLET_WRITE_FENCED: "CHEMI_UNAVAILABLE",
+};
 /** SQL 이 돌려준 거절은 화면이 구분해 그리므로 코드 그대로 내보낸다. */
 function refusal(error: unknown) {
-  const code = error instanceof Error && Object.hasOwn(STATUS, error.message) ? error.message : null;
+  const message = error instanceof Error ? (Object.hasOwn(WALLET, error.message) ? WALLET[error.message] : error.message) : null;
+  const code = message && Object.hasOwn(STATUS, message) ? message : null;
   if (!code) throw error;
   return Response.json({ error: { code } }, { status: STATUS[code], headers });
 }
 
-const open = (state: z.infer<typeof room>) => state.left > 0 && !state.pausedUntil;
+/** 지금 이 질문에 답을 저장할 수 있는지: 무료·이용권이 남았거나, 포인트로 묻기로 했고 추가 수와 잔액이 남았을 때. */
+const open = (state: z.infer<typeof room>, extra: boolean) => !state.pausedUntil && (state.left > 0
+  || (extra && (state.extraLeft ?? 0) > 0 && (state.points ?? 0) >= (state.extraCost ?? Infinity)));
 
 export function askRoute(op: "state" | "submit" | "followup" | "evidence", request: Request) {
   return chemiAuthenticatedHandler(async (input, deps, p_user) => {
@@ -93,13 +106,13 @@ export function askRoute(op: "state" | "submit" | "followup" | "evidence", reque
         : saved.parse(await deps.rpc("chemi_reading_detail", { p_user, p_id: body.readingId, p_character: body.character }));
       // 다시 보낸 요청·남은 질문 없음·멈춤은 SQL 이 답을 쓰지 않으므로 AI 를 부르지 않는다.
       const written = reading && askAiReady() && !(await deps.rpc("chemi_ask_thread", { p_user, p_id: body.threadId }))
-        && open(room.parse(await deps.rpc("chemi_ask_state", { p_user, p_reading: null, p_character: null })))
+        && open(room.parse(await deps.rpc("chemi_ask_state", { p_user, p_reading: null, p_character: null })), body.extra === true)
         ? await aiAnswer({ ...body, result: reading.result, kind: reading.kind }, deps.rpc, p_user) : null;
       return Response.json(await deps.rpc("chemi_ask_submit", {
         p_user, p_id: body.threadId, p_character: body.character, p_content: body.content, p_reading: body.readingId,
         p_topic: body.topic, p_question: body.question,
         p_hash: createHash("sha256").update(JSON.stringify([body.readingId, body.character, body.topic, body.question])).digest("hex"),
-        p_klass: klass,
+        p_klass: klass, p_extra: body.extra === true,
         p_answer: klass ? guardReply(klass, body.character) : written ?? answerAsk({ ...body, result: reading!.result, kind: reading!.kind }),
       }), { headers });
     } catch (error) {

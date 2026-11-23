@@ -36,6 +36,8 @@ it("shows the raised mini, its level and today's remaining contents", async () =
   expect(screen.getByText("스타 Lv 15")).toBeTruthy();
   expect(screen.getByText("2 / 6")).toBeTruthy();
   expect(screen.getByText("받음")).toBeTruthy();
+  // 받을 친밀·받은 표시는 입구 목록과 같은 알약(AffinityBadge)이다.
+  expect(screen.getAllByRole("img", { name: /^친밀 \+\d+/ }).length).toBeGreaterThan(0);
   expect(screen.getByText("오늘 다 받음")).toBeTruthy();
   expect(screen.getByRole("link", { name: "최애 사주 보기" }).getAttribute("href")).toBe("/chemi/saju?locale=ko");
   // 최애 런도 하루 친밀을 준다(chemi_run_finish).

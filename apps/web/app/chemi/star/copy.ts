@@ -327,40 +327,40 @@ type Tone = {
 };
 const tones: Record<StarCharacterId, Tone> = {
   changha: {
-    enter: "오늘 밤하늘이 너한테 뭐라고 하는지 같이 볼래?",
+    enter: "오늘 밤하늘이 너한테 뭐라는지 볼래? 칭찬이면 좋겠다.",
     birth: "별자리 운세 보려면 네 생일이 필요해. 한 번만 알려 줘.",
-    calc: "잠깐, 대본 넘기듯 오늘 밤하늘 좀 읽어 볼게.",
+    calc: "잠깐, 오늘 밤하늘 좀 읽어 볼게. 좋은 거 나오면 칭찬해 줘.",
     sign: (sign, headline) => `넌 ${sign}야. 오늘은 ${headline}이야.`,
     best: (domain, worst) => `오늘은 ${domain} 별점이 제일 높아. ${worst}은 평소 정도야.`,
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어.",
     pair: (mine, theirs, calm) =>
-      `오늘 달이 우리 둘 별자리와 잘 어울리는 자리에 있어. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "우리 사이는 잘 맞아. 하루는 천천히 가자." : "내 영상이 유난히 잘 보이는 날일걸?"}`,
+      `오늘 달이 우리 둘 별자리와 잘 어울리는 자리에 있어. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "우리 사이는 잘 맞아. 하루는 천천히 가자." : "오늘은 내가 너 응원하기 딱 좋은 날이네?"}`,
     pairAlone: () => "별자리는 여기까지야. 오늘 정리를 볼래?",
     picked: { why: "이유부터 궁금했구나.", pair: "우리 사이부터 묻네." },
   },
   elina: {
-    enter: "오늘 밤하늘이 뭐라고 하는지 같이 볼까요?",
+    enter: "춥진 않아요? 오늘 밤하늘 같이 천천히 봐요.",
     birth: "별자리 운세를 보려면 생일이 필요해요. 한 번만 알려 줘요.",
-    calc: "잠깐만요, 악보 보듯 오늘 밤하늘을 읽어 볼게요.",
+    calc: "잠깐만요, 오늘 밤하늘 천천히 읽어 볼게요.",
     sign: (sign, headline) => `${sign}네요. 오늘은 ${headline}이에요.`,
     best: (domain, worst) => `오늘은 ${domain} 별점이 가장 높아요. ${worst}은 평소 정도예요.`,
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어요.",
     pair: (mine, theirs, calm) =>
-      `오늘 달이 두 별자리와 잘 어울리는 자리에 있어요. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "사이는 잘 맞는 날이에요. 하루는 천천히 가요." : "내 노래를 틀어 두기 좋은 날이에요."}`,
+      `오늘 달이 두 별자리와 잘 어울리는 자리에 있어요. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "사이는 잘 맞는 날이에요. 하루는 천천히 가요." : "오늘은 내가 더 챙겨 줄게요."}`,
     pairAlone: () => "별자리는 여기까지예요. 오늘 정리를 볼래요?",
     picked: { why: "이유가 먼저 궁금했군요.", pair: "우리 사이가 먼저 궁금했군요." },
   },
   yuna: {
-    enter: "오늘 밤하늘이 뭐라는지 같이 보자!",
+    enter: "오늘 밤하늘이 뭐라는지 콕 집어 줄게.",
     birth: "별자리 운세 보려면 네 생일부터 알려 줘. 한 번만 하면 돼.",
-    calc: "잠깐만, 색 고르듯 오늘 밤하늘을 하나씩 볼게.",
-    sign: (sign, headline) => `${sign}구나! 오늘은 ${headline}이야.`,
-    best: (domain, worst) => `${domain} 별점이 제일 높아! ${worst}은 평소 정도야.`,
-    why: "오늘 풀이는 행성 셋이 움직여서 나왔어!",
+    calc: "잠깐만, 오늘 밤하늘 하나씩 짚어 볼게.",
+    sign: (sign, headline) => `${sign}구나. 오늘은 ${headline}이야.`,
+    best: (domain, worst) => `${domain} 별점이 제일 높아. ${worst}은 평소 정도야.`,
+    why: "오늘 풀이는 행성 셋이 움직여서 나왔어.",
     pair: (mine, theirs, calm) =>
-      `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어! ${withParticle(theirs, "이랑")} ${mine}, ${calm ? "사이는 잘 맞는 날이야. 하루는 천천히 가자!" : "영상 보면서 같이 따라 해 보기 좋은 날이야."}`,
-    pairAlone: () => "별자리는 여기까지야! 오늘 정리 볼래?",
-    picked: { why: "이유부터? 좋아!", pair: "우리 궁합부터? 좋아!" },
+      `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어. ${withParticle(theirs, "이랑")} ${mine}, ${calm ? "사이는 잘 맞는 날이야. 하루는 천천히 가자." : "하고 싶은 말 있으면 오늘 바로 해."}`,
+    pairAlone: () => "별자리는 여기까지야. 오늘 정리 볼래?",
+    picked: { why: "이유부터 묻네. 좋아.", pair: "우리 궁합부터 묻네. 좋아." },
   },
   dosa: {
     enter: "오늘 밤하늘이 무어라 이르는지 같이 보겠소?",
@@ -417,7 +417,7 @@ export function starSayLine(character: StarCharacterId, domain: StarDomain, star
   const line = {
     changha: bright ? `${name} 별점이 ${stars}개야. ${ask.plain}` : `${name} 별은 차분해. 오늘은 천천히 가자.`,
     elina: bright ? `${name} 별점이 ${stars}개예요. ${ask.polite}` : `${name} 별은 차분해요. 천천히 가요.`,
-    yuna: bright ? `${name} 별점 ${stars}개야! ${ask.plain}` : `${name} 별은 조용해. 오늘은 천천히 가자!`,
+    yuna: bright ? `${name} 별점 ${stars}개야. ${ask.plain}` : `${name} 별은 조용해. 오늘은 천천히 가자.`,
     dosa: bright ? `${name} 별이 ${stars}개 밝소. ${ask.old}` : `${name} 별은 고요하오. 천천히 걸으시오.`,
   } satisfies Record<StarCharacterId, string>;
   return line[character];
@@ -428,7 +428,7 @@ export function starChartLine(character: StarCharacterId, element: string, count
   return {
     changha: `${element} 원소가 ${count}개나 돼. 그래서 그런 모습이구나.`,
     elina: `${element} 원소가 ${count}개예요. 그래서 그런 모습이었군요.`,
-    yuna: `${element} 원소가 ${count}개나 있어! 그래서 그랬구나.`,
+    yuna: `${element} 원소가 ${count}개나 있어. 그래서 그랬구나.`,
     dosa: `${element} 원소가 ${count}개나 되오. 그래서 그런 모습이구려.`,
   }[character];
 }

@@ -360,21 +360,21 @@ const intentAdvice: Record<Intent, Record<"good" | "care", Record<Voice, string>
 };
 
 /**
- * 최애마다 맺는 말. 같은 소재(촬영·노래·화장)로 세 가지를 두고 질문마다 돌려 쓴다(같은 맺음이 줄줄이 나오지 않게).
- * 엘리나는 반존대라 '~요' 답 끝의 맺음 한 줄은 반말이 섞인다(K-3729a7).
+ * 최애마다 맺는 말. 같은 태도(창하 장난스러운 응원·엘리나 다정하게 챙김·유나 솔직하게 콕 집음)로 세 가지를 두고 질문마다 돌려 쓴다.
+ * 엘리나는 반존대라 맺음 한 줄은 반말이 섞인다(K-3729a7). 직업 비유는 쓰지 않는다(11/23 사용자 결정).
  */
 const personaClose: Record<"changha" | "elina" | "yuna", Record<"good" | "care", readonly [string, string, string]>> = {
   changha: {
-    good: [chemiPersona.changha.close.good, "대본 넘기듯 다음 장면으로 가 봐. 이번엔 한 번에 갈 수 있어.", "슛 들어가기 직전이 제일 떨리는 거야. 들어가면 괜찮아."],
-    care: [chemiPersona.changha.close.care, "컷 사인 나기 전엔 서두를 필요 없어. 대사 한 줄만 더 맞춰 봐.", "오늘은 테이크를 아끼는 날이야. 확실한 장면만 찍자."],
+    good: [chemiPersona.changha.close.good, "생각보다 잘될걸? 끝나면 자랑하러 와.", "떨리면 나 생각해. 그럼 좀 웃기지?"],
+    care: [chemiPersona.changha.close.care, "급할수록 천천히. 이건 진지하게 하는 말이야.", "오늘은 확실한 것만 하자. 나머진 나중에 같이 보자."],
   },
   elina: {
-    good: [chemiPersona.elina.close.good, "박자 맞았으니까 그냥 들어가 봐.", "오늘 고른 옷처럼 마음 가는 쪽이 맞아."],
-    care: [chemiPersona.elina.close.care, "한 박자 쉬고 들어가도 괜찮아.", "오늘은 늘 입던 옷처럼 편한 쪽을 골라 봐요."],
+    good: [chemiPersona.elina.close.good, "마음 가는 쪽으로 가 봐요. 내가 응원할게.", "잘하고 있어요. 너무 걱정하지 마."],
+    care: [chemiPersona.elina.close.care, "한 박자 쉬고 해도 괜찮아.", "오늘은 편한 쪽을 골라요. 그래도 돼."],
   },
   yuna: {
-    good: [chemiPersona.yuna.close.good, "바탕이 잘 먹은 날이라 포인트 하나만 더하면 돼.", "톤이 맞는 날이야. 힘을 안 줘도 잘 보여."],
-    care: [chemiPersona.yuna.close.care, "덧바르기보다 한 번 지우고 다시 하는 게 나아.", "오늘은 진한 색보다 맑은 톤이 맞아."],
+    good: [chemiPersona.yuna.close.good, "고민은 여기까지. 이제 하면 돼.", "솔직히 오늘은 네 편이야. 그냥 해."],
+    care: [chemiPersona.yuna.close.care, "지금 하면 후회하기 쉬워. 하루만 미뤄.", "욕심 하나만 내려놔. 그럼 보여."],
   },
 };
 /** 주제 칸의 두 조언 중 무엇을 쓸지 최애마다 엇갈리게 한다(같은 질문을 넷에게 물어도 같은 글이 되지 않게). */
@@ -385,20 +385,68 @@ const fieldWord = {
   en: { love: "love", work: "work", money: "money", people: "people", month: "", free: "" },
   ja: { love: "恋愛", work: "仕事", money: "金", people: "人間関係", month: "", free: "" },
 } as const;
-function foreignAnswer(question: string, input: { content: AskContent; topic: AskTopic; result: unknown; kind?: string }, flow: "good" | "care", follow: boolean) {
-  const ja = /[぀-ヿ]/.test(question);
+/** 외국어 답에서 카드 이름을 부르는 말. 한국어 덱 이름(features/chemi/tarot/deck.ts)을 영어·일본어로 옮긴다. */
+const majorNames = {
+  en: ["The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor", "The Hierophant", "The Lovers", "The Chariot", "Strength", "The Hermit", "Wheel of Fortune", "Justice", "The Hanged Man", "Death", "Temperance", "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World"],
+  ja: ["愚者", "魔術師", "女教皇", "女帝", "皇帝", "教皇", "恋人", "戦車", "力", "隠者", "運命の輪", "正義", "吊るされた男", "死神", "節制", "悪魔", "塔", "星", "月", "太陽", "審判", "世界"],
+} as const;
+const suitNames = { 완드: ["Wands", "ワンド"], 컵: ["Cups", "カップ"], 소드: ["Swords", "ソード"], 펜타클: ["Pentacles", "ペンタクル"] } as const;
+const rankNames: Record<string, readonly [string, string]> = { "1": ["Ace", "エース"], 시종: ["Page", "ペイジ"], 기사: ["Knight", "ナイト"], 여왕: ["Queen", "クイーン"], 왕: ["King", "キング"] };
+function foreignCard(index: number, ja: boolean) {
+  if (index < 22) return majorNames[ja ? "ja" : "en"][index];
+  const [suit, rank] = (TAROT_DECK[index]?.[1] ?? "").split(" ") as [keyof typeof suitNames, string];
+  const suitName = suitNames[suit]?.[ja ? 1 : 0];
+  if (!suitName || !rank) return null;
+  const rankName = rankNames[rank]?.[ja ? 1 : 0] ?? rank;
+  return ja ? `${suitName}の${rankName}` : `${rankName} of ${suitName}`;
+}
+const foreignElement = {
+  en: { wood: "Wood", fire: "Fire", earth: "Earth", metal: "Metal", water: "Water" },
+  ja: { wood: "木", fire: "火", earth: "土", metal: "金", water: "水" },
+} as const;
+
+/** 외국어 답의 첫 줄: 한국어 답(askBasis)처럼 풀이에서 값 하나를 그대로 인용한다. 값을 못 찾으면 null. */
+function foreignHead(input: { content: AskContent; topic: AskTopic; result: unknown; kind?: string }, ja: boolean) {
   const result = input.result as any;
   const key = fortuneField[input.topic];
-  const score = input.content === "fortune" && input.kind !== "week" && typeof result?.score === "number"
-    ? (key ? result.fields?.[key] ?? result.score : result.score) as number : null;
   const word = fieldWord[ja ? "ja" : "en"][input.topic];
-  if (ja) {
-    const head = score === null ? "あなたの結果をもう一度読んだよ。" : `今日の${word ? `${word}運` : "運勢"}は${score}点だよ。`;
-    const body = flow === "good" ? "流れは味方してるよ。今日は小さく一歩動いてみて。" : "今日はゆっくりでいいよ。大きな決断はあとに回そう。";
-    return follow ? body : `${head}\n${body}`;
+  if (input.content === "fortune" && input.kind === "week" && Array.isArray(result?.days) && result.days.length) {
+    const strongest = result.days.reduce((best: any, row: any) => row.result.score > best.result.score ? row : best);
+    const date = strongest.day.slice(5).replace("-", "/");
+    return ja ? `今週いちばん点数が高いのは${date}だよ。` : `This week, ${date} has your highest score.`;
   }
-  const head = score === null ? "I read your result again." : `Your ${word ? `${word} ` : ""}score today is ${score}.`;
-  const body = flow === "good" ? "The flow is on your side. Take one small step today." : "Take it slow today. Leave the big decisions for later.";
+  if (input.content === "fortune" && typeof result?.score === "number") {
+    const score = (key ? result.fields?.[key] ?? result.score : result.score) as number;
+    const day = input.kind === "tomorrow";
+    return ja
+      ? `${day ? "明日" : "今日"}の${word ? `${word}運` : "運勢"}は${score}点だよ。`
+      : `Your ${word ? `${word} ` : ""}score ${day ? "tomorrow" : "today"} is ${score}.`;
+  }
+  if (input.content === "star" && input.kind !== "compat" && typeof result?.stars?.overall === "number") {
+    const stars = (key ? result.stars[key] ?? result.stars.overall : result.stars.overall) as number;
+    return ja ? `今日の${word || "全体"}の星は5つ中${stars}つだよ。` : `Your ${word || "overall"} stars today: ${stars} of 5.`;
+  }
+  if (input.content === "tarot") {
+    const first = input.kind === "tarot3" ? result?.cards?.[2] : result?.cards?.[0] ?? result;
+    const name = typeof first?.card === "number" ? foreignCard(first.card, ja) : null;
+    if (name)
+      return ja
+        ? `${input.kind === "tarot3" ? "最後のカード" : "今日のカード"}は「${name}」の${first.reversed ? "逆位置" : "正位置"}だよ。`
+        : `${input.kind === "tarot3" ? "Your last card" : "Today's card"} is ${name}, ${first.reversed ? "reversed" : "upright"}.`;
+  }
+  if (input.content === "saju" && isChart(result)) {
+    const element = stemElement[result.pillars.day!.heavenlyStem];
+    return ja ? `あなたの日主は${foreignElement.ja[element]}の気だよ。` : `Your day master is ${foreignElement.en[element]}.`;
+  }
+  return null;
+}
+
+function foreignAnswer(question: string, input: { content: AskContent; topic: AskTopic; result: unknown; kind?: string }, flow: "good" | "care", follow: boolean) {
+  const ja = /[぀-ヿ]/.test(question);
+  const head = foreignHead(input, ja) ?? (ja ? "あなたの結果をもう一度読んだよ。" : "I read your result again.");
+  const body = ja
+    ? flow === "good" ? "流れは味方してるよ。今日は小さく一歩動いてみて。" : "今日はゆっくりでいいよ。大きな決断はあとに回そう。"
+    : flow === "good" ? "The flow is on your side. Take one small step today." : "Take it slow today. Leave the big decisions for later.";
   return follow ? body : `${head}\n${body}`;
 }
 
@@ -410,7 +458,7 @@ export function answerAsk(input: { character: AskCharacter; content: AskContent;
   const turn = seed(input.question);
   const intent = intentOf(input.question);
   const pick = intent ? intentAdvice[intent][flow][tone] : advice[input.topic][flow][tone][(turn + adviceTurn[input.character]) % 2];
-  // 세 최애는 자기 활동 분야에 빗댄 한마디로 맺는다(도사는 없음).
+  // 세 최애는 자기 태도대로 한마디로 맺는다(도사는 없음).
   const close = isChemiPersona(input.character) ? `\n${personaClose[input.character][flow][turn % 3]}` : "";
   return `${read.line[tone]}\n${pick}${close}`;
 }

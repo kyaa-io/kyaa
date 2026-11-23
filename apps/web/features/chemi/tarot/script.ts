@@ -58,23 +58,23 @@ export const TAROT_LINES: Record<TarotVoice, { hello: string; again: string; thi
 };
 
 /**
- * 최애마다 다른 대사. 말투 바탕(TAROT_LINES) 위에 얹는다: 창하는 촬영, 엘리나는 노래에 빗대고(반존대),
+ * 최애마다 다른 대사. 말투 바탕(TAROT_LINES) 위에 얹는다: 창하는 장난스럽게 응원, 엘리나는 다정하게 챙기고(반존대),
  * 유나는 맡아서 읽어 주고 색 고르기에 빗댄다(features/chemi/persona.ts).
  */
 const TAROT_OWN: Partial<Record<TarotCharacter, Partial<(typeof TAROT_LINES)[TarotVoice]>>> = {
   changha: {
-    shuffle: "촬영 전 리허설처럼 천천히 섞을게. 끌리는 거 있으면 그걸로 골라.",
-    lock: "좋아, 이 장면은 네가 고른 카드로 갈게.",
+    shuffle: "천천히 섞을게. 좋은 카드 나오면 내 덕이다? 끌리는 걸로 골라.",
+    lock: "좋아, 네가 고른 카드로 간다. 결과는 같이 보자.",
   },
   elina: {
     hello: "왔네. 오늘 카드 한 장 뽑아 볼래요?",
-    shuffle: "노래 시작 전처럼 천천히 섞을게. 끌리는 게 있으면 그걸로 골라요.",
-    lock: "좋아요, 고른 카드로 첫 소절을 열게요.",
+    shuffle: "천천히 섞을게요. 서두르지 말고, 끌리는 게 있으면 그걸로 골라.",
+    lock: "좋아요, 고른 카드로 볼게요. 마음 편히 들어요.",
   },
   yuna: {
     hello: "왔네. 오늘 카드, 내가 읽어 줄게.",
     think: "궁금한 거 하나만 정해. 말 안 해도 돼.",
-    shuffle: "색 고르듯 천천히 섞을게. 끌리는 걸로 골라.",
+    shuffle: "천천히 섞을게. 고민 길게 하지 말고 끌리는 걸로 골라.",
     lock: "좋아, 네가 고른 카드부터 볼게.",
     drawn: (name, reversed) => `${name} 카드네. ${reversed ? "거꾸로" : "똑바로"} 나왔어.`,
   },

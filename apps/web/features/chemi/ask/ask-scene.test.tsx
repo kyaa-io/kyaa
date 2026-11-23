@@ -103,6 +103,39 @@ it("난감한 질문은 거절하는 말과 '질문 수 그대로'를 보이고 
   await waitFor(() => expect(location.search).toContain("ask=topic"));
 });
 
+it("무관한 질문 뒤에는 이 풀이로 답할 수 있는 질문 둘을 고르게 하고, 누르면 입력 판에 넣기만 한다(DF-ASK-015)", async () => {
+  serve((_url, body) => ({
+    thread: answered(body.threadId, { status: "blocked", klass: "off_topic", question: body.question, answer: "그건 풀이로 답할 수 있는 게 아니야." }),
+    state: state(),
+  }));
+  render(<Host />);
+  askGo({ step: "write", topic: "free" });
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "오늘 날씨 알려 줘" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  const group = await screen.findByRole("group", { name: "예시 질문" });
+  const choices = group.querySelectorAll("button");
+  expect(choices).toHaveLength(2);
+  const picked = choices[0].textContent!;
+  fireEvent.click(choices[0]);
+  await waitFor(() => expect(location.search).toContain("ask=result"));
+  expect((await screen.findByLabelText("질문 입력") as HTMLTextAreaElement).value).toBe(picked);
+  expect(calls).toHaveLength(1);
+});
+
+it("실제 인물 질문 뒤에는 내 연애 질문 둘로 돌린다", async () => {
+  serve((_url, body) => ({
+    thread: answered(body.threadId, { status: "blocked", klass: "privacy", question: body.question, answer: "나는 kyaa 속 창하야. 진짜 창하 이야기는 말 못 해." }),
+    state: state(),
+  }));
+  render(<Host />);
+  askGo({ step: "write", topic: "free" });
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "진짜 창하야?" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  const group = await screen.findByRole("group", { name: "예시 질문" });
+  fireEvent.click(group.querySelectorAll("button")[1]);
+  await waitFor(() => expect(location.search).toContain("at=love"));
+});
+
 it("위기 신호는 최애 이름표·남은 수 없이 전화 버튼 둘과 닫기만 보인다(DF-ASK-003)", async () => {
   serve((_url, body) => ({
     thread: answered(body.threadId, { status: "blocked", klass: "crisis", question: body.question, answer: "혼자 버티지 마." }),
@@ -190,7 +223,7 @@ it("질문을 다 쓰면 오늘 물어본 질문을 다시 열 수 있고, 살 �
   const { container } = render(<Host />);
   askGo({ step: "topic" });
   expect(await screen.findByText("오늘 질문을 모두 썼어요.")).toBeTruthy();
-  expect(screen.getByText("오늘 이야기 재밌었어. 내일 또 와.")).toBeTruthy();
+  expect(screen.getByText("네 사주로 이야기하니까 재밌었어. 물어봐 줘서 고마워.")).toBeTruthy();
   expect(screen.queryByRole("group", { name: "주제" })).toBeNull();
   expect(container.textContent).not.toMatch(/원\b|990|구매|결제/);
   fireEvent.click(screen.getByRole("button", { name: "내일 알려 줘" }));
@@ -207,7 +240,7 @@ it("알림을 신청한 뒤에는 자랑하기가 주 버튼이고, 이어 물�
   render(<Host />);
   askGo({ step: "topic" });
   expect(await screen.findByText("알림 신청함")).toBeTruthy();
-  expect(screen.getByText("응, 내일 기다릴게.")).toBeTruthy();
+  expect(screen.getByText("응, 오늘 이야기 잘 기억해 둘게.")).toBeTruthy();
   expect(screen.getByRole("button", { name: /자랑하기.*질문 \+1/ })).toBeTruthy();
   askGo({ step: "answer", thread: done.threadId });
   await turn();
@@ -260,10 +293,10 @@ it("오늘 마지막 질문을 이어 묻기까지 마치면 작별 인사로 �
   fireEvent.click(screen.getByRole("button", { name: "보내기" }));
   expect(await screen.findByText("오늘 안에 움직여.")).toBeTruthy();
   await turn();
-  expect(await screen.findByText("오늘 이야기 재밌었어. 내일 또 와.")).toBeTruthy();
+  expect(await screen.findByText("네 사주로 이야기하니까 재밌었어. 물어봐 줘서 고마워.")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "고마워" })).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "내일 알려 줘" }));
-  expect(await screen.findByText("응, 내일 기다릴게.")).toBeTruthy();
+  expect(await screen.findByText("응, 오늘 이야기 잘 기억해 둘게.")).toBeTruthy();
   expect(screen.getByText("알림 신청함")).toBeTruthy();
 });
 
@@ -359,4 +392,40 @@ it("답이 20초 안에 오지 않으면 끊긴 것으로 보고 다시 보내�
   expect(await screen.findByRole("button", { name: "다시 보내기" })).toBeTruthy();
   expect(toast).toHaveBeenCalledWith({ title: "답을 받지 못했어요. 질문 수는 그대로예요.", tone: "error" });
   timeout.mockRestore();
+});
+
+it("질문을 다 쓴 뒤 최애는 한도·내일 이야기를 하지 않고 오늘 이야기에 대한 소감만 한다(K-b528db)", async () => {
+  const { askLinesFor } = await import("./lines");
+  for (const who of ["changha", "elina", "yuna", "dosa"] as const) {
+    const lines = askLinesFor(who);
+    for (const line of [...Object.values(lines.rest), lines.reminded]) expect(line, who).not.toMatch(/내일|한도|다 썼|남은|질문 수|기다리/);
+  }
+});
+
+it("무료를 다 쓴 화면: 주 버튼 '20P로 하나 더' → 공통 추가 판 창 → 고른 질문만 포인트로 보낸다(CHEMI-ASK-POINTS-1123)", async () => {
+  serve((_url, body) => ({ thread: answered(body.threadId, { question: body.question }), state: state({ left: 0, extraLeft: 2, extraCost: 20, points: 30 }) }),
+    state({ left: 0, extraLeft: 3, extraCost: 20, points: 50 }));
+  render(<Host />);
+  askGo({ step: "topic" });
+  const cta = await screen.findByRole("button", { name: "20P로 하나 더" });
+  expect(screen.getByRole("button", { name: /자랑하기/ })).toBeTruthy();
+  fireEvent.click(cta);
+  expect(await screen.findByText("20P로 질문 하나 더")).toBeTruthy();
+  expect(screen.getByText("50P")).toBeTruthy();
+  expect(screen.getByRole("img", { name: "남은 추가 질문 3번 → 2번" })).toBeTruthy();
+  fireEvent.click(screen.getByRole("button", { name: "20P 쓰고 묻기" }));
+  fireEvent.click(await screen.findByRole("button", { name: "연애" }));
+  fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "오늘 연락해도 될까?" } });
+  fireEvent.click(screen.getByRole("button", { name: "보내기" }));
+  await waitFor(() => expect(calls).toHaveLength(1));
+  expect(calls[0].body).toMatchObject({ question: "오늘 연락해도 될까?", extra: true });
+});
+
+it("포인트가 모자라면 창의 주 버튼이 꺼지고 모자란 만큼을 알려 준다", async () => {
+  serve(() => ({}), state({ left: 0, extraLeft: 3, extraCost: 20, points: 5 }));
+  render(<Host />);
+  askGo({ step: "topic" });
+  fireEvent.click(await screen.findByRole("button", { name: "20P로 하나 더" }));
+  expect(await screen.findByText("포인트가 15P 모자라요")).toBeTruthy();
+  expect((screen.getByRole("button", { name: "20P 쓰고 묻기" }) as HTMLButtonElement).disabled).toBe(true);
 });

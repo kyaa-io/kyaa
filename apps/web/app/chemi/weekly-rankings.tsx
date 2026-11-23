@@ -49,7 +49,8 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
   }, [ready, authenticated, getAccessToken, attempt, modes]);
 
   // Favorite Run ranks by points, not metres.
-  const points = new Intl.NumberFormat(locale);
+  // 네 자리 수도 묶음 점을 찍어 한 화면 숫자 표기를 하나로 둔다(es 는 기본값이 '3906'·'38.429'로 갈린다).
+  const points = new Intl.NumberFormat(locale, { useGrouping: "always" });
   const games: GameRanking[] = modes.map(([game, mode]) => {
     const result = results[mode];
     const rows = Array.isArray(result) ? result : [];
@@ -60,7 +61,7 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
       name: rankName(row.nickname, locale),
       initial: row.nickname?.trim() ? undefined : null,
       change: 0,
-      record: mode === "run" ? points.format(row.score) : row.score != null ? row.score.toLocaleString(locale) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
+      record: mode === "run" ? points.format(row.score) : row.score != null ? points.format(row.score) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
         .map((part) => String(part).padStart(2, "0")).join(":"),
     });
     const mine = rows.find((row) => row.isMe);
