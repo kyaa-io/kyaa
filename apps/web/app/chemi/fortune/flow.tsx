@@ -2,7 +2,7 @@
 
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -48,6 +48,7 @@ import { FortuneResult } from "./result";
 import { Under14 } from "./under-14";
 import styles from "./scene.module.css";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
+import { useChemiNickname } from "@/features/chemi/use-chemi-nickname";
 
 const art = "/chemi/fortune";
 const talkChoice = [
@@ -114,6 +115,13 @@ function seoulDate(
   return new Intl.DateTimeFormat(locale, { timeZone: "Asia/Seoul", ...options }).format(at);
 }
 
+/** 결과 본문(오늘의 흐름·분야 풀이)을 고른 최애 말투로 쓰도록 근거에 최애를 붙인다(fortune/depth.ts). */
+function voicedReading(reading: FortuneReading, character: FortuneCharacterId): FortuneReading {
+  if (reading.result.locked) return reading;
+  const evidence = { ...reading.result.evidence, voice: character };
+  return { ...reading, result: { ...reading.result, evidence } };
+}
+
 export function FortuneFlow({
   locale,
   restoring: restoringFromUrl = false,
@@ -128,6 +136,9 @@ export function FortuneFlow({
   const text = useReadingCopy();
   const ask = useAskLocation();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
+  const nickname = useChemiNickname();
+  // 대화 줄은 한국어 표라 별명도 한국어 화면에서만 부른다(다른 언어는 공통 글자).
+  const koNickname = locale === "ko" ? nickname : null;
   const [step, setStep] = useState<FortuneStep>("enter");
   const [picked, setPicked] = useState<"fandom" | "luck" | null>(null);
   const [character, setCharacter] = useState<FortuneCharacterId>("changha");
@@ -145,6 +156,8 @@ export function FortuneFlow({
   const abort = useRef<AbortController | null>(null);
   /** 화면에 있는 `reading`을 받은 최애. 주소의 최애와 다르면 그 결과는 이 주소의 것이 아니다. */
   const readingOf = useRef<FortuneCharacterId | null>(null);
+  // 결과 화면은 받은 풀이가 바뀔 때만 다시 그리므로 같은 객체를 넘긴다.
+  const voiced = useMemo(() => reading && voicedReading(reading, character), [reading, character]);
 
   const day = kstDayStart(reading?.kstDate);
   const index = fortuneCharacters.findIndex((c) => c.id === character);
@@ -382,7 +395,7 @@ export function FortuneFlow({
     return (
       <FortuneResult
         locale={locale}
-        initial={reading}
+        initial={voiced}
         character={character}
         backHref={`/chemi/fortune?c=${character}&locale=${locale}`}
         onAsk={() => askGo({ step: "result" })}
@@ -408,7 +421,11 @@ export function FortuneFlow({
       ? fortuneCalcLine(character)
       : talk && lineInput
         ? fortuneTalkLine(character, talk, lineInput, reading?.styled?.headline, picked)
-        : needBirth ? fortuneEnterLine(character, null, "birth") : text(`fortuneEnter_${character}`);
+        : needBirth
+          ? fortuneEnterLine(character, koNickname, "birth")
+          : koNickname
+            ? fortuneEnterLine(character, koNickname)
+            : text(`fortuneEnter_${character}`);
 
   const wideArt =
     character === "changha"
@@ -424,7 +441,7 @@ export function FortuneFlow({
       : null;
 
   // 입장에서는 '응, 봐 줘', 대화에서는 다음 말로 가는 강조 버튼 하나만 둔다.
-  // 대화 선택지는 한국어에서 최애마다 다르다(창하 영상·소품, 엘리나 노래·옷, 유나 볼 것·포인트 색).
+  // 대화 선택지는 한국어에서 최애마다 다르다(나를 대하는 태도대로: 창하 장난스러운 응원, 엘리나 다정하게 챙김, 유나 솔직하게 콕 집음).
   const choiceLabel = (key: (typeof talkChoice)[number]) =>
     (locale === "ko" ? fortuneChoiceLabel(character, key) : null) ?? text(key);
   const primaryLabel = entering ? text("readFortune") : talk ? choiceLabel(talkChoice[talk - 1]) : null;

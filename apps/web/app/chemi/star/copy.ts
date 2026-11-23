@@ -375,8 +375,10 @@ const tones: Record<StarCharacterId, Tone> = {
   },
 };
 
-export function starEnterLine(character: StarCharacterId, mode: "enter" | "birth" = "enter") {
-  return tones[character][mode];
+/** 첫 대사·생일 묻기. 로그인한 팬의 별명이 있으면 그 이름으로 부르며 시작한다(운세와 같은 규칙, K-4f2dc9). */
+export function starEnterLine(character: StarCharacterId, mode: "enter" | "birth" = "enter", nickname: string | null = null) {
+  const who = nickname ? (character === "dosa" ? `${nickname} 님, ` : `${nickname}, `) : "";
+  return `${who}${tones[character][mode]}`;
 }
 export function starCalcLine(character: StarCharacterId) {
   return tones[character].calc;

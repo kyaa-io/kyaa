@@ -56,6 +56,7 @@ import {
 import { AskScene } from "@/features/chemi/ask/ask-scene";
 import { askGo, useAskLocation } from "@/features/chemi/ask/location";
 import { StarResult, StarResultSkeleton } from "./result";
+import { useChemiNickname } from "@/features/chemi/use-chemi-nickname";
 import { StarRating } from "./stars";
 import { Under14 } from "./under-14";
 import styles from "./scene.module.css";
@@ -123,6 +124,9 @@ export function StarFlow({
   const text = useReadingCopy();
   const ask = useAskLocation();
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
+  // 대화 줄은 한국어 표라 별명도 한국어 화면에서만 부른다.
+  const nickname = useChemiNickname();
+  const koNickname = locale === "ko" ? nickname : null;
   const [step, setStep] = useState<StarStep>("enter");
   const [picked, setPicked] = useState<"why" | "pair" | null>(null);
   const [character, setCharacter] = useState<StarCharacterId>("changha");
@@ -485,7 +489,11 @@ export function StarFlow({
                   picked === "pair",
                   stars?.overall,
                 )
-              : needBirth ? starEnterLine(character, "birth") : text(`starEnter_${character}`);
+              : needBirth
+                ? starEnterLine(character, "birth", koNickname)
+                : koNickname
+                  ? starEnterLine(character, "enter", koNickname)
+                  : text(`starEnter_${character}`);
 
   const primaryLabel = entering ? text("readHoroscope") : talk ? text(talkChoice[talk - 1]) : null;
 
