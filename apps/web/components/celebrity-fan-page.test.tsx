@@ -139,7 +139,7 @@ describe("approved fanpage", () => {
     const view = render(<CelebrityFanPage celebrity={hyunji} locale={locale} upcomingLive={null} />);
     const hero = view.container.querySelector('[aria-labelledby="celebrity-heading"]')!;
     expect(hero).toHaveAttribute("data-artist-identity", "true");
-    expect(within(hero as HTMLElement).getByRole("heading")).toHaveTextContent(locale === "ko" ? "현지Hyunji" : "Hyunji현지");
+    expect(within(hero as HTMLElement).getByRole("heading")).toHaveTextContent(locale === "ko" ? "현지Hyunji" : /^Hyunji$/);
     expect(within(hero as HTMLElement).getByText(hyunji.summary)).toBeInTheDocument();
     expect(within(hero as HTMLElement).getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://www.instagram.com/hyunjiiee/");
     expect(within(hero as HTMLElement).queryByRole("link", { name: /TikTok|YouTube/ })).not.toBeInTheDocument();
@@ -151,7 +151,8 @@ describe("approved fanpage", () => {
   it.each(APP_LOCALES)("keeps WENA branding, media discovery and fan participation in %s", async (locale) => {
     const wena = { ...kara, slug: "wena", name: "위나", locale: toContentLocale(locale) };
     const view = render(<CelebrityFanPage celebrity={wena} locale={locale} upcomingLive={null} />);
-    expect(screen.getByRole("heading", { level: 1, name: /We;Na/ })).toHaveTextContent("위나");
+    // 한국어 화면만 한글 이름을 함께 보인다(CREATOR-NAME-I18N-1122).
+    expect(screen.getByRole("heading", { level: 1, name: /We;Na/ }).textContent).toBe(locale === "ko" ? "We;Na위나" : "We;Na");
     expect(view.container.querySelector('img[src*="official-logo"]')).toBeInTheDocument();
     expect(await screen.findByRole("link", { name: /We;Na · Baby Step/ })).toHaveAttribute("href", "https://www.youtube.com/watch?v=172bEkNPqqs");
     expect([...view.container.querySelectorAll("a")].map(link => link.getAttribute("href"))).toContain(`/wena?tab=board&section=media&locale=${locale}&media=photos#celebrity-content`);

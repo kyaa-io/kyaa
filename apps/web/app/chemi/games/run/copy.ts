@@ -1,4 +1,5 @@
 import type { AppLocale } from "@/i18n/locales";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const keys = [
   "title", "back", "sound", "pause", "changha", "elina", "yuna", "map",
@@ -155,7 +156,7 @@ export function getRunCopy(locale: AppLocale, cost?: number, character: import("
     copy.map = otherCourses[locale][index];
     copy.combo = comboLines[locale][index];
   }
-  return copy;
+  return { ...copy, changha: creatorName("changha", locale), elina: creatorName("elina", locale), yuna: creatorName("yuna", locale) };
 }
 
 export function fill(text: string, values: Record<string, string | number>) {

@@ -74,7 +74,7 @@ export function TarotShared({
   if (state === "empty")
     return <FanState kind="empty" title={uiText("loadFailure")} action={{ href: `/chemi?locale=${locale}`, label: uiText("chemi") }} />;
 
-  const person = tarotCharacter(state.character);
+  const person = tarotCharacter(state.character, locale);
   const content = meaning.card?.dir[state.reversed ? "down" : "up"];
   return (
     <article className={styles.root} data-tarot-shared="">

@@ -17,6 +17,7 @@ import { starCharacters, type StarCharacterId } from "../copy";
 import { Toolbar } from "../parts";
 import { matchCopy } from "./copy";
 import styles from "./match.module.css";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 type Connection = { mine: string; theirs: string; angle: number };
 type Match = { readingId: string; name: string; connections: Connection[] };
@@ -68,7 +69,7 @@ export function MatchScreen({
   const [match, setMatch] = useState<Match | null>(null);
   const [error, setError] = useState<Failure | null>(null);
   const [reload, setReload] = useState(0);
-  const name = starCharacters.find((item) => item.id === character)!.name;
+  const name = creatorName(character, locale);
   const back = `/chemi/star?locale=${locale}&c=${character}`;
 
   useEffect(() => {

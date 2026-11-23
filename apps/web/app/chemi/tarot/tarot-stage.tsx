@@ -28,9 +28,11 @@ import spread from "./spread/spread.module.css";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import type { TarotDraw, TarotStep } from "./types";
 import styles from "./tarot.module.css";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
+import type { AppLocale } from "@/i18n/locales";
 
 type Props = {
-  locale: string;
+  locale: AppLocale;
   step: TarotStep;
   character: TarotCharacter;
   /** 회원이 오늘 이미 뽑은 카드. 있으면 입장 장면이 '다시 온 장면'이다. */
@@ -56,7 +58,7 @@ type Props = {
 export function TarotStage(props: Props) {
   const uiText = useReadingCopy();
   const { step, character, shown, draw, slot, offline, meaning, reduced } = props;
-  const person = tarotCharacter(character);
+  const person = tarotCharacter(character, props.locale);
   const lines = tarotLines(character);
   const entry = step === "enter";
   const revisit = entry && shown;
@@ -329,14 +331,14 @@ function Flip({ draw, turning, areaRef, flipRef }: { draw: TarotDraw; turning: b
 }
 
 /** 입장·다시 온 장면의 최애 고르기 띠: 실제 사진 아바타 + 이름. 고른 최애는 핑크 고리와 굵은 이름. */
-export function Pickband({ character, onSelect }: { character: TarotCharacter; onSelect: (key: TarotCharacter) => void }) {
+export function Pickband({ locale, character, onSelect }: { locale: AppLocale; character: TarotCharacter; onSelect: (key: TarotCharacter) => void }) {
   const uiText = useReadingCopy();
   return (
     <div className={styles.pickband} role="group" aria-label={uiText("favorite")}>
       {TAROT_CHARACTERS.map((item) => (
-        <FanIconButton key={item.key} aria-label={item.name} aria-pressed={item.key === character} onClick={() => onSelect(item.key)}>
+        <FanIconButton key={item.key} aria-label={creatorName(item.key, locale)} aria-pressed={item.key === character} onClick={() => onSelect(item.key)}>
           <img src={tarotAvatar(item.key)} alt="" />
-          <FanText role={item.key === character ? "label" : "meta"}>{item.name}</FanText>
+          <FanText role={item.key === character ? "label" : "meta"}>{creatorName(item.key, locale)}</FanText>
         </FanIconButton>
       ))}
     </div>

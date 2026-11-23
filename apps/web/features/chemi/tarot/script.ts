@@ -1,3 +1,5 @@
+import type { AppLocale } from "@/i18n/locales";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 export type TarotCharacter = "changha" | "elina" | "yuna" | "dosa";
 export type TarotVoice = "ban" | "yo" | "hao";
 
@@ -12,7 +14,11 @@ export const TAROT_CHARACTERS: readonly { key: TarotCharacter; name: string; voi
 export const isTarotCharacter = (value: string | null | undefined): value is TarotCharacter =>
   TAROT_CHARACTERS.some((character) => character.key === value);
 
-export const tarotCharacter = (key: TarotCharacter) => TAROT_CHARACTERS.find((character) => character.key === key)!;
+/** `locale` 을 주면 이름을 그 언어 표기로 바꿔 준다(creatorName). 말투(voice)만 볼 때는 생략한다. */
+export const tarotCharacter = (key: TarotCharacter, locale?: AppLocale) => {
+  const row = TAROT_CHARACTERS.find((character) => character.key === key)!;
+  return locale ? { ...row, name: creatorName(key, locale) } : row;
+};
 
 /** 뽑는 동안 최애가 하는 말. 입장·떠올리기·섞기·고르기·확정·이미 뽑은 날. 카드를 읽어 주는 말은 풀이 글(content/chemi/tarot)에 있다. */
 export const TAROT_LINES: Record<TarotVoice, { hello: string; again: string; think: string; shuffle: string; pick: string; lock: string; already: string; drawn: (name: string, reversed: boolean) => string }> = {

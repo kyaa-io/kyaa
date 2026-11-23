@@ -45,8 +45,9 @@ import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { ReadingTitle, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import type { AppLocale } from "@/i18n/locales";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 import {
-  askArt, askExamples, askFollowups, askLinesFor, askLoop, askName, askPages, askReaction, askRecall, askResultExamples, askResultLine,
+  askArt, askExamples, askFollowups, askLinesFor, askLoop, askPages, askReaction, askRecall, askResultExamples, askResultLine,
   askSubject, askVoice,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
   type AskCharacter, type AskContent, type AskRecall, type AskTopic,
@@ -161,7 +162,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   const picked = at.step === "answer" || at.step === "follow" ? at.react ?? null : null;
   const who = shown?.character ?? character;
   const where = shown?.content ?? content;
-  const name = askName[who];
+  const name = creatorName(who, locale);
   const lines = askLinesFor(who);
   const art = askArt(where, who);
   // 토큰 함수가 그릴 때마다 새로 만들어져도 상태를 다시 읽지 않게 최신 함수만 기억해 둔다.
@@ -698,7 +699,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
                   <li key={item.threadId} data-row="">
                     <FanAction variant="text" className={styles.rowLink} onClick={() => open(item)}>
                       <span className={styles.rowGrid}>
-                        <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={askName[item.character]} />
+                        <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
                         <FanText role="body" className={styles.clip}>{item.question}</FanText>
                         <FanIcon icon={ChevronRight} size={16} />
                       </span>
@@ -820,7 +821,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
         {days > 1 && !crisis ? (
-          <span className={`${styles.count} ${styles.days}`} aria-label={`${askName[character]} ${text("askDays", { count: days })}`}>
+          <span className={`${styles.count} ${styles.days}`} aria-label={`${creatorName(character, locale)} ${text("askDays", { count: days })}`}>
             <FanIcon icon={Heart} size={16} />
             <FanText role="label" aria-hidden="true">{text("askDays", { count: days })}</FanText>
           </span>
@@ -870,7 +871,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
               <li key={item.threadId} data-row="">
                 <FanAction variant="text" className={styles.rowLink} onClick={() => open(item)}>
                   <span className={`${styles.rowGrid} ${styles.histRow}`}>
-                    <img className={styles.face} src={askArt(item.content, item.character).face} alt={askName[item.character]} />
+                    <img className={styles.face} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
                     <span className={styles.histText}>
                       <FanText role="item" className={styles.clip}>{item.question}</FanText>
                       <FanText role="meta">

@@ -52,7 +52,7 @@ export function TarotResult({
   onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
-  const person = tarotCharacter(character);
+  const person = tarotCharacter(character, locale);
   // 지난 날의 결과 링크로 열었으면 오늘 받은 것을 이 카드의 보상으로 보여 주지 않는다.
   const today = draw.date === kstDate();
   const [rewards, setRewards] = useState<Rewards | null>(null);
