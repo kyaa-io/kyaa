@@ -622,6 +622,14 @@
     "tenGodTitle": "Sepuluh dewa",
     "relationTitle": "Kombinasi & benturan",
     "yearFlow": "Tahun ini",
-    "hourLocked": "Pilar jam terbuka setelah Anda menambahkan jam lahir"
+    "hourLocked": "Pilar jam terbuka setelah Anda menambahkan jam lahir",
+    "sharedFortune": "Ramalan hari ini dari teman",
+    "sharedSaju": "Saju dari teman",
+    "sharedGone": "Kartu yang dibagikan ini sudah kedaluwarsa",
+    "shareStartFortune": "Lihat ramalanku hari ini",
+    "shareStartSaju": "Lihat sajuku",
+    "linkCopied": "Tautan disalin",
+    "askCount": "{count} pertanyaan",
+    "luckyColor": "Warna keberuntungan {color}"
   }
 }

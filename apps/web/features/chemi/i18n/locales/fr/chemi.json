@@ -622,6 +622,14 @@
     "tenGodTitle": "Dix dieux",
     "relationTitle": "Combinaisons et chocs",
     "yearFlow": "Cette année",
-    "hourLocked": "Le pilier de l'heure s'ouvre avec votre heure de naissance"
+    "hourLocked": "Le pilier de l'heure s'ouvre avec votre heure de naissance",
+    "sharedFortune": "La fortune du jour d'un ami",
+    "sharedSaju": "Le saju d'un ami",
+    "sharedGone": "Cette carte partagée a expiré",
+    "shareStartFortune": "Voir ma fortune du jour",
+    "shareStartSaju": "Voir mon saju",
+    "linkCopied": "Lien copié",
+    "askCount": "{count} questions",
+    "luckyColor": "Couleur porte-bonheur {color}"
   }
 }

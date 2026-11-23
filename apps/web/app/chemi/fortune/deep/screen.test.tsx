@@ -137,6 +137,15 @@ it("asks a guest to sign in instead of loading", async () => {
   expect(fetcher).not.toHaveBeenCalled();
 });
 
+it("offers login, not retry, when the session has expired (DF-STATE-008)", async () => {
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ error: { code: "UNAUTHORIZED" } }, { status: 401 })));
+  render(<FortuneDeep view="tomorrow" character="changha" locale="ko" paidPreview={false} />);
+  expect(await screen.findByText("로그인이 만료되었습니다.")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "다시 시도" })).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "로그인" }));
+  expect(login).toHaveBeenCalled();
+});
+
 it("shows the amulet on a rest day, the keepsake on a great day and nothing in between", async () => {
   vi.stubGlobal("URL", Object.assign(URL, { createObjectURL: () => "blob:card", revokeObjectURL: () => {} }));
   serve([56, 70, 70, 70, 70, 70, 70]);

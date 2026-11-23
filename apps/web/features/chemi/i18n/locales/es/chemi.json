@@ -622,6 +622,14 @@
     "tenGodTitle": "Diez dioses",
     "relationTitle": "Combinaciones y choques",
     "yearFlow": "Este año",
-    "hourLocked": "El pilar de la hora se abre con tu hora de nacimiento"
+    "hourLocked": "El pilar de la hora se abre con tu hora de nacimiento",
+    "sharedFortune": "La fortuna de hoy de un amigo",
+    "sharedSaju": "El saju de un amigo",
+    "sharedGone": "Esta tarjeta compartida ya expiró",
+    "shareStartFortune": "Ver mi fortuna de hoy",
+    "shareStartSaju": "Ver mi saju",
+    "linkCopied": "Enlace copiado",
+    "askCount": "{count} preguntas",
+    "luckyColor": "Color de la suerte {color}"
   }
 }

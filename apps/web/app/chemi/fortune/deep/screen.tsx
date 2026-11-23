@@ -107,11 +107,11 @@ export function FortuneDeep(props: Props) {
     </div>
   );
   if (ask) return ask;
-  if (week.status === "guest")
+  if (week.status === "guest" || week.status === "expired")
     return (
       <FanState
         kind="auth"
-        title={text("fortuneLogin")}
+        title={text(week.status === "expired" ? "expired" : "fortuneLogin")}
         actions={<FanAction onClick={week.login}><ReadingText id="login" /></FanAction>}
       />
     );

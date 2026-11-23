@@ -622,6 +622,14 @@
     "tenGodTitle": "十神分佈",
     "relationTitle": "合・沖",
     "yearFlow": "今年運勢",
-    "hourLocked": "知道出生時間後可查看時柱"
+    "hourLocked": "知道出生時間後可查看時柱",
+    "sharedFortune": "朋友分享的今日運勢",
+    "sharedSaju": "朋友分享的八字",
+    "sharedGone": "這張分享卡已過期",
+    "shareStartFortune": "看我的今日運勢",
+    "shareStartSaju": "看我的八字",
+    "linkCopied": "已複製連結",
+    "askCount": "提問 {count}次",
+    "luckyColor": "幸運色 {color}"
   }
 }

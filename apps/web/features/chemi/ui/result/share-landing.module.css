@@ -1,0 +1,137 @@
+/* 공유 링크 착지: 자랑 카드 한 장 + 첫 장면으로 들어가는 주 버튼. 390은 주 버튼을 탭바 위에 고정, 1024+는 카드 아래에 둔다. */
+.layout {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 40rem;
+  margin-inline: auto;
+  padding-block: var(--space-3) calc(var(--min-target) + var(--space-8));
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+}
+.round {
+  flex: none;
+  width: var(--min-target);
+  height: var(--min-target);
+  padding: 0;
+  border: 1px solid var(--color-line);
+  border-radius: 50%;
+}
+.kicker {
+  margin: 0;
+  color: var(--color-muted);
+}
+.card {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+.hero {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+}
+.card .hero {
+  border-radius: 0;
+}
+.hero img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2;
+  object-fit: cover;
+  object-position: center 25%;
+}
+.body {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+}
+.body h1 {
+  margin: 0;
+  word-break: keep-all;
+  text-wrap: balance;
+}
+.score {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.quote {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-accent-line);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}
+.quote img {
+  grid-row: 1 / span 2;
+  width: var(--min-target);
+  height: var(--min-target);
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+.quote blockquote {
+  margin: 0;
+}
+.quote p {
+  margin: 0;
+  word-break: keep-all;
+  text-wrap: pretty;
+}
+.quote figcaption {
+  grid-column: 2;
+  color: var(--color-muted);
+}
+.keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.keywords li {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--space-8);
+  padding-inline: var(--space-3);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-pill);
+}
+.cta {
+  display: flex;
+  justify-content: center;
+}
+@media (max-width: 63.99rem) {
+  .cta {
+    position: fixed;
+    z-index: var(--z-bottom-nav);
+    bottom: calc(var(--chemi-result-nav-height, var(--fan-bottom-nav-height)) + env(safe-area-inset-bottom));
+    inset-inline: 0;
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-surface);
+  }
+}
+@media (min-width: 64rem) {
+  .layout {
+    padding-bottom: var(--space-8);
+  }
+  .hero img {
+    aspect-ratio: 2.4;
+  }
+}
+/* 착지에는 뒤로 가기(케미 탭)가 머리에 있으니 페이지 위 '케미 목록으로' 줄을 겹쳐 두지 않는다. */
+:global(main):has(.layout) > :global([data-chemi-list-link]) {
+  display: none;
+}
+.score p {
+  margin: 0;
+}

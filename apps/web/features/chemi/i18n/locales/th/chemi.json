@@ -622,6 +622,14 @@
     "tenGodTitle": "สิบเทพ",
     "relationTitle": "การรวมและการปะทะ",
     "yearFlow": "ปีนี้",
-    "hourLocked": "เสาชั่วโมงจะเปิดเมื่อใส่เวลาเกิด"
+    "hourLocked": "เสาชั่วโมงจะเปิดเมื่อใส่เวลาเกิด",
+    "sharedFortune": "ดวงวันนี้ที่เพื่อนแชร์",
+    "sharedSaju": "ดวงซาจูที่เพื่อนแชร์",
+    "sharedGone": "การ์ดที่แชร์นี้หมดอายุแล้ว",
+    "shareStartFortune": "ดูดวงวันนี้ของฉัน",
+    "shareStartSaju": "ดูซาจูของฉัน",
+    "linkCopied": "คัดลอกลิงก์แล้ว",
+    "askCount": "คำถาม {count} ข้อ",
+    "luckyColor": "สีมงคล {color}"
   }
 }
