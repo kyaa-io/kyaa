@@ -8,7 +8,7 @@ export function HomeHeroBanner({ image, imageBadge, eyebrow, title, description,
   imageBadge?: ReactNode;
   desktopImage?: ReactNode;
   fullImage?: ReactNode;
-  kind?: "live" | "guide" | "welcome" | "campaign" | "art" | "mission" | "missionbook";
+  kind?: "live" | "guide" | "welcome" | "campaign" | "art" | "mission" | "missionbook" | "chemi";
   eyebrow: ReactNode;
   title: ReactNode;
   description: ReactNode;

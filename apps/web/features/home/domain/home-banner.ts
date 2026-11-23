@@ -3,15 +3,23 @@ import { z } from "zod";
 import { safeAssetUrlSchema } from "../../live/domain/live-event";
 
 export const bannerLocaleSchema = z.enum(["ko", "en"]);
-export const bannerSlotSchema = z.enum(["member_event_popup", "home_below_board", "home_between_events", "home_mid", "fanpage_below_gallery", "fanpage_second", "dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"]);
+export const bannerSlotSchema = z.enum(["chemi_promo_popup", "member_event_popup", "home_below_board", "home_between_events", "home_mid", "fanpage_below_gallery", "fanpage_second", "dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"]);
 export type BannerSlot = z.infer<typeof bannerSlotSchema>;
-export type BannerSlotArea = "home" | "fanpage" | "dukjil" | "member-event";
-export const bannerSlotsByArea: Record<BannerSlotArea, readonly BannerSlot[]> = { "member-event": ["member_event_popup"], home: ["home_below_board", "home_between_events", "home_mid"], fanpage: ["fanpage_below_gallery", "fanpage_second"], dukjil: ["dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"] };
+export type BannerSlotArea = "home" | "fanpage" | "dukjil" | "member-event" | "chemi-promo";
+export const bannerSlotsByArea: Record<BannerSlotArea, readonly BannerSlot[]> = { "chemi-promo": ["chemi_promo_popup"], "member-event": ["member_event_popup"], home: ["home_below_board", "home_between_events", "home_mid"], fanpage: ["fanpage_below_gallery", "fanpage_second"], dukjil: ["dukjil_mid", "dukjil_side", "dukjil_side_2", "dukjil_side_3"] };
 export const bannerPlacementSchema = z.enum(["home", "groups", "both", ...bannerSlotSchema.options]);
 export const bannerCategorySchema = z.enum(["event", "group", "fanpage", "announcement", "live", "guide", "ad"]);
 export function isMemberEventHref(value: string) {
   return /^\/live\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ||
     /^\/pages\/groups\/[0-9a-f-]{36}\/raffles\/[0-9a-f-]{36}$/.test(value);
+}
+
+export function isChemiPromoHref(value: string) {
+  return value === "/chemi" || value === "/guide/chemi";
+}
+
+export function isScheduledPopup(placement?: string) {
+  return placement === "member_event_popup" || placement === "chemi_promo_popup";
 }
 
 const popupSchedule = {
@@ -85,10 +93,10 @@ export const homeBannerCommandSchema = z.discriminatedUnion("action", [
     kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
     localizations: z.object({ ko: writeLocalizationSchema, en: writeLocalizationSchema }).strict(),
   }).strict().refine(v => v.kind !== "regular_live" || v.celebrityId !== null, "CREATOR_REQUIRED")
-    .refine(v => v.placement !== "member_event_popup" || (
+    .refine(v => !isScheduledPopup(v.placement) || (
       v.kind === "announcement" && v.startsAt && v.endsAt &&
       Date.parse(v.startsAt) < Date.parse(v.endsAt) &&
-      isMemberEventHref(v.localizations.ko.href) && v.localizations.ko.href === v.localizations.en.href
+      (v.placement === "chemi_promo_popup" ? isChemiPromoHref : isMemberEventHref)(v.localizations.ko.href) && v.localizations.ko.href === v.localizations.en.href
     ), "INVALID_EVENT_POPUP")
     .refine(v => v.id !== null || v.expectedRevision === 0, "INVALID_REVISION"),
   z.object({ action: z.literal("publication"), id: z.uuid(), expectedRevision: z.number().int().positive(), publicationStatus: z.enum(["draft", "published"]) }).strict(),

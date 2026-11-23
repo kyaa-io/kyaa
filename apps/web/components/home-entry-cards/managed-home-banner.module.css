@@ -76,3 +76,5 @@
     inset-inline-end: auto;
   }
 }
+
+.root[data-chemi-art] .artwork img { object-fit: cover; object-position: 80% 12%; }
