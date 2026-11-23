@@ -30,14 +30,13 @@ import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { flowKey, gradeKey, periodKey } from "./deep/copy";
 import { englishFieldNotes, englishFortuneBasis, englishFortuneFlow, englishFortuneVoice, englishHeadline, englishSpirits, englishStages, englishValue } from "./result.en";
-import { fortuneBasis, fortuneFieldDetail, fortuneFlow } from "./depth";
+import { fortuneBasis, fortuneFieldDetail, fortuneFieldNote, fortuneFlow } from "./depth";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
 import {
   band,
   dayHeadline,
   localizedDayPillar,
-  fieldNotes,
   kstDate,
   kstDayStart,
   kstWeekday,
@@ -567,12 +566,12 @@ export function FortuneResult({
           <ul className={styles.fields}>
             {fields.map(([label, key, value]) => {
               const [first, second] = exampleKeys[key];
-              const fieldNote = (korean ? fieldNotes : englishFieldNotes)[key][band(value)];
+              const fieldNote = korean ? fortuneFieldNote(key, value, character) : englishFieldNotes[key][band(value)];
               const note = key === highest || key === lowest ? fieldNote : null;
               const detail = korean ? fortuneFieldDetail(
                 key,
                 value,
-                result.evidence,
+                { ...result.evidence, voice: character },
                 key === highest ? "highest" : key === lowest ? "lowest" : null,
                 note !== null,
               ) : {

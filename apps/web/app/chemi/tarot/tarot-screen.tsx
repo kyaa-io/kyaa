@@ -212,12 +212,13 @@ export function TarotScreen({
     return () => removeEventListener("popstate", onPop);
   }, [go, normalize]);
 
-  // 접기 이동이 끝나 주소가 입장 장면으로 돌아오면 결과를 연다.
+  // 접기 이동 뒤 직접 열었던 단계도 입장 기록으로 바꾼다.
   useEffect(() => {
-    if (!folded.current || new URLSearchParams(location.search).has("step")) return;
+    if (!folded.current) return;
     folded.current = false;
     if (fold.current) clearTimeout(fold.current);
     fold.current = null;
+    go("enter", { replace: true });
     go("result");
   }, [search, go]);
 
@@ -299,7 +300,11 @@ export function TarotScreen({
   // 결과 → 고르기: 결과로 오는 길의 장면 기록을 접어 결과의 바로 앞 칸이 입장 장면이 되게 한다.
   const openResult = () => {
     const index = (history.state?.tarot as number | undefined) ?? 0;
-    if (index <= 0) return go("result");
+    if (index <= 0) {
+      go("enter", { replace: true });
+      go("result");
+      return;
+    }
     // 되돌아가는 기록 이동이 끝나면(popstate) 결과를 연다. 이동 신호가 끝내 안 오면 3초 뒤 그 자리에서 연다.
     fold.current = setTimeout(() => {
       fold.current = null;
