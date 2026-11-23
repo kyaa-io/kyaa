@@ -622,6 +622,14 @@
     "tenGodTitle": "十神の分布",
     "relationTitle": "合・沖",
     "yearFlow": "今年の流れ",
-    "hourLocked": "時柱は生まれた時間がわかると開きます"
+    "hourLocked": "時柱は生まれた時間がわかると開きます",
+    "sharedFortune": "友だちが自慢した今日の運勢",
+    "sharedSaju": "友だちが自慢した四柱推命",
+    "sharedGone": "この自慢カードは見られる期間が過ぎました",
+    "shareStartFortune": "自分の今日の運勢を見る",
+    "shareStartSaju": "自分の四柱推命を見る",
+    "linkCopied": "リンクをコピーしました",
+    "askCount": "質問 {count}件",
+    "luckyColor": "ラッキーカラー {color}"
   }
 }

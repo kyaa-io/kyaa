@@ -622,6 +622,14 @@
     "tenGodTitle": "Thập thần",
     "relationTitle": "Hợp · xung",
     "yearFlow": "Năm nay",
-    "hourLocked": "Trụ giờ sẽ mở khi bạn thêm giờ sinh"
+    "hourLocked": "Trụ giờ sẽ mở khi bạn thêm giờ sinh",
+    "sharedFortune": "Vận may hôm nay của bạn bè",
+    "sharedSaju": "Saju của bạn bè",
+    "sharedGone": "Thẻ chia sẻ này đã hết hạn",
+    "shareStartFortune": "Xem vận may hôm nay của tôi",
+    "shareStartSaju": "Xem saju của tôi",
+    "linkCopied": "Đã sao chép liên kết",
+    "askCount": "{count} câu hỏi",
+    "luckyColor": "Màu may mắn {color}"
   }
 }

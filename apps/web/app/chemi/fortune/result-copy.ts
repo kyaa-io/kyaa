@@ -117,3 +117,25 @@ export function kstWeekday(locale: string, at: number = Date.now()) {
 export function kstDayStart(day?: string) {
   return day ? Date.parse(`${day}T12:00:00+09:00`) : Date.now();
 }
+
+/**
+ * 결과 머리의 한 줄 제목(시안 04-3 · 01 '누군가 먼저 도와주는 날'). 오늘 일진이 내 일간에게 무엇인지(십신)로 고르고,
+ * 쉬어 가는 날(50~59)은 쉬는 것을 권하는 말로 쓴다(04-3 · 12). 말투 없이 표 원문 쪽이다.
+ */
+const tenGodHeadlines: Record<string, string> = {
+  비견: "내 편이 곁에 있는 날",
+  겁재: "내 몫을 먼저 챙길 날",
+  식신: "좋아하는 일에 손이 가는 날",
+  상관: "하고 싶은 말이 많아지는 날",
+  편재: "뜻밖의 기회가 지나가는 날",
+  정재: "차곡차곡 쌓이는 날",
+  편관: "해야 할 일이 몰려오는 날",
+  정관: "순서대로 하면 되는 날",
+  편인: "혼자 생각이 깊어지는 날",
+  정인: "누군가 먼저 도와주는 날",
+};
+export const restHeadline = "속도를 줄여야 오래 가는 날";
+export function dayHeadline(tenGod: string, grade: string) {
+  if (grade === "쉬어 가는 날") return restHeadline;
+  return tenGodHeadlines[tenGod] ?? null;
+}

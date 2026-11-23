@@ -486,3 +486,65 @@
     top: calc(var(--fan-header-height) + var(--space-6));
   }
 }
+
+/* 점수·등급 줄 아래 한 줄 제목(04-3 · 01). 등급 이름은 점수 옆에 항목 크기로. */
+.head .grade {
+  margin: 0;
+}
+/* 보상 줄(04-3 · 02): 항목 사이 세로선. 패스포트가 없으면 받으러 가는 한 줄 링크가 된다(타로 결과와 같은 모양). */
+.rewardRow > * + * {
+  padding-inline-start: var(--space-2);
+  border-inline-start: 1px solid var(--color-line);
+}
+.rewardRow > [data-earn-badge] + * {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+.scorePanel > .passportRow {
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--min-target);
+  padding: 0;
+  text-align: start;
+}
+.passportRow .rewardRow {
+  flex-wrap: nowrap;
+}
+.go {
+  color: var(--color-accent-ink);
+}
+/* 주 버튼 안 남은 질문 수 배지(04-3 · 10). */
+.askCount {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: var(--space-2);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-accent-ink);
+}
+/* 자랑하기 판 미리 보기: 최애 얼굴 + 점수·등급 + 최애 한마디(04-3 · 14). */
+.shareCard {
+  display: grid;
+  grid-template-columns: var(--space-16) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-2);
+}
+.shareCard img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 50% 25%;
+}
+.shareCard > span {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+/* 보상 줄만 있는 판은 한 줄 높이로(빈 흰 칸처럼 보이지 않게). */
+.scorePanel:not(:has(.score)) {
+  padding-block: var(--space-2);
+}

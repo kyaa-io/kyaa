@@ -73,12 +73,13 @@ it("copies the public share URL and records completion only after a successful c
   vi.stubGlobal("fetch", fetcher);
   vi.stubGlobal(
     "navigator",
-    Object.assign(Object.create(navigator), { clipboard: { writeText: copy } }),
+    { clipboard: { writeText: copy }, userAgent: navigator.userAgent, platform: navigator.platform, maxTouchPoints: 0 },
   );
   render(<FortuneResult locale="ko" />);
   const [button] = await screen.findAllByRole("button", { name: "자랑하기" });
-  // 제목이 등급 이름이면 점수 옆에 같은 말을 되풀이하지 않는다.
+  // 머리: 점수·등급 다음 줄에 오늘 일진 한 줄 제목(04-3 · 01). 등급 이름은 한 번만.
   expect(screen.getAllByText("좋은 날")).toHaveLength(1);
+  expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("좋아하는 일에 손이 가는 날");
   expect(screen.getByText("창하의 한마디")).toBeVisible();
   // 분야 점수는 한 판에 6줄이고, 요약은 가장 높은 분야(덕질 88)와 가장 낮은 분야(애정 75)에만 달린다.
   const rows = [...document.querySelectorAll("ul > li > [data-fan-collapsible] > button")];
@@ -97,7 +98,10 @@ it("copies the public share URL and records completion only after a successful c
   expect([...document.querySelector("[data-result-actions]")!.children].map((item) => item.textContent)).toEqual(["자랑하기", "다른 놀이 보기"]);
   expect(toast).not.toHaveBeenCalled();
   expect(celebrate).not.toHaveBeenCalled();
+  // 자랑하기는 미리 보기 판을 열고, 판의 '링크 복사'가 실제로 보낸다(타로와 같은 판 · DF-FORT-004).
   fireEvent.click(button!);
+  expect(await screen.findByRole("dialog")).toHaveTextContent("82좋은 날");
+  fireEvent.click(screen.getByRole("button", { name: "링크 복사" }));
   await waitFor(() =>
     expect(toast).toHaveBeenCalledWith(
       expect.objectContaining({ tone: "error" }),
@@ -106,15 +110,15 @@ it("copies the public share URL and records completion only after a successful c
   expect(fetcher.mock.calls.flat()).not.toContain(
     "/api/chemi/shares/card/done",
   );
-  fireEvent.click(button!);
+  fireEvent.click(screen.getByRole("button", { name: "링크 복사" }));
   await waitFor(() =>
     expect(fetcher.mock.calls.flat()).toContain("/api/chemi/shares/card/done"),
   );
   expect(copy).toHaveBeenLastCalledWith(
-    new URL("/chemi/fortune?from=card", location.origin).href,
+    new URL("/chemi/fortune?from=card&locale=ko", location.origin).href,
   );
-  expect(toast).toHaveBeenLastCalledWith(
-    expect.objectContaining({ tone: "success" }),
+  expect(toast).toHaveBeenCalledWith(
+    expect.objectContaining({ title: "링크를 복사했어요", tone: "success" }),
   );
 });
 
@@ -199,4 +203,27 @@ it("sends the member to the Chemi home from the main button until questions exis
     "/chemi?locale=ko",
   );
   expect(screen.queryByText("이 결과로 질문하기")).toBeNull();
+});
+
+it("shows the passport row when today's 3P is held for a missing passport (DF-FORT-002)", async () => {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now());
+  vi.stubGlobal("fetch", vi.fn(async (path: string) => {
+    if (path === "/api/chemi/readings")
+      return Response.json({
+        readingId: "reading", kstDate: today, styled: null, replayed: false, reward: { exp: 10 },
+        result: {
+          locked: false, score: 72, grade: { name: "무난한 날" },
+          fields: { fandom: 74, people: 66, money: 78, rest: 66, work: 74, love: 72 },
+          periods: { morning: 75, afternoon: 72, night: 72 },
+          evidence: { dayPillar: "신축", yearPillar: "병오", relation: "무관", stage: "양", spirit: "월살", tenGod: "정재", useful: "목", timeBasis: "시주 포함" },
+          luck: { color: "초록", number: 3, direction: "동", item: "나무 연필" },
+        },
+      });
+    if (path === "/api/chemi/rewards/today") return Response.json({ grants: [], pending: ["changha", "elina"] });
+    return Response.json({});
+  }));
+  render(<FortuneResult locale="ko" character="elina" />);
+  const row = await screen.findByRole("link", { name: /패스포트 받고 \+3P · 스탬프/ });
+  expect(row).toHaveAttribute("href", "/c/elina?locale=ko");
+  expect(row).toHaveTextContent("친밀 +10");
 });

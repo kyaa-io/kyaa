@@ -1,6 +1,7 @@
 import { chemiTopupEnabled } from "@/features/chemi/domain/availability";
 import { dayCardKind } from "@/app/chemi/fortune/deep/copy";
 import { isFortuneResult } from "@/app/chemi/fortune/reading";
+import { shareSummary } from "./share-summary";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { chemiClosedResponse } from "@/server/chemi/dependencies";
@@ -319,10 +320,17 @@ export async function rewardRoute(
       }
       if (op === "share") {
         const input = share.parse(body);
+        // 공유 줄은 저장된 결과에서 서버가 만든다. 남의 풀이면 chemi_reading_detail 이 CHEMI_NOT_FOUND 로 막는다.
+        const saved = (await deps.rpc("chemi_reading_detail", {
+          p_user,
+          p_id: input.readingId,
+          p_character: input.character,
+        })) as { result?: unknown; styled?: { share?: { line?: unknown } } | null };
         return deps.rpc("chemi_create_share", {
           p_user,
           p_reading: input.readingId,
           p_character: input.character,
+          p_summary: shareSummary(input.character, saved.result, saved.styled),
         });
       }
       if (op === "done")

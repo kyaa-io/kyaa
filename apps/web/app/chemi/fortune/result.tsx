@@ -1,7 +1,6 @@
 "use client";
-import { showShareReward } from "@/features/chemi/i18n/share-reward";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
-import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
+import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { ChevronDown, ChevronLeft, ChevronRight } from "@/components/fan-ui/fan-icons";
@@ -22,13 +21,17 @@ import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import { withTopic } from "@/features/chemi/domain/korean-particle";
-import { ResultActions } from "@/features/chemi/ui/result/result-actions";
+import { ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
+import { ShareLanding } from "@/features/chemi/ui/result/share-landing";
+import { completeShare } from "@/features/chemi/ui/complete-share";
+import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { fortuneBasis, fortuneFieldDetail, fortuneFlow } from "./depth";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
 import {
   band,
+  dayHeadline,
   fieldNotes,
   kstDate,
   kstDayStart,
@@ -89,27 +92,20 @@ export function FortuneResult({
   const [reading, setReading] = useState<Reading>();
   const celebratedReading = useRef<string | null>(null);
   const [points, setPoints] = useState(0);
-  const [line, setLine] = useState("");
   const [status, setStatus] = useState("loading");
   const [sharing, setSharing] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  /** 오늘 이 최애의 3P 가 패스포트가 없어 보류됐는지(chemi_rewards_today.pending). */
+  const [passportPending, setPassportPending] = useState(false);
+  /** 남은 질문 수. 못 읽었으면 null 이고 배지를 그리지 않는다. */
+  const [askLeft, setAskLeft] = useState<number | null>(null);
+  const name = creatorName(character, locale);
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
     setStatus("loading");
     async function load() {
-      if (pending) return;
-      if (from) {
-        const response = await fetch(
-          `/api/chemi/shares/${encodeURIComponent(from)}`,
-          { signal },
-        );
-        if (!response.ok) throw Error();
-        const card = await response.json();
-        if (signal.aborted) return;
-        setLine(card.line ?? "");
-        setStatus(card.gone || !card.line ? "empty" : "shared");
-        return;
-      }
+      if (pending || from) return;
       if (!ready) return;
       if (!authenticated) {
         setStatus("guest");
@@ -162,6 +158,7 @@ export function FortuneResult({
       if (rewards.ok) {
         const today = await rewards.json();
         if (signal.aborted) return;
+        setPassportPending(Array.isArray(today.pending) && today.pending.includes(character));
         if (today.claimedPoints > 0)
           celebrateReward({ locale, points: today.claimedPoints });
         setPoints(
@@ -180,7 +177,26 @@ export function FortuneResult({
     return () => controller.abort();
   }, [ready, authenticated, user?.id, getAccessToken, from, attempt, locale, initial, character, pending]);
 
-  async function share() {
+  // 주 버튼 옆 남은 질문 수(시트 04-3 · 10). 질문하기를 열 수 있는 내 결과에서만 읽는다.
+  const readingId = reading?.readingId;
+  const askable = Boolean(onAsk);
+  useEffect(() => {
+    if (!askable || !readingId || !authenticated) return;
+    const controller = new AbortController();
+    void (async () => {
+      const response = await fetch(`/api/chemi/ask?r=${encodeURIComponent(readingId)}&c=${character}`, {
+        headers: { Authorization: `Bearer ${await getAccessToken()}` },
+        signal: controller.signal,
+      });
+      if (!response.ok) return;
+      const { left } = (await response.json()) as { left?: unknown };
+      if (!controller.signal.aborted && typeof left === "number") setAskLeft(left);
+    })().catch(() => {});
+    return () => controller.abort();
+  }, [askable, readingId, authenticated, character, getAccessToken]);
+
+  /** 자랑하기 판에서 고른 수단으로 보낸다. 끝난 공유만 보상 확인을 하고, 취소·실패는 성공으로 보이지 않는다. */
+  async function share(via: ShareVia) {
     if (!reading || sharing) return;
     setSharing(true);
     try {
@@ -197,22 +213,22 @@ export function FortuneResult({
         }),
       });
       if (!response.ok) throw Error();
-      const card = await response.json();
-      await navigator.clipboard.writeText(
-        new URL(card.url, location.origin).href,
-      );
-      showFanToast({ title: uiText("copyDone"), tone: "success" });
-      await fetch(
-        `/api/chemi/shares/${encodeURIComponent(card.shareId)}/done`,
-        { method: "POST", headers, body: JSON.stringify({ via: "copy" }) },
-      ).then(response => showShareReward(response, uiText, name)).catch(() => {});
-    } catch {
+      const card = (await response.json()) as { url: string; shareId: string };
+      const url = new URL(`${card.url}&locale=${locale}`, location.origin).href;
+      if (via === "send") await navigator.share({ title: uiText("share"), url });
+      else {
+        await navigator.clipboard.writeText(url);
+        showFanToast({ title: uiText("linkCopied"), tone: "success" });
+      }
+      setShareOpen(false);
+      await completeShare(card.shareId, via, headers, uiText, name);
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
       showFanToast({ title: uiText("copyFailed"), tone: "error" });
     } finally {
       setSharing(false);
     }
   }
-  const name = creatorName(character, locale);
   const back = backHref ?? `/chemi?locale=${locale}`;
   const day = kstDayStart(reading?.kstDate);
   const toolbar = (
@@ -233,6 +249,7 @@ export function FortuneResult({
       )}
     </div>
   );
+  if (from) return <ShareLanding locale={locale} from={from} content="fortune" />;
   if (status === "guest")
     return (
       <FanState
@@ -280,16 +297,6 @@ export function FortuneResult({
       </section>
     );
   }
-  if (status === "shared")
-    return (
-      <section className={styles.layout}>
-        {toolbar}
-        <div className={styles.panel}>
-          <FanHeading as="h1"><ReadingTitle id="fortune" /></FanHeading>
-          <FanState inline kind="info" title={line} />
-        </div>
-      </section>
-    );
   if (status === "empty" || !reading || reading.result.locked)
     return (
       <FanState
@@ -299,7 +306,9 @@ export function FortuneResult({
       />
     );
   const { result } = reading;
-  const headline = reading.styled?.headline || result.grade.name;
+  // 한 줄 제목: 말투로 다시 쓴 제목 → 오늘 일진 한 줄(04-3 · 01) → 등급 이름.
+  const headline =
+    reading.styled?.headline || dayHeadline(result.evidence.tenGod, result.grade.name) || result.grade.name;
   const fields = [
     [uiText("fandom"), "fandom", result.fields.fandom],
     [uiText("people"), "people", result.fields.people],
@@ -347,9 +356,35 @@ export function FortuneResult({
   const isToday = reading.kstDate === todayKst();
   const cardKind = isToday ? dayCardKind(result.score) : null;
   const deepTarget = { character, locale, readingId: reading.readingId };
-  const actions = <ResultActions locale={locale} sharing={sharing} onShare={share} />;
+  const actions = <ResultActions locale={locale} sharing={sharing} onShare={() => setShareOpen(true)} />;
   const merged = headline === result.grade.name;
-  const rewarded = points > 0 || Boolean(reading.reward?.stamp) || Boolean(reading.reward?.exp);
+  // 쉬어 가는 날(50~59)은 숫자보다 등급 이름을 먼저 보인다(04-3 · 12). 자랑하기 카드에도 숫자를 넣지 않는다.
+  const rest = result.score < 60;
+  // 보상 줄(04-3 · 02)은 오늘 결과에서만. 받은 것 → 이미 받은 최애 → 패스포트가 없어 보류된 3P 순서로 한 줄.
+  const received = Boolean(reading.replayed) && points > 0;
+  const rewardParts = [
+    points > 0 && !received && <EarnBadge key="points" locale={locale} points={points} variant="inline" />,
+    reading.reward?.stamp && <FanText key="stamp" role="meta"><ReadingText id="stamp" /></FanText>,
+    Boolean(reading.reward?.exp) && (
+      <FanText key="exp" role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
+    ),
+    points > 0 && !received && <FanText key="share" role="meta">{uiText("shareOf", { name })}</FanText>,
+    received && <FanText key="received" role="meta">{uiText("receivedToday", { name })}</FanText>,
+  ].filter(Boolean);
+  const rewardRow = !isToday ? null : passportPending && points <= 0 ? (
+    <FanAction variant="text" className={styles.passportRow} href={`/c/${character}?locale=${locale}`} trailingIcon={<FanIcon icon={ChevronRight} size={16} />}>
+      <span className={styles.rewardRow}>
+        <FanText role="label" className={styles.go}>
+          {uiText("passportReward", { points: CHEMI_PASSPORT_DAILY_POINTS })}
+        </FanText>
+        {Boolean(reading.reward?.exp) && (
+          <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
+        )}
+      </span>
+    </FanAction>
+  ) : rewardParts.length > 0 ? (
+    <div className={styles.rewardRow}>{rewardParts}</div>
+  ) : null;
   return (
     <article data-fortune-result="" className={styles.layout}>
       {toolbar}
@@ -358,13 +393,21 @@ export function FortuneResult({
           <FanText as="p" role="meta">
             {uiText("todayBy", { pillar: result.evidence.dayPillar, name })}
           </FanText>
-          {/* 제목이 등급 이름이면 점수를 제목 옆에 두고, 아래 점수 칸에서 같은 말을 되풀이하지 않는다. */}
+          {/* 점수·등급 다음 줄에 오늘을 한 줄로 말하는 제목(04-3 · 01). 제목이 등급 이름뿐이면 점수 옆에 둔다. */}
           {merged ? (
             <div className={styles.headScore}>
-              <FanNumber size="xl" locale={locale} value={result.score} />
+              {!rest && <FanNumber size="xl" locale={locale} value={result.score} />}
               <FanHeading as="h1">{headline}</FanHeading>
             </div>
-          ) : <FanHeading as="h1">{headline}</FanHeading>}
+          ) : (
+            <>
+              <div className={styles.headScore}>
+                {!rest && <FanNumber size="xl" locale={locale} value={result.score} />}
+                <FanText as="p" role="item" className={styles.grade}>{result.grade.name}</FanText>
+              </div>
+              <FanHeading as="h1">{headline}</FanHeading>
+            </>
+          )}
           <picture className={styles.hero}>
             <img
               src={
@@ -376,10 +419,9 @@ export function FortuneResult({
             />
           </picture>
         </header>
-        {(!merged || cardKind || rewarded) && <section className={`${styles.panel} ${styles.scorePanel}`}>
-          {(!merged || cardKind) && <div className={styles.score}>
-            {!merged && <FanNumber size="xl" locale={locale} value={result.score} />}
-            {!merged && <FanHeading as="h2">{result.grade.name}</FanHeading>}
+        {(cardKind || rewardRow) && <section className={`${styles.panel} ${styles.scorePanel}`}>
+          {rewardRow}
+          {cardKind && <div className={styles.score}>
             {cardKind && (
               <FanAction
                 variant="text"
@@ -391,16 +433,6 @@ export function FortuneResult({
               </FanAction>
             )}
           </div>}
-          <div className={styles.rewardRow}>
-            {points > 0 && (
-              <EarnBadge locale={locale} points={points} variant="inline" />
-            )}
-            {reading.reward?.stamp && <FanText role="meta"><ReadingText id="stamp" /></FanText>}
-            {Boolean(reading.reward?.exp) && (
-              <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
-            )}
-            {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
-          </div>
         </section>}
         <section className={`${styles.section} ${styles.flowSec}`}>
           <FanHeading><ReadingText id="todayFlow" /></FanHeading>
@@ -506,8 +538,13 @@ export function FortuneResult({
             {sayLine}
           </FanText>
           <div className={styles.cta}>
-            <FanAction variant="primary" fullWidth {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
+            <FanAction
+              variant="primary"
+              fullWidth
+              {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}
+            >
               <ReadingText id={onAsk ? "askFromResult" : "otherFortunes"} />
+              {onAsk && askLeft ? <FanText role="meta" className={styles.askCount}>{uiText("askCount", { count: askLeft })}</FanText> : null}
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>
@@ -593,8 +630,26 @@ export function FortuneResult({
           <FanText as="p" role="meta">
             <ReadingText id="fun" />
           </FanText>
+          {reading.styled && (
+            <FanText as="p" role="meta">
+              <ReadingText id="ai" />
+            </FanText>
+          )}
         </footer>
       </aside>
+      <ShareSheet open={shareOpen} onOpenChange={setShareOpen} sharing={sharing} onShare={(via) => void share(via)}>
+        <div className={styles.shareCard}>
+          <img src={`/chemi/fortune/avatar-${character}-v1.jpg`} alt="" />
+          <span>
+            <span className={styles.headScore}>
+              {!rest && <FanNumber locale={locale} value={result.score} />}
+              <FanText role="item">{result.grade.name}</FanText>
+            </span>
+            <FanText role="body">{sayLine}</FanText>
+            <FanText role="meta">{name}</FanText>
+          </span>
+        </div>
+      </ShareSheet>
     </article>
   );
 }

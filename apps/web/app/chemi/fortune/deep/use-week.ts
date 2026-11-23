@@ -6,7 +6,7 @@ import { isFortuneResult } from "../reading";
 import { isOpenDay, type FortuneDay, type OpenDay } from "./copy";
 
 export type WeekState =
-  | { status: "loading" | "guest" | "birth" | "error" }
+  | { status: "loading" | "guest" | "birth" | "expired" | "error" }
   | { status: "ready"; today: string; days: OpenDay[] };
 
 /** 오늘부터 7일의 운세. 내일·이번 주·오늘 카드가 같은 응답을 쓴다. */
@@ -27,8 +27,13 @@ export function useFortuneWeek(): WeekState & { retry: () => void; login: () => 
         headers: { Authorization: `Bearer ${await getAccessToken()}` },
         signal: controller.signal,
       });
-      const body = await response.json();
+      const body = await response.json().catch(() => null);
       if (controller.signal.aborted) return;
+      // 로그인이 풀린 401(또는 케미가 직접 거절한 것이 아닌 403)은 다시 시도해도 풀리지 않는다 — 운세 흐름의 isAuthFailure 와 같은 판정.
+      if (response.status === 401 || (response.status === 403 && !String(body?.error?.code ?? "").startsWith("CHEMI_"))) {
+        setState({ status: "expired" });
+        return;
+      }
       if (body?.error?.code === "CHEMI_BIRTH_REQUIRED") {
         setState({ status: "birth" });
         return;

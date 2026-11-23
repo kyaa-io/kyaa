@@ -96,7 +96,8 @@
     "release-notes/2026-11-23-chemi-talk-persona.json",
     "release-notes/2026-11-23-number-link-wrap.json",
     "release-notes/2026-11-23-chemi-ask-points-tone.json",
-    "release-notes/2026-11-23-chemi-match-plays.json"
+    "release-notes/2026-11-23-chemi-match-plays.json",
+    "release-notes/2026-11-23-chemi-fortune-share.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
