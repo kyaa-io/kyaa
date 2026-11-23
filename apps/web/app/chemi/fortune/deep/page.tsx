@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
-import { chemiEnabled, chemiPreview } from "@/features/chemi/domain/availability";
+import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { parseAppLocale } from "@/i18n/locales";
 import { fortuneCharacters } from "../lines";
@@ -30,7 +30,7 @@ export default async function FortuneDeepPage({
             character={character}
             locale={locale}
             readingId={params.r && readingId.test(params.r) ? params.r : undefined}
-            paidPreview={chemiPreview()}
+            paidPreview
           />
         </FanContentContainer>
       </ReadingCopyProvider>

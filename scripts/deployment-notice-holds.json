@@ -92,7 +92,8 @@
     "release-notes/2026-11-23-consent-bar-top.json",
     "release-notes/2026-11-23-chemi-tarot-guest-english.json",
     "release-notes/2026-11-23-chemi-run-again.json",
-    "release-notes/2026-11-23-points-terms-privacy.json"
+    "release-notes/2026-11-23-points-terms-privacy.json",
+    "release-notes/2026-11-23-refund-points-open.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

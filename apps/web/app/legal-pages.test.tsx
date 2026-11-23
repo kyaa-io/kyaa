@@ -120,8 +120,12 @@ describe("public legal pages", () => {
     expect(points.heading).toBe("5. 포인트");
     expect(points.items?.join(" ")).toMatch(/20P.*10P/);
     expect(points.items?.join(" ")).toContain("현금으로 바꾸거나 다른 회원에게 넘길 수 없습니다");
+    expect(points.items?.[3]).toBe("포인트는 게임 추가 판이나 다른 날짜의 운세가 열린 뒤에만 차감하고, 열리지 않으면 차감하지 않습니다.");
+    expect(points.items?.join(" ")).not.toContain("돌려줍니다");
     const privacy = legalDocuments.privacy.ko.sections;
     expect(privacy[0]!.items?.join(" ")).toContain("생년월일");
+    expect(privacy[0]!.items?.join(" ")).toContain("상대의 정보는 회원이 그 사람의 동의를 받은 뒤 입력해야 합니다");
+    expect(legalDocuments.privacy.en.sections[0]!.items?.join(" ")).toContain("You must have that person's consent");
     expect(privacy[1]!.items?.join(" ")).toContain("로그인하지 않은 사람도 볼 수 있습니다");
     expect(privacy[2]!.paragraphs?.join(" ")).toContain("만 14세 미만으로 확인되는 생년월일은 저장하지 않습니다");
 
@@ -147,16 +151,13 @@ describe("public legal pages", () => {
     expect(within(screen.getByRole("contentinfo")).getByRole("link", { name: "환불 정책 열기" })).toHaveAttribute("href", "/refund?locale=ko");
   });
 
-  it("publishes the Korean refund policy with its legal basis, method, period and contact", async () => {
-    render(await RefundPage({ searchParams: searchParams("ko") }));
+  it("publishes the Korean refund policy for a service with no paid products", async () => {
+    const { container } = render(await RefundPage({ searchParams: searchParams("ko") }));
 
     expect(screen.getByRole("heading", { level: 1, name: "환불 정책" })).toBeInTheDocument();
-    expect(screen.getByText(/결제한 시각부터 7일\(168시간\) 안에 전액 환불/)).toBeInTheDocument();
-    expect(screen.getByText(/청약철회가 제한됩니다\(전자상거래 등에서의 소비자보호에 관한 법률 제17조 제2항\)/)).toBeInTheDocument();
-    expect(screen.getByText(/MY > 구매 내역에서 환불을 요청합니다/)).toBeInTheDocument();
-    expect(screen.getByText(/카드는 취소 후 3~7영업일, 간편결제는 즉시~3영업일/)).toBeInTheDocument();
-    expect(screen.getByText(/자동으로 전액 취소합니다/)).toBeInTheDocument();
-    expect(screen.getByText(/만 19세 미만 회원은 첫 결제 때 보호자 동의를 받습니다/)).toBeInTheDocument();
+    expect(screen.getByText("현재 kyaa에는 유료 결제 상품이 없습니다.")).toBeInTheDocument();
+    expect(screen.getByText("시행일: 2026년 11월 23일")).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/구매 내역|영업일|168시간/);
     expect(screen.getByRole("link", { name: "support@kyaa.io" })).toHaveAttribute("href", "mailto:support@kyaa.io");
   });
 
@@ -172,7 +173,7 @@ describe("public legal pages", () => {
 
     render(await RefundPage({ searchParams: searchParams("en") }));
     expect(screen.getByRole("heading", { level: 1, name: "Refund Policy" })).toBeInTheDocument();
-    expect(screen.getByText(/within 7 days \(168 hours\) of payment/)).toBeInTheDocument();
+    expect(screen.getByText("kyaa currently has no paid products.")).toBeInTheDocument();
     expect(within(screen.getByRole("contentinfo")).getByRole("link", { name: "Open Pricing" })).toHaveAttribute("href", "/pricing?locale=en");
   });
 
