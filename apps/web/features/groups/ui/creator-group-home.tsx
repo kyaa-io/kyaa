@@ -50,7 +50,6 @@ import homeStyles from './creator-group-home.module.css';
 const GroupBrandHomeEvent=dynamic(()=>import('./group-home-panels').then(module=>module.GroupBrandHomeEvent));
 const parse=(v:unknown)=>feedPageSchema.parse(v);
 /** 첫 사진. 공개 글만 바로 읽을 수 있고, 그 밖의 글은 글 아이콘 칸을 둔다. */
-const thumbnailOf=(item:FeedItem)=>item.kind==='fan_post'?(item.visibility==='public'&&item.assets?.[0]?`/api/content-assets/${item.assets[0].id}?size=thumbnail`:null):item.kind==='chzzk'?item.images[0]?.url??null:null;
 export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,onVideoSelect,schedule}:{celebrity:PublishedCelebrity;locale:AppLocale;channelId:string|null;passportId?:string|null;owned?:MySummary['creators'][number];onVideoSelect?:(media:CreatorMediaSelection)=>void;schedule?:{label:string;note:string}}){
  const returnParam=useSearchParams()?.get('returnTo');
  const [attendanceOpen,setAttendanceOpen]=useState(false);
@@ -61,7 +60,17 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
  const t=groupsCopy(locale),c=groupHomeCopy(locale),w=walletCopy(locale),b=boardCopy(locale),m=managementCopy(locale),[filter,setFilter]=useState<'all'|'notice'|'fans'>('all'),[cursors,setCursors]=useState<Array<readonly [string|null,string|null]>>([]),[search,setSearch]=useState('');
  // 한 쪽은 10개다. '전체'는 공식 글(공지·아티스트 소식) 최신 5개와 팬 글 최신 5개를 따로 읽고, 한쪽이 모자라도 다른 쪽으로 채우지 않는다(대표 11/17 00:29).
  // 다음 쪽도 각자 이어지는 5개씩이고, 먼저 끝난 쪽은 더 읽지 않는다.
- const page=cursors[cursors.length-1],feedUrl=(lane:0|1)=>{if(filter!=='all'&&lane===1)return null;if(page&&!page[lane])return null;const source=filter==='all'?(lane===0?'official':'fans'):filter==='notice'?'official':'fans',query=new URLSearchParams({locale:toContentLocale(locale),source,limit:filter==='all'?'5':'10'});if(filter==='notice')query.set('news','notice');if(search)query.set('q',search);if(page?.[lane])query.set('cursor',page[lane]!);return `/api/celebrities/${encodeURIComponent(celebrity.slug)}/feed?${query}`;};
+ const page=cursors[cursors.length-1];
+ const feedUrl=(lane:0|1)=>{
+  if((filter!=='all'&&lane===1)||(page&&!page[lane]))return null;
+  const notices=filter==='notice'||(filter==='all'&&lane===0);
+  const limit=filter!=='all'?10:notices?3:7;
+  const query=new URLSearchParams({locale:toContentLocale(locale),source:notices?'official':'fans',limit:String(limit)});
+  if(notices)query.set('news','notice');
+  if(search)query.set('q',search);
+  if(page?.[lane])query.set('cursor',page[lane]!);
+  return `/api/celebrities/${encodeURIComponent(celebrity.slug)}/feed?${query}`;
+ };
  const urls=[feedUrl(0),feedUrl(1)] as const,lanes=[useCommunityResource(urls[0],parse,true,false,false,true),useCommunityResource(urls[1],parse,true,false,false,true)] as const,returnTo=boardHref(celebrity.slug,locale);
  const states=lanes.map((lane,index)=>urls[index]?lane.state:{status:'ready' as const,data:{items:[] as FeedItem[],nextCursor:null}}),failed=states.some(state=>state.status==='error');
  const feed=states[0]!.status==='ready'&&states[1]!.status==='ready'?{items:[...states[0]!.data.items,...states[1]!.data.items],next:[states[0]!.data.nextCursor,states[1]!.data.nextCursor] as const}:null,hasNext=Boolean(feed&&(feed.next[0]||feed.next[1]));
@@ -75,7 +84,7 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
   return {title:item.body.split('\n')[0],name:item.nickname,artist:item.artist,date:item.createdAt,count:item.replyCount,href:`/c/${celebrity.slug}/community/${item.id}?source=cheer&locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`};
  };
  const rowPageImage=fanPostPageImage({slug:celebrity.slug,src:celebrity.image.url,photos:celebrity.image.photos,position:celebrity.image.position});
- const postRows=(items:FeedItem[])=><FanSurface as='div' appearance='list' className={homeStyles.rows}>{[...items.filter(item=>item.kind==='notice'),...items.filter(item=>item.kind!=='notice')].map(item=>{const row=itemView(item);return <FanPostRow key={`${item.kind}:${item.id}`} href={row.href} locale={locale} title={row.title||feedCopy(locale).readPost} thumbnail={thumbnailOf(item)} avatar={item.kind==='fan_post'?item.author.avatarUrl:item.kind==='cheer'?item.avatarUrl:undefined} avatarArtist={'artist' in row&&row.artist} pageImage={rowPageImage} notice={item.kind==='notice'} commentCount={row.count} likes={item.kind==='notice'?item.likeCount:undefined} views={item.kind==='notice'?item.viewCount:undefined} author={row.name} authorTier={item.kind === "fan_post" ? item.author.tier : undefined} authorArtist={'artist' in row&&row.artist} reactedBy={item.kind==='fan_post'&&item.artistReacted?celebrity.name:undefined} time={row.date} density='home'/>;})}</FanSurface>;
+ const postRows=(items:FeedItem[])=><FanSurface as='div' appearance='list' className={homeStyles.rows}>{[...items.filter(item=>item.kind==='notice'),...items.filter(item=>item.kind!=='notice')].map(item=>{const row=itemView(item);return <FanPostRow key={`${item.kind}:${item.id}`} href={row.href} locale={locale} title={row.title||feedCopy(locale).readPost} avatar={item.kind==='fan_post'?item.author.avatarUrl:item.kind==='cheer'?item.avatarUrl:undefined} avatarArtist={'artist' in row&&row.artist} pageImage={rowPageImage} notice={item.kind==='notice'} commentCount={row.count} likes={item.kind==='notice'?item.likeCount:undefined} views={item.kind==='notice'?item.viewCount:undefined} author={row.name} authorTier={item.kind === "fan_post" ? item.author.tier : undefined} authorArtist={'artist' in row&&row.artist} reactedBy={item.kind==='fan_post'&&item.artistReacted?celebrity.name:undefined} time={row.date} density='home'/>;})}</FanSurface>;
  const composeHref=String(boardHref(celebrity.slug,locale,{source:'fans',compose:true}));
  const writeHref:string=frame&&frame.ready&&!frame.authenticated?fanLoginHref(locale,composeHref):composeHref;
  const filters:FanTabItem[]=(['all','notice','fans'] as const).map(value=>({key:value,label:value==='all'?t.all:value==='notice'?b.notice:b.free,onSelect:()=>{setCursors([]);setFilter(value);}}));
