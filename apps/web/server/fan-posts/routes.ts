@@ -5,6 +5,7 @@ import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { prepareRichPostBody, richDocumentForPost, RICH_DOCUMENT_MAX_BYTES } from "@/components/editor/rich-document";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
 import { withTranslationLease, type FailureHold } from "@/server/content-translation/lease";
+import { reserveTranslation } from "@/server/content-translation/reserve";
 import { postTitleSlots } from "@/features/fan-posts/domain/post-title-slots";
 import { type FanPost, slotTranslationSchema, postReactionInputSchema, postReactionSchema, assetSchema, blocksSchema, commentSchema, createCommentSchema, boardCreatePostSchema, boardEditPostSchema, postAttachmentPolicySchema, noticeSchema, postSchema, reportInputSchema, adminReportSchema, adminReportSummarySchema, targetSchema, translationInputSchema, translationSchema } from "@/features/fan-posts/domain/content";
 import { boundedJson, boundedMultipart, CertificationBodyError, json } from "@/server/certification/certification-http";
@@ -361,7 +362,7 @@ export function createContentHandlers(deps: ContentDependencies) {
         // One server calls the provider per cache key; the others wait for its row. Quota is reserved by that one caller only.
         const leased = await withTranslationLease(deps.rpc, { ...args, p_scope: "slots", p_source_revision: target.revision, p_source_hash: target.sourceHash },
           () => deps.rpc("read_content_translation_slots", args), async token => {
-            await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
+            await reserveTranslation(deps.rpc, "reserve_content_translation_request", { p_app_user_id, p_character_count: count });
             const results = await providerCall(async () => {
               const translated = await deps.translateTexts(slots.map(item => item.text), value.targetLocale);
               if (translated.length !== slots.length) throw new Error("TRANSLATION_FAILED");
@@ -384,7 +385,7 @@ export function createContentHandlers(deps: ContentDependencies) {
       if (!target.body.trim() || count > 20_000) throw new Error("TRANSLATION_INVALID_INPUT");
       const leased = await withTranslationLease(deps.rpc, { ...args, p_scope: "whole", p_source_revision: target.revision, p_source_hash: target.sourceHash },
         () => deps.rpc("read_content_translation", args), async token => {
-          await deps.rpc("reserve_content_translation_request", { p_app_user_id, p_character_count: count });
+          await reserveTranslation(deps.rpc, "reserve_content_translation_request", { p_app_user_id, p_character_count: count });
           const result = await providerCall(() => deps.translate(target.body, value.targetLocale));
           await deps.rpc("save_content_translation_leased", { ...args, p_lease_token: token, p_source_revision: target.revision, p_source_hash: target.sourceHash, p_translated_text: result.translatedText, p_detected_source_locale: result.detectedSourceLocale ?? null });
           // Recheck after provider latency; source mutation, blocks, deletion or a lost lease cannot return a stale translation.

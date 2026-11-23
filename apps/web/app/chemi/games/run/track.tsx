@@ -12,7 +12,7 @@ import { FPS } from "@/features/chemi/games/engine";
 import { FEVER_NOTES, FEVER_TICKS, RUN_INPUT, RUN_TITLES, runRound, type RunInput } from "@/features/chemi/games/run";
 import { fill, type RunCopy } from "./copy";
 import { readRunKey, RUN_KEYCAPS, RUN_PAUSE_SHORTCUT, runKeyAction } from "./keys";
-import { drawField, loadArt, originOf, PROPS, type Art, type PropName } from "./render";
+import { drawField, pixelScale, loadArt, originOf, PROPS, SHIELD_FX_TICKS, type Art, type PropName } from "./render";
 import type { RunSound } from "./sound";
 import styles from "./run.module.css";
 
@@ -63,8 +63,8 @@ export function Legend({ copy, layout }: { copy: RunCopy; layout: "veil" | "list
   </dl>;
 }
 
-export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSound, pauseRequest, onFinish }: {
-  ticket: Ticket; copy: RunCopy; locale: string; name: string; sound: RunSound; soundOn: boolean;
+export function Track({ character, ticket, copy, locale, name, sound, soundOn, onToggleSound, pauseRequest, onFinish }: {
+  character: import("./shared").Character; ticket: Ticket; copy: RunCopy; locale: string; name: string; sound: RunSound; soundOn: boolean;
   onToggleSound: () => void; pauseRequest: number; onFinish: (body: Submission, stats: RunStats) => void;
 }) {
   const [stage, setStage] = useState<Stage>("ready");
@@ -89,6 +89,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
   const number = new Intl.NumberFormat(locale);
 
   function go(next: Stage) {
+    sound.music(character, next === "play" ? "run" : null);
     stageRef.current = next;
     setStage(next);
   }
@@ -115,17 +116,18 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
     let frameId = 0;
     let last = performance.now();
     let fraction = 0;
-    let freeze = 0;
+
     let hitFor = 0;
+    const shieldFx = { gained: 0, broke: 0 };
     let sayId = 0;
     let shown = "";
     let finished = false;
-    const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
     const timers = new Set<ReturnType<typeof setTimeout>>();
     const later = (work: () => void, ms: number) => { const id = setTimeout(() => { timers.delete(id); work(); }, ms); timers.add(id); };
 
     function resize() {
-      scale = innerWidth >= 1024 ? 3 : 2;
+      scale = pixelScale(innerWidth >= 1024 ? 3 : 2);
       node.width = Math.ceil(box.clientWidth / scale);
       node.height = Math.ceil(box.clientHeight / scale);
       node.style.width = `${node.width * scale}px`;
@@ -165,16 +167,17 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       const elapsed = Math.min(100, now - last);
       last = now;
       if (stageRef.current === "play" && !sim.state.done) {
-        if (freeze > 0) freeze--;
-        else fraction += elapsed * FPS / 1000;
+        fraction += elapsed * FPS / 1000;
         let steps = 0;
-        while (fraction >= 1 && !sim.state.done && steps++ < 6 && freeze === 0) {
+        while (fraction >= 1 && !sim.state.done && steps++ < 6) {
           fraction--;
           const mask = pending.current;
           pending.current = 0;
           if (mask) inputs.push([sim.state.tick + 1, mask]);
           sim.step(mask);
           if (hitFor > 0) hitFor--;
+          if (shieldFx.gained > 0) shieldFx.gained--;
+          if (shieldFx.broke > 0) shieldFx.broke--;
           for (const event of sim.events) {
             const text = copyRef.current;
             sound.play(event.type);
@@ -182,12 +185,12 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
             else if (event.type === "combo") announce(fill(text.combo, { n: event.count }));
             else if (event.type === "fever") announce(`${text.fever}!`);
             else if (event.type === "boost") announce(text.boost);
-            else if (event.type === "block") announce(text.shield);
+            else if (event.type === "shield") shieldFx.gained = SHIELD_FX_TICKS;
+            else if (event.type === "block") { announce(text.shield); shieldFx.broke = SHIELD_FX_TICKS; }
             else if (event.type === "hit" || event.type === "fall") {
               announce(text.crash);
               hitFor = 24;
-              if (!calm) {
-                freeze = 5;
+              if (!motion.matches) {
                 box.dataset.hit = "true";
                 later(() => { delete box.dataset.hit; }, 320);
               }
@@ -203,10 +206,10 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
         }
         if (s.done) {
           sound.play("over");
-          later(() => finish(false), calm ? 0 : 500);
+          later(() => finish(false), motion.matches ? 0 : 500);
         }
       }
-      if (art) drawField(context, art, node, sim, hitFor);
+      if (art) drawField(context, art, node, sim, hitFor, motion.matches, shieldFx);
     }
     function key(event: KeyboardEvent) {
       const action = runKeyAction(readRunKey(event), stageRef.current);
@@ -231,6 +234,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       if (stageRef.current === "play" && matchMedia("(orientation: landscape) and (pointer: coarse) and (height < 30rem)").matches) go("paused");
     }
     function start() {
+      sound.unlock();
       sound.play("start");
       last = performance.now();
       go("play");
@@ -250,7 +254,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
     const observer = new ResizeObserver(resize);
     observer.observe(box);
     resize();
-    void loadArt().then((loaded) => { art = loaded; setArtReady(true); }).catch(() => {});
+    void loadArt(character).then((loaded) => { art = loaded; setArtReady(true); }).catch(() => {});
     addEventListener("keydown", key);
     addEventListener("keyup", key);
     addEventListener("resize", turned);
@@ -265,7 +269,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       removeEventListener("resize", turned);
       document.removeEventListener("visibilitychange", leave);
     };
-  }, [ticket, sound]);
+  }, [character, ticket, sound]);
 
   const nextTitle = RUN_TITLES.find((title) => title > hud.score);
   const previousTitle = [...RUN_TITLES].reverse().find((title) => title <= hud.score) ?? 0;
@@ -294,7 +298,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
       <div className={styles.hudMid}>
         <span className={styles.hearts} role="img" aria-label={`${hud.hearts} / 3`}>
           {[0, 1, 2].map((i) => <Prop key={i} name={i < hud.hearts ? "heart" : "heartEmpty"} />)}
-          {hud.shield && <Prop name="shield" />}
+          {hud.shield && <span className={styles.shieldOn}><Prop name="shield" /></span>}
         </span>
         <FanText role="label" className={styles.noteCount}><Prop name="note" />{number.format(hud.notes)}</FanText>
       </div>
@@ -309,9 +313,7 @@ export function Track({ ticket, copy, locale, name, sound, soundOn, onToggleSoun
     </div>
     <div className={styles.field} ref={field} data-art={artReady}>
       <canvas ref={canvas} role="img" aria-label={`${name} · ${copy.map}`} />
-      <div className={styles.streaks} aria-hidden="true"><i /><i /><i /></div>
       <div className={styles.effects} ref={effects} aria-hidden="true" />
-      <div className={styles.flash} aria-hidden="true" />
       {say && <FanPixelText as="p" role="say" className={styles.say} key={say.id}>{say.text}</FanPixelText>}
       {keyboard && hint && stage === "play" && <p className={styles.keyHint} aria-hidden="true">
         <span><Keys caps={RUN_KEYCAPS.jump.slice(0, 1)} /><FanText role="label">{copy.jump}</FanText></span>

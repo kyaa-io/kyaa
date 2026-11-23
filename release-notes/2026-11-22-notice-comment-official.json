@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "공지 댓글은 내 닉네임으로 올라가요. kyaa 관리자 계정으로 써도 크리에이터 이름으로 바뀌지 않아요.",
+    "그 페이지의 채널 운영자나 연결된 아티스트 계정은 등록 버튼 옆에서 페이지 이름을 골라 댓글을 올릴 수 있어요.",
+    "페이지 이름으로 올린 댓글은 이름 옆에 ‘인증 아티스트’ 표시가 붙고, 관리자 공지 댓글 목록에는 쓴 계정도 함께 보여요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/ensemble-patchwork",
+  "images": [
+    "release-notes/images/2026-11-22-notice-comment-official-1440.png",
+    "release-notes/images/2026-11-22-notice-comment-official-390.png"
+  ]
+}

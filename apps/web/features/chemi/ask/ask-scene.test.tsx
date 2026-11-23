@@ -411,8 +411,8 @@ it("무료를 다 쓴 화면: 주 버튼 '20P로 하나 더' → 공통 추가 �
   expect(screen.getByRole("button", { name: /자랑하기/ })).toBeTruthy();
   fireEvent.click(cta);
   expect(await screen.findByText("20P로 질문 하나 더")).toBeTruthy();
-  expect(screen.getByText("50P → 30P")).toBeTruthy();
-  expect(screen.getByText("오늘 추가 질문")).toBeTruthy();
+  expect(screen.getByText("50P")).toBeTruthy();
+  expect(screen.getByRole("img", { name: "남은 추가 질문 3번 → 2번" })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "20P 쓰고 묻기" }));
   fireEvent.click(await screen.findByRole("button", { name: "연애" }));
   fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "오늘 연락해도 될까?" } });

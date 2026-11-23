@@ -14,11 +14,11 @@ import {EarnBadgeCorner} from '@/features/dukjil/ui/earn-badge';
 import {CheckinCorner} from '@/features/dukjil/ui/checkin-corner';
 import {FanMissions} from '@/features/dukjil/ui/fan-missions';
 import {JjinfanGauge} from '@/features/rankings/ui/jjinfan-gauge';
-import {GroupBrandHomeEvent} from './group-home-panels';
 import {noPostsText,viewAllText} from '@/features/media/ui/gallery-copy';
 import {useOptionalGroupPage} from './group-page-context';
 import {useCompactHeader} from './group-page-menu';
 import {useRef,useState} from 'react';
+import dynamic from 'next/dynamic';
 import type {MySummary} from '@/features/my/domain/my-summary';
 import {CreatorBoardFooter} from './creator-board-footer';
 import {CreatorScheduleCard} from './creator-schedule-card';
@@ -46,6 +46,8 @@ import {BannerSlot} from '@/components/banner-slot/banner-slot';
 import {EventLikeCard} from '@/features/reaction/ui/event-like-card';
 import styles from './groups.module.css';
 import homeStyles from './creator-group-home.module.css';
+// 브랜드 페이지에만 있는 행사 칸. 그 안의 게시판 글 렌더러(Tiptap)를 팬페이지 홈 묶음에 넣지 않는다.
+const GroupBrandHomeEvent=dynamic(()=>import('./group-home-panels').then(module=>module.GroupBrandHomeEvent));
 const parse=(v:unknown)=>feedPageSchema.parse(v);
 /** 첫 사진. 공개 글만 바로 읽을 수 있고, 그 밖의 글은 글 아이콘 칸을 둔다. */
 const thumbnailOf=(item:FeedItem)=>item.kind==='fan_post'?(item.visibility==='public'&&item.assets?.[0]?`/api/content-assets/${item.assets[0].id}?size=thumbnail`:null):item.kind==='chzzk'?item.images[0]?.url??null:null;
@@ -63,6 +65,8 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
  const urls=[feedUrl(0),feedUrl(1)] as const,lanes=[useCommunityResource(urls[0],parse,true,false,false,true),useCommunityResource(urls[1],parse,true,false,false,true)] as const,returnTo=boardHref(celebrity.slug,locale);
  const states=lanes.map((lane,index)=>urls[index]?lane.state:{status:'ready' as const,data:{items:[] as FeedItem[],nextCursor:null}}),failed=states.some(state=>state.status==='error');
  const feed=states[0]!.status==='ready'&&states[1]!.status==='ready'?{items:[...states[0]!.data.items,...states[1]!.data.items],next:[states[0]!.data.nextCursor,states[1]!.data.nextCursor] as const}:null,hasNext=Boolean(feed&&(feed.next[0]||feed.next[1]));
+ // 공식 글은 바로 온다. 팬 글을 기다리는 동안 공식 글을 먼저 그리고 팬 글 자리만 골격으로 둔다. 순서는 다 온 뒤와 같다(공식 다음 팬).
+ const officialFirst=!feed&&!failed&&states[0]!.status==='ready'&&states[0]!.data.items.length>0?states[0]!.data.items:null;
  const previous=()=>setCursors(cursors.slice(0,-1)),next=()=>{if(feed&&hasNext)setCursors([...cursors,feed.next]);};
  const itemView=(item:FeedItem)=>{
   if(item.kind==='fan_post')return {title:item.body.split('\n')[0],name:item.author.nickname,artist:item.artist,date:item.createdAt,count:item.commentCount,href:`/c/${celebrity.slug}/community/${item.id}?locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`};
@@ -71,6 +75,7 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
   return {title:item.body.split('\n')[0],name:item.nickname,artist:item.artist,date:item.createdAt,count:item.replyCount,href:`/c/${celebrity.slug}/community/${item.id}?source=cheer&locale=${locale}&returnTo=${encodeURIComponent(returnTo)}`};
  };
  const rowPageImage=fanPostPageImage({slug:celebrity.slug,src:celebrity.image.url,photos:celebrity.image.photos,position:celebrity.image.position});
+ const postRows=(items:FeedItem[])=><FanSurface as='div' appearance='list' className={homeStyles.rows}>{[...items.filter(item=>item.kind==='notice'),...items.filter(item=>item.kind!=='notice')].map(item=>{const row=itemView(item);return <FanPostRow key={`${item.kind}:${item.id}`} href={row.href} locale={locale} title={row.title||feedCopy(locale).readPost} thumbnail={thumbnailOf(item)} avatar={item.kind==='fan_post'?item.author.avatarUrl:item.kind==='cheer'?item.avatarUrl:undefined} avatarArtist={'artist' in row&&row.artist} pageImage={rowPageImage} notice={item.kind==='notice'} commentCount={row.count} likes={item.kind==='notice'?item.likeCount:undefined} views={item.kind==='notice'?item.viewCount:undefined} author={row.name} authorTier={item.kind === "fan_post" ? item.author.tier : undefined} authorArtist={'artist' in row&&row.artist} reactedBy={item.kind==='fan_post'&&item.artistReacted?celebrity.name:undefined} time={row.date} density='home'/>;})}</FanSurface>;
  const composeHref=String(boardHref(celebrity.slug,locale,{source:'fans',compose:true}));
  const writeHref:string=frame&&frame.ready&&!frame.authenticated?fanLoginHref(locale,composeHref):composeHref;
  const filters:FanTabItem[]=(['all','notice','fans'] as const).map(value=>({key:value,label:value==='all'?t.all:value==='notice'?b.notice:b.free,onSelect:()=>{setCursors([]);setFilter(value);}}));
@@ -82,7 +87,7 @@ export function CreatorGroupHome({celebrity,locale,channelId,passportId,owned,on
   <section className={homeStyles.stories}>
    <header className={homeStyles.storiesHeader}><FanHeading>{fanStories[locale]}</FanHeading><FanSectionLink href={returnTo}>{viewAllText(locale)}</FanSectionLink></header>
    <div className={homeStyles.toolbar}><FanTabs variant='chip' label={fanStories[locale]} current={filter} items={filters}/><EarnBadgeCorner action='post' locale={locale}><FanAction href={writeHref} variant='primary' trailingIcon={<Pencil/>}>{m.write}</FanAction></EarnBadgeCorner></div>
-   {feed?<>{feed.items.length?<FanSurface as='div' appearance='list' className={homeStyles.rows}>{[...feed.items.filter(item=>item.kind==='notice'),...feed.items.filter(item=>item.kind!=='notice')].map(item=>{const row=itemView(item);return <FanPostRow key={`${item.kind}:${item.id}`} href={row.href} locale={locale} title={row.title||feedCopy(locale).readPost} thumbnail={thumbnailOf(item)} avatar={item.kind==='fan_post'?item.author.avatarUrl:item.kind==='cheer'?item.avatarUrl:undefined} avatarArtist={'artist' in row&&row.artist} pageImage={rowPageImage} notice={item.kind==='notice'} commentCount={row.count} likes={item.kind==='notice'?item.likeCount:undefined} views={item.kind==='notice'?item.viewCount:undefined} author={row.name} authorTier={item.kind === "fan_post" ? item.author.tier : undefined} authorArtist={'artist' in row&&row.artist} reactedBy={item.kind==='fan_post'&&item.artistReacted?celebrity.name:undefined} time={row.date} density='home'/>;})}</FanSurface>:<FanState inline compact kind='empty' title={noPostsText(locale)}/>}{(feed.items.length>0||cursors.length>0||hasNext)&&<nav className={styles.creatorPagination} aria-label={t.more}><button type='button' aria-label={locale==='ko'?'이전 페이지':'Previous page'} disabled={!cursors.length} onClick={previous}><ChevronLeft size={18}/></button><button type='button' disabled={!cursors.length} onClick={previous}>{cursors.length||1}</button><span aria-current='page'>{cursors.length+1}</span>{hasNext&&<button type='button' onClick={next}>{cursors.length+2}</button>}<button type='button' aria-label={locale==='ko'?'다음 페이지':'Next page'} disabled={!hasNext} onClick={next}><ChevronRight size={18}/></button></nav>}</>:failed?<FanState inline compact kind='error' title={t.error} actions={<FanAction variant='text' onClick={()=>lanes.forEach(lane=>lane.retry())}>{t.retry}</FanAction>}/>:<FanSkeletonRows rows={5} variant='post'/>}
+   {feed?<>{feed.items.length?postRows(feed.items):<FanState inline compact kind='empty' title={noPostsText(locale)}/>}{(feed.items.length>0||cursors.length>0||hasNext)&&<nav className={styles.creatorPagination} aria-label={t.more}><button type='button' aria-label={locale==='ko'?'이전 페이지':'Previous page'} disabled={!cursors.length} onClick={previous}><ChevronLeft size={18}/></button><button type='button' disabled={!cursors.length} onClick={previous}>{cursors.length||1}</button><span aria-current='page'>{cursors.length+1}</span>{hasNext&&<button type='button' onClick={next}>{cursors.length+2}</button>}<button type='button' aria-label={locale==='ko'?'다음 페이지':'Next page'} disabled={!hasNext} onClick={next}><ChevronRight size={18}/></button></nav>}</>:failed?<FanState inline compact kind='error' title={t.error} actions={<FanAction variant='text' onClick={()=>lanes.forEach(lane=>lane.retry())}>{t.retry}</FanAction>}/>:officialFirst?<>{postRows(officialFirst)}<FanSkeletonRows rows={5} variant='post'/></>:<FanSkeletonRows rows={5} variant='post'/>}
    <CreatorBoardFooter searchLabel={t.search} onSearch={value=>{setCursors([]);setSearch(value.normalize('NFC'));}}/>
   </section>
   {!brand&&<BannerSlot slot='fanpage_second' locale={locale}/>}

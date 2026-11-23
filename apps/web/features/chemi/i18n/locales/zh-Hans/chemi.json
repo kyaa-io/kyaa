@@ -407,7 +407,7 @@
     "askRemind": "明天提醒我",
     "askExtraCta": "{cost}P 再问一个",
     "askExtraTitle": "用 {cost}P 再问一个问题",
-    "askExtraLabel": "今日追加提问",
+    "askExtraLabel": "剩余追加提问",
     "askExtraPay": "花 {cost}P 提问",
     "askExtraShort": "积分不足",
     "askReminded": "已申请提醒",
@@ -614,6 +614,14 @@
     "starEnter_changha": "想看看今晚的星空怎么说你吗？希望是夸你。",
     "starEnter_elina": "冷不冷？我们一起慢慢看今晚的星空。",
     "starEnter_yuna": "今晚的星空在说什么，我直接告诉你。",
-    "starEnter_dosa": "可愿一同听听今夜的星语？"
+    "starEnter_dosa": "可愿一同听听今夜的星语？",
+    "chartTitle": "四柱八字",
+    "showDetail": "详细",
+    "hideDetail": "收起",
+    "strengthTitle": "身强・身弱",
+    "tenGodTitle": "十神分布",
+    "relationTitle": "合・冲",
+    "yearFlow": "今年运势",
+    "hourLocked": "知道出生时间后可查看时柱"
   }
 }

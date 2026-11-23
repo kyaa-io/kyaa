@@ -5,11 +5,13 @@ import { AlertCircle, RefreshCw, UserCog, UserPlus } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useOperatorChannels, type OperatorChannel } from "../operator/use-operator-channels";
-import { channelOperatorListSchema, type ChannelOperatorGrant } from "@/features/operator/domain/channel-operator-grants";
+import { channelOperatorInvitationListSchema, channelOperatorListSchema, type ChannelOperatorGrant, type ChannelOperatorInvitation } from "@/features/operator/domain/channel-operator-grants";
 import { AdminAccessState } from "./admin-access-state";
 import { AdminOperationsShell, type AdminLocale } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
 import { AlertDialog } from "../ui/overlay/accessible-overlay";
+import { FanAction } from "../fan-ui/fan-action";
+import { FanHeading } from "../fan-ui/fan-heading";
 import styles from "./admin-directory-manager.module.css";
 
 const copy = {
@@ -20,8 +22,15 @@ const copy = {
     empty: "지정된 운영자가 없습니다.", loadError: "운영자 명단을 불러오지 못했습니다.", retry: "다시 시도", noChannels: "지정할 수 있는 채널이 없습니다.",
     granted_ok: "운영자를 지정했습니다.", replayed: "이미 지정된 운영자입니다.", revoked_ok: "운영자를 해지했습니다.",
     confirmTitle: "운영자를 해지할까요?", confirmBody: (email: string) => `${email}은 이 채널을 더 이상 운영할 수 없습니다.`,
+    inviteTitle: "초대 메일을 보낼까요?", inviteBody: (email: string, channel: string) => `${email}은 아직 가입하지 않았습니다. 이 이메일로 가입하면 ${channel} 운영자로 지정됩니다.`,
+    invite: "초대 메일 보내기", inviting: "보내는 중…", invited_ok: (email: string) => `${email}을 초대했습니다.`,
+    invitations: "초대", expires: "만료일", mail: "메일", cancelInvite: "초대 취소", cancelling: "취소 중…", cancelled_ok: "초대를 취소했습니다.",
+    cancelTitle: "초대를 취소할까요?", cancelBody: (email: string) => `${email}이 가입해도 운영자로 지정되지 않습니다.`, keep: "닫기",
+    invitationsError: "초대 목록을 불러오지 못했습니다.",
+    inviteStatus: { pending: "대기", accepted: "수락", cancelled: "취소됨", expired: "만료" },
+    mailStatus: { pending: "보내기 전", sending: "보내는 중", sent: "보냄", failed: "실패", cancelled: "—" },
     errors: {
-      INVALID_INPUT: "이메일을 확인해 주세요.", CHANNEL_OPERATOR_CANDIDATE_NOT_FOUND: "가입한 회원 중에서 이 이메일을 찾을 수 없습니다.", CHANNEL_OPERATOR_CANDIDATE_AMBIGUOUS: "이 이메일로 가입한 계정이 둘 이상이라 지정할 수 없습니다.",
+      INVALID_INPUT: "이메일을 확인해 주세요.", CHANNEL_OPERATOR_INVITATION_EXISTS: "이미 초대한 이메일입니다.", CHANNEL_OPERATOR_INVITATION_NOT_PENDING: "대기 중인 초대만 취소할 수 있습니다.", CHANNEL_OPERATOR_INVITATION_RATE_LIMITED: "초대가 너무 많습니다. 1시간 뒤 다시 시도해 주세요.", CHANNEL_OPERATOR_CANDIDATE_NOT_FOUND: "가입한 회원 중에서 이 이메일을 찾을 수 없습니다.", CHANNEL_OPERATOR_CANDIDATE_AMBIGUOUS: "이 이메일로 가입한 계정이 둘 이상이라 지정할 수 없습니다.",
       CHANNEL_OPERATOR_NOT_FOUND: "채널 또는 지정 정보를 찾을 수 없습니다.", CHANNEL_OPERATOR_UNAVAILABLE: "지금은 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
       FORBIDDEN: "전체 관리자만 사용할 수 있습니다.", UNAUTHENTICATED: "관리자 로그인이 필요합니다.",
     },
@@ -33,8 +42,15 @@ const copy = {
     empty: "No operators are assigned.", loadError: "Operators could not be loaded.", retry: "Try again", noChannels: "There are no channels to assign.",
     granted_ok: "Operator granted.", replayed: "This operator is already assigned.", revoked_ok: "Operator revoked.",
     confirmTitle: "Revoke this operator?", confirmBody: (email: string) => `${email} will no longer be able to operate this channel.`,
+    inviteTitle: "Send an invitation email?", inviteBody: (email: string, channel: string) => `${email} has not signed up yet. Signing up with this email makes them an operator of ${channel}.`,
+    invite: "Send invitation", inviting: "Sending…", invited_ok: (email: string) => `Invited ${email}.`,
+    invitations: "Invitations", expires: "Expires", mail: "Email", cancelInvite: "Cancel invitation", cancelling: "Cancelling…", cancelled_ok: "Invitation cancelled.",
+    cancelTitle: "Cancel this invitation?", cancelBody: (email: string) => `${email} will not become an operator by signing up.`, keep: "Close",
+    invitationsError: "Invitations could not be loaded.",
+    inviteStatus: { pending: "Pending", accepted: "Accepted", cancelled: "Cancelled", expired: "Expired" },
+    mailStatus: { pending: "Queued", sending: "Sending", sent: "Sent", failed: "Failed", cancelled: "—" },
     errors: {
-      INVALID_INPUT: "Check the email address.", CHANNEL_OPERATOR_CANDIDATE_NOT_FOUND: "No registered member has this email.", CHANNEL_OPERATOR_CANDIDATE_AMBIGUOUS: "More than one account uses this email, so it cannot be assigned.",
+      INVALID_INPUT: "Check the email address.", CHANNEL_OPERATOR_INVITATION_EXISTS: "This email has already been invited.", CHANNEL_OPERATOR_INVITATION_NOT_PENDING: "Only pending invitations can be cancelled.", CHANNEL_OPERATOR_INVITATION_RATE_LIMITED: "Too many invitations. Try again in an hour.", CHANNEL_OPERATOR_CANDIDATE_NOT_FOUND: "No registered member has this email.", CHANNEL_OPERATOR_CANDIDATE_AMBIGUOUS: "More than one account uses this email, so it cannot be assigned.",
       CHANNEL_OPERATOR_NOT_FOUND: "The channel or assignment could not be found.", CHANNEL_OPERATOR_UNAVAILABLE: "Unavailable right now. Try again later.",
       FORBIDDEN: "Only full administrators can use this.", UNAUTHENTICATED: "Admin sign-in is required.",
     },
@@ -65,6 +81,8 @@ export function ChannelOperatorManager() {
   </AdminOperationsShell>;
 }
 
+type ConfirmState = { kind: "revoke"; grant: ChannelOperatorGrant } | { kind: "invite"; email: string } | { kind: "cancel"; invitation: ChannelOperatorInvitation };
+
 function OperatorContent({ locale, channels }: { locale: AdminLocale; channels: OperatorChannel[] | null }) {
   const t = copy[locale];
   const { getAccessToken } = usePrivy();
@@ -74,7 +92,8 @@ function OperatorContent({ locale, channels }: { locale: AdminLocale; channels: 
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [pending, setPending] = useState<ChannelOperatorGrant | null>(null);
+  const [invitations, setInvitations] = useState<ChannelOperatorInvitation[] | "error">([]);
+  const [pending, setPending] = useState<ConfirmState | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const selected = channelId || channels?.[0]?.id || "";
 
@@ -89,19 +108,26 @@ function OperatorContent({ locale, channels }: { locale: AdminLocale; channels: 
     try {
       const token = await getAccessToken();
       if (!token || controller.signal.aborted) throw new Error("missing token");
-      const response = await fetch(`/api/admin/celebrities/${selected}/operators`, { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal });
+      const init = { headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal } as const;
+      const [response, invitationResponse] = await Promise.all([
+        fetch(`/api/admin/celebrities/${selected}/operators`, init),
+        fetch(`/api/admin/celebrities/${selected}/operator-invitations`, init).catch(() => null),
+      ]);
       const body = await response.json().catch(() => null);
+      const invitationBody = invitationResponse?.ok ? await invitationResponse.json().catch(() => null) : null;
       if (controller.signal.aborted) return;
       const parsed = channelOperatorListSchema.safeParse(body);
       if (!response.ok || !parsed.success) throw new Error("load failed");
+      const parsedInvitations = channelOperatorInvitationListSchema.safeParse(invitationBody);
       setItems(parsed.data.items);
+      setInvitations(parsedInvitations.success ? parsedInvitations.data.items : "error");
       setState("ready");
     } catch { if (!controller.signal.aborted) setState("error"); }
   }, [getAccessToken, selected]);
 
   useEffect(() => { setMessage(null); void load(); }, [load]);
 
-  async function send(path: string, init: RequestInit, onDone: (body: unknown, response: Response) => void) {
+  async function send(path: string, init: RequestInit, onDone: (body: unknown, response: Response) => void, onError?: (code: ErrorCode) => boolean) {
     setBusy(true);
     setMessage(null);
     try {
@@ -109,34 +135,61 @@ function OperatorContent({ locale, channels }: { locale: AdminLocale; channels: 
       if (!token) throw new Error("missing token");
       const response = await fetch(path, { ...init, cache: "no-store", headers: { authorization: `Bearer ${token}`, ...(init.body ? { "content-type": "application/json" } : {}) } });
       const body = await response.json().catch(() => null);
-      if (!response.ok) { setMessage({ type: "error", text: t.errors[errorCode(response, body)] }); return; }
+      if (!response.ok) {
+        const code = errorCode(response, body);
+        if (!onError?.(code)) setMessage({ type: "error", text: t.errors[code] });
+        return;
+      }
       onDone(body, response);
       await load();
     } catch { setMessage({ type: "error", text: t.errors.CHANNEL_OPERATOR_UNAVAILABLE }); }
-    finally { setBusy(false); setPending(null); }
+    finally { setBusy(false); }
   }
 
   function grant(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!email.trim() || busy || !selected) return;
-    void send(`/api/admin/celebrities/${selected}/operators`, { method: "POST", body: JSON.stringify({ email: email.trim() }) }, (body) => {
+    const target = email.trim().toLowerCase();
+    void send(`/api/admin/celebrities/${selected}/operators`, { method: "POST", body: JSON.stringify({ email: target }) }, (body) => {
       const replayed = (body as { item?: { replayed?: boolean } } | null)?.item?.replayed === true;
       setEmail("");
       setMessage({ type: "success", text: replayed ? t.replayed : t.granted_ok });
+    }, (code) => {
+      // Not a member yet: ask before sending an invitation to this exact address.
+      if (code !== "CHANNEL_OPERATOR_CANDIDATE_NOT_FOUND") return false;
+      setPending({ kind: "invite", email: target });
+      return true;
     });
   }
 
-  function revoke() {
+  function confirm() {
     if (!pending || busy) return;
-    void send(`/api/admin/celebrities/${selected}/operators/${pending.id}`, { method: "DELETE" }, () => setMessage({ type: "success", text: t.revoked_ok }));
+    const done = () => setPending(null);
+    if (pending.kind === "revoke") {
+      void send(`/api/admin/celebrities/${selected}/operators/${pending.grant.id}`, { method: "DELETE" }, () => setMessage({ type: "success", text: t.revoked_ok })).finally(done);
+    } else if (pending.kind === "cancel") {
+      void send(`/api/admin/celebrities/${selected}/operator-invitations/${pending.invitation.id}`, { method: "DELETE" }, () => setMessage({ type: "success", text: t.cancelled_ok })).finally(done);
+    } else {
+      const target = pending.email;
+      void send(`/api/admin/celebrities/${selected}/operator-invitations`, { method: "POST", body: JSON.stringify({ email: target, locale }) }, (body) => {
+        const granted = (body as { item?: { kind?: string } } | null)?.item?.kind === "granted";
+        setEmail("");
+        setMessage({ type: "success", text: granted ? t.granted_ok : t.invited_ok(target) });
+      }).finally(done);
+    }
   }
+  const selectedName = channels?.find((channel) => channel.id === selected);
+  const dialog = pending === null ? null
+    : pending.kind === "revoke" ? { title: t.confirmTitle, body: t.confirmBody(pending.grant.email), action: busy ? t.revoking : t.revoke, close: t.cancel, danger: true }
+    : pending.kind === "cancel" ? { title: t.cancelTitle, body: t.cancelBody(pending.invitation.email), action: busy ? t.cancelling : t.cancelInvite, close: t.keep, danger: true }
+    : { title: t.inviteTitle, body: t.inviteBody(pending.email, selectedName ? channelName(selectedName, locale) : ""), action: busy ? t.inviting : t.invite, close: t.cancel, danger: false };
 
   return <>
     <header className={styles.heading}><div><p>{t.eyebrow}</p><h1>{t.title}</h1></div><UserCog aria-hidden="true" /></header>
     {channels !== null && channels.length === 0 && <div className={styles.stateMessage}><AlertCircle aria-hidden="true" /><h3>{t.noChannels}</h3></div>}
     {channels !== null && channels.length > 0 && <>
       <section className={styles.addPanel} aria-labelledby="channel-operator-grant-title">
-        <h2 id="channel-operator-grant-title">{t.grant}</h2>
+        <FanHeading id="channel-operator-grant-title">{t.grant}</FanHeading>
         <form onSubmit={grant}>
           <label><span>{t.channel}</span><select value={selected} disabled={busy} onChange={(event) => { setChannelId(event.target.value); setItems([]); }}>{channels.map((channel) => <option key={channel.id} value={channel.id}>{channelName(channel, locale)}</option>)}</select></label>
           <label className={styles.emailField}><span>{t.email}</span><input type="email" autoComplete="off" required value={email} placeholder={t.emailPlaceholder} disabled={busy} onChange={(event) => setEmail(event.target.value)} /></label>
@@ -144,7 +197,7 @@ function OperatorContent({ locale, channels }: { locale: AdminLocale; channels: 
         </form>
       </section>
       <section className={styles.directory} aria-labelledby="channel-operator-list-title">
-        <div className={styles.toolbar}><div><h2 id="channel-operator-list-title">{t.title}</h2></div></div>
+        <div className={styles.toolbar}><div><FanHeading id="channel-operator-list-title">{t.title}</FanHeading></div></div>
         {message && <div className={message.type === "error" ? styles.errorMessage : styles.successMessage} role={message.type === "error" ? "alert" : "status"}><span>{message.text}</span></div>}
         {(state === "loading" || state === "idle") && <div className={styles.skeletonList} role="status" aria-label={t.loading}>{[1, 2, 3].map((number) => <div key={number} />)}</div>}
         {state === "error" && <div className={styles.stateMessage}><AlertCircle aria-hidden="true" /><h3>{t.loadError}</h3><button type="button" onClick={() => void load()}><RefreshCw aria-hidden="true" />{t.retry}</button></div>}
@@ -154,13 +207,24 @@ function OperatorContent({ locale, channels }: { locale: AdminLocale; channels: 
           <td data-label={t.status}><span className={item.status === "active" ? styles.activeBadge : styles.inactiveBadge}><i aria-hidden="true" />{item.status === "active" ? t.active : t.revoked}</span></td>
           <td data-label={t.granted}><time dateTime={item.grantedAt}>{formatDate(item.grantedAt, locale)}</time></td>
           <td data-label={t.revokedAt}>{item.revokedAt ? <time dateTime={item.revokedAt}>{formatDate(item.revokedAt, locale)}</time> : "—"}</td>
-          <td data-label={t.actions}><div className={styles.rowActions}>{item.status === "active" && <button className={styles.revokeButton} type="button" disabled={busy} onClick={() => setPending(item)}>{t.revoke}</button>}</div></td>
+          <td data-label={t.actions}><div className={styles.rowActions}>{item.status === "active" && <button className={styles.revokeButton} type="button" disabled={busy} onClick={() => setPending({ kind: "revoke", grant: item })}>{t.revoke}</button>}</div></td>
         </tr>)}</tbody></table></div>}
       </section>
+      {state === "ready" && (invitations === "error" || invitations.length > 0) && <section className={`${styles.directory} ${styles.invitations}`} aria-labelledby="channel-operator-invitations-title">
+        <div className={styles.toolbar}><div><FanHeading id="channel-operator-invitations-title">{t.invitations}</FanHeading></div></div>
+        {invitations === "error" ? <div className={styles.errorMessage} role="alert"><span>{t.invitationsError}</span><FanAction variant="neutral" size="sm" onClick={() => void load()} leadingIcon={<RefreshCw aria-hidden="true" />}>{t.retry}</FanAction></div>
+          : <div className={styles.tableWrap}><table><thead><tr><th>{t.email}</th><th>{t.status}</th><th>{t.mail}</th><th>{t.expires}</th><th>{t.actions}</th></tr></thead><tbody>{invitations.map((invitation) => <tr key={invitation.id} className={invitation.status === "pending" ? undefined : styles.inactiveRow}>
+            <td data-label={t.email}><strong>{invitation.email}</strong></td>
+            <td data-label={t.status}><span className={invitation.status === "accepted" ? styles.activeBadge : invitation.status === "pending" ? styles.pendingBadge : styles.inactiveBadge}><i aria-hidden="true" />{t.inviteStatus[invitation.status]}</span></td>
+            <td data-label={t.mail}>{invitation.status !== "pending" && invitation.mailStatus === "pending" ? "—" : t.mailStatus[invitation.mailStatus]}</td>
+            <td data-label={t.expires}><time dateTime={invitation.expiresAt}>{formatDate(invitation.expiresAt, locale)}</time></td>
+            <td data-label={t.actions}><div className={styles.rowActions}>{invitation.status !== "pending" ? "—" : <FanAction variant="neutral" size="sm" disabled={busy} onClick={() => setPending({ kind: "cancel", invitation })}>{t.cancelInvite}</FanAction>}</div></td>
+          </tr>)}</tbody></table></div>}
+      </section>}
     </>}
-    {pending && <AlertDialog open onClose={() => setPending(null)} labelledBy="operator-revoke-title" describedBy="operator-revoke-description" backdropClassName={styles.confirmBackdrop} contentClassName={styles.confirmDialog} busy={busy}>
-      <h2 id="operator-revoke-title">{t.confirmTitle}</h2><p id="operator-revoke-description">{t.confirmBody(pending.email)}</p>
-      <div><button type="button" data-autofocus disabled={busy} onClick={() => setPending(null)}>{t.cancel}</button><button className={styles.confirmDanger} type="button" disabled={busy} onClick={revoke}>{busy ? t.revoking : t.revoke}</button></div>
+    {dialog && <AlertDialog open onClose={() => setPending(null)} labelledBy="operator-confirm-title" describedBy="operator-confirm-description" backdropClassName={styles.confirmBackdrop} contentClassName={styles.confirmDialog} busy={busy}>
+      <h2 id="operator-confirm-title">{dialog.title}</h2><p id="operator-confirm-description">{dialog.body}</p>
+      <div><button type="button" data-autofocus disabled={busy} onClick={() => setPending(null)}>{dialog.close}</button><button className={dialog.danger ? styles.confirmDanger : styles.confirmPrimary} type="button" disabled={busy} onClick={confirm}>{dialog.action}</button></div>
     </AlertDialog>}
   </>;
 }

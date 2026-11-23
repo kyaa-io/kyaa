@@ -17,7 +17,8 @@
 .photoColumn { display: flex; min-width: 0; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .photo { flex: none; }
 .reservationTile { aspect-ratio: var(--gallery-photo-ratio); }
-.photoLink { display: block; border-radius: var(--radius-card, 12px); }
+.photoNew { position: absolute; inset-block-start: var(--space-2); inset-inline-start: var(--space-2); pointer-events: none; }
+.photoLink { position: relative; display: block; border-radius: var(--radius-card, 12px); }
 .photoLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .photoImage { display: block; width: 100%; height: auto; border-radius: var(--radius-card, 12px); }
 .desktopOnly { display: none; }

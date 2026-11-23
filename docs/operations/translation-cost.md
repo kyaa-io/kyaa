@@ -12,7 +12,7 @@
 - 렌더마다 호출하지 않는다. 클라이언트가 화면 진입 시 1회, 같은 키는 탭 내 메모리로 중복 제거한다.
 - 언어 감지: 클라이언트 `shouldOfferTranslation`(문자 스크립트 비율 + `franc-min`)으로 같은 언어면 요청 자체를 하지 않는다. 제공자의 `detectedSourceLanguage`는 응답에 있으나 저장만 하고 재사용하지 않았다.
 - 배치: 제공자 호출은 최대 128건/20,000자를 한 요청으로 보낼 수 있으며, `texts` 배열 한 번에 하나의 제공자 요청이다. 게시글 title/body도 한 요청.
-- 한도: 회원 일 10,000자, 전체 일 20,000자·월 200,000자, 분당 10회(`reserve_display_translation_request`).
+- 한도: `public.translation_limits` 한 줄(service_role 만 읽고 수정). 2026-11-23 값: 사용자 분당 20회·하루 30,000자, 서비스 하루 300,000자·월 3,000,000자. 이전에는 함수 안 상수(10회·10,000·20,000·200,000)였다.
 
 ### 낭비 지점
 `display_translations`는 **요청자별** 캐시라서 같은 공지·SNS 글을 서로 다른 N명(또는 N개 IP/일)이 보면 N번 번역하고 N번 글자 수를 쓴다. 인기 글 하나(길이 L자)를 서로 다른 N명이 보면 대략 `N × L`자 과금 + 전체 일/월 한도 소진이 빨라진다. (게스트는 날짜·IP로 키가 바뀌어 같은 사람도 하루마다 재번역.) 저장된 대상 경로(`content_translations`)는 이미 공유 캐시라 낭비가 없다.
@@ -37,3 +37,10 @@
 
 MIGRATION: apply 20261221130000 and 20261223130000 before deploying the handler.
 Miss reservations expire after five minutes. Failed requests show source text until that reservation expires.
+
+## 한도와 경보 (2026-11-23, migration 20270115020600)
+
+- 한도 바꾸기: `update public.translation_limits set service_monthly_characters=…;` 다음 예약부터 바로 적용된다. 하루 상한은 월 상한보다 클 수 없다.
+- 경보: 서비스 하루·월 사용량이 `alert_percent`(기본 80%)를 넘은 첫 요청, 그리고 상한에 닿아 원문만 나간 첫 요청이 `public.translation_limit_alerts`에 한 번씩 남는다(종류·기간·상한 값마다 한 줄, 상한을 올리면 다시 경보).
+- 비공개 문장: `scope: "personal"`(알림·친구 메시지)은 공용 캐시를 쓰지 않고 그 사람 것으로만 `display_translations`에 저장한다.
+- 비용 상한: NMT $20 / 100만 자, 결제 계정마다 월 50만 자 무료($10 크레딧). 월 3,000,000자를 다 써도 (3,000,000−500,000) × $20 / 1,000,000 = $50.

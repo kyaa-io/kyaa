@@ -59,7 +59,11 @@ export const commentSchema = z.object({
 });
 export const commentsSchema = z.object({ total: z.number().int().nonnegative(), comments: z.array(commentSchema).max(50) }).strict();
 export type NoticeComments = z.infer<typeof commentsSchema>;
-export const postCommentSchema = z.object({ body: z.string().trim().min(1).max(1000), idempotencyKey: z.uuid(), parentId: z.uuid().optional() }).strict();
+/** `asOfficial` asks for the page's name; the server stores it only for that page's operator or bound artist. */
+export const postCommentSchema = z.object({ body: z.string().trim().min(1).max(1000), idempotencyKey: z.uuid(), parentId: z.uuid().optional(), asOfficial: z.boolean().optional() }).strict();
+/** The names the signed-in viewer's comment can be posted under on this page. */
+export const commentAuthorSchema = z.object({ name: nickname, official: z.object({ name: nickname, avatarUrl: safeAssetUrlSchema }).strict().nullable() }).strict();
+export type CommentAuthor = z.infer<typeof commentAuthorSchema>;
 export const commentReactionSchema = z.object({
   emoji: z.enum(["heart", "thumbs_up", "clap", "laugh", "star"]), selected: z.boolean(),
 }).strict();

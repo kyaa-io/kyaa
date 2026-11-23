@@ -19,13 +19,13 @@ it("shows the server price before a date is selected", async () => {
 });
 
 it("shows activity earning when the production balance is short", async () => {
-  vi.stubGlobal("fetch", async () => Response.json({ balance: 1, price: 3 }));
+  vi.stubGlobal("fetch", async () => Response.json({ balance: 1, price: 10 }));
   render(<DatePurchase character="dosa" locale="ko" />);
   fireEvent.change(screen.getByLabelText("운세를 볼 날짜"), {
     target: { value: "20270515" },
   });
   fireEvent.click(screen.getByText("가격 확인"));
-  expect(await screen.findByText("2P가 부족해요.")).toBeTruthy();
+  expect(await screen.findByText("9P가 부족해요.")).toBeTruthy();
   expect(
     screen.getByRole("link", { name: "출석하고 포인트 받기" }),
   ).toBeTruthy();
@@ -33,11 +33,11 @@ it("shows activity earning when the production balance is short", async () => {
 });
 
 it.each([
-  [2, "1P가 부족해요."],
-  [3, "구매 후 잔액 0P"],
-  [4, "구매 후 잔액 1P"],
-] as const)("quotes a 3P purchase with a %iP balance", async (balance, message) => {
-  vi.stubGlobal("fetch", async () => Response.json({ balance, price: 3 }));
+  [9, "1P가 부족해요."],
+  [10, "구매 후 잔액 0P"],
+  [11, "구매 후 잔액 1P"],
+] as const)("quotes a 10P purchase with a %iP balance", async (balance, message) => {
+  vi.stubGlobal("fetch", async () => Response.json({ balance, price: 10 }));
   render(<DatePurchase character="dosa" locale="ko" />);
   fireEvent.change(screen.getByLabelText("운세를 볼 날짜"), {
     target: { value: "20270515" },
@@ -50,11 +50,11 @@ it("returns to the selected date and requires confirmation again after a DEV top
   const calls: { day: string; confirm: boolean }[] = [];
   let balance = 1;
   vi.stubGlobal("fetch", async (_url: string, options: RequestInit) => {
-    if (!options.body) return Response.json({ price: 3 });
+    if (!options.body) return Response.json({ price: 10 });
     calls.push(JSON.parse(String(options.body)));
     return Response.json({
       balance,
-      price: 3,
+      price: 10,
       topupPath: "/chemi/points/topup",
     });
   });
@@ -84,7 +84,7 @@ it("returns to the selected date and requires confirmation again after a DEV top
   render(<DatePurchase {...props} />);
   expect(screen.getByLabelText("운세를 볼 날짜")).toHaveValue("2027.05.15");
   fireEvent.click(screen.getByText("가격 확인"));
-  expect(await screen.findByText("구매 후 잔액 98P")).toBeTruthy();
+  expect(await screen.findByText("구매 후 잔액 91P")).toBeTruthy();
   expect(calls.map((c) => c.confirm)).toEqual([false, false]);
   fireEvent.click(screen.getByText("취소"));
   expect(calls).toHaveLength(2);
@@ -94,9 +94,9 @@ it("returns to the selected date and requires confirmation again after a DEV top
 it("takes the date as eight digits with a wheel, never the browser date input", async () => {
   const calls: { day: string }[] = [];
   vi.stubGlobal("fetch", async (_url: string, options: RequestInit) => {
-    if (!options.body) return Response.json({ price: 3 });
+    if (!options.body) return Response.json({ price: 10 });
     calls.push(JSON.parse(String(options.body)));
-    return Response.json({ balance: 5, price: 3 });
+    return Response.json({ balance: 12, price: 10 });
   });
   const { container } = render(<DatePurchase character="dosa" locale="ko" />);
   expect(container.querySelector('input[type="date"]')).toBeNull();

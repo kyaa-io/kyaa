@@ -14,7 +14,10 @@ export function createChannelOperatorGrantDependencies() {
     appleLoginEnabled: env.PRIVY_APPLE_LOGIN_ENABLED,
   });
   const repository = createSupabaseAdminSessionRepository(config);
+  const origin = new URL(env.NEXT_PUBLIC_APP_URL).origin;
   return createChannelOperatorGrantHandlers({
+    // Invitation links are built only for origins the invitation table accepts.
+    ...(/^(https:\/\/(dev\.)?kyaa\.io|http:\/\/(localhost|127\.0\.0\.1):\d{2,5})$/.test(origin) ? { origin } : {}),
     authorize: (input) => authorizeAdminSession({ ...input, verifier, repository }),
     repository: createChannelOperatorGrantRepository(config),
   });

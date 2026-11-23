@@ -407,7 +407,7 @@
     "askRemind": "Nhắc tôi ngày mai",
     "askExtraCta": "Thêm 1 với {cost}P",
     "askExtraTitle": "Thêm 1 câu hỏi với {cost}P",
-    "askExtraLabel": "Câu hỏi thêm hôm nay",
+    "askExtraLabel": "Câu hỏi thêm còn lại",
     "askExtraPay": "Dùng {cost}P để hỏi",
     "askExtraShort": "Không đủ điểm",
     "askReminded": "Đã đăng ký nhắc",
@@ -614,6 +614,14 @@
     "starEnter_changha": "Xem bầu trời đêm nay nói gì về bạn không? Mong là lời khen.",
     "starEnter_elina": "Có lạnh không? Cùng ngắm bầu trời đêm nay từ từ nhé.",
     "starEnter_yuna": "Mình chỉ đúng bầu trời đêm nay nói gì.",
-    "starEnter_dosa": "Có muốn cùng lắng nghe lời các vì sao đêm nay chăng?"
+    "starEnter_dosa": "Có muốn cùng lắng nghe lời các vì sao đêm nay chăng?",
+    "chartTitle": "Tám chữ của bạn",
+    "showDetail": "Chi tiết",
+    "hideDetail": "Thu gọn",
+    "strengthTitle": "Thân vượng · thân nhược",
+    "tenGodTitle": "Thập thần",
+    "relationTitle": "Hợp · xung",
+    "yearFlow": "Năm nay",
+    "hourLocked": "Trụ giờ sẽ mở khi bạn thêm giờ sinh"
   }
 }

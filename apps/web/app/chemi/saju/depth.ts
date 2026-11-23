@@ -16,6 +16,7 @@ import {
   monthSpanAt,
   seasonAt,
   stemElement,
+  strengthOf,
   tenGod,
   type Chart,
   type Element,
@@ -41,7 +42,7 @@ const pillarName = (pillar: Pillar) => `${pillar.heavenlyStem}${pillar.earthlyBr
 
 /** 일간과 일지의 오행 사이. 일지는 가까운 사람과 속마음의 자리로 읽는다. */
 type Seat = "same" | "supports" | "spends" | "handles" | "presses";
-function seatOf(chart: Chart): Seat {
+export function seatOf(chart: Chart): Seat {
   const own = stemElement[dayStem(chart)];
   const seat = branchElement[dayBranch(chart)];
   if (seat === own) return "same";
@@ -49,7 +50,7 @@ function seatOf(chart: Chart): Seat {
   if (generates[own] === seat) return "spends";
   return controls[own] === seat ? "handles" : "presses";
 }
-const seatPlain: Record<Seat, string> = {
+export const seatPlain: Record<Seat, string> = {
   same: "일간과 같은 기운이라 겉과 속이 닮았어요",
   supports: "일간을 받쳐 주는 자리라 마음이 든든해요",
   spends: "내 기운을 쏟는 자리라 좋아하는 일에 힘을 다 써요",
@@ -63,21 +64,6 @@ const relationPlain = (unit: "해" | "달"): Record<Relation, string> => ({
   rough: `일지와 부딪치는 ${unit}라 자리와 관계가 한 번 흔들려요`,
   plain: `일지와 합도 충도 없어 큰 변동이 적은 ${unit === "해" ? "해예요" : "달이에요"}`,
 });
-
-/**
- * 신강·신약. 나와 같은 기운과 나를 낳는 기운이 전체의 절반 이상이면 신강으로 본다.
- * 월지는 계절이라 한 번 더 센다(운세 점수 계산 server/chemi-engine/fortune 과 같은 기준).
- */
-function strengthOf(chart: Chart) {
-  const month = chart.pillars.month;
-  if (!month) return null;
-  const own = stemElement[dayStem(chart)];
-  const mother = elements.find((element) => generates[element] === own)!;
-  const all: Element[] = [branchElement[month.earthlyBranch]];
-  for (const pillar of Object.values(chart.pillars))
-    if (pillar) all.push(stemElement[pillar.heavenlyStem], branchElement[pillar.earthlyBranch]);
-  return all.filter((element) => element === own || element === mother).length * 2 >= all.length;
-}
 
 function countsLine(chart: Chart) {
   const counts = elementCounts(chart);
@@ -103,7 +89,7 @@ export function sajuBasis(chart: Chart, at: number, view: DepthView): BasisRow[]
   const helpRow: BasisRow = {
     term: "도움 기운",
     value: helping(chart),
-    plain: "사주에서 가장 적은 기운이에요. 채워 주면 균형이 맞아요",
+    plain: "기운이 한쪽으로 쏠린 정도를 보고 고른 기운이에요. 채워 주면 균형이 맞아요",
   };
   const yearRow: BasisRow = {
     term: "세운",
@@ -127,14 +113,15 @@ export function sajuBasis(chart: Chart, at: number, view: DepthView): BasisRow[]
     if (open) {
       const line = countsLine(chart);
       rows.push({ term: "오행", value: line.value, plain: line.plain });
-      const strong = strengthOf(chart);
-      if (strong !== null)
+      const strength = strengthOf(chart);
+      const strong = strength?.leansStrong;
+      if (strength)
         rows.push({
           term: strong ? "신강" : "신약",
           value: strong ? "기운이 넉넉한 사주" : "도움이 필요한 사주",
           plain: strong
-            ? "나와 나를 돕는 기운이 절반 이상이에요. 힘을 밖으로 쓸 때 편해요"
-            : "나와 나를 돕는 기운이 절반에 못 미쳐요. 도움을 받을 때 힘이 나요",
+            ? "나와 나를 돕는 기운이 넉넉한 편이에요. 힘을 밖으로 쓸 때 편해요"
+            : "나와 나를 돕는 기운이 모자란 편이에요. 도움을 받을 때 힘이 나요",
         });
       rows.push(helpRow);
     }

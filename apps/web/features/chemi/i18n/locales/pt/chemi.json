@@ -407,7 +407,7 @@
     "askRemind": "Avise-me amanhã",
     "askExtraCta": "Mais 1 por {cost}P",
     "askExtraTitle": "Mais 1 pergunta por {cost}P",
-    "askExtraLabel": "Perguntas extras hoje",
+    "askExtraLabel": "Perguntas extras restantes",
     "askExtraPay": "Usar {cost}P e perguntar",
     "askExtraShort": "Pontos insuficientes",
     "askReminded": "Aviso solicitado",
@@ -614,6 +614,14 @@
     "starEnter_changha": "Quer ver o que o céu de hoje diz de você? Tomara que seja elogio.",
     "starEnter_elina": "Não está com frio? Vamos olhar o céu desta noite com calma.",
     "starEnter_yuna": "Vou dizer exatamente o que o céu desta noite diz.",
-    "starEnter_dosa": "Vamos ouvir o que anunciam os astros nesta noite?"
+    "starEnter_dosa": "Vamos ouvir o que anunciam os astros nesta noite?",
+    "chartTitle": "Seus oito caracteres",
+    "showDetail": "Detalhes",
+    "hideDetail": "Ocultar",
+    "strengthTitle": "Força do mestre do dia",
+    "tenGodTitle": "Dez deuses",
+    "relationTitle": "Combinações e choques",
+    "yearFlow": "Este ano",
+    "hourLocked": "O pilar da hora abre com seu horário de nascimento"
   }
 }

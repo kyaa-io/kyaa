@@ -407,7 +407,7 @@
     "askRemind": "내일 알려 줘",
     "askExtraCta": "{cost}P로 하나 더",
     "askExtraTitle": "{cost}P로 질문 하나 더",
-    "askExtraLabel": "오늘 추가 질문",
+    "askExtraLabel": "남은 추가 질문",
     "askExtraPay": "{cost}P 쓰고 묻기",
     "askExtraShort": "포인트가 모자라요",
     "askReminded": "알림 신청함",
@@ -614,6 +614,14 @@
     "starEnter_changha": "오늘 밤하늘이 너한테 뭐라는지 볼래? 칭찬이면 좋겠다.",
     "starEnter_elina": "춥진 않아요? 오늘 밤하늘 같이 천천히 봐요.",
     "starEnter_yuna": "오늘 밤하늘이 뭐라는지 콕 집어 줄게.",
-    "starEnter_dosa": "오늘 밤하늘이 무어라 이르는지 같이 보겠소?"
+    "starEnter_dosa": "오늘 밤하늘이 무어라 이르는지 같이 보겠소?",
+    "chartTitle": "사주 여덟 글자",
+    "showDetail": "자세히",
+    "hideDetail": "접기",
+    "strengthTitle": "신강 · 신약",
+    "tenGodTitle": "십신 분포",
+    "relationTitle": "합 · 충",
+    "yearFlow": "올해 흐름",
+    "hourLocked": "시주는 시간을 알면 열려요"
   }
 }

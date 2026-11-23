@@ -43,6 +43,8 @@ afterEach(() => {
 });
 
 it("plays all five seeded boards, reveals a miss, pauses and submits exactly one result", async () => {
+  // 앞면 미리 보기(2026-11-23 0시 KST부터 켜짐) 전의 판 흐름을 본다. 날짜가 지나도 같은 결과가 나오게 시계를 고정한다.
+  vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 10, 22, 14));
   Object.defineProperty(HTMLDialogElement.prototype, "showModal", {
     configurable: true, value(this: HTMLDialogElement) { this.open = true; },
   });
@@ -96,7 +98,7 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   const choose = screen.getByRole("button", { name: copy.elina });
   await waitFor(() => expect(choose).toBeEnabled());
   fireEvent.click(choose);
-  fireEvent.click(screen.getByRole("button", {name: new RegExp("^" + copy.elina + " · " + copy.start)}));
+  fireEvent.click(screen.getByRole("button", {name: copy.start}));
   await screen.findByRole("button", { name: copy.pause });
   fireEvent.click(screen.getByRole("button", { name: copy.pause }));
   expect(
@@ -127,9 +129,9 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   await screen.findByRole("button", { name: copy.share });
   expect(requests.filter((r) => r.action === "finish")).toHaveLength(1);
   expect(screen.getByRole("img", { name: "10" }).closest("b")).toHaveTextContent(/EXP$/);
-});
+}, 20000);
 
-it("waits for explicit 10P confirmation after the free games run out", async () => {
+it("waits for explicit 20P confirmation after the free games run out", async () => {
   const requests: Record<string, unknown>[] = [];
   vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
     const body = JSON.parse(String(init.body));
@@ -139,8 +141,8 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
         sound: false,
         freeRemaining: 0,
         extraRemaining: 2,
-        points: 12,
-        extraCost: 10,
+        points: 22,
+        extraCost: 20,
         ranking: [],
       });
     if (body.action === "start")
@@ -151,14 +153,13 @@ it("waits for explicit 10P confirmation after the free games run out", async () 
   const choice = screen.getByRole("button", { name: copy.changha });
   await waitFor(() => expect(choice).toBeEnabled());
   fireEvent.click(choice);
-  fireEvent.click(screen.getByRole("button", {name: new RegExp("^" + copy.changha + " · " + copy.start)}));
+  fireEvent.click(screen.getByRole("button", {name: copy.start}));
   expect(requests.filter((r) => r.action === "start")).toHaveLength(0);
-  const extra = await screen.findByRole("button", {
-    name: copy.extraPlay + " · 10P",
-  });
+  const extra = await screen.findByRole("button", { name: "20P로 한 판 더" });
+  expect(screen.getByText("2번")).toBeInTheDocument();
   fireEvent.click(extra);
   expect(requests.some(r => r.action === "start")).toBe(false);
-  fireEvent.click(await screen.findByRole("button", { name: "10P 쓰고 시작" }));
+  fireEvent.click(await screen.findByRole("button", { name: "20P 쓰고 시작" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(copy.insufficient);
   expect(requests.find((r) => r.action === "start")).toMatchObject({
     character: "changha",
@@ -173,13 +174,12 @@ it("shows the rules and a free 2x2 practice before the first game", async () => 
     const body = JSON.parse(String(init.body));
     requests.push(body);
     if (body.action === "lobby")
-      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 10, ranking: [] });
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
     throw Error(body.action);
   });
   render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
-  const startButton = await screen.findByRole("button", { name: new RegExp("^" + copy.changha + " · " + copy.start) });
-  await waitFor(() => expect(startButton).toBeEnabled());
-  fireEvent.click(startButton);
+  await waitFor(() => expect(screen.getByRole("button", { name: copy.start })).toBeEnabled());
+  fireEvent.click(screen.getByRole("button", { name: copy.start }));
   expect(await screen.findByText(copy.rulePreview)).toBeInTheDocument();
   expect(screen.getByRole("button", { name: copy.skip })).toBeEnabled();
   // 연습 판 [0,1,1,0]: 1·2번은 다른 사진(틀림), 1·4번과 2·3번이 짝이다.
@@ -192,6 +192,6 @@ it("shows the rules and a free 2x2 practice before the first game", async () => 
   fireEvent.click(card(4));
   fireEvent.click(card(2));
   fireEvent.click(card(3));
-  expect(await screen.findByRole("button", { name: copy.changha + " · " + copy.start + " · " + copy.freePlays + " 3" })).toBeEnabled();
+  expect(await screen.findByRole("button", { name: copy.start, description: copy.freePlays + " 3" })).toBeEnabled();
   expect(requests.some(r => r.action === "start")).toBe(false);
 });

@@ -5,6 +5,7 @@ import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy";
 import { homeGalleryCopy, type HomeGalleryPhoto, type HomeShort } from "@/features/home/domain/home-gallery";
+import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { HomeShorts } from "./home-shorts";
 import type { HomeNoticeSummary } from "@/features/home/domain/home-notice";
@@ -75,8 +76,8 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
   return <section className={styles.block} aria-labelledby="home-gallery-heading" data-home-block="gallery">
     <FanSectionHeader variant="editorial" id="home-gallery-heading" title={v[1]!} action={more ? { href: `/gallery?locale=${locale}`, label: homeGalleryCopy[locale].viewAll } : undefined} />
     {mobile && desktop ? <>
-      <GalleryColumns columns={mobile.columns} layout="mobile" />
-      <GalleryColumns columns={desktop.columns} layout="desktop" />
+      <GalleryColumns columns={mobile.columns} layout="mobile" showNew />
+      <GalleryColumns columns={desktop.columns} layout="desktop" showNew />
     </> : reservation ? <>
       <GalleryReservation photos={reservation} layout="mobile" />
       <GalleryReservation photos={reservation} layout="desktop" />
@@ -89,20 +90,24 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
 }
 
 /** The photos laid into the layout's columns (`allocateGalleryColumns`). `caption` adds a line under each photo; `itemClassName` styles that item. */
-export function GalleryColumns({ columns, layout, caption, itemClassName }: { columns: readonly (readonly HomeGalleryPhoto[])[]; layout: "mobile" | "desktop"; caption?: (photo: HomeGalleryPhoto) => ReactNode; itemClassName?: string }) {
+export function GalleryColumns({ columns, layout, caption, itemClassName, showNew = false }: { showNew?: boolean; columns: readonly (readonly HomeGalleryPhoto[])[]; layout: "mobile" | "desktop"; caption?: (photo: HomeGalleryPhoto) => ReactNode; itemClassName?: string }) {
   return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-layout={layout}>
     {columns.map((photos, index) => <ul key={index} className={styles.photoColumn}>
-      {photos.map(photo => <li key={photo.id} className={[styles.photo, itemClassName].filter(Boolean).join(" ")} data-row="photo"><GalleryImage photo={photo} sizes={layout === "mobile" ? "calc(50vw - 20px)" : "340px"} />{caption?.(photo)}</li>)}
+      {photos.map(photo => <li key={photo.id} className={[styles.photo, itemClassName].filter(Boolean).join(" ")} data-row="photo"><GalleryImage photo={photo} showNew={showNew} sizes={layout === "mobile" ? "calc(50vw - 20px)" : "340px"} />{caption?.(photo)}</li>)}
     </ul>)}
   </div>;
 }
 
-export function GalleryImage({ photo, sizes }: { photo: HomeGalleryPhoto; sizes: string }) {
+export function GalleryImage({ photo, sizes, showNew = false }: { showNew?: boolean; photo: HomeGalleryPhoto; sizes: string }) {
   // Content assets recheck visibility on every request (private, no-store). Do not put them in the shared optimizer cache.
-  const unoptimized = photo.image.url.startsWith("/api/content-assets/") || bypassImageOptimization(photo.image.url);
+  const unoptimized = (photo.image.url.startsWith("/api/content-assets/") || photo.image.url.startsWith("/api/groups/media/")) || bypassImageOptimization(photo.image.url);
   const image = <Image className={styles.photoImage} src={photo.image.url} alt={photo.alt} width={photo.image.width} height={photo.image.height}
     sizes={sizes} loading="lazy" unoptimized={unoptimized} />;
-  return photo.sourceHref ? <Link className={styles.photoLink} href={photo.sourceHref as Route}>{image}</Link> : image;
+  if (!photo.sourceHref) return image;
+  return <Link className={styles.photoLink} href={photo.sourceHref as Route}>
+    {image}
+    {showNew && photo.isNew && <FanTag tone="fan" className={styles.photoNew}><span lang="en">New</span></FanTag>}
+  </Link>;
 }
 
 /** Same allocation, responsive column widths and per-image ratios as the loaded gallery. */

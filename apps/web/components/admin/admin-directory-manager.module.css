@@ -37,12 +37,15 @@
 .tableWrap select { min-width: 116px; }
 .tableWrap time { color: var(--secondary-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .inactiveRow { color: var(--muted); background: var(--color-surface); }
-.selfBadge, .activeBadge, .inactiveBadge { display: inline-flex; min-height: 28px; align-items: center; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.selfBadge, .activeBadge, .inactiveBadge, .pendingBadge { display: inline-flex; min-height: 28px; align-items: center; border-radius: 999px; font-size: 11px; font-weight: 800; white-space: nowrap; }
 .selfBadge { margin-left: 8px; padding: 0 9px; background: var(--accent-soft); color: var(--color-accent); }
-.activeBadge, .inactiveBadge { gap: 7px; padding: 0 10px; }
+.activeBadge, .inactiveBadge, .pendingBadge { gap: 7px; padding: 0 10px; }
+.pendingBadge { background: var(--soft); color: var(--ink); }
+.invitations { margin-top: var(--space-6); }
+.invitations .errorMessage { margin-bottom: var(--space-4); }
 .activeBadge { background: var(--color-soft); color: var(--success); }
 .inactiveBadge { background: var(--soft); color: var(--muted); }
-.activeBadge i, .inactiveBadge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.activeBadge i, .inactiveBadge i, .pendingBadge i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .rowActions { display: flex; gap: 8px; }
 .rowActions button, .stateMessage button, .confirmDialog button { min-height: 44px; padding: 0 12px; border: 1px solid var(--strong-line); border-radius: 9px; background: var(--color-surface); color: var(--ink); cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .rowActions .revokeButton { border-color: color-mix(in srgb, var(--color-accent-ink) 20%, transparent); color: var(--error); }
@@ -84,7 +87,7 @@
   .tableWrap td:first-child small { grid-column: 2 / -1; margin-top: 0; }
   .tableWrap td:last-child { border-bottom: 0; }
   .tableWrap select { width: 100%; }
-  .activeBadge, .inactiveBadge { justify-self: start; }
+  .activeBadge, .inactiveBadge, .pendingBadge { justify-self: start; }
   .rowActions { flex-wrap: wrap; }
   .rowActions button { flex: 1 1 112px; }
 }

@@ -1,9 +1,31 @@
 import { describe, expect, it } from "vitest";
-import type { HomeGalleryPhoto } from "./home-gallery";
-import { diversifyGalleryPhotos, diversifyShorts } from "./home-gallery-order";
+import { homeGalleryPhotoSchema, type HomeGalleryPhoto } from "./home-gallery";
+import { diversifyGalleryPhotos, diversifyShorts, homeGalleryPostPhotos } from "./home-gallery-order";
 
 const photo = (id: string, slug?: string): HomeGalleryPhoto => ({ id, source: "official_sns", image: { url: "https://example.com/a.jpg", width: 4, height: 5 }, alt: id, ...(slug ? { creator: { slug, name: slug } } : {}) });
 const ids = (list: readonly HomeGalleryPhoto[]) => list.map(item => item.id);
+
+it("selects only original notice photos for the home gallery", () => {
+  const post = { ...photo("notice:1", "creator"), sourceHref: "/c/creator/notices/post" };
+  expect(homeGalleryPostPhotos([
+    { ...post, source: "cms_upload" },
+    { ...post, sourceHref: "/live/event" },
+    photo("missing-link", "creator"),
+    post,
+  ])).toEqual([post]);
+});
+
+it("mixes public board attachments with notices and accepts only their protected media routes", () => {
+  const id = "90000000-0000-4000-8000-000000000001";
+  const post = { ...photo("n:1", "a"), sourceHref: "/c/a/notices/news" };
+  const fan = homeGalleryPhotoSchema.parse({ ...photo("f:1", "b"), source: "fan_post",
+    image: { ...post.image, url: `/api/content-assets/${id}` }, sourceHref: `/c/b/community/${id}` });
+  const group = homeGalleryPhotoSchema.parse({ ...photo("g:1", "c"), source: "group_post",
+    image: { ...post.image, url: `/api/groups/media/${id}` }, sourceHref: `/pages/groups/${id}?tab=board&post=${id}` });
+  expect(homeGalleryPostPhotos([fan, group, post])).toEqual([fan, group, post]);
+  expect(homeGalleryPhotoSchema.safeParse({ ...fan, image: post.image }).success).toBe(false);
+  expect(homeGalleryPhotoSchema.safeParse({ ...group, sourceHref: "/c/c" }).success).toBe(false);
+});
 
 describe("diversifyGalleryPhotos", () => {
   it("takes one photo per post first and puts the other cuts after everything else", () => {

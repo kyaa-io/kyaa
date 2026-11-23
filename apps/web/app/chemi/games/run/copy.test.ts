@@ -14,3 +14,11 @@ it("has every label in every language and keeps the placeholders of the Korean t
   }
   expect(fill(ko.start, { name: ko.changha, n: 2 })).toBe("창하로 시작 · 남은 판 2");
 });
+
+it("names each course and keeps its combo count in every locale", () => {
+  for (const locale of APP_LOCALES) {
+    const copies = (["changha", "elina", "yuna"] as const).map(character => getRunCopy(locale, 10, character));
+    expect(new Set(copies.map(copy => copy.map)).size).toBe(3);
+    for (const copy of copies) expect(copy.combo).toContain("{n}");
+  }
+});

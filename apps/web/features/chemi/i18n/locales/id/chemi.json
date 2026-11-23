@@ -407,7 +407,7 @@
     "askRemind": "Ingatkan besok",
     "askExtraCta": "1 lagi dengan {cost}P",
     "askExtraTitle": "1 pertanyaan lagi dengan {cost}P",
-    "askExtraLabel": "Pertanyaan tambahan hari ini",
+    "askExtraLabel": "Sisa pertanyaan tambahan",
     "askExtraPay": "Pakai {cost}P dan tanya",
     "askExtraShort": "Poin tidak cukup",
     "askReminded": "Pengingat diajukan",
@@ -614,6 +614,14 @@
     "starEnter_changha": "Mau lihat langit malam ini bilang apa soal kamu? Semoga pujian.",
     "starEnter_elina": "Nggak kedinginan? Yuk lihat langit malam ini pelan-pelan.",
     "starEnter_yuna": "Aku kasih tahu persis apa kata langit malam ini.",
-    "starEnter_dosa": "Bersediakah engkau menyimak pesan bintang malam ini?"
+    "starEnter_dosa": "Bersediakah engkau menyimak pesan bintang malam ini?",
+    "chartTitle": "Delapan aksara Anda",
+    "showDetail": "Detail",
+    "hideDetail": "Tutup",
+    "strengthTitle": "Kekuatan hari",
+    "tenGodTitle": "Sepuluh dewa",
+    "relationTitle": "Kombinasi & benturan",
+    "yearFlow": "Tahun ini",
+    "hourLocked": "Pilar jam terbuka setelah Anda menambahkan jam lahir"
   }
 }

@@ -81,7 +81,18 @@
     "release-notes/2026-11-22-chemi-ask-answers.json",
     "release-notes/2026-11-23-chemi-talk-persona.json",
     "release-notes/2026-11-23-number-link-wrap.json",
-    "release-notes/2026-11-23-chemi-ask-points-tone.json"
+    "release-notes/2026-11-23-chemi-ask-points-tone.json",
+    "release-notes/2026-11-22-chemi-run-roster.json",
+    "release-notes/2026-11-23-chemi-run-result.json",
+    "release-notes/2026-11-23-chemi-saju-time-basis.json",
+    "release-notes/2026-11-22-chemi-point-prices.json",
+    "release-notes/2026-11-23-chemi-price-preview.json",
+    "release-notes/2026-11-23-chemi-ask-retry.json",
+    "release-notes/2026-11-23-chemi-ask-safety.json",
+    "release-notes/2026-11-23-chemi-run-shield-music.json",
+    "release-notes/2026-11-23-chemi-saju-chart.json",
+    "release-notes/2026-11-23-chemi-games-extra-play.json",
+    "release-notes/2026-11-23-consent-bar-top.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

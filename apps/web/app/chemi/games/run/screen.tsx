@@ -29,7 +29,8 @@ export function RunScreen(props: { locale: AppLocale; share: string | null }) {
 
 function Session({ locale, share, auth }: { locale: AppLocale; share: string | null; auth: ReturnType<typeof useByUsAuth> }) {
   const [lobby, setLobby] = useState<Lobby>();
-  const copy = useMemo(() => getRunCopy(locale, lobby?.extraCost), [locale, lobby?.extraCost]);
+  const [character, setCharacter] = useState<Character>("changha");
+  const copy = useMemo(() => getRunCopy(locale, lobby?.extraCost, character), [locale, lobby?.extraCost, character]);
   const names: Record<Character, string> = { changha: copy.changha, elina: copy.elina, yuna: copy.yuna };
   const number = new Intl.NumberFormat(locale);
   const [stage, setStage] = useState<Stage>("select");
@@ -80,7 +81,14 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     }
   }, [auth.ready, auth.authenticated, call, share, sound]);
   useEffect(() => { void load(); }, [load]);
-  useEffect(() => () => sound.close(), [sound]);
+  useEffect(() => {
+    document.addEventListener("visibilitychange", sound.visibility);
+    return () => { document.removeEventListener("visibilitychange", sound.visibility); sound.close(); };
+  }, [sound]);
+  useEffect(() => {
+    // The choose screen previews the picked 최애's running song; the run keeps it going from there.
+    if (stage !== "run") sound.music(character, stage === "result" ? "result" : "run");
+  }, [sound, stage, character]);
   useEffect(() => { void loadArt().catch(() => {}); }, []);
 
   // Back during a run opens the pause veil instead of leaving the page.
@@ -112,7 +120,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       const key = requestKey.current ??= crypto.randomUUID();
       const issued = await call<Ticket>(trial
         ? { action: "trial", key, shareId: share }
-        : { action: "start", game: "run", character: "changha", key, extra: paid }, !trial);
+        : { action: "start", game: "run", character, key, extra: paid }, !trial);
       requestKey.current = null;
       setBefore({ place: lobby?.ranking.find((row) => row.isMe)?.place, best: lobby?.best ?? 0 });
       setLobby((now) => now && { ...now, [paid ? "extraRemaining" : "freeRemaining"]: Math.max(0, now[paid ? "extraRemaining" : "freeRemaining"] - 1), points: now.points - (paid ? now.extraCost : 0) });
@@ -154,6 +162,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     }
   }
   function toggleSound() {
+    sound.unlock();
     const next = !soundOn;
     setSoundOn(next);
     sound.set(next);
@@ -184,7 +193,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
 
   const startLabel = !auth.ready ? copy.go : !auth.authenticated
     ? (trial ? copy.trial : copy.login)
-    : free > 0 ? fill(copy.start, { name: names.changha, n: free })
+    : free > 0 ? fill(copy.start, { name: names[character], n: free })
       : fill(copy.extraCta, { n: extra });
   const spent = Boolean(lobby && free <= 0 && extra <= 0);
   const footer = [lobby && lobby.players > 0 ? fill(copy.players, { n: number.format(lobby.players) }) : "",
@@ -198,7 +207,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   </div>;
 
   if (stage === "run" && ticket) return <main className={styles.shell} lang={locale} data-stage="run">
-    <Track key={ticket.playId} ticket={ticket} copy={copy} locale={locale} name={names.changha} sound={sound} soundOn={soundOn}
+    <Track character={character} key={ticket.playId} ticket={ticket} copy={copy} locale={locale} name={names[character]} sound={sound} soundOn={soundOn}
       onToggleSound={toggleSound} pauseRequest={pauseRequest} onFinish={(body, played) => void finish(body, played)} />
   </main>;
 
@@ -208,11 +217,11 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       <FanHeading as="h1">{copy.title}</FanHeading>
       <FanIconButton aria-label={copy.sound} aria-pressed={soundOn} onClick={toggleSound}><FanIcon icon={soundOn ? Volume2 : VolumeX} /></FanIconButton>
     </header>
-    {stage === "select" && <SelectStage copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} footer={footer}
+    {stage === "select" && <SelectStage character={character} pickDisabled={!auth.ready || busy || Boolean(requestKey.current)} onPick={(who) => { sound.unlock(); setCharacter(who); }} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} footer={footer}
       challenge={challenge} spent={spent} startLabel={startLabel} startDisabled={!auth.ready || busy || (auth.authenticated && !lobby)}
       onStart={() => auth.authenticated && free <= 0 ? setPaying(true) : void begin()} onAllRanks={() => setAllRanks(true)}
       errorLine={errorLine} reminder={reminder} />}
-    {stage === "result" && <ResultStage copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} stats={stats} result={result}
+    {stage === "result" && <ResultStage character={character} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} stats={stats} result={result}
       before={before} saving={busy && !result} trial={Boolean(ticket?.trial)} member={auth.authenticated} spent={spent} free={free} extra={extra}
       busy={busy} copied={copied} onAgain={again} onLogin={() => auth.login()} onShare={() => void shareResult()}
       onAllRanks={() => setAllRanks(true)} errorLine={errorLine} reminder={reminder} />}
@@ -222,7 +231,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       <ol className={styles.allRanks}>
         {rows.map((row) => <li data-row="" key={row.place} data-me={row.isMe}>
           <FanText role="label">{row.place}</FanText>
-          <FanText role="item">{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`}</FanText>
+          <FanText role="item">{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`} · {names[row.character]}</FanText>
           <FanText role="item">{number.format(row.score)}</FanText>
         </li>)}
       </ol>

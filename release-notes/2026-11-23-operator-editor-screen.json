@@ -1,0 +1,5 @@
+{
+  "changes": ["채널 운영 화면에서 공지를 작성할 때 관리자용 ‘홈 공지’ 제목이 사라졌어요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/operator",
+  "images": ["release-notes/images/2026-11-23-operator-editor-local.png"]
+}

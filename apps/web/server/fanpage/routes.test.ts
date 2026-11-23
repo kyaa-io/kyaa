@@ -199,11 +199,43 @@ describe("fanpage server authority", () => {
   });
   it("preserves keyset cursors and owner-scoped comment projection", async () => {
     const comment = { id: commentId, body: "hello", nickname: "fan", avatarUrl: row.avatarUrl, createdAt: now, isOwner: true };
-    rpc.mockResolvedValueOnce({ total: 2, comments: [comment] });
+    rpc.mockImplementation(async (name: string) => name === "read_notice_comment_author" ? { name: "fan", official: null } : { total: 2, comments: [comment] });
     const response = await api.comments(request("/api?limit=1", undefined, true, "GET"), "elina", "notice");
     const result = await response.json(); expect(result.comments).toEqual([comment]);
     expect(JSON.parse(Buffer.from(result.nextCursor, "base64url").toString())).toEqual({ at: now, id: commentId });
-    expect(rpc).toHaveBeenLastCalledWith("read_celebrity_notice_comments", expect.objectContaining({ p_locale: "ko" }));
+    expect(rpc).toHaveBeenCalledWith("read_celebrity_notice_comments", expect.objectContaining({ p_locale: "ko" }));
+  });
+  it("adds the names a signed-in viewer can post under to the first page only", async () => {
+    const author = { name: "운영자닉", official: { name: "앙상블 패치워크", avatarUrl: "/images/creators/ensemble.webp" } };
+    rpc.mockImplementation(async (name: string) => name === "read_notice_comment_author" ? author : { total: 0, comments: [] });
+    expect((await (await api.comments(request("/api", undefined, true, "GET"), "elina", "notice")).json()).author).toEqual(author);
+    expect(rpc).toHaveBeenCalledWith("read_notice_comment_author", { p_app_user_id: owner, p_slug: "elina", p_locale: "ko" });
+    rpc.mockClear();
+    const cursor = Buffer.from(JSON.stringify({ at: now, id: commentId })).toString("base64url");
+    expect((await (await api.comments(request(`/api?cursor=${cursor}`, undefined, true, "GET"), "elina", "notice")).json()).author).toBeUndefined();
+    expect((await (await api.comments(request("/api", undefined, false, "GET"), "elina", "notice")).json()).author).toBeUndefined();
+    expect(rpc.mock.calls.map(call => call[0])).not.toContain("read_notice_comment_author");
+    rpc.mockImplementation(async (name: string) => name === "read_notice_comment_author" ? { name: "fan", official: null } : { total: 0, comments: [] });
+    expect((await (await api.comments(request("/api", undefined, true, "GET"), "elina", "notice")).json()).author).toEqual({ name: "fan", official: null });
+    // A failed or unexpected author answer leaves the list readable and the composer personal.
+    rpc.mockImplementation(async (name: string) => { if (name === "read_notice_comment_author") throw new Error("FANPAGE_UNAVAILABLE"); return { total: 0, comments: [] }; });
+    const failed = await api.comments(request("/api", undefined, true, "GET"), "elina", "notice");
+    expect(failed.status).toBe(200); expect((await failed.json()).author).toBeUndefined();
+    rpc.mockReset();
+  });
+  it("writes under the page name only through the authority-checked entry point", async () => {
+    rpc.mockResolvedValue({ id: commentId, replayed: false });
+    expect((await api.postComment(request("/api", { body: "공식 인사", idempotencyKey: other, asOfficial: true }), "elina", "notice")).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("post_celebrity_notice_comment_as_official", { p_app_user_id: owner, p_slug: "elina", p_notice_slug: "notice", p_body: "공식 인사", p_idempotency_key: other, p_parent_id: null });
+    expect((await api.postComment(request("/api", { body: "공식 답글", idempotencyKey: other, asOfficial: true, parentId: commentId }), "elina", "notice")).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("post_celebrity_notice_comment_as_official", expect.objectContaining({ p_body: "공식 답글", p_parent_id: commentId }));
+    expect((await api.postComment(request("/api", { body: "개인 인사", idempotencyKey: other, asOfficial: false }), "elina", "notice")).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("post_celebrity_notice_comment", { p_app_user_id: owner, p_slug: "elina", p_notice_slug: "notice", p_body: "개인 인사", p_idempotency_key: other });
+    expect((await api.postComment(request("/api", { body: "x", idempotencyKey: other, asOfficial: "yes" }), "elina", "notice")).status).toBe(400);
+    rpc.mockReset();
+    rpc.mockRejectedValueOnce(new Error("FANPAGE_FORBIDDEN"));
+    const forbidden = await api.postComment(request("/api", { body: "공식 인사", idempotencyKey: other, asOfficial: true }), "elina", "notice");
+    expect(forbidden.status).toBe(403); expect(await forbidden.json()).toEqual({ error: { code: "FANPAGE_FORBIDDEN" } });
   });
   it("requires admin authorization and bounded nonempty reasons", async () => {
     rpc.mockResolvedValueOnce(null);

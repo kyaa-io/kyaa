@@ -407,7 +407,7 @@
     "askRemind": "Remind me tomorrow",
     "askExtraCta": "1 more for {cost}P",
     "askExtraTitle": "1 more question for {cost}P",
-    "askExtraLabel": "Extra questions today",
+    "askExtraLabel": "Extra questions left",
     "askExtraPay": "Spend {cost}P and ask",
     "askExtraShort": "Not enough points",
     "askReminded": "Reminder set",
@@ -614,6 +614,14 @@
     "starEnter_changha": "Want to see what tonight's sky says about you? Hope it's compliments.",
     "starEnter_elina": "Not too cold? Let's look at the night sky together, slowly.",
     "starEnter_yuna": "I'll tell you exactly what tonight's sky says.",
-    "starEnter_dosa": "Shall we heed the words of the night sky?"
+    "starEnter_dosa": "Shall we heed the words of the night sky?",
+    "chartTitle": "Your eight characters",
+    "showDetail": "Details",
+    "hideDetail": "Hide",
+    "strengthTitle": "Strong or weak",
+    "tenGodTitle": "Ten gods",
+    "relationTitle": "Combinations & clashes",
+    "yearFlow": "This year",
+    "hourLocked": "The hour pillar opens with your birth time"
   }
 }

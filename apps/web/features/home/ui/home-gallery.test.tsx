@@ -85,6 +85,20 @@ describe("gallery column allocation", () => {
 });
 
 describe("home gallery block", () => {
+  it("adds New to the recent photo link on both home layouts only", () => {
+    const recent = { ...photos[2]!, isNew: true as const };
+    const list = [recent, photos[3]!];
+    const { container, unmount } = render(<HomeGallery locale="ko" photos={list} hasMore={false} shorts={[]} />);
+    for (const layout of container.querySelectorAll("[data-gallery-layout]")) {
+      const tags = layout.querySelectorAll("[data-fan-tag]");
+      expect(tags).toHaveLength(1);
+      expect(tags[0]).toHaveTextContent("New");
+      expect(tags[0]!.closest("a")).toHaveAttribute("href", recent.sourceHref);
+    }
+    unmount();
+    render(<HomeGalleryScreen locale="ko" items={list} nextCursor={null} />);
+    expect(screen.queryByText("New")).toBeNull();
+  });
   it("shows the empty text only when the read found nothing", () => {
     const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={[]} />);
     expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);

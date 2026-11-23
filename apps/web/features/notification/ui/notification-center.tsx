@@ -442,9 +442,9 @@ export function NotificationCenter() {
                     >
                       <span className={styles.copy}>
                         {!item.readAt ? <span className={styles.dot} aria-hidden="true" /> : null}
-                        <strong><TranslatedText text={itemText(item, locale).title} locale={locale} controls={false} /></strong>
+                        <strong><TranslatedText text={itemText(item, locale).title} locale={locale} controls={false} personal /></strong>
                         <span>
-                          <TranslatedText text={itemText(item, locale).detail} locale={locale} controls={false} /> · {time(item.createdAt, locale)}
+                          <TranslatedText text={itemText(item, locale).detail} locale={locale} controls={false} personal /> · {time(item.createdAt, locale)}
                         </span>
                       </span>
                       <span className={styles.read} aria-label={item.readAt ? c.readLabel : c.unreadLabel}>

@@ -1,4 +1,13 @@
-import type { HomeGalleryPhoto } from "./home-gallery";
+import { fanPostPath, groupPostPath, type HomeGalleryPhoto } from "./home-gallery";
+
+/** Only original posts belong in the home photo selection. Filter before ranking and taking the first twelve. */
+export function homeGalleryPostPhotos(photos: readonly HomeGalleryPhoto[]) {
+  return diversifyGalleryPhotos(photos.filter(photo =>
+    (photo.source === "fan_post" && fanPostPath.test(photo.sourceHref ?? "")) ||
+    (photo.source === "group_post" && groupPostPath.test(photo.sourceHref ?? "")) ||
+    photo.source === "official_sns" && /^\/c\/[a-z0-9-]+\/notices\/[a-z0-9-]+$/.test(photo.sourceHref ?? "")
+  ));
+}
 
 /**
  * The order the home gallery shows (사용자 2026-11-11 08:30 "갤러리 최대한 셀럽의 다양한 이미지"): newest first only decides the order *inside* one creator.

@@ -17,7 +17,7 @@
 .commentMeta strong { flex: 0 1 auto; min-width: 0; font-size: 14px; line-height: var(--fan-body-leading); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .commentMeta time { flex: none; font-size: 12px; color: var(--color-muted); font-variant-numeric: tabular-nums; }
 .commentList p { margin: 4px 0 0; font-size: 15px; line-height: 1.7; color: var(--color-ink); white-space: pre-wrap; overflow-wrap: anywhere; }
-.comments button:not(.darkButton) { min-width: 44px; min-height: 44px; padding: 8px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); font: inherit; font-size: var(--fan-metadata-size); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.comments button:not(.darkButton,[data-fan-select-pill]) { min-width: 44px; min-height: 44px; padding: 8px; border: 0; border-radius: var(--radius-pill); background: transparent; color: var(--color-muted); font: inherit; font-size: var(--fan-metadata-size); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .commentMeta button { margin-left: auto; }
 .commentForm { display: grid; gap:var(--space-2); margin-top:var(--space-6); }
 .commentForm label { font-size: 14px; font-weight: var(--fan-item-title-weight); line-height: var(--fan-body-leading); }
@@ -28,7 +28,7 @@
 .commentForm small { flex: 1; min-width: 0; font-size: 12px; line-height: 1.6; color: var(--color-muted); }
 .darkButton { flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 80px; min-height: 44px; padding: 10px 20px; border: 0; border-radius: var(--radius-pill); background: var(--color-accent); color: var(--color-canvas); font: inherit; font-size: 14px; font-weight: var(--fan-item-title-weight); cursor: pointer; }
 .darkButton:disabled { opacity: var(--fan-disabled-opacity); cursor: not-allowed; }
-.comments button:not(.darkButton):disabled { opacity: var(--fan-disabled-opacity); cursor: not-allowed; }
+.comments button:not(.darkButton,[data-fan-select-pill]):disabled { opacity: var(--fan-disabled-opacity); cursor: not-allowed; }
 .loginComment { display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top:var(--space-6); padding: 12px 16px; border: 1px solid var(--color-line); border-radius: var(--radius-pill); color: var(--color-ink); font-size: 14px; font-weight: var(--fan-item-title-weight); line-height: 1.6; text-align: center; text-decoration: none; }
 .pagination { display: flex; justify-content: space-between; gap: 12px; }
 .pagination:empty { display: none; }
@@ -36,7 +36,7 @@
 .comments [role="alert"] { margin: 12px 0 0; color: var(--color-error); font-size: 14px; line-height: 1.6; }
 .comments :is(button,a,textarea):focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 @media (hover: hover) {
-  .comments button:not(.darkButton):hover, .loginComment:hover { background: var(--color-soft); }
+  .comments button:not(.darkButton,[data-fan-select-pill]):hover, .loginComment:hover { background: var(--color-soft); }
   .darkButton:not(:disabled):hover { background: var(--color-accent-ink); }
 }
 @media (max-width: 47.99rem) {

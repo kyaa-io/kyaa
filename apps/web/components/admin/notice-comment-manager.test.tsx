@@ -106,4 +106,17 @@ describe("NoticeCommentManager pagination", () => {
     finishHide({ ok: true, status: 200, json: async () => ({ hidden: true }) } as Response);
     await waitFor(() => expect(screen.getByRole("button", { name: "다음 페이지" })).toBeEnabled());
   });
+
+  it("names the page and the writing account for an official comment, and only the account otherwise", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ comments: [
+      { ...comment("11111111-1111-4111-8111-111111111111", "공식 인사"), nickname: "slowafternoon", officialName: "앙상블 패치워크" },
+      { ...comment("22222222-2222-4222-8222-222222222222", "팬 인사"), nickname: "크크크", officialName: null },
+    ], nextCursor: null }) }) as Response));
+    render(<NoticeCommentManager />);
+    const official = (await screen.findByText("공식 인사")).closest("article")!;
+    expect(official.querySelector("header")).toHaveTextContent("앙상블 패치워크인증 아티스트slowafternoon");
+    const personal = screen.getByText("팬 인사").closest("article")!;
+    expect(personal.querySelector("header strong")).toHaveTextContent("크크크");
+    expect(personal).not.toHaveTextContent("인증 아티스트");
+  });
 });

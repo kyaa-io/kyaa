@@ -6,7 +6,7 @@ import {feedPageSchema} from '@/features/fan-posts/domain/feed';
 const resource=vi.hoisted(()=>({read:vi.fn(),data:undefined as unknown}));
 vi.mock('./creator-group-home-aside',()=>({CreatorGroupHomeAside:()=>null}));
 vi.mock('@/features/media/ui/creator-media-panel',()=>({CreatorMediaPanel:()=>null}));
-vi.mock('@/features/fanpage/ui/use-community-resource',()=>({useCommunityResource:(url:string|null)=>{if(url)resource.read(url);const data=typeof resource.data==='function'?(resource.data as (url:string|null)=>unknown)(url):resource.data;return {state:{status:'ready',data},retry:()=>{}};}}));
+vi.mock('@/features/fanpage/ui/use-community-resource',()=>({useCommunityResource:(url:string|null)=>{if(url)resource.read(url);const data=typeof resource.data==='function'?(resource.data as (url:string|null)=>unknown)(url):resource.data;return {state:data==='loading'?{status:'loading'}:{status:'ready',data},retry:()=>{}};}}));
 it('uses the existing creator feed and original detail URLs for the compact home, without copying group posts',async()=>{
  resource.data=feedPageSchema.parse(await legacyVisualFixture(new URL('http://localhost/api/celebrities/elina/feed'),'GET','ko','creator')!.json());
  render(<CreatorGroupHome celebrity={legacyVisualCreator('ko')} locale='ko' channelId={null} passportId='10000000-0000-4000-8000-000000000001'/>);
@@ -50,5 +50,14 @@ it('shows five official and five fan posts per page, never fills one side from t
  expect(resource.read.mock.calls.every(([url])=>String(url).includes('source=fans')&&String(url).includes('cursor=fans-2'))).toBe(true);
  expect(screen.getByRole('button',{name:'다음 페이지'})).toBeDisabled();
  fireEvent.click(screen.getByRole('button',{name:'이전 페이지'}));expect(rows()).toHaveLength(7);
+ resource.data=undefined;
+});
+it('draws official posts at once while the fan lane is still loading, and keeps the fan place as a skeleton',async()=>{
+ resource.data=(url:string|null)=>!url?undefined:url.includes('source=official')?feedPageSchema.parse({items:[1,2].map(notice),nextCursor:null}):'loading';
+ const view=render(<CreatorGroupHome celebrity={legacyVisualCreator('ko')} locale='ko' channelId={null}/>);
+ const stories=view.container.querySelector('[data-fan-post-row]')!.closest('section')!;
+ expect(stories.querySelectorAll('[data-fan-post-row][data-notice]')).toHaveLength(2);
+ expect(stories.querySelector('[data-fan-skeleton="post"]')).not.toBeNull();
+ expect(screen.queryByRole('button',{name:'다음 페이지'})).toBeNull();
  resource.data=undefined;
 });
