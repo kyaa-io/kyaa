@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<defs><linearGradient id="g-silver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FAFBFD"/><stop offset="1" stop-color="#A7B1BF"/></linearGradient></defs>
+<g fill="url(#g-silver)" stroke="#4F5A6B" stroke-width="3"><polygon points="60.18,43.67 43.67,60.18 20.33,60.18 3.82,43.67 3.82,20.33 20.33,3.82 43.67,3.82 60.18,20.33"/></g>
+<g fill="none" stroke="#4F5A6B" stroke-width="1.4" opacity=".55"><polygon points="54.64,41.38 41.38,54.64 22.62,54.64 9.36,41.38 9.36,22.62 22.62,9.36 41.38,9.36 54.64,22.62"/></g>
+<polygon points="32.00,16.00 35.53,25.15 45.31,25.67 37.71,31.85 40.23,41.33 32.00,36.00 23.77,41.33 26.29,31.85 18.69,25.67 28.47,25.15" fill="#FFFFFF" stroke="#4F5A6B" stroke-width="2.4" stroke-linejoin="round"/>
+<circle cx="28.5" cy="47" r="2.8" fill="#4F5A6B"/><circle cx="35.5" cy="47" r="2.8" fill="#4F5A6B"/>
+</svg>
