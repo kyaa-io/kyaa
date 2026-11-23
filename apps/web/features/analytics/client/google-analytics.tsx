@@ -67,7 +67,21 @@ function ConsentBar({ onChoose }: { onChoose: (choice: AnalyticsConsent) => void
     policy: analyticsConsentText(locale, "policy"), decline: analyticsConsentText(locale, "decline"), allow: analyticsConsentText(locale, "allow"),
   };
   const privacy = (locale === "ko" ? "/privacy" : `/privacy?locale=${locale}`) as Route;
-  return <section className={styles.bar} aria-label={copy.region}>
+  const bar = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const element = bar.current;
+    if (!element) return;
+    const root = document.documentElement;
+    const measure = () => root.style.setProperty("--analytics-consent-height", `${element.getBoundingClientRect().height}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--analytics-consent-height");
+    };
+  }, []);
+  return <section ref={bar} className={styles.bar} aria-label={copy.region}>
     <div className={styles.inner}>
       <p className={styles.copy}>{copy.question} <Link href={privacy} className={styles.policy}>{copy.policy}</Link></p>
       <div className={styles.actions}>

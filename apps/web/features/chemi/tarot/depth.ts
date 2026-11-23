@@ -3,7 +3,7 @@
  * 카드마다 쓴 풀이 글(content/chemi/tarot/cards.json)에 덧붙이는 문장이고, 같은 카드·같은 방향이면 같은 문장이 나온다.
  */
 import { TAROT_DECK } from "./deck";
-import { tarotLang } from "./script";
+import { tarotLang, type TarotCharacter } from "./script";
 
 type Suit = "major" | "wands" | "cups" | "swords" | "pentacles";
 
@@ -103,6 +103,67 @@ export function tarotRowMore(id: number, label: string) {
   if (!TAROT_DECK[id]) return null;
   const domain = /^[A-Za-z]/.test(label) ? suitDomainEn : suitDomain;
   return (domain[suitOf(id).suit] as Record<string, string | undefined>)[label] ?? null;
+}
+
+const detailVoice = {
+  changha: { advice: " 줘", fact: "", point: " 하면 돼" },
+  elina: { advice: "요", fact: "요", point: " 해 보세요" },
+  yuna: { advice: "", fact: "", point: " 챙겨" },
+  dosa: { advice: "", fact: "", point: "부터 살피시오" },
+} as const;
+
+const casualVerb: Record<string, string> = {
+  하: "해", 보: "봐", 두: "둬", 적: "적어", 주: "줘", 쓰: "써", 보내: "보내", 추: "춰",
+  누: "눠", 듣: "들어", 내: "내", 걸: "걸어", 쉬: "쉬어", 기: "겨",
+  걷: "걸어", 가: "가", 찾: "찾아", 리: "려", 키: "켜", 않: "않아", 묻: "물어",
+  들: "들어", 쌓: "쌓아", 피: "펴", 있: "있어", 열: "열어", 풀: "풀어", 짜: "짜",
+  받: "받아", 우: "워", 놓: "놔", 갖: "가져", 히: "혀", 재: "재", 개: "개",
+  덮: "덮어", 찍: "찍어", 짚: "짚어", 넣: "넣어", 잡: "잡아", 닫: "닫아", 이: "여",
+  훑: "훑어", 지: "져", 믿: "믿어", 빼: "빼", 오: "와", 읽: "읽어", 말: "말아",
+  꾸: "꿔", 지키: "지켜", 붙이: "붙여", 비우: "비워", 피우: "피워", 세우: "세워", 고르: "골라", 따르: "따라", 미루: "미뤄",
+};
+
+export function tarotDetail(text: string, character: TarotCharacter, locale: string): string {
+  if (tarotLang(locale) !== "ko") return text;
+  const voice = detailVoice[character];
+  const line = text.replace(/\.$/, "");
+  if (line.endsWith("기")) {
+    const stem = line.slice(0, -1);
+    const tail = stem.slice(-1);
+    const suffix = [stem.slice(-2), tail].find((part) => Object.hasOwn(casualVerb, part));
+    const casual = suffix && casualVerb[suffix];
+    if (suffix && casual) {
+      const action = stem.slice(0, -suffix.length) + casual;
+      if (character === "dosa" && action.endsWith("봐")) return action.slice(0, -1) + "보시오.";
+      if (action.endsWith("봐")) return `${action}${voice.fact}.`;
+      if (character === "dosa") {
+        const hasFinal = (tail.charCodeAt(0) - 0xac00) % 28 !== 0;
+        const formal = stem.endsWith("듣") || stem.endsWith("걷") || stem.endsWith("묻")
+          ? stem.slice(0, -1) + ({ 듣: "들", 걷: "걸", 묻: "물" })[tail]
+          : stem.replace(/([걸들열풀말])$/, (word) => ({ 걸: "거", 들: "드", 열: "여", 풀: "푸", 말: "마" })[word] ?? word);
+        return `${formal}${hasFinal && (formal === stem || /[듣걷묻]$/.test(stem)) ? "으" : ""}시오.`;
+      }
+      return `${action}${action.endsWith("줘") ? voice.fact : voice.advice}.`;
+    }
+  }
+  if (line.endsWith("요")) {
+    if (character === "elina") return text;
+    if (character === "dosa") {
+      const facts: Record<string, string> = {
+        봐요: "보시오", 점검해요: "점검하시오", 만들어요: "만드오", 붙어요: "붙소",
+        빨라져요: "빨라지오", 닿아요: "닿소", 정해요: "정하오", 열려요: "열리오",
+        커져요: "커지오", 좋아요: "좋소", 움직여요: "움직이시오", 전해요: "전하오",
+        남아요: "남소", 나와요: "나오",
+      };
+      return line.replace(/[^ ]+요$/, (word) => facts[word] ?? word) + ".";
+    }
+    return line.slice(0, -1) + ".";
+  }
+  if (line.endsWith("든다") || line.endsWith("진다")) {
+    const statement = line.slice(0, -2) + (line.endsWith("든다") ? "들어" : "져");
+    return character === "dosa" ? `${line}고 보면 되오.` : `${statement}${voice.fact}.`;
+  }
+  return `${line}${voice.point}.`;
 }
 
 /* 영어 화면의 근거 줄과 덧붙이는 문장. 영어 풀이 글(cards.en.json)의 줄 이름은 Love · Work · Money · Advice 다. */

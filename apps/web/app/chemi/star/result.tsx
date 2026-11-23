@@ -134,7 +134,7 @@ export function StarResult({
     const byBody = new Map(result.natal.map((planet) => [planet.body, planet.sign]));
     return (target: string) => byBody.get(target) ?? null;
   }, [result.natal]);
-  const reasons = pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate));
+  const reasons = pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate, character));
 
   // 처음 만든 결과의 보상 연출과 오늘 받은 몫을 한 번 가져온다.
   useEffect(() => {

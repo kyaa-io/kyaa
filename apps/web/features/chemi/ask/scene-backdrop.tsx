@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { MediaBackdrop, mediaFillClass } from "@/components/fan-ui/media-fill";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import styles from "./ask.module.css";
 
@@ -44,7 +45,8 @@ export function SceneBackdrop({ tall, wide, loop, alt, expression }: { tall: str
         {expression}
       </div>
       {loop ? (
-        <div className={styles.loop}>
+        <div className={`${styles.loop} ${mediaFillClass}`}>
+          <MediaBackdrop src={wide} />
           <SceneVideo src={loop} objectPosition="center 26%" />
         </div>
       ) : null}

@@ -843,7 +843,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
         ) : (
           <div className={`${styles.choices} ${styles.topics} ${styles.reveal}`} data-shown={spoken ? "" : undefined} role="group" aria-label={text("askTopics")}>
             {ASK_TOPICS.map((item) => (
-              <FanAction key={item} variant="text" className={styles.cell} leadingIcon={<FanIcon icon={topicIcon[item]} />} onClick={() => askGo({ step: "write", topic: item })}>
+              <FanAction key={item} variant="text" className={styles.cell} leadingIcon={item === "free" && locale === "ko" ? undefined : <FanIcon icon={topicIcon[item]} />} onClick={() => askGo({ step: "write", topic: item })}>
                 {text(topicKey[item])}
               </FanAction>
             ))}
@@ -864,6 +864,11 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   const expression = view.startsWith("follow") ? expressionFor.followup
     : view.startsWith("answer") && shown?.status === "answered" && !shown.klass ? expressionFor.choicePraise
     : expressionFor.arrival;
+  const historyDate = (item: Thread) => {
+    const matches = state?.threads.filter((thread) => thread.date === item.date && thread.question === item.question) ?? [];
+    const order = matches.length - matches.findIndex((thread) => thread.threadId === item.threadId);
+    return matches.length > 1 ? `${shortDate(item.date)} · #${order}` : shortDate(item.date);
+  };
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
     <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-crisis={crisis ? "" : undefined} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
@@ -890,7 +895,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
           <FanIcon icon={History} />
         </FanIconButton>
       </div>
-      {/* PC 는 오른쪽 360px 판에 물어본 것을 늘 띄운다. 줄을 누르면 가운데가 그 질문으로 바뀐다(기획 03-6 PC 21, DF-ASK-014). */}
+      {/* PC 는 대화판 왼쪽 아래에 물어본 것을 늘 띄운다. 줄을 누르면 가운데가 그 질문으로 바뀐다(기획 03-6 PC 21, DF-ASK-014). */}
       {wide && state && !crisis ? (
         <aside className={styles.asked} aria-label={text("askHistory")}>
           <FanText as="p" role="label">{text("askHistory")}</FanText>
@@ -905,7 +910,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
                         <FanText role="body" className={styles.clip}>{item.question}</FanText>
                         <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
                         <FanText role="meta">
-                          {shortDate(item.date)} · {creatorName(item.character, locale)}
+                          {historyDate(item)} · {creatorName(item.character, locale)}
                           {item.followupAnswer ? "" : ` · ${text("askFollow")} ${text("askFollowOnce")}`}
                         </FanText>
                       </span>
@@ -958,7 +963,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
                       <FanText role="item" className={styles.clip}>{item.question}</FanText>
                       <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
                       <FanText role="meta">
-                        {shortDate(item.date)}
+                        {historyDate(item)}
                         {item.topic ? ` · ${text(topicKey[item.topic])}` : ""}
                         {item.followupAnswer ? "" : ` · ${text("askFollow")} ${text("askFollowOnce")}`}
                       </FanText>

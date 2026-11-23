@@ -30,8 +30,16 @@ const thread = z.object({
 });
 const room = z.object({
   left: z.number(), pausedUntil: z.string().nullish(),
+  threads: z.array(z.object({
+    threadId: z.string(), answer: z.string().nullish(), followupAnswer: z.string().nullish(),
+  })).optional(),
   extraLeft: z.number().optional(), extraCost: z.number().optional(), points: z.number().optional(),
 });
+
+function recentAnswers(state: z.infer<typeof room>, exclude?: string) {
+  return (state.threads ?? []).filter((item) => item.threadId !== exclude).slice(0, 3)
+    .flatMap((item) => [item.followupAnswer, item.answer].filter((answer): answer is string => Boolean(answer)));
+}
 
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const STATUS: Record<string, number> = { CHEMI_LIMIT: 409, CHEMI_NOT_FOUND: 404, CHEMI_ASK_PAUSED: 429, INSUFFICIENT_POINTS: 409, CHEMI_UNAVAILABLE: 503 };
@@ -97,10 +105,14 @@ export function askRoute(op: "state" | "submit" | "followup" | "evidence", reque
           : { result: null, kind: undefined };
         const ask = { ...asked, topic: asked.topic ?? "free" as const, question: body.question, result: reading.result, kind: reading.kind };
         // 이미 이어 물은 질문은 SQL 이 저장된 답을 돌려주거나 거절하므로 AI 를 부르지 않는다.
-        const written = asked.followupAnswer || !asked.question || !asked.answer ? null
-          : await aiAnswer({ ...ask, before: { question: asked.question, answer: asked.answer } }, deps.rpc, p_user);
+        const before = asked.question && asked.answer ? { question: asked.question, answer: asked.answer } : undefined;
+        let written = null;
+        if (before && !asked.followupAnswer && askAiReady()) {
+          const state = room.parse(await deps.rpc("chemi_ask_state", { p_user, p_reading: null, p_character: null }));
+          written = await aiAnswer({ ...ask, before, recentAnswers: recentAnswers(state, body.threadId) }, deps.rpc, p_user);
+        }
         return Response.json(await deps.rpc("chemi_ask_followup", {
-          p_user, p_id: body.threadId, p_question: body.question, p_answer: written ?? answerFollowup({ ...ask, before: asked.question && asked.answer ? { question: asked.question, answer: asked.answer } : undefined }),
+          p_user, p_id: body.threadId, p_question: body.question, p_answer: written ?? answerFollowup({ ...ask, before }),
         }), { headers });
       }
       const body = submit.parse(await boundedJson(input, 2048));
@@ -108,9 +120,10 @@ export function askRoute(op: "state" | "submit" | "followup" | "evidence", reque
       const reading = klass ? null
         : saved.parse(await deps.rpc("chemi_reading_detail", { p_user, p_id: body.readingId, p_character: body.character }));
       // 다시 보낸 요청·남은 질문 없음·멈춤은 SQL 이 답을 쓰지 않으므로 AI 를 부르지 않는다.
-      const written = reading && askAiReady() && !(await deps.rpc("chemi_ask_thread", { p_user, p_id: body.threadId }))
-        && open(room.parse(await deps.rpc("chemi_ask_state", { p_user, p_reading: null, p_character: null })), body.extra === true)
-        ? await aiAnswer({ ...body, result: reading.result, kind: reading.kind }, deps.rpc, p_user) : null;
+      const state = reading && askAiReady() && !(await deps.rpc("chemi_ask_thread", { p_user, p_id: body.threadId }))
+        ? room.parse(await deps.rpc("chemi_ask_state", { p_user, p_reading: null, p_character: null })) : null;
+      const written = reading && state && open(state, body.extra === true)
+        ? await aiAnswer({ ...body, result: reading.result, kind: reading.kind, recentAnswers: recentAnswers(state) }, deps.rpc, p_user) : null;
       return Response.json(await deps.rpc("chemi_ask_submit", {
         p_user, p_id: body.threadId, p_character: body.character, p_content: body.content, p_reading: body.readingId,
         p_topic: body.topic, p_question: body.question,

@@ -1,0 +1,17 @@
+{
+  "changes": [
+    "질문 답변의 마지막 문장이 최근 답과 같은 말로 시작하거나 문장 사이에 부호가 빠지면 다시 작성해요.",
+    "동의 안내 아래에서 뒤로 가기와 지난 질문을 바로 누를 수 있어요. 넓은 화면에서는 지난 질문이 대화 왼쪽 아래에 놓이고 영상은 원본 크기보다 커지지 않아요.",
+    "같은 날 제목이 같은 질문은 기록에 차례가 표시돼요.",
+    "타로 상세는 선택한 최애의 말투로 읽을 수 있고, 별자리 행성 풀이는 각도와 분야에 따라 달라져요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/star",
+  "images": [
+    "release-notes/images/2026-11-24-chemi-r4d-ask-topic-390.png",
+    "release-notes/images/2026-11-24-chemi-r4d-ask-topic-1440.png",
+    "release-notes/images/2026-11-24-chemi-r4d-ask-history-390.png",
+    "release-notes/images/2026-11-24-chemi-r4d-tarot-result-390.png",
+    "release-notes/images/2026-11-24-chemi-r4d-star-reasons-390.png"
+  ]
+}
