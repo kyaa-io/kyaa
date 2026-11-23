@@ -4,6 +4,7 @@ import { type SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/server/data/client";
 import {
   homeBannerManagerDataSchema,
+  isScheduledPopup,
   type HomeBannerCommand,
   type HomeBannerManagerData,
 } from "../../features/home/domain/home-banner";
@@ -43,7 +44,7 @@ export function createHomeBannerManagerRepository(
         const { data, error } = await db.rpc("save_admin_managed_banner", {
           ...common, p_banner_id: command.id, p_expected_revision: command.expectedRevision,
           p_kind: command.kind, p_celebrity_id: command.celebrityId,
-          p_localizations: command.placement === "member_event_popup"
+          p_localizations: isScheduledPopup(command.placement)
             ? { ...command.localizations, startsAt: command.startsAt, endsAt: command.endsAt }
             : command.localizations, p_placement: command.placement ?? null, p_category: command.category ?? null,
         });

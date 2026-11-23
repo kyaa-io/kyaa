@@ -1,0 +1,108 @@
+begin;
+set local lock_timeout='5s';
+alter table public.home_banners drop constraint home_banners_placement_check,
+  drop constraint home_banners_popup_schedule_check,
+  add constraint home_banners_placement_check check (placement in (
+    'home','groups','both','home_below_board','home_between_events','home_mid',
+    'fanpage_below_gallery','fanpage_second','dukjil_mid','dukjil_side','dukjil_side_2','dukjil_side_3',
+    'member_event_popup','chemi_promo_popup'
+  )),
+  add constraint home_banners_popup_schedule_check check (
+    placement not in ('member_event_popup','chemi_promo_popup') or (
+      popup_starts_at is not null and popup_ends_at is not null and popup_starts_at < popup_ends_at
+    )
+  );
+
+create or replace function public.read_published_slot_banners(p_locale public.content_locale,p_area text)
+returns jsonb language plpgsql stable security definer set search_path='' as $$
+begin
+ if p_locale is null or p_area is null or p_area not in('home','fanpage','dukjil','member-event','chemi-promo')then raise exception 'invalid banner area' using errcode='22023';end if;
+ return coalesce((select jsonb_object_agg(x.placement,x.banner) from(
+  select distinct on(b.placement) b.placement,jsonb_build_object(
+    'id',b.id,'kind',b.kind,'celebrityId',b.celebrity_id,'placement',b.placement,'category',b.category,
+    'title',l.title,'description',l.description,'ctaLabel',l.cta_label,
+    'href',l.href,'alt',l.alt,
+    'desktopImage',public.home_banner_asset_json(l.desktop_asset_id),
+    'mobileImage',public.home_banner_asset_json(l.mobile_asset_id))
+    || case when p_area in ('member-event','chemi-promo') then jsonb_build_object('startsAt',b.popup_starts_at,'endsAt',b.popup_ends_at) else '{}'::jsonb end banner
+  from public.home_banners b
+  join public.home_banner_localizations l on l.banner_id=b.id and l.locale=p_locale
+  where b.placement=any(case p_area when 'chemi-promo' then array['chemi_promo_popup'] when 'member-event' then array['member_event_popup'] when 'home' then array['home_below_board','home_between_events','home_mid'] when 'fanpage' then array['fanpage_below_gallery','fanpage_second'] else array['dukjil_mid','dukjil_side','dukjil_side_2','dukjil_side_3'] end) and b.publication_status='published'
+    and (p_area <> 'member-event' or (
+      now() >= b.popup_starts_at and now() < b.popup_ends_at and (
+        exists(select 1 from public.live_events e
+          join public.celebrities c on c.id=e.celebrity_id
+          where l.href='/live/'||e.slug and e.publication_status='published'
+            and public.live_effective_status_at(e.id,now()) in ('scheduled','live') and c.status='published' and c.archived_at is null
+            and now() >= e.reservation_opens_at and now() < e.ends_at)
+        or exists(select 1 from public.group_raffles r
+          join public.group_pages g on g.id=r.page_id
+          left join public.celebrities c on c.id=g.celebrity_id
+          where l.href='/pages/groups/'||r.page_id||'/raffles/'||r.id and g.status='published'
+            and (g.celebrity_id is null or (c.status='published' and c.archived_at is null))
+            and r.cancelled_at is null and r.drawn_at is null and now() >= r.opens_at and now() < r.closes_at)
+      )
+    ))
+    and (p_area <> 'chemi-promo' or (
+      now() >= b.popup_starts_at and now() < b.popup_ends_at
+      and l.href in ('/chemi','/guide/chemi')
+    ))
+    and (b.kind<>'regular_live' or exists(select 1 from public.celebrities c where c.id=b.celebrity_id and c.status='published'))
+    and length(btrim(l.title))>0 and length(btrim(l.cta_label))>0
+    and length(btrim(l.alt))>0 and l.href<>'' and l.desktop_asset_id is not null
+  order by b.placement,b.sort_order,b.id)x),'{}'::jsonb);
+end $$;
+revoke all on function public.read_published_slot_banners(public.content_locale,text) from public,anon,authenticated;
+grant execute on function public.read_published_slot_banners(public.content_locale,text) to service_role;
+
+create or replace function public.save_admin_managed_banner(
+  p_actor_app_user_id uuid,p_actor_admin_allowlist_id uuid,p_correlation_id uuid,
+  p_banner_id uuid,p_expected_revision integer,p_kind public.home_banner_kind,p_celebrity_id uuid,
+  p_localizations jsonb,p_placement text default null,p_category text default null
+) returns jsonb language plpgsql security definer set search_path='' as $$
+declare b public.home_banners; loc public.content_locale; payload jsonb; v_before jsonb; v_start timestamptz; v_end timestamptz; v_href text; v_placement text;
+begin
+  perform public.assert_active_admin(p_actor_app_user_id,p_actor_admin_allowlist_id,true);
+  perform pg_catalog.pg_advisory_xact_lock(pg_catalog.hashtextextended('home-banners',20260913));
+  if p_localizations is null or jsonb_typeof(p_localizations)<>'object' or not (p_localizations ?& array['ko','en']) then raise exception 'invalid banner localizations'; end if;
+  if p_kind='regular_live' and p_celebrity_id is null then raise exception 'celebrity required'; end if;
+  v_placement := coalesce(p_placement, (select placement from public.home_banners where id=p_banner_id));
+  if v_placement in ('member_event_popup','chemi_promo_popup') then
+    v_start := (p_localizations->>'startsAt')::timestamptz;
+    v_end := (p_localizations->>'endsAt')::timestamptz;
+    v_href := p_localizations->'ko'->>'href';
+    if p_kind<>'announcement' or v_start is null or v_end is null or not (v_start<v_end)
+       or v_href is distinct from p_localizations->'en'->>'href'
+       or (v_placement='chemi_promo_popup' and (v_href is null or v_href not in ('/chemi','/guide/chemi')))
+       or (v_placement='member_event_popup' and not (
+         exists(select 1 from public.live_events e where v_href='/live/'||e.slug)
+         or exists(select 1 from public.group_raffles r where v_href='/pages/groups/'||r.page_id||'/raffles/'||r.id)
+       )) then raise exception 'invalid scheduled popup'; end if;
+  end if;
+  if p_banner_id is null then
+    if p_expected_revision is distinct from 0 then raise exception 'revision conflict'; end if;
+    insert into public.home_banners(kind,celebrity_id,placement,category,popup_starts_at,popup_ends_at,sort_order) values(p_kind,p_celebrity_id,coalesce(p_placement,'home'),coalesce(p_category,case when p_kind='regular_live' then 'live' else 'announcement' end),v_start,v_end,coalesce((select max(sort_order)+1 from public.home_banners),0)) returning * into b;
+  else
+    select * into b from public.home_banners x where x.id=p_banner_id for update;
+    if not found then raise exception 'banner not found'; end if;
+    v_before:=to_jsonb(b);
+    if b.revision is distinct from p_expected_revision then raise exception 'revision conflict'; end if;
+    update public.home_banners set kind=p_kind,celebrity_id=p_celebrity_id,placement=coalesce(p_placement,b.placement),category=coalesce(p_category,b.category),popup_starts_at=v_start,popup_ends_at=v_end,revision=revision+1 where id=p_banner_id returning * into b;
+  end if;
+  foreach loc in array array['ko','en']::public.content_locale[] loop
+    payload:=p_localizations->(loc::text);
+    insert into public.home_banner_localizations(banner_id,locale,title,description,cta_label,href,alt,desktop_asset_id,mobile_asset_id)
+    values(b.id,loc,coalesce(payload->>'title',''),coalesce(payload->>'description',''),coalesce(payload->>'ctaLabel',''),coalesce(payload->>'href',''),coalesce(payload->>'alt',''),nullif(payload->>'desktopAssetId','')::uuid,nullif(payload->>'mobileAssetId','')::uuid)
+    on conflict(banner_id,locale) do update set title=excluded.title,description=excluded.description,cta_label=excluded.cta_label,href=excluded.href,alt=excluded.alt,desktop_asset_id=excluded.desktop_asset_id,mobile_asset_id=excluded.mobile_asset_id;
+  end loop;
+  if b.publication_status='published' and exists(
+    select 1 from public.home_banner_localizations l where l.banner_id=b.id
+      and (length(btrim(l.title))=0 or length(btrim(l.cta_label))=0 or length(btrim(l.alt))=0 or l.href='' or l.desktop_asset_id is null)
+  ) then raise exception 'banner publication incomplete'; end if;
+  insert into public.audit_logs(actor_app_user_id,actor_admin_allowlist_id,action,entity_type,entity_id,before_after_summary,correlation_id)
+  values(p_actor_app_user_id,p_actor_admin_allowlist_id,'home_banner.saved','home_banner',b.id::text,jsonb_build_object('before',v_before,'after',to_jsonb(b)),p_correlation_id);
+  return jsonb_build_object('id',b.id,'revision',b.revision);
+end $$;
+
+notify pgrst, 'reload schema';
+commit;

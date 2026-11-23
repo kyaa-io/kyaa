@@ -1,0 +1,45 @@
+.page {
+  display: grid;
+  gap: var(--space-8);
+  padding-block: var(--space-6) var(--space-12);
+}
+
+.intro, .growth {
+  display: grid;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.intro {
+  background: var(--color-soft);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.intro .copy { padding: var(--space-5); }
+.copy, .section, .panel { display: grid; gap: var(--space-3); }
+.hero { display: block; width: 100%; height: auto; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
+}
+.art { position: relative; aspect-ratio: 2 / 1; }
+.art img { object-fit: cover; object-position: center 35%; }
+.cardCopy { display: grid; flex: 1; gap: var(--space-2); padding: var(--space-3); grid-template-rows: auto 1fr auto; }
+.cardCopy a { color: inherit; text-underline-offset: 0.15em; }
+.cardCopy a::after { content: ""; position: absolute; inset: 0; }
+.panel { background: var(--color-soft); border-radius: var(--radius-card); padding: var(--space-5); }
+.growth img { width: 100%; max-width: 320px; height: auto; border-radius: var(--radius-card); }
+.page > a { justify-self: start; }
+
+@media (min-width: 48rem) {
+  .intro { grid-template-columns: 2fr 3fr; }
+  .growth { grid-template-columns: minmax(0, 320px) 1fr; }
+  .grid:has(> :nth-child(3)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}

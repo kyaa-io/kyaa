@@ -56,3 +56,17 @@ it("returns member event slots privately after checking the bearer token", async
   expect(response.headers.get("vary")).toBe("Authorization");
   expect((await response.json()).slots.member_event_popup.href).toBe(sqlResult.member_event_popup.href);
 });
+
+it("returns the scheduled Chemi promotion to guests without authorizing member events", async () => {
+  const promo = {
+    ...banner("33333333-3333-4333-8333-333333333333", "chemi_promo_popup"),
+    href: "/guide/chemi", startsAt: "2026-11-24T00:00:00Z", endsAt: "2026-12-01T00:00:00Z",
+  };
+  state.rpc.mockResolvedValueOnce({ data: { chemi_promo_popup: promo, ...sqlResult }, error: null });
+  const response = await GET(new Request("https://byus.test/api/public/banner-slots?area=chemi-promo&locale=ja"));
+  expect(response.status).toBe(200);
+  expect(response.headers.get("cache-control")).toContain("no-store");
+  expect(state.authorize).not.toHaveBeenCalled();
+  expect(state.rpc).toHaveBeenCalledWith("read_published_slot_banners", { p_locale: "en", p_area: "chemi-promo" });
+  expect(await response.json()).toEqual({ slots: { chemi_promo_popup: promo } });
+});

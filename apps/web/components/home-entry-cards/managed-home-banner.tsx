@@ -10,7 +10,7 @@ import type { Route } from "next";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
-import { isGuideBanner, localizedBannerHref, type HomeBanner } from "../../features/home/domain/home-banner";
+import { isChemiPromoHref, isGuideBanner, localizedBannerHref, type HomeBanner } from "../../features/home/domain/home-banner";
 import { FIRST_STEPS_BANNER_ID } from "../../features/home/domain/first-steps-home-banner";
 import { SIGNUP_RAFFLE_BANNER_ID } from "../../features/home/domain/signup-raffle-home-banner";
 import { MISSIONBOOK_BANNER_ID } from "../../features/home/domain/missionbook-home-banner";
@@ -61,12 +61,13 @@ function BannerArtwork({ banner, priority, creatorWelcome, campaign }: { banner:
 export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent = false }: { banner: HomeBanner; locale: AppLocale; priority?: boolean; liveEvent?: boolean }) {
   const gggiCampaign = banner.id === "8bf2f180-cb32-4f00-93e2-e84b570ad450";
   const guideArt = isGuideBanner(banner);
+  const chemi = guideArt && isChemiPromoHref(banner.href);
   const missionbook = banner.id === MISSIONBOOK_BANNER_ID;
   const creatorWelcome = banner.kind === "announcement" && banner.celebrityId !== null && banner.desktopImage.width === banner.desktopImage.height;
   const artwork = <BannerArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={priority} creatorWelcome={creatorWelcome} campaign={gggiCampaign} />;
-  return <div className={styles.root} data-managed-home-banner={banner.id} data-signup-raffle={banner.id === SIGNUP_RAFFLE_BANNER_ID || undefined} data-creator-welcome={creatorWelcome} data-guide-art={guideArt || undefined} data-missionbook={missionbook || undefined} data-first-steps={banner.id === FIRST_STEPS_BANNER_ID || undefined} data-gggi-campaign={gggiCampaign || undefined}>
-    <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={missionbook ? "missionbook" : ["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
-      eyebrow={isAdminEventBanner(banner) ? <EventDayEyebrow locale={locale} /> : banner.category && ['event','group','fanpage'].includes(banner.category) || guideArt ? bannerCategoryLabel(banner.category ?? "guide", locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
+  return <div className={styles.root} data-managed-home-banner={banner.id} data-signup-raffle={banner.id === SIGNUP_RAFFLE_BANNER_ID || undefined} data-creator-welcome={creatorWelcome} data-guide-art={guideArt && !chemi || undefined} data-chemi-art={chemi || undefined} data-missionbook={missionbook || undefined} data-first-steps={banner.id === FIRST_STEPS_BANNER_ID || undefined} data-gggi-campaign={gggiCampaign || undefined}>
+    <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={chemi ? "chemi" : missionbook ? "missionbook" : ["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
+      eyebrow={chemi ? (locale === "ko" ? "케미 베타" : "Chemi beta") : isAdminEventBanner(banner) ? <EventDayEyebrow locale={locale} /> : banner.category && ['event','group','fanpage'].includes(banner.category) || guideArt ? bannerCategoryLabel(banner.category ?? "guide", locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={missionbook ? <MissionbookLikeCount locale={locale} tone="banner" /> : banner.description}
       action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
   </div>;

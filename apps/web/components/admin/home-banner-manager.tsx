@@ -1,5 +1,7 @@
 "use client";
 
+import { isScheduledPopup } from "@/features/home/domain/home-banner";
+
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { ArrowDown, ArrowUp, ImagePlus, Plus, RefreshCw, Save, Send, Undo2, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -73,6 +75,7 @@ const issueLabels = (locale: AdminLocale) => {
 
 /** Sliders first, then the managed slots (261107-2 C6). One banner shows per slot: the first published one in this list's order. */
 const placementOptions: readonly (readonly [NonNullable<Draft["placement"]>, string, string])[] = [
+  ["chemi_promo_popup", "케미 홍보 팝업", "Chemi promotion popup"],
   ["member_event_popup", "회원 이벤트 팝업", "Member event popup"],
   ["home", "홈", "Home"], ["groups", "모임 탐색", "Group discovery"], ["both", "홈과 모임 탐색", "Home and group discovery"],
   ["home_below_board", "홈 슬롯 · 팬게시판 아래", "Home slot · below the board"], ["home_between_events", "홈 슬롯 · 이벤트 카드 사이", "Home slot · between event cards"],
@@ -159,12 +162,12 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
     const localizations = Object.fromEntries((["ko", "en"] as const).map((language) => {
       const item = value.localizations[language];
       return [language, {
-        title: item.title, description: item.description, ctaLabel: item.ctaLabel, href: value.placement === "member_event_popup" ? value.localizations.ko.href : item.href, alt: item.alt,
+        title: item.title, description: item.description, ctaLabel: item.ctaLabel, href: isScheduledPopup(value.placement) ? value.localizations.ko.href : item.href, alt: item.alt,
         desktopAssetId: item.desktopImage?.id ?? null, mobileAssetId: item.mobileImage?.id ?? null,
       }];
     })) as SaveCommand["localizations"];
-    return { action: "save", id: value.id || null, expectedRevision: value.revision, kind: value.placement === "member_event_popup" ? "announcement" : value.kind,
-      ...(value.placement === "member_event_popup" ? { startsAt: value.startsAt, endsAt: value.endsAt } : {}),
+    return { action: "save", id: value.id || null, expectedRevision: value.revision, kind: isScheduledPopup(value.placement) ? "announcement" : value.kind,
+      ...(isScheduledPopup(value.placement) ? { startsAt: value.startsAt, endsAt: value.endsAt } : {}),
       placement: value.placement, category: value.category, celebrityId: value.celebrityId, localizations };
   }
 
@@ -259,9 +262,9 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
             <form className={styles.form} onSubmit={(event) => { event.preventDefault(); void save(); }}>
               <div className={styles.row}>
                 <label className={styles.field}>{locale === 'ko' ? '표시 위치' : 'Placement'}<select disabled={!canWrite} value={draft.placement ?? 'home'} onChange={event=>updateRoot({placement:event.target.value as Draft['placement']})}>{placementOptions.map(([value])=><option key={value} value={value}>{placementLabel(value, locale)}</option>)}</select></label>
-                {draft.placement === "member_event_popup" && <>
-                  <label className={styles.field}>{locale === "ko" ? "이벤트 상세 주소" : "Event detail path"}
-                    <input disabled={!canWrite} maxLength={2048} placeholder="/live/…" value={draft.localizations.ko.href} onChange={event => {
+                {isScheduledPopup(draft.placement) && <>
+                  <label className={styles.field}>{draft.placement === "chemi_promo_popup" ? (locale === "ko" ? "케미 이동 주소" : "Chemi destination") : (locale === "ko" ? "이벤트 상세 주소" : "Event detail path")}
+                    <input disabled={!canWrite} maxLength={2048} placeholder={draft.placement === "chemi_promo_popup" ? "/guide/chemi" : "/live/…"} value={draft.localizations.ko.href} onChange={event => {
                       const href = event.target.value;
                       updateRoot({ localizations: { ko: {...draft.localizations.ko, href}, en: {...draft.localizations.en, href} } });
                     }} />
@@ -272,8 +275,8 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
                   </label>)}
                 </>}
                 <label className={styles.field}>{locale === 'ko' ? '분류' : 'Category'}<select disabled={!canWrite} value={draft.category ?? (draft.kind==='regular_live'?'live':'announcement')} onChange={event=>updateRoot({category:event.target.value as Draft['category']})}>{[['event','이벤트','Event'],['group','모임','Group'],['fanpage','팬페이지','Fan page'],['announcement','소식','News'],['live','LIVE','LIVE'],['guide','안내','Guide'],['ad','광고(외부)','Ad (external)']].map(([value,ko,en])=><option key={value} value={value}>{locale==='ko'?ko:en}</option>)}</select></label>
-                <label className={styles.field}>{t.kind}<select disabled={!canWrite || draft.placement === "member_event_popup"} value={draft.placement === "member_event_popup" ? "announcement" : draft.kind} onChange={(event) => updateRoot({ kind: event.target.value as Draft["kind"], celebrityId: event.target.value === "regular_live" ? draft.celebrityId : null })}><option value="regular_live">{t.regular}</option><option value="announcement">{t.announcement}</option></select></label>
-                <label className={styles.field}>{t.creator}<select disabled={!canWrite || draft.placement === "member_event_popup" || draft.kind !== "regular_live"} aria-invalid={attemptedPublish && issueSet.has("celebrityId")} value={draft.celebrityId ?? ""} onChange={(event) => updateRoot({ celebrityId: event.target.value || null })}><option value="">{t.chooseCreator}</option>{data?.celebrities.map((creator) => <option key={creator.id} value={creator.id}>{locale === "ko" ? creator.nameKo : creator.nameEn}</option>)}</select></label>
+                <label className={styles.field}>{t.kind}<select disabled={!canWrite || isScheduledPopup(draft.placement)} value={isScheduledPopup(draft.placement) ? "announcement" : draft.kind} onChange={(event) => updateRoot({ kind: event.target.value as Draft["kind"], celebrityId: event.target.value === "regular_live" ? draft.celebrityId : null })}><option value="regular_live">{t.regular}</option><option value="announcement">{t.announcement}</option></select></label>
+                <label className={styles.field}>{t.creator}<select disabled={!canWrite || isScheduledPopup(draft.placement) || draft.kind !== "regular_live"} aria-invalid={attemptedPublish && issueSet.has("celebrityId")} value={draft.celebrityId ?? ""} onChange={(event) => updateRoot({ celebrityId: event.target.value || null })}><option value="">{t.chooseCreator}</option>{data?.celebrities.map((creator) => <option key={creator.id} value={creator.id}>{locale === "ko" ? creator.nameKo : creator.nameEn}</option>)}</select></label>
               </div>
               {(["ko", "en"] as const).map((language) => {
                 const localized = draft.localizations[language];
@@ -284,14 +287,14 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
                   </div>
                   <label className={styles.field}>{t.descriptionField}<textarea disabled={!canWrite} maxLength={600} value={localized.description} onChange={(e) => updateLocalization(language, { description: e.target.value })} /></label>
                   <div className={styles.row}>
-                    {draft.placement !== "member_event_popup" && <label className={styles.field}>{t.href}<input disabled={!canWrite} aria-invalid={attemptedPublish && issueSet.has(`${language}.href`)} maxLength={2048} placeholder="/live/…" value={localized.href} onChange={(e) => updateLocalization(language, { href: e.target.value })} /></label> }
+                    {!isScheduledPopup(draft.placement) && <label className={styles.field}>{t.href}<input disabled={!canWrite} aria-invalid={attemptedPublish && issueSet.has(`${language}.href`)} maxLength={2048} placeholder="/live/…" value={localized.href} onChange={(e) => updateLocalization(language, { href: e.target.value })} /></label> }
                     <label className={styles.field}>{t.alt}<input disabled={!canWrite} aria-invalid={attemptedPublish && issueSet.has(`${language}.alt`)} maxLength={300} value={localized.alt} onChange={(e) => updateLocalization(language, { alt: e.target.value })} /></label>
                   </div>
                   <div className={styles.images}>{(["desktopImage", "mobileImage"] as const).map((field) => {
                     const asset = localized[field]; const key = `${language}.${field}`;
                     return <section key={field} className={styles.imageCard} aria-label={field === "desktopImage" ? t.desktop : t.mobile}>
                       <h3>{field === "desktopImage" ? t.desktop : t.mobile}</h3>
-                      <div className={`${styles.preview} ${draft.placement === "member_event_popup" && asset ? styles.popupPreview : field === "mobileImage" ? styles.mobile : ""}`}>{asset ? <img src={asset.url} alt={localized.alt || ""} /> : <span>{t.noImage}</span>}</div>
+                      <div className={`${styles.preview} ${isScheduledPopup(draft.placement) && asset ? styles.popupPreview : field === "mobileImage" ? styles.mobile : ""}`}>{asset ? <img src={asset.url} alt={localized.alt || ""} /> : <span>{t.noImage}</span>}</div>
                       <div className={styles.imageActions}>
                         <label className={styles.uploadLabel}><ImagePlus aria-hidden="true" />{uploading === key ? "…" : t.upload}<input type="file" accept="image/*" disabled={!canWrite || !!uploading} onChange={(event) => void upload(language, field, event)} /></label>
                         {asset && <button className={styles.danger} type="button" disabled={!canWrite || !!uploading} onClick={() => updateLocalization(language, { [field]: null })}><X aria-hidden="true" />{t.remove}</button>}
