@@ -64,7 +64,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
         <div className={styles.copy}>
           <FanText role="meta">{t.beta}</FanText>
           <FanHeading as="h1">{t.title}</FanHeading>
-          <FanText>{t.intro}</FanText>
+          <FanText role="body">{t.intro}</FanText>
         </div>
         <Image unoptimized className={styles.hero} src="/chemi/chemi-promo.webp" width={1774} height={887} priority alt="" />
       </header>
@@ -75,7 +75,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
             <div className={styles.art}><Image unoptimized src={`/chemi/${art[key]}`} fill sizes="(min-width: 768px) 25vw, 50vw" alt="" /></div>
             <div className={styles.cardCopy}>
               <FanHeading as="h3"><a href={`${href}?locale=${locale}`}>{names[key]}</a></FanHeading>
-              <FanText>{names.descriptions[key]}</FanText>
+              <FanText role="body">{names.descriptions[key]}</FanText>
               <FanText role="meta">+{EARN[key][1]} EXP</FanText>
             </div>
           </article>)}
@@ -83,15 +83,15 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
       </section>)}
       <section className={styles.panel}>
         <FanHeading>{t.points}</FanHeading>
-        <FanText>{t.games}</FanText>
-        <FanText>{t.dates}</FanText>
+        <FanText role="body">{t.games}</FanText>
+        <FanText role="body">{t.dates}</FanText>
       </section>
       <section className={styles.growth}>
         <Image unoptimized src="/chemi/grow/room-changha-v2.webp" width={320} height={320} alt="" />
         <div className={styles.copy}>
           <FanHeading>{t.growth}</FanHeading>
-          <FanText>{t.growthDetail}</FanText>
-          <FanText>{t.album}</FanText>
+          <FanText role="body">{t.growthDetail}</FanText>
+          <FanText role="body">{t.album}</FanText>
         </div>
       </section>
       <FanAction variant="primary" size="lg" href={`/chemi?locale=${locale}`}>{t.start}</FanAction>
