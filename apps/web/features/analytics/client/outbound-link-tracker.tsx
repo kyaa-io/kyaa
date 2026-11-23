@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { decorateOutboundUrl, outboundCampaign, outboundKindSchema, outboundPlacementSchema, outboundTrackingAllowed } from "../domain/outbound-link";
+import { advertiserForBanner } from "../domain/banner-ad";
+import { observeAdImpressions } from "./observe-ad-impressions";
 import { recordProductEventV1 } from "./product-event-client";
 
 const REACT_FIBER = "__reactFiber$", REACT_PROPS = "__reactProps$";
@@ -69,7 +71,11 @@ export function trackOutboundLinks(root: Document, pathname: string) {
     owned.set(anchor, { original, decorated: result.href });
     return result;
   }
-  const scan = () => root.querySelectorAll<HTMLAnchorElement>("a[href]").forEach(decorate);
+  const impressions = observeAdImpressions(root);
+  const scan = () => {
+    root.querySelectorAll<HTMLAnchorElement>("a[href]").forEach(decorate);
+    impressions.scan();
+  };
   scan();
   const observer = new MutationObserver(scan);
   observer.observe(root.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["href", "download", "data-outbound-campaign", "data-outbound-placement", "data-outbound-kind", "data-outbound-tracking"] });
@@ -81,8 +87,10 @@ export function trackOutboundLinks(root: Document, pathname: string) {
     if (!result) return;
     try {
       // No awaited identity lookup: keepalive starts before same-tab navigation.
+      const adId = anchor.closest<HTMLElement>("[data-ad-banner]")?.dataset.adBanner;
+      const advertiser = adId && advertiserForBanner(adId);
       void recordProductEventV1({ eventName: "outbound_link_click", source: "web.outbound", idempotencyKey: `outbound:${crypto.randomUUID()}`,
-        celebrityId: null, liveEventId: null, missionId: null, benefitId: null, properties: result.properties });
+        celebrityId: null, liveEventId: null, missionId: null, benefitId: null, properties: advertiser && adId ? { ...result.properties, adId, advertiser } : result.properties });
     } catch { /* Analytics must never prevent navigation. */ }
   }
   root.addEventListener("click", click);
@@ -91,6 +99,7 @@ export function trackOutboundLinks(root: Document, pathname: string) {
     if (retry !== undefined) window.clearTimeout(retry);
     pending.clear();
     observer.disconnect();
+    impressions.stop();
     root.removeEventListener("click", click);
     root.removeEventListener("auxclick", click);
     for (const [anchor, value] of owned) if (anchor.getAttribute("href") === value.decorated) anchor.setAttribute("href", value.original);

@@ -1,3 +1,4 @@
+import { advertiserForBanner } from "./banner-ad";
 import { z } from "zod";
 
 export const outboundCampaignSchema = z.string().max(80).regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/);
@@ -9,6 +10,11 @@ export const outboundPropertiesSchema = z.object({
   placement: outboundPlacementSchema,
   linkKind: outboundKindSchema,
 }).strict();
+const adFields = { adId: z.uuid(), advertiser: z.string() };
+const validAd = (value: { adId: string; advertiser: string }) => advertiserForBanner(value.adId) === value.advertiser;
+const adClick = outboundPropertiesSchema.extend(adFields).refine(validAd);
+const adImpression = z.object(adFields).strict().refine(validAd);
+
 export type OutboundProperties = z.infer<typeof outboundPropertiesSchema>;
 export type OutboundContext = Omit<OutboundProperties, "destinationHost">;
 
@@ -17,10 +23,13 @@ export function validateOutboundEvent(event: {
   celebrityId: string | null; liveEventId: string | null; missionId: string | null; benefitId: string | null;
   properties: unknown;
 }, context: z.RefinementCtx) {
-  if (event.eventName !== "outbound_link_click") return;
+  const impression = event.eventName === "ad_impression";
+  if (!impression && event.eventName !== "outbound_link_click") return;
+  const validProperties = impression ? adImpression.safeParse(event.properties).success
+    : outboundPropertiesSchema.safeParse(event.properties).success || adClick.safeParse(event.properties).success;
   if (event.source !== "web.outbound" || event.appUserId != null || !event.anonymousSessionId
     || event.celebrityId !== null || event.liveEventId !== null || event.missionId !== null || event.benefitId !== null
-    || !outboundPropertiesSchema.safeParse(event.properties).success) {
+    || !validProperties) {
     context.addIssue({ code: "custom", message: "Invalid outbound event" });
   }
 }

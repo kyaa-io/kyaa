@@ -65,3 +65,12 @@ describe("outbound event trust boundary", () => {
     expect(productEventV1Schema.safeParse({ ...event, anonymousSessionId: null, appUserId: "11111111-1111-4111-8111-111111111111" }).success).toBe(false);
   });
 });
+
+it("accepts the registered banner and advertiser together for anonymous views and clicks", () => {
+  const ad = { adId: "a002b205-c7ff-4bc9-b067-fb8d69e81be2", advertiser: "beepio" };
+  expect(clientProductEventV1Schema.safeParse({ ...event, properties: { ...event.properties, ...ad } }).success).toBe(true);
+  const impression = { ...event, eventName: "ad_impression", properties: ad };
+  expect(clientProductEventV1Schema.safeParse(impression).success).toBe(true);
+  expect(clientProductEventV1Schema.safeParse({ ...impression, properties: { ...ad, advertiser: "chillsa" } }).success).toBe(false);
+  expect(clientProductEventV1Schema.safeParse({ ...impression, properties: { ...ad, href: "private" } }).success).toBe(false);
+});

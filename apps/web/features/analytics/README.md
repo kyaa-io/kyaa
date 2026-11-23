@@ -16,7 +16,7 @@
 
 ## 수집과 조회
 
-일반 click(키보드 Enter 포함)과 가운데 버튼 auxclick을 `outbound_link_click`으로 전송한다. 익명 탭 세션을 기존 `/api/events` 경로로 보내고, 서버에서 해시한 뒤 이벤트 원장에 저장한다. source는 `web.outbound`, 모든 회원·콘텐츠 UUID 필드는 비운다. 속성은 `destinationHost`, `campaign`, `placement`, `linkKind` 네 개만 허용한다. 원본 URL·query·hash·링크 문구는 저장하지 않는다.
+일반 click(키보드 Enter 포함)과 가운데 버튼 auxclick을 `outbound_link_click`으로 전송한다. 익명 탭 세션을 기존 `/api/events` 경로로 보내고, 서버에서 해시한 뒤 이벤트 원장에 저장한다. source는 `web.outbound`, 모든 회원·콘텐츠 UUID 필드는 비운다. 일반 링크의 속성은 `destinationHost`, `campaign`, `placement`, `linkKind` 네 개만 허용한다. 원본 URL·query·hash·링크 문구는 저장하지 않는다.
 
 `/admin/traffic`의 외부 링크 집계에서 UTC 오늘을 포함한 최근 7·30·90일의 클릭 수와 세션 수를 확인한다. `GET /api/admin/analytics/outbound`는 기존 관리자 인증과 DB 관리자 검증 후 집계만 반환한다. 목적지·맥락·위치·종류별 상위 100개 조합을 표시하며, 전체 합계는 100개 제한과 무관하다. 브라우저 세션은 사람 수가 아니며 행별 세션 수를 더하면 중복될 수 있다. Banksy/LIVE의 기존 내부 리다이렉트 클릭은 각각 기존 전용 집계에 남는다.
 
@@ -79,3 +79,5 @@
 - 로그인 전에 들어온 경우: 헤더 로그인 링크의 returnTo에 검증된 UTM을 이어 붙이고, 같은 탭의 첫 태그를 세션 저장소에도 둔다. 다른 로그인 진입점(좋아요·인증 버튼)으로 돌아와 주소의 UTM이 사라져도 같은 탭에서는 로그인 직후 한 번 기록한다. 다른 기기·다른 브라우저로 이어진 로그인은 귀속하지 못한다.
 - 관리자 `이벤트 참여자` 화면(`list_admin_event_participants`의 `p_campaign`)은 참여자별 **첫 유입 출처**(source·code)와 출처별 합계, 태그 없는 참여자 수를 보여 주고 CSV에도 `유입` 열을 넣는다. 캠페인별로 회원의 첫 인증 접점만 인정하며 나중에 다른 링크로 들어와도 바뀌지 않는다. 참여 시각보다 5분 넘게 늦게 기록된 첫 접점은 그 참여에 귀속하지 않는다(서버가 받는 시계 오차 한도와 같다).
 - 측정된 회원만 센다. 브라우저 저장소 제한, 차단 도구, 이벤트 API의 rate/오류 시 204 drop 때문에 누락될 수 있으며, 태그 없음은 유입이 없다는 뜻이 아니라 측정되지 않았다는 뜻이다. 좋아요 성공은 측정 실패와 무관하게 진행된다.
+
+beepio·chillsa 광고의 외부 클릭은 같은 이벤트에 등록된 광고 UUID(adId)와 광고주 코드(advertiser)를 함께 기록한다. 일반 링크는 기존 네 속성을 유지한다. ad_impression은 광고가 보이는 탭에서 면적의 절반 이상이 연속 1초 동안 보일 때 탭 세션별로 한 번 기록한다. 두 광고 속성은 UTM에 넣지 않는다. /admin/traffic의 광고 성과와 CSV는 한국 시간 기준으로 선택한 달을 집계한다.

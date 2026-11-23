@@ -38,7 +38,7 @@ export function BannerSlotCard({ banner, slot, locale, className }: { banner: Ho
       <span className={styles.action}>{banner.ctaLabel}{external ? <ArrowUpRight size={16} aria-hidden="true"/> : <ArrowRight size={16} aria-hidden="true"/>}</span>
     </span>
   </>;
-  return <div className={[styles.slot, className].filter(Boolean).join(" ")} data-banner-slot={slot} data-banner-id={banner.id} data-image-failed={failed || undefined}>
+  return <div className={[styles.slot, className].filter(Boolean).join(" ")} data-banner-slot={slot} data-banner-id={banner.id} data-ad-banner={banner.category === "ad" ? banner.id : undefined} data-image-failed={failed || undefined}>
     {external
       ? <a className={styles.card} href={href} target="_blank" rel="noopener noreferrer" data-outbound-placement="content" data-outbound-kind="external">{body}</a>
       : <Link className={styles.card} href={href as Route}>{body}</Link>}

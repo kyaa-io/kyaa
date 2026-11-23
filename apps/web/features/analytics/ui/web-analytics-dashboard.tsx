@@ -8,6 +8,7 @@ import { AdminOperationsShell, type AdminLocale } from "../../../components/admi
 import { useAdminSession } from "../../../components/admin/use-admin-session";
 import { webAnalyticsSchema, type WebAnalyticsData, type WebAnalyticsDays, type WebAnalyticsRow } from "../domain/web-analytics";
 import { AnalyticsLineChart } from "./analytics-line-chart";
+import { BannerMonthReport } from "./banner-month-report";
 import { OutboundAnalytics } from "./outbound-analytics";
 import { AcquisitionAnalytics } from "./acquisition-analytics";
 import { FunnelAnalytics } from "./funnel-analytics";
@@ -145,6 +146,7 @@ export function WebAnalyticsDashboard({ locale = "ko" }: { locale?: AdminLocale 
     {visible.status === "ready" && <><WebAnalyticsContent data={visible.data} locale={locale} /><p className={styles.updated}>{ko ? "마지막 조회" : "Last fetched"} {date(visible.data.fetchedAt, locale, true)} · UTC</p></>}
     <WeeklyMetrics refresh={refresh} locale={locale} />
     <FunnelAnalytics days={days} refresh={refresh} locale={locale} />
+    <BannerMonthReport locale={locale} refresh={refresh} />
     <OutboundAnalytics days={days} refresh={refresh} locale={locale} />
     <AcquisitionAnalytics days={days} refresh={refresh} locale={locale} />
   </div></AdminOperationsShell>;
