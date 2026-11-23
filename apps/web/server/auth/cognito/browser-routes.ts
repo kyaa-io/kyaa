@@ -50,6 +50,9 @@ export async function start(request: Request): Promise<Response> {
     const locale = sanitizeLocale(query.get("locale"));
     const url = new URL("/oauth2/authorize", config.domain);
     url.search = new URLSearchParams({ response_type: "code", client_id: config.clientId, redirect_uri: config.redirectUri, scope: "openid email profile", state, nonce, code_challenge: challenge(verifier), code_challenge_method: "S256", identity_provider: provider === "google" ? "Google" : provider === "apple" ? "SignInWithApple" : "Kakao" }).toString();
+    // Google account picker on every start: switching accounts happens inside this flow, not in another tab that
+    // invalidates Google's in-progress consent step (400 "malformed"). Cognito forwards prompt to the IdP with managed login.
+    if (provider === "google") url.searchParams.set("prompt", "select_account");
     const headers = authHeaders();
     headers.set("location", url.toString());
     headers.set("set-cookie", cookie(FLOW_COOKIE, seal({ state, verifier, nonce, expiresAt: Date.now()+600_000, returnTo, locale }, config.cookieSecret),600));
