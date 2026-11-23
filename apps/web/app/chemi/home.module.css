@@ -99,9 +99,11 @@
 }
 
 /* 게임별 이번 주 랭킹: 390은 옆으로 넘기는 압축 카드, 1024부터 오른쪽 288 열에 세로로 쌓는다. */
-.rankings {
+.rankings, .rankRow {
   --rank-row: calc(var(--space-6) + var(--space-1));
   --rank-avatar: var(--space-6);
+}
+.rankings {
   --rank-mine: calc(var(--min-target) + var(--space-1));
   --rank-gap: var(--space-2);
   display: flex;
@@ -235,9 +237,11 @@
     grid-template-rows: auto 1fr;
   }
   .home[data-ranked="true"] > section:last-child { grid-area: 2 / 1; }
-  .rankings {
+  .rankings, .rankRow {
     --rank-row: calc(var(--space-12) + var(--space-1));
     --rank-avatar: calc(var(--space-8) + var(--space-1));
+  }
+  .rankings {
     --rank-mine: calc(var(--rank-row) + var(--space-3));
     --rank-gap: var(--space-3);
     grid-area: 1 / 2 / 3 / 3;
