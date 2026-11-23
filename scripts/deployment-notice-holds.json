@@ -103,7 +103,9 @@
     "release-notes/2026-11-23-chemi-fortune-persona-voice.json",
     "release-notes/2026-11-23-chemi-pair-proof.json",
     "release-notes/2026-11-23-chemi-fortune-share.json",
-    "release-notes/2026-11-23-chemi-reading-voice.json"
+    "release-notes/2026-11-23-chemi-reading-voice.json",
+    "release-notes/2026-11-23-chemi-r3c-game-lobby.json",
+    "release-notes/2026-11-23-chemi-r3e-entry-banner.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
