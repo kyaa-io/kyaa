@@ -22,9 +22,15 @@ vi.mock("@/features/auth/client/cognito-auth", () => ({
   useByUsAuth: () => auth,
 }));
 // jsdom 은 사진을 받지 않으므로, 붙는 즉시 다 받은 것으로 알린다(미리 받기가 제한 시간까지 기다리지 않게).
+// images.hold 이면 받음 알림을 모아 두었다가 시험이 직접 보낸다(느린 망).
+const images = vi.hoisted(() => ({ hold: false, waiting: new Map<string, () => void>() }));
 vi.mock("next/image", () => ({
   default: ({ src, alt, onLoad }: { src: string; alt: string; onLoad?: () => void }) => (
-    <img src={src} alt={alt} ref={(node) => { if (node && onLoad) queueMicrotask(onLoad); }} />
+    <img src={src} alt={alt} ref={(node) => {
+      if (!node || !onLoad) return;
+      if (images.hold) images.waiting.set(src, onLoad);
+      else queueMicrotask(onLoad);
+    }} />
   ),
 }));
 const copy = getMatchCopy("ko");
@@ -39,6 +45,8 @@ beforeEach(() => {
   localStorage.setItem("chemi.match.guide", "1");
 });
 afterEach(() => {
+  images.hold = false;
+  images.waiting.clear();
   localStorage.clear();
   sessionStorage.clear();
   vi.unstubAllGlobals();
@@ -126,6 +134,9 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
     }
     if (stage < 5) {
       fireEvent.click(screen.getByRole("button", { name: copy.round + " " + (stage+1) + " · " + copy.start }));
+      advance(1);
+      // 다음 라운드 사진이 뜰 때까지 시계가 멈춰 있다(사진 받음 알림을 처리한 뒤 다시 센다).
+      await act(async () => {});
       advance(1);
     }
   }
@@ -260,7 +271,8 @@ it("remembers the start key until the game arrives, then the game itself", async
   fireEvent.click(screen.getByRole("button", { name: copy.start }));
   await screen.findByRole("button", { name: copy.pause });
   expect(JSON.parse(seen[0] ?? "{}")).toHaveProperty("key");
-  expect(JSON.parse(sessionStorage.getItem("chemi.match.pending") ?? "{}")).toEqual({ playId: "local-round" });
+  // 첫 라운드 사진이 다 뜬 뒤에야 판이 시작된 것으로 남긴다.
+  await waitFor(() => expect(JSON.parse(sessionStorage.getItem("chemi.match.pending") ?? "{}")).toEqual({ playId: "local-round" }));
 });
 
 it("tells an expired sign-in apart from a server error in the lobby (DF-STATE-008)", async () => {
@@ -335,4 +347,35 @@ it("says the record is not saved yet and keeps the retry beside it (DF-GAME-006)
   fireEvent.click(within(alert).getByRole("button", { name: copy.retry }));
   expect(await screen.findByText(copy.received)).toBeInTheDocument();
   expect(screen.queryByText(copy.saveFailed)).toBeNull();
+});
+
+it("does not count the preview until the round's photos have arrived (DF-GAME-002)", async () => {
+  images.hold = true;
+  vi.spyOn(Date, "now").mockReturnValue(Date.UTC(2026, 10, 23, 3));
+  vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.action === "lobby") return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, ranking: [] });
+    if (body.action === "start") return Response.json({ playId: "local-round", seed: 12, game: "match" });
+    throw Error(body.action);
+  });
+  let frame: FrameRequestCallback | undefined;
+  let now = 1000;
+  vi.spyOn(performance, "now").mockImplementation(() => now);
+  vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { frame = callback; return 1; });
+  vi.stubGlobal("cancelAnimationFrame", () => { frame = undefined; });
+  const wait = (ms: number) => { now += ms; act(() => frame?.(now)); };
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  await waitFor(() => expect(screen.getByRole("button", { name: copy.start })).toBeEnabled());
+  fireEvent.click(screen.getByRole("button", { name: copy.start }));
+  await screen.findByRole("button", { name: copy.pause });
+  for (let i = 0; i < 10; i++) wait(500);
+  // 5초가 지나도 사진이 안 왔으면 미리 보기도 시계도 그대로다.
+  expect(screen.queryByText(new RegExp(copy.memorize))).toBeNull();
+  expect(screen.getByRole("progressbar", { name: copy.time })).toHaveValue(30 * FPS);
+  expect(sessionStorage.getItem("chemi.match.pending")).toContain("key");
+  await act(async () => { for (const load of images.waiting.values()) load(); });
+  wait(16);
+  wait(500);
+  expect(screen.getByText(copy.memorize + " · 3")).toBeInTheDocument();
+  expect(JSON.parse(sessionStorage.getItem("chemi.match.pending") ?? "{}")).toEqual({ playId: "local-round" });
 });

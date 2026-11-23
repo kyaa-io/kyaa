@@ -128,7 +128,7 @@ function errorKind(e: unknown, fallback: ErrorKind = "error"): ErrorKind {
 }
 /** 응답이 20초 안에 오지 않으면 실패로 보고 다시 시도를 보인다(운세 흐름의 제한과 같은 결). */
 const REQUEST_TIMEOUT = 20_000;
-/** 미리 보기 전에 사진을 받아 두는 최대 시간. 넘으면 받은 만큼으로 시작한다. */
+/** 라운드마다 미리 보기 전에 판 사진을 기다리는 최대 시간. 넘으면 받은 만큼으로 센다. */
 const PRELOAD_LIMIT = 8_000;
 function fill(text: string, values: Record<string, string | number>) {
   return text.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ""));
@@ -210,25 +210,18 @@ function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, numb
   </dl>;
 }
 
-/** 카드 앞면 사진의 속성. 미리 받아 두는 숨은 사진도 같은 속성이라 같은 주소를 받는다. */
-function cardImage(src: string) {
-  return { width: 640, height: 800, sizes: "(min-width: 768px) 210px, 33vw", src,
-    unoptimized: src.startsWith("/chemi/match/") || src.startsWith("/api/") };
-}
-
 /** 카드 한 장: 뒷면 무늬·앞면 사진·맞춤 표시·틀림 표시(빨간 테두리 + '틀림' 글자 + 짧은 흔들림). */
-function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLabel, onClick }: {
+function MatchCard({ open, matched, wrong, src, label, number, disabled, wrongLabel, onClick, onReady }: {
   open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number;
-  disabled: boolean; wrongLabel: string; onClick: () => void;
+  disabled: boolean; wrongLabel: string; onClick: () => void; onReady?: (src: string) => void;
 }) {
+  // 뒤집힌 카드도 사진을 미리 받아 둔다(보이지 않게). 미리 보기가 시작될 때 이미 떠 있어야 한다(DF-GAME-002).
   return (
     <div className={styles.card} data-open={open} data-matched={matched} data-wrong={wrong || undefined}>
       <FanAction variant="text" disabled={disabled} ariaLabel={label} onClick={onClick}>
-        {open ? (
-          <Image {...cardImage(src)} alt="" />
-        ) : (
-          <span aria-hidden="true" />
-        )}
+        <Image width={640} height={800} sizes="(min-width: 768px) 210px, 33vw" loading="eager"
+          unoptimized={src.startsWith("/chemi/match/") || src.startsWith("/api/")} src={src} alt=""
+          onLoad={() => onReady?.(src)} onError={() => onReady?.(src)} />
         {!open && <small className={styles.cardNumber}>{String(number).padStart(2, "0")}</small>}
         {matched && (
           <i>
@@ -377,8 +370,9 @@ function Session({
   const [result, setResult] = useState<Finish | null>(null);
   const [pendingFinish, setPendingFinish] = useState<Submission | null>(null);
   const [error, setError] = useState<ErrorKind | "">("");
-  const [warm, setWarm] = useState<readonly string[]>([]);
-  const warming = useRef<{ left: Set<string>; done: () => void } | null>(null);
+  /** 판 사진 중 받은 것. 라운드의 사진이 다 오거나 제한 시간이 지나면 그 라운드의 미리 보기를 센다. */
+  const [ready, setReady] = useState<ReadonlySet<string>>(() => new Set());
+  const [forced, setForced] = useState(0);
   const [paying, setPaying] = useState(false);
   const [working, setWorking] = useState(false);
   const [sound, setSound] = useState(false);
@@ -390,6 +384,8 @@ function Session({
   const [now, setNow] = useState(() => Date.now());
   const audio = useRef<AudioContext | null>(null);
   const inFlight = useRef(false);
+  /** 판을 받았지만 첫 라운드 사진을 아직 기다리는 동안의 시작 키. 이때 떠나면 판을 돌려받는다. */
+  const pendingKey = useRef<string | null>(null);
   const accessToken = useRef<string | null>(null);
   const startKey = useRef({ choice: "", key: "" });
   const tokenGetter = useRef(auth.getAccessToken);
@@ -503,25 +499,9 @@ function Session({
   function facesFor(who: Character) {
     return [photos[who], ...characters.filter(c => c !== who).map(c => photos[c])].flatMap(person => person.cards);
   }
-  /** 사진을 숨은 칸에 먼저 받아 둔다. 다 받거나 제한 시간이 지나면 끝난다. */
-  function preload(srcs: readonly string[]) {
-    return new Promise<void>((resolve) => {
-      const finish = () => {
-        window.clearTimeout(timer);
-        warming.current = null;
-        resolve();
-      };
-      const timer = window.setTimeout(finish, PRELOAD_LIMIT);
-      warming.current = { left: new Set(srcs), done: finish };
-      setWarm(srcs);
-    });
-  }
-  function warmed(src: string) {
-    const current = warming.current;
-    if (!current) return;
-    current.left.delete(src);
-    if (!current.left.size) current.done();
-  }
+  const cardReady = useCallback((src: string) => {
+    setReady((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
+  }, []);
   async function start(who: Character, extra = false, fromGuide = false) {
     if (!auth.authenticated && !share) {
       auth.login();
@@ -585,12 +565,11 @@ function Session({
         window.removeEventListener("pagehide", cancelOnExit);
         throw e;
       }
-      // 미리 보기가 세는 동안 카드가 다 보이게, 1라운드 사진을 먼저 받고 판을 연다. 받는 동안 떠나도 판은 돌려받는다.
-      const cards = facesFor(who);
-      await preload(cards.slice(0, LEVELS[0].pairs));
       window.removeEventListener("pagehide", cancelOnExit);
-      if (!trial) writePending({ playId: next.playId });
-      setWarm(cards);
+      // 사진을 받는 동안(미리 보기 전)에는 시작 키를 그대로 둔다: 이때 떠나면 판을 돌려받는다.
+      if (!trial) pendingKey.current = key;
+      setForced(0);
+      setReady(new Set());
       startKey.current.choice = "";
       setEquipped(false);
       setPriorRank(lobby?.ranking.find(row => row.isMe)?.place ?? null);
@@ -640,7 +619,24 @@ function Session({
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
     return () => window.clearInterval(timer);
   }, [stage]);
-  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play", submit);
+  // 이번 라운드 사진이 다 올 때까지(최대 8초) 시계와 미리 보기를 세지 않는다.
+  const [roundStage, setRoundStage] = useState(1);
+  const roundPhotos = facesFor(character).slice(0, LEVELS[roundStage - 1].pairs);
+  const photosReady = forced >= roundStage || roundPhotos.every((src) => ready.has(src));
+  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play" || !photosReady, submit);
+  const viewStage = view?.stage ?? 1;
+  useEffect(() => setRoundStage(viewStage), [viewStage]);
+  useEffect(() => {
+    if (!ticket || photosReady) return;
+    const timer = window.setTimeout(() => setForced(roundStage), PRELOAD_LIMIT);
+    return () => window.clearTimeout(timer);
+  }, [ticket, roundStage, photosReady]);
+  // 첫 라운드 사진이 다 오면 그때부터 판이 시작된 것으로 본다(이전에 떠나면 판을 돌려받음).
+  useEffect(() => {
+    if (!ticket || !photosReady || !pendingKey.current) return;
+    pendingKey.current = null;
+    writePending({ playId: ticket.playId });
+  }, [ticket, photosReady]);
   useEffect(() => {
     if (!ticket || !["play", "pause"].includes(stage)) return;
     const visibility = () => {
@@ -665,7 +661,9 @@ function Session({
       );
       setStage("pause");
     };
-    const abandon = () => sendOnExit(accessToken.current, { action: "leave", playId: ticket.playId });
+    const abandon = () => sendOnExit(accessToken.current, pendingKey.current
+      ? { action: "cancel", key: pendingKey.current }
+      : { action: "leave", playId: ticket.playId });
     const restore = (event: PageTransitionEvent) => {
       if (event.persisted) {
         setTicket(null);
@@ -864,12 +862,6 @@ function Session({
           )}
         </span>
       </header>
-      {/* 판 사진을 미리 받는 숨은 칸(화면에 보이지 않음). */}
-      <div className={styles.warm} aria-hidden="true">
-        {warm.map((src) => (
-          <Image key={src} {...cardImage(src)} alt="" loading="eager" onLoad={() => warmed(src)} onError={() => warmed(src)} />
-        ))}
-      </div>
       {error && stage !== "result" && (
         <div role="alert" className={styles.error}>
           <FanText role="item">{copy[error]}</FanText>
@@ -1047,6 +1039,7 @@ function Session({
                       matched={matched}
                       wrong={active.second >= 0 && (active.first === index || active.second === index)}
                       src={faces[photo]}
+                      onReady={cardReady}
                       number={cell + 1}
                       wrongLabel={copy.wrong}
                       disabled={active.preview > 0 || matched || active.first === index || active.second >= 0}
@@ -1222,7 +1215,7 @@ function Session({
                   <span>
                     <FanText role="item">{fill(copy.care, { name: copy[character] })}</FanText>
                     {result.excitement !== undefined && (
-                      <FanText role="meta"> · {copy.excitement} +{result.excitement}</FanText>
+                      <FanText role="meta">{copy.excitement} +{result.excitement}</FanText>
                     )}
                   </span>
                   <FanText role="item" className={styles.gainValue}>{result.exp > 0 ? `+${result.exp.toLocaleString(locale)}` : copy.received}</FanText>
