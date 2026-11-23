@@ -821,3 +821,24 @@
   .layout[data-lobby="true"] .roundTable { grid-column: 3; grid-row: 2; align-self: stretch; grid-template-rows: auto 1fr; }
   .layout[data-lobby="true"] .roundTable .levelList { grid-column: 1; }
 }
+
+.card[data-variant] .cardNumber { border: 2px solid currentColor; }
+.card[data-variant="1"] .cardNumber { background: var(--color-ink); color: var(--color-surface); border-style: double; border-width: 4px; }
+.card[data-variant="2"] .cardNumber { border-style: dashed; background: var(--color-accent-soft); }
+.card[data-variant="3"] .cardNumber { border-radius: 50%; background: var(--color-accent); }
+.roundTable .stepName { flex-direction: column; align-items: flex-start; }
+.roundTable .stepGrid { height: calc(var(--space-12) + var(--space-2)); align-content: end; gap: var(--space-1); }
+.roundTable .levelList li { min-width: 0; padding-inline: 0; }
+
+.freeCount { display: block; margin-bottom: var(--space-2); }
+.resultActions { display: contents; }
+.zeroActions { display: flex; align-items: center; gap: var(--space-2); }
+.zeroActions > * { min-width: 0; flex: 1 1 auto; }
+.roundTable .levelGoal { display: flex; align-items: baseline; flex-wrap: nowrap; column-gap: var(--space-1); }
+
+.card[data-variant="1"]::before, .card[data-variant="2"]::before, .card[data-variant="3"]::before {
+  content: ""; position: absolute; z-index: 1; pointer-events: none; inset: 0 auto 0 0; width: var(--space-2);
+  background: var(--color-surface); border-left: var(--space-2) double var(--color-ink);
+}
+.card[data-variant="2"]::before { border-left-style: dashed; border-color: var(--color-accent); }
+.card[data-variant="3"]::before { border-left-style: dotted; border-color: var(--color-accent-ink); }
