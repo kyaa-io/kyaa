@@ -19,7 +19,7 @@ import { useReadingCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { PillarSheet } from "@/features/chemi/ui/result/pillar-sheet";
 import type { AppLocale } from "@/i18n/locales";
-import { branchHanja, elements, elementHanja, elementName, pillarKeys, stemHanja, tenGodGroups, type Chart, type Element } from "./chart";
+import { branchHanja, elements, elementHanja, elementName, stemHanja, type Chart, type Element } from "./chart";
 import {
   elementView,
   natureRows,
@@ -32,7 +32,6 @@ import {
   tenGodView,
   termNote,
   yearFlowView,
-  groupPlain,
 } from "./first";
 import styles from "./first-blocks.module.css";
 
@@ -199,24 +198,34 @@ export function ElementBlock({ chart, locale }: { chart: Chart; locale: AppLocal
   return (
     <section className={styles.section}>
       <Head title={<ReadingText id="energy" />} scope={scopeLabel(chart)} />
-      <div className={styles.elements}>
-        {view.rows.map((row) => (
-          <div key={row.element} data-zero={row.count === 0 || undefined}>
-            <ElementName element={row.element} />
-            <FanNumber locale={locale} value={row.percent} unit="%" />
-            <span className={styles.bar} data-top={row.top || undefined} role="img" aria-label={`${row.name} ${row.percent}%`}>
-              <i style={{ width: `${row.percent}%` }} />
-            </span>
-            <FanText role={row.count === 0 ? "label" : "meta"} className={styles.count}>
-              {row.count}자
-            </FanText>
-          </div>
-        ))}
-      </div>
+      <ElementRows rows={view.rows} locale={locale} />
       <ReadingBasisRows rows={view.summary} />
     </section>
   );
 }
+
+export function ElementRows({ rows, locale }: {
+  rows: readonly { element: Element; name: string; count: number; percent: number; top: boolean }[];
+  locale: AppLocale;
+}) {
+  return (
+    <div className={styles.elements}>
+      {rows.map((row) => (
+        <div key={row.element} data-zero={row.count === 0 || undefined}>
+          <ElementName element={row.element} />
+          <FanNumber locale={locale} value={row.percent} unit="%" />
+          <span className={styles.bar} data-top={row.top || undefined} role="img" aria-label={`${row.name} ${row.percent}%`}>
+            <i style={{ width: `${row.percent}%` }} />
+          </span>
+          <FanText role={row.count === 0 ? "label" : "meta"} className={styles.count}>
+            {row.count}자
+          </FanText>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ElementName({ element }: { element: Element }) {
   return (
     <span className={styles.elementName}>
@@ -309,27 +318,21 @@ export function StrengthBlock({ chart, locale }: { chart: Chart; locale: AppLoca
 }
 
 export function TenGodBlock({ chart }: { chart: Chart }) {
-  if (!chart.pillars.month)
+  if (!chart.pillars.month) {
     return (
       <section className={styles.section}>
         <Head title={<ReadingText id="tenGodTitle" />} locked />
-        <div className={styles.tenGods} aria-hidden="true">
-          {tenGodGroups.map((group) => (
-            <div key={group}>
-              <FanText role="label">{group}</FanText>
-              <FanText role="meta">{groupPlain[group]}</FanText>
-              <i className={styles.faint} data-value="" style={{ width: "3rem" }} />
-              <span />
-            </div>
-          ))}
-        </div>
-        <FaintRows rows={[["고른 묶음", 58, 88], ["없는 묶음", 20, 94, 44]]} />
       </section>
     );
+  }
   const view = tenGodView(chart);
   return (
-    <section className={styles.section}>
-      <Head title={<ReadingText id="tenGodTitle" />} scope={scopeLabel(chart)} />
+    <details className={styles.section}>
+      <summary className={styles.disclosure}>
+        <FanHeading><ReadingText id="tenGodTitle" /></FanHeading>
+        <FanText role="meta">{view.groups.map(({ group, count }) => `${group} ${count}`).join(" · ")}</FanText>
+      </summary>
+      <FanText role="meta">{scopeLabel(chart)}</FanText>
       <div className={styles.tenGods}>
         {view.groups.map((group) => (
           <div key={group.group} data-zero={group.count === 0 || undefined}>
@@ -353,77 +356,80 @@ export function TenGodBlock({ chart }: { chart: Chart }) {
         ))}
       </div>
       <ReadingBasisRows rows={view.rows} />
-    </section>
+    </details>
   );
 }
 
+export function RelationRow({ letters, kind, where, rough, children }: {
+  letters: readonly string[];
+  kind: string;
+  where?: string;
+  rough?: boolean;
+  children?: ReactNode;
+}) {
+  return (
+    <li data-row="">
+      <span className={styles.relationChips} data-rough={rough || undefined} aria-hidden="true">
+        {letters.map((letter, index) => (
+          <FanHanja role="pair" key={index}>{letter}</FanHanja>
+        ))}
+      </span>
+      <span className={styles.relationText}>
+        <span className={styles.kind}>
+          <FanText role="item">{kind}</FanText>
+          {where && <FanText role="meta">{where}</FanText>}
+        </span>
+        {children}
+      </span>
+    </li>
+  );
+}
+
+export function RelationList({ children }: { children: ReactNode }) {
+  return <ul className={styles.relations}>{children}</ul>;
+}
+
 export function RelationBlock({ chart }: { chart: Chart }) {
-  if (!chart.pillars.month)
+  if (!chart.pillars.month) {
     return (
       <section className={styles.section}>
         <Head title={<ReadingText id="relationTitle" />} locked />
-        <ul className={styles.relations} aria-hidden="true">
-          {[0, 1, 2].map((i) => (
-            <li key={i} data-row="">
-              <span className={styles.spot}>
-                {Array.from({ length: 8 }, (_, j) => (
-                  <i key={j} />
-                ))}
-              </span>
-              <span className={styles.relationText}>
-                <Faint widths={[34, 92, 58]} />
-              </span>
-            </li>
-          ))}
-        </ul>
       </section>
     );
+  }
   const rows = relationRows(chart);
   return (
-    <section className={styles.section}>
-      <Head title={<ReadingText id="relationTitle" />} scope={scopeLabel(chart)} />
-      <ul className={styles.relations}>
+    <details className={styles.section}>
+      <summary className={styles.disclosure}>
+        <FanHeading><ReadingText id="relationTitle" /></FanHeading>
+        <FanText role="meta">
+          {rows.length ? [...new Set(rows.map((row) => row.kind))]
+            .map((kind) => `${kind} ${rows.filter((row) => row.kind === kind).length}`).join(" · ") : "합 · 충 · 형 없음"}
+        </FanText>
+      </summary>
+      <FanText role="meta">{scopeLabel(chart)}</FanText>
+      <RelationList>
         {rows.map((row) => (
-          <li key={`${row.kind}:${row.where}`} data-row="">
-            <span className={styles.spot} data-rough={row.rough || undefined} aria-hidden="true">
-              {(["stem", "branch"] as const).flatMap((place) =>
-                pillarKeys.map((key) => {
-                  const pillar = chart.pillars[key];
-                  const on = place === row.place && row.keys.includes(key) && pillar;
-                  return (
-                    <FanText role="meta" as="span" key={`${place}${key}`} data-on={on ? "" : undefined}>
-                      {on ? (place === "stem" ? stemHanja[pillar.heavenlyStem] : branchHanja[pillar.earthlyBranch]) : null}
-                    </FanText>
-                  );
-                }),
-              )}
-            </span>
-            <span className={styles.relationText}>
-              <span className={styles.kind}>
-                <FanText role="item">{row.kind}</FanText>
-                <FanText role="meta">{row.where}</FanText>
-              </span>
-              <FanText role="meta">
-                <FanText role="label" className={styles.ink}>
-                  {row.tag}
-                </FanText>{" "}
-                · {row.plain}
-              </FanText>
-            </span>
-          </li>
+          <RelationRow
+            key={`${row.kind}:${row.where}`}
+            kind={row.kind}
+            where={row.where}
+            rough={row.rough}
+            letters={row.keys.map((key) => {
+              const pillar = chart.pillars[key]!;
+              return row.place === "stem" ? stemHanja[pillar.heavenlyStem] : branchHanja[pillar.earthlyBranch];
+            })}
+          >
+            <FanText role="meta">
+              <FanText role="label" className={styles.ink}>{row.tag}</FanText> · {row.plain}
+            </FanText>
+          </RelationRow>
         ))}
-        {rows.length === 0 && (
-          <li data-row="">
-            <span className={styles.relationText}>
-              <FanText role="item">합 · 충 · 형 없음</FanText>
-              <FanText role="meta">겉에 드러난 글자끼리 합 · 충 · 형으로 묶이거나 맞서는 자리는 없어요</FanText>
-            </span>
-          </li>
-        )}
-      </ul>
-    </section>
+      </RelationList>
+    </details>
   );
 }
+
 export function YearFlowBlock({ chart, at }: { chart: Chart; at: number }) {
   const view = yearFlowView(chart, at);
   return (

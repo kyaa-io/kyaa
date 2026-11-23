@@ -14,7 +14,7 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { completeShare } from "@/features/chemi/ui/complete-share";
-import { ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
+import { useMobileResultAction, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK_SIZE, tarotAlt, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
@@ -56,6 +56,7 @@ export function TarotResult({
   onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
+  const mobileAction = useMobileResultAction("47.99rem");
   const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const person = tarotCharacter(character, locale);
   // 지난 날의 결과 링크로 열었으면 오늘 받은 것을 이 카드의 보상으로 보여 주지 않는다.
@@ -185,6 +186,12 @@ export function TarotResult({
     </div>
   );
 
+  const primaryAction = onAsk ? (
+    <FanAction variant="primary" fullWidth onClick={onAsk}>
+      <ReadingText id="askFromResult" />
+    </FanAction>
+  ) : null;
+
   return (
     <article className={styles.result} data-reversed={draw.reversed || undefined} data-result="" data-ask={onAsk ? "" : undefined}>
       <div className={styles.colMain}>
@@ -281,13 +288,7 @@ export function TarotResult({
             {rewardRow}
             {saveBox}
           </div>
-          {onAsk ? (
-            <div className={styles.cta}>
-              <FanAction variant="primary" fullWidth onClick={onAsk}>
-                <ReadingText id="askFromResult" />
-              </FanAction>
-            </div>
-          ) : null}
+          {!mobileAction && primaryAction && <div className={styles.cta}>{primaryAction}</div>}
           <div className={styles.asideActions}>{actions}</div>
         </div>
         <section className={styles.keys} hidden={failed}>
@@ -317,6 +318,7 @@ export function TarotResult({
         </section>
       </div>
       <div className={styles.mobileActions}>{actions}</div>
+      {mobileAction && primaryAction && <div className={styles.mobileCta}>{primaryAction}</div>}
       <ShareSheet open={shareOpen} onOpenChange={setShareOpen} sharing={sharing} onShare={(via) => void share(via)}>
         <div className={styles.shareCard}>
           <img src={tarotFace(draw.card)} alt="" data-reversed={draw.reversed || undefined} />

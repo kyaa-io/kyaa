@@ -18,7 +18,7 @@ import { FanHanja } from "@/components/fan-ui/fan-hanja";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
-import { defaultShareVia, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
+import { defaultShareVia, useMobileResultAction, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { ReadingBasis, ReadingDomains } from "@/features/chemi/ui/result/reading-depth";
 import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
@@ -34,7 +34,7 @@ import {
 } from "./copy";
 import { sajuBasis, sajuDomains } from "./depth";
 import { dayLine } from "./first";
-import { ChartPanel, ElementBlock, NatureBlock, RelationBlock, StrengthBlock, TenGodBlock, YearFlowBlock } from "./first-blocks";
+import { ChartPanel, ElementBlock, ElementRows, NatureBlock, RelationBlock, RelationList, RelationRow, StrengthBlock, TenGodBlock, YearFlowBlock } from "./first-blocks";
 import { sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
@@ -45,7 +45,7 @@ const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.ear
 
 const positions = { hour: "시", day: "일", month: "월", year: "연" };
 
-function PairEvidence({ result, name }: { result: PairResult; name: string }) {
+function PairEvidence({ result, name, locale }: { result: PairResult; name: string; locale: AppLocale }) {
   const charts = result.charts;
   if (!charts) return null;
   const [a, b] = result.dayStems;
@@ -133,27 +133,26 @@ function PairEvidence({ result, name }: { result: PairResult; name: string }) {
           " 두 일간은 천간합을 이뤄요."}
       </FanText>
       <FanHeading>오행 보완</FanHeading>
-      <table>
-        <caption>확인된 글자에 담긴 오행</caption>
-        <thead>
-          <tr>
-            <th>명식</th>
-            {elements.map((e) => (
-              <th key={e}>{elementName[e]}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {owners.map(([owner], i) => (
-            <tr key={i}>
-              <th>{owner}</th>
-              {elements.map((e) => (
-                <td key={e}>{counts[i].filter((value) => value === e).length}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <FanText as="p" role="meta">확인된 글자에 담긴 오행</FanText>
+      <div className={styles.cols}>
+        {owners.map(([owner], index) => {
+          const letters = counts[index];
+          const values = elements.map((element) => letters.filter((value) => value === element).length);
+          const top = values.indexOf(Math.max(...values));
+          return (
+            <section key={index} className={styles.block}>
+              <FanHeading as="h3">{owner}</FanHeading>
+              <ElementRows locale={locale} rows={elements.map((element, i) => ({
+                element,
+                name: elementName[element],
+                count: values[i],
+                percent: letters.length ? Math.round(values[i] / letters.length * 1000) / 10 : 0,
+                top: i === top && values[i] > 0,
+              }))} />
+            </section>
+          );
+        })}
+      </div>
       {owners.map(([owner], i) => {
         const other = owners[1 - i][0];
         const missing = elements.filter((e) => !counts[i].includes(e) && counts[1 - i].includes(e));
@@ -168,16 +167,21 @@ function PairEvidence({ result, name }: { result: PairResult; name: string }) {
       })}
       <FanHeading>지지 합·충</FanHeading>
       {result.relations?.length ? (
-        result.relations.map((r) => {
-          const self = charts.self[r.selfKey]!.earthlyBranch,
-            partner = charts.partner[r.partnerKey]!.earthlyBranch;
-          return (
-            <FanText as="p" role="body" key={r.selfKey + r.partnerKey}>
-              내 {positions[r.selfKey]}지 {self}({branchHanja[self]}) · 상대 {positions[r.partnerKey]}지{" "}
-              {partner}({branchHanja[partner]}) — {r.kind}
-            </FanText>
-          );
-        })
+        <RelationList>
+          {result.relations.map((r) => {
+            const self = charts.self[r.selfKey]!.earthlyBranch;
+            const partner = charts.partner[r.partnerKey]!.earthlyBranch;
+            return (
+              <RelationRow
+                key={`${r.selfKey}:${r.partnerKey}:${r.kind}`}
+                kind={r.kind}
+                rough={r.kind === "충"}
+                letters={[branchHanja[self], branchHanja[partner]]}
+                where={`내 ${positions[r.selfKey]}지 ${self}(${branchHanja[self]}) · 상대 ${positions[r.partnerKey]}지 ${partner}(${branchHanja[partner]})`}
+              />
+            );
+          })}
+        </RelationList>
       ) : (
         <FanText as="p" role="item">
           확인된 지지 사이에는 육합이나 충이 없어요.
@@ -246,6 +250,7 @@ export function SajuResult({
   onBirthTime: () => void;
 }) {
   const uiText = useReadingCopy();
+  const mobileAction = useMobileResultAction();
   const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const [shareOpen, setShareOpen] = useState(false);
   const name = creatorName(character, locale);
@@ -397,6 +402,12 @@ export function SajuResult({
       <ResultActions locale={locale} sharing={sharing} onShare={() => setShareOpen(true)} />
     );
 
+  const primaryAction = (
+    <FanAction variant="primary" fullWidth {...(view === "pair" ? { disabled: sharing, onClick: () => onShare(defaultShareVia()) } : onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
+      <ReadingText id={view === "pair" ? "shareFriend" : onAsk ? "askFromResult" : "otherFortunes"} />
+    </FanAction>
+  );
+
   return (
     <article data-saju-result={view} className={styles.layout}>
       <div className={styles.toolbar}>
@@ -418,6 +429,9 @@ export function SajuResult({
           <FanHeading as="h1">{title}</FanHeading>
           {view === "first" && (
             <>
+              <picture className={`${styles.hero} ${styles.mobileHero}`}>
+                <img src={hero(character)} alt="" />
+              </picture>
               <FanText as="p" role="label" className={styles.dayLine}>
                 <FanHanja role="inline">{first.day.hanja}</FanHanja> · {first.day.read}
               </FanText>
@@ -459,9 +473,6 @@ export function SajuResult({
                   </div>
                 ))}
               </dl>
-              <picture className={`${styles.hero} ${styles.mobileHero}`}>
-                <img src={hero(character)} alt="" />
-              </picture>
             </div>
             <div className={styles.cols}>
               <ElementBlock chart={chart} locale={locale} />
@@ -548,7 +559,7 @@ export function SajuResult({
 
         {view === "pair" && compat && pair && (
           <section className={`${styles.panel} ${styles.pairPanel}`}>
-            <PairEvidence result={pair.result} name={pair.name} />
+            <PairEvidence result={pair.result} name={pair.name} locale={locale} />
             <div className={styles.block}>
               <FanHeading>{uiText("pairMe", { name: pair.name })}</FanHeading>
               <div className={styles.bars}>
@@ -598,7 +609,6 @@ export function SajuResult({
         {depth}
 
         <div className={styles.mobileActions}>{actions}</div>
-        <div className={styles.dockSpace} aria-hidden="true" />
         <footer className={styles.legal}>
           <FanText as="p" role="meta">
             <ReadingText id="outlookNote" />
@@ -622,11 +632,7 @@ export function SajuResult({
               {sayLine}
             </FanText>
           </section>
-          <div className={styles.cta}>
-            <FanAction variant="primary" fullWidth {...(view === "pair" ? { disabled: sharing, onClick: () => onShare(defaultShareVia()) } : onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
-              <ReadingText id={view === "pair" ? "shareFriend" : onAsk ? "askFromResult" : "otherFortunes"} />
-            </FanAction>
-          </div>
+          {!mobileAction && <div className={styles.cta}>{primaryAction}</div>}
           <div className={styles.desktopOnly}>{actions}</div>
         </div>
         {view !== "pair" && bondCard}
@@ -668,6 +674,7 @@ export function SajuResult({
           </nav>
         )}
       </aside>
+      {mobileAction && <div className={styles.mobileCta}>{primaryAction}</div>}
       <ShareSheet
         open={shareOpen}
         onOpenChange={setShareOpen}

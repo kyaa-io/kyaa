@@ -48,6 +48,12 @@ const show = (view: ResultView, extra: Partial<Parameters<typeof SajuResult>[0]>
 it("처음 풀이: 한 줄 제목·명식표·오행·신강·십신·합충·올해 흐름, 가격은 없다", () => {
   const { container } = show("first");
   expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("한낮의 해처럼, 좋아하는 걸 숨기지 않는 사람");
+  expect(screen.getByRole("heading", { level: 1 }).nextElementSibling?.tagName).toBe("PICTURE");
+  for (const label of ["십신 분포", "합 · 충"]) {
+    const summary = screen.getByText(label).closest("summary");
+    expect(summary?.textContent).not.toBe(label);
+    expect(summary?.parentElement).not.toHaveAttribute("open");
+  }
   expect(container.textContent).toContain("丙火 · 병화 일간");
   for (const label of ["사주 여덟 글자", "타고난 기운", "타고난 성격", "신강 · 신약", "십신 분포", "합 · 충", "올해 흐름", "강점", "조심할 것", "조심할 점"])
     expect(screen.getByText(label)).toBeTruthy();

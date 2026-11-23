@@ -249,15 +249,6 @@
 .mobileActions {
   order: 5;
 }
-.dockSpace {
-  order: 7;
-  height: var(--space-16);
-}
-.dockSpace::after {
-  content: "";
-  display: block;
-  height: var(--space-16);
-}
 .legal {
   order: 6;
   color: var(--color-muted);
@@ -417,8 +408,7 @@
   .side > * {
     order: 0 !important;
   }
-  .mobileActions,
-  .dockSpace {
+  .mobileActions {
     display: none;
   }
   .desktopOnly {
@@ -457,16 +447,11 @@
   .layout .head { display: contents; }
   .head > * { order: 1; }
   .head .keywords, .head .hero { order: 2; }
+  .head .mobileHero { order: 1; }
+  .mobileHero img { aspect-ratio: auto; }
   .dock .reaction { order: 1; }
   .layout { gap: var(--space-5); }
-  .dock .cta {
-    position: fixed;
-    z-index: var(--z-bottom-nav);
-    bottom: calc(var(--chemi-result-nav-height) + env(safe-area-inset-bottom));
-    inset-inline: 0;
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface);
-  }
+  .dock .cta { display: none; }
 }
 
 @media (min-width: 64rem) {
@@ -491,4 +476,8 @@
   .mobileHero {
     display: none;
   }
+}
+
+.mobileCta {
+  composes: mobileDock from "../../../features/chemi/ui/result/result-actions.module.css";
 }

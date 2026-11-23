@@ -17,3 +17,15 @@
   width: 100%;
   max-width: none;
 }
+
+/* The final row starts above the tab bar and scrolls away with the result. */
+.mobileDock {
+  display: flex;
+  justify-content: center;
+  order: 12;
+  position: sticky;
+  z-index: var(--z-bottom-nav);
+  bottom: calc(var(--chemi-result-nav-height, var(--fan-bottom-nav-height, 64px)) + env(safe-area-inset-bottom));
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+}

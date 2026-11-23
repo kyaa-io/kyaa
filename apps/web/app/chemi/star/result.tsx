@@ -34,7 +34,7 @@ import {
   type StarCharacterId,
   type StarDomain,
 } from "./copy";
-import { ResultActions } from "@/features/chemi/ui/result/result-actions";
+import { useMobileResultAction, ResultActions } from "@/features/chemi/ui/result/result-actions";
 import { withParticle } from "./particle";
 import { Legal, Reaction, Toolbar, art } from "./parts";
 import { signList, type StarReading } from "./reading";
@@ -114,6 +114,7 @@ export function StarResult({
   onAsk: () => void;
 }) {
   const uiText = useReadingCopy();
+  const mobileAction = useMobileResultAction();
   const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const { authenticated, getAccessToken } = useByUsAuth();
   const celebratedReading = useRef<string | null>(null);
@@ -216,6 +217,12 @@ export function StarResult({
         <FanText role="item">{moonBare}</FanText>
       </div>
     </div>
+  );
+
+  const primaryAction = (
+    <FanAction variant="primary" fullWidth {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
+      <ReadingText id={onAsk ? "askFromResult" : "otherFortunes"} />
+    </FanAction>
   );
 
   return (
@@ -322,11 +329,7 @@ export function StarResult({
           character={character}
           name={name}
           line={starSayLine(character, best, stars[best])}
-          action={
-            <FanAction variant="primary" fullWidth {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
-              <ReadingText id={onAsk ? "askFromResult" : "otherFortunes"} />
-            </FanAction>
-          }
+          action={mobileAction ? null : primaryAction}
           extra={<div className={styles.desktopOnly}>{shareAction}</div>}
         />
           <section className={`${styles.section} ${styles.todaySec}`}>
@@ -377,6 +380,7 @@ export function StarResult({
         </nav>
         <Legal />
       </aside>
+      {mobileAction && <div className={styles.mobileCta}>{primaryAction}</div>}
       <FanDialog
         open={shareOpen}
         onOpenChange={setShareOpen}

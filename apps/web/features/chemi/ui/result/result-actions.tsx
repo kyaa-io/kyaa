@@ -1,10 +1,23 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useSyncExternalStore, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
 import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import styles from "./result-actions.module.css";
+
+function subscribeToViewport(callback: () => void) {
+  window.addEventListener("resize", callback);
+  return () => window.removeEventListener("resize", callback);
+}
+
+export function useMobileResultAction(maxWidth = "63.99rem") {
+  return useSyncExternalStore(
+    subscribeToViewport,
+    () => window.matchMedia?.(`(max-width: ${maxWidth})`).matches ?? false,
+    () => false,
+  );
+}
 
 export type ShareVia = "copy" | "send";
 
