@@ -21,7 +21,7 @@ import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import { withTopic } from "@/features/chemi/domain/korean-particle";
-import { ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
+import { useMobileResultAction, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { ShareLanding } from "@/features/chemi/ui/result/share-landing";
 import { completeShare } from "@/features/chemi/ui/complete-share";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
@@ -88,6 +88,7 @@ export function FortuneResult({
   onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
+  const mobileAction = useMobileResultAction();
   const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [attempt, retry] = useState(0);
@@ -387,6 +388,17 @@ export function FortuneResult({
   ) : rewardParts.length > 0 ? (
     <div className={styles.rewardRow}>{rewardParts}</div>
   ) : null;
+  const primaryAction = (
+    <FanAction
+      variant="primary"
+      fullWidth
+      {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}
+    >
+      <ReadingText id={onAsk ? "askFromResult" : "otherFortunes"} />
+      {onAsk && askLeft ? <FanText role="meta" className={styles.askCount}>{uiText("askCount", { count: askLeft })}</FanText> : null}
+    </FanAction>
+  );
+
   return (
     <article data-fortune-result="" className={styles.layout}>
       {toolbar}
@@ -539,16 +551,7 @@ export function FortuneResult({
           <FanText as="p" role="body">
             {sayLine}
           </FanText>
-          <div className={styles.cta}>
-            <FanAction
-              variant="primary"
-              fullWidth
-              {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}
-            >
-              <ReadingText id={onAsk ? "askFromResult" : "otherFortunes"} />
-              {onAsk && askLeft ? <FanText role="meta" className={styles.askCount}>{uiText("askCount", { count: askLeft })}</FanText> : null}
-            </FanAction>
-          </div>
+          {!mobileAction && <div className={styles.cta}>{primaryAction}</div>}
           <div className={styles.desktopOnly}>{actions}</div>
         </section>
         <section className={`${styles.section} ${styles.fieldsSec}`}>
@@ -639,6 +642,7 @@ export function FortuneResult({
           )}
         </footer>
       </aside>
+      {mobileAction && <div className={styles.mobileCta}>{primaryAction}</div>}
       <ShareSheet open={shareOpen} onOpenChange={setShareOpen} sharing={sharing} onShare={(via) => void share(via)}>
         <div className={styles.shareCard}>
           <img src={`/chemi/fortune/avatar-${character}-v1.jpg`} alt="" />

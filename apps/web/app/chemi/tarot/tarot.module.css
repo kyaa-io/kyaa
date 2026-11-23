@@ -856,20 +856,8 @@
 }
 /* 390: 이 결과로 질문하기는 하단 탭 위에 고정한다(사주·운세·별자리 결과와 같은 자리). */
 @media (max-width: 47.99rem) {
-  .result[data-ask] {
-    padding-bottom: calc(var(--min-target) + var(--space-8));
-  }
-  .cta {
-    position: fixed;
-    display: flex;
-    justify-content: center;
-    z-index: var(--z-bottom-nav);
-    bottom: calc(var(--fan-bottom-nav-height, 64px) + env(safe-area-inset-bottom));
-    inset-inline: 0;
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface);
-  }
-  :global(body):has(.cta) :global([data-fan-toast-viewport]) {
+  .cta { display: none; }
+  :global(body):has(.mobileCta) :global([data-fan-toast-viewport]) {
     bottom: calc(
       var(--fan-bottom-nav-height, 64px) + env(safe-area-inset-bottom) + var(--space-3) * 2 +
         var(--min-target)
@@ -1019,4 +1007,8 @@
     position: sticky;
     top: calc(var(--fan-header-height) + var(--space-6));
   }
+}
+
+.mobileCta {
+  composes: mobileDock from "../../../features/chemi/ui/result/result-actions.module.css";
 }

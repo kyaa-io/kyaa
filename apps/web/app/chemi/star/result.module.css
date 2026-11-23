@@ -299,6 +299,7 @@
   display: none;
 }
 @media (max-width: 63.99rem) {
+  [data-star-result] .cta { display: none; }
   .cta {
     position: fixed;
     z-index: var(--z-bottom-nav);
@@ -319,7 +320,7 @@
     height: var(--min-target);
     width: 100%;
   }
-  :global(body):has(.cta) :global([data-fan-toast-viewport]) {
+  :global(body):has(.mobileCta, .cta) :global([data-fan-toast-viewport]) {
     bottom: calc(
       var(--fan-bottom-nav-height, 64px) + env(safe-area-inset-bottom) + var(--space-3) * 2 +
         var(--min-target)
@@ -431,4 +432,8 @@
     position: sticky;
     top: calc(var(--fan-header-height) + var(--space-6));
   }
+}
+
+.mobileCta {
+  composes: mobileDock from "../../../features/chemi/ui/result/result-actions.module.css";
 }

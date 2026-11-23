@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "운세·사주·별자리·타로 결과의 질문 버튼이 풀이 끝에서 함께 스크롤돼 아래의 문의하기와 요금 안내를 가리지 않아요.",
+    "모바일 사주 풀이는 제목 아래에 그림이 나오고 십신 분포와 합·충은 요약부터 볼 수 있어요. 궁합에서는 두 사람의 오행 비중을 막대로 비교하고 합·충 글자를 칩으로 확인할 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/2026-11-23-chemi-result-reading-saju.png",
+    "release-notes/images/2026-11-23-chemi-result-reading-summary.png",
+    "release-notes/images/2026-11-23-chemi-result-reading-pair.png",
+    "release-notes/images/2026-11-23-chemi-result-reading-footer.png"
+  ]
+}

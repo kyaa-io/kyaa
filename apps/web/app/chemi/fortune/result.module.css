@@ -339,14 +339,7 @@
   display: none;
 }
 @media (max-width: 63.99rem) {
-  .cta {
-    position: fixed;
-    z-index: var(--z-bottom-nav);
-    bottom: calc(var(--chemi-result-nav-height) + env(safe-area-inset-bottom));
-    inset-inline: 0;
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface);
-  }
+  .cta { display: none; }
   .errorCta {
     display: block;
     position: fixed;
@@ -359,7 +352,7 @@
     height: var(--min-target);
     width: 100%;
   }
-  :global(body):has(.cta) :global([data-fan-toast-viewport]) {
+  :global(body):has(.mobileCta) :global([data-fan-toast-viewport]) {
     bottom: calc(
       var(--chemi-result-nav-height) + env(safe-area-inset-bottom) +
         var(--space-3) * 2 + var(--min-target)
@@ -547,4 +540,8 @@
 /* 보상 줄만 있는 판은 한 줄 높이로(빈 흰 칸처럼 보이지 않게). */
 .scorePanel:not(:has(.score)) {
   padding-block: var(--space-2);
+}
+
+.mobileCta {
+  composes: mobileDock from "../../../features/chemi/ui/result/result-actions.module.css";
 }

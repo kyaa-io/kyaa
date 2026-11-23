@@ -6,6 +6,9 @@
   align-content: start;
   min-width: 0;
 }
+details.section:not([open]) {
+  display: block;
+}
 .section h2,
 .section p {
   margin: 0;
@@ -324,30 +327,34 @@
   align-items: center;
   gap: var(--space-2);
 }
-.spot {
-  display: grid;
-  grid-template-columns: repeat(4, 22px);
-  grid-template-rows: 22px 22px;
+.relationChips {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: calc(var(--space-8) * 2 + var(--space-1));
   gap: var(--space-1);
 }
-.spot > * {
+.relationChips > * {
   display: grid;
   place-items: center;
-}
-.spot > :not([data-on])::before {
-  content: "";
-  width: var(--space-1);
-  height: var(--space-1);
-  border-radius: 50%;
-  background: var(--color-line);
-}
-.spot > [data-on] {
+  width: var(--space-8);
+  height: var(--space-8);
   border: 1px solid var(--color-ink);
   border-radius: var(--radius-small);
-  color: var(--color-ink);
 }
-.spot[data-rough] > [data-on] {
+.relationChips[data-rough] > * {
   border-style: dashed;
+}
+.disclosure {
+  display: list-item;
+  min-height: var(--min-target);
+  cursor: pointer;
+}
+.disclosure h2 {
+  display: inline;
+}
+.disclosure > span {
+  display: block;
+  margin-block-start: var(--space-1);
 }
 
 /* 간지 칩(내 일주 × 올해) */
