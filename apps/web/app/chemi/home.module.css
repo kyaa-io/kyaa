@@ -285,8 +285,8 @@
     grid-template-columns: 1fr;
   }
   .home[data-ranked="false"] .banner {
-    position: relative;
-    align-self: stretch;
+    /* Keep the full-list artwork crop when the filter shortens the rail. */
+    height: calc(var(--space-12) * 9 + var(--min-target));
   }
   .home[data-ranked="false"] .artwork {
     position: absolute;
