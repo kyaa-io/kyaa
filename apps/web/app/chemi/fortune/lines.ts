@@ -56,7 +56,7 @@ const tones: Record<FortuneCharacterId, Tone> = {
     },
     people: {
       high: "선배나 윗사람이 먼저 말 걸 수도 있어. 반갑게 받아 주면 돼.",
-      low: "사람들 사이에서는 대사를 줄이는 날이야. 듣는 쪽이 편할 거야.",
+      low: "사람들 사이에서는 말 줄이는 날이야. 듣는 쪽이 편할 거야.",
     },
     fandom: (score, high) =>
       high
@@ -85,8 +85,8 @@ const tones: Record<FortuneCharacterId, Tone> = {
     },
     fandom: (score, high) =>
       high
-        ? `덕질은 ${score}점이에요. 좋아하는 노래를 크게 틀어 두기 좋은 날이에요. 같이 흥얼거려도 돼.`
-        : `덕질은 ${score}점이에요. 오늘은 한 곡만 천천히 들어요. 나머지는 내일 들어도 괜찮아.`,
+        ? `덕질은 ${score}점이에요. 보고 싶던 거 몰아 봐도 되는 날이에요. 물 한 잔 옆에 두고 봐.`
+        : `덕질은 ${score}점이에요. 오늘은 하나만 천천히 봐요. 나머지는 내일 봐도 괜찮아.`,
     luck: (hour, color) =>
       `${hour ? `부탁은 ${hour}가 좋아요. ` : ""}${color}색 물건 하나 챙겨요. 잊지 말고, 알았지?`,
     choice: { tellMore: "좋아, 더 들려줘", whatFandom: "덕질은 뭐 할까?", whatBring: "뭐 챙길까?" },
@@ -129,7 +129,7 @@ const tones: Record<FortuneCharacterId, Tone> = {
     fandom: (score, high) =>
       high
         ? `덕질은 ${score}점이오. 무대 영상을 즐기되 장바구니는 내일까지 두시오.`
-        : `덕질은 ${score}점이오. 오늘은 천천히 즐기시오. 큰 결제는 내일로 미루시오.`,
+        : `덕질은 ${score}점이오. 오늘은 천천히 즐기시오. 큰 지출은 내일로 미루시오.`,
     luck: (hour, color) =>
       `${hour ? `${hour}가 청하기 좋소. ` : ""}${color}빛 물건도 챙기시오.`,
     gradeNotes: {

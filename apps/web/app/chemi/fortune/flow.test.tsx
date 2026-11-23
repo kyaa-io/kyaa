@@ -406,3 +406,44 @@ it("shows a loading shape, not the entrance, while a restored address loads", as
   expect(await screen.findByText("오늘 영상 봐도 돼?")).toBeVisible();
   expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
 });
+
+it("calls the signed-in fan by nickname in the first line (DF-FORT-008)", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (path: string) =>
+      path === "/api/me/profile"
+        ? Response.json({ profile: { nickname: "별빛토끼" } })
+        : Response.json({ participation: null }),
+    ),
+  );
+  render(<FortuneFlow locale="ko" />);
+  expect(await screen.findByText("별빛토끼, 구름 위까지 올라왔네? 오늘 운세 내가 봐 줄게, 기대해.")).toBeVisible();
+});
+
+it("keeps the shared first line when the fan has no nickname", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (path: string) =>
+      path === "/api/me/profile" ? Response.json({ profile: { nickname: null } }) : Response.json({ participation: null }),
+    ),
+  );
+  render(<FortuneFlow locale="ko" />);
+  expect(await screen.findByText("구름 위까지 올라왔네? 오늘 운세 내가 봐 줄게, 기대해.")).toBeVisible();
+});
+
+it("writes the result body in the chosen favorite's voice (DF-FORT-001)", async () => {
+  const body = async (character: string) => {
+    window.history.replaceState(null, "", `/chemi/fortune?step=result&c=${character}&r=reading`);
+    vi.stubGlobal("fetch", restoreFetch(() => Response.json(stored())));
+    const { unmount, container } = render(<FortuneFlow locale="ko" />);
+    await screen.findByText("오늘의 흐름", {}, { timeout: 3000 });
+    const flow = [...container.querySelectorAll("section")].find((node) => node.textContent?.startsWith("오늘의 흐름"));
+    const text = flow?.querySelector("p")?.textContent ?? "";
+    unmount();
+    return text;
+  };
+  const lines = [await body("changha"), await body("elina"), await body("yuna"), await body("dosa")];
+  expect(new Set(lines).size).toBe(4);
+  expect(lines[3]).toContain("이오.");
+  for (const line of lines) expect(line).not.toMatch(/일진|일간|식신/);
+});

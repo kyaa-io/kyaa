@@ -144,3 +144,22 @@ describe("별자리 4/4 궁합 줄", () => {
     expect(starPairLine("elina", "게", "물병", false, 5)).toContain("내가 더 챙겨 줄게요");
   });
 });
+
+describe("별자리 첫 대사 별명", () => {
+  it("별명이 있으면 그 이름으로 부르며 시작하고, 없으면 그대로다(운세와 같은 규칙)", async () => {
+    const { starEnterLine } = await import("./copy");
+    expect(starEnterLine("changha", "enter", "별빛토끼")).toBe("별빛토끼, 오늘 밤하늘이 너한테 뭐라는지 볼래? 칭찬이면 좋겠다.");
+    expect(starEnterLine("dosa", "birth", "별빛토끼")).toMatch(/^별빛토끼 님, /);
+    expect(starEnterLine("yuna")).toBe("오늘 밤하늘이 뭐라는지 콕 집어 줄게.");
+  });
+});
+
+describe("대사에서 부르는 이름", () => {
+  it("8자가 넘으면 앞 7자 + '…', 빈 이름은 부르지 않는다", async () => {
+    const { chemiCallName } = await import("@/features/chemi/use-chemi-nickname");
+    expect(chemiCallName("별빛토끼")).toBe("별빛토끼");
+    expect(chemiCallName("열두글자짜리긴별명입니다")).toBe("열두글자짜리긴…");
+    expect(chemiCallName("12345678")).toBe("12345678");
+    expect(chemiCallName("  ")).toBeNull();
+  });
+});
