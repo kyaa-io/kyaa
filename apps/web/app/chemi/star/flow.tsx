@@ -473,9 +473,9 @@ export function StarFlow({
   const worst = stars ? worstDomain(stars) : null;
   const entering = step === "enter" && !needBirth;
   const creator = starCharacters[index].sign;
-  // 1은 첫 별점(놀람), 2는 좋은 분야와 낮은 분야·3은 행성 흐름(기본), 4는 둘 사이 궁합(웃음).
+  // 기획 13-2: 첫 별점은 별 3개 이상이면 웃음, 1~2개면 기본(걱정 표정 대신). 2는 좋은 분야와 낮은 분야·3은 행성 흐름(기본), 4는 둘 사이 궁합(웃음).
   const expression = !talk || !stars || phase !== "idle" ? null
-    : talk === 1 ? expressionFor.firstReveal
+    : talk === 1 ? (stars.overall >= 3 ? expressionFor.good : expressionFor.low)
     : talk === 4 ? expressionFor.bond
     : expressionFor.low;
   const line =

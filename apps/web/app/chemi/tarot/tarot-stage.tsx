@@ -117,11 +117,11 @@ export function TarotStage(props: Props) {
   else if (step === "pick") dialogLine = lines.pick;
   else if (step === "lock") dialogLine = lines.lock;
   else dialogLine = "";
-  // 카드를 뒤집을 때 놀람, 첫 풀이는 바로 선 카드면 웃음·거꾸로 선 카드면 기본, 마지막 한마디는 웃음.
+  // 기획 13-2: 바로 선 카드는 웃음, 거꾸로 선 카드는 뒤집을 때 놀람 → 풀이 기본 → 마지막 한마디 웃음.
   const expression = !talking || !draw ? null
+    : step === "talk3" || !draw.reversed ? expressionFor.good
     : step === "flip" ? expressionFor.firstReveal
-    : step === "talk2" ? (draw.reversed ? expressionFor.low : expressionFor.good)
-    : expressionFor.good;
+    : expressionFor.low;
   const talkLine = (() => {
     if (!draw) return "";
     if (step === "flip") return lines.drawn(tarotName(draw.card, props.locale), draw.reversed);
