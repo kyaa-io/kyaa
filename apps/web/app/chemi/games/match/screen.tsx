@@ -50,6 +50,36 @@ function guideSeen() {
 function markGuideSeen() {
   try { localStorage.setItem(GUIDE_KEY, "1"); } catch { /* 다음에 다시 보여 준다 */ }
 }
+/**
+ * 시작을 누른 뒤 판을 받기 전(key) 또는 판 도중(playId)에 페이지가 바뀌었는지 같은 탭 안에서만 기억한다.
+ * 다시 들어오면 받기 전이면 그 판을 돌려받고(무료 판 그대로), 판 도중이면 그 판을 끝내고 알린다.
+ */
+const PENDING_KEY = "chemi.match.pending";
+type Pending = { key: string } | { playId: string };
+function readPending(): Pending | null {
+  try {
+    const raw = sessionStorage.getItem(PENDING_KEY);
+    return raw ? (JSON.parse(raw) as Pending) : null;
+  } catch {
+    return null;
+  }
+}
+function writePending(value: Pending | null) {
+  try {
+    if (value) sessionStorage.setItem(PENDING_KEY, JSON.stringify(value));
+    else sessionStorage.removeItem(PENDING_KEY);
+  } catch { /* 저장소를 못 쓰면 떠날 때 보내는 요청만 남는다 */ }
+}
+/** 페이지가 닫히는 중에도 끝까지 가는 요청(시작 취소·판 끝내기). */
+function sendOnExit(token: string | null, body: object) {
+  if (!token) return;
+  void fetch("/api/chemi/games", {
+    method: "POST",
+    keepalive: true,
+    headers: { "content-type": "application/json", authorization: "Bearer " + token },
+    body: JSON.stringify(body),
+  }).catch(() => {});
+}
 /** 무료 판은 한국 자정에 다시 채워진다. */
 function untilKstMidnight(now: number) {
   const day = 86_400_000, offset = 9 * 3_600_000;
@@ -323,6 +353,7 @@ function Session({
   const [copied, setCopied] = useState(false);
   const [load, setLoad] = useState(0);
   const [practiced, setPracticed] = useState(false);
+  const [ended, setEnded] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const audio = useRef<AudioContext | null>(null);
   const inFlight = useRef(false);
@@ -380,8 +411,15 @@ function Session({
           if (active) setError(copy.error);
         });
     }
-    if (auth.authenticated)
-      void call<Lobby>({ action: "lobby" })
+    if (auth.authenticated) {
+      const pending = readPending();
+      if (pending && "playId" in pending) setEnded(true);
+      const settled = pending
+        ? call("key" in pending ? { action: "cancel", key: pending.key } : { action: "leave", playId: pending.playId })
+            .then(() => writePending(null), () => {})
+        : Promise.resolve();
+      void settled
+        .then(() => call<Lobby>({ action: "lobby" }))
         .then((data) => {
           if (active) {
             setLobby(data);
@@ -391,6 +429,7 @@ function Session({
         .catch(() => {
           if (active) setError(copy.error);
         });
+    }
     return () => {
       active = false;
     };
@@ -434,11 +473,21 @@ function Session({
       setStage("empty");
       return;
     }
+    setEnded(false);
     await action(async () => {
       const choice = who + ":" + extra;
       if (startKey.current.choice !== choice)
         startKey.current = { choice, key: crypto.randomUUID() };
       const trial = Boolean(share && !auth.authenticated);
+      const key = startKey.current.key;
+      // 판을 받기 전에 페이지가 닫히면 그 판은 쓰지 않은 것으로 돌린다(K-7578e3 중복 차감 없음).
+      const cancelOnExit = (event: PageTransitionEvent) => {
+        if (!event.persisted) sendOnExit(accessToken.current, { action: "cancel", key });
+      };
+      if (!trial) {
+        writePending({ key });
+        window.addEventListener("pagehide", cancelOnExit);
+      }
       let next: Ticket;
       try {
         next = await call<Ticket>(
@@ -457,6 +506,7 @@ function Session({
       } catch (e) {
         if (String(e).includes("CHEMI_LIMIT")) {
           startKey.current.choice = "";
+          writePending(null);
           if (trial) {
             setChallenge((prev) => prev && { ...prev, available: false });
             return;
@@ -467,7 +517,10 @@ function Session({
           return;
         }
         throw e;
+      } finally {
+        window.removeEventListener("pagehide", cancelOnExit);
       }
+      if (!trial) writePending({ playId: next.playId });
       startKey.current.choice = "";
       setEquipped(false);
       setPriorRank(lobby?.ranking.find(row => row.isMe)?.place ?? null);
@@ -496,6 +549,7 @@ function Session({
     });
   }
   async function submit(body: Submission) {
+    writePending(null);
     setPendingFinish(body);
     setStage("result");
     if (!auth.authenticated) {
@@ -541,18 +595,7 @@ function Session({
       );
       setStage("pause");
     };
-    const abandon = () => {
-      if (accessToken.current)
-        void fetch("/api/chemi/games", {
-          method: "POST",
-          keepalive: true,
-          headers: {
-            "content-type": "application/json",
-            authorization: "Bearer " + accessToken.current,
-          },
-          body: JSON.stringify({ action: "leave", playId: ticket.playId }),
-        }).catch(() => {});
-    };
+    const abandon = () => sendOnExit(accessToken.current, { action: "leave", playId: ticket.playId });
     const restore = (event: PageTransitionEvent) => {
       if (event.persisted) {
         setTicket(null);
@@ -619,6 +662,7 @@ function Session({
     void action(async () => {
       if (ticket && auth.authenticated)
         await call({ action: "leave", playId: ticket.playId });
+      writePending(null);
       setTicket(null);
       setStage("start");
     });
@@ -788,7 +832,12 @@ function Session({
               </>
             ) : (
               <>
-
+                {ended && lobby && (
+                  <p role="status" className={styles.ended}>
+                    <FanText role="item">{copy.prevEnded}</FanText>
+                    <FanText role="meta">{copy.freePlays} {lobby.freeRemaining}</FanText>
+                  </p>
+                )}
                 <div className={styles.choices} role="group" aria-label={copy.choose}>
                   {characters.map((c) => (
                     <FanAction

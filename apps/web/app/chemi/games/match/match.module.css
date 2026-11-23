@@ -768,3 +768,14 @@
 @media (width < 48rem) {
   .shell[data-stage="empty"] .scene[data-tall] { aspect-ratio: 16 / 9; }
 }
+/* 이전 판이 끝난 채 다시 들어왔을 때: 무엇이 끝났고 판이 몇 개 남았는지 한 줄로. */
+.ended {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-card);
+  background: var(--color-accent-soft);
+}

@@ -38,6 +38,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -194,4 +195,64 @@ it("shows the rules and a free 2x2 practice before the first game", async () => 
   fireEvent.click(card(3));
   expect(await screen.findByRole("button", { name: copy.start, description: copy.freePlays + " 3" })).toBeEnabled();
   expect(requests.some(r => r.action === "start")).toBe(false);
+});
+
+it("gives back a game that was issued but never received when the page reloads (DF-GAME-009)", async () => {
+  sessionStorage.setItem("chemi.match.pending", JSON.stringify({ key: "6f1c2a1e-3b0b-4a59-9d55-2a0f1c4e8b11" }));
+  const requests: Record<string, unknown>[] = [];
+  vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    requests.push(body);
+    if (body.action === "cancel") return Response.json({ refunded: true });
+    if (body.action === "lobby")
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
+    throw Error(body.action);
+  });
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  await waitFor(() => expect(screen.getByRole("button", { name: copy.start })).toBeEnabled());
+  // 취소가 로비보다 먼저 가야 로비가 돌려받은 판까지 센다.
+  expect(requests.map(r => r.action)).toEqual(["cancel", "lobby"]);
+  expect(requests[0]).toEqual({ action: "cancel", key: "6f1c2a1e-3b0b-4a59-9d55-2a0f1c4e8b11" });
+  expect(screen.queryByText(copy.prevEnded)).toBeNull();
+  expect(sessionStorage.getItem("chemi.match.pending")).toBeNull();
+});
+
+it("ends a game left mid-play and says so with the games left (DF-GAME-009)", async () => {
+  sessionStorage.setItem("chemi.match.pending", JSON.stringify({ playId: "7a6e0f43-9d1d-4c0e-8f53-6d5b1c2e9a10" }));
+  const requests: Record<string, unknown>[] = [];
+  vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    requests.push(body);
+    if (body.action === "leave") return Response.json({ left: false });
+    if (body.action === "lobby")
+      return Response.json({ sound: false, freeRemaining: 2, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
+    throw Error(body.action);
+  });
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  const notice = (await screen.findByText(copy.prevEnded)).closest("[role=status]");
+  expect(notice).toHaveTextContent(copy.prevEnded);
+  expect(notice).toHaveTextContent(copy.freePlays + " 2");
+  expect(requests.map(r => r.action)).toEqual(["leave", "lobby"]);
+});
+
+it("remembers the start key until the game arrives, then the game itself", async () => {
+  const seen: (string | null)[] = [];
+  vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
+    const body = JSON.parse(String(init.body));
+    if (body.action === "lobby")
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
+    if (body.action === "start") {
+      seen.push(sessionStorage.getItem("chemi.match.pending"));
+      return Response.json({ playId: "local-round", seed: 12, game: "match" });
+    }
+    throw Error(body.action);
+  });
+  vi.stubGlobal("requestAnimationFrame", () => 1);
+  vi.stubGlobal("cancelAnimationFrame", () => {});
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  await waitFor(() => expect(screen.getByRole("button", { name: copy.start })).toBeEnabled());
+  fireEvent.click(screen.getByRole("button", { name: copy.start }));
+  await screen.findByRole("button", { name: copy.pause });
+  expect(JSON.parse(seen[0] ?? "{}")).toHaveProperty("key");
+  expect(JSON.parse(sessionStorage.getItem("chemi.match.pending") ?? "{}")).toEqual({ playId: "local-round" });
 });

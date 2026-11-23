@@ -79,6 +79,7 @@ const copy = {
     doneElina: "오늘 카드 자리 다 외우시던데요? 꽤 잘하잖아.",
     doneYuna: "오늘 기억력 뭐야? 나보다 빨랐어!",
     toChemi: "케미로",
+    prevEnded: "이전 판은 끝났어요",
   },
   "en": {
     title: "Match pairs",
@@ -158,6 +159,7 @@ const copy = {
     doneElina: "You remembered every spot, didn't you? Not bad at all.",
     doneYuna: "How's your memory that good? You beat me!",
     toChemi: "Back to Chemi",
+    prevEnded: "Your last game ended",
   },
   "ja": {
     title: "絵合わせ",
@@ -237,6 +239,7 @@ const copy = {
     doneElina: "カードの場所、全部覚えてましたよね?やるじゃん。",
     doneYuna: "記憶力どうなってるの?私より速かった!",
     toChemi: "ケミへ",
+    prevEnded: "前のプレイは終了しました",
   },
   "zh-Hans": {
     title: "配对游戏",
@@ -316,6 +319,7 @@ const copy = {
     doneElina: "卡片位置你全都记住了吧？挺厉害的嘛。",
     doneYuna: "你记性怎么这么好？比我还快！",
     toChemi: "返回 Chemi",
+    prevEnded: "上一局已结束",
   },
   "zh-Hant": {
     title: "配對遊戲",
@@ -395,6 +399,7 @@ const copy = {
     doneElina: "卡片位置你全都記住了吧？挺厲害的嘛。",
     doneYuna: "你記性怎麼這麼好？比我還快！",
     toChemi: "返回 Chemi",
+    prevEnded: "上一局已結束",
   },
   "es": {
     title: "Emparejar",
@@ -474,6 +479,7 @@ const copy = {
     doneElina: "Recordabas cada lugar, ¿verdad? Nada mal.",
     doneYuna: "¿Qué memoria tienes? ¡Fuiste más rápido que yo!",
     toChemi: "Volver a Chemi",
+    prevEnded: "Tu partida anterior terminó",
   },
   "id": {
     title: "Cari pasangan",
@@ -553,6 +559,7 @@ const copy = {
     doneElina: "Kamu hafal semua posisinya, kan? Hebat juga.",
     doneYuna: "Ingatanmu kok bagus banget? Lebih cepat dari aku!",
     toChemi: "Kembali ke Chemi",
+    prevEnded: "Permainan sebelumnya sudah berakhir",
   },
   "vi": {
     title: "Ghép đôi",
@@ -632,6 +639,7 @@ const copy = {
     doneElina: "Bạn nhớ hết vị trí rồi phải không? Giỏi ghê.",
     doneYuna: "Trí nhớ gì mà tốt vậy? Nhanh hơn cả mình!",
     toChemi: "Về Chemi",
+    prevEnded: "Ván trước đã kết thúc",
   },
   "th": {
     title: "จับคู่",
@@ -711,6 +719,7 @@ const copy = {
     doneElina: "จำตำแหน่งได้หมดเลยใช่ไหมคะ เก่งนี่",
     doneYuna: "ความจำดีขนาดนี้ได้ไง เร็วกว่าเราอีก!",
     toChemi: "กลับไปที่ Chemi",
+    prevEnded: "เกมก่อนหน้าจบแล้ว",
   },
   "pt": {
     title: "Jogo de pares",
@@ -790,6 +799,7 @@ const copy = {
     doneElina: "Lembrou de todos os lugares, né? Nada mal.",
     doneYuna: "Que memória é essa? Foi mais rápido que eu!",
     toChemi: "Voltar ao Chemi",
+    prevEnded: "Sua partida anterior terminou",
   },
   "fr": {
     title: "Jeu de paires",
@@ -869,6 +879,7 @@ const copy = {
     doneElina: "Vous vous souveniez de chaque place, non ? Pas mal du tout.",
     doneYuna: "C'est quoi cette mémoire ? Plus rapide que moi !",
     toChemi: "Retour à Chemi",
+    prevEnded: "Ta partie précédente est terminée",
   },
   "ru": {
     title: "Найди пару",
@@ -948,6 +959,7 @@ const copy = {
     doneElina: "Вы запомнили все места, да? Неплохо.",
     doneYuna: "Откуда такая память? Ты был быстрее меня!",
     toChemi: "Назад в Chemi",
+    prevEnded: "Прошлая игра завершилась",
   },
 } satisfies Record<AppLocale, Record<string, string>>;
 
