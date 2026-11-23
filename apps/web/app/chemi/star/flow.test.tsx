@@ -68,7 +68,7 @@ it("walks calc → talk 1~4 → result → chart and back one step at a time", a
   const posts = fetcher.mock.calls.filter(([path, init]) => path === "/api/chemi/readings" && init?.method === "POST");
   expect(posts).toHaveLength(1);
   expect(JSON.parse(String(posts[0]![1]!.body))).toEqual({ content: "star", kind: "daily", character: "changha" });
-  fireEvent.click(screen.getByRole("button", { name: "영역별로도 알려 줘" }));
+  fireEvent.click(screen.getByRole("button", { name: "영역별 운세" }));
   expect(await screen.findByText("2/4")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "왜 그런 거야?" }));
   expect(await screen.findByText("3/4")).toBeTruthy();

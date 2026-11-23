@@ -26,6 +26,8 @@ import { ShareLanding } from "@/features/chemi/ui/result/share-landing";
 import { completeShare } from "@/features/chemi/ui/complete-share";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
+import { flowKey, gradeKey, periodKey } from "./deep/copy";
+import { englishFieldNotes, englishFortuneBasis, englishFortuneFlow, englishFortuneVoice, englishHeadline, englishSpirits, englishStages, englishValue } from "./result.en";
 import { fortuneBasis, fortuneFieldDetail, fortuneFlow } from "./depth";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
@@ -308,9 +310,12 @@ export function FortuneResult({
       />
     );
   const { result } = reading;
+  const korean = locale === "ko";
+  const grade = korean ? result.grade.name : uiText(gradeKey(result.score));
   // 한 줄 제목: 말투로 다시 쓴 제목 → 오늘 일진 한 줄(04-3 · 01) → 등급 이름.
   const headline =
-    reading.styled?.headline || dayHeadline(result.evidence.tenGod, result.grade.name) || result.grade.name;
+    (korean ? reading.styled?.headline || dayHeadline(result.evidence.tenGod, result.grade.name)
+      : englishHeadline(result.score, result.evidence.tenGod)) || grade;
   const fields = [
     [uiText("fandom"), "fandom", result.fields.fandom],
     [uiText("people"), "people", result.fields.people],
@@ -340,9 +345,9 @@ export function FortuneResult({
       </span>
     </div>
   );
-  const stage = stageNotes[result.evidence.stage];
-  const spirit = spiritNotes[result.evidence.spirit];
-  const sayLine =
+  const stage = (korean ? stageNotes : englishStages)[result.evidence.stage];
+  const spirit = (korean ? spiritNotes : englishSpirits)[result.evidence.spirit];
+  const sayLine = !korean ? englishFortuneVoice[character] :
     reading.styled?.share?.line ??
     fortuneTalkLine(character, 4, {
       score: result.score,
@@ -359,7 +364,7 @@ export function FortuneResult({
   const cardKind = isToday ? dayCardKind(result.score) : null;
   const deepTarget = { character, locale, readingId: reading.readingId };
   const actions = <ResultActions locale={locale} sharing={sharing} onShare={() => setShareOpen(true)} />;
-  const merged = headline === result.grade.name;
+  const merged = headline === grade;
   // 쉬어 가는 날(50~59)은 숫자보다 등급 이름을 먼저 보인다(04-3 · 12). 자랑하기 카드에도 숫자를 넣지 않는다.
   const rest = result.score < 60;
   // 보상 줄(04-3 · 02)은 오늘 결과에서만. 받은 것 → 이미 받은 최애 → 패스포트가 없어 보류된 3P 순서로 한 줄.
@@ -405,7 +410,7 @@ export function FortuneResult({
             <>
               <div className={styles.headScore}>
                 {!rest && <FanNumber size="xl" locale={locale} value={result.score} />}
-                <FanText as="p" role="item" className={styles.grade}>{result.grade.name}</FanText>
+                <FanText as="p" role="item" className={styles.grade}>{grade}</FanText>
               </div>
               <FanHeading as="h1">{headline}</FanHeading>
             </>
@@ -438,7 +443,7 @@ export function FortuneResult({
         </section>}
         <section className={`${styles.section} ${styles.flowSec}`}>
           <FanHeading><ReadingText id="todayFlow" /></FanHeading>
-          <p>{fortuneFlow(result.grade.name, result.evidence)}</p>
+          <p>{korean ? fortuneFlow(result.grade.name, result.evidence) : englishFortuneFlow(uiText(flowKey(result.score)), result.evidence)}</p>
         </section>
         <section className={`${styles.section} ${styles.timesSec}`}>
           <FanHeading><ReadingText id="timeWindow" /></FanHeading>
@@ -453,8 +458,8 @@ export function FortuneResult({
               <div key={key}>
                 {bar(label, result.periods[key])}
                 <FanText as="p" role="meta">
-                  {periodHours[key]} ·{" "}
-                  {periodNotes[key][band(result.periods[key])]}
+                  {korean ? periodHours[key] : ({ morning: "05:00–11:00", afternoon: "11:00–17:00", night: "17:00–23:00" })[key]} ·{" "}
+                  {korean ? periodNotes[key][band(result.periods[key])] : uiText(periodKey(key, result.periods[key]))}
                 </FanText>
               </div>
             ))}
@@ -471,7 +476,7 @@ export function FortuneResult({
                   </FanText>
                   <dd>
                     <FanText as="strong" role="item">
-                      {result.evidence.stage} · {stage[0]}
+                      {korean && `${result.evidence.stage} · `}{stage[0]}
                     </FanText>
                     <FanText as="p" role="meta">
                       {stage[1]}
@@ -486,7 +491,7 @@ export function FortuneResult({
                   </FanText>
                   <dd>
                     <FanText as="strong" role="item">
-                      {result.evidence.spirit.replace(/살$/, "")} · {spirit[0]}
+                      {korean && `${result.evidence.spirit.replace(/살$/, "")} · `}{spirit[0]}
                     </FanText>
                     <FanText as="p" role="meta">
                       {spirit[1]}
@@ -499,15 +504,15 @@ export function FortuneResult({
         )}
         <section className={`${styles.panel} ${styles.whyPanel}`}>
           <FanDisclosure label={uiText("whyScore")}>
-            <ReadingBasisRows rows={fortuneBasis(result.evidence)} />
+            <ReadingBasisRows rows={korean ? fortuneBasis(result.evidence) : englishFortuneBasis(result.evidence)} />
           </FanDisclosure>
           <FanDisclosure label={uiText("luck")} defaultOpen={focus === "luck"}>
             <dl className={styles.facts}>
               {Object.entries({
-                [uiText("tableColor")]: result.luck.color,
+                [uiText("tableColor")]: korean ? result.luck.color : englishValue(result.luck.color),
                 [uiText("tableNumber")]: result.luck.number,
-                [uiText("tableDirection")]: result.luck.direction,
-                [uiText("tableItem")]: result.luck.item,
+                [uiText("tableDirection")]: korean ? result.luck.direction : englishValue(result.luck.direction),
+                [uiText("tableItem")]: korean ? result.luck.item : englishValue(result.luck.item),
                 [uiText("tableLuckyhour")]:
                   result.luck.luckyHour &&
                   uiText("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),
@@ -556,14 +561,18 @@ export function FortuneResult({
           <ul className={styles.fields}>
             {fields.map(([label, key, value]) => {
               const [first, second] = exampleKeys[key];
-              const note = key === highest || key === lowest ? fieldNotes[key][band(value)] : null;
-              const detail = fortuneFieldDetail(
+              const fieldNote = (korean ? fieldNotes : englishFieldNotes)[key][band(value)];
+              const note = key === highest || key === lowest ? fieldNote : null;
+              const detail = korean ? fortuneFieldDetail(
                 key,
                 value,
                 result.evidence,
                 key === highest ? "highest" : key === lowest ? "lowest" : null,
                 note !== null,
-              );
+              ) : {
+                basis: null,
+                text: [!note && fieldNote, key === highest && "This is your strongest area today.", key !== highest && key === lowest && "Give this area a little more room today."].filter(Boolean).join(" "),
+              };
               return (
                 <li data-row="" key={key}>
                   <FanCollapsible
@@ -645,7 +654,7 @@ export function FortuneResult({
           <span>
             <span className={styles.headScore}>
               {!rest && <FanNumber locale={locale} value={result.score} />}
-              <FanText role="item">{result.grade.name}</FanText>
+              <FanText role="item">{grade}</FanText>
             </span>
             <FanText role="body">{sayLine}</FanText>
             <FanText role="meta">{name}</FanText>

@@ -1,5 +1,7 @@
 "use client";
 
+import { directionParticle } from "@/features/chemi/domain/korean-particle";
+
 /**
  * 최애 사주 풀이 화면(승인 시안 03-2 결과·03-4 올해·이달·03-5 궁합).
  * 390은 한 열(최애 한마디 + 큰 버튼이 탭바 위에 고정), 1024+는 본문 + 오른쪽 레일.
@@ -127,7 +129,7 @@ function PairEvidence({ result, name }: { result: PairResult; name: string }) {
       )}
       <FanHeading>일간 관계</FanHeading>
       <FanText as="p" role="body">
-        {a}({elementName[ea]}) · {b}({elementName[eb]}) — {direction} 상대 일간의 십신은 ‘{tenGod(a, b)}’로
+        {a}({elementName[ea]}) · {b}({elementName[eb]}) — {direction} 상대 일간의 십신은 ‘{tenGod(a, b)}’{directionParticle(tenGod(a, b))}
         읽어요.
         {["갑기", "을경", "병신", "정임", "무계"].some((pair) => pair === a + b || pair === b + a) &&
           " 두 일간은 천간합을 이뤄요."}

@@ -1,6 +1,7 @@
 "use client";
 
 import { ParticipationCount } from "../participation";
+import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import Link from "@/components/fan-ui/hover-prefetch-link";
@@ -106,7 +107,9 @@ export function TarotStage(props: Props) {
   const voice = ({ ban: "Ban", yo: "Yo", hao: "Hao" } as const)[person.voice];
   const soon = (label: string) => () => showFanToast({ title: uiText("comingSoon", { subject: withTopic(label), label }) });
   let dialogLine: string;
-  if (spreadEntry) dialogLine = uiText(`${spreadEntry.used ? "saySpreadUsed" : "saySpreadAsk"}${voice}`);
+  if (spreadEntry && !spreadEntry.used && isChemiPersona(character))
+    dialogLine = chemiPersona[character].tarotRevisit[props.locale === "ko" ? "ko" : "en"];
+  else if (spreadEntry) dialogLine = uiText(`${spreadEntry.used ? "saySpreadUsed" : "saySpreadAsk"}${voice}`);
   else if (entry) dialogLine = revisit ? lines.again : lines.hello;
   else if (step === "think") dialogLine = lines.think;
   else if (step === "shuffle") dialogLine = lines.shuffle;

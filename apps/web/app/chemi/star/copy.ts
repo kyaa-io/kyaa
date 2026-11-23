@@ -2,6 +2,8 @@
  * 별자리 운세 문구 표. 풀이 표(AS-TX)가 들어오기 전까지 승인 시안(05-2·05-3)의 말투로 만든 임시 문장이다.
  * 별 개수·영역·행성 이름만 끼우고, 같은 입력이면 같은 문장이 나온다. AS-TX 표가 오면 이 파일만 바꾼다.
  */
+import { withTopic } from "@/features/chemi/domain/korean-particle";
+import { chemiPersona } from "@/features/chemi/persona";
 import { withParticle } from "./particle";
 
 export const starCharacters = [
@@ -331,7 +333,7 @@ const tones: Record<StarCharacterId, Tone> = {
     birth: "별자리 운세 보려면 네 생일이 필요해. 한 번만 알려 줘.",
     calc: "잠깐, 오늘 밤하늘 좀 읽어 볼게. 좋은 거 나오면 칭찬해 줘.",
     sign: (sign, headline) => `넌 ${sign}야. 오늘은 ${headline}이야.`,
-    best: (domain, worst) => `오늘은 ${domain} 별점이 제일 높아. ${worst}은 평소 정도야.`,
+    best: (domain, worst) => `오늘은 ${domain} 별점이 제일 높아. ${withTopic(worst)} 평소 정도야.`,
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어.",
     pair: (mine, theirs, calm) =>
       `오늘 달이 우리 둘 별자리와 잘 어울리는 자리에 있어. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "우리 사이는 잘 맞아. 하루는 천천히 가자." : "오늘은 내가 너 응원하기 딱 좋은 날이네?"}`,
@@ -343,7 +345,7 @@ const tones: Record<StarCharacterId, Tone> = {
     birth: "별자리 운세를 보려면 생일이 필요해요. 한 번만 알려 줘요.",
     calc: "잠깐만요, 오늘 밤하늘 천천히 읽어 볼게요.",
     sign: (sign, headline) => `${sign}네요. 오늘은 ${headline}이에요.`,
-    best: (domain, worst) => `오늘은 ${domain} 별점이 가장 높아요. ${worst}은 평소 정도예요.`,
+    best: (domain, worst) => `오늘은 ${domain} 별점이 가장 높아요. ${withTopic(worst)} 평소 정도예요.`,
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔어요.",
     pair: (mine, theirs, calm) =>
       `오늘 달이 두 별자리와 잘 어울리는 자리에 있어요. ${withParticle(theirs, "과와")} ${mine}, ${calm ? "사이는 잘 맞는 날이에요. 하루는 천천히 가요." : "오늘은 내가 더 챙겨 줄게요."}`,
@@ -355,7 +357,7 @@ const tones: Record<StarCharacterId, Tone> = {
     birth: "별자리 운세 보려면 네 생일부터 알려 줘. 한 번만 하면 돼.",
     calc: "잠깐만, 오늘 밤하늘 하나씩 짚어 볼게.",
     sign: (sign, headline) => `${sign}구나. 오늘은 ${headline}이야.`,
-    best: (domain, worst) => `${domain} 별점이 제일 높아. ${worst}은 평소 정도야.`,
+    best: (domain, worst) => `${domain} 별점이 제일 높아. ${withTopic(worst)} 평소 정도야.`,
     why: "오늘 풀이는 행성 셋이 움직여서 나왔어.",
     pair: (mine, theirs, calm) =>
       `오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어. ${withParticle(theirs, "이랑")} ${mine}, ${calm ? "사이는 잘 맞는 날이야. 하루는 천천히 가자." : "하고 싶은 말 있으면 오늘 바로 해."}`,
@@ -367,7 +369,7 @@ const tones: Record<StarCharacterId, Tone> = {
     birth: "별자리를 보려면 생일을 알아야 하오. 한 번만 알려 주시오.",
     calc: "잠시 오늘 밤하늘을 살피리다.",
     sign: (sign, headline) => `그대는 ${sign}이구려. 오늘은 ${headline}이오.`,
-    best: (domain, worst) => `오늘은 ${domain} 별점이 가장 높소. ${worst}은 평소와 같소.`,
+    best: (domain, worst) => `오늘은 ${domain} 별점이 가장 높소. ${withTopic(worst)} 평소와 같소.`,
     why: "오늘 풀이는 행성 셋의 움직임에서 나왔소.",
     pair: () => "별은 여기까지 읽었소. 오늘 정리를 보시겠소?",
     pairAlone: () => "별은 여기까지 읽었소. 오늘 정리를 보시겠소?",
@@ -480,10 +482,19 @@ const natalLine: Record<StarDomain, Record<"fire" | "earth" | "air" | "water", s
  * 영역 한 칸의 풀이: 오늘 별점의 풀이(2~3문장) 뒤에, 태어날 때 그 영역을 맡은 행성이 놓인 별자리를 근거로 한 문장을 잇는다.
  * `signOf`: 내 행성이 어느 별자리에 있는지.
  */
-export function starDomainText(domain: StarDomain, stars: number, signOf: (body: string) => ZodiacSign | null) {
+export function starDomainText(domain: StarDomain, stars: number, signOf: (body: string) => ZodiacSign | null, character?: StarCharacterId) {
   const today = domainLong[domain][stars - 1];
   const planet = domainPlanet[domain];
   const sign = signOf(planet.body);
-  if (!sign) return today;
-  return `${today} 내 ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}.`;
+  if (!character) return sign ? `${today} 내 ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}.` : today;
+  const basis = sign ? `내 ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}.` : "";
+  const line = character === "dosa" ? starDosa[domain][stars - 1] : chemiPersona[character].star[domain][stars - 1];
+  return basis ? `${line} ${basis}` : line;
 }
+
+const starDosa: Record<StarDomain, readonly string[]> = {
+  love: ["오늘은 마음을 잠시 접어 두시오.", "보내기 전에 한 번 더 읽으시오.", "평소처럼 지내면 무난하오.", "가벼운 인사를 먼저 건네시오.", "미뤄 둔 말을 꺼내기 좋소."],
+  people: ["모임은 짧게 다녀와도 되오.", "중요한 말은 글로 남기시오.", "익숙한 사람과 편하게 지내시오.", "먼저 안부를 건네기 좋소.", "두루 말이 잘 통하는 날이오."],
+  money: ["큰 결제는 하루 묵히시오.", "살 물건은 내일 다시 보시오.", "작은 지출부터 살피시오.", "필요한 물건을 비교하기 좋소.", "놓친 혜택이 없는지 살피시오."],
+  work: ["오늘은 정리만 해도 충분하오.", "작은 일부터 하나씩 마치시오.", "어려운 일은 늦게 잡으시오.", "오래 걸리는 일을 시작하기 좋소.", "기한이 가까운 일부터 마치시오."],
+};

@@ -1,6 +1,7 @@
 "use client";
 
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
+import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
 import { useReadingCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
 import Link from "@/components/fan-ui/hover-prefetch-link";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
@@ -152,6 +153,8 @@ export function TarotResult({
   const alt = tarotAlt(draw.card, locale);
   const direction = uiText(draw.reversed ? "reversed" : "upright");
   const content = meaning.card?.dir[draw.reversed ? "down" : "up"];
+  const persona = isChemiPersona(character) ? chemiPersona[character] : null;
+  const readingLanguage = locale === "ko" ? "ko" : "en";
   const slotLine = draw.slot ? ` · ${uiText("deckSlot", { total: TAROT_DECK_SIZE, slot: draw.slot })}` : "";
 
   const rewardRow = member && today ? <RewardRow character={character} name={person.name} rewards={rewards} locale={locale} /> : null;
@@ -216,7 +219,8 @@ export function TarotResult({
                 {content ? (
                   <>
                     <FanText as="p" role="item" className={styles.lead}>
-                      {content.lead}
+                      {character === "yuna" ? content.react.ban : content.talk[person.voice][0]}{" "}
+                      {persona?.tarotResult[readingLanguage] ?? content.talk.hao[1]}
                     </FanText>
                     <dl className={styles.rows}>
                       {content.rows.map(([label, text]) => (
