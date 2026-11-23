@@ -16,6 +16,7 @@ import { classifyAsk } from "./guard";
  */
 export type AskAiInput = {
   character: AskCharacter; content: AskContent; topic: AskTopic; question: string; result: unknown; kind?: string;
+  recentAnswers?: readonly string[];
   /** 이어 묻기일 때 앞선 질문과 답. */
   before?: { question: string; answer: string };
 };
@@ -83,6 +84,7 @@ function retryNote(fault: string, input: AskAiInput) {
   switch (fault) {
     case "length": return "2~3문장, 모두 합쳐 150자 안쪽으로 끝까지 쓴다.";
     case "punctuation": return "모든 문장을 마침표·물음표·느낌표 중 하나로 끝낸다.";
+    case "ending": return "마지막 문장을 다른 말로 시작하고 새로운 조언으로 맺는다.";
     case "repeat": return "이번 답이나 앞 답에서 이미 쓴 문장은 되풀이하지 않는다.";
     case "question": return "되묻지 말고 조언으로 끝낸다.";
     case "format": return "목록·이모지·기호·따옴표·줄 바꿈 없이 문장만 쓴다.";
@@ -144,12 +146,18 @@ export function askAnswerFault(answer: string, input: AskAiInput): string | null
     .map((sentence) => sentence.trim().replace(/\s+/g, " ").toLowerCase())
     .filter(Boolean);
   const sentences = splitSentences(text);
+  const joined = /(?:때야|거야|해요|돼요|좋아|괜찮아|있소|하시오)\s+(?:내가|너는|오늘은|그리고|그러니|그러니까|그럼)(?=\s)/u;
+  if (joined.test(text)) return "punctuation";
   if (text.length < 20 || text.length > 260 || sentences.length < 2 || sentences.length > 4) return "length";
   if (/[\n*#`"“”「」]|\p{Extended_Pictographic}/u.test(text)) return "format";
   if (input.before && /[?？]/u.test(text)) return "question";
   if (!/[.!?。！？．]$/u.test(text)) return "punctuation";
-  const previous = new Set(splitSentences(input.before?.answer ?? ""));
+  const earlier = [input.before?.answer ?? "", ...(input.recentAnswers ?? [])];
+  const previous = new Set(earlier.flatMap(splitSentences));
+  const opening = (sentence = "") => Array.from(sentence).slice(0, 5).join("");
+  const last = opening(sentences.at(-1));
   if (new Set(sentences).size !== sentences.length || sentences.some((sentence) => previous.has(sentence))) return "repeat";
+  if (last.length === 5 && earlier.some((answer) => opening(splitSentences(answer).at(-1)) === last)) return "ending";
   if (banned.test(text) || ["crisis", "harassment", "prompt"].includes(classifyAsk(text) ?? "")) return "banned";
   const given = [...askFacts(input), input.question, input.before?.question ?? "", input.before?.answer ?? ""].join("\n");
   // 숫자·요일·카드·다른 최애 이름은 풀이 값이나 팬의 말에 있던 것만 쓸 수 있다.
@@ -182,7 +190,7 @@ const log = (outcome: string, retries = 0) =>
 export async function aiAnswer(input: AskAiInput, rpc: Rpc, p_user: string): Promise<string | null> {
   if (classifyAsk(input.question) || !askAiReady()) return null;
   const key = createHash("sha256").update(JSON.stringify([
-    p_user, input.character, input.content, input.kind ?? null, input.topic, input.question, input.result, input.before ?? null,
+    p_user, input.character, input.content, input.kind ?? null, input.topic, input.question, input.result, input.before ?? null, input.recentAnswers ?? [],
   ])).digest("hex");
   const hit = cache.get(key);
   if (hit && hit.until > Date.now()) return log("cache"), hit.answer;

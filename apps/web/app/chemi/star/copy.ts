@@ -209,6 +209,34 @@ const toneLine: Record<StarDomain | "overall", { smooth: string; hard: string }>
   overall: { smooth: "하루가 순하게 흘러가요.", hard: "작은 일에 마음이 쓰일 수 있어요." },
 };
 
+const hardAngleAdvice = {
+  90: {
+    love: "보내려던 말에서 날 선 표현을 한 번 걷어 내",
+    people: "어긋난 이야기는 한 가지씩 확인해",
+    money: "장바구니에서 급히 담은 것부터 덜어 내",
+    work: "막힌 단계는 작게 나눠서 다시 해",
+    overall: "걸리는 일 하나부터 작게 풀어 봐",
+  },
+  180: {
+    love: "하고 싶은 말과 상대가 듣고 싶은 말을 함께 생각해",
+    people: "각자 원하는 것을 한 문장씩 말해",
+    money: "지금 필요한 것과 남겨 둘 돈을 함께 계산해",
+    work: "서로 다른 우선순위를 적어서 맞춰 봐",
+    overall: "마음이 가는 두 방향을 적어 놓고 살펴봐",
+  },
+} as const;
+
+function reasonSpeech(line: string, character: StarCharacterId) {
+  if (character === "elina") return line;
+  if (character === "dosa") return line.replace(/부담을 줘요|풀려 가요|있어요|어울려요|실어 줘요|때예요|편해요|흘러가요|옅어져요|가벼워져요|강해요/g, (word) => ({
+    "부담을 줘요": "부담을 주오", "풀려 가요": "풀려 가오", "있어요": "있소",
+    "어울려요": "어울리오", "실어 줘요": "실어 주오", "때예요": "때이오",
+    "편해요": "편하오", "흘러가요": "흘러가오", "옅어져요": "옅어지오",
+    "가벼워져요": "가벼워지오", "강해요": "강하오",
+  })[word] ?? word);
+  return line.replace(/예요(?=[.!?]|$)/g, "야").replace(/요(?=[.!?]|$)/g, "");
+}
+
 /** 시안 05-3의 이름 짓는 규칙: 오늘 행성 + 내 행성/지점. */
 export function targetName(target: string) {
   if (target === "ASC") return "첫인상";
@@ -257,6 +285,7 @@ export function reasonView(
   reason: StarReason,
   signOf: (target: string) => ZodiacSign | null,
   today: string,
+  character?: StarCharacterId,
 ): ReasonView {
   const body = bodyNames[reason.body] ?? reason.body;
   const target = targetName(reason.target);
@@ -265,7 +294,7 @@ export function reasonView(
   const up = aspect.smooth ?? reason.score >= 0;
   const fading = aspect.smooth !== null && !reason.applying;
   const phrase = aspectPhrase[reason.angle]?.[aspect.smooth === null ? (up ? 0 : 1) : fading ? 1 : 0] ?? "이어져 있어요";
-  const tone = fading ? fadingLine[up ? "smooth" : "hard"] : toneLine[domain][up ? "smooth" : "hard"];
+  const baseTone = fading ? fadingLine[up ? "smooth" : "hard"] : toneLine[domain][up ? "smooth" : "hard"];
   const sign = signOf(reason.target);
   const exit = reason.exitDate;
   // 달처럼 빨리 지나가는 행성은 가장 센 시각을, 느린 행성은 끝나는 날을 보인다.
@@ -273,15 +302,25 @@ export function reasonView(
     reason.body === "Moon" || exit <= today
       ? hourWords(reason.hour)
       : `${Number(exit.slice(5, 7))}월 ${Number(exit.slice(8, 10))}일(${kstWeekday(exit)})까지`;
-  const mine = sign ? `내 ${target}(${signNames[sign].full})` : `내 ${target}`;
+  const advice = reason.angle === 90 || reason.angle === 180 ? hardAngleAdvice[reason.angle][domain] : null;
+  const tone = character && advice
+    ? {
+        changha: `${advice} 줘.`,
+        elina: `${advice}요.`,
+        yuna: `${advice}.`,
+        dosa: `${advice.replace(/해$|봐$|내$/, (ending) => ({ 해: "하시오", 봐: "보시오", 내: "내시오" })[ending] ?? ending)}.`,
+      }[character]
+    : character ? reasonSpeech(baseTone, character) : baseTone;
+  const owner = character === "dosa" ? "그대의" : character ? "네" : "내";
+  const mine = sign ? `${owner} ${target}(${signNames[sign].full})` : `${owner} ${target}`;
   return {
     title: `${withParticle(body, "과와")} 내 ${target}`,
     aspect: aspect.name,
     domain,
     up,
-    when,
+    when: character ? reasonSpeech(when, character) : when,
     tone,
-    text: `${withParticle(body, "은는")} ${withParticle(mine, "과와")} ${phrase}. ${tone}`,
+    text: `${withParticle(body, "은는")} ${withParticle(mine, "과와")} ${character ? reasonSpeech(phrase, character) : phrase}. ${tone}`,
   };
 }
 

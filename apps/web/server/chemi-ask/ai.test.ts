@@ -112,6 +112,16 @@ describe("답 검사", () => {
     ["목록·기호", "연애 운이 55점이야.\n- 먼저 연락해 봐.", "format"],
     ["말투가 섞임", "연애 운이 55점이에요. 오늘은 서두르지 마세요.", "voice"],
   ])("%s → 떨어진다", (_, answer, fault) => expect(askAnswerFault(answer, love)).toBe(fault));
+  it("최근 답의 끝 문장을 같은 틀로 시작하면 다시 쓰게 한다", () => {
+    const recentAnswers = ["할 일부터 정해 봐. 지금이 딱 쉬어 갈 때야."];
+    expect(askAnswerFault("연애 운이 55점이야. 지금이 딱 마음을 돌볼 때야.", { ...love, recentAnswers })).toBe("ending");
+    expect(askAnswerFault("연애 운이 55점이야. 잠깐 쉬었다가 안부를 보내 봐.", { ...love, recentAnswers })).toBeNull();
+  });
+
+  it("문장 사이 부호 없이 새 문장이 붙으면 다시 쓰게 한다", () => {
+    expect(askAnswerFault("연애 운이 55점이야. 지금이 딱 쉬어 갈 때야 내가 응원하는 거 알지?", love)).toBe("punctuation");
+  });
+
   it("이어 묻기에서 직전 답의 문장을 되풀이하면 떨어진다", () => {
     const before = { question: "먼저 연락할까?", answer: "오늘은 답을 재촉하지 마!" };
     expect(askAnswerFault("연애 운이 55점이야. 오늘은 답을 재촉하지 마.", { ...love, before })).toBe("repeat");

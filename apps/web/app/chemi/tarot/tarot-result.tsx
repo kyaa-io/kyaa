@@ -19,7 +19,7 @@ import { useMobileResultAction, ResultActions, ShareSheet, type ShareVia } from 
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK_SIZE, tarotAlt, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
-import { tarotBasis, tarotRowMore } from "@/features/chemi/tarot/depth";
+import { tarotBasis, tarotDetail, tarotRowMore } from "@/features/chemi/tarot/depth";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
@@ -236,7 +236,7 @@ export function TarotResult({
                             {label}
                           </FanText>
                           <FanText as="dd" role="body">
-                            {[text, tarotRowMore(draw.card, label)].filter(Boolean).join(" ")}
+                            {[text, tarotRowMore(draw.card, label)].flatMap((line) => line ? [tarotDetail(line, character, readingLanguage)] : []).join(" ")}
                           </FanText>
                         </div>
                       ))}

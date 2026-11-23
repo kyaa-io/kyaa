@@ -54,7 +54,7 @@ it("주제를 고르면 최애가 되묻고, 예시를 눌러 보내면 답과 �
   render(<Host />);
   askGo({ step: "topic" });
   await screen.findByLabelText("남은 질문 3개");
-  for (const topic of ["연애", "일", "돈", "관계", "이번 달", "그냥 물어볼게"]) expect(screen.getByRole("button", { name: topic })).toBeTruthy();
+  for (const topic of ["연애", "일", "돈", "관계", "이번 달", "직접 물어보기"]) expect(screen.getByRole("button", { name: topic })).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "연애" }));
   expect(await screen.findByText("연애 이야기네. 요즘 누가 제일 마음에 걸려?")).toBeTruthy();
   expect(location.search).toContain("ask=write&at=love");

@@ -1,18 +1,17 @@
 /* 케미 질문하기 장면. 글자 크기·굵기는 FanText·FanAction·FanTag 역할이 정하고, 이 파일은 배치·면만 정한다.
- * 화면 전체(100dvh)가 장면이다: 최애 그림이 배경을 채우고, 위에는 뒤로·남은 질문·지난 질문만, 아래에는 대화 상자와 선택지가 놓인다. */
+ * 동의 띠 아래 화면이 장면이다: 최애 그림이 배경을 채우고, 위에는 뒤로·남은 질문·지난 질문만, 아래에는 대화 상자와 선택지가 놓인다. */
 .root {
   /* 그림 위에 놓는 면: 흐림 없이 흰 면 88%(DESIGN §5 backdrop-filter 0) */
   --ask-glass: color-mix(in srgb, var(--color-surface) 88%, transparent);
   /* 선택지가 차례로 나타나는 간격(DESIGN §9 목록 시차 90ms) */
   --ask-stagger: calc(var(--motion-fast) * 0.6);
   position: fixed;
-  inset: 0;
+  inset: var(--analytics-consent-height, 0px) 0 0;
   z-index: var(--z-bottom-nav);
   isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100dvh;
   overflow: hidden;
   background: var(--color-accent-soft);
 }
@@ -132,7 +131,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: calc(var(--space-3) + env(safe-area-inset-top)) var(--space-4) 0;
+  padding: var(--space-3) var(--space-4) 0;
+  padding-top: max(var(--space-3), calc(var(--space-3) + env(safe-area-inset-top) - var(--analytics-consent-height, 0px)));
 }
 .root .round {
   border: 1px solid var(--color-control-line);
@@ -657,8 +657,15 @@
   .art img {
     object-position: center 26%;
   }
-  .loop {
+  .root .loop {
+    position: absolute;
     display: block;
+  }
+  .loop:not(:has(video[data-playing])) {
+    opacity: 0;
+  }
+  .loop video {
+    object-fit: scale-down;
   }
   .art,
   .loop {
@@ -684,18 +691,18 @@
     max-height: min(50svh, calc(var(--space-16) * 8));
   }
 }
-@media (width >= 64rem) {
+@media (width >= 80rem) {
   .asked {
     position: absolute;
-    top: calc(var(--space-6) + var(--space-12) + var(--space-4));
-    right: var(--space-8);
+    bottom: var(--space-8);
+    right: calc(50% + var(--space-16) * 5 + var(--space-4));
     z-index: 1;
     display: grid;
     align-content: start;
     gap: var(--space-2);
     box-sizing: border-box;
-    width: calc(var(--space-16) * 5 + var(--space-10));
-    max-height: calc(100dvh - var(--space-16) * 3);
+    width: min(calc(var(--space-16) * 5 + var(--space-10)), calc(50% - var(--space-16) * 5 - var(--space-8) - var(--space-4)));
+    max-height: 42%;
     padding: var(--space-4);
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -705,8 +712,12 @@
   .asked li[data-current] .rowLink {
     color: var(--color-accent-ink);
   }
-  /* 기록이 늘 보이므로 위의 시계 단추는 숨긴다. */
-  .root .history {
+  /* 기록 판이 있을 때만 시계 단추를 숨긴다. */
+  .root:has(.asked) .history {
     display: none;
   }
+}
+
+@media (width < 80rem) {
+  .asked { display: none; }
 }
