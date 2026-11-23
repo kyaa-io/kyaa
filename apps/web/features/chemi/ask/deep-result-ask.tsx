@@ -5,6 +5,7 @@ import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import type { AppLocale } from "@/i18n/locales";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { AskScene } from "./ask-scene";
 import { askOpenWith, useAskLocation } from "./location";
 import type { AskCharacter, AskContent } from "./lines";
@@ -22,6 +23,7 @@ export function DeepResultAsk({ name, reading, fixed = true }: {
   fixed?: boolean;
 }) {
   const text = useReadingCopy();
+  const { ask } = useChemiFeatures();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -37,6 +39,7 @@ export function DeepResultAsk({ name, reading, fixed = true }: {
     }
   }
 
+  if (!ask) return null;
   return (
     <div className={fixed ? styles.fixed : styles.inPanel} data-deep-result-ask="">
       {failed && <div role="alert"><FanText as="p" role="body">{text("loadFailure")}</FanText></div>}

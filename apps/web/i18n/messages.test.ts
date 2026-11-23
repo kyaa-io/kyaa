@@ -132,7 +132,7 @@ describe("localized messages", () => {
   // 카탈로그를 모두 읽는다. 전체 실행의 부하에서 기본 5초를 넘길 수 있어 한도를 따로 둔다.
   it("includes every added locale and preserves every numbered and named placeholder", { timeout: 30_000 }, async () => {
     const directory = resolve(process.cwd(), "i18n/catalogs");
-    const community = legalDocuments.terms.en.sections.find(section => section.heading === "5. Prohibited Conduct");
+    const community = legalDocuments.terms.en.sections.find(section => section.heading === "6. Prohibited Conduct");
     expect(community?.paragraphs).toHaveLength(2);
     const sources: Record<string, { en: string }> = {
       ...rankingsSource,

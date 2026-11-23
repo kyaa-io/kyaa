@@ -44,6 +44,7 @@ import { DayCardThumb } from "./deep/day-card";
 import deep from "./deep/deep.module.css";
 import { deepHref } from "./deep/screen";
 import styles from "./result.module.css";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 
 const exampleKeys = {
   fandom: ["depthFandomA", "depthFandomB"],
@@ -61,7 +62,7 @@ export function FortuneResult({
   initial,
   pending = false,
   backHref,
-  onAsk,
+  onAsk: askHandler,
   character = "changha",
   paidPreview = false,
   focus = null,
@@ -83,6 +84,7 @@ export function FortuneResult({
   onAsk?: () => void;
 }) {
   const uiText = useReadingCopy();
+  const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [attempt, retry] = useState(0);
   const [reading, setReading] = useState<Reading>();

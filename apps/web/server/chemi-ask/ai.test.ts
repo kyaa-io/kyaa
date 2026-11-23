@@ -35,6 +35,7 @@ const sent = () => JSON.parse(modelCalls().at(-1)![1].body);
 beforeEach(() => {
   vi.stubGlobal("fetch", fetchMock);
   vi.stubEnv("CHEMI_TAB", "true");
+  vi.stubEnv("APP_ENV", "dev");
   vi.stubEnv("CHEMI_ASK_AI", "true");
   vi.stubEnv("CHEMI_ASK_AI_GCP_KEY", JSON.stringify({ client_email: "ask@p.iam.gserviceaccount.com", private_key: privateKey, project_id: "p" }));
   authorize.mockResolvedValue({ appUserId: "user" });

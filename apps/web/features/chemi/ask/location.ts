@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { ASK_REACTIONS, ASK_TOPICS, type AskReaction, type AskTopic } from "./lines";
 
 /**
@@ -42,7 +43,8 @@ function subscribe(notify: () => void) {
 
 export function useAskLocation() {
   const search = useSyncExternalStore(subscribe, () => location.search, () => "");
-  return parse(search);
+  const { ask } = useChemiFeatures();
+  return ask ? parse(search) : null;
 }
 
 /** 질문 단계로 간다. null 이면 질문 화면을 닫고 결과로 돌아간다. */

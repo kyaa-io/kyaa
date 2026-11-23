@@ -7,6 +7,7 @@
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
 import { AskScene } from "@/features/chemi/ask/ask-scene";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { askGo, askOpenWith, useAskLocation } from "@/features/chemi/ask/location";
 import { ParticipationCount } from "../participation";
 import { useReadingCopy, useSajuSceneCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
@@ -139,6 +140,7 @@ export function SajuFlow({
   const text = useReadingCopy();
   const sceneCopy = useSajuSceneCopy();
   const ask = useAskLocation();
+  const askOpen = useChemiFeatures().ask;
   const { ready, authenticated, getAccessToken, login } = useByUsAuth();
   const nav = readUrl(useSyncExternalStore(subscribeUrl, currentSearch, serverSearch));
   const [reading, setReading] = useState<SajuReading>();
@@ -744,7 +746,7 @@ export function SajuFlow({
   const wideArt =
     character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-wide-v2.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
-  const primaryLabel = entering ? (again ? (reading ? text("askStart") : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
+  const primaryLabel = entering ? (again ? (reading ? (askOpen ? text("askStart") : sceneCopy.history) : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
 
   const turns = () => (
     <>
@@ -926,7 +928,7 @@ export function SajuFlow({
                 </FanAction>
               ))}
             </div>
-            {again && reading && (
+            {again && reading && askOpen && (
               <FanAction
                 variant="neutral"
                 ariaLabel={sceneCopy.history}
@@ -1021,7 +1023,7 @@ export function SajuFlow({
                 <FanAction
                   variant="primary"
                   disabled={entering && (!ready || (authenticated && firsts === null))}
-                  onClick={() => (entering ? (again ? openAsk() : start()) : advance())}
+                  onClick={() => (entering ? (again ? (askOpen ? openAsk() : openView("first")) : start()) : advance())}
                 >
                   {primaryLabel}
                 </FanAction>

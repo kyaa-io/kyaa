@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { APP_LOCALES } from "@/i18n/locales";
-import { legalDocuments, resolveLegalLocale } from "@/components/legal-content";
+import { legalDocument, legalDocuments, resolveLegalLocale } from "@/components/legal-content";
 import PrivacyPage, { generateMetadata as generatePrivacyMetadata } from "./privacy/page";
 import PricingPage, { generateMetadata as generatePricingMetadata } from "./pricing/page";
 import RefundPage, { generateMetadata as generateRefundMetadata } from "./refund/page";
@@ -16,7 +16,7 @@ describe("public legal pages", () => {
     render(await PrivacyPage({ searchParams: searchParams("ko") }));
 
     expect(screen.getByRole("heading", { level: 1, name: "개인정보처리방침" })).toBeInTheDocument();
-    expect(screen.getByText("시행일: 2026년 9월 11일")).toBeInTheDocument();
+    expect(screen.getByText("시행일: 2026년 11월 23일")).toBeInTheDocument();
     expect(screen.getAllByText(/Sallylab Inc\./).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "support@kyaa.io" })).toHaveAttribute("href", "mailto:support@kyaa.io");
     expect(screen.getByText(/Google 및 Privy 인증 식별자/)).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe("public legal pages", () => {
     const { container } = render(await PrivacyPage({ searchParams: searchParams("en") }));
 
     expect(screen.getByRole("heading", { level: 1, name: "Privacy Policy" })).toBeInTheDocument();
-    expect(screen.getByText("Effective date: September 11, 2026")).toBeInTheDocument();
+    expect(screen.getByText("Effective date: November 23, 2026")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "1. Personal Information We Process" })).toBeInTheDocument();
     expect(screen.getByText(/Google and Privy authentication identifiers/)).toBeInTheDocument();
     expect(screen.getByText(/Name and phone number for physical reward delivery/)).toBeInTheDocument();
@@ -54,13 +54,13 @@ describe("public legal pages", () => {
   it("publishes the terms in both languages with Korean governing law", async () => {
     const { unmount } = render(await TermsPage({ searchParams: searchParams("ko") }));
     expect(screen.getByRole("heading", { level: 1, name: "이용약관" })).toBeInTheDocument();
-    expect(screen.getByText("시행일: 2026년 10월 20일")).toBeInTheDocument();
+    expect(screen.getByText("시행일: 2026년 11월 23일")).toBeInTheDocument();
     expect(screen.getByText(/대한민국 법률에 따라 해석됩니다/)).toBeInTheDocument();
     unmount();
 
     render(await TermsPage({ searchParams: searchParams("en") }));
     expect(screen.getByRole("heading", { level: 1, name: "Terms of Use" })).toBeInTheDocument();
-    expect(screen.getByText("Effective date: October 20, 2026")).toBeInTheDocument();
+    expect(screen.getByText("Effective date: November 23, 2026")).toBeInTheDocument();
     expect(screen.getByText(/governed by and construed in accordance with the laws of the Republic of Korea/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Choose language, currently English" })).toHaveValue("en");
   });
@@ -73,9 +73,10 @@ describe("public legal pages", () => {
     expect(screen.getByRole("heading", { level: 1, name: "이용약관" })).toBeInTheDocument();
   });
 
-  it("renders Japanese legal content for a supported locale", async () => {
-    render(await PrivacyPage({ searchParams: searchParams("ja") }));
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("プライバシーポリシー");
+  it("shows the English privacy policy under the Japanese shell until the 2026-11-23 revision is translated", async () => {
+    const { container } = render(await PrivacyPage({ searchParams: searchParams("ja") }));
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Privacy Policy");
+    expect(container.querySelector("article")).toHaveAttribute("lang", "en");
   });
 
   it("localizes legal metadata", async () => {
@@ -93,7 +94,7 @@ describe("public legal pages", () => {
     expect(legalDocuments.privacy.ko.sections).toHaveLength(legalDocuments.privacy.en.sections.length);
     expect(legalDocuments.terms.ko.sections).toHaveLength(legalDocuments.terms.en.sections.length);
     expect(legalDocuments.privacy.en.sections).toHaveLength(8);
-    expect(legalDocuments.terms.en.sections).toHaveLength(9);
+    expect(legalDocuments.terms.en.sections).toHaveLength(10);
   });
 
   it("preserves English locale in reciprocal legal navigation", async () => {
@@ -105,27 +106,42 @@ describe("public legal pages", () => {
   });
   it("publishes the moderation policy and 24-hour response commitment in every locale", () => {
     for (const locale of APP_LOCALES) {
-      const policy = legalDocuments.terms[locale].sections[4].paragraphs;
+      const policy = legalDocument("terms", locale).sections[5].paragraphs;
       expect(policy).toHaveLength(2);
       expect(policy?.[1]).toContain("24");
       expect(policy?.every(text => text.trim().length > 0)).toBe(true);
     }
-    expect(legalDocuments.terms.ko.sections[4].paragraphs?.[0]).toContain("허용하지 않습니다");
-    expect(legalDocuments.terms.en.sections[4].paragraphs?.[0]).toContain("zero tolerance");
+    expect(legalDocuments.terms.ko.sections[5].paragraphs?.[0]).toContain("허용하지 않습니다");
+    expect(legalDocuments.terms.en.sections[5].paragraphs?.[0]).toContain("zero tolerance");
   });
 
-  it("publishes the Korean pricing page with the confirmed prices and launch condition", async () => {
-    render(await PricingPage({ searchParams: searchParams("ko") }));
+  it("publishes the 2026-11-23 points clause and Chemi privacy lines, and shows English in other locales", async () => {
+    const points = legalDocuments.terms.ko.sections[4]!;
+    expect(points.heading).toBe("5. 포인트");
+    expect(points.items?.join(" ")).toMatch(/20P.*10P/);
+    expect(points.items?.join(" ")).toContain("현금으로 바꾸거나 다른 회원에게 넘길 수 없습니다");
+    const privacy = legalDocuments.privacy.ko.sections;
+    expect(privacy[0]!.items?.join(" ")).toContain("생년월일");
+    expect(privacy[1]!.items?.join(" ")).toContain("로그인하지 않은 사람도 볼 수 있습니다");
+    expect(privacy[2]!.paragraphs?.join(" ")).toContain("만 14세 미만으로 확인되는 생년월일은 저장하지 않습니다");
+
+    const { container } = render(await TermsPage({ searchParams: searchParams("ja") }));
+    expect(screen.getByRole("heading", { level: 1, name: "Terms of Use" })).toBeInTheDocument();
+    expect(screen.getByText("Effective date: November 23, 2026")).toBeInTheDocument();
+    expect(container.querySelector("article")).toHaveAttribute("lang", "en");
+  });
+
+  it("publishes the Korean pricing page with point items and no cash payment", async () => {
+    const { container } = render(await PricingPage({ searchParams: searchParams("ko") }));
 
     expect(screen.getByRole("heading", { level: 1, name: "요금 안내" })).toBeInTheDocument();
-    expect(screen.getByText("시행일: 2026년 11월 18일")).toBeInTheDocument();
-    expect(screen.getByText(/결제는 케미 탭 출시와 함께 열리며/)).toBeInTheDocument();
+    expect(screen.getByText("시행일: 2026년 11월 23일")).toBeInTheDocument();
+    expect(screen.getByText(/케미 탭에는 현금 결제가 없습니다/)).toBeInTheDocument();
     const table = screen.getAllByRole("table")[0]!;
-    expect(within(table).getByRole("columnheader", { name: "가격(부가세 포함)" })).toBeInTheDocument();
-    const row = within(table).getByRole("row", { name: /^첫 구매 질문 이용권 5개/ });
-    expect(within(row).getByRole("cell", { name: "990원" })).toBeInTheDocument();
-    for (const price of ["490원", "1,900원", "4,900원", "6,900원"]) expect(screen.getAllByText(new RegExp(`^${price}`)).length).toBeGreaterThan(0);
-    expect(screen.getAllByText("구매일부터 5년")).toHaveLength(4);
+    expect(within(table).getByRole("columnheader", { name: "포인트" })).toBeInTheDocument();
+    expect(within(within(table).getByRole("row", { name: /^게임 추가 판 1판/ })).getByRole("cell", { name: "20P" })).toBeInTheDocument();
+    expect(within(within(table).getByRole("row", { name: /^오늘의 운세 다른 날짜 1개/ })).getByRole("cell", { name: "10P" })).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/\d원|토스페이먼츠|출시와 함께|포인트로 유료 상품을 구매할 수 없/);
     expect(screen.getByRole("link", { name: "홈으로 돌아가기" })).toHaveAttribute("href", "/?locale=ko");
     expect(screen.getByRole("combobox", { name: "언어 선택, 현재 한국어" })).toHaveValue("ko");
     expect(within(screen.getByRole("contentinfo")).getByRole("link", { name: "환불 정책 열기" })).toHaveAttribute("href", "/refund?locale=ko");
@@ -147,8 +163,9 @@ describe("public legal pages", () => {
   it("publishes pricing and refund in English and keeps the English shell", async () => {
     const { container, unmount } = render(await PricingPage({ searchParams: searchParams("en") }));
     expect(screen.getByRole("heading", { level: 1, name: "Pricing" })).toBeInTheDocument();
-    expect(screen.getByText("Effective date: November 18, 2026")).toBeInTheDocument();
-    expect(screen.getAllByText("KRW 990").length).toBeGreaterThan(0);
+    expect(screen.getByText("Effective date: November 23, 2026")).toBeInTheDocument();
+    expect(screen.getAllByText("20P").length).toBeGreaterThan(0);
+    expect(container.textContent).not.toMatch(/KRW|Toss/);
     expect(screen.getByRole("combobox", { name: "Choose language, currently English" })).toHaveValue("en");
     expect(container.querySelector("[data-fan-surface]")).toHaveAttribute("lang", "en");
     unmount();

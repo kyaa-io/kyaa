@@ -41,6 +41,7 @@ import { signList, type StarReading } from "./reading";
 import { StarShareCard } from "./share-card";
 import { StarRating } from "./stars";
 import styles from "./result.module.css";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 
 /** 저장된 결과를 불러오는 동안 보이는 모양. 요청은 부른 쪽이 한다. */
 export function StarResultSkeleton({
@@ -101,7 +102,7 @@ export function StarResult({
   character,
   backHref,
   onChart,
-  onAsk,
+  onAsk: askHandler,
 }: {
   locale: AppLocale;
   reading: StarReading;
@@ -112,6 +113,7 @@ export function StarResult({
   onAsk: () => void;
 }) {
   const uiText = useReadingCopy();
+  const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const { authenticated, getAccessToken } = useByUsAuth();
   const celebratedReading = useRef<string | null>(null);
   const [points, setPoints] = useState(reading.reward?.points ?? 0);
@@ -320,8 +322,8 @@ export function StarResult({
           name={name}
           line={starSayLine(character, best, stars[best])}
           action={
-            <FanAction variant="primary" fullWidth onClick={onAsk}>
-              <ReadingText id="askFromResult" />
+            <FanAction variant="primary" fullWidth {...(onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
+              <ReadingText id={onAsk ? "askFromResult" : "otherFortunes"} />
             </FanAction>
           }
           extra={<div className={styles.desktopOnly}>{shareAction}</div>}

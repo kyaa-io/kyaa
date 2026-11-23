@@ -37,6 +37,7 @@ import { ChartPanel, ElementBlock, NatureBlock, RelationBlock, StrengthBlock, Te
 import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
+import { useChemiFeatures } from "@/features/chemi/domain/features";
 
 const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.earthlyBranch, "pillar");
 
@@ -71,7 +72,7 @@ export function SajuResult({
   backLabel,
   onBack,
   onShare,
-  onAsk,
+  onAsk: askHandler,
   onTopics,
   onGo,
   onScene,
@@ -99,6 +100,7 @@ export function SajuResult({
   onBirthTime: () => void;
 }) {
   const uiText = useReadingCopy();
+  const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const [shareOpen, setShareOpen] = useState(false);
   const name = sajuCharacters.find((item) => item.id === character)!.name;
   const first = { ...firstReading(chart, at), day: dayLine(chart) };
@@ -458,8 +460,8 @@ export function SajuResult({
             </FanText>
           </section>
           <div className={styles.cta}>
-            <FanAction variant="primary" fullWidth disabled={view === "pair" && sharing} onClick={view === "pair" ? () => onShare(defaultShareVia()) : onAsk}>
-              <ReadingText id={view === "pair" ? "shareFriend" : "askFromResult"} />
+            <FanAction variant="primary" fullWidth {...(view === "pair" ? { disabled: sharing, onClick: () => onShare(defaultShareVia()) } : onAsk ? { onClick: onAsk } : { href: `/chemi?locale=${locale}` })}>
+              <ReadingText id={view === "pair" ? "shareFriend" : onAsk ? "askFromResult" : "otherFortunes"} />
             </FanAction>
           </div>
           <div className={styles.desktopOnly}>{actions}</div>

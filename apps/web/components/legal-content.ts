@@ -79,6 +79,7 @@ export const legalDocuments = {
       metadataDescription: "kyaa 개인정보처리방침",
       title: "개인정보처리방침",
       description: "Sallylab Inc.는 kyaa를 이용하는 팬의 개인정보를 필요한 범위에서만 처리하고 안전하게 보호하기 위해 다음과 같이 개인정보처리방침을 안내합니다.",
+      effectiveDate: "시행일: 2026년 11월 23일",
       sections: [
         {
           heading: "1. 처리하는 개인정보",
@@ -94,6 +95,9 @@ export const legalDocuments = {
             "수동 팬 인증을 위해 직접 제출한 설명·증빙 이미지, 제출·심사 상태와 보상 기록",
             "공지 댓글 본문, 공개 닉네임·캐릭터, 팬 순위와 선택적으로 공개한 팬 활동",
             "프로계정 소유자가 Instagram 연결에 동의한 경우 계정 ID·사용자명, 암호화한 접근 토큰과 만료시각, 최근 게시물의 설명·게시시각·원본 링크·미디어 주소",
+            "케미를 이용하는 경우: 생년월일과 양력·음력 구분, 선택 사항으로 태어난 시간·성별·태어난 곳, 생일 정보 저장에 동의한 시각, 사주·운세·별자리·타로 풀이 기록",
+            "케미에서 궁합을 보려고 이용자가 직접 저장한 상대의 별명과 생년월일, 선택 사항으로 태어난 시간·성별",
+            "케미 게임 기록과 순위(점수, 닉네임)",
             "서비스 이용 과정에서 생성되는 접속 기록, 오류 및 보안 이벤트",
           ],
         },
@@ -107,12 +111,13 @@ export const legalDocuments = {
             "LIVE 예약·출석·설문 및 혜택 제공",
             "알림 발송, 문의 대응과 서비스 품질 개선",
             "카카오 알림톡 수신 동의를 확인하고 카카오 계정의 전화번호로 서비스 알림을 발송하며, 제공사 접수와 최종 배달 결과 확인",
+            "케미의 사주·운세·별자리·궁합 풀이 계산과 풀이 기록 저장, 게임 순위 집계와 표시. 게임 순위와 도전 링크에는 닉네임(정하지 않았으면 '팬')과 점수가 표시되며, 로그인하지 않은 사람도 볼 수 있습니다.",
             "부정 이용 방지, 보안 사고 대응과 법적 의무 이행",
           ],
         },
         {
           heading: "3. 보유 및 이용 기간",
-          paragraphs: ["개인정보는 서비스 제공과 계정 유지에 필요한 기간 동안 보유하며, 처리 목적이 달성되거나 이용자가 삭제를 요청한 경우 지체 없이 파기합니다. 실물 혜택 수령 정보는 배송 또는 현장 수령 완료 후 30일이 지나면 삭제합니다. 카카오 알림톡 수신 동의를 철회하거나 Kakao 연결을 해제하면 kyaa 내부 저장소의 원본 전화번호와 완료되지 않은 등록 정보를 삭제합니다. 동의·철회 이력, 발송 대조값과 제공사 접수·결과 기록은 관계 법령 준수, 분쟁 또는 보안 대응에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다. 그 밖에 관계 법령에서 일정 기간 보관을 요구하는 경우에도 해당 목적에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다."],
+          paragraphs: ["개인정보는 서비스 제공과 계정 유지에 필요한 기간 동안 보유하며, 처리 목적이 달성되거나 이용자가 삭제를 요청한 경우 지체 없이 파기합니다. 실물 혜택 수령 정보는 배송 또는 현장 수령 완료 후 30일이 지나면 삭제합니다. 카카오 알림톡 수신 동의를 철회하거나 Kakao 연결을 해제하면 kyaa 내부 저장소의 원본 전화번호와 완료되지 않은 등록 정보를 삭제합니다. 동의·철회 이력, 발송 대조값과 제공사 접수·결과 기록은 관계 법령 준수, 분쟁 또는 보안 대응에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다. 그 밖에 관계 법령에서 일정 기간 보관을 요구하는 경우에도 해당 목적에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다.", "케미에 저장한 생일 정보와 궁합 상대 정보는 MY > 내 생일 정보에서 언제든 지울 수 있으며, 지우면 그 생일로 계산한 풀이 기록도 함께 삭제합니다. 회원 탈퇴 시에도 함께 삭제합니다. 만 14세 미만으로 확인되는 생년월일은 저장하지 않습니다."],
         },
         {
           heading: "4. 외부 서비스 이용 및 처리 위탁",
@@ -146,6 +151,7 @@ export const legalDocuments = {
       metadataDescription: "kyaa Privacy Policy",
       title: "Privacy Policy",
       description: "Sallylab Inc. provides this Privacy Policy to explain how we process only the personal information necessary to operate kyaa and how we protect it securely.",
+      effectiveDate: "Effective date: November 23, 2026",
       sections: [
         {
           heading: "1. Personal Information We Process",
@@ -161,6 +167,9 @@ export const legalDocuments = {
             "Descriptions and evidence images you submit for manual fan verification, review status, and reward records",
             "Notice comments, public nicknames and characters, fan rankings, and fan activity you choose to make public",
             "When a professional account owner consents to Instagram connection: account ID and username, encrypted access token and expiry time, and recent post captions, timestamps, original links, and media URLs",
+            "When you use Chemi: your date of birth and whether it is solar or lunar, optionally your birth time, gender, and birthplace, the time you consented to saving your birth details, and your saju, fortune, zodiac, and tarot reading records",
+            "For Chemi compatibility readings, the nickname and date of birth of a person you save yourself, and optionally their birth time and gender",
+            "Chemi game records and rankings (scores and nickname)",
             "Access logs, errors, and security events generated while you use the service",
           ],
         },
@@ -174,12 +183,13 @@ export const legalDocuments = {
             "Providing LIVE reservations, attendance, surveys, and benefits",
             "Sending notifications, responding to inquiries, and improving service quality",
             "Confirming consent for Kakao service notifications, sending service notifications to the phone number on the Kakao account, and checking provider acceptance and final delivery results",
+            "Calculating Chemi saju, fortune, zodiac, and compatibility readings, saving reading records, and calculating and displaying game rankings. Game rankings and challenge links show your nickname (\"Fan\" if you have not set one) and score, and can be seen by people who are not signed in.",
             "Preventing misuse, responding to security incidents, and complying with legal obligations",
           ],
         },
         {
           heading: "3. Retention and Use Period",
-          paragraphs: ["We retain personal information for as long as necessary to provide the service and maintain your account. We delete it without undue delay when the purpose of processing has been fulfilled or when you request deletion. We delete physical reward recipient details 30 days after shipping or on-site pickup is completed. If you withdraw consent for Kakao service notifications or disconnect Kakao, we delete the original phone number from kyaa systems and any incomplete registration information. Consent and withdrawal history, delivery correlation values, and provider acceptance and result records may be stored separately for the scope and period necessary to comply with applicable laws, resolve disputes, or respond to security incidents. We may also store information separately where applicable laws require retention for a certain period."],
+          paragraphs: ["We retain personal information for as long as necessary to provide the service and maintain your account. We delete it without undue delay when the purpose of processing has been fulfilled or when you request deletion. We delete physical reward recipient details 30 days after shipping or on-site pickup is completed. If you withdraw consent for Kakao service notifications or disconnect Kakao, we delete the original phone number from kyaa systems and any incomplete registration information. Consent and withdrawal history, delivery correlation values, and provider acceptance and result records may be stored separately for the scope and period necessary to comply with applicable laws, resolve disputes, or respond to security incidents. We may also store information separately where applicable laws require retention for a certain period.", "You can delete the birth details and compatibility partners you saved in Chemi at any time in MY > My birth details. Deleting them also deletes the reading records calculated from that birth date. They are also deleted when you delete your account. We do not save a date of birth that shows you are under 14."],
         },
         {
           heading: "4. External Services and Processing Providers",
@@ -283,10 +293,11 @@ export const legalDocuments = {
       metadataDescription: "kyaa 서비스 이용약관",
       title: "이용약관",
       description: "이 약관은 Sallylab Inc.가 제공하는 kyaa 서비스의 이용 조건과 회사 및 이용자의 권리와 책임을 정합니다.",
+      effectiveDate: "시행일: 2026년 11월 23일",
       sections: [
         {
           heading: "1. 약관의 목적과 적용",
-          paragraphs: ["이 약관은 kyaa 웹·앱과 이에 연결된 팬 인증, LIVE 참여, Fan Passport, Stamp, 혜택 및 알림 기능에 적용됩니다. 이용자는 앱에 가입하거나 로그인하기 전에 이 약관과 개인정보처리방침에 동의해야 합니다."],
+          paragraphs: ["이 약관은 kyaa 웹·앱과 이에 연결된 팬 인증, LIVE 참여, Fan Passport, Stamp, 포인트, 케미(사주·운세·별자리·타로·게임), 혜택 및 알림 기능에 적용됩니다. 이용자는 앱에 가입하거나 로그인하기 전에 이 약관과 개인정보처리방침에 동의해야 합니다."],
         },
         {
           heading: "2. 계정과 인증",
@@ -298,14 +309,24 @@ export const legalDocuments = {
         },
         {
           heading: "3. 팬 인증과 디지털 기록",
-          paragraphs: ["팬 인증 결과, Fan Passport와 Stamp는 kyaa 안에서 팬 활동을 기록하고 관련 기능을 제공하기 위한 디지털 기록입니다. 별도의 명시가 없는 한 현금, 증권, 투자 상품 또는 회사에 대한 권리를 의미하지 않습니다."],
+          paragraphs: ["팬 인증 결과, Fan Passport, Stamp, 포인트와 케미의 친밀 기록은 kyaa 안에서 팬 활동을 기록하고 관련 기능을 제공하기 위한 디지털 기록입니다. 별도의 명시가 없는 한 현금, 증권, 투자 상품 또는 회사에 대한 권리를 의미하지 않으며, 현금으로 바꾸거나 다른 회원에게 넘길 수 없습니다."],
         },
         {
           heading: "4. LIVE와 혜택",
           paragraphs: ["LIVE 일정, 예약, 출석 방식과 혜택의 수량·조건·기간은 각 화면에 표시된 안내를 따릅니다. 셀럽, 브랜드 또는 운영상 사유로 일정이나 제공 조건이 변경될 수 있으며, 회사는 가능한 범위에서 변경 내용을 안내합니다."],
         },
         {
-          heading: "5. 금지 행위",
+          heading: "5. 포인트",
+          items: [
+            "회원은 각 화면에 표시된 활동 조건을 채우면 포인트를 받습니다. 케미에서는 최애를 골라 사주·오늘의 운세·별자리·타로 풀이를 그날(한국 시간 기준) 처음 마치면, 그 최애의 Fan Passport를 가진 회원에게 최애마다 하루 한 번 3P를 지급합니다. 게임 결과와 결과 공유에는 포인트를 지급하지 않습니다.",
+            "케미에서는 게임 추가 판(한 판 20P, 게임마다 하루 무료 판을 다 한 뒤 하루 3판까지)과 오늘이 아닌 날짜의 운세(날짜마다 10P)에 포인트를 쓸 수 있습니다. 사용처별 포인트와 하루 한도는 사용 화면과 요금 안내에 표시합니다.",
+            "포인트는 돈으로 충전하거나 살 수 없고, 현금으로 바꾸거나 다른 회원에게 넘길 수 없습니다.",
+            "포인트를 쓰는 콘텐츠가 서비스 오류로 열리지 않으면 포인트를 차감하지 않습니다. 차감된 뒤 열리지 않은 사실이 확인되면 차감한 포인트를 돌려줍니다. 회원이 이용 도중 스스로 그만둔 경우에는 돌려주지 않습니다.",
+            "중복 지급, 계산 오류, 허위 참여가 확인되면 해당 지급분을 정정할 수 있습니다.",
+          ],
+        },
+        {
+          heading: "6. 금지 행위",
           paragraphs: ["음란물, 혐오·폭력 조장, 괴롭힘 등 부적절한 콘텐츠와 악의적인 이용 행위를 허용하지 않습니다. 게시물·댓글·메시지의 금지 표현을 필터링하며, 위반 콘텐츠를 삭제하거나 숨기고 해당 이용자의 서비스 이용을 제한합니다.", "콘텐츠의 신고 기능으로 부적절한 내용을 알리고 사용자 차단 기능으로 상대의 콘텐츠를 내 화면에서 즉시 숨길 수 있습니다. 차단 내역도 운영자에게 전달됩니다. 회사는 신고 접수 후 24시간 이내에 내용을 검토하고, 위반이 확인된 콘텐츠를 제거하며 해당 이용자의 서비스 이용을 제한합니다."],
           items: [
             "타인의 계정, 인증 정보 또는 혜택을 도용하거나 거래하는 행위",
@@ -316,19 +337,19 @@ export const legalDocuments = {
           ],
         },
         {
-          heading: "6. 서비스 변경과 중단",
+          heading: "7. 서비스 변경과 중단",
           paragraphs: ["회사는 서비스 개선, 보안, 점검, 제휴 관계 또는 불가피한 운영 사유에 따라 기능을 변경하거나 일시 중단할 수 있습니다. 이용자에게 중대한 영향을 주는 변경은 합리적인 방법으로 사전에 안내하되, 긴급한 보안 대응 등 사전 안내가 어려운 경우에는 사후 안내할 수 있습니다."],
         },
         {
-          heading: "7. 책임의 범위",
+          heading: "8. 책임의 범위",
           paragraphs: ["회사는 고의 또는 중대한 과실이 없는 한 천재지변, 통신 장애, 외부 인증·지갑·네트워크 서비스의 장애 또는 이용자의 귀책 사유로 발생한 손해에 책임을 지지 않습니다. 관계 법령상 제한할 수 없는 책임은 이 조항의 영향을 받지 않습니다."],
         },
         {
-          heading: "8. 준거법과 관할",
+          heading: "9. 준거법과 관할",
           paragraphs: ["이 약관은 대한민국 법률에 따라 해석됩니다. 서비스 이용과 관련한 분쟁은 당사자 간 협의를 우선하며, 해결되지 않는 경우 대한민국 민사소송법상 관할 법원을 제1심 전속 관할 법원으로 합니다."],
         },
         {
-          heading: "9. 문의",
+          heading: "10. 문의",
           contact: {
             before: "서비스 또는 약관에 관한 문의는 Sallylab Inc.의 ",
             email: "support@kyaa.io",
@@ -342,10 +363,11 @@ export const legalDocuments = {
       metadataDescription: "kyaa Terms of Use",
       title: "Terms of Use",
       description: "These Terms of Use set out the conditions for using the kyaa service provided by Sallylab Inc. and the rights and responsibilities of the company and its users.",
+      effectiveDate: "Effective date: November 23, 2026",
       sections: [
         {
           heading: "1. Purpose and Scope",
-          paragraphs: ["These Terms apply to the kyaa web and app services and their connected fan verification, LIVE participation, Fan Passport, Stamp, benefit, and notification features. Before registering or logging in to the app, you must agree to these Terms and the Privacy Policy."],
+          paragraphs: ["These Terms apply to the kyaa web and app services and their connected fan verification, LIVE participation, Fan Passport, Stamp, points, Chemi (saju, fortune, zodiac, tarot, and games), benefit, and notification features. Before registering or logging in to the app, you must agree to these Terms and the Privacy Policy."],
         },
         {
           heading: "2. Accounts and Authentication",
@@ -357,14 +379,24 @@ export const legalDocuments = {
         },
         {
           heading: "3. Fan Verification and Digital Records",
-          paragraphs: ["Fan verification results, Fan Passports, and Stamps are digital records used to record fan activities and provide related features within kyaa. Unless expressly stated otherwise, they do not represent cash, securities, investment products, or rights in the company."],
+          paragraphs: ["Fan verification results, Fan Passports, Stamps, points, and Chemi affinity records are digital records used to record fan activities and provide related features within kyaa. Unless expressly stated otherwise, they do not represent cash, securities, investment products, or rights in the company, and they cannot be exchanged for cash or transferred to another member."],
         },
         {
           heading: "4. LIVE and Benefits",
           paragraphs: ["LIVE schedules, reservation and attendance methods, and the quantity, conditions, and availability period of benefits are governed by the information displayed on the relevant screen. Schedules or availability conditions may change for reasons related to a celebrity, brand, or service operations, and we will provide notice of changes where reasonably possible."],
         },
         {
-          heading: "5. Prohibited Conduct",
+          heading: "5. Points",
+          items: [
+            "Members receive points when they meet the activity conditions shown on each screen. In Chemi, when you pick a favorite and finish a saju, daily fortune, zodiac, or tarot reading for the first time that day (Korea time), members who hold that favorite's Fan Passport receive 3P, once per favorite per day. Game results and sharing results do not earn points.",
+            "In Chemi, points can be used for extra game plays (20P per play, up to 3 per game per day after that day's free plays) and for the fortune of a date other than today (10P per date). Point values and daily limits are shown on the screen where you use them and on the Pricing page.",
+            "Points cannot be topped up or bought with money, exchanged for cash, or transferred to another member.",
+            "If content that uses points does not open because of a service error, no points are deducted. If points were deducted and we confirm the content did not open, we return the deducted points. Points are not returned if you stop partway through on your own.",
+            "If we confirm a duplicate award, a calculation error, or false participation, we may correct the points awarded in that transaction.",
+          ],
+        },
+        {
+          heading: "6. Prohibited Conduct",
           paragraphs: ["We have zero tolerance for objectionable content, including pornography, hate, incitement to violence and harassment, or for abusive users. We filter prohibited expressions in posts, comments and messages, remove or hide violating content, and restrict offending users from using the service.", "You can report objectionable content using its report action and block a user to immediately hide their content from your view. Blocks are also sent to our moderation team. Within 24 hours of receiving a report, we review it and, when a violation is confirmed, remove the offending content and restrict the offending user from using the service."],
           items: [
             "Using or trading another person's account, authentication information, or benefits without authorization",
@@ -375,19 +407,19 @@ export const legalDocuments = {
           ],
         },
         {
-          heading: "6. Changes to and Suspension of the Service",
+          heading: "7. Changes to and Suspension of the Service",
           paragraphs: ["We may change or temporarily suspend features to improve the service, maintain security, perform maintenance, manage partnership arrangements, or address unavoidable operational circumstances. We will provide reasonable advance notice of changes that materially affect users. If advance notice is impracticable, such as during an urgent security response, we may provide notice afterward."],
         },
         {
-          heading: "7. Limitation of Liability",
+          heading: "8. Limitation of Liability",
           paragraphs: ["Except in cases of willful misconduct or gross negligence, we are not liable for loss arising from natural disasters, communication failures, outages of external authentication, wallet, or network services, or causes attributable to the user. Nothing in this section limits liability that cannot be limited under applicable law."],
         },
         {
-          heading: "8. Governing Law and Jurisdiction",
+          heading: "9. Governing Law and Jurisdiction",
           paragraphs: ["These Terms are governed by and construed in accordance with the laws of the Republic of Korea. The parties will first attempt to resolve any dispute relating to the service through consultation. If a dispute remains unresolved, the court having jurisdiction under the Civil Procedure Act of the Republic of Korea will have exclusive jurisdiction as the court of first instance."],
         },
         {
-          heading: "9. Contact",
+          heading: "10. Contact",
           contact: {
             before: "For questions about the service or these Terms, contact Sallylab Inc. at ",
             email: "support@kyaa.io",
@@ -458,6 +490,15 @@ export const legalDocuments = {
     }))
 },
 } as const satisfies Record<LegalDocumentId, Record<FanLocale, LegalDocumentContent>>;
+
+/**
+ * ko·en 은 원문. 2026-11-23 케미 개정(포인트 조항·케미 개인정보)은 ko·en 에만 들어가 있어,
+ * 그 밖의 언어는 번역을 채울 때까지 en 문서를 en 언어 표시로 보인다(요금 안내·환불 정책과 같은 방식).
+ */
+export function legalDocument(id: LegalDocumentId, locale: FanLocale): LegalDocumentContent {
+  if (locale === "ko" || locale === "en") return legalDocuments[id][locale];
+  return { ...legalDocuments[id].en, lang: "en" };
+}
 
 export function resolveLegalLocale(value: string | string[] | undefined): FanLocale {
   return parseAppLocale(value);

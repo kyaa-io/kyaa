@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { chemiClosedResponse } from "@/server/chemi/dependencies";
+import { chemiClosedResponse, chemiFeatureClosedResponse } from "@/server/chemi/dependencies";
 import { boundedJson } from "@/server/certification/certification-http";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { chemiAuthenticatedHandler } from "@/server/chemi-profile/handlers";
@@ -11,7 +11,8 @@ const reminder = z.strictObject({
 });
 
 export function reminderRoute(request: Request, enabled: boolean) {
-  const closed = chemiClosedResponse();
+  // 끄기(DELETE)는 운영에서도 받는다. 새 신청만 닫는다.
+  const closed = enabled ? chemiFeatureClosedResponse("reminders") : chemiClosedResponse();
   if (closed) return closed;
   return chemiAuthenticatedHandler(async (input, deps, user) => {
     const { kind, content } = reminder.parse(await boundedJson(input, 512));

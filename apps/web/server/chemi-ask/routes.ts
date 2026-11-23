@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import { boundedJson } from "@/server/certification/certification-http";
 import { chemiAuthenticatedHandler } from "@/server/chemi-profile/handlers";
+import { chemiFeatureClosedResponse } from "@/server/chemi/dependencies";
 import { createFanpageDependencies } from "@/server/fanpage/dependencies";
 import { aiAnswer } from "./ai-answer";
 import { askAiReady } from "./ai-provider";
@@ -39,6 +40,8 @@ function refusal(error: unknown) {
 const open = (state: z.infer<typeof room>) => state.left > 0 && !state.pausedUntil;
 
 export function askRoute(op: "state" | "submit" | "followup" | "evidence", request: Request) {
+  const closed = chemiFeatureClosedResponse("ask");
+  if (closed) return closed;
   return chemiAuthenticatedHandler(async (input, deps, p_user) => {
     try {
       if (op === "state") {
