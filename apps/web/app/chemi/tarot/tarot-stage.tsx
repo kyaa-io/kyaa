@@ -1,5 +1,6 @@
 "use client";
 
+import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { ParticipationCount } from "../participation";
 import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
@@ -116,6 +117,11 @@ export function TarotStage(props: Props) {
   else if (step === "pick") dialogLine = lines.pick;
   else if (step === "lock") dialogLine = lines.lock;
   else dialogLine = "";
+  // 기획 13-2: 바로 선 카드는 웃음, 거꾸로 선 카드는 뒤집을 때 놀람 → 풀이 기본 → 마지막 한마디 웃음.
+  const expression = !talking || !draw ? null
+    : step === "talk3" || !draw.reversed ? expressionFor.good
+    : step === "flip" ? expressionFor.firstReveal
+    : expressionFor.low;
   const talkLine = (() => {
     if (!draw) return "";
     if (step === "flip") return lines.drawn(tarotName(draw.card, props.locale), draw.reversed);
@@ -146,6 +152,7 @@ export function TarotStage(props: Props) {
           <source media="(min-width: 48rem)" srcSet={`/chemi/tarot/scene-${character}-l.webp`} />
           <img src={`/chemi/tarot/scene-${character}-p.webp`} alt={uiText("candleRoom", { name: person.name })} />
         </picture>
+        <SceneExpression scene="tarot" character={character} portrait={`/chemi/tarot/scene-${character}-p.webp`} expression={expression} />
       </div>
 
 

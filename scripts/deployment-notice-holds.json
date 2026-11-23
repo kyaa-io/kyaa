@@ -110,7 +110,8 @@
     "release-notes/2026-11-23-chemi-r3c-game-lobby.json",
     "release-notes/2026-11-23-chemi-r3e-entry-banner.json",
     "release-notes/2026-11-24-chemi-promo.json",
-    "release-notes/2026-11-24-chemi-r4d-ask-reading.json"
+    "release-notes/2026-11-24-chemi-r4d-ask-reading.json",
+    "release-notes/2026-11-24-chemi-expression-scenes.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

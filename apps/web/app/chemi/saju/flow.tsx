@@ -6,6 +6,7 @@
  * 공통 부품 대기: 대화 틀(장면·말풍선·고르기 띠)은 운세 구현(t3/chemi-w3-fortune-fix2)에 같은 모양이 있다.
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
+import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { AskScene } from "@/features/chemi/ask/ask-scene";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { askGo, askOpenWith, useAskLocation } from "@/features/chemi/ask/location";
@@ -746,6 +747,11 @@ export function SajuFlow({
   const wideArt =
     character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-wide-v2.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
+  // 1은 첫 풀이(놀람), 2는 강점과 조심할 것·3은 올해 흐름(기본), 4는 둘 사이(웃음). 계산·궁합 계산·한도 안내 중에는 기본.
+  const expression = !talk || phase !== "idle" ? null
+    : talk === 1 ? expressionFor.firstReveal
+    : talk === 4 ? expressionFor.bond
+    : expressionFor.low;
   const primaryLabel = entering ? (again ? (reading ? (askOpen ? text("askStart") : sceneCopy.history) : null) : sceneCopy.start) : talk ? text(talkChoice[talk - 1]) : null;
 
 
@@ -936,10 +942,13 @@ export function SajuFlow({
         {talk && <div className={styles.toastAnchor} data-saju-toast-anchor="" />}
       </div>
       <div className={styles.stage}>
-        <picture className={styles.art}>
-          <source media="(min-width: 48rem)" srcSet={wideArt} />
-          <img src={mobileArt} alt={text("sajuSceneAlt", { name })} />
-        </picture>
+        <div className={styles.art}>
+          <picture>
+            <source media="(min-width: 48rem)" srcSet={wideArt} />
+            <img src={mobileArt} alt={text("sajuSceneAlt", { name })} />
+          </picture>
+          <SceneExpression scene="saju" character={character} portrait={mobileArt} expression={expression} />
+        </div>
         {phase === "error" ? (
           <div className={styles.controls}>
             <FanState

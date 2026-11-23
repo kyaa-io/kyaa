@@ -2,6 +2,8 @@
  * 질문하기 장면에서 최애가 하는 말과 주제별 예시 질문. 다른 케미 대화 줄(fortune/lines.ts 등)처럼 한국어 원문만 둔다.
  * 최애는 한도·오류·결제를 말하지 않는다(L158): 그런 안내는 화면 글자(chemi.json readingUi.ask*)가 맡는다.
  */
+import type { Expression } from "@/features/chemi/ui/scene-expression";
+
 export const ASK_TOPICS = ["love", "work", "money", "people", "month", "free"] as const;
 export type AskTopic = (typeof ASK_TOPICS)[number];
 export type AskCharacter = "changha" | "elina" | "yuna" | "dosa";
@@ -194,6 +196,13 @@ const reactions: Record<AskReaction, readonly [ban: string, yo: string]> = {
   worried: ["좀 걱정돼", "조금 걱정돼요"],
 };
 export const askReaction = (kind: AskReaction, character: AskCharacter) => reactions[kind][askVoice[character] === "ban" ? 0 : 1];
+
+/** 반응 칩마다 최애 표정: 고마워 = 웃음, 진짜? = 놀람, 좀 걱정돼 = 기본(달래는 말에 웃거나 놀라지 않는다). */
+export const askReactionExpression = {
+  thanks: "smile",
+  really: "surprise",
+  worried: "neutral",
+} as const satisfies Record<AskReaction, Expression>;
 
 const recalls: Record<AskRecall, readonly [ban: string, yo: string]> = {
   good: ["잘됐어", "잘됐어요"],
