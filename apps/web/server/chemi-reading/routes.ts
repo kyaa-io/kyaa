@@ -24,7 +24,7 @@ import {
   birthMoonSigns,
 } from "@/server/chemi-engine/star";
 import { synastryConnections } from "@/server/chemi-engine/star/synastry";
-import { drawGuestTarot, drawMemberTarot } from "@/server/chemi-engine/tarot";
+import { drawGuestTarot, drawMemberTarot, readGuestTarot, signGuestTarot } from "@/server/chemi-engine/tarot";
 
 const character = z.enum(["changha", "elina", "yuna", "dosa"]);
 const content = z.enum(["fortune", "saju", "star", "tarot"]);
@@ -46,6 +46,8 @@ const reading = z.object({
   partnerId: z.string().uuid().optional(),
   position: z.number().int().min(0).max(77).default(0),
   targetKey: z.string().max(120).optional(),
+  /** 비회원 때 뽑은 오늘의 타로 카드 증표(signGuestTarot). 로그인한 뒤 그날 첫 카드로 저장한다. */
+  claim: z.string().max(80).optional(),
 });
 const share = z.object({ readingId: z.string().uuid(), character });
 const birth = z.object({
@@ -227,9 +229,11 @@ export async function rewardRoute(
         body.kind === "daily"
       ) {
         reading.parse(body);
+        const drawn = drawGuestTarot();
         return {
           readingId: null,
-          result: drawGuestTarot(),
+          result: drawn,
+          claim: signGuestTarot(drawn, kstToday(), process.env.CHEMI_TAROT_SALT),
           reward: {},
           styled: null,
           chain: null,
@@ -367,8 +371,9 @@ export async function rewardRoute(
       let version: string;
       if (input.content === "tarot") {
         version = "tarot-v1";
+        const claimed = readGuestTarot(input.claim, day, process.env.CHEMI_TAROT_SALT);
         result = {
-          cards: drawMemberTarot({
+          cards: claimed ? [claimed] : drawMemberTarot({
             userId: p_user,
             kstDate: day,
             deckVersion: version,

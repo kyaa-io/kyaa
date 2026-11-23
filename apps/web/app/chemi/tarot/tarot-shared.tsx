@@ -8,7 +8,7 @@ import { FanState } from "@/components/fan-ui/fan-state";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
-import { TAROT_DECK, TAROT_DECK_SIZE, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
+import { TAROT_DECK_SIZE, tarotAlt, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { isTarotCharacter, tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import { tarotUrl } from "./types";
@@ -60,7 +60,7 @@ export function TarotShared({
     })();
     return () => controller.abort();
   }, [from, character]);
-  const meaning = useTarotMeaning(typeof state === "object" ? state.card : null);
+  const meaning = useTarotMeaning(typeof state === "object" ? state.card : null, locale);
 
   if (state === "loading")
     return (
@@ -74,20 +74,20 @@ export function TarotShared({
   if (state === "empty")
     return <FanState kind="empty" title={uiText("loadFailure")} action={{ href: `/chemi?locale=${locale}`, label: uiText("chemi") }} />;
 
-  const person = tarotCharacter(state.character);
+  const person = tarotCharacter(state.character, locale);
   const content = meaning.card?.dir[state.reversed ? "down" : "up"];
   return (
     <article className={styles.root} data-tarot-shared="">
       <div className={styles.shared}>
         <header className={styles.head}>
           <div className={styles.nameRow}>
-            <FanHeading as="h1">{tarotTitle(state.card)}</FanHeading>
+            <FanHeading as="h1">{tarotTitle(state.card, locale)}</FanHeading>
             <FanTag tone="fan">{uiText(state.reversed ? "reversed" : "upright")}</FanTag>
           </div>
         </header>
         <div className={styles.hero} data-reversed={state.reversed || undefined}>
           <img className={styles.cloth} src="/chemi/tarot/cloth-390.webp" alt="" />
-          <img className={styles.cardFace} src={tarotFace(state.card)} alt={TAROT_DECK[state.card][2]} />
+          <img className={styles.cardFace} src={tarotFace(state.card)} alt={tarotAlt(state.card, locale)} />
         </div>
         <div className={styles.said}>
           <div className={styles.react}>

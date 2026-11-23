@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function TarotPage({
   searchParams,
 }: {
-  searchParams: Promise<{ locale?: string | string[]; c?: string; step?: string; r?: string; from?: string; card?: string; rev?: string }>;
+  searchParams: Promise<{ locale?: string | string[]; c?: string; step?: string; r?: string; from?: string; card?: string; rev?: string; claim?: string }>;
 }) {
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
@@ -42,6 +42,7 @@ export default async function TarotPage({
               initialCharacter={isTarotCharacter(params.c) ? params.c : "changha"}
               initialStep={isTarotStep(params.step) ? params.step : "enter"}
               initialReading={params.step === "result" && isReadingId(params.r) ? params.r : null}
+              initialClaim={typeof params.claim === "string" && params.claim.length <= 80 ? params.claim : null}
             />
           )}
         </FanContentContainer>

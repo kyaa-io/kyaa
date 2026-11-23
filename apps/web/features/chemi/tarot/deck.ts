@@ -1,3 +1,4 @@
+import { tarotLang } from "./script";
 /** 덱 번호(0~77) → [번호 글자, 이름, 그림 대체 글]. 서버 풀이 글(content/chemi/tarot/cards.json)과 같은 순서이고, 풀이 글을 못 불러와도 카드 이름과 그림 설명은 이 표로 그린다. */
 export const TAROT_DECK_SIZE = 78;
 export const TAROT_DECK: readonly (readonly [num: string, name: string, alt: string])[] = [
@@ -81,8 +82,96 @@ export const TAROT_DECK: readonly (readonly [num: string, name: string, alt: str
   ["", "펜타클 왕", "펜타클 왕 카드: 포도 덩굴 옥좌에서 동전을 든 왕"]
 ];
 
-export function tarotTitle(id: number) {
-  const [num, name] = TAROT_DECK[id];
+/** 영어 화면의 덱 표. 순서·번호 글자는 TAROT_DECK 과 같고, 이름은 라이더-웨이트 체계의 영어 이름이다(content/chemi/tarot/cards.en.json 과 같은 글). */
+export const TAROT_DECK_EN: readonly (readonly [num: string, name: string, alt: string])[] = [
+  ["0", "The Fool", "The Fool card: a traveller reaching for a white bird before an open iron gate"],
+  ["I", "The Magician", "The Magician card: a rose rising from a table with ribbons trailing down"],
+  ["II", "The High Priestess", "The High Priestess card: someone under a crescent moon listening to a seashell"],
+  ["III", "The Empress", "The Empress card: someone in a pomegranate crown planting seeds in the earth"],
+  ["IV", "The Emperor", "The Emperor card: a crowned figure seen from behind, overlooking fields at sunrise"],
+  ["V", "The Hierophant", "The Hierophant card: a bearded elder weaving a basket with two children"],
+  ["VI", "The Lovers", "The Lovers card: two people holding hands with an angel above them"],
+  ["VII", "The Chariot", "The Chariot card: a crowned figure driving two seahorses in a shell cart"],
+  ["VIII", "Strength", "Strength card: someone gently stroking the brow of a seated lion"],
+  ["IX", "The Hermit", "The Hermit card: a hooded figure on a mountaintop holding a lantern under the stars"],
+  ["X", "Wheel of Fortune", "Wheel of Fortune card: a round celestial sphere of gears and the four seasons"],
+  ["XI", "Justice", "Justice card: a blindfolded figure holding a sword and scales"],
+  ["XII", "The Hanged Man", "The Hanged Man card: someone hanging upside down from a vine, reflected upright in water"],
+  ["XIII", "Death", "Death card: a skeleton knight with a white rose banner and open fields beyond"],
+  ["XIV", "Temperance", "Temperance card: someone in a workshop pouring two jugs of water into a basin"],
+  ["XV", "The Devil", "The Devil card: someone in a white mask wrapped in a loose rope"],
+  ["XVI", "The Tower", "The Tower card: a tall tower struck by lightning, its top splitting apart"],
+  ["XVII", "The Star", "The Star card: someone holding up a bowl to catch starlight"],
+  ["XVIII", "The Moon", "The Moon card: two foxes looking up at a crescent moon, its reflection in a pool"],
+  ["XIX", "The Sun", "The Sun card: a laughing child on a white horse with arms spread under the sun"],
+  ["XX", "Judgement", "Judgement card: people rising from the earth and looking up at a trumpet call"],
+  ["XXI", "The World", "The World card: someone dancing on one foot inside a flower wreath"],
+  ["", "Ace of Wands", "Ace of Wands card: a hand from the clouds holding a sprouting branch"],
+  ["", "Two of Wands", "Two of Wands card: someone on a cliff holding a globe between two staffs"],
+  ["", "Three of Wands", "Three of Wands card: someone shading their eyes and watching ships at sea"],
+  ["", "Four of Wands", "Four of Wands card: two people walking hand in hand under a garland as others clap"],
+  ["", "Five of Wands", "Five of Wands card: five people swinging staffs on a grassy field"],
+  ["", "Six of Wands", "Six of Wands card: a laurel-crowned rider on horseback and a cheering crowd"],
+  ["", "Seven of Wands", "Seven of Wands card: someone on a rock fending off staffs from below"],
+  ["", "Eight of Wands", "Eight of Wands card: eight staffs flying side by side over a river"],
+  ["", "Nine of Wands", "Nine of Wands card: a bandaged figure leaning on a staff before a row of staffs"],
+  ["", "Ten of Wands", "Ten of Wands card: someone carrying an armful of staffs toward a castle"],
+  ["", "Page of Wands", "Page of Wands card: a traveller with a flowering staff and a bird on their shoulder"],
+  ["", "Knight of Wands", "Knight of Wands card: a helmeted knight galloping with a flowering staff"],
+  ["", "Queen of Wands", "Queen of Wands card: a crowned queen holding rose stems among rose bushes"],
+  ["", "King of Wands", "King of Wands card: someone seated before a flowering lattice holding a staff"],
+  ["", "Ace of Cups", "Ace of Cups card: a hand from the clouds holding an overflowing golden cup and a dove"],
+  ["", "Two of Cups", "Two of Cups card: two people sharing cups beneath a winged lion"],
+  ["", "Three of Cups", "Three of Cups card: three people dancing barefoot with cups raised"],
+  ["", "Four of Cups", "Four of Cups card: someone resting their chin as a hand from a cloud offers a cup"],
+  ["", "Five of Cups", "Five of Cups card: a bowed figure before spilled cups, with two still standing"],
+  ["", "Six of Cups", "Six of Cups card: a child handing a cup of flowers to a smaller child"],
+  ["", "Seven of Cups", "Seven of Cups card: someone gazing up at seven cups on the clouds"],
+  ["", "Eight of Cups", "Eight of Cups card: a hooded figure walking away from eight cups under a crescent moon"],
+  ["", "Nine of Cups", "Nine of Cups card: a smiling figure seated before a shelf full of cups"],
+  ["", "Ten of Cups", "Ten of Cups card: two adults embracing under a rainbow of cups, children and a puppy at play"],
+  ["", "Page of Cups", "Page of Cups card: a young person in a hat looking into a rose-patterned cup"],
+  ["", "Knight of Cups", "Knight of Cups card: an armored knight on horseback holding a cup high"],
+  ["", "Queen of Cups", "Queen of Cups card: a crowned queen holding two cups of roses among the vines"],
+  ["", "King of Cups", "King of Cups card: a crowned figure holding a cup in both hands before a vine lattice"],
+  ["", "Ace of Swords", "Ace of Swords card: a hand from the clouds holding an upright sword topped with a crown"],
+  ["", "Two of Swords", "Two of Swords card: a blindfolded figure holding two crossed swords by the sea"],
+  ["", "Three of Swords", "Three of Swords card: a heart pierced by three swords in the rain"],
+  ["", "Four of Swords", "Four of Swords card: an armored knight lying at rest beneath swords on the wall"],
+  ["", "Five of Swords", "Five of Swords card: a knight holding swords as three others walk away"],
+  ["", "Six of Swords", "Six of Swords card: a small boat carrying six swords across a river"],
+  ["", "Seven of Swords", "Seven of Swords card: a cloaked figure slipping away at night carrying swords"],
+  ["", "Eight of Swords", "Eight of Swords card: a blindfolded figure standing among swords"],
+  ["", "Nine of Swords", "Nine of Swords card: someone in bed covering their face beneath nine swords"],
+  ["", "Ten of Swords", "Ten of Swords card: a figure lying on a shore at sunrise with ten swords"],
+  ["", "Page of Swords", "Page of Swords card: a young person in a feathered hat raising a sword in a windy field"],
+  ["", "Knight of Swords", "Knight of Swords card: an armored knight charging forward on horseback with a sword"],
+  ["", "Queen of Swords", "Queen of Swords card: a queen on a thorny rose throne holding a sword upright"],
+  ["", "King of Swords", "King of Swords card: a crowned king on a throne before a rose lattice holding a sword"],
+  ["", "Ace of Pentacles", "Ace of Pentacles card: a hand from the clouds holding a star-patterned coin"],
+  ["", "Two of Pentacles", "Two of Pentacles card: someone balancing two coins inside a figure-eight ribbon"],
+  ["", "Three of Pentacles", "Three of Pentacles card: a stonemason and two people with a plan beneath an arch"],
+  ["", "Four of Pentacles", "Four of Pentacles card: someone on a box clutching coins to their chest"],
+  ["", "Five of Pentacles", "Five of Pentacles card: two people walking in the snow past a lit window"],
+  ["", "Six of Pentacles", "Six of Pentacles card: someone holding scales and handing out coins"],
+  ["", "Seven of Pentacles", "Seven of Pentacles card: someone leaning on a hoe, looking at coins on a vine"],
+  ["", "Eight of Pentacles", "Eight of Pentacles card: a craftsperson carving a star pattern into a coin"],
+  ["", "Nine of Pentacles", "Nine of Pentacles card: someone in a vineyard with a falcon on their arm"],
+  ["", "Ten of Pentacles", "Ten of Pentacles card: a family of generations and dogs beneath a rose arch"],
+  ["", "Page of Pentacles", "Page of Pentacles card: a young person gazing at a coin held in both hands"],
+  ["", "Knight of Pentacles", "Knight of Pentacles card: a knight on a white horse holding up a coin"],
+  ["", "Queen of Pentacles", "Queen of Pentacles card: a crowned queen in a rose garden holding a coin on her lap"],
+  ["", "King of Pentacles", "King of Pentacles card: a crowned king on a vine-covered throne holding a coin"]
+];
+
+const deckFor = (locale: string) => (tarotLang(locale) === "ko" ? TAROT_DECK : TAROT_DECK_EN);
+/** 카드 이름(번호 글자 없이). */
+export const tarotName = (id: number, locale: string = "ko") => deckFor(locale)[id][1];
+/** 카드 그림 대체 글. */
+export const tarotAlt = (id: number, locale: string = "ko") => deckFor(locale)[id][2];
+
+export function tarotTitle(id: number, locale: string = "ko") {
+  const [num, name] = deckFor(locale)[id];
   return `${num} ${name}`.trim();
 }
 export const tarotFace = (id: number) => `/chemi/tarot/card-${String(id).padStart(2, "0")}.webp`;
