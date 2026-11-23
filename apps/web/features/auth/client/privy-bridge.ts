@@ -13,7 +13,7 @@ export interface PrivyLoginUser {
 /** The login page listens for the OAuth result, which can arrive on the return page before Privy reports `authenticated`. */
 export interface PrivyOAuthListener {
   onComplete(userId: string): void;
-  onError(): void;
+  onError(reason?: "cancelled" | "provider_error"): void;
 }
 
 export interface PrivyBridge {

@@ -30,7 +30,10 @@ function PrivyBridgeProvider({ children }: { children: ReactNode }) {
   const listeners = useRef(new Set<PrivyOAuthListener>());
   const { initOAuth, loading: oauthLoading } = useLoginWithOAuth({
     onComplete: ({ user }) => { for (const listener of [...listeners.current]) listener.onComplete(user.id); },
-    onError: () => { for (const listener of [...listeners.current]) listener.onError(); },
+    onError: (code) => {
+      const reason = code === "exited_auth_flow" || code === "oauth_user_denied" ? "cancelled" : "provider_error";
+      for (const listener of [...listeners.current]) listener.onError(reason);
+    },
   });
   const subscribeOAuth = useCallback((listener: PrivyOAuthListener) => {
     listeners.current.add(listener);
