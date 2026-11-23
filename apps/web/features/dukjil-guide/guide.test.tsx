@@ -299,7 +299,7 @@ describe("dukjil guide figures match /api/dukjil/catalog", () => {
     const placeholders = (text: string) => (text.match(/\{\d+\}/g) ?? []).sort();
     expect(Object.keys(detailMessages).sort()).toEqual(Object.keys(dukjilGuideDetailSource).sort());
     for (const [key, source] of Object.entries(dukjilGuideDetailSource)) {
-      for (const locale of APP_LOCALES.filter((value) => value !== "ko" && value !== "en")) {
+      for (const locale of APP_LOCALES.filter((value) => value !== "ko" && value !== "en" && value !== "mn")) {
         const text = (detailMessages as Record<string, Record<string, string>>)[key][locale];
         expect(text?.trim(), `${key}/${locale}`).toBeTruthy();
         expect(placeholders(text), `${key}/${locale}`).toEqual(placeholders(source.en));

@@ -70,9 +70,9 @@ describe("public search and sharing metadata", () => {
     expect(meta.openGraph).toMatchObject({ alternateLocale: [] });
   });
   it("provides localized primary-page titles and Open Graph locales for every app language", () => {
-    expect(Object.keys(pageCopy.home)).toEqual([...APP_LOCALES]);
-    expect(Object.keys(pageCopy.live)).toEqual([...APP_LOCALES]);
-    expect(Object.keys(pageCopy.celebrities)).toEqual([...APP_LOCALES]);
+    expect(Object.keys(pageCopy.home).sort()).toEqual([...APP_LOCALES].sort());
+    expect(Object.keys(pageCopy.live).sort()).toEqual([...APP_LOCALES].sort());
+    expect(Object.keys(pageCopy.celebrities).sort()).toEqual([...APP_LOCALES].sort());
     for (const locale of APP_LOCALES) {
       expect(pageCopy.home[locale].title).toBe("꺄(Kyaa). Every Fan Moment Counts.");
       expect(pageCopy.home[locale].description).toContain("꺄");
