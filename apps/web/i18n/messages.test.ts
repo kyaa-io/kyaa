@@ -40,6 +40,7 @@ import { adminReviewLabels } from "./catalogs/components__admin__review-navigati
 
 const fanWebCatalogs = new Set([
   "components__admin__review-navigation.ts",
+  "components__admin__operator-editor.ts",
   "components__custom-social-auth.ts",
   "components__editor.ts",
   "components__fan-ui__fan-ui-copy.ts",

@@ -1,6 +1,7 @@
 "use client";
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor } from "@tiptap/react";
+import { operatorEditor } from "@/i18n/catalogs/components__admin__operator-editor";
 import Image from "@tiptap/extension-image";
 import { Archive, Bold, ImagePlus, Italic, Link2, List, ListOrdered, Pin, Save, Underline as UnderlineIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -53,12 +54,14 @@ function normalize(row: any): Notice {
  * `errorMessages` maps the route's `error` code to the message shown to the admin.
  * `linkable` shows an optional linked fan page field filled from the list response's `linkTargets` and saves `linkedGroupPageId`.
  */
-export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities", endpoint, categories, categoryLabels, errorMessages, linkable = false }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string; endpoint?: string; categories?: readonly Category[]; categoryLabels?: Readonly<Record<Category, string>>; errorMessages?: Readonly<Record<string, string>>; linkable?: boolean }) {
+export function NoticeManager({ celebrityId, celebrityName, role, locale, isBrand = false, apiBase = "/api/admin/celebrities", endpoint, categories, categoryLabels, errorMessages, linkable = false, channelOperator = false }: { celebrityId: string; celebrityName: string; role: string; locale: AdminLocale; isBrand?: boolean; apiBase?: string; endpoint?: string; categories?: readonly Category[]; categoryLabels?: Readonly<Record<Category, string>>; errorMessages?: Readonly<Record<string, string>>; channelOperator?: boolean; linkable?: boolean }) {
   const { getAccessToken } = usePrivy();
   const operatorChannelId = apiBase.startsWith("/api/operator/") ? celebrityId : undefined;
   const noticesUrl = endpoint ?? `${apiBase}/${celebrityId}/notices`;
   const defaultCategory = categories?.[0];
   const canEdit = role !== "viewer";
+  const defaultPostType = channelOperator ? "artist_post" : "notice";
+  const copy = operatorEditor[locale];
   const [query, setQuery] = useState("");
   const [listState, setListState] = useState<"loading" | "ready" | "error">("loading");
   const [items, setItems] = useState<Notice[]>([]);
@@ -66,7 +69,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const [language, setLanguage] = useState<"ko" | "en">("ko");
   const [slug, setSlug] = useState("");
   const [pinned, setPinned] = useState(false);
-  const [postType, setPostType] = useState<Notice["postType"]>("notice");
+  const [postType, setPostType] = useState<Notice["postType"]>(defaultPostType);
   const [visibility, setVisibility] = useState<Notice["visibility"]>("public");
   const [category, setCategory] = useState<Category | undefined>(defaultCategory);
   const [linkTargets, setLinkTargets] = useState<{ id: string; name: string; slug: string }[]>([]);
@@ -92,9 +95,9 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       cache: "no-store",
     });
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error((typeof payload.error === "string" ? errorMessages?.[payload.error] : undefined) ?? payload.message ?? "Notice request failed");
+    if (!response.ok) throw new Error((typeof payload.error === "string" ? errorMessages?.[payload.error] : undefined) ?? (operatorChannelId ? copy.request : payload.message ?? "Notice request failed"));
     return payload;
-  }, [noticesUrl, getAccessToken, errorMessages]);
+  }, [noticesUrl, getAccessToken, errorMessages, operatorChannelId, copy]);
   const load = useCallback(async () => {
     setListState("loading");
     try {
@@ -141,7 +144,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   }, [bodies, editor, language]);
 
   const dirty = slug !== (current?.slug ?? "") || pinned !== (current?.pinned ?? false)
-    || postType !== (current?.postType ?? "notice") || visibility !== (current?.visibility ?? "public")
+    || postType !== (current?.postType ?? defaultPostType) || visibility !== (current?.visibility ?? "public")
     || (categories ? category !== (current?.category ?? defaultCategory) : false)
     || (linkable ? linkedPageId !== (current?.linkedGroupPageId ?? null) : false)
     || (["ko", "en"] as const).some(value => titles[value] !== (current?.localizations[value].title ?? "")
@@ -157,7 +160,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   }
   function reset() {
     if (!confirmDiscard()) return;
-    setSelectedId(null); setSlug(""); setPinned(false); setPostType("notice"); setVisibility("public"); setCategory(defaultCategory); setLinkedPageId(null); setTitles({ ko: "", en: "" });
+    setSelectedId(null); setSlug(""); setPinned(false); setPostType(defaultPostType); setVisibility("public"); setCategory(defaultCategory); setLinkedPageId(null); setTitles({ ko: "", en: "" });
     setBodies({ ko: emptyDocument, en: emptyDocument }); setMessage("");
   }
   function beginOperation(label: string) {
@@ -176,6 +179,11 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     if (!beginOperation(locale === "ko" ? "공지를 저장하는 중입니다." : "Saving Notice.")) return;
     let postSucceeded = false;
     try {
+      if (operatorChannelId) {
+        if (!titles.en.trim()) throw new Error(copy.title);
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error(copy.slug);
+        if (items.some(item => item.id !== current?.id && item.slug === slug)) throw new Error(copy.duplicate);
+      }
       const result = await request("POST", {
         action: "save", id: current?.id, expectedRevision: current?.revision, slug, pinned,
         ...(categories ? { category } : { postType, visibility: isBrand ? "public" : visibility }),
@@ -213,6 +221,8 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     if (!current) { setMessage(locale === "ko" ? "이미지를 추가하려면 공지를 먼저 저장하세요." : "Save the Notice before adding images."); return; }
     if (!beginOperation(locale === "ko" ? "이미지를 업로드하는 중입니다." : "Uploading image.")) return;
     try {
+      if (operatorChannelId && file.size > 8 * 1024 * 1024) throw new Error(copy.size);
+      if (operatorChannelId && !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error(copy.type);
       const alt = prompt(locale === "ko" ? "이미지 대체 텍스트를 입력하세요." : "Enter image alt text.");
       if (!alt?.trim()) throw new Error(locale === "ko" ? "이미지 대체 텍스트가 필요합니다." : "Image alt text is required.");
       const token = await getAccessToken();
@@ -221,8 +231,8 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       const response = await fetch(`${noticesUrl}/${current.id}/assets`, {
         method: "POST", headers: { Authorization: `Bearer ${token}`, "x-correlation-id": crypto.randomUUID() }, body: data,
       });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.message ?? "Upload failed");
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(operatorChannelId ? (response.status === 413 ? copy.size : copy.upload) : payload.message ?? "Upload failed");
       editor?.chain().focus().setImage({ src: payload.url, alt: alt.trim() }).run();
       setMessageIsError(false); setMessage(locale === "ko" ? "이미지를 추가했습니다." : "Image added.");
     } catch (error) { setMessageIsError(true); setMessage(error instanceof Error ? error.message : "Upload failed"); }
@@ -260,7 +270,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
   const toolbarDisabled = interactionLocked || !editor?.isEditable;
 
   return <section className={styles.manager} aria-labelledby="notice-manager-title">
-    <header><div><p>{locale === "ko" ? "홈 공지" : "Notice management"}</p><h2 id="notice-manager-title">{celebrityName} {locale === "ko" ? "공지" : "Notices"}</h2></div>{canEdit && <button type="button" disabled={interactionLocked} onClick={reset}>{locale === "ko" ? "새 공지" : "New Notice"}</button>}</header>
+    <header><div>{!operatorChannelId && <p>{locale === "ko" ? "홈 공지" : "Notice management"}</p>}<h2 id="notice-manager-title">{celebrityName} {locale === "ko" ? "공지" : "Notices"}</h2></div>{canEdit && <button type="button" disabled={interactionLocked} onClick={reset}>{locale === "ko" ? "새 공지" : "New Notice"}</button>}</header>
     <div className={styles.layout}>
       <div className={styles.list}><AdminListSearch value={query} onChange={setQuery} locale={locale} disabled={interactionLocked} />
         {listState === "loading" && !pending && <p role="status">{locale === "ko" ? "공지를 불러오는 중입니다." : "Loading notices."}</p>}
