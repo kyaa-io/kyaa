@@ -72,6 +72,7 @@ type Thread = {
   followupQuestion: string | null;
   followupAnswer: string | null;
   date: string;
+  createdAt?: string;
 };
 type AskState = {
   left: number;
@@ -332,6 +333,44 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   const empty = state?.left === 0 && !extra;
   const today = kstToday();
   const todays = state?.threads.filter((item) => item.date === today) ?? [];
+  const historyDate = (item: Thread) => {
+    const timestamp = item.createdAt ? new Date(item.createdAt) : null;
+    if (timestamp && Number.isFinite(timestamp.getTime())) {
+      const time = new Intl.DateTimeFormat(locale, {
+        timeZone: "Asia/Seoul", hour: "numeric", minute: "2-digit",
+      }).format(timestamp);
+      return item.date === today ? time : `${shortDate(item.date)} · ${time}`;
+    }
+    const matches = state?.threads.filter((thread) => thread.date === item.date && thread.question === item.question) ?? [];
+    const order = matches.length - matches.findIndex((thread) => thread.threadId === item.threadId);
+    return matches.length > 1 ? `${shortDate(item.date)} · #${order}` : shortDate(item.date);
+  };
+  const historyRow = (item: Thread, placement: "today" | "side" | "sheet") => {
+    const current = placement === "side" && item.threadId === shown?.threadId;
+    const preview = item.answer?.trim().split(/\r?\n/, 1)[0]?.match(/^.*?(?:[!?。！？]+|\.(?!\d)|$)/u)?.[0];
+    return (
+      <li key={item.threadId} data-row="" data-current={current ? "" : undefined}>
+        <FanAction variant="text" className={styles.rowLink} aria-current={current ? "true" : undefined} onClick={() => open(item)}>
+          <span className={`${styles.rowGrid} ${styles.histRow}`}>
+            <img className={placement === "sheet" ? styles.face : styles.faceSmall}
+              src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
+            <span className={styles.histText}>
+              <FanText role="item" className={styles.clip}>{item.question}</FanText>
+              <FanText role="meta" className={styles.clip}>{preview}</FanText>
+              {placement !== "today" ? (
+                <FanText role="meta">
+                  {historyDate(item)}
+                  {placement === "side" ? ` · ${creatorName(item.character, locale)}` : item.topic ? ` · ${text(topicKey[item.topic])}` : ""}
+                  {item.followupAnswer ? "" : ` · ${text("askFollow")} ${text("askFollowOnce")}`}
+                </FanText>
+              ) : null}
+            </span>
+            {placement !== "side" ? <FanIcon icon={ChevronRight} size={16} /> : null}
+          </span>
+        </FanAction>
+      </li>
+    );
+  };
   // 이 최애와 이야기한 날 수(오늘 포함). 서버가 최근 30개만 주므로 30개가 찼으면 세지 않는다.
   const days = state && state.threads.length < 30
     ? new Set([...state.threads.filter((item) => item.character === character).map((item) => item.date), today]).size
@@ -739,18 +778,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
             <div className={styles.todays}>
               <FanText as="p" role="label">{text("askToday")}</FanText>
               <ul className={styles.list}>
-                {todays.map((item) => (
-                  <li key={item.threadId} data-row="">
-                    <FanAction variant="text" className={styles.rowLink} onClick={() => open(item)}>
-                      <span className={styles.rowGrid}>
-                        <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
-                        <FanText role="body" className={styles.clip}>{item.question}</FanText>
-                        <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
-                        <FanIcon icon={ChevronRight} size={16} />
-                      </span>
-                    </FanAction>
-                  </li>
-                ))}
+                {todays.map((item) => historyRow(item, "today"))}
               </ul>
             </div>
           ) : null}
@@ -873,11 +901,6 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
     : shown?.status !== "answered" || shown.klass ? expressionFor.wait
     : reacting && picked ? askReactionExpression[picked]
     : expressionFor.answer;
-  const historyDate = (item: Thread) => {
-    const matches = state?.threads.filter((thread) => thread.date === item.date && thread.question === item.question) ?? [];
-    const order = matches.length - matches.findIndex((thread) => thread.threadId === item.threadId);
-    return matches.length > 1 ? `${shortDate(item.date)} · #${order}` : shortDate(item.date);
-  };
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
     <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-crisis={crisis ? "" : undefined} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
@@ -910,23 +933,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
           <FanText as="p" role="label">{text("askHistory")}</FanText>
           {state.threads.length ? (
             <ul className={styles.list}>
-              {state.threads.map((item) => (
-                <li key={item.threadId} data-row="" data-current={item.threadId === shown?.threadId ? "" : undefined}>
-                  <FanAction variant="text" className={styles.rowLink} aria-current={item.threadId === shown?.threadId ? "true" : undefined} onClick={() => open(item)}>
-                    <span className={`${styles.rowGrid} ${styles.histRow}`}>
-                      <img className={styles.faceSmall} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
-                      <span className={styles.histText}>
-                        <FanText role="body" className={styles.clip}>{item.question}</FanText>
-                        <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
-                        <FanText role="meta">
-                          {historyDate(item)} · {creatorName(item.character, locale)}
-                          {item.followupAnswer ? "" : ` · ${text("askFollow")} ${text("askFollowOnce")}`}
-                        </FanText>
-                      </span>
-                    </span>
-                  </FanAction>
-                </li>
-              ))}
+              {state.threads.map((item) => historyRow(item, "side"))}
             </ul>
           ) : (
             <FanText as="p" role="meta">{text("askHistoryEmpty")}</FanText>
@@ -963,25 +970,7 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
       >
         {state?.threads.length ? (
           <ul className={styles.list}>
-            {state.threads.map((item) => (
-              <li key={item.threadId} data-row="">
-                <FanAction variant="text" className={styles.rowLink} onClick={() => open(item)}>
-                  <span className={`${styles.rowGrid} ${styles.histRow}`}>
-                    <img className={styles.face} src={askArt(item.content, item.character).face} alt={creatorName(item.character, locale)} />
-                    <span className={styles.histText}>
-                      <FanText role="item" className={styles.clip}>{item.question}</FanText>
-                      <FanText role="meta" className={styles.clip}>{item.answer?.trim().split("\n")[0]}</FanText>
-                      <FanText role="meta">
-                        {historyDate(item)}
-                        {item.topic ? ` · ${text(topicKey[item.topic])}` : ""}
-                        {item.followupAnswer ? "" : ` · ${text("askFollow")} ${text("askFollowOnce")}`}
-                      </FanText>
-                    </span>
-                    <FanIcon icon={ChevronRight} size={16} />
-                  </span>
-                </FanAction>
-              </li>
-            ))}
+            {state.threads.map((item) => historyRow(item, "sheet"))}
           </ul>
         ) : (
           <div className={styles.empty}>

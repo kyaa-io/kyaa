@@ -91,6 +91,18 @@ describe("최애 설정", () => {
 });
 
 describe("답 검사", () => {
+  it("normalizes spacing before returning an accepted model reply", async () => {
+    model("연애 운이 55점이야. 마음에 조금 여유를 가져봐.");
+    expect(await aiAnswer(love, rpc, "user")).toBe("연애 운이 55점이야. 마음에 조금 여유를 가져 봐.");
+  });
+
+  it("requires a practical criterion in the advice for an amount question", () => {
+    const input = { ...love, question: "선물은 얼마로 잡을까?" };
+    expect(askAnswerFault("연애 운이 55점이야. 떨리면 나를 생각해.", input)).toBe("concrete");
+    expect(askAnswerFault("연애 운이 55점이야. 생활비를 빼고 남은 예산 안에서 골라 봐.", input)).toBeNull();
+    expect(askAnswerFault("연애 운이 55점이야. 선물에 99원을 쓰면 좋아.", input)).toBe("grounding");
+  });
+
   it("풀이 값 안에서 말투를 지킨 2~4문장은 통과한다", () => {
     expect(askAnswerFault(good, love)).toBeNull();
     expect(askAnswerFault("연애 운이 55점이에요. 오늘은 답을 재촉하지 않는 게 좋아요.", { ...love, character: "elina" })).toBeNull();

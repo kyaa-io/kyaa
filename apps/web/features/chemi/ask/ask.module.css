@@ -692,6 +692,9 @@
   }
 }
 @media (width >= 80rem) {
+  .root:has(.asked) .todays {
+    display: none;
+  }
   .asked {
     position: absolute;
     bottom: var(--space-8);

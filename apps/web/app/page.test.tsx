@@ -163,9 +163,10 @@ describe("Home server content isolation", () => {
 
   it("retains independent banners if the creator lookup fails", async () => {
     repositories.findBySlug.mockRejectedValue(new Error("creator unavailable"));
-    repositories.homeBanners.mockResolvedValue([{ id: "independent" }]);
+    const banner = { id: "independent", href: "/events" };
+    repositories.homeBanners.mockResolvedValue([banner]);
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(await props(result).queries.homeBanners).toEqual({ status: "fulfilled", value: [{ id: "independent" }] });
+    expect(await props(result).queries.homeBanners).toEqual({ status: "fulfilled", value: [banner] });
     expect(await props(result).queries.celebrities).toEqual({ status: "rejected" });
   });
 

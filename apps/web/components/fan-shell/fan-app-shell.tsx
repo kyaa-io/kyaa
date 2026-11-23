@@ -98,6 +98,14 @@ export function fanNavigationItems(
   return [...items.slice(0, at), chemi, ...items.slice(at)];
 }
 
+const desktopMenuLabels: Readonly<Record<FanSection, string>> = {
+  home: "HOME",
+  community: "Groups",
+  chemi: "Chemi",
+  favorites: "Stan",
+  my: "MY",
+};
+
 function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled: boolean): readonly FanNavigationItem[] {
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
@@ -213,7 +221,7 @@ export function FanAppHeader({
         ariaLabel={locale === "ko" ? "주요 메뉴" : translate(locale, localizedMessages.m5cfebe367665, "Primary navigation")}
         className={styles.desktopNav}
         itemClassName={styles.desktopNavItem}
-        items={items}
+        items={items.map((item) => ({ ...item, label: desktopMenuLabels[item.id as FanSection] }))}
       />
       <div className={styles.actions}>
         {groupsEnabled?<GroupHeaderActions locale={locale} languageHref={languageHref} notificationsLabel={notificationsLabel} actions={actions} actionsAreIdentity={actionsAreIdentity}/>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
