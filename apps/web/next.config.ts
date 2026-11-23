@@ -24,8 +24,10 @@ const nextConfig: NextConfig = {
   typedRoutes: true,
   serverExternalPackages: ["ffmpeg-static", "ffprobe-static"],
   // Sharp 0.35 moved its entry point; Next 16's native dependency tracing
-  // misses libvips. Include the installed runtime assets for avatar routes.
+  // misses libvips. Include the installed runtime assets for avatar routes
+  // and the link-preview cards that convert WebP creator photos.
   outputFileTracingIncludes: {
+    "/share/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/content-assets/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/avatar": ["../../node_modules/@img/sharp-libvips-*/**/*"],
     "/api/me/avatar/**": ["../../node_modules/@img/sharp-libvips-*/**/*"],

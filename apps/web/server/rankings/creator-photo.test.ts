@@ -1,3 +1,4 @@
+import sharp from "sharp";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -44,13 +45,50 @@ describe("creatorPhotoDataUri remote photo", () => {
     await expect(creatorPhotoDataUri(OK)).resolves.toBeNull();
   });
 
-  it("rejects a body that is over the limit even without Content-Length", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => png(new Uint8Array(5 * 1024 * 1024 + 1))));
+  it.each(["image/png", "image/webp"])("rejects a %s body that is over the limit even without Content-Length", async (type) => {
+    vi.stubGlobal("fetch", vi.fn(async () => png(new Uint8Array(5 * 1024 * 1024 + 1), { "content-type": type })));
     await expect(creatorPhotoDataUri(OK)).resolves.toBeNull();
   });
 
-  it("rejects a non-image type", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => png(new Uint8Array(4), { "content-type": "text/html" })));
+  it.each(["text/html", "image/svg+xml"])("rejects a %s type, even with WebP bytes", async (type) => {
+    const webp = await sharp({ create: { width: 8, height: 8, channels: 3, background: "#ee3366" } }).webp().toBuffer();
+    vi.stubGlobal("fetch", vi.fn(async () => png(new Uint8Array(webp), { "content-type": type })));
     await expect(creatorPhotoDataUri(OK)).resolves.toBeNull();
+  });
+});
+
+/** The data URI's own bytes, read back by sharp. */
+async function drawn(uri: string | null) {
+  expect(uri).toMatch(/^data:image\/png;base64,/);
+  return sharp(Buffer.from(uri!.slice(uri!.indexOf(",") + 1), "base64")).metadata();
+}
+
+describe("creatorPhotoDataUri WebP and AVIF, which Satori cannot draw", () => {
+  const photo = (width: number, height: number) => sharp({ create: { width, height, channels: 3, background: "#ee3366" } });
+
+  it.each([
+    ["image/webp", () => photo(1200, 1480).webp().toBuffer()],
+    ["image/avif", () => photo(1200, 1480).avif().toBuffer()],
+  ])("converts a %s response to a PNG at most 840 px wide", async (type, encode) => {
+    const bytes = await encode();
+    vi.stubGlobal("fetch", vi.fn(async () => png(new Uint8Array(bytes), { "content-type": `${type}; charset=binary` })));
+    const meta = await drawn(await creatorPhotoDataUri(OK));
+    expect(meta).toMatchObject({ format: "png", width: 840, height: 1036 });
+  });
+
+  it("keeps a small WebP at its own size", async () => {
+    const bytes = await photo(300, 400).webp().toBuffer();
+    vi.stubGlobal("fetch", vi.fn(async () => png(new Uint8Array(bytes), { "content-type": "image/webp" })));
+    expect(await drawn(await creatorPhotoDataUri(OK))).toMatchObject({ format: "png", width: 300, height: 400 });
+  });
+
+  it("returns null when the WebP bytes cannot be read", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => png(new Uint8Array([1, 2, 3, 4]), { "content-type": "image/webp" })));
+    await expect(creatorPhotoDataUri(OK)).resolves.toBeNull();
+  });
+
+  it("converts a WebP under public/", async () => {
+    const meta = await drawn(await creatorPhotoDataUri("/chemi/my-fortune-512.webp"));
+    expect(meta).toMatchObject({ format: "png", width: 512 });
   });
 });
