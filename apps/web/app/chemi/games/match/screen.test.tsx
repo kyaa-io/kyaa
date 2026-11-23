@@ -168,11 +168,10 @@ it("waits for explicit 20P confirmation after the free games run out", async () 
   const choice = screen.getByRole("button", { name: copy.changha });
   await waitFor(() => expect(choice).toBeEnabled());
   fireEvent.click(choice);
-  fireEvent.click(screen.getByRole("button", {name: copy.start}));
+  const extra = await screen.findByRole("button", { name: "20P로 한 판" });
   expect(requests.filter((r) => r.action === "start")).toHaveLength(0);
-  const extra = await screen.findByRole("button", { name: "20P로 한 판 더" });
-  expect(screen.getByText("2번")).toBeInTheDocument();
   fireEvent.click(extra);
+  expect(await screen.findByText("2번")).toBeInTheDocument();
   expect(requests.some(r => r.action === "start")).toBe(false);
   fireEvent.click(await screen.findByRole("button", { name: "20P 쓰고 시작" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(copy.insufficient);

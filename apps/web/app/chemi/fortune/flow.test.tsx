@@ -370,7 +370,7 @@ it("does not turn a new calculation for another character into the earlier resul
   // 다른 최애로 바꿔 새 계산을 시작한다. 응답은 아직 오지 않았다.
   window.history.replaceState(null, "", "/chemi/fortune?c=changha");
   window.dispatchEvent(new PopStateEvent("popstate"));
-  fireEvent.click((await screen.findAllByRole("button", { name: "다음 최애" }))[0]);
+  fireEvent.click(await screen.findByRole("button", { name: "엘리나" }));
   const other = new URLSearchParams(window.location.search).get("c");
   expect(other).not.toBe("changha");
   fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
