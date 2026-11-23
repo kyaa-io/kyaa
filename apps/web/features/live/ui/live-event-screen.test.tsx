@@ -486,11 +486,11 @@ describe("LiveEventScreen", () => {
     await screen.findByRole("heading", { name: "KARA × NUALEAF LIVE" });
     const primary = screen.getByRole("navigation", { name: "주요 메뉴" });
     const bottom = screen.getByRole("navigation", { name: "모바일 주요 메뉴" });
-    expect(within(primary).getByRole("link", { name: "최애" })).toHaveAttribute(
+    expect(within(primary).getByRole("link", { name: "Stan" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    expect(within(primary).getByRole("link", { name: "최애" })).toHaveAttribute(
+    expect(within(primary).getByRole("link", { name: "Stan" })).toHaveAttribute(
       "href",
       "/celebrities?locale=ko",
     );

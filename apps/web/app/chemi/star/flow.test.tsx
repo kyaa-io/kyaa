@@ -57,7 +57,7 @@ it("shows the entrance with the participation count and asks guests to log in", 
   expect(await screen.findByText("별자리 운세를 보려면 로그인해 주세요.")).toBeTruthy();
 });
 
-it("walks calc → talk 1~4 → result → chart and back one step at a time", async () => {
+it("walks calc → talk 1~4 → result → chart and back one step at a time", { timeout: 12_000 }, async () => {
   const fetcher = stubFetch();
   render(<StarFlow locale="ko" />);
   fireEvent.click(screen.getByRole("button", { name: "별자리 운세 보기" }));

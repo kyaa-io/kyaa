@@ -1,3 +1,4 @@
+import { APP_LOCALES } from "@/i18n/locales";
 import styles from "./fan-app-shell.module.css";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { ChemiReleaseProvider } from "@/features/chemi/ui/chemi-release";
@@ -96,6 +97,19 @@ describe("fan app shell navigation", () => {
     expect(ids).toEqual(["home", "community", "chemi", "favorites", "my", "home", "community", "chemi", "favorites", "my"]);
   });
 
+  it.each(APP_LOCALES)("uses fixed English desktop menu labels for %s", (locale) => {
+    render(
+      <GroupsReleaseProvider enabled>
+        <ChemiReleaseProvider enabled>
+          <FanAppFrame locale={locale}><main /></FanAppFrame>
+        </ChemiReleaseProvider>
+      </GroupsReleaseProvider>,
+    );
+    const menu = within(screen.getByRole("banner")).getByRole("navigation");
+    expect(within(menu).getAllByRole("link").map((link) => link.textContent))
+      .toEqual(["HOME", "Groups", "Chemi", "Stan", "MY"]);
+  });
+
   it("derives the active destination from the current route on the first render", () => {
     pathname = "/live/kara-byus-live";
     search = "locale=ko";
@@ -107,7 +121,7 @@ describe("fan app shell navigation", () => {
     );
 
     const currentLinks = screen
-      .getAllByRole("link", { name: "최애" })
+      .getAllByRole("link", { name: /^(Stan|최애)$/ })
       .filter((link) => link.hasAttribute("aria-current"));
     expect(currentLinks).toHaveLength(2);
     for (const current of currentLinks) {
@@ -214,7 +228,7 @@ describe("fan app shell navigation", () => {
  it("switches existing pages and their footer together only under the server release gate", () => {
    pathname = "/community";
    render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
-   const groupLinks=screen.getAllByRole("link",{name:"모임"});
+   const groupLinks=screen.getAllByRole("link",{name:/^(Groups|모임)$/});
    expect(groupLinks.length).toBeGreaterThanOrEqual(3);
    for(const link of groupLinks)expect(link).toHaveAttribute("href","/pages/groups?locale=ko");
    for(const link of screen.getAllByRole("link",{name:"덕질"}))expect(link).toHaveAttribute("href","/benefits?locale=ko");
