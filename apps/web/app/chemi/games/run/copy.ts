@@ -1,4 +1,5 @@
 import type { AppLocale } from "@/i18n/locales";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 const keys = [
   "title", "back", "sound", "pause", "changha", "elina", "yuna", "map",
@@ -125,7 +126,9 @@ const table: Record<AppLocale, readonly string[]> = {
 };
 
 export function getRunCopy(locale: AppLocale, cost?: number): RunCopy {
-  return Object.fromEntries(keys.map((key, i) => [key, table[locale][i]!.replace("{cost}", cost?.toLocaleString(locale) ?? "—")])) as RunCopy;
+  const copy = Object.fromEntries(keys.map((key, i) => [key, table[locale][i]!.replace("{cost}", cost?.toLocaleString(locale) ?? "—")])) as RunCopy;
+  // 최애 이름은 사이트 공통 표기(creatorName) 하나만 쓴다.
+  return { ...copy, changha: creatorName("changha", locale), elina: creatorName("elina", locale), yuna: creatorName("yuna", locale) };
 }
 
 export function fill(text: string, values: Record<string, string | number>) {

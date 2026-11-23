@@ -291,7 +291,7 @@ export function TarotScreen({
       </div>
     );
 
-  const person = tarotCharacter(character);
+  const person = tarotCharacter(character, locale);
   const result = step === "result" && shown;
   if (result && ask && member && shown.readingId)
     return <AskScene locale={locale} content="tarot" character={character} readingId={shown.readingId} at={ask} />;
@@ -302,7 +302,7 @@ export function TarotScreen({
           <FanIcon icon={ChevronLeft} size={16} />
         </FanIconButton>
         {step === "enter" ? (
-          <Pickband character={character} onSelect={selectCharacter} />
+          <Pickband locale={locale} character={character} onSelect={selectCharacter} />
         ) : (
           <span className={styles.who}>
             <FanText role="label">{person.name}</FanText>

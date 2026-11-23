@@ -34,6 +34,7 @@ import { sajuBasis, sajuDomains } from "./depth";
 import { sajuCharacters, sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 
 /** 타고난 기운 줄 앞의 오행 그림. */
 const elementIcon: Record<Element, typeof Sprout> = {
@@ -104,7 +105,7 @@ export function SajuResult({
 }) {
   const uiText = useReadingCopy();
   const [shareOpen, setShareOpen] = useState(false);
-  const name = sajuCharacters.find((item) => item.id === character)!.name;
+  const name = creatorName(character, locale);
   const locked = chart.locked.length > 0;
   const first = firstReading(chart, at);
   const year = yearReading(chart, at);

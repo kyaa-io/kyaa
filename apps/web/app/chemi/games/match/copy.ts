@@ -1,3 +1,4 @@
+import { creatorName } from "@/features/fanpage/domain/creator-names";
 import { parseAppLocale, type AppLocale } from "@/i18n/locales";
 
 const copy = {
@@ -930,5 +931,7 @@ const copy = {
 export type MatchCopy = typeof copy.ko;
 
 export function getMatchCopy(locale: string): MatchCopy {
-  return copy[parseAppLocale(locale)];
+  const appLocale = parseAppLocale(locale);
+  // 최애 이름은 사이트 공통 표기(creatorName) 하나만 쓴다.
+  return { ...copy[appLocale], changha: creatorName("changha", appLocale), elina: creatorName("elina", appLocale), yuna: creatorName("yuna", appLocale) };
 }

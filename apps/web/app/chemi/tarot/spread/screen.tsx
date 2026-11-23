@@ -47,7 +47,7 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
   const [controlsHost, setControlsHost] = useState<HTMLElement | null>(null);
   const [reduced, setReduced] = useState(false);
   const ask = useDeepResultAsk(locale, "tarot", character);
-  const person = tarotCharacter(character);
+  const person = tarotCharacter(character, locale);
   const voice = voiceKey[person.voice];
   const home = `/chemi/tarot?locale=${locale}&c=${character}`;
 
@@ -217,7 +217,7 @@ function SpreadResult({
   home: string;
 }) {
   const text = useReadingCopy();
-  const person = tarotCharacter(character);
+  const person = tarotCharacter(character, locale);
   const meanings = [useTarotMeaning(saved.cards[0].card), useTarotMeaning(saved.cards[1].card), useTarotMeaning(saved.cards[2].card)];
   const failed = meanings.some((meaning) => meaning.status === "error");
   const sides = saved.cards.map((card, index) => meanings[index].card?.dir[card.reversed ? "down" : "up"]);

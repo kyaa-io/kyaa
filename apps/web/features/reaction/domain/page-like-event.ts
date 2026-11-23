@@ -1,3 +1,5 @@
+import { creatorName } from "@/features/fanpage/domain/creator-names";
+import { parseAppLocale } from "@/i18n/locales";
 /**
  * 팬페이지 좋아요 이벤트 창. 엘리나·창하·유나는 각자 시작일 00:00(KST)부터 2026-11-24 00:00(11/23 끝)까지 계속 열려 있고(11/19 14:1x 계획 변경: 하루로 닫지 않는다), 창하 미공개 사진 창(11/22~23)은 따로 둔다. `to`는 다음 00:00(미포함).
  * 관리자 참여자 집계(`features/admin/event-participants.ts`)와 팬페이지의 이벤트 좋아요 카드가 이 한 정의를 같이 읽는다.
@@ -16,12 +18,8 @@ export const passportIssuedEventWindows = {
 
 export type PageLikeEventWindow = (typeof pageLikeEventWindows)[keyof typeof pageLikeEventWindows];
 
-/** 이벤트 이름: 배너 제목과 같은 `이름 × Kyaa`. 한국어 말고는 영문 이름을 쓴다. */
-const eventNames: Readonly<Record<string, { ko: string; en: string }>> = {
-  elina: { ko: "엘리나", en: "Elina" },
-  changha: { ko: "창하", en: "Changha" },
-  yuna: { ko: "유나", en: "Yuna" },
-};
+/** 이벤트 이름: 배너 제목과 같은 `이름 × Kyaa`. 이름은 사이트 공통 표기(creatorName). */
+const eventSlugs: readonly string[] = ["elina", "changha", "yuna"];
 
 /** 지금(`now`) 이 크리에이터의 좋아요 이벤트 창이 열려 있으면 그 창, 아니면 undefined. */
 export function openPageLikeEvent(slug: string, now: Date | number): PageLikeEventWindow | undefined {
@@ -30,6 +28,5 @@ export function openPageLikeEvent(slug: string, now: Date | number): PageLikeEve
 }
 
 export function pageLikeEventTitle(slug: string, locale: string): string | undefined {
-  const name = eventNames[slug];
-  return name ? `${locale === "ko" ? name.ko : name.en} × Kyaa` : undefined;
+  return eventSlugs.includes(slug) ? `${creatorName(slug, parseAppLocale(locale))} × Kyaa` : undefined;
 }
