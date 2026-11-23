@@ -15,5 +15,6 @@ export function firstStepsHomeBanner(locale: AppLocale): HomeBanner {
     desktopImage: { id: "5c0f2b8e-7d1a-4f3e-9b6c-2a4d8e1f0c37", url: "/images/onboarding/first-steps-wide.webp", width: 1774, height: 887, mimeType: "image/webp", revision: 2 },
     // 390 전용 정사각 크롭(같은 원본 1:1, 여권·도장 중심). 2:1을 cover로 자르면 절반만 쓰여 확대·흐림이 생긴다(GPT 2차 Top3).
     mobileImage: { id: "9e3d7a41-2b6c-4f58-8a1d-6c0e5b2f7d93", url: "/images/onboarding/first-steps-mobile.webp", width: 887, height: 887, mimeType: "image/webp", revision: 2 },
+    video: { desktop: "/public-assets/cms-assets/home-banners/video/first-steps-wide-loop-v1", mobile: "/public-assets/cms-assets/home-banners/video/first-steps-mobile-loop-v1" },
   };
 }

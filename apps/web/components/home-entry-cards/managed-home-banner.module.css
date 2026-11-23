@@ -4,41 +4,47 @@
  */
 .root { width:100%; height:100%; }
 .artwork, .unavailable { display:block; width:100%; height:100%; background:var(--color-soft); }
-.artwork img { display:block; width:100%; height:100%; object-fit:cover; object-position:50% 35%; }
+.artwork img { display:block; width:100%; height:100%; }
+:is(.artwork img, .motion video) { object-fit:cover; object-position:50% 35%; }
+.motion { position:absolute; inset:0; }
+@media (width < 48rem) { .motion[data-banner-video="desktop"] { display:none; } }
+@media (width >= 48rem) { .motion[data-banner-video="mobile"] { display:none; } }
+/* 흐린 뒷배경은 정지 그림만 쓴다. 숨긴 층의 영상은 화면에 들어오지 않아 내려받지 않는다. */
+[data-hero-backdrop] .motion { display:none; }
 
 /* 위나 환영(정사각 원본): 얼굴 네 명이 위쪽 15~40%에 있다. 모바일 4:3 원본은 가로 74%만 남아도 네 얼굴이 들어간다. */
-.root[data-creator-welcome="true"] .artwork img { object-position:50% 10%; }
+.root[data-creator-welcome="true"] :is(.artwork img, .motion video) { object-position:50% 10%; }
 @media (max-width:767px) {
-  .root[data-creator-welcome="true"] .artwork img { object-position:53% 25%; }
+  .root[data-creator-welcome="true"] :is(.artwork img, .motion video) { object-position:53% 25%; }
 }
 
 /* GGGI 캠페인(가로 3:2 원본, 인물은 오른쪽): 얼굴이 가운데보다 오른쪽 위에 있어 오른쪽을 기준으로 맞춘다. */
 .root[data-gggi-campaign] .artwork { background:transparent; }
-.root[data-gggi-campaign] .artwork img { object-position:75% 30%; }
+.root[data-gggi-campaign] :is(.artwork img, .motion video) { object-position:75% 30%; }
 
 /* 안내 그림은 내장 글자를 보존한다. 모바일 대체 원본도 전체를 표시한다. */
 .root[data-guide-art] .artwork { background:transparent; }
-.root[data-guide-art] .artwork img { object-fit:contain; object-position:center; }
+.root[data-guide-art] :is(.artwork img, .motion video) { object-fit:contain; object-position:center; }
 
 @media (max-width: 767px) {
-  .root .artwork img { object-fit: contain; object-position: center; }
+  .root :is(.artwork img, .motion video) { object-fit: contain; object-position: center; }
 }
 
-.root[data-missionbook] .artwork img { object-fit: cover; object-position: center 45%; }
+.root[data-missionbook] :is(.artwork img, .motion video) { object-fit: cover; object-position: center 45%; }
 
 /* 첫 걸음(종이 위 여권 사진, 글자 없음): 그림 칸 전체를 채워 따로 떠 있는 사진 상자와 흐린 띠를 없앤다. 모바일은 정사각 전용 크롭을 그대로 채우고,
  * 글자 받침 그늘은 검정 대신 사진의 여권 색(강조 잉크)을 섞은 짙은 와인색으로 둔다 — 홈 배너와 온보딩 그림이 같은 종이 무드로 읽히게(GPT 2차 Top3). */
 @media (width < 48rem) {
-  .root[data-first-steps] .artwork img { object-fit:cover; object-position:50% 50%; }
+  .root[data-first-steps] :is(.artwork img, .motion video) { object-fit:cover; object-position:50% 50%; }
   .root[data-first-steps] { --color-home-hero-shade:var(--color-first-steps-shade); }
 }
 @media (width >= 48rem) {
   .root[data-first-steps] [data-hero-full-image] { top:0; bottom:0; aspect-ratio:auto; transform:none; }
-  .root[data-first-steps] .artwork img { object-fit:cover; object-position:62% 50%; }
+  .root[data-first-steps] :is(.artwork img, .motion video) { object-fit:cover; object-position:62% 50%; }
 }
 
 /* 선택한 티켓 포켓의 중앙 카드와 로고를 문구 위에 온전히 남긴다. */
-.root[data-signup-raffle] .artwork img { object-fit:contain; object-position:50% 50%; }
+.root[data-signup-raffle] :is(.artwork img, .motion video) { object-fit:contain; object-position:50% 50%; }
 @media (width < 48rem) {
   .root[data-signup-raffle] [data-hero-full-image] { bottom:34%; }
 }

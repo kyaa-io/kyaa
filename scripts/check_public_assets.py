@@ -28,7 +28,8 @@ def collect(paths):
             key = unquote(re.split(r"[?#]", match["url"], 1)[0][1:])
             if key.endswith("/") or any(x in key for x in ("${", "*")):
                 continue
-            if re.search(r"<SceneVideo\s+src=$", source[:match.start()]):
+            # SceneVideo takes an extensionless MP4/WebM pair, inline or stored in data (home banner loops).
+            if re.search(r"<SceneVideo\s+src=$", source[:match.start()]) or not Path(key).suffix:
                 keys.update(key + ext for ext in (".webm", ".mp4"))
             else:
                 keys.add(key)

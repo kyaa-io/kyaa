@@ -20,6 +20,7 @@ import { EventDayEyebrow } from "../../features/home/ui/event-day-eyebrow";
 import motionStyles from "../fan-ui/event-blink.module.css";
 import { liveEventLabel } from "../../features/home/domain/event-day";
 import { HomeHeroBanner } from "./home-hero-banner";
+import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { bypassImageOptimization, homeHeroCampaignSizes, homeHeroSizes } from "../fan-ui/public-image-policy";
 import styles from "./managed-home-banner.module.css";
 import carouselStyles from "../guest-home.module.css";
@@ -43,13 +44,18 @@ function BannerArtwork({ banner, priority, creatorWelcome, campaign }: { banner:
     preload(desktopProps.src, { as: "image", fetchPriority: "high", imageSrcSet: desktopProps.srcSet, imageSizes: desktopProps.sizes, ...(banner.mobileImage ? { media: desktopMedia } : {}) });
     if (banner.mobileImage) preload(mobileProps.src, { as: "image", fetchPriority: "high", imageSrcSet: mobileProps.srcSet, imageSizes: mobileProps.sizes, media: creatorWelcome ? "(max-width: 767px), (min-width: 1024px) and (max-width: 1199px)" : "(max-width: 767px)" });
   }
-  return failed ? <div className={styles.unavailable} data-banner-image-unavailable /> : (
+  if (failed) return <div className={styles.unavailable} data-banner-image-unavailable />;
+  const { video } = banner;
+  return <>
     <picture className={styles.artwork} data-mobile-fallback={!banner.mobileImage}>
       <source media={desktopMedia} srcSet={desktopProps.srcSet ?? desktopProps.src} sizes={desktopProps.sizes} />
       {/* getImageProps supplies Next's optimized image sources for the responsive picture. */}
       <img {...mobileProps} alt={banner.alt} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : "auto"} onError={() => setFailed(true)} />
     </picture>
-  );
+    {/* The picture stays underneath as the poster; each loop loads only at the width that shows it (hidden layers never intersect). */}
+    {video && <span className={styles.motion} data-banner-video={video.mobile ? "desktop" : "all"}><SceneVideo src={video.desktop} /></span>}
+    {video?.mobile && <span className={styles.motion} data-banner-video="mobile"><SceneVideo src={video.mobile} /></span>}
+  </>;
 }
 
 export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent = false }: { banner: HomeBanner; locale: AppLocale; priority?: boolean; liveEvent?: boolean }) {

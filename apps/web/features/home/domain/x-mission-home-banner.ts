@@ -11,5 +11,6 @@ export function xMissionHomeBanner(locale: AppLocale): HomeBanner {
     alt: ko ? "좋아요 하트와 미션 완료 체크" : "Like heart and mission complete check",
     desktopImage: { id: "8539db20-aa65-43ec-983b-4384cb736b04", url: "/images/x-mission/banner.png", width: 1254, height: 1254, mimeType: "image/png", revision: 1 },
     mobileImage: null,
+    video: { desktop: "/public-assets/cms-assets/home-banners/video/x-mission-loop-v1", mobile: null },
   };
 }

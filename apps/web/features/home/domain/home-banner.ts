@@ -76,6 +76,8 @@ export const homeBannerSchema = z.object({
   title: z.string().trim().min(1).max(160), description: copyFields.description,
   ctaLabel: z.string().trim().min(1).max(80), href: z.string().max(2048).refine(isBannerHref),
   alt: z.string().trim().min(1).max(300), desktopImage: assetSchema, mobileImage: assetSchema.nullable(),
+  // Muted loop over the same scene, as extensionless MP4/WebM pairs (SceneVideo). The images stay as the poster and the fallback.
+  video: z.object({ desktop: z.string().startsWith("/public-assets/"), mobile: z.string().startsWith("/public-assets/").nullable() }).strict().optional(),
 }).strict();
 export const homeBannerCommandSchema = z.discriminatedUnion("action", [
   z.object({
