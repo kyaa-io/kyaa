@@ -16,6 +16,7 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
+import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import {
@@ -257,9 +258,9 @@ export function StarResult({
           <div className={styles.rewardRow}>
             {points > 0 && <EarnBadge locale={locale} points={points} variant="inline" />}
             {reading.reward?.stamp && <FanText role="meta"><ReadingText id="stamp" /></FanText>}
-            {Boolean(reading.reward?.exp) && (
-              <FanText role="meta">{uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })}</FanText>
-            )}
+            {reading.reward?.exp ? (
+              <AffinityBadge size="sm" amount={reading.reward.exp} label={`${name} ${uiText("affinityGain", { exp: reading.reward.exp })}`} />
+            ) : null}
             {points > 0 && <FanText role="meta">{uiText("shareOf", { name })}</FanText>}
           </div>
           <ul className={styles.domains}>
@@ -286,7 +287,7 @@ export function StarResult({
                   <FanText as="p" role="body">
                     {key === "overall"
                       ? overallHeadline[stars.overall - 1]
-                      : starDomainText(key, stars[key], signOf)}
+                      : starDomainText(key, stars[key], signOf, character)}
                   </FanText>
                 </li>
               );

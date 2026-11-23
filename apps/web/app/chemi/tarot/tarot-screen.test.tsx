@@ -239,7 +239,7 @@ it("speaks English from entry to result for an English guest, with no Korean lef
   fireEvent.click(screen.getByRole("button", { name: "2/3" }));
   fireEvent.click(await screen.findByRole("button", { name: "See my reading" }));
   await waitFor(() => expect(screen.getByRole("heading", { name: "Four of Wands" })).toBeVisible(), { timeout: 4000 });
-  await screen.findByText(cardsEn[25].dir.up.lead);
+  await screen.findByText(/Choose one thing from this reading\. Do it today\./);
   expect(screen.getByText("Love")).toBeVisible();
   expect(screen.getByText("Card type")).toBeVisible();
   expect(document.querySelector("[data-result]")!.textContent).not.toMatch(hangul);
