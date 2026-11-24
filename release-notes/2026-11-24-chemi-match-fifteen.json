@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "짝 맞추기 마지막 라운드에서는 최애 한 명의 서로 다른 사진 15장으로 짝을 찾아요.",
+    "예시 데이터로 플레이한 로컬 화면입니다."
+  ],
+  "path": "/chemi/games/match",
+  "images": [
+    "release-notes/images/2026-11-24-chemi-match-fifteen.png"
+  ]
+}
