@@ -63,10 +63,10 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
             <FanText as="dt" role="meta">{copy.points}</FanText>
             {/* 모자라면 빠질 것처럼 보이는 전후 값 대신 지금 값만 둔다(DF-GAME-007). */}
             <dd>{short
-              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}P</span>
+              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}M</span>
               : <>
-                <FanText role="meta" className={styles.before}>{number.format(points)}P</FanText>
-                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}P`} duration={600} /></span>
+                <FanText role="meta" className={styles.before}>{number.format(points)}M</FanText>
+                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}M`} duration={600} /></span>
               </>}
             </dd>
           </div>

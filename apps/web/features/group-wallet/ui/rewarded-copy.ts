@@ -83,5 +83,5 @@ export function rewardedStopMessage(locale:AppLocale,kind:RewardedStopKind,done:
 }
 
 /** B13: the 모임 home link to the 덕질 wallet. It only opens the wallet, so it never says exchange (교환 starts only in the 덕질 wallet card). */
-const pointsView:Record<AppLocale,string>={ko:'내 포인트 보기',get mn() { return this.en; }, en:'View my points',ja:'ポイントを見る','zh-Hans':'查看我的积分','zh-Hant':'查看我的點數',es:'Ver mis puntos',id:'Lihat poinku',vi:'Xem điểm của tôi',th:'ดูแต้มของฉัน',pt:'Ver meus pontos',fr:'Voir mes points',ru:'Мои баллы'};
+const pointsView:Record<AppLocale,string>={ko:'내 마일리지 보기',get mn() { return this.en; }, en:'View my miles',ja:'マイルを見る','zh-Hans':'查看我的里程','zh-Hant':'查看我的里程',es:'Ver mis millas',id:'Lihat mil saya',vi:'Xem dặm của tôi',th:'ดูไมล์ของฉัน',pt:'Ver minhas milhas',fr:'Voir mes miles',ru:'Мои мили'};
 export const pointsViewLabel=(locale:AppLocale)=>pointsView[locale];

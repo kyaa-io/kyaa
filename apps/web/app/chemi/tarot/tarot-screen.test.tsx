@@ -128,7 +128,7 @@ it("shows the saved card as a revisit for a member and settles the reward once",
   expect(screen.getByText("역방향")).toBeVisible();
   fireEvent.click(screen.getByRole("link", { name: /오늘 카드: / }));
   expect(await screen.findByRole("heading", { name: "XIII 죽음" })).toBeVisible();
-  await waitFor(() => expect(screen.getAllByText("패스포트 받고 +3P · 스탬프").length).toBeGreaterThan(0));
+  await waitFor(() => expect(screen.getAllByText("패스포트 받고 +3M · 스탬프").length).toBeGreaterThan(0));
   const settles = calls.filter((call) => call.path === "/api/chemi/readings" && call.method === "POST");
   expect(settles).toHaveLength(1);
   expect(JSON.parse(settles[0].body!)).toMatchObject({ character: "changha", position: 0 });
@@ -152,7 +152,7 @@ it("shows only what the server gave: no points, no made-up counts", async () => 
   today = [{ readingId: "saved", kind: "daily", date: kstDate() }];
   open("result");
   await screen.findByRole("heading", { name: "XIII 죽음" });
-  await waitFor(() => expect(screen.getAllByText("패스포트 받고 +3P · 스탬프").length).toBeGreaterThan(0));
+  await waitFor(() => expect(screen.getAllByText("패스포트 받고 +3M · 스탬프").length).toBeGreaterThan(0));
   expect(screen.queryByText(/스탬프 1개/)).toBeNull();
   expect(screen.queryByText(/이번 주 \d+일/)).toBeNull();
 });
@@ -170,7 +170,7 @@ it.each(["changha", "dosa"] as const)("reopens %s’s historical reading without
   expect(calls.some((call) => call.path.startsWith("/api/chemi/readings?") && !call.path.includes("from="))).toBe(true);
   expect(calls.some((call) => call.method === "POST")).toBe(false);
   expect(calls.some((call) => call.path === "/api/chemi/rewards/today")).toBe(false);
-  expect(screen.queryByText("패스포트 받고 +3P · 스탬프")).toBeNull();
+  expect(screen.queryByText("패스포트 받고 +3M · 스탬프")).toBeNull();
 });
 
 it("falls back to today's card when the linked reading is not the member's", async () => {

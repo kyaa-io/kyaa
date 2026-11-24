@@ -30,19 +30,19 @@ export const REWARD_MERGE_MS = 1200;
 const BADGE_MS = 900;
 
 const unit: Record<AppLocale, { points: (n: string) => string; stamps: (n: string, count: number) => string }> = {
-  ko: { points: n => `+${n}P`, stamps: n => `스탬프 ${n}` },
+  ko: { points: n => `+${n}M`, stamps: n => `스탬프 ${n}` },
   get mn() { return this.en; },
-  en: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "stamp" : "stamps"}` },
-  ja: { points: n => `+${n}P`, stamps: n => `スタンプ ${n}` },
-  "zh-Hans": { points: n => `+${n}P`, stamps: n => `印章 ${n}` },
-  "zh-Hant": { points: n => `+${n}P`, stamps: n => `印章 ${n}` },
-  es: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "sello" : "sellos"}` },
-  id: { points: n => `+${n}P`, stamps: n => `${n} stempel` },
-  vi: { points: n => `+${n}P`, stamps: n => `${n} con dấu` },
-  th: { points: n => `+${n}P`, stamps: n => `ตราประทับ ${n}` },
-  pt: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "carimbo" : "carimbos"}` },
-  fr: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "tampon" : "tampons"}` },
-  ru: { points: n => `+${n}P`, stamps: n => `Штампы: ${n}` },
+  en: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "stamp" : "stamps"}` },
+  ja: { points: n => `+${n}M`, stamps: n => `スタンプ ${n}` },
+  "zh-Hans": { points: n => `+${n}M`, stamps: n => `印章 ${n}` },
+  "zh-Hant": { points: n => `+${n}M`, stamps: n => `印章 ${n}` },
+  es: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "sello" : "sellos"}` },
+  id: { points: n => `+${n}M`, stamps: n => `${n} stempel` },
+  vi: { points: n => `+${n}M`, stamps: n => `${n} con dấu` },
+  th: { points: n => `+${n}M`, stamps: n => `ตราประทับ ${n}` },
+  pt: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "carimbo" : "carimbos"}` },
+  fr: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "tampon" : "tampons"}` },
+  ru: { points: n => `+${n}M`, stamps: n => `Штампы: ${n}` },
 };
 
 /** "+20P · 스탬프 1", "+20P", "스탬프 1", or "" when nothing was granted. */
@@ -78,7 +78,7 @@ export function celebrateSpend({ locale, points, label, anchor }: Readonly<{ loc
   if (!p) return;
   window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
   const amount = p.toLocaleString(locale);
-  showFanToast({ title: `-${amount}P`, description: label, duration: 2800 });
+  showFanToast({ title: `-${amount}M`, description: label, duration: 2800 });
   popBadge(`-${amount}`, true, anchor, true);
 }
 

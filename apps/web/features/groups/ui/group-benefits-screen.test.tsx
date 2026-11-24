@@ -82,11 +82,11 @@ function duoData() {
   return base(url,init);
  }));
 }
-it('대표 11/11: the tickets result links to my raffles and the points under it read 137/100P',async()=>{
- duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');
+it('대표 11/11: the tickets result links to my raffles and the points under it read 137/100M',async()=>{
+ duoData();render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137M');
  const card=document.querySelector('[data-wallet-card]')!;
  expect(card.querySelector('[data-cell="tickets"]')).toHaveAttribute('href','/my/raffles?locale=ko');
- expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('보유 137P');expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('100P사용');
+ expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('보유 137M');expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('100M사용');
  // 대표 11/13 09:39 swap line: the real count stays in view; ready is the 교환 button turning primary (no 교환 가능 label).
  expect(within(card as HTMLElement).getByRole('button',{name:'교환'})).toHaveAttribute('data-fan-action-emphasis','primary');
  // 대표 11/14 18:22 N8: no bar under the count, only the balance text.
@@ -96,7 +96,7 @@ it('대표 11/11 + 사용자 12:26: without an ad unit 교환 and 받기 read �
  adUnit.value=undefined;
  try{
   withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:true,claimed:false,locked:false,lockedReason:null}]};
-  render(<><GroupBenefitsScreen locale='ko'/><MyHeartExchange locale='ko'/></>);await screen.findAllByText('보유 137P');
+  render(<><GroupBenefitsScreen locale='ko'/><MyHeartExchange locale='ko'/></>);await screen.findAllByText('보유 137M');
   await waitFor(()=>expect(document.querySelector('[data-cell="stamps"]')).toHaveTextContent('보유 9 / 9'));
   // 사용자 12:26: both read 준비 중 (no other notice) and stay disabled.
   // 대표 11/13 09:39: the two swap lines head 럭키드로우 and 덕질 미션.
@@ -145,7 +145,7 @@ it('대표 11/14 22:25 덕질배너1: the banner sits between the lucky draw and
 });
 it('대표 11/15 17:34 덕질배너2: the vertical banner is its own column after the body, flags the page, and without one nothing is drawn',async()=>{
  duoData(); const asset={id:uid(910),url:'/dukjil-side.webp',width:720,height:1200,mimeType:'image/webp',revision:1};
- const side={id:uid(911),kind:'announcement' as const,celebrityId:null,placement:'dukjil_side' as const,category:'event' as const,title:'덕후인증 +100P',description:'',ctaLabel:'보기',href:'/guide/dukjil',alt:'덕후인증 +100P',desktopImage:asset,mobileImage:null};
+ const side={id:uid(911),kind:'announcement' as const,celebrityId:null,placement:'dukjil_side' as const,category:'event' as const,title:'덕후인증 +100M',description:'',ctaLabel:'보기',href:'/guide/dukjil',alt:'덕후인증 +100M',desktopImage:asset,mobileImage:null};
  const v=render(<GroupBenefitsScreen locale='ko' sideBanner={side}/>);
  await screen.findByText('글쓰기');
  const slot=v.container.querySelector('[data-dukjil-side-slot]')!,main=v.container.querySelector('#benefits-main')!,body=v.container.querySelector('[data-lucky-section]')!.parentElement!;
@@ -216,7 +216,7 @@ it('DUO: opens exchange only from its tile, restores focus on Escape and makes n
 it('DUO: keeps unaffordable exchange disabled and enables it after the shared wallet event',async()=>{
  duoData();const base=fetch;let points=99;
  vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('보유 99P');expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('보유 99M');expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
  points=100;act(()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  await waitFor(()=>expect(screen.getByRole('button',{name:'교환'})).toBeEnabled());
 });
@@ -335,7 +335,7 @@ it('drops accumulated pages immediately when the owner changes',async()=>{
 });
 
 it('refreshes balances after the shared wallet mutation event',async()=>{
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');requests.length=0;
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137M');requests.length=0;
  await act(async()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
  expect(requests).toContain('/api/me/wallet');
 });
@@ -349,7 +349,7 @@ it('labels preparing entries and preserves raffle errors',async()=>{const origin
 
 
 it('hides 오늘의 덕질 while the attendance policy is off',async()=>{
- catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137P');
+ catalogOn=false;render(<GroupBenefitsScreen locale='ko'/>);await screen.findAllByText('보유 137M');
  await waitFor(()=>expect(screen.queryByRole('region',{name:'오늘의 덕질'})).toBeNull());expect(requests.some(url=>url.includes('/api/me/attendance'))).toBe(false);
 });
 

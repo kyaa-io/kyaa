@@ -205,7 +205,7 @@ it("sends the member to the Chemi home from the main button until questions exis
   expect(screen.queryByText("이 결과로 질문하기")).toBeNull();
 });
 
-it("shows the passport row when today's 3P is held for a missing passport (DF-FORT-002)", async () => {
+it("shows the passport row when today's 3M is held for a missing passport (DF-FORT-002)", async () => {
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now());
   vi.stubGlobal("fetch", vi.fn(async (path: string) => {
     if (path === "/api/chemi/readings")
@@ -223,7 +223,7 @@ it("shows the passport row when today's 3P is held for a missing passport (DF-FO
     return Response.json({});
   }));
   render(<FortuneResult locale="ko" character="elina" />);
-  const row = await screen.findByRole("link", { name: /패스포트 받고 \+3P · 스탬프/ });
+  const row = await screen.findByRole("link", { name: /패스포트 받고 \+3M · 스탬프/ });
   expect(row).toHaveAttribute("href", "/c/elina?locale=ko");
   expect(within(row).getByRole("img", { name: "친밀 +10" })).toHaveTextContent("+10");
 });
