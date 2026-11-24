@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "gamePricing": "Setiap game memberi tiga putaran gratis per hari. Tiga putaran tambahan pertama masing-masing seharga 100P, 300P, dan 500P. Mulai putaran tambahan keempat, biayanya 1.000P per putaran tanpa batas harian.",
     "todayResult": "Hasil hari ini",
     "playsLeft": "Gratis {n} lagi",
     "extraCost": "Ekstra {n}P",

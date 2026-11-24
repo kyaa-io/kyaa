@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "gamePricing": "Cada jogo oferece três partidas grátis por dia. As três primeiras extras custam 100P, 300P e 500P, respectivamente. Da quarta em diante, cada partida custa 1.000P, sem limite diário.",
     "todayResult": "Resultado de hoje",
     "playsLeft": "{n} grátis",
     "extraCost": "Extra {n}P",

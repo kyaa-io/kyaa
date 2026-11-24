@@ -11,7 +11,7 @@ begin
   receipt:=public.chemi_match_finish(u,play,242760,replay);
   if receipt<>public.chemi_match_finish(u,play,242760,replay) or receipt->>'exp'<>'10' then raise exception 'unstable receipt'; end if;
   lobby:=public.chemi_match_lobby(u,null);
-  if lobby->>'freeRemaining'<>'2' or lobby->>'extraRemaining'<>'3'
+  if lobby->>'freeRemaining'<>'2' or lobby->>'extraCost' is distinct from '100'
     or lobby#>>'{ranking,0,place}'<>'1' or lobby#>>'{ranking,0,isMe}'<>'true'
     or lobby#>>'{ranking,0,misses}'<>'1' then raise exception 'lobby %',lobby; end if;
   trial:=public.chemi_match_challenge(receipt->>'shareId',null);
