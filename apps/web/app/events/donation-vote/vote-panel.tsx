@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -63,7 +64,7 @@ function MemberPanel({ locale, auth }: { locale: keyof typeof voteCopy; auth: Re
       <FanHeading>{closed ? results : days ? "D−" + days : "D-day"}</FanHeading>
       <p>{allowance} · {state.remaining.toLocaleString(locale)} M</p>
       {open && <label>{vote} (1 M = 1) <input type="number" min={1} max={state.remaining} value={quantity || ""} onChange={e => setQuantity(Number(e.target.value))} /></label>}
-      <ol>{state.ranking.map(row => <li data-row key={row.id}>{row.slug} {row.fandom_name} · {row.votes.toLocaleString(locale)} {open && <FanAction size="sm" disabled={busy || !Number.isInteger(quantity) || quantity < 1 || quantity > state.remaining} onClick={() => void submit(row.id)}>{vote} · {quantity} M</FanAction>}</li>)}</ol>
+      <ol>{state.ranking.map(row => <li data-row key={row.id}>{row.slug} {row.fandom_name} · <FanNumber value={row.votes} locale={locale} countUp /> {open && <FanAction size="sm" disabled={busy || !Number.isInteger(quantity) || quantity < 1 || quantity > state.remaining} onClick={() => void submit(row.id)}>{vote} · {quantity} M</FanAction>}</li>)}</ol>
     </>}
     <p role="status">{message}</p>
   </>;
