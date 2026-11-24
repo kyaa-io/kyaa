@@ -1,5 +1,6 @@
 "use client";
 
+import { proofStageReward } from "@/features/passport-proofs/ui/proof-stage-copy";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { useState } from "react";
@@ -62,6 +63,7 @@ export function ProofReward({ locale, slug, points, summary }: { locale: AppLoca
           ))}
         </dl>
       ) : null}
+      {points === 1000 && <FanText role="meta" as="p">{proofStageReward[locale]}</FanText>}
       <FanAction className={styles.rewardAction} href={submitHref(slug, locale)} variant="primary">{proofsText(locale, "pfTabSubmit")}</FanAction>
     </div>
   );
