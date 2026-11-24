@@ -143,5 +143,8 @@
   ],
   "account-switch": [
     "release-notes/2026-11-25-account-switch.json"
+  ],
+  "donation-vote": [
+    "release-notes/2026-11-25-new-year-donation-vote.json"
   ]
 }

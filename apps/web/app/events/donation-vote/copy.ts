@@ -1,0 +1,15 @@
+export const voteCopy = {
+  ko: ["새해맞이 기부 투표", "내 남은 한도", "투표", "결과", "1월 10일, 1위와 팬덤 이름으로 초록우산에 100만원을 기부합니다.", "로그인 후 투표할 수 있어요.", "다시 시도", "투표 완료"],
+  en: ["New Year donation vote", "Daily allowance left", "Vote", "Results", "On January 10, ₩1 million will go to ChildFund Korea in the winner’s and fandom’s names.", "Sign in to vote.", "Retry", "Vote recorded"],
+  ja: ["新春寄付投票", "本日の残り枠", "投票", "結果", "1月10日、1位とファンダムの名前で緑の傘子ども財団に100万ウォンを寄付します。", "ログインして投票してください。", "再試行", "投票しました"],
+  "zh-Hans": ["新年公益投票", "今日剩余额度", "投票", "结果", "1月10日将以第一名和粉丝团的名义向绿伞儿童基金会捐赠100万韩元。", "请登录后投票。", "重试", "投票成功"],
+  "zh-Hant": ["新年公益投票", "今日剩餘額度", "投票", "結果", "1月10日將以第一名和粉絲團的名義向綠傘兒童基金會捐贈100萬韓元。", "請登入後投票。", "重試", "投票成功"],
+  es: ["Votación solidaria de Año Nuevo", "Límite diario disponible", "Votar", "Resultados", "El 10 de enero se donará un millón de wones a ChildFund Korea en nombre del ganador y su fandom.", "Inicia sesión para votar.", "Reintentar", "Voto registrado"],
+  id: ["Voting donasi Tahun Baru", "Sisa batas harian", "Pilih", "Hasil", "Pada 10 Januari, satu juta won akan disumbangkan ke ChildFund Korea atas nama pemenang dan fandomnya.", "Masuk untuk memilih.", "Coba lagi", "Suara tercatat"],
+  vi: ["Bình chọn thiện nguyện năm mới", "Hạn mức còn lại hôm nay", "Bình chọn", "Kết quả", "Ngày 10/1, một triệu won sẽ được tặng cho ChildFund Korea dưới tên người thắng và cộng đồng người hâm mộ.", "Đăng nhập để bình chọn.", "Thử lại", "Đã ghi nhận"],
+  th: ["โหวตเพื่อการกุศลปีใหม่", "สิทธิ์ที่เหลือวันนี้", "โหวต", "ผลโหวต", "วันที่ 10 มกราคม จะบริจาคหนึ่งล้านวอนให้ ChildFund Korea ในนามผู้ชนะและแฟนด้อม", "เข้าสู่ระบบเพื่อโหวต", "ลองอีกครั้ง", "บันทึกคะแนนแล้ว"],
+  pt: ["Votação solidária de Ano Novo", "Limite diário disponível", "Votar", "Resultados", "Em 10 de janeiro, um milhão de won será doado à ChildFund Korea em nome do vencedor e de seus fãs.", "Entre para votar.", "Tentar novamente", "Voto registrado"],
+  fr: ["Vote solidaire du Nouvel An", "Quota disponible aujourd’hui", "Voter", "Résultats", "Le 10 janvier, un million de wons sera versé à ChildFund Korea au nom du gagnant et de ses fans.", "Connectez-vous pour voter.", "Réessayer", "Vote enregistré"],
+  ru: ["Новогоднее благотворительное голосование", "Остаток на сегодня", "Голосовать", "Результаты", "10 января от имени победителя и его фанатов в ChildFund Korea перечислят миллион вон.", "Войдите, чтобы проголосовать.", "Повторить", "Голос принят"],
+  mn: ["Шинэ жилийн хандивын санал хураалт", "Өдрийн үлдсэн эрх", "Санал өгөх", "Үр дүн", "1 сарын 10-нд ялагч болон шүтэн бишрэгчдийн нэрээр ChildFund Korea-д нэг сая вон хандивлана.", "Санал өгөхийн тулд нэвтэрнэ үү.", "Дахин оролдох", "Санал бүртгэгдлээ"],
+} as const;

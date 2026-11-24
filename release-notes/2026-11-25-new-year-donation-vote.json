@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "새해맞이 기부 투표에서 마일리지 1M으로 1표를 보내고 후보별 득표와 오늘 남은 투표 한도를 확인할 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/events/donation-vote",
+  "images": [
+    "release-notes/images/2026-11-25-donation-vote.png"
+  ]
+}
