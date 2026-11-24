@@ -61,7 +61,7 @@
   padding-top: var(--space-4);
 }
 .layout[data-playing="true"] {
-  padding-top: 0;
+  padding-top: var(--analytics-consent-height, 0px);
 }
 .content {
   align-items: start;

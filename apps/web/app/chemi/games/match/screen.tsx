@@ -1205,7 +1205,7 @@ function Session({
                   </FanText>
                   <dd className={numberStyles.xl}>{view.misses}</dd>
                 </div>
-                {rows.some((r) => r.isMe) && (
+                {view.score > 0 && rows.some((r) => r.isMe) && (
                   <div>
                     <FanText as="dt" role="meta">
                       {copy.rank}
