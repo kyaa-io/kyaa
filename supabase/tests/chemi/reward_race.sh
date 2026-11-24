@@ -16,7 +16,7 @@ race "$read_call"
 key=ab100000-0000-4000-8000-000000000002
 race "select chemi_issue_play('$u','$key','run','changha',false)"
 [[ $(sql "select count(*) from chemi_game_plays where user_id='$u'") == 1 ]]
-if sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true,100)" ; then exit 1; fi
+if sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true)" ; then exit 1; fi
 [[ $(sql "select count(*) from chemi_game_plays where user_id='$u' and slot_kind='extra'") == 0 ]]
 echo "reward_race passed"
 
@@ -25,16 +25,16 @@ psql -Xq -v ON_ERROR_STOP=1 <<'SQL'
 update public.group_wallet_release set enabled=true,write_fenced=false,legacy_writers_verified=true,
   migration_evidence_sha256=repeat('a',64),rewards_start_on=current_date;
 SQL
-sql "select group_wallet_post('$u','fan_point',900,'group_support',gen_random_uuid())"
+sql "select group_wallet_post('$u','fan_point',60,'group_support',gen_random_uuid())"
 for used in 1 2; do
-  if error=$(sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true,100)" 2>&1); then exit 1; fi
+  if error=$(sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true)" 2>&1); then exit 1; fi
   [[ "$error" == *CHEMI_LIMIT* ]]
-  [[ $(sql "select group_wallet_balance('$u','fan_point')") == 900 ]]
+  [[ $(sql "select group_wallet_balance('$u','fan_point')") == 60 ]]
   sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',false)"
 done
 # Feature-only checkouts run the pre-approval assertion first.
 if [[ $(sql "select position('chemi_reward' in pg_get_functiondef('public.group_wallet_post(uuid,text,bigint,text,uuid)'::regprocedure))") == 0 ]]; then
-  if error=$(sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true,100)" 2>&1); then exit 1; fi
+  if error=$(sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true)" 2>&1); then exit 1; fi
   [[ "$error" == *CHEMI_UNAVAILABLE* ]]
   psql -Xq -v ON_ERROR_STOP=1 <<'SQL'
 do $$
@@ -44,29 +44,24 @@ begin
 end $$;
 SQL
 fi
-extra() { sql "select chemi_issue_play('$u','$1','run','changha',true,100)"; }
+extra() { sql "select chemi_issue_play('$u','$1','run','changha',true)"; }
 key=ab100000-0000-4000-8000-000000000003
-race "select chemi_issue_play('$u','$key','run','changha',true,100)"
+race "select chemi_issue_play('$u','$key','run','changha',true)"
 for _ in 1 2 3; do extra "$key" >/dev/null; done
-[[ $(sql "select group_wallet_balance('$u','fan_point')") == 800 ]]
-# Only one of two buyers confirming the same second-round price can advance.
-pids=()
-for n in 4 5; do
-  sql "select chemi_issue_play('$u','ab100000-0000-4000-8000-00000000000$n','run','changha',true,300)" & pids+=("$!")
-done
-wins=0
-for pid in "${pids[@]}"; do if wait "$pid"; then wins=$((wins+1)); fi; done
-[[ $wins == 1 ]]
-sql "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true,500)"
+[[ $(sql "select group_wallet_balance('$u','fan_point')") == 40 ]]
+extra ab100000-0000-4000-8000-000000000004 & first=$!
+extra ab100000-0000-4000-8000-000000000005 & second=$!
+wait "$first"
+wait "$second"
 [[ $(sql "select group_wallet_balance('$u','fan_point')") == 0 ]]
 expect_error() {
   local error
   if error=$(sql "$1" 2>&1); then return 1; fi
   [[ "$error" == *"$2"* ]]
 }
-expect_error "select chemi_issue_play('$u','$key','run','elina',true,100)" CHEMI_REQUEST_KEY_REUSED
-expect_error "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true,100)" CHEMI_LIMIT
-[[ $(sql "select count(*) from mobile_fan_economy_ledger where app_user_id='$u' and source_type='chemi_game_extra' and amount in (-100,-300,-500)") == 3 ]]
+expect_error "select chemi_issue_play('$u','$key','run','elina',true)" CHEMI_REQUEST_KEY_REUSED
+expect_error "select chemi_issue_play('$u',gen_random_uuid(),'run','changha',true)" CHEMI_LIMIT
+[[ $(sql "select count(*) from mobile_fan_economy_ledger where app_user_id='$u' and source_type='chemi_game_extra' and amount=-20") == 3 ]]
 sql "select chemi_complete_reading('$u','saju','compat','dosa',null,'a','{}','v1','v1')"
 sql "select chemi_complete_reading('$u','star','compat','dosa',null,'a','{}','v1','v1')"
 expect_error "select chemi_complete_reading('$u','star','compat','dosa',null,'b','{}','v1','v1')" CHEMI_PAYMENT_REQUIRED
@@ -152,7 +147,7 @@ wait "$reading"
 play=$(sql "select id from chemi_game_plays where user_id='$u' and request_key='$key'")
 before=$(sql "select group_wallet_balance('$u','fan_point')")
 race "select chemi_refund_play('$u','$play')"
-[[ $(sql "select group_wallet_balance('$u','fan_point')") == $((before+100)) ]]
+[[ $(sql "select group_wallet_balance('$u','fan_point')") == $((before+10)) ]]
 echo "same-user reading and dukjil award passed, deadlocks=0"
 race "select chemi_complete_reading('$u','fortune','daily','elina','$u','','{}','v1','v1')"
 [[ $(sql "select count(*) from chemi_readings where user_id='$u' and content='fortune' and kind='daily' and kst_date=dukjil_kst_date()") == 1 ]]

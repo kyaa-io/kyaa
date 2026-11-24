@@ -13,7 +13,7 @@ const command = z.discriminatedUnion("action", [
   z.object({ action: z.literal("lobby") }),
   z.object({ action: z.literal("ranking") }),
   z.object({ action: z.literal("sound"), sound: z.boolean() }),
-  z.object({ action: z.literal("start"), game: game, character: z.enum(["changha", "elina", "yuna"]), key: z.uuid(), extra: z.boolean(), expectedCost: z.int().optional() }),
+  z.object({ action: z.literal("start"), game: game, character: z.enum(["changha", "elina", "yuna"]), key: z.uuid(), extra: z.boolean() }),
   z.object({ action: z.literal("leave"), playId: z.uuid() }),
   z.object({ action: z.literal("cancel"), key: z.uuid() }),
   z.object({ action: z.literal("finish"), playId: z.uuid(), inputs: z.array(z.tuple([z.int(), z.int()])).max(6000).optional(), ticks: z.int(), score: z.int(), moves: z.array(z.tuple([z.int(), z.int()])).max(1000) }),
@@ -62,7 +62,7 @@ export async function POST(request: Request) {
         return reply(await rpc("chemi_cancel_play", { p_user, p_game: mode, p_request_key: body.key }));
       case "start": {
         const ticket = await rpc("chemi_issue_play", {
-          p_user, p_game: mode, p_request_key: body.key, p_character: body.character, p_extra: body.extra, p_expected_cost: body.expectedCost ?? null,
+          p_user, p_game: mode, p_request_key: body.key, p_character: body.character, p_extra: body.extra,
         }) as { playId: string };
         const issued = await info(ticket.playId);
         return issued?.status === "issued" ? reply(issued) : reply({ error: "CHEMI_INVALID" }, 409);

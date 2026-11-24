@@ -41,10 +41,10 @@ function ResultScore({ score, locale, pattern }: { score: number; locale: string
 }
 
 /** Result screen: score first, then what changed (rank, title, affinity), then what to do next. */
-export function ResultStage({ character, copy, locale, names, rows, loaded, stats, result, before, saving, trial, member, spent, free, busy, copied, onAgain, onLogin, onShare, onAllRanks, errorLine, reminder }: {
+export function ResultStage({ character, copy, locale, names, rows, loaded, stats, result, before, saving, trial, member, spent, free, extra, busy, copied, onAgain, onLogin, onShare, onAllRanks, errorLine, reminder }: {
   character: Character; copy: RunCopy; locale: string; names: Record<Character, string>; rows: Rank[]; loaded: boolean;
   stats?: RunStats; result?: Result; before: { place?: number; best: number }; saving: boolean; trial: boolean; member: boolean;
-  spent: boolean; free: number; busy: boolean; copied: boolean;
+  spent: boolean; free: number; extra: number; busy: boolean; copied: boolean;
   onAgain: () => void; onLogin: () => void; onShare: () => void; onAllRanks: () => void; errorLine: ReactNode; reminder: ReactNode;
 }) {
   const number = new Intl.NumberFormat(locale);
@@ -107,7 +107,7 @@ export function ResultStage({ character, copy, locale, names, rows, loaded, stat
         <div className={styles.nextRow} ref={next}>
           {member && spent ? <><FanText as="p" role="item">{copy.done}</FanText>{reminder}</>
             : <FanAction variant="primary" disabled={busy} onClick={member ? onAgain : onLogin} trailingIcon={keyboard && <Keys caps={RUN_KEYCAPS.confirm} />}>
-              {!member ? copy.login : free > 0 ? fill(copy.again, { n: free }) : copy.extraCta}
+              {!member ? copy.login : free > 0 ? fill(copy.again, { n: free }) : fill(copy.extraCta, { n: extra })}
             </FanAction>}
           {result.shareId && <FanAction onClick={onShare}>{copied ? copy.copied : copy.challenge}</FanAction>}
           <FanAction variant="text" href={`/chemi?locale=${locale}`}>{copy.home}</FanAction>

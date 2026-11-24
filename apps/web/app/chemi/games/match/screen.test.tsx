@@ -153,7 +153,7 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   expect(screen.getByText("+10")).toBeInTheDocument();
 }, 20000);
 
-it("waits for explicit 100P confirmation after the free games run out", async () => {
+it("waits for explicit 20P confirmation after the free games run out", async () => {
   const requests: Record<string, unknown>[] = [];
   vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
     const body = JSON.parse(String(init.body));
@@ -163,8 +163,8 @@ it("waits for explicit 100P confirmation after the free games run out", async ()
         sound: false,
         freeRemaining: 0,
         extraRemaining: 2,
-        points: 122,
-        extraCost: 100,
+        points: 22,
+        extraCost: 20,
         ranking: [],
       });
     if (body.action === "start")
@@ -175,12 +175,12 @@ it("waits for explicit 100P confirmation after the free games run out", async ()
   const choice = screen.getByRole("button", { name: copy.changha });
   await waitFor(() => expect(choice).toBeEnabled());
   fireEvent.click(choice);
-  const extra = await screen.findByRole("button", { name: "100P로 한 판" });
+  const extra = await screen.findByRole("button", { name: "20P로 한 판" });
   expect(requests.filter((r) => r.action === "start")).toHaveLength(0);
   fireEvent.click(extra);
-  expect(await screen.findByRole("dialog")).toBeVisible();
+  expect(await screen.findByText("2번")).toBeInTheDocument();
   expect(requests.some(r => r.action === "start")).toBe(false);
-  fireEvent.click(await screen.findByRole("button", { name: "100P 쓰고 시작" }));
+  fireEvent.click(await screen.findByRole("button", { name: "20P 쓰고 시작" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(copy.insufficient);
   expect(requests.find((r) => r.action === "start")).toMatchObject({
     character: "changha",
@@ -195,7 +195,7 @@ it("shows the rules and a free 2x2 practice before the first game", async () => 
     const body = JSON.parse(String(init.body));
     requests.push(body);
     if (body.action === "lobby")
-      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 100, ranking: [] });
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
     throw Error(body.action);
   });
   render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
@@ -228,7 +228,7 @@ it("gives back a game that was issued but never received when the page reloads (
     requests.push(body);
     if (body.action === "cancel") return Response.json({ refunded: true });
     if (body.action === "lobby")
-      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 100, ranking: [] });
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
     throw Error(body.action);
   });
   render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
@@ -248,7 +248,7 @@ it("ends a game left mid-play and says so with the games left (DF-GAME-009)", as
     requests.push(body);
     if (body.action === "leave") return Response.json({ left: false });
     if (body.action === "lobby")
-      return Response.json({ sound: false, freeRemaining: 2, extraRemaining: 3, points: 0, extraCost: 100, ranking: [] });
+      return Response.json({ sound: false, freeRemaining: 2, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
     throw Error(body.action);
   });
   render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
@@ -263,7 +263,7 @@ it("remembers the start key until the game arrives, then the game itself", async
   vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
     const body = JSON.parse(String(init.body));
     if (body.action === "lobby")
-      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 100, ranking: [] });
+      return Response.json({ sound: false, freeRemaining: 3, extraRemaining: 3, points: 0, extraCost: 20, ranking: [] });
     if (body.action === "start") {
       seen.push(sessionStorage.getItem("chemi.match.pending"));
       return Response.json({ playId: "local-round", seed: 12, game: "match" });
@@ -389,7 +389,7 @@ it("does not count the preview until the round's photos have arrived (DF-GAME-00
 it("disables an exhausted lobby and shows the free count only in the ended banner", async () => {
   sessionStorage.setItem("chemi.match.pending", JSON.stringify({ playId: "ended-game" }));
   vi.stubGlobal("fetch", async () => Response.json({
-    freeRemaining: 0, extraRemaining: 0, extraCost: 0, ranking: [], sound: false,
+    freeRemaining: 0, extraRemaining: 0, extraCost: 20, ranking: [], sound: false,
   }));
   render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
   expect(await screen.findByRole("button", { name: copy.playsDone })).toBeDisabled();

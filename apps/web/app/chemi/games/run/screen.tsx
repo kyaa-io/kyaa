@@ -114,6 +114,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const loaded = Boolean(lobby || publicRows);
   const trial = !auth.authenticated && Boolean(challenge?.available);
   const free = lobby?.freeRemaining ?? 0;
+  const extra = lobby?.extraRemaining ?? 0;
 
   async function begin(paid = false) {
     if (busy) return;
@@ -128,10 +129,10 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       const key = requestKey.current ??= crypto.randomUUID();
       const issued = await call<Ticket>(trial
         ? { action: "trial", key, shareId: share }
-        : { action: "start", game: "run", character, key, extra: paid, expectedCost: paid ? lobby?.extraCost : undefined }, !trial);
+        : { action: "start", game: "run", character, key, extra: paid }, !trial);
       requestKey.current = null;
       setBefore({ place: lobby?.ranking.find((row) => row.isMe)?.place, best: lobby?.best ?? 0 });
-      setLobby((now) => now && { ...now, freeRemaining: Math.max(0, now.freeRemaining - (paid ? 0 : 1)), points: now.points - (paid ? now.extraCost : 0) });
+      setLobby((now) => now && { ...now, [paid ? "extraRemaining" : "freeRemaining"]: Math.max(0, now[paid ? "extraRemaining" : "freeRemaining"] - 1), points: now.points - (paid ? now.extraCost : 0) });
       setResult(undefined);
       setStats(undefined);
       setSubmission(undefined);
@@ -205,8 +206,8 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const startLabel = !auth.ready ? copy.go : !auth.authenticated
     ? (trial ? copy.trial : copy.login)
     : free > 0 ? fill(copy.start, { name: names[character], n: free })
-      : copy.extraCta;
-  const spent = Boolean(lobby && free <= 0 && !lobby.extraCost);
+      : fill(copy.extraCta, { n: extra });
+  const spent = Boolean(lobby && free <= 0 && extra <= 0);
   const footer = [lobby && lobby.players > 0 ? fill(copy.players, { n: number.format(lobby.players) }) : "",
     lobby?.previous ? fill(copy.lastWeek, { n: lobby.previous.place }) : ""].filter(Boolean).join(" · ");
   async function remind() {
@@ -246,11 +247,11 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       onStart={() => auth.authenticated && free <= 0 ? setPaying(true) : void begin()} onAllRanks={() => setAllRanks(true)}
       errorLine={errorLine} reminder={reminder} />}
     {stage === "result" && <ResultStage character={character} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} stats={stats} result={result}
-      before={before} saving={busy && !result} trial={Boolean(ticket?.trial)} member={auth.authenticated} spent={spent} free={free}
+      before={before} saving={busy && !result} trial={Boolean(ticket?.trial)} member={auth.authenticated} spent={spent} free={free} extra={extra}
       busy={busy} copied={copied} onAgain={again} onLogin={() => auth.login()} onShare={() => void shareResult()}
       onAllRanks={() => setAllRanks(true)} errorLine={errorLine} reminder={reminder} />}
     <ExtraPlayDialog open={paying} onOpenChange={setPaying} onConfirm={() => void begin(true)}
-      busy={busy} locale={locale} points={lobby?.points} cost={lobby?.extraCost ?? 0} />
+      busy={busy} locale={locale} points={lobby?.points} cost={lobby?.extraCost ?? 0} extraRemaining={extra} />
     <FanDialog open={allRanks} onOpenChange={setAllRanks} title={copy.ranking} closeLabel={copy.close} size="sm" responsive>
       <ol className={styles.allRanks}>
         {rows.map((row) => <li data-row="" key={row.place} data-me={row.isMe}>
