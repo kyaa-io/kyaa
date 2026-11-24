@@ -15,14 +15,15 @@ it("answers 404 unless CHEMI_TAB is exactly true", async () => {
   }
 });
 
-it("opens the entry scene with a known favorite and step, and falls back otherwise", async () => {
+it("opens the entry scene with a known favorite and step, and asks for an explicit choice otherwise", async () => {
   process.env.CHEMI_TAB = "true";
   const open = async (params: Record<string, string>) => {
     const page = await TarotPage({ searchParams: Promise.resolve(params) });
     return (page.props.children.props.children.props.children[1] as { props: Record<string, unknown> }).props;
   };
   expect(await open({ c: "yuna", step: "pick" })).toMatchObject({ initialCharacter: "yuna", initialStep: "pick" });
-  expect(await open({ c: "nobody", step: "x" })).toMatchObject({ initialCharacter: "changha", initialStep: "enter" });
+  for (const c of ["nobody", "dosa", ""])
+    expect(await open({ c, step: "enter" })).toMatchObject({ content: "tarot" });
 });
 
 it("passes the reading link only to the result step and only when it is a reading id", async () => {
@@ -33,8 +34,9 @@ it("passes the reading link only to the result step and only when it is a readin
   };
   const id = "f712264a-858d-43ec-81b7-0bef38aabbc2";
   expect(await open({ step: "result", r: id })).toMatchObject({ initialReading: id });
-  expect(await open({ step: "result", r: "x" })).toMatchObject({ initialReading: null });
-  expect(await open({ step: "enter", r: id })).toMatchObject({ initialReading: null });
+  expect(await open({ step: "result", r: "x" })).toMatchObject({ content: "tarot" });
+  expect(await open({ step: "enter", r: id })).toMatchObject({ content: "tarot" });
+  expect(await open({ c: "dosa", step: "result", r: id })).toMatchObject({ initialReading: id, initialCharacter: "dosa" });
 });
 
 it("opens a shared card from a share id or a card number, without the drawing flow", async () => {

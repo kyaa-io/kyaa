@@ -25,7 +25,7 @@ export default async function SajuPage({
   // 결과 주소를 새로 열면 저장된 결과를 불러오는 동안 입장 화면이 아니라 불러오는 모양을 보인다.
   const catalog = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
   const birthCopy = mergeMyBirthCopy(koCatalog.myBirth, catalog.myBirth);
-  const restoring = Boolean(params.r) && params.step === "result";
+  const restoring = Boolean(params.r) && Boolean(params.step && params.step !== "enter");
   return (
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="saju-main">
       <ReadingCopyProvider value={catalog}>
@@ -33,7 +33,7 @@ export default async function SajuPage({
           <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
           {params.from ? (
             <SajuShared key={params.from} locale={locale} from={params.from} />
-          ) : needsCreatorChoice(params) ? (
+          ) : needsCreatorChoice(params.c, restoring) ? (
             <ReadingCreatorPicker content="saju" locale={locale} />
           ) : (
             <SajuFlow locale={locale} birthCopy={birthCopy} restoring={restoring} />

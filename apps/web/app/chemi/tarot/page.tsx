@@ -37,7 +37,7 @@ export default async function TarotPage({
               reversed={params.rev === "1"}
               character={isTarotCharacter(params.c) ? params.c : "changha"}
             />
-          ) : needsCreatorChoice(params) ? (
+          ) : needsCreatorChoice(params.c, params.step === "result" && isReadingId(params.r)) ? (
             <ReadingCreatorPicker content="tarot" locale={locale} />
           ) : (
             <TarotScreen

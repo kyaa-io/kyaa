@@ -31,7 +31,7 @@ export default async function FortunePage({
           <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
           {params.from ? (
             <FortuneResult key={params.from} locale={locale} from={params.from} />
-          ) : needsCreatorChoice(params) ? (
+          ) : needsCreatorChoice(params.c, restoring) ? (
             <ReadingCreatorPicker content="fortune" locale={locale} />
           ) : (
             <FortuneFlow locale={locale} restoring={restoring} paidPreview />

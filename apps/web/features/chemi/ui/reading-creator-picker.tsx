@@ -7,9 +7,9 @@ import type { AppLocale } from "@/i18n/locales";
 
 const creators = ["changha", "elina", "yuna"] as const;
 
-export function needsCreatorChoice(params: { c?: string; r?: string; step?: string }) {
-  if (params.r && params.step && params.step !== "enter") return false;
-  return !creators.some((creator) => creator === params.c);
+export function needsCreatorChoice(character: string | undefined, restoring: boolean) {
+  if (restoring) return false;
+  return !creators.some((creator) => creator === character);
 }
 
 export function ReadingCreatorPicker({ content, locale, onChoose }: {

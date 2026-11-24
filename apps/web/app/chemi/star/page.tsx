@@ -25,7 +25,7 @@ export default async function StarPage({
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="star-main">
           <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
-          {needsCreatorChoice(params) ? <ReadingCreatorPicker content="star" locale={locale} /> : <StarFlow locale={locale} restoring={restoring} />}
+          {needsCreatorChoice(params.c, restoring) ? <ReadingCreatorPicker content="star" locale={locale} /> : <StarFlow locale={locale} restoring={restoring} />}
         </FanContentContainer>
       </ReadingCopyProvider>
     </FanAppFrame>
