@@ -1,5 +1,6 @@
 "use client";
 
+import { SpentPoints } from "@/features/chemi/games/spent-points";
 import { VacantRank } from "@/features/chemi/games/vacant-rank";
 
 import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
@@ -15,7 +16,6 @@ import { FanNumUnit } from "@/components/fan-ui/fan-num-unit";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import type { CSSProperties, ReactNode } from "react";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
-import { celebrateSpend } from "@/components/fan-ui/reward-celebration";
 import { parseAppLocale } from "@/i18n/locales";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -216,19 +216,19 @@ function ScoreLines({ lines, locale }: { lines: readonly (readonly [string, numb
 }
 
 /** 카드 한 장: 뒷면 무늬·앞면 사진·맞춤 표시·틀림 표시(빨간 테두리 + '틀림' 글자 + 짧은 흔들림). */
-function MatchCard({ open, matched, wrong, src, label, number, faceNumber, disabled, wrongLabel, onClick, onReady }: {
-  open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number; faceNumber?: number;
+function MatchCard({ open, matched, wrong, src, label, number, faceNumber, variant = 0, disabled, wrongLabel, onClick, onReady }: {
+  open: boolean; matched: boolean; wrong: boolean; src: string; label: string; number: number; faceNumber?: number; variant?: number;
   disabled: boolean; wrongLabel: string; onClick: () => void; onReady?: (src: string) => void;
 }) {
   // 뒤집힌 카드도 사진을 미리 받아 둔다(보이지 않게). 미리 보기가 시작될 때 이미 떠 있어야 한다(DF-GAME-002).
   return (
-    <div className={styles.card} data-open={open} data-matched={matched} data-wrong={wrong || undefined}>
+    <div className={styles.card} data-variant={open && faceNumber ? variant : undefined} data-open={open} data-matched={matched} data-wrong={wrong || undefined}>
       <FanAction variant="text" disabled={disabled} ariaLabel={label} onClick={onClick}>
         <Image width={640} height={800} sizes="(min-width: 768px) 210px, 33vw" loading="eager"
           unoptimized={src.startsWith("/chemi/match/") || src.startsWith("/api/")} src={src} alt=""
           onLoad={() => onReady?.(src)} onError={() => onReady?.(src)} />
-        {open && faceNumber && <small className={styles.cardNumber}>{faceNumber}</small>}
-        {!open && <small className={styles.cardNumber}>{String(number).padStart(2, "0")}</small>}
+        {open && faceNumber && <FanText role="body" className={styles.cardNumber}>{faceNumber}</FanText>}
+        {!open && <FanText role="body" className={styles.cardNumber}>{String(number).padStart(2, "0")}</FanText>}
         {matched && (
           <i>
             <FanIcon icon={Check} size={16} />
@@ -342,7 +342,7 @@ function Rankings({
         ))}
         {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, index) => (
           <li data-row="" data-vacant="" key={`vacant-${index}`}>
-            <VacantRank place={displayed.length + index + 1} avatarClassName={styles.avatar} />
+            <VacantRank label={copy.vacant} place={displayed.length + index + 1} avatarClassName={styles.avatar} />
           </li>
         ))}
       </ol>
@@ -378,6 +378,12 @@ function Session({
   /** 판 사진 중 받은 것. 라운드의 사진이 다 오거나 제한 시간이 지나면 그 라운드의 미리 보기를 센다. */
   const [ready, setReady] = useState<ReadonlySet<string>>(() => new Set());
   const [forced, setForced] = useState(0);
+  const [spent, setSpent] = useState(0);
+  useEffect(() => {
+    if (!spent) return;
+    const timer = window.setTimeout(() => setSpent(0), 3000);
+    return () => window.clearTimeout(timer);
+  }, [spent]);
   const [paying, setPaying] = useState(false);
   const [working, setWorking] = useState(false);
   const [sound, setSound] = useState(false);
@@ -586,7 +592,7 @@ function Session({
       setStage("play");
       if (extra && !trial && lobby) {
         setPaying(false);
-        celebrateSpend({ locale: parseAppLocale(locale), points: lobby.extraCost, label: copy.extraPlay });
+        setSpent(lobby.extraCost);
       }
       if (trial && challenge) setChallenge({ ...challenge, available: false });
       if (!trial)
@@ -629,7 +635,7 @@ function Session({
   const [roundStage, setRoundStage] = useState(1);
   const roundPhotos = facesFor(character).slice(0, LEVELS[roundStage - 1].pairs);
   const photosReady = forced >= roundStage || roundPhotos.every((src) => ready.has(src));
-  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play" || !photosReady, submit);
+  const { view, tap, nextLevel, finishLevel } = useMatchRound(ticket, stage !== "play" || !photosReady || spent > 0, submit);
   const viewStage = view?.stage ?? 1;
   useEffect(() => setRoundStage(viewStage), [viewStage]);
   useEffect(() => {
@@ -804,7 +810,7 @@ function Session({
             {Array.from({ length: columns * rows }, (_, cell) => <i key={cell} />)}
           </span>}
         </span>
-        {!active && <span className={styles.levelGoal} aria-hidden="true"><FanNumUnit>{pairs}{copy.pairUnit}</FanNumUnit><FanNumUnit>{seconds}{copy.secondUnit}</FanNumUnit></span>}
+        {!active && <FanText role="meta" className={styles.levelGoal} aria-hidden="true"><FanNumUnit>{pairs}{copy.pairUnit}</FanNumUnit><FanNumUnit>{seconds}{copy.secondUnit}</FanNumUnit></FanText>}
       </li>;
     })}
   </ol>;
@@ -947,8 +953,8 @@ function Session({
                 <section className={styles.roundTable}><FanHeading as="h2">{locale === "ko" ? `${LEVELS.length}라운드` : `${copy.round} · ${LEVELS.length}`}</FanHeading>
                 {levelList}</section>
                 <div className={styles.startAction}>
-                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}
-                    helperText={lobby ? `${copy.freePlays} ${lobby.freeRemaining}` : undefined}>
+                  {lobby && <FanText role="meta" className={styles.freeCount}>{copy.freePlays} {lobby.freeRemaining}</FanText>}
+                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}>
                     {paidStart ? (locale === "ko" ? `${lobby.extraCost}P로 한 판` : extraCopy.cta) : copy.start}
                   </StageAction>
                   <FanAction variant="secondary" onClick={() => { setPracticed(false); setStage("guide"); }}>{copy.howTo}</FanAction>
@@ -988,8 +994,9 @@ function Session({
           {active && (
             <>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{active.score.toLocaleString(locale)}</strong>
+                {spent > 0 && <SpentPoints points={spent} />}
                 <FanText role="label" className={styles.status} aria-live="polite" data-tone={active.preview ? "preview" : active.second >= 0 ? "wrong" : undefined}>
-                  {active.preview ? `${copy.memorize} · ${active.preview}` : active.second >= 0 ? copy.wrong
+                  {spent > 0 ? null : active.preview ? `${copy.memorize} · ${active.preview}` : active.second >= 0 ? copy.wrong
                     : fill(copy.goal, { n: LEVELS[active.stage - 1].pairs, s: LEVELS[active.stage - 1].seconds })}
                 </FanText>
               </div>
@@ -1035,7 +1042,7 @@ function Session({
                   const index = active.stage === 1 && cell > 4 ? cell - 1 : cell;
                   const matched = Boolean(active.matched & (1 << index));
                   const open =
-                    active.preview > 0 ||
+                    (!spent && active.preview > 0) ||
                     matched ||
                     active.first === index ||
                     active.second === index;
@@ -1047,11 +1054,12 @@ function Session({
                       matched={matched}
                       wrong={active.second >= 0 && (active.first === index || active.second === index)}
                       src={faces[photo]}
+                      variant={Math.floor(photo / photos[character].cards.length)}
                       faceNumber={LEVELS[active.stage - 1].pairs > photos[character].cards.length ? photo + 1 : undefined}
                       onReady={cardReady}
                       number={cell + 1}
                       wrongLabel={copy.wrong}
-                      disabled={active.preview > 0 || matched || active.first === index || active.second >= 0}
+                      disabled={spent > 0 || active.preview > 0 || matched || active.first === index || active.second >= 0}
                       label={[
                         copy.card,
                         cell + 1,
@@ -1239,6 +1247,7 @@ function Session({
                 })}>{equipped && <FanIcon icon={Check} size={16} />}{copy.equip}</FanAction>
               </div>}
 
+              <div className={view.score === 0 ? styles.zeroActions : styles.resultActions}>
               {result && (
                 <StageAction
                   onClick={() => {
@@ -1252,12 +1261,13 @@ function Session({
                   {isTrial ? copy.signIn : copy.playAgain}
                 </StageAction>
               )}
-              {result && !isTrial && <FanAction href={`/chemi?locale=${locale}`}>{copy.back}</FanAction>}
+              {result && !isTrial && <FanAction variant="secondary" href={`/chemi?locale=${locale}`}>{copy.back}</FanAction>}
               {result?.shareId && (
-                <FanAction onClick={() => void shareResult()}>
+                <FanAction variant="secondary" onClick={() => void shareResult()}>
                   {copied ? copy.copied : copy.share}
                 </FanAction>
               )}
+              </div>
             </>
           )}
         </section>

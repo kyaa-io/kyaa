@@ -170,18 +170,6 @@
   grid-template-columns: minmax(var(--space-6), auto) var(--rank-avatar) minmax(0, 1fr) auto;
   border-top: thin solid var(--color-line-subtle);
 }
-.rankMine[data-first] {
-  display: flex;
-  justify-content: space-between;
-  border-top: 0;
-}
-/* 내가 상위 세 줄 안이면 내 기록 줄 대신 같은 높이의 빈 자리 */
-.rankMine[data-spacer] {
-  border-top: 0;
-}
-.rankMine[data-first] a {
-  translate: var(--space-2) 0;
-}
 .rankMine > :last-child {
   color: var(--color-accent-ink);
 }
@@ -245,8 +233,9 @@
     --rank-mine: calc(var(--rank-row) + var(--space-3));
     --rank-gap: var(--space-3);
     grid-area: 1 / 2 / 3 / 3;
-    align-self: stretch;
-    flex-direction: column;
+    align-self: start;
+    display: grid;
+    grid-auto-rows: 1fr;
     overflow: visible;
   }
   .rankCard {
@@ -296,8 +285,8 @@
     grid-template-columns: 1fr;
   }
   .home[data-ranked="false"] .banner {
-    position: relative;
-    align-self: stretch;
+    /* Keep the full-list artwork crop when the filter shortens the rail. */
+    height: calc(var(--space-12) * 9 + var(--min-target));
   }
   .home[data-ranked="false"] .artwork {
     position: absolute;

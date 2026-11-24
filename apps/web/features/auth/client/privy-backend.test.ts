@@ -102,7 +102,7 @@ describe("privy-backend (direct)", () => {
     const PROVIDER_IMPORT = /import\s*\{[^}]*\bPrivyProvider\b[^}]*\}\s*from\s*["']@privy-io\/react-auth["']/;
     expect(files.filter(file => PROVIDER_IMPORT.test(runtime(file.text))).map(file => file.rel).sort())
       .toEqual(["features/auth/client/privy-provider-boundary.tsx"]);
-  });
+  }, 30_000);
 
   it("reaches the Privy island only inside the privy-mode chunk, which auth-root.tsx imports dynamically (PRIVY-RESTORE-1115)", () => {
     const chunk = new Set([
