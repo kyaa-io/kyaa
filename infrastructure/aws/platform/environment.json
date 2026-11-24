@@ -803,6 +803,17 @@
               "Statement": [
                 {
                   "Effect": "Allow",
+                  "Action": "s3:ListBucketVersions",
+                  "Resource": { "Fn::GetAtt": ["PublicAssetsBucket", "Arn"] },
+                  "Condition": { "StringLike": { "s3:prefix": "public-assets/cms-assets/*" } }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": "s3:DeleteObjectVersion",
+                  "Resource": { "Fn::Sub": "${PublicAssetsBucket.Arn}/public-assets/cms-assets/*" }
+                },
+                {
+                  "Effect": "Allow",
                   "Action": "cloudfront:CreateInvalidation",
                   "Resource": { "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}" }
                 },

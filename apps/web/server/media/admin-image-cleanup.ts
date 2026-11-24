@@ -36,19 +36,16 @@ export async function handleImageCleanup(request: Request) {
     const { data, error } = await database.rpc("admin_delete_image_asset", { ...args, p_id: id.data, p_correlation: correlationId, p_sources: sources });
     if (error) throw error;
     if (data.status !== 200) return json(data, data.status);
-    try {
-      await storage.finishQueuedDelete(data.bucket, data.path, data.generation);
-    } catch {
-      return json({ storage: "pending", cache: "remaining" }, 202);
-    }
+    const result = await storage.purgeImageVersions(data.bucket, data.path, data.generation);
+    if (result.remainingVersions !== 0) return json({ ...result, storage: "pending", cache: "remaining" }, 202);
     try {
       await new CloudFrontClient({ region: "us-east-1" }).send(new CreateInvalidationCommand({
         DistributionId: process.env.ASSET_CLOUDFRONT_DISTRIBUTION_ID,
         InvalidationBatch: { CallerReference: crypto.randomUUID(), Paths: { Quantity: 1, Items: [`/public-assets/${data.bucket}/${data.path}*`] } },
       }));
-      return json({ storage: "deleted", cache: "requested" });
+      return json({ ...result, storage: "deleted", cache: "requested" });
     } catch {
-      return json({ storage: "deleted", cache: "remaining" });
+      return json({ ...result, storage: "deleted", cache: "remaining" });
     }
   } catch (error) { return mapError(error); }
 }

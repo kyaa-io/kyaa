@@ -48,7 +48,7 @@ function AssetList({ locale, role }: { locale: AdminLocale; role: string }) {
     return () => controller.abort();
   }, [offset, getAccessToken, en]);
   async function remove(asset: Asset) {
-    if (!window.confirm(en ? "Delete this image permanently? This cannot be undone." : "이 이미지를 지울까요? 지우면 되돌릴 수 없어요.")) return;
+    if (!window.confirm(en ? "Permanently delete every version of this image? This cannot be undone." : "이 이미지의 모든 버전을 영구 삭제할까요? 지우면 되돌릴 수 없어요.")) return;
     setBusy(true);
     try {
       const response = await fetch(`/api/admin/image-assets?id=${asset.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${await getAccessToken()}` } });
@@ -56,7 +56,13 @@ function AssetList({ locale, role }: { locale: AdminLocale; role: string }) {
       if (response.status === 409) { setMessage((en ? "Used in " : "이미지 사용처 · ") + result.references.join(", ")); return; }
       if (!response.ok) throw Error();
       setItems(previous => previous.filter(item => item.id !== asset.id));
-      setMessage(result.storage === "pending" ? (en ? "File deletion pending. Cached copies remain." : "파일 삭제 재시도를 기다리고 있어요. 캐시가 남아 있어요.") : result.cache === "remaining" ? (en ? "File deleted. Cached copies remain." : "파일을 지웠어요. 캐시가 남아 있어요.") : (en ? "File deleted. Cache removal requested." : "파일을 지우고 캐시 삭제를 요청했어요."));
+      const count = result.deletedVersionIds.length;
+      const remaining = result.remainingVersions ?? (en ? "unknown" : "확인 불가");
+      setMessage(result.storage === "pending"
+        ? (en ? `Deletion pending. Remaining versions: ${remaining}.` : `삭제 대기 중 · 남은 버전 ${remaining}`)
+        : (en ? `Permanently deleted ${count} versions. ` : `영구 삭제(버전 ${count}개) · `) +
+          (result.cache === "requested" ? (en ? "Cache removal requested." : "캐시 삭제를 요청했어요.") : (en ? "Cached copies remain." : "캐시가 남아 있어요.")));
+
     } catch { setMessage(en ? "Could not confirm deletion." : "삭제 결과를 확인하지 못했어요."); }
     finally { setBusy(false); }
   }
