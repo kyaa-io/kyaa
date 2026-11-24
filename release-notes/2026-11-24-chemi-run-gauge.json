@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "최애 런에서 피버 동안 판 위에 보이던 흰 선을 없앴어요.",
+    "부스트는 남은 초와 줄어드는 막대로, 보호막은 막대로 판 왼쪽 위에 표시해요.",
+    "부스트가 1초 남으면 막대가 깜빡여요.",
+    "달리는 최애 둘레에 빛 테두리와 반짝임을 넣었어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/games/run",
+  "images": [
+    "release-notes/images/2026-11-24-chemi-run-gauge-1440.png",
+    "release-notes/images/2026-11-24-chemi-run-gauge-390.png"
+  ]
+}

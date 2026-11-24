@@ -125,7 +125,8 @@
     "release-notes/2026-11-24-changha-match-photos.json",
     "release-notes/2026-11-24-chemi-reading-voice.json",
     "release-notes/2026-11-24-chemi-popup-checkbox.json",
-    "release-notes/2026-11-24-chemi-ranking-hour.json"
+    "release-notes/2026-11-24-chemi-ranking-hour.json",
+    "release-notes/2026-11-24-chemi-run-gauge.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
