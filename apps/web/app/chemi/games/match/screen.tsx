@@ -32,7 +32,7 @@ import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { FPS, LEVELS } from "@/features/chemi/games/engine";
 import { rankName } from "@/features/chemi/games/rank-name";
 import { RankAvatar } from "@/features/chemi/games/rank-initial";
-import { getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
+import { extraGameUnit, getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
 import styles from "./match.module.css";
@@ -956,7 +956,7 @@ function Session({
                   {lobby && !ended && <FanText role="meta" className={styles.freeCount}>{copy.freePlays} {lobby.freeRemaining}</FanText>}
                   {exhausted && <FanText role="meta">{copy.nextFree} {hms(untilKstMidnight(now))}</FanText>}
                   <StageAction disabled={exhausted || working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}>
-                    {exhausted ? copy.playsDone : paidStart ? (locale === "ko" ? `${lobby.extraCost}M로 한 판` : extraCopy.cta) : copy.start}
+                    {exhausted ? copy.playsDone : paidStart ? (locale === "ko" ? `${lobby.extraCost}${extraGameUnit(lobby.extraCost)}로 한 판` : extraCopy.cta) : copy.start}
                   </StageAction>
                   <FanAction variant="secondary" onClick={() => { setPracticed(false); setStage("guide"); }}>{copy.howTo}</FanAction>
                 </div>
