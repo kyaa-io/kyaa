@@ -126,7 +126,7 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
         else player.current?.playVideo();
       }, 260);
     }} />}
-    {immersive && item.platform === "tiktok" && showSource && !loaded && <FanAction variant="text" className={styles.sourcePlay} href={item.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external"><FanIcon icon={Play} />TikTok ↗</FanAction>}
+    {immersive && item.platform === "tiktok" && showSource && !loaded && <FanAction variant="text" className={styles.sourcePlay} external href={item.href}><FanIcon icon={Play} />TikTok ↗</FanAction>}
     {immersive && <progress className={styles.feedProgress} ref={progress} value={0} max={1} aria-label={item.title} />}
     <FanAction variant="text" type="button" className={`${styles.soundButton} ${blocked ? styles.soundBlocked : ""}`} ariaLabel={soundCopy[locale][muted ? 0 : 1]} aria-pressed={!muted} onClick={() => setSound(!desired.current)}><FanIcon icon={muted ? VolumeX : Volume2} /></FanAction>
   </div>;
