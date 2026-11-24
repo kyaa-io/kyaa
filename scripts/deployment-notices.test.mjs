@@ -602,3 +602,15 @@ test('production notices default to the hold-aware note reader and the repositor
   assert.match(notifyDeployment.toString(), /notes = productionNotes/);
   heldNoteFiles(execFileSync(process.env.GIT_EXECUTABLE || 'git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim());
 });
+
+test('DEV and production use the same disclosure for old and new notes', async () => {
+  const { devNoticeBatches } = await import('./dev-deployment-notices.mjs');
+  const current = '예시 데이터로 만든 확인용 화면입니다.';
+  const legacy = '예시 데이터로 만든 로컬 화면입니다.';
+  const notes = [legacy, current].map(change => ({ ...note, changes: [change] }));
+  const messages = [formatNotice(notes, status.created_at), ...devNoticeBatches(notes, status.created_at).map(batch => batch.text)];
+  for (const message of messages) {
+    assert.equal(message.split(current).length - 1, 1);
+    assert.ok(!message.includes(legacy));
+  }
+});
