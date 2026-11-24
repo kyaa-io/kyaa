@@ -83,12 +83,12 @@ it("saves the reading once, then walks the four talk steps", async () => {
   render(<FortuneFlow locale="ko" />);
   expect(await screen.findByText("오늘 128명이 봤어요")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
-  expect(await screen.findByText("누구 덕에 잘 풀려?", {}, { timeout: 3000 })).toBeVisible();
+  expect(await screen.findByText("누구 덕에?", {}, { timeout: 3000 })).toBeVisible();
   expect(window.location.search).toContain("step=talk-1");
   expect(window.location.search).toContain("r=reading");
   expect(request.mock.calls.filter(([path]) => path === "/api/chemi/readings")).toHaveLength(1);
-  fireEvent.click(screen.getByRole("button", { name: "누구 덕에 잘 풀려?" }));
-  expect(await screen.findByText("덕질 친구도 만날까?")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "누구 덕에?" }));
+  expect(await screen.findByText("친구 만나도 돼?")).toBeVisible();
   expect(window.location.search).toContain("step=talk-2");
 });
 
@@ -347,7 +347,7 @@ it("resumes the calculation when the member goes back and then forward during it
   window.dispatchEvent(new PopStateEvent("popstate"));
   window.history.replaceState({ fortuneDepth: 1 }, "", "/chemi/fortune?step=calc&c=changha");
   window.dispatchEvent(new PopStateEvent("popstate"));
-  expect(await screen.findByText("누구 덕에 잘 풀려?", {}, { timeout: 4000 })).toBeVisible();
+  expect(await screen.findByText("누구 덕에?", {}, { timeout: 4000 })).toBeVisible();
   expect(window.location.search).toContain("step=talk-1");
   expect(request.mock.calls.filter(([path]) => path === "/api/chemi/readings").length).toBeGreaterThanOrEqual(2);
 });
@@ -366,7 +366,7 @@ it("does not turn a new calculation for another character into the earlier resul
   window.history.replaceState(null, "", "/chemi/fortune?c=changha");
   render(<FortuneFlow locale="ko" />);
   fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
-  expect(await screen.findByText("누구 덕에 잘 풀려?", {}, { timeout: 3000 })).toBeVisible();
+  expect(await screen.findByText("누구 덕에?", {}, { timeout: 3000 })).toBeVisible();
   // 다른 최애로 바꿔 새 계산을 시작한다. 응답은 아직 오지 않았다.
   window.history.replaceState(null, "", "/chemi/fortune?c=changha");
   window.dispatchEvent(new PopStateEvent("popstate"));
@@ -403,7 +403,7 @@ it("shows a loading shape, not the entrance, while a restored address loads", as
   expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
   await waitFor(() => expect(finish).not.toBe(undefined));
   await waitFor(() => finish(Response.json(stored())));
-  expect(await screen.findByText("덕질 친구도 만날까?")).toBeVisible();
+  expect(await screen.findByText("친구 만나도 돼?")).toBeVisible();
   expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
 });
 

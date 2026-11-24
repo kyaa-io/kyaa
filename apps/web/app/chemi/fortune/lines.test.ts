@@ -39,9 +39,9 @@ it("gives the same result a different line and choices for each creator", () => 
   expect(fortuneTalkLine("changha", 4, input)).toContain("초록색 물건도 하나 챙기고");
   expect(fortuneTalkLine("elina", 4, input)).toContain("초록색 물건 하나 챙겨요");
   expect(fortuneTalkLine("yuna", 4, input)).toContain("초록색 물건 딱 하나만");
-  expect(fortuneChoiceLabel("changha", 3, "next", { ...calm, money: 40 })).toBe("지갑 말고 뭘 챙겨?");
-  expect(fortuneChoiceLabel("elina", 3, "next", { ...calm, money: 40 })).toBe("지갑 대신 뭘 챙길까?");
-  expect(fortuneChoiceLabel("dosa", 2, "next", { ...calm, people: 40 })).toBe("혼자 덕질하면 될까요?");
+  expect(fortuneChoiceLabel("changha", 3, "next", { ...calm, money: 40 })).toBe("대신 뭘 챙겨?");
+  expect(fortuneChoiceLabel("elina", 3, "next", { ...calm, money: 40 })).toBe("대신 뭘 챙길까?");
+  expect(fortuneChoiceLabel("dosa", 2, "next", { ...calm, people: 40 })).toBe("혼자 덕질할까요?");
   expect(fortuneChoiceLabel("changha", 3, "skip", calm)).toBeNull();
   expect(fortuneChoiceLabel("changha", 4, "next", calm)).toBeNull();
   // 유나는 느낌표 없이 담백하게, 엘리나는 한 대사 안에 존댓말과 반말을 섞는다.
@@ -130,16 +130,16 @@ it("asks what follows from the line just said and answers it on the next page (C
   const day = { ...input, score: 74, grade: "무난한 날", people: 45, fandom: 57, money: 61 };
   expect(fortuneTalkLine("changha", 2, day)).toBe("오늘은 누구랑 있든 말 줄이는 게 좋아. 듣는 쪽이 편할 거야.");
   expect(fortuneChoiceLabel("changha", 1, "next", day)).toBe("사람 쪽도 괜찮아?");
-  expect(fortuneChoiceLabel("changha", 2, "next", day)).toBe("그럼 혼자 덕질할까?");
-  expect(fortuneChoiceLabel("changha", 2, "skip", day)).toBe("언제 말 걸면 좋아?");
+  expect(fortuneChoiceLabel("changha", 2, "next", day)).toBe("혼자 덕질할까?");
+  expect(fortuneChoiceLabel("changha", 2, "skip", day)).toBe("언제 말 걸까?");
   expect(fortuneTalkLine("changha", 3, day)).toBe(
     "혼자 쉬엄쉬엄 하자. 갖고 있는 포카 정리하면 딱이야. 돈은 평소대로. 살 건 저녁에 한 번 더 보고 정해.",
   );
-  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "조심하면 괜찮은 날" })).toBe("누구한테 조심해야 돼?");
-  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "쉬어 가는 날", people: 70 })).toBe("그 약속, 누구랑 잡지?");
-  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "좋은 날", people: 90 })).toBe("누구 덕에 잘 풀려?");
-  expect(fortuneChoiceLabel("changha", 2, "next", { ...day, people: 90 })).toBe("덕질 친구도 만날까?");
-  expect(fortuneChoiceLabel("changha", 2, "skip", { ...day, luckyHour: null })).toBe("챙길 것부터 알려 줘");
+  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "조심하면 괜찮은 날" })).toBe("누굴 조심해야 돼?");
+  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "쉬어 가는 날", people: 70 })).toBe("누구랑 잡지?");
+  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "좋은 날", people: 90 })).toBe("누구 덕에?");
+  expect(fortuneChoiceLabel("changha", 2, "next", { ...day, people: 90 })).toBe("친구 만나도 돼?");
+  expect(fortuneChoiceLabel("changha", 2, "skip", { ...day, luckyHour: null })).toBe("챙길 건 뭐야?");
 });
 
 it("reads fan life as one concrete fan activity per score band and company, never the video-length formula", () => {
@@ -153,14 +153,14 @@ it("reads fan life as one concrete fan activity per score band and company, neve
             const line = fortuneTalkLine(character, 3, day);
             expect(line, `${character} ${fandom}/${people}/${money}`).not.toMatch(/영상|길이|긴 건|짧은 거/);
             expect(line).toMatch(/직캠|응원 글|응원 댓글|출석|포카|장면/);
-            expect(line).toMatch(/돈|재물/);
-            expect(line).not.toMatch(/부탁|청|결제/);
+            expect(line).toMatch(/돈/);
+            expect(line).not.toMatch(/부탁|청|결제|재물운|대박|반드시|것이오/);
             fandomLines.add(fortuneTalkLine(character, 3, { ...day, money: 70 }));
             for (const talk of [1, 2, 3, 4] as const)
               for (const slot of ["next", "skip"] as const) {
                 const label = fortuneChoiceLabel(character, talk, slot, day);
                 if (talk === 4 || (talk === 3 && slot === "skip")) expect(label).toBeNull();
-                else expect((label ?? "").length, `${character} ${talk} ${slot} ${label}`).toBeLessThanOrEqual(13);
+                else expect((label ?? "").length, `${character} ${talk} ${slot} ${label}`).toBeLessThanOrEqual(10);
               }
           }
     expect(fandomLines.size, character).toBe(9);
@@ -174,7 +174,7 @@ it("does not presuppose a meeting when the people page was skipped", () => {
   }
 });
 
-it("answers '언제 말 걸면 좋아?' directly and keeps the hand-off line when there is no lucky hour", () => {
+it("answers '언제 말 걸까?' directly and keeps the hand-off line when there is no lucky hour", () => {
   expect(fortuneTalkLine("changha", 4, input, null, "luck")).toMatch(/^부탁할 거 있으면 9시에서 11시 사이에 해\./);
   expect(fortuneTalkLine("changha", 4, { ...input, luckyHour: null }, null, "luck")).toMatch(/^챙길 것부터 묻네\. 좋아\./);
   expect(fortuneTalkLine("dosa", 4, { ...input, luckyHour: null })).toBe("초록빛 물건 하나를 챙기시오.");
