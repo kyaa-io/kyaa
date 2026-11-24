@@ -35,9 +35,23 @@
 }
 
 .policy {
+  display: inline-block;
+  position: relative;
+  min-inline-size: var(--min-target);
+  max-inline-size: 100%;
   color: var(--color-muted);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.policy::after {
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  min-block-size: var(--min-target);
+  block-size: 100%;
+  transform: translateY(-50%);
+  content: "";
 }
 
 .actions {
