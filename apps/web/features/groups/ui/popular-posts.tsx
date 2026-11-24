@@ -10,7 +10,7 @@ import {boardHref} from '@/features/fanpage/domain/board-navigation';
 import {FanSkeletonRows} from '@/components/fan-ui/fan-skeleton';
 import styles from './popular-posts.module.css';
 const labels:Record<AppLocale,readonly [string,string,string,string]>={
- ko:['오늘의 인기글','일간','주간','월간'],
+ ko:['인기','일간','주간','월간'],
  get mn() { return this.en; },
  en:['Popular posts','Daily','Weekly','Monthly'],
  ja:['人気の投稿','日間','週間','月間'],
@@ -24,6 +24,7 @@ const labels:Record<AppLocale,readonly [string,string,string,string]>={
  fr:['Publications populaires','Jour','Semaine','Mois'],
  ru:['Популярные публикации','День','Неделя','Месяц'],
 };
+export const popularTabLabel = (locale: AppLocale) => labels[locale][0];
 const titles:Record<AppLocale,readonly [string,string,string]>={
  ko:['오늘의 인기글','이번 주의 인기글','이번 달의 인기글'],
  get mn() { return this.en; },
@@ -46,7 +47,5 @@ export function PopularPosts({slug,locale,pageImage}:{slug:string;locale:AppLoca
  const [period,setPeriod]=useState<'day'|'week'|'month'>('day');
  const result=useCommunityResource(`/api/celebrities/${encodeURIComponent(slug)}/popular-posts?period=${period}&locale=${toContentLocale(locale)}`,parse,false,false,false,true);
  const [, ...text]=labels[locale],title=titles[locale][(['day','week','month'] as const).indexOf(period)],copy=contentCopy(locale);
- // No readable posts in this period: the board below speaks for itself.
- if(result.state.status==='ready'&&result.state.data.items.length===0)return null;
- return <section className={styles.panel}><header><h2>{title}</h2><div className={styles.tabs}>{(['day','week','month'] as const).map((value,i)=><button type='button' key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{text[i]}</button>)}</div></header>{result.state.status==='ready'?<CompactFeed items={result.state.data.items.slice(0,period==='day'?5:10).map(item=>({...item,kind:'fan_post' as const}))} slug={slug} locale={locale} returnTo={boardHref(slug,locale)} onChanged={noop} pageImage={pageImage}/>:result.state.status==='error'?<button type='button' onClick={result.retry}>{copy.retry}</button>:<FanSkeletonRows rows={3} variant='post'/>}</section>;
+ return <section className={styles.panel}><header><h2>{title}</h2><div className={styles.tabs}>{(['day','week','month'] as const).map((value,i)=><button type='button' key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{text[i]}</button>)}</div></header>{result.state.status==='ready'?result.state.data.items.length===0?<p role='status'>{copy.empty}</p>:<CompactFeed items={result.state.data.items.slice(0,period==='day'?5:10).map(item=>({...item,kind:'fan_post' as const}))} slug={slug} locale={locale} returnTo={boardHref(slug,locale)} onChanged={noop} pageImage={pageImage}/>:result.state.status==='error'?<button type='button' onClick={result.retry}>{copy.retry}</button>:<FanSkeletonRows rows={3} variant='post'/>}</section>;
 }
