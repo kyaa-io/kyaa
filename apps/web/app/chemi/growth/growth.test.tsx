@@ -20,7 +20,7 @@ const state: GrowthState = {
 };
 const respond = (body: unknown, ok = true) => vi.fn(async () => ({ ok, status: ok ? 200 : 503, json: async () => body }));
 // Rank reads are independent of adoption and the private growth state.
-function stubGrowth(fetcher: ReturnType<typeof vi.fn>) {
+function stubGrowth(fetcher: (url: string, options: RequestInit) => Promise<unknown>) {
   vi.stubGlobal("fetch", (url: string, options: RequestInit) =>
     url.startsWith("/api/chemi/grow?") ? Promise.resolve({ ok: true, json: async () => [] }) : fetcher(url, options));
 }
