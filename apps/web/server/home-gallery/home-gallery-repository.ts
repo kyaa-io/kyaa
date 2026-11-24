@@ -52,8 +52,8 @@ export class HomeGalleryRepository {
     return { items: page.items, nextCursor: page.hasMore && page.last ? encodeHomeGalleryCursor(page.last) : null };
   }
 
-  private async readPage(locale: "ko" | "en", limit: number, from: { p_offset: number } | { p_after_rank: number; p_after_at: string; p_after_id: string }, markRecent = false) {
-    const { data, error } = await this.db.rpc("read_public_gallery_post_photos", { p_include_groups: process.env.KYAA_GROUPS_ENABLED === "true", p_locale: locale, p_limit: limit, ...(markRecent ? { p_mark_recent: true } : {}), ...from });
+  private async readPage(locale: "ko" | "en", limit: number, from: { p_offset: number } | { p_after_rank: number; p_after_at: string; p_after_id: string }, homePool = false) {
+    const { data, error } = await this.db.rpc(homePool ? "read_home_gallery_mix" : "read_public_gallery_post_photos", { p_include_groups: process.env.KYAA_GROUPS_ENABLED === "true", p_locale: locale, p_limit: limit, ...from });
     if (error) throw new HomeGalleryRepositoryError(error.message);
     return keyPageSchema.parse(data);
   }

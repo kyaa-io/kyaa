@@ -2,11 +2,26 @@ import { fanPostPath, groupPostPath, type HomeGalleryPhoto } from "./home-galler
 
 /** Only original posts belong in the home photo selection. Filter before ranking and taking the first twelve. */
 export function homeGalleryPostPhotos(photos: readonly HomeGalleryPhoto[]) {
-  return diversifyGalleryPhotos(photos.filter(photo =>
+  const ranked = diversifyGalleryPhotos(photos.filter(photo =>
     (photo.source === "fan_post" && fanPostPath.test(photo.sourceHref ?? "")) ||
     (photo.source === "group_post" && groupPostPath.test(photo.sourceHref ?? "")) ||
     photo.source === "official_sns" && /^\/c\/[a-z0-9-]+\/notices\/[a-z0-9-]+$/.test(photo.sourceHref ?? "")
   ));
+  const selected = new Set<HomeGalleryPhoto>();
+  const posts = new Set<string>();
+  function takePosts(fan: boolean, limit: number) {
+    for (const photo of ranked) {
+      if (selected.size >= limit) break;
+      const href = photo.sourceHref!;
+      if ((photo.source !== "official_sns") === fan && !posts.has(href)) {
+        posts.add(href);
+        selected.add(photo);
+      }
+    }
+  }
+  takePosts(true, 3);
+  takePosts(false, 10);
+  return [...selected, ...ranked.filter(photo => !selected.has(photo))];
 }
 
 /**
