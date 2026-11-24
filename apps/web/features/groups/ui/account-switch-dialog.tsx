@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useState, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { PencilHeaderIcon } from "@/components/fan-shell/pencil-header-icon";
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -49,4 +51,14 @@ export function AccountSwitchDialog({ locale, avatar, name, path, onClose }: { l
       {error ? <FanText role="meta" as="p" className={styles.error}><span role="alert">{error}</span></FanText> : null}
     </div>
   </FanDialog>;
+}
+
+/** Below 768 there is no header account menu (header frozen), so MY carries the same line under the member's name. */
+export function AccountSwitchLine({ locale, avatar, name }: { locale: AppLocale; avatar: ReactNode; name: string }) {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname() || "/", query = useSearchParams()?.toString();
+  return <>
+    <FanAction variant="text" size="sm" className={styles.line} data-account-action="switch" leadingIcon={<PencilHeaderIcon name="switch" size={16} />} onClick={() => setOpen(true)}>{accountSwitchCopy(locale).switchAccount}</FanAction>
+    {open ? <AccountSwitchDialog locale={locale} avatar={avatar} name={name} path={`${pathname}${query ? `?${query}` : ""}`} onClose={() => setOpen(false)} /> : null}
+  </>;
 }
