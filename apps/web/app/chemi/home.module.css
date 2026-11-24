@@ -36,11 +36,13 @@
   width: auto;
   flex: none;
 }
-.caption small {
+.caption small,
+.caption > div > span {
   background: var(--color-home-caption);
   padding-inline: var(--space-2);
-  border-radius: var(--radius-small);
+  border-radius: var(--radius-pill);
 }
+.caption small { border-radius: var(--radius-small); }
 .caption h1 {
   margin: 0;
 }

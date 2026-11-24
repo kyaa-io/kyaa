@@ -115,7 +115,7 @@ describe("header capsule", () => {
     state.bias = { ...state.bias, selected: { ...selected, hearts: undefined }, status: "error" };
     state.wallet = { ...state.wallet, data: undefined, error: true };
     render(<FanHeaderStatus locale="ko" />);
-    expect(chip()).toHaveTextContent("—");
+    expect(chip()).toHaveTextContent(/^$/);
     expect(chip().querySelector('img[src="/images/dukjil-duo/glyph-heart-160.webp"]')).toBeNull();
     expect(chip()).not.toHaveAccessibleName(/하트 0/);
   });

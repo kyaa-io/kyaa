@@ -61,7 +61,7 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   // Signed out (or a session that just ended) the header holds only the small 로그인 link — never the illustrated join chip (user 11/13).
   // Signed in without a favorite the capsule shows the points alone; joining a group is led by the home first-steps banner, not the header.
   if (!auth.authenticated || expired || bias.status === "guest") return <Link className={styles.trigger} href={loginHref}>{w.login}</Link>;
-  const summary = [c.status, grade, `${w.points} ${points?.toLocaleString(locale) ?? "—"}`].filter(Boolean).join(" · ");
+  const summary = [c.status, grade, `${w.points} ${points?.toLocaleString(locale) ?? ""}`].filter(Boolean).join(" · ");
   const format = (value: number) => compactNumber(value, locale);
 
   return <Link ref={chip} className={styles.trigger} href={myHref as Route} onNavigate={(event) => {
@@ -73,6 +73,6 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
     window.dispatchEvent(new Event("hashchange"));
   }} data-header-status="" aria-label={summary}>
     {tier && <span className={styles.grade} data-header-tier={tier} title={grade}><FanTierBadge tier={tier} stageKey={passport?.stage?.key} locale={locale} size={16} eager /></span>}
-    <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? "—" : <RollingNumber value={points} format={format} />}</span>
+    <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? null : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }

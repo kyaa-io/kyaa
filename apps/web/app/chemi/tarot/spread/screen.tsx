@@ -18,7 +18,7 @@ import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/
 import type { AppLocale } from "@/i18n/locales";
 import { CardRail } from "../card-rail";
 import styles from "../tarot.module.css";
-import { loginExpired } from "../types";
+import { loginExpired, tarotDateLabel } from "../types";
 import { useTarotMeaning } from "../use-tarot-meaning";
 import spread from "./spread.module.css";
 
@@ -253,7 +253,7 @@ function SpreadResult({
     }
   }
   const date = saved.date
-    ? new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(saved.date))
+    ? tarotDateLabel(saved.date, locale)
     : "";
   return (
     <div className={styles.root} data-step="result" data-tarot-spread="result">

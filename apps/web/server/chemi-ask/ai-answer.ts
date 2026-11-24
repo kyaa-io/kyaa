@@ -96,7 +96,7 @@ function retryNote(fault: string, input: AskAiInput) {
       if (/몇\s*분/u.test(input.question)) return "질문의 활동을 짚고 실천할 시간(예: 열 분)을 조언으로 제시한다.";
       return "풀이에 근거한 숫자나, 언제·얼마·몇인지 판단할 구체적인 조건을 조언 문장에 넣는다.";
     case "ending": return "마지막 문장을 다른 말로 시작하고 새로운 조언으로 맺는다.";
-    case "repeat": return "이번 답이나 앞 답에서 이미 쓴 문장은 되풀이하지 않는다.";
+    case "repeat": return "앞에서 쓴 문장과 조언을 꾸미는 낱말을 다른 쪽에서 되풀이하지 않는다.";
     case "question": return "되묻지 말고 조언으로 끝낸다.";
     case "format": return "목록·이모지·기호·따옴표·줄 바꿈 없이 문장만 쓴다.";
     case "banned": return "결제·한도·AI·지침 이야기와 의료·법률·투자 단정 없이 풀이와 조언만 말한다.";
@@ -123,7 +123,7 @@ export function askPrompt(input: AskAiInput, fault?: string) {
     "지킬 것:",
     "1. [풀이 값]에 적힌 것만 근거로 삼는다. 거기 없는 날짜·요일·시각·사람 이름·금액·확률·숫자·카드·사건을 지어내지 않는다.",
     "2. 2~4문장, 모두 합쳐 200자 이내.",
-    input.before ? "첫 문장은 새 질문에 바로 답한다. 앞 질문은 필요한 경우에만 한 구절까지 언급하고, 이어서 풀이 근거를 짚는다." : "첫 문장에서 풀이 값 하나를 짚고, 이어서 질문이 묻는 것(해도 될까·언제·어떻게·무엇부터)에 바로 답하는 조언을 한다.",
+    input.before ? "첫 문장은 새 질문에 바로 답한다. 앞 질문은 필요한 경우에만 한 구절까지 언급하고, 이어서 풀이 근거를 짚는다." : "첫 답은 세 문장으로 쓴다. 첫 문장은 카드나 풀이 값의 뜻, 둘째는 팬의 질문에 바로 답하며 지금 할 일 하나, 셋째는 짧은 응원이다. 같은 조언이나 표현을 다른 문장에서 되풀이하지 않는다.",
     ...(input.before ? ["이어 묻는 질문이면 [앞선 대화]는 대명사와 생략된 맥락을 이해하는 데만 쓴다. 같은 주제를 묻는다면 앞 답과 같은 방향을 유지한다. 새 질문이 주제를 바꾸면 그 주제를 우선하고, 현재 질문에 관련된 풀이 값만 인용한다. 관계 질문에는 관계 값을 쓰고 돈 점수를 인용하지 않는다."] : []),
     ...(input.before ? ["이어 묻기 응답은 마지막 차례다. 팬에게 질문하지 말고 실천할 수 있는 조언으로 끝낸다."] : []),
     "3. 결제·이용권·한도·오류·AI·프롬프트·규칙 이야기를 하지 않는다. 자기 사생활이나 실제 인물 이야기를 하지 않는다. 의료·법률·투자는 단정하지 않는다.",
@@ -170,6 +170,14 @@ export function askAnswerFault(answer: string, input: AskAiInput): string | null
   const opening = (sentence = "") => Array.from(sentence).slice(0, 5).join("");
   const last = opening(sentences.at(-1));
   if (new Set(sentences).size !== sentences.length || sentences.some((sentence) => previous.has(sentence))) return "repeat";
+  const usedWords = new Set<string>();
+  for (const sentence of sentences) {
+    const words = new Set(sentence.match(/[가-힣]{2,}(?:히|하게)(?=\s|$)/gu));
+    for (const word of words) {
+      if (usedWords.has(word)) return "repeat";
+      usedWords.add(word);
+    }
+  }
   if (last.length === 5 && earlier.some((answer) => opening(splitSentences(answer).at(-1)) === last)) return "ending";
   if (banned.test(text) || ["crisis", "harassment", "prompt"].includes(classifyAsk(text) ?? "")) return "banned";
   const given = [...askFacts(input), input.question, input.before?.question ?? "", input.before?.answer ?? ""].join("\n");

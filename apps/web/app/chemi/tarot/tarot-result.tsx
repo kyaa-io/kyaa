@@ -25,7 +25,7 @@ import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
-import { kstDate, tarotShareUrl, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
+import { tarotDateLabel, kstDate, tarotShareUrl, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
 import styles from "./tarot.module.css";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
 
@@ -200,7 +200,7 @@ export function TarotResult({
     <article className={styles.result} data-reversed={draw.reversed || undefined} data-result="" data-ask={onAsk ? "" : undefined}>
       <div className={styles.colMain}>
         <header className={styles.head}>
-          <FanText as="p" role="meta">{`${uiText("cardDay", { date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(draw.date)) })}${slotLine}`}</FanText>
+          <FanText as="p" role="meta">{`${uiText("cardDay", { date: tarotDateLabel(draw.date, locale) })}${slotLine}`}</FanText>
           <div className={styles.nameRow}>
             <FanHeading as="h1">{tarotTitle(draw.card, locale)}</FanHeading>
             <FanTag tone="fan">{direction}</FanTag>
