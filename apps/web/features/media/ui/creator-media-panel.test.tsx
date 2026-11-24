@@ -102,6 +102,8 @@ it("recovers a broken YouTube image in the full board and preserves the destinat
   const card = screen.getByRole("link", { name: /공식 채널 영상/ });
   fireEvent.error(card.querySelector("img")!);
   // R5: text-free tiles skip YouTube's letterboxed 4:3 covers.
+  expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg");
+  fireEvent.error(card.querySelector("img")!);
   expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hq720.jpg");
   fireEvent.error(card.querySelector("img")!);
   expect(card.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg");
