@@ -55,7 +55,17 @@ export function onAnalyticsConsentAvailability(listener: (value: boolean) => voi
   return () => { availabilityListeners.delete(listener); };
 }
 
+const mongolianConsent = {
+  question: "Зочлолтын статистик гаргахын тулд Google Analytics ашиглаж болох уу?",
+  policy: "Нууцлалын бодлого",
+  decline: "Татгалзах",
+  allow: "Зөвшөөрөх",
+  settings: "Зочлолтын статистикийн тохиргоо",
+  region: "Зочлолтын статистикийн зөвшөөрөл",
+} satisfies Record<keyof typeof analyticsConsentSource, string>;
+
 export function analyticsConsentText(locale: AppLocale, field: keyof typeof analyticsConsentSource): string {
+  if (locale === "mn") return mongolianConsent[field];
   const source = analyticsConsentSource[field];
   return locale === "ko" ? source.ko : translate(locale, messages[source.key], source.en);
 }

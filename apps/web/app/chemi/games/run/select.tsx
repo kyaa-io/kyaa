@@ -1,5 +1,6 @@
 "use client";
 
+import { runDateLabel } from "@/features/chemi/i18n/calendar-label";
 import { rankName } from "@/features/chemi/games/rank-name";
 import type { ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -20,7 +21,7 @@ export function SelectStage({ character, pickDisabled, onPick, copy, locale, nam
   const [action, remaining] = startLabel.split(" · ");
   const number = new Intl.NumberFormat(locale);
   // One course a day, the same for everyone, changing at midnight in Korea.
-  const today = new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date());
+  const today = runDateLabel(locale, new Date());
   return <div className={styles.select}>
     <ul className={styles.picks} aria-label={copy.title}>
       {characters.map((who) => <li data-row="" key={who} data-who={who} data-on={who === character}>
