@@ -16,6 +16,12 @@ create table public.donation_vote_candidates (
   fandom_name text,
   primary key (event_slug, celebrity_id)
 );
+insert into public.donation_vote_candidates(event_slug, celebrity_id)
+select 'new-year-2027', id from public.celebrities
+where status='published' and primary_role::text in ('idol','creator','actor','singer','show_host')
+and slug in ('nchive','wena','changha','elina','elle','hiroro','ifewknow','jenny-jeong','mmnoo-s','yuna',
+  'aryeom','hyunji','park-myungho','thisisj-official');
+
 create table public.donation_vote_receipts (
   owner_id uuid not null references public.app_users,
   request_id uuid not null,
@@ -97,4 +103,15 @@ language sql stable security definer set search_path='' as $$
 $$;
 revoke all on function public.donation_vote_state(uuid,text) from public, anon, authenticated;
 grant execute on function public.donation_vote_state(uuid,text) to service_role;
+create function public.set_donation_vote_fandom(p_admin uuid,p_allowlist uuid,p_creator uuid,p_name text)
+returns void language plpgsql security definer set search_path='' as $$
+begin
+  perform public.assert_active_admin(p_admin,p_allowlist,true);
+  if char_length(trim(p_name)) > 100 then raise exception 'VOTE_INVALID_NAME'; end if;
+  update public.donation_vote_candidates set fandom_name=nullif(trim(p_name),'')
+    where event_slug='new-year-2027' and celebrity_id=p_creator;
+  if not found then raise exception 'VOTE_UNAVAILABLE'; end if;
+end $$;
+revoke all on function public.set_donation_vote_fandom(uuid,uuid,uuid,text) from public,anon,authenticated;
+grant execute on function public.set_donation_vote_fandom(uuid,uuid,uuid,text) to service_role;
 commit;

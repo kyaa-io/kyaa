@@ -33,3 +33,21 @@ async function handle(request: Request) {
 
 export const GET = handle;
 export const POST = handle;
+
+export async function PATCH(request: Request) {
+  if (process.env.DONATION_VOTE_ENABLED !== "true") return new Response(null, { status: 404, headers });
+  try {
+    const deps = createFanpageDependencies();
+    const admin = await deps.authorizeAdmin(request.headers.get("authorization"), crypto.randomUUID());
+    const body = await request.json().catch(() => null);
+    if (!body || !uuid.test(body.creatorId) || typeof body.name !== "string" || body.name.length > 100) {
+      return new Response(null, { status: 400, headers });
+    }
+    await deps.rpc("set_donation_vote_fandom", {
+      p_admin: admin.appUserId, p_allowlist: admin.allowlistId, p_creator: body.creatorId, p_name: body.name,
+    });
+    return new Response(null, { status: 204, headers });
+  } catch (error) {
+    return new Response(null, { status: error instanceof AuthError ? error.status : 503, headers });
+  }
+}
