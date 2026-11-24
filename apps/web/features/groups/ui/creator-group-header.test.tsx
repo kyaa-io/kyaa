@@ -49,10 +49,11 @@ it('Q1 fan page: restoring auth links straight to verification, member without a
  state.ready=true;state.authenticated=true;state.data={page:page(),membership:null,bookmarked:true};render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='board'/>);
  const star=screen.getByRole('link',{name:'팬 인증'});expect(star.getAttribute('href')).toMatch(/^\/c\/elina\/verify\?locale=ko&returnTo=%2F/);expect(star).not.toHaveAttribute('aria-pressed');
 });
-it('Q1 fan page: a passport fills the star and opens that passport',()=>{
+it('Q1 fan page: the grade opens the passport without a duplicate verification chip',()=>{
  state.authenticated=true;state.data={page:page(),membership:null};state.summary={state:{status:'ready',data:{creators:[{celebrity:{slug:'elina'},passport:{id:'pass-1',tier:'Silver'}}]}},retry:()=>{}};
  render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='home'/>);
- const star=screen.getByRole('link',{name:'팬 인증 완료'});expect(star).toHaveAttribute('href','/passports/pass-1?locale=ko');expect(star).toHaveAttribute('data-fan-star','filled');
+ expect(screen.queryByRole('link',{name:'팬 인증 완료'})).toBeNull();
+ expect(screen.getByRole('link',{name:/실버/})).toHaveAttribute('href','/passports/pass-1?locale=ko');
 });
 it('Q1 brand: signed-in join button, joined shows a status that does not leave, signed out logs in',()=>{
  state.authenticated=true;state.data={page:page({kind:'brand',slug:'runmusic',name:'RUN&MUSIC'}),membership:null};
