@@ -32,14 +32,14 @@ describe("header capsule", () => {
     expect(link).toHaveAttribute("href", "/my?locale=ko&passport=favorite-a#my-passport");
     expect(link).toHaveTextContent("1,260");
     expect(link.querySelector('img[src="/images/economy/point-coin.webp"]')).not.toBeNull();
-    expect(link.querySelector('img[src="/images/dukjil-duo/glyph-heart-160.webp"]')).not.toBeNull();
+    expect(link.querySelector('img[src="/images/dukjil-duo/glyph-heart-160.webp"]')).toBeNull();
     fireEvent.click(link);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(link).not.toHaveAttribute("aria-expanded");
   });
 
-  it("shows one tier badge and points without the heart balance on home", () => {
-    state.pathname = "/";
+  it.each(["/", "/pages/groups", "/chemi", "/my", "/knowingstudy"])("shows one tier badge and points on %s", pathname => {
+    state.pathname = pathname;
     state.bias.selected = { ...selected, tier: "Gold", hearts: 17 };
     state.wallet.data = { points: 987654321 };
     render(<FanHeaderStatus locale="ko" />);
@@ -54,9 +54,9 @@ describe("header capsule", () => {
   it("shows the named favorite grade before points even with a higher passport", () => {
     state.bias.options = [{ ...selected, slug: "other", tier: "Gold" }, selected];
     render(<FanHeaderStatus locale="ko" />);
-    const label = screen.getByText("브론즈");
-    expect(label.parentElement?.nextElementSibling).toHaveTextContent("1,260");
-    expect(label.previousElementSibling?.getAttribute("src")).toContain("/images/passport/tiers/medal-v2/bronze-1.svg");
+    const label = chip().querySelector("[data-header-tier]")!;
+    expect(label.nextElementSibling).toHaveTextContent("1,260");
+    expect(label.querySelector("img")?.getAttribute("src")).toContain("/images/passport/tiers/medal-v2/bronze-1.svg");
     expect(chip()).toHaveAccessibleName(/브론즈/);
   });
 
@@ -66,7 +66,7 @@ describe("header capsule", () => {
     state.bias.options = [selected, gold];
     render(<FanHeaderStatus locale="ko" />);
     expect(chip()).toHaveAttribute("href", "/my?locale=ko&passport=other#my-passport");
-    expect(chip().querySelector("[data-header-tier]")).toHaveTextContent("골드");
+    expect(chip().querySelector("[data-header-tier]")).toHaveAttribute("title", "골드");
     expect(chip().querySelector('img[src*="/tiers/medal-v2/gold-2.svg"]')).not.toBeNull();
   });
 
@@ -125,13 +125,13 @@ describe("header capsule", () => {
     state.bias.selected = { ...selected, hearts: 1234567 };
     render(<FanHeaderStatus locale="ko" />);
     expect(chip()).not.toHaveTextContent("1,234,567");
-    expect(chip()).toHaveAccessibleName(/하트 1,234,567/);
+    expect(chip()).not.toHaveAccessibleName(/하트 1,234,567/);
     expect(chip()).toHaveAccessibleName(/포인트 1,234,567/);
   });
 
   it.each([["ko", "브론즈"], ["en", "Bronze"], ["ja", "ブロンズ"]] as const)("displays the grade name in %s", (locale, grade) => {
     render(<FanHeaderStatus locale={locale} />);
-    expect(screen.getByText(grade)).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAccessibleName(new RegExp(grade));
   });
 
   it.each(APP_LOCALES)("provides translated labels in %s", locale => {
