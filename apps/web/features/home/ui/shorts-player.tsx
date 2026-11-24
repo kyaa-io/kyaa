@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { Volume2, VolumeX } from "@/components/fan-ui/fan-icons";
+import { Play, Volume2, VolumeX } from "@/components/fan-ui/fan-icons";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import type { HomeShort } from "@/features/home/domain/home-gallery";
@@ -44,6 +44,7 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
   ended.current = onEnded;
   const [muted, setMuted] = useState(true);
   const [loaded, setLoaded] = useState(false);
+  const [showSource, setShowSource] = useState(false);
   const [blocked, setBlocked] = useState(false);
   const iframe = useRef<HTMLIFrameElement>(null);
   const youtubeNode = useRef<HTMLIFrameElement>(null);
@@ -51,7 +52,7 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
   const progress = useRef<HTMLProgressElement>(null);
   const tap = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(tap.current), []);
-  const playing = useRef(false);
+  const [playing, setPlaying] = useState(false);
   const ready = useRef(false);
   const desired = useRef(true);
   const syncing = useRef(false);
@@ -85,12 +86,18 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
           if (value !== desired.current) { desired.current = value; setMuted(value); rememberMuted(value); }
         }
         if (event.data.type === "onCurrentTime" && progress.current && event.data.value?.duration > 0) progress.current.value = event.data.value.currentTime / event.data.value.duration;
-        if (event.data.type === "onStateChange") playing.current = event.data.value === 1;
+        if (event.data.type === "onStateChange") setPlaying(event.data.value === 1);
         if (event.data.type === "onStateChange" && event.data.value === 0) ended.current?.();
         if (event.data.type === "onPlayerError" && event.data.value?.errorCode === 3002) { setSound(true, false); setBlocked(true); }
       };
+      const timeout = window.setTimeout(() => {
+        if (!ready.current) setShowSource(true);
+      }, 8000);
       window.addEventListener("message", onMessage);
-      return () => window.removeEventListener("message", onMessage);
+      return () => {
+        window.clearTimeout(timeout);
+        window.removeEventListener("message", onMessage);
+      };
     }
     let disposed = false;
     void youtubeAPI().then(api => {
@@ -105,20 +112,21 @@ export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike 
     return () => { disposed = true; window.clearInterval(poll); player.current?.destroy(); player.current = null; };
   }, [item.platform, item.videoId, immersive]);
   const cover = item.thumbnail ?? (item.platform === "tiktok" ? `/images/media/tiktok/${item.videoId}.jpg` : `https://i.ytimg.com/vi/${item.videoId}/oardefault.jpg`);
-  return <div className={styles.mediaFrame} data-loading={immersive && !loaded || undefined}>
-    {immersive && !loaded && <img className={styles.playerPoster} src={cover} alt="" />}
-    {item.platform === "tiktok" ? <iframe ref={iframe} src={`https://www.tiktok.com/player/v1/${item.videoId}?autoplay=0${immersive ? "&controls=0&loop=1" : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <iframe ref={youtubeNode} src={`https://www.youtube.com/embed/${item.videoId}?rel=0&enablejsapi=1&autoplay=${Number(immersive)}${immersive ? `&playsinline=1&mute=1&controls=0&loop=1&playlist=${item.videoId}` : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
-    {immersive && <FanAction variant="text" type="button" className={styles.tapSurface} ariaLabel={item.title} onClick={() => {
+  return <div className={styles.mediaFrame} data-loading={immersive && item.platform !== "tiktok" && !loaded || undefined}>
+    {immersive && item.platform !== "tiktok" && !loaded && <img className={styles.playerPoster} src={cover} alt="" />}
+    {item.platform === "tiktok" ? <iframe ref={iframe} src={`https://www.tiktok.com/player/v1/${item.videoId}?autoplay=0${immersive ? "&controls=0&loop=1&music_info=0&description=0&rel=0" : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <iframe ref={youtubeNode} src={`https://www.youtube.com/embed/${item.videoId}?rel=0&enablejsapi=1&autoplay=${Number(immersive)}${immersive ? `&playsinline=1&mute=1&controls=0&loop=1&playlist=${item.videoId}` : ""}`} title={item.title} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />}
+    {immersive && (item.platform !== "tiktok" || playing) && <FanAction variant="text" type="button" className={styles.tapSurface} ariaLabel={item.title} onClick={() => {
       if (tap.current !== undefined) {
         clearTimeout(tap.current); tap.current = undefined; onLike?.(); return;
       }
       tap.current = setTimeout(() => {
         tap.current = undefined;
-        if (item.platform === "tiktok") iframe.current?.contentWindow?.postMessage({ type: playing.current ? "pause" : "play", "x-tiktok-player": true }, "https://www.tiktok.com");
+        if (item.platform === "tiktok") iframe.current?.contentWindow?.postMessage({ type: playing ? "pause" : "play", "x-tiktok-player": true }, "https://www.tiktok.com");
         else if (player.current?.getPlayerState() === 1) player.current.pauseVideo();
         else player.current?.playVideo();
       }, 260);
     }} />}
+    {immersive && item.platform === "tiktok" && showSource && !loaded && <FanAction variant="text" className={styles.sourcePlay} external href={item.href}><FanIcon icon={Play} />TikTok ↗</FanAction>}
     {immersive && <progress className={styles.feedProgress} ref={progress} value={0} max={1} aria-label={item.title} />}
     <FanAction variant="text" type="button" className={`${styles.soundButton} ${blocked ? styles.soundBlocked : ""}`} ariaLabel={soundCopy[locale][muted ? 0 : 1]} aria-pressed={!muted} onClick={() => setSound(!desired.current)}><FanIcon icon={muted ? VolumeX : Volume2} /></FanAction>
   </div>;
