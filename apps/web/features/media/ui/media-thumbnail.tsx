@@ -12,19 +12,23 @@ import styles from "./creator-media-panel.module.css";
 
 const LETTERBOXED_YOUTUBE_COVER = /^https:\/\/i\.ytimg\.com\/vi(?:_webp)?\/[^/]+\/(?:hq|sd|)default\.(?:jpg|webp)$|^https:\/\/i\.ytimg\.com\/vi(?:_webp)?\/[^/]+\/[0-3]\.(?:jpg|webp)$/;
 
-export function MediaThumbnail({ image, href, kind, source, locale, priority = false, iconOnly = false, backdrop = false, title, onMissing }: { title?: string; /** Called once no cover can be shown. A caller that would rather leave the card out than show a bare frame removes it here. */ onMissing?: () => void; image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean; iconOnly?: boolean; /** The frame carries `mediaFillClass`; the cover's own blurred copy fills what the whole picture leaves. */ backdrop?: boolean }) {
+export function MediaThumbnail({ image, href, kind, source, locale, priority = false, iconOnly = false, backdrop = false, preferHighResolution = false, title, onMissing }: { title?: string; /** Called once no cover can be shown. A caller that would rather leave the card out than show a bare frame removes it here. */ onMissing?: () => void; image: string | null; href: string; kind: "photos" | "videos" | "replays"; source?: string; locale: AppLocale; priority?: boolean; iconOnly?: boolean; preferHighResolution?: boolean; /** The frame carries `mediaFillClass`; the cover's own blurred copy fills what the whole picture leaves. */ backdrop?: boolean }) {
   const [failed, setFailed] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>();
   const id = kind !== "photos" ? youtubeVideoId(href) : null;
   // Stored video covers have a full-size companion behind the same public authorization check.
-  const original = kind !== "photos"
+  const original = preferHighResolution && kind !== "photos"
     ? image?.match(/^(\/api\/public\/notice-media\/[0-9a-f-]{36})\?variant=thumbnail$/)?.[1]
     : undefined;
   const stored = original ?? image;
   const youtubeCover = id ? `https://i.ytimg.com/vi/${id}` : null;
   const preferredStored = stored && !stored.startsWith("https://i.ytimg.com/") ? stored : null;
   // sddefault and hqdefault can contain baked-in bars. Use the wide variants in compact tiles.
-  const candidates = youtubeCover
+  const barFree = Boolean(id) && (iconOnly || backdrop);
+  const legacyCandidates = barFree
+    ? [image && !LETTERBOXED_YOUTUBE_COVER.test(image) ? image : null, `${youtubeCover}/hq720.jpg`, `${youtubeCover}/mqdefault.jpg`]
+    : [image, videoThumbnailUrl(href), youtubeCover ? `${youtubeCover}/mqdefault.jpg` : null];
+  const galleryCandidates = youtubeCover
     ? [
       preferredStored,
       `${youtubeCover}/maxresdefault.jpg`,
@@ -33,6 +37,7 @@ export function MediaThumbnail({ image, href, kind, source, locale, priority = f
       image && !LETTERBOXED_YOUTUBE_COVER.test(image) ? image : null,
     ]
     : kind === "photos" ? [image] : [original, image, videoThumbnailUrl(href)];
+  const candidates = preferHighResolution ? galleryCandidates : legacyCandidates;
   const src = candidates.find((value): value is string => typeof value === "string" && value.length > 0 && !failed.includes(value));
   const provider = id ? "YouTube" : isRecordedReplayUrl("instagram", href) ? "Instagram" : isRecordedReplayUrl("tiktok", href) ? "TikTok" : source;
   useEffect(() => { if (!src) onMissing?.(); }, [src, onMissing]);
@@ -46,8 +51,8 @@ export function MediaThumbnail({ image, href, kind, source, locale, priority = f
     onLoad={event => {
       const { naturalWidth, naturalHeight } = event.currentTarget;
       // Prefer a provider cover when the stored image cannot fill a 188px tile at 2×.
-      const undersizedStoredCover = id && src === preferredStored && naturalWidth < 376;
-      if (id && (naturalWidth <= 120 || undersizedStoredCover)) {
+      const undersizedStoredCover = preferHighResolution && id && src === preferredStored && naturalWidth < 376;
+      if ((id && (preferHighResolution || barFree) && naturalWidth <= 120) || undersizedStoredCover) {
         setFailed(previous => [...previous, src]);
         return;
       }
