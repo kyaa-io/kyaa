@@ -60,20 +60,24 @@ function StageNotice({ mini, locale, label, account, reveal, celebrate }: {
   useEffect(() => {
     const key = `chemi-growth-stage:${account}:${mini.character}`;
     try {
-      const previous = sessionStorage.getItem(key);
-      sessionStorage.setItem(key, String(mini.exp));
+      const previous = localStorage.getItem(key);
+      localStorage.setItem(key, String(mini.exp));
       if (previous === null || mini.exp <= Number(previous)) return;
       const before = growthStep(Number(previous), locale);
       const after = growthStep(mini.exp, locale);
       if (before.name === after.name) return;
-      const particle = (after.name.charCodeAt(after.name.length - 1) - 0xac00) % 28 === 0 ? "가" : "이";
+      const ending = after.name.slice(-1);
+      const hasFinalConsonant = /[0-9]/.test(ending)
+        ? "013678".includes(ending)
+        : (ending.charCodeAt(0) - 0xac00) % 28 !== 0;
+      const particle = hasFinalConsonant ? "이" : "가";
       showFanToast({ title: fill(getGrowthCopy(locale).promoted, { mini: label, stage: after.name, particle }) });
       celebrate(key + after.name);
       const photo = mini.album.filter(({ slot }) => slot >= 2 && slot <= PHOTO_SLOTS &&
         Number(previous) < 10 * SLOT_LEVELS[slot - 2]! ** 2).sort((a, b) => b.slot - a.slot)[0];
       if (photo) reveal(photo.slot);
     } catch {
-      // Session storage can be disabled in private browsing.
+      // Browser storage can be disabled in private browsing.
     }
   }, [account, mini, locale, label, reveal, celebrate]);
   return null;
