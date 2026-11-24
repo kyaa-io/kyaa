@@ -432,6 +432,9 @@ export function FortuneResult({
             </>
           )}
           <picture className={styles.hero}>
+            {character === "changha" && (
+              <source media="(min-width: 48rem)" srcSet="/chemi/fortune/fortune-v1.webp 1x, /chemi/fortune/fortune-v1@2x.webp 2x" />
+            )}
             <img
               src={
                 character === "changha"
