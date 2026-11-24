@@ -1,5 +1,5 @@
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import Link from "next/link";
+import Link from "@/components/fan-ui/hover-prefetch-link";
 import Script from "next/script";
 import { notFound } from "next/navigation";
 import { loadServerEnv } from "@/server/config/env";
