@@ -33,3 +33,14 @@ it("returns the original completion time on duplicate submission and lookup", as
   expect(await (await POST(request(), context)).json()).toEqual({ deletion });
   expect(await (await GET(new Request("https://example.test"), context)).json()).toEqual({ deletion });
 });
+
+it("records a support inquiry and returns the current processing state", async () => {
+  rpc.mockResolvedValue({ status: "processing", completedAt: null });
+  const response = await POST(new Request("https://example.test", {
+    method: "POST",
+    body: JSON.stringify({ confirmation: id, channel: "inquiry", receivedAt: "2026-01-01T00:00:00Z" }),
+  }), context);
+  expect(response.status).toBe(202);
+  expect((await response.json()).deletion.status).toBe("processing");
+  expect(rpc).toHaveBeenCalledWith("admin_member_withdrawal", expect.objectContaining({ p_channel: "inquiry" }));
+});

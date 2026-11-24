@@ -18,13 +18,15 @@ begin
     if sqlerrm <> 'viewer is read-only' then raise; end if;
   end;
   update public.admin_allowlist set role='admin' where id=allow_id;
-  req := public.admin_member_withdrawal(actor,allow_id,member,member,now(),'email');
+  req := public.admin_member_withdrawal(actor,allow_id,member,member,now(),'inquiry');
   if req->>'status' is distinct from 'pending' or
     public.admin_member_withdrawal(actor,allow_id,member,member,now()-interval '1 hour','email') is distinct from req
     then raise exception 'pending retry failed'; end if;
   if not exists(select 1 from public.account_deletion_requests where app_user_id=member and requested_by_admin=actor
-    and request_channel='email' and request_received_at=now()) then raise exception 'missing original evidence'; end if;
+    and request_channel='inquiry' and request_received_at=now()) then raise exception 'missing original evidence'; end if;
   job := public.claim_account_deletion(member);
+  if public.admin_member_withdrawal(actor,allow_id,member,null,null,null)->>'status' is distinct from 'processing'
+    then raise exception 'leased request should be processing'; end if;
   perform public.finish_account_deletion_provider(member,(job->>'leaseToken')::uuid,'privy');
   if public.chemi_complete_account_deletion(member,(job->>'leaseToken')::uuid) is not true then raise exception 'completion failed'; end if;
   req := public.admin_member_withdrawal(actor,allow_id,member,member,now(),'email');
