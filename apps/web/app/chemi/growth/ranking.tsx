@@ -16,6 +16,7 @@ const labels: Record<string,string[]> = {
   ko: ["키우기 랭킹","이번 주","전체","내 순위","앞 순위까지","미등록","팬"],
   en: ["Growth ranking","This week","All time","My rank","To the next rank","Unranked","Fan"],
   ja: ["育成ランキング","今週","累計","自分の順位","次の順位まで","未登録","ファン"],
+  "zh-Hant": ["養成排行","本週","累計","我的排名","距上一名","未上榜","粉絲"],
   zh: ["养成排行","本周","累计","我的排名","距上一名","未上榜","粉丝"],
   th: ["อันดับการเติบโต","สัปดาห์นี้","ทั้งหมด","อันดับของฉัน","สู่อันดับถัดไป","ยังไม่มีอันดับ","แฟน"],
   id: ["Peringkat pertumbuhan","Minggu ini","Sepanjang waktu","Peringkat saya","Ke posisi berikutnya","Belum berperingkat","Penggemar"],

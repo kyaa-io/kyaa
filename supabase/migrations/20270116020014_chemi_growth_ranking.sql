@@ -10,6 +10,8 @@ returns jsonb language sql stable security definer set search_path='' as $$
     join public.app_users u on u.id=m.user_id and u.status='active'
     join public.chemi_exp_log l on l.user_id=m.user_id and l.character=m.character
     where m.character=p_character and public.social_profile_is_public(m.user_id)
+      and not exists (select 1 from public.social_profile_settings privacy
+        where privacy.app_user_id=m.user_id and privacy.profile_visible=false)
       and (p_period='all' or (p_period='week' and l.kst_date>=date_trunc('week',now() at time zone 'Asia/Seoul')::date))
     group by m.user_id,m.exp_total
   ), ranked as (

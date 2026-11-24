@@ -19,6 +19,11 @@ const state: GrowthState = {
   ],
 };
 const respond = (body: unknown, ok = true) => vi.fn(async () => ({ ok, status: ok ? 200 : 503, json: async () => body }));
+// Rank reads are independent of adoption and the private growth state.
+function stubGrowth(fetcher: ReturnType<typeof vi.fn>) {
+  vi.stubGlobal("fetch", (url: string, options: RequestInit) =>
+    url.startsWith("/api/chemi/grow?") ? Promise.resolve({ ok: true, json: async () => [] }) : fetcher(url, options));
+}
 const show = () => render(<ChemiGrowth locale="ko" home={ko.home} matchAvailable />);
 
 afterEach(() => {
@@ -29,7 +34,7 @@ afterEach(() => {
 });
 
 it("shows the raised mini, its level and today's remaining contents", async () => {
-  vi.stubGlobal("fetch", respond(state));
+  stubGrowth(respond(state));
   show();
   expect(await screen.findByText("창하 친밀 Lv")).toBeTruthy();
   expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe("490/640");
@@ -49,7 +54,7 @@ it("starts raising a creator that is not raised yet", async () => {
   const fetcher = vi.fn()
     .mockResolvedValueOnce({ ok: true, json: async () => state })
     .mockResolvedValueOnce({ ok: true, json: async () => adopted });
-  vi.stubGlobal("fetch", fetcher);
+  stubGrowth(fetcher);
   show();
   fireEvent.click(await screen.findByRole("button", { name: "유나" }));
   expect(screen.getByText("내 첫 번째 팬, 어디 없나?")).toBeTruthy();
@@ -61,7 +66,7 @@ it("starts raising a creator that is not raised yet", async () => {
 it("shows a signed-out visitor the room without values", () => {
   auth.authenticated = false;
   const fetcher = respond(state);
-  vi.stubGlobal("fetch", fetcher);
+  stubGrowth(fetcher);
   show();
   expect(screen.getByText("예시 화면")).toBeTruthy();
   expect(screen.getByRole("button", { name: "로그인하고 키우기" })).toBeTruthy();
@@ -71,7 +76,7 @@ it("shows a signed-out visitor the room without values", () => {
 });
 
 it("offers a retry when loading fails", async () => {
-  vi.stubGlobal("fetch", respond({}, false));
+  stubGrowth(respond({}, false));
   show();
   expect(await screen.findByText(/불러오지 못했습니다/)).toBeTruthy();
   expect(screen.getByRole("button", { name: "다시 시도" })).toBeTruthy();
@@ -89,7 +94,7 @@ it("has every key in every language", () => {
 });
 
 it("changes the mini's line on tap, pets on a long press and gets dizzy on rapid taps", async () => {
-  vi.stubGlobal("fetch", respond(state));
+  stubGrowth(respond(state));
   show();
   const mini = await screen.findByRole("button", { name: "미니 창하" });
   vi.useFakeTimers();
@@ -109,7 +114,7 @@ it("changes the mini's line on tap, pets on a long press and gets dizzy on rapid
 });
 
 it("keeps Elina's half-formal tone in Korean", async () => {
-  vi.stubGlobal("fetch", respond(state));
+  stubGrowth(respond(state));
   show();
   fireEvent.click(await screen.findByRole("button", { name: /^엘리나/ }));
   expect(screen.getByText("여기가 제 방이에요? 오늘부터 연습할게요.")).toBeTruthy();
@@ -125,7 +130,7 @@ it("has every room line in every language", () => {
 
 it("shows the room for the mini's stage and fades in a newly reached stage once", async () => {
   vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }));
-  vi.stubGlobal("fetch", respond({ ...state, fresh: [{ character: "changha", slot: 2 }] }));
+  stubGrowth(respond({ ...state, fresh: [{ character: "changha", slot: 2 }] }));
   const { container } = show();
   const rooms = () => [...container.querySelectorAll<HTMLImageElement>("img[data-room-stage]")].map((img) => img.dataset.roomStage);
   await waitFor(() => expect(rooms()).toEqual(["kid"]));
