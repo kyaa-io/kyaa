@@ -11,6 +11,13 @@ declare
   fp uuid := gen_random_uuid(); gp uuid := gen_random_uuid(); page_id uuid;
   fa uuid := gen_random_uuid(); ga uuid := gen_random_uuid(); result jsonb;
 begin
+  insert into public.home_shortform(celebrity_id,video_id,title,href,published_at)
+    values(artist,'Curated00001','영상 예시','https://www.youtube.com/watch?v=Curated00001',now());
+  if public.read_curated_home_shortform_page('ko')->'items' <> '[]'::jsonb then raise exception 'legacy short automatically selected'; end if;
+  perform public.admin_edit_home_media('video','select',array(select id::text from public.home_shortform where video_id='Curated00001'),actor::text);
+  if public.read_curated_home_shortform_page('ko')#>>'{items,0,videoId}' is distinct from 'Curated00001' then raise exception 'selected short missing'; end if;
+  update public.home_shortform set unavailable_at=now() where video_id='Curated00001';
+  if public.read_curated_home_shortform_page('ko')->'items' <> '[]'::jsonb then raise exception 'unavailable short shown'; end if;
   select id into page_id from public.group_pages where celebrity_id=artist;
   if page_id is null then
     insert into public.group_pages(kind,celebrity_id,name,status,listed)
