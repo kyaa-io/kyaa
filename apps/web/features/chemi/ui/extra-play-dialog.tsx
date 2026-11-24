@@ -31,10 +31,10 @@ const DAILY_EXTRA = 3;
 
 /** 추가 판 확인(짝 맞추기·최애 런·질문하기 공통). 남은 추가 판 칸 3개 중 이번에 쓸 칸을 한 번 비우고, 포인트는 쓴 뒤 값으로 한 번 굴린다. */
 export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra, art, labels }: ExtraPlayDialogProps) {
-  const unit = extraGameUnit(cost);
+  const unit = labels ? "M" : extraGameUnit(cost);
   const limited = extra !== undefined;
   const remaining = extra ?? 0;
-  const base = getExtraPlayCopy(locale, cost);
+  const base = getExtraPlayCopy(locale, cost, unit);
   const copy = labels ? { ...base, title: labels.title, left: labels.extra, confirm: labels.pay } : base;
   const number = new Intl.NumberFormat(locale);
   const after = points == null ? null : Math.max(0, points - cost);

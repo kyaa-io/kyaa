@@ -66,8 +66,8 @@ export function extraGameUnit(cost: number) {
   return [10, 30, 50, 100].includes(cost) ? "M" : "P";
 }
 
-export function getExtraPlayCopy(locale: string, cost = 0): ExtraPlayCopy {
-  const row = (extraGameUnit(cost) === "M" ? mileageTable : pointsTable)[parseAppLocale(locale)];
+export function getExtraPlayCopy(locale: string, cost = 0, unit = extraGameUnit(cost)): ExtraPlayCopy {
+  const row = (unit === "M" ? mileageTable : pointsTable)[parseAppLocale(locale)];
   return Object.fromEntries(keys.map((key, index) => [key, row[index].replaceAll("{cost}", String(cost))])) as ExtraPlayCopy;
 }
 
