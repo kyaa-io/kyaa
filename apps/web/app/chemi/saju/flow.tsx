@@ -491,8 +491,7 @@ export function SajuFlow({
     }
   }
 
-  function choose(next: number) {
-    const id = sajuCharacters[(next + sajuCharacters.length) % sajuCharacters.length].id;
+  function choose(id: SajuCharacterId) {
     commit({ character: id }, "replace");
   }
 
@@ -904,13 +903,13 @@ export function SajuFlow({
         {step === "enter" ? (
           <>
             <div className={styles.pick} role="group" aria-label={text("favorite")}>
-              {sajuCharacters.map((item) => (
+              {sajuCharacters.filter(({ id }) => id !== "dosa").map((item) => (
                 <FanAction
                   key={item.id}
                   variant="text"
                   className={styles.pickItem}
                   aria-pressed={item.id === character}
-                  onClick={() => choose(sajuCharacters.indexOf(item))}
+                  onClick={() => choose(item.id)}
                 >
                   <img src={`${art}/avatar-${item.id}-v1.jpg`} alt="" />
                   <FanText role={item.id === character ? "label" : "meta"}>{creatorName(item.id, locale)}</FanText>

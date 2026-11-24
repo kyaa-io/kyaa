@@ -1,3 +1,4 @@
+import { needsCreatorChoice, ReadingCreatorPicker } from "@/features/chemi/ui/reading-creator-picker";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function StarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ locale?: string; step?: string; r?: string }>;
+  searchParams: Promise<{ c?: string; locale?: string; step?: string; r?: string }>;
 }) {
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
@@ -24,7 +25,7 @@ export default async function StarPage({
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="star-main">
           <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
-          <StarFlow locale={locale} restoring={restoring} />
+          {needsCreatorChoice(params) ? <ReadingCreatorPicker content="star" locale={locale} /> : <StarFlow locale={locale} restoring={restoring} />}
         </FanContentContainer>
       </ReadingCopyProvider>
     </FanAppFrame>

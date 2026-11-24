@@ -350,7 +350,6 @@ export function TarotScreen({
     return (
       <div className={styles.loading} role="status">
         <FanSkeletonStatus locale={locale} />
-        <img src="/chemi/tarot/loading-dosa.webp" alt="" />
         <FanSkeleton shape="block" className={styles.loadbar} />
       </div>
     );

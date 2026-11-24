@@ -66,7 +66,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
           <FanHeading as="h1">{t.title}</FanHeading>
           <FanText role="body">{t.intro}</FanText>
         </div>
-        <Image unoptimized className={styles.hero} src="/chemi/chemi-promo.webp" width={1774} height={887} priority alt="" />
+        <Image unoptimized className={styles.hero} src="/chemi/chemi-promo-trio.webp" width={1774} height={887} priority alt="" />
       </header>
       {(["readings", "games"] as const).map(group => <section key={group} className={styles.section}>
         <FanHeading>{names[group]}</FanHeading>

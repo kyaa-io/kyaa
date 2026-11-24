@@ -11,6 +11,7 @@
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { ReadingCreatorPicker } from "@/features/chemi/ui/reading-creator-picker";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -112,7 +113,7 @@ type Evidence = { rows: { kind: "basis" | "why"; text: string }[]; hourless: boo
 const kstToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(Date.now());
 const shortDate = (day: string) => `${day.slice(5, 7)}. ${day.slice(8, 10)}.`;
 
-export function AskScene({ locale, content, character, readingId, at, result }: {
+type AskSceneProps = {
   locale: AppLocale;
   content: AskContent;
   character: AskCharacter;
@@ -120,7 +121,16 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
   at: AskLocation;
   /** 결과 화면에서 온 질문의 '이 결과' 칩 뒤에 붙는 결과 이름(예: 82점). */
   result?: string;
-}) {
+};
+
+export function AskScene(props: AskSceneProps) {
+  const [chosen, setChosen] = useState<Exclude<AskCharacter, "dosa"> | null>(null);
+  if (props.character === "dosa" && !chosen && props.at.step !== "answer" && props.at.step !== "follow")
+    return <ReadingCreatorPicker content={props.content} locale={props.locale} onChoose={setChosen} />;
+  return <AskConversation {...props} character={chosen ?? props.character} />;
+}
+
+function AskConversation({ locale, content, character, readingId, at, result }: AskSceneProps) {
   const text = useReadingCopy();
   const { ready, getAccessToken } = useByUsAuth();
   const [state, setState] = useState<AskState | null>(null);

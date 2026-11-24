@@ -366,8 +366,7 @@ export function StarFlow({
     }
   }
 
-  function choose(next: number) {
-    const id = starCharacters[(next + starCharacters.length) % starCharacters.length].id;
+  function choose(id: StarCharacterId) {
     setCharacter(id);
     writeUrl({ c: id }, "replace");
   }
@@ -528,13 +527,13 @@ export function StarFlow({
         {step === "enter" ? (
           <>
             <div className={styles.pick} role="group" aria-label={text("favorite")}>
-              {starCharacters.map((c) => (
+              {starCharacters.filter(({ id }) => id !== "dosa").map((c) => (
                 <FanAction
                   key={c.id}
                   variant="text"
                   className={styles.pickItem}
                   aria-pressed={c.id === character}
-                  onClick={() => choose(starCharacters.indexOf(c))}
+                  onClick={() => choose(c.id)}
                 >
                   <img src={`${art}/avatar-${c.id}-v1.jpg`} alt="" />
                   <FanText role={c.id === character ? "label" : "meta"}>{creatorName(c.id, locale)}</FanText>

@@ -575,14 +575,9 @@
   background: var(--color-accent-soft);
   animation: appear var(--motion-slow) var(--motion-easing) 150ms 1 both;
 }
-.loading img {
-  display: block;
-  width: calc(var(--space-10) * 4 + var(--space-2));
-}
 .loadbar {
   width: calc(var(--space-16) * 3 + var(--space-2));
   height: var(--space-6);
-  margin-top: calc(var(--space-2) - var(--space-8));
   border-radius: var(--radius-pill);
 }
 @keyframes appear {

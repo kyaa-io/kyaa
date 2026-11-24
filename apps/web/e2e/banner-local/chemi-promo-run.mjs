@@ -13,8 +13,8 @@ const popup = {
   id: "90000000-0000-4000-8000-000000000002", kind: "announcement", celebrityId: null, category: "guide",
   placement: "chemi_promo_popup", startsAt: "2026-11-24T00:00:00Z", endsAt: "2026-12-24T00:00:00Z",
   title: "케미 탭이 열렸어요", description: "운세를 보고, 미니게임을 즐기며, 미니 최애를 키워요.",
-  ctaLabel: "케미 해 보기", href: "/guide/chemi", alt: "달빛 아래 모인 케미의 주인공 네 명",
-  desktopImage: { id: "90000000-0000-4000-8000-000000000003", url: "/chemi/chemi-promo.webp", width: 1774, height: 887, revision: 1, mimeType: "image/webp" },
+  ctaLabel: "케미 해 보기", href: "/guide/chemi", alt: "달빛 아래 모인 케미의 크리에이터 세 명",
+  desktopImage: { id: "90000000-0000-4000-8000-000000000003", url: "/chemi/chemi-promo-trio.webp", width: 1774, height: 887, revision: 1, mimeType: "image/webp" },
   mobileImage: null,
 };
 const key = `kyaa:chemi-promo:${popup.id}`;

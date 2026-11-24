@@ -32,6 +32,8 @@ import type { TarotDraw, TarotStep } from "./types";
 import styles from "./tarot.module.css";
 import type { AppLocale } from "@/i18n/locales";
 
+const selectableCharacters = TAROT_CHARACTERS.filter(({ key }) => key !== "dosa");
+
 type Props = {
   locale: AppLocale;
   step: TarotStep;
@@ -86,8 +88,8 @@ export function TarotStage(props: Props) {
   }, [step]);
 
   const turn = (offset: number) => {
-    const index = TAROT_CHARACTERS.findIndex((item) => item.key === character);
-    props.onSelectCharacter(TAROT_CHARACTERS[(index + offset + TAROT_CHARACTERS.length) % TAROT_CHARACTERS.length].key);
+    const index = selectableCharacters.findIndex((item) => item.key === character);
+    props.onSelectCharacter(selectableCharacters[(index + offset + selectableCharacters.length) % selectableCharacters.length].key);
   };
 
   // 대화는 장면 어디를 눌러도 다음 대사로 간다(버튼·링크는 제 일을 한다).
@@ -338,7 +340,7 @@ export function Pickband({ locale, character, onSelect }: { locale: string; char
   const uiText = useReadingCopy();
   return (
     <div className={styles.pickband} role="group" aria-label={uiText("favorite")}>
-      {TAROT_CHARACTERS.map(({ key }) => tarotCharacter(key, locale)).map((item) => (
+      {selectableCharacters.map(({ key }) => tarotCharacter(key, locale)).map((item) => (
         <FanIconButton key={item.key} aria-label={item.name} aria-pressed={item.key === character} onClick={() => onSelect(item.key)}>
           <img src={tarotAvatar(item.key)} alt="" />
           <FanText role={item.key === character ? "label" : "meta"}>{item.name}</FanText>

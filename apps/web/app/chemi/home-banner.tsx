@@ -12,7 +12,7 @@ import { Pause, Play } from "@/components/fan-ui/fan-icons";
 import styles from "./home.module.css";
 
 const images = {
-  fortune: "fortune/fortune-changha-banner-v2.webp",
+  fortune: "fortune/fortune-elina-wide-v2.webp",
   saju: "saju/saju-changha-wide-v1.webp",
   zodiac: "star/hero-elina-l-v1.webp",
   tarot: "tarot/scene-yuna-l.webp",
@@ -50,7 +50,7 @@ export function HomeBanner({
       onPointerUp={event => { if (event.pointerType !== "mouse") setPointerInside(false); }} onPointerCancel={() => setPointerInside(false)}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
-        <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={resting} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />
+        {id !== "fortune" && <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={resting} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />}
         <div className={styles.caption}>
           <div><span>{copy[type]}</span><div className={styles.faces}>{["changha", "elina", "yuna"].map(person => <img key={person} alt="" src={`/chemi/grow/face-${person}-v1.webp`} />)}</div><FanHeading as="h1">{copy[id]}</FanHeading></div>
           {href ? (
