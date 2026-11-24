@@ -4,6 +4,7 @@ import { openLoginPage } from "./open-login-page";
 import { usePrivyBridge } from "./privy-bridge";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
+import { guardRestoredPagesAfterSignOut, markSignedOut } from "./account-switch";
 
 interface Session { authenticated: boolean; walletLinked: boolean; userId?: string; accessToken: string; expiresAt: number }
 interface CognitoAuth { enabled: boolean; loading: boolean; session: Session | null; refresh(): Promise<Session | null>; logout(): Promise<string|null>; getAccessToken(): Promise<string | null> }
@@ -33,6 +34,8 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
     return request;
   },[]);
   useEffect(()=>{void refresh().catch(()=>{}).finally(()=>setLoading(false));},[refresh]);
+  // After a sign-out, a page restored from the back-forward cache would show the old account: it reloads instead.
+  useEffect(()=>guardRestoredPagesAfterSignOut(),[]);
   const getAccessToken=useCallback(async()=>{
     const expectedRevision=revision.current;
     const value=current.current && current.current.expiresAt>Date.now()+30_000?current.current:await refresh();
@@ -41,7 +44,7 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
   const logout=useCallback(async()=>{
     const response=await fetch("/api/auth/cognito/logout",{method:"POST"});
     if(!response.ok)throw new Error("Sign out unavailable");
-    revision.current+=1;current.current=null;setSession(null);
+    revision.current+=1;current.current=null;setSession(null);markSignedOut();
     const value=await response.json();
     return typeof value.logoutUrl==="string"?value.logoutUrl:null;
   },[]);
@@ -60,7 +63,7 @@ export type { ByUsAuth, ByUsAuthUser } from "./auth-fallback";
 export function useByUsAuth(): ByUsAuth{
   const fallback=useFallbackAuth(),cognito=useCognitoAuth(),privy=usePrivyBridge();
   const {logout:cognitoLogout,session,loading,getAccessToken}=cognito;
-  const logout=useCallback(async()=>{const destination=await cognitoLogout();if(destination)window.location.assign(destination);},[cognitoLogout]);
+  const logout=useCallback(async()=>{const destination=await cognitoLogout();if(destination)window.location.replace(destination);},[cognitoLogout]);
   const authenticated=session?.authenticated===true && session.walletLinked===true && typeof session.userId==="string";
   const userId=authenticated?session!.userId!:null;
   const user=useMemo<ByUsAuthUser|null>(()=>userId?{id:userId,linkedAccounts:[]}:null,[userId]);
