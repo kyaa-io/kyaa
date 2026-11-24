@@ -55,6 +55,7 @@ export type FanNumberProps = Readonly<{
   unit?: ReactNode;
   /** md 16/700 · lg 24/850 · xl 24(390)/32(768+)/850 */
   size?: "md" | "lg" | "xl";
+  signDisplay?: "auto" | "always";
   countUp?: boolean;
   pulseOnChange?: boolean;
   locale: string;
@@ -65,12 +66,12 @@ export type FanNumberProps = Readonly<{
 
 /** 자산 숫자(포인트·응모권·스탬프·온도). tabular-nums에 최대 자릿수 폭을 미리 잡아 카운트업 중에도 폭이 변하지 않는다.
  * `aria-live`는 붙이지 않는다(호출 쪽이 한 번만). 화면 판독기는 최종 값만 읽는다. */
-export function FanNumber({ value, unit, size = "md", countUp = false, pulseOnChange = false, locale, icon, className }: FanNumberProps) {
+export function FanNumber({ value, unit, size = "md", signDisplay = "auto", countUp = false, pulseOnChange = false, locale, icon, className }: FanNumberProps) {
   const shown = useCountUp(value, countUp);
   const [pulse, endPulse] = usePulse(value, pulseOnChange);
   // 네 자리 수도 묶음 표시를 넣어 언어마다 표기가 섞이지 않게 한다(es 기본값은 '3906'·'38.429'로 갈린다).
-  const formatted = shown.toLocaleString(locale, { useGrouping: "always" });
-  const final = value.toLocaleString(locale, { useGrouping: "always" });
+  const formatted = shown.toLocaleString(locale, { useGrouping: "always", signDisplay });
+  const final = value.toLocaleString(locale, { useGrouping: "always", signDisplay });
   const counting = shown !== value;
   // 카운트업 중에만 최종 값 폭을 잡아 옆 요소가 흔들리지 않게 한다. 멈춘 값은 글자 폭 그대로(앞 빈칸 없음).
   return <span className={[styles.number, styles[size], className ?? ""].filter(Boolean).join(" ")} data-number-role="asset" data-pulse={pulse ? "true" : undefined} onAnimationEnd={pulse ? endPulse : undefined}>
