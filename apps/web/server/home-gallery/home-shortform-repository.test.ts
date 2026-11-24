@@ -79,7 +79,7 @@ describe("home shortform", () => {
     const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000002?variant=thumbnail";
     const rpc = vi.fn(async (name: string) => name === "read_public_video_thumbnails" ? { data: { [one.href]: thumbnail }, error: null } : { data: { items: [one], hasMore: false }, error: null });
     expect(await new HomeGalleryRepository({ rpc } as never).listShorts("ko", { limit: 6 })).toEqual([{ ...one, platform: "youtube", thumbnail }]);
-    expect(rpc).toHaveBeenCalledWith("read_public_home_shortform_page", { p_locale: "ko", p_offset: 0, p_limit: 12 });
+    expect(rpc).toHaveBeenCalledWith("read_curated_home_shortform_page", { p_locale: "ko", p_offset: 0, p_limit: 12 });
   });
   it("reads a TikTok short made from a creator's notice (real read_public_home_shortform response, 20261222150000)", async () => {
     const sql = [{ id: "a1657945-3803-4c89-a7f4-24504cb8681a", href: "https://www.tiktok.com/@fixture.one/video/7000000000000000001", title: "원문 캡션 고침", creator: { name: "정제니", slug: "jenny-jeong" }, videoId: "7000000000000000001", platform: "tiktok" }];
@@ -109,13 +109,11 @@ describe("home shortform", () => {
     const rpc = pageRpc([video(1, "a", "U8YzMfHLFQM")]);
     expect(await new HomeGalleryRepository({ rpc } as never).listShorts("ko", { limit: 6 })).toHaveLength(1);
   });
-  it("lets creators take turns even when one creator posted the newest forty (사용자 2026-11-12)", async () => {
+  it("keeps the curator’s order even for consecutive videos by one creator", async () => {
     const list = [...Array.from({ length: 40 }, (_, i) => video(i, "elina")), ...["yuna", "changha", "hiroro", "minju"].flatMap((slug, s) => [0, 1, 2].map(n => video(100 + s * 3 + n, slug)))];
     const repo = new HomeGalleryRepository({ rpc: pageRpc(list) } as never);
     const firstTwelve = await repo.listShorts("ko", { limit: 12 });
-    expect(new Set(firstTwelve.map(item => item.creator.slug)).size).toBe(5);
-    firstTwelve.slice(1).forEach((item, i) => expect(item.creator.slug).not.toBe(firstTwelve[i]!.creator.slug));
-    expect(firstTwelve.filter(item => item.creator.slug === "elina").length).toBeLessThanOrEqual(3);
+    expect(firstTwelve.map(item => item.id)).toEqual(list.slice(0,12).map(item => item.id));
   });
   it("pages by position in the diversified list, without repeats, and tells when the list ends", async () => {
     const list = ["a", "b", "c"].flatMap((slug, s) => Array.from({ length: 8 }, (_, i) => video(s * 20 + i, slug)));

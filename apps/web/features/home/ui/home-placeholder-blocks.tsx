@@ -81,7 +81,7 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
   const mobile = list?.length ? homeColumns(list, "mobile") : null;
   const desktop = list?.length ? homeColumns(list, "desktop") : null;
   const reservation = list === null && expectedPhotos?.length ? expectedPhotos : null;
-  const more = !!list?.length && hasMore;
+  const more = list !== null && hasMore;
   return <section className={styles.block} aria-labelledby="home-gallery-heading" data-home-block="gallery">
     <FanSectionHeader variant="editorial" id="home-gallery-heading" title={v[1]!} action={more ? { href: `/gallery?locale=${locale}`, label: homeGalleryCopy[locale].viewAll } : undefined} />
     {mobile && desktop ? <>
@@ -91,10 +91,10 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
       <GalleryReservation photos={reservation} layout="mobile" />
       <GalleryReservation photos={reservation} layout="desktop" />
     </> : <div className={styles.photos} data-home-measure="photos" data-home-state={typeof photos === "string" ? photos : "empty"}>{Array.from({ length: 8 }, (_, i) => <span key={i} className={styles.tile} data-row="photo-placeholder" aria-hidden={i > 0 || list === null || undefined}>{i === 0 && list ? <span className={styles.note}>{v[4]}</span> : null}</span>)}</div>}
-    {shortList?.length === 0 ? null : <div className={styles.shelf} data-home-measure="shorts">
+    <div className={styles.shelf} data-home-measure="shorts">
       <div className={styles.shortHead}><FanHeading as="h3">{v[2]}</FanHeading>{shortList?.length ? <FanSectionLink reloadDocument href={`/shorts?locale=${locale}`}>{homeGalleryCopy[locale].viewAll}</FanSectionLink> : null}</div>
-      {shortList?.length ? <HomeShorts items={shortList} locale={locale} hasMore={shortList.length >= 12} /> : <div data-home-state={typeof shorts === "string" ? shorts : undefined} />}
-    </div>}
+      {shortList?.length ? <HomeShorts items={shortList} locale={locale} hasMore={shortList.length >= 12} /> : shortList ? <p className={styles.note}>{v[5]}</p> : <div data-home-state={typeof shorts === "string" ? shorts : undefined} />}
+    </div>
   </section>;
 }
 

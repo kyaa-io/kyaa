@@ -178,7 +178,7 @@ function StreamHomeGallery({ queries, locale }: Pick<StreamingHomeProps, "querie
   const result = use(queries.homeGallery);
   const posts = result.status === "fulfilled" ? homeGalleryPostPhotos(result.value.items) : [];
   const photos = result.status === "fulfilled" ? posts.slice(0, 12) : "error";
-  const hasMore = result.status === "fulfilled" && (result.value.nextCursor !== null || posts.length > 12);
+  const hasMore = result.status === "fulfilled";
   return <Suspense fallback={<HomeGalleryPlaceholder locale={locale} expectedPhotos={photos === "error" ? undefined : photos} state={photos === "error" ? "error" : "loading"} />}>
     <StreamHomeGalleryContent queries={queries} locale={locale} photos={photos} hasMore={hasMore} />
   </Suspense>;

@@ -11,6 +11,13 @@ declare
   fp uuid := gen_random_uuid(); gp uuid := gen_random_uuid(); page_id uuid;
   fa uuid := gen_random_uuid(); ga uuid := gen_random_uuid(); result jsonb;
 begin
+  insert into public.home_shortform(celebrity_id,video_id,title,href,published_at)
+    values(artist,'Curated0001','영상 예시','https://www.youtube.com/watch?v=Curated0001',now());
+  if public.read_curated_home_shortform_page('ko')->'items' <> '[]'::jsonb then raise exception 'legacy short automatically selected'; end if;
+  perform public.admin_edit_home_media('video','select',array(select id::text from public.home_shortform where video_id='Curated0001'),actor::text);
+  if public.read_curated_home_shortform_page('ko')#>>'{items,0,videoId}' is distinct from 'Curated0001' then raise exception 'selected short missing'; end if;
+  update public.home_shortform set unavailable_at=now() where video_id='Curated0001';
+  if public.read_curated_home_shortform_page('ko')->'items' <> '[]'::jsonb then raise exception 'unavailable short shown'; end if;
   select id into page_id from public.group_pages where celebrity_id=artist;
   if page_id is null then
     insert into public.group_pages(kind,celebrity_id,name,status,listed)
@@ -35,6 +42,12 @@ begin
     or result::text like '%'||actor::text||'%' then raise exception 'public photo projection'; end if;
   if public.read_public_gallery_post_photos('ko',false,24)->'items' @> '[{"source":"group_post"}]' then raise exception 'groups disabled'; end if;
   update public.mobile_media_assets set kind='video',content_type='video/mp4' where id=ga;
+  if public.read_home_gallery_mix('ko',true,24)->'items' <> '[]'::jsonb then raise exception 'unexpected initial selection'; end if;
+  perform public.admin_edit_home_media('photo','select',array['group:'||gp||':'||ga],actor::text);
+  if jsonb_array_length(public.read_home_gallery_mix('ko',true,24)->'items') <> 1 then raise exception 'unexpected partial selection'; end if;
+  perform public.admin_edit_home_media('photo','hide',array['group:'||gp||':'||ga],actor::text);
+  if public.read_home_gallery_mix('ko',true,24)->'items' <> '[]'::jsonb then raise exception 'hidden selection'; end if;
+  perform public.admin_edit_home_media('photo','select',array(select id from public.home_media_photo_candidates('ko',true)),actor::text);
   result := public.read_home_gallery_mix('ko',true,24)->'items';
   if not exists(select 1 from jsonb_array_elements(result) i
      where i->>'source'='group_post' and i#>>'{image,url}'='/api/groups/media/'||ga||'?variant=thumbnail')

@@ -4,7 +4,6 @@ import { z } from "zod";
 import { createClient } from "@/server/data/client";
 import { createCreatorAvatarReader, type CreatorAvatarReader } from "./creator-avatars";
 import { snsIngestSlug } from "@/server/sns-ingest/source-url";
-import { diversifyShorts } from "@/features/home/domain/home-gallery-order";
 import { homeGalleryPageSchema, homeShortsPageSchema, homeShortsSchema, type HomeGalleryPage, type HomeShort } from "@/features/home/domain/home-gallery";
 
 type Db = Pick<SupabaseClient, "rpc">;
@@ -58,10 +57,7 @@ export class HomeGalleryRepository {
     return keyPageSchema.parse(data);
   }
 
-  /**
-   * The newest `pages` × 24 photos in one list, for the home block that picks the most varied 12 from them (the newest 24 alone can be
-   * one or two creators). The pages are read in parallel by position; `nextCursor` continues after the last photo of the last page.
-   */
+  /** Read the selected public posts in rank order before applying the home mix. */
   async listPublishedPool(locale: "ko" | "en", input: { pages: number }): Promise<HomeGalleryPage> {
     const pages = await Promise.all(Array.from({ length: input.pages }, (_, index) => this.readPage(locale, 24, { p_offset: index * 24 }, true)));
     const seen = new Set<string>();
@@ -90,20 +86,17 @@ export class HomeGalleryRepository {
     return (await this.withThumbnails(items)).filter(item => item.platform !== "instagram" || item.thumbnail);
   }
 
-  /**
-   * The newest SHORTS_POOL short-form videos, creators taking turns (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"). Paging is by position in
-   * this diversified list, so the offset the shorts page and the rail send means the same on every read.
-   */
-  private async shortsPool(locale: "ko" | "en", diversify = true): Promise<HomeShort[]> {
+  /** The home rail uses curator order. The catalog reads all public videos by publication date. */
+  private async shortsPool(locale: "ko" | "en", curated = true): Promise<HomeShort[]> {
     const pages = await Promise.all(Array.from({ length: SHORTS_POOL / SHORTS_READ }, async (_, index) => {
-      const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: index * SHORTS_READ, p_limit: SHORTS_READ });
+      const { data, error } = await this.db.rpc(curated ? "read_curated_home_shortform_page" : "read_public_home_shortform_page", { p_locale: locale, p_offset: index * SHORTS_READ, p_limit: SHORTS_READ });
       if (error) throw new HomeGalleryRepositoryError(error.message);
       return homeShortsPageSchema.parse(data);
     }));
     const seen = new Set<string>();
     const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
     const shown = await this.withCoverRule(items);
-    return diversify ? diversifyShorts(shown) : shown;
+    return shown;
   }
 
   /** Public like totals for the videos, a few reads of up to LIKES_BATCH ids; a video without a total (not public) counts 0. */
