@@ -328,7 +328,7 @@ export function SajuFlow({
   }, [phase]);
 
   const run = useCallback(
-    async (id: SajuCharacterId) => {
+    async (id: SajuCharacterId, reopenChart = false) => {
       restoreRetry.current = null;
       abort.current?.abort();
       const controller = new AbortController();
@@ -350,7 +350,7 @@ export function SajuFlow({
         setPhase("idle");
         setNeedBirth(false);
         void settle(data, id, token);
-        commit({ step: "talk-1", r: data.readingId }, "replace");
+        commit({ step: reopenChart ? "result" : "talk-1", view: "first", r: data.readingId }, "replace");
       } catch (error) {
         // 다른 단계로 떠났거나 새 요청이 이어받은 요청의 끝은 화면에 반영하지 않는다.
         if (abort.current !== controller) return;
@@ -478,8 +478,9 @@ export function SajuFlow({
     try {
       await saveBirth(await getAccessToken(), birth);
       setSheet(null);
-      commit({ step: "calc" }, "push");
-      void run(character);
+      const reopenChart = navRef.current.step === "result";
+      commit({ step: "calc" }, reopenChart ? "replace" : "push");
+      void run(character, reopenChart);
     } catch (error) {
       if (error instanceof ChemiRequestError && error.code === "CHEMI_UNDER_14") {
         setSheet(null);

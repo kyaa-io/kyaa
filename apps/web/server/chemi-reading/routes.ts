@@ -178,10 +178,17 @@ export function starDailyResult(b: Birth, day: string) {
  * 별자리 오늘 풀이가 별점 없는 구형 모양({natal, sky})으로 저장돼 있으면, 저장된 날짜와 지금 프로필로
  * 같은 식을 다시 계산해 새 모양으로 돌려준다(저장된 행은 건드리지 않는다).
  */
-async function upgradeLegacyStar(
+async function upgradeSavedReading(
   saved: Record<string, any>,
   readProfile: () => Promise<unknown>,
 ) {
+  if ((!saved.content || (saved.content === "saju" && saved.kind === "first")) &&
+      saved.result?.pillars && saved.result.timeKnown === false) {
+    const profile = z.object({ birth: birth.nullable() }).parse(await readProfile());
+    if (profile.birth && timePrecision(profile.birth) !== "unknown")
+      return { ...saved, result: calculateSaju(birthInput(profile.birth)) };
+    return saved;
+  }
   if (
     saved.content !== undefined &&
     (saved.content !== "star" || saved.kind !== "daily")
@@ -314,7 +321,7 @@ export async function rewardRoute(
           p_id: z.string().uuid().parse(id),
           p_character: character.nullable().parse(params.get("c")),
         });
-        return upgradeLegacyStar(saved as Record<string, any>, () =>
+        return upgradeSavedReading(saved as Record<string, any>, () =>
           deps.rpc("chemi_read_profile", { p_user }),
         );
       }
@@ -369,8 +376,8 @@ export async function rewardRoute(
           }),
         );
       if (context.saved)
-        return input.content === "star" && input.kind === "daily"
-          ? upgradeLegacyStar(context.saved, () =>
+        return (input.content === "star" && input.kind === "daily") || (input.content === "saju" && input.kind === "first")
+          ? upgradeSavedReading(context.saved, () =>
               deps.rpc("chemi_read_profile", { p_user }),
             )
           : context.saved;

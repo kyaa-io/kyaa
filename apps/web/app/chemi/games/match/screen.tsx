@@ -31,7 +31,7 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { FPS, LEVELS } from "@/features/chemi/games/engine";
 import { rankName } from "@/features/chemi/games/rank-name";
-import { RankInitial } from "@/features/chemi/games/rank-initial";
+import { RankAvatar } from "@/features/chemi/games/rank-initial";
 import { fillCount, getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
@@ -97,6 +97,7 @@ function hms(ms: number) {
   return [Math.floor(total / 3600), Math.floor(total / 60) % 60, total % 60].map(n => String(n).padStart(2, "0")).join(":");
 }
 type Row = {
+  avatarUrl?: string | null;
   nickname: string;
   character: Character;
   place: number;
@@ -328,7 +329,7 @@ function Rankings({
           >
             <b>{row.place}</b>
             <span className={styles.avatar} aria-hidden="true">
-              <RankInitial nickname={row.nickname} />
+              <RankAvatar nickname={row.nickname} url={row.avatarUrl} />
             </span>
             <span>
               {rankName(row.nickname, locale)}

@@ -2,7 +2,7 @@
 
 import { VacantRank } from "@/features/chemi/games/vacant-rank";
 import { rankName } from "@/features/chemi/games/rank-name";
-import { RankInitial } from "@/features/chemi/games/rank-initial";
+import { RankAvatar } from "@/features/chemi/games/rank-initial";
 import { useEffect, useRef } from "react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
@@ -16,10 +16,10 @@ import styles from "./run.module.css";
 export const characters = ["changha", "elina", "yuna"] as const;
 export type Character = (typeof characters)[number];
 
-export type Rank = { place: number; nickname: string; character: Character; score: number; isMe: boolean };
+export type Rank = { place: number; avatarUrl?: string | null; nickname: string; character: Character; score: number; isMe: boolean };
 export type Lobby = { extraCost: number; freeRemaining: number; extraRemaining: number; ranking: Rank[]; sound: boolean; players: number; best: number; points: number; previous?: { place: number; score: number } | null };
 export type Result = { score: number; exp: number; shareId?: string; title?: number | null };
-export type Challenge = { score: number; nickname: string; available: boolean; ranking?: Rank[] };
+export type Challenge = { score: number; avatarUrl?: string | null; nickname: string; available: boolean; ranking?: Rank[] };
 export type Stage = "select" | "run" | "result";
 export const SELECT_PROPS: readonly (readonly [PropName, number])[] = [["leaves", 0.04], ["cone", 0.7], ["mailbox", 0.82]];
 
@@ -59,7 +59,7 @@ export function Ranking({ rows, loaded, loading = false, copy, locale, names, ne
   const line = (row: Rank | undefined, key: string, slot?: "near", place?: number) => row ? (
     <li data-row="" key={key} data-me={row.isMe} data-slot={slot && !row.isMe ? "near" : undefined} data-top={row.place <= 3}>
       <FanText role="label" className={styles.place}>{row.place}</FanText>
-      <FanText role="label" className={styles.avatar} aria-hidden="true"><RankInitial nickname={row.nickname} /><img src={`${ART}/face-${row.character}-v1.png`} alt="" /></FanText>
+      <FanText role="label" className={styles.avatar} aria-hidden="true"><RankAvatar nickname={row.nickname} url={row.avatarUrl} /><img className={styles.characterBadge} src={`${ART}/face-${row.character}-v1.png`} alt="" /></FanText>
       <FanText role="item" className={styles.who}>{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`}</FanText>
       <FanText role="meta">{names[row.character]}</FanText>
       <FanText role="item">{number.format(row.score)}</FanText>
