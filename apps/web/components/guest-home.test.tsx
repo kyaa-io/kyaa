@@ -1,6 +1,4 @@
 import type { BannerSlotMap, HomeBanner } from "@/features/home/domain/home-banner";
-import type { PublishedCelebrity } from "@/server/content/content-domain";
-import type { RaffleList } from "@/features/benefit/domain/raffle";
 import { settleHomeQuery, type HomeQueries } from "./home-query-stream";
 import { groupApplyText } from "@/features/groups/ui/group-apply-copy";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -14,7 +12,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatPassportTier, GuestHome, StreamingGuestHome } from "./guest-home";
 import { SIGNUP_RAFFLE_BANNER_ID } from "../features/home/domain/signup-raffle-home-banner";
 import { FIRST_STEPS_BANNER_ID } from "../features/home/domain/first-steps-home-banner";
-const missionbook = "247861a1-27b0-4e0a-9039-b5f8f7bc1c48", xEvent = "fc1bd251-f675-4e69-82b0-26a8a73be41f", gggi = "8bf2f180-cb32-4f00-93e2-e84b570ad450";
+const missionbook = "247861a1-27b0-4e0a-9039-b5f8f7bc1c48", xEvent = "fc1bd251-f675-4e69-82b0-26a8a73be41f";
 import { notifyFanActivityUpdated } from "./fan-ui/fan-activity-updates";
 import { formatHeroLiveTitle, formatLiveCountdown } from "./live-hero-carousel";
 
@@ -396,15 +394,11 @@ describe("streamed Home sections", () => {
   function pendingHome() {
     const pending = {
       homeBanners: deferred<readonly HomeBanner[]>(),
-      celebrities: deferred<readonly PublishedCelebrity[]>(),
       homeSlots: deferred<BannerSlotMap>(),
-      elinaRaffles: deferred<RaffleList>(),
     };
     const queries: HomeQueries = {
       homeBanners: settleHomeQuery(pending.homeBanners.promise),
-      celebrities: settleHomeQuery(pending.celebrities.promise),
       homeSlots: settleHomeQuery(pending.homeSlots.promise),
-      elinaRaffles: settleHomeQuery(pending.elinaRaffles.promise),
       homeNotices: settleHomeQuery(Promise.resolve({ items: [], nextCursor: null })),
       homeGallery: settleHomeQuery(Promise.resolve({ items: [], nextCursor: null })),
       homeShorts: settleHomeQuery(Promise.resolve([])),
@@ -419,28 +413,30 @@ describe("streamed Home sections", () => {
     expect(screen.getByRole("navigation", { name: "주요 메뉴" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "모바일 주요 메뉴" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
-    await act(async () => { home.pending.celebrities.resolve(celebrities); home.pending.homeSlots.resolve({}); });
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요" })).not.toBeInTheDocument();
-    await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); home.pending.elinaRaffles.resolve({ raffles: elinaRaffles }); });
-    expect(screen.getAllByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true }).length).toBeGreaterThan(0);
+    await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
+    expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true })).not.toBeInTheDocument();
   });
 
-  it("orders pinned banners signup raffle → missionbook → X event → first steps → GGGI → CMS, in the finished carousel", async () => {
+  it("orders pinned banners signup raffle → missionbook → X event → first steps → CMS, in the finished carousel", async () => {
     const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
     const raffle = SIGNUP_RAFFLE_BANNER_ID;
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle firstSteps />); });
     expect(ids(view)).toEqual([]);
-    await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
-    expect(ids(view)).toEqual([raffle, missionbook, xEvent, FIRST_STEPS_BANNER_ID, gggi, bannerFixture.id]);
-    expect(ids(view).filter(id => id === raffle || id === xEvent)).toHaveLength(2);
+    const managed = ["아는공부캠프 설명회", "아는공부", "앙상블 패치워크", "최애와 케미 한 판"].map(title => ({
+      ...bannerFixture, id: title, title,
+    }));
+    await act(async () => { home.pending.homeBanners.resolve(managed); });
+    expect(ids(view)).toEqual([raffle, missionbook, xEvent, FIRST_STEPS_BANNER_ID, ...managed.map(banner => banner.id)]);
+    expect(view.container.querySelectorAll("article[aria-roledescription=slide]")).toHaveLength(8);
     view.unmount();
     const off = pendingHome();
     await act(async () => { view = render(<StreamingGuestHome {...off} locale="ko" />); });
     await act(async () => { off.pending.homeBanners.resolve([]); });
     expect(ids(view)).not.toContain(raffle);
-    expect(ids(view)).toEqual([missionbook, xEvent, gggi]);
+    expect(ids(view)).toEqual([missionbook, xEvent]);
   });
 
   it("puts the admin 'event' banner first and shows its strip under the header, closing it for good (cookie)", async () => {
@@ -451,7 +447,7 @@ describe("streamed Home sections", () => {
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
     expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture, eventBanner]); });
-    expect(ids(view)).toEqual([eventBanner.id, missionbook, xEvent, gggi, bannerFixture.id]);
+    expect(ids(view)).toEqual([eventBanner.id, missionbook, xEvent, bannerFixture.id]);
     const strip = view.container.querySelector("[data-home-event-strip]")!;
     expect(strip).toHaveAttribute("data-home-event-strip", eventBanner.id);
     expect(strip.querySelector("a")).toHaveAttribute("href", "/wena?locale=ko");
@@ -527,20 +523,11 @@ describe("streamed Home sections", () => {
     expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
   });
 
-  it.each(["homeBanners", "elinaRaffles"] as const)("isolates a failed %s query", async (failed) => {
+  it("keeps the pinned banners when the managed banner query fails", async () => {
     const home = pendingHome();
-    let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
-    await act(async () => {
-      home.pending[failed].reject();
-      if (failed !== "homeBanners") home.pending.homeBanners.resolve([bannerFixture]);
-      home.pending.celebrities.resolve(celebrities);
-      home.pending.homeSlots.resolve({});
-      if (failed !== "elinaRaffles") home.pending.elinaRaffles.resolve({ raffles: elinaRaffles });
-    });
-    expect(view.container.querySelector("[data-managed-home-banner]")).toHaveTextContent("덕질미션북");
-    expect(view.container.querySelector(`[data-managed-home-banner="${gggi}"]`)).toHaveTextContent("GGGI");
-    if (failed === "elinaRaffles") expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true })).not.toBeInTheDocument();
-    expect(screen.getAllByRole("alert", { hidden: true }).length).toBeGreaterThan(0);
+    await act(async () => { render(<StreamingGuestHome {...home} locale="ko" />); });
+    await act(async () => { home.pending.homeBanners.reject(); });
+    expect(screen.getAllByRole("article", { hidden: true }).filter(article => article.getAttribute("aria-roledescription") === "slide")).toHaveLength(2);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 });
