@@ -30,7 +30,7 @@
 
 .trigger[data-header-status] {
   flex: 0 1 auto;
-  min-width: 0;
+  min-width: 44px;
   max-width: 182px;
   padding-inline: 0;
 }
