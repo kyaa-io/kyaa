@@ -11,6 +11,8 @@
     "gameMinutes": ""
   },
   "home": {
+    "mileageGuideTitle": "Cách dùng dặm",
+    "datePricing": "Mở vận may của ngày khác với 10M. Dặm kiếm được từ hoạt động sẽ được dùng trước. Bạn có thể xem lại nội dung đã mở. Lượt chơi được đặt lại lúc nửa đêm theo giờ Hàn Quốc.",
     "gamePricing": "Mỗi trò chơi có ba lượt miễn phí mỗi ngày. Ba lượt thêm đầu tiên lần lượt tốn 10M, 30M và 50M. Từ lượt thêm thứ tư, mỗi lượt tốn 100M và không giới hạn số lượt.",
     "todayResult": "Kết quả hôm nay",
     "playsLeft": "Miễn phí: {n}",

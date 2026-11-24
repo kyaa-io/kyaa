@@ -11,6 +11,8 @@
     "gameMinutes": ""
   },
   "home": {
+    "mileageGuideTitle": "Cara menggunakan mil",
+    "datePricing": "Buka ramalan tanggal lain dengan 10M. Mil dari aktivitas digunakan terlebih dahulu. Ramalan yang sudah dibuka bisa dilihat kembali. Batas permainan diatur ulang pada tengah malam waktu Korea.",
     "gamePricing": "Setiap game memberi tiga putaran gratis per hari. Tiga putaran tambahan pertama masing-masing seharga 10M, 30M, dan 50M. Mulai putaran tambahan keempat, biayanya 100M per putaran tanpa batas harian.",
     "todayResult": "Hasil hari ini",
     "playsLeft": "Gratis {n} lagi",

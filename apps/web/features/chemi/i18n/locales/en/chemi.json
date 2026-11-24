@@ -11,6 +11,8 @@
     "gameMinutes": ""
   },
   "home": {
+    "mileageGuideTitle": "How to use miles",
+    "datePricing": "Open a fortune for another date for 10M. Miles earned through activities are used first. You can revisit unlocked readings. Game limits reset at midnight in Korea.",
     "gamePricing": "Each game has three free plays a day. Extra plays cost 10M, 30M and 50M in order. From the fourth, each costs 100M with no daily limit.",
     "todayResult": "Today’s result",
     "playsLeft": "{n} free left",

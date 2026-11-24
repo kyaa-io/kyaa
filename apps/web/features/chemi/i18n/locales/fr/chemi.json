@@ -11,6 +11,8 @@
     "gameMinutes": ""
   },
   "home": {
+    "mileageGuideTitle": "Utiliser ses miles",
+    "datePricing": "Consulte ton horoscope pour une autre date pour 10M. Les miles gagnés en participant sont utilisés en premier. Tu peux relire un horoscope débloqué. Le compteur de parties est remis à zéro à minuit en Corée.",
     "gamePricing": "Chaque jeu offre trois parties gratuites par jour. Les trois premières parties supplémentaires coûtent respectivement 10M, 30M et 50M. Dès la quatrième, chaque partie coûte 100M, sans limite quotidienne.",
     "todayResult": "Résultat du jour",
     "playsLeft": "{n} gratuites",

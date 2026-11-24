@@ -153,7 +153,7 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   expect(screen.getByText("+10")).toBeInTheDocument();
 }, 20000);
 
-it("waits for explicit 100P confirmation after the free games run out", async () => {
+it("waits for explicit 100M confirmation after the free games run out", async () => {
   const requests: Record<string, unknown>[] = [];
   vi.stubGlobal("fetch", async (_path: string, init: RequestInit) => {
     const body = JSON.parse(String(init.body));
@@ -175,12 +175,12 @@ it("waits for explicit 100P confirmation after the free games run out", async ()
   const choice = screen.getByRole("button", { name: copy.changha });
   await waitFor(() => expect(choice).toBeEnabled());
   fireEvent.click(choice);
-  const extra = await screen.findByRole("button", { name: "100P로 한 판" });
+  const extra = await screen.findByRole("button", { name: "100M로 한 판" });
   expect(requests.filter((r) => r.action === "start")).toHaveLength(0);
   fireEvent.click(extra);
   expect(await screen.findByRole("dialog")).toBeVisible();
   expect(requests.some(r => r.action === "start")).toBe(false);
-  fireEvent.click(await screen.findByRole("button", { name: "100P 쓰고 시작" }));
+  fireEvent.click(await screen.findByRole("button", { name: "100M 쓰고 시작" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(copy.insufficient);
   expect(requests.find((r) => r.action === "start")).toMatchObject({
     character: "changha",

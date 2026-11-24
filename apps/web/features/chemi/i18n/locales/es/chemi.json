@@ -11,6 +11,8 @@
     "gameMinutes": ""
   },
   "home": {
+    "mileageGuideTitle": "Cómo usar tus millas",
+    "datePricing": "Consulta la fortuna de otra fecha por 10M. Primero se usan las millas que ganas en actividades. Puedes volver a ver las lecturas desbloqueadas. Las partidas se renuevan a medianoche en Corea.",
     "gamePricing": "Cada juego incluye tres partidas gratis al día. Las tres primeras adicionales cuestan 10M, 30M y 50M. A partir de la cuarta, cada partida cuesta 100M, sin límite diario.",
     "todayResult": "Resultado de hoy",
     "playsLeft": "{n} gratis",

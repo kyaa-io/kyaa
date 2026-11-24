@@ -24,17 +24,17 @@ it('an expired session turns the points slot into a sign-in link instead of a da
 });
 it('a failed wallet read offers a retry instead of a dash',()=>{
  state.wallet=undefined;state.failure={status:503,code:'UNAVAILABLE'};state.retry=vi.fn();render(<GroupHeaderPoints locale='ko'/>);
- fireEvent.click(screen.getByRole('button',{name:'포인트 · 다시 시도'}));
+ fireEvent.click(screen.getByRole('button',{name:'마일리지 · 다시 시도'}));
  expect(state.retry).toHaveBeenCalledTimes(1);
  expect(screen.queryByText('—')).toBeNull();
 });
 it('shows the check-in entry in the menu until today is received',async()=>{
  state.wallet=wallet(false);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
- expect(await screen.findByRole('menuitem',{name:'출석하고 포인트 받기'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
+ expect(await screen.findByRole('menuitem',{name:'출석하고 마일리지 받기'})).toHaveAttribute('href','/my/wallet?view=attendance&locale=ko');
 });
 it('names no amount on the 7th day and hides the entry once checked in',async()=>{
  state.wallet=wallet(false,1);const first=render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
- expect(await screen.findByRole('menuitem',{name:'출석하고 포인트 받기'})).toBeInTheDocument();first.unmount();
+ expect(await screen.findByRole('menuitem',{name:'출석하고 마일리지 받기'})).toBeInTheDocument();first.unmount();
  state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
  await new Promise(r=>setTimeout(r,20));
  expect(screen.queryByRole('menuitem',{name:/출석하고/})).toBeNull();
@@ -45,7 +45,7 @@ it('hides the menu check-in entry before the reward start date or while writes a
  state.wallet={...wallet(false),writeFenced:true};const second=render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
  expect(screen.queryByRole('menuitem',{name:/출석하고/})).toBeNull();second.unmount();
  state.wallet={...wallet(false),rewardsStartOn:'2026-11-05',writeFenced:false};render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
- expect(await screen.findByRole('menuitem',{name:'출석하고 포인트 받기'})).toBeInTheDocument();
+ expect(await screen.findByRole('menuitem',{name:'출석하고 마일리지 받기'})).toBeInTheDocument();
 });
 
 it('under an active policy the menu shows a plain attendance item with no fixed points, and the legacy payout line is gone',async()=>{
@@ -59,7 +59,7 @@ it('under an active policy the menu shows a plain attendance item with no fixed 
 it('an empty catalog keeps the legacy payout item',async()=>{
  state.request=vi.fn().mockResolvedValue({version:1,rules:{},missionBook:{}});
  state.wallet=wallet(false);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
- expect(await screen.findByRole('menuitem',{name:'출석하고 포인트 받기'})).toBeInTheDocument();
+ expect(await screen.findByRole('menuitem',{name:'출석하고 마일리지 받기'})).toBeInTheDocument();
 });
 it('while the policy is still loading neither the legacy payout nor the new attendance item is shown',async()=>{
  state.request=vi.fn().mockReturnValue(new Promise(()=>{}));

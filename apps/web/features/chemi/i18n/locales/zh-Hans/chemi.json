@@ -11,6 +11,8 @@
     "gameMinutes": ""
   },
   "home": {
+    "mileageGuideTitle": "如何使用里程",
+    "datePricing": "花10M即可查看其他日期的运势。优先使用活动赚取的里程，已解锁的运势可再次查看。游戏次数在韩国时间零点重置。",
     "gamePricing": "每款游戏每天可免费玩3局。额外的前三局依次为10M、30M、50M，从第4局起每局100M，不限次数。",
     "todayResult": "今日结果",
     "playsLeft": "免费剩 {n} 局",
