@@ -17,3 +17,12 @@
     transition: opacity var(--motion-fast) var(--motion-easing);
   }
 }
+
+@media (min-width: 48rem) {
+  .video[data-scene-loop] {
+    margin: auto;
+    max-width: var(--loop-width);
+    max-height: var(--loop-height);
+    object-fit: contain;
+  }
+}

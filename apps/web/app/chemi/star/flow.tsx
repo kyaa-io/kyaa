@@ -1,5 +1,6 @@
 "use client";
 
+import { landscapeSrcSet } from "@/features/chemi/ui/scene-art";
 import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
@@ -571,7 +572,7 @@ export function StarFlow({
       <div className={styles.stage}>
         <div className={styles.art}>
           <picture>
-            <source media="(min-width: 48rem)" srcSet={`${art}/hero-${character}-l-v1.webp`} />
+            <source media="(min-width: 48rem)" srcSet={landscapeSrcSet(`${art}/hero-${character}-l-v1.webp`)} />
             <img src={`${art}/hero-${character}-p-v1.webp`} alt={text("nightArt", { name })} />
           </picture>
           <SceneExpression scene="star" character={character} portrait={`${art}/hero-${character}-p-v1.webp`} expression={expression} />

@@ -323,3 +323,9 @@
 :global(main):has(.chips) > :global([data-chemi-list-link]) {
   display: none;
 }
+
+@media (min-width: 48rem) {
+  .art:has([data-expression][data-active]) > picture:first-child img {
+    object-position: center top;
+  }
+}

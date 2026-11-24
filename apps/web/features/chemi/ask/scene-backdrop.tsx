@@ -1,5 +1,6 @@
 "use client";
 
+import { landscapeSrcSet } from "@/features/chemi/ui/scene-art";
 import { useEffect, useRef, type ReactNode } from "react";
 import { MediaBackdrop, mediaFillClass } from "@/components/fan-ui/media-fill";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
@@ -39,7 +40,7 @@ export function SceneBackdrop({ tall, wide, loop, alt, expression }: { tall: str
     <div className={styles.backdrop} ref={box}>
       <div className={styles.art}>
         <picture>
-          <source media="(min-width: 64rem)" srcSet={wide} />
+          <source media="(min-width: 64rem)" srcSet={landscapeSrcSet(wide)} />
           <img ref={art} src={tall} alt={alt} />
         </picture>
         {expression}
