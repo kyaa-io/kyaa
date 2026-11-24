@@ -33,13 +33,13 @@ export function GroupVisitLine({data,locale}:{data?:VisitCounts;locale:AppLocale
 }
 
 /** 머리의 접속 한 줄(261107-2 U1): `팬 123 · 지금 접속 4 · 오늘 방문 31`. 0인 접속·방문은 그리지 않고, 팬 수는 늘 첫 값이다. 높이 24px로 고정이라 읽는 동안에도 같은 자리를 차지한다. */
-export function GroupPresence({pageId,locale,member=false,mode="compact",memberCount,challengeSlug,separateVisits=false}:{pageId:string|null;locale:AppLocale;member?:boolean;mode?:"hidden"|"compact";memberCount?:number;separateVisits?:boolean;/** 찐팬 100 챌린지 항목을 읽을 팬페이지(VISUAL-K ②). */challengeSlug?:string}){
+export function GroupPresence({pageId,locale,member=false,mode="compact",memberCount,challengeSlug,linkMembers=false,separateVisits=false}:{pageId:string|null;locale:AppLocale;member?:boolean;mode?:"hidden"|"compact";memberCount?:number;linkMembers?:boolean;separateVisits?:boolean;/** 찐팬 100 챌린지 항목을 읽을 팬페이지(VISUAL-K ②). */challengeSlug?:string}){
  const r=useGroupPresence(pageId,true,member),t=groupsCopy(locale),c=presenceCopy(locale);
  // 팬페이지면 연결 계정 닉네임 대신 그 페이지의 표시 이름(예: 엘리나)을 쓴다(11/13 감독).
  const group=useOptionalGroupPage(),pageName=group?.celebrity?.name;
  // 팬페이지는 '팬·랭킹' 탭이 없다. 머리의 '팬 N'이 팬 목록(?tab=members)으로 들어가는 입구다.
  let membersHref:Route|undefined;
- if(challengeSlug&&group)membersHref=group.hrefFor('members');
+ if((linkMembers||challengeSlug)&&group)membersHref=group.hrefFor('members');
  if(mode==='hidden')return null;
  const fanClass=`${styles.item} ${styles.fanCount}`;
  const fans=memberCount===undefined?<span className={styles.item}><FanSkeleton width={56} height={16}/></span>:membersHref&&group
