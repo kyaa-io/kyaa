@@ -170,7 +170,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
         const type=z.enum(["all", "fan", "hobby", "brand", "nonfan"]).parse(one("type") ?? "all");
         const search=z.string().max(100).parse(one("search") ?? "");
         const owned=z.enum(["1"]).optional().parse(one("owned")) === "1";
-        const artistRole=z.enum(["idol","singer","actor","creator","show_host"]).optional().parse(one("artistRole"));
+        const artistRole=z.enum(["idol","creator","brand","underground_idol"]).optional().parse(one("artistRole"));
         const cursor=one("cursor");
         if(sort==="discovery" && (mine || owned)) throw new SyntaxError("invalid discovery scope");
         if(sort==="visited" && (mine!=="joined" || !owner || type!=="all" || search!=="" || owned || artistRole)) throw new SyntaxError("invalid visited scope");
