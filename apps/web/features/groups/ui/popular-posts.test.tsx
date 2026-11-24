@@ -15,7 +15,6 @@ describe('popular posts',()=>{
   expect(first).toHaveTextContent('1,234,567');expect(first.querySelector('time')).not.toBeNull();
   fireEvent.click(screen.getByRole('button',{name:'주간'}));
   expect(screen.getByRole('heading',{name:'이번 주의 인기글'})).toBeInTheDocument();
-  expect(container.querySelectorAll('li')).toHaveLength(10);
   expect(resource).toHaveBeenLastCalledWith('/api/celebrities/artist/popular-posts?period=week&locale=ko',expect.any(Function),false,false,false,true);
   const parse=resource.mock.calls[0]![1] as (value:unknown)=>{items:unknown[]};
   expect(parse({items:[post(1)]}).items).toHaveLength(1);expect(()=>parse({items:Array.from({length:11},(_,i)=>post(i+1))})).toThrow();
@@ -41,3 +40,13 @@ describe('popular posts',()=>{
 });
 
 it.each(['ko','en','ja','zh-Hans','zh-Hant','es','id','vi','th','pt','fr','ru'] as const)('changes all three period titles in %s',locale=>{resource.mockReturnValue({state:{status:'ready',data:{items:[{id:'x',kind:'fan_post',body:'title',visibility:'public',assets:[],author:{nickname:'fan'},createdAt:'2026-11-11T00:00:00Z'}]}}});const view=render(<PopularPosts slug='artist' locale={locale}/>);const titles=new Set<string>();for(const button of screen.getAllByRole('button')){fireEvent.click(button);titles.add(screen.getByRole('heading').textContent!);}expect(titles.size).toBe(3);view.unmount();});
+
+it('shows all ten weekly and monthly results',()=>{
+  const items=Array.from({length:10},(_,i)=>({id:String(i),celebritySlug:'artist',body:'글',author:{nickname:'팬'},assets:[],createdAt:'2026-11-05T01:00:00Z'}));
+  resource.mockReturnValue({state:{status:'ready',data:{items}}});
+  const {container}=render(<PopularPosts slug='artist' locale='ko'/>);
+  for(const name of ['주간','월간']){
+    fireEvent.click(screen.getByRole('button',{name}));
+    expect(container.querySelectorAll('li')).toHaveLength(10);
+  }
+});
