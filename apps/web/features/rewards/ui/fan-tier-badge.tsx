@@ -8,17 +8,19 @@ type Props = {
   locale: AppLocale;
   size: number;
   adjacentLabel?: boolean;
+  eager?: boolean;
   className?: string;
 };
 
 /** Tier badge artwork (medal-v2, 11/23): one colour and silhouette per tier, stage dots inside. */
 export const fanTierBadgeSrc = (key: string) => `/images/passport/tiers/medal-v2/${key}.svg`;
 
-export function FanTierBadge({ tier, stageKey, locale, size, adjacentLabel = true, className }: Props) {
+export function FanTierBadge({ tier, stageKey, locale, size, adjacentLabel = true, eager = false, className }: Props) {
   const key = stageKey ?? fanTierEntryKey(tier);
   const label = fanStageLabel(locale, { tier, subdivision: Number(key.split("-").at(-1)) });
   return <Image
     className={className}
+    loading={eager ? "eager" : undefined}
     unoptimized
     src={fanTierBadgeSrc(key)}
     width={size}

@@ -42,3 +42,5 @@
 .trigger > .value { flex: none; --value-gap: calc(var(--space-1) / 2); gap: var(--value-gap); }
 .trigger > .grade { flex: 0 1 auto; min-width: 0; }
 .grade > .tier { min-width: 0; }
+
+.trigger[data-home-status] > .value { gap: var(--space-1); }

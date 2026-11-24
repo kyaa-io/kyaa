@@ -54,7 +54,8 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   const tier = passport?.tier;
   const myHref = `/my?locale=${locale}${passport ? `&passport=${encodeURIComponent(passport.slug)}#my-passport` : ""}`;
   const grade = tier ? fanTierName(locale, tier) : "";
-  const hearts = passport?.hearts;
+  const home = pathname === "/";
+  const hearts = home ? undefined : passport?.hearts;
   const points = wallet.data?.points;
   useChangeFlash(chip, [grade || undefined, hearts, points]);
   // A stale authenticated session must never keep a previously read member balance/tier on screen.
@@ -72,9 +73,9 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
     // Reopen the favorite even if the viewer selected another passport at this URL.
     event.preventDefault();
     window.dispatchEvent(new Event("hashchange"));
-  }} data-header-status="" aria-label={summary}>
+  }} data-header-status="" data-home-status={home ? "" : undefined} aria-label={summary}>
     {hearts !== undefined && <span className={styles.value}><RewardIcon kind="heart" alt="" width={16} height={16} /><RollingNumber value={hearts} format={format} /></span>}
-    {tier && <span className={styles.grade}><FanTierBadge tier={tier} stageKey={passport?.stage?.key} locale={locale} size={16} /><span className={styles.tier} data-header-tier={tier} title={grade}>{grade}</span></span>}
+    {tier && <span className={styles.grade} data-header-tier={home ? tier : undefined} title={home ? grade : undefined}><FanTierBadge tier={tier} stageKey={passport?.stage?.key} locale={locale} size={16} eager={home} />{!home && <span className={styles.tier} data-header-tier={tier} title={grade}>{grade}</span>}</span>}
     <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? "—" : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }
