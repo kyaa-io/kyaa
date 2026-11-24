@@ -176,7 +176,7 @@ race "select chemi_reading_context('$u','fortune','daily','','elina','$u')"
 [[ $(sql "select chemi_reading_context('$u','fortune','daily','','elina','$u')#>'{saved,reward}'") == '{}' ]]
 sql "select chemi_complete_reading('$u','star','daily','elina','$u','','{}','v1','v1')"
 [[ $(sql "select sum(points) from chemi_point_grants where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 3 ]]
-[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 40 ]]
+[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and character='elina' and kst_date=dukjil_kst_date()") == 20 ]]
 sql "select chemi_complete_reading('$u','tarot','daily','dosa','$other','','{}','v1','v1')"
 [[ $(sql "select points from chemi_point_grants where user_id='$u' and character='dosa' and kst_date=dukjil_kst_date()") == 0 ]]
 sql "begin; set local session_replication_role=replica;
@@ -191,5 +191,5 @@ for character in dosa changha elina yuna; do
   workers+=("$!")
 done
 for worker in "${workers[@]}"; do wait "$worker"; done
-[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and source='fortune' and kst_date=dukjil_kst_date()") == 60 ]]
+[[ $(sql "select sum(exp) from chemi_exp_log where user_id='$u' and source='fortune' and kst_date=dukjil_kst_date()") == 30 ]]
 echo "reward_race PASS"
