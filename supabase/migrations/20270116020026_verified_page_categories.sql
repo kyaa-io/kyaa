@@ -45,7 +45,7 @@ create function public.approve_underground_winner(
 ) returns void
 language plpgsql security definer set search_path = '' as $$
 begin
-  perform public.require_content_editor(p_actor, false);
+  perform public.require_content_editor(p_actor, true);
   if nullif(trim(p_winner_evidence),'') is null or nullif(trim(p_consent_evidence),'') is null then
     raise exception 'vote result and team consent required';
   end if;
