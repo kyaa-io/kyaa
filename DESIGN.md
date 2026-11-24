@@ -19,6 +19,14 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 
 이 절 하나가 kyaa 화면의 기준이다. 값의 원본은 `apps/web/app/globals.css`와 `apps/web/components/fan-ui/`이고, 이 절은 그 값을 역할별로 모은다. 아래 "이력" 부록은 근거 기록이다. **이력과 이 절이 다르면 이 절을 따른다.** 이 절과 코드가 다르면 표의 "결정" 열을 따르고, 코드는 다음 화면 작업에서 맞춘다. 토큰 표와 충돌 결정 전체: `board/tasks/design-system-1112/token-table.md`.
 
+### 관리자 회원 상세 탈퇴 접수 감사표
+
+| 항목 | 적용한 기준 및 소유자 |
+| --- | --- |
+| 제목·간격 | 회원 상세의 operations.module.css detailSection과 h3 재사용 |
+| 입력·행동 | fan-operations.module.css correction과 공통 FanAction 재사용. 회원 번호 일치 및 필수 입력 확인 |
+| 화면 구성 | 기존 Drawer 안에서 미접수 회원에게 입력 폼, 접수 회원에게 상태와 완료 시각 표시 |
+
 ## 0. 전제 (사용자 결정)
 
 - **미감**: 민희진 미감 — 절제, 촌스러운 것 금지, 큰 글자는 굵기가 아니라 크기로(11/12 22:52·23:03).

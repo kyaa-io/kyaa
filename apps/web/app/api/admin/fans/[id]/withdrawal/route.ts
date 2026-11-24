@@ -6,10 +6,10 @@ import { createAccountDeletionDependencies } from "@/server/profile/account-dele
 export const dynamic = "force-dynamic";
 const evidence = z.object({
   confirmation: z.uuid(),
-  channel: z.literal("email"),
+  channel: z.enum(["email", "inquiry"]),
   receivedAt: z.iso.datetime({ offset: true }).refine(value => Date.parse(value) <= Date.now()),
 }).strict();
-const result = z.object({ status: z.enum(["pending", "completed"]), completedAt: z.string().nullable() });
+const result = z.object({ status: z.enum(["pending", "processing", "completed"]), completedAt: z.string().nullable() });
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 
 async function withdrawal(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -35,7 +35,7 @@ async function withdrawal(request: Request, context: { params: Promise<{ id: str
     });
     if (data === null) return Response.json({ error: "NOT_FOUND" }, { status: 404, headers });
     const deletion = result.parse(data);
-    return Response.json({ deletion }, { headers, status: body && deletion.status === "pending" ? 202 : 200 });
+    return Response.json({ deletion }, { headers, status: body && deletion.status !== "completed" ? 202 : 200 });
   } catch (error) {
     const status = error instanceof AuthError ? error.status : 503;
     return Response.json({ error: status === 503 ? "UNAVAILABLE" : "ACCESS_DENIED" }, { status, headers });

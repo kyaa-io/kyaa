@@ -13,6 +13,7 @@ import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Withdrawal } from "./fan-withdrawal";
 import { AdminAccessState } from "./admin-access-state";
 import { AdminOperationsShell, type AdminLocale } from "./operations-shell";
 import { useAdminSession } from "./use-admin-session";
@@ -598,6 +599,7 @@ export function FanOperations() {
                       </span>
                     ))}
                   </div>
+                  {session.admin.role !== "viewer" && <Withdrawal key={detail.fanId} id={detail.fanId} locale={locale} getToken={getAccessToken} />}
                   {detail.passports.length === 0 && (
                     <section className={ops.detailSection}>
                       <h3>{t.noPassport}</h3>
