@@ -4,7 +4,6 @@ import { z } from "zod";
 import { createClient } from "@/server/data/client";
 import { createCreatorAvatarReader, type CreatorAvatarReader } from "./creator-avatars";
 import { snsIngestSlug } from "@/server/sns-ingest/source-url";
-import { diversifyShorts } from "@/features/home/domain/home-gallery-order";
 import { homeGalleryPageSchema, homeShortsPageSchema, homeShortsSchema, type HomeGalleryPage, type HomeShort } from "@/features/home/domain/home-gallery";
 
 type Db = Pick<SupabaseClient, "rpc">;
@@ -94,16 +93,16 @@ export class HomeGalleryRepository {
    * The newest SHORTS_POOL short-form videos, creators taking turns (사용자 2026-11-12 "숏폼도 여러 셀럽 교차적으로"). Paging is by position in
    * this diversified list, so the offset the shorts page and the rail send means the same on every read.
    */
-  private async shortsPool(locale: "ko" | "en", diversify = true): Promise<HomeShort[]> {
+  private async shortsPool(locale: "ko" | "en", curated = true): Promise<HomeShort[]> {
     const pages = await Promise.all(Array.from({ length: SHORTS_POOL / SHORTS_READ }, async (_, index) => {
-      const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: index * SHORTS_READ, p_limit: SHORTS_READ });
+      const { data, error } = await this.db.rpc(curated ? "read_curated_home_shortform_page" : "read_public_home_shortform_page", { p_locale: locale, p_offset: index * SHORTS_READ, p_limit: SHORTS_READ });
       if (error) throw new HomeGalleryRepositoryError(error.message);
       return homeShortsPageSchema.parse(data);
     }));
     const seen = new Set<string>();
     const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
     const shown = await this.withCoverRule(items);
-    return diversify ? diversifyShorts(shown) : shown;
+    return shown;
   }
 
   /** Public like totals for the videos, a few reads of up to LIKES_BATCH ids; a video without a total (not public) counts 0. */
