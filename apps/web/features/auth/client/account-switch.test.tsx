@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { peekResource, storeResource, syncResourceOwner } from "@/components/fan-ui/resource-cache";
-import { accountSwitchEnabled } from "./account-switch-release";
+import { accountSwitchEnabled } from "../domain/account-switch-availability";
 import { beginAccountSwitch, clearAccountSwitch, guardRestoredPagesAfterSignOut, markSignedOut, publicReturnPath, readAccountSwitch, settleAccountSwitch } from "./account-switch";
 
 afterEach(() => { clearAccountSwitch(); window.sessionStorage.clear(); vi.useRealTimers(); });
