@@ -1,14 +1,14 @@
-/* 명식표(DESIGN.md 케미 사주 결과 절). 열 머리 32 · 십신 28 · 글자 76 · 글자 76 · 십신 28, 펼친 줄 36씩. 글자는 FanText·FanHanja. */
+/* 명식표(DESIGN.md 케미 사주 결과 절). 열 머리 32 · 십신 28 · 글자 76 · 글자 76 · 십신 28, 펼친 줄 36씩. 십신 이름이 긴 언어는 두 줄까지 늘어난다. 글자는 FanText·FanHanja. */
 .sheet {
   display: grid;
-  grid-template-columns: 2.5rem repeat(4, minmax(0, 1fr));
-  grid-template-rows: var(--space-8) 28px 76px 76px 28px;
+  grid-template-columns: minmax(2.5rem, max-content) repeat(4, minmax(0, 1fr));
+  grid-template-rows: var(--space-8) minmax(28px, auto) 76px 76px minmax(28px, auto);
 }
 .sheet[data-rows="7"] {
-  grid-template-rows: var(--space-8) 28px 76px 76px 28px 36px 36px;
+  grid-template-rows: var(--space-8) minmax(28px, auto) 76px 76px minmax(28px, auto) 36px 36px;
 }
 .sheet[data-rows="8"] {
-  grid-template-rows: var(--space-8) 28px 76px 76px 28px 36px 36px 36px;
+  grid-template-rows: var(--space-8) minmax(28px, auto) 76px 76px minmax(28px, auto) 36px 36px 36px;
 }
 .col {
   display: grid;
@@ -31,6 +31,7 @@
   border-top-color: var(--color-line-subtle);
 }
 .rowName {
+  padding-inline-end: var(--space-1);
   justify-items: start;
   text-align: start;
 }
@@ -93,6 +94,6 @@
 }
 @media (min-width: 64rem) {
   .sheet {
-    grid-template-columns: 3.5rem repeat(4, minmax(0, 1fr));
+    grid-template-columns: minmax(3.5rem, max-content) repeat(4, minmax(0, 1fr));
   }
 }

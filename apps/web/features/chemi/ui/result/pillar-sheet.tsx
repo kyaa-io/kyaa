@@ -40,7 +40,8 @@ function Glyph({ cell, locale }: { cell: Cell; locale?: string }) {
     <span className={styles.glyph}>
       <FanHanja role="glyph">{cell.hanja}</FanHanja>
       <span className={styles.read}>
-        <FanText role="label">{cell.letter}</FanText>
+        {/* 한글 읽기(을·병)는 한국어 화면에서만. 다른 언어는 한자와 오행 이름으로 읽는다. */}
+        {locale !== "en" && locale !== "mn" && <FanText role="label">{cell.letter}</FanText>}
         <img src={`/chemi/saju/elements/${cell.element}.webp`} width={24} height={24} alt="" />
         <FanText role="meta">{pillarTerm(elementName[cell.element], locale)}</FanText>
       </span>
