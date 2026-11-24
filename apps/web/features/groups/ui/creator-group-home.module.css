@@ -6,15 +6,6 @@
 /* 팬페이지·모임·취미·브랜드 홈의 같은 구성: 갤러리 → 팬들의 이야기 → 사이드. 머리 아래 24px은 머리가 갖는다. */
 .noTopGap.noTopGap { margin-top:0; padding-top:0; }
 .main.main { display:grid; gap:var(--fan-section-gap); min-width:0; }
-@media (min-width:1024px) {
-  .main:has(> [data-creator-media-preview] [data-scroll-row] li:only-child):has(> .stories) {
-    grid-template-columns:minmax(0, 1fr) minmax(0, 2fr);
-    align-items:start;
-  }
-  .main > * { grid-column:1 / -1; }
-  .main > [data-creator-media-preview]:has([data-scroll-row] li:only-child):has(+ .stories) { grid-column:1; }
-  .main > [data-creator-media-preview]:has([data-scroll-row] li:only-child) + .stories { grid-column:2; }
-}
 .stories { display:grid; gap:var(--space-3); min-width:0; }
 .storiesHeader { display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); min-width:0; }
 .storiesHeader h2 { margin:0; min-width:0; }
