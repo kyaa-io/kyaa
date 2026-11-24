@@ -24,6 +24,7 @@ import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { getRoomLines } from "./room-lines";
 import { RoomBackdrop, type Stage } from "./room-backdrop";
 import { growthStep } from "./ladder";
+import { GrowthRanking } from "./ranking";
 import { RoomStage } from "./room-stage";
 import styles from "./growth.module.css";
 
@@ -261,6 +262,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
             ))}
           </ul>
         </section>
+        <GrowthRanking key={mini.character + (user?.id ?? "")} character={mini.character} locale={locale} />
         <section>
           <div className={styles.head}>
             <FanHeading>{copy.album}</FanHeading>
