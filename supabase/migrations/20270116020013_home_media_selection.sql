@@ -15,7 +15,15 @@ alter table public.home_shortform
 create policy home_media_editor_insert on public.home_gallery_curation for insert to current_user with check (true);
 create policy home_media_editor_update on public.home_gallery_curation for update to current_user using (true) with check (true);
 -- Preserve collector and source-specific policies installed in each environment.
-create policy home_media_editor_short_update on public.home_shortform for update to postgres using (true) with check (true);
+do $policy$
+begin
+  if exists (select 1 from pg_catalog.pg_roles where rolname = 'postgres') then
+    create policy home_media_editor_short_update on public.home_shortform for update to postgres using (true) with check (true);
+  else
+    create policy home_media_editor_short_update on public.home_shortform for update to current_user using (true) with check (true);
+  end if;
+end;
+$policy$;
 
 create function public.home_media_photo_candidates(p_locale public.content_locale,p_include_groups boolean)
 returns table(at timestamptz,id text,item jsonb) language sql stable security definer set search_path='' as $$
