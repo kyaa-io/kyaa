@@ -20,6 +20,9 @@ const item = (count: number, limit: number) => ({ count, points: count * 10, rem
 let uninstall = () => {};
 
 beforeEach(() => {
+  // Keep the KST midnight refresh outside this write-invalidation scenario.
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date("2026-11-08T12:00:00+09:00"));
   Object.assign(server, { post: 0, comment: 0, share: 0, todayReads: 0 });
   resetDukjilCatalogCache(); syncResourceOwner("fan:1"); clearResources();
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -37,7 +40,7 @@ beforeEach(() => {
   }));
   uninstall = installResourceWriteWatch();
 });
-afterEach(() => { uninstall(); cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { uninstall(); cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 const ui = () => render(<DukjilProvider slug="elina" locale="ko"><FanMissions locale="ko" slug="elina" title="팬 활동" passportHref="/passports/p?locale=ko" proofHref="/elina?tab=certifications&locale=ko" onAttendance={() => {}} /></DukjilProvider>);
 const count = (key: string) => document.querySelector(`li[data-mission="${key}"] [role=progressbar]`)?.getAttribute("aria-valuenow");
