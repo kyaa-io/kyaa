@@ -172,3 +172,15 @@ a:has(> [data-video-fallback]) > .playIcon,button:has(> [data-video-fallback]) >
 .mosaic :is(a,button):focus-visible { outline:3px solid var(--color-ink); outline-offset:-3px; }
 @media(min-width:1024px) { .mosaic { columns:4; column-gap:var(--space-3); } .mosaic > li { margin-bottom:var(--space-3); } }
 .mosaic[aria-hidden] > li { aspect-ratio:4 / 5; }
+
+@media (min-width:1024px) {
+  .gallery:has(.galleryRail li:only-child) {
+    width:min(100%,12rem);
+  }
+  .galleryRail li:only-child { width:100%; }
+  .galleryRail li:not(:only-child) {
+    min-width:132px;
+    max-width:188px;
+    width:calc((100% - 5 * var(--space-2)) / 6);
+  }
+}
