@@ -4,7 +4,7 @@ import { FanTierBadge } from "./fan-tier-badge";
 
 describe("FanTierBadge", () => {
   it("uses the validated stage-key asset and stays decorative beside a visible label", () => {
-    const { container } = render(<span><FanTierBadge tier="Platinum" stageKey="platinum-3" locale="ko" size={40} />플래티넘 3</span>);
+    const { container } = render(<span><FanTierBadge tier="Platinum" stageKey="platinum-3" locale="ko" size={40} />플래티넘 Ⅲ</span>);
     const badge = container.querySelector("img");
     expect(decodeURIComponent(badge!.getAttribute("src")!)).toContain("/images/passport/tiers/medal-v2/platinum-3.svg");
     expect(badge).toHaveAttribute("alt", "");
@@ -13,6 +13,6 @@ describe("FanTierBadge", () => {
 
   it("falls back to the major tier entry asset and can expose its own name", () => {
     render(<FanTierBadge tier="Diamond" locale="en" size={88} adjacentLabel={false} />);
-    expect(decodeURIComponent(screen.getByRole("img", { name: "Diamond fan tier" }).getAttribute("src")!)).toContain("/images/passport/tiers/medal-v2/diamond-1.svg");
+    expect(decodeURIComponent(screen.getByRole("img", { name: "Diamond Ⅰ fan tier" }).getAttribute("src")!)).toContain("/images/passport/tiers/medal-v2/diamond-1.svg");
   });
 });
