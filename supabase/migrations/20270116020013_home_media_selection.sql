@@ -9,20 +9,9 @@ alter table public.home_shortform
   add column home_editor text,
   add column home_edited_at timestamptz;
 
-create or replace function public.read_home_gallery_mix(
-  p_locale public.content_locale, p_include_groups boolean, p_limit integer default 12,
-  p_offset integer default 0)
-returns jsonb language plpgsql stable security definer set search_path = '' as $$
-declare v_rows jsonb;
-begin
-  if p_locale is null or p_limit is null or p_limit not between 1 and 24 or p_offset is null or p_offset not between 0 and 10000 then
-    raise exception 'invalid home gallery page' using errcode = '22023';
-  end if;
-  select coalesce(jsonb_agg(jsonb_build_object('item', x.item || case when x.at <= statement_timestamp() and x.at > statement_timestamp() - interval '48 hours' then '{"isNew":true}'::jsonb else '{}'::jsonb end, 'rank', x.sort_rank, 'at', x.at, 'id', x.id) order by x.position), '[]'::jsonb) into v_rows from (
-    select k.*, row_number() over (order by case when cut = 1 and source_pos <= case when fan then 3 else 10 end then 0 else 1 end, sort_rank, at desc, id) position from (
-      select cuts.*, row_number() over (partition by fan, cut order by sort_rank, at desc, id) source_pos from (
-      select eligible.*, row_number() over (partition by item->>'sourceHref' order by sort_rank, at desc, id) cut, item->>'source' <> 'official_sns' fan from (
-      select u.at, u.id, u.item, public.home_gallery_curation_rank(u.id) sort_rank from (
+create function public.home_media_photo_candidates(p_locale public.content_locale,p_include_groups boolean)
+returns table(at timestamptz,id text,item jsonb) language sql stable security definer set search_path='' as $$
+
         select n.display_published_at at, n.id::text || ':' || i.ord id, jsonb_build_object(
             'id', n.id::text || ':' || i.ord, 'source', 'official_sns',
             'image', jsonb_build_object('url', i.value->'attrs'->>'src', 'width', (i.value->'attrs'->>'width')::numeric::integer, 'height', (i.value->'attrs'->>'height')::numeric::integer),
@@ -76,7 +65,22 @@ begin
           and a.cleanup_requested_at is null and a.storage_deleted_at is null
           and public.authorize_group_media_read(null, a.id, 'original') is not null
           and not exists (select 1 from public.group_reports r where r.target_type = 'post' and r.target_id = p.id)
-      ) u join public.home_gallery_curation selection on selection.photo_id = u.id and selection.home_selected and not selection.hidden
+      $$;
+revoke all on function public.home_media_photo_candidates(public.content_locale,boolean) from public,anon,authenticated;
+create or replace function public.read_home_gallery_mix(
+  p_locale public.content_locale, p_include_groups boolean, p_limit integer default 12,
+  p_offset integer default 0)
+returns jsonb language plpgsql stable security definer set search_path = '' as $$
+declare v_rows jsonb;
+begin
+  if p_locale is null or p_limit is null or p_limit not between 1 and 24 or p_offset is null or p_offset not between 0 and 10000 then
+    raise exception 'invalid home gallery page' using errcode = '22023';
+  end if;
+  select coalesce(jsonb_agg(jsonb_build_object('item', x.item || case when x.at <= statement_timestamp() and x.at > statement_timestamp() - interval '48 hours' then '{"isNew":true}'::jsonb else '{}'::jsonb end, 'rank', x.sort_rank, 'at', x.at, 'id', x.id) order by x.position), '[]'::jsonb) into v_rows from (
+    select k.*, row_number() over (order by case when cut = 1 and source_pos <= case when fan then 3 else 10 end then 0 else 1 end, sort_rank, at desc, id) position from (
+      select cuts.*, row_number() over (partition by fan, cut order by sort_rank, at desc, id) source_pos from (
+      select eligible.*, row_number() over (partition by item->>'sourceHref' order by sort_rank, at desc, id) cut, item->>'source' <> 'official_sns' fan from (
+      select u.at, u.id, u.item, public.home_gallery_curation_rank(u.id) sort_rank from public.home_media_photo_candidates(p_locale,p_include_groups) u join public.home_gallery_curation selection on selection.photo_id = u.id and selection.home_selected and not selection.hidden
       ) eligible
       ) cuts where cut = 1
     ) k
@@ -104,5 +108,45 @@ begin
 end $$;
 revoke all on function public.read_curated_home_shortform_page(public.content_locale,integer,integer) from public,anon,authenticated;
 grant execute on function public.read_curated_home_shortform_page(public.content_locale,integer,integer) to service_role;
+create function public.admin_home_media_candidates(p_kind text,p_groups boolean)
+returns setof jsonb language plpgsql stable security definer set search_path='' as $$
+begin
+  if p_kind='photo' then
+    return query select p.item || jsonb_build_object('selected',coalesce(c.home_selected,false),'hidden',coalesce(c.hidden,false),
+      'legacy',coalesce(c.rank>0 and not c.hidden and c.home_editor is null,false),'rank',c.rank)
+      from public.home_media_photo_candidates('ko',p_groups) p left join public.home_gallery_curation c on c.photo_id=p.id
+      order by c.rank nulls last,p.at desc,p.id;
+  else
+    return query select jsonb_build_object('id',s.id,'title',s.title,'sourceHref',s.href,'platform',s.platform,'videoId',s.video_id,
+      'creator',public.home_creator_json(s.celebrity_id,'ko'),'selected',s.home_selected,'hidden',s.home_hidden,
+      'legacy',s.source_notice_id is null and not s.home_hidden,'rank',s.home_rank)
+      from public.home_shortform s where public.home_gallery_creator_public(s.celebrity_id)
+        and s.unavailable_at is null and public.home_shortform_visible(s.source_notice_id)
+      order by s.home_rank nulls last,s.published_at desc,s.id;
+  end if;
+end $$;
+create function public.admin_edit_home_media(p_kind text,p_action text,p_ids text[],p_editor text)
+returns void language plpgsql security definer set search_path='' as $$
+begin
+  if p_kind not in ('photo','video') or p_action not in ('select','remove','hide','rank') or cardinality(p_ids) not between 1 and 1000 then
+    raise exception 'invalid home media change';
+  end if;
+  if p_kind='photo' then
+    insert into public.home_gallery_curation(photo_id,home_selected,hidden,rank,reason,home_editor)
+    select id,p_action='select',p_action='hide',case when p_action='rank' then pos::integer end,'홈 편성',p_editor
+    from unnest(p_ids) with ordinality entries(id,pos)
+    on conflict(photo_id) do update set home_selected=case when p_action='rank' then home_gallery_curation.home_selected else excluded.home_selected end,
+      hidden=case when p_action='rank' then home_gallery_curation.hidden else excluded.hidden end,
+      rank=case when p_action='hide' or (p_action='rank' and not home_gallery_curation.hidden) then excluded.rank else home_gallery_curation.rank end,
+      home_editor=p_editor,updated_at=now();
+  else
+    update public.home_shortform s set home_selected=case when p_action='rank' then s.home_selected else p_action='select' end,
+      home_hidden=case when p_action='rank' then s.home_hidden else p_action='hide' end,
+      home_rank=case when p_action='rank' then entries.pos::integer else s.home_rank end,home_editor=p_editor,home_edited_at=now()
+      from unnest(p_ids) with ordinality entries(id,pos) where s.id=entries.id::uuid;
+  end if;
+end $$;
+revoke all on function public.admin_edit_home_media(text,text,text[],text),public.admin_home_media_candidates(text,boolean) from public,anon,authenticated;
+grant execute on function public.admin_edit_home_media(text,text,text[],text),public.admin_home_media_candidates(text,boolean) to service_role;
 notify pgrst,'reload schema';
 commit;
