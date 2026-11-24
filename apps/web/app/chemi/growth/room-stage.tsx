@@ -40,12 +40,14 @@ export function RoomStage({
   locale,
   label,
   line: firstLine,
+  celebration,
 }: {
   character: string;
   stage: string;
   locale: string;
   label: string;
   line: string;
+  celebration?: string;
 }) {
   const lines = getRoomLines(locale, character);
   const room = useRef<HTMLDivElement>(null);
@@ -101,6 +103,15 @@ export function RoomStage({
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(next, ms);
   }, []);
+
+  const previousCelebration = useRef(celebration);
+  useEffect(() => {
+    if (celebration === previousCelebration.current) return;
+    previousCelebration.current = celebration;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    setMode("hop");
+    after(420, () => setMode("stand"));
+  }, [celebration, after]);
 
   /** 걷는 도중에 멈추면 지금 보이는 자리에 세운다. */
   const stopHere = useCallback(() => {

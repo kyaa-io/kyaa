@@ -128,7 +128,8 @@
     "release-notes/2026-11-24-chemi-ranking-hour.json",
     "release-notes/2026-11-24-chemi-run-gauge.json",
     "release-notes/2026-11-24-chemi-r8a.json",
-    "release-notes/2026-11-24-chemi-r8b.json"
+    "release-notes/2026-11-24-chemi-r8b.json",
+    "release-notes/2026-11-24-chemi-ladder.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

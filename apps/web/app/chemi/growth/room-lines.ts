@@ -121,10 +121,10 @@ const elinaKo = {
   cat: "쉿, 냥이 자는 중이에요.",
   tea: "차 식기 전에 같이 마셔요.",
   lamp: "불 켜 두니까 아늑하지?",
-  lineBaby: "여기가 우리 집이에요?",
-  lineKid: "저 키 컸죠? 다 덕분이에요.",
+  lineBaby: "여기가 제 방이에요? 오늘부터 연습할게요.",
+  lineKid: "저 데뷔조 됐어요. 매일 와 준 덕이야.",
   lineStar: "오늘 무대도 지켜봐 줘요.",
-  lineWait: "저 키워 줄 사람 없나?",
+  lineWait: "제 첫 번째 팬, 어디 없나요?",
 } as const;
 
 export type StageLineKey = "lineBaby" | "lineKid" | "lineStar" | "lineWait";
