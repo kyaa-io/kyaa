@@ -40,6 +40,18 @@ export async function PATCH(request: Request) {
     const deps = createFanpageDependencies();
     const admin = await deps.authorizeAdmin(request.headers.get("authorization"), crypto.randomUUID());
     const body = await request.json().catch(() => null);
+    if (body?.action === "approveUnderidolWinner") {
+      if (!uuid.test(body.creatorId) || !/^\d{4}-(0[1-9]|1[0-2])-01$/.test(body.month) ||
+        ![body.teamConsent, body.officialAccount].every(value =>
+          typeof value === "string" && value.trim().length > 0 && value.length <= 1000)) {
+        return new Response(null, { status: 400, headers });
+      }
+      await deps.rpc("approve_underidol_vote_winner", {
+        p_admin: admin.appUserId, p_allowlist: admin.allowlistId, p_month: body.month,
+        p_creator: body.creatorId, p_consent: body.teamConsent, p_account: body.officialAccount,
+      });
+      return new Response(null, { status: 204, headers });
+    }
     if (!body || !uuid.test(body.creatorId) || typeof body.name !== "string" || body.name.length > 100) {
       return new Response(null, { status: 400, headers });
     }
