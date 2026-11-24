@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "PC 상단과 휴대폰 하단 메뉴를 앱 언어에 관계없이 HOME · 모임 · 케미 · 덕질 · MY로 통일했어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-24-menu-ko-restore-1440.png"
+  ]
+}
