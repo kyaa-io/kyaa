@@ -109,6 +109,13 @@ export function noticeImages(notes) {
   return images;
 }
 
+const disclosure = '예시 데이터로 만든 확인용 화면입니다.';
+const legacyDisclosure = '예시 데이터로 만든 로컬 화면입니다.';
+
+function formatNoticeChange(line) {
+  return line === legacyDisclosure ? disclosure : line;
+}
+
 export function checkNotes(base, head, pullRequest = false) {
   if (!SHA.test(base) || !SHA.test(head)) throw new Error('INVALID_COMMIT');
   const entries = readNoteEntries(pullRequest ? git('merge-base', base, head) : base, head);
@@ -122,7 +129,7 @@ export function checkNotes(base, head, pullRequest = false) {
   }
   const notes = entries.map(entry => entry.note);
   for (const note of notes) {
-    const disclosure = '예시 데이터로 만든 로컬 화면입니다.';
+    const changes = note.changes.map(formatNoticeChange);
     let local = false;
     for (const path of note.images ?? []) {
       const meta = JSON.parse(git('show', head + ':' + path + '.capture'));
@@ -137,8 +144,8 @@ export function checkNotes(base, head, pullRequest = false) {
         throw new Error('INVALID_CAPTURE_RECEIPT: ' + path);
       local ||= loopback;
     }
-    if (note.images?.length && (note.changes.filter(line => line === disclosure).length !== Number(local) ||
-        note.changes.some(line => line !== disclosure && /(?:예시|로컬).*화면|화면.*(?:예시|로컬)/.test(line))))
+    if (note.images?.length && (changes.filter(line => line === disclosure).length !== Number(local) ||
+        changes.some(line => line !== disclosure && /(?:예시|로컬).*화면|화면.*(?:예시|로컬)/.test(line))))
       throw new Error('INVALID_CAPTURE_DISCLOSURE');
   }
   return notes;
@@ -148,7 +155,7 @@ export function formatNotice(notes, completedAt, site = 'kyaa') {
   if (!notes.length) throw new Error('RELEASE_NOTE_REQUIRED');
   notes.forEach(validateNote);
   const time = new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(completedAt));
-  const changes = [...new Set(notes.flatMap(note => note.changes))];
+  const changes = [...new Set(notes.flatMap(note => note.changes.map(formatNoticeChange)))];
   const links = [...new Set(notes.map(note => `${site === 'wave' ? 'https://kyaawave.com' : 'https://kyaa.io'}${note.path}`))];
   const text = `✅ ${site === 'wave' ? 'kyaa wave' : 'kyaa'} 수정사항이 반영됐어요\n\n${changes.map(line => `• ${line}`).join('\n')}\n\n확인하기\n${links.join('\n')}\n\n반영 시각: ${time} (한국 시간)`;
   if (text.length > (noticeImages(notes).length ? Math.min(3900, 1024 * noticeImages(notes).length) : 3900)) throw new Error('RELEASE_NOTICE_TOO_LONG');
@@ -160,7 +167,8 @@ export function formatNotice(notes, completedAt, site = 'kyaa') {
 export function noticeBatches(notes, completedAt, site = 'kyaa', format = batch => formatNotice(batch, completedAt, site)) {
   const batches = [];
   let current = [];
-  for (const note of notes) {
+  for (const sourceNote of notes) {
+    const note = { ...sourceNote, changes: sourceNote.changes.map(formatNoticeChange) };
     try { format([...current, note]); }
     catch (error) {
       if (!current.length || !['TOO_MANY_RELEASE_IMAGES', 'RELEASE_NOTICE_TOO_LONG'].includes(error.message)) throw error;
