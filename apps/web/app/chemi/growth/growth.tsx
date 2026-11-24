@@ -4,6 +4,7 @@ import { EARN } from "../contents";
 import { useCallback, useEffect, useState } from "react";
 import { Check, LockKeyhole } from "@/components/fan-ui/fan-icons";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -22,6 +23,7 @@ import { getGrowthCopy } from "./copy";
 import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { getRoomLines } from "./room-lines";
 import { RoomBackdrop, type Stage } from "./room-backdrop";
+import { growthStep } from "./ladder";
 import { RoomStage } from "./room-stage";
 import styles from "./growth.module.css";
 
@@ -52,10 +54,35 @@ const sample: GrowthState = {
   minis: CHARACTERS.map((character) => ({ character, exp: 0, level: 1, album: [], today: [] })),
 };
 
+function StageNotice({ mini, locale, label, account, reveal, celebrate }: {
+  mini: Mini; locale: string; label: string; account: string; reveal: (slot: number) => void; celebrate: (key: string) => void;
+}) {
+  useEffect(() => {
+    const key = `chemi-growth-stage:${account}:${mini.character}`;
+    try {
+      const previous = sessionStorage.getItem(key);
+      sessionStorage.setItem(key, String(mini.exp));
+      if (previous === null || mini.exp <= Number(previous)) return;
+      const before = growthStep(Number(previous), locale);
+      const after = growthStep(mini.exp, locale);
+      if (before.name === after.name) return;
+      const particle = (after.name.charCodeAt(after.name.length - 1) - 0xac00) % 28 === 0 ? "가" : "이";
+      showFanToast({ title: fill(getGrowthCopy(locale).promoted, { mini: label, stage: after.name, particle }) });
+      celebrate(key + after.name);
+      const photo = mini.album.filter(({ slot }) => slot >= 2 && slot <= PHOTO_SLOTS &&
+        Number(previous) < 10 * SLOT_LEVELS[slot - 2]! ** 2).sort((a, b) => b.slot - a.slot)[0];
+      if (photo) reveal(photo.slot);
+    } catch {
+      // Session storage can be disabled in private browsing.
+    }
+  }, [account, mini, locale, label, reveal, celebrate]);
+  return null;
+}
+
 export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; home: HomeCopy; matchAvailable: boolean }) {
   const copy = getGrowthCopy(locale);
   const names = getMatchCopy(locale);
-  const { ready, authenticated, getAccessToken, login } = useByUsAuth();
+  const { ready, authenticated, user, getAccessToken, login } = useByUsAuth();
   const [state, setState] = useState<GrowthState>();
   const [failed, setFailed] = useState(false);
   const [picked, setPicked] = useState<Character>();
@@ -64,6 +91,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
     setPicked(CHARACTERS.find(character => character === requested));
   }, []);
   const [busy, setBusy] = useState(false);
+  const [celebration, setCelebration] = useState("");
   const [viewing, setViewing] = useState<number>();
 
   const call = useCallback(async (character?: Character) => {
@@ -109,6 +137,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
   const fallback = [...data.minis].sort((a, b) => Number(raised(b)) - Number(raised(a)) || b.exp - a.exp)[0];
   const mini = data.minis.find((item) => item.character === picked) ?? fallback;
   const name = names[mini.character];
+  const step = growthStep(mini.exp, locale);
   const stage = stageOf(mini.level);
   const next = 10 * (mini.level + 1) ** 2;
   const rows = entries.flatMap(([id, , readingPath]) => {
@@ -166,22 +195,23 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
         <div className={styles.room}>
           {/* 이번에 어린이(2칸)·스타(4칸) 앨범이 열렸으면 지난 단계 방에서 새 방으로 넘어가는 모습을 한 번 보여 준다. */}
           <RoomBackdrop
-            key={`room-${mini.character}`}
+            key={`room-${mini.character}-${stage}`}
             character={mini.character}
             stage={stage}
-            from={fresh.has(2) ? "baby" : fresh.has(4) ? "kid" : undefined}
+            from={fresh.has(4) ? "kid" : fresh.has(2) ? "baby" : undefined}
           />
           <RoomStage
             key={mini.character}
             character={mini.character}
             stage={stage}
+            celebration={celebration}
             locale={locale}
             label={fill(copy.mini, { name })}
             line={lines[lineKey] ?? copy[lineKey]}
           />
           <div className={styles.name}>
             <FanText role="label">{fill(copy.mini, { name })}</FanText>
-            <FanTag tone="neutral">{copy[stage]}</FanTag>
+            <FanTag tone="neutral">{step.chip}</FanTag>
           </div>
           {guest && <FanTag tone="neutral" className={styles.sample}>{copy.sample}</FanTag>}
         </div>
@@ -196,12 +226,10 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
               <FanText role="meta" className={styles.exp}>{mini.exp.toLocaleString(locale, { useGrouping: "always" })} / {next.toLocaleString(locale, { useGrouping: "always" })}</FanText>
             </div>
             <FanGauge value={mini.exp} max={next} label={fill(copy.closeness, { name })} />
-            {stage !== "star" && (
-              <p className={styles.next}>
-                <FanText role="meta">{copy.next}</FanText>
-                <FanText role="label">{stage === "baby" ? `${copy.kid} Lv 5` : `${copy.star} Lv 15`}</FanText>
-              </p>
-            )}
+            <p className={styles.next}>
+              <FanText role="meta">{copy.next} · {step.number} / 24</FanText>
+              <FanText role="label">{step.nextName} · {fill(copy.toGo, { n: step.remaining.toLocaleString(locale) })}</FanText>
+            </p>
           </div>
         )}
         <section>
@@ -277,6 +305,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
           </ol>
         </section>
       </div>
+      {user && <StageNotice key={user.id + mini.character} account={user.id} mini={mini} locale={locale} label={fill(copy.mini, { name })} reveal={setViewing} celebrate={setCelebration} />}
       <FanDialog
         open={viewing !== undefined}
         onOpenChange={(open) => !open && setViewing(undefined)}

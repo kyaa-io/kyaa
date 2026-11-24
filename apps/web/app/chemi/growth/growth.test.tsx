@@ -33,7 +33,7 @@ it("shows the raised mini, its level and today's remaining contents", async () =
   show();
   expect(await screen.findByText("창하 친밀 Lv")).toBeTruthy();
   expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe("490/640");
-  expect(screen.getByText("스타 Lv 15")).toBeTruthy();
+  expect(screen.getByText("신인 · 친밀 160 남음")).toBeTruthy();
   expect(screen.getByText("2 / 6")).toBeTruthy();
   expect(screen.getByText("받음")).toBeTruthy();
   // 받을 친밀·받은 표시는 입구 목록과 같은 알약(AffinityBadge)이다.
@@ -52,7 +52,7 @@ it("starts raising a creator that is not raised yet", async () => {
   vi.stubGlobal("fetch", fetcher);
   show();
   fireEvent.click(await screen.findByRole("button", { name: "유나" }));
-  expect(screen.getByText("나 키워 줄 사람 어디 없나?")).toBeTruthy();
+  expect(screen.getByText("내 첫 번째 팬, 어디 없나?")).toBeTruthy();
   fireEvent.click(screen.getByRole("button", { name: "유나 키우기" }));
   await waitFor(() => expect(screen.getByText("1 / 6")).toBeTruthy());
   expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual({ action: "adopt", character: "yuna" });
@@ -112,7 +112,7 @@ it("keeps Elina's half-formal tone in Korean", async () => {
   vi.stubGlobal("fetch", respond(state));
   show();
   fireEvent.click(await screen.findByRole("button", { name: /^엘리나/ }));
-  expect(screen.getByText("여기가 우리 집이에요?")).toBeTruthy();
+  expect(screen.getByText("여기가 제 방이에요? 오늘부터 연습할게요.")).toBeTruthy();
 });
 
 it("has every room line in every language", () => {
@@ -128,8 +128,7 @@ it("shows the room for the mini's stage and fades in a newly reached stage once"
   vi.stubGlobal("fetch", respond({ ...state, fresh: [{ character: "changha", slot: 2 }] }));
   const { container } = show();
   const rooms = () => [...container.querySelectorAll<HTMLImageElement>("img[data-room-stage]")].map((img) => img.dataset.roomStage);
-  await waitFor(() => expect(rooms()).toEqual(["baby"]));
-  await waitFor(() => expect(rooms()).toEqual(["kid"]), { timeout: 2000 });
+  await waitFor(() => expect(rooms()).toEqual(["kid"]));
   const room = container.querySelector<HTMLImageElement>("img[data-room-stage]")!;
   expect(room.getAttribute("srcset")).toContain("/chemi/grow/room-changha-kid-1280.webp 1280w");
   expect(room).toHaveAttribute("data-entering");
