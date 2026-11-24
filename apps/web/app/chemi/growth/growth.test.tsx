@@ -122,3 +122,17 @@ it("has every room line in every language", () => {
     for (const value of [...lines.tap, lines.pet, lines.dizzy, lines.cat, lines.tea, lines.lamp]) expect(value).not.toBe("");
   }
 });
+
+it("shows the room for the mini's stage and fades in a newly reached stage once", async () => {
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener: () => {}, removeEventListener: () => {} }));
+  vi.stubGlobal("fetch", respond({ ...state, fresh: [{ character: "changha", slot: 2 }] }));
+  const { container } = show();
+  const rooms = () => [...container.querySelectorAll<HTMLImageElement>("img[data-room-stage]")].map((img) => img.dataset.roomStage);
+  await waitFor(() => expect(rooms()).toEqual(["baby"]));
+  await waitFor(() => expect(rooms()).toEqual(["kid"]), { timeout: 2000 });
+  const room = container.querySelector<HTMLImageElement>("img[data-room-stage]")!;
+  expect(room.getAttribute("srcset")).toContain("/chemi/grow/room-changha-kid-1280.webp 1280w");
+  expect(room).toHaveAttribute("data-entering");
+  fireEvent.click(screen.getByRole("button", { name: /^엘리나/ }));
+  await waitFor(() => expect(rooms()).toEqual(["baby"]));
+});

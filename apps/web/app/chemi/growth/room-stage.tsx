@@ -17,12 +17,14 @@ const MINI = 36;
 const MIN_X = 4;
 const MAX_X = 60;
 const HOME_X = 32;
-/** 세 방 그림은 같은 배치다: 왼쪽 아래 자는 고양이, 오른쪽 탁자의 찻잔, 오른쪽 책상 위 램프. */
+/** 어린이 방 기준 배치: 왼쪽 아래 자는 고양이, 오른쪽 탁자의 찻잔, 오른쪽 책상 위 램프. */
 const PROPS: Record<Prop, { x: number; y: number; r: number; stand: number }> = {
   cat: { x: 27, y: 84, r: 9, stand: 34 },
   tea: { x: 80, y: 66, r: 8, stand: 36 },
   lamp: { x: 86, y: 30, r: 8, stand: 44 },
 };
+/** 단계별 방 그림에 실제로 있는 소품. 아기 방은 침대와 창문뿐이고, 스타 방에는 자는 고양이가 없다. */
+const STAGE_PROPS: Record<string, readonly Prop[]> = { baby: [], kid: ["cat", "tea", "lamp"], star: ["tea", "lamp"] };
 /** 걷는 속도: 방 폭 1%를 가는 데 걸리는 시간. 방 폭의 36%를 2초 안팎에 간다. */
 const WALK_MS_PER_UNIT = 55;
 const PET_AFTER_MS = 450;
@@ -204,7 +206,7 @@ export function RoomStage({
     const px = ((event.clientX - box.left) / box.width) * 100;
     const py = ((event.clientY - box.top) / box.height) * 100;
     const from = (mode === "walk" ? stopHere() : undefined) ?? x;
-    const prop = (Object.keys(PROPS) as Prop[]).find((key) => Math.hypot(PROPS[key].x - px, PROPS[key].y - py) <= PROPS[key].r);
+    const prop = (STAGE_PROPS[stage] ?? []).find((key) => Math.hypot(PROPS[key].x - px, PROPS[key].y - py) <= PROPS[key].r);
     if (prop) {
       walkTo(PROPS[prop].stand, () => {
         setFace(PROPS[prop].x < PROPS[prop].stand + MINI / 2 ? "left" : "right");

@@ -33,7 +33,9 @@ it("opens the game with same-origin photos in a production build", async () => {
   vi.stubEnv("NODE_ENV", "production");
   const page = await MatchPage(params);
   expect(page.type).toBe(MatchScreen);
-  expect(page.props.photos.yuna.cards[2]).toMatch(/^\/api\/content-assets\//);
+  const { changha, elina, yuna } = page.props.photos;
+  expect([changha.cards.length, elina.cards.length, yuna.cards.length]).toEqual([6, 9, 7]);
+  for (const src of [...changha.cards, ...elina.cards, ...yuna.cards]) expect(src).toMatch(/^\/chemi\/match\/cards\/[a-z]+-\d{2}\.webp$/);
 });
 
 it("shows the localized ready state when photos are unavailable", async () => {

@@ -21,12 +21,12 @@ import type { HomeCopy } from "../home";
 import { getGrowthCopy } from "./copy";
 import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { getRoomLines } from "./room-lines";
+import { RoomBackdrop, type Stage } from "./room-backdrop";
 import { RoomStage } from "./room-stage";
 import styles from "./growth.module.css";
 
 const CHARACTERS = ["changha", "elina", "yuna"] as const;
 type Character = (typeof CHARACTERS)[number];
-type Stage = "baby" | "kid" | "star";
 export type Mini = {
   character: Character;
   exp: number;
@@ -164,7 +164,13 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
       />
       <div className={styles.stage}>
         <div className={styles.room}>
-          <img src={`/chemi/grow/room-${mini.character}-v1.webp`} alt="" width={1024} height={1024} />
+          {/* 이번에 어린이(2칸)·스타(4칸) 앨범이 열렸으면 지난 단계 방에서 새 방으로 넘어가는 모습을 한 번 보여 준다. */}
+          <RoomBackdrop
+            key={`room-${mini.character}`}
+            character={mini.character}
+            stage={stage}
+            from={fresh.has(2) ? "baby" : fresh.has(4) ? "kid" : undefined}
+          />
           <RoomStage
             key={mini.character}
             character={mini.character}
