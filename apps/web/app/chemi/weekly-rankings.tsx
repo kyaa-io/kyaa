@@ -10,7 +10,7 @@ import { GameRankings, type GameRanking } from "./game-rankings";
 import type { HomeCopy } from "./home";
 
 const allModes = [["pair", "match"], ["run", "run"]] as const;
-type Row = { place: number; nickname: string; ticks: number; score?: number | null; isMe: boolean };
+type Row = { place: number; avatarUrl?: string | null; nickname: string; ticks: number; score?: number | null; isMe: boolean };
 type Props = { copy: HomeCopy; locale: string; matchAvailable: boolean };
 
 export function WeeklyRankings(props: Props) {
@@ -62,6 +62,7 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
       isMe: row.isMe,
       place: row.place,
       name: rankName(row.nickname, locale),
+      avatar: row.avatarUrl ?? undefined,
       initial: row.nickname?.trim() ? undefined : null,
       change: 0,
       record: typeof row.score === "number" ? points.format(row.score) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]

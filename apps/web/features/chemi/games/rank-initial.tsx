@@ -6,3 +6,9 @@ export function RankInitial({ nickname }: { nickname: string | null | undefined 
   const name = nickname?.trim();
   return name ? <>{Array.from(name)[0]}</> : <FanIcon icon={CircleUserRound} size={16} />;
 }
+
+export function RankAvatar({ nickname, url }: { nickname?: string | null; url?: string | null }) {
+  return url
+    ? <img src={url} alt="" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+    : <RankInitial nickname={nickname} />;
+}

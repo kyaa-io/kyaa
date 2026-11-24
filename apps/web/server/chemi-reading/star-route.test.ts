@@ -74,7 +74,7 @@ describe("구형 저장분({natal, sky}) 호환", () => {
     result: { natal: [], sky: [] },
     styled: null,
   };
-  const call = async (saved: unknown, op: "detail" | "createReading") => {
+  const call = async (saved: unknown, op: "detail" | "createReading", saju = false) => {
     vi.stubEnv("CHEMI_TAB", "true");
     const rpc = vi.fn(async (name: string) => {
       if (name === "chemi_reading_detail") return saved;
@@ -94,7 +94,7 @@ describe("구형 저장분({natal, sky}) 호환", () => {
         : new Request("http://x/api/chemi/readings", {
             method: "POST",
             headers: { authorization: "Bearer t" },
-            body: JSON.stringify({ content: "star", kind: "daily", character: "dosa" }),
+            body: JSON.stringify({ content: saju ? "saju" : "star", kind: saju ? "first" : "daily", character: "dosa" }),
           });
     return (await routes.rewardRoute(op, request, "5f1b0c1e-0000-4000-8000-000000000001")).json();
   };
@@ -104,6 +104,14 @@ describe("구형 저장분({natal, sky}) 호환", () => {
     expect(body.kstDate).toBe("2026-11-19");
     expect(body.result.stars.overall).toBeGreaterThanOrEqual(1);
     expect(body.result.natal).toHaveLength(10);
+  });
+
+  it.each(["detail", "createReading"] as const)("%s 는 저장 후 기존 사주의 시주를 연다", async (op) => {
+    const saved = { ...legacy, content: "saju", kind: "first", result: { pillars: { hour: null }, timeKnown: false } };
+    const body = await call(saved, op, true);
+    expect(body.readingId).toBe(saved.readingId);
+    expect(body.result.timeKnown).toBe(true);
+    expect(body.result.pillars.hour).toBeTruthy();
   });
 
   it("이미 새 모양인 저장분은 그대로 둔다", async () => {

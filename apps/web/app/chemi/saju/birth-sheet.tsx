@@ -32,6 +32,7 @@ export function BirthSheet({
   error,
   onClose,
   onSave,
+  onSaveTime,
 }: {
   open: boolean;
   /** me: 내 생일 · partner: 궁합 상대(별명). 두 모드 모두 저장 동의 체크가 있어야 저장한다. */
@@ -41,6 +42,7 @@ export function BirthSheet({
   error: string | null;
   onClose: () => void;
   onSave: (result: SheetResult) => void;
+  onSaveTime?: (time: ReturnType<typeof timeToApi>) => void;
 }) {
   const [nickname, setNickname] = useState("");
   const [dateText, setDateText] = useState("");
@@ -52,18 +54,18 @@ export function BirthSheet({
   const issue = dateText === "" ? null : birthDateIssue(dateText, koreaToday());
   const dateError =
     issue === "invalid" ? copy.invalidDate : issue === "under14" ? (partner ? copy.partnerUnder14 : copy.under14) : null;
-  const ready = birthDateIssue(dateText, koreaToday()) === null && (!partner || nickname.trim() !== "") && agree;
+  const ready = onSaveTime ? time.kind !== "unknown" && agree : birthDateIssue(dateText, koreaToday()) === null && (!partner || nickname.trim() !== "") && agree;
   return (
     <FanSheet
       open={open}
       onOpenChange={(next) => !next && onClose()}
-      title={partner ? copy.partnerNewTitle : copy.firstTitle}
+      title={onSaveTime ? copy.fieldTime : partner ? copy.partnerNewTitle : copy.firstTitle}
       closeLabel={copy.close}
       primary={{
         label: partner ? copy.partnerSave : copy.save,
         disabled: !ready,
         loading: busy,
-        onClick: () =>
+        onClick: () => onSaveTime ? onSaveTime(timeToApi(time)) :
           onSave({
             nickname: nickname.trim(),
             birth: { birthDate: birthTextToIso(dateText)!, calendar, ...timeToApi(time), gender },
@@ -72,6 +74,7 @@ export function BirthSheet({
     >
       <div className={styles.form}>
         {partner && <BirthTextField label={copy.nickname} value={nickname} onChange={setNickname} maxLength={10} />}
+        {!onSaveTime && <>
         <BirthDateField label={copy.fieldDate} value={dateText} onChange={setDateText} error={dateError} copy={copy} />
         <ChoiceField<BirthCalendar>
           label={copy.calendarLabel}
@@ -83,13 +86,14 @@ export function BirthSheet({
           value={calendar}
           onChange={setCalendar}
         />
+        </>}
         <BirthTimeField startOpen value={time} onChange={setTime} copy={copy} />
-        <ChoiceField
+        {!onSaveTime && <ChoiceField
           label={copy.fieldGender}
           options={genderOptions(copy)}
           value={genderKey(gender)}
           onChange={(key) => setGender(genderValue(key))}
-        />
+        />}
         <CheckLabel checked={agree} onChange={setAgree}>
           {(partner ? copy.partnerConsent : copy.consentItem).split(/(?<=[.。])\s+/).map((sentence, index) => (
             <Fragment key={sentence}>

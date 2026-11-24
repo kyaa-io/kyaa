@@ -472,11 +472,20 @@ export function SajuFlow({
     void run(character);
   }
 
-  async function saveMyBirth({ birth }: SheetResult) {
+  async function saveMyBirth(input: SheetResult | Pick<SheetResult["birth"], "birthTime" | "timePrecision">) {
     setBirthBusy(true);
     setBirthError(null);
     try {
-      await saveBirth(await getAccessToken(), birth);
+      const token = await getAccessToken();
+      const current = "birth" in input ? input.birth : (await loadProfile(token)).birth;
+      if (!current) throw new ChemiRequestError("CHEMI_BIRTH_REQUIRED");
+      await saveBirth(token, "birth" in input ? current : { ...current, ...input });
+      if (!("birth" in input)) {
+        const updated = await requestFirst(token, character);
+        setReading(updated);
+        setSheet(null);
+        return;
+      }
       setSheet(null);
       commit({ step: "calc" }, "push");
       void run(character);
@@ -781,6 +790,7 @@ export function SajuFlow({
           error={birthError}
           onClose={() => setSheet(null)}
           onSave={saveMyBirth}
+          onSaveTime={nav.step === "result" ? saveMyBirth : undefined}
         />
         <BirthSheet
           open={sheet === "pair"}

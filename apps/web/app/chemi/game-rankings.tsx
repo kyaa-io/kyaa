@@ -5,8 +5,7 @@ import { useEffect, useRef } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
-import { FanIcon } from "@/components/fan-ui/fan-icon";
-import { CircleUserRound } from "@/components/fan-ui/fan-icons";
+import { RankAvatar } from "@/features/chemi/games/rank-initial";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
@@ -51,7 +50,7 @@ function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string 
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
       {row.vacant ? <VacantRank place={row.place} label={vacantLabel} avatarClassName={styles.rankAvatar} /> : <>
         <FanText role="body" data-flash-target="gain">{row.place}</FanText>
-        {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
+        <span className={styles.rankAvatar} aria-hidden="true"><RankAvatar nickname={row.initial === null ? null : row.name} url={row.avatar} /></span>
         <div>
           <FanText role="item">{row.name}</FanText>
           {row.change !== 0 && (
@@ -112,7 +111,7 @@ export function GameRankings({ games, label, weekLabel, mineLabel, vacantLabel =
                 {game.mine && !game.leaders.some((row) => row.isMe) && (
                   <div className={styles.rankMine}>
                     <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
-                    <span className={styles.rankAvatar} aria-hidden="true" />
+                    <span className={styles.rankAvatar} aria-hidden="true"><RankAvatar nickname={game.mine.initial === null ? null : game.mine.name} url={game.mine.avatar} /></span>
                     <FanText role="body">{mineLabel}</FanText>
                     <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
                   </div>
