@@ -1,3 +1,4 @@
+import consent from "@/server/home-gallery/home-media-consent.json";
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { createHomeNoticeAdminDependencies } from "@/server/home-notice/home-notice-dependencies";
@@ -22,7 +23,8 @@ async function handle(request: Request) {
     }
     const { data, error } = await db.rpc("admin_home_media_candidates", { p_kind: kind.parse(new URL(request.url).searchParams.get("kind")), p_groups: process.env.KYAA_GROUPS_ENABLED === "true" });
     if (error) throw error;
-    return Response.json(data, { headers: { "cache-control": "private, no-store" } });
+    const items = (data ?? []).map((item: { creator?: { slug: string } }) => ({ ...item, consent: consent[item.creator?.slug as keyof typeof consent] ?? null }));
+    return Response.json(items, { headers: { "cache-control": "private, no-store" } });
   } catch (error) {
     return new Response(null, { status: error instanceof AuthError ? error.status : error instanceof z.ZodError || error instanceof SyntaxError ? 400 : 503 });
   }

@@ -9,6 +9,11 @@ alter table public.home_shortform
   add column home_editor text,
   add column home_edited_at timestamptz;
 
+-- The migration role owns the definer functions. FORCE RLS also applies to table owners.
+create policy home_media_editor_insert on public.home_gallery_curation for insert to current_user with check (true);
+create policy home_media_editor_update on public.home_gallery_curation for update to current_user using (true) with check (true);
+create policy home_media_editor_short_update on public.home_shortform for update to current_user using (true) with check (true);
+
 create function public.home_media_photo_candidates(p_locale public.content_locale,p_include_groups boolean)
 returns table(at timestamptz,id text,item jsonb) language sql stable security definer set search_path='' as $$
 
@@ -66,7 +71,7 @@ returns table(at timestamptz,id text,item jsonb) language sql stable security de
           and public.authorize_group_media_read(null, a.id, 'original') is not null
           and not exists (select 1 from public.group_reports r where r.target_type = 'post' and r.target_id = p.id)
       $$;
-revoke all on function public.home_media_photo_candidates(public.content_locale,boolean) from public,anon,authenticated;
+revoke all on function public.home_media_photo_candidates(public.content_locale,boolean) from public,anon,authenticated,service_role;
 create or replace function public.read_home_gallery_mix(
   p_locale public.content_locale, p_include_groups boolean, p_limit integer default 12,
   p_offset integer default 0)
@@ -117,7 +122,7 @@ begin
       from public.home_media_photo_candidates('ko',p_groups) p left join public.home_gallery_curation c on c.photo_id=p.id
       order by c.rank nulls last,p.at desc,p.id;
   else
-    return query select jsonb_build_object('id',s.id,'title',s.title,'sourceHref',s.href,'platform',s.platform,'videoId',s.video_id,
+    return query select jsonb_build_object('id',s.id,'title',s.title,'sourceHref',s.href,'thumbnail',public.read_public_video_thumbnails(array[s.href])->s.href,'platform',s.platform,'videoId',s.video_id,
       'creator',public.home_creator_json(s.celebrity_id,'ko'),'selected',s.home_selected,'hidden',s.home_hidden,
       'legacy',s.source_notice_id is null and not s.home_hidden,'rank',s.home_rank)
       from public.home_shortform s where public.home_gallery_creator_public(s.celebrity_id)

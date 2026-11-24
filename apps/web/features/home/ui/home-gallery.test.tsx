@@ -104,12 +104,12 @@ describe("home gallery block", () => {
     expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
     expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
-    expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
+    expect(screen.queryByText("아직 숏폼 없음")).toBeInTheDocument();
   });
-  it("hides the whole Shorts section, heading included, when there are no items", () => {
+  it("keeps the Shorts heading when no videos have been selected", () => {
     const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={[]} />);
-    expect(container.querySelector('[data-home-measure="shorts"]')).toBeNull();
-    expect(screen.queryByRole("heading", { name: "숏폼" })).not.toBeInTheDocument();
+    expect(container.querySelector('[data-home-measure="shorts"]')).not.toBeNull();
+    expect(screen.queryByRole("heading", { name: "숏폼" })).toBeInTheDocument();
   });
   it.each(["loading", "error"] as const)("keeps the same placeholders without any empty text while %s (a failure is never shown as zero)", (state) => {
     const { container } = render(<HomeGallery locale="ko" photos={state} hasMore={false} shorts={state} />);
@@ -122,7 +122,7 @@ describe("home gallery block", () => {
   it("a failed photo read beside working Shorts keeps only the photo area pending", () => {
     render(<HomeGallery locale="ko" photos="error" hasMore={false} shorts={[]} />);
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
-    expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
+    expect(screen.queryByText("아직 숏폼 없음")).toBeInTheDocument();
   });
   it("shows the real photos at their own ratio with the source alt, links official photos to the notice, with no pink tile among them", () => {
     const { container } = render(<HomeGallery locale="ko" photos={photos} hasMore={false} shorts={[]} />);

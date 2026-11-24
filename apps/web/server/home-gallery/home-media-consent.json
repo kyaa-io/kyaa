@@ -1,0 +1,82 @@
+{
+  "aryeom": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "aya": {
+    "conditions": "사전 동의한 것만.",
+    "preview": false
+  },
+  "changha": {
+    "conditions": "소속사를 통해 받은 사진의 사용 조건을 원문에서 확인하세요.",
+    "preview": true
+  },
+  "elina": {
+    "conditions": "소속사를 통해 받은 사진의 사용 조건을 원문에서 확인하세요.",
+    "preview": true
+  },
+  "elle": {
+    "conditions": "동의한 것만, 건마다 먼저 묻는다(인스타 게시물·영상 포함). 유튜브는 링크만(영상 자동 노출 끔).",
+    "preview": true
+  },
+  "ensemble-patchwork": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "gggi": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "hiroro": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "hyunji": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "ifewknow": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "jenny-jeong": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "knowingstudy": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "kyaa-wave-fanpage": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "mmnoo-s": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "nchive": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "park-myungho": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "runmusic": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "thisisj-official": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "wena": {
+    "conditions": "미확인",
+    "preview": "미확인"
+  },
+  "yuna": {
+    "conditions": "소속사를 통해 받은 사진의 사용 조건을 원문에서 확인하세요.",
+    "preview": true
+  }
+}

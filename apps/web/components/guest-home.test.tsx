@@ -520,7 +520,7 @@ describe("streamed Home sections", () => {
     view.unmount();
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeBanners: settleHomeQuery(Promise.resolve([])), homeGallery: Promise.resolve({ status: "fulfilled", value: { items: [], nextCursor: null } }), homeShorts: Promise.resolve({ status: "fulfilled", value: [] }) }} locale="ko" />); });
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
-    expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
+    expect(screen.getByText("아직 숏폼 없음")).toBeInTheDocument();
   });
 
   it("keeps the pinned banners when the managed banner query fails", async () => {

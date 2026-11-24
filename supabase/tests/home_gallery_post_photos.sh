@@ -35,6 +35,12 @@ begin
     or result::text like '%'||actor::text||'%' then raise exception 'public photo projection'; end if;
   if public.read_public_gallery_post_photos('ko',false,24)->'items' @> '[{"source":"group_post"}]' then raise exception 'groups disabled'; end if;
   update public.mobile_media_assets set kind='video',content_type='video/mp4' where id=ga;
+  if public.read_home_gallery_mix('ko',true,24)->'items' <> '[]'::jsonb then raise exception 'unexpected initial selection'; end if;
+  perform public.admin_edit_home_media('photo','select',array['group:'||gp||':'||ga],actor::text);
+  if jsonb_array_length(public.read_home_gallery_mix('ko',true,24)->'items') <> 1 then raise exception 'unexpected partial selection'; end if;
+  perform public.admin_edit_home_media('photo','hide',array['group:'||gp||':'||ga],actor::text);
+  if public.read_home_gallery_mix('ko',true,24)->'items' <> '[]'::jsonb then raise exception 'hidden selection'; end if;
+  perform public.admin_edit_home_media('photo','select',array(select id from public.home_media_photo_candidates('ko',true)),actor::text);
   result := public.read_home_gallery_mix('ko',true,24)->'items';
   if not exists(select 1 from jsonb_array_elements(result) i
      where i->>'source'='group_post' and i#>>'{image,url}'='/api/groups/media/'||ga||'?variant=thumbnail')
