@@ -44,6 +44,7 @@ import {
   periodLine,
   stageLine,
   spiritNotes,
+  spiritLine,
   stageNotes,
 } from "./result-copy";
 import { DatePurchase } from "./date-purchase";
@@ -509,7 +510,7 @@ export function FortuneResult({
                       {korean && `${result.evidence.spirit.replace(/살$/, "")} · `}{spirit[0]}
                     </FanText>
                     <FanText as="p" role="meta">
-                      {spirit[1]}
+                      {korean ? spiritLine(result.evidence.spirit, character) : spirit[1]}
                     </FanText>
                   </dd>
                 </div>

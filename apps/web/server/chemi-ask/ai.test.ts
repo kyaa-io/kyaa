@@ -151,9 +151,9 @@ describe("답 검사", () => {
     const before = { question: "먼저 연락할까?", answer: "오늘은 답을 재촉하지 마!" };
     expect(askAnswerFault("연애 운이 55점이야. 오늘은 답을 재촉하지 마.", { ...love, before })).toBe("repeat");
   });
-  it("엘리나는 반존대: 마지막 문장만 반말로 맺어도 되고, 앞 문장 반말·합쇼체는 떨어진다(DF-ASK-005)", () => {
+  it("엘리나는 각 쪽의 반말과 합쇼체 어미를 다시 생성한다(DF-ASK-005)", () => {
     const elina = { ...love, character: "elina" as const };
-    expect(askAnswerFault("연애 운이 55점이에요. 오늘은 답을 재촉하지 않는 게 좋아요. 한 박자 쉬고 들어가도 괜찮아.", elina)).toBeNull();
+    expect(askAnswerFault("연애 운이 55점이에요. 오늘은 답을 재촉하지 않는 게 좋아요. 한 박자 쉬고 들어가도 괜찮아.", elina)).toBe("voice");
     expect(askAnswerFault("연애 운이 55점이야. 오늘은 답을 재촉하지 않는 게 좋아요.", elina)).toBe("voice");
     expect(askAnswerFault("연애 운이 55점이에요. 오늘은 답을 재촉하지 마십시오. 기다리면 됩니다.", elina)).toBe("voice");
     const { system } = askPrompt({ ...elina });

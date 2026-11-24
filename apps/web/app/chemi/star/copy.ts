@@ -312,7 +312,7 @@ export function reasonView(
         dosa: `${advice.replace(/해$|봐$|내$/, (ending) => ({ 해: "하시오", 봐: "보시오", 내: "내시오" })[ending] ?? ending)}.`,
       }[character]
     : character ? reasonSpeech(baseTone, character) : baseTone;
-  const owner = character === "dosa" ? "그대의" : character ? "네" : "내";
+  const owner = character === "dosa" ? "그대의" : character === "elina" ? "당신의" : character ? "네" : "내";
   const mine = sign ? `${owner} ${target}(${signNames[sign].full})` : `${owner} ${target}`;
   const shortText = character ? reasonSpeech(phrase, character) : phrase;
   return {
@@ -530,7 +530,7 @@ export function starDomainText(domain: StarDomain, stars: number, signOf: (body:
   const today = !character ? domainLong[domain][stars - 1]
     : character === "dosa" ? starDosa[domain][stars - 1] : chemiPersona[character].star[domain][stars - 1];
   if (!sign) return today;
-  const subject = character === "dosa" ? "그대의" : character ? "네" : "내";
+  const subject = character === "dosa" ? "그대의" : character === "elina" ? "당신의" : character ? "네" : "내";
   const ending = character === "dosa" ? "이오" : character === "elina" || !character ? "이에요" : "이야";
   return `${today} ${subject} ${bodyNames[planet.body]}(${planet.role})이 ${signNames[sign].full}라 ${natalLine[domain][signElement[sign]]}${ending}.`;
 }

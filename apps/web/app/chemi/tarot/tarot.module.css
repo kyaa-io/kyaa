@@ -1007,3 +1007,23 @@
 .mobileCta {
   composes: mobileDock from "../../../features/chemi/ui/result/result-actions.module.css";
 }
+
+.returnChoices, .returnLabel {
+  display: grid;
+  gap: var(--space-1);
+}
+.returnLabel {
+  justify-items: center;
+  white-space: nowrap;
+}
+.returnMore {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.returnMore > * {
+  width: max-content;
+  white-space: nowrap;
+  border-radius: var(--radius-pill);
+}
