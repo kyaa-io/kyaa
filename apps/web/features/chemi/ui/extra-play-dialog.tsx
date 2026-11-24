@@ -20,7 +20,7 @@ export type ExtraPlayDialogProps = {
   locale: AppLocale;
   points?: number;
   cost: number;
-  extraRemaining: number;
+  extraRemaining?: number;
   /** 고른 최애의 얼굴(정사각). 있으면 표 위에 둔다. */
   art?: string;
   /** 게임 말고 다른 곳(질문하기)에서 쓸 때 바꾸는 글자. 없으면 게임 추가 판 글자. */
@@ -31,6 +31,8 @@ const DAILY_EXTRA = 3;
 
 /** 추가 판 확인(짝 맞추기·최애 런·질문하기 공통). 남은 추가 판 칸 3개 중 이번에 쓸 칸을 한 번 비우고, 포인트는 쓴 뒤 값으로 한 번 굴린다. */
 export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra, art, labels }: ExtraPlayDialogProps) {
+  const limited = extra !== undefined;
+  const remaining = extra ?? 0;
   const base = getExtraPlayCopy(locale, cost);
   const copy = labels ? { ...base, title: labels.title, left: labels.extra, confirm: labels.pay } : base;
   const number = new Intl.NumberFormat(locale);
@@ -45,17 +47,17 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
   const short = points != null && points < cost;
   return <FanDialog open={open} onOpenChange={onOpenChange} title={copy.title} closeLabel={copy.close} size="sm" responsive
       secondary={{ label: copy.cancel, onClick: () => onOpenChange(false) }}
-      primary={{ label: copy.confirm, onClick: onConfirm, disabled: busy || !(cost > 0) || points == null || short || extra <= 0, loading: busy }}>
+      primary={{ label: copy.confirm, onClick: onConfirm, disabled: busy || !(cost > 0) || points == null || short || (limited && remaining <= 0), loading: busy }}>
       <div className={styles.body}>
-        <div className={styles.tickets} role="img" aria-label={`${copy.left} ${fillCount(copy.count, extra)} → ${fillCount(copy.count, Math.max(0, extra - 1))}`}>
+        {limited && <div className={styles.tickets} role="img" aria-label={`${copy.left} ${fillCount(copy.count, remaining)} → ${fillCount(copy.count, Math.max(0, remaining - 1))}`}>
           {art && <img className={styles.face} src={art} alt="" />}
           <ol className={styles.cells} aria-hidden="true">
             {Array.from({ length: DAILY_EXTRA }, (_, index) => {
-              const state = index < extra - 1 ? "left" : index === extra - 1 ? "spend" : "used";
+              const state = index < remaining - 1 ? "left" : index === remaining - 1 ? "spend" : "used";
               return <li key={index} data-row="" data-state={state}><FanIcon icon={Play} size={16} /></li>;
             })}
           </ol>
-        </div>
+        </div>}
         {points != null && <dl className={styles.pay}>
           <div>
             <FanText as="dt" role="meta">{copy.points}</FanText>
@@ -68,13 +70,13 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
               </>}
             </dd>
           </div>
-          <div>
+          {limited && <div>
             <FanText as="dt" role="meta">{copy.left}</FanText>
             <dd>
-              <FanText role="meta" className={styles.before}>{fillCount(copy.count, extra)}</FanText>
-              <span className={[numberStyles.lg, styles.value].join(" ")}>{fillCount(copy.count, Math.max(0, extra - 1))}</span>
+              <FanText role="meta" className={styles.before}>{fillCount(copy.count, remaining)}</FanText>
+              <span className={[numberStyles.lg, styles.value].join(" ")}>{fillCount(copy.count, Math.max(0, remaining - 1))}</span>
             </dd>
-          </div>
+          </div>}
         </dl>}
         {short && <p className={styles.short}>
           <FanText role="meta">{fillCount(copy.short, cost - (points ?? 0))}</FanText>

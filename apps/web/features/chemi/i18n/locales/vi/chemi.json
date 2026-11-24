@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "gamePricing": "Mỗi trò chơi có ba lượt miễn phí mỗi ngày. Ba lượt thêm đầu tiên lần lượt tốn 100P, 300P và 500P. Từ lượt thêm thứ tư, mỗi lượt tốn 1.000P và không giới hạn số lượt.",
     "todayResult": "Kết quả hôm nay",
     "playsLeft": "Miễn phí: {n}",
     "extraCost": "Lượt thêm {n}P",

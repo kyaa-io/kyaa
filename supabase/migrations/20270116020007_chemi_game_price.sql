@@ -8,18 +8,19 @@ language sql immutable strict set search_path='' as $$
 $$;
 
 drop function public.chemi_issue_play(uuid,uuid,text,text,boolean);
-create or replace function public.chemi_issue_play(p_user uuid,p_request_key uuid,p_game text,p_character text,p_extra boolean,p_expected_cost integer)
+create or replace function public.chemi_issue_play(p_user uuid,p_request_key uuid,p_game text,p_character text,p_extra boolean,p_expected_cost integer default null)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare
   play public.chemi_game_plays;
   fingerprint text := encode(sha256(convert_to(jsonb_build_array(p_game,p_character,p_extra)::text,'UTF8')),'hex');
-  d date := public.dukjil_kst_date();
+  d date;
   bucket text := case when p_extra then 'extra' else 'free' end;
   slot integer;
   used integer;
   price integer;
 begin
   perform public.chemi_lock_user(p_user,p_extra);
+  d := public.dukjil_kst_date();
   if p_extra is null or p_request_key is null then raise exception 'CHEMI_INVALID'; end if;
   select * into play from public.chemi_game_plays where user_id=p_user and request_key=p_request_key;
   if found then

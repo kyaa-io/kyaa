@@ -32,7 +32,7 @@ import { useChemiFeatures } from "@/features/chemi/domain/features";
 import { FPS, LEVELS } from "@/features/chemi/games/engine";
 import { rankName } from "@/features/chemi/games/rank-name";
 import { RankInitial } from "@/features/chemi/games/rank-initial";
-import { fillCount, getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
+import { getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
 import type { MatchCopy } from "./copy";
 import { useMatchRound, type Submission, type Ticket } from "./use-match-round";
 import styles from "./match.module.css";
@@ -111,7 +111,6 @@ type Lobby = {
   points: number;
   ranking: Row[];
   freeRemaining: number;
-  extraRemaining: number;
   sound: boolean;
   previous?: { place: number; score: number } | null;
 };
@@ -555,7 +554,7 @@ function Session({
                 game: "match",
                 character: who,
                 key: startKey.current.key,
-                extra,
+                extra, expectedCost: extra ? lobby?.extraCost : undefined,
               },
           undefined,
           trial,
@@ -569,6 +568,7 @@ function Session({
             return;
           }
           window.removeEventListener("pagehide", cancelOnExit);
+          setPaying(false);
           setStage("empty");
           if (auth.authenticated)
             setLobby(await call<Lobby>({ action: "lobby" }));
@@ -601,10 +601,7 @@ function Session({
             prev && {
               ...prev,
               points: prev.points - (extra ? prev.extraCost : 0),
-              [extra ? "extraRemaining" : "freeRemaining"]: Math.max(
-                0,
-                prev[extra ? "extraRemaining" : "freeRemaining"] - 1,
-              ),
+              freeRemaining: Math.max(0, prev.freeRemaining - (extra ? 0 : 1)),
             },
         );
     });
@@ -625,7 +622,7 @@ function Session({
       setLobby(await call<Lobby>({ action: "lobby" }));
     }, "saveFailed");
   }
-  const exhausted = lobby?.freeRemaining === 0 && lobby.extraRemaining === 0;
+  const exhausted = lobby?.freeRemaining === 0 && !lobby.extraCost;
   useEffect(() => {
     if (stage !== "empty" && !(stage === "start" && exhausted)) return;
     setNow(Date.now());
@@ -799,7 +796,7 @@ function Session({
       ? (challenge?.ranking ?? [])
       : (lobby?.ranking ?? challenge?.ranking ?? publicRows ?? []);
   const faces = facesFor(character);
-  const paidStart = lobby?.freeRemaining === 0 && lobby.extraRemaining > 0 && lobby.extraCost > 0;
+  const paidStart = lobby?.freeRemaining === 0 && lobby.extraCost > 0;
   const active = stage === "play" && view;
   const levelList = <ol className={styles.levelList} aria-label={copy.round}>
     {LEVELS.map(({columns, pairs, seconds}, i) => {
@@ -849,7 +846,7 @@ function Session({
   return (
     <main className={styles.shell} data-stage={stage}>
       <ExtraPlayDialog open={paying} onOpenChange={setPaying} busy={working} locale={parseAppLocale(locale)}
-        points={lobby?.points} cost={lobby?.extraCost ?? 0} extraRemaining={lobby?.extraRemaining ?? 0} art={art.portrait}
+        points={lobby?.points} cost={lobby?.extraCost ?? 0} art={art.portrait}
         onConfirm={() => { setPaying(false); void start(character, true); }} />
       <header className={styles.header}>
         <FanIconButton type="button" aria-label={copy.back} onClick={back}>
@@ -1123,21 +1120,13 @@ function Session({
                   <FanText as="dt" role="meta">{copy.myRank}</FanText>
                   <dd>{myRow ? <><b>{copy.place.replace("{n}", String(myRow.place))}</b> · {myRow.score?.toLocaleString(locale) ?? clock(myRow.ticks)}</> : extraCopy.myEmpty}</dd>
                 </div>
-                {lobby && (
-                  <div>
-                    <FanText as="dt" role="meta">{extraCopy.left}</FanText>
-                    <dd>{lobby.extraRemaining > 0
-                      ? <b>{fillCount(extraCopy.count, lobby.extraRemaining)}</b>
-                      : extraCopy.allUsed}</dd>
-                  </div>
-                )}
               </dl>
               <p className={styles.quote}>
                 <Image width={112} height={112} alt="" src={art.portrait} />
                 <span><b>{copy[character]}</b> {copy[DONE_LINE[character]]}</span>
               </p>
               <div className={styles.startAction}>
-                {lobby?.extraRemaining && lobby.extraCost ? (
+                {lobby?.extraCost ? (
                   <>
                     <StageAction disabled={working} onClick={() => setPaying(true)}>
                       {extraCopy.cta}
@@ -1147,7 +1136,7 @@ function Session({
                 ) : reminders ? (
                   <StageAction onClick={() => setStage("reminder")}>{copy.tomorrow}</StageAction>
                 ) : null}
-                <FanAction variant={reminders || (lobby?.extraRemaining && lobby.extraCost) ? "text" : "primary"} href={`/chemi?locale=${locale}`}>{copy.toChemi}</FanAction>
+                <FanAction variant={reminders || (lobby?.extraCost) ? "text" : "primary"} href={`/chemi?locale=${locale}`}>{copy.toChemi}</FanAction>
               </div>
             </>
           )}

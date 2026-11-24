@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "gamePricing": "Each game has three free plays a day. Extra plays cost 100P, 300P and 500P in order. From the fourth, each costs 1,000P with no daily limit.",
     "todayResult": "Today’s result",
     "playsLeft": "{n} free left",
     "extraCost": "Extra game {n}P",

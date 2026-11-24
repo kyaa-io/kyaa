@@ -29,7 +29,7 @@ it("shows only the error line and its retry when the lobby failed", () => {
 
 it("writes the affinity line as name · 친밀 with the gain on the right, or 오늘 받음 after the first run", () => {
   const props = { character: "changha" as const, copy, locale: "ko", names, rows: [], loaded: true, before: { best: 0 }, saving: false, trial: false, member: true,
-    spent: false, free: 1, extra: 0, busy: false, copied: false, onAgain: () => {}, onLogin: () => {}, onShare: () => {}, onAllRanks: () => {}, errorLine: false, reminder: null };
+    spent: false, free: 1, busy: false, copied: false, onAgain: () => {}, onLogin: () => {}, onShare: () => {}, onAllRanks: () => {}, errorLine: false, reminder: null };
   const { rerender } = render(<ResultStage {...props} result={{ score: 900, exp: 10 }} />);
   expect(screen.getByText("창하 · 친밀")).toBeInTheDocument();
   expect(screen.getByText("+10")).toBeInTheDocument();

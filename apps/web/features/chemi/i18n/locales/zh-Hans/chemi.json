@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "gamePricing": "每款游戏每天可免费玩3局。额外的前三局依次为100P、300P、500P，从第4局起每局1,000P，不限次数。",
     "todayResult": "今日结果",
     "playsLeft": "免费剩 {n} 局",
     "extraCost": "加局 {n}P",

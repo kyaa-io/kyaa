@@ -39,10 +39,10 @@ it("binds trial retries to the same request key without requiring member authent
 
 it("binds paid slot issuance to the authenticated owner and supplied idempotency key", async () => {
   rpc.mockResolvedValueOnce({ playId:id }).mockResolvedValueOnce({ playId:id, seed:42, status:"issued" });
-  const response = await post({ action:"start", game:"match", key:id, character:"elina", extra:true, p_user:"ignored" });
+  const response = await post({ action:"start", game:"match", key:id, character:"elina", extra:true, expectedCost:300, p_user:"ignored" });
   expect(response.status).toBe(200);
   expect(rpc).toHaveBeenNthCalledWith(1,"chemi_issue_play", {
-    p_user:id, p_request_key:id, p_game:"match", p_character:"elina", p_extra:true,
+    p_user:id, p_request_key:id, p_game:"match", p_character:"elina", p_extra:true, p_expected_cost:300,
   });
 });
 
