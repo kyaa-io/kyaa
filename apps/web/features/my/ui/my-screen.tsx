@@ -31,6 +31,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { myHomeText } from "./my-home-copy";
+import { MyHeartExchange } from "@/features/groups/ui/group-benefits-screen";
 import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTierName } from "./my-passport-card";
 import { GiftNavLink } from "@/features/gifts/ui/gift-nav-link";
 import { GiftNotice } from "@/features/gifts/ui/gift-notice";
@@ -325,6 +326,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
         <div id="my-passport" className={styles.homeRow}>
           <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
+          <MyHeartExchange locale={locale}/>
         </div>
       </div>
       <MyEventsSection locale={locale}/>
@@ -574,6 +576,7 @@ function MyGuest({ locale }: { locale: FanLocale }) {
   return <div className={styles.pencilMy}>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
+      <MyHeartExchange locale={locale}/>
     </div>
     <MyShortcuts locale={locale} items={myShortcutItems(locale, loginTo)}/>
   </div>;

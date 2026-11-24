@@ -18,7 +18,7 @@ it.each(["ko", "en", "ja", "zh-Hans", "zh-Hant", "es", "id", "vi", "th", "pt", "
   expect(scene).not.toBeNull();
   const login = within(scene as HTMLElement).getByRole("link");
   expect(new URL(login.getAttribute("href")!, "https://kyaa.invalid").searchParams.get("returnTo")).toBe(`/my?locale=${locale}`);
-  expect(screen.queryAllByRole("img", { name: /로그인 후 확인|Sign in to view/ })).toHaveLength(0);
+  expect(within(scene as HTMLElement).queryAllByRole("img", { name: /로그인 후 확인|Sign in to view/ })).toHaveLength(0);
   expect(screen.getAllByRole("heading").length).toBeGreaterThanOrEqual(3);
 });
 

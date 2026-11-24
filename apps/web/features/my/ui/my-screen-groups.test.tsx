@@ -41,6 +41,7 @@ vi.mock('@/features/community-stamps/ui/use-community-stamps', () => ({ useCommu
 vi.mock('@/features/dukjil/ui/dukjil-provider', () => ({ DukjilProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>, useDukjil: () => ({ status: 'on' }) }));
 vi.mock('@/features/group-wallet/ui/wallet-screen', () => ({ WalletExchangeDialog: ({ open }: { open: boolean }) => open ? <div role="dialog" aria-label="교환" /> : null }));
 vi.mock('@/features/groups/ui/use-group-resource', () => ({
+  useGroupRequest: () => ({ ready: true, authenticated: true, ownerKey: 'owner-a' }),
   GROUP_WALLET_CHANGED_EVENT: 'kyaa:wallet-changed',
   useGroupResource: (url: string | null) => {
     const base = { loading: false, error: null, retry: vi.fn() };
@@ -139,6 +140,7 @@ it('does not duplicate the wallet on MY', () => {
   renderMy();
   expect(screen.queryByRole('heading', { name: '내 지갑' })).toBeNull();
   expect(document.querySelector('[data-wallet-card="my"]')).toBeNull();
+  expect(document.querySelectorAll('[data-wallet-part="hearts"]')).toHaveLength(1);
 });
 
 it('shows the gift notice from the server count: one gift opens it directly, several open the list, none shows nothing', () => {

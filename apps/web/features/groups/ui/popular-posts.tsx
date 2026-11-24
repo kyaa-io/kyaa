@@ -40,8 +40,7 @@ const titles:Record<AppLocale,readonly [string,string,string]>={
  ru:['Популярные публикации сегодня','Популярные публикации этой недели','Популярные публикации этого месяца'],
 };
 const noop=()=>undefined;
-/** The ranking endpoint answers up to ten and the board shows all ten (tab1 21: "인기글 10개"). */
-const SHOWN=10;
+
 const parse=(value:unknown)=>z.object({items:z.array(fanPostFeedItemSchema.omit({kind:true})).max(10)}).parse(value);
 export function PopularPosts({slug,locale,pageImage}:{slug:string;locale:AppLocale;pageImage?:ReactNode}){
  const [period,setPeriod]=useState<'day'|'week'|'month'>('day');
@@ -49,5 +48,5 @@ export function PopularPosts({slug,locale,pageImage}:{slug:string;locale:AppLoca
  const [, ...text]=labels[locale],title=titles[locale][(['day','week','month'] as const).indexOf(period)],copy=contentCopy(locale);
  // No readable posts in this period: the board below speaks for itself.
  if(result.state.status==='ready'&&result.state.data.items.length===0)return null;
- return <section className={styles.panel}><header><h2>{title}</h2><div className={styles.tabs}>{(['day','week','month'] as const).map((value,i)=><button type='button' key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{text[i]}</button>)}</div></header>{result.state.status==='ready'?<CompactFeed items={result.state.data.items.slice(0,SHOWN).map(item=>({...item,kind:'fan_post' as const}))} slug={slug} locale={locale} returnTo={boardHref(slug,locale)} onChanged={noop} pageImage={pageImage}/>:result.state.status==='error'?<button type='button' onClick={result.retry}>{copy.retry}</button>:<FanSkeletonRows rows={3} variant='post'/>}</section>;
+ return <section className={styles.panel}><header><h2>{title}</h2><div className={styles.tabs}>{(['day','week','month'] as const).map((value,i)=><button type='button' key={value} aria-pressed={period===value} onClick={()=>setPeriod(value)}>{text[i]}</button>)}</div></header>{result.state.status==='ready'?<CompactFeed items={result.state.data.items.slice(0,period==='day'?5:10).map(item=>({...item,kind:'fan_post' as const}))} slug={slug} locale={locale} returnTo={boardHref(slug,locale)} onChanged={noop} pageImage={pageImage}/>:result.state.status==='error'?<button type='button' onClick={result.retry}>{copy.retry}</button>:<FanSkeletonRows rows={3} variant='post'/>}</section>;
 }
