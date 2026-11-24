@@ -336,3 +336,21 @@
   }
   .creatorPostDetailLayout > [data-post-detail-more]:has([data-board-ad-rail]) { position: static; }
 }
+
+@media (min-width:1024px) {
+  .creatorHomeMain:has(> .creatorShortcuts) {
+    --fan-section-gap: var(--space-8);
+    align-content:start;
+  }
+  .creatorHomeMain > .creatorShortcuts {
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    width:min(100%,32rem);
+  }
+  .creatorHomeMain > .creatorShortcuts a[data-has-leading=true] {
+    box-sizing:border-box;
+    width:100%;
+    height:100%;
+    min-width:0;
+    padding:var(--space-2) var(--space-4);
+  }
+}
