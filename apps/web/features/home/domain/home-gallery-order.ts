@@ -21,6 +21,10 @@ export function homeGalleryPostPhotos(photos: readonly HomeGalleryPhoto[]) {
   }
   takePosts(true, 3);
   takePosts(false, 10);
+  for (const photo of ranked) {
+    if (selected.size >= 10) break;
+    if (photo.source === "official_sns") selected.add(photo);
+  }
   return [...selected, ...ranked.filter(photo => !selected.has(photo))];
 }
 
