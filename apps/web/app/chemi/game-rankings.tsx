@@ -36,7 +36,7 @@ export type GameRanking = {
 
 const SLOTS = 3;
 
-function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string }) {
+export function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const previous = useRef(row);
   useEffect(() => {
