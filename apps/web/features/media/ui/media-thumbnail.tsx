@@ -16,11 +16,23 @@ export function MediaThumbnail({ image, href, kind, source, locale, priority = f
   const [failed, setFailed] = useState<string[]>([]);
   const [dimensions, setDimensions] = useState<{ width: number; height: number }>();
   const id = kind !== "photos" ? youtubeVideoId(href) : null;
-  // R5 (no black bands): YouTube's 4:3 covers (hqdefault and friends) carry baked-in bars, so text-free and backdrop tiles use the 16:9 covers.
-  const barFree = Boolean(id) && (iconOnly || backdrop);
-  const candidates = barFree
-    ? [image && !LETTERBOXED_YOUTUBE_COVER.test(image) ? image : null, `https://i.ytimg.com/vi/${id}/hq720.jpg`, `https://i.ytimg.com/vi/${id}/mqdefault.jpg`]
-    : [image, videoThumbnailUrl(href), ...(id ? [`https://i.ytimg.com/vi/${id}/mqdefault.jpg`] : [])];
+  // Stored video covers have a full-size companion behind the same public authorization check.
+  const original = kind !== "photos"
+    ? image?.match(/^(\/api\/public\/notice-media\/[0-9a-f-]{36})\?variant=thumbnail$/)?.[1]
+    : undefined;
+  const stored = original ?? image;
+  const youtubeCover = id ? `https://i.ytimg.com/vi/${id}` : null;
+  const preferredStored = stored && !stored.startsWith("https://i.ytimg.com/") ? stored : null;
+  // sddefault and hqdefault can contain baked-in bars. Use the wide variants in compact tiles.
+  const candidates = youtubeCover
+    ? [
+      preferredStored,
+      `${youtubeCover}/maxresdefault.jpg`,
+      `${youtubeCover}/hq720.jpg`,
+      `${youtubeCover}/mqdefault.jpg`,
+      image && !LETTERBOXED_YOUTUBE_COVER.test(image) ? image : null,
+    ]
+    : kind === "photos" ? [image] : [original, image, videoThumbnailUrl(href)];
   const src = candidates.find((value): value is string => typeof value === "string" && value.length > 0 && !failed.includes(value));
   const provider = id ? "YouTube" : isRecordedReplayUrl("instagram", href) ? "Instagram" : isRecordedReplayUrl("tiktok", href) ? "TikTok" : source;
   useEffect(() => { if (!src) onMissing?.(); }, [src, onMissing]);
@@ -31,7 +43,16 @@ export function MediaThumbnail({ image, href, kind, source, locale, priority = f
     data-media-portrait={dimensions && dimensions.height > dimensions.width || undefined}
     style={dimensions ? { aspectRatio: `${dimensions.width} / ${dimensions.height}` } : undefined}
     // YouTube answers a missing size with a 120×90 grey placeholder; treat it as a failure and try the next cover.
-    onLoad={event => { const img = event.currentTarget; if (barFree && img.naturalWidth <= 120) { setFailed(previous => [...previous, src]); return; } if (kind !== "photos" && !id && img.naturalWidth > 0) setDimensions({ width: img.naturalWidth, height: img.naturalHeight }); }}
+    onLoad={event => {
+      const { naturalWidth, naturalHeight } = event.currentTarget;
+      // Prefer a provider cover when the stored image cannot fill a 188px tile at 2×.
+      const undersizedStoredCover = id && src === preferredStored && naturalWidth < 376;
+      if (id && (naturalWidth <= 120 || undersizedStoredCover)) {
+        setFailed(previous => [...previous, src]);
+        return;
+      }
+      if (kind !== "photos" && !id && naturalWidth > 0) setDimensions({ width: naturalWidth, height: naturalHeight });
+    }}
     onError={() => { setDimensions(undefined); setFailed(previous => [...previous, src]); }} />;
   return backdrop ? <><MediaBackdrop src={src} />{picture}</> : picture;
 }

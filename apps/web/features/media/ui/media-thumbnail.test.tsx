@@ -12,7 +12,7 @@ it.each(["7690854938997558549", "7689367463607192852"])("uses the verified local
 
 it.each(["https://youtu.be/abcdefghijk", "https://www.youtube.com/shorts/abcdefghijk", "https://www.youtube.com/live/abcdefghijk"])("recovers a missing cover for the specific recording %s", href => {
   const { container } = render(<MediaThumbnail image={null} href={href} kind="videos" source="kyaa" locale="ko" />);
-  expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hqdefault.jpg");
+  expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg");
 });
 it("preserves the complete portrait cover and replaces a decode failure with its actual provider", async () => {
   const { container } = render(<MediaThumbnail image="/cover.jpg" href="https://www.instagram.com/reel/DeRosgtTOQo/" kind="videos" source="kyaa" locale="ko" />);
@@ -37,22 +37,26 @@ it("shows the platform and title when a compact gallery thumbnail fails", () => 
   expect(container.textContent).toContain("Instagram");
 });
 
-it("never uses a letterboxed YouTube cover in a text-free tile (R5: no black bands)", async () => {
-  const { container } = render(<MediaThumbnail image="https://i.ytimg.com/vi/abcdefghijk/hqdefault.jpg" href="https://www.youtube.com/watch?v=abcdefghijk" kind="videos" source="kyaa" locale="ko" title="원문 제목" iconOnly />);
+it.each(["hqdefault", "sddefault"])("skips the letterboxed %s in the gallery", async variant => {
+  const { container } = render(<MediaThumbnail image={`https://i.ytimg.com/vi/abcdefghijk/${variant}.jpg`} href="https://www.youtube.com/watch?v=abcdefghijk" kind="videos" source="kyaa" locale="ko" title="원문 제목" />);
   const img = container.querySelector("img")!;
-  expect(img).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hq720.jpg");
+  expect(img).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg");
   // YouTube's 120×90 placeholder for a missing size counts as a failure; next/image reports the load after decoding.
   Object.defineProperty(img, "naturalWidth", { configurable: true, value: 120 });
   fireEvent.load(img);
-  await waitFor(() => expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg"));
-  expect(container.innerHTML).not.toContain("hqdefault");
+  await waitFor(() => expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/hq720.jpg"));
+  fireEvent.error(container.querySelector("img")!);
+  expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/mqdefault.jpg");
+  expect(container.innerHTML).not.toContain(variant);
 });
 
 it("reads a stored API cover directly so image optimization cannot outlive its visibility", () => {
   const image = "/api/public/notice-media/20000000-0000-4000-8000-000000000002?variant=thumbnail";
   const { container } = render(<MediaThumbnail image={image} href="https://www.tiktok.com/@fixture/video/7696850953064189185" kind="videos" locale="ko" title="원문 제목" iconOnly />);
   const src = new URL(container.querySelector("img")!.getAttribute("src")!, location.href);
-  expect(src.pathname + src.search).toBe(image);
+  expect(src.pathname + src.search).toBe(image.split("?")[0]);
+  fireEvent.error(container.querySelector("img")!);
+  expect(container.querySelector("img")).toHaveAttribute("src", image);
   expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
   expect(container.querySelector("img")).not.toHaveAttribute("srcset");
 });
@@ -69,4 +73,20 @@ it("does not report a cover that is shown", () => {
   const onMissing = vi.fn();
   render(<MediaThumbnail image="/cover.jpg" href="https://www.instagram.com/p/DfEtowlgX1j/" kind="videos" source="Instagram" locale="ko" onMissing={onMissing} />);
   expect(onMissing).not.toHaveBeenCalled();
+});
+
+it("keeps a photo on its own source even if its link identifies a video", () => {
+  const { container } = render(<MediaThumbnail image="https://example.com/poster.jpg" href="https://youtu.be/abcdefghijk" kind="photos" locale="ko" />);
+  fireEvent.error(container.querySelector("img")!);
+  expect(container.querySelector("img")).toBeNull();
+});
+
+it("tries the stored YouTube original before the provider and skips it if undersized", async () => {
+  const original = "/api/public/notice-media/20000000-0000-4000-8000-000000000002";
+  const { container } = render(<MediaThumbnail image={original + "?variant=thumbnail"} href="https://youtu.be/abcdefghijk" kind="videos" locale="ko" />);
+  const img = container.querySelector("img")!;
+  expect(new URL(img.src, location.href).pathname).toBe(original);
+  Object.defineProperty(img, "naturalWidth", { value: 135 });
+  fireEvent.load(img);
+  await waitFor(() => expect(container.querySelector("img")).toHaveAttribute("src", "https://i.ytimg.com/vi/abcdefghijk/maxresdefault.jpg"));
 });
