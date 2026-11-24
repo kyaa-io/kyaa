@@ -421,6 +421,6 @@
 }
 
 .homeRow[id] { scroll-margin-top: var(--fan-header-height); }
-/* ACCOUNT-SWITCH-S1: name, then the 390 account-switch line under it. */
-.pencilProfileStack{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--space-1)}
-.pencilProfileStack>.pencilProfileCopy{flex:none}
+/* ACCOUNT-SWITCH-S1: the 390 account-switch line is the third row under the name and tier tag, flush with the name. */
+.pencilSummary .pencilName > .switchLine { grid-area:3 / 2 / 4 / -1; justify-self:start; }
+.switchLine.switchLine { padding-inline:0; }

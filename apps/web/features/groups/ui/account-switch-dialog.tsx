@@ -55,13 +55,13 @@ export function AccountSwitchDialog({ locale, avatar, name, path, onClose }: { l
 }
 
 /** Below 768 there is no header account menu (header frozen), so MY carries the same line under the member's name. */
-export function AccountSwitchLine({ locale, avatar, name }: { locale: AppLocale; avatar: ReactNode; name: string }) {
+export function AccountSwitchLine({ locale, avatar, name, className }: { locale: AppLocale; avatar: ReactNode; name: string; className?: string }) {
   const [open, setOpen] = useState(false);
   const enabled = useAccountSwitchRelease();
   const pathname = usePathname() || "/", query = useSearchParams()?.toString();
   if (!enabled) return null;
   return <>
-    <FanAction variant="text" size="sm" className={styles.line} data-account-action="switch" leadingIcon={<PencilHeaderIcon name="switch" size={16} />} onClick={() => setOpen(true)}>{accountSwitchCopy(locale).switchAccount}</FanAction>
+    <FanAction variant="text" size="sm" className={`${styles.line} ${className ?? ""}`} leadingIcon={<PencilHeaderIcon name="switch" size={16} />} onClick={() => setOpen(true)}>{accountSwitchCopy(locale).switchAccount}</FanAction>
     {open ? <AccountSwitchDialog locale={locale} avatar={avatar} name={name} path={`${pathname}${query ? `?${query}` : ""}`} onClose={() => setOpen(false)} /> : null}
   </>;
 }
