@@ -41,11 +41,27 @@
   border-radius: var(--radius-card);
   background: var(--color-accent-soft);
 }
-.room > img {
+.roomImage {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+/* 단계가 오르면 새 방이 지난 방 위로 서서히 나타난다(투명도만, DESIGN.md §9 보상 600ms). */
+.roomImage[data-entering] {
+  animation: room-in var(--motion-reward) var(--motion-easing) both;
+}
+@keyframes room-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .roomImage[data-entering] {
+    animation: none;
+  }
 }
 /* 방 무대: 미니 최애 한 명이 바닥을 걷고·두리번거리고·앉는다(DESIGN.md §9 살아 있는 요소 — 화면 밖·탭 숨김·움직임 줄이기에서 정지).
    움직이는 것은 transform·translate·opacity 뿐이다. 위치 단위는 방 폭(cqw). */
