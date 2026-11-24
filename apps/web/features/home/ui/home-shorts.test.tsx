@@ -23,11 +23,11 @@ describe("shorts viewer", () => {
     expect(within(dialog).getByRole("button", { name: "다음 영상" })).toBeDisabled();
     expect(zone).toBeTruthy();
   });
-  it("prefers a stored thumbnail to a platform cover", () => {
+  it("requests the full-size stored cover in the home rail", () => {
     const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000002?variant=thumbnail";
     const item = { id: "t1", platform: "tiktok", videoId: "7690854938997558549", title: "원문 제목", href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", creator: { slug: "a", name: "A" }, thumbnail } as HomeShort;
     const { container } = render(<HomeShorts items={[item]} locale="ko" />);
-    expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toContain(thumbnail);
+    expect(decodeURIComponent(container.querySelector("img")!.getAttribute("src")!)).toBe(thumbnail.split("?")[0]);
     expect(container.querySelector("img")).toHaveAttribute("loading", "lazy");
   });
   it("plays a TikTok short in the TikTok player with its kept cover", () => {
