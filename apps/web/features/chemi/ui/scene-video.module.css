@@ -11,3 +11,9 @@
 .video[data-playing] {
   opacity: 1;
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .video[data-once] {
+    transition: opacity var(--motion-fast) var(--motion-easing);
+  }
+}

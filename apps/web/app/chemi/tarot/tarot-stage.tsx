@@ -26,7 +26,6 @@ import {
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { CardRail } from "./card-rail";
-import spread from "./spread/spread.module.css";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import type { TarotDraw, TarotStep } from "./types";
 import styles from "./tarot.module.css";
@@ -224,23 +223,23 @@ export function TarotStage(props: Props) {
           )}
         </section>
         {spreadEntry || primary ? (
-          <div className={styles.choices}>
+          <div className={spreadEntry ? styles.returnChoices : styles.choices}>
             <FanAction variant="primary" {...(spreadEntry ? { href: spreadEntry.href } : { onClick: primary!.onClick })}>
               {spreadEntry ? (
-                <>
+                <span className={styles.returnLabel}>
                   <ReadingText id={spreadEntry.used ? "spreadAgain" : "spreadAsk"} />
                   {spreadEntry.used ? null : (
-                    <FanTag tone="neutral" className={spread.count}>
+                    <FanTag tone="neutral">
                       <ReadingText id="firstFree" />
                     </FanTag>
                   )}
-                </>
+                </span>
               ) : (
                 primary!.label
               )}
             </FanAction>
             {spreadEntry ? (
-              <div className={spread.more}>
+              <div className={styles.returnMore}>
                 <FanAction onClick={soon(uiText("tarotBook"))}>
                   <ReadingText id="tarotBook" />
                 </FanAction>

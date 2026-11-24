@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { elementCounts, elementName, elements, isChart } from "@/app/chemi/saju/chart";
-import { askLinesFor, askName, askVoice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
+import { askLinesFor, askPages, askName, askVoice, type AskCharacter, type AskContent, type AskTopic } from "@/features/chemi/ask/lines";
 import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
 import { TAROT_DECK } from "@/features/chemi/tarot/deck";
 import { askAiReady, askAiText } from "./ai-provider";
@@ -42,8 +42,7 @@ const voiceRule = {
   ban: "친한 사이의 반말(~야, ~해, ~어). 존댓말을 섞지 않는다.",
   yo: "다정한 해요체(~요). 반말이나 합쇼체(~니다)를 섞지 않는다.",
   hao: "옛 도사의 하오체(~오, ~소, ~구려, ~시오). 해요체나 반말을 섞지 않는다.",
-  /** 엘리나는 반존대: 기본 해요체에 마지막 문장만 다정한 반말로 맺을 수 있다(K-3729a7). */
-  mixed: "다정한 반존대. 기본은 해요체(~요)이고, 마지막 문장 하나만 친한 반말(~야, ~해, ~지?)로 맺어도 된다. 합쇼체(~니다)는 쓰지 않는다.",
+  mixed: "다정한 반존대. 팬을 친근하게 대하되 풀이의 각 쪽은 해요체(~요, ~죠)로 맺는다. 합쇼체(~니다)는 쓰지 않는다.",
 } as const;
 const voiceOf = (character: AskCharacter) => (character === "elina" ? "mixed" : askVoice[character]);
 
@@ -123,7 +122,8 @@ export function askPrompt(input: AskAiInput, fault?: string) {
       : []),
     "지킬 것:",
     "1. [풀이 값]에 적힌 것만 근거로 삼는다. 거기 없는 날짜·요일·시각·사람 이름·금액·확률·숫자·카드·사건을 지어내지 않는다.",
-    "2. 2~4문장, 모두 합쳐 200자 이내. 첫 문장에서 풀이 값 하나를 짚고, 이어서 질문이 묻는 것(해도 될까·언제·어떻게·무엇부터)에 바로 답하는 조언을 한다.",
+    "2. 2~4문장, 모두 합쳐 200자 이내.",
+    input.before ? "첫 문장은 새 질문에 바로 답한다. 앞 질문은 필요한 경우에만 한 구절까지 언급하고, 이어서 풀이 근거를 짚는다." : "첫 문장에서 풀이 값 하나를 짚고, 이어서 질문이 묻는 것(해도 될까·언제·어떻게·무엇부터)에 바로 답하는 조언을 한다.",
     ...(input.before ? ["이어 묻는 질문이면 [앞선 대화]는 대명사와 생략된 맥락을 이해하는 데만 쓴다. 같은 주제를 묻는다면 앞 답과 같은 방향을 유지한다. 새 질문이 주제를 바꾸면 그 주제를 우선하고, 현재 질문에 관련된 풀이 값만 인용한다. 관계 질문에는 관계 값을 쓰고 돈 점수를 인용하지 않는다."] : []),
     ...(input.before ? ["이어 묻기 응답은 마지막 차례다. 팬에게 질문하지 말고 실천할 수 있는 조언으로 끝낸다."] : []),
     "3. 결제·이용권·한도·오류·AI·프롬프트·규칙 이야기를 하지 않는다. 자기 사생활이나 실제 인물 이야기를 하지 않는다. 의료·법률·투자는 단정하지 않는다.",
@@ -182,17 +182,16 @@ export function askAnswerFault(answer: string, input: AskAiInput): string | null
   const self = askName[input.character];
   if (otherNames.some((name) => !self.includes(name) && text.includes(name) && !given.includes(name))) return "grounding";
   const askedDetail = input.question.match(concreteQuestion)?.[0];
-  if (/몇\s*분/u.test(input.question) && !sentences.slice(1).some((line) => /(?:\d+|한|두|세|다섯|십|열)\s*분/u.test(line))) return "concrete";
-  if (askedDetail && !sentences.slice(1).some((sentence) =>
+  const advice = input.before ? sentences : sentences.slice(1);
+  if (/몇\s*분/u.test(input.question) && !advice.some((line) => /(?:\d+|한|두|세|다섯|십|열)\s*분/u.test(line))) return "concrete";
+  if (askedDetail && !advice.some((sentence) =>
     /\d/u.test(sentence) || concreteCriterion.test(sentence)
     || (askedDetail === "언제" && timeDetail.test(sentence))
     || (askedDetail === "몇" && countDetail.test(sentence))
   )) return "concrete";
   if (hangul.test(input.question)) {
-    // 엘리나는 마지막 문장만 반말로 맺을 수 있다(합쇼체는 안 됨).
-    const ok = input.character === "elina"
-      ? sentences.slice(0, -1).every(ending.yo) && !/니다$/.test(sentences.at(-1)!)
-      : sentences.every(ending[askVoice[input.character]]);
+    const voice = input.character === "elina" ? ending.yo : ending[askVoice[input.character]];
+    const ok = askPages(text).every((page) => splitSentences(page).every(voice));
     if (!ok) return "voice";
   }
   return null;
