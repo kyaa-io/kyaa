@@ -1,3 +1,4 @@
+import { ANDONG_COURSE } from "./content-course";
 import { FPS } from "./engine";
 
 /**
@@ -46,16 +47,17 @@ const SHAPES: Record<Exclude<RunKind, "pit">, readonly [w: number, h: number, y:
 };
 const SOLID = new Set<RunKind>(["cone", "barricade", "crates", "bar", "lantern"]);
 
-export function runRound(seed: number) {
+export function runRound(seed: number, course?: typeof ANDONG_COURSE) {
+  const finishTick = course?.sections[4].endTick ?? RUN_TICKS;
   const state = {
-    tick: 0, distance: 0, score: 0, meters: 0, level: 1, speed: 160, hearts: 3,
+    cleared: false, tick: 0, distance: 0, score: 0, meters: 0, level: 1, speed: 160, hearts: 3,
     height: 0, velocity: 0, airJumps: 0, grounded: true, sliding: false,
     invincible: false, shield: false, boost: 0, fever: 0, feverNotes: 0,
     notes: 0, combo: 0, bestCombo: 0, fevers: 0, done: false, fell: false,
   };
   const entities: RunEntity[] = [];
   const events: RunEvent[] = [];
-  let random = seed >>> 0;
+  let random = (course?.seed ?? seed) >>> 0;
   let points = 0;
   let nextId = 0;
   let cursor = 480;
@@ -209,18 +211,19 @@ export function runRound(seed: number) {
     state.meters = Math.floor(state.distance / CELLS_PER_METER);
     state.score = Math.floor(points);
     if (state.height < FALL_OUT) { state.fell = true; events.push({ type: "fall" }); }
-    state.done = state.fell || state.hearts <= 0 || tick >= RUN_TICKS;
+    state.cleared = Boolean(course && tick === finishTick && !state.fell && state.hearts > 0);
+    state.done = state.fell || state.hearts <= 0 || tick >= finishTick;
   }
   return { state, entities, events, step };
 }
 
 /** Replays the presses. A run may stop early (the player left), never after it was over. */
-export function verifyRun(seed: number, ticks: number, inputs: RunInput[], score: number, elapsed: number) {
+export function verifyRun(seed: number, ticks: number, inputs: RunInput[], score: number, elapsed: number, course?: typeof ANDONG_COURSE) {
   if (!Number.isInteger(ticks) || ticks < 1 || ticks > RUN_TICKS ||
       !Number.isFinite(elapsed) || ticks * 1000 / FPS > elapsed + 32 ||
       inputs.some(([tick, mask], i) => !Number.isInteger(tick) || tick < 1 || tick > ticks ||
         !Number.isInteger(mask) || mask < 1 || mask > 7 || (i > 0 && tick <= inputs[i - 1][0]))) throw Error("INVALID_RUN");
-  const round = runRound(seed);
+  const round = runRound(seed, course);
   let next = 0;
   while (round.state.tick < ticks) {
     if (round.state.done) throw Error("INVALID_RUN");
