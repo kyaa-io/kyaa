@@ -22,6 +22,7 @@ import {
   tarotLines,
   tarotAvatar,
   tarotCharacter,
+  tarotLang,
   type TarotCharacter,
 } from "@/features/chemi/tarot/script";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
@@ -111,7 +112,7 @@ export function TarotStage(props: Props) {
   const soon = (label: string) => () => showFanToast({ title: uiText("comingSoon", { subject: withTopic(label), label }) });
   let dialogLine: string;
   if (spreadEntry && !spreadEntry.used && isChemiPersona(character))
-    dialogLine = chemiPersona[character].tarotRevisit[props.locale === "ko" ? "ko" : "en"];
+    dialogLine = chemiPersona[character].tarotRevisit[tarotLang(props.locale)];
   else if (spreadEntry) dialogLine = uiText(`${spreadEntry.used ? "saySpreadUsed" : "saySpreadAsk"}${voice}`);
   else if (entry) dialogLine = revisit ? lines.again : lines.hello;
   else if (step === "think") dialogLine = lines.think;

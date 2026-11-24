@@ -7,7 +7,8 @@ export type ExtraPlayCopy = Record<(typeof keys)[number], string>;
 const table: Record<AppLocale, readonly string[]> = {
   ko: ["{cost}P로 한 판 더", "포인트", "남은 추가 판", "{n}번", "{cost}P 쓰고 시작", "그만하기", "닫기", "포인트가 {n}P 모자라요", "덕질 미션에서 모으기",
     "{cost}P로 한 판 더", "오늘 추가 판 3번을 모두 썼어요", "내 기록은 아직 없어요."],
-  get mn() { return this.en; },
+  mn: ["{cost}P-ээр 1 тоглолт нэмэх", "Оноо", "Үлдсэн нэмэлт тоглолт", "{n}", "{cost}P зарцуулаад эхлэх", "Одоо биш", "Хаах", "{n}P дутуу байна", "Фэн даалгавраас оноо цуглуулах",
+    "{cost}P-ээр 1 тоглолт нэмэх", "Өнөөдрийн 3 нэмэлт тоглолтоо бүгдийг ашигласан", "Танд одоогоор оноо алга."],
   en: ["1 more game for {cost}P", "Points", "Extra games left", "{n}", "Spend {cost}P and start", "Not now", "Close", "You're {n}P short", "Earn points in fan missions",
     "1 more game for {cost}P", "You've used all 3 extra games today", "You have no score yet."],
   ja: ["{cost}Pでもう1回", "ポイント", "残りの追加回数", "{n}回", "{cost}P使って始める", "やめる", "閉じる", "{n}P足りません", "推し活ミッションで貯める",

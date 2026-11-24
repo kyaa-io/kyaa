@@ -22,7 +22,7 @@ import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK_SIZE, tarotAlt, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
 import { tarotBasis, tarotDetail, tarotRowMore } from "@/features/chemi/tarot/depth";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
-import { tarotCharacter, tarotFaceThumb, type TarotCharacter } from "@/features/chemi/tarot/script";
+import { tarotCharacter, tarotFaceThumb, tarotLang, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import { tarotDateLabel, kstDate, tarotShareUrl, type TarotAuth, type TarotDraw, type TarotReward } from "./types";
@@ -156,7 +156,7 @@ export function TarotResult({
   const direction = uiText(draw.reversed ? "reversed" : "upright");
   const content = meaning.card?.dir[draw.reversed ? "down" : "up"];
   const persona = isChemiPersona(character) ? chemiPersona[character] : null;
-  const readingLanguage = locale === "ko" ? "ko" : "en";
+  const readingLanguage = tarotLang(locale);
   const slotLine = draw.slot ? ` · ${uiText("deckSlot", { total: TAROT_DECK_SIZE, slot: draw.slot })}` : "";
 
   const rewardRow = member && today ? <RewardRow character={character} name={person.name} rewards={rewards} locale={locale} /> : null;

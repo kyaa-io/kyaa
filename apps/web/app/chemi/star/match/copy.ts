@@ -2,7 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 const words: Record<AppLocale, string> = {
   ko: "끌림|편안함|대화|부딪칠 때|잔잔해요|보통이에요|강한 편이에요|가장 강한 연결|해|달|수성|금성|화성|네 가지로 보면|누구와 볼까요?|{name}와 보기|오늘 무료 1번",
-  get mn() { return this.en; },
+  mn: "Татах хүч|Тав тух|Яриа|Үрэлт|Сул|Дунд зэрэг|Хүчтэй|Гол харьцаанууд|Нар|Сар|Буд|Сугар|Ангараг|Дөрвөн талаас харвал|Хэнтэй харах вэ?|{name}-тай харах|Өнөөдөр 1 удаа үнэгүй",
   en: "Attraction|Comfort|Conversation|Friction|Subtle|Moderate|Strong|Closest aspects|Sun|Moon|Mercury|Venus|Mars|Four ways to look|Who is it with?|See with {name}|1 free today",
   ja: "惹かれ合い|安心感|会話|衝突|穏やか|ほどほど|強め|主なアスペクト|太陽|月|水星|金星|火星|4つの見方|だれと見る?|{name}と見る|今日は1回無料",
   "zh-Hans": "吸引力|舒适感|沟通|摩擦|轻微|适中|较强|主要相位|太阳|月亮|水星|金星|火星|从四个方面看|想和谁看?|和{name}一起看|今日免费1次",

@@ -2,9 +2,9 @@ import type { AppLocale } from "@/i18n/locales";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
 export type TarotCharacter = "changha" | "elina" | "yuna" | "dosa";
 export type TarotVoice = "ban" | "yo" | "hao";
-/** 타로 글의 언어. 한국어 밖의 언어는 영어 글을 보여 준다(운영 오픈 점검표 Q4-A: 한국어·영어만 맞추고 나머지 9개 언어는 영어). */
-export type TarotLang = "ko" | "en";
-export const tarotLang = (locale: string | null | undefined): TarotLang => (locale === "ko" ? "ko" : "en");
+/** 타로 글의 언어. 한국어·영어·몽골어는 각자의 글, 그 밖의 언어는 영어 글을 보여 준다(운영 오픈 점검표 Q4-A, 몽골어는 케미 97 9회차). */
+export type TarotLang = "ko" | "en" | "mn";
+export const tarotLang = (locale: string | null | undefined): TarotLang => (locale === "ko" || locale === "mn" ? locale : "en");
 
 /** 입장 고르기 띠 순서. 말투는 COM-TX-01(반말 · 요체 · 하오체) 셋이고, 세 최애는 그 위에 자기 대사(TAROT_OWN)를 얹는다. */
 export const TAROT_CHARACTERS: readonly { key: TarotCharacter; name: string; voice: TarotVoice }[] = [
@@ -133,11 +133,65 @@ const TAROT_OWN_EN: typeof TAROT_OWN = {
   },
 };
 
+/** 몽골어 화면에서 뽑는 동안 하는 말. 반말은 «чи» 쪽의 가벼운 말, 요체는 «та» 쪽의 부드러운 말, 하오체는 예스러운 명령형(-гтун)으로 옮겼다. */
+const TAROT_LINES_MN: typeof TAROT_LINES = {
+  ban: {
+    hello: "Ирчихлээ. Өнөөдөр нэг хөзөр сугалах уу?",
+    again: "Дахиад ирчихэв үү? Өнөөдрийн хөзөр хэвээрээ.",
+    think: "Сонирхсон нэг зүйлээ зөвхөн дотроо бодоорой. Хэлэх шаардлагагүй.",
+    shuffle: "Аажуухан холино. Татагдсан нь байвал тэрийг сонго.",
+    pick: "Татагдсан хөзөр дээрээ зогсоход л болно.",
+    lock: "За, чиний сонгосон хөзрөөр харъя.",
+    already: "Өнөөдөр аль хэдийн энэ хөзөр буусан.",
+    drawn: (name, reversed) => `${name} хөзөр ${reversed ? "урвуу" : "цэх"} буулаа.`,
+  },
+  yo: {
+    hello: "Ирсэн байна уу. Өнөөдөр нэг хөзөр сугалах уу?",
+    again: "Дахин ирсэн үү? Өнөөдрийн хөзөр хэвээрээ байна.",
+    think: "Сонирхсон нэг зүйлээ зөвхөн сэтгэлдээ бодоорой. Хэлэх шаардлагагүй.",
+    shuffle: "Аажуухан холиё. Сэтгэлд нийцсэн нь байвал тэрийг сонгоорой.",
+    pick: "Сэтгэлд нийцсэн хөзөр дээрээ зогсоход л болно.",
+    lock: "Сайхан байна, сонгосон хөзрөө уншъя.",
+    already: "Өнөөдөр аль хэдийн энэ хөзөр буусан.",
+    drawn: (name, reversed) => `${name} хөзөр ${reversed ? "урвуу" : "цэх"} буулаа.`,
+  },
+  hao: {
+    hello: "Ирэв үү. Өнөөдөр нэгэн хөзөр сугалах уу?",
+    again: "Дахин ирэв. Өнөөдрийн хөзөр хэвээр буй.",
+    think: "Нэгэн асуултаа сэтгэлдээ барьтугай. Өгүүлэх хэрэггүй.",
+    shuffle: "Аажмаар холиё. Дуудах тэр нэгийг сонгогтун.",
+    pick: "Дуудах хөзөр дээрээ зогсогтун.",
+    lock: "Сайн. Сонгосон хөзрийг уншъя.",
+    already: "Өнөөдөр аль хэдийн энэ хөзөр буусан.",
+    drawn: (name, reversed) => `${name} хөзөр ${reversed ? "урвуу" : "цэх"} бууж ирэв.`,
+  },
+};
+
+const TAROT_OWN_MN: typeof TAROT_OWN = {
+  changha: {
+    shuffle: "Зураг авалтын өмнөх бэлтгэл шиг аажуухан. Татагдсан нь байвал тэрийг сонго.",
+    lock: "За, энэ үзэгдэл чиний сонгосон хөзрөөр явна.",
+  },
+  elina: {
+    hello: "Ирчихлээ. Өнөөдөр нэг хөзөр сугалах уу?",
+    shuffle: "Дуу эхлэхийн өмнөх мөч шиг аажуухан. Сэтгэлд нийцсэнээ сонгоорой.",
+    lock: "Сайхан байна, таны хөзөр эхний бадгийг нээнэ.",
+  },
+  yuna: {
+    hello: "Ирчихлээ. Өнөөдрийн хөзрийг би уншиж өгье.",
+    think: "Ганц асуулт л сонго. Хэлэх шаардлагагүй.",
+    shuffle: "Өнгө сонгох шиг аажуухан холино. Татагдсанаа сонго.",
+    lock: "За, чиний сонгосон хөзрөөс эхэлье.",
+    drawn: (name, reversed) => `${name} байна. ${reversed ? "Урвуу" : "Цэх"} буулаа.`,
+  },
+};
+
 /** 뽑는 동안 그 최애가 하는 말. */
-export const tarotLines = (character: TarotCharacter, locale: string = "ko") =>
-  tarotLang(locale) === "ko"
-    ? { ...TAROT_LINES[tarotCharacter(character).voice], ...TAROT_OWN[character] }
-    : { ...TAROT_LINES_EN[tarotCharacter(character).voice], ...TAROT_OWN_EN[character] };
+export const tarotLines = (character: TarotCharacter, locale: string = "ko") => {
+  const lang = tarotLang(locale);
+  const [lines, own] = lang === "ko" ? [TAROT_LINES, TAROT_OWN] : lang === "mn" ? [TAROT_LINES_MN, TAROT_OWN_MN] : [TAROT_LINES_EN, TAROT_OWN_EN];
+  return { ...lines[tarotCharacter(character).voice], ...own[character] };
+};
 
 export const tarotScene = (character: TarotCharacter, wide: boolean) => `/chemi/tarot/scene-${character}-${wide ? "l" : "p"}.webp`;
 export const tarotAvatar = (character: TarotCharacter) => `/chemi/tarot/avatar-${character}.jpg`;
