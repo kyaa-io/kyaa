@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "PC 팬페이지에서 갤러리가 출석 버튼 아래 한 줄을 차지해요. 사진이 한 장이어도 팬들의 이야기는 갤러리 아래에서 읽을 수 있어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/elle",
+  "images": ["release-notes/images/2026-11-25-fanpage-gallery-wide.png"]
+}

@@ -175,8 +175,11 @@ a:has(> [data-video-fallback]) > .playIcon,button:has(> [data-video-fallback]) >
 
 @media (min-width:1024px) {
   .gallery .previewHeading [data-fan-section-header] > div { flex-wrap:nowrap; }
-  .galleryRail li:only-child { width:min(100%, 20rem); }
-  .galleryRail li:not(:only-child) {
+  .galleryRail li:only-child,
+  .galleryRail li:first-child:nth-last-child(2),
+  .galleryRail li:first-child:nth-last-child(2) + li { width:min(100%, 12rem); }
+  .galleryRail li:nth-last-child(n+3),
+  .galleryRail li:nth-last-child(n+3) ~ li {
     min-width:132px;
     max-width:188px;
     width:calc((100% - 5 * var(--space-2)) / 6);
