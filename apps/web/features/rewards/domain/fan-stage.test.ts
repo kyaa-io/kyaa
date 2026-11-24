@@ -36,6 +36,14 @@ describe("server fan stage contract", () => {
     expect(fanStageProgressSchema.safeParse(value).success).toBe(false);
   });
 
+  it("requires ascending stamp thresholds and stamp units under policy 4", () => {
+    const stamps = { ...progress, policyVersion: 4, unit: "stamps",
+      current: { ...silver1, minimumScore: 30 }, next: { ...silver2, minimumScore: 60 } };
+    expect(fanStageProgressSchema.safeParse(stamps).success).toBe(true);
+    expect(fanStageProgressSchema.safeParse({ ...stamps, unit: "hearts" }).success).toBe(false);
+    expect(fanStageProgressSchema.safeParse({ ...stamps, next: { ...silver2, minimumScore: 30 } }).success).toBe(false);
+  });
+
   it("accepts policy version 3", () => {
     expect(fanStageProgressSchema.safeParse({ ...progress, policyVersion: 3 }).success).toBe(true);
   });
