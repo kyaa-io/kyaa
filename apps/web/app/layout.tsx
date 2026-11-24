@@ -9,6 +9,7 @@ import { luckyDrawEntryPreview } from "@/features/benefit/lucky-draw-entry";
 import { LuckyDrawPreviewProvider } from "@/features/benefit/ui/lucky-draw-preview";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { ChemiReleaseProvider } from "@/features/chemi/ui/chemi-release";
+import { AccountSwitchReleaseProvider, accountSwitchEnabled } from "@/features/auth/client/account-switch-release";
 import { DocumentLocale } from "../components/document-locale";
 import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progress";
 import { AuthRoot } from "@/features/auth/client/auth-root";
@@ -91,6 +92,7 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <ChemiReleaseProvider enabled={process.env.CHEMI_TAB === "true"}>
+        <AccountSwitchReleaseProvider enabled={accountSwitchEnabled({ APP_ENV: process.env.APP_ENV, NODE_ENV: process.env.NODE_ENV })}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
         <AuthRoot authProvider={authProvider} privyAppId={privyAppId} appleLoginEnabled={appleLoginEnabled} testAccountLoginEnabled={testAccountLoginEnabled}>
           <DeferredRootClients slot="before" />
@@ -112,6 +114,7 @@ export default async function RootLayout({
           <DeferredRootClients slot="after" />
         </AuthRoot>
         </LuckyDrawPreviewProvider>
+        </AccountSwitchReleaseProvider>
         </ChemiReleaseProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>

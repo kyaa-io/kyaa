@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { peekResource, storeResource, syncResourceOwner } from "@/components/fan-ui/resource-cache";
+import { accountSwitchEnabled } from "./account-switch-release";
 import { beginAccountSwitch, clearAccountSwitch, guardRestoredPagesAfterSignOut, markSignedOut, publicReturnPath, readAccountSwitch, settleAccountSwitch } from "./account-switch";
 
 afterEach(() => { clearAccountSwitch(); window.sessionStorage.clear(); vi.useRealTimers(); });
@@ -58,5 +59,15 @@ describe("after sign-out", () => {
     syncResourceOwner("member-b:2");
     expect(peekResource("member-a:0:ko:true:/api/me/wallet")).toBeUndefined();
     expect(peekResource("member-b:2:ko:true:/api/me/wallet")).toBeUndefined();
+  });
+});
+
+describe("release", () => {
+  it("is on for DEV and local development only", () => {
+    expect(accountSwitchEnabled({ APP_ENV: "dev", NODE_ENV: "production" })).toBe(true);
+    expect(accountSwitchEnabled({ NODE_ENV: "development" })).toBe(true);
+    expect(accountSwitchEnabled({ APP_ENV: "prod", NODE_ENV: "production" })).toBe(false);
+    expect(accountSwitchEnabled({ APP_ENV: "staging", NODE_ENV: "production" })).toBe(false);
+    expect(accountSwitchEnabled({ NODE_ENV: "production" })).toBe(false);
   });
 });

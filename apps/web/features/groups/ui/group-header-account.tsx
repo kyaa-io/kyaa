@@ -29,6 +29,7 @@ import { AccountSwitchDialog } from './account-switch-dialog';
 import { accountSwitchCopy } from '@/features/auth/client/account-switch-copy';
 import { settleAccountSwitch } from '@/features/auth/client/account-switch';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
+import { useAccountSwitchRelease } from '@/features/auth/client/account-switch-release';
 import { showFanToast } from '@/components/fan-ui/fan-toast';
 import styles from './group-header-account.module.css';
 const parse=(value:unknown)=>walletSchema.parse(value);
@@ -38,7 +39,7 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
  const profile=useGroupResource(auth.authenticated?'/api/me/profile':null,parseProfile);
  const [languageOpen,setLanguageOpen]=useState(false),[logoutOpen,setLogoutOpen]=useState(false),trigger=useRef<HTMLButtonElement>(null);
  const [profileOwner,setProfileOwner]=useState<string|null>(null),[switchOpen,setSwitchOpen]=useState(false);
- const memberId=useByUsAuth().user?.id??null;
+ const memberId=useByUsAuth().user?.id??null,switchOn=useAccountSwitchRelease();
  const openProfile=()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setProfileOwner(auth.ownerKey);};
  const profileLabel=profileConnectionCopy(locale).profile;
  const identity=<>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={48}/>:<AvatarPlaceholder size={48}/>}<span dir="auto" className={styles.menuName}>{profile.data?.profile.nickname ?? profileLabel}</span></>;
@@ -62,7 +63,7 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
   {/* Feedback F: signed in, the avatar is the menu trigger (one control, not avatar + ☰); signed out it is ☰. */}
   <Menu.Root><Menu.Trigger ref={trigger} className={`${styles.menuTrigger} ${auth.authenticated?styles.avatarTrigger:''}`} data-account-trigger={auth.authenticated?'avatar':'menu'} aria-label={ko?'계정 메뉴':'Account menu'}>{auth.authenticated?(avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={44}/>:<AvatarPlaceholder size={44}/>):<PencilHeaderIcon name="menu" size={20}/>}</Menu.Trigger><Menu.Portal><Menu.Positioner className={styles.positioner} sideOffset={8} align='end'><Menu.Popup className={styles.menu}>
   {auth.authenticated&&<Menu.Item className={styles.menuIdentity} aria-label={profile.data?.profile.nickname ? `${profileLabel} · ${profile.data.profile.nickname}` : profileLabel} onClick={openProfile}>{identity}</Menu.Item>}
-  {auth.authenticated&&<Menu.Item className={styles.menuItem} data-account-action='switch' onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setSwitchOpen(true);}}><PencilHeaderIcon name='switch' size={20}/>{switchCopy.switchAccount}</Menu.Item>}
+  {auth.authenticated&&switchOn&&<Menu.Item className={styles.menuItem} data-account-action='switch' onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setSwitchOpen(true);}}><PencilHeaderIcon name='switch' size={20}/>{switchCopy.switchAccount}</Menu.Item>}
   {auth.authenticated&&dukjilOn&&<Menu.Item className={styles.menuItem} data-earn='attendance' render={<Link href={`/my/wallet?view=attendance&locale=${locale}` as Route}/>}><PencilHeaderIcon name='points' size={20}/>{attendanceLabel}</Menu.Item>}
   {dukjilStatus==='off'&&canCheckIn&&<Menu.Item className={styles.menuItem} data-earn='attendance' render={<Link href={`/my/wallet?view=attendance&locale=${locale}` as Route}/>}><PencilHeaderIcon name='points' size={20}/>{walletCopy(locale).checkIn}</Menu.Item>}
   {links.map(({href,label,icon},i)=><Menu.Item key={href} className={`${styles.menuItem} ${href==='/settings'?styles.divided:''}`} render={<Link href={`${href}?locale=${locale}` as Route}/>}><PencilHeaderIcon name={icon} size={20}/>{label}</Menu.Item>)}

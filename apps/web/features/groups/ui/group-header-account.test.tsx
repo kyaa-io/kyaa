@@ -2,15 +2,16 @@ import {fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
 import {GroupHeaderAccount,GroupHeaderPoints} from './group-header-account';
-const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,authenticated:true,request:undefined as any,failure:undefined as any,retry:undefined as any,logout:undefined as any,replace:undefined as any,toast:vi.fn()}));
+const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,authenticated:true,request:undefined as any,failure:undefined as any,retry:undefined as any,logout:undefined as any,replace:undefined as any,toast:vi.fn(),switchOn:true}));
 vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:state.authenticated,ready:true,ownerKey:'u',request:state.request}),useGroupResource:(url:string)=>({data:url==='/api/me/profile'?{profile:{nickname:"아리가또아리가또아리가또아리가또"}}:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
 vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:state.favorite?'ready':'empty',options:[],selected:state.favorite,unverified:null,select:()=>{},retry:()=>{}})}));
 vi.mock('@/features/auth/client/auth-fallback',()=>({usePrivy:()=>({ready:true,authenticated:true,user:{id:'u'},getAccessToken:vi.fn(),logout:state.logout})}));
 vi.mock('next/navigation',()=>({usePathname:()=>'/benefits',useSearchParams:()=>new URLSearchParams('locale=ko'),useRouter:()=>({replace:state.replace})}));
+vi.mock('@/features/auth/client/account-switch-release',()=>({useAccountSwitchRelease:()=>state.switchOn}));
 vi.mock('@/components/fan-ui/fan-toast',()=>({showFanToast:state.toast}));
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
 vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:({identity}:{identity:React.ReactNode})=><div role='dialog'>{identity}</div>}));
-beforeEach(()=>{state.toast.mockReset();window.sessionStorage.clear();state.authenticated=true;state.logout=vi.fn().mockResolvedValue(undefined);state.replace=vi.fn();resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
+beforeEach(()=>{state.switchOn=true;state.toast.mockReset();window.sessionStorage.clear();state.authenticated=true;state.logout=vi.fn().mockResolvedValue(undefined);state.replace=vi.fn();resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
 const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
 it('points header link goes to the benefits page, not My',()=>{
@@ -161,4 +162,9 @@ it('account switch: the same member signing back in, or nobody signed in yet, sh
  state.authenticated=true;state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
  await waitFor(()=>expect(window.sessionStorage.getItem('kyaa:account-switch')).toBeNull());
  expect(state.toast).not.toHaveBeenCalled();
+});
+it('account switch stays out of the menu where the release is off (production)',async()=>{
+ state.switchOn=false;state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ await screen.findByRole('menuitem',{name:'로그아웃'});
+ expect(screen.queryByRole('menuitem',{name:'계정 전환'})).toBeNull();
 });
