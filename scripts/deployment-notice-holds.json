@@ -123,7 +123,8 @@
     "release-notes/2026-11-24-chemi-lobby-results.json",
     "release-notes/2026-11-24-chemi-r6b.json",
     "release-notes/2026-11-24-changha-match-photos.json",
-    "release-notes/2026-11-24-chemi-reading-voice.json"
+    "release-notes/2026-11-24-chemi-reading-voice.json",
+    "release-notes/2026-11-24-chemi-popup-checkbox.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
