@@ -140,5 +140,8 @@
   ],
   "home-banner-video": [
     "release-notes/2026-11-23-home-banner-video.json"
+  ],
+  "donation-vote": [
+    "release-notes/2026-11-25-new-year-donation-vote.json"
   ]
 }
