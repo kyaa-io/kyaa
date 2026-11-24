@@ -28,7 +28,8 @@ function VisitMetrics({data,locale,emphasize=true}:{data:VisitCounts;locale:AppL
 }
 
 export function GroupVisitLine({data,locale}:{data?:VisitCounts;locale:AppLocale}) {
- if(!data || !(data.onlineCount || data.todayCount))return null;
+ if (!data) return <div className={styles.visits} aria-hidden="true" />;
+ if (!(data.onlineCount || data.todayCount)) return null;
  return <FanText as="div" role="meta" className={styles.visits}><VisitMetrics emphasize={false} data={data} locale={locale}/></FanText>;
 }
 

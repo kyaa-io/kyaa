@@ -57,4 +57,4 @@
 .line[data-wrap] > * { position: relative; }
 .line[data-wrap] > * + *::before { position: absolute; inset-inline-start: calc(-1 * var(--presence-gap)); width: var(--presence-gap); margin: 0; text-align: center; }
 
-.visits { grid-column: 1 / -1; display: flex; flex-wrap: wrap; }
+.visits { min-height: 24px; grid-column: 1 / -1; display: flex; flex-wrap: wrap; }
