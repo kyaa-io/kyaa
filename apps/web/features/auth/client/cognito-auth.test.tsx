@@ -108,3 +108,20 @@ it("keeps MY's resource in the network retry state during a refresh outage",asyn
  act(()=>result.current.resource.retry());
  await waitFor(()=>expect(result.current.resource.state).toEqual({status:"ready",data:{loaded:true}}));
 });
+
+it("discards an outstanding token read after logout", async () => {
+  const session = { authenticated: true, walletLinked: true, userId: "member-a",
+    accessToken: "old", expiresAt: Date.now() + 1000 };
+  let finishRefresh!: (response: Response) => void;
+  const delayed = new Promise<Response>(resolve => { finishRefresh = resolve; });
+  vi.stubGlobal("fetch", vi.fn((path: string) => path.endsWith("/logout")
+    ? Promise.resolve(Response.json({ logoutUrl: null })) : delayed)
+    .mockResolvedValueOnce(Response.json(session)));
+  const { result } = renderHook(useCognitoAuth, { wrapper: CognitoAuthProvider });
+  await waitFor(() => expect(result.current.session?.userId).toBe("member-a"));
+  const token = result.current.getAccessToken();
+  await act(async () => { await result.current.logout(); });
+  finishRefresh(Response.json(session));
+  await expect(token).resolves.toBeNull();
+  expect(result.current.session).toBeNull();
+});

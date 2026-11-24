@@ -421,3 +421,6 @@
 }
 
 .homeRow[id] { scroll-margin-top: var(--fan-header-height); }
+/* ACCOUNT-SWITCH-S1: the 390 account-switch line is the third row under the name and tier tag, flush with the name. */
+.pencilSummary .pencilName > .switchLine { grid-area:3 / 2 / 4 / -1; justify-self:start; }
+.switchLine.switchLine { padding-inline:0; }

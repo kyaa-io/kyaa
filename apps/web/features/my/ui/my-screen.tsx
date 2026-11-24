@@ -66,6 +66,7 @@ import { nextRaffleBoundary, selectOpenRaffles, type MyCreator, type PassportCre
 import { collectionGroupTitle, groupRecentCollection } from "../domain/recent-collection";
 import { MyLiveCountdown } from "./my-live-countdown";
 import { MyLogout } from "./my-logout";
+import { AccountSwitchLine } from "@/features/groups/ui/account-switch-dialog";
 import styles from "./my-screen.module.css";
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import { personalCopy } from "@/i18n/catalogs/features__my__ui__personal-copy";
@@ -319,7 +320,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       <div className={styles.pencilSummary}>
         <header className={styles.pencilProfile}>
           <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
-          <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
+          <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}<AccountSwitchLine className={styles.switchLine} locale={locale} name={nickname ?? t.profileSummary} avatar={avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label="" size={48}/> : <AvatarPlaceholder size={48}/>}/></div>
           <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
         </header>
         <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />

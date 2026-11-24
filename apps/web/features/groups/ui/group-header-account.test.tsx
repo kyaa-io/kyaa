@@ -1,15 +1,17 @@
-import {fireEvent,render,screen,waitFor} from '@testing-library/react';
+import {fireEvent,render,screen,waitFor,within} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {resetDukjilCatalogCache} from '@/features/dukjil/ui/dukjil-provider';
 import {GroupHeaderAccount,GroupHeaderPoints} from './group-header-account';
-const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,authenticated:true,request:undefined as any,failure:undefined as any,retry:undefined as any,logout:undefined as any,replace:undefined as any}));
+const state=vi.hoisted(()=>({favorite:null as null|{name:string},wallet:undefined as any,authenticated:true,request:undefined as any,failure:undefined as any,retry:undefined as any,logout:undefined as any,replace:undefined as any,toast:vi.fn(),switchOn:true}));
 vi.mock('./use-group-resource',()=>({GROUP_WALLET_CHANGED_EVENT:'wallet-changed',useGroupRequest:()=>({authenticated:state.authenticated,ready:true,ownerKey:'u',request:state.request}),useGroupResource:(url:string)=>({data:url==='/api/me/profile'?{profile:{nickname:"아리가또아리가또아리가또아리가또"}}:state.wallet,error:Boolean(state.failure),failure:state.failure,loading:false,retry:state.retry??vi.fn()})}));
 vi.mock('@/features/selected-bias/ui/use-selected-bias',()=>({useSelectedBias:()=>({status:state.favorite?'ready':'empty',options:[],selected:state.favorite,unverified:null,select:()=>{},retry:()=>{}})}));
 vi.mock('@/features/auth/client/auth-fallback',()=>({usePrivy:()=>({ready:true,authenticated:true,user:{id:'u'},getAccessToken:vi.fn(),logout:state.logout})}));
 vi.mock('next/navigation',()=>({usePathname:()=>'/benefits',useSearchParams:()=>new URLSearchParams('locale=ko'),useRouter:()=>({replace:state.replace})}));
+vi.mock('@/features/auth/client/account-switch-release',()=>({useAccountSwitchRelease:()=>state.switchOn}));
+vi.mock('@/components/fan-ui/fan-toast',()=>({showFanToast:state.toast}));
 vi.mock('@/features/profile/ui/use-avatar',()=>({useAvatar:()=>({state:{status:'none'}})}));
 vi.mock('@/features/group-social/profile-connection',()=>({ProfileConnectionPanel:({identity}:{identity:React.ReactNode})=><div role='dialog'>{identity}</div>}));
-beforeEach(()=>{state.authenticated=true;state.logout=vi.fn().mockResolvedValue(undefined);state.replace=vi.fn();resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
+beforeEach(()=>{state.switchOn=true;state.toast.mockReset();window.sessionStorage.clear();state.authenticated=true;state.logout=vi.fn().mockResolvedValue(undefined);state.replace=vi.fn();resetDukjilCatalogCache();state.favorite=null;state.failure=undefined;state.retry=undefined;state.request=vi.fn().mockRejectedValue(new Error('no policy'));});
 const wallet=(checkedIn:boolean,nextBonusIn=3)=>({points:500,tickets:0,attendance:{date:'2026-11-05',checkedIn,streak:1,nextBonusIn,days:[]}});
 const open=()=>fireEvent.click(screen.getByRole('button',{name:'계정 메뉴'}));
 it('points header link goes to the benefits page, not My',()=>{
@@ -75,7 +77,7 @@ it('signed in, the avatar is the one account-menu trigger and the menu has no �
  open();
  expect(await screen.findByRole('menuitem',{name:/언어 설정/})).toHaveTextContent('한국어');
  expect(screen.queryByRole('menuitem',{name:'알림'})).toBeNull();
- expect(screen.getAllByRole('menuitem').length).toBe(7);
+ expect(screen.getAllByRole('menuitem').length).toBe(8);
  expect(screen.getAllByRole('menuitem').at(-1)).toHaveTextContent('로그아웃');
 });
 it('r6 H1: the attendance item names the fan\'s own favorite page, and no fixed page name appears for anyone',async()=>{
@@ -110,4 +112,59 @@ it('signed out, the last menu row is a login link that returns to the current pa
  expect(item.getAttribute('href')).toContain('returnTo=%2Fbenefits');
  expect(screen.getAllByRole('menuitem').at(-1)).toBe(item);
  expect(screen.queryByRole('menuitem',{name:'로그아웃'})).toBeNull();
+});
+
+it('account switch: the row right under the name asks once, and cancel leaves the session and the page as they were',async()=>{
+ state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ const items=await screen.findAllByRole('menuitem');
+ expect(items[1]).toHaveTextContent('계정 전환');
+ fireEvent.click(items[1]!);
+ const dialog=await screen.findByRole('dialog',{name:'계정 전환'});
+ expect(dialog).toHaveTextContent('아리가또아리가또아리가또아리가또');
+ expect(dialog).toHaveTextContent('현재 계정');
+ fireEvent.click(within(dialog).getAllByRole('button',{name:'취소'}).at(-1)!);
+ await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
+ expect(state.logout).not.toHaveBeenCalled();
+ expect(state.replace).not.toHaveBeenCalled();
+ expect(window.sessionStorage.getItem('kyaa:account-switch')).toBeNull();
+});
+it('account switch: confirming signs out through the normal logout and opens login for the same public page',async()=>{
+ state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ fireEvent.click(await screen.findByRole('menuitem',{name:'계정 전환'}));
+ const dialog=await screen.findByRole('dialog',{name:'계정 전환'});
+ fireEvent.click(within(dialog).getByRole('button',{name:'다른 계정으로 로그인'}));
+ await waitFor(()=>expect(state.replace).toHaveBeenCalledWith('/login?locale=ko&returnTo=%2Fbenefits%3Flocale%3Dko'));
+ expect(state.logout).toHaveBeenCalledTimes(1);
+ expect(JSON.parse(window.sessionStorage.getItem('kyaa:account-switch')!)).toMatchObject({from:'u',returnTo:'/benefits?locale=ko'});
+ expect(state.toast).not.toHaveBeenCalled();
+});
+it('account switch: a failed sign-out keeps the dialog with the error and forgets the switch',async()=>{
+ state.logout=vi.fn().mockRejectedValue(new Error('network'));
+ state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ fireEvent.click(await screen.findByRole('menuitem',{name:'계정 전환'}));
+ const dialog=await screen.findByRole('dialog',{name:'계정 전환'});
+ fireEvent.click(within(dialog).getByRole('button',{name:'다른 계정으로 로그인'}));
+ expect(await within(dialog).findByRole('alert')).toHaveTextContent('로그아웃하지 못했어요');
+ expect(state.replace).not.toHaveBeenCalled();
+ expect(window.sessionStorage.getItem('kyaa:account-switch')).toBeNull();
+});
+it('account switch: the result shows only after the signed-in member is confirmed to be another one',async()=>{
+ window.sessionStorage.setItem('kyaa:account-switch',JSON.stringify({from:'someone-else',returnTo:'/?locale=ko',at:Date.now()}));
+ state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
+ await waitFor(()=>expect(state.toast).toHaveBeenCalledWith({title:'아리가또아리가또아리가또아리가또 계정으로 전환했어요',tone:'success'}));
+ expect(window.sessionStorage.getItem('kyaa:account-switch')).toBeNull();
+});
+it('account switch: the same member signing back in, or nobody signed in yet, shows no result',async()=>{
+ window.sessionStorage.setItem('kyaa:account-switch',JSON.stringify({from:'u',returnTo:'/?locale=ko',at:Date.now()}));
+ state.authenticated=false;state.wallet=undefined;const first=render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
+ await new Promise(r=>setTimeout(r,20));
+ expect(window.sessionStorage.getItem('kyaa:account-switch')).not.toBeNull();first.unmount();
+ state.authenticated=true;state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);
+ await waitFor(()=>expect(window.sessionStorage.getItem('kyaa:account-switch')).toBeNull());
+ expect(state.toast).not.toHaveBeenCalled();
+});
+it('account switch stays out of the menu where the release is off (production)',async()=>{
+ state.switchOn=false;state.wallet=wallet(true);render(<GroupHeaderAccount locale='ko' languageHref='/'/>);open();
+ await screen.findByRole('menuitem',{name:'로그아웃'});
+ expect(screen.queryByRole('menuitem',{name:'계정 전환'})).toBeNull();
 });

@@ -7,6 +7,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__login-page";
 import { additionalLocales, translate } from "@/i18n/messages";
 import { usePageLocale } from "@/components/locale-provider";
+import { readAccountSwitch } from "@/features/auth/client/account-switch";
 
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { usePrivyBridge } from "@/features/auth/client/privy-bridge";
@@ -198,7 +199,10 @@ export function LoginPage({
   const sessionErrorRef = useRef<HTMLDivElement>(null);
   const mobilePresentation = useMobileLoginPresentation();
   const locale = usePageLocale();
-  const returnTo = useMemo(() => withLocalePath(sanitizeReturnTo(searchParams.get("returnTo")), locale), [searchParams, locale]);
+  // An account switch that went through the provider's sign-out page lands here without returnTo; this tab remembers the public page.
+  const [switchReturn, setSwitchReturn] = useState<string | null>(null);
+  useEffect(() => { setSwitchReturn(readAccountSwitch()?.returnTo ?? null); }, []);
+  const returnTo = useMemo(() => withLocalePath(sanitizeReturnTo(searchParams.get("returnTo") ?? switchReturn), locale), [searchParams, switchReturn, locale]);
   const intent = useMemo(() => sanitizeIntent(searchParams.get("intent")), [searchParams]);
   const entity = useMemo(() => sanitizeEntity(searchParams.get("entity")), [searchParams]);
   const authIntent = useMemo(() => sanitizeAuthIntentId(searchParams.get("authIntent")), [searchParams]);
