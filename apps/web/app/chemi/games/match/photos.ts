@@ -24,6 +24,9 @@ const catalog = {
       `${cards}/changha-04.webp`,
       `${cards}/changha-05.webp`,
       `${cards}/changha-06.webp`,
+      `${cards}/changha-07.webp`,
+      `${cards}/changha-08.webp`,
+      `${cards}/changha-09.webp`,
     ],
   },
   elina: {

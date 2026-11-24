@@ -34,7 +34,7 @@ it("opens the game with same-origin photos in a production build", async () => {
   const page = await MatchPage(params);
   expect(page.type).toBe(MatchScreen);
   const { changha, elina, yuna } = page.props.photos;
-  expect([changha.cards.length, elina.cards.length, yuna.cards.length]).toEqual([6, 9, 7]);
+  expect([changha.cards.length, elina.cards.length, yuna.cards.length]).toEqual([9, 9, 7]);
   for (const src of [...changha.cards, ...elina.cards, ...yuna.cards]) expect(src).toMatch(/^\/chemi\/match\/cards\/[a-z]+-\d{2}\.webp$/);
 });
 
