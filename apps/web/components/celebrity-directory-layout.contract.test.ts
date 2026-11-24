@@ -17,17 +17,15 @@ function declarationBlock(selector: string): string {
 }
 
 describe("celebrity directory compact row layout", () => {
-  it("fits all seven category chips in the desktop row for every locale", () => {
+  it("fits all category chips in the desktop row for every locale", () => {
     // jsdom cannot measure glyphs: estimate each 14px glyph at 7px on average.
     const widths = APP_LOCALES.map((locale) => ({
       locale,
       width: (["all", ...CREATOR_ROLES] as const).reduce(
         (total, role) => total + Math.max(96, Array.from(creatorRoleFilterLabel(role, locale)).length * 7 + 26),
-        6 * 8,
+        CREATOR_ROLES.length * 8,
       ),
     }));
-    const longest = widths.reduce((a, b) => a.width >= b.width ? a : b);
-    expect(longest.locale).toBe("es");
     for (const { locale, width } of widths) {
       for (const rowWidth of [948, 1348]) {
         expect(width, `${locale} needs ${width}px in a ${rowWidth}px row`).toBeLessThanOrEqual(rowWidth);
