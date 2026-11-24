@@ -31,7 +31,9 @@ try{
  console.log('PASS actual save_fan_post and event-save share one actor without a groups-page/user lock cycle; both writes rolled back');
 }finally{
  await a.query('rollback').catch(()=>{});if(fanWrite)await fanWrite.catch(()=>{});await b.query('rollback').catch(()=>{});
- if(fixture){await a.query('begin');await a.query('delete from public.group_events where id=$1',[event]);await a.query('delete from public.group_missions where id=$1',[mission]);await a.query('delete from public.group_memberships where page_id=$1',[page]);await a.query('delete from public.group_pages where id=$1',[page]);
+ if(fixture){await a.query('begin');await a.query('delete from public.group_events where id=$1',[event]);await a.query('delete from public.group_missions where id=$1',[mission]);await a.query('delete from public.group_memberships where page_id=$1',[page]);
+ await a.query('delete from public.group_rooms where page_id=$1',[page]);
+ await a.query('delete from public.group_pages where id=$1',[page]);
  // Only synthetic rows on the guarded disposable DB; published content/signup cleanup must bypass immutable delete triggers.
  await a.query("set local session_replication_role='replica'");await a.query("delete from public.fan_product_events where app_user_id=$1 and event_name='account_created'",[actor]);await a.query('delete from public.celebrity_localizations where celebrity_id=$1',[creator]);await a.query('delete from public.celebrities where id=$1',[creator]);await a.query("set local session_replication_role='origin'");await a.query('delete from public.app_users where id=$1',[actor]);await a.query('commit');console.log('PASS isolated committed fan-write race fixtures cleaned');}
  await b.end().catch(()=>{});await a.end().catch(()=>{});
