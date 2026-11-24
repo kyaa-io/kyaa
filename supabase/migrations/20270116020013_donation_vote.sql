@@ -82,4 +82,19 @@ end $$;
 
 revoke all on function public.cast_donation_vote(uuid,uuid,text,uuid,integer), public.donation_vote_limit(uuid) from public, anon, authenticated;
 grant execute on function public.cast_donation_vote(uuid,uuid,text,uuid,integer), public.donation_vote_limit(uuid) to service_role;
+create function public.donation_vote_state(p_user uuid, p_event text) returns jsonb
+language sql stable security definer set search_path='' as $$
+  select jsonb_build_object('startsAt',e.starts_at,'endsAt',e.ends_at,'donationDate',e.donation_date,
+    'remaining', greatest(0, public.donation_vote_limit(p_user) - (select coalesce(sum(quantity),0)
+      from public.donation_vote_receipts where owner_id=p_user and vote_day=public.dukjil_kst_date())),
+    'ranking', coalesce((select jsonb_agg(to_jsonb(r) order by r.votes desc,r.slug)
+      from (select c.celebrity_id as id, a.slug,c.fandom_name,coalesce(sum(v.quantity),0) as votes
+        from public.donation_vote_candidates c join public.celebrities a on a.id=c.celebrity_id
+        left join public.donation_vote_receipts v using(event_slug,celebrity_id)
+        where c.event_slug=e.slug and a.status='published' and a.primary_role::text in ('idol','creator','actor','singer','show_host')
+        group by c.celebrity_id,a.slug,c.fandom_name) r),'[]'::jsonb))
+  from public.donation_vote_events e where e.slug=p_event
+$$;
+revoke all on function public.donation_vote_state(uuid,text) from public, anon, authenticated;
+grant execute on function public.donation_vote_state(uuid,text) to service_role;
 commit;

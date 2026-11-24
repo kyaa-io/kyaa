@@ -1,0 +1,35 @@
+import { AuthError } from "@/features/auth/domain/auth-errors";
+import { createFanpageDependencies } from "@/server/fanpage/dependencies";
+
+export const dynamic = "force-dynamic";
+const headers = { "cache-control": "private, no-store", vary: "Authorization" };
+const event = "new-year-2027";
+const uuid = /^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i;
+
+async function handle(request: Request) {
+  if (process.env.DONATION_VOTE_ENABLED !== "true") return new Response(null, { status: 404, headers });
+  try {
+    const deps = createFanpageDependencies();
+    const actor = await deps.authorize(request.headers.get("authorization"));
+    const args = { p_user: actor.appUserId, p_event: event };
+    if (request.method === "GET") {
+      return Response.json(await deps.rpc("donation_vote_state", args), { headers });
+    }
+    const body = await request.json().catch(() => null);
+    if (!body || !uuid.test(body.requestId) || !uuid.test(body.creatorId) ||
+      !Number.isInteger(body.quantity) || body.quantity < 1 || body.quantity > 1500) {
+      return new Response(null, { status: 400, headers });
+    }
+    const receipt = await deps.rpc("cast_donation_vote", {
+      ...args, p_request: body.requestId, p_creator: body.creatorId, p_quantity: body.quantity,
+    });
+    return Response.json({ receipt }, { headers });
+  } catch (error) {
+    if (error instanceof AuthError) return new Response(null, { status: error.status, headers });
+    const conflict = error instanceof Error && /VOTE_(LIMIT|UNAVAILABLE|REQUEST_CONFLICT)|INSUFFICIENT_BALANCE/.test(error.message);
+    return new Response(null, { status: conflict ? 409 : 503, headers });
+  }
+}
+
+export const GET = handle;
+export const POST = handle;
