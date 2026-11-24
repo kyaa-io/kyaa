@@ -11,14 +11,14 @@ import { withRequestDeadline } from "@/features/reliability/client/request-deadl
 import { parseBannerSlots } from "./banner-slot-source";
 
 const hideToday = {
-  ko: "오늘 하루 안 보기", en: "Hide for today", ja: "今日は表示しない",
+  ko: "오늘 하루 안 보기", get mn() { return this.en; }, en: "Hide for today", ja: "今日は表示しない",
   "zh-Hans": "今天不再显示", "zh-Hant": "今天不再顯示", es: "No mostrar hoy",
   id: "Sembunyikan hari ini", vi: "Không hiển thị hôm nay", th: "ซ่อนสำหรับวันนี้",
   pt: "Não mostrar hoje", fr: "Masquer pour aujourd’hui", ru: "Скрыть на сегодня",
 };
 
 const hideWeek: typeof hideToday = {
-  ko: "일주일간 안 보기", en: "Hide for a week", ja: "1週間表示しない",
+  ko: "일주일간 안 보기", get mn() { return this.en; }, en: "Hide for a week", ja: "1週間表示しない",
   "zh-Hans": "一周内不再显示", "zh-Hant": "一週內不再顯示", es: "No mostrar durante una semana",
   id: "Sembunyikan selama seminggu", vi: "Ẩn trong một tuần", th: "ซ่อนเป็นเวลาหนึ่งสัปดาห์",
   pt: "Não mostrar por uma semana", fr: "Masquer pendant une semaine", ru: "Скрыть на неделю",

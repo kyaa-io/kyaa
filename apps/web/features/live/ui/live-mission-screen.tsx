@@ -30,6 +30,7 @@ type SubmissionState = "pending" | "complete" | "error";
 /** The kind of a LIVE mission in the viewer's language (it used to print the raw type: QUIZ, SURVEY, VOTE). */
 const MISSION_TYPE_LABEL: Record<AppLocale, Record<"quiz" | "survey" | "vote", string>> = {
   ko: { quiz: "퀴즈", survey: "설문", vote: "투표" },
+  get mn() { return this.en; },
   en: { quiz: "Quiz", survey: "Survey", vote: "Vote" },
   ja: { quiz: "クイズ", survey: "アンケート", vote: "投票" },
   "zh-Hans": { quiz: "问答", survey: "问卷", vote: "投票" },

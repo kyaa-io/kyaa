@@ -76,6 +76,7 @@ const copy = {
     "socialProfileHelp": "Instagram, TikTok, YouTube, CHZZK의 공식 프로필 주소를 입력해 주세요.",
     "reviewDecision": "검토 결과"
   },
+  get mn() { return this.en; },
   "en": {
     "schedules": "Schedules",
     "suggest": "Suggest a schedule",

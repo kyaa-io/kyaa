@@ -3,6 +3,7 @@ import type { AppLocale } from "@/i18n/locales";
 type Copy = { tag: string; posts: string; comments: string; likes: string; missions: string; fans: (n: string) => string; period: (days: number) => string; action: string; label: string; previous: string; next: string };
 const copy: Record<AppLocale, Copy> = {
   ko: { tag: "오늘의 팬페이지", posts: "게시글", comments: "댓글", likes: "좋아요", missions: "미션", fans: (n) => `팬 ${n}명 참여`, period: (d) => `최근 ${d}일`, action: "팬페이지 가기", label: "오늘의 팬페이지", previous: "이전 팬페이지", next: "다음 팬페이지" },
+  get mn() { return this.en; },
   en: { tag: "Fan page of the day", posts: "Posts", comments: "Comments", likes: "Likes", missions: "Missions", fans: (n) => `${n} fans joined in`, period: (d) => `Last ${d} days`, action: "Visit fan page", label: "Fan pages of the day", previous: "Previous fan page", next: "Next fan page" },
   ja: { tag: "今日のファンページ", posts: "投稿", comments: "コメント", likes: "いいね", missions: "ミッション", fans: (n) => `ファン${n}人が参加`, period: (d) => `直近${d}日`, action: "ファンページへ", label: "今日のファンページ", previous: "前のファンページ", next: "次のファンページ" },
   "zh-Hans": { tag: "今日粉丝主页", posts: "帖子", comments: "评论", likes: "点赞", missions: "任务", fans: (n) => `${n}位粉丝参与`, period: (d) => `最近${d}天`, action: "前往粉丝主页", label: "今日粉丝主页", previous: "上一个粉丝主页", next: "下一个粉丝主页" },

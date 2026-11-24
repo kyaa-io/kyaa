@@ -45,11 +45,11 @@ const parseChzzk = (value: unknown) => { const page = chzzkFeedSchema.parse(valu
 const parseReplay = (value: unknown) => ({ items: z.object({ catalog: z.object({ replay: z.array(liveEventResponseSchema) }) }).parse(value).catalog.replay.filter(({ live }) => live.watch.available && live.watch.mode === "replay" && isRecordedReplayUrl(live.watch.provider, live.watch.url)).map(({ live }): Media => ({ id: `replay:${live.id}`, kind: "replays", title: live.title, image: live.heroImage.url, href: live.watch.url, date: live.endsAt ?? live.startsAt, slug: live.celebrity.slug })), nextCursor: null });
 
 const parseLive=(value:unknown)=>({items:z.object({catalog:z.object({liveNow:z.array(liveEventResponseSchema)})}).parse(value).catalog.liveNow.filter(({live})=>live.watch.available).map(({live}):Media=>({id:`live:${live.id}`,kind:'videos',live:true,title:live.title,image:live.heroImage.url,href:live.watch.url,date:live.startsAt,slug:live.celebrity.slug})),nextCursor:null});
-const playLabels: Record<AppLocale, string> = { ko: "재생", en: "Play", ja: "再生", "zh-Hans": "播放", "zh-Hant": "播放", es: "Reproducir", id: "Putar", vi: "Phát", th: "เล่น", pt: "Reproduzir", fr: "Lire",
+const playLabels: Record<AppLocale, string> = { ko: "재생", get mn() { return this.en; }, en: "Play", ja: "再生", "zh-Hans": "播放", "zh-Hant": "播放", es: "Reproducir", id: "Putar", vi: "Phát", th: "เล่น", pt: "Reproduzir", fr: "Lire",
   ru: "Играть"
  };
 
-const closeLabels:Record<AppLocale,string>={ko:'닫기',en:'Close',ja:'閉じる','zh-Hans':'关闭','zh-Hant':'關閉',es:'Cerrar',id:'Tutup',vi:'Đóng',th:'ปิด',pt:'Fechar',fr:'Fermer',ru:'Закрыть'};
+const closeLabels:Record<AppLocale,string>={ko:'닫기',get mn() { return this.en; }, en:'Close',ja:'閉じる','zh-Hans':'关闭','zh-Hant':'關閉',es:'Cerrar',id:'Tutup',vi:'Đóng',th:'ปิด',pt:'Fechar',fr:'Fermer',ru:'Закрыть'};
 export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CREATOR_SLUG ? CHZZK_CHANNEL_ID : null, socialLinks = [], preview = false, onVideoSelect }: { slug: string; locale: AppLocale; channelId?: string | null; socialLinks?: PublishedCelebrity["socialLinks"]; preview?: boolean; onVideoSelect?:(media:CreatorMediaSelection)=>void }) {
   const compact=useGroupsRelease();
   const c = participationCopy(locale), feed = feedCopy(locale), discovery = discoveryCopy(locale), router = useRouter(), pathname = usePathname(), search = useSearchParams();

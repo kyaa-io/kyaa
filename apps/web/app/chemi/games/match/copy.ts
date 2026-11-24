@@ -1094,12 +1094,12 @@ const copy = {
     nextGoal: "Следующий раунд: {n} пар · {s} с",
     prevEnded: "Прошлая игра завершилась",
   },
-} satisfies Record<AppLocale, Record<string, string>>;
+} satisfies Record<Exclude<AppLocale, "mn">, Record<string, string>>;
 
 export type MatchCopy = typeof copy.ko;
 
 export function getMatchCopy(locale: string): MatchCopy {
   const appLocale = parseAppLocale(locale);
   // 최애 이름은 사이트 공통 표기(creatorName) 하나만 쓴다.
-  return { ...copy[appLocale], changha: creatorName("changha", appLocale), elina: creatorName("elina", appLocale), yuna: creatorName("yuna", appLocale) };
+  return { ...copy[appLocale === "mn" ? "en" : appLocale], changha: creatorName("changha", appLocale), elina: creatorName("elina", appLocale), yuna: creatorName("yuna", appLocale) };
 }

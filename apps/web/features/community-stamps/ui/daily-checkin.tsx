@@ -39,6 +39,7 @@ const copy = {
     auth: "로그인 정보를 다시 확인해 주세요.",
     count: (value: number) => `이번 달 ${value}일 출석`,
   },
+  get mn() { return this.en; },
   en: {
     title: "Today’s check-in",
     

@@ -20,39 +20,39 @@ import { GuestLoginAction } from "@/features/my/ui/guest-login";
 import styles from "./fan-ticket-history-screen.module.css";
 
 const sourceNames: Record<string, Record<AppLocale, string>> = {
-  verification: { ko: "팬 인증", en: "Fan verification" ,
+  verification: { ko: "팬 인증", get mn() { return this.en; }, en: "Fan verification" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m9136c3390dcd[translationLocale]))
-}, reaction: { ko: "좋아요", en: "Like" ,
+}, reaction: { ko: "좋아요", get mn() { return this.en; }, en: "Like" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m4eac19a07001[translationLocale]))
-}, comment: { ko: "첫 댓글", en: "First comment" ,
+}, comment: { ko: "첫 댓글", get mn() { return this.en; }, en: "First comment" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m6aa11d1da6c4[translationLocale]))
-}, checkin: { ko: "데일리 출석", en: "Daily check-in" ,
+}, checkin: { ko: "데일리 출석", get mn() { return this.en; }, en: "Daily check-in" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m32e73ae25e28[translationLocale]))
 },
-  membership_instagram: { ko: "Instagram 멤버십 인증", en: "Instagram membership" ,
+  membership_instagram: { ko: "Instagram 멤버십 인증", get mn() { return this.en; }, en: "Instagram membership" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m539b6ed756dc[translationLocale]))
-}, membership_tiktok: { ko: "TikTok 멤버십 인증", en: "TikTok membership" ,
+}, membership_tiktok: { ko: "TikTok 멤버십 인증", get mn() { return this.en; }, en: "TikTok membership" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mfcc4c5fa0cc7[translationLocale]))
-}, membership_youtube: { ko: "YouTube 멤버십 인증", en: "YouTube membership" ,
+}, membership_youtube: { ko: "YouTube 멤버십 인증", get mn() { return this.en; }, en: "YouTube membership" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mf6f4f1813c1c[translationLocale]))
-}, share: { ko: "패스포트 공유", en: "Passport share" ,
+}, share: { ko: "패스포트 공유", get mn() { return this.en; }, en: "Passport share" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mf0fcc38f7587[translationLocale]))
 },
-  passport_verification: { ko: "팬 인증", en: "Fan verification" ,
+  passport_verification: { ko: "팬 인증", get mn() { return this.en; }, en: "Fan verification" ,
   ...additionalLocales((translationLocale) => (localizedMessages.mcb885a4cb68b[translationLocale]))
-}, live_reservation: { ko: "LIVE 예약", en: "LIVE reservation" ,
+}, live_reservation: { ko: "LIVE 예약", get mn() { return this.en; }, en: "LIVE reservation" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m09bcaad5a36b[translationLocale]))
-}, live_attendance: { ko: "LIVE 출석", en: "LIVE attendance" ,
+}, live_attendance: { ko: "LIVE 출석", get mn() { return this.en; }, en: "LIVE attendance" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m7ec41b9e944f[translationLocale]))
-}, mission_completion: { ko: "덕질 완료", en: "Mission completed" ,
+}, mission_completion: { ko: "덕질 완료", get mn() { return this.en; }, en: "Mission completed" ,
   ...additionalLocales((translationLocale) => (localizedMessages.maa10a34c3969[translationLocale]))
-}, journey_completion: { ko: "여정 완료", en: "Journey completed" ,
+}, journey_completion: { ko: "여정 완료", get mn() { return this.en; }, en: "Journey completed" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m3f0d9491846e[translationLocale]))
-}, benefit_entry: { ko: "래플 응모", en: "Raffle entry" ,
+}, benefit_entry: { ko: "래플 응모", get mn() { return this.en; }, en: "Raffle entry" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m16fd929df370[translationLocale]))
-}, benefit_entry_refund: { ko: "응모권 환급", en: "Ticket refund" ,
+}, benefit_entry_refund: { ko: "응모권 환급", get mn() { return this.en; }, en: "Ticket refund" ,
   ...additionalLocales((translationLocale) => (localizedMessages.m17cce492b47c[translationLocale]))
-}, manual_certification: { ko: "인증 완료", en: "Verification approved" ,
+}, manual_certification: { ko: "인증 완료", get mn() { return this.en; }, en: "Verification approved" ,
   ...additionalLocales((translationLocale) => (localizedMessages.ma46534c28efb[translationLocale]))
 },
 };

@@ -6,6 +6,7 @@ import styles from "./events-pagination.module.css";
 
 const labels = {
   ko: { navigation: "이벤트 페이지", previous: "이전", next: "다음" },
+  get mn() { return this.en; },
   en: { navigation: "Event pages", previous: "Previous", next: "Next" },
   ja: { navigation: "イベントのページ", previous: "前へ", next: "次へ" },
   "zh-Hans": { navigation: "活动分页", previous: "上一页", next: "下一页" },

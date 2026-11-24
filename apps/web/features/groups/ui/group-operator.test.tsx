@@ -3,7 +3,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import { operatorCopy, operatorCopyLabels, operatorCopyLength } from "./group-operator-copy";
 describe("operator copy", () => {
   it("fills every key for all 12 locales", () => {
-    expect(APP_LOCALES).toHaveLength(12);
+    expect(APP_LOCALES).toHaveLength(13);
     for (const locale of APP_LOCALES) {
       expect(operatorCopyLabels[locale]).toHaveLength(operatorCopyLength);
       for (const value of Object.values(operatorCopy(locale))) expect(value.trim()).not.toBe("");

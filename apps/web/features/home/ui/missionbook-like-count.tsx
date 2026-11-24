@@ -12,6 +12,7 @@ import styles from "./missionbook-like-count.module.css";
 /** `{0}` is the number; the words around it stay small. Same word as the like button (post-reaction-copy). */
 export const missionbookLikeCopy: Record<AppLocale, string> = {
   ko: "좋아요 {0}명",
+  get mn() { return this.en; },
   en: "{0} likes",
   ja: "いいね {0}人",
   "zh-Hans": "{0} 人点赞",

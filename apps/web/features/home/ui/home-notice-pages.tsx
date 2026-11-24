@@ -16,6 +16,7 @@ import styles from "./home-notice-pages.module.css";
 
 export const homeNoticePageCopy: Record<AppLocale, { title: string; empty: string; more: string; recent: string; others: string }> = {
   ko: { title: "공지사항", empty: "아직 공지 없음", more: "더 보기", recent: "최근 공지사항", others: "다른 공지" },
+  get mn() { return this.en; },
   en: { title: "Notices", empty: "No notices yet", more: "Show more", recent: "Recent notices", others: "Other notices" },
   ja: { title: "お知らせ", empty: "お知らせはまだありません", more: "もっと見る", recent: "最近のお知らせ", others: "ほかのお知らせ" },
   "zh-Hans": { title: "公告", empty: "暂无公告", more: "查看更多", recent: "最新公告", others: "其他公告" },

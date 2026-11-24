@@ -22,6 +22,7 @@ import { CapsuleReveal } from "./capsule-reveal";
 import styles from "./capsule.module.css";
 const recoveryMessages:Record<AppLocale,readonly [string,string,string,string]>={
  ko:['이전 뽑기 결과가 있어요','중단된 뽑기의 결과를 확인할 수 있어요. 결과나 연출을 다시 봐도 응모권은 추가로 차감되지 않아요.','이전 결과 보기','연출 다시 보기'],
+ get mn() { return this.en; },
  en:['A previous draw result is available','You can check the interrupted draw. Viewing its result or replaying the animation uses no additional tickets.','View previous result','Replay animation'],
  ja:['前の抽選結果があります','中断した抽選結果を確認できます。結果や演出を見直しても応募券は追加で消費されません。','前の結果を見る','演出をもう一度見る'],
  'zh-Hans':['有上次的抽奖结果','可以查看中断的抽奖结果。再次查看结果或播放动画不会额外扣除抽奖券。','查看上次结果','重播动画'],

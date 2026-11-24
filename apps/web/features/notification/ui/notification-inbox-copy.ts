@@ -33,6 +33,7 @@ const copy: Record<AppLocale, Copy> = {
       officialMany: "{a}님이 새 소식 {n}개를 올렸습니다",
     },
   },
+  get mn() { return this.en; },
   en: {
     title: "Notifications", readAll: "Mark all read", settings: "Notification settings", close: "Close", filter: "Notification type",
     chips: { all: "All", favorite: "Favorite", stamp: "Stamps & points", friend: "Friends", system: "System" },

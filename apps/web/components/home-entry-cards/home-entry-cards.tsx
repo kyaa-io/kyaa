@@ -27,6 +27,14 @@ const copy = {
     fanmeeting: "미국 팬미팅, kyaa와 함께 준비하세요",
     explore: "기획사와 아티스트를 위한 미국 현지 협업",
   },
+  mn: {
+    title: <>See Banksy <br />with Elina</>,
+    label: "See Banksy with Elina",
+
+    action: "Enter the raffle",
+    fanmeeting: "Plan your U.S. fanmeeting with kyaa",
+    explore: "U.S. event partnerships for agencies and artists",
+  },
   en: {
     title: <>See Banksy <br />with Elina</>,
     label: "See Banksy with Elina",

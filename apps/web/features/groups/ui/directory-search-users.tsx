@@ -11,7 +11,7 @@ import { useGroupRequest, useGroupResource } from "./use-group-resource";
 import styles from "./directory-search-posts.module.css";
 const schema = z.object({ items: z.array(z.object({ profileId: z.uuid(), nickname: z.string() })) });
 const parse = (value: unknown) => schema.parse(value);
-export const userSearchLabels: Record<AppLocale, string> = {ko:"유저",en:"Users",ja:"ユーザー","zh-Hans":"用户","zh-Hant":"用戶",es:"Usuarios",id:"Pengguna",vi:"Người dùng",th:"ผู้ใช้",pt:"Usuários",fr:"Utilisateurs",ru:"Пользователи"};
+export const userSearchLabels: Record<AppLocale, string> = {ko:"유저",get mn() { return this.en; }, en:"Users",ja:"ユーザー","zh-Hans":"用户","zh-Hant":"用戶",es:"Usuarios",id:"Pengguna",vi:"Người dùng",th:"ผู้ใช้",pt:"Usuários",fr:"Utilisateurs",ru:"Пользователи"};
 export function DirectorySearchUsers({ locale, search }: { locale: AppLocale; search: string }) {
  const q = search.trim(), t = groupsCopy(locale), auth = useGroupRequest();
  const resource = useGroupResource(auth.authenticated && q.length >= 2 ? `/api/me/social/search?${new URLSearchParams({q})}` : null, parse);

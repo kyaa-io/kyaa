@@ -20,6 +20,7 @@ export const supportCopy = {
     forbiddenError: "로그인 상태와 문의 접근 권한을 확인해 주세요.",
     status: { open: "접수", answered: "답변 완료", resolved: "처리 완료" },
   },
+  get mn() { return this.en; },
   en: {
     title: "My inquiries", adminTitle: "Customer support",
     adminIntro: "Review incoming inquiries and reply to customers.", new: "New inquiry", cancel: "Cancel", subject: "Subject", body: "Your inquiry",

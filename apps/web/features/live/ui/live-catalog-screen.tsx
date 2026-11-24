@@ -49,6 +49,7 @@ const copy = {
     retry: "내 예약 상태 다시 불러오기",
     calendar: "LIVE 캘린더",
   },
+  get mn() { return this.en; },
   en: {
     title: "All LIVE events",
     liveNow: "LIVE NOW",

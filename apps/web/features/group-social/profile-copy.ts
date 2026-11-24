@@ -1,6 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 const copy = {
  ko:['내 프로필','내 친구 추가 QR','QR 미리보기 · 링크 연결 전','친구 QR 찍기','내 프로필 링크 복사','QR을 찍으면 프로필을 확인한 뒤 친구 요청을 보낼 수 있어요.','카메라 미리보기','친구의 QR을 화면 안에 맞춰주세요.','카메라 권한이 필요해요. 스캔 후 상대 프로필을 확인할 수 있어요.','상대 프로필','찾으신 친구가 맞나요?','다시 스캔하기','상대가 요청을 수락하면 친구가 돼요.','닫기'],
+ get mn() { return this.en; },
  en:['My profile','My friend QR','QR preview · link not connected','Scan friend QR','Copy my profile link','Scan a QR to review a profile and send a friend request.','Camera preview','Fit your friend’s QR inside the screen.','Camera permission is needed. Review their profile after scanning.','Friend profile','Is this your friend?','Scan again','You become friends when they accept your request.','Close'],
  ja:['マイプロフィール','友だち追加QR','QRプレビュー · リンク未接続','友だちのQRを読み取る','プロフィールリンクをコピー','QRを読み取るとプロフィールを確認して友だち申請できます。','カメラプレビュー','友だちのQRを画面内に合わせてください。','カメラの許可が必要です。読み取り後にプロフィールを確認できます。','相手のプロフィール','お探しの友だちですか？','もう一度読み取る','相手が申請を承認すると友だちになります。','閉じる'],
  'zh-Hans':['我的资料','我的好友二维码','二维码预览 · 尚未连接链接','扫描好友二维码','复制我的资料链接','扫码后可查看资料并发送好友申请。','相机预览','请将好友的二维码对准屏幕。','需要相机权限。扫码后可查看对方资料。','对方资料','这是您要找的好友吗？','重新扫描','对方接受申请后即可成为好友。','关闭'],
@@ -14,14 +15,15 @@ const copy = {
  ru:['Мой профиль','Мой QR для друзей','Предпросмотр QR · ссылка не подключена','Сканировать QR друга','Копировать ссылку на мой профиль','Отсканируйте QR, чтобы посмотреть профиль и отправить запрос в друзья.','Предпросмотр камеры','Поместите QR друга в рамку экрана.','Необходимо разрешение камеры. После сканирования можно посмотреть профиль.','Профиль друга','Это ваш друг?','Сканировать снова','Вы станете друзьями после принятия запроса.','Закрыть'],
 } satisfies Record<AppLocale,string[]>;
 const keys=['profile','qr','preview','scan','copy','help','camera','scanHelp','permission','peer','confirm','again','acceptance','close'] as const;
-const addFriend:Record<AppLocale,string>={ko:'친구 추가',en:'Add a friend',ja:'友だちを追加','zh-Hans':'添加好友','zh-Hant':'新增好友',es:'Añadir un amigo',id:'Tambah teman',vi:'Thêm bạn',th:'เพิ่มเพื่อน',pt:'Adicionar amigo',fr:'Ajouter un ami',ru:'Добавить друга'};
+const addFriend:Record<AppLocale,string>={ko:'친구 추가',get mn() { return this.en; }, en:'Add a friend',ja:'友だちを追加','zh-Hans':'添加好友','zh-Hant':'新增好友',es:'Añadir un amigo',id:'Tambah teman',vi:'Thêm bạn',th:'เพิ่มเพื่อน',pt:'Adicionar amigo',fr:'Ajouter un ami',ru:'Добавить друга'};
 export function profileConnectionCopy(locale:AppLocale){return {...Object.fromEntries(keys.map((key,index)=>[key,copy[locale][index]])) as Record<typeof keys[number],string>,addFriend:addFriend[locale]};}
 
-const connectionDetail:Record<AppLocale,readonly[string,string]>={ko:['공개한 최애','친구 목록'],en:['Shared favorite','Friends list'],ja:['公開している推し','友だち一覧'],'zh-Hans':['公开的最爱','好友列表'],'zh-Hant':['公開的最愛','好友列表'],es:['Favorito público','Lista de amigos'],id:['Favorit publik','Daftar teman'],vi:['Yêu thích công khai','Danh sách bạn bè'],th:['รายการโปรดที่เปิดเผย','รายชื่อเพื่อน'],pt:['Favorito público','Lista de amigos'],fr:['Favori partagé','Liste d’amis'],ru:['Открытый фаворит','Список друзей']};
+const connectionDetail:Record<AppLocale,readonly[string,string]>={ko:['공개한 최애','친구 목록'],get mn() { return this.en; }, en:['Shared favorite','Friends list'],ja:['公開している推し','友だち一覧'],'zh-Hans':['公开的最爱','好友列表'],'zh-Hant':['公開的最愛','好友列表'],es:['Favorito público','Lista de amigos'],id:['Favorit publik','Daftar teman'],vi:['Yêu thích công khai','Danh sách bạn bè'],th:['รายการโปรดที่เปิดเผย','รายชื่อเพื่อน'],pt:['Favorito público','Lista de amigos'],fr:['Favori partagé','Liste d’amis'],ru:['Открытый фаворит','Список друзей']};
 export const profileConnectionDetailCopy=(locale:AppLocale)=>connectionDetail[locale];
 /** 404 from the profile link: an expired link, or no shared favorite whose Passport the viewer holds (resolve_social_profile_link returns null for both). */
 const profileUnreachable:Record<AppLocale,string>={
  ko:'프로필을 열 수 없어요. 상대가 공개한 최애 중 내가 패스포트를 가진 크리에이터가 없거나, QR이 만료됐어요.',
+ get mn() { return this.en; },
  en:'This profile can’t be opened. The other person has no shared favorite that you hold a Passport for, or the QR code has expired.',
  ja:'プロフィールを開けません。相手が公開している推しの中にあなたがパスポートを持つクリエイターがいないか、QRの有効期限が切れています。',
  'zh-Hans':'无法打开该个人资料。对方公开的最爱中没有你持有护照的创作者，或二维码已过期。',

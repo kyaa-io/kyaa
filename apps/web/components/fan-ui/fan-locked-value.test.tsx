@@ -22,7 +22,7 @@ describe("FanLockedValue", () => {
       return name;
     });
     expect(names.every((name) => name?.trim())).toBe(true);
-    expect(new Set(names).size).toBe(APP_LOCALES.length);
+    expect(new Set(names).size).toBe(APP_LOCALES.filter(locale => locale !== "mn").length);
   });
 });
 

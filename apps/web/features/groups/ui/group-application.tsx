@@ -20,7 +20,7 @@ import {useOperatingExperience} from "./operating-experience-fields";
 import {groupApplyText} from "./group-apply-copy";
 import dialogStyles from "./group-application-dialog.module.css";
 import leaderStyles from "./group-leader-open.module.css";
-const optionalSettings:Record<AppLocale,string>={ko:'추가 설정 (선택)',en:'Additional settings (optional)',ja:'追加設定（任意）','zh-Hans':'其他设置（可选）','zh-Hant':'其他設定（選填）',es:'Opciones adicionales (opcional)',id:'Pengaturan tambahan (opsional)',vi:'Cài đặt bổ sung (không bắt buộc)',th:'การตั้งค่าเพิ่มเติม (ไม่บังคับ)',pt:'Configurações adicionais (opcional)',fr:'Options supplémentaires (facultatif)',ru:'Дополнительные настройки (необязательно)'};
+const optionalSettings:Record<AppLocale,string>={ko:'추가 설정 (선택)',get mn() { return this.en; }, en:'Additional settings (optional)',ja:'追加設定（任意）','zh-Hans':'其他设置（可选）','zh-Hant':'其他設定（選填）',es:'Opciones adicionales (opcional)',id:'Pengaturan tambahan (opsional)',vi:'Cài đặt bổ sung (không bắt buộc)',th:'การตั้งค่าเพิ่มเติม (ไม่บังคับ)',pt:'Configurações adicionais (opcional)',fr:'Options supplémentaires (facultatif)',ru:'Дополнительные настройки (необязательно)'};
 export function GroupApplication({locale,initialKind="hobby",initialName="",modal,notice}:{locale:AppLocale;initialKind?:"fan"|"hobby"|"brand";initialName?:string;modal?:{onClose:()=>void};notice?:string}) {
   const t=groupsCopy(locale),c=applicationCopy(locale),auth=useGroupRequest(),operation=useRef<{body:string;id:string}|null>(null),formRef=useRef<HTMLFormElement>(null);
   const kinds:readonly ("fan"|"hobby"|"brand")[]=initialKind==="fan"?["fan"]:["hobby","brand"];

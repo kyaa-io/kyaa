@@ -13,6 +13,7 @@ describe("contextual translation eligibility", () => {
     }
   });
   it.each<[string, AppLocale]>([
+    ["Өнөөдөр үнэхээр сайхан байлаа!", "mn"],
     ["今日のライブは本当に楽しかったです！", "ja"],
     ["วันนี้สนุกมาก ขอบคุณทุกคนที่มาร่วมงาน", "th"],
     ["We are so excited to see everyone at the concert tonight!", "en"],

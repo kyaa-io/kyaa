@@ -1,6 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 const copy:Record<AppLocale,readonly string[]>={
 ko:['페이지 개설 신청','신청자 · 승인 전 운영 권한 없음','운영자 자격 확인','모임 정보','신청 유형','기존 모임 이름','운영 증빙','운영 증빙 주소','운영 소개','증빙 자료','자료 첨부','자격 확인 요청','팬페이지는 아티스트가 인정한 팬 계정, 브랜드는 담당자 자격을 확인합니다.','현재 운영 중인 커뮤니티','공개 확인 가능한 모임 주소','운영 경험과 확인 방법'],
+get mn() { return this.en; },
 en:['Create a group','Applicant · No operator access before approval','Operator verification','Group information','Application type','Existing group name','Operator evidence','Evidence URL','Operator introduction','Supporting images','Attach images','Request verification','Fan pages require an artist-recognized fan account; brands require an authorized representative.','Community you currently manage','Publicly accessible group URL','Your experience and how to verify it'],
 ja:['グループ開設申請','申請者 · 承認前は運営権限なし','運営者資格の確認','グループ情報','申請種別','既存グループ名','運営の証明','証明URL','運営紹介','証明画像','画像を添付','確認を申請','ファンページはアーティスト公認アカウント、ブランドは担当者資格を確認します。','現在運営中のコミュニティ','公開されているグループURL','運営経験と確認方法'],
 'zh-Hans':['申请创建社群','申请人 · 批准前无管理权限','管理员资格审核','社群信息','申请类型','现有社群名称','运营证明','证明网址','运营介绍','证明图片','添加图片','申请审核','粉丝主页需确认艺人认可的粉丝账号，品牌需确认负责人资格。','目前运营的社群','可公开访问的社群网址','运营经验与验证方式'],
@@ -15,5 +16,5 @@ ru:['Создание группы','Заявитель · До одобрени
 };
 export const qualificationCopy=(locale:AppLocale)=>copy[locale];
 
-const kinds:Record<AppLocale,string>={ko:'취미 모임 운영자|팬페이지 운영자|브랜드 담당자',en:'Community organizer|Fan page operator|Brand representative',ja:'趣味グループ運営者|ファンページ運営者|ブランド担当者','zh-Hans':'兴趣社群管理员|粉丝主页管理员|品牌负责人','zh-Hant':'興趣社群管理員|粉絲專頁管理員|品牌負責人',es:'Organizador de comunidad|Administrador de fans|Representante de marca',id:'Pengelola komunitas|Pengelola halaman penggemar|Perwakilan merek',vi:'Người tổ chức cộng đồng|Quản lý trang người hâm mộ|Đại diện thương hiệu',th:'ผู้ดูแลชุมชน|ผู้ดูแลหน้าแฟนคลับ|ผู้แทนแบรนด์',pt:'Organizador da comunidade|Gestor da página de fãs|Representante da marca',fr:'Responsable de communauté|Responsable de page de fans|Représentant de marque',ru:'Организатор сообщества|Администратор фан-страницы|Представитель бренда'};
+const kinds:Record<AppLocale,string>={ko:'취미 모임 운영자|팬페이지 운영자|브랜드 담당자',get mn() { return this.en; }, en:'Community organizer|Fan page operator|Brand representative',ja:'趣味グループ運営者|ファンページ運営者|ブランド担当者','zh-Hans':'兴趣社群管理员|粉丝主页管理员|品牌负责人','zh-Hant':'興趣社群管理員|粉絲專頁管理員|品牌負責人',es:'Organizador de comunidad|Administrador de fans|Representante de marca',id:'Pengelola komunitas|Pengelola halaman penggemar|Perwakilan merek',vi:'Người tổ chức cộng đồng|Quản lý trang người hâm mộ|Đại diện thương hiệu',th:'ผู้ดูแลชุมชน|ผู้ดูแลหน้าแฟนคลับ|ผู้แทนแบรนด์',pt:'Organizador da comunidade|Gestor da página de fãs|Representante da marca',fr:'Responsable de communauté|Responsable de page de fans|Représentant de marque',ru:'Организатор сообщества|Администратор фан-страницы|Представитель бренда'};
 export const qualificationKinds=(locale:AppLocale)=>kinds[locale].split('|');

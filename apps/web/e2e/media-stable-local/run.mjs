@@ -18,7 +18,7 @@ const alias = [
   { find: 'server-only', replacement: path.join(here, '../lounge-local/server-only.ts') },
   ...['link', 'image', 'navigation'].map(name => ({ find: `next/${name}`, replacement: path.join(here, `../mission-local/next-${name}.${name === 'navigation' ? 'ts' : 'tsx'}`) })),
   { find: '@', replacement: web }];
-const server = await createServer({ configFile: false, root: here, publicDir: path.join(web, 'public'), cacheDir: path.join(out, 'vite-cache'), esbuild: { jsx: 'automatic' }, resolve: { alias }, server: { host: '127.0.0.1', port: PORT, strictPort: true, fs: { allow: [root] } } });
+const server = await createServer({ configFile: false, root: here, publicDir: path.join(web, 'public'), cacheDir: path.join(out, 'vite-cache'), esbuild: { jsx: 'automatic' }, resolve: { alias }, server: { watch: null, hmr: false, host: '127.0.0.1', port: PORT, strictPort: true, fs: { allow: [root] } } });
 await server.listen();
 
 const png = color => sharp({ create: { width: 960, height: 640, channels: 3, background: color } }).png().toBuffer();

@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 const rows: Record<AppLocale, readonly [string, string]> = {
   ko: ["응원하기", "WAVE 팬페이지 홈에서 응원 댓글을 남겨요."],
+  get mn() { return this.en; },
   en: ["Leave a cheer", "Leave a cheer on the WAVE fan page home."],
   ja: ["応援する", "WAVEファンページのホームに応援コメントを残しましょう。"],
   "zh-Hans": ["留言应援", "在WAVE粉丝主页留言应援。"],

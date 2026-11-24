@@ -60,6 +60,7 @@ const copy = {
     upcoming: "다가오는 LIVE 보기", settings: "알림 설정 열기", read: "읽음", unread: "읽지 않음", readLabel: "읽은 알림", unreadLabel: "읽지 않은 알림",
     summary: "알림 요약", unreadSummary: "읽지 않은 알림", notifications: "개", browser: "브라우저 알림", choose: "선택 필요",
   },
+  get mn() { return this.en; },
   en: {
     title: "Notifications", all: "Mark all as read", readingAll: "Marking all as read…",
     empty: "No notifications yet.", today: "Today", previous: "Earlier notifications",

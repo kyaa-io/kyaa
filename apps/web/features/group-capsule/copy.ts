@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 const keys=['title','prizes','probability','stock','blank','drawOne','drawTen','result','tickets','empty','paused','pending','recover','duplicate','storageError','unknown'] as const;
 const values:Record<AppLocale,readonly string[]>={
  ko:['캡슐 럭키드로우','경품','당첨 확률','남은 수량','꽝','1회 뽑기','10회 뽑기','뽑기 결과','응모권','진행 중인 캡슐이 없어요.','지금은 참여할 수 없어요.','이전 뽑기 결과를 확인하고 있어요.','결과 확인','같은 경품에 여러 번 당첨될 수 있어요.','이 브라우저에 요청을 안전하게 저장할 수 없어요. 브라우저 설정을 확인해 주세요.','결과 확인이 필요해요. 새로 뽑기 전에 이전 결과를 확인해 주세요.'],
+ get mn() { return this.en; },
  en:['Capsule lucky draw','Prizes','Probability','Remaining','No prize','Draw once','Draw 10','Draw results','Tickets','No capsule campaigns are available.','Not available now.','Checking your previous draw.','Check results','You may win the same prize more than once.','This browser cannot save your request safely. Please check its settings.','Your draw needs verification. Check the previous result before drawing again.'],
  ja:['カプセルくじ','賞品','当選確率','残り数','はずれ','1回引く','10回引く','抽選結果','応募券','開催中のくじはありません。','現在参加できません。','前の抽選結果を確認しています。','結果を確認','同じ賞品に複数回当選する場合があります。','リクエストを安全に保存できません。ブラウザーの設定をご確認ください。','再度引く前に前の結果を確認してください。'],
  'zh-Hans':['胶囊抽奖','奖品','中奖概率','剩余数量','未中奖','抽1次','抽10次','抽奖结果','抽奖券','暂无进行中的抽奖。','目前无法参与。','正在确认上次抽奖。','查看结果','同一奖品可能重复中奖。','浏览器无法安全保存请求，请检查设置。','请先确认上次结果，再次抽奖。'],

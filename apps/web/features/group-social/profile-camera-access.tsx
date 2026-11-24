@@ -5,6 +5,7 @@ import {FanAction} from '@/components/fan-ui/fan-action';
 import styles from './profile-camera-access.module.css';
 const copy:Record<AppLocale,readonly [string,string,string,string,string]>={
  ko:['카메라 권한 없음','브라우저 설정에서 카메라 접근을 허용해 주세요.','카메라 다시 열기','카메라 미지원','친구가 공유한 프로필 링크로 접속해 주세요.'],
+ get mn() { return this.en; },
  en:['Camera permission denied','Allow camera access in your browser settings.','Reopen camera','Camera unsupported','Open the profile link shared by your friend.'],
  ja:['カメラの権限がありません','ブラウザの設定でカメラへのアクセスを許可してください。','カメラを再度開く','カメラ非対応','友だちが共有したプロフィールリンクを開いてください。'],
  'zh-Hans':['没有相机权限','请在浏览器设置中允许访问相机。','重新打开相机','不支持相机','请打开好友分享的个人资料链接。'],

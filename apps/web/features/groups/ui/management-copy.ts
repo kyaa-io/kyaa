@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 const keys=['manage','owner','manager','member','save','leave','transfer','confirmTransfer','roomName','createRoom','minimumTier','anonymous','title','body','write','remove'] as const;
 const labels:Record<AppLocale,readonly string[]>={
  ko:['운영 관리','소유자','운영진','팬','저장','모임 나가기','소유권 이관','소유권을 넘기면 내 역할은 팬으로 바뀌어요. 계속할까요?','방 이름','비밀방 개설','최소 팬등급','새 게시글 익명 작성','제목','내용','글쓰기','삭제'],
+ get mn() { return this.en; },
  en:['Manage page','Owner','Manager','Fan','Save','Leave group','Transfer ownership','After the transfer, your role becomes fan. Continue?','Room name','Create private room','Minimum fan tier','Anonymous new posts','Title','Body','Write post','Delete'],
  ja:['運営管理','所有者','運営者','ファン','保存','グループを退会','所有権を譲渡','譲渡すると自分の役割はファンに変わります。続けますか？','ルーム名','秘密の部屋を開設','最低ファンランク','新規投稿を匿名にする','タイトル','本文','投稿する','削除'],
  'zh-Hans':['管理页面','所有者','管理员','粉丝','保存','退出群组','转让所有权','转让后你的角色会变为粉丝。是否继续？','房间名称','创建私密聊天室','最低粉丝等级','新帖匿名发布','标题','内容','发帖','删除'],
@@ -15,5 +16,5 @@ const labels:Record<AppLocale,readonly string[]>={
  ru:['Управление','Владелец','Администратор','Фанат','Сохранить','Выйти из группы','Передать владение','После передачи ваша роль станет «фанат». Продолжить?','Название комнаты','Создать закрытую комнату','Минимальный уровень','Новые публикации анонимно','Заголовок','Текст','Написать','Удалить'],
 };
 export function managementCopy(locale:AppLocale){return Object.fromEntries(keys.map((key,index)=>[key,labels[locale][index]])) as Record<typeof keys[number],string>;}
-export const sendLabel: Record<AppLocale,string> = {ko:'보내기',en:'Send',ja:'送信','zh-Hans':'发送','zh-Hant':'傳送',es:'Enviar',id:'Kirim',vi:'Gửi',th:'ส่ง',pt:'Enviar',fr:'Envoyer',ru:'Отправить'};
-export const attachmentLabel: Record<AppLocale,string> = {ko:'사진·영상',en:'Photos and videos',ja:'写真・動画','zh-Hans':'照片和视频','zh-Hant':'照片與影片',es:'Fotos y vídeos',id:'Foto dan video',vi:'Ảnh và video',th:'รูปภาพและวิดีโอ',pt:'Fotos e vídeos',fr:'Photos et vidéos',ru:'Фото и видео'};
+export const sendLabel: Record<AppLocale,string> = {ko:'보내기',get mn() { return this.en; }, en:'Send',ja:'送信','zh-Hans':'发送','zh-Hant':'傳送',es:'Enviar',id:'Kirim',vi:'Gửi',th:'ส่ง',pt:'Enviar',fr:'Envoyer',ru:'Отправить'};
+export const attachmentLabel: Record<AppLocale,string> = {ko:'사진·영상',get mn() { return this.en; }, en:'Photos and videos',ja:'写真・動画','zh-Hans':'照片和视频','zh-Hant':'照片與影片',es:'Fotos y vídeos',id:'Foto dan video',vi:'Ảnh và video',th:'รูปภาพและวิดีโอ',pt:'Fotos e vídeos',fr:'Photos et vidéos',ru:'Фото и видео'};

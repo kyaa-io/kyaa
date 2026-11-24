@@ -41,6 +41,7 @@ const copy = {
     more: "이전 응모 내역 더 보기",
     moreError: "이전 응모 내역을 불러오지 못했어요.",
   },
+  get mn() { return this.en; },
   en: {
     title: "Raffle history",
     back: "Back to MY",

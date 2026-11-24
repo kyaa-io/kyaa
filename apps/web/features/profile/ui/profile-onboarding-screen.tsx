@@ -62,6 +62,7 @@ const copy: Record<AppLocale, Copy> = {
     network: "저장하지 못했어요. 입력한 닉네임을 유지했으니 다시 시도해 주세요.",
     auth: "로그인 후 닉네임 설정을 이어갈 수 있어요.",
   },
+  get mn() { return this.en; },
   en: {
     home: "kyaa home", language: "Language", heading: (name) => `Choose a display name for your ${name} fan verification.`,
     preview: "Fan Passport preview before issuance",

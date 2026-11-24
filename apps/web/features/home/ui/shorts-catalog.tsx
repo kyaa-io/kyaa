@@ -11,6 +11,7 @@ import styles from "./home-gallery-page.module.css";
 
 const copy: Record<AppLocale, { sort: string; latest: string; popular: string; artists: string; all: string }> = {
   ko: { sort: "정렬", latest: "최신", popular: "인기", artists: "아티스트", all: "전체" },
+  get mn() { return this.en; },
   en: { sort: "Sort", latest: "Latest", popular: "Popular", artists: "Artists", all: "All" },
   ja: { sort: "並び順", latest: "新着", popular: "人気", artists: "アーティスト", all: "すべて" },
   "zh-Hans": { sort: "排序", latest: "最新", popular: "热门", artists: "艺人", all: "全部" },

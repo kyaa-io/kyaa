@@ -4,6 +4,7 @@ import { APP_LOCALES, type AppLocale } from "@/i18n/locales";
 // (note or this default in the request language) and pass it as p_post_body; the approval call carries no body argument.
 export const PROOF_POST_BODY: Record<AppLocale, string> = {
   ko: "인증했어요",
+  get mn() { return this.en; },
   en: "I'm verified!",
   ja: "認証しました",
   "zh-Hans": "我已完成认证",

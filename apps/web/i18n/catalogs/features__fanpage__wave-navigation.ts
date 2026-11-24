@@ -1,6 +1,7 @@
 import type { AppLocale } from "@/i18n/locales";
 const labels = {
   ko: ["홈", "자기소개", "친구", "Live 방송", "Live Insight", "사진 · 영상", "응모"],
+  get mn() { return this.en; },
   en: ["Home", "Introductions", "Friends", "Live broadcasts", "Live Insight", "Photos · Videos", "Prize draws"],
   ja: ["ホーム", "自己紹介", "友だち", "ライブ配信", "Live Insight", "写真・動画", "応募"],
   "zh-Hans": ["首页", "自我介绍", "好友", "直播", "Live Insight", "照片 · 视频", "抽奖"],
@@ -15,7 +16,7 @@ const labels = {
 
 } satisfies Record<AppLocale, readonly [string, string, string, string, string, string, string]>;
 const emptyFriends: Record<AppLocale, string> = {
-  ko: "아직 연결된 친구가 없어요.", en: "You haven't connected with any friends yet.", ja: "まだつながった友だちはいません。", "zh-Hans": "还没有已添加的好友。", "zh-Hant": "還沒有已加入的好友。", es: "Aún no tienes amigos conectados.", id: "Belum ada teman yang terhubung.", vi: "Bạn chưa kết nối với người bạn nào.", th: "คุณยังไม่ได้เชื่อมต่อกับเพื่อน", pt: "Você ainda não se conectou com amigos.", fr: "Vous n’avez pas encore d’amis connectés.",
+  ko: "아직 연결된 친구가 없어요.", get mn() { return this.en; }, en: "You haven't connected with any friends yet.", ja: "まだつながった友だちはいません。", "zh-Hans": "还没有已添加的好友。", "zh-Hant": "還沒有已加入的好友。", es: "Aún no tienes amigos conectados.", id: "Belum ada teman yang terhubung.", vi: "Bạn chưa kết nối với người bạn nào.", th: "คุณยังไม่ได้เชื่อมต่อกับเพื่อน", pt: "Você ainda não se conectou com amigos.", fr: "Vous n’avez pas encore d’amis connectés.",
   ru: "Вы ещё не связались ни с одним из своих друзей.",
 
 };

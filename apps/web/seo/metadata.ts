@@ -24,6 +24,7 @@ const OPEN_GRAPH_LOCALES: Record<AppLocale, string> = {
   pt: "pt_PT",
   fr: "fr_FR",
   ru: "ru_RU",
+  mn: "mn_MN",
 };
 
 /** Only these hosts may serve their own share pictures; production, an unset value and anything else keep SITE_URL. */
@@ -137,18 +138,21 @@ export function contentPageMetadata(input: Omit<Parameters<typeof publicMetadata
 export const pageCopy = {
   home: {
     ko: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "꺄(Kyaa)에서 최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 팬 패스포트에 기록하세요." },
+    get mn() { return this.en; },
     en: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "Discover Kyaa (꺄), your favorite creators and their LIVE events. Verify your fandom, reserve a spot for a LIVE, and record your attendance in your Fan Passport." },
 
   ...additionalLocales((translationLocale) => ({ title: "꺄(Kyaa). Every Fan Moment Counts.", description: `Kyaa (꺄). ${localizedMessages.m66f358c91b9f[translationLocale]}` }))
 },
   live: {
     ko: { title: "LIVE 일정 | kyaa", description: "진행 중인 LIVE와 예정된 방송을 확인하세요. 최애의 LIVE를 예약하고 함께한 순간을 기록하세요." },
+    get mn() { return this.en; },
     en: { title: "LIVE events and schedules | kyaa", description: "Explore ongoing and upcoming LIVE events. Reserve a spot for your favorite creator’s LIVE and record the moments you share." },
 
   ...additionalLocales((translationLocale) => ({ title: localizedMessages.m70c75a25ee29[translationLocale], description: localizedMessages.m449445c22831[translationLocale] }))
 },
   celebrities: {
     ko: { title: "셀럽과 크리에이터 | kyaa", description: "kyaa의 셀럽과 크리에이터를 만나보세요. 최애의 소식과 LIVE 일정을 확인하고 팬 패스포트를 시작하세요." },
+    get mn() { return this.en; },
     en: { title: "Celebrities and creators | kyaa", description: "Meet the celebrities and creators on kyaa. Explore updates and LIVE schedules, and create a Fan Passport for your favorite creator." },
 
   ...additionalLocales((translationLocale) => ({ title: localizedMessages.m83574df4c2b6[translationLocale], description: localizedMessages.ma7d9afcd4b2d[translationLocale] }))

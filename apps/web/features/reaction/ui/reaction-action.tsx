@@ -26,6 +26,7 @@ import { StampArtwork } from "../../passport/ui/passport-stamp-artwork";
 
 const copy = {
   ko: { title: "좋아요 남기기", body: "좋아하는 마음을 팬 활동 기록에 남겨보세요.", action: "좋아요 남기기", working: "남기는 중…", checking: "확인하는 중…", done: "좋아요를 남겼어요", error: "좋아요를 남기지 못했어요. 잠시 후 다시 시도해 주세요.", statusError: "좋아요 기록을 확인하지 못했어요. 다시 시도해 주세요.", retry: "다시 확인", passport: "패스포트 만들기", later: "나중에 할게요" },
+  get mn() { return this.en; },
   en: { title: "Leave a like", body: "Save your first like as a Stamp in your Fan Passport.", action: "Leave a like", working: "Recording…", checking: "Checking…", done: "Like recorded", error: "We couldn't save your like. Try again in a moment.", statusError: "We couldn't check your like. Try again in a moment.", retry: "Check again", passport: "Create Fan Passport", later: "Maybe later" },
 
   ...additionalLocales((translationLocale) => ({ title: localizedMessages.m6f6dac867f8e[translationLocale], body: localizedMessages.mf0c0b01e1250[translationLocale], action: localizedMessages.m0be227a6d2b5[translationLocale], working: localizedMessages.me443ebcd1615[translationLocale], checking: localizedMessages.m130d18b3ca08[translationLocale], done: localizedMessages.mbd195f4596d0[translationLocale], error: localizedMessages.m3ee403208b42[translationLocale], statusError: localizedMessages.mab6d207fe534[translationLocale], retry: localizedMessages.ma338c790832e[translationLocale], passport: localizedMessages.m1641d12dfb0d[translationLocale], later: localizedMessages.m5c5e45421dcb[translationLocale] }))

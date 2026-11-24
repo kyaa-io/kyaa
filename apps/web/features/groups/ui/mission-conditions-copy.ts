@@ -1,6 +1,7 @@
 import type{AppLocale}from'@/i18n/locales';
 const rows:Record<AppLocale,readonly [string,string,string,string,string,string,string,string]>={
  ko:['참여 전에 확인해 주세요','참여 대상','이 모임에 가입한 팬','제출할 내용','포인트와 인정 횟수','지급 시점','참여 인정 및 검토 후 지급','인증 제출하기'],
+ get mn() { return this.en; },
  en:['Before you participate','Eligible participants','Fans of this group','What to submit','Points and recognition count','When points are credited','After participation recognition and review','Submit verification'],
  ja:['参加前にご確認ください','参加対象','このグループに加入したファン','提出する内容','ポイントと認定回数','付与時期','参加認定と審査後に付与','認証を提出'],
  'zh-Hans':['参与前请确认','参与对象','已加入本群组的粉丝','提交内容','积分与认可次数','发放时间','参与认可及审核后发放','提交认证'],

@@ -41,7 +41,7 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime(ago(2 * D), "ja", now)).toBe("2 日前");
   });
   it("shows the catalog just-now wording in every app locale", () => {
-    const expected = {ko: "방금 전", en: "just now", ja: "たった今", "zh-Hans": "刚刚", "zh-Hant": "剛剛", es: "ahora mismo", id: "baru saja", vi: "vừa xong", th: "เมื่อสักครู่", pt: "agora mesmo", fr: "à l’instant", ru: "только что"};
+    const expected = {ko: "방금 전", get mn() { return this.en; }, en: "just now", ja: "たった今", "zh-Hans": "刚刚", "zh-Hant": "剛剛", es: "ahora mismo", id: "baru saja", vi: "vừa xong", th: "เมื่อสักครู่", pt: "agora mesmo", fr: "à l’instant", ru: "только что"};
     for (const locale of APP_LOCALES) expect(formatRelativeTime(ago(10 * S), locale, now)).toBe(expected[locale]);
   });
   it("formats the same instant for Seoul, Los Angeles, and New York", () => {

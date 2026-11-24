@@ -30,6 +30,7 @@ export const accountDeletionCopy = {
     timingHeading: "처리 중 상태와 수령 정보",
     timing: "삭제는 지체 없이 진행하며, 외부 로그인 계정과 저장 파일의 정리가 끝날 때까지 처리 중으로 표시될 수 있습니다. 정해진 완료 기한을 안내하지는 않습니다. 실물 혜택 수령 정보는 기존 개인정보처리방침에 따라 배송 또는 현장 수령 완료 후 30일이 지나면 삭제하며, 계정 삭제 시에도 정리합니다.",
   },
+  get mn() { return this.en; },
   en: {
     title: "Delete your kyaa account",
     description: "How to request deletion of your account and personal data in kyaa, operated by Sallylab Inc. You can read this page without signing in.",

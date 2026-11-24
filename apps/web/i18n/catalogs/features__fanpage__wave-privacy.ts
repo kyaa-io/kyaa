@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 const rows = {
   ko: ["체크인한 참가자 전용", "행사 체크인을 완료한 참가자만 볼 수 있는 비공개 공간이에요. 이곳의 글과 사진은 참가자끼리만 공유돼요.", "간단한 자기소개를 남겨주세요. 본인 사진은 선택으로 첨부할 수 있어요.", "자기소개 쓰기", "간단한 자기소개", "본인 사진 (선택)", "어떤 일을 하고, 무엇에 관심이 있나요? 함께한 분들에게 짧게 소개해 주세요."],
+  get mn() { return this.en; },
   en: ["Checked-in participants only", "This private space is only for participants who have completed event check-in. Posts and photos are shared only with fellow participants.", "Introduce yourself briefly. You can add a photo of yourself if you like.", "Write an introduction", "A short introduction", "Your photo (optional)", "What do you do, and what interests you? Tell fellow participants a little about yourself."],
   ja: ["チェックイン済み参加者限定", "イベントのチェックインを完了した参加者だけが閲覧できる非公開のスペースです。投稿や写真は参加者同士でのみ共有されます。", "簡単な自己紹介を投稿してください。ご自身の写真の添付は任意です。", "自己紹介を書く", "簡単な自己紹介", "ご自身の写真（任意）", "どんなお仕事や活動をしていますか？興味のあることなど、参加者に簡単に自己紹介してください。"],
   "zh-Hans": ["仅限已签到的参与者", "这是仅限已完成活动签到的参与者查看的私密空间。帖子和照片仅在参与者之间分享。", "请简单介绍一下自己，也可以选择附上自己的照片。", "写自我介绍", "简单的自我介绍", "本人照片（选填）", "你从事什么工作，有什么兴趣？向其他参与者简单介绍一下自己吧。"],
@@ -23,6 +24,7 @@ export function wavePrivacyCopy(locale: AppLocale) {
 
 export const waveActivityNameNote: Record<AppLocale, string> = {
   "ko": "체크인 이름과 아바타가 KYAA WAVE 참가자에게 표시돼요.",
+  get mn() { return this.en; },
   "en": "Your check-in name and avatar are visible to KYAA WAVE participants.",
   "ja": "チェックイン時のお名前とアバターがKYAA WAVEの参加者に表示されます。",
   "zh-Hans": "您的签到姓名和头像将向 KYAA WAVE 参与者显示。",

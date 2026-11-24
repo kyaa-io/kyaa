@@ -13,7 +13,7 @@ export async function startHarness(port = 4211) {
   {find: /^.*\/auth-fallback$/,replacement:path.join(here,'privy.ts')},
   {find:'@',replacement:web},
   ...['link','image'].map(name=>({find:`next/${name}`,replacement:path.join(here,`../mission-local/next-${name}.tsx`)})),
- ]},server:{host:'127.0.0.1',port,strictPort:true,fs:{allow:[web,realpathSync(path.resolve(web,'../../node_modules')),realpathSync(path.join(web,'node_modules'))]}}});
+ ]},server:{watch:null,hmr:false,host:'127.0.0.1',port,strictPort:true,fs:{allow:[web,realpathSync(path.resolve(web,'../../node_modules')),realpathSync(path.join(web,'node_modules'))]}}});
  server.middlewares.use((req,res,next)=>{
   if(!req.url?.startsWith('/api/'))return next();
   res.statusCode=503;res.setHeader('content-type','application/json');res.end(JSON.stringify({error:{code:'LOCAL_FIXTURE_ONLY'}}));

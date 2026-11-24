@@ -1,6 +1,7 @@
 import type { AppLocale } from "@/i18n/locales";
 const rows = {
   ko: ["팬 제안", "신청곡", "곡·아티스트 검색", "검색", "직접 입력", "곡 제목", "아티스트", "YouTube 링크 (선택)", "곡 선택", "다른 곡 선택", "닉네임과 제안은 이 페이지를 보는 사람들에게 공개돼요.", "아직 검색 결과가 없어요. 직접 입력할 수도 있어요.", "Spotify에서 듣기", "접수됨", "모든 제안", "제안 남기기"],
+  get mn() { return this.en; },
   en: ["Fan suggestions", "Song request", "Search songs or artists", "Search", "Enter manually", "Song title", "Artist", "YouTube link (optional)", "Select song", "Choose another song", "Your nickname and suggestion will be visible to people viewing this page.", "No results yet. You can also enter a song manually.", "Listen on Spotify", "Submitted", "All suggestions", "Leave a suggestion"],
   ja: ["ファンの提案", "リクエスト曲", "曲・アーティストを検索", "検索", "手入力", "曲名", "アーティスト", "YouTubeリンク（任意）", "曲を選択", "別の曲を選択", "ニックネームと提案はこのページの閲覧者に公開されます。", "検索結果がありません。手入力もできます。", "Spotifyで聴く", "受付済み", "すべての提案", "提案を投稿"],
   "zh-Hans": ["粉丝提议", "点歌", "搜索歌曲或歌手", "搜索", "手动输入", "歌名", "歌手", "YouTube链接（可选）", "选择歌曲", "选择其他歌曲", "昵称和提议将向浏览此页面的人公开。", "暂无结果，也可以手动输入。", "在Spotify收听", "已提交", "所有提议", "提交提议"],

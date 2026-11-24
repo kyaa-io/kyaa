@@ -2,6 +2,7 @@ import type { AppLocale } from "../locales";
 
 export const fanPageBrandCopy = {
   ko: { officialPost: "브랜드 소식", officialWebsite: "공식 웹사이트", website: "웹사이트", ticket: "예매·참가 신청", intro: (name: string) => `${name}의 공식 소식과 커뮤니티 이야기를 한곳에서 확인하세요.` },
+  get mn() { return this.en; },
   en: { officialPost: "Brand updates", officialWebsite: "Official website", website: "Website", ticket: "Tickets & registration", intro: (name: string) => `Official ${name} updates and community stories in one place.` },
   ja: { officialPost: "ブランド情報", officialWebsite: "公式サイト", website: "ウェブサイト", ticket: "チケット・参加申込", intro: (name: string) => `${name}の公式情報とコミュニティの投稿をまとめて確認できます。` },
   "zh-Hans": { officialPost: "品牌动态", officialWebsite: "官方网站", website: "网站", ticket: "购票·报名参加", intro: (name: string) => `在这里查看${name}的官方动态和社区故事。` },

@@ -291,7 +291,7 @@ test("F11: 팬페이지 소개가 수집 원문과 같고, 다른 언어에서�
 
 test("F12: 12개 언어 전환 뒤 덕질 탭 이름이 한 단어로 정해진 값이고 새로고침 뒤에도 남는다", async ({ page }) => {
   // B17: 영어 Stan 유지, es·pt·fr·id·vi 는 Stan, ru 는 Стэн, th 는 แฟนคลับ, ko·ja·zh 는 기존 단어.
-  const expected: Record<string, string> = { ko: "덕질", en: "Stan", ja: "推し活", "zh-Hans": "追星", "zh-Hant": "追星", es: "Stan", id: "Stan", vi: "Stan", th: "แฟนคลับ", pt: "Stan", fr: "Stan", ru: "Стэн" };
+  const expected: Record<string, string> = { ko: "덕질", get mn() { return this.en; }, en: "Stan", ja: "推し活", "zh-Hans": "追星", "zh-Hant": "追星", es: "Stan", id: "Stan", vi: "Stan", th: "แฟนคลับ", pt: "Stan", fr: "Stan", ru: "Стэн" };
   const labelOf = async (locale: string) => {
     await page.goto(`/?locale=${locale}`, { waitUntil: "domcontentloaded" }); await settle(page, 1500);
     // 덕질 탭 자체를 읽는다(바닥글의 /benefits 링크가 DOM 에서 먼저 나와 390 기준선이 바닥글 문구로 잡혔던 결함).

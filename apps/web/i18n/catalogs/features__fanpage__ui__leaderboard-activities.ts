@@ -23,6 +23,7 @@ export const leaderboardActivityCopy: Record<AppLocale, Copy> = {
     ties: "동점이면 패스포트 발급 시각, 패스포트가 없으면 참여 시각이 빠른 팬이 앞서요.",
     empty: "아직 이 활동으로 점수를 받은 팬이 없어요.", explore: "팬 활동 보러 가기", medals: ["금메달", "은메달", "동메달"],
   },
+  get mn() { return this.en; },
   en: {
     filters: "Rank by activity",
     categories: { all: "Overall", knowledge: "Quiz", live: "LIVE", mission: "Missions", certification: "Verification" },

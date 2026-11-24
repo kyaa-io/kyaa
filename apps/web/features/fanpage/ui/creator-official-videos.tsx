@@ -7,7 +7,7 @@ import type { AppLocale } from "@/i18n/locales";
 import styles from "./fanpage.module.css";
 
 const titles: Record<AppLocale, string> = {
-  ko: "공식 영상", en: "Official videos", ja: "公式動画",
+  ko: "공식 영상", get mn() { return this.en; }, en: "Official videos", ja: "公式動画",
   "zh-Hans": "官方视频", "zh-Hant": "官方影片", es: "Vídeos oficiales",
   id: "Video resmi", vi: "Video chính thức", th: "วิดีโออย่างเป็นทางการ",
   pt: "Vídeos oficiais", fr: "Vidéos officielles",

@@ -90,6 +90,7 @@ const copy = {
     selectedEmpty: "선택한 날짜에 예정된 LIVE가 없어요.",
     platformLabel: "송출 플랫폼",
   },
+  get mn() { return this.en; },
   en: {
     title: "LIVE calendar",
     previous: "Previous month",
@@ -158,6 +159,7 @@ const formatters = {
     day: new Intl.DateTimeFormat("ko-KR", { calendar: "gregory", year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Seoul" }),
     time: new Intl.DateTimeFormat("ko-KR", { calendar: "gregory", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Seoul" }),
   },
+  get mn() { return this.en; },
   en: {
     month: new Intl.DateTimeFormat("en-US", { calendar: "gregory", year: "numeric", month: "long", timeZone: "Asia/Seoul" }),
     day: new Intl.DateTimeFormat("en-US", { calendar: "gregory", year: "numeric", month: "long", day: "numeric", weekday: "short", timeZone: "Asia/Seoul" }),

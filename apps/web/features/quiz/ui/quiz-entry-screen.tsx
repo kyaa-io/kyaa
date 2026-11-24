@@ -80,6 +80,7 @@ const copy = {
     verified: (name: string) => `${name} 팬 인증 완료`,
     openPassport: "패스포트 보기",
   },
+  get mn() { return this.en; },
   en: {
     sessionExpired: "Your sign-in expired. Sign in again to continue.",
     unavailable: "This fan verification quiz is not available right now.",

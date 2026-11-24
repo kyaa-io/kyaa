@@ -49,23 +49,23 @@ function errorCopy(error: unknown, locale: Locale) {
   const code = error instanceof Error ? error.message : "";
   if (code === "COMMUNITY_STAMP_INVITE_INELIGIBLE") return inviteRedeemFailure(locale, code);
   const messages: Record<string, Record<AppLocale, string>> = {
-    COMMUNITY_STAMP_SELF_INVITE: { ko: "내 코드는 입력할 수 없어요.", en: "You can’t use your own code." ,
+    COMMUNITY_STAMP_SELF_INVITE: { ko: "내 코드는 입력할 수 없어요.", get mn() { return this.en; }, en: "You can’t use your own code." ,
   ...additionalLocales((translationLocale) => (localizedMessages.m4ea3e8203ad1[translationLocale]))
 },
-    COMMUNITY_STAMP_ALREADY_REDEEMED: { ko: "이미 친구 코드를 인증했어요.", en: "You’ve already used a friend’s code." ,
+    COMMUNITY_STAMP_ALREADY_REDEEMED: { ko: "이미 친구 코드를 인증했어요.", get mn() { return this.en; }, en: "You’ve already used a friend’s code." ,
   ...additionalLocales((translationLocale) => (localizedMessages.m991e1d0428af[translationLocale]))
 },
-    COMMUNITY_STAMP_NOT_FOUND: { ko: "코드 또는 최애 정보를 확인해 주세요.", en: "Check the code or creator and try again." ,
+    COMMUNITY_STAMP_NOT_FOUND: { ko: "코드 또는 최애 정보를 확인해 주세요.", get mn() { return this.en; }, en: "Check the code or creator and try again." ,
   ...additionalLocales((translationLocale) => (localizedMessages.m14409b885cde[translationLocale]))
 },
-    COMMUNITY_STAMP_WALLET_NOT_READY: { ko: "스탬프를 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.", en: "Your Stamps are getting ready. Please try again shortly." ,
+    COMMUNITY_STAMP_WALLET_NOT_READY: { ko: "스탬프를 받을 준비 중이에요. 잠시 후 다시 시도해 주세요.", get mn() { return this.en; }, en: "Your Stamps are getting ready. Please try again shortly." ,
   ...additionalLocales((translationLocale) => (localizedMessages.mf7203cb5f875[translationLocale]))
 },
-    AUTHENTICATION_REQUIRED: { ko: "다시 로그인해 주세요.", en: "Please sign in again." ,
+    AUTHENTICATION_REQUIRED: { ko: "다시 로그인해 주세요.", get mn() { return this.en; }, en: "Please sign in again." ,
   ...additionalLocales((translationLocale) => (localizedMessages.m2de144ed728f[translationLocale]))
 },
   };
-  return (messages[code] ?? { ko: "완료하지 못했어요. 다시 시도해 주세요.", en: "Couldn’t complete this. Please try again." ,
+  return (messages[code] ?? { ko: "완료하지 못했어요. 다시 시도해 주세요.", get mn() { return this.en; }, en: "Couldn’t complete this. Please try again." ,
   ...additionalLocales((translationLocale) => (localizedMessages.mb811b50fbce4[translationLocale]))
 })[locale];
 }

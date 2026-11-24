@@ -66,6 +66,7 @@ const copy = {
     venue: "수령 장소",
     pickupPeriod: "수령 가능 기간",
   },
+  get mn() { return this.en; },
   en: {
     heading: "My raffle result",
     loading: "Checking your raffle result.",

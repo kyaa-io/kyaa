@@ -29,6 +29,7 @@ export type HomeNoticePage = Readonly<{ items: readonly HomeNoticeSummary[]; nex
 
 export const homeNoticeCategoryLabels: Record<AppLocale, Record<HomeNoticeCategory, string>> = {
   ko: { guide: "안내", creator: "크리에이터", event: "이벤트", update: "업데이트" },
+  get mn() { return this.en; },
   en: { guide: "Guide", creator: "Creators", event: "Event", update: "Update" },
   ja: { guide: "ご案内", creator: "クリエイター", event: "イベント", update: "アップデート" },
   "zh-Hans": { guide: "指南", creator: "创作者", event: "活动", update: "更新" },
@@ -57,6 +58,7 @@ export const homeNoticeErrorMessages: Record<AppLocale, Record<HomeNoticeErrorCo
     LINK_INVALID: "이 팬페이지는 지금 공개 중이 아니거나 목록에 없어 연결할 수 없어요. 다른 팬페이지를 고르거나 연결을 빼 주세요.",
     UNAVAILABLE: "공지를 처리하지 못했어요. 잠시 뒤 다시 시도해 주세요.",
   },
+  get mn() { return this.en; },
   en: {
     SLUG_TAKEN: "Another notice already uses this URL name. Change the URL name and save again.",
     NOT_FOUND: "This notice could not be found. Reload the list.",

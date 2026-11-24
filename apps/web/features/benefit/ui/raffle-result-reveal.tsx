@@ -13,6 +13,7 @@ import styles from "./raffle-result-reveal.module.css";
 
 const copy = {
   ko: { ready: "나의 티켓에 담긴 결과는?", open: "내 결과 확인하기", waiting: "두구두구…", skip: "바로 결과 보기", replay: "다시 보기", help: "티켓을 열어 응모 결과를 확인해 보세요.", thanks: "함께해 줘서 고마워요", ticket: "당신을 위한 티켓", result: "내 응모 결과" },
+  mn: { ready: "What’s inside your ticket?", open: "Reveal my result", waiting: "Drumroll…", skip: "Show result now", replay: "Watch again", help: "Open your ticket to see your raffle result.", thanks: "Thank you for joining us", ticket: "A ticket for you", result: "My raffle result" },
   en: { ready: "What’s inside your ticket?", open: "Reveal my result", waiting: "Drumroll…", skip: "Show result now", replay: "Watch again", help: "Open your ticket to see your raffle result.", thanks: "Thank you for joining us", ticket: "A ticket for you", result: "My raffle result" },
   ...additionalLocales((locale) => ({
     ready: messages.ready[locale],

@@ -1,6 +1,6 @@
 import type { AppLocale } from "./locales";
 
-export type TranslationLocale = Exclude<AppLocale, "ko" | "en">;
+export type TranslationLocale = Exclude<AppLocale, "ko" | "en" | "mn">;
 export type TranslatedMessage = Readonly<Record<TranslationLocale, string>>;
 
 /** Build real, typed records while keeping each screen's messages in its own bundle. */
@@ -26,7 +26,7 @@ export function translate(
   english: string,
   values: readonly unknown[] = [],
 ): string {
-  const message = locale === "ko" || locale === "en" ? english : translations[locale];
+  const message = locale === "ko" || locale === "en" || locale === "mn" ? english : translations[locale];
   return message.replace(/\{(\d+)\}/g, (token, index: string) => {
     const position = Number(index);
     return position < values.length ? String(values[position]) : token;

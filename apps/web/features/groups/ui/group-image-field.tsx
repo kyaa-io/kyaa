@@ -8,7 +8,7 @@ import { GroupImage } from "./group-image";
 import { groupsCopy } from './copy';
 import { managementCopy } from './management-copy';
 import styles from './groups.module.css';
-const photoLabel:Record<AppLocale,string>={ko:'사진 변경',en:'Change photo',ja:'写真を変更','zh-Hans':'更换照片','zh-Hant':'更換照片',es:'Cambiar foto',id:'Ganti foto',vi:'Đổi ảnh',th:'เปลี่ยนรูป',pt:'Alterar foto',fr:'Changer la photo',ru:'Изменить фото'};
+const photoLabel:Record<AppLocale,string>={ko:'사진 변경',get mn() { return this.en; }, en:'Change photo',ja:'写真を変更','zh-Hans':'更换照片','zh-Hant':'更換照片',es:'Cambiar foto',id:'Ganti foto',vi:'Đổi ảnh',th:'เปลี่ยนรูป',pt:'Alterar foto',fr:'Changer la photo',ru:'Изменить фото'};
 export function GroupImageField({locale,initialUrl,disabled=false,onReadyChange}:{locale:AppLocale;initialUrl?:string|null;disabled?:boolean;onReadyChange:(ready:boolean)=>void}){
  const t=groupsCopy(locale),m=managementCopy(locale),upload=useWaveMediaUpload('group_image',1),[deleted,setDeleted]=useState(false),[preview,setPreview]=useState<{file:File;url:string}>(),task=upload.items[0],ready=!task||Boolean(upload.ready&&!upload.busy&&!task.failed);
  useLayoutEffect(()=>{onReadyChange(ready);},[ready,onReadyChange]);

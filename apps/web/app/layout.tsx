@@ -31,6 +31,7 @@ import "./globals.css";
 const DESCRIPTIONS: Record<AppLocale, string> = {
   ko: "최애의 라이브와 함께한 순간을 팬 패스포트에 기록하세요.",
   en: "Record moments with each of your favorites in a Fan Passport.",
+  mn: "Record moments with each of your favorites in a Fan Passport.",
   ja: "推しのライブと過ごした瞬間をFan Passportに記録しましょう。",
   "zh-Hans": "将与喜爱的艺人一起度过的直播时刻记录在Fan Passport中。",
   "zh-Hant": "將與喜愛的藝人一起度過的直播時刻記錄在Fan Passport中。",

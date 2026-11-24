@@ -4,6 +4,7 @@ type Labels = Record<"certifications" | "missionReview" | "stampReview" | "group
 
 export const adminReviewLabels = {
   "ko": { certifications: "인증 심사", missionReview: "미션 인증 심사", stampReview: "스탬프 증빙 심사", groupOverview: "모임 요약", groupApplications: "모임 개설 신청", giftApplications: "선물 등록 신청" },
+  get mn() { return this.en; },
   "en": { certifications: "Verification review", missionReview: "Mission submission review", stampReview: "Stamp proof review", groupOverview: "Group overview", groupApplications: "Group applications", giftApplications: "Gift applications" },
   "ja": { certifications: "認証審査", missionReview: "ミッション提出物の審査", stampReview: "スタンプ証明の審査", groupOverview: "グループ概要", groupApplications: "グループ開設申請", giftApplications: "ギフト登録申請" },
   "zh-Hans": { certifications: "认证审核", missionReview: "任务提交审核", stampReview: "印章凭证审核", groupOverview: "社群概览", groupApplications: "社群创建申请", giftApplications: "礼物登记申请" },

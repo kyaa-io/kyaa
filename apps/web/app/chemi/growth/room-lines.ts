@@ -19,6 +19,7 @@ const lines = {
     tea: "차 식기 전에 같이 마시자.",
     lamp: "불 켜 두니까 아늑하다.",
   },
+  get mn() { return this.en; },
   "en": {
     tap: ["Hey, that tickles.", "You called?", "What did you do today?"],
     pet: "Hehe, a little more.",

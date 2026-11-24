@@ -42,7 +42,7 @@ it('reuses a watched unspent session without a second ad',async()=>{
  expect(m.requestAd).not.toHaveBeenCalled();expect(m.onGranted).toHaveBeenCalledWith(sid);
 });
 it('has session error copy in all 12 languages',()=>{
- expect(APP_LOCALES.length).toBe(12);
+ expect(APP_LOCALES.length).toBe(13);
  for(const locale of APP_LOCALES){for(const code of ['GROUP_WALLET_AD_DAILY_LIMIT','GROUP_WALLET_AD_RATE_LIMITED','GROUP_WALLET_AD_SESSION_INVALID'])expect(rewardedSessionError(locale,code)?.length).toBeGreaterThan(3);expect(rewardedSessionError(locale,'GROUP_WALLET_AD_GATE_CLOSED')).toBe(rewardedExchangeCopy(locale).adOff);}
 });
 it('hands the ad show control to the caller once the ad is requested',async()=>{
