@@ -122,6 +122,27 @@ export function createDukjilHandlers(deps: DukjilDependencies) {
       const raw = obj(await deps.rpc("cheer_dukjil_favorite", { p_user: appUserId }));
       return Response.json(checked(dukjilCheerResultSchema, { earned: raw.earned, stamped: raw.stamped, replayed: raw.replayed, celebrity: { slug: raw.celebritySlug } }), { headers: privateHeaders });
     }),
+    attendAll: (request: Request) => run(async () => {
+      const { appUserId } = await deps.authorize(request.headers.get("authorization"));
+      const { creators } = z.object({
+        creators: z.array(creatorSlugSchema).max(DUKJIL_ATTENDANCE_MAX_CREATORS),
+      }).strict().parse(await boundedJson(request, 8192));
+      const slugs = [...new Set(creators)];
+      const ids = await (deps.resolveCreatorIds ?? resolveCreatorIds)(slugs);
+      const items = [];
+      for (const slug of slugs) {
+        try {
+          const celebrity = ids.get(slug);
+          if (!celebrity) throw new Error("CREATOR_NOT_FOUND");
+          const raw = await deps.rpc("attend_creator", { p_user: appUserId, p_celebrity: celebrity, p_request_key: crypto.randomUUID() });
+          const result = checked(attendanceResultSchema, raw);
+          items.push({ slug, ok: true, replayed: result.replayed, points: result.replayed ? 0 : result.points });
+        } catch {
+          items.push({ slug, ok: false });
+        }
+      }
+      return Response.json({ items }, { headers: privateHeaders });
+    }),
     attend: (request: Request, creatorSlug: string) => run(async () => {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
       const creator = creatorSlugSchema.parse(creatorSlug);
