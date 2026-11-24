@@ -120,4 +120,3 @@ begin
     'players',today_players,'best',coalesce(week_best,0),
     'points',public.group_wallet_balance(p_user,'fan_point'));
 end $$;
-
