@@ -798,6 +798,12 @@ function Session({
       : (lobby?.ranking ?? challenge?.ranking ?? publicRows ?? []);
   const faces = facesFor(character);
   const paidStart = lobby?.freeRemaining === 0 && lobby.extraCost > 0;
+  useEffect(() => {
+    if (stage === "play" && document.documentElement.style.getPropertyValue("--analytics-consent-height")) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [stage]);
+
   const active = stage === "play" && view;
   const levelList = <ol className={styles.levelList} aria-label={copy.round}>
     {LEVELS.map(({columns, pairs, seconds}, i) => {

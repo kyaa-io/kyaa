@@ -338,7 +338,7 @@
     padding-block-start: var(--space-8);
   }
   .layout[data-playing="true"] {
-    padding-block-start: var(--space-4);
+    padding-block-start: calc(var(--space-4) + var(--analytics-consent-height, 0px));
   }
   .content > [data-fan-action]:not([data-fan-action-emphasis]) {
     max-inline-size: 20rem;
