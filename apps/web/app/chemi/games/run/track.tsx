@@ -10,7 +10,7 @@ import { ArrowDown, ArrowUp, Pause, Volume2, VolumeX } from "@/components/fan-ui
 import { FanPixelText, fanPixelTextClassName } from "@/components/fan-ui/fan-pixel-text";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FPS } from "@/features/chemi/games/engine";
-import { FEVER_NOTES, FEVER_TICKS, RUN_INPUT, RUN_TITLES, runRound, type RunInput } from "@/features/chemi/games/run";
+import { BOOST_TICKS, FEVER_NOTES, FEVER_TICKS, RUN_INPUT, RUN_TITLES, runRound, type RunInput } from "@/features/chemi/games/run";
 import { fill, type RunCopy } from "./copy";
 import { readRunKey, RUN_KEYCAPS, RUN_PAUSE_SHORTCUT, runKeyAction } from "./keys";
 import { drawField, pixelScale, loadArt, originOf, PROPS, SHIELD_FX_TICKS, type Art, type PropName } from "./render";
@@ -70,7 +70,7 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
 }) {
   // "Run again" from the result goes straight to running; the ready veil is for the first run of a visit.
   const [stage, setStage] = useState<Stage>(rerun ? "play" : "ready");
-  const [hud, setHud] = useState({ score: 0, meters: 0, level: 1, hearts: 3, notes: 0, feverNotes: 0, fever: 0, shield: false });
+  const [hud, setHud] = useState({ score: 0, meters: 0, level: 1, hearts: 3, notes: 0, feverNotes: 0, fever: 0, shield: false, boost: 0 });
   const [say, setSay] = useState<{ text: string; id: number }>();
   const [held, setHeld] = useState({ jump: false, slide: false });
   const [artReady, setArtReady] = useState(false);
@@ -211,10 +211,10 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
         }
         if (fraction > 6) fraction = 0;
         const s = sim.state;
-        const key = `${s.score}|${s.meters}|${s.hearts}|${s.notes}|${s.feverNotes}|${Math.ceil(s.fever / 6)}|${s.shield}`;
+        const key = `${s.score}|${s.meters}|${s.hearts}|${s.notes}|${s.feverNotes}|${Math.ceil(s.fever / 6)}|${s.shield}|${Math.ceil(s.boost / 6)}`;
         if (key !== shown) {
           shown = key;
-          setHud({ score: s.score, meters: s.meters, level: s.level, hearts: s.hearts, notes: s.notes, feverNotes: s.feverNotes, fever: s.fever, shield: s.shield });
+          setHud({ score: s.score, meters: s.meters, level: s.level, hearts: s.hearts, notes: s.notes, feverNotes: s.feverNotes, fever: s.fever, shield: s.shield, boost: s.boost });
         }
         if (s.done) {
           sound.play("over");
@@ -314,7 +314,6 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
       <div className={styles.hudMid}>
         <span className={styles.hearts} role="img" aria-label={`${hud.hearts} / 3`}>
           {[0, 1, 2].map((i) => <Prop key={i} name={i < hud.hearts ? "heart" : "heartEmpty"} />)}
-          {hud.shield && <span className={styles.shieldOn}><Prop name="shield" /></span>}
         </span>
         <FanText role="label" className={styles.noteCount}><Prop name="note" />{number.format(hud.notes)}</FanText>
       </div>
@@ -330,6 +329,18 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
     <div className={styles.field} ref={field} data-art={artReady}>
       <canvas ref={canvas} role="img" aria-label={`${name} · ${copy.map}`} />
       <div className={styles.effects} ref={effects} aria-hidden="true" />
+      {/* 부스트는 남은 초가 줄어드는 막대, 보호막은 한 번 막을 때까지 가득 찬 막대. 마지막 1초에 깜빡인다. */}
+      {(hud.boost > 0 || hud.shield) && <div className={styles.gauges}>
+        {hud.boost > 0 && <span className={styles.gauge} data-kind="boost" data-ending={hud.boost <= FPS} role="img" aria-label={copy.boost}>
+          <Prop name="boost" />
+          <span className={styles.gaugeBar}><i style={{ "--fill": hud.boost / BOOST_TICKS } as CSSProperties} /></span>
+          <FanPixelText role="sub" aria-hidden="true">{fill(copy.seconds, { n: (hud.boost / FPS).toFixed(1) })}</FanPixelText>
+        </span>}
+        {hud.shield && <span className={styles.gauge} data-kind="shield" role="img" aria-label={copy.shield}>
+          <Prop name="shield" />
+          <span className={styles.gaugeBar}><i style={{ "--fill": 1 } as CSSProperties} /></span>
+        </span>}
+      </div>}
       {say && <FanPixelText as="p" role="say" className={styles.say} key={say.id}>{say.text}</FanPixelText>}
       {keyboard && hint && stage === "play" && <p className={styles.keyHint} aria-hidden="true">
         <span><Keys caps={RUN_KEYCAPS.jump.slice(0, 1)} /><FanText role="label">{copy.jump}</FanText></span>

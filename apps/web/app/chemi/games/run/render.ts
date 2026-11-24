@@ -21,7 +21,7 @@ export const PROPS = {
   barIcon: [330, 0, 32, 9], lantern: [364, 0, 18, 22],
 } as const;
 export type PropName = keyof typeof PROPS;
-export type Art = Record<keyof typeof ART_FILES, HTMLImageElement>;
+export type Art = Record<keyof typeof ART_FILES, HTMLImageElement> & { glow: CanvasImageSource };
 
 const FRAME = 64;
 /** shield-fx-v1.png: 80-cell frames whose (8, 8) is the runner frame's top-left. */
@@ -40,8 +40,51 @@ export function loadArt(character: import("./shared").Character = "changha"): Pr
     image.onload = () => resolve([name, image]);
     image.onerror = () => { delete pending[character]; reject(Error("RUN_ART")); };
     image.src = src.replace("changha", character);
-  }))).then((loaded) => Object.fromEntries(loaded) as Art);
+  }))).then((loaded) => {
+    const art = Object.fromEntries(loaded) as Art;
+    art.glow = glowSheet(art.runner);
+    return art;
+  });
   return pending[character];
+}
+
+const GLOW = "#fff4c2";
+/** The runner sheet as one flat light colour, drawn a cell out on each side to give the runner a lit rim. */
+function glowSheet(runner: HTMLImageElement) {
+  const sheet = document.createElement("canvas");
+  sheet.width = runner.width;
+  sheet.height = runner.height;
+  const ctx = sheet.getContext("2d")!;
+  ctx.drawImage(runner, 0, 0);
+  ctx.globalCompositeOperation = "source-in";
+  ctx.fillStyle = GLOW;
+  ctx.fillRect(0, 0, sheet.width, sheet.height);
+  return sheet;
+}
+
+/** Rim brightness steps (a full cycle is 32 ticks); reduced motion holds the middle one. */
+const RIM = [0.45, 0.7, 0.95, 0.7] as const;
+/** Sparkle sizes over one 36-tick life: a dot, a small cross, a long cross, back, then a rest. */
+const TWINKLE = [0, 1, 2, 1, 0, -1] as const;
+const SPARKLE_LIFE = 36;
+
+function sparkles(ctx: CanvasRenderingContext2D, left: number, top: number, tick: number, count: number) {
+  for (let i = 0; i < count; i++) {
+    const at = tick + Math.floor(i * SPARKLE_LIFE / count);
+    const size = TWINKLE[Math.floor(at % SPARKLE_LIFE / 6)];
+    if (size < 0) continue;
+    // Each life lands somewhere new around the runner's body; the spot only depends on the tick.
+    const spot = (Math.imul(Math.floor(at / SPARKLE_LIFE) + 1, 2654435761) ^ Math.imul(i + 1, 40503)) >>> 0;
+    const x = left + 10 + spot % 44;
+    const y = top + 6 + (spot >>> 8) % 40;
+    if (size > 0) {
+      ctx.fillStyle = GLOW;
+      ctx.fillRect(x - size, y, size * 2 + 1, 1);
+      ctx.fillRect(x, y - size, 1, size * 2 + 1);
+    }
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x, y, 1, 1);
+  }
 }
 
 /** Cells between the left edge and the runner: a fifth of the way in on wide fields. */
@@ -108,14 +151,6 @@ export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldVi
   ctx.fillStyle = "#cdb9ae";
   ctx.fillRect(0, 0, width, height);
   tile(ctx, art.street, reducedMotion ? 0 : state.distance * 0.24, width, height - art.street.height);
-  // Fever speed lines: dashes one cell high in the field's own dots, sliding left with the run.
-  if (state.fever > 0) {
-    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
-    const shift = reducedMotion ? 0 : (state.tick * 4) % 24;
-    for (const [row, lag] of [[0.22, 0], [0.34, 9], [0.46, 4]] as const) {
-      for (let x = -((shift + lag) % 24); x < width; x += 24) ctx.fillRect(x, Math.round(height * row), 14, 1);
-    }
-  }
   for (const e of entities) {
     if (e.gone) continue;
     const x = Math.round(e.x - state.distance + origin);
@@ -134,7 +169,12 @@ export function drawField(ctx: CanvasRenderingContext2D, art: Art, view: FieldVi
     : state.sliding ? 16 + Math.floor(state.tick / 5) % 4
       : !state.grounded ? (state.airJumps ? 12 : 8) + airPhase
         : Math.floor(state.tick / 4) % 8;
+  ctx.globalAlpha = RIM[reducedMotion ? 1 : Math.floor(state.tick / 8) % 4];
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]] as const) ctx.drawImage(art.glow, pose * FRAME, 0, FRAME, FRAME, left + dx, top + dy, FRAME, FRAME);
+  ctx.globalAlpha = 1;
   ctx.drawImage(art.runner, pose * FRAME, 0, FRAME, FRAME, left, top, FRAME, FRAME);
+  // Boost and fever double the sparkles; reduced motion keeps the still rim and drops them.
+  if (!reducedMotion) sparkles(ctx, left, top, state.tick, state.boost || state.fever ? 6 : 3);
   if (state.shield) {
     const shimmer = reducedMotion ? 0 : Math.floor(state.tick / 6) % 4;
     fx(ctx, art, (state.sliding ? FX_FRAMES.slide : FX_FRAMES.stand) + shimmer, left, top);
