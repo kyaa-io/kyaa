@@ -152,5 +152,8 @@
   ],
   "lucky-mileage": [
     "release-notes/2026-11-25-lucky-ticket-conversion.json"
+  ],
+  "creator-hex": [
+    "release-notes/2026-11-25-creator-hex.json"
   ]
 }
