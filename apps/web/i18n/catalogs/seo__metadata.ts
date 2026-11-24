@@ -15,16 +15,16 @@ export const messages = {
 
   },
   "m66f358c91b9f": {
-    "ja": "お気に入りのクリエイターとLIVEを見つけましょう。ファン認証、LIVE予約、出席を行い、その記録をFan Passportに残せます。",
-    "zh-Hans": "发现喜爱的创作者及其 LIVE。认证粉丝身份、预约 LIVE，并将出席记录保存在 Fan Passport 中。",
-    "zh-Hant": "發現喜愛的創作者及其 LIVE。認證粉絲身份、預約 LIVE，並將出席記錄儲存在 Fan Passport 中。",
-    "es": "Descubre a tus creadores favoritos y sus LIVE. Verifica que eres fan, reserva un LIVE y registra tu asistencia en tu Fan Passport.",
-    "id": "Temukan kreator favorit Anda dan acara LIVE mereka. Verifikasi fandom, pesan tempat untuk LIVE, dan catat kehadiran di Fan Passport Anda.",
-    "vi": "Khám phá nhà sáng tạo yêu thích và LIVE của họ. Xác minh, đặt chỗ LIVE và ghi lại tham dự trong Fan Passport.",
-    "th": "ค้นพบครีเอเตอร์คนโปรดและกิจกรรม LIVE ของพวกเขา ยืนยันความเป็นแฟน จองที่สำหรับ LIVE และบันทึกการเข้าร่วมไว้ใน Fan Passport",
-    "pt": "Descubra seus criadores favoritos e suas LIVE. Verifique que você é fã, reserve um lugar em uma LIVE e registre sua presença em seu Fan Passport.",
-    "fr": "Découvrez vos créateurs favoris et leurs LIVE. Vérifiez que vous êtes fan, réservez une place pour un LIVE et consignez votre présence dans votre Fan Passport.",
-    ru: "Найдите своих любимых авторов и их мероприятия LIVE. Подтвердите свою любовь к их творчеству, зарезервируйте место на мероприятии LIVE и отметьте свое присутствие в вашем фан-аккаунте Passport."
+    "ja": "今日のファンランキングを確認できます。 お気に入りのクリエイターとLIVEを見つけましょう。ファン認証、LIVE予約、出席を行い、その記録をFan Passportに残せます。",
+    "zh-Hans": "查看今日粉丝排名。 发现喜爱的创作者及其 LIVE。认证粉丝身份、预约 LIVE，并将出席记录保存在 Fan Passport 中。",
+    "zh-Hant": "查看今日粉絲排名。 發現喜愛的創作者及其 LIVE。認證粉絲身份、預約 LIVE，並將出席記錄儲存在 Fan Passport 中。",
+    "es": "Consulta la clasificación de fans de hoy. Descubre a tus creadores favoritos y sus LIVE. Verifica que eres fan, reserva un LIVE y registra tu asistencia en tu Fan Passport.",
+    "id": "Lihat peringkat penggemar hari ini. Temukan kreator favorit Anda dan acara LIVE mereka. Verifikasi fandom, pesan tempat untuk LIVE, dan catat kehadiran di Fan Passport Anda.",
+    "vi": "Xem bảng xếp hạng người hâm mộ hôm nay. Khám phá nhà sáng tạo yêu thích và LIVE của họ. Xác minh, đặt chỗ LIVE và ghi lại tham dự trong Fan Passport.",
+    "th": "ดูอันดับแฟนคลับวันนี้ ค้นพบครีเอเตอร์คนโปรดและกิจกรรม LIVE ของพวกเขา ยืนยันความเป็นแฟน จองที่สำหรับ LIVE และบันทึกการเข้าร่วมไว้ใน Fan Passport",
+    "pt": "Veja a classificação dos fãs de hoje. Descubra seus criadores favoritos e suas LIVE. Verifique que você é fã, reserve um lugar em uma LIVE e registre sua presença em seu Fan Passport.",
+    "fr": "Consultez le classement des fans du jour. Découvrez vos créateurs favoris et leurs LIVE. Vérifiez que vous êtes fan, réservez une place pour un LIVE et consignez votre présence dans votre Fan Passport.",
+    ru: "Посмотрите сегодняшний рейтинг фанатов. Найдите своих любимых авторов и их мероприятия LIVE. Подтвердите свою любовь к их творчеству, зарезервируйте место на мероприятии LIVE и отметьте свое присутствие в вашем фан-аккаунте Passport."
 
   },
   "m70c75a25ee29": {

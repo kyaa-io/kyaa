@@ -137,9 +137,9 @@ export function contentPageMetadata(input: Omit<Parameters<typeof publicMetadata
 
 export const pageCopy = {
   home: {
-    ko: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "꺄(Kyaa)에서 최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 팬 패스포트에 기록하세요." },
+    ko: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "꺄(Kyaa)에서 오늘의 팬 순위와 최애의 LIVE 일정을 확인하고 팬 인증, 예약, 출석으로 함께한 순간을 팬 패스포트에 기록하세요." },
     get mn() { return this.en; },
-    en: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "Discover Kyaa (꺄), your favorite creators and their LIVE events. Verify your fandom, reserve a spot for a LIVE, and record your attendance in your Fan Passport." },
+    en: { title: "꺄(Kyaa). Every Fan Moment Counts.", description: "Explore today's fan rankings, your favorite creators and their LIVE events on Kyaa (꺄). Verify your fandom, reserve a spot for a LIVE, and record your attendance in your Fan Passport." },
 
   ...additionalLocales((translationLocale) => ({ title: "꺄(Kyaa). Every Fan Moment Counts.", description: `Kyaa (꺄). ${localizedMessages.m66f358c91b9f[translationLocale]}` }))
 },

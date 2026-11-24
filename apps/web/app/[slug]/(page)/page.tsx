@@ -7,7 +7,6 @@ import { parseAppLocale } from "@/i18n/locales";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
 import { serializeStructuredData } from "@/seo/structured-data";
-import { APP_LOCALES } from "@/i18n/locales";
 import { canonicalUrl, isRehearsalPath, publicMetadata, shareOrigin } from "@/seo/metadata";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { resolvePhoto } from "@/features/media/domain/public-image";
@@ -29,7 +28,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string; share?: string }> }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   if (!isCreatorHandle(slug)) notFound();
-  const locale = parseAppLocale(query.locale);
+  const locale = toContentLocale(parseAppLocale(query.locale));
   const celebrity = await loadSeoCreator(slug, locale);
   if (!celebrity) notFound();
   if (slug === WAVE_FANPAGE_SLUG) return { title: `${celebrity.name} | kyaa`, robots: { index: false, follow: false } };
@@ -43,7 +42,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const challenge = query.share === JJINFAN_SHARE_VALUE ? await readSharedJjinfanChallenge(slug).catch(() => null) : null;
   return publicMetadata({ path: creatorHomeHref(slug), locale, title: challenge ? `${challenge.campaign.title} · ${celebrity.name} | kyaa` : `${celebrity.name} | kyaa`, description: challenge?.campaign.description || celebrity.summary,
     image: challenge ? new URL(jjinfanShareImagePath(slug, challenge.count, parseAppLocale(query.locale)), shareOrigin()).href : photo.src, imageAlt: challenge ? challenge.campaign.title : photo.alt ?? celebrity.image.alt,
-    locales: APP_LOCALES.filter(language => translated || toContentLocale(language) === toContentLocale(locale)) });
+    locales: translated ? ["ko", "en"] : [toContentLocale(locale)] });
 }
 
 export default async function CelebrityPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string; tab?: string; month?: string; section?: string; source?: string; news?: string; media?: string; authIntent?: string }> }) {
@@ -74,6 +73,6 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
   const unlisted = await createPublishedContentRepositoryFromEnvironment().listUnlistedSlugs();
   if (unlisted.has(slug)) return content;
   const entity = { "@context": "https://schema.org", "@type": type, name: celebrity.name,
-    description: celebrity.summary, url: canonicalUrl(creatorHomeHref(slug), locale) };
+    description: celebrity.summary, url: canonicalUrl(creatorHomeHref(slug), toContentLocale(locale)) };
   return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(entity) }} />{content}</>;
 }
