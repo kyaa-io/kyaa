@@ -15,7 +15,6 @@ import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
-import { STAMPS_PER_HEART } from "@/features/groups/ui/stan-lucky-cheer";
 import type { AppLocale } from "@/i18n/locales";
 import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
 import { walletCopy } from "./copy";
