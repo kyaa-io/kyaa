@@ -22,12 +22,14 @@ export function ChemiHome({
   locale,
   growth,
   preview,
+  weeklyRankings,
   matchAvailable = false,
 }: {
   copy: HomeCopy;
   locale: string;
   growth: boolean;
   preview: boolean;
+  weeklyRankings: boolean;
   matchAvailable?: boolean;
 }) {
   const [category, setCategory] = useState("all");
@@ -41,9 +43,9 @@ export function ChemiHome({
   if (growth)
     return <ChemiGrowth locale={locale} home={copy} matchAvailable={matchAvailable} />;
   return (
-    <div className={styles.home} data-ranked={preview} data-chemi-hide-dm="">
+    <div className={styles.home} data-ranked={weeklyRankings} data-chemi-hide-dm="">
       <HomeBanner copy={copy} activities={activities} index={activeIndex} setIndex={setActiveIndex} />
-      {preview && <WeeklyRankings copy={copy} locale={locale} matchAvailable={matchAvailable} />}
+      {weeklyRankings && <WeeklyRankings copy={copy} locale={locale} matchAvailable={matchAvailable} />}
       <section>
         <FanTabs
           variant="chip"

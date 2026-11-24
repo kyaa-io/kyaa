@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "케미 탭에서 짝 맞추기와 최애 런의 이번 주 상위 3명과 내 순위를 볼 수 있어요.",
+    "기록이 없는 순위 칸은 ‘미등록’으로 표시해요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/2026-11-24-chemi-weekly-rankings-1440.png",
+    "release-notes/images/2026-11-24-chemi-weekly-rankings-390.png"
+  ]
+}
