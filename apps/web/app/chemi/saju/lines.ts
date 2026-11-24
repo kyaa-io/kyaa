@@ -61,7 +61,7 @@ const tones: Record<SajuCharacterId, Tone> = {
     pairReact: (line) => line,
   },
   elina: {
-    hello: "사주 보러 왔어요? 같이 볼까?",
+    hello: "사주 보러 왔어요? 같이 볼까요?",
     birth: "좋아요. 언제 태어났는지 알려 줄래요?",
     calc: "잠깐만요, 사주를 천천히 펼쳐 볼게요.",
     t1: (i) => `${i.image} 같은 사람이에요. ${i.trait} 사람이죠?`,

@@ -555,6 +555,11 @@ export function answerFollowup(input: {
   const read = askBasis(input.content, input.topic, input.result, input.before?.question ?? input.question, input.kind);
   const flow = read.good ? "good" : "care";
   if (!/[가-힣]/.test(input.question)) return foreignAnswer(input.question, input, flow, true);
+  if (/몇\s*분/u.test(input.question)) {
+    const activity = input.question.match(/([가-힣]+)(?:은|는)\s+(?:하루에\s*)?몇\s*분/u)?.[1];
+    const start = activity ? `오늘은 ${activity} 시간을 10분으로` : "오늘은 10분으로";
+    return { ban: `${start} 잡아 봐. 편하게 마치면 내일 조금 늘려 봐.`, yo: `${start} 잡아 봐요. 편하게 마치면 내일 조금 늘려 봐요.`, hao: `${start} 잡으시오. 무리가 없으면 내일 조금 늘려 보시오.` }[tone];
+  }
   if (followHow.test(input.question)) return howAnswer[intentOf(input.before?.question ?? "") === "contact" ? "contact" : "other"][flow][tone];
   if (followWhen.test(input.question)) return whenAnswer[flow][tone];
   if (followWhy.test(input.question)) {

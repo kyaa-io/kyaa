@@ -41,7 +41,8 @@ import {
   kstDayStart,
   kstWeekday,
   periodHours,
-  periodNotes,
+  periodLine,
+  stageLine,
   spiritNotes,
   stageNotes,
 } from "./result-copy";
@@ -473,7 +474,7 @@ export function FortuneResult({
                 {bar(label, result.periods[key])}
                 <FanText as="p" role="meta">
                   {korean ? periodHours[key] : ({ morning: "05:00–11:00", afternoon: "11:00–17:00", night: "17:00–23:00" })[key]} ·{" "}
-                  {korean ? periodNotes[key][band(result.periods[key])] : uiText(periodKey(key, result.periods[key]))}
+                  {korean ? periodLine(key, band(result.periods[key]), character) : uiText(periodKey(key, result.periods[key]))}
                 </FanText>
               </div>
             ))}
@@ -493,7 +494,7 @@ export function FortuneResult({
                       {korean && `${result.evidence.stage} · `}{stage[0]}
                     </FanText>
                     <FanText as="p" role="meta">
-                      {stage[1]}
+                      {korean ? stageLine(result.evidence.stage, character) : stage[1]}
                     </FanText>
                   </dd>
                 </div>

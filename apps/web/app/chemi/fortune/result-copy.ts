@@ -84,6 +84,44 @@ export const stageNotes: Record<string, [string, string]> = {
   양: ["천천히 자라는 자리", "당장 결과가 없어도 괜찮아요. 꾸준함이 쌓여요."],
 };
 
+type FortuneVoice = "changha" | "elina" | "yuna" | "dosa";
+type Period = keyof typeof periodNotes;
+
+const casualPeriods: Record<Period, Record<Band, string>> = {
+  morning: { high: "급한 일부터 끝내기 좋아", mid: "가벼운 일부터 천천히 시작해", low: "서두르지 말고 준비부터 해" },
+  afternoon: { high: "사람을 만나 이야기하기 좋아", mid: "집중이 흐려지면 짧게 나눠서 해", low: "무리한 약속은 피해" },
+  night: { high: "좋아하는 걸 몰아 보기 좋은 시간", mid: "하루를 조용히 정리하기 좋은 시간", low: "일찍 쉬기 좋은 시간" },
+};
+const casualStages: Record<string, string> = {
+  장생: "처음 해 보는 일에 운이 붙어. 작게 시작해 봐.", 목욕: "마음이 들뜨면 선택을 한 번 더 살펴봐.",
+  관대: "준비한 게 빛나는 날이야. 사람 앞에 서기 좋아.", 건록: "네 힘으로 해내는 일이 잘 풀려.",
+  제왕: "힘이 넘쳐. 밀어붙이기 전에 한 번만 양보해.", 쇠: "하던 걸 다듬을 때 결과가 좋아. 마무리에 힘을 써.",
+  병: "무리하지 말고 컨디션부터 챙겨.", 사: "끝내야 할 일을 정리하기 좋아.",
+  묘: "지금은 모아 두는 편이 좋아.", 절: "지난 일을 놓으면 새 흐름이 들어와.",
+  태: "아직 꺼내지 않은 아이디어를 키워 봐.", 양: "당장 결과가 없어도 괜찮아. 꾸준함이 쌓여.",
+};
+const dosaPeriods: Record<Period, Record<Band, string>> = {
+  morning: { high: "급한 일부터 끝내기 좋소", mid: "가벼운 일부터 시작하시오", low: "서두르지 말고 준비부터 하시오" },
+  afternoon: { high: "사람을 만나 이야기하기 좋소", mid: "집중이 흐려지면 짧게 나누시오", low: "무리한 약속은 피하시오" },
+  night: { high: "좋아하는 것을 몰아 보기 좋소", mid: "하루를 조용히 정리하시오", low: "오늘은 일찍 쉬시오" },
+};
+const dosaStages: Record<string, string> = {
+  장생: "새 일에 운이 붙으니 작게 시작하시오.", 목욕: "마음이 들뜨면 선택을 한 번 더 살피시오.",
+  관대: "준비한 것이 빛나니 사람 앞에 서기 좋소.", 건록: "그대 힘으로 하는 일이 잘 풀리오.",
+  제왕: "힘이 넘치니 밀어붙이기 전에 양보하시오.", 쇠: "하던 일을 다듬고 마무리에 힘을 쓰시오.",
+  병: "무리하지 말고 몸부터 챙기시오.", 사: "끝내야 할 일을 정리하기 좋소.",
+  묘: "지금은 모아 두는 편이 좋소.", 절: "지난 일을 놓으면 새 흐름이 들어오.",
+  태: "아직 꺼내지 않은 생각을 키워 보시오.", 양: "당장 결과가 없어도 꾸준함이 쌓이오.",
+};
+export function periodLine(period: Period, level: Band, character: FortuneVoice) {
+  const table = { changha: casualPeriods, yuna: casualPeriods, elina: periodNotes, dosa: dosaPeriods };
+  return table[character][period][level];
+}
+export function stageLine(stage: string, character: FortuneVoice) {
+  if (character === "elina") return stageNotes[stage]?.[1];
+  return (character === "dosa" ? dosaStages : casualStages)[stage];
+}
+
 export const spiritNotes: Record<string, [string, string]> = {
   겁살: ["부딪히기 쉬운 기운", "의견이 갈리기 쉬워요. 한 박자 늦춰 말하세요."],
   재살: ["새는 것을 막는 기운", "물건이나 돈을 흘리기 쉬워요. 소지품을 한 번 더 보세요."],

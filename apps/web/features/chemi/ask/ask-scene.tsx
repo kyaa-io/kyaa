@@ -962,8 +962,9 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
           {main && !paging ? (
             <div className={`${styles.actions} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
               <FanAction
-                variant="primary"
-                className={styles.main}
+                variant={view === "topic" ? "text" : "primary"}
+                size={view === "topic" ? "sm" : "md"}
+                className={view === "topic" ? undefined : styles.main}
                 leadingIcon={main.icon ? <FanIcon icon={main.icon} /> : undefined}
                 loading={main.loading}
                 onClick={main.onClick}
