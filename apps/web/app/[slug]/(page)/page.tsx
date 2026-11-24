@@ -6,8 +6,7 @@ import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { creatorHomeHref, isCreatorHandle } from "@/features/creator/domain/creator-navigation";
 import { GROUP_COLLECTIONS_VISIBLE } from "@/features/groups/domain/collection-visibility";
-import { serializeStructuredData } from "@/seo/structured-data";
-import { canonicalUrl, isRehearsalPath, publicMetadata, shareOrigin } from "@/seo/metadata";
+import { publicMetadata, shareOrigin } from "@/seo/metadata";
 import { loadSeoCreator } from "@/server/seo/public-content";
 import { resolvePhoto } from "@/features/media/domain/public-image";
 import { creatorShareImages, resolveCreatorHeroImage } from "@/components/fan-ui/creator-image-config";
@@ -67,12 +66,5 @@ export default async function CelebrityPage({ params, searchParams }: { params: 
   const [primaryLives, initialCheerEvent, jjinfanSeed] = slug === WAVE_FANPAGE_SLUG ? [[], null, undefined] : await Promise.all([createPublishedContentRepositoryFromEnvironment().listPrimaryLives(toContentLocale(locale)), readPublicCheerEvent(slug, toContentLocale(locale)), readJjinfanSeed(slug)]);
   const upcomingLive = primaryLives.find((live) => live.celebritySlug === slug) ?? null;
   const content = <JjinfanSeed slug={slug} value={jjinfanSeed}><CelebrityFanPage groupsEnabled={process.env.KYAA_GROUPS_ENABLED === "true"} celebrity={celebrity} locale={locale} upcomingLive={upcomingLive} initialCheerEvent={initialCheerEvent} initialTab={initialTab} calendarMonth={requestedMonth} initialBoardSection={initialBoardSection} initialBoardSource={initialBoardSource} initialNewsFilter={requestedNews === "artist_post" || requestedNews === "notice" || requestedNews === "chzzk" ? requestedNews : "all"} initialMediaFilter={requestedMedia === "photos" || requestedMedia === "videos" || requestedMedia === "replays" ? requestedMedia : undefined} instagramEnabled={process.env.INSTAGRAM_INTEGRATION_ENABLED === "true"} jjinfanChallengeEnabled={jjinfanGaugeEnabled()} /></JjinfanSeed>;
-  if (slug === WAVE_FANPAGE_SLUG) return <WaveAccessBoundary locale={locale}>{content}</WaveAccessBoundary>;
-  const type = slug === "ensemble-patchwork" ? "MusicGroup" : celebrity.roles.includes("brand") ? null : "Person";
-  if (!type || isRehearsalPath(creatorHomeHref(slug))) return content;
-  const unlisted = await createPublishedContentRepositoryFromEnvironment().listUnlistedSlugs();
-  if (unlisted.has(slug)) return content;
-  const entity = { "@context": "https://schema.org", "@type": type, name: celebrity.name,
-    description: celebrity.summary, url: canonicalUrl(creatorHomeHref(slug), toContentLocale(locale)) };
-  return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(entity) }} />{content}</>;
+  return slug === WAVE_FANPAGE_SLUG ? <WaveAccessBoundary locale={locale}>{content}</WaveAccessBoundary> : content;
 }
