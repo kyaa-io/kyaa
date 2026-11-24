@@ -45,7 +45,7 @@ const publishedCelebrityRowSchema = z.object({
   image_url: httpsOrRootRelativeUrl,
   image_alt: z.string().trim().min(1).max(300),
   image_position: z.string().trim().min(1).max(100),
-  primary_role: creatorRoleSchema,
+  primary_role: z.preprocess(role => role === "singer" || role === "actor" || role === "show_host" ? "creator" : role, creatorRoleSchema),
   website_url: httpsUrl.nullable().optional(),
   ticket_url: httpsUrl.max(2048).nullable().optional(),
   themes: z.array(themeSchema),
