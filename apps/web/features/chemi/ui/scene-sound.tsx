@@ -12,7 +12,7 @@ const labels: Record<string, string> = {
   fr: "Son de la scène", es: "Sonido de la escena", pt: "Som da cena", ru: "Звук сцены",
 };
 
-export function SceneSound({ locale, reveal, card = false }: { locale: string; reveal: boolean; card?: boolean }) {
+export function SceneSound({ locale, reveal, card = false, className }: { locale: string; reveal: boolean; card?: boolean; className?: string }) {
   const [enabled, setEnabled] = useState(false);
   const [ready, setReady] = useState(false);
   const player = useRef<HTMLAudioElement>(null);
@@ -35,7 +35,7 @@ export function SceneSound({ locale, reveal, card = false }: { locale: string; r
     try { localStorage.setItem(preference, next ? "on" : "off"); } catch { /* Session only. */ }
   }
   return <>
-    <FanIconButton disabled={!ready} aria-label={labels[locale] ?? labels.en} aria-pressed={enabled} onClick={toggle}>
+    <FanIconButton className={className} disabled={!ready} aria-label={labels[locale] ?? labels.en} aria-pressed={enabled} onClick={toggle}>
       <FanIcon icon={enabled ? Volume2 : VolumeX} />
     </FanIconButton>
     <audio ref={player} src={card ? "/chemi/audio/card.mp3" : "/chemi/audio/reveal.mp3"} preload={enabled ? "auto" : "none"} />

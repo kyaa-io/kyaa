@@ -912,10 +912,10 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
       <SceneBackdrop tall={art.tall} wide={art.wide} loop={expression === null ? askLoop(where, who) : null} alt={name}
         expression={<SceneExpression scene={where} character={who} portrait={art.tall} expression={expression} wide="64" />} />
       <div className={styles.top}>
-        <SceneSound locale={locale} reveal={revealAnswer} />
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>
+        <SceneSound className={styles.round} locale={locale} reveal={revealAnswer} />
         {days > 1 && !crisis ? (
           <span className={`${styles.count} ${styles.days}`} aria-label={`${creatorName(character, locale)} ${text("askDays", { count: days })}`}>
             <FanIcon icon={Heart} size={16} />
