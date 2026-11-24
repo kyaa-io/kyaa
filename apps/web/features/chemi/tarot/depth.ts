@@ -45,6 +45,7 @@ export type TarotBasisRow = { term: string; value: string; plain: string };
 export function tarotBasis(id: number, reversed: boolean, locale: string = "ko"): TarotBasisRow[] {
   if (!TAROT_DECK[id]) return [];
   if (tarotLang(locale) === "en") return tarotBasisEn(id, reversed);
+  if (tarotLang(locale) === "mn") return tarotBasisMn(id, reversed);
   const { suit, rank } = suitOf(id);
   const rows: TarotBasisRow[] = [];
   if (suit === "major") {
@@ -101,7 +102,7 @@ const suitDomain: Record<Suit, Record<"연애" | "일" | "돈", string>> = {
 
 export function tarotRowMore(id: number, label: string) {
   if (!TAROT_DECK[id]) return null;
-  const domain = /^[A-Za-z]/.test(label) ? suitDomainEn : suitDomain;
+  const domain = /^[A-Za-z]/.test(label) ? suitDomainEn : /^[\u0400-\u04ff]/.test(label) ? suitDomainMn : suitDomain;
   return (domain[suitOf(id).suit] as Record<string, string | undefined>)[label] ?? null;
 }
 
@@ -244,5 +245,86 @@ const suitDomainEn: Record<Suit, Record<"Love" | "Work" | "Money", string>> = {
     Love: "As a card of daily life, steady small acts of care carry your heart.",
     Work: "As a card of building, visible results pile up bit by bit.",
     Money: "As a card of money and body, checking the real numbers gives you the answer.",
+  },
+};
+
+/* 몽골어 화면의 근거 줄과 덧붙이는 문장. 몽골어 풀이 글(cards.mn.json)의 줄 이름은 Хайр · Ажил · Мөнгө · Зөвлөгөө 다. */
+const suitsMn: Record<Exclude<Suit, "major">, { name: string; element: string; plain: string }> = {
+  wands: { name: "Саваа", element: "Гал", plain: "Хүсэл тэмүүлэл, үйлдлийн хөзөр" },
+  cups: { name: "Аяга", element: "Ус", plain: "Сэтгэл, харилцааны хөзөр" },
+  swords: { name: "Сэлэм", element: "Салхи", plain: "Бодол, үгийн хөзөр" },
+  pentacles: { name: "Зоос", element: "Шороо", plain: "Мөнгө, бие, өдөр тутмын амьдралын хөзөр" },
+};
+const stepsMn = [
+  "эхлэх байр",
+  "сонгож тэнцвэр олох байр",
+  "анхны үр дүн, хамтын ажлын байр",
+  "байраа олж зогсох байр",
+  "мөргөлдөж ганхах байр",
+  "сэргэж хуваалцах байр",
+  "эргэн харж сорилтод орох байр",
+  "хөдөлж дадлагажих байр",
+  "бараг хүрсэн байр",
+  "дуусгаад дараагийнх руу шилжих байр",
+] as const;
+const courtMn = [
+  ["Шадар", "Суралцагч. Шинэ мэдээ, анхны оролдлогын тухай өгүүлнэ"],
+  ["Баатар", "Хөдлөгч. Урагш түлхэх хүчний тухай өгүүлнэ"],
+  ["Хатан", "Халамжлагч. Дотроо боловсорсон хүчний тухай өгүүлнэ"],
+  ["Хаан", "Удирдагч. Хариуцлага хүлээж шийдэх хүчний тухай өгүүлнэ"],
+] as const;
+const ordinalMn = ["нэгдүгээр", "хоёрдугаар", "гуравдугаар", "дөрөвдүгээр", "тавдугаар", "зургадугаар", "долдугаар", "наймдугаар", "есдүгээр", "аравдугаар"] as const;
+
+function tarotBasisMn(id: number, reversed: boolean): TarotBasisRow[] {
+  const { suit, rank } = suitOf(id);
+  const rows: TarotBasisRow[] = [];
+  if (suit === "major") {
+    rows.push({
+      term: "Хөзрийн төрөл",
+      value: `Их аркана ${rank}`,
+      plain: "Ердөө хорин хоёр ширхэг байдаг том урсгалын хөзөр. Өдрийн үйл явдлаас илүү одоо туулж буй сэдвийг заана",
+    });
+  } else {
+    const info = suitsMn[suit];
+    rows.push({ term: "Хөзрийн төрөл", value: `Бага аркана · ${info.name} (${info.element})`, plain: info.plain });
+    if (rank < 10)
+      rows.push({ term: "Тоо", value: String(rank + 1), plain: `Арван шатны ${ordinalMn[rank]} нь: ${stepsMn[rank]}` });
+    else rows.push({ term: "Дүр", value: courtMn[rank - 10][0], plain: courtMn[rank - 10][1] });
+  }
+  rows.push({
+    term: "Чиглэл",
+    value: reversed ? "Урвуу" : "Цэх",
+    plain: reversed
+      ? "Утга нь хойшлох юм уу дотогшоо чиглэнэ. Муу хөзөр гэсэн үг биш"
+      : "Утга нь байгаагаараа илэрнэ",
+  });
+  return rows;
+}
+
+const suitDomainMn: Record<Suit, Record<"Хайр" | "Ажил" | "Мөнгө", string>> = {
+  major: {
+    Хайр: "Том урсгалын хөзөр тул зөвхөн өнөөдрийг биш, харилцаа хаашаа явж байгааг харна.",
+    Ажил: "Том урсгалын хөзөр тул гарт буй ажлаас илүү чиглэлээ шалгана.",
+    Мөнгө: "Том урсгалын хөзөр тул өнөөдрийн зардлаас илүү мөнгөнд хандах хандлагыг харна.",
+  },
+  wands: {
+    Хайр: "Үйлдлийн хөзөр тул эхэлж хөдөлсөн нь урсгалыг бүтээнэ.",
+    Ажил: "Хүсэл тэмүүллийн хөзөр тул эхлэх хүч нэмэгдэнэ.",
+    Мөнгө: "Хурдан хөзөр тул зарцуулалт ч хурдасна.",
+  },
+  cups: {
+    Хайр: "Сэтгэлийн хөзөр тул мэдэрснээ үгээр илэрхийлбэл хүрнэ.",
+    Ажил: "Сэтгэлийн хөзөр тул хамт ажилладаг хүмүүстэйгээ уур амьсгал үр дүнг шийднэ.",
+    Мөнгө: "Сэтгэлийн хөзөр тул сэтгэл санаагаараа түрийвчээ нээнэ.",
+  },
+  swords: {
+    Хайр: "Бодлын хөзөр тул ганц үгийн жин нэмэгдэнэ.",
+    Ажил: "Шүүлтийн хөзөр тул цэгцэлж шийдэхэд сайн.",
+    Мөнгө: "Жинлэх хөзөр тул харьцуулж тооцоолоод хөдлөөрэй.",
+  },
+  pentacles: {
+    Хайр: "Өдөр тутмын хөзөр тул тогтмол жижиг халамж сэтгэлийг тань хүргэнэ.",
+    Ажил: "Бүтээх хөзөр тул харагдах үр дүн бага багаар хуримтлагдана.",
+    Мөнгө: "Мөнгө, биеийн хөзөр тул бодит тоогоо шалгавал хариу гарна.",
   },
 };

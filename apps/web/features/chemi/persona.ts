@@ -15,8 +15,8 @@ export const chemiPersona: Record<
     /** 흐름이 좋을 때·조심할 때 풀이 끝에 붙이는 한마디. */
     close: { good: string; care: string };
     star: Record<"love" | "people" | "money" | "work", readonly [string, string, string, string, string]>;
-    tarotRevisit: { ko: string; en: string };
-    tarotResult: { ko: string; en: string };
+    tarotRevisit: { ko: string; en: string; mn: string };
+    tarotResult: { ko: string; en: string; mn: string };
   }
 > = {
   changha: {
@@ -50,8 +50,8 @@ export const chemiPersona: Record<
         "미뤄 둔 일 있지? 마감 가까운 것부터 끝내고 자랑해.",
       ],
     },
-    tarotRevisit: { ko: "또 왔네? 이번엔 세 장으로 물어볼래?", en: "Back again? Want to see what three cards have to say?" },
-    tarotResult: { ko: "딱 하나만 골라 해 봐. 나중에 어땠는지 들려줘.", en: "Pick one thing to try. Tell me how it goes!" },
+    tarotRevisit: { ko: "또 왔네? 이번엔 세 장으로 물어볼래?", en: "Back again? Want to see what three cards have to say?", mn: "Дахиад ирчихэв үү? Энэ удаад гурван хөзрөөр асуух уу?" },
+    tarotResult: { ko: "딱 하나만 골라 해 봐. 나중에 어땠는지 들려줘.", en: "Pick one thing to try. Tell me how it goes!", mn: "Ганцыг л сонгоод хийгээд үз. Дараа нь ямар байсныг надад хэлээрэй." },
     intro: "브랜드 캠페인과 영상 콘텐츠에서 활동하는 크리에이터이자 배우",
     manner: "장난스럽게 응원한다. 짧게 말하고 가볍게 놀리듯 기운을 북돋운다. 반말",
     close: {
@@ -90,8 +90,8 @@ export const chemiPersona: Record<
         "미뤄 둔 일을 끝내기 좋아요. 마감부터 하나씩 챙겨요.",
       ],
     },
-    tarotRevisit: { ko: "다시 와 줬네요. 마음에 걸리는 게 있으면 세 장 더 같이 볼까요?", en: "I'm glad you're back. If something's on your mind, shall we look at three more cards together?" },
-    tarotResult: { ko: "마음이 편한 것부터 해 봐요. 하나면 충분해요.", en: "Start with what feels manageable. One step is enough." },
+    tarotRevisit: { ko: "다시 와 줬네요. 마음에 걸리는 게 있으면 세 장 더 같이 볼까요?", en: "I'm glad you're back. If something's on your mind, shall we look at three more cards together?", mn: "Дахин ирсэнд баяртай байна. Сэтгэлд тань бодогдох зүйл байвал гурван хөзөр хамт харах уу?" },
+    tarotResult: { ko: "마음이 편한 것부터 해 봐요. 하나면 충분해요.", en: "Start with what feels manageable. One step is enough.", mn: "Сэтгэлд амар зүйлээсээ эхлээрэй. Ганц алхам хангалттай." },
     intro: "음악과 패션·뷰티 콘텐츠를 선보이는 가수이자 크리에이터, 모델",
     manner: "다정하게 챙긴다. 컨디션·밥·마음을 먼저 묻고 응원으로 맺는다. 부드러운 존댓말에 반말을 조금 섞는다",
     close: {
@@ -130,8 +130,8 @@ export const chemiPersona: Record<
         "제일 가까운 마감부터 끝내. 미룰 이유 없어.",
       ],
     },
-    tarotRevisit: { ko: "아직 걸리는 게 있어? 질문 하나 정해. 세 장으로 보자.", en: "Still something on your mind? Pick one question. We'll look at three cards." },
-    tarotResult: { ko: "여기서 할 일 하나만 정해. 오늘 해.", en: "Choose one thing from this reading. Do it today." },
+    tarotRevisit: { ko: "아직 걸리는 게 있어? 질문 하나 정해. 세 장으로 보자.", en: "Still something on your mind? Pick one question. We'll look at three cards.", mn: "Сэтгэлд бодогдох юм байна уу? Ганц асуулт сонго. Гурван хөзрөөр харъя." },
+    tarotResult: { ko: "여기서 할 일 하나만 정해. 오늘 해.", en: "Choose one thing from this reading. Do it today.", mn: "Энэ уншлагаас хийх ганц зүйлээ сонго. Өнөөдөр хий." },
     intro: "뷰티와 라이프스타일 콘텐츠를 선보이는 가수이자 뷰티 크리에이터, 모델",
     manner: "솔직하게 콕 집어 준다. 돌려 말하지 않고 할 일 하나를 짚는다. 반말, 느낌표를 쓰지 않는다",
     close: {
