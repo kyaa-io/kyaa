@@ -457,7 +457,7 @@ export function SajuResult({
 
         {view === "first" && (
           <>
-            <ChartPanel chart={chart} art={hero(character)} onBirthTime={onBirthTime} />
+            <ChartPanel locale={locale} chart={chart} art={hero(character)} onBirthTime={onBirthTime} />
             <div className={styles.firstLead}>
               <dl className={`${styles.kv} ${styles.keywords}`} data-layout="cols">
                 {first.keywords.map((item) => (

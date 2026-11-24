@@ -9,6 +9,7 @@ import { LockKeyhole } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanHanja } from "@/components/fan-ui/fan-hanja";
 import { FanText } from "@/components/fan-ui/fan-text";
+import { pillarTerm } from "./pillar-terms";
 import styles from "./pillar-sheet.module.css";
 
 export type PillarElement = "wood" | "fire" | "earth" | "metal" | "water";
@@ -34,14 +35,14 @@ export type PillarColumn =
 const rowNames = ["십신", "천간", "지지", "십신"] as const;
 const detailNames = ["지장간", "12운성", "12신살"] as const;
 
-function Glyph({ cell }: { cell: Cell }) {
+function Glyph({ cell, locale }: { cell: Cell; locale?: string }) {
   return (
     <span className={styles.glyph}>
       <FanHanja role="glyph">{cell.hanja}</FanHanja>
       <span className={styles.read}>
         <FanText role="label">{cell.letter}</FanText>
         <img src={`/chemi/saju/elements/${cell.element}.webp`} width={24} height={24} alt="" />
-        <FanText role="meta">{elementName[cell.element]}</FanText>
+        <FanText role="meta">{pillarTerm(elementName[cell.element], locale)}</FanText>
       </span>
     </span>
   );
@@ -52,6 +53,7 @@ export function PillarSheet({
   label,
   open,
   unknownLabel,
+  locale,
 }: {
   columns: readonly PillarColumn[];
   /** 표 전체를 읽어 주는 이름(사주 여덟 글자. 시주 …) */
@@ -60,6 +62,7 @@ export function PillarSheet({
   open: boolean;
   /** 모르는 기둥 칸의 읽기 이름 */
   unknownLabel: string;
+  locale?: string;
 }) {
   const showSpirit = columns.some((column) => column.known && column.spirit);
   const detailRows = open ? (showSpirit ? detailNames : detailNames.slice(0, 2)) : [];
@@ -69,7 +72,7 @@ export function PillarSheet({
         <span />
         {[...rowNames, ...detailRows].map((name, i) => (
           <FanText role="meta" className={styles.rowName} key={`${name}${i}`}>
-            {name}
+            {pillarTerm(name, locale)}
           </FanText>
         ))}
       </div>
@@ -77,15 +80,15 @@ export function PillarSheet({
         column.known ? (
           <div className={styles.col} data-me={column.me || undefined} key={column.key} aria-hidden="true">
             <FanText role={column.me ? "label" : "meta"} className={styles.name}>
-              {column.name}
+              {pillarTerm(column.name, locale)}
             </FanText>
             <FanText role={column.me ? "label" : "meta"} className={styles.god}>
-              {column.stemGod}
+              {pillarTerm(column.stemGod, locale)}
             </FanText>
-            <Glyph cell={column.stem} />
-            <Glyph cell={column.branch} />
+            <Glyph locale={locale} cell={column.stem} />
+            <Glyph locale={locale} cell={column.branch} />
             <FanText role="meta" className={styles.god}>
-              {column.branchGod}
+              {pillarTerm(column.branchGod, locale)}
             </FanText>
             {open && (
               <>
@@ -109,7 +112,7 @@ export function PillarSheet({
         ) : (
           <div className={styles.col} data-unknown="" key={column.key} aria-hidden="true">
             <FanText role="meta" className={styles.name}>
-              {column.name}
+              {pillarTerm(column.name, locale)}
             </FanText>
             <span className={styles.slot} title={unknownLabel}>
               <FanIcon icon={LockKeyhole} size={16} />
