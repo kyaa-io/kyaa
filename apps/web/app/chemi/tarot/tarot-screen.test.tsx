@@ -87,8 +87,7 @@ it("changes the favorite on the entry scene and speaks in that voice", async () 
   expect(location.search).toContain("c=elina");
   fireEvent.click(screen.getByRole("button", { name: "유나" }));
   expect(screen.getByText("왔네. 오늘 카드, 내가 읽어 줄게.")).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "kyaa 도사" }));
-  expect(screen.getByText("왔구려. 오늘 카드 한 장 뽑아 보겠소?")).toBeVisible();
+  expect(screen.queryByRole("button", { name: "kyaa 도사" })).toBeNull();
 });
 
 it("offers 78 cards to pick from and a random pick", async () => {
@@ -158,13 +157,13 @@ it("shows only what the server gave: no points, no made-up counts", async () => 
   expect(screen.queryByText(/이번 주 \d+일/)).toBeNull();
 });
 
-it("reopens the result of the linked reading on a later day, without today's rewards", async () => {
+it.each(["changha", "dosa"] as const)("reopens %s’s historical reading without awarding points or affinity again", async (character) => {
   auth.authenticated = true;
   today = [
     { readingId: "later", kind: "daily", date: kstDate() },
     { readingId: "linked", kind: "daily", date: "2026-11-17" },
   ];
-  open("result", "linked");
+  render(<TarotScreen locale="ko" initialCharacter={character} initialStep="result" initialReading="linked" />);
   expect(await screen.findByRole("heading", { name: "XIII 죽음" })).toBeVisible();
   expect(screen.getByText("11월 17일의 카드")).toBeVisible();
   expect(calls.some((call) => call.path === "/api/chemi/readings/linked")).toBe(true);

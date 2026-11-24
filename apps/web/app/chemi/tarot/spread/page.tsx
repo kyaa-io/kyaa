@@ -3,6 +3,7 @@ import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app
 import { chemiEnabled } from "@/features/chemi/domain/availability";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { isTarotCharacter } from "@/features/chemi/tarot/script";
+import { ReadingCreatorPicker } from "@/features/chemi/ui/reading-creator-picker";
 import { parseAppLocale } from "@/i18n/locales";
 import { TarotSpread } from "./screen";
 
@@ -22,7 +23,11 @@ export default async function TarotSpreadPage({
     <FanAppFrame currentPath="/chemi" locale={locale} mainId="tarot-spread-main">
       <ReadingCopyProvider value={catalog}>
         <FanContentContainer as="main" id="tarot-spread-main">
-          <TarotSpread locale={locale} character={isTarotCharacter(params.c) ? params.c : "changha"} />
+          {isTarotCharacter(params.c) ? (
+            <TarotSpread locale={locale} character={params.c} />
+          ) : (
+            <ReadingCreatorPicker content="tarot/spread" locale={locale} />
+          )}
         </FanContentContainer>
       </ReadingCopyProvider>
     </FanAppFrame>

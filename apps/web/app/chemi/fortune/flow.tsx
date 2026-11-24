@@ -329,8 +329,7 @@ export function FortuneFlow({
     }
   }
 
-  function choose(next: number) {
-    const id = fortuneCharacters[(next + fortuneCharacters.length) % fortuneCharacters.length].id;
+  function choose(id: FortuneCharacterId) {
     setCharacter(id);
     writeUrl({ c: id }, "replace");
   }
@@ -477,13 +476,13 @@ export function FortuneFlow({
         {step === "enter" ? (
           <>
             <div className={styles.pick} role="group" aria-label={text("favorite")}>
-              {fortuneCharacters.map((c) => (
+              {fortuneCharacters.filter(({ id }) => id !== "dosa").map((c) => (
                 <FanAction
                   key={c.id}
                   variant="text"
                   className={styles.pickItem}
                   aria-pressed={c.id === character}
-                  onClick={() => choose(fortuneCharacters.indexOf(c))}
+                  onClick={() => choose(c.id)}
                 >
                   <img src={`${art}/avatar-${c.id}-v1.jpg`} alt="" />
                   <FanText role={c.id === character ? "label" : "meta"}>

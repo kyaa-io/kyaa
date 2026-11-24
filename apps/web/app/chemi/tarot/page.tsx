@@ -1,3 +1,4 @@
+import { needsCreatorChoice, ReadingCreatorPicker } from "@/features/chemi/ui/reading-creator-picker";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
@@ -36,6 +37,8 @@ export default async function TarotPage({
               reversed={params.rev === "1"}
               character={isTarotCharacter(params.c) ? params.c : "changha"}
             />
+          ) : needsCreatorChoice(params.c, params.step === "result" && isReadingId(params.r)) ? (
+            <ReadingCreatorPicker content="tarot" locale={locale} />
           ) : (
             <TarotScreen
               locale={locale}

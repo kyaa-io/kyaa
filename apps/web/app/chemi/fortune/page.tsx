@@ -1,3 +1,4 @@
+import { needsCreatorChoice, ReadingCreatorPicker } from "@/features/chemi/ui/reading-creator-picker";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { notFound } from "next/navigation";
@@ -15,7 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function FortunePage({
   searchParams,
 }: {
-  searchParams: Promise<{ locale?: string; from?: string; step?: string; r?: string }>;
+  searchParams: Promise<{ c?: string; locale?: string; from?: string; step?: string; r?: string }>;
 }) {
   if (!chemiEnabled()) notFound();
   const params = await searchParams;
@@ -30,6 +31,8 @@ export default async function FortunePage({
           <div data-chemi-list-link=""><FanAction variant="text" href={`/chemi?locale=${locale}`}>← {catalog.readingUi.chemiList}</FanAction></div>
           {params.from ? (
             <FortuneResult key={params.from} locale={locale} from={params.from} />
+          ) : needsCreatorChoice(params.c, restoring) ? (
+            <ReadingCreatorPicker content="fortune" locale={locale} />
           ) : (
             <FortuneFlow locale={locale} restoring={restoring} paidPreview />
           )}

@@ -54,8 +54,8 @@ const artBanner = { ...bannerFixture, category: "guide" as const,
 const chemiBanner = {
   ...bannerFixture, kind: "announcement" as const, category: "guide" as const,
   title: "최애와 케미 한 판", description: "운세를 보고 미니 최애를 키워요.",
-  href: "/guide/chemi", ctaLabel: "케미 알아보기", alt: "달빛 아래 모인 미니게임과 운세의 주인공 네 명",
-  desktopImage: { ...bannerFixture.desktopImage, url: "/chemi/chemi-promo.webp", width: 1774, height: 887 },
+  href: "/guide/chemi", ctaLabel: "케미 알아보기", alt: "달빛 아래 모인 미니게임과 운세의 크리에이터 세 명",
+  desktopImage: { ...bannerFixture.desktopImage, url: "/chemi/chemi-promo-trio.webp", width: 1774, height: 887 },
   mobileImage: null,
 };
 const calendar = buildLiveCalendarMonth({ month: "2026-09", events: lives.map(({live}) => ({ id: live.id, slug: live.slug, startsAt: live.startsAt, effectiveStatus: live.effectiveStatus, title: live.title, celebrity: { name: creator.name, image: creator.image.url }, reservationState: null, hasBenefit: null })) });
