@@ -206,3 +206,19 @@ describe("awardDukjilAction", () => {
     expect(onError).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("bulk attendance", () => {
+  it.each([[], ["one"], ["one", "two"]].map(creators => ({ creators })))("handles $creators", async ({ creators }) => {
+    const d = { ...deps(), resolveCreatorIds: async () => new Map(creators.map(slug => [slug, slug])) };
+    d.rpc.mockResolvedValue(attendance);
+    const response = await createDukjilHandlers(d).attendAll(req("POST", "https://x.test/a", { creators }));
+    expect((await response.json()).items).toHaveLength(creators.length);
+  });
+  it("continues after failure and counts no points for a replay", async () => {
+    const creators = ["one", "two", "three", "three"];
+    const d = { ...deps(), resolveCreatorIds: async () => new Map(creators.map(slug => [slug, slug])) };
+    d.rpc.mockRejectedValueOnce(new Error("PASSPORT_REQUIRED")).mockResolvedValueOnce({ ...attendance, replayed: true }).mockResolvedValueOnce(attendance);
+    const response = await createDukjilHandlers(d).attendAll(req("POST", "https://x.test/a", { creators }));
+    expect((await response.json()).items).toEqual([{ slug: "one", ok: false }, { slug: "two", ok: true, replayed: true, points: 0 }, { slug: "three", ok: true, replayed: false, points: 2 }]);
+  });
+});
