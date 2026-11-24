@@ -116,7 +116,8 @@
     "release-notes/2026-11-24-chemi-r5c.json",
     "release-notes/2026-11-24-chemi-match-round-layout.json",
     "release-notes/2026-11-24-chemi-hero-height.json",
-    "release-notes/2026-11-24-chemi-weekly-rankings.json"
+    "release-notes/2026-11-24-chemi-weekly-rankings.json",
+    "release-notes/2026-11-24-chemi-growth-stage-rooms.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
