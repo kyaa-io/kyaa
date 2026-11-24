@@ -82,7 +82,7 @@ function FaintRows({ rows }: { rows: readonly (readonly [string, ...number[]])[]
 }
 
 /** 명식표 판. 1024px부터 오른쪽에 최애 장면 그림을 3 : 2 로 둔다. */
-export function ChartPanel({ chart, art, onBirthTime }: { chart: Chart; art: string; onBirthTime: () => void }) {
+export function ChartPanel({ chart, art, onBirthTime, locale }: { locale?: AppLocale; chart: Chart; art: string; onBirthTime: () => void }) {
   const uiText = useReadingCopy();
   const [open, setOpen] = useState(false);
   const detailId = useId();
@@ -100,7 +100,7 @@ export function ChartPanel({ chart, art, onBirthTime }: { chart: Chart; art: str
               </FanSectionLink>
             )}
           </Head>
-          <PillarSheet columns={sheetColumns(chart)} label={sheetLabel(chart)} open={open} unknownLabel={uiText("unlockTime")} />
+          <PillarSheet locale={locale} columns={sheetColumns(chart)} label={sheetLabel(chart)} open={open} unknownLabel={uiText("unlockTime")} />
           {(note || !chart.timeKnown) && (
             <div className={styles.lockBox}>
               {note ? (

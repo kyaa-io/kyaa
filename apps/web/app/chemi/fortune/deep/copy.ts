@@ -35,9 +35,7 @@ export const deepArt = (kind: "keep" | "care" | "tomorrow", character: FortuneCh
 export const AMULET_PAPER = "/chemi/fortune/card/amulet-paper-v1.webp";
 
 /** YYYY-MM-DD 를 그 날짜 그대로(시간대 변환 없이) 보여 준다. */
-export function dayLabel(locale: string, day: string, options: Intl.DateTimeFormatOptions) {
-  return new Intl.DateTimeFormat(locale, { timeZone: "UTC", ...options }).format(Date.parse(`${day}T00:00:00Z`));
-}
+export { calendarLabel as dayLabel } from "@/features/chemi/i18n/calendar-label";
 export const dotted = (day: string) => day.replaceAll("-", ".");
 
 export function isOpenDay(row: FortuneDay): row is OpenDay {
