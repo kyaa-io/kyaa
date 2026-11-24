@@ -189,7 +189,7 @@
   width: 100%;
   aspect-ratio: 1;
 }
-.rankRow img {
+.rankAvatar img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
@@ -212,11 +212,7 @@
     --fan-body-size: var(--fan-metadata-size);
   }
   .rankMine {
-    grid-template-columns: minmax(var(--space-6), auto) minmax(0, 1fr) auto;
     min-height: var(--rank-mine);
-  }
-  .rankMine .rankAvatar {
-    display: none;
   }
 }
 
