@@ -82,7 +82,7 @@ const hangul = /[가-힣]/;
 const concreteQuestion = /(?<![가-힣])(?:얼마(?!나)|언제|몇)/u;
 const concreteCriterion = /(?:하면|라면|다면|이면|되면|끝나면|마다|까지|안에서|이하|이상|이내|범위)/u;
 const timeDetail = /오전|오후|아침|점심|저녁|오늘|내일|(?:전|후|때)(?=\s|[.!?]|$)/u;
-const countDetail = /[한두세네]\s*(?:번|개|명|시간|분|달|주)/u;
+const countDetail = /(?:한|두|세|네|다섯|열|십)\s*(?:번|개|명|시간|분|달|주)/u;
 
 function normalizeAskSpacing(answer: string) {
   return answer.replace(/((?:가져|꺼내|살펴|골라|찾아|적어|해|써))봐(?=요|도|야|서|라|[.!?\s]|$)/gu, "$1 봐");
@@ -93,7 +93,9 @@ function retryNote(fault: string, input: AskAiInput) {
   switch (fault) {
     case "length": return "2~3문장, 모두 합쳐 150자 안쪽으로 끝까지 쓴다.";
     case "punctuation": return "모든 문장을 마침표·물음표·느낌표 중 하나로 끝낸다.";
-    case "concrete": return "풀이에 근거한 숫자나, 언제·얼마·몇인지 판단할 구체적인 조건을 조언 문장에 넣는다.";
+    case "concrete":
+      if (/몇\s*분/u.test(input.question)) return "질문의 활동을 짚고 실천할 시간(예: 열 분)을 조언으로 제시한다.";
+      return "풀이에 근거한 숫자나, 언제·얼마·몇인지 판단할 구체적인 조건을 조언 문장에 넣는다.";
     case "ending": return "마지막 문장을 다른 말로 시작하고 새로운 조언으로 맺는다.";
     case "repeat": return "이번 답이나 앞 답에서 이미 쓴 문장은 되풀이하지 않는다.";
     case "question": return "되묻지 말고 조언으로 끝낸다.";
@@ -180,6 +182,7 @@ export function askAnswerFault(answer: string, input: AskAiInput): string | null
   const self = askName[input.character];
   if (otherNames.some((name) => !self.includes(name) && text.includes(name) && !given.includes(name))) return "grounding";
   const askedDetail = input.question.match(concreteQuestion)?.[0];
+  if (/몇\s*분/u.test(input.question) && !sentences.slice(1).some((line) => /(?:\d+|한|두|세|다섯|십|열)\s*분/u.test(line))) return "concrete";
   if (askedDetail && !sentences.slice(1).some((sentence) =>
     /\d/u.test(sentence) || concreteCriterion.test(sentence)
     || (askedDetail === "언제" && timeDetail.test(sentence))

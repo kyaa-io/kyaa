@@ -650,7 +650,7 @@ export function StarFlow({
                       <FanText role="meta">{reason.when}</FanText>
                     </div>
                     <FanText as="p" role="meta">
-                      {reason.shortText}
+                      {reason.shortText} · {text(`star_${reason.domain}`)}
                     </FanText>
                   </li>
                 ))}

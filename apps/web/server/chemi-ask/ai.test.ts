@@ -124,6 +124,19 @@ describe("답 검사", () => {
     ["목록·기호", "연애 운이 55점이야.\n- 먼저 연락해 봐.", "format"],
     ["말투가 섞임", "연애 운이 55점이에요. 오늘은 서두르지 마세요.", "voice"],
   ])("%s → 떨어진다", (_, answer, fault) => expect(askAnswerFault(answer, love)).toBe(fault));
+  it("이어 묻기에서 연습 시간을 빼먹으면 다시 생성하고, 대체 답에도 활동과 분량을 담는다", async () => {
+    const input = { ...love, question: "이번 주 연습은 하루에 몇 분씩 하면 좋을까", before: { question: love.question, answer: good } };
+    const detailed = "오늘은 연애 운이 55점이야. 연습은 열 분부터 시작해 봐.";
+    let calls = 0;
+    model(async () => Response.json({
+      candidates: [{ finishReason: "STOP", content: { parts: [{ text: ++calls === 1 ? "오늘은 연애 운이 55점이야. 피곤하면 잠깐 쉬어." : detailed }] } }],
+    }));
+    expect(await aiAnswer(input, rpc, "user")).toBe(detailed);
+    expect(calls).toBe(2);
+    const { answerFollowup } = await import("./answer");
+    expect(answerFollowup(input)).toMatch(/연습 시간을 10분/);
+  });
+
   it("최근 답의 끝 문장을 같은 틀로 시작하면 다시 쓰게 한다", () => {
     const recentAnswers = ["할 일부터 정해 봐. 지금이 딱 쉬어 갈 때야."];
     expect(askAnswerFault("연애 운이 55점이야. 지금이 딱 마음을 돌볼 때야.", { ...love, recentAnswers })).toBe("ending");
