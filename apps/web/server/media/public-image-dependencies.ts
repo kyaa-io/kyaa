@@ -16,6 +16,7 @@ export function createPublicImageRouteDependencies() {
   });
   const sessions = createSupabaseAdminSessionRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY }, database);
   return {
+    database,
     repository: createPublicImageRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY }, database),
     authorize: ({ authorization, correlationId }: { authorization: string; correlationId: string }) => authorizeAdminSession({ authorization, correlationId, verifier, repository: sessions }),
     invalidatePublicContent: invalidatePublicContentCache,

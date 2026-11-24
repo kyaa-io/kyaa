@@ -3,3 +3,4 @@ import { createPostPublicImageAssetHandler } from "../../../../server/media/publ
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function POST(request: Request) { return createPostPublicImageAssetHandler(createPublicImageRouteDependencies())(request); }
+export { handleImageCleanup as GET, handleImageCleanup as DELETE } from "../../../../server/media/admin-image-cleanup";

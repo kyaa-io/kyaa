@@ -37,7 +37,7 @@ function fixture({ failRefresh = false, importerRemainsLogin = false, sourceUnfe
     if (sql.startsWith('select count(*)::int from pg_stat_activity')) return active;
     if (sql.includes('with importer as')) {
       events.push('importer-role-check');
-      return { login, bypass: true, unsafe: false, appCount: 1, appAccess: false, ownsApp: false, schemaCreate: false, otherWrites: false, exactAccess: true };
+      return { login, sessions: active, bypass: true, unsafe: false, appCount: 1, appAccess: false, ownsApp: false, schemaCreate: false, otherWrites: false, exactAccess: true };
     }
     if (sql.includes("'open',imports_open")) { events.push('sealed-state-check');return { open, closedAt, fenced: true, firstWriteAt: null }; }
     if (sql.startsWith('begin;')) {

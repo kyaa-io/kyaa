@@ -1,5 +1,6 @@
+import { invalidatePublicImage } from "./invalidate-public-image";
 import { createHash } from "node:crypto";
-import { S3Client, GetObjectCommand, HeadObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, HeadObjectCommand, PutObjectCommand, ListObjectVersionsCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { bucketPolicies, objectKey, type StorageConfig } from "./config";
@@ -20,6 +21,55 @@ export class S3Storage {
     const { data, error } = await this.database.rpc(name, args);
     if (error) throw new Error("Storage metadata unavailable");
     return data;
+  }
+  async purgeImageVersions(bucket: string, path: string, generation: number) {
+    if (bucket !== "cms-assets") throw new Error("Invalid image bucket");
+    const location = this.location(bucket, path);
+    const listVersions = async () => {
+      const ids: string[] = [];
+      let keyMarker: string | undefined;
+      let versionMarker: string | undefined;
+      for (;;) {
+        const page = await this.s3.send(new ListObjectVersionsCommand({
+          Bucket: location.Bucket, Prefix: location.Key, KeyMarker: keyMarker, VersionIdMarker: versionMarker,
+        }));
+        for (const entry of [...(page.Versions ?? []), ...(page.DeleteMarkers ?? [])]) {
+          if (entry.Key !== location.Key) continue;
+          if (!entry.VersionId) throw new Error("Missing S3 version ID");
+          ids.push(entry.VersionId);
+        }
+        if (!page.IsTruncated) break;
+        if (!page.NextKeyMarker || (keyMarker === page.NextKeyMarker && versionMarker === page.NextVersionIdMarker)) {
+          throw new Error("Invalid S3 pagination markers");
+        }
+        keyMarker = page.NextKeyMarker;
+        versionMarker = page.NextVersionIdMarker;
+      }
+      return ids;
+    };
+    const deletedVersionIds: string[] = [];
+    let remainingVersions: number | null = null;
+    try {
+      for (const VersionId of await listVersions()) {
+        await this.s3.send(new DeleteObjectCommand({ ...location, VersionId }));
+        deletedVersionIds.push(VersionId);
+      }
+    } catch {
+      // Recount after a partial delete or an ambiguous S3 response.
+    } finally {
+      remainingVersions = await listVersions().then(ids => ids.length, () => null);
+      await this.rpc("finish_admin_image_purge", { p_bucket: bucket, p_path: path, p_generation: generation, p_deleted: deletedVersionIds, p_remaining: remainingVersions });
+    }
+    return { deletedVersionIds, remainingVersions };
+  }
+  async finishQueuedDelete(bucket: string, path: string, generation: number) {
+    let succeeded = false;
+    try {
+      await this.s3.send(new DeleteObjectCommand(this.location(bucket, path)));
+      succeeded = true;
+    } finally {
+      await this.rpc("finish_s3_storage_delete", { p_bucket: bucket, p_path: path, p_generation: generation, p_succeeded: succeeded });
+    }
   }
   from(bucket: string) {
     objectKey(bucket, "validation");
@@ -54,11 +104,9 @@ export class S3Storage {
       remove: async (paths: string[]) => {
         try {
           for (const path of paths) {
-            const location = this.location(bucket, path);
+            this.location(bucket, path);
             const generation = await this.rpc("queue_s3_storage_delete", { p_bucket: bucket, p_path: path }) as number;
-            let succeeded = false;
-            try { await this.s3.send(new DeleteObjectCommand(location)); succeeded = true; }
-            finally { await this.rpc("finish_s3_storage_delete", { p_bucket: bucket, p_path: path, p_generation: generation, p_succeeded: succeeded }); }
+            await this.finishQueuedDelete(bucket, path, generation);
           }
           return { data: paths.map(name => ({ name })), error: null };
         } catch (error) { return failure(error); }
@@ -110,9 +158,15 @@ export class S3Storage {
     }
   }
   async drainDeletes(limit = 10) {
-    const claims = await this.rpc("claim_s3_storage_deletes", { p_limit: Math.min(limit, 100) }) as Array<{ bucket: string; path: string; generation: number }>;
+    const claims = await this.rpc("claim_s3_storage_deletes", { p_limit: Math.min(limit, 100) }) as Array<{ bucket: string; path: string; generation: number; permanent?: boolean }>;
     let failed = false;
     for (const claim of claims ?? []) {
+      if (claim.permanent) {
+        const result = await this.purgeImageVersions(claim.bucket, claim.path, claim.generation);
+        if (result.remainingVersions !== 0) failed = true;
+        else await invalidatePublicImage(claim.bucket, claim.path);
+        continue;
+      }
       let succeeded = false;
       try { await this.s3.send(new DeleteObjectCommand(this.location(claim.bucket, claim.path))); succeeded = true; } catch { failed = true; }
       await this.rpc("finish_s3_storage_delete", { p_bucket: claim.bucket, p_path: claim.path, p_generation: claim.generation, p_succeeded: succeeded });

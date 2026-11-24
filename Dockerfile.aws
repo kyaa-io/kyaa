@@ -16,6 +16,7 @@ COPY scripts/apply-security-patches.mjs scripts/apply-security-patches.mjs
 # ffmpeg-static downloads its binary from GitHub releases during npm ci; retry the whole install (10, 20, 40 s) on a transient failure. Its own integrity check still runs each attempt.
 RUN d=10; for n in 1 2 3 4; do npm ci --include=dev && exit 0; [ "$n" = 4 ] && exit 1; echo "npm ci failed (attempt $n of 4); retrying in ${d}s" >&2; sleep "$d"; d=$((d*2)); done
 COPY . .
+RUN node scripts/public-image-source-index.mjs /app/public-image-source-index.json
 ENV HOSTING_PROVIDER=aws NEXT_BUILD_CACHE=1
 # The restored build cache replaces the empty nextcache stage via --build-context, never through the main context.
 # It holds turbopack/ and typecheck/buildinfo; with the latter Next re-checks only what changed instead of every file (4.5-7 min).
@@ -46,6 +47,7 @@ RUN groupadd --gid 1001 app && useradd --uid 1001 --gid app --home-dir /app app
 # the race surfaces as sporadic 502s. Keep the app's keep-alive longer than the ALB's.
 ENV NODE_ENV=production HOSTING_PROVIDER=aws NEXT_TELEMETRY_DISABLED=1 HOSTNAME=0.0.0.0 PORT=3000 KEEP_ALIVE_TIMEOUT=65000
 COPY --from=verified --chown=app:app /app/apps/web/.next/standalone ./
+COPY --from=verified --chown=app:app /app/public-image-source-index.json ./apps/web/public-image-source-index.json
 COPY --from=verified --chown=app:app /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=verified --chown=app:app /app/apps/web/public ./apps/web/public
 RUN mkdir -p apps/web/.next/cache && chown app:app apps/web/.next/cache
