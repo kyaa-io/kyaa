@@ -38,6 +38,20 @@ const copy = {
   },
 };
 
+const albumGuide = {
+  ko: copy.ko.album, en: copy.en.album, mn: copy.en.album,
+  ja: "ミニ推しは自宅練習生から始まり、24段階を上がっていくよ。デビュー組やおうちスターになると、記念アルバムに写真が追加されるよ。",
+  "zh-Hans": "迷你偶像从居家练习生开始，一共可以成长24个阶段。加入出道组、成为卧室明星时，就能解锁纪念相册里的照片。",
+  "zh-Hant": "迷你偶像從居家練習生開始，一共可以成長24個階段。加入出道組、成為臥室明星時，就能解鎖紀念相簿裡的照片。",
+  es: "Tu mini empieza ensayando en casa y pasa por 24 etapas. Al entrar en el grupo de debut y al convertirse en estrella en casa, desbloquea fotos para el álbum.",
+  pt: "Seu mini começa treinando em casa e passa por 24 etapas. Ao entrar no grupo de estreia e virar estrela em casa, ele desbloqueia fotos no álbum.",
+  fr: "Ton mini commence à répéter chez lui et gravit 24 étapes. Des photos s’ajoutent à son album quand il rejoint le groupe de lancement et devient une star à domicile.",
+  ru: "Мини-кумир начинает тренироваться дома и проходит 24 этапа. При вступлении в дебютную группу и получении звания домашней звезды в альбоме открываются фотографии.",
+  id: "Minimu mulai sebagai trainee rumahan dan melewati 24 tahap. Foto album terbuka saat mini masuk tim debut dan menjadi bintang rumahan.",
+  vi: "Mini của bạn bắt đầu là thực tập sinh tại nhà và trải qua 24 giai đoạn. Ảnh kỷ niệm mở khóa khi mini vào đội hình ra mắt và khi trở thành ngôi sao tại gia.",
+  th: "มินิของคุณเริ่มจากเด็กฝึกที่บ้านและเติบโตผ่าน 24 ขั้น เมื่อเข้าทีมเดบิวต์และเมื่อได้เป็นดาวประจำบ้าน รูปในอัลบั้มที่ระลึกจะปลดล็อก",
+};
+
 const art = {
   fortune: "fortune/fortune-changha-banner-v2.webp",
   saju: "saju/saju-elina-wide-v2.webp",
@@ -91,7 +105,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
         <div className={styles.copy}>
           <FanHeading>{t.growth}</FanHeading>
           <FanText role="body">{t.growthDetail}</FanText>
-          <FanText role="body">{t.album}</FanText>
+          <FanText role="body">{albumGuide[locale]}</FanText>
         </div>
       </section>
       <FanAction variant="primary" size="lg" href={`/chemi?locale=${locale}`}>{t.start}</FanAction>
