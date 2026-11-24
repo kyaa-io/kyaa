@@ -11,10 +11,10 @@
     "gameMinutes": ""
   },
   "home": {
-    "gamePricing": "Cada juego incluye tres partidas gratis al día. Las tres primeras adicionales cuestan 100P, 300P y 500P. A partir de la cuarta, cada partida cuesta 1.000P, sin límite diario.",
+    "gamePricing": "Cada juego incluye tres partidas gratis al día. Las tres primeras adicionales cuestan 10M, 30M y 50M. A partir de la cuarta, cada partida cuesta 100M, sin límite diario.",
     "todayResult": "Resultado de hoy",
     "playsLeft": "{n} gratis",
-    "extraCost": "Extra {n}P",
+    "extraCost": "Extra {n}M",
     "playsDone": "Vuelve mañana",
     "rankingError": "No se pudo cargar la clasificación.",
     "descriptions": {
@@ -406,11 +406,11 @@
     "askLoadFailed": "No se pudieron cargar las preguntas.",
     "askLimit": "Ya usaste todas las preguntas de hoy.",
     "askRemind": "Avísame mañana",
-    "askExtraCta": "1 más por {cost}P",
-    "askExtraTitle": "1 pregunta más por {cost}P",
+    "askExtraCta": "1 más por {cost}M",
+    "askExtraTitle": "1 pregunta más por {cost}M",
     "askExtraLabel": "Preguntas extra restantes",
-    "askExtraPay": "Usar {cost}P y preguntar",
-    "askExtraShort": "No tienes suficientes puntos",
+    "askExtraPay": "Usar {cost}M y preguntar",
+    "askExtraShort": "No tienes suficientes millas",
     "askReminded": "Aviso solicitado",
     "askRemindNoMail": "Verifica tu correo para recibir avisos",
     "askRemindFailed": "No se pudo solicitar el aviso",
