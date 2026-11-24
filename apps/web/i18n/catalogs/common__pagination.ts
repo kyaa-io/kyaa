@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 const labels = {
   ko: { previous: "이전", next: "다음" },
+  get mn() { return this.en; },
   en: { previous: "Previous", next: "Next" },
   ja: { previous: "前へ", next: "次へ" },
   "zh-Hans": { previous: "上一页", next: "下一页" },

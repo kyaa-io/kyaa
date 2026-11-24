@@ -67,6 +67,7 @@ export const serviceGuideContent = {
     contactDescription: "계정이나 서비스 이용 문의는 kyaa 운영팀에서 확인해 드릴게요.",
     contactAction: "문의하기",
   },
+  get mn() { return this.en; },
   en: {
     metadataTitle: "Guide and Frequently Asked Questions",
     metadataDescription: "Learn how fan verification, Fan Passports, LIVE reservations and attendance, and prize entries work on kyaa.",

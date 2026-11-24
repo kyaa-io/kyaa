@@ -174,6 +174,7 @@ const copy = {
     notFound: "공개된 혜택을 찾을 수 없어요.",
     locale: "KO / EN",
   },
+  get mn() { return this.en; },
   en: {
     nav: ["Home", "Celebrities", "Live", "Passports", "Benefits"],
     title: "Fan benefits",

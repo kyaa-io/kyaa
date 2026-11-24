@@ -28,6 +28,7 @@ const copy = {
     selectionHelp: "신청 후 선정 결과에 따라 혜택이 제공돼요.",
     stale: "최신 조건을 확인하지 못했어요.",
   },
+  get mn() { return this.en; },
   en: {
     loading: "Loading your next benefit.",
     error: "We couldn’t load the next benefit.", retry: "Try again", empty: "No next benefit for this favorite right now.",

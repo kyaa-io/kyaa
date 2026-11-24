@@ -24,6 +24,7 @@ export const useWaveParticipantName = () => useContext(WaveParticipantNameContex
 const parse = (value: unknown) => participationResponseSchema.parse(value);
 const help: Record<AppLocale, string> = {
   ko: "로그인하고 행사 체크인을 마치면 덕질과 팬페이지를 볼 수 있어요.",
+  get mn() { return this.en; },
   en: "Sign in and complete event check-in to view your missions and the fan page.",
   ja: "ログインしてイベントのチェックインを完了すると、ミッションとファンページを確認できます。",
   "zh-Hans": "登录并完成活动签到后，即可查看任务和粉丝页面。",

@@ -63,6 +63,7 @@ export const homeShortsPageSchema = z.object({ items: homeShortsSchema, hasMore:
 
 export const homeGalleryCopy: Record<AppLocale, { title: string; empty: string; viewAll: string; more: string }> = {
   ko: { title: "갤러리", empty: "아직 사진 없음", viewAll: "전체 보기", more: "더 보기" },
+  get mn() { return this.en; },
   en: { title: "Gallery", empty: "No photos yet", viewAll: "View all", more: "Show more" },
   ja: { title: "ギャラリー", empty: "写真はまだありません", viewAll: "すべて見る", more: "もっと見る" },
   "zh-Hans": { title: "图库", empty: "暂无照片", viewAll: "查看全部", more: "查看更多" },

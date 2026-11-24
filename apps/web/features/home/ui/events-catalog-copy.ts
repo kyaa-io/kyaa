@@ -3,6 +3,7 @@ import { messages as homeMessages } from "@/i18n/catalogs/components__guest-home
 
 const details = {
   ko: { empty: "현재 공개된 이벤트가 없어요.", error: "일부 이벤트를 불러오지 못했어요.", retry: "다시 시도" },
+  mn: { empty: "There are no published events right now.", error: "Some events could not be loaded.", retry: "Try again" },
   en: { empty: "There are no published events right now.", error: "Some events could not be loaded.", retry: "Try again" },
   ja: { empty: "現在公開中のイベントはありません。", error: "一部のイベントを読み込めませんでした。", retry: "再試行" },
   "zh-Hans": { empty: "目前没有已发布的活动。", error: "部分活动加载失败。", retry: "重试" },
@@ -17,5 +18,5 @@ const details = {
 } satisfies Record<AppLocale, { empty: string; error: string; retry: string }>;
 
 export function eventsCatalogCopy(locale: AppLocale) {
-  return { title: ({ ko: "전체 이벤트", en: "All events", ...homeMessages.allEvents })[locale], ...details[locale] };
+  return { title: ({ ko: "전체 이벤트", en: "All events", mn: "All events", ...homeMessages.allEvents })[locale], ...details[locale] };
 }

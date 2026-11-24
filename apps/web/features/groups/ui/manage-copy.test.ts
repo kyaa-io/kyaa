@@ -5,7 +5,7 @@ import {manageSource} from './manage-source';
 it('fills every locale and keeps every placeholder',()=>{
  const holes=(text:string)=>(text.match(/\{\d+\}/g)??[]).sort();
  expect(Object.keys(messages).sort()).toEqual(Object.keys(manageSource).sort());
- for(const [key,source] of Object.entries(manageSource))for(const locale of APP_LOCALES.filter(item=>item!=='ko'&&item!=='en')){
+ for(const [key,source] of Object.entries(manageSource))for(const locale of APP_LOCALES.filter(item=>item!=='ko'&&item !== 'en' && item !== 'mn')){
   const text=(messages as Record<string,Record<string,string>>)[key][locale];
   expect(text?.trim(),`${key}/${locale}`).toBeTruthy();
   expect(holes(text),`${key}/${locale}`).toEqual(holes(source.en));

@@ -5,6 +5,7 @@ type Copy = { soundOn: string; soundOff: string; play: string; pause: string };
 /** Button names of the post video player. "Play" matches the editor's own playVideo wording in each language. */
 const copy: Record<AppLocale, Copy> = {
   ko: { soundOn: "소리 켜기", soundOff: "소리 끄기", play: "재생", pause: "일시정지" },
+  get mn() { return this.en; },
   en: { soundOn: "Turn sound on", soundOff: "Turn sound off", play: "Play", pause: "Pause" },
   ja: { soundOn: "音を出す", soundOff: "音を消す", play: "再生", pause: "一時停止" },
   "zh-Hans": { soundOn: "开启声音", soundOff: "关闭声音", play: "播放", pause: "暂停" },

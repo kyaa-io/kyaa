@@ -1,6 +1,7 @@
 import type { AppLocale } from "../locales";
 const rows: Record<AppLocale, readonly [string, string, string, string, string, string]> = {
   ko: ["이메일로 계속하기", "이메일", "비밀번호", "로그인", "로그인 중", "로그인하지 못했어요. 이메일과 비밀번호를 확인한 뒤 다시 시도해 주세요."],
+  get mn() { return this.en; },
   en: ["Continue with email", "Email", "Password", "Sign in", "Signing in", "Couldn't sign in. Check your email and password and try again."],
   ja: ["メールで続ける", "メールアドレス", "パスワード", "ログイン", "ログイン中", "ログインできませんでした。メールアドレスとパスワードを確認して、もう一度お試しください。"],
   "zh-Hans": ["使用邮箱继续", "邮箱", "密码", "登录", "正在登录", "无法登录。请检查邮箱和密码后重试。"],

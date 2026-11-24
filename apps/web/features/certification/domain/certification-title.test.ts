@@ -9,7 +9,7 @@ it("names the entry quiz in each locale and leaves the creator's own titles alon
       const name = knownCertificationTitle(locale, { kind: "quiz", title });
       expect(name).toBeTruthy();
       expect(name).not.toContain("Official");
-      if (locale !== "en") expect(name).not.toMatch(/^Fan verification quiz$/);
+      if (locale !== "en" && locale !== "mn") expect(name).not.toMatch(/^Fan verification quiz$/);
     }
   }
   expect(knownCertificationTitle("ko", { kind: "manual", title: "Official Fan Quiz" })).toBeNull();

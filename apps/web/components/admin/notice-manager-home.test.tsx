@@ -147,7 +147,7 @@ describe("NoticeManager shows the cause of a refused home notice request", () =>
       expect(Object.keys(messages).sort()).toEqual([...homeNoticeErrorCodes].sort());
       for (const text of Object.values(messages)) expect(text.trim().length).toBeGreaterThan(8);
     }
-    expect(Object.keys(homeNoticeErrorMessages)).toHaveLength(12);
+    expect(Object.keys(homeNoticeErrorMessages)).toHaveLength(13);
   });
 });
 

@@ -224,16 +224,16 @@ const waveMissionLabels = {
 
 export const COMMUNITY_STAMPS = {
   wave_mission: {
-    asset: "mission", ko: "WAVE 덕질", en: "WAVE mission", scope: "creator",
+    asset: "mission", ko: "WAVE 덕질", get mn() { return this.en; }, en: "WAVE mission", scope: "creator",
     ...additionalLocales(locale => waveMissionLabels[locale][0]),
-    help: { ko: "WAVE 덕질 완료를 기록하는 스탬프예요.", en: "A stamp recording a completed WAVE mission.", ...additionalLocales(locale => waveMissionLabels[locale][1]) },
+    help: { ko: "WAVE 덕질 완료를 기록하는 스탬프예요.", get mn() { return this.en; }, en: "A stamp recording a completed WAVE mission.", ...additionalLocales(locale => waveMissionLabels[locale][1]) },
   },
-  welcome: { asset: "welcome", ko: "가입 기념", en: "Welcome", scope: "account", help: { ko: "가입하면 받는 기념 스탬프예요.", en: "A welcome Stamp for joining kyaa.",
+  welcome: { asset: "welcome", ko: "가입 기념", get mn() { return this.en; }, en: "Welcome", scope: "account", help: { ko: "가입하면 받는 기념 스탬프예요.", get mn() { return this.en; }, en: "A welcome Stamp for joining kyaa.",
   ...additionalLocales((translationLocale) => (localizedMessages.m1126b31a7c01[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m2f8dbf719303[translationLocale]))
 },
-  first_comment: { asset: "first-comment", ko: "첫 댓글", en: "First comment", scope: "creator", help: { ko: "최애에게 첫 댓글을 남겨보세요.", en: "Leave your first comment for your favorite.",
+  first_comment: { asset: "first-comment", ko: "첫 댓글", get mn() { return this.en; }, en: "First comment", scope: "creator", help: { ko: "최애에게 첫 댓글을 남겨보세요.", get mn() { return this.en; }, en: "Leave your first comment for your favorite.",
   ...additionalLocales((translationLocale) => (localizedMessages.m57edb71ad308[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m448150d0a8d7[translationLocale]))
@@ -241,10 +241,12 @@ export const COMMUNITY_STAMPS = {
   first_clip: {
     asset: "first-clip",
     ko: "첫 영상",
+    get mn() { return this.en; },
     en: "First clip",
     scope: "creator",
     help: {
       ko: "첫 팬 영상을 올리면 받아요.",
+      get mn() { return this.en; },
       en: "Earn this when you publish your first fan video.",
       ...additionalLocales(
         (translationLocale) =>
@@ -255,27 +257,27 @@ export const COMMUNITY_STAMPS = {
       (translationLocale) => localizedMessages.m0ad38e80c1c2[translationLocale],
     ),
   },
-  subscription: { asset: "subscription", ko: "구독인증", en: "Subscription", scope: "creator", help: { ko: "최애의 SNS 구독을 인증해요.", en: "Verify your subscription to your favorite.",
+  subscription: { asset: "subscription", ko: "구독인증", get mn() { return this.en; }, en: "Subscription", scope: "creator", help: { ko: "최애의 SNS 구독을 인증해요.", get mn() { return this.en; }, en: "Verify your subscription to your favorite.",
   ...additionalLocales((translationLocale) => (localizedMessages.m8d237ac84fe2[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.mbe6440927666[translationLocale]))
 },
-  support: { asset: "support", ko: "후원", en: "Support", scope: "creator", help: { ko: "최애에게 보낸 후원을 기록해요.", en: "Keep a record of your support.",
+  support: { asset: "support", ko: "후원", get mn() { return this.en; }, en: "Support", scope: "creator", help: { ko: "최애에게 보낸 후원을 기록해요.", get mn() { return this.en; }, en: "Keep a record of your support.",
   ...additionalLocales((translationLocale) => (localizedMessages.ma73e6a2b5cc4[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m7c0546df2eff[translationLocale]))
 },
-  share: { asset: "share", ko: "공유하기", en: "Share", scope: "creator", help: { ko: "패스포트 링크를 받은 다른 팬이 로그인 후 최애를 확인하면 받아요.", en: "Earn a Stamp when another member signs in and confirms a visit through your Passport link.",
+  share: { asset: "share", ko: "공유하기", get mn() { return this.en; }, en: "Share", scope: "creator", help: { ko: "패스포트 링크를 받은 다른 팬이 로그인 후 최애를 확인하면 받아요.", get mn() { return this.en; }, en: "Earn a Stamp when another member signs in and confirms a visit through your Passport link.",
   ...additionalLocales((translationLocale) => (localizedMessages.m14bb4137cf8e[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m7f1d76d612b2[translationLocale]))
 },
-  invite: { asset: "invite", ko: "친구초대", en: "Invite a friend", scope: "account", help: { ko: "친구 코드를 인증하면 둘 다 받아요.", en: "Use a friend’s code to earn a Stamp together.",
+  invite: { asset: "invite", ko: "친구초대", get mn() { return this.en; }, en: "Invite a friend", scope: "account", help: { ko: "친구 코드를 인증하면 둘 다 받아요.", get mn() { return this.en; }, en: "Use a friend’s code to earn a Stamp together.",
   ...additionalLocales((translationLocale) => (localizedMessages.m6e987219bf15[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.m66421648262d[translationLocale]))
 },
-  daily_checkin: { asset: "daily-checkin", ko: "출첵", en: "Daily check-in", scope: "creator", help: { ko: "최애 캘린더에서 매일 출석해요.", en: "Check in on your favorite’s calendar each day.",
+  daily_checkin: { asset: "daily-checkin", ko: "출첵", get mn() { return this.en; }, en: "Daily check-in", scope: "creator", help: { ko: "최애 캘린더에서 매일 출석해요.", get mn() { return this.en; }, en: "Check in on your favorite’s calendar each day.",
   ...additionalLocales((translationLocale) => (localizedMessages.mcec3db980a47[translationLocale]))
 },
   ...additionalLocales((translationLocale) => (localizedMessages.mc47f16b546b2[translationLocale]))

@@ -2,6 +2,7 @@ import type { AppLocale } from "../locales";
 
 const labels = {
   ko: ["최애 요청", "찾는 최애가 없나요?", "오늘은 어떤 이야기를 나눌까요?", "공식 소식", "공식 채널", "아직 모아둔 미디어가 없어요. 공식 채널에서 더 많은 소식을 만나보세요.", "영상을 불러오지 못했어요. 공식 채널에서 확인해 주세요."],
+  get mn() { return this.en; },
   en: ["Request a favorite", "Can't find your favorite?", "What would you like to share today?", "Official updates", "Official channels", "No media here yet. Explore more updates on the official channels.", "Videos couldn't be loaded. Visit the official channel."],
   ja: ["推しをリクエスト", "推しが見つかりませんか？", "今日はどんな話をしますか？", "公式ニュース", "公式チャンネル", "まだメディアはありません。公式チャンネルで最新情報をご覧ください。", "動画を読み込めませんでした。公式チャンネルでご確認ください。"],
   "zh-Hans": ["申请添加喜爱的艺人", "找不到你喜欢的艺人？", "今天想分享什么？", "官方动态", "官方频道", "暂无媒体内容。前往官方频道查看更多动态。", "无法加载视频，请前往官方频道查看。"],

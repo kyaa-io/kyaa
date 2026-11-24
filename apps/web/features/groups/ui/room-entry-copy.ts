@@ -1,6 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 const copy:Record<AppLocale,readonly [string,string,string,string,string]>={
  ko:['아직 대화가 없어요.','입장 조건','팬 인증 완료','{tier} 이상','입장 조건 확인'],
+ get mn() { return this.en; },
  en:['No messages yet.','Entry requirements','Fan verification completed','{tier} or higher','Check entry requirements'],
  ja:['まだ会話がありません。','入室条件','ファン認証済み','{tier}以上','入室条件を確認'],
  'zh-Hans':['暂无消息。','进入条件','已完成粉丝认证','{tier}及以上','查看进入条件'],
@@ -15,7 +16,7 @@ const copy:Record<AppLocale,readonly [string,string,string,string,string]>={
 };
 export function roomEntryCopy(locale:AppLocale){const [empty,title,verified,minimum,check]=copy[locale];return {empty,title,verified,minimum,check};}
 
-export const roomMessageLabel:Record<AppLocale,string>={ko:'메시지',en:'Message',ja:'メッセージ','zh-Hans':'消息','zh-Hant':'訊息',es:'Mensaje',id:'Pesan',vi:'Tin nhắn',th:'ข้อความ',pt:'Mensagem',fr:'Message',ru:'Сообщение'};
+export const roomMessageLabel:Record<AppLocale,string>={ko:'메시지',get mn() { return this.en; }, en:'Message',ja:'メッセージ','zh-Hans':'消息','zh-Hant':'訊息',es:'Mensaje',id:'Pesan',vi:'Tin nhắn',th:'ข้อความ',pt:'Mensagem',fr:'Message',ru:'Сообщение'};
 
-export const roomContextCopy:Record<AppLocale,readonly [string,string]>={ko:['참여 팬','인증 아티스트'],en:['Participating fans','Verified artist'],ja:['参加ファン','認証済みアーティスト'],'zh-Hans':['参与粉丝','已认证艺人'],'zh-Hant':['參與粉絲','已認證藝人'],es:['Fans participantes','Artista verificado'],id:['Penggemar yang ikut','Artis terverifikasi'],vi:['Fan tham gia','Nghệ sĩ đã xác minh'],th:['แฟนที่เข้าร่วม','ศิลปินที่ยืนยันแล้ว'],pt:['Fãs participantes','Artista verificado'],fr:['Fans participants','Artiste vérifié'],ru:['Участвующие фанаты','Подтверждённый артист']};
+export const roomContextCopy:Record<AppLocale,readonly [string,string]>={ko:['참여 팬','인증 아티스트'],get mn() { return this.en; }, en:['Participating fans','Verified artist'],ja:['参加ファン','認証済みアーティスト'],'zh-Hans':['参与粉丝','已认证艺人'],'zh-Hant':['參與粉絲','已認證藝人'],es:['Fans participantes','Artista verificado'],id:['Penggemar yang ikut','Artis terverifikasi'],vi:['Fan tham gia','Nghệ sĩ đã xác minh'],th:['แฟนที่เข้าร่วม','ศิลปินที่ยืนยันแล้ว'],pt:['Fãs participantes','Artista verificado'],fr:['Fans participants','Artiste vérifié'],ru:['Участвующие фанаты','Подтверждённый артист']};
 

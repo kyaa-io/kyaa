@@ -48,7 +48,7 @@ export function fanStageLabel(locale: AppLocale, stage: Pick<FanStage, "tier" | 
     Gold: tierMessages.me12a6f61ff09, Platinum: tierMessages.me2f02b0acb25,
     Diamond: tierMessages.mcc8c85f578b9,
   };
-  const tier = locale === "ko" ? labels[stage.tier] : locale === "en" ? stage.tier : translated[stage.tier][locale];
+  const tier = locale === "ko" ? labels[stage.tier] : locale === "en" || locale === "mn" ? stage.tier : translated[stage.tier][locale];
   return stage.tier === "Bronze" || stage.tier === "Diamond" ? tier : `${tier} ${stage.subdivision}`;
 }
 

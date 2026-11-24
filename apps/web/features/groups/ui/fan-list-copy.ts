@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 const copy: Record<AppLocale, { jjinfans: string; order: string; since: string }> = {
   ko: { jjinfans: "찐팬", order: "하트 많은 순", since: "찐팬" },
+  get mn() { return this.en; },
   en: { jjinfans: "True fans", order: "Most hearts", since: "True fan" },
   ja: { jjinfans: "熱烈ファン", order: "ハートが多い順", since: "熱烈ファン" },
   "zh-Hans": { jjinfans: "真爱粉", order: "爱心从多到少", since: "真爱粉" },

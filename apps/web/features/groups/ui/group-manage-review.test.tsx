@@ -59,7 +59,7 @@ it('shows the mission status table above the mission list with the daily cheer r
 it('fills every locale of the new form copy with the same placeholders',()=>{
  const holes=(text:string)=>(text.match(/\{\d+\}/g)??[]).sort();
  expect(Object.keys(messages).sort()).toEqual(Object.keys(manageFormSource).sort());
- for(const[key,source]of Object.entries(manageFormSource))for(const locale of APP_LOCALES.filter(item=>item!=='ko'&&item!=='en')){
+ for(const[key,source]of Object.entries(manageFormSource))for(const locale of APP_LOCALES.filter(item=>item!=='ko'&&item !== 'en' && item !== 'mn')){
   const text=(messages as Record<string,Record<string,string>>)[key][locale];
   expect(text?.trim(),`${key}/${locale}`).toBeTruthy();expect(holes(text),`${key}/${locale}`).toEqual(holes(source.en));
  }

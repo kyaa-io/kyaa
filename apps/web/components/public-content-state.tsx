@@ -18,6 +18,7 @@ const labels = {
     error: { home: "홈 콘텐츠를 불러오지 못했어요.", directory: "공개 셀럽 목록을 불러오지 못했어요.", celebrity: "팬페이지를 불러오지 못했어요." },
     help: "연결 상태를 확인한 뒤 다시 시도해 주세요.", retry: "다시 시도", home: "홈으로",
   },
+  get mn() { return this.en; },
   en: {
     loading: { home: "Loading today's published content.", directory: "Loading published celebrities.", celebrity: "Loading the published fan page." },
     error: { home: "We couldn't load the home content.", directory: "We couldn't load the published celebrities.", celebrity: "We couldn't load this fan page." },

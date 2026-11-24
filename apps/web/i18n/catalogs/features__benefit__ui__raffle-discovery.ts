@@ -6,6 +6,7 @@ export const raffleDiscoveryCopy = {
     announced: "결과 발표", title: "래플 결과가 발표됐어요", description: "응모한 선물의 당첨 여부를 확인해 보세요.", action: "내 결과 확인",
     myTitle: "래플 결과", myDescription: "당첨 여부와 응모 내역 확인", pendingTitle: "응모가 끝났어요", pendingDescription: "결과 발표 전에는 응모 내역을 확인할 수 있어요.", historyAction: "응모 내역 확인", loginAction: "로그인하고 내 결과 확인",
   },
+  get mn() { return this.en; },
   en: {
     cancelledTitle: "This raffle was cancelled",
     announced: "Results announced", title: "Raffle results are here", description: "Check whether you won a prize you entered for.", action: "Check my results",

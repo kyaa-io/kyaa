@@ -74,6 +74,7 @@ const copy = {
     
     
   },
+  get mn() { return this.en; },
   en: {
     back: "Back to LIVE",
     title: "LIVE survey",

@@ -3,6 +3,7 @@ import type { AppLocale } from "@/i18n/locales";
 /** 261107-2 E6: the two artist notice switches in Settings > Notifications. */
 export const artistNotificationSettingCopy: Record<AppLocale, { artistActivityNotifications: string; artistOnlineNotifications: string }> = {
   ko: { artistActivityNotifications: "아티스트 댓글", artistOnlineNotifications: "아티스트 접속" },
+  get mn() { return this.en; },
   en: { artistActivityNotifications: "Artist comments", artistOnlineNotifications: "Artist on the fan page" },
   ja: { artistActivityNotifications: "アーティストのコメント", artistOnlineNotifications: "アーティストの入室" },
   "zh-Hans": { artistActivityNotifications: "艺人评论", artistOnlineNotifications: "艺人上线" },

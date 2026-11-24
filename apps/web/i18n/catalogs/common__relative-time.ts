@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 const justNow = {
   ko: "방금 전",
+  get mn() { return this.en; },
   en: "just now",
   ja: "たった今",
   "zh-Hans": "刚刚",

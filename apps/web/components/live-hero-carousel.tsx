@@ -76,6 +76,7 @@ const carouselCopy = {
     next: "다음 배너",
     position: (index: number, total: number) => `${index} / ${total}`,
   },
+  get mn() { return this.en; },
   en: {
     label: "Home banners",
     previous: "Previous banner",

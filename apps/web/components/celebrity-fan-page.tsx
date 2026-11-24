@@ -94,6 +94,7 @@ export { flattenLiveCatalog } from "@/features/fanpage/domain/live-catalog";
 export type CelebrityFanTab = FanPageTab | "friends" | "community" | "media" | "notice" | "live" | "raffles" | "benefits";
 const socialLabels = {
   ko: { instagram: "Instagram", youtube: "YouTube", tiktok: "TikTok", chzzk: "치지직" },
+  get mn() { return this.en; },
   en: { instagram: "Instagram", youtube: "YouTube", tiktok: "TikTok", chzzk: "CHZZK" },
 
   ...additionalLocales((translationLocale) => ({ instagram: "Instagram", youtube: "YouTube", tiktok: "TikTok", chzzk: localizedMessages.m912b89a327a1[translationLocale] }))

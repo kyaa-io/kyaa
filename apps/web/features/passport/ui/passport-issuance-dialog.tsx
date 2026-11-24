@@ -63,6 +63,7 @@ const copy = {
     errorBody: "잠시 후 다시 확인하거나, 내 패스포트를 열어보세요.",
     retry: "다시 확인",
   },
+  get mn() { return this.en; },
   en: {
     skip: "Skip",
     progress: "Passport issuance progress",

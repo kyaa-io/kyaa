@@ -43,6 +43,7 @@ export const legalLabels = {
     homeAriaLabel: "홈으로 돌아가기",
     languageAriaLabel: "언어 선택, 현재 한국어",
   },
+  get mn() { return this.en; },
   en: {
     notice: "kyaa Legal Notice",
     effectiveDate: {
@@ -146,6 +147,7 @@ export const legalDocuments = {
         },
       ],
     },
+    get mn() { return this.en; },
     en: {
       metadataTitle: "Privacy Policy | kyaa",
       metadataDescription: "kyaa Privacy Policy",
@@ -358,6 +360,7 @@ export const legalDocuments = {
         },
       ],
     },
+    get mn() { return this.en; },
     en: {
       metadataTitle: "Terms of Use | kyaa",
       metadataDescription: "kyaa Terms of Use",

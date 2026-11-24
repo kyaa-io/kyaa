@@ -17,6 +17,7 @@ import styles from "./home-placeholder-blocks.module.css";
 /** Home fallbacks use white surfaces and line tokens. Photo reservations reuse the final column allocation and image ratios. */
 const values: Record<AppLocale, readonly string[]> = {
   ko: ["공지사항", "갤러리", "숏폼", "아직 공지 없음", "아직 사진 없음", "아직 숏폼 없음"],
+  get mn() { return this.en; },
   en: ["Notices", "Gallery", "Shorts", "No notices yet", "No photos yet", "No Shorts yet"],
   ja: ["お知らせ", "ギャラリー", "ショート", "お知らせはまだありません", "写真はまだありません", "ショートはまだありません"],
   "zh-Hans": ["公告", "图库", "短视频", "暂无公告", "暂无照片", "暂无短视频"],
@@ -31,7 +32,7 @@ const values: Record<AppLocale, readonly string[]> = {
 };
 
 const viewAll: Record<AppLocale, string> = {
-  ko: "전체 보기", en: "View all", ja: "すべて見る", "zh-Hans": "查看全部", "zh-Hant": "查看全部", es: "Ver todo",
+  ko: "전체 보기", get mn() { return this.en; }, en: "View all", ja: "すべて見る", "zh-Hans": "查看全部", "zh-Hant": "查看全部", es: "Ver todo",
   id: "Lihat semua", vi: "Xem tất cả", th: "ดูทั้งหมด", pt: "Ver tudo", fr: "Tout voir", ru: "Смотреть все",
 };
 

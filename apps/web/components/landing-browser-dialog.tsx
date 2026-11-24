@@ -10,6 +10,7 @@ import styles from "./landing-browser-dialog.module.css";
 
 const copy: Record<AppLocale, [string,string,string,string]> = {
   ko:["브라우저에서 열기","오른쪽 위 ··· 또는 공유 메뉴에서 브라우저로 열기를 선택해 주세요.","주소 복사","그냥 여기서 계속"],
+  get mn() { return this.en; },
   en:["Open in browser","Tap ··· or Share, then open in your browser.","Copy address","Continue here"],
   ja:["ブラウザで開く","··· または共有からブラウザで開いてください。","アドレスをコピー","ここで続ける"],
   "zh-Hans":["在浏览器中打开","点按 ··· 或分享，然后选择在浏览器中打开。","复制地址","在这里继续"],

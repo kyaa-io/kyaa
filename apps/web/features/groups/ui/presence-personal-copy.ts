@@ -1,6 +1,7 @@
 import type {AppLocale} from '@/i18n/locales';
 const values:Record<AppLocale,readonly[string]>={
  ko:['팬들에게 보이는 모습'],
+ get mn() { return this.en; },
  en:['What fans see'],
  ja:['ファンへの表示'],
  'zh-Hans':['粉丝看到的样子'],

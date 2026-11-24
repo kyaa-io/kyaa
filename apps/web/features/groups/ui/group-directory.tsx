@@ -46,9 +46,9 @@ import {SourceStatePanel} from "./source-state-panel";
 import {GroupApplicationDialog} from "./group-application-dialog";
 const eventBoundaries = Object.values(pageLikeEventWindows).flatMap(({ from, to }) => [Date.parse(from), Date.parse(to)]).sort((a, b) => a - b);
 const parseChallenges=(value:unknown)=>activeJjinfanChallengesSchema.parse(value);
-export const seeAllLabel:Record<AppLocale,string>={ko:'전체 보기',en:'View all',ja:'すべて見る','zh-Hans':'查看全部','zh-Hant':'查看全部',es:'Ver todo',id:'Lihat semua',vi:'Xem tất cả',th:'ดูทั้งหมด',pt:'Ver tudo',fr:'Tout voir',ru:'Все страницы'};
-const fanpageLabel:Record<AppLocale,string>={ko:'팬페이지',en:'Fan pages',ja:'ファンページ','zh-Hans':'粉丝主页','zh-Hant':'粉絲專頁',es:'Páginas de fans',id:'Halaman penggemar',vi:'Trang người hâm mộ',th:'แฟนเพจ',pt:'Páginas de fãs',fr:'Pages de fans',ru:'Фан-страницы'};
-const resetFiltersLabel:Record<AppLocale,string>={ko:'필터 초기화',en:'Reset filters',ja:'フィルターをリセット','zh-Hans':'重置筛选','zh-Hant':'重設篩選',es:'Restablecer filtros',id:'Atur ulang filter',vi:'Đặt lại bộ lọc',th:'รีเซ็ตตัวกรอง',pt:'Redefinir filtros',fr:'Réinitialiser les filtres',ru:'Сбросить фильтры'};
+export const seeAllLabel:Record<AppLocale,string>={ko:'전체 보기',get mn() { return this.en; }, en:'View all',ja:'すべて見る','zh-Hans':'查看全部','zh-Hant':'查看全部',es:'Ver todo',id:'Lihat semua',vi:'Xem tất cả',th:'ดูทั้งหมด',pt:'Ver tudo',fr:'Tout voir',ru:'Все страницы'};
+const fanpageLabel:Record<AppLocale,string>={ko:'팬페이지',get mn() { return this.en; }, en:'Fan pages',ja:'ファンページ','zh-Hans':'粉丝主页','zh-Hant':'粉絲專頁',es:'Páginas de fans',id:'Halaman penggemar',vi:'Trang người hâm mộ',th:'แฟนเพจ',pt:'Páginas de fãs',fr:'Pages de fans',ru:'Фан-страницы'};
+const resetFiltersLabel:Record<AppLocale,string>={ko:'필터 초기화',get mn() { return this.en; }, en:'Reset filters',ja:'フィルターをリセット','zh-Hans':'重置筛选','zh-Hant':'重設篩選',es:'Restablecer filtros',id:'Atur ulang filter',vi:'Đặt lại bộ lọc',th:'รีเซ็ตตัวกรอง',pt:'Redefinir filtros',fr:'Réinitialiser les filtres',ru:'Сбросить фильтры'};
 function DirectorySkeleton({label}:{label:string}) {
  return <FanSkeletonRows rows={6} variant="tile" ariaLabel={label} className={directoryStyles.list}/>;
 }
@@ -69,7 +69,7 @@ function useOverflowHint(){
 const parseList = (value:unknown)=>groupListSchema.parse(value);
 const SEARCH_DELAY_MS=300;
 const ROLE_FILTERS=['all','idol','singer','actor','creator','show_host'] as const;
-const searchTabs:Record<AppLocale,{artists:string;posts:string}>={ko:{artists:'아티스트',posts:'게시글'},en:{artists:'Artists',posts:'Posts'},ja:{artists:'アーティスト',posts:'投稿'},'zh-Hans':{artists:'艺人',posts:'帖子'},'zh-Hant':{artists:'藝人',posts:'貼文'},es:{artists:'Artistas',posts:'Publicaciones'},id:{artists:'Artis',posts:'Postingan'},vi:{artists:'Nghệ sĩ',posts:'Bài viết'},th:{artists:'ศิลปิน',posts:'โพสต์'},pt:{artists:'Artistas',posts:'Publicações'},fr:{artists:'Artistes',posts:'Publications'},ru:{artists:'Артисты',posts:'Публикации'}};
+const searchTabs:Record<AppLocale,{artists:string;posts:string}>={ko:{artists:'아티스트',posts:'게시글'},get mn() { return this.en; }, en:{artists:'Artists',posts:'Posts'},ja:{artists:'アーティスト',posts:'投稿'},'zh-Hans':{artists:'艺人',posts:'帖子'},'zh-Hant':{artists:'藝人',posts:'貼文'},es:{artists:'Artistas',posts:'Publicaciones'},id:{artists:'Artis',posts:'Postingan'},vi:{artists:'Nghệ sĩ',posts:'Bài viết'},th:{artists:'ศิลปิน',posts:'โพสต์'},pt:{artists:'Artistas',posts:'Publicações'},fr:{artists:'Artistes',posts:'Publications'},ru:{artists:'Артисты',posts:'Публикации'}};
 export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=[],initialList}:{locale:AppLocale;banners?:HomeBanner[];promoOrder?:readonly string[];initialList?:GroupList;initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);

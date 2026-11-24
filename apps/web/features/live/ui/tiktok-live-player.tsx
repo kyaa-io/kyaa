@@ -12,6 +12,7 @@ import styles from "./tiktok-live-player.module.css";
 
 const copy = {
   ko: { close: "닫기", loading: "LIVE를 불러오는 중이에요.", ended: "LIVE가 종료됐어요.", error: "LIVE를 재생할 수 없어요. 다시 시도하거나 TikTok에서 시청해 주세요.", unsupported: "이 브라우저에서는 LIVE를 재생할 수 없어요. TikTok에서 시청해 주세요.", retry: "다시 시도", sound: "소리 켜고 재생", original: "TikTok에서 시청" },
+  get mn() { return this.en; },
   en: { close: "Close", loading: "Loading LIVE…", ended: "This LIVE has ended.", error: "Unable to play this LIVE. Try again or watch on TikTok.", unsupported: "This browser cannot play this LIVE. Watch on TikTok.", retry: "Try again", sound: "Play with sound", original: "Watch on TikTok" },
   ja: { close: "閉じる", loading: "LIVEを読み込み中…", ended: "LIVEは終了しました。", error: "LIVEを再生できません。再試行するか、TikTokでご覧ください。", unsupported: "このブラウザではLIVEを再生できません。TikTokでご覧ください。", retry: "再試行", sound: "音声付きで再生", original: "TikTokで見る" },
   "zh-Hans": { close: "关闭", loading: "正在加载 LIVE…", ended: "LIVE 已结束。", error: "无法播放 LIVE。请重试或前往 TikTok 观看。", unsupported: "此浏览器无法播放 LIVE。请前往 TikTok 观看。", retry: "重试", sound: "开启声音播放", original: "在 TikTok 观看" },
@@ -27,7 +28,7 @@ const copy = {
 } satisfies Record<AppLocale, Record<string, string>>;
 
 const framingCopy = {
-  ko: ["화면 채우기", "전체 영상 보기"], en: ["Fill screen", "Show full video"],
+  ko: ["화면 채우기", "전체 영상 보기"], get mn() { return this.en; }, en: ["Fill screen", "Show full video"],
   ja: ["画面いっぱいに表示", "映像全体を表示"], "zh-Hans": ["填满画面", "显示完整画面"], "zh-Hant": ["填滿畫面", "顯示完整畫面"],
   es: ["Llenar pantalla", "Ver vídeo completo"], id: ["Penuhi layar", "Tampilkan seluruh video"],
   vi: ["Lấp đầy màn hình", "Hiển thị toàn bộ video"], th: ["เติมเต็มหน้าจอ", "แสดงวิดีโอทั้งหมด"],

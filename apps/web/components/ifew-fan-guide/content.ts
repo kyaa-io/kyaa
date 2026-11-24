@@ -70,6 +70,7 @@ export const ifewFanGuideContent = {
     eventImageAlt: "이퓨 틱톡 100일 기념 LIVE 포스터, 2026년 9월 12일",
     prizeAlt: "전시 공간에 걸린 작품을 바라보는 관람객",
   },
+  get mn() { return this.en; },
   en: {
     heroTitle: "100 days with ifew.\nLet’s celebrate.",
     heroDescription: "A LIVE celebrating 100 days on TikTok.\nJoin ifew for a chat and make more memories together.",

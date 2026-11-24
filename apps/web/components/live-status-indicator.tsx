@@ -6,6 +6,7 @@ import styles from "./live-status-indicator.module.css";
 
 const labels = {
   ko: { live: "LIVE 진행중", scheduled: "LIVE 예정" },
+  get mn() { return this.en; },
   en: { live: "LIVE NOW", scheduled: "UPCOMING LIVE" },
 
   ...additionalLocales((translationLocale) => ({ live: localizedMessages.m0607a7952b63[translationLocale], scheduled: localizedMessages.md663dc71dcef[translationLocale] }))

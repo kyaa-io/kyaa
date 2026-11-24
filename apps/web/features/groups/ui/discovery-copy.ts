@@ -1,10 +1,11 @@
 import type { AppLocale } from '@/i18n/locales';
 export const challengeBadge: Record<AppLocale, string> = {
- ko: '찐팬 100', en: '100 True Fans', ja: '本命ファン100', 'zh-Hans': '真爱粉100', 'zh-Hant': '真愛粉100',
+ ko: '찐팬 100', get mn() { return this.en; }, en: '100 True Fans', ja: '本命ファン100', 'zh-Hans': '真爱粉100', 'zh-Hant': '真愛粉100',
  es: '100 fans fieles', id: '100 fan sejati', vi: '100 fan ruột', th: 'แฟนตัวจริง 100', pt: '100 fãs fiéis', fr: '100 vrais fans', ru: '100 преданных фанатов',
 };
 const values:Record<AppLocale,readonly string[]>={
  ko:['팬페이지와 모임 찾기','관심 있는 아티스트·취미·브랜드를 검색해 보세요.','한강에서 함께 달려요','같이 달리고 러닝 기록을 나눠요.','러닝 모임 보기','오늘의 출석','기본순'],
+ get mn() { return this.en; },
  en:['Find fan pages and groups','Search for artists, hobbies and brands you like.','Run together by the Han River','Run together and share your records.','Explore running groups','Today’s check-in','Default order'],
  ja:['ファンページとグループを探す','好きなアーティスト・趣味・ブランドを検索。','漢江で一緒に走ろう','一緒に走って記録をシェアしましょう。','ランニンググループを見る','今日の出席','標準順'],
  'zh-Hans':['寻找粉丝页和群组','搜索你感兴趣的艺人、爱好和品牌。','一起在汉江跑步','一起跑步，分享跑步记录。','查看跑步群组','今日签到','默认排序'],

@@ -17,6 +17,7 @@ const ko = {
 
 const copy = {
   ko,
+  get mn() { return this.en; },
   en: {
     membersTitle: "Checked-in participants", membersDescription: "Send a friend request. You can chat once they accept.", membersEmpty: "No participants to show yet.", relationshipLoading: "Checking friendship status…", relationshipError: "Couldn’t check friendship status. Try again above.", pending: "Awaiting acceptance", membersPagination: "Participant pages", previousPage: "Previous", nextPage: "Next",
     title: "Friends", add: "Add friends", myQr: "Show my QR code",

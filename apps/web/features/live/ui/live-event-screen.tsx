@@ -198,6 +198,76 @@ const copy = {
     continue: "계속 보기",
     close: "예약 완료 창 닫기",
   },
+  mn: {
+    nav: ["Home", "Celebrities", "Live", "Passports", "Benefits"],
+    back: "Live",
+    scheduled: "UPCOMING",
+    live: "LIVE",
+    ended: "ENDED",
+    cancelled: "CANCELLED",
+    introduction: "About this LIVE",
+    howTo: "How to join",
+    benefit: "LIVE benefit",
+    fanCode: "Fan Code",
+
+    attendance: {
+      label: "Enter Fan Code",
+
+      submit: "Verify attendance",
+      pending: "Checking attendance",
+      signIn: "Sign in to verify attendance",
+      passport: "Create a Fan Passport before joining.",
+      issuePassport: "Get your Fan Passport",
+      beforeLive: "You can enter the Fan Code once the LIVE starts.",
+      notOpen: "Attendance verification is not open yet.",
+      attendanceEnded: "Attendance verification has ended.",
+      invalid:
+        "That Fan Code isn’t valid. Check the code shared during the LIVE.",
+      format: "Enter at least 4 letters or numbers.",
+      rateLimited: "Too many attempts. Try again in {time}.",
+      unavailable: "Attendance can’t be verified right now. Try again shortly.",
+      wallet: "Your Passport is still getting ready. Try again shortly.",
+      authenticationRequired: "Your sign-in expired. Please sign in again.",
+      successTitle: "Your LIVE attendance is recorded",
+      successHelper: "You earned an Attendance Stamp, +3 Fan Score, and 2 raffle tickets.",
+      replay: "Your completed attendance record was safely retrieved.",
+      survey: "Take the survey for your next Stamp",
+    },
+    steps: ["Reserve", "Watch LIVE", "Fan Code", "Survey", "Stamp"],
+    action: {
+      reservation_upcoming: "Reservations open soon",
+      sign_in_to_reserve: "Sign in",
+      verify_fan: "Verify fan status",
+      reserve: "Reserve a spot",
+      reserved: "Reserved",
+      watch_live: "Watch LIVE",
+      reservation_closed: "Reservations closed",
+      live_ended: "LIVE ended",
+      live_cancelled: "LIVE cancelled",
+    },
+    actionHelper: {
+      verifyFan: "A {celebrity} Fan Passport is required to reserve.",
+    },
+    reservationPeriod: "Reservation period",
+    eventTime: "LIVE schedule",
+    timeZone: "KST (UTC+9)",
+    reservePending: "Reserving",
+    reserveError:
+      "We couldn’t complete your reservation. Check the status and try again.",
+    reserveUnknown:
+      "The reservation result is still unconfirmed. Check the same reservation request again.",
+    loadError: "We couldn’t load this LIVE.",
+    loadErrorHelper: "Try again shortly or return to all LIVE events.",
+    notFound: "We couldn’t find this LIVE.",
+    retry: "Try again",
+    calendar: "Add to Google Calendar",
+    watch: "Watch LIVE",
+    newWindow: "new window",
+    reservedTitle: "Your reservation is complete",
+    stampIssued: "Reservation Stamp earned",
+    continue: "Keep browsing",
+    close: "Close reservation confirmation",
+  },
   en: {
     nav: ["Home", "Celebrities", "Live", "Passports", "Benefits"],
     back: "Live",
@@ -357,6 +427,22 @@ const ifewLiveCopy = {
     steps: ["팬 인증", "LIVE 예약", "LIVE 출석", "선물 응모"],
     prizeAction: "뱅크시 관람권 추첨 응모하기",
     
+  },
+  mn: {
+    fanCode: "Attendance code",
+
+    attendance: {
+      label: "Enter attendance code",
+      beforeLive:
+        "Once the LIVE starts, enter the attendance code shared during the broadcast here.",
+      invalid:
+        "That attendance code isn’t valid. Check the code shared during the LIVE.",
+      successHelper:
+        "Your LIVE attendance is recorded, and you received 2 raffle tickets.",
+    },
+    steps: ["Fan verification", "Reserve", "LIVE attendance", "Enter the prize draw"],
+    prizeAction: "Enter the Banksy ticket draw",
+
   },
   en: {
     fanCode: "Attendance code",
@@ -1226,8 +1312,8 @@ export function LiveEventScreen({
   const attendanceCopy = eventCopy
     ? { ...c.attendance, ...eventCopy.attendance }
     : c.attendance;
-  const elinaSteps = ({ ko: ["팬 인증", "LIVE 예약", "선물 응모", "방송 당일 출석"], en: ["Verify", "Reserve", "Enter for prizes", "LIVE check-in"], ...additionalLocales((translationLocale) => ([localizedMessages.mc1710e55de0d[translationLocale], localizedMessages.m30f072d4f05f[translationLocale], localizedMessages.mfa0fca66bf63[translationLocale], localizedMessages.med9574a43a55[translationLocale]])) })[locale];
-  const elinaStepHelpers = ({ ko: ["첫 인증으로 응모권 1장", "첫 예약으로 응모권 1장", "모은 응모권으로 직접 응모해요", "kyaa에 코드 입력하고 2장 추가"], en: ["Earn 1 ticket on first verification", "Earn 1 ticket on first reservation", "Use your tickets to enter separately", "Return to kyaa, enter the code and earn 2"], ...additionalLocales((translationLocale) => ([localizedMessages.mcdbf7d4c741f[translationLocale], localizedMessages.m256a94549924[translationLocale], localizedMessages.m0e68ee041cca[translationLocale], localizedMessages.m52dd9000cd4f[translationLocale]])) })[locale];
+  const elinaSteps = ({ ko: ["팬 인증", "LIVE 예약", "선물 응모", "방송 당일 출석"], mn: ["Verify", "Reserve", "Enter for prizes", "LIVE check-in"], en: ["Verify", "Reserve", "Enter for prizes", "LIVE check-in"], ...additionalLocales((translationLocale) => ([localizedMessages.mc1710e55de0d[translationLocale], localizedMessages.m30f072d4f05f[translationLocale], localizedMessages.mfa0fca66bf63[translationLocale], localizedMessages.med9574a43a55[translationLocale]])) })[locale];
+  const elinaStepHelpers = ({ ko: ["첫 인증으로 응모권 1장", "첫 예약으로 응모권 1장", "모은 응모권으로 직접 응모해요", "kyaa에 코드 입력하고 2장 추가"], mn: ["Earn 1 ticket on first verification", "Earn 1 ticket on first reservation", "Use your tickets to enter separately", "Return to kyaa, enter the code and earn 2"], en: ["Earn 1 ticket on first verification", "Earn 1 ticket on first reservation", "Use your tickets to enter separately", "Return to kyaa, enter the code and earn 2"], ...additionalLocales((translationLocale) => ([localizedMessages.mcdbf7d4c741f[translationLocale], localizedMessages.m256a94549924[translationLocale], localizedMessages.m0e68ee041cca[translationLocale], localizedMessages.m52dd9000cd4f[translationLocale]])) })[locale];
   const journeySteps = live.attendanceConfigured === false ? c.steps.slice(0, 2) : eventCopy?.steps ?? (isElinaLive ? elinaSteps : c.steps.filter((_, index) => live.missionsAvailable !== false || index !== 3));
   const journeyStepHelpers = isElinaLive && live.attendanceConfigured !== false && !eventCopy ? elinaStepHelpers : null;
   const statusLabel =

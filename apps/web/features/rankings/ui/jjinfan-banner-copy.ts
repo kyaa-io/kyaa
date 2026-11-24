@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 type Copy = { title: string; invite: string; join: string; close: string };
 export const jjinfanBannerCopy: Record<AppLocale, Copy> = {
   ko: { title: "찐팬 100 챌린지", invite: "찐팬 100 챌린지를 하고 있어요. 같이 동참해봐요!", join: "동참하기", close: "닫기" },
+  get mn() { return this.en; },
   en: { title: "100 True Fans Challenge", invite: "The 100 True Fans Challenge is on. Join in!", join: "Join in", close: "Close" },
   ja: { title: "真のファン100人チャレンジ", invite: "真のファン100人チャレンジ開催中。一緒に参加しましょう！", join: "参加する", close: "閉じる" },
   "zh-Hans": { title: "100位真爱粉挑战", invite: "100位真爱粉挑战进行中，一起来参与吧！", join: "参与挑战", close: "关闭" },

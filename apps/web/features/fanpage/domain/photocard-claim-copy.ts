@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 
 const rows: Record<AppLocale, readonly [string, string, string, string, string, string, string]> = {
   ko: ["최애 멤버를 선택해 주세요", "선택한 멤버의 화이트·파스텔 포토카드 2장을 받아요. 받은 후에는 멤버를 바꿀 수 없어요.", "포토카드 2장 받기", "서로 다른 분위기의 포토카드 3장을 랜덤으로 받아요. 받은 구성은 다시 뽑을 수 없어요.", "랜덤 포토카드 3장 받기", "포토카드를 받고 있어요", "수령 결과를 확인하지 못했어요. 다시 확인해 주세요."],
+  get mn() { return this.en; },
   en: ["Choose your favorite member", "Receive 2 photocards of your chosen member, one in white and one in pastel colors. You cannot change your choice after claiming.", "Claim 2 photocards", "Receive a random set of 3 photocards with different looks. Your set cannot be redrawn.", "Claim 3 random photocards", "Claiming your photocards", "We couldn’t confirm your claim. Please check again."],
   ja: ["推しメンバーを選んでください", "選んだメンバーのホワイト・パステルのフォトカードを2枚受け取れます。受け取り後はメンバーを変更できません。", "フォトカードを2枚受け取る", "雰囲気の異なるフォトカード3枚をランダムで受け取れます。引き直しはできません。", "ランダムフォトカードを3枚受け取る", "フォトカードを受け取り中", "受け取り結果を確認できませんでした。もう一度確認してください。"],
   "zh-Hans": ["请选择你最喜欢的成员", "领取所选成员的白色和粉彩风格小卡，共2张。领取后无法更换成员。", "领取2张小卡", "随机领取一组3张不同风格的小卡，领取后无法重新抽取。", "领取3张随机小卡", "正在领取小卡", "无法确认领取结果，请重新查看。"],

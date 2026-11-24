@@ -48,6 +48,7 @@ const selectCopy = {
     empty: "검색 결과가 없어요.",
     selected: "선택됨",
   },
+  get mn() { return this.en; },
   en: {
     label: "Country calling code",
     search: "Search country or calling code",

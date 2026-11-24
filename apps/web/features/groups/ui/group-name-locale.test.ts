@@ -45,7 +45,7 @@ describe('creator home card copy', () => {
     for (const locale of APP_LOCALES) {
       const card = creatorHomeCardCopy(locale);
       expect(Object.values(card).every(Boolean)).toBe(true);
-      if (locale !== 'en') for (const key of Object.keys(en) as (keyof typeof en)[]) expect(card[key]).not.toBe(en[key]);
+      if (locale !== 'en' && locale !== 'mn') for (const key of Object.keys(en) as (keyof typeof en)[]) expect(card[key]).not.toBe(en[key]);
     }
   });
 });

@@ -68,6 +68,7 @@ export const elinaFanGuideContent = {
     imageAlt: "바다를 배경으로 선 엘리나",
     prizeAlt: "뱅크시 관람권, 비피오 케이스, 뱅크시 한정판 스태츄",
   },
+  get mn() { return this.en; },
   en: {
     heroTitle: "Instagram LIVE\nwith Elina",
     heroDescription: "Verify your fandom and reserve your spot to earn 2 raffle tickets. Enter for your favorite prize now.",

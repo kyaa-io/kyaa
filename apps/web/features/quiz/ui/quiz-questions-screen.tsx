@@ -76,6 +76,7 @@ const copy = {
     recheck: "제출 결과 다시 확인",
     next: "다음 질문",
   },
+  get mn() { return this.en; },
   en: {
     sessionExpired: "Your sign-in expired. Sign in again to continue.",
     closed: "This quiz was already submitted. Check the result screen for your verification status.",

@@ -7,7 +7,7 @@ const ENTRY_QUIZ_TITLES: ReadonlySet<string> = new Set(["Official Fan 인증 퀴
 /** The quiz that starts a Passport is named in the viewer's language here, because the database holds only two spellings. */
 export function entryQuizName(locale: AppLocale): string {
   if (locale === "ko") return "팬 인증 퀴즈";
-  if (locale === "en") return "Fan verification quiz";
+  if (locale === "en" || locale === "mn") return "Fan verification quiz";
   return messages.m621c5de2e1cf[locale];
 }
 

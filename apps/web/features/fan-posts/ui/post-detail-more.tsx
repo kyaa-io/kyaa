@@ -29,6 +29,7 @@ export const MORE_ROWS = 5;
 
 const labels: Record<AppLocale, readonly [string, string, string]> = {
   ko: ["이 페이지의 다른 글", "인기", "최신"],
+  get mn() { return this.en; },
   en: ["More from this page", "Popular", "Latest"],
   ja: ["このページの他の投稿", "人気", "新着"],
   "zh-Hans": ["此页面的其他帖子", "热门", "最新"],

@@ -76,6 +76,7 @@ export const businessPageContent: Record<BusinessPageKind, Record<FanLocale, Con
       guide: "팬 이용 가이드 보기",
       related: "브랜드·기업 협업을 찾고 계신가요?",
     },
+    get mn() { return this.en; },
     en: {
       title: "For everyone with fans",
       eyebrow: "FOR EVERYONE WITH FANS",
@@ -200,6 +201,7 @@ export const businessPageContent: Record<BusinessPageKind, Record<FanLocale, Con
       guide: "kyaa 이용 가이드 보기",
       related: "미국 팬미팅 협업을 찾고 계신가요?",
     },
+    get mn() { return this.en; },
     en: {
       title: "Partnership proposals",
       eyebrow: "PARTNERSHIPS",

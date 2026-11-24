@@ -68,6 +68,7 @@ const copy = {
     startQuiz: "퀴즈 풀기",
     attempt: (value: number) => `${value}회차`,
   },
+  get mn() { return this.en; },
   en: {
     title: "Fan verification",
     missions: "Verification",

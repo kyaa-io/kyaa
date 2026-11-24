@@ -28,6 +28,7 @@ const copy = {
     action: "덕질 시작하기",
     
   },
+  get mn() { return this.en; },
   en: {
     eyebrow: "MISSIONS OPEN NOW",
     title: "Elina and Banksy, one artwork",

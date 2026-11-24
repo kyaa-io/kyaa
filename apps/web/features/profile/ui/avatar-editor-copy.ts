@@ -30,6 +30,7 @@ export const avatarEditorCopy = {
     refresh: "최신 상태 다시 불러오기",
     photoAlt: "조정할 프로필 사진",
   },
+  get mn() { return this.en; },
   en: {
     avatar: "Profile image",
     

@@ -2,6 +2,7 @@ import type { AppLocale } from "@/i18n/locales";
 const keys=['statsTitle','noticesTitle','days7','days30','members','joined','posts','postsPeriod','notices','visitors','visitDays','daily','empty','retry','error','loading','title','body','visibility','public','members_only','write','save','edit','remove','cancel','confirmRemove','saved','removed'] as const;
 const labels:Record<AppLocale,readonly string[]>={
  ko:['통계','공지','최근 7일','최근 30일','팬 수','기간 내 가입','게시글 수','기간 내 게시글','공지 수','방문자','방문 일수 합','일별 방문자','공지가 없습니다','다시 시도','불러오지 못했습니다','불러오는 중','제목','내용','공개 범위','전체 공개','팬 공개','공지 쓰기','저장','수정','삭제','취소','공지를 삭제할까요?','저장했습니다','삭제했습니다'],
+ get mn() { return this.en; },
  en:['Stats','Notices','Last 7 days','Last 30 days','Fans','Joined in period','Posts','Posts in period','Notices','Visitors','Visit days total','Daily visitors','No notices','Retry','Could not load','Loading','Title','Body','Visibility','Public','Fans only','Write notice','Save','Edit','Delete','Cancel','Delete this notice?','Saved','Deleted'],
  ja:['統計','お知らせ','直近7日','直近30日','ファン数','期間内の加入','投稿数','期間内の投稿','お知らせ数','訪問者','訪問日数の合計','日別の訪問者','お知らせはありません','再試行','読み込めませんでした','読み込み中','タイトル','本文','公開範囲','全体公開','ファンのみ','お知らせを書く','保存','編集','削除','キャンセル','お知らせを削除しますか？','保存しました','削除しました'],
  'zh-Hans':['统计','公告','最近7天','最近30天','粉丝数','期间内加入','帖子数','期间内帖子','公告数','访客','访问天数合计','每日访客','暂无公告','重试','加载失败','加载中','标题','内容','公开范围','所有人可见','仅粉丝可见','写公告','保存','编辑','删除','取消','要删除这条公告吗？','已保存','已删除'],

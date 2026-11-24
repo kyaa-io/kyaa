@@ -71,6 +71,7 @@ const copy = {
     nextLevel: "다음 등급", levelMax: "최고 등급에 도달했어요.", remaining: "점 남음", nextBenefit: "다음 혜택", benefitReady: "지금 받을 수 있어요.", participationReady: "지금 참여할 수 있어요.", benefitLocked: "조건을 달성하면 받을 수 있어요.", viewBenefit: "혜택 확인하기", relatedActivity: "관련 활동", currentScore: "현재", requiredScore: "필요", opensAt: "공개",
     firstReaction: "첫 좋아요", firstReactionDate: "첫 좋아요를 남긴 날", firstReactionTransaction: "첫 좋아요 등록 기록",
   },
+  get mn() { return this.en; },
   en: {
     passports: "My Passports", discover: "Discover artists", open: "Open Passport",
     emptyTitle: "No Passports yet", emptyAction: "Find artists to verify",

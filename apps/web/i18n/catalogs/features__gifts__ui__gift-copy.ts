@@ -13,6 +13,7 @@ export const giftCopy = {
     stageInfo: "수령 정보", stageShipPrep: "배송 준비", stageTransit: "배송 중", stageDelivered: "배송 완료",
     stageReady: "준비 중", stagePickup: "수령 가능", stagePickedUp: "수령 완료", stageDigitalWait: "지급 대기", stageDigitalDone: "지급 완료",
   },
+  get mn() { return this.en; },
   en: {
     title: "Gifts", history: "Raffle history", sectionNew: "New gifts", sectionProgress: "In progress", sectionReceived: "Received",
     loading: "Loading your gifts.", error: "We couldn’t load your gifts.", retry: "Try again",

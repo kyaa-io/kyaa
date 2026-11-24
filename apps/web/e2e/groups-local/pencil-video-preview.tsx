@@ -11,6 +11,7 @@ import menuStyles from '../../features/content-safety/ui/content.module.css';
 import './pencil-video-preview.css';
 const labels:Record<AppLocale,readonly [string,string,string,string]>={
  ko:['영상 목록으로','YouTube에서 보기','이 영상에 대한 이야기를 남겨보세요.','재생'],
+ get mn() { return this.en; },
  en:['Back to videos','Watch on YouTube','Share your thoughts about this video.','Play'],
  ja:['動画一覧へ','YouTubeで見る','この動画について話してみましょう。','再生'],
  'zh-Hans':['返回视频列表','在YouTube观看','分享您对此视频的想法。','播放'],

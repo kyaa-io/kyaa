@@ -31,6 +31,7 @@ const BADGE_MS = 900;
 
 const unit: Record<AppLocale, { points: (n: string) => string; stamps: (n: string, count: number) => string }> = {
   ko: { points: n => `+${n}P`, stamps: n => `스탬프 ${n}` },
+  get mn() { return this.en; },
   en: { points: n => `+${n}P`, stamps: (n, c) => `${n} ${c === 1 ? "stamp" : "stamps"}` },
   ja: { points: n => `+${n}P`, stamps: n => `スタンプ ${n}` },
   "zh-Hans": { points: n => `+${n}P`, stamps: n => `印章 ${n}` },

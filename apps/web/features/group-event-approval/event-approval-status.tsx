@@ -1,6 +1,7 @@
 import type {AppLocale} from '@/i18n/locales';
 export const eventApprovalCopy:Record<AppLocale,{pending:string;rejected:string;reason:string;notFound:string}>={
  ko:{pending:'승인 대기',rejected:'반려됨',reason:'반려 사유',notFound:'행사를 찾을 수 없어요'},
+ get mn() { return this.en; },
  en:{pending:'Awaiting approval',rejected:'Rejected',reason:'Reason for rejection',notFound:'Event not found'},
  ja:{pending:'承認待ち',rejected:'差し戻し',reason:'差し戻しの理由',notFound:'イベントが見つかりません'},
  'zh-Hans':{pending:'等待审核',rejected:'未通过',reason:'未通过原因',notFound:'找不到活动'},

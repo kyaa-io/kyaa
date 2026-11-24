@@ -21,7 +21,7 @@ import { operatorToolsCopy } from './operator-tools-copy';
 import { raffleCopy } from '@/features/group-raffle/copy';
 import type { GroupManagementPresentation } from './management-presentation';
 import styles from './group-manage.module.css';
-const denied:Record<AppLocale,string>={ko:'운영진만 볼 수 있어요',en:'Only page staff can view this',ja:'運営メンバーのみ閲覧できます','zh-Hans':'仅管理团队可查看','zh-Hant':'僅管理團隊可檢視',es:'Solo el equipo puede ver esta página',id:'Hanya pengelola yang dapat melihat',vi:'Chỉ ban quản lý có thể xem',th:'เฉพาะทีมดูแลเท่านั้นที่ดูได้',pt:'Apenas a equipe pode ver esta página',fr:'Réservé à l’équipe de gestion',ru:'Доступно только команде страницы'};
+const denied:Record<AppLocale,string>={ko:'운영진만 볼 수 있어요',get mn() { return this.en; }, en:'Only page staff can view this',ja:'運営メンバーのみ閲覧できます','zh-Hans':'仅管理团队可查看','zh-Hant':'僅管理團隊可檢視',es:'Solo el equipo puede ver esta página',id:'Hanya pengelola yang dapat melihat',vi:'Chỉ ban quản lý có thể xem',th:'เฉพาะทีมดูแลเท่านั้นที่ดูได้',pt:'Apenas a equipe pode ver esta página',fr:'Réservé à l’équipe de gestion',ru:'Доступно только команде страницы'};
 const parse=(value:unknown)=>groupDetailSchema.parse(value);
 /** 390에서 넘치는 탭 줄: 현재 탭을 보이게 옮기고, 가려진 쪽만 흐리게 해 더 있음을 알린다. 탭 줄의 scrollLeft만 움직인다. */
 function useTabStrip(current:string,shown:boolean){

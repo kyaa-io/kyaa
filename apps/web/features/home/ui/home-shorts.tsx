@@ -21,7 +21,7 @@ import { ShortsPlayer } from "./shorts-player";
 import styles from "./home-shorts.module.css";
 
 export const navigation: Record<AppLocale, [string, string, string]> = {
-  ko: ["이전 영상", "다음 영상", "더 보기"], en: ["Previous video", "Next video", "More"], ja: ["前の動画", "次の動画", "その他"],
+  ko: ["이전 영상", "다음 영상", "더 보기"], get mn() { return this.en; }, en: ["Previous video", "Next video", "More"], ja: ["前の動画", "次の動画", "その他"],
   "zh-Hans": ["上一个视频", "下一个视频", "更多"], "zh-Hant": ["上一個影片", "下一個影片", "更多"],
   es: ["Vídeo anterior", "Siguiente vídeo", "Más"], id: ["Video sebelumnya", "Video berikutnya", "Lainnya"], vi: ["Video trước", "Video tiếp theo", "Thêm"], th: ["วิดีโอก่อนหน้า", "วิดีโอถัดไป", "เพิ่มเติม"], pt: ["Vídeo anterior", "Próximo vídeo", "Mais"], fr: ["Vidéo précédente", "Vidéo suivante", "Plus"], ru: ["Предыдущее видео", "Следующее видео", "Ещё"],
 };

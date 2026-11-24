@@ -36,7 +36,7 @@ function youtubeAPI(): Promise<YouTubeAPI> {
   return youtubeLoader;
 }
 const soundCopy: Record<AppLocale, [string, string]> = {
-  ko: ["소리 켜기", "음소거"], en: ["Turn sound on", "Mute"], ja: ["音声をオン", "ミュート"], "zh-Hans": ["打开声音", "静音"], "zh-Hant": ["開啟聲音", "靜音"], es: ["Activar sonido", "Silenciar"], id: ["Nyalakan suara", "Bisukan"], vi: ["Bật âm thanh", "Tắt tiếng"], th: ["เปิดเสียง", "ปิดเสียง"], pt: ["Ativar som", "Silenciar"], fr: ["Activer le son", "Couper le son"], ru: ["Включить звук", "Выключить звук"],
+  ko: ["소리 켜기", "음소거"], get mn() { return this.en; }, en: ["Turn sound on", "Mute"], ja: ["音声をオン", "ミュート"], "zh-Hans": ["打开声音", "静音"], "zh-Hant": ["開啟聲音", "靜音"], es: ["Activar sonido", "Silenciar"], id: ["Nyalakan suara", "Bisukan"], vi: ["Bật âm thanh", "Tắt tiếng"], th: ["เปิดเสียง", "ปิดเสียง"], pt: ["Ativar som", "Silenciar"], fr: ["Activer le son", "Couper le son"], ru: ["Включить звук", "Выключить звук"],
 };
 /** `onEnded`: the video played to its end (YouTube state 0, TikTok onStateChange 0). */
 export function ShortsPlayer({ item, locale, onEnded, immersive = false, onLike }: { item: HomeShort; locale: AppLocale; onEnded?: () => void; immersive?: boolean; onLike?: () => void }) {

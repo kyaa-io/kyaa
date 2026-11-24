@@ -1,6 +1,7 @@
 import type {AppLocale} from '@/i18n/locales';
 const copy:Record<AppLocale,readonly [string,string,string,string,string,string,string,string,string,string]>={
 ko:['접수한 신고','신고 처리 결과','신고 내역에서 최종 결과와 처리 사유를 확인하세요.','접수 완료','검토 중','조치 요청','처리 완료','신고 내용','처리 사유','대상 글 확인'],
+get mn() { return this.en; },
 en:['My reports','Report result','Check the final result and reason in your report history.','Received','Under review','Action requested','Resolved','Report reason','Resolution reason','View reported content'],
 ja:['送信した通報','通報の処理結果','通報履歴で最終結果と処理理由を確認してください。','受付済み','確認中','対応依頼','処理済み','通報内容','処理理由','対象を確認'],
 'zh-Hans':['我的举报','举报处理结果','请在举报记录中查看最终结果及处理原因。','已受理','审核中','已请求处理','已处理','举报内容','处理原因','查看举报对象'],

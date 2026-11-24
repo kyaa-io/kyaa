@@ -18,7 +18,7 @@ import { FanAction } from '@/components/fan-ui/fan-action';
 import styles from './my-group-destinations.module.css';
 const parseWallet=(v:unknown)=>walletSchema.parse(v);
 const parse=(v:unknown)=>z.object({enabled:z.boolean(),canConfigure:z.boolean()}).parse(v);
-const labels:Record<AppLocale,readonly[string,string]>={ko:['내 지갑','지갑 열기'],en:['My wallet','Open wallet'],ja:['マイウォレット','ウォレットを開く'],'zh-Hans':['我的钱包','打开钱包'],'zh-Hant':['我的錢包','開啟錢包'],es:['Mi cartera','Abrir cartera'],id:['Dompet saya','Buka dompet'],vi:['Ví của tôi','Mở ví'],th:['กระเป๋าของฉัน','เปิดกระเป๋า'],pt:['Minha carteira','Abrir carteira'],fr:['Mon portefeuille','Ouvrir le portefeuille'],ru:['Мой кошелёк','Открыть кошелёк']};
+const labels:Record<AppLocale,readonly[string,string]>={ko:['내 지갑','지갑 열기'],get mn() { return this.en; }, en:['My wallet','Open wallet'],ja:['マイウォレット','ウォレットを開く'],'zh-Hans':['我的钱包','打开钱包'],'zh-Hant':['我的錢包','開啟錢包'],es:['Mi cartera','Abrir cartera'],id:['Dompet saya','Buka dompet'],vi:['Ví của tôi','Mở ví'],th:['กระเป๋าของฉัน','เปิดกระเป๋า'],pt:['Minha carteira','Abrir carteira'],fr:['Mon portefeuille','Ouvrir le portefeuille'],ru:['Мой кошелёк','Открыть кошелёк']};
 export function MyGroupDestinations({locale}:{locale:AppLocale}){
  const enabled=useGroupsRelease(),t=groupsCopy(locale),r=useGroupResource(enabled?'/api/groups/me/presence':null,parse),wallet=useGroupResource(enabled?'/api/me/wallet':null,parseWallet),w=walletCopy(locale),dukjilOn=useDukjilStatus(locale)==='on';
  if(!enabled)return null;

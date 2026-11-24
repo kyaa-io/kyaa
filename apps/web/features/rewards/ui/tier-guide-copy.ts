@@ -10,6 +10,7 @@ const copy: Record<AppLocale, readonly string[]> = {
     "하트",
     "도장 칸"
   ],
+  get mn() { return this.en; },
   "en": [
     "Fan tier guide",
     "Explore the tier system?",
@@ -127,6 +128,7 @@ const rules: Record<AppLocale, readonly string[]> = {
     "새 등급 획득 기준",
     "이전에 달성한 큰 등급은 유지돼요. 같은 등급 안의 숫자는 현재 활동 기록에 따라 정해져요."
   ],
+  get mn() { return this.en; },
   "en": [
     "Starting tier",
     "Requirements for a new tier",
@@ -184,7 +186,7 @@ const rules: Record<AppLocale, readonly string[]> = {
   ]
 };
 export const tierGuideCopy = (locale: AppLocale) => { const [title, prompt, view, close, system, requirements, hearts, stamps] = copy[locale]; const [initial, attainment, rule] = rules[locale]; const minimum = (unit: string, n: number) => ({
-ko: `${unit} ${n}개 이상`, en: `${unit}: ${n} or more`, ja: `${unit} ${n}個以上`,
+ko: `${unit} ${n}개 이상`, get mn() { return this.en; }, en: `${unit}: ${n} or more`, ja: `${unit} ${n}個以上`,
 "zh-Hans": `${unit}至少 ${n}`, "zh-Hant": `${unit}至少 ${n}`, es: `${unit}: ${n} o más`,
 id: `${unit}: minimal ${n}`, vi: `${unit}: từ ${n}`, th: `${unit}: อย่างน้อย ${n}`,
 pt: `${unit}: ${n} ou mais`, fr: `${unit} : ${n} minimum`, ru: `${unit}: от ${n}`

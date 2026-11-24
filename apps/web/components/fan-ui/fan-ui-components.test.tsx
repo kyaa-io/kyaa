@@ -17,7 +17,7 @@ vi.mock("@/features/groups/ui/group-image", () => ({ GroupImage: ({ src, classNa
 describe("copy", () => {
   it("fills every added locale and keeps every placeholder", () => {
     const placeholders = (text: string) => (text.match(/\{\d+\}/g) ?? []).sort();
-    const locales = APP_LOCALES.filter((locale) => locale !== "ko" && locale !== "en");
+    const locales = APP_LOCALES.filter((locale) => locale !== "ko" && locale !== "en" && locale !== "mn");
     expect(Object.keys(messages).sort()).toEqual(Object.keys(fanUiSource).sort());
     for (const [key, source] of Object.entries(fanUiSource)) for (const locale of locales) {
       const text = (messages as Record<string, Record<string, string>>)[key][locale];
