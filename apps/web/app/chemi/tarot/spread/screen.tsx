@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
+import { ReadingCreatorPicker } from "@/features/chemi/ui/reading-creator-picker";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
@@ -124,6 +125,8 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
     </div>
   );
 
+  if (character === "dosa" && (status === "pick" || status === "guest"))
+    return <ReadingCreatorPicker content="tarot/spread" locale={locale} />;
   if (ask) return ask;
   if (status === "expired")
     return (
