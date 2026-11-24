@@ -25,6 +25,7 @@ import { ReadingBasis, ReadingDomains } from "@/features/chemi/ui/result/reading
 import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
+import { firstIntro } from "./first-locale";
 import type { AppLocale } from "@/i18n/locales";
 import { controls, pillarKeys, branchHanja, elementRatio, tenGod, stemElement, branchElement, elementName, elements, generates, monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
 import {
@@ -256,6 +257,7 @@ export function SajuResult({
   const [shareOpen, setShareOpen] = useState(false);
   const name = creatorName(character, locale);
   const first = { ...firstReading(chart, at), day: dayLine(chart) };
+  const intro = firstIntro(locale, first.stem);
   const year = yearReading(chart, at);
   const month = monthReading(chart, at);
   const compat =
@@ -289,7 +291,7 @@ export function SajuResult({
       ? uiText("pairTitle", { name, partner: pair.name })
       : uiText("readingTitle", { name, topic: uiText(view === "year" ? "year" : view === "month" ? "month" : "sajuName") });
   const title =
-    view === "first" ? first.headline : view === "year" ? year.title : view === "month" ? month.title : compat!.title;
+    view === "first" ? (intro?.title ?? first.headline) : view === "year" ? year.title : view === "month" ? month.title : compat!.title;
   const bondKicker = { first: uiText("bondFirst", { name }), year: uiText("bondYear", { name }), month: uiText("bondMonth", { name }), pair: "" }[view];
   const bond = view === "first" ? first.bond : view === "year" ? year.bond : view === "month" ? month.bond : "";
 
@@ -434,10 +436,10 @@ export function SajuResult({
                 <img src={hero(character)} alt="" />
               </picture>
               <FanText as="p" role="label" className={styles.dayLine}>
-                <FanHanja role="inline">{first.day.hanja}</FanHanja> · {first.day.read}
+                <FanHanja role="inline">{first.day.hanja}</FanHanja> · {intro?.day ?? first.day.read}
               </FanText>
               <FanText as="p" role="body" className={styles.opening}>
-                {sajuOpening(character, first.stem)}
+                {character === "changha" && intro ? intro.changha : sajuOpening(character, first.stem)}
               </FanText>
             </>
           )}
