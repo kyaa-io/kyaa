@@ -5,13 +5,13 @@ const copy: Record<AppLocale, readonly [string,string,string,string,string]> = {
  en:['A stamp for today','Check in daily for miles','Check-in record','Miles earned','Check-in stamps'],
  ja:['スタンプで残す今日の記録','毎日の出席でマイル獲得','出席記録','獲得マイル','出席スタンプ'],
  'zh-Hans':['用印章记录今天','每天签到得里程','签到记录','已获里程','签到印章'],
- 'zh-Hant':['用印章記錄今天','每天簽到得里程','簽到記錄','已獲積分','簽到印章'],
+ 'zh-Hant':['用印章記錄今天','每天簽到得里程','簽到記錄','已獲里程','簽到印章'],
  es:['Un sello para hoy','Millas por registrarte cada día','Registro de asistencia','Millas obtenidas','Sellos de asistencia'],
  id:['Stempel untuk hari ini','Check-in setiap hari untuk mil','Catatan check-in','Mil diperoleh','Stempel presensi'],
  vi:['Một dấu cho hôm nay','Điểm danh mỗi ngày nhận dặm','Lịch sử điểm danh','Dặm đã nhận','Dấu điểm danh'],
  th:['ตราประทับบันทึกวันนี้','เช็กอินทุกวันรับไมล์','ประวัติเช็กอิน','ไมล์ที่ได้รับ','ตราเช็กอิน'],
  pt:['Um carimbo para hoje','Milhas por check-in diário','Registro de presença','Milhas recebidas','Carimbos de presença'],
- fr:['Un tampon pour aujourd’hui','Des milts à chaque présence quotidienne','Historique de présence','Milts gagnés','Tampons de présence'],
+ fr:['Un tampon pour aujourd’hui','Des miles à chaque présence quotidienne','Historique de présence','Miles gagnés','Tampons de présence'],
  ru:['Штамп за сегодня','Мили за ежедневное посещение','История посещений','Получено миль','Штампы посещений'],
 };
 export function attendanceCopy(locale: AppLocale) { const [title,daily,record,earned,stamps]=copy[locale]; return {title,daily,record,earned,stamps}; }
