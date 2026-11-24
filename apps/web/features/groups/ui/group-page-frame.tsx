@@ -86,7 +86,7 @@ export function GroupPageHead() {
     description={summary}
     descriptionLabels={pageHeadCopy(g.locale)}
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
-    star={g.star}
+    star={g.kind === "fan" && g.celebrity && g.authenticated && g.star?.state === "filled" ? undefined : g.star}
     badge={<GroupArtistBadge locale={g.locale} />}
     links={[...(g.celebrity?.websiteUrl && g.celebrity.roles.includes("brand") ? [{ kind: "website", href: g.celebrity.websiteUrl }] : []), ...(g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url })) ?? []), ...(g.page?.externalLinks ?? []).map((room) => ({ kind: room.kind, href: room.url }))]}
     grade={g.kind === "fan" && g.celebrity ? g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : undefined : undefined}

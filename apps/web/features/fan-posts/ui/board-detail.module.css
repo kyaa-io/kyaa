@@ -2,10 +2,11 @@
 .detail { width:100%; margin:0; min-width:0; gap:16px; }
 /* 11/12 hotfix: article → comments gap. The card rule (content.module.css .card, 20px padding, loaded after this file in the post card) and the section gap stacked to ~50px between the reaction row and the comment title. */
 /* 2026-11-12 14:24: content.module.css .postDetail (760, centered) is applied after .detail in some bundles; the board detail takes its column's full width from its left line. */
-.detail.detail { width:100%; margin:0; gap:var(--space-3); }
+.detail.detail { width:100%; margin:0; gap:var(--space-1); }
+.detail > :nth-child(n + 3) { margin-block-start:var(--space-2); }
 
 .detail > .article[data-post-id] { padding-bottom:var(--space-3); }
-.detail>a:first-child { margin-inline-start:-12px; }
+.detail>a:first-child { margin-inline-start:-12px; min-height:var(--min-target);  }
 /* 2026-11-09 shell-width: the comment block starts at the column's left edge like the title, meta and body. */
 @media (min-width:1024px) { .detail [data-post-comments] { padding-inline:0; background:transparent; } }
 .article { display:flex; flex-direction:column; gap:16px; padding:0; border:0; border-radius:0; box-shadow:none; }
