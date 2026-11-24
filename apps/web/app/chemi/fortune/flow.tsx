@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
@@ -474,6 +475,7 @@ export function FortuneFlow({
             onClick={() => window.history.back()}
           />
         )}
+        <SceneSound locale={locale} reveal={talk === 1 && expression !== null} />
         {step === "enter" ? (
           <>
             <div className={styles.pick} role="group" aria-label={text("favorite")}>

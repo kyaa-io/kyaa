@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -429,6 +430,17 @@ export function StarFlow({
     };
   }, [reading, result, character]);
 
+  const firstStars = starTalkNumber(step) === 1 && !!result?.stars && phase === "idle";
+  const [revealSettled, setRevealSettled] = useState(false);
+  useEffect(() => {
+    if (!firstStars) {
+      setRevealSettled(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setRevealSettled(true), 400);
+    return () => window.clearTimeout(timer);
+  }, [firstStars]);
+
   if (under14) return <Under14 locale={locale} />;
 
   if (restoring)
@@ -475,6 +487,7 @@ export function StarFlow({
   const creator = starCharacters[index].sign;
   // 기획 13-2: 첫 별점은 별 3개 이상이면 웃음, 1~2개면 기본(걱정 표정 대신). 2는 좋은 분야와 낮은 분야·3은 행성 흐름(기본), 4는 둘 사이 궁합(웃음).
   const expression = !talk || !stars || phase !== "idle" ? null
+    : firstStars && !revealSettled ? expressionFor.firstReveal
     : talk === 1 ? (stars.overall >= 3 ? expressionFor.good : expressionFor.low)
     : talk === 4 ? expressionFor.bond
     : expressionFor.low;
@@ -525,6 +538,7 @@ export function StarFlow({
             onClick={() => window.history.back()}
           />
         )}
+        <SceneSound locale={locale} reveal={talk === 1 && expression !== null} />
         {step === "enter" ? (
           <>
             <div className={styles.pick} role="group" aria-label={text("favorite")}>

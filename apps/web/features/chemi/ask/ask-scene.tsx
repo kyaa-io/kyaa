@@ -8,6 +8,7 @@
  * 남은 질문 수·차감·한도는 서버(/api/chemi/ask)가 정하고, 이 화면은 받은 값만 그린다.
  * 유료 구매 자리는 결제 수단이 붙기 전이라 두지 않는다.
  */
+import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -901,12 +902,17 @@ export function AskScene({ locale, content, character, readingId, at, result }: 
     : shown?.status !== "answered" || shown.klass ? expressionFor.wait
     : reacting && picked ? askReactionExpression[picked]
     : expressionFor.answer;
+  const revealAnswer = !!shown && !draft && !shown.klass && shown.status === "answered" && (
+    (view.startsWith("answer") && fresh === shown.threadId) ||
+    (view.startsWith("follow") && fresh === `${shown.threadId}:follow`)
+  );
   const quote = (shown?.status === "answered" ? shown.answer : state?.threads[0]?.answer)?.split("\n").at(-1);
   return (
     <div className={styles.root} data-chemi-immersive="" data-ask-step={at.step} data-mood={mood} data-crisis={crisis ? "" : undefined} data-beat={picked && shown && fresh === `${shown.threadId}:react` ? picked : undefined}>
-      <SceneBackdrop tall={art.tall} wide={art.wide} loop={askLoop(where, who)} alt={name}
+      <SceneBackdrop tall={art.tall} wide={art.wide} loop={expression === null ? askLoop(where, who) : null} alt={name}
         expression={<SceneExpression scene={where} character={who} portrait={art.tall} expression={expression} wide="64" />} />
       <div className={styles.top}>
+        <SceneSound locale={locale} reveal={revealAnswer} />
         <FanIconButton aria-label={text("back")} className={styles.round} onClick={askBack}>
           <FanIcon icon={ChevronLeft} />
         </FanIconButton>

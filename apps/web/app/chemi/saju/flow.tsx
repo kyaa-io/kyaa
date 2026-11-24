@@ -6,6 +6,7 @@
  * 공통 부품 대기: 대화 틀(장면·말풍선·고르기 띠)은 운세 구현(t3/chemi-w3-fortune-fix2)에 같은 모양이 있다.
  * 병합 뒤 CHEMI-W2-FRAME-EXTRACT 로 뽑은 부품으로 바꾼다.
  */
+import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { AskScene } from "@/features/chemi/ask/ask-scene";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
@@ -901,6 +902,7 @@ export function SajuFlow({
             onClick={() => (phase === "error" && step === "result" ? setPhase("idle") : window.history.back())}
           />
         )}
+        <SceneSound locale={locale} reveal={talk === 1 && expression !== null} />
         {step === "enter" ? (
           <>
             <div className={styles.pick} role="group" aria-label={text("favorite")}>
