@@ -70,6 +70,6 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
     };
   }, [src, once, mobileOnly, paused]);
   return <video ref={ref} muted playsInline loop={!once} preload="none" aria-hidden="true"
-    className={styles.video} data-playing={playing || undefined}
+    className={styles.video} data-once={once || undefined} data-playing={playing || undefined}
     style={{ "--scene-focus": objectPosition } as CSSProperties} />;
 }
