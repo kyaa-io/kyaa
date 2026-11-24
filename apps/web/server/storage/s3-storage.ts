@@ -21,6 +21,15 @@ export class S3Storage {
     if (error) throw new Error("Storage metadata unavailable");
     return data;
   }
+  async finishQueuedDelete(bucket: string, path: string, generation: number) {
+    let succeeded = false;
+    try {
+      await this.s3.send(new DeleteObjectCommand(this.location(bucket, path)));
+      succeeded = true;
+    } finally {
+      await this.rpc("finish_s3_storage_delete", { p_bucket: bucket, p_path: path, p_generation: generation, p_succeeded: succeeded });
+    }
+  }
   from(bucket: string) {
     objectKey(bucket, "validation");
     return {
@@ -54,11 +63,9 @@ export class S3Storage {
       remove: async (paths: string[]) => {
         try {
           for (const path of paths) {
-            const location = this.location(bucket, path);
+            this.location(bucket, path);
             const generation = await this.rpc("queue_s3_storage_delete", { p_bucket: bucket, p_path: path }) as number;
-            let succeeded = false;
-            try { await this.s3.send(new DeleteObjectCommand(location)); succeeded = true; }
-            finally { await this.rpc("finish_s3_storage_delete", { p_bucket: bucket, p_path: path, p_generation: generation, p_succeeded: succeeded }); }
+            await this.finishQueuedDelete(bucket, path, generation);
           }
           return { data: paths.map(name => ({ name })), error: null };
         } catch (error) { return failure(error); }

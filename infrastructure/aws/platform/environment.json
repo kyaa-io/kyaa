@@ -803,6 +803,11 @@
               "Statement": [
                 {
                   "Effect": "Allow",
+                  "Action": "cloudfront:CreateInvalidation",
+                  "Resource": { "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${Distribution}" }
+                },
+                {
+                  "Effect": "Allow",
                   "Action": [
                     "s3:GetObject",
                     "s3:PutObject",
@@ -1035,6 +1040,10 @@
               }
             ],
             "Environment": [
+              {
+                "Name": "ASSET_CLOUDFRONT_DISTRIBUTION_ID",
+                "Value": { "Ref": "Distribution" }
+              },
               {
                 "Name": "NODE_ENV",
                 "Value": "production"

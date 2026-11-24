@@ -1,0 +1,4 @@
+.list { list-style: none; padding: 0; }
+.list li { display: flex; align-items: center; flex-wrap: wrap; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--line); }
+.list p { flex: 1 1 180px; margin: 0; overflow-wrap: anywhere; }
+.preview { object-fit: contain; }
