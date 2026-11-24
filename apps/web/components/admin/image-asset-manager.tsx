@@ -3,6 +3,8 @@
 import { FanHeading } from "../fan-ui/fan-heading";
 import { FanAction } from "../fan-ui/fan-action";
 import { FanSkeletonRows } from "../fan-ui/fan-skeleton";
+import { AlertDialog } from "../ui/overlay/accessible-overlay";
+import dialogStyles from "./admin-directory-manager.module.css";
 import styles from "./image-asset-manager.module.css";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -28,6 +30,7 @@ function AssetList({ locale, role }: { locale: AdminLocale; role: string }) {
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<Asset | null>(null);
   const [message, setMessage] = useState("");
   useEffect(() => {
     const controller = new AbortController();
@@ -48,7 +51,6 @@ function AssetList({ locale, role }: { locale: AdminLocale; role: string }) {
     return () => controller.abort();
   }, [offset, getAccessToken, en]);
   async function remove(asset: Asset) {
-    if (!window.confirm(en ? "Permanently delete every version of this image? This cannot be undone." : "이 이미지의 모든 버전을 영구 삭제할까요? 지우면 되돌릴 수 없어요.")) return;
     setBusy(true);
     try {
       const response = await fetch(`/api/admin/image-assets?id=${asset.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${await getAccessToken()}` } });
@@ -64,7 +66,7 @@ function AssetList({ locale, role }: { locale: AdminLocale; role: string }) {
           (result.cache === "requested" ? (en ? "Cache removal requested." : "캐시 삭제를 요청했어요.") : (en ? "Cached copies remain." : "캐시가 남아 있어요.")));
 
     } catch { setMessage(en ? "Could not confirm deletion." : "삭제 결과를 확인하지 못했어요."); }
-    finally { setBusy(false); }
+    finally { setBusy(false); setPending(null); }
   }
   return <AdminOperationsShell locale={locale} adminRole={role}>
     <FanHeading as="h1">{en ? "Image assets" : "이미지 자산"}</FanHeading>
@@ -75,10 +77,18 @@ function AssetList({ locale, role }: { locale: AdminLocale; role: string }) {
       <img src={asset.url} alt={en ? "Image preview" : "이미지 미리보기"} width={144} height={96} className={styles.preview} />
       <p>{asset.creator} · {new Date(asset.created_at).toLocaleString(locale)} · {asset.byte_size.toLocaleString(locale)} B</p>
       {asset.sources.length > 0 ? <p>{en ? "Used in code" : "코드에서 사용"} · {asset.sources.join(", ")}</p> :
-        role !== "viewer" && <FanAction variant="secondary" disabled={busy} onClick={() => void remove(asset)}>{en ? "Delete image" : "이미지 지우기"}</FanAction>}
+        role !== "viewer" && <FanAction variant="secondary" disabled={busy} onClick={() => setPending(asset)}>{en ? "Delete image" : "이미지 지우기"}</FanAction>}
     </li>)}</ul>}
     {!loading && !items.length && <p>{en ? "No images on this page." : "이 페이지에 표시할 이미지가 없어요."}</p>}
     {offset > 0 && <FanAction variant="secondary" disabled={busy || loading} onClick={() => setOffset(offset - 50)}>{en ? "Previous" : "이전"}</FanAction>}
     {items.length === 50 && <FanAction variant="secondary" disabled={busy || loading} onClick={() => setOffset(offset + 50)}>{en ? "Next" : "다음"}</FanAction>}
+    {pending && <AlertDialog open onClose={() => setPending(null)} labelledBy="asset-delete-title" describedBy="asset-delete-description" backdropClassName={dialogStyles.confirmBackdrop} contentClassName={dialogStyles.confirmDialog} busy={busy}>
+      <FanHeading as="h2" id="asset-delete-title">{en ? "Delete every version of this image?" : "이 이미지의 모든 버전을 영구 삭제할까요?"}</FanHeading>
+      <p id="asset-delete-description">{en ? "This cannot be undone." : "삭제한 이미지는 복구할 수 없어요."}</p>
+      <div>
+        <FanAction variant="secondary" data-autofocus disabled={busy} onClick={() => setPending(null)}>{en ? "Cancel" : "취소"}</FanAction>
+        <FanAction variant="danger" disabled={busy} onClick={() => void remove(pending)}>{en ? "Delete permanently" : "영구 삭제"}</FanAction>
+      </div>
+    </AlertDialog>}
   </AdminOperationsShell>;
 }

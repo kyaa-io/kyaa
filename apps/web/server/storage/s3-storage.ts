@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { S3Client, GetObjectCommand, HeadObjectCommand, PutObjectCommand, paginateListObjectVersions, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, GetObjectCommand, HeadObjectCommand, PutObjectCommand, ListObjectVersionsCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { bucketPolicies, objectKey, type StorageConfig } from "./config";
@@ -26,12 +26,23 @@ export class S3Storage {
     const location = this.location(bucket, path);
     const listVersions = async () => {
       const ids: string[] = [];
-      for await (const page of paginateListObjectVersions({ client: this.s3 }, { Bucket: location.Bucket, Prefix: location.Key })) {
+      let keyMarker: string | undefined;
+      let versionMarker: string | undefined;
+      for (;;) {
+        const page = await this.s3.send(new ListObjectVersionsCommand({
+          Bucket: location.Bucket, Prefix: location.Key, KeyMarker: keyMarker, VersionIdMarker: versionMarker,
+        }));
         for (const entry of [...(page.Versions ?? []), ...(page.DeleteMarkers ?? [])]) {
           if (entry.Key !== location.Key) continue;
           if (!entry.VersionId) throw new Error("Missing S3 version ID");
           ids.push(entry.VersionId);
         }
+        if (!page.IsTruncated) break;
+        if (!page.NextKeyMarker || (keyMarker === page.NextKeyMarker && versionMarker === page.NextVersionIdMarker)) {
+          throw new Error("Invalid S3 pagination markers");
+        }
+        keyMarker = page.NextKeyMarker;
+        versionMarker = page.NextVersionIdMarker;
       }
       return ids;
     };
