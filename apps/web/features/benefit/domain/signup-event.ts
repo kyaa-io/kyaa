@@ -6,7 +6,7 @@ export const signupEvent = {
 const timeZone = z.string().refine(value => { try { new Intl.DateTimeFormat('en', { timeZone: value }); return true; } catch { return false; } });
 export const rafflePolicySchema = z.object({
   startsAt: z.iso.datetime({ offset: true }).default('2026-11-10T15:00:00.000Z'),
-  closesAt: z.iso.datetime({ offset: true }).default('2026-11-30T23:59:59.999+09:00'),
+  closesAt: z.iso.datetime({ offset: true }).default('2026-12-13T23:59:59.999+09:00'),
   timeZone: timeZone.default('Asia/Seoul'),
   // passport·community: Fan Passport 받기·커뮤니티 가입은 추첨 자격이 아니라 각각 한 번 +1(사용자 결정 2026-11-13, 응모만 필수).
   // referral: 내 초대 링크로 가입하고 응모한 친구 한 명당(사용자 결정 2026-11-13). 댓글·출석과 달리 하루 상한이 없고 친구마다 한 번이다.

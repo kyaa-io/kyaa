@@ -6,7 +6,7 @@ vi.mock('@/server/signup-event/local-admin', () => ({authorizeLocalAdmin:authori
 vi.mock('@/server/signup-event/local', async importOriginal => ({...await importOriginal<typeof import('@/server/signup-event/local')>(),readLocalSnapshot:read}));
 vi.mock('@/server/signup-event/database', () => ({createSignupRaffleDatabase:()=>({}),recordSignupRaffleDraw:record,readSignupRaffleDraw:lookup,signupRaffleAliasKey:()=>Buffer.alloc(32,7)}));
 import { GET, POST } from './route';
-const afterClose=new Date('2026-12-01T00:00:00+09:00'),beforeClose=new Date('2026-11-30T23:59:00+09:00');
+const afterClose=new Date('2026-12-14T00:00:00+09:00'),beforeClose=new Date('2026-12-13T23:59:00+09:00');
 const admin={role:'admin',appUserId:'00000000-0000-4000-8000-0000000000a1',allowlistId:'00000000-0000-4000-8000-0000000000a2'};
 const seventeen=()=>Array.from({length:17},(_,i)=>({id:`00000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`,createdAt:'2025-01-01T00:00:00Z',passportReceived:true,communityJoined:true}));
 const draw=(requestId:string)=>POST(new Request('http://localhost/api/admin/signup-event',{method:'POST',body:JSON.stringify({quantity:17,requestId})}));
@@ -69,7 +69,7 @@ it('never seeds the draw from the request and always answers with the stored win
  // Only the first request draws; the two repeats are answered from the stored draw without reading participants again.
  expect(record).toHaveBeenCalledTimes(1);expect(read).toHaveBeenCalledTimes(1);
  const inputs=record.mock.calls.map(call=>call[1]);
- for(const input of inputs){expect(input.seed).toMatch(/^[a-f0-9]{64}$/);expect(input.actor).toBe(admin.appUserId);expect(input.allowlistId).toBe(admin.allowlistId);expect(input.candidates).toHaveLength(17);expect(input.closesAt).toBe('2026-11-30T23:59:59.999+09:00');}
+ for(const input of inputs){expect(input.seed).toMatch(/^[a-f0-9]{64}$/);expect(input.actor).toBe(admin.appUserId);expect(input.allowlistId).toBe(admin.allowlistId);expect(input.candidates).toHaveLength(17);expect(input.closesAt).toBe('2026-12-13T23:59:59.999+09:00');}
  expect(inputs[0].seed).not.toContain(same.replaceAll('-',''));
 });
 it('keeps answering with the first winners when participants later drop below 17 or cannot be read',async()=>{

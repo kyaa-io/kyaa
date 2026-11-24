@@ -17,7 +17,7 @@ it('splits the time left into D-day and a fixed-width clock', () => {
 
 it('ticks every second and disappears once the raffle closes', () => {
   render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleCountdown /></RaffleProvider>);
-  expect(screen.getByRole('timer', { name: '11월 30일 23:59 마감' }).textContent).toBe('D-1721:59:59');
+  expect(screen.getByRole('timer', { name: '12월 13일 23:59 마감' }).textContent).toBe('D-1721:59:59');
   act(() => { vi.advanceTimersByTime(2000); });
   expect(screen.getByRole('timer').textContent).toBe('D-1721:59:57');
   act(() => { vi.setSystemTime(closesAt + 1000); vi.advanceTimersByTime(1000); });
