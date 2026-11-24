@@ -3,7 +3,7 @@ import {
   FanAppFrame,
   FanContentContainer,
 } from "@/components/fan-shell/fan-app-shell";
-import { chemiEnabled, chemiPreview } from "@/features/chemi/domain/availability";
+import { chemiEnabled, chemiPreview, chemiWeeklyRankingsEnabled } from "@/features/chemi/domain/availability";
 import { parseAppLocale } from "@/i18n/locales";
 
 import { chemiTabLabel } from "@/features/chemi/ui/copy";
@@ -23,7 +23,6 @@ export default async function ChemiPage({
   const { home: copy } = (
     await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)
   ).default;
-  // 운영 조합은 입구 주간 랭킹만 숨긴다. 성장 탭·분류 칩은 운영에서도 연다.
   const preview = chemiPreview();
   const growth = params.tab === "growth";
   return (
@@ -46,7 +45,7 @@ export default async function ChemiPage({
             },
           ]}
         />
-        <ChemiHome matchAvailable={Boolean(getMatchPhotos())} preview={preview} copy={copy} locale={locale} growth={growth} />
+        <ChemiHome matchAvailable={Boolean(getMatchPhotos())} preview={preview} weeklyRankings={chemiWeeklyRankingsEnabled()} copy={copy} locale={locale} growth={growth} />
       </FanContentContainer>
     </FanAppFrame>
   );

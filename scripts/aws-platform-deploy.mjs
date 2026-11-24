@@ -20,7 +20,7 @@ const GA4_STREAMS = { prod: 'G-HPXFR0PQP0', dev: 'G-WKSF9KP5QW' };
 const REWARDED_SESSION_ENV = ['KYAA_REWARDED_AD_SESSION_TTL_SECONDS', 'KYAA_REWARDED_AD_MIN_WATCH_SECONDS', 'KYAA_REWARDED_AD_ISSUE_LIMIT', 'KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS', 'KYAA_REWARDED_AD_DAILY_CAP'];
 const PUBLIC_RUNTIME_ENV = new Set([
   ...REWARDED_SESSION_ENV,
-  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED', 'CHEMI_TAB', 'CHEMI_ASK_AI', 'CHEMI_ASK_AI_MODEL', 'CHEMI_TOPUP_ENABLED', 'CHEMI_MAIL_SINK', 'KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE', 'KYAA_REWARDED_AD_UNIT', 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED',
+  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED', 'CHEMI_TAB', 'CHEMI_WEEKLY_RANKINGS', 'CHEMI_ASK_AI', 'CHEMI_ASK_AI_MODEL', 'CHEMI_TOPUP_ENABLED', 'CHEMI_MAIL_SINK', 'KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE', 'KYAA_REWARDED_AD_UNIT', 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED',
   'FAN_SESSION_ISSUE', 'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY', 'GA4_MEASUREMENT_ID',
   'GIWA_CHAIN_ID', 'GIWA_RPC_URL', 'GIWA_EXPLORER_URL', 'BYUS_PASSPORT_CONTRACT_ADDRESS',
   'BYUS_STAMP_CONTRACT_ADDRESS', 'BYUS_RELAYER_ADDRESS', 'KAKAO_OAUTH_MODE', 'KAKAO_CLIENT_ID',
@@ -152,7 +152,7 @@ export function validateConfig(config, template) {
       if (key === 'CHEMI_TOPUP_ENABLED' && !['true', 'false'].includes(value)) fail('CHEMI_TOPUP_ENABLED must be true or false');
       if (key === 'CHEMI_ASK_AI' && (!['true', 'false'].includes(value) || (value === 'true' && config.environment !== 'dev'))) fail('CHEMI_ASK_AI can be enabled only in dev');
       if (key === 'CHEMI_ASK_AI_MODEL' && !/^gemini-[a-z0-9.-]{1,60}$/.test(value)) fail('CHEMI_ASK_AI_MODEL must be a Gemini model id');
-      if (key === 'CHEMI_TAB' && !['true', 'false'].includes(value)) fail('CHEMI_TAB must be true or false');
+      if (['CHEMI_TAB', 'CHEMI_WEEKLY_RANKINGS'].includes(key) && !['true', 'false'].includes(value)) fail(`${key} must be true or false`);
       if (['KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE'].includes(key) && !['true', 'false'].includes(value)) fail(`${key} must be true or false`);
       if (key === 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED' && !['true', 'false'].includes(value)) fail('KYAA_REWARDED_TICKET_EXCHANGE_ENABLED must be true or false');
       if (REWARDED_SESSION_ENV.includes(key) && !/^[1-9]\d{0,8}$/.test(value)) fail(`${key} must be a positive integer`);

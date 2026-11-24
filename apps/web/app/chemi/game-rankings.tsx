@@ -1,7 +1,5 @@
 "use client";
 
-import { VacantRank } from "@/features/chemi/games/vacant-rank";
-
 import { useEffect, useRef } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -24,7 +22,7 @@ type RecordRow = {
   change: number;
   record: string;
   isMe?: boolean;
-  /** 기록이 없는 순위 자리: 빈 원 · 줄표 · 0(DESIGN 케미 홈). */
+  /** 기록이 없는 순위 자리: 빈 원 · 미등록(DESIGN 케미 홈). */
   vacant?: true;
 };
 export type GameRanking = {
@@ -50,7 +48,11 @@ function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string 
   }, [row]);
   return (
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
-      {row.vacant ? <VacantRank label={vacantLabel} place={row.place} avatarClassName={styles.rankAvatar} /> : <>
+      {row.vacant ? <>
+        <FanText role="body">{row.place}</FanText>
+        <span className={styles.rankAvatar} aria-hidden="true" />
+        <FanText role="item"><span role="img" aria-label={vacantLabel}>{vacantLabel}</span></FanText>
+      </> : <>
         <FanText role="body" data-flash-target="gain">{row.place}</FanText>
         {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
         <div>
@@ -104,11 +106,12 @@ export function GameRankings({ games, label, weekLabel, mineLabel, vacantLabel =
                 <div className={styles.leaders}>
                   {Array.from({ length: SLOTS }, (_, index) => {
                     const row = game.leaders[index] ?? {
-                      id: `empty-${index}`, place: index + 1, name: "—", vacant: true, change: 0, record: "0",
+                      id: `empty-${index}`, place: index + 1, name: vacantLabel, vacant: true, change: 0, record: "",
                     };
                     return <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />;
                   })}
                 </div>
+                {firstPlay && <FanText role="meta" className={styles.rankStatus}>{game.leaders.length ? mineEmpty : empty}</FanText>}
                 {game.mine && !game.leaders.some((row) => row.isMe) && (
                   <div className={styles.rankMine}>
                     <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>

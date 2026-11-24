@@ -582,3 +582,15 @@ test('45+ runtime keys use S3 validation and deploy upload without AWS; small DE
     assert(!deploymentCommand(c, file, 'params').includes('--s3-bucket'));
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+test('weekly rankings can be switched off in production runtime configuration', async () => {
+  const template = await loadTemplate('environment');
+  const production = config('environment', 'prod');
+  const environment = () => renderTemplate(production, template).Resources.TaskDefinition.Properties
+    .ContainerDefinitions.find(container => container.Name === 'web').Environment;
+  assert.equal(environment().some(entry => entry.Name === 'CHEMI_WEEKLY_RANKINGS'), false);
+  production.runtimeEnvironment.CHEMI_WEEKLY_RANKINGS = 'false';
+  assert(environment().some(entry => entry.Name === 'CHEMI_WEEKLY_RANKINGS' && entry.Value === 'false'));
+  production.runtimeEnvironment.CHEMI_WEEKLY_RANKINGS = 'off';
+  assert.throws(() => validateConfig(production, template), /CHEMI_WEEKLY_RANKINGS/);
+});

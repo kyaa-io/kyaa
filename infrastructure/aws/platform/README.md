@@ -186,5 +186,6 @@ SNS email 구독은 선택이며 수신자가 확인해야 활성화된다. Clou
 PostgREST 이미지는 `Dockerfile.postgrest.aws`와 `buildspec-postgrest.yml`로 별도 생성하고 ECR digest로 고정한다. 공식 PostgREST 14.18 이미지와 AWS 공개 RDS CA bundle을 포함하며 UID 1001로 실행한다. `PGRST_DB_URI`에는 `sslmode=verify-full&sslrootcert=/etc/ssl/certs/rds-ca-bundle.crt`를 지정한다. CA 원본은 https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem 이며, 인증서를 갱신할 때 AWS 원문·해시·실제 TLS 연결을 다시 확인한다.
 
 - `CHEMI_TAB`: 케미 탭 플래그. 값이 정확히 `true`일 때만 케미 탭 버튼·페이지·API가 열리고, 없거나 다른 값이면 페이지·API가 404이고 탭 버튼이 없다. `true`/`false`만 허용하며 운영은 값을 넣지 않는다(꺼짐). `true`이면 `runtimeSecretKeys`에 `CHEMI_TAROT_SALT`(타로 뽑기 소금값, 32자 이상, 런타임 비밀 JSON의 같은 이름 키)가 있어야 배포 설정 검사를 통과한다.
+- `CHEMI_WEEKLY_RANKINGS`: 케미 입구 주간 랭킹은 기본 공개한다. `false`로 설정하면 케미 입구에서 랭킹 카드 대신 기존 목록 배치를 표시한다. 질문하기와 알림은 기존 환경 설정을 따른다.
 - `CHEMI_ASK_AI`: 케미 질문하기 답을 AI(Vertex AI Gemini)로 쓰는 플래그. `true`는 dev 에서만 허용하고 운영은 값을 넣지 않는다(꺼짐 = 규칙 문장). `true`이면 `runtimeSecretKeys`에 `CHEMI_ASK_AI_GCP_KEY`(Vertex AI User 권한만 가진 GCP 서비스 계정 키 JSON 또는 그 base64)가 있어야 배포 설정 검사를 통과한다. 모델을 바꿀 때만 `CHEMI_ASK_AI_MODEL`(기본 `gemini-3.5-flash-lite`)을 넣는다.
 - `KYAA_FEATURE_QUIZ_LEARN`: 서버 전용 퀴즈 학습 플래그. 서버에서는 `true`일 때 켜진다. 로컬 dev 환경 생성 및 dev·운영 배포 설정은 기본 `true`이며 명시적인 `false`로 끌 수 있다. 꺼지면 학습 RPC를 호출하지 않고 결과의 알아보기 및 관리자 힌트 입력을 숨긴다.

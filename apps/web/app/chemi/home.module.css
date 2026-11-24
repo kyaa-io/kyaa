@@ -166,6 +166,12 @@
 .rankRow[data-me] {
   color: var(--color-accent-ink);
 }
+.rankStatus {
+  display: flex;
+  align-items: center;
+  min-height: var(--rank-mine);
+  border-top: thin solid var(--color-line-subtle);
+}
 .rankMine {
   grid-template-columns: minmax(var(--space-6), auto) var(--rank-avatar) minmax(0, 1fr) auto;
   border-top: thin solid var(--color-line-subtle);

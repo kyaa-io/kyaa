@@ -10,7 +10,7 @@ import { GameRankings, type GameRanking } from "./game-rankings";
 import type { HomeCopy } from "./home";
 
 const allModes = [["pair", "match"], ["run", "run"]] as const;
-type Row = { place: number; nickname: string; ticks: number; score: number; isMe: boolean };
+type Row = { place: number; nickname: string; ticks: number; score?: number | null; isMe: boolean };
 type Props = { copy: HomeCopy; locale: string; matchAvailable: boolean };
 
 export function WeeklyRankings(props: Props) {
@@ -39,7 +39,10 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
         });
         if (!response.ok) throw Error();
         const { ranking } = await response.json() as { ranking: Row[] };
-        if (!Array.isArray(ranking)) throw Error();
+        if (!Array.isArray(ranking) || ranking.some((row) =>
+          !row || !Number.isInteger(row.place) ||
+          (typeof row.score === "number" ? !Number.isFinite(row.score) : mode === "run" || !Number.isFinite(row.ticks))
+        )) throw Error();
         if (!controller.signal.aborted) setResults((previous) => ({ ...previous, [mode]: ranking }));
       })().catch(() => {
         if (!controller.signal.aborted) setResults((previous) => ({ ...previous, [mode]: "error" }));
@@ -61,7 +64,7 @@ function RankingSession({ auth, copy, locale, matchAvailable }: Props & { auth: 
       name: rankName(row.nickname, locale),
       initial: row.nickname?.trim() ? undefined : null,
       change: 0,
-      record: mode === "run" ? points.format(row.score) : row.score != null ? points.format(row.score) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
+      record: typeof row.score === "number" ? points.format(row.score) : [Math.floor(row.ticks / FPS / 60), Math.floor(row.ticks / FPS) % 60]
         .map((part) => String(part).padStart(2, "0")).join(":"),
     });
     const mine = rows.find((row) => row.isMe);

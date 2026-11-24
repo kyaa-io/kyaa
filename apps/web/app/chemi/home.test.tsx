@@ -11,7 +11,7 @@ vi.mock("@/features/rankings/ui/ranking-rows", () => ({
 }));
 
 it("filters the six activities and keeps the game rankings visible", () => {
-  render(<ChemiHome preview copy={copy} locale="ko" growth={false} />);
+  render(<ChemiHome weeklyRankings preview copy={copy} locale="ko" growth={false} />);
   expect(screen.getByRole("link", { name: copy.fortune })).toHaveAttribute(
     "href",
     "/chemi/fortune?locale=ko",
@@ -66,35 +66,38 @@ it("drops my record row when I am already in the top three", () => {
 });
 
 it("pauses and resumes the banner from the button inside it", () => {
-  render(<ChemiHome preview copy={copy} locale="ko" growth={false} />);
+  render(<ChemiHome weeklyRankings preview copy={copy} locale="ko" growth={false} />);
   fireEvent.click(screen.getByRole("button", { name: copy.pause }));
   fireEvent.click(screen.getByRole("button", { name: copy.resume }));
   expect(screen.getByRole("button", { name: copy.pause })).toBeVisible();
 });
 
-it("opens growth and the category chips on production but keeps the weekly rankings dev-only", () => {
-  const view = render(<ChemiHome copy={copy} locale="ko" growth preview={false} />);
+it("controls the weekly rankings independently from preview and growth", () => {
+  const view = render(<ChemiHome weeklyRankings={false} copy={copy} locale="ko" growth preview={false} />);
   expect(screen.queryByRole("link", { name: copy.start })).toBeNull();
-  view.rerender(<ChemiHome copy={copy} locale="ko" growth={false} preview={false} />);
+  view.rerender(<ChemiHome weeklyRankings={false} copy={copy} locale="ko" growth={false} preview={false} />);
   expect(screen.getByRole("button", { name: copy.games })).toBeVisible();
-  expect(screen.queryByText(copy.rankings)).toBeNull();
+  expect(screen.queryByRole("complementary")).toBeNull();
+  view.rerender(<ChemiHome weeklyRankings copy={copy} locale="ko" growth={false} preview={false} />);
+  expect(screen.getByRole("complementary", { name: copy.rankings })).toBeVisible();
+  expect(screen.queryByText(copy.rankingOf.replace("{game}", copy.pair))).toBeNull();
 });
 
 it.each([true, false])("shows the open fortune first (preview=%s)", (preview) => {
-  render(<ChemiHome copy={copy} locale="ko" growth={false} preview={preview} />);
+  render(<ChemiHome weeklyRankings={false} copy={copy} locale="ko" growth={false} preview={preview} />);
   const fortune = screen.getByRole("link", { name: copy.fortune });
   expect(fortune.parentElement?.firstElementChild).toBe(fortune);
 });
 
 it("opens today's tarot from the list and keeps the unreleased contents pending", () => {
-  render(<ChemiHome copy={copy} locale="ko" growth={false} preview={false} />);
+  render(<ChemiHome weeklyRankings={false} copy={copy} locale="ko" growth={false} preview={false} />);
   expect(screen.getByRole("link", { name: copy.tarot })).toHaveAttribute("href", "/chemi/tarot?locale=ko");
   expect(screen.getByRole("link", { name: copy.saju })).toHaveAttribute("href", "/chemi/saju?locale=ko");
   expect(screen.getByRole("link", { name: copy.zodiac })).toHaveAttribute("href", "/chemi/star?locale=ko");
 });
 
 it("opens the enabled match game from the games tab and the runner", () => {
-  render(<ChemiHome matchAvailable preview copy={copy} locale="ja" growth={false} />);
+  render(<ChemiHome matchAvailable weeklyRankings preview copy={copy} locale="ja" growth={false} />);
   fireEvent.click(screen.getByRole("button", { name: copy.games }));
   expect(screen.getByRole("link", { name: copy.pair })).toHaveAttribute("href", "/chemi/games/match?locale=ja");
   expect(screen.getByRole("link", { name: copy.run })).toHaveAttribute("href", "/chemi/games/run?locale=ja");
@@ -108,4 +111,24 @@ it("opens the enabled match game from the games tab and the runner", () => {
       row.getAttribute("href"),
     );
   }
+});
+
+it("shows vacant slots, no personal record, and an actual zero score separately", () => {
+  const game: GameRanking = { game: "run", title: "최애 런 랭킹", status: "ready", leaders: [], mine: null };
+  const renderRankings = (ranking: GameRanking) => (
+    <GameRankings label={copy.rankings} games={[ranking]}
+      empty="아직 주간 기록이 없어요" mineEmpty="내 기록이 없어요" />
+  );
+  const view = render(renderRankings(game));
+  expect(screen.getAllByRole("img", { name: "미등록" })).toHaveLength(3);
+  expect(screen.getAllByText("미등록")).toHaveLength(3);
+  expect(screen.getByText("아직 주간 기록이 없어요")).toBeVisible();
+  expect(screen.queryByText("0")).toBeNull();
+  view.rerender(renderRankings({
+    ...game,
+    leaders: [{ id: "fan", name: "별", place: 1, change: 0, record: "0" }],
+  }));
+  expect(screen.getAllByText("미등록")).toHaveLength(2);
+  expect(screen.getByText("0")).toBeVisible();
+  expect(screen.getByText("내 기록이 없어요")).toBeVisible();
 });
