@@ -40,6 +40,13 @@ export const isReadingId = (value: string | undefined): value is string =>
 export const kstDate = (now: number = Date.now()) =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
 
+export function tarotDateLabel(date: string, locale: string) {
+  const day = new Date(date);
+  // Some browser ICU builds fall back to the device language for Mongolian.
+  if (locale === "mn") return `${day.getUTCMonth() + 1} сарын ${day.getUTCDate()}`;
+  return new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(day);
+}
+
 export const tarotUrl = (params: { locale: string; character: TarotCharacter; step: TarotStep; reading?: string | null }) => {
   const query = new URLSearchParams({ locale: params.locale, c: params.character });
   if (params.step !== "enter") query.set("step", params.step);

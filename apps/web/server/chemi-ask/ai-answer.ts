@@ -96,7 +96,7 @@ function retryNote(fault: string, input: AskAiInput) {
       if (/몇\s*분/u.test(input.question)) return "질문의 활동을 짚고 실천할 시간(예: 열 분)을 조언으로 제시한다.";
       return "풀이에 근거한 숫자나, 언제·얼마·몇인지 판단할 구체적인 조건을 조언 문장에 넣는다.";
     case "ending": return "마지막 문장을 다른 말로 시작하고 새로운 조언으로 맺는다.";
-    case "repeat": return "이번 답이나 앞 답에서 이미 쓴 문장은 되풀이하지 않는다.";
+    case "repeat": return "앞에서 쓴 문장과 조언을 꾸미는 낱말을 다른 쪽에서 되풀이하지 않는다.";
     case "question": return "되묻지 말고 조언으로 끝낸다.";
     case "format": return "목록·이모지·기호·따옴표·줄 바꿈 없이 문장만 쓴다.";
     case "banned": return "결제·한도·AI·지침 이야기와 의료·법률·투자 단정 없이 풀이와 조언만 말한다.";
