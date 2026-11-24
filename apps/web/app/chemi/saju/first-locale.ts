@@ -1,4 +1,4 @@
-import { stemElement, type Stem } from "./chart";
+import { stems, stemElement, type Stem } from "./chart";
 
 type Language = "en" | "mn";
 const titles: Record<Language, Record<Stem, string>> = {
@@ -39,10 +39,11 @@ const changha: Record<Language, Record<Stem, string>> = {
 export function firstIntro(locale: string, stem: Stem) {
   if (locale !== "en" && locale !== "mn") return null;
   const element = stemElement[stem];
+  const yang = stems.indexOf(stem) % 2 === 0;
   const mnElement = { wood: "Мод", fire: "Гал", earth: "Шороо", metal: "Төмөр", water: "Ус" };
   return {
     title: titles[locale][stem],
-    day: locale === "mn" ? `Өдрийн иш · ${mnElement[element]}` : `Day stem · ${element}`,
+    day: locale === "mn" ? `Өдрийн иш · ${yang ? "Ян" : "Инь"} ${mnElement[element].toLowerCase()}` : `Day stem · ${yang ? "Yang" : "Yin"} ${element}`,
     changha: changha[locale][stem],
   };
 }
