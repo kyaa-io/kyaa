@@ -1,5 +1,6 @@
 "use client";
 
+import { VacantRank } from "@/features/chemi/games/vacant-rank";
 import { rankName } from "@/features/chemi/games/rank-name";
 import { RankInitial } from "@/features/chemi/games/rank-initial";
 import { useEffect, useRef } from "react";
@@ -64,13 +65,7 @@ export function Ranking({ rows, loaded, loading = false, copy, locale, names, ne
       <FanText role="item">{number.format(row.score)}</FanText>
     </li>
   ) : <li data-row="" key={key} data-empty="true" data-slot={slot} aria-hidden={place ? undefined : true}>
-    {place && <>
-      <FanText role="label" className={styles.place}>{place}</FanText>
-      <FanText role="label" className={styles.avatar} aria-hidden="true" />
-      <FanText role="item" className={styles.who}>—</FanText>
-      <FanText role="meta" />
-      <FanText role="item">{number.format(0)}</FanText>
-    </>}
+    {place && <VacantRank place={place} label={getMatchCopy(locale).vacant} avatarClassName={styles.avatar} />}
     {!place && loading && <FanSkeleton className={styles.rowSkeleton} />}
   </li>;
   return <section className={styles.rank} aria-label={copy.ranking} aria-busy={loading}>
