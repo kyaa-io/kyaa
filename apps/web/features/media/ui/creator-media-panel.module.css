@@ -174,10 +174,8 @@ a:has(> [data-video-fallback]) > .playIcon,button:has(> [data-video-fallback]) >
 .mosaic[aria-hidden] > li { aspect-ratio:4 / 5; }
 
 @media (min-width:1024px) {
-  .gallery:has(.galleryRail li:only-child) {
-    width:min(100%,12rem);
-  }
-  .galleryRail li:only-child { width:100%; }
+  .gallery .previewHeading [data-fan-section-header] > div { flex-wrap:nowrap; }
+  .galleryRail li:only-child { width:min(100%, 20rem); }
   .galleryRail li:not(:only-child) {
     min-width:132px;
     max-width:188px;
