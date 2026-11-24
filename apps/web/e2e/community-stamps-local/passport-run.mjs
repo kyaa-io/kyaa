@@ -12,7 +12,9 @@ let browser;
 const results = [];
 const locales = APP_LOCALES;
 try {
+  console.log('Card layout: starting Chromium');
   browser = await chromium.launch();
+  console.log('Card layout: Chromium started; loading the first fixture with a cold Vite cache');
   for (const locale of locales) {
     const widths = ['ko', 'ja', 'vi', 'th'].includes(locale) ? [360, 390, 768, 1440] : [390, 1440];
     for (const width of widths) {
@@ -20,7 +22,10 @@ try {
       const page = await context.newPage();
       const errors = [];
       page.on('pageerror', error => errors.push(error.message));
-      await page.goto(`${harness.baseURL}/?view=passports&locale=${locale}&data=mixed`);
+      // The first navigation includes Vite's cold dependency optimization.
+      const firstNavigation = results.length === 0;
+      await page.goto(`${harness.baseURL}/?view=passports&locale=${locale}&data=mixed`, firstNavigation ? { timeout: 90_000 } : undefined);
+      if (firstNavigation) console.log('Card layout: first fixture loaded');
       await expect(page.locator('article')).toHaveCount(6);
       await page.evaluate(() => document.fonts.ready);
       await page.waitForFunction(() => [...document.images].every(image => image.complete && image.naturalWidth > 0));
