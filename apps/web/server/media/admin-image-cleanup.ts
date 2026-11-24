@@ -1,6 +1,6 @@
 import "server-only";
 import { readFile } from "node:fs/promises";
-import { CloudFrontClient, CreateInvalidationCommand } from "@aws-sdk/client-cloudfront";
+import { invalidatePublicImage } from "../storage/invalidate-public-image";
 import { z } from "zod";
 import { correlation, json, mapError } from "../certification/certification-http";
 import { S3Storage } from "../storage/s3-storage";
@@ -39,10 +39,7 @@ export async function handleImageCleanup(request: Request) {
     const result = await storage.purgeImageVersions(data.bucket, data.path, data.generation);
     if (result.remainingVersions !== 0) return json({ ...result, storage: "pending", cache: "remaining" }, 202);
     try {
-      await new CloudFrontClient({ region: "us-east-1" }).send(new CreateInvalidationCommand({
-        DistributionId: process.env.ASSET_CLOUDFRONT_DISTRIBUTION_ID,
-        InvalidationBatch: { CallerReference: crypto.randomUUID(), Paths: { Quantity: 1, Items: [`/public-assets/${data.bucket}/${data.path}*`] } },
-      }));
+      await invalidatePublicImage(data.bucket, data.path);
       return json({ ...result, storage: "deleted", cache: "requested" });
     } catch {
       return json({ ...result, storage: "deleted", cache: "remaining" });

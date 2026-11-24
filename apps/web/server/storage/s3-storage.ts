@@ -1,3 +1,4 @@
+import { invalidatePublicImage } from "./invalidate-public-image";
 import { createHash } from "node:crypto";
 import { S3Client, GetObjectCommand, HeadObjectCommand, PutObjectCommand, ListObjectVersionsCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -163,6 +164,7 @@ export class S3Storage {
       if (claim.permanent) {
         const result = await this.purgeImageVersions(claim.bucket, claim.path, claim.generation);
         if (result.remainingVersions !== 0) failed = true;
+        else await invalidatePublicImage(claim.bucket, claim.path);
         continue;
       }
       let succeeded = false;
