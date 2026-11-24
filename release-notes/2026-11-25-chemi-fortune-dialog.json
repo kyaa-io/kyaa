@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "오늘의 운세 대화에서 버튼이 바로 앞 대사에 이어지는 질문으로 바뀌어요. 사람 운이 낮은 날에는 '혼자 덕질할까?', '언제 말 걸까?'처럼 물어요.",
+    "덕질 운은 점수와 그날 사람 운에 맞춰 직캠 정주행, 응원 글, 출석 체크, 포카 정리처럼 오늘 할 일 하나를 알려 줘요.",
+    "금전 운도 점수에 맞춰 받을 돈 챙기기, 살 것 하루 미루기 같은 할 일을 함께 말해요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/fortune",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-fortune-dialog-people-390.png",
+    "release-notes/images/2026-11-25-chemi-fortune-dialog-fandom-390.png"
+  ]
+}

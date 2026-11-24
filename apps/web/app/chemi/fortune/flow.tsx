@@ -448,10 +448,10 @@ export function FortuneFlow({
       : null;
 
   // 입장에서는 '응, 봐 줘', 대화에서는 다음 말로 가는 강조 버튼 하나만 둔다.
-  // 대화 선택지는 한국어에서 최애마다 다르다(나를 대하는 태도대로: 창하 장난스러운 응원, 엘리나 다정하게 챙김, 유나 솔직하게 콕 집음).
-  const choiceLabel = (key: (typeof talkChoice)[number]) =>
-    (locale === "ko" ? fortuneChoiceLabel(character, key) : null) ?? text(key);
-  const primaryLabel = entering ? text("readFortune") : talk ? choiceLabel(talkChoice[talk - 1]) : null;
+  // 한국어 대화 선택지는 바로 앞 대사에서 나온 질문이고, 다음 대사가 그 답이 되도록 점수 구간을 보고 고른다(lines.ts).
+  const choiceLabel = (slot: "next" | "skip", key: (typeof talkChoice)[number]) =>
+    (locale === "ko" && talk && lineInput ? fortuneChoiceLabel(character, talk, slot, lineInput) : null) ?? text(key);
+  const primaryLabel = entering ? text("readFortune") : talk ? choiceLabel("next", talkChoice[talk - 1]) : null;
 
 
 
@@ -653,7 +653,7 @@ export function FortuneFlow({
                 </FanAction>
                 {talk && talk < 4 && (
                   <FanAction variant="neutral" onClick={skipAhead}>
-                    {choiceLabel(talkChoice[talk as 1 | 2 | 3])}
+                    {choiceLabel("skip", talkChoice[talk as 1 | 2 | 3])}
                   </FanAction>
                 )}
               </div>
