@@ -1,5 +1,6 @@
 "use client";
 
+import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { untypedRouter } from "@/lib/navigation/untyped";
@@ -364,6 +365,7 @@ export function TarotScreen({
         <FanIconButton aria-label={uiText("back")} className={styles.back} onClick={back}>
           <FanIcon icon={ChevronLeft} size={16} />
         </FanIconButton>
+        <SceneSound card locale={locale} reveal={step === "flip" && !!shown} />
         {step === "enter" ? (
           <Pickband locale={locale} character={character} onSelect={selectCharacter} />
         ) : (

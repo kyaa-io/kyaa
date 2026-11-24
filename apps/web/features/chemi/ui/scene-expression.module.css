@@ -43,3 +43,14 @@
     transition: none;
   }
 }
+
+@media (prefers-reduced-motion: no-preference) {
+  .layer[data-expression="smile"][data-active],
+  .layer[data-expression="surprise"][data-active] {
+    animation: scene-reaction 240ms var(--motion-easing);
+  }
+}
+
+@keyframes scene-reaction {
+  50% { transform: scale(1.012) translateY(-0.15%); }
+}
