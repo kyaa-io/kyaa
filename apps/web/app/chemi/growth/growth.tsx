@@ -233,7 +233,7 @@ export function ChemiGrowth({ locale, home, matchAvailable }: { locale: string; 
             <FanGauge value={mini.exp} max={next} label={fill(copy.closeness, { name })} />
             <p className={styles.next}>
               <FanText role="meta">{copy.next} · {step.number} / 24</FanText>
-              <FanText role="label">{step.nextName} · {fill(copy.toGo, { n: step.remaining.toLocaleString(locale) })}</FanText>
+              <FanText role="label">→ {step.nextName} · {(mini.exp + step.remaining).toLocaleString(locale)} EXP · {fill(copy.toGo, { n: step.remaining.toLocaleString(locale) })}</FanText>
             </p>
           </div>
         )}

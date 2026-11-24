@@ -38,7 +38,7 @@ it("shows the raised mini, its level and today's remaining contents", async () =
   show();
   expect(await screen.findByText("창하 친밀 Lv")).toBeTruthy();
   expect(screen.getByRole("progressbar").getAttribute("aria-valuetext")).toBe("490/640");
-  expect(screen.getByText("신인 · 친밀 160 남음")).toBeTruthy();
+  expect(screen.getByText("→ 신인 · 650 EXP · 친밀 160 남음")).toBeTruthy();
   expect(screen.getByText("2 / 6")).toBeTruthy();
   expect(screen.getByText("받음")).toBeTruthy();
   // 받을 친밀·받은 표시는 입구 목록과 같은 알약(AffinityBadge)이다.
