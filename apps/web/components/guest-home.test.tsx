@@ -289,7 +289,7 @@ describe("canonical 03 guest home", () => {
       "aria-current",
       "page",
     );
-    expect(within(primary).getByRole("link", { name: "Groups" })).toHaveAttribute(
+    expect(within(primary).getByRole("link", { name: "커뮤니티" })).toHaveAttribute(
       "href",
       "/pages/groups?locale=ko",
     );

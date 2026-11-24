@@ -2,7 +2,7 @@ import { APP_LOCALES } from "@/i18n/locales";
 import styles from "./fan-app-shell.module.css";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { ChemiReleaseProvider } from "@/features/chemi/ui/chemi-release";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -84,7 +84,7 @@ describe("fan app shell navigation", () => {
     expect(fanNavigationItems("ko", "/", true, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
     expect(fanNavigationItems("ko", "/", false, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
     expect(fanNavigationItems("ko", "/chemi", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "케미", isCurrent: true });
-    expect(fanNavigationItems("ja", "/", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "Chemi", href: "/chemi?locale=ja" });
+    expect(fanNavigationItems("ja", "/", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "케미", href: "/chemi?locale=ja" });
   });
   it("marks only the chemi tab current on /chemi and keeps home out of it", () => {
     expect(activeFanSection("/chemi")).toBe("chemi");
@@ -97,17 +97,23 @@ describe("fan app shell navigation", () => {
     expect(ids).toEqual(["home", "community", "chemi", "favorites", "my", "home", "community", "chemi", "favorites", "my"]);
   });
 
-  it.each(APP_LOCALES)("uses fixed English desktop menu labels for %s", (locale) => {
-    render(
-      <GroupsReleaseProvider enabled>
-        <ChemiReleaseProvider enabled>
-          <FanAppFrame locale={locale}><main /></FanAppFrame>
-        </ChemiReleaseProvider>
-      </GroupsReleaseProvider>,
-    );
-    const menu = within(screen.getByRole("banner")).getByRole("navigation");
-    expect(within(menu).getAllByRole("link").map((link) => link.textContent))
-      .toEqual(["HOME", "Groups", "Chemi", "Stan", "MY"]);
+  it("uses the same fixed desktop and mobile menu labels in every supported language", () => {
+    for (const locale of APP_LOCALES) {
+      render(
+        <GroupsReleaseProvider enabled>
+          <ChemiReleaseProvider enabled>
+            <FanAppFrame locale={locale}><main /></FanAppFrame>
+          </ChemiReleaseProvider>
+        </GroupsReleaseProvider>,
+      );
+      const menus = screen.getAllByRole("navigation").filter((menu) =>
+        menu.querySelector("[data-fan-navigation-id]"),
+      );
+      const expected = ["HOME", "모임", "케미", "덕질", "MY"];
+      expect(menus.map((menu) => within(menu).getAllByRole("link").map((link) => link.textContent)), locale)
+        .toEqual([expected, expected]);
+      cleanup();
+    }
   });
 
   it("derives the active destination from the current route on the first render", () => {
@@ -121,7 +127,7 @@ describe("fan app shell navigation", () => {
     );
 
     const currentLinks = screen
-      .getAllByRole("link", { name: /^(Stan|최애)$/ })
+      .getAllByRole("link", { name: "최애" })
       .filter((link) => link.hasAttribute("aria-current"));
     expect(currentLinks).toHaveLength(2);
     for (const current of currentLinks) {
@@ -228,7 +234,7 @@ describe("fan app shell navigation", () => {
  it("switches existing pages and their footer together only under the server release gate", () => {
    pathname = "/community";
    render(<GroupsReleaseProvider enabled><FanAppFrame locale="ko"><main>본문</main></FanAppFrame></GroupsReleaseProvider>);
-   const groupLinks=screen.getAllByRole("link",{name:/^(Groups|모임)$/});
+   const groupLinks=screen.getAllByRole("link",{name:"모임"});
    expect(groupLinks.length).toBeGreaterThanOrEqual(3);
    for(const link of groupLinks)expect(link).toHaveAttribute("href","/pages/groups?locale=ko");
    for(const link of screen.getAllByRole("link",{name:"덕질"}))expect(link).toHaveAttribute("href","/benefits?locale=ko");

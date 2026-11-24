@@ -17,7 +17,6 @@ import { HeaderNotificationLink } from "@/features/notification/ui/header-notifi
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { fanLoginHref } from "@/components/login-href";
-import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 
 
@@ -93,18 +92,10 @@ export function fanNavigationItems(
   const items = baseNavigationItems(locale, pathname, groupsEnabled);
   if (!chemiEnabled) return items;
   // 케미 sits right after the community tab (HOME · 모임 · 케미 · 덕질 · MY).
-  const chemi: FanNavigationItem = { id: "chemi", href: `/chemi?locale=${locale}` as Route, label: chemiTabLabel(locale), icon: groupsEnabled ? <PencilHeaderIcon name="chemi" /> : undefined, isCurrent: activeFanSection(pathname) === "chemi" };
+  const chemi: FanNavigationItem = { id: "chemi", href: `/chemi?locale=${locale}` as Route, label: groupsEnabled ? "케미" : chemiTabLabel(locale), icon: groupsEnabled ? <PencilHeaderIcon name="chemi" /> : undefined, isCurrent: activeFanSection(pathname) === "chemi" };
   const at = items.findIndex((item) => item.id === "community") + 1;
   return [...items.slice(0, at), chemi, ...items.slice(at)];
 }
-
-const desktopMenuLabels: Readonly<Record<FanSection, string>> = {
-  home: "HOME",
-  community: "Groups",
-  chemi: "Chemi",
-  favorites: "Stan",
-  my: "MY",
-};
 
 function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled: boolean): readonly FanNavigationItem[] {
   const current = activeFanSection(pathname);
@@ -114,8 +105,8 @@ function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled:
   const rankings = pathname === '/rankings' || pathname.startsWith('/rankings/');
   if(groupsEnabled)return [
     {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"&&!rankings},
-    {id:"community",href:`/pages/groups${query}` as Route,label:groupsCopy(locale).groups,icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:groupBenefitsCopy(locale).title,icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||rankings},
+    {id:"community",href:`/pages/groups${query}` as Route,label:"모임",icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
+    {id:"favorites",href:`/benefits${query}` as Route,label:"덕질",icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||rankings},
     {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [
@@ -221,7 +212,7 @@ export function FanAppHeader({
         ariaLabel={locale === "ko" ? "주요 메뉴" : translate(locale, localizedMessages.m5cfebe367665, "Primary navigation")}
         className={styles.desktopNav}
         itemClassName={styles.desktopNavItem}
-        items={items.map((item) => ({ ...item, label: desktopMenuLabels[item.id as FanSection] }))}
+        items={items}
       />
       <div className={styles.actions}>
         {groupsEnabled?<GroupHeaderActions locale={locale} languageHref={languageHref} notificationsLabel={notificationsLabel} actions={actions} actionsAreIdentity={actionsAreIdentity}/>:<>{actions}{pathname!=="/notifications"&&<Link className={styles.utilityLink} href={`/notifications?locale=${locale}` as Route} aria-label={notificationsLabel} title={notificationsLabel}><Bell aria-hidden="true"/></Link>}<FanLanguageSwitch locale={locale} href={languageHref}/></>}
