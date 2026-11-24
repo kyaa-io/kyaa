@@ -328,7 +328,7 @@ export function SajuFlow({
   }, [phase]);
 
   const run = useCallback(
-    async (id: SajuCharacterId, reopenChart = false) => {
+    async (id: SajuCharacterId) => {
       restoreRetry.current = null;
       abort.current?.abort();
       const controller = new AbortController();
@@ -350,7 +350,7 @@ export function SajuFlow({
         setPhase("idle");
         setNeedBirth(false);
         void settle(data, id, token);
-        commit({ step: reopenChart ? "result" : "talk-1", view: "first", r: data.readingId }, "replace");
+        commit({ step: "talk-1", r: data.readingId }, "replace");
       } catch (error) {
         // 다른 단계로 떠났거나 새 요청이 이어받은 요청의 끝은 화면에 반영하지 않는다.
         if (abort.current !== controller) return;
@@ -472,15 +472,23 @@ export function SajuFlow({
     void run(character);
   }
 
-  async function saveMyBirth({ birth }: SheetResult) {
+  async function saveMyBirth(input: SheetResult | Pick<SheetResult["birth"], "birthTime" | "timePrecision">) {
     setBirthBusy(true);
     setBirthError(null);
     try {
-      await saveBirth(await getAccessToken(), birth);
+      const token = await getAccessToken();
+      const current = "birth" in input ? input.birth : (await loadProfile(token)).birth;
+      if (!current) throw new ChemiRequestError("CHEMI_BIRTH_REQUIRED");
+      await saveBirth(token, "birth" in input ? current : { ...current, ...input });
+      if (!("birth" in input)) {
+        const updated = await requestFirst(token, character);
+        setReading(updated);
+        setSheet(null);
+        return;
+      }
       setSheet(null);
-      const reopenChart = navRef.current.step === "result";
-      commit({ step: "calc" }, reopenChart ? "replace" : "push");
-      void run(character, reopenChart);
+      commit({ step: "calc" }, "push");
+      void run(character);
     } catch (error) {
       if (error instanceof ChemiRequestError && error.code === "CHEMI_UNDER_14") {
         setSheet(null);
@@ -782,6 +790,7 @@ export function SajuFlow({
           error={birthError}
           onClose={() => setSheet(null)}
           onSave={saveMyBirth}
+          onSaveTime={nav.step === "result" ? saveMyBirth : undefined}
         />
         <BirthSheet
           open={sheet === "pair"}

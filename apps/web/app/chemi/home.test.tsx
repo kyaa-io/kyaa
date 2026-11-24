@@ -62,7 +62,7 @@ it("drops my record row when I am already in the top three", () => {
   expect(screen.getByRole("link", { name: `짝 맞추기 랭킹 ${copy.thisWeek}` })).toHaveAttribute("href", "/chemi/games/match");
   view.rerender(<GameRankings label={copy.rankings} weekLabel={copy.thisWeek} mineLabel={copy.myRecord}
     games={[{ ...game, leaders: [row(1, "별"), row(2, "달"), row(3, "해")], mine: row(8, "나", true) }]} />);
-  expect(screen.getByText(copy.myRecord).parentElement).toHaveTextContent("8내 기록0:48");
+  expect(screen.getByText(copy.myRecord).parentElement).toHaveTextContent("8나내 기록0:48");
 });
 
 it("pauses and resumes the banner from the button inside it", () => {

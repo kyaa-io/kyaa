@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, waitFor, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
@@ -358,4 +358,28 @@ it("다시 온 장면의 주 버튼은 질문 주제 화면을 한 번에 열고
   fireEvent.click(await screen.findByRole("button", { name: "지난 풀이" }));
   expect(await screen.findByRole("button", { name: "이 결과로 질문하기" })).toBeVisible();
   expect(new URLSearchParams(window.location.search).get("ask")).toBeNull();
+});
+
+it("잠긴 시주에서 자정을 입력하면 기존 출생 정보를 보존하고 갱신한 표로 돌아온다", async () => {
+  const birth = { birthDate: "1998-03-02", calendar: "solar", gender: "female", birthPlace: "서울", birthTime: null, timePrecision: "unknown" };
+  const api = server({
+    ...baseRoutes,
+    "GET /api/chemi/profile": () => Response.json({ birth, partners: [] }),
+    "PUT /api/chemi/profile/birth": () => Response.json({ saved: true }),
+    "POST /api/chemi/readings": () => Response.json({ ...first, result: { ...chart, timeKnown: true, pillars: { ...chart.pillars, hour: chart.pillars.day } } }),
+  });
+  await openResult("/chemi/saju?step=result&c=changha&r=first-1");
+  fireEvent.click(await screen.findByRole("button", { name: "태어난 시간 넣기" }));
+  fireEvent.click(await screen.findByRole("button", { name: "선택" }));
+  fireEvent.click(await screen.findByRole("button", { name: "선택 완료" }));
+  fireEvent.click(await screen.findByLabelText(/생일 정보 저장 동의/));
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
+  await waitFor(() => expect(api.count("POST /api/chemi/readings")).toBe(1));
+  expect(api.calls.find(call => call.key === "PUT /api/chemi/profile/birth")?.body).toEqual({
+    ...birth, birthTime: "00:00", timePrecision: "exact", consent: true,
+  });
+  await waitFor(() => {
+    expect(screen.getByText("사주 여덟 글자")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "태어난 시간 넣기" })).toBeNull();
+  }, { timeout: 4000 });
 });

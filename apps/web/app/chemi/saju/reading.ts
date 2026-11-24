@@ -139,6 +139,7 @@ export async function loadReading(
 }
 
 export type Birth = {
+  birthPlace?: string | null;
   birthDate: string;
   calendar: "solar" | "lunar" | "lunar_leap";
   birthTime: string | null;
@@ -176,7 +177,7 @@ export async function saveBirth(token: string | null, birth: Birth) {
   const response = await fetch("/api/chemi/profile/birth", {
     method: "PUT",
     headers: json(token),
-    body: JSON.stringify({ ...birth, birthPlace: null, consent: true }),
+    body: JSON.stringify({ birthDate: birth.birthDate, calendar: birth.calendar, birthTime: birth.birthTime, timePrecision: birth.timePrecision, gender: birth.gender, birthPlace: birth.birthPlace ?? null, consent: true }),
   });
   if (!response.ok) {
     const data = await response.json().catch(() => null);
