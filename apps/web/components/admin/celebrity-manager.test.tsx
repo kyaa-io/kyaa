@@ -11,7 +11,7 @@ vi.mock("./notice-manager", () => ({ NoticeManager: () => null }));
 
 const celebrity = {
   id: "33333333-3333-4333-8333-333333333333", slug: "role-proof", status: "draft", imageUrl: "/proof.jpg", imagePosition: "center", displayOrder: 0, fanCount: 10,
-  archivedAt: null, updatedAt: "2026-09-10T00:00:00Z", primaryRole: "singer",
+  archivedAt: null, updatedAt: "2026-09-10T00:00:00Z", primaryRole: "creator",
   localizations: { ko: { name: "직군 검증", summary: "소개", imageAlt: "직군 검증" }, en: { name: "Role proof", summary: "Profile", imageAlt: "Role proof" } }, themes: [], socialLinks: [],
 };
 afterEach(() => vi.unstubAllGlobals());
@@ -19,7 +19,7 @@ afterEach(() => vi.unstubAllGlobals());
 it("keeps the creator list usable when follower counts cannot load", async () => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [celebrity], platformFollowers: null, followersUnavailable: true }) }));
   render(<AuthorizedCelebrityManager environment="Development" />);
-  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*크리에이터/ }));
   expect(screen.getAllByText("불러오지 못했습니다.").some((message) => message.closest("form")?.getAttribute("aria-label") === "플랫폼별 팔로워")).toBe(true);
   expect(screen.queryByRole("button", { name: "팔로워 저장" })).not.toBeInTheDocument();
 });
@@ -32,7 +32,7 @@ it("shows registration failure separately from publication and retries the same 
   const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [item] }) });
   vi.stubGlobal("fetch", fetchMock);
   render(<AuthorizedCelebrityManager environment="Development" />);
-  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*크리에이터/ }));
   expect(screen.getByText("확인 필요")).toBeVisible();
   expect(screen.getByText(/페이지 공개 상태는 그대로 유지됩니다/)).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "등록 다시 시도" }));
@@ -46,7 +46,7 @@ it("distinguishes usable likes from final confirmation and offers no extra retry
     attempts: 1, nextAttemptAt: null, transactionHash: null, errorCode: null, canRetry: false } };
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [item] }) }));
   render(<AuthorizedCelebrityManager environment="Development" />);
-  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*크리에이터/ }));
   expect(screen.getByText("등록 성공 · 최종 확인 중")).toBeVisible();
   expect(screen.getByText("좋아요를 누를 수 있습니다.")).toBeVisible();
   expect(screen.queryByRole("button", { name: "등록 다시 시도" })).not.toBeInTheDocument();
@@ -59,18 +59,18 @@ it("requires exactly one primary role and saves no legacy activity array", async
   const primary = screen.getByRole("combobox", { name: "대표 분류" });
   expect(primary).toBeInvalid();
   expect(screen.queryByRole("group", { name: "추가 직군" })).not.toBeInTheDocument();
-  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
-  await waitFor(() => expect(primary).toHaveValue("singer"));
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*크리에이터/ }));
+  await waitFor(() => expect(primary).toHaveValue("creator"));
   expect(screen.getByRole("textbox", { name: "기본 이미지 URL (초안 생성용)" })).toBeDisabled();
   expect(screen.getByRole("textbox", { name: "기본 이미지 위치 (초안 생성용)" })).toBeDisabled();
-  fireEvent.change(primary, { target: { value: "show_host" } });
+  fireEvent.change(primary, { target: { value: "underground_idol" } });
   fireEvent.submit(primary.closest("form")!);
   await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init.method === "POST")).toBe(true));
   const [, request] = fetchMock.mock.calls.find(([, init]) => init.method === "POST")!;
   const payload = JSON.parse(request.body).payload;
-  expect(payload.primaryRole).toBe("show_host");
+  expect(payload.primaryRole).toBe("underground_idol");
   expect(payload).not.toHaveProperty("roles");
-  expect(Array.from(primary.querySelectorAll("option")).map((option) => option.value)).toEqual(["", "idol", "singer", "actor", "creator", "show_host", "brand"]);
+  expect(Array.from(primary.querySelectorAll("option")).map((option) => option.value)).toEqual(["", "idol", "creator", "brand", "underground_idol"]);
 });
 
 it("keeps saved person and brand profiles in their category and saves blank external URLs as null", async () => {
@@ -82,7 +82,7 @@ it("keeps saved person and brand profiles in their category and saves blank exte
   fireEvent.click(await screen.findByRole("button", { name: /런뮤직.*브랜드/ }));
   const primary = document.querySelector<HTMLSelectElement>('select[required]')!;
   expect(primary).toHaveValue("brand");
-  expect(primary.querySelector<HTMLOptionElement>('option[value="singer"]')).toBeDisabled();
+  expect(primary.querySelector<HTMLOptionElement>('option[value="creator"]')).toBeDisabled();
   expect(primary.querySelector<HTMLOptionElement>('option[value="brand"]')).not.toBeDisabled();
   expect(screen.getByRole("link", { name: "팬 퀴즈" })).toHaveAttribute("href", `/admin/celebrities/${brand.id}/quiz`);
 
@@ -112,7 +112,7 @@ it("makes list scope and new-versus-edit mode explicit", async () => {
   fireEvent.change(status, { target: { value: "published" } });
   expect(screen.getByText("조건에 맞는 크리에이터가 없습니다.")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "조건 지우기" }));
-  const item = await screen.findByRole("button", { name: /직군 검증.*가수.*초안/ });
+  const item = await screen.findByRole("button", { name: /직군 검증.*크리에이터.*초안/ });
   fireEvent.click(item);
   expect(
     screen.getByRole("heading", { name: "직군 검증 편집" }),
@@ -130,7 +130,7 @@ it("rejects reserved paths and locks a slug after first publication", async () =
   fireEvent.change(newSlug, { target: { value: "admin" } });
   expect(screen.getByRole("button", { name: "초안 저장" })).toBeDisabled();
 
-  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*가수/ }));
+  fireEvent.click(await screen.findByRole("button", { name: /직군 검증.*크리에이터/ }));
   expect(screen.getByRole("textbox", { name: "주소 경로" })).toBeDisabled();
   expect(screen.getByText(/최초 공개 후에는 변경할 수 없습니다/)).toBeInTheDocument();
 });
@@ -139,16 +139,16 @@ it("pages the full creator list and resets to the first page when filters change
   const items = Array.from({ length: 41 }, (_, index) => ({ ...celebrity, id: `creator-${index}`, slug: `creator-${index}`, localizations: { ...celebrity.localizations, ko: { ...celebrity.localizations.ko, name: `크리에이터 ${index}` } } }));
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items }) }));
   render(<AuthorizedCelebrityManager environment="Development" />);
-  expect(await screen.findByRole("button", { name: /크리에이터 0.*가수/ })).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: /크리에이터 20.*가수/ })).not.toBeInTheDocument();
+  expect(await screen.findByRole("button", { name: /크리에이터 0.*크리에이터/ })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /크리에이터 20.*크리에이터/ })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "다음 페이지" }));
-  expect(screen.getByRole("button", { name: /크리에이터 20.*가수/ })).toBeInTheDocument();
-  expect(screen.queryByRole("button", { name: /크리에이터 0.*가수/ })).not.toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /크리에이터 20.*크리에이터/ })).toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /크리에이터 0.*크리에이터/ })).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "마지막 페이지" }));
-  expect(screen.getByRole("button", { name: /크리에이터 40.*가수/ })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /크리에이터 40.*크리에이터/ })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "다음 페이지" })).toBeDisabled();
   fireEvent.change(screen.getByRole("textbox", { name: "이름·주소 검색" }), { target: { value: "creator-0" } });
-  expect(screen.getByRole("button", { name: /크리에이터 0.*가수/ })).toBeInTheDocument();
+  expect(screen.getByRole("button", { name: /크리에이터 0.*크리에이터/ })).toBeInTheDocument();
   expect(screen.getByText("전체 1건 중 1–1건")).toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "조건 지우기" }));
   expect(screen.getByRole("button", { name: "1페이지" })).toHaveAttribute("aria-current", "page");

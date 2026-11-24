@@ -1,4 +1,5 @@
 {
-  "changes": ["팬페이지 이름 옆에 인증 표시를 추가하고 가수·배우·쇼호스트 페이지를 크리에이터로 묶었어요."],
-  "path": "/celebrities"
+  "changes": ["팬페이지 이름 옆에 인증 표시를 추가하고 가수·배우·쇼호스트 페이지를 크리에이터로 묶었어요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/celebrities",
+  "images": ["release-notes/images/2026-11-25-verified-pages.png"]
 }

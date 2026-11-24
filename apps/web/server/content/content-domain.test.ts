@@ -150,7 +150,7 @@ it("accepts CHZZK alongside existing public social links", () => {
 it.each([undefined, null, "", "artist", [], ["idol"], "host"])("rejects invalid primary role %j even with valid legacy roles", (primary_role) => {
   expect(() => parsePublishedCelebrity({ ...completeRow, primary_role, roles: ["artist", "creator"] })).toThrow();
 });
-it.each(["idol", "singer", "actor", "creator", "show_host", "brand"])("projects one %s role without leaking legacy activities", (primary_role) => {
+it.each(["idol", "creator", "brand", "underground_idol"])("projects one %s role without leaking legacy activities", (primary_role) => {
   expect(parsePublishedCelebrity({ ...completeRow, primary_role, roles: ["artist", "creator"] }).roles).toEqual([primary_role]);
 });
 

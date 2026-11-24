@@ -13,6 +13,7 @@ create table public.unverified_idol_candidates (
   country text not null check (country in ('JP','KR')),
   official_name text not null,
   official_x text,
+  schedule_celebrity_id uuid unique references public.celebrities(id),
   recent_show text,
   next_show text,
   primary key (country, official_name)
@@ -25,4 +26,7 @@ begin
   for target_role in select rolname from pg_roles where rolname in ('anon','authenticated') loop
     execute format('revoke all on public.unverified_idol_candidates from %I', target_role);
   end loop;
+  if exists (select 1 from pg_roles where rolname = 'service_role') then
+    grant select, insert, update on public.unverified_idol_candidates to service_role;
+  end if;
 end $$;
