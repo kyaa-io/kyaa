@@ -41,17 +41,18 @@ type Props = PostReactionState & {
   onChange: (choice: PostReactionChoice) => void;
   /** Show the point badge on both thumbs (a first reaction on this post pays the same for a like and a dislike). */
   reward?: boolean;
+  compact?: boolean;
 };
 
-export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy = false, loginHref, join, onChange, reward = false }: Props) {
+export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy = false, loginHref, join, onChange, reward = false, compact = false }: Props) {
   const t = postReactionCopy(locale), likes = likeCount.toLocaleString(locale);
   const dislikeLabel = dislikeCount === null ? t.dislike : fill(t.dislikeCount, dislikeCount.toLocaleString(locale));
   const likeIcon = <ThumbsUp strokeWidth={1.75} />, dislikeIcon = <ThumbsDown strokeWidth={1.75} />;
   const dislikeNumber = dislikeCount === null ? undefined : <span className={styles.reactionPrivateCount}>{dislikeCount.toLocaleString(locale)}</span>;
   const shared = { variant: "neutral" as const, size: "sm" as const };
-  const likeProps = { ...shared, className: styles.reactionLike, leadingIcon: likeIcon };
+  const likeProps = { ...shared, className: styles.reactionLike, ariaLabel: compact ? `${t.like} ${likes}` : undefined, leadingIcon: likeIcon };
   const dislikeProps = { ...shared, className: styles.reactionDislike, leadingIcon: dislikeIcon, ariaLabel: dislikeLabel };
-  const likeText = `${t.like} ${likes}`;
+  const likeText = compact ? likes : `${t.like} ${likes}`;
   let like, dislike;
   if (loginHref) {
     like = <FanAction {...likeProps} href={loginHref}>{likeText}</FanAction>;

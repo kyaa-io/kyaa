@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAppLocale } from "@/components/locale-provider";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { PageNoticeDialog, pageNoticeBlocked } from "@/features/groups/ui/page-notice-modal";
 import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { isChemiPromoHref, isMemberEventHref, localizedBannerHref, type HomeBanner } from "@/features/home/domain/home-banner";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
 import { parseBannerSlots } from "./banner-slot-source";
+
+import styles from "./banner-slot.module.css";
 
 const hideToday = {
   ko: "오늘 하루 안 보기", en: "Hide for today", ja: "今日は表示しない",
@@ -22,6 +25,14 @@ const hideWeek: typeof hideToday = {
   "zh-Hans": "一周内不再显示", "zh-Hant": "一週內不再顯示", es: "No mostrar durante una semana",
   id: "Sembunyikan selama seminggu", vi: "Ẩn trong một tuần", th: "ซ่อนเป็นเวลาหนึ่งสัปดาห์",
   pt: "Não mostrar por uma semana", fr: "Masquer pendant une semaine", ru: "Скрыть на неделю",
+};
+
+const durationLabel: typeof hideToday = {
+  ko: "숨길 기간 (최대 하나 선택)", en: "Hide duration (choose at most one)",
+  ja: "非表示期間（選択は1つまで）", "zh-Hans": "隐藏时长（最多选一项）", "zh-Hant": "隱藏時間（最多選一項）",
+  es: "Duración (elige como máximo una opción)", id: "Durasi (pilih maksimal satu)",
+  vi: "Thời gian ẩn (chọn tối đa một)", th: "ระยะเวลาที่ซ่อน (เลือกได้ไม่เกินหนึ่งข้อ)",
+  pt: "Duração (escolha no máximo uma opção)", fr: "Durée (un choix maximum)", ru: "Срок (не более одного варианта)",
 };
 
 const day = 86_400_000;
@@ -116,22 +127,32 @@ export function MemberEventPopup() {
 
   if (!active || active.lookup !== lookup || closed.has(active.key)) return null;
   const { banner, key } = active;
-  const close = () => setClosed(previous => new Set([...previous, key]));
+  return <PopupContent key={active.lookup + key} banner={banner} storageKey={key} locale={locale}
+    close={() => setClosed(previous => new Set([...previous, key]))} hide={() => setActive(undefined)} />;
+}
+
+function PopupContent({ banner, storageKey, locale, close, hide }: {
+  banner: HomeBanner; storageKey: string; locale: keyof typeof hideToday; close: () => void; hide: () => void;
+}) {
+  const [duration, setDuration] = useState<"today" | "week">();
   const dismiss = (duration: "today" | "week") => {
     try {
-      localStorage.setItem(key, String(popupDismissalExpiry(Date.now(), duration)));
-      setActive(undefined);
+      localStorage.setItem(storageKey, String(popupDismissalExpiry(Date.now(), duration)));
+      hide();
     } catch {
       close();
     }
   };
-  return <PageNoticeDialog key={key} open onClose={close} locale={locale} title={banner.title} description={banner.description}
+  return <PageNoticeDialog open onClose={() => duration ? dismiss(duration) : close()} locale={locale} title={banner.title} description={banner.description}
     actionLabel={banner.ctaLabel} actionHref={localizedBannerHref(banner.href, locale)}
-    secondary={<>
-      <FanAction variant="text" onClick={() => dismiss("today")}>{hideToday[locale]}</FanAction>
-      {banner.placement === "chemi_promo_popup" &&
-        <FanAction variant="text" onClick={() => dismiss("week")}>{hideWeek[locale]}</FanAction>}
-    </>}>
+    secondary={banner.placement === "chemi_promo_popup" ?
+      <div role="group" aria-label={durationLabel[locale]} className={styles.durationOptions}>
+        {(["today", "week"] as const).map(option => <label key={option}>
+          <input type="checkbox" checked={duration === option}
+            onChange={event => setDuration(event.target.checked ? option : undefined)} />
+          <FanText role="meta">{(option === "today" ? hideToday : hideWeek)[locale]}</FanText>
+        </label>)}
+      </div> : <FanAction variant="text" onClick={() => dismiss("today")}>{hideToday[locale]}</FanAction>}>
     <picture>
       {banner.mobileImage && <source media="(width < 48rem)" srcSet={banner.mobileImage.url} width={banner.mobileImage.width} height={banner.mobileImage.height} />}
       {/* The managed original defines the frame so embedded text and logos stay visible. */}

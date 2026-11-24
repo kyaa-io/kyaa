@@ -15,7 +15,6 @@ import { additionalLocales } from "@/i18n/messages";
 import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 
 import { Suspense, use, type ReactNode } from "react";
-import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
 import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
 import { adminEventBanners, isLiveCampaignBanner, orderHomeBanners } from "../features/home/domain/event-banner-priority";
 import { HomeEventStrip } from "../features/home/ui/home-event-strip";
@@ -33,7 +32,6 @@ import { levelLabel, type PassportLevel } from "../features/passport/domain/pass
 import { FanSectionHeader } from "./fan-ui/fan-heading";
 import { groupApplyText } from "@/features/groups/ui/group-apply-copy";
 import { FanAction } from "@/components/fan-ui/fan-action";
-import { FanSkeleton, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { HomeRankingCard } from "@/features/rankings/ui/home-ranking-card";
 import { HomeHeartDonation } from "@/features/rankings/ui/home-heart-donation";
 import { HomeBelowRankingSlot } from "@/components/banner-slot/home-below-ranking-slot";
@@ -45,7 +43,6 @@ import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholde
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 import { homeGalleryPostPhotos } from "@/features/home/domain/home-gallery-order";
 import styles from "./guest-home.module.css";
-import { ElinaGuideCard } from "./home-entry-cards/home-entry-cards";
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
 
@@ -61,16 +58,6 @@ const copy = {
 
 export function formatPassportTier(tier: PassportLevel, locale: AppLocale) {
   return levelLabel(locale, tier);
-}
-
-function PersonalizationLoading({ locale, quiet = false }: { locale: AppLocale; quiet?: boolean }) {
-  return (
-    <section className={`${styles.personalizationState} ${styles.personalizationLoading}`} aria-busy="true">
-      {quiet ? null : <FanSkeletonStatus locale={locale} label={copy[locale].loading} />}
-      <FanSkeleton shape="block" width="100%" height="100%" />
-      <FanSkeleton shape="block" width="100%" height="100%" />
-    </section>
-  );
 }
 
 function ContentLoadError({ locale }: { locale: AppLocale }) {
@@ -133,9 +120,9 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
 }
 type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "fanPageApplications" | "jjinfanGauge" | "heartDonation" | "homeTop"> & { queries: HomeQueries; /** 이벤트 띠를 닫은 배너 id(쿠키). 같은 배너의 띠는 서버가 그리지 않는다. */ closedEventStrip?: string; /** 신규 가입 래플 배너를 첫 슬라이드로 둔다(서버 플래그가 켜진 환경만). */ signupRaffle?: boolean; /** 온보딩 첫 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘긴다. */ firstSteps?: boolean };
 
-/** 코드로 둔 홈 배너: 신규 가입 래플(플래그 켜짐) → 덕질하는 법 → X 이벤트 → 첫 걸음(아직 안 마친 브라우저) → GGGI. 진행 중인 관리자 이벤트와의 배치는 orderHomeBanners가 정한다. */
+/** 코드로 둔 홈 배너: 신규 가입 래플(플래그 켜짐) → 덕질하는 법 → X 이벤트 → 첫 걸음(아직 안 마친 브라우저). 진행 중인 관리자 이벤트와의 배치는 orderHomeBanners가 정한다. */
 function pinnedHomeBanners(locale: AppLocale, firstSteps: boolean, signupRaffle: boolean) {
-  return [...(signupRaffle ? [signupRaffleHomeBanner(locale)] : []), missionbookHomeBanner(locale), xMissionHomeBanner(locale), ...(firstSteps ? [firstStepsHomeBanner(locale)] : []), gggiHomeBanner(locale)];
+  return [...(signupRaffle ? [signupRaffleHomeBanner(locale)] : []), missionbookHomeBanner(locale), xMissionHomeBanner(locale), ...(firstSteps ? [firstStepsHomeBanner(locale)] : [])];
 }
 
 export function StreamingGuestHome({ queries, closedEventStrip, ...props }: StreamingHomeProps) {
@@ -155,7 +142,7 @@ function ResolvedGuestHome({ queries, closedEventStrip, ...props }: StreamingHom
     hero={<HomeHero {...props} celebrities={[]} homeBanners={homeBanners}
       liveEventBannerIds={managed.filter(item => isLiveCampaignBanner(item, now)).map(item => item.id)}
       contentErrors={{ homeBanners: result.status === "rejected" }}
-      elinaGuide={<Suspense fallback={<PersonalizationLoading quiet locale={props.locale} />}><StreamElinaGuide queries={queries} locale={props.locale} hero /></Suspense>} />}
+      elinaGuide={null} />}
     midBanner={<Suspense fallback={null}><StreamHomeMidBanner {...props} queries={queries} /></Suspense>}
     thinBanner={<Suspense fallback={null}><StreamHomeThinBanner {...props} queries={queries} /></Suspense>}
     notices={<Suspense fallback={<HomeNoticesPlaceholder locale={props.locale} />}><StreamHomeNotices {...props} queries={queries} /></Suspense>}
@@ -200,11 +187,4 @@ function StreamHomeGalleryContent({ queries, locale, photos, hasMore }: Pick<Str
   const shorts = use(queries.homeShorts);
   return <HomeGallery locale={locale} photos={photos} hasMore={hasMore}
     shorts={shorts.status === "fulfilled" ? shorts.value : "error"} />;
-}
-
-function StreamElinaGuide({ queries, locale, hero = false }: Pick<StreamingHomeProps, "queries" | "locale"> & { hero?: boolean }) {
-  const raffles = use(queries.elinaRaffles);
-  const celebrities = use(queries.celebrities);
-  if (raffles.status === "rejected") return <ContentLoadError locale={locale} />;
-  return <ElinaGuideCard locale={locale} hero={hero} elina={celebrities.status === "fulfilled" ? celebrities.value.find(item => item.slug === "elina") : undefined} raffles={raffles.value.raffles} />;
 }
