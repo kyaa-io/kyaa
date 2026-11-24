@@ -1,5 +1,11 @@
 {
-  "changes": ["PC에서 케미 대화를 볼 때 가로 배경 위에 최애의 표정이 세로 카드로 보여요. 별자리와 타로 배경 영상도 더 선명하게 볼 수 있어요. 첨부 화면은 로컬 예시예요."],
+  "changes": [
+    "PC에서 케미 대화를 볼 때 가로 배경 위에 최애의 표정이 세로 카드로 보여요.",
+    "별자리와 타로 배경 영상의 화질을 높였어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
   "path": "/chemi/fortune",
-  "images": ["release-notes/images/2026-11-24-chemi-scene-quality.png"]
+  "images": [
+    "release-notes/images/2026-11-24-chemi-scene-quality.png"
+  ]
 }
