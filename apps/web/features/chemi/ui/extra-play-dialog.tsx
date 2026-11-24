@@ -31,6 +31,7 @@ const DAILY_EXTRA = 3;
 
 /** 추가 판 확인(짝 맞추기·최애 런·질문하기 공통). 남은 추가 판 칸 3개 중 이번에 쓸 칸을 한 번 비우고, 포인트는 쓴 뒤 값으로 한 번 굴린다. */
 export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra, art, labels }: ExtraPlayDialogProps) {
+  const unit = cost === 20 ? "P" : "M";
   const limited = extra !== undefined;
   const remaining = extra ?? 0;
   const base = getExtraPlayCopy(locale, cost);
@@ -63,10 +64,10 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
             <FanText as="dt" role="meta">{copy.points}</FanText>
             {/* 모자라면 빠질 것처럼 보이는 전후 값 대신 지금 값만 둔다(DF-GAME-007). */}
             <dd>{short
-              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}M</span>
+              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}{unit}</span>
               : <>
-                <FanText role="meta" className={styles.before}>{number.format(points)}M</FanText>
-                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}M`} duration={600} /></span>
+                <FanText role="meta" className={styles.before}>{number.format(points)}{unit}</FanText>
+                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}${unit}`} duration={600} /></span>
               </>}
             </dd>
           </div>
