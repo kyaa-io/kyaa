@@ -754,7 +754,7 @@ export function SajuFlow({
               : text(greeting[character][0]);
 
   const wideArt =
-    character === "changha" ? `${art}/saju-changha-wide-v1.webp` : `${art}/saju-${character}-wide-v2.webp`;
+    `${art}/saju-${character}-wide-v2.webp`;
   const mobileArt = `${art}/saju-${character}-v1.webp`;
   // 1은 첫 풀이(놀람), 2는 강점과 조심할 것·3은 올해 흐름(기본), 4는 둘 사이(웃음). 계산·궁합 계산·한도 안내 중에는 기본.
   const expression = !talk || phase !== "idle" ? null

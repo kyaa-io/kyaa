@@ -1,5 +1,6 @@
 "use client";
 
+import { landscapeSrcSet } from "@/features/chemi/ui/scene-art";
 import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
@@ -519,7 +520,7 @@ export function FortuneFlow({
       <div className={styles.stage}>
         <div className={styles.art}>
           <picture>
-            <source media="(min-width: 48rem)" srcSet={wideArt} />
+            <source media="(min-width: 48rem)" srcSet={landscapeSrcSet(wideArt)} />
             <img src={mobileArt} alt={text("cloudArt", { name })} />
           </picture>
           <SceneExpression

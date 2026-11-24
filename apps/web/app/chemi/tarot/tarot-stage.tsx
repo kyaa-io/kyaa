@@ -1,5 +1,6 @@
 "use client";
 
+import { landscapeSrcSet } from "@/features/chemi/ui/scene-art";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { ParticipationCount } from "../participation";
 import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
@@ -150,7 +151,7 @@ export function TarotStage(props: Props) {
     >
       <div className={styles.scene}>
         <picture key={character}>
-          <source media="(min-width: 48rem)" srcSet={`/chemi/tarot/scene-${character}-l.webp`} />
+          <source media="(min-width: 48rem)" srcSet={landscapeSrcSet(`/chemi/tarot/scene-${character}-l.webp`)} />
           <img src={`/chemi/tarot/scene-${character}-p.webp`} alt={uiText("candleRoom", { name: person.name })} />
         </picture>
         <SceneExpression scene="tarot" character={character} portrait={`/chemi/tarot/scene-${character}-p.webp`} expression={expression} />

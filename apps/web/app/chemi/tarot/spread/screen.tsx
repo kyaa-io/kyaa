@@ -1,5 +1,6 @@
 "use client";
 
+import { landscapeSrcSet } from "@/features/chemi/ui/scene-art";
 import { useEffect, useState } from "react";
 import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
 import { ReadingCreatorPicker } from "@/features/chemi/ui/reading-creator-picker";
@@ -182,7 +183,7 @@ export function TarotSpread({ locale, character }: { locale: AppLocale; characte
       <section className={styles.stage}>
         <div className={styles.scene}>
           <picture>
-            <source media="(min-width: 48rem)" srcSet={`/chemi/tarot/scene-${character}-l.webp`} />
+            <source media="(min-width: 48rem)" srcSet={landscapeSrcSet(`/chemi/tarot/scene-${character}-l.webp`)} />
             <img src={`/chemi/tarot/scene-${character}-p.webp`} alt={text("candleRoom", { name: person.name })} />
           </picture>
         </div>

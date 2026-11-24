@@ -44,7 +44,15 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
       if (!video.hasAttribute("src")) video.src = src + (video.canPlayType("video/mp4") ? ".mp4" : ".webm");
       video.play()?.catch(() => { if (revision === attempt) setPlaying(false); });
     };
+    const sizeLoop = () => {
+      if (!video.videoWidth || !src.startsWith("/chemi/video/")) return;
+      const scale = 1.5 / window.devicePixelRatio;
+      video.style.setProperty("--loop-width", `${video.videoWidth * scale}px`);
+      video.style.setProperty("--loop-height", `${video.videoHeight * scale}px`);
+    };
+    window.addEventListener("resize", sizeLoop);
     const start = () => {
+      sizeLoop();
       setPlaying(true);
       if (once) {
         seen.add(key);
@@ -61,6 +69,7 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
     for (const [target, event] of events) target?.addEventListener(event, update);
     return () => {
       ++revision;
+      window.removeEventListener("resize", sizeLoop);
       observer.disconnect();
       video.pause();
       video.removeEventListener("playing", start);
@@ -70,6 +79,6 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
     };
   }, [src, once, mobileOnly, paused]);
   return <video ref={ref} muted playsInline loop={!once} preload="none" aria-hidden="true"
-    className={styles.video} data-once={once || undefined} data-playing={playing || undefined}
+    className={styles.video} data-scene-loop={src.startsWith("/chemi/video/") || undefined} data-once={once || undefined} data-playing={playing || undefined}
     style={{ "--scene-focus": objectPosition } as CSSProperties} />;
 }
