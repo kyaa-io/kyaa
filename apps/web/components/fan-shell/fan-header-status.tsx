@@ -54,16 +54,14 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   const tier = passport?.tier;
   const myHref = `/my?locale=${locale}${passport ? `&passport=${encodeURIComponent(passport.slug)}#my-passport` : ""}`;
   const grade = tier ? fanTierName(locale, tier) : "";
-  const home = pathname === "/";
-  const hearts = home ? undefined : passport?.hearts;
   const points = wallet.data?.points;
-  useChangeFlash(chip, [grade || undefined, hearts, points]);
+  useChangeFlash(chip, [grade || undefined, points]);
   // A stale authenticated session must never keep a previously read member balance/tier on screen.
   const expired = wallet.failure?.status === 401 || wallet.failure?.status === 403;
   // Signed out (or a session that just ended) the header holds only the small 로그인 link — never the illustrated join chip (user 11/13).
   // Signed in without a favorite the capsule shows the points alone; joining a group is led by the home first-steps banner, not the header.
   if (!auth.authenticated || expired || bias.status === "guest") return <Link className={styles.trigger} href={loginHref}>{w.login}</Link>;
-  const summary = [c.status, grade, hearts === undefined ? "" : `${c.hearts} ${hearts.toLocaleString(locale)}`, `${w.points} ${points?.toLocaleString(locale) ?? "—"}`].filter(Boolean).join(" · ");
+  const summary = [c.status, grade, `${w.points} ${points?.toLocaleString(locale) ?? "—"}`].filter(Boolean).join(" · ");
   const format = (value: number) => compactNumber(value, locale);
 
   return <Link ref={chip} className={styles.trigger} href={myHref as Route} onNavigate={(event) => {
@@ -73,9 +71,8 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
     // Reopen the favorite even if the viewer selected another passport at this URL.
     event.preventDefault();
     window.dispatchEvent(new Event("hashchange"));
-  }} data-header-status="" data-home-status={home ? "" : undefined} aria-label={summary}>
-    {hearts !== undefined && <span className={styles.value}><RewardIcon kind="heart" alt="" width={16} height={16} /><RollingNumber value={hearts} format={format} /></span>}
-    {tier && <span className={styles.grade} data-header-tier={home ? tier : undefined} title={home ? grade : undefined}><FanTierBadge tier={tier} stageKey={passport?.stage?.key} locale={locale} size={16} eager={home} />{!home && <span className={styles.tier} data-header-tier={tier} title={grade}>{grade}</span>}</span>}
+  }} data-header-status="" aria-label={summary}>
+    {tier && <span className={styles.grade} data-header-tier={tier} title={grade}><FanTierBadge tier={tier} stageKey={passport?.stage?.key} locale={locale} size={16} eager /></span>}
     <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? "—" : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }

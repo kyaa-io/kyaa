@@ -28,19 +28,11 @@
 
 .trigger > span { display: inline-flex; align-items: center; gap: var(--space-1); }
 
-.tier { color: var(--color-accent-ink); }
-.tier[data-header-tier="Gold"] { color: var(--color-tier-gold-ink); }
-.tier[data-header-tier="Platinum"] { color: var(--color-tier-platinum-ink); }
-.grade > .tier { display: block; max-width: 8em; overflow: hidden; text-overflow: ellipsis; }
-
 .trigger[data-header-status] {
   flex: 0 1 auto;
   min-width: 0;
   max-width: 182px;
   padding-inline: 0;
 }
-.trigger > .value { flex: none; --value-gap: calc(var(--space-1) / 2); gap: var(--value-gap); }
+.trigger > .value { flex: none; gap: var(--space-1); }
 .trigger > .grade { flex: 0 1 auto; min-width: 0; }
-.grade > .tier { min-width: 0; }
-
-.trigger[data-home-status] > .value { gap: var(--space-1); }
