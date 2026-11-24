@@ -625,12 +625,14 @@ function Session({
       setLobby(await call<Lobby>({ action: "lobby" }));
     }, "saveFailed");
   }
+  const exhausted = lobby?.freeRemaining === 0 && lobby.extraRemaining === 0;
   useEffect(() => {
-    if (stage !== "empty") return;
+    if (stage !== "empty" && !(stage === "start" && exhausted)) return;
     setNow(Date.now());
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [stage]);
+    const refresh = window.setTimeout(() => setLoad(v => v + 1), untilKstMidnight(Date.now()));
+    return () => { window.clearInterval(timer); window.clearTimeout(refresh); };
+  }, [stage, exhausted]);
   // 이번 라운드 사진이 다 올 때까지(최대 8초) 시계와 미리 보기를 세지 않는다.
   const [roundStage, setRoundStage] = useState(1);
   const roundPhotos = facesFor(character).slice(0, LEVELS[roundStage - 1].pairs);
@@ -953,9 +955,10 @@ function Session({
                 <section className={styles.roundTable}><FanHeading as="h2">{locale === "ko" ? `${LEVELS.length}라운드` : `${copy.round} · ${LEVELS.length}`}</FanHeading>
                 {levelList}</section>
                 <div className={styles.startAction}>
-                  {lobby && <FanText role="meta" className={styles.freeCount}>{copy.freePlays} {lobby.freeRemaining}</FanText>}
-                  <StageAction disabled={working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}>
-                    {paidStart ? (locale === "ko" ? `${lobby.extraCost}P로 한 판` : extraCopy.cta) : copy.start}
+                  {lobby && !ended && <FanText role="meta" className={styles.freeCount}>{copy.freePlays} {lobby.freeRemaining}</FanText>}
+                  {exhausted && <FanText role="meta">{copy.nextFree} {hms(untilKstMidnight(now))}</FanText>}
+                  <StageAction disabled={exhausted || working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}>
+                    {exhausted ? copy.playsDone : paidStart ? (locale === "ko" ? `${lobby.extraCost}P로 한 판` : extraCopy.cta) : copy.start}
                   </StageAction>
                   <FanAction variant="secondary" onClick={() => { setPracticed(false); setStage("guide"); }}>{copy.howTo}</FanAction>
                 </div>
@@ -1176,7 +1179,7 @@ function Session({
             <>
               <FanHeading as="h2">
                 {copy[character]} ·{" "}
-                {view.cleared ? copy.completed : copy.timeUp}
+                {view.cleared ? copy.completed : fill(copy.roundEnded, { n: view.stage })}
               </FanHeading>
               <div className={styles.stageLine}><span>{copy.record}</span><strong className={numberStyles.xl}>{view.score.toLocaleString(locale)}</strong></div>
               {pendingFinish && !working && (
@@ -1240,14 +1243,14 @@ function Session({
                 </div>
               )}
               {result?.titleStage && <div className={styles.detail}>
-                <b>{copy.round} {result.titleStage} · {copy.completed}</b>
+                <b>{copy.round} {result.titleStage}</b>
                 <FanAction disabled={working || equipped} onClick={() => void action(async () => {
                   await call({action: "equip", stage: result.titleStage});
                   setEquipped(true);
                 })}>{equipped && <FanIcon icon={Check} size={16} />}{copy.equip}</FanAction>
               </div>}
 
-              <div className={view.score === 0 ? styles.zeroActions : styles.resultActions}>
+              <div className={styles.resultActions}>
               {result && (
                 <StageAction
                   onClick={() => {

@@ -112,8 +112,8 @@ it("plays all five seeded boards, reveals a miss, pauses and submits exactly one
   const vacant = within(ranking).getAllByRole("listitem");
   expect(vacant).toHaveLength(3);
   for (const row of vacant) {
-    expect(within(row).getByText("—")).toBeVisible();
-    expect(within(row).getByText("0")).toBeVisible();
+    expect(within(row).getByText(copy.vacant)).toBeVisible();
+    expect(within(row).queryByText("0")).toBeNull();
   }
   fireEvent.click(choose);
   fireEvent.click(screen.getByRole("button", {name: copy.start}));
@@ -384,4 +384,15 @@ it("does not count the preview until the round's photos have arrived (DF-GAME-00
   wait(500);
   expect(screen.getByText(copy.memorize + " · 3")).toBeInTheDocument();
   expect(JSON.parse(sessionStorage.getItem("chemi.match.pending") ?? "{}")).toEqual({ playId: "local-round" });
+});
+
+it("disables an exhausted lobby and shows the free count only in the ended banner", async () => {
+  sessionStorage.setItem("chemi.match.pending", JSON.stringify({ playId: "ended-game" }));
+  vi.stubGlobal("fetch", async () => Response.json({
+    freeRemaining: 0, extraRemaining: 0, extraCost: 20, ranking: [], sound: false,
+  }));
+  render(<MatchScreen copy={copy} locale="ko" photos={photos} share={null} />);
+  expect(await screen.findByRole("button", { name: copy.playsDone })).toBeDisabled();
+  expect(screen.getByText(copy.freePlays + " 0")).toBeVisible();
+  expect(screen.getByText(new RegExp(copy.nextFree))).toBeVisible();
 });

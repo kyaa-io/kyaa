@@ -1,5 +1,6 @@
 "use client";
 
+import { VacantRank } from "@/features/chemi/games/vacant-rank";
 import { useEffect, useRef } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -48,11 +49,7 @@ function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string 
   }, [row]);
   return (
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
-      {row.vacant ? <>
-        <FanText role="body">{row.place}</FanText>
-        <span className={styles.rankAvatar} aria-hidden="true" />
-        <FanText role="item"><span role="img" aria-label={vacantLabel}>{vacantLabel}</span></FanText>
-      </> : <>
+      {row.vacant ? <VacantRank place={row.place} label={vacantLabel} avatarClassName={styles.rankAvatar} /> : <>
         <FanText role="body" data-flash-target="gain">{row.place}</FanText>
         {row.avatar ? <img src={row.avatar} alt="" /> : <span className={styles.rankAvatar} aria-hidden="true">{row.initial === null ? <FanIcon icon={CircleUserRound} size={16} /> : Array.from(row.name)[0]}</span>}
         <div>

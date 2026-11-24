@@ -4,7 +4,6 @@ export function VacantRank({ place, label, avatarClassName }: { place: number; l
   return <>
     <FanText role="body">{place}</FanText>
     <span className={avatarClassName} aria-hidden="true" />
-    <FanText role="item"><span role="img" aria-label={label}>—</span></FanText>
-    <FanText role="body">0</FanText>
+    <FanText role="item"><span role="img" aria-label={label}>{label}</span></FanText>
   </>;
 }
