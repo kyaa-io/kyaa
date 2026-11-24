@@ -1,5 +1,10 @@
 {
-  "changes": ["PC 팬페이지 홈에서 출석 스탬프와 내 패스포트를 작은 버튼 두 개로 모았어요. 갤러리는 사진 수에 맞춰 표시하고 구역 사이 간격을 줄였어요. 이미지는 공개 팬페이지의 본문을 로컬에서 재현한 화면이에요."],
+  "changes": [
+    "PC 팬페이지 홈에서 출석 스탬프와 내 패스포트를 작은 버튼 두 개로 모았어요. 갤러리는 사진 수에 맞춰 표시하고 구역 사이 간격을 줄였어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
   "path": "/elle",
-  "images": ["release-notes/images/2026-11-24-fanpage-home-compact.png"]
+  "images": [
+    "release-notes/images/2026-11-24-fanpage-home-compact.png"
+  ]
 }
