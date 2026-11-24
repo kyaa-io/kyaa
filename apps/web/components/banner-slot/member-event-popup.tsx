@@ -18,7 +18,7 @@ const hideToday = {
 };
 
 const hideWeek: typeof hideToday = {
-  ko: "일주일간 안 보기", en: "Hide for a week", ja: "1週間表示しない",
+  ko: "일주일간 안 보기", get mn() { return this.en; }, en: "Hide for a week", ja: "1週間表示しない",
   "zh-Hans": "一周内不再显示", "zh-Hant": "一週內不再顯示", es: "No mostrar durante una semana",
   id: "Sembunyikan selama seminggu", vi: "Ẩn trong một tuần", th: "ซ่อนเป็นเวลาหนึ่งสัปดาห์",
   pt: "Não mostrar por uma semana", fr: "Masquer pendant une semaine", ru: "Скрыть на неделю",
