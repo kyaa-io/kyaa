@@ -30,3 +30,42 @@ begin
     grant select, insert, update on public.unverified_idol_candidates to service_role;
   end if;
 end $$;
+
+-- Staff link the independently reviewed vote result to an existing draft.
+-- Normal CMS publication remains the final operator action.
+alter table public.unverified_idol_candidates
+  add column winner_evidence text,
+  add column consent_evidence text,
+  add column approved_by uuid,
+  add column approved_at timestamptz;
+
+create function public.approve_underground_winner(
+  p_actor uuid, p_country text, p_name text, p_draft uuid,
+  p_winner_evidence text, p_consent_evidence text
+) returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform public.require_content_editor(p_actor, false);
+  if nullif(trim(p_winner_evidence),'') is null or nullif(trim(p_consent_evidence),'') is null then
+    raise exception 'vote result and team consent required';
+  end if;
+  update public.unverified_idol_candidates set
+    schedule_celebrity_id = p_draft, winner_evidence = p_winner_evidence,
+    consent_evidence = p_consent_evidence, approved_by = p_actor, approved_at = now()
+  where country = p_country and official_name = p_name and approved_at is null;
+  if not found then raise exception 'no pending candidate'; end if;
+  update public.celebrities set primary_role = 'underground_idol', roles = array['artist'::public.celebrity_role]
+    where id = p_draft and status = 'draft' and primary_role is distinct from 'brand';
+  if not found then raise exception 'eligible draft required'; end if;
+end $$;
+revoke all on function public.approve_underground_winner(uuid,text,text,uuid,text,text) from public;
+do $$
+declare target_role text;
+begin
+  for target_role in select rolname from pg_roles where rolname in ('anon','authenticated') loop
+    execute format('revoke all on function public.approve_underground_winner(uuid,text,text,uuid,text,text) from %I', target_role);
+  end loop;
+  if exists (select 1 from pg_roles where rolname = 'service_role') then
+    grant execute on function public.approve_underground_winner(uuid,text,text,uuid,text,text) to service_role;
+  end if;
+end $$;
