@@ -6,7 +6,7 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { HomeCopy } from "./home";
 import styles from "./home.module.css";
 
-type Lobby = { freeRemaining: number; extraRemaining: number; extraCost: number };
+type Lobby = { freeRemaining: number; extraCost: number };
 
 export function GameStatusChip({ game, copy }: { game: "pair" | "run"; copy: HomeCopy }) {
   const { authenticated, ready, user, getAccessToken } = useByUsAuth();
@@ -32,8 +32,8 @@ export function GameStatusChip({ game, copy }: { game: "pair" | "run"; copy: Hom
     return () => controller.abort();
   }, [ready, authenticated, owner, getAccessToken, game]);
   if (!authenticated || !result || result.owner !== owner) return null;
-  const { freeRemaining, extraRemaining, extraCost } = result.lobby;
+  const { freeRemaining, extraCost } = result.lobby;
   const label = freeRemaining > 0 ? copy.playsLeft.replace("{n}", String(freeRemaining))
-    : extraRemaining > 0 ? copy.extraCost.replace("{n}", String(extraCost)) : copy.playsDone;
+    : extraCost > 0 ? copy.extraCost.replace("{n}", String(extraCost)) : copy.playsDone;
   return <FanText role="label" className={styles.statusChip} title={label}>{label}</FanText>;
 }

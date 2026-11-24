@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "gamePricing": "Chaque jeu offre trois parties gratuites par jour. Les trois premières parties supplémentaires coûtent respectivement 100P, 300P et 500P. Dès la quatrième, chaque partie coûte 1 000P, sans limite quotidienne.",
     "todayResult": "Résultat du jour",
     "playsLeft": "{n} gratuites",
     "extraCost": "Bonus {n}P",

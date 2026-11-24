@@ -143,7 +143,7 @@ describe("public legal pages", () => {
     expect(screen.getByText(/케미 탭에는 현금 결제가 없습니다/)).toBeInTheDocument();
     const table = screen.getAllByRole("table")[0]!;
     expect(within(table).getByRole("columnheader", { name: "포인트" })).toBeInTheDocument();
-    expect(within(within(table).getByRole("row", { name: /^게임 추가 판 1판/ })).getByRole("cell", { name: "20P" })).toBeInTheDocument();
+    expect(within(within(table).getByRole("row", { name: /^게임 추가 판 1판/ })).getByRole("cell", { name: "100P → 300P → 500P → 1,000P" })).toBeInTheDocument();
     expect(within(within(table).getByRole("row", { name: /^오늘의 운세 다른 날짜 1개/ })).getByRole("cell", { name: "10P" })).toBeInTheDocument();
     expect(container.textContent).not.toMatch(/\d원|토스페이먼츠|출시와 함께|포인트로 유료 상품을 구매할 수 없/);
     expect(screen.getByRole("link", { name: "홈으로 돌아가기" })).toHaveAttribute("href", "/?locale=ko");
@@ -165,7 +165,7 @@ describe("public legal pages", () => {
     const { container, unmount } = render(await PricingPage({ searchParams: searchParams("en") }));
     expect(screen.getByRole("heading", { level: 1, name: "Pricing" })).toBeInTheDocument();
     expect(screen.getByText("Effective date: November 23, 2026")).toBeInTheDocument();
-    expect(screen.getAllByText("20P").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("100P → 300P → 500P → 1,000P").length).toBeGreaterThan(0);
     expect(container.textContent).not.toMatch(/KRW|Toss/);
     expect(screen.getByRole("combobox", { name: "Choose language, currently English" })).toHaveValue("en");
     expect(container.querySelector("[data-fan-surface]")).toHaveAttribute("lang", "en");

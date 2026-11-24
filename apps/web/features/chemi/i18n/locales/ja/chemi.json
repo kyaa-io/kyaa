@@ -11,6 +11,7 @@
     "gameMinutes": ""
   },
   "home": {
+    "gamePricing": "各ゲームは毎日3回まで無料です。追加プレイは順に100P、300P、500P。4回目からは毎回1,000Pで、回数制限はありません。",
     "todayResult": "今日の結果",
     "playsLeft": "無料 残り{n}回",
     "extraCost": "追加 {n}P",

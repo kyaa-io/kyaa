@@ -6,7 +6,7 @@ export type CommerceDocumentId = "pricing" | "refund";
 /**
  * 요금 안내·환불 정책. 한국 소비자법을 따르는 문서라 ko 원문과 en만 둔다.
  * 그 밖의 언어에서는 en 문서를 en 언어 표시로 보인다(화면 틀·라벨은 언어별 번역 그대로).
- * 요금 안내는 2026-11-23 케미 운영 오픈 기준: 현금 결제 없음, 포인트 값은 DB `chemi_extra_play_cost()`(20)·`chemi_date_reading_price()`(10)와 같아야 한다.
+ * 요금 안내는 2026-11-23 케미 운영 오픈 기준: 현금 결제 없음, 포인트 값은 DB `chemi_game_price(used)`·`chemi_date_reading_price()`(10)와 같아야 한다.
  * 환불 정책은 유료 결제 상품이 없는 동안의 안내다(2026-11-23). 결제를 열 때 환불·청약철회 기준을 다시 쓴다.
  */
 const pointHead = {
@@ -28,7 +28,7 @@ export const commerceDocuments: Record<CommerceDocumentId, Record<"ko" | "en", L
           table: {
             head: pointHead.ko,
             rows: [
-              ["게임 추가 판 1판(짝 맞추기·최애 런)", "20P", "게임마다 하루 무료 3판을 다 한 뒤, 게임마다 하루 3판까지"],
+              ["게임 추가 판 1판(짝 맞추기·최애 런)", "100P → 300P → 500P → 1,000P", "게임마다 하루 무료 3판 이후 적용. 네 번째 추가 판부터 매번 1,000P, 횟수 제한 없음"],
               ["오늘의 운세 다른 날짜 1개", "10P", "같은 최애로 연 날짜는 다시 봐도 포인트를 쓰지 않음"],
             ],
           },
@@ -57,7 +57,7 @@ export const commerceDocuments: Record<CommerceDocumentId, Record<"ko" | "en", L
           table: {
             head: pointHead.en,
             rows: [
-              ["Extra game play, 1 play (Match pairs, Favorite Run)", "20P", "After your 3 free plays of that game for the day, up to 3 extra plays per game per day"],
+              ["Extra game play, 1 play (Match pairs, Favorite Run)", "100P → 300P → 500P → 1,000P", "After three free plays per game each day. From the fourth extra play, each costs 1,000P with no daily limit."],
               ["Daily fortune for another date, 1 date", "10P", "Dates you've already opened with the same favorite can be viewed again without points"],
             ],
           },
