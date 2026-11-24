@@ -146,5 +146,8 @@
   ],
   "donation-vote": [
     "release-notes/2026-11-25-new-year-donation-vote.json"
+  ],
+  "lucky-mileage": [
+    "release-notes/2026-11-25-lucky-ticket-conversion.json"
   ]
 }
