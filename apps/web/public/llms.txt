@@ -9,6 +9,15 @@
 - [Service guide](https://kyaa.io/guide?locale=en): How to use Kyaa and frequently asked questions.
 - [Sitemap](https://kyaa.io/sitemap.xml): Public canonical URLs and language alternatives.
 
+- [Fan pages](https://kyaa.io/celebrities?locale=en): Browse listed creators and follow their public fan pages.
+- [Concerts and schedules](https://kyaa.io/live/calendar?locale=en): Find dates and official sources.
+- [Today’s rankings](https://kyaa.io/?locale=en#home-ranking): Compare the fan activity shown on the home leaderboard.
+
+## Revamp terminology
+
+- Mileage (마일리지, M) is the planned name for fan points. Under the revamp, one existing point equals one M, and one M spent on a vote counts as one vote.
+- Fan tier (등급) is per creator. Under the revamp, cumulative stamps determine the tier from Bronze through Diamond, with true-fan status required from Gold onward.
+
 ## Official channels
 
 - [Instagram](https://www.instagram.com/kyaa_app/)

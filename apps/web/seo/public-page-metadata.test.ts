@@ -25,14 +25,14 @@ beforeEach(() => {
 });
 
 describe("public detail search metadata", () => {
-  it("uses Changha's updated banner for link previews while preserving later CMS photos", async () => {
-    for (const [source, expected] of [
-      ["/images/guest-home/changha-card.jpg", "/images/celebrities/changha/gggi-20261030.jpg"],
-      ["/future-changha.jpg", "/future-changha.jpg"],
+  it("uses Changha's designated sharing portrait independently of the hero photo", async () => {
+    for (const source of [
+      "/images/guest-home/changha-card.jpg",
+      "/future-changha.jpg",
     ]) {
       mocks.creator.mockResolvedValue({ name: "창하", summary: "창하 소식", image: { url: source, alt: "창하", position: "center" } });
       const metadata = await creatorMetadata({ params: Promise.resolve({ slug: "changha" }), searchParams: Promise.resolve({ locale: "ko" }) });
-      expect(JSON.stringify(metadata.openGraph)).toContain(encodeURIComponent(expected!));
+      expect(JSON.stringify(metadata.openGraph)).toContain(encodeURIComponent("/images/celebrities/changha/profile-autumn-sharp-20261113.webp"));
     }
   });
 

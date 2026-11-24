@@ -155,5 +155,8 @@
   ],
   "creator-hex": [
     "release-notes/2026-11-25-creator-hex.json"
+  ],
+  "revamp-search": [
+    "release-notes/2026-11-25-revamp-search.json"
   ]
 }
