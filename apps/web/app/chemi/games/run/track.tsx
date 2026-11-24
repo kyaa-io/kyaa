@@ -330,17 +330,18 @@ export function Track({ character, ticket, copy, locale, name, sound, soundOn, o
       <canvas ref={canvas} role="img" aria-label={`${name} · ${copy.map}`} />
       <div className={styles.effects} ref={effects} aria-hidden="true" />
       {/* 부스트는 남은 초가 줄어드는 막대, 보호막은 한 번 막을 때까지 가득 찬 막대. 마지막 1초에 깜빡인다. */}
-      {(hud.boost > 0 || hud.shield) && <div className={styles.gauges}>
+      <div className={styles.gauges}>
         {hud.boost > 0 && <span className={styles.gauge} data-kind="boost" data-ending={hud.boost <= FPS} role="img" aria-label={copy.boost}>
           <Prop name="boost" />
           <span className={styles.gaugeBar}><i style={{ "--fill": hud.boost / BOOST_TICKS } as CSSProperties} /></span>
           <FanPixelText role="sub" aria-hidden="true">{fill(copy.seconds, { n: (hud.boost / FPS).toFixed(1) })}</FanPixelText>
         </span>}
-        {hud.shield && <span className={styles.gauge} data-kind="shield" role="img" aria-label={copy.shield}>
+        <span className={styles.gauge} data-kind="shield" role="img" aria-label={`${copy.shield} ${Number(hud.shield)}/1`}>
           <Prop name="shield" />
-          <span className={styles.gaugeBar}><i style={{ "--fill": 1 } as CSSProperties} /></span>
-        </span>}
-      </div>}
+          <span className={styles.gaugeBar}><i style={{ "--fill": Number(hud.shield) } as CSSProperties} /></span>
+          <FanPixelText role="sub" aria-hidden="true">{Number(hud.shield)}/1</FanPixelText>
+        </span>
+      </div>
       {say && <FanPixelText as="p" role="say" className={styles.say} key={say.id}>{say.text}</FanPixelText>}
       {keyboard && hint && stage === "play" && <p className={styles.keyHint} aria-hidden="true">
         <span><Keys caps={RUN_KEYCAPS.jump.slice(0, 1)} /><FanText role="label">{copy.jump}</FanText></span>

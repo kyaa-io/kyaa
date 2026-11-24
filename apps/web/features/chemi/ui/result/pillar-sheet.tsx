@@ -5,14 +5,13 @@
  * 일주 열(나)은 선 하나로 구분한다. 모르는 기둥은 자물쇠 자리표시로 높이를 지킨다.
  * '자세히'를 펼치면 같은 표 아래에 지장간·12운성·12신살 줄이 붙는다(주소는 바뀌지 않는다).
  */
-import { Droplet, Flame, Gem, LockKeyhole, Mountain, Sprout } from "@/components/fan-ui/fan-icons";
+import { LockKeyhole } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanHanja } from "@/components/fan-ui/fan-hanja";
 import { FanText } from "@/components/fan-ui/fan-text";
 import styles from "./pillar-sheet.module.css";
 
 export type PillarElement = "wood" | "fire" | "earth" | "metal" | "water";
-const elementIcon = { wood: Sprout, fire: Flame, earth: Mountain, metal: Gem, water: Droplet } as const;
 const elementName: Record<PillarElement, string> = { wood: "나무", fire: "불", earth: "흙", metal: "쇠", water: "물" };
 
 type Cell = { letter: string; hanja: string; element: PillarElement };
@@ -41,7 +40,7 @@ function Glyph({ cell }: { cell: Cell }) {
       <FanHanja role="glyph">{cell.hanja}</FanHanja>
       <span className={styles.read}>
         <FanText role="label">{cell.letter}</FanText>
-        <FanIcon icon={elementIcon[cell.element]} size={16} />
+        <img src={`/chemi/saju/elements/${cell.element}.webp`} width={24} height={24} alt="" />
         <FanText role="meta">{elementName[cell.element]}</FanText>
       </span>
     </span>
