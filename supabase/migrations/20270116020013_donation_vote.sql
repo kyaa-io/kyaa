@@ -39,7 +39,6 @@ create index donation_vote_totals on public.donation_vote_receipts(event_slug, c
 alter table public.donation_vote_events enable row level security;
 alter table public.donation_vote_candidates enable row level security;
 alter table public.donation_vote_receipts enable row level security;
-revoke all on public.donation_vote_events, public.donation_vote_candidates, public.donation_vote_receipts from public, anon, authenticated, service_role;
 
 do $$
 declare definition text := pg_get_functiondef('public.group_wallet_post(uuid,text,bigint,text,uuid)'::regprocedure);
@@ -86,8 +85,6 @@ begin
   return ledger;
 end $$;
 
-revoke all on function public.cast_donation_vote(uuid,uuid,text,uuid,integer), public.donation_vote_limit(uuid) from public, anon, authenticated;
-grant execute on function public.cast_donation_vote(uuid,uuid,text,uuid,integer), public.donation_vote_limit(uuid) to service_role;
 create function public.donation_vote_state(p_user uuid, p_event text) returns jsonb
 language sql stable security definer set search_path='' as $$
   select jsonb_build_object('startsAt',e.starts_at,'endsAt',e.ends_at,'donationDate',e.donation_date,
@@ -101,8 +98,6 @@ language sql stable security definer set search_path='' as $$
         group by c.celebrity_id,a.slug,c.fandom_name) r),'[]'::jsonb))
   from public.donation_vote_events e where e.slug=p_event
 $$;
-revoke all on function public.donation_vote_state(uuid,text) from public, anon, authenticated;
-grant execute on function public.donation_vote_state(uuid,text) to service_role;
 create function public.set_donation_vote_fandom(p_admin uuid,p_allowlist uuid,p_creator uuid,p_name text)
 returns void language plpgsql security definer set search_path='' as $$
 begin
@@ -112,6 +107,30 @@ begin
     where event_slug='new-year-2027' and celebrity_id=p_creator;
   if not found then raise exception 'VOTE_UNAVAILABLE'; end if;
 end $$;
-revoke all on function public.set_donation_vote_fandom(uuid,uuid,uuid,text) from public,anon,authenticated;
-grant execute on function public.set_donation_vote_fandom(uuid,uuid,uuid,text) to service_role;
+-- DEV and clean installations can have different PostgREST roles.
+do $$
+declare
+  role_name text;
+  function_name text;
+  functions text[] := array[
+    'public.cast_donation_vote(uuid,uuid,text,uuid,integer)',
+    'public.donation_vote_limit(uuid)',
+    'public.donation_vote_state(uuid,text)',
+    'public.set_donation_vote_fandom(uuid,uuid,uuid,text)'
+  ];
+begin
+  revoke all on public.donation_vote_events, public.donation_vote_candidates, public.donation_vote_receipts from public;
+  foreach function_name in array functions loop
+    execute format('revoke all on function %s from public', function_name);
+  end loop;
+  for role_name in select rolname from pg_catalog.pg_roles where rolname in ('anon','authenticated','service_role') loop
+    execute format('revoke all on public.donation_vote_events, public.donation_vote_candidates, public.donation_vote_receipts from %I', role_name);
+    foreach function_name in array functions loop
+      execute format('revoke all on function %s from %I', function_name, role_name);
+      if role_name = 'service_role' then
+        execute format('grant execute on function %s to %I', function_name, role_name);
+      end if;
+    end loop;
+  end loop;
+end $$;
 commit;
