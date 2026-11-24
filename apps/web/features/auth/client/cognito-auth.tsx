@@ -22,10 +22,10 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
         const response=await fetch("/api/auth/cognito/session",{cache:"no-store",signal});
         return {response,value:response.ok?await response.json():null};
       });
-      if(expectedRevision!==revision.current)return current.current;
+      if(expectedRevision!==revision.current)return null;
       if(!response.ok){if(response.status===401){current.current=null;setSession(null);return null;}throw new Error("Authentication unavailable");}
       if(value.authenticated!==true || typeof value.walletLinked!=="boolean" || typeof value.accessToken!=="string" || typeof value.expiresAt!=="number")throw new Error("Invalid authentication response");
-      if(expectedRevision!==revision.current)return current.current;
+      if(expectedRevision!==revision.current)return null;
       current.current=value;setSession(value);return value;
     })();
     pending.current=request;
@@ -34,8 +34,9 @@ export function CognitoAuthProvider({children}:{children:ReactNode}){
   },[]);
   useEffect(()=>{void refresh().catch(()=>{}).finally(()=>setLoading(false));},[refresh]);
   const getAccessToken=useCallback(async()=>{
+    const expectedRevision=revision.current;
     const value=current.current && current.current.expiresAt>Date.now()+30_000?current.current:await refresh();
-    return value?.walletLinked?value.accessToken:null;
+    return expectedRevision===revision.current && value?.walletLinked?value.accessToken:null;
   },[refresh]);
   const logout=useCallback(async()=>{
     const response=await fetch("/api/auth/cognito/logout",{method:"POST"});
