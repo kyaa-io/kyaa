@@ -34,9 +34,16 @@ begin
     or result @> '[{"source":"cms_upload"}]' or not result @> '[{"source":"official_sns"}]'
     or result::text like '%'||actor::text||'%' then raise exception 'public photo projection'; end if;
   if public.read_public_gallery_post_photos('ko',false,24)->'items' @> '[{"source":"group_post"}]' then raise exception 'groups disabled'; end if;
+  update public.mobile_media_assets set kind='video',content_type='video/mp4' where id=ga;
+  result := public.read_home_gallery_mix('ko',true,24)->'items';
+  if not exists(select 1 from jsonb_array_elements(result) i
+     where i->>'source'='group_post' and i#>>'{image,url}'='/api/groups/media/'||ga||'?variant=thumbnail')
+     then raise exception 'Missing publicly readable fan video cover'; end if;
   update public.fan_posts set visibility='members' where id=fp;
   update public.group_posts set visibility='members' where id=gp;
   if exists(select 1 from jsonb_array_elements(public.read_public_gallery_post_photos('ko',true,24)->'items') i where i->>'source' in ('fan_post','group_post')) then raise exception 'members photo'; end if;
+  if exists(select 1 from jsonb_array_elements(public.read_home_gallery_mix('ko',true,24)->'items') i
+    where i->>'source' in ('fan_post','group_post')) then raise exception 'Private media in home mix'; end if;
   update public.fan_posts set visibility='public',hidden_at=now() where id=fp;
   update public.group_posts set visibility='public',removed_at=now() where id=gp;
   if exists(select 1 from jsonb_array_elements(public.read_public_gallery_post_photos('ko',true,24)->'items') i where i->>'source' in ('fan_post','group_post')) then raise exception 'hidden photo'; end if;

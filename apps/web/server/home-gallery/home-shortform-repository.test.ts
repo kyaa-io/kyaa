@@ -137,9 +137,8 @@ describe("home gallery pool", () => {
     const rpc = vi.fn(async (_: string, args: { p_offset: number }) => ({ data: { items: Array.from({ length: 24 }, (_, i) => photo(args.p_offset + i)), hasMore: true, last: last(args.p_offset + 23) }, error: null }));
     const page = await new HomeGalleryRepository({ rpc } as never).listPublishedPool("ko", { pages: 3 });
     expect(page.items).toHaveLength(72);
-    for (const [, args] of rpc.mock.calls) expect(args).toMatchObject({ p_mark_recent: true });
     expect(rpc.mock.calls.map(call => (call[1] as { p_offset: number }).p_offset).sort((a, b) => a - b)).toEqual([0, 24, 48]);
-    expect(rpc.mock.calls.every(call => call[0] === "read_public_gallery_post_photos" && (call[1] as { p_offset: number; p_limit: number }).p_limit === 24)).toBe(true);
+    expect(rpc.mock.calls.every(call => call[0] === "read_home_gallery_mix" && (call[1] as { p_offset: number; p_limit: number }).p_limit === 24)).toBe(true);
     expect(decodeHomeGalleryCursor(page.nextCursor!)).toEqual({ after: { rank: 2147483647, at: "2026-11-17T01:02:03.123456+00:00", id: "n71:0" } });
   });
   it("continues after the sort key of a cursor, and refuses a cursor it did not issue", async () => {

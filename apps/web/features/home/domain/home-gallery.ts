@@ -5,6 +5,7 @@ import type { PhotoSet } from "@/features/media/domain/public-image";
 // SQL authorizes each attachment for an anonymous reader before returning its private media route.
 // This schema validates URL shape, not authorization. Never accept arbitrary paths or query overrides.
 const homeGalleryImageUrlSchema = z.union([
+  z.string().regex(/^\/api\/groups\/media\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\?variant=thumbnail$/),
   z.url({ protocol: /^https$/ }),
   z.string().regex(/^\/api\/(?:content-assets|groups\/media)\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
 ]);

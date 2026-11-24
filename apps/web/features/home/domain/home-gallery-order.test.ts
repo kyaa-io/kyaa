@@ -122,3 +122,21 @@ describe("diversifyShorts with Instagram reels, YouTube Shorts and TikTok", () =
     expect(out.map(item => item.id).indexOf("t4")).toBeLessThan(out.map(item => item.id).indexOf("y2"));
   });
 });
+
+it.each([0, 1, 3, 5])("opens with up to three distinct fan posts from %i available", count => {
+  const notices = Array.from({ length: 12 }, (_, i) => ({
+    ...photo(`n${i}:0`), sourceHref: `/c/a/notices/post-${i}`,
+  }));
+  const fans = Array.from({ length: count }, (_, i) => ({
+    ...photo(`fan${i}:0`), source: "fan_post" as const,
+    sourceHref: `/c/a/community/90000000-0000-4000-8000-${String(i).padStart(12, "0")}`,
+  }));
+  const pool = [...notices, ...fans, ...fans.map(fan => ({ ...fan, id: fan.id + "extra" }))];
+  const ranked = homeGalleryPostPhotos(pool);
+  const head = ranked.slice(0, 10);
+  const fanSlots = Math.min(3, count);
+  expect(head.slice(0, fanSlots).every(item => item.source === "fan_post")).toBe(true);
+  expect(head.slice(fanSlots).every(item => item.source === "official_sns")).toBe(true);
+  expect(new Set(head.map(item => item.sourceHref)).size).toBe(10);
+  expect(new Set(ranked)).toEqual(new Set(pool));
+});
