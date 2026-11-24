@@ -57,6 +57,7 @@ test('BuildKit refuses the final image when either branch fails', t => {
   const dir=fixture();
   try {
     const graph=`FROM node:24-bookworm-slim AS build\nWORKDIR /app\nRUN mkdir -p apps/web/.next/cache apps/web/.next/standalone apps/web/.next/static apps/web/public && touch apps/web/.next/cache/.tsbuildinfo apps/web/.next/cache/turbopack-placeholder && mkdir apps/web/.next/cache/turbopack && echo app > apps/web/.next/standalone/server.js\n`+
+      `RUN echo '{}' > /app/public-image-source-index.json\n`+
       `FROM build AS typecheck\nARG TYPECHECK_EXIT=0\nRUN node -e "process.exit(Number(process.env.TYPECHECK_EXIT))" && touch /tmp/kyaa-web-typecheck-passed\n`+
       `FROM build AS bundle\nARG BUNDLE_EXIT=0\nRUN node -e "process.exit(Number(process.env.BUNDLE_EXIT))"\n`+
       stages.get('verified')+'\nFROM scratch AS runtime\n'+stages.get('runtime').split('\n').filter(l=>l.startsWith('COPY --from=')).map(l=>l.replace('--chown=app:app ','')).join('\n');
