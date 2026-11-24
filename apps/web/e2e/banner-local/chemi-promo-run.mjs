@@ -21,7 +21,7 @@ const key = `kyaa:chemi-promo:${popup.id}`;
 try {
   for (const width of [390, 1440]) {
     for (const member of [false, true]) {
-      const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: "reduce" });
+      const page = await browser.newPage({ ...(width === 390 && !member && process.env.BANNER_RECORD_DIR ? { recordVideo: { dir: process.env.BANNER_RECORD_DIR } } : {}), viewport: { width, height: 900 }, reducedMotion: "reduce" });
       await page.clock.setFixedTime(now);
       if (member) await page.addInitScript(() => localStorage.setItem("banner-local-account", "did:privy:fixture-a"));
       const event = { ...popup, id: "90000000-0000-4000-8000-000000000004", placement: "member_event_popup", title: "회원 이벤트", href: "/live/elina-week-0" };
@@ -53,14 +53,32 @@ try {
       await expect.poll(() => dialog.getByRole("img").evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
       const state = member ? "member" : "guest";
       await page.screenshot({ path: path.join(out, `modal-${state}-${width}.png`) });
+      await page.keyboard.press("Escape");
+      await expect(dialog).toHaveCount(0);
+      assert.equal(await page.evaluate(key => localStorage.getItem(key), key), null);
+      await page.reload();
+      await expect(dialog).toBeVisible();
       for (const [toggle, expiry] of [
         ["오늘 하루 안 보기", Date.parse("2026-11-24T15:00:00Z")],
         ["일주일간 안 보기", +now + 604_800_000],
       ]) {
-        await dialog.getByRole("button", { name: toggle }).click();
+        const checkbox = dialog.getByRole("checkbox", { name: toggle });
+        await checkbox.focus();
+        await page.keyboard.press("Space");
+        await expect(dialog.locator("input:checked")).toHaveCount(1);
+        const other = dialog.getByRole("checkbox", { name: toggle === "오늘 하루 안 보기" ? "일주일간 안 보기" : "오늘 하루 안 보기" });
+        await other.check();
+        await expect(checkbox).not.toBeChecked();
+        await other.uncheck();
+        await expect(dialog.locator("input:checked")).toHaveCount(0);
+        await checkbox.check();
+        await page.screenshot({ path: path.join(out, `checked-${state}-${width}-${expiry}.png`) });
+        if (member) await page.mouse.click(2, 2);
+        else if (toggle === "오늘 하루 안 보기") await dialog.getByRole("button").first().click();
+        else await dialog.getByRole("link").click();
         assert.equal(await page.evaluate(key => Number(localStorage.getItem(key)), key), expiry);
         await page.clock.setFixedTime(new Date(expiry - 1));
-        await page.reload();
+        await page.goto(url);
         await expect(dialog).toHaveCount(0);
         if (toggle === "일주일간 안 보기") {
           const banner = page.locator('[data-home-hero-banner][data-kind="chemi"]').first();
@@ -71,6 +89,20 @@ try {
         await page.clock.setFixedTime(new Date(expiry));
         await expect(dialog).toBeVisible();
         await page.clock.setFixedTime(now);
+      }
+      if (!member) for (const language of ["ko","en","ja","zh-Hans","zh-Hant","es","id","vi","th","pt","fr","ru","mn"]) {
+        await page.goto(url.replace("locale=ko", "locale=" + language));
+        await expect(dialog).toBeVisible();
+        await dialog.screenshot(); // Wait for the entrance animation to settle.
+        const boxes = await dialog.locator("label").evaluateAll(labels => labels.map(label => {
+          const rect = label.getBoundingClientRect();
+          const span = label.querySelector("span");
+          return { y: rect.y, height: rect.height, right: rect.right, lines: span.offsetHeight / parseFloat(getComputedStyle(span).lineHeight) };
+        }));
+        assert.equal(boxes.length, 2);
+        assert.equal(boxes[0].y, boxes[1].y);
+        assert.ok(boxes.every(box => box.height >= 44 && box.right <= width && box.lines < 2.1), language + JSON.stringify(boxes));
+        if (language === "fr") await page.screenshot({ path: path.join(out, `fr-${width}.png`) });
       }
       await page.close();
     }
