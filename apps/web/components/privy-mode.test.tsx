@@ -30,6 +30,7 @@ function makeBridge(): PrivyBridge {
     oauthLoading: false,
     startOAuth: vi.fn(async () => {}),
     subscribeOAuth: (listener) => { listeners.add(listener); return () => { listeners.delete(listener); }; },
+    emailLoginAvailable: vi.fn(async () => true),
     openEmailLogin: vi.fn(),
     openGoogleLogin: vi.fn(),
     refreshUser: vi.fn(async () => ({ id: "did:privy:fan", linkedAccounts: [] })),
@@ -81,19 +82,45 @@ describe("privy mode", () => {
     expect(assign).not.toHaveBeenCalled();
   });
 
-  it.each([["iPhone Instagram",true],["iPhone Twitter for iPhone",true],["Android TikTok",false]] as const)(
-    "offers Apple and email in device order inside %s", async (ua, appleFirst) => {
+  it.each([
+    ["iPhone Instagram", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 Instagram 350.0.2.15.84"],
+    ["iPhone X", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 Twitter for iPhone"],
+    ["Android X", "Mozilla/5.0 (Linux; Android 14; SM-S918N Build/UP1A; wv) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36 TwitterAndroid"],
+    ["Android TikTok", "Mozilla/5.0 (Linux; Android 14; SM-S918N Build/UP1A; wv) AppleWebKit/537.36 Chrome/130.0.0.0 Mobile Safari/537.36 musical_ly_36.5.0"],
+    ["Telegram", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 Telegram"],
+  ])("puts email first, then Apple, and no Google button inside %s", async (_name, ua) => {
       const agent = vi.spyOn(navigator,"userAgent","get").mockReturnValue(ua);
       try {
         render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
         const apple = screen.getByRole("button",{name:/Apple로 계속하기/});
-        const email = screen.getByRole("button",{name:/이메일로 계속하기/});
-        expect(Boolean(apple.compareDocumentPosition(email) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(appleFirst);
+        const email = await screen.findByRole("button",{name:/이메일로 계속하기/});
+        expect(Boolean(email.compareDocumentPosition(apple) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
         expect(screen.queryByRole("button",{name:/Google로 계속하기/})).toBeNull();
         fireEvent.click(email);
         expect(bridge.openEmailLogin).toHaveBeenCalledOnce();
       } finally { agent.mockRestore(); }
     });
+  it("keeps email off the in-app screen while Privy's email sign-in is switched off (it answers 403 not allowed)", async () => {
+    bridge.emailLoginAvailable = vi.fn(async () => false);
+    const agent = vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 Twitter for iPhone");
+    try {
+      render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
+      await waitFor(() => expect(bridge.emailLoginAvailable).toHaveBeenCalled());
+      expect(screen.queryByRole("button", { name: /이메일로 계속하기/ })).toBeNull();
+      expect(screen.getByRole("button", { name: /Apple로 계속하기/ })).toBeEnabled();
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
+    } finally { agent.mockRestore(); }
+  });
+  it("leaves the ordinary browser as it was: Google first, no email button, no browser hint", () => {
+    const agent = vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1");
+    try {
+      render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
+      expect(screen.getByRole("button", { name: /Google로 계속하기/ })).toBeEnabled();
+      expect(bridge.emailLoginAvailable).not.toHaveBeenCalled();
+      expect(screen.queryByRole("button", { name: /이메일로 계속하기/ })).toBeNull();
+      expect(screen.queryByRole("button", { name: "로그인 링크 복사" })).toBeNull();
+    } finally { agent.mockRestore(); }
+  });
   // RAFFLE-FUNNEL-CHECK-1123: inside X the "Google · Safari ↗" link did nothing (X ignores x-safari-https://). It is replaced by
   // the copy-link notice, and the copied sign-in link keeps the raffle's ?enter=1 so entry continues in the browser.
   it("shows the open-in-browser notice and copy link in place of the dead Google link inside X", async () => {
@@ -106,7 +133,7 @@ describe("privy mode", () => {
     try {
       render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
       expect(screen.queryByRole("button", { name: /Safari/ })).toBeNull();
-      expect(screen.getByRole("status")).toHaveTextContent("Choose ‘Open in browser’ in the app menu");
+      expect(screen.getByRole("status")).toHaveTextContent("Open in your browser to sign in with Google.");
       fireEvent.click(screen.getByRole("button", { name: "Copy sign-in link" }));
       await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
       const link = new URL(String(writeText.mock.calls[0]?.[0]));
@@ -117,6 +144,23 @@ describe("privy mode", () => {
       expect(assign).not.toHaveBeenCalled();
     } finally { agent.mockRestore(); }
   });
+  it("copies the raffle link with its campaign tag on the sign-in address too", async () => {
+    vi.stubGlobal("location", { ...window.location, assign: vi.fn(), origin: "https://kyaa.io", href: "https://kyaa.io/login" });
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
+    navigation.query = new URLSearchParams({ returnTo: "/s/raffle?utm_source=x&utm_medium=paid&utm_campaign=raffle-1125&utm_content=x-ad-1&enter=1", locale: "en" }).toString();
+    const agent = vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 Twitter for iPhone");
+    try {
+      render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
+      fireEvent.click(screen.getByRole("button", { name: "Copy sign-in link" }));
+      await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
+      const link = new URL(String(writeText.mock.calls[0]?.[0]));
+      expect(Object.fromEntries([...link.searchParams].filter(([key]) => key.startsWith("utm_")))).toEqual({ utm_source: "x", utm_medium: "paid", utm_campaign: "raffle-1125", utm_content: "x-ad-1" });
+      const back = new URL(link.searchParams.get("returnTo") ?? "", "https://kyaa.io");
+      expect(back.searchParams.get("utm_campaign")).toBe("raffle-1125");
+      expect(back.searchParams.get("enter")).toBe("1");
+    } finally { agent.mockRestore(); }
+  });
   it("keeps the Google hand-off link where it works and adds the notice after a tap", () => {
     const assign = vi.fn();
     vi.stubGlobal("location", { ...window.location, assign, origin: "https://kyaa.io", href: "https://kyaa.io/login" });
@@ -124,7 +168,7 @@ describe("privy mode", () => {
     const agent = vi.spyOn(navigator, "userAgent", "get").mockReturnValue("Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/22B83 KAKAOTALK 11.0.0");
     try {
       render(withBridge(<ByUsSessionProvider><LoginPage appleLoginEnabled /></ByUsSessionProvider>));
-      expect(screen.queryByRole("button", { name: "로그인 링크 복사" })).toBeNull();
+      expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();
       fireEvent.click(screen.getByRole("button", { name: /Google · Safari/ }));
       expect(String(assign.mock.calls[0]?.[0])).toMatch(/^kakaotalk:\/\/web\/openExternal\?url=/);
       expect(screen.getByRole("button", { name: "로그인 링크 복사" })).toBeEnabled();

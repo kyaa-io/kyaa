@@ -34,3 +34,20 @@ it("distinguishes explicit login cancellation from provider failures", () => {
   expect(onError.mock.calls).toEqual([["cancelled"], ["cancelled"], ["provider_error"]]);
   unsubscribe();
 });
+
+it("reports email sign-in only when the Privy app has it switched on, and treats a failed lookup as off", async () => {
+  const answers: Record<string, Response | Error> = { "on-app": Response.json({ email_auth: true }), "off-app": Response.json({ email_auth: false }), "down-app": new Error("offline"), "denied-app": new Response(null, { status: 403 }) };
+  const fetchMock = vi.fn(async (url: string) => { const answer = answers[new URL(url).pathname.split("/").at(-1)!]!; if (answer instanceof Error) throw answer; return answer; });
+  vi.stubGlobal("fetch", fetchMock);
+  try {
+    const results: Record<string, boolean> = {};
+    for (const appId of Object.keys(answers)) {
+      render(<Root appId={appId} appleLoginEnabled={false} testAccountLoginEnabled={false}><Consumer /></Root>);
+      results[appId] = await bridge!.emailLoginAvailable();
+      await bridge!.emailLoginAvailable();
+    }
+    expect(results).toEqual({ "on-app": true, "off-app": false, "down-app": false, "denied-app": false });
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenCalledWith("https://auth.privy.io/api/v1/apps/on-app", { headers: { "privy-app-id": "on-app" } });
+  } finally { vi.unstubAllGlobals(); }
+});

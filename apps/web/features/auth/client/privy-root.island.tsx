@@ -22,7 +22,21 @@ export function PrivyIsland({ appId, config }: { appId: string; config: PrivyCli
   return <IslandPrivyProvider appId={appId} config={config}><PrivyMirrors /></IslandPrivyProvider>;
 }
 
-function PrivyBridgeProvider({ children }: { children: ReactNode }) {
+// Privy's public app settings (the same call the SDK makes) tell whether email sign-in is switched on in its dashboard.
+const emailSettingByApp = new Map<string, Promise<boolean>>();
+function privyEmailEnabled(appId: string): Promise<boolean> {
+  let setting = emailSettingByApp.get(appId);
+  if (!setting) {
+    setting = fetch(`https://auth.privy.io/api/v1/apps/${encodeURIComponent(appId)}`, { headers: { "privy-app-id": appId } })
+      .then((response) => response.ok ? response.json() as Promise<{ email_auth?: unknown }> : null)
+      .then((settings) => settings?.email_auth === true)
+      .catch(() => false);
+    emailSettingByApp.set(appId, setting);
+  }
+  return setting;
+}
+
+function PrivyBridgeProvider({ appId, children }: { appId: string; children: ReactNode }) {
   const privy = usePrivy();
   const { refreshUser } = useUser();
   const { createWallet } = useCreateWallet();
@@ -59,11 +73,12 @@ function PrivyBridgeProvider({ children }: { children: ReactNode }) {
     oauthLoading,
     startOAuth: (provider) => initOAuth({ provider }).then(() => undefined),
     subscribeOAuth,
+    emailLoginAvailable: () => privyEmailEnabled(appId),
     openEmailLogin: () => login({ loginMethods: ["email"] }),
     openGoogleLogin: () => login({ loginMethods: ["google"] }),
     refreshUser: () => refreshUser(),
     createWallet: () => Promise.resolve(createWallet({ createAdditional: false })),
-  }), [auth, createWallet, initOAuth, login, oauthLoading, refreshUser, subscribeOAuth]);
+  }), [appId, auth, createWallet, initOAuth, login, oauthLoading, refreshUser, subscribeOAuth]);
   return <PrivyBridgeContext.Provider value={value}><FanSessionKeeper ownerId={userId} getPrivyAccessToken={getAccessToken} onAccountUnavailable={signOut} />{children}</PrivyBridgeContext.Provider>;
 }
 
@@ -78,6 +93,6 @@ export default function PrivyAuthRoot({ appId, appleLoginEnabled, testAccountLog
   if (!appId) throw new Error(PRIVY_APP_ID_REQUIRED);
   return <AuthBootProvider>
     <PrivyIsland appId={appId} config={config} />
-    <PrivyBridgeProvider><PrivyAvatarSessionBridge>{children}</PrivyAvatarSessionBridge></PrivyBridgeProvider>
+    <PrivyBridgeProvider appId={appId}><PrivyAvatarSessionBridge>{children}</PrivyAvatarSessionBridge></PrivyBridgeProvider>
   </AuthBootProvider>;
 }

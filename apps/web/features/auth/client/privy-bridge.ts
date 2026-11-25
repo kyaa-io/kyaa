@@ -21,7 +21,9 @@ export interface PrivyBridge {
   oauthLoading: boolean;
   startOAuth(provider: "google" | "apple"): Promise<void>;
   subscribeOAuth(listener: PrivyOAuthListener): () => void;
-  /** Privy's own Google sign-in window (operator login). */
+  /** Whether the Privy app accepts email sign-in. With it off, Privy answers 403 "Login with email not allowed" on the first code request. */
+  emailLoginAvailable(): Promise<boolean>;
+  /** Privy's own email code window. */
   openEmailLogin(): void;
   openGoogleLogin(): void;
   refreshUser(): Promise<PrivyLoginUser>;
