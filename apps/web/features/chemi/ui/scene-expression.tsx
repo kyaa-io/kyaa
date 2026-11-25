@@ -80,7 +80,8 @@ function ExpressionLayer({ scene, src, variant, active, wide }: {
 /**
  * 장면 그림 위에 겹치는 표정 그림. 세 장을 처음부터 그려 두어(보이지 않게) 미리 내려받고, 읽기가 끝난 그림만 바꾼다.
  * `expression` 이 null 이면 대화 밖이라 아무것도 보이지 않는다.
- * 가로 원화를 쓰는 넓은 화면(`wide` rem 이상)에서는 대화 동안 세로 원화(`portrait`)를 별도 카드에 표시해,
+ * 64rem부터 사주·별자리 대화와 모든 질문하기는 가로 원화만 표시한다.
+ * 그 밖에 가로 원화를 쓰는 넓은 화면(`wide` rem 이상)에서는 대화 동안 세로 원화(`portrait`)를 별도 카드에 표시해,
  * 표정이 바뀔 때 구도는 그대로 두고 얼굴만 바뀌게 한다. 좁은 화면에서는 아래 그림이 이미 그 세로 원화다.
  */
 export function SceneExpression({ scene, character, portrait, expression, wide = "48" }: {

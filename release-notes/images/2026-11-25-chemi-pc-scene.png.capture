@@ -1,0 +1,1 @@
+{"tool":"local-login","mode":"login","url":"http://localhost:3417/r11-scene/index.html","capturedAt":"2026-11-25T04:00:59.112Z","sha256":"8cc1b3ebf030ab13aa74e37fa0cc9304e39d2ac2ec28a79082a18bfa0ef06839","description":"Playwright with local-login storageState, isolated real SceneExpression component"}
