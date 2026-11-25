@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "큰 화면에서 사주·별자리 대화를 보거나 질문할 때 최애가 한 명만 보여요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi/saju",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-pc-scene.png"
+  ]
+}

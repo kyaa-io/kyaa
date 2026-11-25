@@ -10,7 +10,7 @@
   opacity: 1;
 }
 
-/* 모바일은 무대 원화를 그대로 사용한다. PC에서는 대화 표정을 독립된 세로 카드로 표시한다. */
+/* 모바일은 무대 원화를 그대로 사용한다. 세로 무대의 기본 표정은 배경에 있다. */
 .layer[data-expression="neutral"] {
   display: none;
 }
@@ -28,14 +28,10 @@
 }
 
 @media (min-width: 64rem) {
-  .layer[data-wide="64"][data-expression] {
-    display: block;
-    inset: var(--space-4) auto auto var(--space-4);
-    width: min(25%, 28rem, 38svh);
-    height: auto;
-    aspect-ratio: 2 / 3;
-    object-fit: contain;
-    border-radius: var(--radius-card);
+  .layer[data-wide="64"][data-expression],
+  .layer[data-scene="saju"][data-expression],
+  .layer[data-scene="star"][data-expression] {
+    display: none;
   }
 }
 
