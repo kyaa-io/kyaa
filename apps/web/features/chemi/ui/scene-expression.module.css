@@ -28,9 +28,7 @@
 }
 
 @media (min-width: 64rem) {
-  .layer[data-wide="64"][data-expression],
-  .layer[data-scene="saju"][data-expression],
-  .layer[data-scene="star"][data-expression] {
+  .layer[data-wide][data-expression] {
     display: none;
   }
 }

@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "별자리 대화와 풀이를 선택한 언어로 읽을 수 있어요.",
+    "큰 화면에서 오늘의 운세와 타로를 볼 때 최애가 한 명만 보여요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi/star",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-star-result.png",
+    "release-notes/images/2026-11-25-chemi-fortune-stage.png"
+  ]
+}

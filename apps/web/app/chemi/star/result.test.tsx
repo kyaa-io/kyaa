@@ -1,3 +1,4 @@
+import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import fixture from "./reading.fixture.json";
@@ -123,3 +124,17 @@ it("says whether the birth time was used, on the result and on the chart", () =>
   render(<StarChart locale="ko" reading={exact} character="changha" onBack={() => {}} />);
   expect(screen.getByText("열대 황도 기준 · 태어난 시각 반영")).toBeTruthy();
 });
+
+it.each(["en", "ja", "zh-Hans", "zh-Hant", "es", "fr", "id", "mn", "pt", "ru", "th", "vi"] as const)(
+  "renders a completed star reading without Korean copy in %s",
+  async (locale) => {
+    const catalog = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ grants: [] })));
+    const { container } = render(
+      <ReadingCopyProvider value={catalog}>
+        <StarResult locale={locale} reading={reading} character="changha" backHref="/chemi/star" onChart={() => {}} onAsk={() => {}} />
+      </ReadingCopyProvider>,
+    );
+    expect(container.querySelector("[data-star-result]")?.textContent).not.toMatch(/[가-힣]/);
+  },
+);
