@@ -131,7 +131,7 @@
     "hiddenTerm": "Troncs cachés",
     "hiddenNote": "La lettre foncée est l’énergie principale.",
     "voidTerm": "Vide",
-    "voidIn": "{seats} tombent dans le vide. Lis la force de cette place un peu plus légère.",
+    "voidIn": "Dans le vide : {seats}. Lis la force de cette place un peu plus légère.",
     "voidNone": "Aucun des {n} caractères ne tombe dans le vide.",
     "basisTerm": "Calcul",
     "basisTime": "Heure de naissance → correction de longitude de Séoul, environ −32 min → branche de l’heure {hour}",

@@ -131,7 +131,7 @@
     "hiddenTerm": "Troncos ocultos",
     "hiddenNote": "A letra escura é a energia principal.",
     "voidTerm": "Vazio",
-    "voidIn": "{seats} caem no vazio. Leia a força desse lugar um pouco mais leve.",
+    "voidIn": "No vazio: {seats}. Leia a força desse lugar um pouco mais leve.",
     "voidNone": "Nenhum dos {n} caracteres cai no vazio.",
     "basisTerm": "Cálculo",
     "basisTime": "Hora de nascimento → correção pela longitude de Seul, cerca de −32 min → ramo da hora {hour}",

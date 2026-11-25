@@ -42,7 +42,8 @@ function Glyph({ cell, terms }: { cell: Cell; terms?: PillarSheetTerms }) {
       <span className={styles.read}>
         {/* 한글 읽기(을·병)는 한국어 화면에서만. 다른 언어는 한자와 오행 이름으로 읽는다. */}
         {!terms && <FanText role="label">{cell.letter}</FanText>}
-        <img src={`/chemi/saju/elements/${cell.element}.webp`} width={24} height={24} alt="" />
+        {/* 오행 이름이 긴 언어(Металл·Madeira)는 그림을 16으로 줄여 한 칸(390에서 69px) 안에 둔다. */}
+        <img src={`/chemi/saju/elements/${cell.element}.webp`} width={terms ? 16 : 24} height={terms ? 16 : 24} alt="" />
         <FanText role="meta">{terms ? terms.element(cell.element) : elementName[cell.element]}</FanText>
       </span>
     </span>

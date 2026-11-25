@@ -131,7 +131,7 @@
     "hiddenTerm": "Batang tersembunyi",
     "hiddenNote": "Huruf yang tebal adalah energi utamanya.",
     "voidTerm": "Kosong",
-    "voidIn": "{seats} jatuh pada kekosongan. Baca kekuatan tempat itu sedikit lebih ringan.",
+    "voidIn": "Jatuh pada kekosongan: {seats}. Baca kekuatan tempat itu sedikit lebih ringan.",
     "voidNone": "Tidak ada dari {n} aksara yang jatuh pada kekosongan.",
     "basisTerm": "Dasar hitungan",
     "basisTime": "Jam lahir → koreksi bujur Seoul sekitar −32 menit → cabang jam {hour}",

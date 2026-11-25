@@ -131,7 +131,7 @@
     "hiddenTerm": "Tallos ocultos",
     "hiddenNote": "La letra oscura es la energía principal.",
     "voidTerm": "Vacío",
-    "voidIn": "{seats} caen en el vacío. Lee la fuerza de ese lugar un poco más ligera.",
+    "voidIn": "En el vacío: {seats}. Lee la fuerza de ese lugar un poco más ligera.",
     "voidNone": "Ninguno de los {n} caracteres cae en el vacío.",
     "basisTerm": "Cálculo",
     "basisTime": "Hora de nacimiento → corrección por la longitud de Seúl, unos −32 min → rama de la hora {hour}",
