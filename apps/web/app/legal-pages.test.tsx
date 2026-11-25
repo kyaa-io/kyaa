@@ -16,7 +16,7 @@ describe("public legal pages", () => {
     render(await PrivacyPage({ searchParams: searchParams("ko") }));
 
     expect(screen.getByRole("heading", { level: 1, name: "개인정보처리방침" })).toBeInTheDocument();
-    expect(screen.getByText("시행일: 2026년 11월 23일")).toBeInTheDocument();
+    expect(screen.getByText("시행일: 2026년 11월 26일")).toBeInTheDocument();
     expect(screen.getAllByText(/Sallylab Inc\./).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "support@kyaa.io" })).toHaveAttribute("href", "mailto:support@kyaa.io");
     expect(screen.getByText(/Google 및 Privy 인증 식별자/)).toBeInTheDocument();
@@ -27,6 +27,10 @@ describe("public legal pages", () => {
     expect(screen.getByText(/수탁자: 솔라피 주식회사\(SOLAPI\)/)).toBeInTheDocument();
     expect(screen.getByText(/메시지 발송 이력을 발송일로부터 1년간 보관/)).toBeInTheDocument();
     expect(screen.getByText(/원본 전화번호와 완료되지 않은 등록 정보를 삭제/)).toBeInTheDocument();
+    expect(screen.getByText(/이벤트·혜택 안내\(광고성 정보\) 이메일 수신에 동의한 경우/)).toBeInTheDocument();
+    expect(screen.getByText(/래플·이벤트·혜택 안내\(광고성 정보\)를 이메일로 발송/)).toBeInTheDocument();
+    expect(screen.getByText(/동의를 철회하면 해당 이메일 발송을 중단합니다/)).toBeInTheDocument();
+    expect(screen.getByText(/설정 > 알림에서 언제든 끄거나 다시 켤 수 있습니다/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "언어 선택, 현재 한국어" })).toHaveValue("ko");
     expect(screen.getByRole("link", { name: "홈으로 돌아가기" })).toHaveAttribute("href", "/?locale=ko");
   });
@@ -35,7 +39,7 @@ describe("public legal pages", () => {
     const { container } = render(await PrivacyPage({ searchParams: searchParams("en") }));
 
     expect(screen.getByRole("heading", { level: 1, name: "Privacy Policy" })).toBeInTheDocument();
-    expect(screen.getByText("Effective date: November 23, 2026")).toBeInTheDocument();
+    expect(screen.getByText("Effective date: November 26, 2026")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "1. Personal Information We Process" })).toBeInTheDocument();
     expect(screen.getByText(/Google and Privy authentication identifiers/)).toBeInTheDocument();
     expect(screen.getByText(/Name and phone number for physical reward delivery/)).toBeInTheDocument();
@@ -45,6 +49,10 @@ describe("public legal pages", () => {
     expect(screen.getByText(/Processor: 솔라피 주식회사 \(SOLAPI\)/)).toBeInTheDocument();
     expect(screen.getByText(/for one year from the delivery date/)).toBeInTheDocument();
     expect(screen.getByText(/delete the original phone number from kyaa systems and any incomplete registration information/)).toBeInTheDocument();
+    expect(screen.getByText(/when you consent to receive event and offer announcement \(advertising\) emails/)).toBeInTheDocument();
+    expect(screen.getByText(/sending raffle, event, and offer announcements \(advertising\) by email/)).toBeInTheDocument();
+    expect(screen.getByText(/stop sending them when you withdraw it/)).toBeInTheDocument();
+    expect(screen.getByText(/turn it off or on again at any time in Settings > Notifications/)).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "Choose language, currently English" })).toHaveValue("en");
     expect(screen.getByRole("link", { name: "Return home" })).toHaveAttribute("href", "/?locale=en");
     expect(container.querySelector("[data-fan-surface]")).toHaveAttribute("lang", "en");
