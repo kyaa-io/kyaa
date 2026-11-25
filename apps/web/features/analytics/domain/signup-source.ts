@@ -9,13 +9,16 @@ const hostSchema = z.enum([
 ]);
 const sourceSchema = z.enum([
   "x", "instagram", "threads", "reddit", "koreapas", "email", "discord", "facebook", "meta", "google",
+  "telegram", "supertoday", "localvibe",
 ]);
-const mediumSchema = z.enum(["community", "kol", "paid"]);
+const mediumSchema = z.enum(["community", "kol", "paid", "referral"]);
 const campaignSchema = z.literal("raffle-1125");
-const contentSchema = z.enum([
+// Per-partner (kol-<handle>) and per-keyword (g-kw-<keyword>) tags share a fixed prefix.
+const contentSchema = z.union([z.enum([
   "ig-story", "member-1125", "fb-group", "fb-group-ko", "r-giveaways", "r-sweepstakes",
-  "r-kpoppers", "kyaa-pin-ko", "kyaa-pin", "x-promo-pin", "g-kw-giveaway", "m-phid-img1", "m-us-img1", "m-kr-img1",
-]);
+  "r-kpoppers", "kyaa-pin-ko", "kyaa-pin", "x-promo-pin", "m-phid-img1", "m-us-img1", "m-kr-img1",
+  "tg-channel", "discord", "koreapas-post", "supertoday", "localvibe-banner",
+]), z.string().regex(/^(?:kol|g-kw)-[a-z0-9_-]{1,24}$/)]);
 const pathSchema = z.enum([
   "/", "/s/raffle", "/celebrities", "/live", "/live/:event", "/benefits/:benefit",
   "/c/:creator/raffles", "/c/:creator/raffles/:raffle", "/guide", "/pages/elina-fan-guide",
