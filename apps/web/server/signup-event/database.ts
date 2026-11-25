@@ -72,3 +72,13 @@ export async function recordSignupRaffleDraw(database: Pick<DataClient, 'rpc'>, 
   if (result.error) throw new Error(String(result.error.message ?? '').includes('SIGNUP_RAFFLE_NOT_CLOSED') ? 'SIGNUP_RAFFLE_NOT_CLOSED' : 'SIGNUP_RAFFLE_DRAW_FAILED');
   return storedDrawSchema.parse(result.data);
 }
+/** 초대 링크로 들어온 친구에게 보일 초대한 사람의 닉네임. 코드가 없거나 그 사람이 보너스를 받을 수 없는 계정이면 null(화면은 일반 문구). */
+export async function readRaffleInviterName(database: Pick<DataClient, 'rpc'>, code: string) {
+  const result = await database.rpc('signup_raffle_inviter_nickname', { p_code: code });
+  if (result.error) throw new Error('SIGNUP_RAFFLE_INVITER_READ_FAILED');
+  const name = z.string().trim().min(1).nullable().catch(null).parse(result.data);
+  if (!name) return null;
+  // 닉네임은 512자까지 될 수 있다: 배너 한 줄에 들어가게 20글자에서 자른다(글자 단위, 이모지를 반으로 자르지 않는다).
+  const letters = Array.from(name);
+  return letters.length > 20 ? `${letters.slice(0, 20).join('')}…` : name;
+}

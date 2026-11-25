@@ -11,7 +11,7 @@ import { FanPrintReveal } from '@/components/fan-ui/fan-print-reveal';
 import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { RaffleCardFloat } from '@/features/raffle-cards/card-float';
-import { RaffleBoostAction, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleOdds, RaffleProvider, RaffleStickyCta, RaffleCountdown, type RafflePreview } from './participation';
+import { RaffleBoostAction, RaffleEnterBlock, RaffleMoreAction, RaffleOdds, RaffleProvider, RaffleStickyCta, RaffleCountdown, type RafflePreview } from './participation';
 import styles from './raffle.module.css';
 
 const art = (name: string) => `/images/raffle/v4/${name}.webp`;
@@ -27,10 +27,10 @@ const boosts = [
   { kind: 'invite', stamp: 'invite', label: 'bonusInvite', plus: 'plusThree', facts: ['bonusInviteRule'] },
 ] as const;
 
-export function RaffleContent({ locale, closesAt, now, closed, preview, invite }: { locale: AppLocale; closesAt: number; now: number; closed: boolean; preview?: RafflePreview; invite?: string }) {
+export function RaffleContent({ locale, closesAt, now, closed, preview, invite, inviterName }: { locale: AppLocale; closesAt: number; now: number; closed: boolean; preview?: RafflePreview; invite?: string; inviterName?: string }) {
   const text = (key: Parameters<typeof signupRaffleText>[1], count?: number) => signupRaffleText(locale, key, count);
   const t = (key: SignupRaffleLongformKey, count?: number) => raffleLongformText(locale, key, count);
-  return <RaffleProvider locale={locale} closed={closed} closesAt={closesAt} now={now} preview={preview} invite={invite}>
+  return <RaffleProvider locale={locale} closed={closed} closesAt={closesAt} now={now} preview={preview} invite={invite} inviterName={inviterName}>
     {/* v5.3 상세페이지 흐름: 키 비주얼(무슨 이벤트·얼마·몇 명·언제까지) → 참여 방법(필수, 큰 응모 버튼) → 경품 카드 → 당첨 확률 올리기 → 더 즐기기(선택) → 안내. 응모 버튼은 하단 고정 줄로 늘 보인다 */}
     <FanPrintDesk className={styles.keyVisual} src={art('key-visual-tall')} wideSrc={art('key-visual-wide')} wideFrom="48rem" width={1131} height={1391} eager>
       {/* 왼쪽 정렬로 쌓이는 줄은 모두 optical: 첫 글자 잉크가 같은 세로선에서 시작한다(DESIGN.md 7-2 큰 글자 줄 왼쪽 광학 정렬) */}
@@ -74,7 +74,7 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
           <FanActivityStamp kind={row.stamp} />
           <div className={styles.bonusRowText}>
             <p className={styles.bonusName}><FanDisplay role="lead">{t(row.label)}</FanDisplay><FanDisplay role="lead" className={styles.plus} data-raffle-plus>{t(row.plus)}</FanDisplay></p>
-            <p className={styles.bonusFacts}>{row.facts.map(key => <FanDisplay key={key} role="caption">{t(key)}</FanDisplay>)}{row.kind === 'invite' ? <RaffleInvitedFriends /> : null}</p>
+            <p className={styles.bonusFacts}>{row.facts.map(key => <FanDisplay key={key} role="caption">{t(key)}</FanDisplay>)}</p>
           </div>
           {row.kind === 'passport' || row.kind === 'community' ? <RaffleMoreAction kind={row.kind} short /> : <RaffleBoostAction kind={row.kind} />}
         </li>)}</ul>

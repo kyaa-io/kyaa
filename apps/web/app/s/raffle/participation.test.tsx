@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const auth = vi.hoisted(() => ({ authenticated: false, ready: true, login: vi.fn(), getAccessToken: vi.fn(async () => 'token') }));
 vi.mock('@/features/auth/client/cognito-auth', () => ({ useByUsAuth: () => auth }));
-import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleOdds, RaffleProvider, raffleCountdown } from './participation';
+import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleMoreAction, RaffleOdds, RaffleProvider, raffleCountdown } from './participation';
 import { raffleOddsText } from '@/i18n/catalogs/signup-raffle-longform';
 
 const closesAt = Date.parse('2026-11-30T23:59:59.999+09:00'), now = Date.parse('2026-11-13T02:00:00+09:00');
@@ -65,7 +65,7 @@ it('shows my chances and invited friends only from the server, and shares my own
   const share = vi.fn(async (_data: { title?: string; url: string }) => {});
   const writeText = vi.fn(async (_url: string) => {});
   vi.stubGlobal('navigator', { ...navigator, share, clipboard: { writeText } });
-  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /><RaffleInvitedFriends /><RaffleBoostAction kind="invite" /></RaffleProvider>);
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /><RaffleBoostAction kind="invite" /></RaffleProvider>);
   expect(screen.queryByText(/내 당첨 기회/)).toBeNull();
   await settle();
   expect(screen.getByText('응모 완료')).toBeTruthy();
@@ -73,7 +73,11 @@ it('shows my chances and invited friends only from the server, and shares my own
   const result = document.querySelector('[data-state="entered"][role="status"]')!;
   expect(result.querySelector('[data-raffle-chances]')?.textContent).toBe('내 당첨 기회8회');
   expect(result.querySelector('[data-fan-print="stamp"]')).toBeTruthy();
-  expect(screen.getByText('초대로 가입·응모한 친구 2명 · 받은 당첨 기회 +6회')).toBeTruthy();
+  // 초대 카드: 혜택 한 줄(제목) · 조건 · 내 현황(서버 값 2명 → +6회)
+  const card = document.querySelector('[data-raffle-invite]')!;
+  expect(screen.getByRole('heading', { level: 3, name: '친구 1명 초대할 때마다 당첨 기회 +3' })).toBeTruthy();
+  expect(card.textContent).toContain('이벤트 기간에 내 링크로 새로 가입하고 응모한 친구만 해당돼요');
+  expect(card.querySelector('[data-raffle-friends="2"]')?.textContent).toBe('2명 참여 · 당첨 기회 +6회');
   expect(calls.map(call => `${call.method} ${call.url}`).sort()).toEqual([
     'GET /api/notifications/preferences', 'GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code',
   ]);
@@ -86,16 +90,56 @@ it('shows my chances and invited friends only from the server, and shares my own
   fireEvent.click(consent);
   await settle();
   expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: false }));
-  fireEvent.click(screen.getByRole('button', { name: '초대 링크 공유' }));
+  // 응모 뒤에는 초대 버튼이 화면의 다음 행동(primary)
+  const invite = screen.getByRole('button', { name: '친구 초대하기' });
+  expect(invite.getAttribute('data-fan-action-emphasis')).toBe('primary');
+  fireEvent.click(invite);
   await settle();
   fireEvent.click(screen.getByRole('button', { name: '초대 링크 복사' }));
   await settle();
-  expect(screen.getByText('링크를 복사했어요')).toBeTruthy();
+  expect(screen.getByRole('button', { name: '링크를 복사했어요' })).toBeTruthy();
   expect(writeText).toHaveBeenCalledWith(share.mock.calls[0]![0].url);
   expect(share).toHaveBeenCalledTimes(1);
   const url = new URL(share.mock.calls[0]![0].url);
   expect(url.pathname).toBe('/s/raffle');
   expect(url.searchParams.get('invite')).toBe(mine);
+  // 당첨 확률 올리기 행의 초대 버튼도 같은 내 링크를 공유한다
+  fireEvent.click(screen.getByRole('button', { name: '초대 링크 공유' }));
+  await settle();
+  expect(share).toHaveBeenCalledTimes(2);
+  expect(share.mock.calls[1]![0].url).toBe(share.mock.calls[0]![0].url);
+});
+
+it('shows the empty invite status with the invite stamp before anyone joins, and copies when there is no share sheet', async () => {
+  auth.authenticated = true;
+  server({ entered: false, passportReceived: false, communityJoined: false, friends: 0 });
+  const writeText = vi.fn(async (_url: string) => {});
+  vi.stubGlobal('navigator', { ...navigator, share: undefined, clipboard: { writeText } });
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  await settle();
+  const status = document.querySelector('[data-raffle-friends="0"]')!;
+  expect(status.textContent).toBe('아직 초대로 응모한 친구가 없어요');
+  expect(status.querySelector('[data-fan-activity-stamp="invite"]')).toBeTruthy();
+  // 응모 전에는 분홍 버튼이 응모 하나뿐이라 초대 버튼은 보조
+  const invite = screen.getByRole('button', { name: '친구 초대하기' });
+  expect(invite.getAttribute('data-fan-action-emphasis')).toBeNull();
+  fireEvent.click(invite);
+  await settle();
+  expect(new URL(writeText.mock.calls[0]![0]).searchParams.get('invite')).toBe(mine);
+  expect(screen.getByRole('button', { name: '링크를 복사했어요' })).toBeTruthy();
+});
+
+it('tells an invited friend who invited them and that the inviter gets +3, with a general line when the name is unknown', () => {
+  const named = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} invite={friendCode} inviterName="보석"><RaffleEnterBlock /></RaffleProvider>);
+  const banner = document.querySelector('[data-raffle-invited="named"]')!;
+  expect(banner.textContent).toBe('보석님이 초대했어요가입하고 응모하면 보석님이 당첨 기회 +3을 받아요');
+  // 응모 버튼 바로 위
+  expect(banner.nextElementSibling?.textContent).toBe('래플 응모하기');
+  // 비로그인은 내 현황이 없다(값을 지어내지 않는다)
+  expect(document.querySelector('[data-raffle-friends]')).toBeNull();
+  named.unmount();
+  render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now} invite={friendCode}><RaffleEnterBlock /></RaffleProvider>);
+  expect(document.querySelector('[data-raffle-invited="friend"]')?.textContent).toBe('A friend invited youSign up and enter, and your friend gets 3 extra chances');
 });
 
 it('keeps a friend\'s invite code through sign-in and sends it with the entry once', async () => {

@@ -3,7 +3,10 @@
 import { sendGa4Event } from '@/features/analytics/client/ga4-client';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { FanPrintStamp } from '@/components/fan-ui/fan-print';
-import { Check, Share2, Ticket } from '@/components/fan-ui/fan-icons';
+import { Check, Link2, Share2, Ticket } from '@/components/fan-ui/fan-icons';
+import { FanActivityStamp } from '@/components/fan-ui/fan-activity-stamp';
+import { FanHeading } from '@/components/fan-ui/fan-heading';
+import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import type { AppLocale } from '@/i18n/locales';
@@ -35,6 +38,8 @@ type Ctx = {
   winChance?: number;
   /** 내 친구 초대 코드(로그인했을 때만). 공유 주소에 붙는다. */
   inviteCode?: string; invited: boolean;
+  /** 초대 링크로 들어온 친구에게 보일 초대한 사람의 닉네임(서버가 읽은 값). 없으면 일반 문구. */
+  inviterName?: string;
   /** 마감 뒤 내 결과(서버에 저장된 추첨이 있고 내가 응모했을 때만). 추첨 전·미응모·조회 실패는 없다. */
   result?: RaffleCapsuleResult;
   enter: () => void; login: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
@@ -110,7 +115,7 @@ const count = (value: unknown) => typeof value === 'number' && Number.isSafeInte
 
 type EntryResult = { newEntry?: boolean; entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; invite?: 'registered' | 'refused' | 'pending' };
 
-export function RaffleProvider({ locale, closed, closesAt, now, preview, invite, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; /** 주소의 ?invite= 로 받은 친구의 초대 코드 */ invite?: string; children: ReactNode }) {
+export function RaffleProvider({ locale, closed, closesAt, now, preview, invite, inviterName, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; /** 주소의 ?invite= 로 받은 친구의 초대 코드 */ invite?: string; inviterName?: string; children: ReactNode }) {
   const auth = useByUsAuth(), { getAccessToken } = auth;
   const [pending, setPending] = useState(false);
   const [entered, setEntered] = useState(false), [passport, setPassport] = useState(false), [community, setCommunity] = useState(false), [error, setError] = useState(false);
@@ -196,7 +201,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
   }
   // 개발 미리보기 won·lost: 로그인·API 없이 결과 팝업만 본다(US$100 당첨 / 미당첨). 운영 빌드에는 preview 값이 오지 않는다.
   const shown = p === 'won' ? { state: 'won' as const, usd: 100 } : p === 'lost' ? { state: 'lost' as const } : result;
-  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, invited: !!raffleInviteCode(invite), chances, friends, totalChances, winChance, inviteCode, result: shown, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, invited: !!raffleInviteCode(invite), inviterName, chances, friends, totalChances, winChance, inviteCode, result: shown, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -246,15 +251,16 @@ export function RaffleEnterBlock() {
   return <div className={styles.enter} data-raffle-hero-action>
     {/* 페이지 첫 행동(대표 2026-11-23 X 홍보): 큰 응모 버튼(56) 바로 아래 두 걸음 ① 응모 누르기 ② 가입·로그인. 끝낸 걸음은 체크 */}
     <div className={styles.enterActions}>
+      {/* 초대 링크로 들어온 친구: 누가 초대했는지와 응모하면 그 사람이 받는 것(+3)을 응모 버튼 바로 위에 */}
+      {r.invited && !r.entered && <RaffleInvitedBanner />}
       <div className={styles.enterCta}><RaffleEnterAction size="lg" /></div>
-      {r.ready && !r.signedIn && r.invited && <FanDisplay role="body">{raffleInviteText[r.locale].welcome}</FanDisplay>}
       <RaffleInAppGuide />
       <ol className={styles.steps}>
         <RaffleStep order={1} done={r.entered} label={r.t('stepEnter')} />
         <RaffleStep order={2} done={r.signedIn} label={r.t(r.signedIn ? 'stepLoggedIn' : 'stepLogin')} />
       </ol>
-      {/* 응모 바로 옆(모바일은 바로 아래)의 보조 행동. 응모 뒤에는 이 칸에서 누를 수 있는 유일한 버튼이라 다음 행동이 된다 */}
-      <RaffleShare />
+      {/* 응모 바로 아래 친구 초대 카드(사용자 11/25 "토스처럼 눈에 잘 띄게"). 응모 뒤에는 이 카드의 버튼이 화면의 다음 행동(primary)이 된다 */}
+      <RaffleInviteCard />
     </div>
     <div className={styles.enterFacts}>
       <p className={styles.enterDeadline}><FanDisplay role="strong">{r.t('closesAt')}</FanDisplay><FanDisplay role="caption" className={styles.muted}>{r.t('kst')}</FanDisplay></p>
@@ -323,12 +329,6 @@ export function RaffleOdds() {
   </div>;
 }
 
-/** 친구 초대 행의 사실 줄 끝: 내 링크로 가입·응모한 친구 수(서버 값, 한 명 이상일 때만). */
-export function RaffleInvitedFriends() {
-  const r = useRaffle();
-  return r.signedIn && r.friends !== undefined ? <FanDisplay role="caption" data-raffle-friends>{raffleInviteText[r.locale].stats.replace('{n}', String(r.friends)).replace('{c}', String(r.friends * 3))}</FanDisplay> : null;
-}
-
 /** Fan Passport · 커뮤니티 행동 버튼. 끝냈으면 '완료' 표시. short: 행 이름이 바로 옆에 있는 당첨 확률 올리기 행에서는 '받기'/'가입'만(390에서 이름·+1·버튼이 한 줄). */
 export function RaffleMoreAction({ kind, short = false }: { kind: 'passport' | 'community'; short?: boolean }) {
   const r = useRaffle();
@@ -385,17 +385,48 @@ function useRaffleShare() {
   return { share, copied, failed };
 }
 
-export function RaffleShare() {
+/** 초대 링크로 들어온 친구에게: '○○님이 초대했어요' + 가입하고 응모하면 그 사람이 +3을 받는다(초대받은 사람의 보너스는 없다: 서버 규칙 20261224050000). */
+function RaffleInvitedBanner() {
+  const r = useRaffle();
+  const text = raffleInviteText[r.locale];
+  const name = r.inviterName;
+  return <div className={styles.invited} data-raffle-invited={name ? 'named' : 'friend'}>
+    <FanActivityStamp kind="invite" size="sm" />
+    <p className={styles.invitedText}>
+      <FanDisplay role="strong">{name ? text.invitedBy.replace('{name}', name) : text.invitedFriend}</FanDisplay>
+      <FanDisplay role="caption" className={styles.muted}>{name ? text.invitedByBody.replace('{name}', name) : text.invitedFriendBody}</FanDisplay>
+    </p>
+  </div>;
+}
+
+/** 친구 초대 카드: 혜택 한 줄(큰 글자) · 조건 한 줄 · 내 초대 현황 · 큰 버튼 하나(공유 시트, 없으면 복사) · 링크 복사. */
+export function RaffleInviteCard() {
   const r = useRaffle();
   const { share, copied, failed } = useRaffleShare();
   const text = raffleInviteText[r.locale];
-  const disabled = !r.ready;
-  return <>
-    <FanDisplay role="strong">{text.title}</FanDisplay>
-    <FanDisplay role="caption">{text.rule}</FanDisplay>
-    <FanAction type="button" variant="secondary" disabled={disabled} onClick={() => share(true)}>{text.copy}</FanAction>
-    <FanAction type="button" variant="neutral" disabled={disabled} leadingIcon={<FanIcon icon={Share2} />} onClick={() => share()}>{text.share}</FanAction>
-    {failed && <span role="alert">{r.s('error')}</span>}
-    {copied && <span role="status">{text.copied}</span>}
-  </>;
+  if (r.closed) return null;
+  return <FanSurface as="div" className={styles.invite} data-raffle-invite>
+    <FanHeading as="h3"><FanDisplay role="title" className={styles.inviteHeadline}>{text.headline}</FanDisplay></FanHeading>
+    <FanDisplay role="caption" as="p" className={styles.muted}>{text.rule}</FanDisplay>
+    <RaffleInviteStatus />
+    <div className={styles.inviteActions}>
+      <FanAction type="button" variant={r.entered ? 'primary' : 'secondary'} fullWidth disabled={!r.ready} leadingIcon={<FanIcon icon={Share2} />} onClick={() => share()}>{text.cta}</FanAction>
+      <FanAction type="button" variant="text" size="sm" disabled={!r.ready} leadingIcon={<FanIcon icon={copied ? Check : Link2} className={copied ? styles.doneCheck : undefined} />} onClick={() => share(true)}>{copied ? text.copied : text.copy}</FanAction>
+    </div>
+    {failed && <p className={styles.inviteError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay></p>}
+    {copied && <span className={styles.srOnly} role="status">{text.copied}</span>}
+  </FanSurface>;
+}
+
+/** 내 초대 현황(로그인했을 때만, 서버 값): 0명은 초대 도장 그림 + 한 줄, 1명 이상은 'N명 참여 · +3N회'. 값을 받기 전에는 그리지 않는다. */
+function RaffleInviteStatus() {
+  const r = useRaffle();
+  if (!r.signedIn || r.friends === undefined) return null;
+  const text = raffleInviteText[r.locale];
+  return <p className={styles.inviteStatus} data-raffle-friends={r.friends}>
+    <FanActivityStamp kind="invite" size="sm" />
+    {r.friends > 0
+      ? <FanDisplay role="strong">{text.progress.replace('{n}', String(r.friends)).replace('{c}', String(r.friends * 3))}</FanDisplay>
+      : <FanDisplay role="caption" className={styles.muted}>{text.empty}</FanDisplay>}
+  </p>;
 }
