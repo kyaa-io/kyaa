@@ -115,6 +115,17 @@ it('reports a re-read to Next only when the filter write passes a state without 
  wrapper.mockRestore();
 });
 
+it('puts the kyaa official mark after the name of a page tied to a registered creator, not of a page people opened',()=>{
+ history.replaceState(null,'','/pages/groups?type=all');
+ render(<GroupDirectory locale='ko'/>);
+ const list=screen.getByRole('region',{name:'페이지 둘러보기'});
+ const artist=within(list).getByRole('link',{name:/Original artist/});
+ expect(artist).toHaveAccessibleName(/Original artist kyaa official/);
+ expect(artist.querySelector('[data-tile-media] [data-verified-mark]')).toBeNull();
+ expect(within(list).getAllByRole('img',{name:'kyaa official'})).toHaveLength(1);
+ expect(within(list).getByRole('link',{name:/Original hobby/}).querySelector('[data-verified-mark]')).toBeNull();
+});
+
 it('tags a fan page whose 찐팬 100 challenge is on, and not the group pages',()=>{
  state.challenges=['nchive'];
  history.replaceState(null,'','/pages/groups?type=all');

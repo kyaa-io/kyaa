@@ -7,33 +7,33 @@ describe("official creator identity", () => {
   it.each(APP_LOCALES)("keeps artist and fandom marks distinct in %s", locale => {
     const view = render(<CreatorFanIdentity slug="nchive" name="엔카이브" locale={locale} />);
     // 한국어 화면만 한글 이름을 함께 보인다(CREATOR-NAME-I18N-1122).
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(locale === "ko" ? "NCHIVE엔카이브" : "NCHIVE");
+    expect(screen.getByRole("heading", { level: 1 }).textContent?.trim()).toBe(locale === "ko" ? "NCHIVE 엔카이브" : "NCHIVE");
     const fandom = screen.getByRole("link", { name: /SAVE · 세이브/ });
     expect(fandom).toHaveAttribute("href", "https://x.com/nchiveofficial/status/1750805783091229003");
     expect(fandom).toHaveAttribute("rel", "noopener noreferrer");
     expect(view.container.querySelector("svg image")).toHaveAttribute("href", "/images/celebrities/nchive/save-announcement.jpg");
     view.rerender(<CreatorFanIdentity slug="wena" name="위나" locale={locale} />);
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(locale === "ko" ? "We;Na위나" : "We;Na");
+    expect(screen.getByRole("heading", { level: 1 }).textContent?.trim()).toBe(locale === "ko" ? "We;Na 위나" : "We;Na");
     expect(screen.getByRole("link", { name: /mymean · 마이민/ })).toHaveAttribute("href", "https://www.instagram.com/p/Cgi79qPJVt-/");
     expect(view.container.querySelector("svg image")).toBeNull();
   });
 
   it("shows verified creator spellings without inventing a fandom", () => {
     const view = render(<CreatorFanIdentity slug="changha" name="창하" locale="ko" />);
-    expect(screen.getByRole("heading")).toHaveTextContent("창하CHANGHA");
+    expect(screen.getByRole("heading")).toHaveTextContent("창하 CHANGHA");
     expect(view.container.querySelector("dl")).toBeNull();
     view.rerender(<CreatorFanIdentity slug="elina" name="Elina" locale="en" />);
-    expect(screen.getByRole("heading").textContent).toBe("Elina Karimova");
+    expect(screen.getByRole("heading").textContent?.trim()).toBe("Elina Karimova");
     view.rerender(<CreatorFanIdentity slug="changha" name="Changha" locale="ja" />);
-    expect(screen.getByRole("heading").textContent).toBe("CHANGHAチャンハ");
+    expect(screen.getByRole("heading").textContent).toBe("CHANGHA チャンハ");
     view.rerender(<CreatorFanIdentity slug="yuna" name="Yuna" locale="ru" />);
-    expect(screen.getByRole("heading").textContent).toBe("Yuna KarimovaЮна");
-    expect(view.container.querySelector("img")).toBeNull();
+    expect(screen.getByRole("heading").textContent).toBe("Yuna Karimova Юна");
+    expect(view.container.querySelector("img:not([data-verified-mark])")).toBeNull();
   });
 
   it.each(["runmusic", "future-creator", "constructor"])("preserves supplied names for %s", slug => {
     const view = render(<CreatorFanIdentity slug={slug} name="Published name" locale="ko" />);
-    expect(screen.getByRole("heading", { name: "Published name" })).toBeInTheDocument();
-    expect(view.container.querySelector("dl, img")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Published name kyaa official" })).toBeInTheDocument();
+    expect(view.container.querySelector("dl, img:not([data-verified-mark])")).toBeNull();
   });
 });
