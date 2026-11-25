@@ -38,6 +38,18 @@ test('sitemap rejects missing, duplicate, external, private and tracking URLs', 
   assert.throws(() => parsePublicSitemap('unavailable'));
   assert.throws(() => parsePublicSitemap(`<loc>${home}</loc><loc>${home}</loc>`));
 });
+test('accepts Russian and Mongolian canonicals and rejects extra locale parameters', () => {
+  const wrap = (address) => `<urlset><url><loc>${address.replaceAll('&', '&amp;')}</loc></url></urlset>`;
+  for (const locale of ['ru', 'mn']) {
+    const canonical = `${base}/guide?locale=${locale}`;
+    assert.deepEqual(parsePublicSitemap(wrap(canonical)), [canonical]);
+    for (const suffix of ['&utm_source=share', '&locale=en']) {
+      assert.throws(() => parsePublicSitemap(wrap(canonical + suffix)), /SITEMAP_QUERY_INVALID/);
+    }
+  }
+  assert.throws(() => parsePublicSitemap(wrap(`${base}/guide?locale=unknown`)), /SITEMAP_QUERY_INVALID/);
+  assert.throws(() => parsePublicSitemap(wrap(`${base}/i/invite?locale=mn`)), /SITEMAP_PUBLIC_URL_INVALID/);
+});
 test('checks public crawler metadata, real image, missing page and anonymous authorization without credentials', async () => {
   const f = fixture();
   const report = await verifySearchHealth({ transport: f.transport });
