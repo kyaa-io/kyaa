@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, expect, it, vi } from "vitest";
 import { LuckyStage } from "./lucky-stage";
 
+const goods = vi.hoisted(() => ({ enabled: false }));
+vi.mock("@/features/groups/goods-menu", () => ({ get GOODS_MENU() { return goods.enabled; } }));
 const canvas = vi.hoisted(() => ({ props: [] as Array<Record<string, unknown>> }));
 const gpu = vi.hoisted(() => ({ ok: true, checks: 0 }));
 vi.mock("./gpu", () => ({ canRunCapsuleMachine: async () => { gpu.checks++; return gpu.ok; } }));
@@ -23,7 +25,7 @@ function idle(mode: "now" | "never") {
 }
 function connection(saveData: boolean) { Object.defineProperty(navigator, "connection", { value: { saveData }, configurable: true }); }
 
-beforeEach(() => { canvas.props = []; gpu.ok = true; gpu.checks = 0; Observer.near = true; media(false); idle("now"); connection(false); vi.stubGlobal("IntersectionObserver", Observer); });
+beforeEach(() => { goods.enabled = false; canvas.props = []; gpu.ok = true; gpu.checks = 0; Observer.near = true; media(false); idle("now"); connection(false); vi.stubGlobal("IntersectionObserver", Observer); });
 
 const settle = () => act(async () => { await new Promise((resolve) => setTimeout(resolve, 20)); });
 const stage = () => document.querySelector("[data-lucky-stage]") as HTMLElement;
@@ -127,5 +129,22 @@ it("uses a short still reaction in the reduced-motion modal", async () => {
   fireEvent.click(machine);
   expect(machine).toBeDisabled();
   await waitFor(() => expect(machine).not.toBeDisabled());
+  expect(gpu.checks).toBe(0);
+});
+
+it("animates a resting goods machine while keeping the draw closed", async () => {
+  goods.enabled = true;
+  render(<LuckyStage paused />);
+  expect(await screen.findByTestId("machine-canvas")).toBeInTheDocument();
+  expect(canvas.props.at(-1)).toMatchObject({ idle: true });
+  expect(stage()).toHaveAttribute("data-preview-enabled");
+});
+
+it("keeps the resting goods machine still with reduced motion", async () => {
+  goods.enabled = true;
+  media(true);
+  render(<LuckyStage paused />);
+  await settle();
+  expect(stage()).toHaveAttribute("data-lucky-graphics", "still");
   expect(gpu.checks).toBe(0);
 });
