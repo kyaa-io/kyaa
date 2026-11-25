@@ -1,3 +1,4 @@
+import { captureSignupSource } from "./signup-source";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -73,4 +74,33 @@ describe("acquisition attribution", () => {
       occurredAt: new Date().toISOString(),
     }))).toBeNull();
   });
+});
+
+it("keeps only registered campaign values and a public route template", () => {
+  const params = new URLSearchParams("utm_source=x&utm_medium=community&utm_campaign=raffle-1125&utm_content=private@example.com");
+  expect(captureSignupSource("/benefits/private-id", params, "https://t.co/private?token=secret")).toEqual({
+    referrerHost: "t.co",
+    utmSource: "x",
+    utmMedium: "community",
+    utmCampaign: "raffle-1125",
+    landingPath: "/benefits/:benefit",
+  });
+});
+
+it("keeps the channel link tags from the raffle link sheet", () => {
+  const capture = (query: string) => captureSignupSource("/s/raffle", new URLSearchParams(query), "");
+  expect(capture("utm_source=telegram&utm_medium=community&utm_campaign=raffle-1125&utm_content=tg-channel")).toEqual({
+    utmSource: "telegram", utmMedium: "community", utmCampaign: "raffle-1125", utmContent: "tg-channel", landingPath: "/s/raffle",
+  });
+  expect(capture("utm_source=supertoday&utm_medium=referral&utm_content=supertoday")).toMatchObject({
+    utmSource: "supertoday", utmMedium: "referral", utmContent: "supertoday",
+  });
+  expect(capture("utm_source=x&utm_medium=kol&utm_content=kol-alina")).toMatchObject({ utmMedium: "kol", utmContent: "kol-alina" });
+  expect(capture("utm_source=google&utm_medium=paid&utm_content=g-kw-giveaway")).toMatchObject({ utmContent: "g-kw-giveaway" });
+  expect(capture("utm_source=localvibe&utm_content=localvibe-banner")).toMatchObject({
+    utmSource: "localvibe", utmContent: "localvibe-banner",
+  });
+  expect(capture("utm_source=koreapas&utm_content=koreapas-post")).toMatchObject({ utmSource: "koreapas", utmContent: "koreapas-post" });
+  expect(capture("utm_source=discord&utm_content=discord")).toMatchObject({ utmSource: "discord", utmContent: "discord" });
+  expect(capture("utm_content=kol-private@example.com")).toEqual({ landingPath: "/s/raffle" });
 });

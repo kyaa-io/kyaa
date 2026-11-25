@@ -1,4 +1,5 @@
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
+import { signupSourceFields } from "./signup-source";
 import { z } from "zod";
 
 export const acquisitionChannelSchema = z.enum([
@@ -28,6 +29,7 @@ export type AcquisitionLanding = z.infer<typeof acquisitionLandingSchema>;
 export const acquisitionTouchSchema = z.object({
   channel: acquisitionChannelSchema,
   landing: acquisitionLandingSchema,
+  signupSource: signupSourceFields.optional(),
   anonymousRecorded: z.boolean(),
   identifiedRecorded: z.boolean(),
   eventNonce: z.uuid(),
