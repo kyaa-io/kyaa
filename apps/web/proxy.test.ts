@@ -355,3 +355,17 @@ describe("storage upload CSP outside AWS hosting", () => {
     expect(proxy(new NextRequest("http://localhost:3000/benefits?locale=ko")).headers.get("Content-Security-Policy")).toBeNull();
   });
 });
+
+describe("raffle invite landing count", () => {
+  it("logs one line for an opened invite address, without the code, and not for other requests", () => {
+    const info = vi.spyOn(console, "info").mockImplementation(() => {});
+    proxy(new NextRequest("https://kyaa.io/s/raffle?invite=AB2300000000000000000001"));
+    expect(info).toHaveBeenCalledExactlyOnceWith("RAFFLE_INVITE_LANDING");
+    info.mockClear();
+    proxy(new NextRequest("https://kyaa.io/s/raffle"));
+    proxy(new NextRequest("https://kyaa.io/s/raffle?invite=AB2300000000000000000001", { headers: { rsc: "1" } }));
+    proxy(new NextRequest("https://kyaa.io/s/other?invite=AB2300000000000000000001"));
+    expect(info).not.toHaveBeenCalled();
+    info.mockRestore();
+  });
+});
