@@ -10,6 +10,10 @@
   color: var(--color-ink);
   background: var(--color-surface);
 }
+.shell[data-stage="start"],
+.shell[data-stage="result"] {
+  padding-block-start: var(--analytics-consent-height, 0px);
+}
 .shell h1,
 .shell h2,
 .shell p,
