@@ -1,4 +1,10 @@
 {
+  "guide": {
+    "points": "Como usar pontos",
+    "dates": "Escolha uma data na Previsão diária e gaste 10P para abrir a previsão desse dia. O sistema usa primeiro os pontos de atividade. Você pode rever as previsões já desbloqueadas. Os limites de partidas são reiniciados à meia-noite no horário da Coreia.",
+    "growth": "Cuide do seu mini",
+    "growthDetail": "Entre na sua conta e veja o resultado de uma leitura ou termine uma partida para ganhar EXP de afinidade com o favorito escolhido. Você pode ganhar EXP 1 vez por dia por atividade e por favorito. Cada tipo de leitura concede EXP de afinidade com até 3 favoritos por dia."
+  },
   "menu": {
     "home": "HOME",
     "my": "MY"

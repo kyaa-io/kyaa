@@ -1,4 +1,10 @@
 {
+  "guide": {
+    "points": "Cara memakai poin",
+    "dates": "Pilih tanggal di Ramalan Harian dan gunakan 10P untuk membuka ramalan pada tanggal itu. Sistem memakai poin aktivitas terlebih dahulu. Ramalan yang sudah dibuka bisa dibaca lagi. Jatah bermain direset pada tengah malam waktu Korea.",
+    "growth": "Besarkan minimu",
+    "growthDetail": "Masuk lalu lihat hasil ramalan atau selesaikan permainan untuk mendapat EXP kedekatan dengan idola pilihanmu. Kamu bisa mendapatkannya 1 kali sehari per aktivitas untuk setiap idola. Setiap jenis ramalan memberi EXP kedekatan untuk maksimal 3 idola per hari."
+  },
   "menu": {
     "home": "HOME",
     "my": "MY"

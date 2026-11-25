@@ -1,4 +1,10 @@
 {
+  "guide": {
+    "points": "Cómo usar los puntos",
+    "dates": "Elige una fecha en la fortuna diaria y gasta 10P para ver la predicción de ese día. Se usan primero los puntos de actividad. Puedes volver a ver las predicciones que ya desbloqueaste. Las partidas se restablecen a medianoche en Corea.",
+    "growth": "Cuida a tu mini",
+    "growthDetail": "Inicia sesión y consulta el resultado de una lectura o termina una partida para ganar EXP de afinidad con tu favorito elegido. Puedes ganarla 1 vez al día por actividad y por favorito. Cada tipo de lectura permite ganar EXP de afinidad con hasta 3 favoritos al día."
+  },
   "menu": {
     "home": "HOME",
     "my": "MY"
