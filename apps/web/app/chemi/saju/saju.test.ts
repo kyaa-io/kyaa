@@ -182,6 +182,11 @@ describe("첫 풀이 키워드와 최애 한마디", () => {
     expect(sajuOpening("elina", "병")).toMatch(/요\?/);
     expect(sajuOpening("yuna", "병")).toMatch(/^오늘의 .+!/);
     expect(sajuOpening("dosa", "병")).toMatch(/오\.$/);
+    // 제목 바로 아래 한마디와 "즐거운 것" 행동은 풀이(일간의 강점)에서 나온 일을 권하고, 영상을 보라고 시키지 않는다(11/26 대표 제보).
+    for (const stem of stems) {
+      for (const id of [...idols, "dosa"] as const) expect(sajuOpening(id, stem)).not.toMatch(/영상|직캠|틀어|정주행/);
+      expect(stemKeywords[stem].joy.act).not.toMatch(/영상|직캠|정주행/);
+    }
   });
 
   it("행운은 올해 관계의 flow 한 줄을 근거로 삼고, 시기를 말하는 줄은 쓰지 않는다", () => {
