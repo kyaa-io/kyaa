@@ -1,3 +1,16 @@
+import type { AppLocale } from "@/i18n/locales";
+import en from "@/features/chemi/i18n/locales/en/star.json";
+import ja from "@/features/chemi/i18n/locales/ja/star.json";
+import zhHans from "@/features/chemi/i18n/locales/zh-Hans/star.json";
+import zhHant from "@/features/chemi/i18n/locales/zh-Hant/star.json";
+import es from "@/features/chemi/i18n/locales/es/star.json";
+import fr from "@/features/chemi/i18n/locales/fr/star.json";
+import id from "@/features/chemi/i18n/locales/id/star.json";
+import mn from "@/features/chemi/i18n/locales/mn/star.json";
+import pt from "@/features/chemi/i18n/locales/pt/star.json";
+import ru from "@/features/chemi/i18n/locales/ru/star.json";
+import th from "@/features/chemi/i18n/locales/th/star.json";
+import vi from "@/features/chemi/i18n/locales/vi/star.json";
 /**
  * 별자리 운세 문구 표. 풀이 표(AS-TX)가 들어오기 전까지 승인 시안(05-2·05-3)의 말투로 만든 임시 문장이다.
  * 별 개수·영역·행성 이름만 끼우고, 같은 입력이면 같은 문장이 나온다. AS-TX 표가 오면 이 파일만 바꾼다.
@@ -5,6 +18,19 @@
 import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { chemiPersona } from "@/features/chemi/persona";
 import { withParticle } from "./particle";
+
+const catalog: Record<Exclude<AppLocale, "ko">, Record<string, string>> = {
+  en, ja, "zh-Hans": zhHans, "zh-Hant": zhHant, es, fr, id, mn, pt, ru, th, vi,
+};
+
+export function starCopy(locale: AppLocale, source: string, values: Record<string, string | number> = {}) {
+  const template = locale === "ko" ? source : catalog[locale][source] ?? source;
+  return template.replace(/\{([a-zA-Z.]+)\}/g, (token, key: string) => String(values[key] ?? token));
+}
+
+export function starSignName(locale: AppLocale, sign: ZodiacSign, form: "full" | "bare" | "short") {
+  return locale === "ko" ? signNames[sign][form] : starCopy(locale, signNames[sign].full);
+}
 
 export const starCharacters = [
   { id: "changha", name: "창하", sign: "aquarius" },
@@ -287,6 +313,7 @@ export function reasonView(
   signOf: (target: string) => ZodiacSign | null,
   today: string,
   character?: StarCharacterId,
+  locale: AppLocale = "ko",
 ): ReasonView {
   const body = bodyNames[reason.body] ?? reason.body;
   const target = targetName(reason.target);
@@ -304,6 +331,27 @@ export function reasonView(
       ? hourWords(reason.hour)
       : `${Number(exit.slice(5, 7))}월 ${Number(exit.slice(8, 10))}일(${kstWeekday(exit)})까지`;
   const advice = reason.angle === 90 || reason.angle === 180 ? hardAngleAdvice[reason.angle][domain] : null;
+  if (locale !== "ko") {
+    const t = (source: string) => starCopy(locale, source);
+    const names = { body: bodyNames[reason.body] ? t(body) : body, target: t(target) };
+    const date = new Date(`${exit}T00:00:00Z`);
+    const time = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", timeZone: "UTC" })
+      .format(new Date(Date.UTC(2000, 0, 1, reason.hour)));
+    const shortText = t(phrase);
+    const tone = t(baseTone);
+    return {
+      title: starCopy(locale, "{body} and your {target}", names),
+      aspect: t(aspect.name),
+      domain,
+      up,
+      when: reason.body === "Moon" || exit <= today
+        ? starCopy(locale, "Strongest around {time} today", { time })
+        : starCopy(locale, "Until {date}", { date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", weekday: "short", timeZone: "UTC" }).format(date) }),
+      tone,
+      shortText,
+      text: `${starCopy(locale, "{body} forms an aspect with your {target}.", names)} ${shortText}. ${tone}`,
+    };
+  }
   const tone = character && advice
     ? {
         changha: `${advice} 줘.`,
@@ -369,7 +417,9 @@ type Tone = {
   /** 두 번째 선택지로 이야기를 골라 들었을 때 그 선택을 먼저 받아 주는 한마디. */
   picked: { why: string; pair: string };
 };
-const tones: Record<StarCharacterId, Tone> = {
+function tonesFor(locale: AppLocale): Record<StarCharacterId, Tone> {
+  if (locale !== "ko") return translatedTones(locale);
+  return {
   changha: {
     enter: "오늘 밤하늘이 너한테 뭐라는지 볼래? 칭찬이면 좋겠다.",
     birth: "별자리 운세 보려면 네 생일이 필요해. 한 번만 알려 줘.",
@@ -417,24 +467,78 @@ const tones: Record<StarCharacterId, Tone> = {
     pairAlone: () => "별은 여기까지 읽었소. 오늘 정리를 보시겠소?",
     picked: { why: "까닭부터 묻는구려.", pair: "" },
   },
-};
+  };
+}
+
+function translatedTones(locale: AppLocale): Record<StarCharacterId, Tone> {
+  const t = (source: string, values?: Record<string, string>) => starCopy(locale, source, values);
+  return {
+  changha: {
+    enter: t("오늘 밤하늘이 너한테 뭐라는지 볼래? 칭찬이면 좋겠다."),
+    birth: t("별자리 운세 보려면 네 생일이 필요해. 한 번만 알려 줘."),
+    calc: t("잠깐, 오늘 밤하늘 좀 읽어 볼게. 좋은 거 나오면 칭찬해 줘."),
+    sign: (sign, headline) => t("넌 {sign}야. 오늘은 {headline}이야.", { sign, headline }),
+    best: (domain, worst) => t("오늘은 {domain} 별점이 제일 높아. {worst} 평소 정도야.", { domain, worst }),
+    why: t("오늘 풀이는 행성 셋의 움직임에서 나왔어."),
+    pair: (mine, theirs, calm) =>
+      t("오늘 달이 우리 둘 별자리와 잘 어울리는 자리에 있어. {theirs} {mine},", { theirs, mine }) + " " + t(calm ? "우리 사이는 잘 맞아. 하루는 천천히 가자." : "오늘은 내가 너 응원하기 딱 좋은 날이네?"),
+    pairAlone: () => t("별자리는 여기까지야. 오늘 정리를 볼래?"),
+    picked: { why: t("이유부터 궁금했구나."), pair: t("우리 사이부터 묻네.") },
+  },
+  elina: {
+    enter: t("춥진 않아요? 오늘 밤하늘 같이 천천히 봐요."),
+    birth: t("별자리 운세를 보려면 생일이 필요해요. 한 번만 알려 줘요."),
+    calc: t("잠깐만요, 오늘 밤하늘 천천히 읽어 볼게요."),
+    sign: (sign, headline) => t("{sign}네요. 오늘은 {headline}이에요.", { sign, headline }),
+    best: (domain, worst) => t("오늘은 {domain} 별점이 가장 높아요. {worst} 평소 정도예요.", { domain, worst }),
+    why: t("오늘 풀이는 행성 셋의 움직임에서 나왔어요."),
+    pair: (mine, theirs, calm) =>
+      t("오늘 달이 두 별자리와 잘 어울리는 자리에 있어요. {theirs} {mine},", { theirs, mine }) + " " + t(calm ? "사이는 잘 맞는 날이에요. 하루는 천천히 가요." : "오늘은 내가 더 챙겨 줄게요."),
+    pairAlone: () => t("별자리는 여기까지예요. 오늘 정리를 볼래요?"),
+    picked: { why: t("이유가 먼저 궁금했군요."), pair: t("우리 사이가 먼저 궁금했군요.") },
+  },
+  yuna: {
+    enter: t("오늘 밤하늘이 뭐라는지 콕 집어 줄게."),
+    birth: t("별자리 운세 보려면 네 생일부터 알려 줘. 한 번만 하면 돼."),
+    calc: t("잠깐만, 오늘 밤하늘 하나씩 짚어 볼게."),
+    sign: (sign, headline) => t("{sign}구나. 오늘은 {headline}이야.", { sign, headline }),
+    best: (domain, worst) => t("{domain} 별점이 제일 높아. {worst} 평소 정도야.", { domain, worst }),
+    why: t("오늘 풀이는 행성 셋이 움직여서 나왔어."),
+    pair: (mine, theirs, calm) =>
+      t("오늘 달이 우리 둘 별자리랑 잘 어울리는 자리에 있어. {theirs} {mine},", { theirs, mine }) + " " + t(calm ? "사이는 잘 맞는 날이야. 하루는 천천히 가자." : "하고 싶은 말 있으면 오늘 바로 해."),
+    pairAlone: () => t("별자리는 여기까지야. 오늘 정리 볼래?"),
+    picked: { why: t("이유부터 묻네. 좋아."), pair: t("우리 궁합부터 묻네. 좋아.") },
+  },
+  dosa: {
+    enter: t("오늘 밤하늘이 무어라 이르는지 같이 보겠소?"),
+    birth: t("별자리를 보려면 생일을 알아야 하오. 한 번만 알려 주시오."),
+    calc: t("잠시 오늘 밤하늘을 살피리다."),
+    sign: (sign, headline) => t("그대는 {sign}이구려. 오늘은 {headline}이오.", { sign, headline }),
+    best: (domain, worst) => t("오늘은 {domain} 별점이 가장 높소. {worst} 평소와 같소.", { domain, worst }),
+    why: t("오늘 풀이는 행성 셋의 움직임에서 나왔소."),
+    pair: () => t("별은 여기까지 읽었소. 오늘 정리를 보시겠소?"),
+    pairAlone: () => t("별은 여기까지 읽었소. 오늘 정리를 보시겠소?"),
+    picked: { why: t("까닭부터 묻는구려."), pair: "" },
+  },
+  };
+}
 
 /** 첫 대사·생일 묻기. 로그인한 팬의 별명이 있으면 그 이름으로 부르며 시작한다(운세와 같은 규칙, K-4f2dc9). */
-export function starEnterLine(character: StarCharacterId, mode: "enter" | "birth" = "enter", nickname: string | null = null) {
+export function starEnterLine(character: StarCharacterId, mode: "enter" | "birth" = "enter", nickname: string | null = null, locale: AppLocale = "ko") {
   const who = nickname ? (character === "dosa" ? `${nickname} 님, ` : `${nickname}, `) : "";
-  return `${who}${tones[character][mode]}`;
+  return `${who}${tonesFor(locale)[character][mode]}`;
 }
-export function starCalcLine(character: StarCharacterId) {
-  return tones[character].calc;
+export function starCalcLine(character: StarCharacterId, locale: AppLocale = "ko") {
+  return tonesFor(locale)[character].calc;
 }
-export function starSignLine(character: StarCharacterId, sign: string, headline: string) {
-  return tones[character].sign(sign, headline);
+export function starSignLine(character: StarCharacterId, sign: string, headline: string, locale: AppLocale = "ko") {
+  return tonesFor(locale)[character].sign(sign, headline);
 }
-export function starBestLine(character: StarCharacterId, domain: string, worst: string) {
-  return tones[character].best(domain, worst);
+export function starBestLine(character: StarCharacterId, domain: string, worst: string, locale: AppLocale = "ko") {
+  return tonesFor(locale)[character].best(domain, worst);
 }
-export function starWhyLine(character: StarCharacterId, picked = false) {
-  return `${picked ? `${tones[character].picked.why} ` : ""}${tones[character].why}`;
+export function starWhyLine(character: StarCharacterId, picked = false, locale: AppLocale = "ko") {
+  return `${picked ? `${tonesFor(locale)[character].picked.why} ` : ""}${tonesFor(locale)[character].why}`;
 }
 export function starPairLine(
   character: StarCharacterId,
@@ -443,8 +547,9 @@ export function starPairLine(
   picked = false,
   /** 오늘 총운 별 수. 셋 이하면 '사이'만 좋다고 말한다. */
   overall = 5,
+  locale: AppLocale = "ko",
 ) {
-  const tone = tones[character];
+  const tone = tonesFor(locale)[character];
   const line = mine && theirs ? tone.pair(mine, theirs, overall <= 3) : tone.pairAlone(mine ?? "");
   return picked && tone.picked.pair && mine && theirs ? `${tone.picked.pair} ${line}` : line;
 }
@@ -456,15 +561,22 @@ const sayAsk: Record<StarDomain, { plain: string; polite: string; old: string }>
   money: { plain: "살 것부터 하나만 골라 볼래?", polite: "살 것을 하나만 골라 볼래요?", old: "살 것을 하나만 고르겠소?" },
   work: { plain: "제일 급한 일부터 열어 볼래?", polite: "제일 급한 일부터 열어 볼래요?", old: "가장 급한 일부터 열어 보겠소?" },
 };
-export function starSayLine(character: StarCharacterId, domain: StarDomain, stars: number) {
+export function starSayLine(character: StarCharacterId, domain: StarDomain, stars: number, locale: AppLocale = "ko") {
   const name = domainLabels[domain];
   const ask = sayAsk[domain];
   const bright = stars >= 4;
+  const values = {
+    name: starCopy(locale, name),
+    stars,
+    "ask.plain": starCopy(locale, ask.plain),
+    "ask.polite": starCopy(locale, ask.polite),
+    "ask.old": starCopy(locale, ask.old),
+  };
   const line = {
-    changha: bright ? `${name} 별점이 ${stars}개야. ${ask.plain}` : `${name} 별은 차분해. 오늘은 천천히 가자.`,
-    elina: bright ? `${name} 별점이 ${stars}개예요. ${ask.polite}` : `${name} 별은 차분해요. 천천히 가요.`,
-    yuna: bright ? `${name} 별점 ${stars}개야. ${ask.plain}` : `${name} 별은 조용해. 오늘은 천천히 가자.`,
-    dosa: bright ? `${name} 별이 ${stars}개 밝소. ${ask.old}` : `${name} 별은 고요하오. 천천히 걸으시오.`,
+    changha: bright ? starCopy(locale, "{name} 별점이 {stars}개야. {ask.plain}", values) : starCopy(locale, "{name} 별은 차분해. 오늘은 천천히 가자.", values),
+    elina: bright ? starCopy(locale, "{name} 별점이 {stars}개예요. {ask.polite}", values) : starCopy(locale, "{name} 별은 차분해요. 천천히 가요.", values),
+    yuna: bright ? starCopy(locale, "{name} 별점 {stars}개야. {ask.plain}", values) : starCopy(locale, "{name} 별은 조용해. 오늘은 천천히 가자.", values),
+    dosa: bright ? starCopy(locale, "{name} 별이 {stars}개 밝소. {ask.old}", values) : starCopy(locale, "{name} 별은 고요하오. 천천히 걸으시오.", values),
   } satisfies Record<StarCharacterId, string>;
   return line[character];
 }
@@ -524,11 +636,21 @@ const natalLine: Record<StarDomain, Record<"fire" | "earth" | "air" | "water", s
  * 영역 한 칸의 풀이: 오늘 별점의 풀이(2~3문장) 뒤에, 태어날 때 그 영역을 맡은 행성이 놓인 별자리를 근거로 한 문장을 잇는다.
  * `signOf`: 내 행성이 어느 별자리에 있는지.
  */
-export function starDomainText(domain: StarDomain, stars: number, signOf: (body: string) => ZodiacSign | null, character?: StarCharacterId) {
+export function starDomainText(domain: StarDomain, stars: number, signOf: (body: string) => ZodiacSign | null, character?: StarCharacterId, locale: AppLocale = "ko") {
   const planet = domainPlanet[domain];
   const sign = signOf(planet.body);
   const today = !character ? domainLong[domain][stars - 1]
     : character === "dosa" ? starDosa[domain][stars - 1] : chemiPersona[character].star[domain][stars - 1];
+  if (locale !== "ko") {
+    const lead = starCopy(locale, today);
+    if (!sign) return lead;
+    return `${lead} ${starCopy(locale, "Your {body} ({role}) is in {sign}. {trait}.", {
+      body: starCopy(locale, bodyNames[planet.body]),
+      role: starCopy(locale, planet.role),
+      sign: starSignName(locale, sign, "full"),
+      trait: starCopy(locale, natalLine[domain][signElement[sign]]),
+    })}`;
+  }
   if (!sign) return today;
   const subject = character === "dosa" ? "그대의" : character === "elina" ? "당신의" : character ? "네" : "내";
   const ending = character === "dosa" ? "이오" : character === "elina" || !character ? "이에요" : "이야";

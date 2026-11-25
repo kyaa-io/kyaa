@@ -139,12 +139,14 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=
   }, []);
   const pageCard = (page: GroupList["items"][number]) => {
     const isFan = page.kind === "fan";
+    // kyaa official: a fan or brand page tied to a creator or brand record kyaa registered. Pages people open themselves have no such record.
+    const verified = page.kind !== "hobby" && Boolean(page.celebrityId);
     const challenge = isFan && (page.challenge ?? (!!page.slug && challengeSlugs.has(page.slug)));
     const event = isFan && page.slug && eventTime !== undefined && openPageLikeEvent(page.slug, eventTime);
     const badge = event
       ? <FanTag tone="fan" className={motionStyles.eventBlink}>{liveEventLabel(locale)}</FanTag>
       : challenge ? <FanTag tone="fan"><span aria-label={rankingsText(locale, "jjTag")}>{challengeBadge[locale]}</span></FanTag> : undefined;
-    return <FanEntityCard key={page.id} size="tile" href={groupHref(page, locale)} image={{ src: page.imageUrl, slug: page.slug }} name={page.name} kind={page.kind} locale={locale} newBadge={isFan && page.isNew === true && !badge} badge={badge}/>;
+    return <FanEntityCard key={page.id} size="tile" href={groupHref(page, locale)} image={{ src: page.imageUrl, slug: page.slug }} name={page.name} kind={page.kind} locale={locale} newBadge={isFan && page.isNew === true && !badge} badge={badge} verified={verified}/>;
   };
   const applyKind=nonFanType?'hobby':'fan';
   const applyLabel=nonFanType?t.apply:groupApplyText(locale,'fanPageApply');

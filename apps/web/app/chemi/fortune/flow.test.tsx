@@ -82,6 +82,7 @@ it("saves the reading once, then walks the four talk steps", async () => {
   vi.stubGlobal("fetch", request);
   render(<FortuneFlow locale="ko" />);
   expect(await screen.findByText("오늘 128명이 봤어요")).toBeVisible();
+  const entryCount = window.history.length;
   fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
   expect(await screen.findByText("누구 덕에?", {}, { timeout: 3000 })).toBeVisible();
   expect(window.location.search).toContain("step=talk-1");
@@ -90,6 +91,7 @@ it("saves the reading once, then walks the four talk steps", async () => {
   fireEvent.click(screen.getByRole("button", { name: "누구 덕에?" }));
   expect(await screen.findByText("친구 만나도 돼?")).toBeVisible();
   expect(window.location.search).toContain("step=talk-2");
+  expect(window.history.length).toBe(entryCount);
 });
 
 it("opens the birth sheet when the profile has no birth yet", async () => {

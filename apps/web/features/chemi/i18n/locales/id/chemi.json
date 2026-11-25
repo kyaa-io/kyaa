@@ -1,4 +1,8 @@
 {
+  "guide": {
+    "growth": "Besarkan minimu",
+    "growthDetail": "Masuk lalu lihat hasil ramalan atau selesaikan permainan untuk mendapat EXP kedekatan dengan idola pilihanmu. Kamu bisa mendapatkannya 1 kali sehari per aktivitas untuk setiap idola. Setiap jenis ramalan memberi EXP kedekatan untuk maksimal 3 idola per hari."
+  },
   "menu": {
     "home": "HOME",
     "my": "MY"

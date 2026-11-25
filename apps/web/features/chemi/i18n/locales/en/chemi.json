@@ -1,4 +1,8 @@
 {
+  "guide": {
+    "growth": "Raise your Mini Bias",
+    "growthDetail": "Sign in and finish a reading or game to earn bond EXP for the bias you chose. You can earn it once a day per activity and bias. Each kind of reading awards EXP to up to three biases per day."
+  },
   "menu": {
     "home": "HOME",
     "my": "MY"

@@ -29,6 +29,13 @@ describe("FanEntityCard list row", () => {
     rerender(<FanEntityCard size="tile" href="/a" image={{}} name="김민주" kind="fan" locale="ko" memberCount={0} />);
     expect(screen.getByRole("link").textContent).toBe("김민" + "김민주");
   });
+  it("tile size: the kyaa official mark follows the name and stays outside the photo", () => {
+    const { container } = render(<FanEntityCard size="tile" href="/a" image={{}} name="엘리나" kind="fan" locale="ko" verified />);
+    const mark = screen.getByRole("img", { name: "kyaa official" });
+    expect(mark.getAttribute("title")).toBe("kyaa official");
+    expect(mark.previousElementSibling?.textContent).toBe("엘리나");
+    expect(container.querySelector("[data-tile-media] [data-verified-mark]")).toBeNull();
+  });
   it("keeps a non-public tile without a navigation link", () => {
     render(<FanEntityCard size="tile" href="/a" image={{}} name="비공개" kind="fan" locale="ko" disabled />);
     expect(screen.getByText("비공개")).toBeInTheDocument();

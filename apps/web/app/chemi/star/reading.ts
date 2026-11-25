@@ -159,6 +159,8 @@ export async function loadParticipation(signal?: AbortSignal): Promise<Participa
 }
 
 /** 해·달 별자리를 화면 글자로. 경계를 넘는 날이면 "게 또는 사자"처럼 둘을 잇는다. */
-export function signList(signs: ZodiacSign[], pick: (sign: ZodiacSign) => string) {
-  return signs.map(pick).join(" 또는 ");
+export function signList(signs: ZodiacSign[], pick: (sign: ZodiacSign) => string, locale = "ko") {
+  return locale === "ko"
+    ? signs.map(pick).join(" 또는 ")
+    : new Intl.ListFormat(locale, { type: "disjunction" }).format(signs.map(pick));
 }

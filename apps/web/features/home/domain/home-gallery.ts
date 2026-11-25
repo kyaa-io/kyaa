@@ -51,7 +51,7 @@ const tiktokShortSchema = youtubeShortSchema.extend({
   videoId: z.string().regex(/^[0-9]{15,25}$/),
   href: z.string().regex(/^https:\/\/www\.tiktok\.com\/@[A-Za-z0-9._]{1,64}\/video\/[0-9]{15,25}$/),
 }).strict().refine(short => short.href.endsWith(`/video/${short.videoId}`));
-// An Instagram reel has no in-app player: the card opens the original post (`href`).
+// The feed embeds the validated shortcode and keeps the original post as a fallback.
 const instagramShortSchema = youtubeShortSchema.extend({
   platform: z.literal("instagram"),
   videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),

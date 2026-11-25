@@ -23,12 +23,23 @@ import type { ActionLifecycleTransaction, FinalizedIndexedFanAction, IndexedCred
 const ZERO_HASH = `0x${"0".repeat(64)}` as Hash;
 const ZERO_ADDRESS = `0x${"0".repeat(40)}` as Address;
 const LOG_CHUNK_BLOCKS = 1_000n;
-const MAX_HUB_LOGS = 50_000;
-const MAX_ACTIONS = 10_000;
-const MAX_EVENT_BLOCKS = 5_000;
-// shortcut: full-history verification has a bounded budget; use an incremental verified index when it outgrows scheduled refreshes.
+// Totals bound memory and the published payload. RPC work per run is bounded by the deadline:
+// immutable facts of already verified actions are reused, so only new actions cost transaction reads.
+const MAX_ACTIONS = 50_000;
+const MAX_HUB_LOGS = 4 * MAX_ACTIONS;
+// Event blocks are normally proven by their transaction or by a reused fact; direct block reads stay bounded.
+const MAX_UNPROVEN_EVENT_BLOCKS = 5_000;
 const SNAPSHOT_DEADLINE_MS = 240_000;
 const READ_BATCH_SIZE = 64;
+const FACTS_VERSION = "kyaa-onchain-facts-v2";
+// ERC-1967 implementation slot of the Hub proxy, and the codec pointer in the Hub's ERC-7201 storage
+// (byus.storage.ActionHub, field 6). hashRequest runs the implementation and staticcalls the codec.
+const HUB_IMPLEMENTATION_SLOT = "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
+const HUB_CODEC_SLOT = "0x9b4561162b6d58cdaee430aa4073a2ec544ff4ca21320ef4e942bd0b419f7706";
+const MAX_UINT32 = 0xffff_ffff;
+// Each run verifies this many already verified actions again in full, so every stored fact is re-proven in rotation.
+const AUDIT_ACTIONS_PER_RUN = 128;
+const AUDIT_ROTATION_SECONDS = 600n;
 
 type ActionRecord = {
   occurrenceId: Hash; actionId: Hash; easUID: Hash; requestHash: Hash; recordHash: Hash;
@@ -46,6 +57,22 @@ type CredentialRef = {
 };
 type InvalidatedEvent = { actionId: Hash; easUID: Hash; transactionHash: Hash; blockNumber: bigint; blockHash: Hash };
 type CorrectedEvent = { previousActionId: Hash; newActionId: Hash; occurrenceId: Hash; transactionHash: Hash; blockNumber: bigint; blockHash: Hash };
+
+/**
+ * Proof that the immutable part of one action was verified: its transaction calldata, request hash and mint receipts.
+ * The digest binds every input of those checks to the finalized block (anchor) the verification was pinned to.
+ */
+export interface VerifiedActionFact {
+  digest: Hash;
+  bindingVersion: number;
+  sourceOccurrence: Hash;
+  anchorBlockNumber: bigint;
+  anchorBlockHash: Hash;
+}
+export type VerifiedActionFacts = Map<string, VerifiedActionFact>;
+export function verifiedActionFactKey(hubAddress: string, actionId: string): string {
+  return `${hubAddress.toLowerCase()}:${actionId.toLowerCase()}`;
+}
 
 export interface FinalizedActionSnapshot {
   blockNumber: bigint;
@@ -91,6 +118,12 @@ export interface FinalizedActionSnapshotOptions {
   logScan?: SnapshotLogScan;
   deadlineMs?: number;
   signal?: AbortSignal;
+  /**
+   * Facts verified by earlier runs. A fact is reused only while its anchor block is still canonical and its digest
+   * matches the current logs and Hub record; otherwise the action is verified again in full. The map is updated as
+   * actions pass, also when the run later fails, so a history too long for one run is caught up over several runs.
+   */
+  facts?: VerifiedActionFacts;
 }
 
 const hubEventNames = ["FanActionRecorded", "CredentialLinked", "FanActionInvalidated", "FanActionCorrected"] as const;
@@ -228,6 +261,90 @@ function assertRecordMatchesEvent(record: ActionRecord, event: RecordedEvent) {
     || !sameHex(record.migrationBatchId, event.migrationBatchId)) {
     throw new Error("Action public snapshot Hub record mismatch");
   }
+}
+
+function anchorKey(blockNumber: bigint, blockHash: Hash): string { return `${blockNumber}:${blockHash.toLowerCase()}`; }
+
+/** Drops facts whose anchor block is no longer canonical and returns the anchors that still are. */
+async function canonicalFactAnchors(client: PublicClient, facts: VerifiedActionFacts, blockNumber: bigint, blockHash: Hash): Promise<Set<string>> {
+  const anchors = new Map<string, { blockNumber: bigint; blockHash: Hash }>();
+  for (const fact of facts.values()) anchors.set(anchorKey(fact.anchorBlockNumber, fact.anchorBlockHash), { blockNumber: fact.anchorBlockNumber, blockHash: fact.anchorBlockHash });
+  const canonical = new Set<string>();
+  await Promise.all([...anchors].map(async ([key, anchor]) => {
+    // A provider whose finalized head is behind earlier runs cannot prove those facts; retry on a later run.
+    if (anchor.blockNumber > blockNumber) throw new Error("Action public snapshot finalized head is behind verified facts");
+    const hash = anchor.blockNumber === blockNumber ? blockHash : (await client.getBlock({ blockNumber: anchor.blockNumber })).hash;
+    if (hash && sameHex(hash, anchor.blockHash)) canonical.add(key);
+  }));
+  // Reorg below an earlier finalized head: nothing verified under that anchor is trusted again.
+  for (const [key, fact] of facts) if (!canonical.has(anchorKey(fact.anchorBlockNumber, fact.anchorBlockHash))) facts.delete(key);
+  return canonical;
+}
+
+const credentialFactComponents = [
+  { name: "nftContract", type: "address" }, { name: "tokenId", type: "uint256" }, { name: "kind", type: "uint8" },
+  { name: "issuanceKey", type: "bytes32" }, { name: "linkOrigin", type: "uint8" }, { name: "transactionHash", type: "bytes32" },
+  { name: "blockNumber", type: "uint256" }, { name: "blockHash", type: "bytes32" }, { name: "expectedAsset", type: "address" },
+] as const;
+
+/** Every input and output of the immutable checks (calldata, request hash, mint receipts) for one action. */
+function actionFactInputs(
+  options: FinalizedActionSnapshotOptions, event: RecordedEvent, record: ActionRecord, refs: readonly CredentialRef[],
+  correctedFrom: Hash, sourceOccurrence: Hash, bindingVersion: number,
+): Hash {
+  const bindingAssets = options.assetBindings[bindingVersion] ?? {};
+  return keccak256(encodeAbiParameters([
+    { type: "uint256" }, { type: "address" }, { type: "bytes32" },
+    { type: "bytes32" }, { type: "uint256" }, { type: "bytes32" },
+    { type: "bytes32" }, { type: "address" }, { type: "bytes32" }, { type: "bytes32" }, { type: "uint32" }, { type: "bytes32" },
+    { type: "string" }, { type: "uint16" }, { type: "uint32" }, { type: "bytes32" }, { type: "uint32" }, { type: "uint8" }, { type: "bytes32" },
+    { type: "bytes32" }, { type: "uint16" }, { type: "bytes32" }, { type: "bytes32" }, { type: "uint32" },
+    { type: "tuple[]", components: credentialFactComponents },
+  ], [
+    BigInt(options.chainId), getAddress(options.hubAddress), options.environmentId,
+    event.transactionHash, event.blockNumber, event.blockHash,
+    event.actionId, getAddress(event.fan), event.campaignId, event.occurrenceId, event.revision, event.creatorId,
+    event.actionName, event.schemaVersion, event.policyVersion, event.easUID, event.occurredDay, event.origin, event.migrationBatchId,
+    record.requestHash, record.actionCode, correctedFrom, sourceOccurrence, bindingVersion,
+    refs.map((ref) => ({
+      nftContract: getAddress(ref.nftContract), tokenId: ref.tokenId, kind: ref.kind, issuanceKey: ref.issuanceKey,
+      linkOrigin: ref.linkOrigin, transactionHash: ref.transactionHash, blockNumber: ref.blockNumber, blockHash: ref.blockHash,
+      expectedAsset: getAddress(bindingAssets[ref.kind] ?? ZERO_ADDRESS),
+    })),
+  ]));
+}
+
+/**
+ * Identity of the code that computes hashRequest at the pinned block: the proxy, its implementation and the codec.
+ * A fact sealed under one identity is never reused under another, so a Hub or codec upgrade sends every action
+ * back through the full check against the upgraded code.
+ */
+async function hubCodeIdentity(client: PublicClient, hubAddress: Address, blockNumber: bigint): Promise<Hash> {
+  const [implementationWord, codecWord, proxyCode] = await Promise.all([
+    client.getStorageAt({ address: hubAddress, slot: HUB_IMPLEMENTATION_SLOT, blockNumber }),
+    client.getStorageAt({ address: hubAddress, slot: HUB_CODEC_SLOT, blockNumber }),
+    client.getCode({ address: hubAddress, blockNumber }),
+  ]);
+  const pointer = /^0x0{24}[0-9a-fA-F]{40}$/;
+  if (!implementationWord || !codecWord || !pointer.test(implementationWord) || !pointer.test(codecWord)) {
+    throw new Error("Action public snapshot Hub code identity unavailable");
+  }
+  const [implementationCode, codecCode] = await Promise.all([implementationWord, codecWord].map((word) =>
+    client.getCode({ address: getAddress(`0x${word.slice(-40)}`), blockNumber })));
+  if (!proxyCode || proxyCode === "0x" || !implementationCode || implementationCode === "0x" || !codecCode || codecCode === "0x") {
+    throw new Error("Action public snapshot Hub code identity unavailable");
+  }
+  return keccak256(encodeAbiParameters(
+    [{ type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }],
+    [implementationWord, codecWord, keccak256(proxyCode), keccak256(implementationCode), keccak256(codecCode)],
+  ));
+}
+
+function sealActionFact(anchorBlockNumber: bigint, anchorBlockHash: Hash, codeIdentity: Hash, inputs: Hash): Hash {
+  return keccak256(encodeAbiParameters(
+    [{ type: "string" }, { type: "uint256" }, { type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }],
+    [FACTS_VERSION, anchorBlockNumber, anchorBlockHash, codeIdentity, inputs],
+  ));
 }
 
 function refsHash(refs: readonly CredentialRef[]): Hash {
@@ -370,6 +487,7 @@ async function readFinalizedActionSnapshotInner(
   signal: AbortSignal,
   pinnedFinalized?: { number: bigint; hash: Hash; timestamp: bigint },
   pinnedLogs?: Awaited<ReturnType<PublicClient["getLogs"]>>,
+  pinnedAnchors?: Set<string>,
 ): Promise<FinalizedActionSnapshot> {
   const client = options.client ?? snapshotClient(options, signal);
   assertNotAborted(signal);
@@ -379,9 +497,12 @@ async function readFinalizedActionSnapshotInner(
   const blockHash = finalized.hash;
   const timestamp = finalized.timestamp;
   if (options.logScan && !pinnedLogs) await assertSnapshotLogScanHead(options.logScan, options.chainId, blockNumber, blockHash);
+  const facts = options.facts ?? new Map<string, VerifiedActionFact>();
+  const canonicalAnchors = pinnedAnchors ?? await canonicalFactAnchors(client, facts, blockNumber, blockHash);
 
-  const [actualChainId, actualEnvironment, actualEas, logs] = await Promise.all([
+  const [actualChainId, codeIdentity, actualEnvironment, actualEas, logs] = await Promise.all([
     client.getChainId(),
+    hubCodeIdentity(client, options.hubAddress, blockNumber),
     client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "environmentId", blockNumber }),
     client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "eas", blockNumber }),
     pinnedLogs ?? loadHubLogs(client, options.hubAddress, options.fromBlock, blockNumber, signal, options.logScan),
@@ -425,16 +546,9 @@ async function readFinalizedActionSnapshotInner(
     if (prior && !sameHex(prior, event.blockHash)) throw new Error("Action public snapshot conflicting event block hashes");
     eventBlocks.set(key, event.blockHash);
   }
-  if (eventBlocks.size > MAX_EVENT_BLOCKS) throw new Error("Action public snapshot event block cap exceeded");
-  const canonicalEventBlocks = [...eventBlocks];
-  for (let index = 0; index < canonicalEventBlocks.length; index += READ_BATCH_SIZE) {
-    assertNotAborted(signal);
-    await yieldToRequests(undefined, { signal });
-    await Promise.all(canonicalEventBlocks.slice(index, index + READ_BATCH_SIZE).map(async ([number, expectedHash]) => {
-      const canonical = await client.getBlock({ blockNumber: BigInt(number) });
-      if (!canonical.hash || !sameHex(canonical.hash, expectedHash)) throw new Error("Action public snapshot event block reorg");
-    }));
-  }
+  // Blocks the state provider has placed on its canonical chain: by a transaction read in this run,
+  // or by a fact verified under an anchor that is still canonical. Any other event block is read directly below.
+  const provenBlocks = new Map<string, Hash>();
 
   const records = new Map<string, ActionRecord>();
   for (let index = 0; index < events.recorded.length; index += READ_BATCH_SIZE) {
@@ -525,9 +639,18 @@ async function readFinalizedActionSnapshotInner(
   for (let index = 0; index < standaloneInvalidations.length; index += 8) {
     assertNotAborted(signal);
     await yieldToRequests(undefined, { signal });
-    await Promise.all(standaloneInvalidations.slice(index, index + 8)
-      .map((event) => verifyStandaloneInvalidation(client, options.hubAddress, event)));
+    await Promise.all(standaloneInvalidations.slice(index, index + 8).map(async (event) => {
+      await verifyStandaloneInvalidation(client, options.hubAddress, event);
+      provenBlocks.set(event.blockNumber.toString(), event.blockHash);
+    }));
   }
+  const correctedFrom = new Map<string, Hash>();
+  for (const correction of events.corrected) {
+    const key = correction.newActionId.toLowerCase();
+    if (!correctedFrom.has(key)) correctedFrom.set(key, correction.previousActionId);
+  }
+  const auditStart = events.recorded.length === 0 ? 0
+    : Number((timestamp / AUDIT_ROTATION_SECONDS * BigInt(AUDIT_ACTIONS_PER_RUN)) % BigInt(events.recorded.length));
 
   const receiptCache = new Map<string, Awaited<ReturnType<PublicClient["getTransactionReceipt"]>>>();
   const verifiedBindings = new Map<string, Promise<Address>>();
@@ -535,10 +658,24 @@ async function readFinalizedActionSnapshotInner(
   for (let index = 0; index < events.recorded.length; index += READ_BATCH_SIZE) {
     assertNotAborted(signal);
     await yieldToRequests(undefined, { signal });
-    const batch = await Promise.all(events.recorded.slice(index, index + READ_BATCH_SIZE).map(async (event): Promise<FinalizedIndexedFanAction> => {
+    const batch = await Promise.all(events.recorded.slice(index, index + READ_BATCH_SIZE).map(async (event, offset): Promise<FinalizedIndexedFanAction> => {
     const record = records.get(event.actionId.toLowerCase())!;
     const refs = refsByAction.get(event.actionId.toLowerCase()) ?? [];
-    const { sourceOccurrence, bindingVersion } = await verifyRecordedTransaction(client, options, event, record, events.corrected, blockNumber);
+    const factKey = verifiedActionFactKey(options.hubAddress, event.actionId);
+    const previousActionId = correctedFrom.get(event.actionId.toLowerCase()) ?? ZERO_HASH;
+    const audited = (index + offset - auditStart + events.recorded.length) % events.recorded.length < AUDIT_ACTIONS_PER_RUN;
+    const prior = audited ? undefined : facts.get(factKey);
+    const reused = prior !== undefined
+      // A binding version no request can carry is not a fact this verifier sealed.
+      && Number.isInteger(prior.bindingVersion) && prior.bindingVersion >= 0 && prior.bindingVersion <= MAX_UINT32
+      && canonicalAnchors.has(anchorKey(prior.anchorBlockNumber, prior.anchorBlockHash))
+      && event.blockNumber <= prior.anchorBlockNumber
+      && sameHex(canonicalOccurrenceId(options.chainId, options.hubAddress, options.environmentId, prior.sourceOccurrence), record.occurrenceId)
+      && sameHex(sealActionFact(prior.anchorBlockNumber, prior.anchorBlockHash, codeIdentity,
+        actionFactInputs(options, event, record, refs, previousActionId, prior.sourceOccurrence, prior.bindingVersion)), prior.digest);
+    const { sourceOccurrence, bindingVersion } = reused ? prior
+      : await verifyRecordedTransaction(client, options, event, record, events.corrected, blockNumber);
+    provenBlocks.set(event.blockNumber.toString(), event.blockHash);
     const bindingAssets = options.assetBindings[bindingVersion] ?? {};
     for (const ref of refs) {
       const expectedAsset = bindingAssets[ref.kind];
@@ -580,7 +717,7 @@ async function readFinalizedActionSnapshotInner(
     }
     if (BigInt(event.occurredDay) > timestamp / 86_400n) throw new Error("Action public snapshot occurrence is after finalized timestamp");
 
-    for (const ref of refs.filter((candidate) => candidate.linkOrigin === 0)) {
+    for (const ref of reused ? [] : refs.filter((candidate) => candidate.linkOrigin === 0)) {
       let receipt = receiptCache.get(ref.transactionHash.toLowerCase());
       if (!receipt) {
         receipt = await client.getTransactionReceipt({ hash: ref.transactionHash });
@@ -592,6 +729,8 @@ async function readFinalizedActionSnapshotInner(
       }
       assertMintLog(ref, record.fan, receipt, bindingAssets[ref.kind]!);
     }
+    const digest = sealActionFact(blockNumber, blockHash, codeIdentity, actionFactInputs(options, event, record, refs, previousActionId, sourceOccurrence, bindingVersion));
+    facts.set(factKey, { digest, bindingVersion, sourceOccurrence, anchorBlockNumber: blockNumber, anchorBlockHash: blockHash });
 
     let original = event;
     while (original.revision > 1) {
@@ -614,9 +753,24 @@ async function readFinalizedActionSnapshotInner(
       origin: event.origin === 1 ? "HISTORICAL" : "NATIVE", finality: "finalized", txHash: event.transactionHash,
       creatorId: event.creatorId, campaignId: event.campaignId, occurredDay: event.occurredDay,
       blockNumber: event.blockNumber, blockHash: event.blockHash, originalRecipient: getAddress(original.fan), credentials,
+      verifiedFacts: { digest, bindingVersion },
     };
     }));
     actions.push(...batch);
+  }
+
+  const unprovenEventBlocks = [...eventBlocks].filter(([number, expectedHash]) => {
+    const proven = provenBlocks.get(number);
+    return !proven || !sameHex(proven, expectedHash);
+  });
+  if (unprovenEventBlocks.length > MAX_UNPROVEN_EVENT_BLOCKS) throw new Error("Action public snapshot event block cap exceeded");
+  for (let index = 0; index < unprovenEventBlocks.length; index += READ_BATCH_SIZE) {
+    assertNotAborted(signal);
+    await yieldToRequests(undefined, { signal });
+    await Promise.all(unprovenEventBlocks.slice(index, index + READ_BATCH_SIZE).map(async ([number, expectedHash]) => {
+      const canonical = await client.getBlock({ blockNumber: BigInt(number) });
+      if (!canonical.hash || !sameHex(canonical.hash, expectedHash)) throw new Error("Action public snapshot event block reorg");
+    }));
   }
 
   const lifecycleByTx = new Map<string, { txHash: Hash; blockNumber: bigint; blockHash: Hash; kinds: Set<ActionLifecycleTransaction["kind"]>; actionIds: string[] }>();
@@ -687,6 +841,7 @@ export async function readFinalizedActionSnapshot(options: FinalizedActionSnapsh
       }
       const fromBlock = deployments.reduce((minimum, deployment) => deployment.fromBlock < minimum ? deployment.fromBlock : minimum, deployments[0]!.fromBlock);
       const logs = await loadHubLogs(client, deployments.map((deployment) => deployment.hubAddress), fromBlock, pinned.number, controller.signal, options.logScan);
+      const anchors = await canonicalFactAnchors(client, options.facts ?? new Map(), pinned.number, pinned.hash);
       await runOnchainWork(mapOnchainWork(logs, log => {
         if (!uniqueHubs.has(getAddress(log.address).toLowerCase())) throw new Error("Action public snapshot unexpected Hub log address");
       }), controller.signal);
@@ -695,7 +850,7 @@ export async function readFinalizedActionSnapshot(options: FinalizedActionSnapsh
         const snapshot = await readFinalizedActionSnapshotInner({
           ...sharedOptions, client, hubAddress: deployment.hubAddress, fromBlock: deployment.fromBlock,
         }, controller.signal, pinned, logs.filter((log) => sameHex(log.address, deployment.hubAddress)
-          && (log.blockNumber == null || log.blockNumber >= deployment.fromBlock)));
+          && (log.blockNumber == null || log.blockNumber >= deployment.fromBlock)), anchors);
         snapshot.deployments[0]!.label = deployment.label ?? "ActionHub";
         return snapshot;
       }));
@@ -725,7 +880,12 @@ export async function readFinalizedActionSnapshot(options: FinalizedActionSnapsh
         deployments: snapshots.flatMap((snapshot) => snapshot.deployments), sourceCollisions,
       };
     };
-    return await Promise.race([read(), deadline]);
+    const snapshot = await Promise.race([read(), deadline]);
+    if (options.facts) {
+      const current = new Set(snapshot.actions.map((action) => verifiedActionFactKey(action.hubProxy, action.actionId)));
+      for (const key of options.facts.keys()) if (!current.has(key)) options.facts.delete(key);
+    }
+    return snapshot;
   } finally {
     if (timer) clearTimeout(timer);
     if (abort) options.signal?.removeEventListener("abort", abort);

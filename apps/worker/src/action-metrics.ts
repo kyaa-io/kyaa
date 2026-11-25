@@ -41,6 +41,8 @@ export interface FinalizedIndexedFanAction extends IndexedFanAction {
   blockNumber: bigint;
   blockHash: string;
   originalRecipient: string;
+  /** Digest of the verified immutable facts, published so a later run can reuse them (see VerifiedActionFact). */
+  verifiedFacts?: { digest: string; bindingVersion: number };
 }
 
 export interface ActionLifecycleTransaction {

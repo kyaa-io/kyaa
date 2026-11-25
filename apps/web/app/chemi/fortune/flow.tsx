@@ -47,6 +47,7 @@ import {
 } from "./reading";
 import { kstDate, kstDayStart } from "./result-copy";
 import { AskScene } from "@/features/chemi/ask/ask-scene";
+import { exitFortune } from "./exit";
 import { askGo, useAskLocation } from "@/features/chemi/ask/location";
 import { FortuneResult } from "./result";
 import { Under14 } from "./under-14";
@@ -62,6 +63,11 @@ const talkChoice = [
   "dailySummary",
 ] as const;
 const mobileTalkArt = ["portrait", "calm", "laugh", "care"] as const;
+/**
+ * 입장 화면의 사진 → 캐릭터 변신 영상 판(`<최애>-photo-to-character-<판>`, 휴대폰 첫 입장에 한 번). 끝 프레임이 지금 입장 그림과 같은 것만 넣는다.
+ * 유나는 그림을 다시 고르는 중이라(11/25) 비워 두고, 창하는 변신 영상이 없다.
+ */
+const photoToCharacter: Partial<Record<FortuneCharacterId, string>> = { elina: "v1" };
 
 type Phase = "idle" | "calc" | "error";
 /** 오류 안내를 가른다: 로그인 만료, 서비스 거절, 연결 끊김. */
@@ -83,30 +89,12 @@ function readUrl() {
   };
 }
 
-/** 이 운세 흐름이 쌓은 기록 칸 수. 새 탭에서 복원한 주소는 0이다. */
-function flowDepth() {
-  const depth = (window.history.state as { fortuneDepth?: number } | null)?.fortuneDepth;
-  return typeof depth === "number" ? depth : 0;
-}
-
-function writeUrl(
-  patch: Record<string, string | null>,
-  mode: "push" | "replace",
-  /** replace 에서 기록 칸 수를 다시 센다(입장 주소로 되돌린 칸이 새 바닥이 될 때). */
-  depth?: number,
-) {
+function writeUrl(patch: Record<string, string | null>) {
   const params = new URLSearchParams(window.location.search);
   for (const [key, value] of Object.entries(patch))
     value === null ? params.delete(key) : params.set(key, value);
   const url = `${window.location.pathname}?${params}`;
-  if (mode === "push")
-    window.history.pushState({ fortuneDepth: flowDepth() + 1 }, "", url);
-  else
-    window.history.replaceState(
-      depth === undefined ? window.history.state : { fortuneDepth: depth },
-      "",
-      url,
-    );
+  window.history.replaceState(window.history.state, "", url);
 }
 
 
@@ -156,7 +144,6 @@ export function FortuneFlow({
   const [under14, setUnder14] = useState(false);
   const [restoring, setRestoring] = useState(restoringFromUrl);
   const [participation, setParticipation] = useState<Participation>(null);
-  const collapsing = useRef(false);
   const abort = useRef<AbortController | null>(null);
   /** 화면에 있는 `reading`을 받은 최애. 주소의 최애와 다르면 그 결과는 이 주소의 것이 아니다. */
   const readingOf = useRef<FortuneCharacterId | null>(null);
@@ -175,7 +162,7 @@ export function FortuneFlow({
     ) {
       if (!ready) return;
       if (!authenticated) {
-        writeUrl({ step: null, r: null }, "replace");
+        writeUrl({ step: null, r: null });
         setRestoring(false);
         return;
       }
@@ -190,7 +177,7 @@ export function FortuneFlow({
         setReading({ ...data, readingId, replayed: true });
         setStep(reachableFortuneStep(target, true));
       } catch {
-        writeUrl({ step: null, r: null }, "replace");
+        writeUrl({ step: null, r: null });
         setStep("enter");
         showFanToast({ title: text("fortuneMissing") });
       } finally {
@@ -201,7 +188,7 @@ export function FortuneFlow({
     setCharacter(url.character);
     if (url.step !== "enter") {
       if (!url.readingId) {
-        writeUrl({ step: null, r: null }, "replace");
+        writeUrl({ step: null, r: null });
         setRestoring(false);
         return;
       }
@@ -244,13 +231,13 @@ export function FortuneFlow({
         setReading(data);
         setPhase("idle");
         setNeedBirth(false);
-        writeUrl({ step: "talk-1", r: data.readingId }, "replace");
+        writeUrl({ step: "talk-1", r: data.readingId });
         setStep("talk-1");
       } catch (error) {
         // 다른 단계로 떠났거나 새 요청이 이어받은 요청의 끝은 화면에 반영하지 않는다.
         if (abort.current !== controller) return;
         if (error instanceof ChemiRequestError && error.code === "CHEMI_BIRTH_REQUIRED") {
-          writeUrl({ step: null }, "replace", 0);
+          writeUrl({ step: null });
           setStep("enter");
           setPhase("idle");
           setNeedBirth(true);
@@ -275,7 +262,7 @@ export function FortuneFlow({
   // 브라우저 뒤로·앞으로 이동. 계산 중이던 기록으로 앞으로 오면 같은 요청을 다시 이어 간다.
   useEffect(() => {
     function onPop() {
-      if (collapsing.current) return;
+      if (window.location.pathname !== "/chemi/fortune") return;
       // 계산 중에 떠나면 요청을 끊어, 늦게 온 응답이 화면을 끌고 가지 못하게 한다.
       abort.current?.abort();
       abort.current = null;
@@ -286,7 +273,7 @@ export function FortuneFlow({
       const shown = reading && readingOf.current === url.character ? reading : undefined;
       if (url.step === "calc" && !shown) {
         if (!authenticated) {
-          writeUrl({ step: null }, "replace", 0);
+          writeUrl({ step: null });
           setStep("enter");
           return;
         }
@@ -297,7 +284,7 @@ export function FortuneFlow({
       const next = reachableFortuneStep(url.step, Boolean(shown));
       // 주소가 가리키는 단계와 보이는 단계가 다르면 주소를 보이는 단계에 맞춘다.
       if (next !== url.step)
-        writeUrl({ step: next === "enter" ? null : next, r: shown?.readingId ?? null }, "replace");
+        writeUrl({ step: next === "enter" ? null : next, r: shown?.readingId ?? null });
       setStep(next);
     }
     window.addEventListener("popstate", onPop);
@@ -306,7 +293,7 @@ export function FortuneFlow({
 
   function start() {
     if (!authenticated) return setSheet("login");
-    writeUrl({ step: "calc", c: character }, "push");
+    writeUrl({ step: "calc", c: character });
     setStep("calc");
     void run(character);
   }
@@ -317,7 +304,7 @@ export function FortuneFlow({
     try {
       await saveBirth(await getAccessToken(), birth);
       setSheet(null);
-      writeUrl({ step: "calc", c: character }, "push");
+      writeUrl({ step: "calc", c: character });
       setStep("calc");
       void run(character);
     } catch (error) {
@@ -334,35 +321,19 @@ export function FortuneFlow({
 
   function choose(id: FortuneCharacterId) {
     setCharacter(id);
-    writeUrl({ c: id }, "replace");
+    writeUrl({ c: id });
   }
 
-  /** 결과로 들어갈 때 대화 칸들을 접어, 뒤로 가면 입장이 되게 한다. */
   function openResult() {
-    const keep = { r: reading?.readingId ?? null, c: character };
-    const depth = flowDepth();
-    // 새 탭에서 복원해 쌓은 칸이 없으면 접을 것이 없다. 지금 칸을 결과로 바꾼다.
-    if (depth === 0) {
-      writeUrl({ step: "result", ...keep }, "replace");
-      setStep("result");
-      return;
-    }
-    collapsing.current = true;
-    const reset = () => {
-      window.removeEventListener("popstate", reset);
-      writeUrl({ step: "result", ...keep }, "push");
-      collapsing.current = false;
-      setStep("result");
-    };
-    window.addEventListener("popstate", reset);
-    window.history.go(-depth);
+    writeUrl({ step: "result", r: reading?.readingId ?? null, c: character });
+    setStep("result");
   }
 
   function advance() {
     const talk = talkNumber(step);
     if (talk === 4) return openResult();
     const next = nextFortuneStep(step);
-    writeUrl({ step: next }, "push");
+    writeUrl({ step: next });
     setStep(next);
   }
 
@@ -373,7 +344,7 @@ export function FortuneFlow({
     // 고른 이야기를 기억한다: 최애가 그 선택을 받아 말하고, 결과에서 그 칸이 펼쳐진 채 열린다.
     setPicked(talk === 1 ? "fandom" : "luck");
     const next = `talk-${talk + 2}` as FortuneStep;
-    writeUrl({ step: next }, "push");
+    writeUrl({ step: next });
     setStep(next);
   }
 
@@ -399,7 +370,7 @@ export function FortuneFlow({
         locale={locale}
         initial={voiced}
         character={character}
-        backHref={`/chemi/fortune?c=${character}&locale=${locale}`}
+        backHref={`/chemi?locale=${locale}`}
         onAsk={() => askGo({ step: "result" })}
         paidPreview={paidPreview}
         focus={picked}
@@ -459,23 +430,14 @@ export function FortuneFlow({
   return (
     <div className={styles.page} data-fortune-flow={step}>
       <div className={styles.chips}>
-        {step === "enter" ? (
-          <FanAction
-            variant="neutral"
-            href={`/chemi?locale=${locale}`}
-            ariaLabel={text("chemiExit")}
-            leadingIcon={<FanIcon icon={ChevronLeft} />}
-            className={styles.round}
-          />
-        ) : (
-          <FanAction
-            variant="neutral"
-            ariaLabel={text("back")}
-            leadingIcon={<FanIcon icon={ChevronLeft} />}
-            className={styles.round}
-            onClick={() => window.history.back()}
-          />
-        )}
+        <FanAction
+          variant="neutral"
+          href={`/chemi?locale=${locale}`}
+          ariaLabel={entering ? text("chemiExit") : text("back")}
+          leadingIcon={<FanIcon icon={ChevronLeft} />}
+          className={styles.round}
+          onClick={exitFortune}
+        />
         <SceneSound locale={locale} reveal={talk === 1 && expression !== null} />
         {step === "enter" ? (
           <>
@@ -530,8 +492,8 @@ export function FortuneFlow({
             portrait={character === "changha" ? `${art}/fortune-portrait-v1.webp` : mobileArt}
             expression={expression}
           />
-          {step === "enter" && character === "elina" && (
-            <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
+          {step === "enter" && photoToCharacter[character] && (
+            <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-${photoToCharacter[character]}`} once mobileOnly objectPosition="center 25%" />
           )}
         </div>
         {phase === "error" ? (
