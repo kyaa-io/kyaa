@@ -40,7 +40,7 @@ describe("EMAIL-UI-1116 mail delivery state in settings", () => {
 describe("EMAIL-UI-1116 three more notification switches", () => {
   it("defaults the three switches to on", () => {
     expect(notificationPreferencesSchema.parse({ liveReminders: true, surveyReminders: true, benefitNotifications: true, browserSubscription: "unsubscribed" }))
-      .toMatchObject({ socialNotifications: true, friendActivityNotifications: true, participationNotifications: true });
+      .toMatchObject({ marketingNotifications: false, socialNotifications: true, friendActivityNotifications: true, participationNotifications: true });
   });
   it("passes each switch to the repository and rejects an unknown or non-boolean one", async () => {
     const patchPreferences = vi.fn(async () => ({}));
@@ -50,7 +50,8 @@ describe("EMAIL-UI-1116 three more notification switches", () => {
       expect((await call({ [key]: false })).status).toBe(200);
       expect(patchPreferences).toHaveBeenLastCalledWith({ appUserId: "11111111-1111-4111-8111-111111111111", [key]: false });
     }
-    expect((await call({ marketingNotifications: true })).status).toBe(400);
+    expect((await call({ marketingNotifications: true })).status).toBe(200);
+    expect((await call({ unknownPreference: true })).status).toBe(400);
     expect((await call({ socialNotifications: "no" })).status).toBe(400);
   });
 });

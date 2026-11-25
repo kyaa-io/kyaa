@@ -34,11 +34,11 @@ describe("FanStageTooltip", () => {
 
   it.each(["floating", "compact"] as const)("opens and pins the %s trigger on click, then closes when clicked again", (variant) => {
     render(<FanStageTooltip variant={variant} celebrityName="KARA" tier="Gold" points={62} stageProgress={withinTierStage} locale="ko" />);
-    const trigger = screen.getByRole("button", { name: /KARA · 골드 1/ });
+    const trigger = screen.getByRole("button", { name: /KARA · 골드 Ⅰ/ });
 
     expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
     fireEvent.click(trigger);
-    expect(screen.getByRole("tooltip")).toHaveTextContent("골드 2까지 8점");
+    expect(screen.getByRole("tooltip")).toHaveTextContent("골드 Ⅱ까지 8점");
     expect(trigger).toHaveAttribute("aria-expanded", "true");
 
     fireEvent.click(trigger);
@@ -49,7 +49,7 @@ describe("FanStageTooltip", () => {
   it("keeps a hover-open tooltip readable while the pointer moves into its portal", () => {
     vi.useFakeTimers();
     render(<FanStageTooltip celebrityName="KARA" tier="Gold" points={62} stageProgress={withinTierStage} locale="en" />);
-    const trigger = screen.getByRole("button", { name: /KARA · Gold 1/ });
+    const trigger = screen.getByRole("button", { name: /KARA · Gold Ⅰ/ });
 
     fireEvent.pointerEnter(trigger, { pointerType: "mouse" });
     const tooltip = screen.getByRole("tooltip");
@@ -66,7 +66,7 @@ describe("FanStageTooltip", () => {
 
   it("opens on keyboard focus and closes with Escape or blur", () => {
     render(<><FanStageTooltip celebrityName="KARA" tier="Silver" points={38} stageProgress={nextTierStage} locale="ko" /><button type="button">다음</button></>);
-    const trigger = screen.getByRole("button", { name: /KARA · 실버 2/ });
+    const trigger = screen.getByRole("button", { name: /KARA · 실버 Ⅱ/ });
 
     act(() => { trigger.focus(); });
     expect(screen.getByRole("tooltip")).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe("FanStageTooltip", () => {
 
   it("dismisses a pinned tooltip on an outside pointer press", () => {
     render(<FanStageTooltip celebrityName="KARA" tier="Silver" points={38} stageProgress={nextTierStage} locale="ko" />);
-    const trigger = screen.getByRole("button", { name: /KARA · 실버 2/ });
+    const trigger = screen.getByRole("button", { name: /KARA · 실버 Ⅱ/ });
 
     fireEvent.click(trigger);
     expect(screen.getByRole("tooltip")).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe("FanStageTooltip", () => {
 
   it("dismisses when a responsive resize hides its trigger", () => {
     render(<FanStageTooltip celebrityName="KARA" tier="Silver" points={38} stageProgress={nextTierStage} locale="ko" />);
-    const trigger = screen.getByRole("button", { name: /KARA · 실버 2/ });
+    const trigger = screen.getByRole("button", { name: /KARA · 실버 Ⅱ/ });
     fireEvent.click(trigger);
     expect(screen.getByRole("tooltip")).toBeInTheDocument();
     const rects = vi.spyOn(trigger, "getClientRects").mockReturnValue([] as unknown as DOMRectList);

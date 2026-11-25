@@ -146,7 +146,7 @@ function makeFixture(options: {
     throw new Error(`Unexpected ${functionName}`);
   });
   const client = {
-    getChainId: vi.fn().mockResolvedValue(91342),
+    getChainId: vi.fn().mockResolvedValue(91342), getStorageAt: vi.fn().mockResolvedValue(`0x${"0".repeat(24)}${"1a".repeat(20)}`), getCode: vi.fn().mockResolvedValue("0x6000"),
     readContract,
     getLogs: vi.fn().mockResolvedValue(options.logs ?? defaultLogs),
     getBlock: vi.fn(async ({ blockTag, blockNumber }: { blockTag?: string; blockNumber?: bigint }) => {
@@ -359,7 +359,7 @@ it("rejects a standalone invalidation for an unknown action", async () => {
 
 it("fails closed when the action resource cap is exceeded", async () => {
   const repeatedLog = hubLog("FanActionRecorded", {});
-  const repeated = Array.from({ length: 10_001 }, () => repeatedLog);
+  const repeated = Array.from({ length: 50_001 }, () => repeatedLog);
   await expect(readFinalizedActionSnapshot(makeFixture({ logs: repeated }).options)).rejects.toThrow("action cap exceeded");
 });
 
@@ -420,7 +420,7 @@ it("reads every allowlisted Hub at one common finalized block and keeps an empty
     throw new Error("Unexpected block");
   });
   const client = {
-    getChainId: vi.fn().mockResolvedValue(91342), getBlock,
+    getChainId: vi.fn().mockResolvedValue(91342), getStorageAt: vi.fn().mockResolvedValue(`0x${"0".repeat(24)}${"1a".repeat(20)}`), getCode: vi.fn().mockResolvedValue("0x6000"), getBlock,
     getLogs: vi.fn().mockResolvedValue([]),
     readContract: vi.fn(async ({ functionName }: { functionName: string }) => {
       if (functionName === "environmentId") return environmentId;
@@ -448,7 +448,7 @@ it("reads every allowlisted Hub at one common finalized block and keeps an empty
 it("fails the whole multi-Hub snapshot when one source cannot be read", async () => {
   const newHub = address("17");
   const client = {
-    getChainId: vi.fn().mockResolvedValue(91342),
+    getChainId: vi.fn().mockResolvedValue(91342), getStorageAt: vi.fn().mockResolvedValue(`0x${"0".repeat(24)}${"1a".repeat(20)}`), getCode: vi.fn().mockResolvedValue("0x6000"),
     getBlock: vi.fn().mockResolvedValue({ number: 120n, hash: finalBlockHash, timestamp: 200_000n }),
     getLogs: vi.fn(async ({ address: target }: { address: Address | Address[] }) => {
       if ((Array.isArray(target) ? target : [target]).some((item) => getAddress(item) === getAddress(newHub))) throw new Error("new Hub RPC unavailable");

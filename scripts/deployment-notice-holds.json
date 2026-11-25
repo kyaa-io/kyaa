@@ -8,7 +8,6 @@
     "release-notes/2026-11-21-admin-copy-apply.json"
   ],
   "chemi-tab": [
-    "release-notes/2026-11-25-chemi-stage-layout.json",
     "release-notes/2026-11-24-chemi-match-run.json",
     "release-notes/2026-11-24-chemi-r4c.json",
     "release-notes/2026-11-24-chemi-expressions.json",
@@ -143,12 +142,19 @@
     "release-notes/2026-11-25-chemi-growth-match.json",
     "release-notes/2026-11-25-chemi-reading-language.json",
     "release-notes/2026-11-25-chemi-fan-copy.json",
+    "release-notes/2026-11-25-chemi-mileage-price.json",
+    "release-notes/2026-11-25-chemi-mileage-extra-game.json",
+    "release-notes/2026-11-25-chemi-stage-layout.json",
     "release-notes/2026-11-25-chemi-pc-scene.json",
     "release-notes/2026-11-25-chemi-match-favorites.json",
     "release-notes/2026-11-25-chemi-ask-wait.json",
     "release-notes/2026-11-25-chemi-run-retry.json",
     "release-notes/2026-11-25-chemi-saju-languages.json",
-    "release-notes/2026-11-25-chemi-art-likeness.json"
+    "release-notes/2026-11-25-chemi-art-likeness.json",
+    "release-notes/2026-11-25-chemi-star-pc.json",
+    "release-notes/2026-11-25-chemi-fortune-back.json",
+    "release-notes/2026-11-25-chemi-guide-languages.json",
+    "release-notes/2026-11-25-chemi-motion-slots.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
@@ -171,6 +177,9 @@
   ],
   "revamp-search": [
     "release-notes/2026-11-25-revamp-search.json"
+  ],
+  "stamp-tier": [
+    "release-notes/2026-11-25-stamp-tier.json"
   ],
   "goods-menu": [
     "release-notes/2026-11-25-goods-menu.json"

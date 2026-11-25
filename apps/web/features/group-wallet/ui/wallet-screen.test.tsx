@@ -23,14 +23,14 @@ vi.stubGlobal=((name:string,value:unknown)=>name==='fetch'?nativeStub(name,vi.fn
 beforeEach(()=>{clearResources();sessionRefusal.code='';grantedFirst.left=0;rewardedAd.noClose=false;rewardedAd.requests=0;sessionStorage.clear();rewardedAd.unit='/123/rewarded';rewardedAd.outcome='earned';});
 it('asks for the first stamp instead of a zero-day streak',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:{...wallet,attendance:{...wallet.attendance,streak:0,nextBonusIn:7}})));
- render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'});
+ render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'});
  expect(screen.getByRole('heading',{name:'오늘 첫 스탬프를 찍어요'})).toBeInTheDocument();expect(screen.queryByText(/0일 연속/)).toBeNull();
 });
 it('shows the seventh-day reward',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
- render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'});
+ render(<WalletScreen locale='ko' attendance/>);await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'});
  expect(screen.getByRole('heading',{name:'6일 연속 출석 중'})).toBeInTheDocument();
- expect(screen.getByText('오늘 일곱 번째 스탬프를 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 포인트를 받아요 · 7일 연속 출석하면 보너스 포인트')).toBeInTheDocument();expect(screen.queryByText('+20P')).not.toBeInTheDocument();
+ expect(screen.getByText('오늘 일곱 번째 스탬프를 찍어요')).toBeInTheDocument();expect(screen.getByText('매일 출석하면 마일리지를 받아요 · 7일 연속 출석하면 보너스 마일리지')).toBeInTheDocument();expect(screen.queryByText('+20M')).not.toBeInTheDocument();
 });
 it('keeps legacy receipts pending instead of reposting them',async()=>{
  sessionStorage.setItem('kyaa-wallet-pending:owner-a',JSON.stringify({operation:'exchange',requestKey:id,target:'ticket',units:1,policyVersion:'group-wallet-v1'}));
@@ -48,15 +48,15 @@ it('disables attendance before the configured reward start date',async()=>{
 it('renders the balance and a disabled check-in when rewards never start (infinity)',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}: {...wallet,rewardsStartOn:'infinity'})));
  render(<WalletScreen locale='ko' attendance/>);
- expect(await screen.findByRole('button',{name:/출석하고 포인트 받기/})).toBeDisabled();
+ expect(await screen.findByRole('button',{name:/출석하고 마일리지 받기/})).toBeDisabled();
  expect(screen.queryByText('요청을 완료하지 못했어요.')).not.toBeInTheDocument();
 });
 
 
 it('keeps source wallet balances on the shared wallet card',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
- render(<WalletScreen locale='ko' localProfile={{nickname:'스타벅스라이프',avatarUrl:'/images/avatars/star-pink.webp'}} localPresentation={{benefitsHref:'/benefits',historyRows:[{label:'출석체크 · 오늘',value:'포인트 적립'}]}}/>);
- expect(await screen.findByText('240')).toBeInTheDocument();expect(document.querySelector('[data-wallet-card="my"]')).toHaveAttribute('href','/benefits');expect(await screen.findByText('포인트 적립')).toBeInTheDocument();expect(screen.getAllByText('응모권')).toHaveLength(1);expect(screen.queryByRole('button',{name:'교환하기'})).toBeNull();
+ render(<WalletScreen locale='ko' localProfile={{nickname:'스타벅스라이프',avatarUrl:'/images/avatars/star-pink.webp'}} localPresentation={{benefitsHref:'/benefits',historyRows:[{label:'출석체크 · 오늘',value:'마일리지 적립'}]}}/>);
+ expect(await screen.findByText('240')).toBeInTheDocument();expect(document.querySelector('[data-wallet-card="my"]')).toHaveAttribute('href','/benefits');expect(await screen.findByText('마일리지 적립')).toBeInTheDocument();expect(screen.getAllByText('응모권')).toHaveLength(1);expect(screen.queryByRole('button',{name:'교환하기'})).toBeNull();
 });
 it('renders source balance failure from the real resource and retries the same read',async()=>{
  let reads=0;vi.stubGlobal('fetch',vi.fn(async(url:string)=>{if(url==='/api/me/wallet'){reads++;return reads===1?Response.json({error:{code:'UNAVAILABLE'}},{status:503}):Response.json(wallet);}return Response.json({entries:[]});}));
@@ -85,8 +85,8 @@ it('UI019 attendance dialog shows refreshed actual balance after a local receipt
  }));
  render(<WalletScreen locale='ko' attendance/>);
  expect(await screen.findByRole('dialog',{name:'출석체크'})).toBeInTheDocument();
- expect(methods).not.toContain('POST');fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'}));
- expect(await screen.findByText('포인트 270 P')).toBeInTheDocument();expect(methods.filter(x=>x==='POST')).toHaveLength(1);
+ expect(methods).not.toContain('POST');fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
+ expect(await screen.findByText('마일리지 270 M')).toBeInTheDocument();expect(methods.filter(x=>x==='POST')).toHaveLength(1);
 });
 it('UI019 attendance retries a lost receipt without another check-in',async()=>{
  let key='',checked=false;const writes:string[]=[];
@@ -96,9 +96,9 @@ it('UI019 attendance retries a lost receipt without another check-in',async()=>{
   if(url.endsWith('/history'))return Response.json({entries:[]});
   return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked}});
  }));
- const view=render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'}));
+ const view=render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
  fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));
- expect(await screen.findByText('포인트 270 P')).toBeInTheDocument();expect(writes).toEqual(['/api/me/wallet/check-in']);view.unmount();
+ expect(await screen.findByText('마일리지 270 M')).toBeInTheDocument();expect(writes).toEqual(['/api/me/wallet/check-in']);view.unmount();
 });
 it('wallet page shows the balance card without any exchange',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
@@ -168,5 +168,5 @@ it('names history rows after the real activity and the correction reason, with t
  await screen.findByText('글 쓰기');
  const text=view.container.textContent??'';
  expect(text).toContain('글 삭제로 회수');expect(text).toContain('공감 누르기');expect(text).toContain('활동 참여');
- expect(text).toContain('-20 P');
+ expect(text).toContain('-20 M');
 });

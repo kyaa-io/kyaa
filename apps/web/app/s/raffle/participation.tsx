@@ -1,4 +1,6 @@
 'use client';
+
+import { sendGa4Event } from '@/features/analytics/client/ga4-client';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { FanPrintStamp } from '@/components/fan-ui/fan-print';
 import { Check, Link2, Share2, Ticket } from '@/components/fan-ui/fan-icons';
@@ -8,6 +10,7 @@ import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import type { AppLocale } from '@/i18n/locales';
+import { marketingConsentCopy } from '@/features/notification/marketing-consent-copy';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { raffleInviteText, raffleLongformText, raffleOddsText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
 import { raffleInviteCode, raffleShareHref } from '@/features/benefit/domain/signup-event';
@@ -52,6 +55,47 @@ const storeInvite = (code?: string) => { try { if (code) window.localStorage.set
 const enterKey = 'kyaa:raffle:enter';
 const takeEnterIntent = () => { try { const wants = window.sessionStorage.getItem(enterKey) === '1'; window.sessionStorage.removeItem(enterKey); return wants; } catch { return false; } };
 const keepEnterIntent = () => { try { window.sessionStorage.setItem(enterKey, '1'); } catch { /* 저장소 없음: 주소의 ?enter=1이 남는다 */ } };
+function RaffleEmailConsent({ locale }: { locale: AppLocale }) {
+  const { authenticated, getAccessToken } = useByUsAuth();
+  const [consent, setConsent] = useState<boolean>();
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const readOrUpdate = useCallback(async (value?: boolean) => {
+    const token = await getAccessToken();
+    if (!token) throw new Error('auth');
+    const response = await fetch('/api/notifications/preferences', {
+      method: value === undefined ? 'GET' : 'PATCH',
+      cache: 'no-store',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: value === undefined ? undefined : JSON.stringify({ marketingNotifications: value }),
+    });
+    if (!response.ok) throw new Error('preferences');
+    const body = await response.json();
+    if (typeof body.preferences?.marketingNotifications !== 'boolean') throw new Error('preferences');
+    return body.preferences.marketingNotifications as boolean;
+  }, [getAccessToken]);
+  useEffect(() => {
+    let live = true;
+    setConsent(undefined);
+    if (authenticated) void readOrUpdate().then(value => { if (live) setConsent(value); }).catch(() => {});
+    return () => { live = false; };
+  }, [authenticated, readOrUpdate]);
+  async function update(value: boolean) {
+    setPending(true);
+    setFailed(false);
+    try { setConsent(await readOrUpdate(value)); }
+    catch { setFailed(true); }
+    finally { setPending(false); }
+  }
+  const copy = marketingConsentCopy[locale];
+  return <div className={styles.consent} data-raffle-consent>
+    <label><input type="checkbox" checked={consent === true} disabled={pending || consent === undefined}
+      onChange={event => void update(event.currentTarget.checked)} /><FanDisplay role="strong">{copy.title}</FanDisplay></label>
+    <FanDisplay role="caption" as="p" className={styles.muted}>{copy.detail}</FanDisplay>
+    {failed && <p className={styles.enterError} role="alert"><FanDisplay role="caption">{signupRaffleText(locale, 'error')}</FanDisplay></p>}
+  </div>;
+}
+
 /** 앱 안 브라우저(X 등)에서 Safari·Chrome으로 옮기면 sessionStorage는 따라가지 않는다. 그래서 응모 의도를 주소(?enter=1)에도 싣는다:
  * 로그인 뒤 돌아올 주소와 '링크 복사' 주소가 같은 값이다(감사 RAFFLE-FUNNEL-CHECK-1123 2번). 해시와 개발 미리보기 값은 뺀다. */
 export const raffleEnterHref = (href: string) => { const url = new URL(href); url.searchParams.delete('preview'); url.searchParams.set('enter', '1'); url.hash = ''; return url.href; };
@@ -67,8 +111,9 @@ const takeEnterFromAddress = () => {
     return wants;
   } catch { return false; }
 };
-type EntryResult = { entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; invite?: 'registered' | 'refused' | 'pending' };
 const count = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
+
+type EntryResult = { newEntry?: boolean; entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; invite?: 'registered' | 'refused' | 'pending' };
 
 export function RaffleProvider({ locale, closed, closesAt, now, preview, invite, inviterName, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; /** 주소의 ?invite= 로 받은 친구의 초대 코드 */ invite?: string; inviterName?: string; children: ReactNode }) {
   const auth = useByUsAuth(), { getAccessToken } = auth;
@@ -89,7 +134,11 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     const code = method === 'POST' ? received.current : undefined;
     const response = await fetch('/api/signup-event/entry', { method, headers: { authorization: `Bearer ${token}`, ...(code ? { 'content-type': 'application/json' } : {}) }, ...(code ? { body: JSON.stringify({ invite: code }) } : {}) });
     if (!response.ok) throw new Error('entry');
-    return await response.json() as EntryResult;
+    const result = await response.json() as EntryResult;
+    if (method === 'POST' && result.newEntry === true) {
+      sendGa4Event('raffle_enter', { campaign: 'raffle-1125', method: result.invite === 'registered' ? 'invite' : 'direct' });
+    }
+    return result;
   }, [getAccessToken]);
   useEffect(() => {
     const code = raffleInviteCode(invite) ?? storedInvite();
@@ -228,6 +277,7 @@ export function RaffleEnterBlock() {
             : <p className={styles.enterStatus} data-state="entered"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>}
         </div>
       : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
+    {r.entered && <RaffleEmailConsent locale={r.locale} />}
   </div>;
 }
 

@@ -15,7 +15,7 @@ afterEach(() => {
 it("shows the server price before a date is selected", async () => {
   vi.stubGlobal("fetch", async () => Response.json({ price: 7 }));
   render(<DatePurchase character="dosa" locale="ko" />);
-  expect(await screen.findByRole("heading", { name: /7P/ })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: /7M/ })).toBeVisible();
 });
 
 it("shows activity earning when the production balance is short", async () => {
@@ -25,18 +25,18 @@ it("shows activity earning when the production balance is short", async () => {
     target: { value: "20270515" },
   });
   fireEvent.click(screen.getByText("가격 확인"));
-  expect(await screen.findByText("9P가 부족해요.")).toBeTruthy();
+  expect(await screen.findByText("9M가 부족해요.")).toBeTruthy();
   expect(
-    screen.getByRole("link", { name: "출석하고 포인트 받기" }),
+    screen.getByRole("link", { name: "출석하고 마일리지 받기" }),
   ).toBeTruthy();
-  expect(screen.queryByText("시험 포인트 충전")).toBeNull();
+  expect(screen.queryByText("시험 마일리지 충전")).toBeNull();
 });
 
 it.each([
-  [9, "1P가 부족해요."],
-  [10, "구매 후 잔액 0P"],
-  [11, "구매 후 잔액 1P"],
-] as const)("quotes a 10P purchase with a %iP balance", async (balance, message) => {
+  [9, "1M가 부족해요."],
+  [10, "구매 후 잔액 0M"],
+  [11, "구매 후 잔액 1M"],
+] as const)("quotes a 10M purchase with a %iP balance", async (balance, message) => {
   vi.stubGlobal("fetch", async () => Response.json({ balance, price: 10 }));
   render(<DatePurchase character="dosa" locale="ko" />);
   fireEvent.change(screen.getByLabelText("운세를 볼 날짜"), {
@@ -65,7 +65,7 @@ it("returns to the selected date and requires confirmation again after a DEV top
     target: { value: "20270515" },
   });
   fireEvent.click(screen.getByText("가격 확인"));
-  const topup = await screen.findByRole("link", { name: "시험 포인트 충전" });
+  const topup = await screen.findByRole("link", { name: "시험 마일리지 충전" });
   const destination = new URL((topup as HTMLAnchorElement).href);
   first.unmount();
   history.replaceState({}, "", destination.pathname + destination.search);
@@ -84,7 +84,7 @@ it("returns to the selected date and requires confirmation again after a DEV top
   render(<DatePurchase {...props} />);
   expect(screen.getByLabelText("운세를 볼 날짜")).toHaveValue("2027.05.15");
   fireEvent.click(screen.getByText("가격 확인"));
-  expect(await screen.findByText("구매 후 잔액 91P")).toBeTruthy();
+  expect(await screen.findByText("구매 후 잔액 91M")).toBeTruthy();
   expect(calls.map((c) => c.confirm)).toEqual([false, false]);
   fireEvent.click(screen.getByText("취소"));
   expect(calls).toHaveLength(2);
@@ -110,7 +110,7 @@ it("takes the date as eight digits with a wheel, never the browser date input", 
   expect(screen.getByRole("button", { name: "가격 확인" })).toBeDisabled();
   fireEvent.change(input, { target: { value: "20270515" } });
   fireEvent.click(screen.getByRole("button", { name: "가격 확인" }));
-  expect(await screen.findByText("구매 후 잔액 2P")).toBeVisible();
+  expect(await screen.findByText("구매 후 잔액 2M")).toBeVisible();
   expect(calls[0].day).toBe("2027-05-15");
   // 휠: 올해 앞뒤 한 해씩 세 해를 고를 수 있고, 판 제목은 생년월일이 아니다.
   fireEvent.click(screen.getByRole("button", { name: "휠로 고르기" }));

@@ -1,3 +1,4 @@
+import { resetGa4ForTests, startGa4 } from '@/features/analytics/client/ga4-client';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const auth = vi.hoisted(() => ({ authenticated: false, ready: true, login: vi.fn(), getAccessToken: vi.fn(async () => 'token') }));
@@ -47,6 +48,9 @@ function server(status: Record<string, unknown>) {
   const calls: Array<{ url: string; method: string; body?: string }> = [];
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, method: init?.method ?? 'GET', body: typeof init?.body === 'string' ? init.body : undefined });
+    if (url === '/api/notifications/preferences') {
+      return json({ preferences: { marketingNotifications: init?.method === 'PATCH' } });
+    }
     if (url.includes('invite-code')) return json({ code: mine, redeemed: false, redemptionState: 'none' });
     return json(init?.method === 'POST' ? { ...status, entered: true, ...(init.body ? { invite: 'registered' } : {}) } : status);
   });
@@ -74,7 +78,18 @@ it('shows my chances and invited friends only from the server, and shares my own
   expect(screen.getByRole('heading', { level: 3, name: '친구 1명 초대할 때마다 당첨 기회 +3' })).toBeTruthy();
   expect(card.textContent).toContain('이벤트 기간에 내 링크로 새로 가입하고 응모한 친구만 해당돼요');
   expect(card.querySelector('[data-raffle-friends="2"]')?.textContent).toBe('2명 참여 · 당첨 기회 +6회');
-  expect(calls.map(call => `${call.method} ${call.url}`)).toEqual(['GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code']);
+  expect(calls.map(call => `${call.method} ${call.url}`).sort()).toEqual([
+    'GET /api/notifications/preferences', 'GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code',
+  ]);
+  const consent = screen.getByRole('checkbox', { name: /이벤트·혜택/ }) as HTMLInputElement;
+  expect(consent.checked).toBe(false);
+  fireEvent.click(consent);
+  await settle();
+  expect(consent.checked).toBe(true);
+  expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: true }));
+  fireEvent.click(consent);
+  await settle();
+  expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: false }));
   // 응모 뒤에는 초대 버튼이 화면의 다음 행동(primary)
   const invite = screen.getByRole('button', { name: '친구 초대하기' });
   expect(invite.getAttribute('data-fan-action-emphasis')).toBe('primary');
@@ -395,4 +410,34 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
     await settle();
     expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET', 'POST']);
   });
+});
+
+it.each([
+  [true, true, undefined, 'direct'],
+  [true, true, 'registered', 'invite'],
+  [true, false, 'registered', undefined],
+  [false, false, undefined, undefined],
+] as const)('measures only newly committed raffle entries (%s, %s, %s)', async (ok, newEntry, invite, method) => {
+  auth.authenticated = true;
+  window.history.replaceState(null, '', '/s/raffle?enter=1');
+  const gtag = vi.fn();
+  window.gtag = gtag;
+  startGa4('G-TEST', '/s/raffle');
+  try {
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.includes('invite-code')) return json({ code: mine, redeemed: false, redemptionState: 'none' });
+      if (init?.method === 'POST') return { ok, json: async () => ({ entered: true, newEntry, invite }) };
+      return json({ entered: false });
+    }));
+    render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now} invite={invite ? friendCode : undefined}><RaffleEnterBlock /></RaffleProvider>);
+    await settle();
+    expect(gtag.mock.calls.filter(([command]) => command === 'event')).toEqual(
+      method ? [['event', 'raffle_enter', { campaign: 'raffle-1125', method }]] : [],
+    );
+  } finally {
+    resetGa4ForTests();
+    delete window.gtag;
+    document.getElementById('kyaa-ga4')?.remove();
+    window.history.replaceState(null, '', '/');
+  }
 });

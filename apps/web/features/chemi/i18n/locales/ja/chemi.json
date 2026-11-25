@@ -1,4 +1,8 @@
 {
+  "guide": {
+    "growth": "ミニ推しを育てる",
+    "growthDetail": "ログインして占い結果を見るかゲームを最後までプレイすると、選んだ推しとの親密EXPが貯まるよ。同じ推し・同じコンテンツにつき1日1回もらえるよ。占いは種類ごとに1日最大3人の推しに親密EXPが入るよ。"
+  },
   "menu": {
     "home": "HOME",
     "my": "MY"
@@ -11,10 +15,12 @@
     "gameMinutes": "{count}分後に無料プレイが再開します"
   },
   "home": {
-    "gamePricing": "各ゲームは毎日3回まで無料です。追加プレイは順に100P、300P、500P。4回目からは毎回1,000Pで、回数制限はありません。",
+    "mileageGuideTitle": "マイルの使い方",
+    "datePricing": "別の日の運勢は10Mで開けます。活動で獲得したマイルから使われ、一度開いた占いは再度見られます。ゲーム回数は韓国時間の午前0時にリセットされます。",
+    "gamePricing": "各ゲームは毎日3回まで無料です。追加プレイは順に10M、30M、50M。4回目からは毎回100Mで、回数制限はありません。",
     "todayResult": "今日の結果",
     "playsLeft": "無料 残り{n}回",
-    "extraCost": "追加 {n}P",
+    "extraCost": "追加 {n}M",
     "playsDone": "また明日",
     "rankingError": "ランキングを読み込めませんでした。",
     "descriptions": {
@@ -406,11 +412,11 @@
     "askLoadFailed": "質問を読み込めませんでした。",
     "askLimit": "今日の質問をすべて使いました。",
     "askRemind": "明日知らせて",
-    "askExtraCta": "{cost}Pでもう1つ",
-    "askExtraTitle": "{cost}Pで質問をもう1つ",
+    "askExtraCta": "{cost}Mでもう1つ",
+    "askExtraTitle": "{cost}Mで質問をもう1つ",
     "askExtraLabel": "残りの追加質問",
-    "askExtraPay": "{cost}P使って質問する",
-    "askExtraShort": "ポイントが足りません",
+    "askExtraPay": "{cost}M使って質問する",
+    "askExtraShort": "マイルが足りません",
     "askReminded": "通知を申し込みました",
     "askRemindNoMail": "メール認証を済ませると通知を受け取れます",
     "askRemindFailed": "通知を申し込めませんでした",
@@ -482,7 +488,7 @@
     "star_people": "人間関係",
     "star_money": "お金",
     "star_work": "仕事・勉強",
-    "pointsShort": "{points}P足りません。",
+    "pointsShort": "{points}M足りません。",
     "testTopup": "テストチャージ",
     "depthHigh": "一歩踏み出す日",
     "depthMid": "いつものペースで",

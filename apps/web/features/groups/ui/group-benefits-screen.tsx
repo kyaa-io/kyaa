@@ -99,12 +99,11 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
  const auth=useGroupRequest(),guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated)||bias.status==='guest';
  const passportId=auth.authenticated?bias.selected?.passportId:undefined,roadmap=useGroupResource(passportId?`/api/me/passports/${encodeURIComponent(passportId)}/roadmap`:null,parseRoadmap);
  const page=roadmap.data?roadmap.data.pages[openingPage(roadmap.data.pages)]:undefined;
- // DS-D 9/9: a claimed page is spent — with no next page yet the count starts again from 0, and 하트 받기 shows only for a page that can be claimed.
- const filled=page?(page.claimed?0:page.filled):undefined,claimable=Boolean(page?.claimable&&!page.claimed);
+ const filled=roadmap.data?.pages.reduce((total,current)=>total+current.filled,0);
  const stamps:StanSlot=guest?'locked':!bias.selected?(bias.status==='loading'?'loading':0):filled!==undefined?filled:roadmap.data?0:roadmap.error?'missing':'loading';
  const hearts:StanSlot=guest?'locked':bias.status==='loading'?'loading':bias.selected?bias.selected.hearts??'missing':0;
  const stripSlots=page&&!page.claimed?page.slots.map(slot=>({kind:slot.kind,filled:slot.state==='filled'})):null;
- return {guest,stamps,hearts,passportId,claimable,stripSlots};
+ return {guest,stamps,hearts,passportId,stripSlots};
 }
 /** 럭키드로우 section (대표 11/13 09:39): its header, the points → ticket swap line, then the draw card and the past draws (StanLucky). */
 function BenefitsLucky({locale,bias,signedOut,wallet}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean;wallet:ReactNode}){
@@ -146,13 +145,13 @@ export function MyHeartExchange({locale}:{locale:AppLocale}){
 /** Four wallet tiles; guests keep locked balances and use the profile login action. */
 function BenefitsWallet({locale,signedOut=false,bias,part}:{locale:AppLocale;signedOut?:boolean;bias:SelectedBias;part:'tickets'|'hearts'}){
  const auth=useGroupRequest(),w=walletCopy(locale),wallet=useGroupResource(auth.authenticated?'/api/me/wallet':null,parseWallet);
- const {guest,stamps,hearts,passportId,claimable}=useStanNumbers(bias,signedOut),favorite=guest?null:stanFavorite(bias),slug=favorite?.slug??null;
+ const {guest,stamps,hearts,passportId}=useStanNumbers(bias,signedOut);
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);},[wallet.retry]);
  const sections=useContext(SectionContext),retryAll=()=>window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT)),failed=auth.ready&&auth.authenticated&&!wallet.loading&&!wallet.data,allFailed=useSectionFailure(`wallet-${part}`,failed,retryAll),lifted=useLiftedAlert(`wallet-${part}`,{message:w.error,label:w.retry,retry:retryAll},failed&&!allFailed),walletAlert=lifted?null:<FanState inline kind='error' className={styles.inlineError} title={w.error} actions={<FanAction onClick={retryAll}>{w.retry}</FanAction>}/>;
  if(allFailed)return <div className={styles.pWallet}><FanState inline compact kind='error' title={w.error} actions={<FanAction variant='text' onClick={()=>sections?.retryAll()}>{w.retry}</FanAction>}/></div>;
  const loginPath=part==="hearts"?"/my":"/benefits";
  const loginHref:string=fanLoginHref(locale,`${loginPath}?locale=${locale}`);
- const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet part={part} locale={locale} state={state} loginHref={loginHref} stamps={stamps} hearts={hearts} favoritePicker={!guest&&!bias.selected&&!bias.unverified&&(bias.status==='empty'||bias.status==='ready')?(bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FavoritePickMenu>:<FanAction href={`/pages/groups?locale=${locale}`}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FanAction>):undefined} links={{hearts:slug?`/${encodeURIComponent(slug)}?tab=members&locale=${locale}`:`/passports?locale=${locale}`,claim:passportId&&claimable?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:undefined}}/>;
+ const card=(state:Parameters<typeof WalletCard>[0]['state'])=><StanWallet part={part} locale={locale} state={state} loginHref={loginHref} stamps={stamps} hearts={hearts} favoritePicker={!guest&&!bias.selected&&!bias.unverified&&(bias.status==='empty'||bias.status==='ready')?(bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FavoritePickMenu>:<FanAction href={`/pages/groups?locale=${locale}`}><img src="/images/groups/join-community-cutout-20261113.webp" alt="" width={64} height={45}/>{dukjilText(locale,'heartPick')}</FanAction>):undefined} links={{hearts:passportId?`/passports/${encodeURIComponent(passportId)}?locale=${locale}#mission-book`:`/passports?locale=${locale}`}}/>;
  // The server saw no session: the signed-out card is drawn from the first HTML instead of a loading card of another height.
  if(!auth.ready&&signedOut||auth.ready&&!auth.authenticated)return card({kind:'guest',action:null});
  if(!auth.ready||wallet.loading)return card({kind:'loading'});

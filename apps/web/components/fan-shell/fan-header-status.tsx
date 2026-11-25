@@ -11,8 +11,8 @@ import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from "@
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { defaultPassport } from "@/features/selected-bias/domain/selected-bias-pick";
 import { useSelectedBias, type SelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
-import { fanTierName } from "@/features/rewards/domain/fan-stage";
-import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
+import { fanStageLabel, fanTierEntryKey } from "@/features/rewards/domain/fan-stage";
+import { FanTierBadge, FanTierNumeral } from "@/features/rewards/ui/fan-tier-badge";
 import { walletSchema } from "@/server/group-wallet/domain";
 import type { AppLocale } from "@/i18n/locales";
 import { headerStatusCopy } from "./fan-header-status-copy";
@@ -53,7 +53,8 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   const passport = headerTier(bias);
   const tier = passport?.tier;
   const myHref = `/my?locale=${locale}${passport ? `&passport=${encodeURIComponent(passport.slug)}#my-passport` : ""}`;
-  const grade = tier ? fanTierName(locale, tier) : "";
+  const stageKey = tier ? passport?.stage?.key ?? fanTierEntryKey(tier) : null;
+  const grade = tier && stageKey ? fanStageLabel(locale, { tier, subdivision: Number(stageKey.split("-").at(-1)) }) : "";
   const points = wallet.data?.points;
   useChangeFlash(chip, [grade || undefined, points]);
   // A stale authenticated session must never keep a previously read member balance/tier on screen.
@@ -72,7 +73,7 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
     event.preventDefault();
     window.dispatchEvent(new Event("hashchange"));
   }} data-header-status="" aria-label={summary}>
-    {tier && <span className={styles.grade} data-header-tier={tier} title={grade}><FanTierBadge tier={tier} stageKey={passport?.stage?.key} locale={locale} size={16} eager /></span>}
+    {tier && <span className={styles.grade} data-header-tier={tier} title={grade}><FanTierBadge tier={tier} stageKey={stageKey} locale={locale} size={16} eager /><FanTierNumeral tier={tier} stageKey={stageKey} height={12} /></span>}
     <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? null : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }

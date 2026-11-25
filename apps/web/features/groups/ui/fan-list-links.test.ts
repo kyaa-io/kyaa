@@ -12,7 +12,7 @@ const walk = (dir: string): string[] => readdirSync(dir).flatMap(name => {
 it("links the fan list at ?tab=members; the old ?tab=fans is not a tab and falls back to home", () => {
   const files = ["app", "components", "features"].flatMap(dir => walk(join(WEB, dir))).filter(path => !path.endsWith("fan-list-links.test.ts"));
   expect(files.filter(path => readFileSync(path, "utf8").includes("tab=fans"))).toEqual([]);
-  for (const name of ["stan-lucky-cheer.tsx", "group-benefits-screen.tsx", "duo-profile.tsx"]) {
+  for (const name of ["stan-lucky-cheer.tsx", "duo-profile.tsx"]) {
     expect(readFileSync(join(WEB, "features/groups/ui", name), "utf8")).toContain("?tab=members&locale=");
   }
 });

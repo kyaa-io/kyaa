@@ -39,6 +39,7 @@ const patch = z
     artistOnlineNotifications: z.boolean().optional(),
     socialNotifications: z.boolean().optional(),
     friendActivityNotifications: z.boolean().optional(),
+    marketingNotifications: z.boolean().optional(),
     participationNotifications: z.boolean().optional(),
   })
   .strict()

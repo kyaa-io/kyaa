@@ -9,10 +9,10 @@ beforeEach(() => { vi.useFakeTimers(); toast.shown.length = 0; toast.closed.leng
 afterEach(() => vi.useRealTimers());
 
 it("writes the grant in each language without multiplication signs", () => {
-  expect(rewardSummary("ko", 20, 1)).toBe("+20P · 스탬프 1");
-  expect(rewardSummary("en", 1200, 2)).toBe("+1,200P · 2 stamps");
+  expect(rewardSummary("ko", 20, 1)).toBe("+20M · 스탬프 1");
+  expect(rewardSummary("en", 1200, 2)).toBe("+1,200M · 2 stamps");
   expect(rewardSummary("en", 0, 1)).toBe("1 stamp");
-  expect(rewardSummary("ja", 20, 0)).toBe("+20P");
+  expect(rewardSummary("ja", 20, 0)).toBe("+20M");
   expect(rewardSummary("ko", 0, 0)).toBe("");
 });
 
@@ -26,11 +26,11 @@ it("raises the coin badge from the pressed element and adds close grants into on
   vi.advanceTimersByTime(REWARD_MERGE_MS - 200);
   celebrateReward({ locale: "ko", points: 1, stamps: 1 });
   expect(toast.closed).toEqual(["t1"]);
-  expect(toast.shown.at(-1)).toMatchObject({ title: "+4P · 스탬프 1", tone: "success" });
+  expect(toast.shown.at(-1)).toMatchObject({ title: "+4M · 스탬프 1", tone: "success" });
   expect(document.querySelectorAll("[data-reward-badge]")).toHaveLength(1);
   vi.advanceTimersByTime(REWARD_MERGE_MS + 100);
   celebrateReward({ locale: "ko", points: 20 });
-  expect(toast.shown.at(-1)).toMatchObject({ title: "+20P" });
+  expect(toast.shown.at(-1)).toMatchObject({ title: "+20M" });
 });
 
 it("shows a stamp-only grant in words and ignores empty or invalid grants", () => {
@@ -44,7 +44,7 @@ it("shows a stamp-only grant in words and ignores empty or invalid grants", () =
 
 it("writes a spend as a minus toast with a sinking coin badge", () => {
   celebrateSpend({ locale: "ko", points: 10, label: "추가 판 시작" });
-  expect(toast.shown.at(-1)).toMatchObject({ title: "-10P", description: "추가 판 시작", duration: 2800 });
+  expect(toast.shown.at(-1)).toMatchObject({ title: "-10M", description: "추가 판 시작", duration: 2800 });
   const badge = document.querySelector<HTMLElement>("[data-reward-badge]")!;
   expect([badge.textContent, badge.dataset.spend]).toEqual(["-10", ""]);
   vi.advanceTimersByTime(1799);
@@ -59,6 +59,6 @@ it("keeps affinity and points in one notice when the point grant arrives later",
   celebrateReward({ locale: "ko", affinity: { amount: 10, text: "창하 친밀 +10" } });
   celebrateReward({ locale: "ko", points: 3 });
   expect(toast.closed).toEqual(["t1"]);
-  expect(toast.shown.at(-1)).toMatchObject({ title: "+3P · 창하 친밀 +10" });
+  expect(toast.shown.at(-1)).toMatchObject({ title: "+3M · 창하 친밀 +10" });
   expect(document.querySelector("[data-reward-badge] img")?.getAttribute("src")).toContain("heart");
 });

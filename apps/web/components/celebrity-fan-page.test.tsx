@@ -139,7 +139,7 @@ describe("approved fanpage", () => {
     const view = render(<CelebrityFanPage celebrity={hyunji} locale={locale} upcomingLive={null} />);
     const hero = view.container.querySelector('[aria-labelledby="celebrity-heading"]')!;
     expect(hero).toHaveAttribute("data-artist-identity", "true");
-    expect(within(hero as HTMLElement).getByRole("heading")).toHaveTextContent(locale === "ko" ? "현지Hyunji" : /^Hyunji$/);
+    expect(within(hero as HTMLElement).getByRole("heading")).toHaveTextContent(locale === "ko" ? "현지 Hyunji" : /^Hyunji$/);
     expect(within(hero as HTMLElement).getByText(hyunji.summary)).toBeInTheDocument();
     expect(within(hero as HTMLElement).getByRole("link", { name: /Instagram/ })).toHaveAttribute("href", "https://www.instagram.com/hyunjiiee/");
     expect(within(hero as HTMLElement).queryByRole("link", { name: /TikTok|YouTube/ })).not.toBeInTheDocument();
@@ -152,7 +152,7 @@ describe("approved fanpage", () => {
     const wena = { ...kara, slug: "wena", name: "위나", locale: toContentLocale(locale) };
     const view = render(<CelebrityFanPage celebrity={wena} locale={locale} upcomingLive={null} />);
     // 한국어 화면만 한글 이름을 함께 보인다(CREATOR-NAME-I18N-1122).
-    expect(screen.getByRole("heading", { level: 1, name: /We;Na/ }).textContent).toBe(locale === "ko" ? "We;Na위나" : "We;Na");
+    expect(screen.getByRole("heading", { level: 1, name: /We;Na/ }).textContent?.trim()).toBe(locale === "ko" ? "We;Na 위나" : "We;Na");
     expect(view.container.querySelector('img[src*="official-logo"]')).toBeInTheDocument();
     expect(await screen.findByRole("link", { name: /We;Na · Baby Step/ })).toHaveAttribute("href", "https://www.youtube.com/watch?v=172bEkNPqqs");
     expect([...view.container.querySelectorAll("a")].map(link => link.getAttribute("href"))).toContain(`/wena?tab=board&section=media&locale=${locale}&media=photos#celebrity-content`);
@@ -230,7 +230,7 @@ describe("approved fanpage", () => {
     const request = stubHubFetch();
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={upcomingLive} />);
 
-    expect(screen.getByRole("heading", { name: "KARA" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "KARA kyaa official" })).toBeInTheDocument();
     await waitFor(() => expect(request.mock.calls.some(([input, init]) =>
       String(input).includes("/api/live-events/calendar") && !(init as RequestInit | undefined)?.headers,
     )).toBe(true));
@@ -239,7 +239,7 @@ describe("approved fanpage", () => {
   it("keeps creator content visible when page-view storage fails", async () => {
     analytics.pageViewIdempotencyKey.mockRejectedValueOnce(new Error("storage unavailable"));
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={upcomingLive} />);
-    expect(screen.getByRole("heading", { name: "KARA" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "KARA kyaa official" })).toBeInTheDocument();
     expect(await screen.findByText("아직 공개된 소식이 없어요.")).toBeInTheDocument();
   });
   it("scopes a stale authenticated user as anonymous when no token is issued", async () => {
@@ -253,7 +253,7 @@ describe("approved fanpage", () => {
     authenticated = true;
     ownerId = null;
     render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={upcomingLive} />);
-    expect(screen.getByRole("heading", { name: "KARA" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "KARA kyaa official" })).toBeInTheDocument();
     expect(await screen.findByText("아직 공개된 소식이 없어요.")).toBeInTheDocument();
     expect(analytics.pageViewIdempotencyKey).not.toHaveBeenCalled();
   });
@@ -432,8 +432,8 @@ describe("approved fanpage", () => {
     };
     stubHubFetch({ passports: [{ ...ownedPassport, stageProgress }] });
     const view = render(<CelebrityFanPage celebrity={kara} locale="ko" upcomingLive={null} />);
-    expect(await screen.findByText("실버 1")).toBeInTheDocument();
-    expect(screen.getAllByText("실버 2까지 7점").length).toBeGreaterThan(0);
+    expect(await screen.findByText("실버 Ⅰ")).toBeInTheDocument();
+    expect(screen.getAllByText("실버 Ⅱ까지 7점").length).toBeGreaterThan(0);
     expect([...view.container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/medal-v2/silver-1.svg"))).toBe(true);
     expect(screen.getByRole("progressbar", { name: "팬 등급 진행도" })).toHaveAttribute("value", "53");
   });

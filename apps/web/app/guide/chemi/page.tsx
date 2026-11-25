@@ -16,10 +16,6 @@ const copy = {
     title: "케미 탭 안내",
     intro: "케미는 최애와 운세를 보고 미니게임을 하면서 미니 최애를 키우는 탭이에요.",
     beta: "베타 운영 중",
-    points: "포인트 쓰는 법",
-    dates: "오늘의 운세에서 날짜를 골라 그날의 운세를 10P로 열 수 있어요. 활동 포인트부터 쓰고 이미 연 운세는 다시 볼 수 있어요. 게임 횟수는 한국 시간 자정에 새로 생겨요.",
-    growth: "최애 키우기",
-    growthDetail: "로그인하고 운세 결과를 보거나 게임을 끝내면 선택한 최애의 친밀 EXP가 올라요. 같은 최애와 같은 콘텐츠로는 하루 한 번 받아요. 운세는 종류마다 하루 최대 세 명의 최애에게 친밀 EXP를 받을 수 있어요.",
     album: "케미의 성장 탭에서 미니 최애의 방과 친밀 레벨을 볼 수 있어요. 미니 최애는 방구석 연습생에서 시작해 24단계를 올라요. 데뷔조, 방구석 스타가 되는 날 기념 앨범이 열려요.",
     start: "케미 시작하기",
   },
@@ -27,10 +23,6 @@ const copy = {
     title: "Кэмигийн гарын авлага",
     intro: "Кэмид хайртай одтойгоо зурхай үзэж, бяцхан тоглоом тоглон мини одоо өсгөөрэй.",
     beta: "Туршилтын хувилбар",
-    points: "Оноогоо хэрхэн ашиглах вэ?",
-    dates: "Өдрийн зурхайгаас огноо сонгож, 10 оноогоор тухайн өдрийн зурхайг нээнэ. Эхлээд үйл ажиллагааны оноог зарцуулна. Нээсэн зурхайгаа дахин үзэж болно. Тоглох эрх Солонгосын цагаар шөнө дунд шинэчлэгдэнэ.",
-    growth: "Мини одоо өсгөх",
-    growthDetail: "Нэвтэрч зурхайгаа үзэх эсвэл тоглоомоо дуусгахад сонгосон одтойгоо дотносох туршлага хуримтлуулна. Үйл ажиллагаа бүрээс нэг одонд өдөрт нэг удаа туршлага авна. Зурхайн төрөл бүрээс өдөрт гурав хүртэлх одонд туршлага авах боломжтой.",
     album: "Өсөлт хэсгээс мини одныхоо өрөө болон дотно байдлын түвшнийг хараарай. Мини од гэртээ бэлтгэл хийж эхлээд 24 шатаар ахина. Дебют хийх багт орох болон гэрийн од болох үед дурсгалын цомогт зураг нэмэгдэнэ.",
     start: "Кэмиг эхлүүлэх",
   },
@@ -38,10 +30,6 @@ const copy = {
     title: "Chemi guide",
     intro: "Read fortunes and play mini-games with your bias to raise your Mini Bias in Chemi.",
     beta: "In beta",
-    points: "How to use points",
-    dates: "In Daily fortune, choose another date and spend 10P to read its fortune. Activity points are used first. You can reopen readings you’ve already unlocked. Game limits reset at midnight Korea time.",
-    growth: "Raise your Mini Bias",
-    growthDetail: "Sign in and finish a reading or game to earn bond EXP for the bias you chose. You can earn it once a day per activity and bias. Each kind of reading awards EXP to up to three biases per day.",
     album: "Open Growth in Chemi to see your Mini Bias’s room and bond level. Your Mini Bias starts as a bedroom trainee and climbs 24 stages. Album photos unlock along the way.",
     start: "Start Chemi",
   },
@@ -80,7 +68,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
   const language = locale === "ko" || locale === "mn" ? locale : "en";
   const t = copy[language];
-  const { home: names } = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
+  const { home: names, guide } = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
   return <FanAppFrame locale={locale} currentPath="/guide/chemi" mainId="chemi-guide">
     <FanContentContainer as="main" id="chemi-guide" tabIndex={-1} className={styles.page}>
       <header className={styles.intro}>
@@ -105,15 +93,15 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
         </div>
       </section>)}
       <section className={styles.panel}>
-        <FanHeading>{t.points}</FanHeading>
+        <FanHeading>{names.mileageGuideTitle}</FanHeading>
         <FanText role="body">{names.gamePricing}</FanText>
-        <FanText role="body">{t.dates}</FanText>
+        <FanText role="body">{names.datePricing}</FanText>
       </section>
       <section className={styles.growth}>
         <Image unoptimized src="/chemi/grow/room-changha-v2.webp" width={320} height={320} alt="" />
         <div className={styles.copy}>
-          <FanHeading>{t.growth}</FanHeading>
-          <FanText role="body">{t.growthDetail}</FanText>
+          <FanHeading>{guide.growth}</FanHeading>
+          <FanText role="body">{guide.growthDetail}</FanText>
           <FanText role="body">{albumGuide[locale]}</FanText>
         </div>
       </section>

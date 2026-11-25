@@ -51,7 +51,7 @@ export function EarnBadge({ variant, locale, points, stamp = false, remaining = 
     return <span className={[cornerStyles.pill, cornerStyles.badge, className].filter(Boolean).join(" ")} data-earn-badge="corner"><img src={POINT_COIN_SRC} width={16} height={16} alt="" aria-hidden="true" />{points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}</span>}{label && <span className={styles.srOnly}>{label}</span>}</span>;
   }
   if (variant === "balance") {
-    return <span className={cls} data-earn-badge="balance"><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" /><span className={styles.balanceValue}>{(points ?? 0).toLocaleString(locale)}</span><span className={styles.balanceUnit}>P</span></span>;
+    return <span className={cls} data-earn-badge="balance"><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" /><span className={styles.balanceValue}>{(points ?? 0).toLocaleString(locale)}</span><span className={styles.balanceUnit}>M</span></span>;
   }
   const coin = size === "sm" ? 12 : 16;
   // `오늘 +22P` 문구에서 `+` 앞 낱말(오늘·Today)만 알약 앞에 둔다. 숫자는 알약이 말한다.

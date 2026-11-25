@@ -6,7 +6,7 @@ import { raffleInviteCode } from '@/features/benefit/domain/signup-event';
 import { localSignupEnabled, raffleChances, raffleOthers, raffleWinChance, readLocalSnapshot, type LocalSnapshot } from '@/server/signup-event/local';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { createSignupRaffleDatabase, readSignupRaffleStored } from '@/server/signup-event/database';
-import { refreshLocalSignupEvent } from '@/server/signup-event/refresh';
+import { enterSignupRaffle } from '@/server/signup-event/refresh';
 const headers={'cache-control':'private, no-store',vary:'Authorization'};
 /** 전체 기회 합계용 저장 값은 1분 동안 다시 쓴다(요청마다 응모자 전원의 행을 읽지 않게). */
 let storedCache:{at:number;snapshot:Promise<LocalSnapshot>}|undefined;
@@ -45,17 +45,18 @@ export async function POST(request: Request) {
   const invite=await inviteFrom(request);
   const env=loadServerEnv();
   const database=createClient(env.SUPABASE_URL,env.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
-  if(!await refreshLocalSignupEvent(database,actor.appUserId,true))return new Response(null,{status:409,headers});
+  const outcome=await enterSignupRaffle(database,actor.appUserId);
+  if(outcome==='rejected')return new Response(null,{status:409,headers});
   // registered: 친구 초대로 등록됨 · refused: 등록할 수 없는 코드(본인·이미 등록·기존 회원 등, 다시 보내지 않는다) · pending: 잠시 뒤 다시(계정 준비 중 등)
   let inviteState:'registered'|'refused'|'pending'|undefined;
   if(invite){
-   try{await deps.rpc('redeem_community_stamp_invite',{p_app_user_id:actor.appUserId,p_code:invite});inviteState='registered';}
+   try{await deps.rpc('redeem_community_stamp_invite',{p_app_user_id:actor.appUserId,p_code:invite});inviteState='registered';console.info('RAFFLE_INVITE_REGISTERED');}
    catch(error){
     const code=error instanceof Error?error.message:'';
     inviteState=/^COMMUNITY_STAMP_(SELF_INVITE|ALREADY_REDEEMED|INVITE_INELIGIBLE|INVALID_REQUEST|UNAVAILABLE)$/.test(code)?'refused':'pending';
     console.warn('RAFFLE_INVITE_NOT_REGISTERED',code||'unknown');
    }
   }
-  return Response.json({...await status(actor.appUserId),...(inviteState?{invite:inviteState}:{})},{headers});
+  return Response.json({...await status(actor.appUserId),newEntry:outcome==='created',...(inviteState?{invite:inviteState}:{})},{headers});
  }catch(error){return new Response(null,{status:error instanceof AuthError?error.status:503,headers});}
 }

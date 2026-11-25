@@ -15,20 +15,20 @@ const serve=(attendance:Record<string,unknown>,extra:Record<string,unknown>={})=
 beforeEach(()=>{sessionStorage.clear();auth.ready=true;auth.authenticated=true;});
 it('day one: first-stamp title and a single check-in action',async()=>{
  serve({streak:0,nextBonusIn:7});render(<WalletScreen locale='ko' attendance/>);
- expect(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'})).toBeEnabled();expect(screen.getByRole('heading',{name:'오늘 첫 스탬프를 찍어요'})).toBeInTheDocument();expect(screen.queryByText('오늘 출석 완료')).toBeNull();
+ expect(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'})).toBeEnabled();expect(screen.getByRole('heading',{name:'오늘 첫 스탬프를 찍어요'})).toBeInTheDocument();expect(screen.queryByText('오늘 출석 완료')).toBeNull();
 });
 it('mid streak: check-in action and no completion row',async()=>{
  serve({streak:3,nextBonusIn:4});render(<WalletScreen locale='ko' attendance/>);
- expect(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'})).toBeEnabled();expect(screen.getByRole('heading',{name:'3일 연속 출석 중'})).toBeInTheDocument();expect(screen.queryByRole('status')).toBeNull();
+ expect(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'})).toBeEnabled();expect(screen.getByRole('heading',{name:'3일 연속 출석 중'})).toBeInTheDocument();expect(screen.queryByRole('status')).toBeNull();
 });
 it('before the seventh stamp: check-in action and the seventh-day hint',async()=>{
  serve({});render(<WalletScreen locale='ko' attendance/>);
- expect(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'})).toBeEnabled();expect(screen.getByText('오늘 일곱 번째 스탬프를 찍어요')).toBeInTheDocument();
+ expect(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'})).toBeEnabled();expect(screen.getByText('오늘 일곱 번째 스탬프를 찍어요')).toBeInTheDocument();
 });
 it('already done: says completion and the actual points once, offers only the record link',async()=>{
  serve({checkedIn:true,streak:7,nextBonusIn:7,days:[{date:'2026-11-02',points:30}]});render(<WalletScreen locale='ko' attendance/>);
  const status=(await screen.findByText('오늘 출석 완료')).closest('p')!;expect(status).toHaveAttribute('role','status');expect(status).toHaveTextContent('+30');
- expect(screen.getAllByText(/오늘 출석 완료/)).toHaveLength(1);expect(screen.queryByText('완료했어요.')).toBeNull();expect(screen.queryByText(/출석하고 10P 받기/)).toBeNull();
+ expect(screen.getAllByText(/오늘 출석 완료/)).toHaveLength(1);expect(screen.queryByText('완료했어요.')).toBeNull();expect(screen.queryByText(/출석하고 10M 받기/)).toBeNull();
  expect(screen.queryByRole('button',{name:/오늘 출석/})).toBeNull();expect(screen.getByRole('link',{name:'내 출석 기록 보기'})).toHaveAttribute('href',expect.stringContaining('#attendance-record'));
 });
 it('right after the response: completion row carries the refreshed balance, no duplicate success card',async()=>{
@@ -37,8 +37,8 @@ it('right after the response: completion row carries the refreshed balance, no d
   if(url.endsWith('/history'))return Response.json({entries:[]});
   return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked,streak:checked?7:6,nextBonusIn:checked?7:1,days:checked?[{date:'2026-11-02',points:30}]:[]}});
  }));
- render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'}));
- const status=await screen.findByText('포인트 270 P');expect(status.closest('p')).toHaveTextContent('+30');expect(screen.queryByText('완료했어요.')).toBeNull();expect(screen.getAllByRole('status')).toHaveLength(1);
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
+ const status=await screen.findByText('마일리지 270 M');expect(status.closest('p')).toHaveTextContent('+30');expect(screen.queryByText('완료했어요.')).toBeNull();expect(screen.getAllByRole('status')).toHaveLength(1);
 });
 it('wallet error shows one alert with retry; guest sees login only',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>new Response('{}',{status:500})));render(<WalletScreen locale='ko' attendance/>);
@@ -60,11 +60,11 @@ it('check-in transition never shows the before state again after the POST and ke
   if(checked)await gate;
   return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked,streak:checked?7:6,nextBonusIn:checked?7:1,days:checked?[{date:'2026-11-02',points:30}]:[]}});
  }));
- render(<WalletScreen locale='ko' attendance/>);const button=await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'});
- const frames:string[]=[];const snap=()=>frames.push(`${screen.queryByText('출석을 확인하고 있어요')?'panel':''}|${screen.queryByText('오늘 출석 완료')?'done':''}|${screen.queryByText(/포인트 270 P/)?'balance':''}|${screen.queryByRole('button',{name:/오늘 출석하고/})?.hasAttribute('disabled')?'locked':screen.queryByRole('button',{name:/오늘 출석하고/})?'open':''}`);
+ render(<WalletScreen locale='ko' attendance/>);const button=await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'});
+ const frames:string[]=[];const snap=()=>frames.push(`${screen.queryByText('출석을 확인하고 있어요')?'panel':''}|${screen.queryByText('오늘 출석 완료')?'done':''}|${screen.queryByText(/마일리지 270 M/)?'balance':''}|${screen.queryByRole('button',{name:/오늘 출석하고/})?.hasAttribute('disabled')?'locked':screen.queryByRole('button',{name:/오늘 출석하고/})?'open':''}`);
  const observer=new MutationObserver(snap);observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true});
  fireEvent.click(button);await new Promise(r=>setTimeout(r,50));snap();release();
- await screen.findByText('포인트 270 P');observer.disconnect();
+ await screen.findByText('마일리지 270 M');observer.disconnect();
  expect(frames.some(f=>f.startsWith('panel'))).toBe(false);
  const firstDone=frames.findIndex(f=>f.includes('done'));expect(firstDone).toBeGreaterThan(-1);
  expect(frames.slice(0,firstDone).filter(f=>f==='|||open').length).toBeLessThanOrEqual(1);
@@ -79,7 +79,7 @@ it('refetch failure after the POST does not leave the button locked and goes to 
   if(checked)return Response.json({error:{code:'GROUP_WALLET_UNAVAILABLE'}},{status:503});
   return Response.json({...wallet,attendance:{...wallet.attendance,days:[]}});
  }));
- render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'}));
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
  const retry=await screen.findByRole('button',{name:'잔액 다시 확인'});
  expect(retry.hasAttribute('disabled')).toBe(false);expect(screen.getByRole('alert')).toBeTruthy();
  expect(screen.queryByRole('button',{name:/오늘 출석하고/})).toBeNull();
@@ -91,8 +91,8 @@ it('replayed check-in response completes like a fresh one and shows the refreshe
   if(url.endsWith('/history'))return Response.json({entries:[]});
   return Response.json({...wallet,points:checked?270:240,attendance:{...wallet.attendance,checkedIn:checked,streak:checked?7:6,nextBonusIn:checked?7:1,days:checked?[{date:'2026-11-02',points:30}]:[]}});
  }));
- render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'}));
- expect(await screen.findByText('포인트 270 P')).toBeTruthy();expect(screen.getByText('오늘 출석 완료')).toBeTruthy();
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
+ expect(await screen.findByText('마일리지 270 M')).toBeTruthy();expect(screen.getByText('오늘 출석 완료')).toBeTruthy();
  expect(screen.queryByRole('button',{name:/오늘 출석하고/})).toBeNull();
 });
 it('recover with a committed original request completes and shows the refreshed balance',async()=>{
@@ -105,7 +105,7 @@ it('recover with a committed original request completes and shows the refreshed 
  }));
  const {walletCopy}=await import('./copy');
  render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:walletCopy('ko').recover}));
- expect(await screen.findByText('포인트 270 P')).toBeTruthy();expect(screen.getByText('오늘 출석 완료')).toBeTruthy();
+ expect(await screen.findByText('마일리지 270 M')).toBeTruthy();expect(screen.getByText('오늘 출석 완료')).toBeTruthy();
  expect(sessionStorage.getItem('kyaa-wallet-pending:owner-a')).toBeNull();
 });
 it('drops the unplayed award when the balance refetch fails, so a later retry never replays it',async()=>{
@@ -117,7 +117,7 @@ it('drops the unplayed award when the balance refetch fails, so a later retry ne
   if(recovered)return Response.json({...wallet,points:270,attendance:{...wallet.attendance,checkedIn:true,days:[{date:'2026-11-02',points:30}]}});
   return Response.json({...wallet,attendance:{...wallet.attendance,days:[]}});
  }));
- render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 포인트 받기'}));
+ render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
  const retry=await screen.findByRole('button',{name:'잔액 다시 확인'});
  recovered=true;fireEvent.click(retry);
  expect(await screen.findByText('오늘 출석 완료')).toBeTruthy();

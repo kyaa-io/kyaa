@@ -1,7 +1,7 @@
 "use client";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { Check, ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import paper from "@/components/fan-ui/passport-paper.module.css";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -12,18 +12,11 @@ import { dukjilText, type DukjilCopyKey } from "@/features/dukjil/ui/dukjil-copy
 import { useDukjil } from "@/features/dukjil/ui/dukjil-provider";
 import { EarnBadge, EarnBadgeCorner } from "@/features/dukjil/ui/earn-badge";
 import { StampPress } from "@/features/dukjil/ui/stamp-press";
-import { GroupRequestError, useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
-import { notifyFanActivityUpdated } from "@/components/fan-ui/fan-activity-updates";
-import { showFanToast } from "@/components/fan-ui/fan-toast";
-import { loadRewardedGpt, requestRewardedAd, rewardedAdUnit } from "@/features/group-wallet/ui/google-rewarded-ad";
-import { rewardedStopMessage, type RewardedStopKind } from "@/features/group-wallet/ui/rewarded-copy";
-import { runRewardedSession } from "@/features/group-wallet/ui/rewarded-session";
-import { useByUsSession } from "@/components/byus-session-provider";
-import { useByUsAuth } from "@/features/auth/client/cognito-auth";
+import { useGroupResource } from "@/features/groups/ui/use-group-resource";
 import type { Route } from "next";
 import type { AppLocale } from "@/i18n/locales";
 import { buildGuideModel } from "@/features/dukjil-guide/domain/guide-model";
-import { passportClaimResultSchema, passportRoadmapSchema, type PassportRoadmapPage, type PassportRoadmapSlot } from "../domain/dukjil-types";
+import { passportRoadmapSchema, type PassportRoadmapPage, type PassportRoadmapSlot } from "../domain/dukjil-types";
 import { SNS_POST_PROOF, proofMissionListSchema, type ProofMissionList } from "../domain/proof-types";
 import { passportBookText } from "./passport-book-copy";
 import { MISSION_STAMP } from "./passport-book-source";
@@ -150,15 +143,13 @@ function Pager({ index, total, locale, onChange }: { index: number; total: numbe
   </nav>;
 }
 
-/** The page to open on, here and wherever a passport's stamp count shows: one ready to claim, then the first still filling, then the last. */
+/** The page to open on, here and wherever a passport's stamp count shows: the first still filling, then the last. */
 export const openingPage = (pages: readonly PassportRoadmapPage[]) => {
-  const ready = pages.findIndex(page => page.claimable && !page.claimed);
-  if (ready >= 0) return ready;
   const filling = pages.findIndex(page => page.filled < page.slots.length);
   return filling >= 0 ? filling : Math.max(0, pages.length - 1);
 };
 
-function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc, hrefFor }: { page: PassportRoadmapPage; locale: AppLocale; busy: boolean; failed: boolean; onClaim: () => void; proofHref: string; pager: ReactNode; stampSrc?: (stampId: string) => string | undefined; hrefFor: (kind: string | null | undefined) => string | null }) {
+function Page({ page, locale, proofHref, pager, stampSrc, hrefFor }: { page: PassportRoadmapPage; locale: AppLocale; proofHref: string; pager: ReactNode; stampSrc?: (stampId: string) => string | undefined; hrefFor: (kind: string | null | undefined) => string | null }) {
   const locked = page.locked && !page.claimed;
   return <section className={styles.page} aria-labelledby={`mission-page-${page.pageNo}`} data-claimed={page.claimed} data-locked={locked}>
     <header className={styles.pageHead}>
@@ -167,86 +158,29 @@ function Page({ page, locale, busy, failed, onClaim, proofHref, pager, stampSrc,
       {pager}
     </header>
     <ol className={styles.slots}>{page.slots.map(slot => <Slot key={slot.slotNo} slot={slot} locale={locale} stampSrc={slot.stampId ? stampSrc?.(slot.stampId) : undefined} href={locked || slot.state === "filled" ? null : hrefFor(slot.kind)} sheet />)}</ol>
-    {page.claimed ? <p className={styles.claimed}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionClaimed")}</p>
-      : locked ? <FanAction className={styles.lockedAction} variant="neutral" href={proofHref}>{dukjilText(locale, "missionLocked")}</FanAction>
-      : <FanAction className={styles.claim} variant="primary" disabled={!page.claimable || busy} onClick={onClaim} leadingIcon={<Heart size={18} />}>{dukjilText(locale, "missionClaim")}</FanAction>}
-    {failed ? <p className={styles.error} role="alert">{dukjilText(locale, "missionClaimFailed")}</p> : null}
+    {locked ? <FanAction className={styles.lockedAction} variant="neutral" href={proofHref}>{dukjilText(locale, "missionLocked")}</FanAction> : null}
   </section>;
 }
 
 /** Mission book of one passport (K8: every page is drawn in one grid cell, the others hidden and inert, so the book is the tallest page's height
- * from the first paint whichever page it opens on and whichever way it turns): 9 stamp slots per page, one heart per completed page, page 2+ locked until the 찐팬 title. Rendered only while the dukjil policy is active. */
+ * from the first paint whichever page it opens on and whichever way it turns): 9 stamp slots per page, page 2+ locked until the 찐팬 title. Rendered only while the dukjil policy is active. */
 export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc }: { passportId: string; creatorSlug: string; locale: AppLocale; stampSrc?: (stampId: string) => string | undefined }) {
   const dukjil = useDukjil();
   const on = dukjil?.status === "on";
   const roadmap = useGroupResource(on ? `/api/me/passports/${encodeURIComponent(passportId)}/roadmap` : null, parseRoadmap);
   const proofMissions = useGroupResource(on ? `/api/me/proofs/missions?creator=${encodeURIComponent(creatorSlug)}` : null, parseProofMissions, { nameLocale: false });
-  const { request } = useGroupRequest();
-  const session = useByUsSession(), auth = useByUsAuth(), ownerId = session.ownerId ?? auth.user?.id;
-  const [busy, setBusy] = useState<number | null>(null);
-  const [failedPage, setFailedPage] = useState<number | null>(null);
   const [picked, setPicked] = useState<number | null>(null);
   const { retry } = roadmap;
   const bookRef = useRef<HTMLElement>(null), jumped = useRef(false);
-  // DS-D 9/9: 덕질's 하트 받기 › arrives with #mission-book before the book is drawn, so the browser's own hash jump lands on nothing.
-  // Once the pages are drawn, move to the claim button of the open page (else the book title) and focus it, once per visit.
   useEffect(() => {
     if (jumped.current || !roadmap.data || window.location.hash !== "#mission-book") return;
     const root = bookRef.current;
     if (!root) return;
     jumped.current = true;
-    const claimButton = [...root.querySelectorAll<HTMLButtonElement>(`button.${styles.claim}`)].find(button => !button.disabled && !button.closest("[inert],[hidden]"));
-    const target: HTMLElement | null = claimButton ?? root.querySelector<HTMLElement>("#mission-book-title");
+    const target: HTMLElement | null = root.querySelector<HTMLElement>("#mission-book-title");
     target?.scrollIntoView?.({ block: "center" });
     target?.focus({ preventScroll: true });
   }, [roadmap.data]);
-  /** One request key per page until the claim is settled, so a retry after a failure replays the same claim. */
-  const keys = useRef(new Map<number, string>());
-  const alive = useRef(true), ad = useRef<{ show(): boolean; cancel(): void } | null>(null);
-  useEffect(() => { alive.current = true; return () => { alive.current = false; ad.current?.cancel(); }; }, []);
-  const stop = useCallback((kind: RewardedStopKind) => showFanToast({ title: rewardedStopMessage(locale, kind, 0), tone: "error" }), [locale]);
-  const send = useCallback(async (pageNo: number, adSessionId: string) => {
-    const requestKey = keys.current.get(pageNo) ?? crypto.randomUUID();
-    keys.current.set(pageNo, requestKey);
-    try {
-      const result = await request(`/api/me/passports/${encodeURIComponent(passportId)}/pages/${pageNo}/claim`, { method: "POST", body: JSON.stringify({ requestKey, adSessionId }) });
-      passportClaimResultSchema.parse(result);
-      keys.current.delete(pageNo);
-      // A claimed page is a heart: the header ♥N and 덕질 read hearts from the summary, which re-reads on this signal (C1).
-      notifyFanActivityUpdated(ownerId, ["summary", "passports"]);
-    } catch (error) {
-      if (error instanceof GroupRequestError && error.status === 409) keys.current.delete(pageNo);
-      else setFailedPage(pageNo);
-    } finally { if (alive.current) { setBusy(null); retry(); } }
-  }, [ownerId, passportId, request, retry]);
-  // 대표 11/11: a heart comes after a rewarded ad, like a ticket. The page's own server session is issued first, the ad second, and the
-  // claim is sent only once the server marked the session granted (reported on rewardedSlotGranted; closing the ad pays nothing).
-  const claim = useCallback(async (pageNo: number) => {
-    setBusy(pageNo); setFailedPage(null);
-    const settle = () => { if (alive.current) setBusy(null); };
-    ad.current = await runRewardedSession({
-      post: (path, body) => request(path, { method: "POST", body: JSON.stringify(body) }),
-      paths: { issue: `/api/me/passports/${encodeURIComponent(passportId)}/pages/${pageNo}/ad-session`, report: "/api/me/passports/ad-session/report" },
-      unit: rewardedAdUnit(), loadGpt: loadRewardedGpt, requestAd: requestRewardedAd, alive: () => alive.current,
-      onState: state => {
-        if (state === "ready") setTimeout(() => ad.current?.show(), 0);
-        else if (state === "unsupported") { stop(rewardedAdUnit() ? "unsupported" : "unconfigured"); settle(); }
-        else if (state === "cancelled") { stop("incomplete"); settle(); }
-        else if (state === "no-fill") { stop("unavailable"); settle(); }
-        else if (state === "error") { stop("failed"); settle(); }
-      },
-      onGranted: id => void send(pageNo, id),
-      onRefused: error => {
-        settle();
-        const code = error instanceof GroupRequestError ? error.code : undefined;
-        if (code === "GROUP_WALLET_AD_RATE_LIMITED") stop("rateLimited");
-        else if (code === "GROUP_WALLET_AD_SESSION_INVALID") stop("sessionExpired");
-        else if (code === "GROUP_WALLET_AD_GATE_CLOSED" || code === "GROUP_WALLET_AD_CONFIG_MISSING") stop("unavailable");
-        else if (error instanceof GroupRequestError && error.status === 409) retry();
-        else setFailedPage(pageNo);
-      },
-    });
-  }, [passportId, request, retry, send, stop]);
   if (!on) return null;
   const proofHref = withLocale(`/c/${encodeURIComponent(creatorSlug)}/certifications`, locale);
   const pages = roadmap.data?.pages ?? [];
@@ -256,12 +190,11 @@ export function PassportMissionBook({ passportId, creatorSlug, locale, stampSrc 
   return <section ref={bookRef} id="mission-book" className={`${paper.palette} ${styles.book}`} aria-labelledby="mission-book-title" aria-busy={roadmap.loading}>
     <div className={styles.head}>
       <h2 id="mission-book-title" tabIndex={-1}>{dukjilText(locale, "missionBookTitle")}</h2>
-      {roadmap.data ? <span className={styles.hearts}><Heart aria-hidden="true" size={18} />{dukjilText(locale, "missionHearts", [roadmap.data.hearts])}</span> : null}
     </div>
     {roadmap.loading ? <div className={styles.skeleton} aria-hidden="true"><i /><i /></div>
       : roadmap.error || !roadmap.data ? <div className={styles.errorBox} role="alert"><p>{dukjilText(locale, "missionLoadError")}</p><FanAction variant="neutral" onClick={retry}>{dukjilText(locale, "missionRetry")}</FanAction></div>
       : page ? <div className={styles.pages} data-stacked="">{pages.map((each, i) => <div key={each.pageNo} className={styles.bookPage} data-current={i === index || undefined} inert={i !== index} aria-hidden={i !== index || undefined}>
-        <Page page={each} locale={locale} busy={busy === each.pageNo} failed={failedPage === each.pageNo} onClaim={() => void claim(each.pageNo)} proofHref={proofHref} stampSrc={stampSrc} hrefFor={hrefFor} pager={<Pager index={i} total={pages.length} locale={locale} onChange={setPicked} />} />
+        <Page page={each} locale={locale} proofHref={proofHref} stampSrc={stampSrc} hrefFor={hrefFor} pager={<Pager index={i} total={pages.length} locale={locale} onChange={setPicked} />} />
       </div>)}<MissionOnboarding page={page} locale={locale} hrefFor={hrefFor} /></div> : null}
   </section>;
 }
