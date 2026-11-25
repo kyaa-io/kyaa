@@ -50,7 +50,10 @@ export function ProofReward({ locale, slug, points, summary }: { locale: AppLoca
   return (
     <div className={styles.reward} data-block="proof-reward">
       {typeof points === "number" ? (
-        <FanNumber value={points} unit="P" locale={locale} size="xl" icon={<span className={styles.rewardIcon}><img src={POINT_COIN_SRC} width={40} height={40} alt="" /><span className={styles.rewardPlus}>+</span></span>} />
+        <span className={styles.rewardAmount}>
+          <img src={POINT_COIN_SRC} width={40} height={40} alt="" />
+          <FanNumber value={points} unit="P" locale={locale} size="xl" signDisplay="always" className={styles.rewardNumber} />
+        </span>
       ) : null}
       {shown.length ? (
         <dl className={styles.stats}>
