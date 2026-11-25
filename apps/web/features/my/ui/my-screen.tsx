@@ -317,7 +317,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
   if (groupsEnabled) {
     const labels = { title: t.myPassport, detail: myHomeText(locale, "viewDetails"), noCreators: t.noCreators, findCreator: t.findCreator, loadError: w.error, retry: w.retry, creators: t.creators };
     const stamps = communityStamps.state.status === "ready" ? communityStamps.state.data.stamps : [];
-    return <DukjilProvider locale={locale}><div className={styles.pencilMy}>
+    return <DukjilProvider locale={locale} accountToday={GOODS_MENU}><div className={styles.pencilMy}>
       <div className={styles.pencilSummary}>
         <header className={styles.pencilProfile}>
           <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
