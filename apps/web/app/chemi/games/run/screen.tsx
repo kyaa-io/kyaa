@@ -26,6 +26,12 @@ import { Track, type RunStats, type Submission, type Ticket } from "./track";
 import styles from "./run.module.css";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
 
+class RunRequestError extends Error {
+  constructor(readonly status: number, code: string) {
+    super(code);
+  }
+}
+
 export function RunScreen(props: { locale: AppLocale; share: string | null }) {
   const auth = useByUsAuth();
   return <Session key={auth.user?.id ?? "guest"} {...props} auth={auth} />;
@@ -56,7 +62,15 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const { reminders } = useChemiFeatures();
   const [pauseRequest, setPauseRequest] = useState(0);
   const sound = useMemo(createSound, []);
-  const requestKey = useRef<string | null>(null);
+  const pendingStart = useRef<{
+    key: string;
+    character: Character;
+    trial: boolean;
+    shareId: string | null;
+    extra: boolean;
+    expectedCost?: number;
+  } | null>(null);
+  const starting = useRef(false);
   const getter = useRef(auth.getAccessToken);
   getter.current = auth.getAccessToken;
 
@@ -68,13 +82,15 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       headers: { "content-type": "application/json", ...(token ? { authorization: "Bearer " + token } : {}) },
       body: JSON.stringify(body),
     });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw Error(String(data.error ?? response.status));
-    return data;
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new RunRequestError(response.status, String(data?.error ?? response.status));
+    }
+    return response.json();
   }, []);
-  const load = useCallback(async () => {
+  const load = useCallback(async (clearError = true) => {
     if (!auth.ready) return;
-    setFailed(null);
+    if (clearError) setFailed(null);
     try {
       if (auth.authenticated) {
         const data = await call<Lobby>({ action: "lobby" }, true, undefined, LOBBY_TIMEOUT_MS);
@@ -116,35 +132,49 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
   const free = lobby?.freeRemaining ?? 0;
 
   async function begin(paid = false) {
-    if (busy) return;
-    if (!auth.authenticated && !trial) return auth.login();
-    if (auth.authenticated && !lobby) return;
-    if (paid && !lobby?.extraCost) return;
+    if (busy || starting.current) return;
+    if (!pendingStart.current) {
+      if (!auth.authenticated && !trial) return auth.login();
+      if (auth.authenticated && !lobby) return;
+      if (paid && !lobby?.extraCost) return;
+      pendingStart.current = {
+        key: crypto.randomUUID(), character, trial, shareId: share,
+        extra: paid, expectedCost: paid ? lobby?.extraCost : undefined,
+      };
+    }
+    const start = pendingStart.current;
+    const cost = start.expectedCost ?? 0;
+    starting.current = true;
     setBusy(true);
     setFailed(null);
-    // The extra-run sheet leaves its history entry with a back step when it closes; close it before the run's back guard is listening.
+    // Close the extra-run sheet before the run's back guard is listening.
     setPaying(false);
     try {
-      const key = requestKey.current ??= crypto.randomUUID();
-      const issued = await call<Ticket>(trial
-        ? { action: "trial", key, shareId: share }
-        : { action: "start", game: "run", character, key, extra: paid, expectedCost: paid ? lobby?.extraCost : undefined }, !trial);
-      requestKey.current = null;
+      const issued = await call<Ticket & { issuedAt: string }>(start.trial
+        ? { action: "trial", key: start.key, shareId: start.shareId }
+        : { action: "start", game: "run", character: start.character, key: start.key, extra: start.extra, expectedCost: start.expectedCost }, !start.trial);
+      if (!issued?.playId || !issued.issuedAt || !Number.isInteger(issued.seed)) throw new Error("Invalid run ticket");
+      pendingStart.current = null;
       setBefore({ place: lobby?.ranking.find((row) => row.isMe)?.place, best: lobby?.best ?? 0 });
-      setLobby((now) => now && { ...now, freeRemaining: Math.max(0, now.freeRemaining - (paid ? 0 : 1)), points: now.points - (paid ? now.extraCost : 0) });
+      setLobby((now) => now && { ...now, freeRemaining: Math.max(0, now.freeRemaining - (start.extra ? 0 : 1)), points: now.points - cost });
       setResult(undefined);
       setStats(undefined);
       setSubmission(undefined);
       setCopied(false);
-      setTicket({ ...issued, trial, spentPoints: paid && !trial ? lobby?.extraCost : undefined });
+      setTicket({ ...issued, trial: start.trial, spentPoints: start.expectedCost });
       setRerun(stage === "result");
       setStage("run");
-      if (paid && !trial) window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
+      if (start.extra && !start.trial) window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
     } catch (error) {
-      if (error instanceof Error && !/^5/.test(error.message)) requestKey.current = null;
       setFailed("start");
-      if (auth.authenticated) void load();
+      if (error instanceof RunRequestError && error.status >= 400 && error.status < 500
+        && error.status !== 408 && error.status !== 429
+        && error.message !== "CHEMI_UNAVAILABLE" && error.message !== "CHEMI_RUN_START_RETRY") {
+        pendingStart.current = null;
+        if (auth.authenticated) void load(false);
+      }
     } finally {
+      starting.current = false;
       setBusy(false);
     }
   }
@@ -195,6 +225,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
     }
   }
   function again() {
+    if (pendingStart.current) return void begin();
     if (!auth.authenticated) return auth.login();
     if (free > 0) void begin();
     else setPaying(true);
@@ -241,9 +272,9 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       <FanHeading as="h1">{copy.title}</FanHeading>
       <FanIconButton aria-label={copy.sound} aria-pressed={soundOn} onClick={toggleSound}><FanIcon icon={soundOn ? Volume2 : VolumeX} /></FanIconButton>
     </header>
-    {stage === "select" && <SelectStage character={character} pickDisabled={!auth.ready || busy || Boolean(requestKey.current)} onPick={(who) => { sound.unlock(); setCharacter(who); }} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} loading={!loaded && !failed} footer={footer}
+    {stage === "select" && <SelectStage character={character} pickDisabled={!auth.ready || busy || Boolean(pendingStart.current)} onPick={(who) => { sound.unlock(); setCharacter(who); }} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} loading={!loaded && !failed} footer={footer}
       challenge={challenge} waiting={waiting} spent={spent} startLabel={startLabel} startDisabled={!auth.ready || busy || (auth.authenticated && !lobby)}
-      onStart={() => auth.authenticated && free <= 0 ? setPaying(true) : void begin()} onAllRanks={() => setAllRanks(true)}
+      onStart={() => !pendingStart.current && auth.authenticated && free <= 0 ? setPaying(true) : void begin()} onAllRanks={() => setAllRanks(true)}
       errorLine={errorLine} reminder={reminder} />}
     {stage === "result" && <ResultStage character={character} copy={copy} locale={locale} names={names} rows={rows} loaded={loaded} stats={stats} result={result}
       before={before} saving={busy && !result} trial={Boolean(ticket?.trial)} member={auth.authenticated} spent={spent} free={free}
