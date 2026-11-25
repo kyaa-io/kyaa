@@ -1,3 +1,4 @@
+import { officialRules } from './rules/copy';
 import { rulesTitle } from './rules/titles';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
@@ -103,19 +104,9 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
         <div className={styles.sectionHead}>
           <FanHeading as="h2" id="raffle-notice"><FanDisplay role="heading">{rulesTitle[locale]}</FanDisplay></FanHeading>
         </div>
-        <ul className={styles.notice}>{(['notice1', 'notice2', 'notice3', 'notice9', 'notice8', 'notice4', 'notice5', 'notice6', 'notice7'] as const).map(key => <li key={key} data-row="raffle-terms"><FanDisplay role="caption">{t(key)}</FanDisplay></li>)}</ul>
+        <ul className={styles.notice}>{(['notice1', 'notice2', 'notice3', 'notice9', 'notice8', 'notice4', 'notice5', 'notice7'] as const).map(key => <li key={key} data-row="raffle-terms"><FanDisplay role="caption">{t(key)}</FanDisplay></li>)}</ul>
         <ul className={styles.notice}>
-          {(locale === 'ko' ? [
-            'kyaa / SallyLab이 주최하며, 공식 원문은 영어입니다. 응모는 무료이며 구매할 필요가 없습니다.',
-            '응모 자격 초안은 제재 대상 국가를 제외한 전 세계 만 18세 이상입니다. 최종 자격은 확정 후 안내합니다.',
-            '마감 후 유효 응모자의 당첨 기회 수에 따라 무작위로 추첨합니다. 추첨일과 수령 기한은 확정 후 안내합니다.',
-            'Meta, Google, Reddit, X는 이 행사를 후원하거나 운영하지 않으며 행사와 관련이 없습니다.',
-          ] : [
-            'Organized by kyaa / SallyLab. English is the official version. Entry is free. No purchase is necessary.',
-            'Proposed eligibility, pending confirmation: ages 18 and over worldwide, except in sanctioned countries.',
-            'After entries close, winners are drawn at random from eligible entrants, weighted by their chances. The draw date and claim deadline will be announced.',
-            'Meta, Google, Reddit and X do not sponsor, endorse or administer this raffle and are not affiliated with it.',
-          ]).map(line => <li key={line} data-row="raffle-rule"><FanDisplay role="caption">{line}</FanDisplay></li>)}
+          {officialRules[locale].map(line => <li key={line} data-row="raffle-rule"><FanDisplay role="caption">{line}</FanDisplay></li>)}
         </ul>
         <p><a href={`/privacy?locale=${locale}`}>{locale === 'ko' ? '개인정보 처리방침' : 'Privacy policy'}</a> · <a href="mailto:support@kyaa.io">support@kyaa.io</a></p>
       </section>
