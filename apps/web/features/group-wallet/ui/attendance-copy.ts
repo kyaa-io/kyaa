@@ -1,18 +1,18 @@
 import type { AppLocale } from '@/i18n/locales';
 const copy: Record<AppLocale, readonly [string,string,string,string,string]> = {
- ko:['스탬프 하나, 오늘의 기록','매일 출석하면 포인트를 받아요','이번 출석 기록','받은 포인트','출석 스탬프'],
+ ko:['스탬프 하나, 오늘의 기록','매일 출석하면 마일리지를 받아요','이번 출석 기록','받은 마일리지','출석 스탬프'],
  get mn() { return this.en; },
- en:['A stamp for today','Check in daily for points','Check-in record','Points earned','Check-in stamps'],
- ja:['スタンプで残す今日の記録','毎日の出席でポイント獲得','出席記録','獲得ポイント','出席スタンプ'],
- 'zh-Hans':['用印章记录今天','每天签到得积分','签到记录','已获积分','签到印章'],
- 'zh-Hant':['用印章記錄今天','每天簽到得點數','簽到記錄','已獲積分','簽到印章'],
- es:['Un sello para hoy','Puntos por registrarte cada día','Registro de asistencia','Puntos obtenidos','Sellos de asistencia'],
- id:['Stempel untuk hari ini','Check-in setiap hari untuk poin','Catatan check-in','Poin diperoleh','Stempel presensi'],
- vi:['Một dấu cho hôm nay','Điểm danh mỗi ngày nhận điểm','Lịch sử điểm danh','Điểm đã nhận','Dấu điểm danh'],
- th:['ตราประทับบันทึกวันนี้','เช็กอินทุกวันรับแต้ม','ประวัติเช็กอิน','คะแนนที่ได้รับ','ตราเช็กอิน'],
- pt:['Um carimbo para hoje','Pontos por check-in diário','Registro de presença','Pontos recebidos','Carimbos de presença'],
- fr:['Un tampon pour aujourd’hui','Des points à chaque présence quotidienne','Historique de présence','Points gagnés','Tampons de présence'],
- ru:['Штамп за сегодня','Баллы за ежедневное посещение','История посещений','Получено баллов','Штампы посещений'],
+ en:['A stamp for today','Check in daily for miles','Check-in record','Miles earned','Check-in stamps'],
+ ja:['スタンプで残す今日の記録','毎日の出席でマイル獲得','出席記録','獲得マイル','出席スタンプ'],
+ 'zh-Hans':['用印章记录今天','每天签到得里程','签到记录','已获里程','签到印章'],
+ 'zh-Hant':['用印章記錄今天','每天簽到得里程','簽到記錄','已獲里程','簽到印章'],
+ es:['Un sello para hoy','Millas por registrarte cada día','Registro de asistencia','Millas obtenidas','Sellos de asistencia'],
+ id:['Stempel untuk hari ini','Check-in setiap hari untuk mil','Catatan check-in','Mil diperoleh','Stempel presensi'],
+ vi:['Một dấu cho hôm nay','Điểm danh mỗi ngày nhận dặm','Lịch sử điểm danh','Dặm đã nhận','Dấu điểm danh'],
+ th:['ตราประทับบันทึกวันนี้','เช็กอินทุกวันรับไมล์','ประวัติเช็กอิน','ไมล์ที่ได้รับ','ตราเช็กอิน'],
+ pt:['Um carimbo para hoje','Milhas por check-in diário','Registro de presença','Milhas recebidas','Carimbos de presença'],
+ fr:['Un tampon pour aujourd’hui','Des miles à chaque présence quotidienne','Historique de présence','Miles gagnés','Tampons de présence'],
+ ru:['Штамп за сегодня','Мили за ежедневное посещение','История посещений','Получено миль','Штампы посещений'],
 };
 export function attendanceCopy(locale: AppLocale) { const [title,daily,record,earned,stamps]=copy[locale]; return {title,daily,record,earned,stamps}; }
 const firstStamp: Record<AppLocale,string> = {ko:'오늘 첫 스탬프를 찍어요',get mn() { return this.en; }, en:'Get your first stamp today',ja:'今日、最初のスタンプを押しましょう','zh-Hans':'今天盖下第一枚印章','zh-Hant':'今天蓋下第一枚印章',es:'Consigue tu primer sello hoy',id:'Dapatkan stempel pertamamu hari ini',vi:'Nhận dấu đầu tiên hôm nay',th:'รับตราประทับแรกวันนี้',pt:'Ganhe seu primeiro carimbo hoje',fr:'Obtenez votre premier tampon aujourd’hui',ru:'Получите первый штамп сегодня'};

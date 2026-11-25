@@ -18,18 +18,18 @@ describe("PointRewardBurst (261107-2 D8: the shared reward celebration)", () => 
     const badge = document.body.querySelector("[data-testid=point-reward-burst]")!;
     expect(badge.textContent).toBe("+10");
     expect(badge.getAttribute("aria-hidden")).toBe("true");
-    expect(shown).toEqual([{ title: "+10P", description: undefined, tone: "success" }]);
+    expect(shown).toEqual([{ title: "+10M", description: undefined, tone: "success" }]);
   });
 
   it("names stamps beside points", () => {
     render(<PointRewardBurst locale="ko" points={20} stamps={1} label="글쓰기 미션 완료" burstKey={1} />);
-    expect(shown.at(-1)).toMatchObject({ title: "+20P · 스탬프 1", description: "글쓰기 미션 완료" });
+    expect(shown.at(-1)).toMatchObject({ title: "+20M · 스탬프 1", description: "글쓰기 미션 완료" });
   });
 
   it("takes the hook's merged total as it is instead of adding it again", () => {
     const { rerender } = render(<PointRewardBurst locale="en" points={10} burstKey={1} />);
     rerender(<PointRewardBurst locale="en" points={20} burstKey={2} />);
-    expect(shown.at(-1)).toMatchObject({ title: "+20P" });
+    expect(shown.at(-1)).toMatchObject({ title: "+20M" });
     expect(document.body.querySelectorAll("[data-testid=point-reward-burst]")).toHaveLength(1);
   });
 

@@ -72,7 +72,7 @@ it('shows points, stamps and tier in one read-only row between the profile and t
   expect(before(name, stats)).toBe(true);
   expect(before(stats, passport)).toBe(true);
   const value = (label: string) => within(stats).getByText(label).closest('div')!.querySelector('dd')!.textContent;
-  expect(value('포인트')).toBe('375');
+  expect(value('마일리지')).toBe('375');
   expect(value('스탬프')).toBe('3/9');
   expect(value('등급')).toBe('실버 1');
   expect(within(stats).queryByText('하트')).toBeNull();

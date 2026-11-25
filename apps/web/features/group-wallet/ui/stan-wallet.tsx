@@ -103,7 +103,7 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const show = (name: "tickets" | "hearts") => !part || part === name;
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? `${s("stanFlowStamps")} → ${s("stanFlowHearts")}` : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
     {show("tickets") ? swap("tickets",
-      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}P` : ""), amount: amount("spend", pointCost, "P") },
+      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}M` : ""), amount: amount("spend", pointCost, "M") },
       { cell: "tickets", flash: flashes.tickets, kind: "ticket", name: w.tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("gain", 1, ko ? "장" : "") },
       `/my/raffles?locale=${locale}`,
       action(ko ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })) : null}

@@ -137,7 +137,9 @@
     "release-notes/2026-11-25-chemi-mongolian-tarot.json",
     "release-notes/2026-11-25-chemi-polish.json",
     "release-notes/2026-11-25-chemi-andong-course.json",
-    "release-notes/2026-11-25-chemi-fortune-dialog.json"
+    "release-notes/2026-11-25-chemi-fortune-dialog.json",
+    "release-notes/2026-11-25-chemi-mileage-price.json",
+    "release-notes/2026-11-25-chemi-mileage-extra-game.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
