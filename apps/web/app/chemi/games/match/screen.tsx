@@ -1,5 +1,6 @@
 "use client";
 
+import { matchTitle } from "../titles";
 import { SpentPoints } from "@/features/chemi/games/spent-points";
 import { VacantRank } from "@/features/chemi/games/vacant-rank";
 
@@ -798,6 +799,12 @@ function Session({
       : (lobby?.ranking ?? challenge?.ranking ?? publicRows ?? []);
   const faces = facesFor(character);
   const paidStart = lobby?.freeRemaining === 0 && lobby.extraCost > 0;
+  useEffect(() => {
+    if (stage === "play" && document.documentElement.style.getPropertyValue("--analytics-consent-height")) {
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }, [stage]);
+
   const active = stage === "play" && view;
   const levelList = <ol className={styles.levelList} aria-label={copy.round}>
     {LEVELS.map(({columns, pairs, seconds}, i) => {
@@ -1205,7 +1212,7 @@ function Session({
                   </FanText>
                   <dd className={numberStyles.xl}>{view.misses}</dd>
                 </div>
-                {rows.some((r) => r.isMe) && (
+                {view.score > 0 && rows.some((r) => r.isMe) && (
                   <div>
                     <FanText as="dt" role="meta">
                       {copy.rank}
@@ -1233,7 +1240,7 @@ function Session({
                 </div>
               )}
               {result?.titleStage && <div className={styles.detail}>
-                <b>{copy.round} {result.titleStage}</b>
+                <b>{matchTitle(locale, result.titleStage) ?? `${copy.round} ${result.titleStage}`}</b>
                 <FanAction disabled={working || equipped} onClick={() => void action(async () => {
                   await call({action: "equip", stage: result.titleStage});
                   setEquipped(true);

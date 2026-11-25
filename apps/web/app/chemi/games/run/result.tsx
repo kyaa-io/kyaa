@@ -1,5 +1,7 @@
 "use client";
 
+import { runTitle } from "../titles";
+import { runDateLabel } from "@/features/chemi/i18n/calendar-label";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -48,7 +50,7 @@ export function ResultStage({ character, copy, locale, names, rows, loaded, stat
   onAgain: () => void; onLogin: () => void; onShare: () => void; onAllRanks: () => void; errorLine: ReactNode; reminder: ReactNode;
 }) {
   const number = new Intl.NumberFormat(locale);
-  const today = new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "Asia/Seoul" }).format(new Date());
+  const today = runDateLabel(locale, new Date());
   const me = rows.find((row) => row.isMe);
   const climbed = before.place && me && before.place > me.place ? before.place - me.place : 0;
   const score = result?.score ?? stats?.score ?? 0;
@@ -93,7 +95,7 @@ export function ResultStage({ character, copy, locale, names, rows, loaded, stat
         </div>}
         {result.title ? <div>
           <FanText as="dt" role="meta">{copy.newTitle}</FanText>
-          <dd><FanText role="label" className={styles.badge}>{fill(copy.titleName, { n: number.format(result.title) })}</FanText></dd>
+          <dd><FanText role="label" className={styles.badge}>{runTitle(locale, result.title) ?? fill(copy.titleName, { n: number.format(result.title) })}</FanText></dd>
         </div> : null}
         <div className={styles.care}>
           <dt><img src={`${ART}/face-${character}-v1.png`} alt="" /></dt>

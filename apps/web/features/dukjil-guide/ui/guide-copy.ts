@@ -1,3 +1,4 @@
+import { proofStageReward } from "@/features/passport-proofs/ui/proof-stage-copy";
 import { messages } from "@/i18n/catalogs/features__dukjil-guide__ui__guide-copy";
 import { messages as detailMessages } from "@/i18n/catalogs/features__dukjil-guide__ui__guide-detail";
 import { translate } from "@/i18n/messages";
@@ -40,7 +41,8 @@ export function pointsText(locale: AppLocale, a: GuideActivity) {
 }
 
 export function limitText(locale: AppLocale, a: GuideActivity) {
-  if (!a.limit) return "";
+  const stage = a.key === "proof" && a.points === 1000 ? proofStageReward[locale] : "";
+  if (!a.limit) return stage;
   const key = a.limit.per === "day" ? "dkgLimitDay" : a.limit.per === "month" ? "dkgLimitMonth" : "dkgLimitCreatorMonth";
-  return guideText(locale, key, [a.limit.max]);
+  return [guideText(locale, key, [a.limit.max]), stage].filter(Boolean).join(" ");
 }

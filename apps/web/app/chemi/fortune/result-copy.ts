@@ -10,9 +10,9 @@ export const band = (score: number): Band =>
 
 export const fieldNotes: Record<string, Record<Band, string>> = {
   fandom: {
-    high: "혼자 깊이 파고들수록 즐거운 날. 지난 무대 영상 정주행에 딱이에요.",
+    high: "혼자 깊이 팔수록 즐거운 날. 지난 무대 직캠 정주행에 딱이에요.",
     mid: "보고 싶던 영상을 하나만 골라 보세요. 천천히 즐기면 충분해요.",
-    low: "오늘은 새로 파기보다 좋아하던 걸 다시 보는 게 편해요.",
+    low: "오늘은 새 떡밥보다 좋아하던 무대를 다시 보는 게 편해요.",
   },
   people: {
     high: "선배나 윗사람이 먼저 손을 내밀어요. 반갑게 받아 주세요.",
@@ -53,7 +53,7 @@ export const periodNotes: Record<"morning" | "afternoon" | "night", Record<Band,
     low: "무리한 약속은 피하세요",
   },
   night: {
-    high: "좋아하는 걸 몰아 보기 좋은 시간",
+    high: "밀린 떡밥 몰아 보기 좋은 시간",
     mid: "하루를 조용히 정리하기 좋은 시간",
     low: "일찍 쉬는 게 이득인 시간",
   },
@@ -90,7 +90,7 @@ type Period = keyof typeof periodNotes;
 const casualPeriods: Record<Period, Record<Band, string>> = {
   morning: { high: "급한 일부터 끝내기 좋아", mid: "가벼운 일부터 천천히 시작해", low: "서두르지 말고 준비부터 해" },
   afternoon: { high: "사람을 만나 이야기하기 좋아", mid: "집중이 흐려지면 짧게 나눠서 해", low: "무리한 약속은 피해" },
-  night: { high: "좋아하는 걸 몰아 보기 좋은 시간", mid: "하루를 조용히 정리하기 좋은 시간", low: "일찍 쉬기 좋은 시간" },
+  night: { high: "밀린 떡밥 몰아 보기 좋은 시간", mid: "하루를 조용히 정리하기 좋은 시간", low: "일찍 쉬기 좋은 시간" },
 };
 const casualStages: Record<string, string> = {
   장생: "처음 해 보는 일에 운이 붙어. 작게 시작해 봐.", 목욕: "마음이 들뜨면 선택을 한 번 더 살펴봐.",

@@ -107,7 +107,7 @@ it("draws seven days, links only today and tomorrow, and keeps paid dates out be
   // 눈여겨볼 날: 가장 높은 날 · 그다음 · 가장 낮은 날
   const notable = [...view.container.querySelectorAll("ol")].at(-1)!.querySelectorAll(":scope > li");
   expect([...notable].map((row) => row.textContent)).toEqual([
-    expect.stringContaining("96 · 아주 좋은 날"),
+    expect.stringContaining("96 · 계 타는 날"),
     expect.stringContaining("88 · 좋은 날"),
     expect.stringContaining("57 · 쉬어 가는 날"),
   ]);

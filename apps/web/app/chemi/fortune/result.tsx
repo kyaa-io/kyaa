@@ -316,7 +316,7 @@ export function FortuneResult({
     );
   const { result } = reading;
   const korean = locale === "ko";
-  const grade = korean ? result.grade.name : uiText(gradeKey(result.score));
+  const grade = korean && result.grade.name !== "아주 좋은 날" ? result.grade.name : uiText(gradeKey(result.score));
   // 한 줄 제목: 말투로 다시 쓴 제목 → 오늘 일진 한 줄(04-3 · 01) → 등급 이름.
   const headline =
     (korean ? reading.styled?.headline || dayHeadline(result.evidence.tenGod, result.grade.name)
@@ -571,7 +571,10 @@ export function FortuneResult({
           <ul className={styles.fields}>
             {fields.map(([label, key, value]) => {
               const [first, second] = exampleKeys[key];
-              const fieldNote = korean ? fortuneFieldNote(key, value, character) : englishFieldNotes[key][band(value)];
+              const level = band(value);
+              const fieldNote = korean ? fortuneFieldNote(key, value, character)
+                : key === "fandom" && level !== "mid" ? uiText(level === "high" ? "fieldFandomHigh" : "fieldFandomLow")
+                : englishFieldNotes[key][level];
               const note = key === highest || key === lowest ? fieldNote : null;
               const detail = korean ? fortuneFieldDetail(
                 key,

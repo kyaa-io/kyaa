@@ -14,7 +14,9 @@ import { FanText } from "@/components/fan-ui/fan-text";
 import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import type { AppLocale } from "@/i18n/locales";
 import { DatePurchase } from "../date-purchase";
-import { fortuneCharacters, type FortuneCharacterId } from "../lines";
+import { creatorName } from "@/features/fanpage/domain/creator-names";
+import { englishValue } from "../result.en";
+import type { FortuneCharacterId } from "../lines";
 import { band } from "../result-copy";
 import result from "../result.module.css";
 import {
@@ -58,6 +60,17 @@ const periods = [
   ["night", 17, 23],
 ] as const;
 
+const mongolianLuck: Record<string,string> = {
+  초록: "Ногоон", 빨강: "Улаан", 노랑: "Шар", 하양: "Цагаан", 검정: "Хар",
+  "나무 연필": "Модон харандаа", "빨간 펜": "Улаан үзэг", "도자기 컵": "Шаазан аяга",
+  "금속 책갈피": "Металл хавчуурга", 물병: "Усны сав",
+};
+
+function luckValue(value: string, locale: AppLocale) {
+  if (locale === "mn") return mongolianLuck[value] ?? value;
+  return locale === "en" ? englishValue(value) ?? value : value;
+}
+
 export function deepHref(view: View | "card", props: { character: string; locale: string; readingId?: string }) {
   const query = new URLSearchParams({ locale: props.locale, c: props.character });
   if (props.readingId) query.set("r", props.readingId);
@@ -91,7 +104,7 @@ export function FortuneDeep(props: Props) {
   const text = useReadingCopy();
   const week = useFortuneWeek();
   const ask = useDeepResultAsk(locale, "fortune", character);
-  const name = fortuneCharacters.find((item) => item.id === character)?.name ?? "";
+  const name = creatorName(character, locale);
   const back = resultHref(props);
   const toolbar = (meta?: string) => (
     <div className={`${result.toolbar} ${styles.toolbarRow}`}>
@@ -318,9 +331,9 @@ export function FortuneDeep(props: Props) {
             <dl className={styles.luck}>
               {(
                 [
-                  [text("color"), r.luck.color],
+                  [text("color"), luckValue(r.luck.color, locale)],
                   [text("number"), r.luck.number],
-                  [text("item"), r.luck.item],
+                  [text("item"), luckValue(r.luck.item, locale)],
                   [text("luckyTime"), r.luck.luckyHour && text("hourRange", { start: r.luck.luckyHour.start, end: r.luck.luckyHour.end })],
                 ] as const
               ).map(

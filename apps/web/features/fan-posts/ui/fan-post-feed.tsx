@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
+import { popularTabLabel } from "@/features/groups/ui/popular-posts";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, MessageCircle, PenLine, X } from "lucide-react";
@@ -64,7 +66,10 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   const insightCopy = program === "live-insight" ? waveEngagementCopy(locale) : null;
   const introductionCopy = wavePrivacyCopy(locale);
   const cursor = cursors.at(-1) ?? null, selectedSource = introduction ? "fans" : source ?? "fans";
-  const groupedBoard = compact && selectedSource === "all";
+  const search = useSearchParams();
+  const popularSelected = search?.get("view") === "popular";
+  const showPopular = Boolean(beforeFeed && compact && popularSelected && !composing && !composeIntent);
+  const groupedBoard = !showPopular && compact && selectedSource === "all";
   const shownPinned = compact && !cursor && selectedSource !== "fans"
     ? groupedBoard ? (pinnedNotices ?? []).slice(0, BOARD_NOTICE_LIMIT) : pinnedNotices ?? []
     : [];
@@ -83,7 +88,7 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   if (mediaOnly) query.set("media", "1");
   if (newsFilter !== "all" && !introduction) query.set("news", newsFilter);
   const waitingForNotices = (!cursor && compact && selectedSource !== "fans" && pinnedPending) || waitingForOfficial;
-  const resource = useCommunityResource(groupedBoard && waitingForNotices ? null : program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse, true, false, false, !groupedBoard);
+  const resource = useCommunityResource(showPopular || groupedBoard && waitingForNotices ? null : program ? `/api/celebrities/${slug}/programs/${program}/posts?${query}` : `/api/celebrities/${slug}/feed?${query}`, program ? parseProgram : parse, true, false, false, !groupedBoard);
   useEffect(() => {
     if (resource.state.status !== "ready" || !window.location.hash.startsWith("#cheer-")) return;
     const id = window.location.hash.slice(1);
@@ -117,14 +122,14 @@ function FeedForOwner({ pageImage, pinnedNotices, pinnedPending = false, filterH
   const writeAction = compact && !composerOpen && selectedSource !== "official" && sessionReady && <div className={feedStyles.writeRow}><EarnBadgeCorner action="post" locale={locale}>{auth.authenticated ? <button ref={composeTrigger} type="button" className={feedStyles.writeButton} onClick={() => setComposing(true)}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></button> : <Link className={feedStyles.writeButton} href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{locale === "ko" ? "글쓰기" : copy.writePost}<ArrowRight size={16} aria-hidden="true" /></Link>}</EarnBadgeCorner></div>;
   return <section id="cheers" ref={section} tabIndex={-1} className={`${styles.section} ${feedStyles.feed} ${compact ? feedStyles.compact : ""}`} aria-labelledby={heading} data-unified-feed="">
     {compact && composerOpen ? null : introduction || program ? <FanSectionHeader id={heading} title={introduction ? waveNavigationCopy(locale).labels[1] : insightCopy?.insightTitle ?? waveProgramsCopy(locale).photos} description={introduction ? introductionCopy.introduction : undefined} /> : <header className={hideHeading && intro === "" ? feedStyles.visuallyHidden : `${feedStyles.heading} ${compact ? feedStyles.compactHeading : ""}`}><h2 id={heading} className={hideHeading ? feedStyles.visuallyHidden : undefined}>{compact && composerOpen ? locale === "ko" ? "글쓰기" : copy.writePost : headingTitle ?? (source ? feed.feed : feed.fanBoard)}</h2>{writeAction}</header>}
-    {beforeFeed && <div hidden={compact && composerOpen} className={feedStyles.passThrough}>{beforeFeed}</div>}
-    {source && !introduction && (!compact || !composerOpen) && <div ref={toolbar} className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Link key={value} scroll={false} href={sourceFilterHref(value)} aria-current={selectedSource === value ? "page" : undefined}>{compact ? value === "official" ? boardCopy(locale).notice : value === "fans" ? boardCopy(locale).free : feed.all : feed[value]}</Link>)}</nav>
+    {beforeFeed && !compact && <div hidden={compact && composerOpen} className={feedStyles.passThrough}>{beforeFeed}</div>}
+    {source && !introduction && (!compact || !composerOpen) && <div ref={toolbar} className={feedStyles.toolbar}><nav className={feedStyles.filters} aria-label={feed.filters}>{(["all", "official", "fans"] as const).map(value => <Fragment key={value}><Link scroll={false} href={sourceFilterHref(value)} aria-current={!showPopular && selectedSource === value ? "page" : undefined}>{compact ? value === "official" ? boardCopy(locale).notice : value === "fans" ? boardCopy(locale).free : feed.all : feed[value]}</Link>{value === "all" && compact && beforeFeed && <Link scroll={false} href={sourceFilterHref("all").replace("?", "?view=popular&")} aria-current={showPopular ? "page" : undefined}>{popularTabLabel(locale)}</Link>}</Fragment>)}</nav>
       {newsFilter !== "all" && !(compact && newsFilter === "notice") && <span className={feedStyles.topic}>{filterLabel}<Link scroll={false} href={boardHref(slug, locale, { source: "official" })} aria-label={feed.removeFilter}><X size={16} aria-hidden="true" /></Link></span>}
     </div>}
     {selectedSource !== "official" && sessionReady && alwaysOpen && (auth.authenticated ? <PostComposer key={composerKey} slug={slug} locale={locale} onSaved={reward => { setComposerKey(value => value + 1); saved(reward); }} onCancel={() => setComposerKey(value => value + 1)} featured autoFocus={focusComposer} allowMembers={allowMembers} />
       : <div className={`${styles.composer} ${styles.composerFeatured}`} data-composer-guest=""><span className={styles.guestPrompt}>{discoveryCopy(locale).writePrompt}</span><div className={styles.composerTools}><FanAction className={styles.guestLogin} variant="primary" href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction></div></div>)}
     {selectedSource !== "official" && sessionReady && !alwaysOpen && (auth.authenticated ? (composerOpen ? <PostComposer board={compact} introduction={introduction} program={program} slug={slug} locale={locale} onSaved={saved} onCancel={closeComposer} featured autoFocus allowMembers={allowMembers} heading={compact ? managementCopy(locale).write : undefined} headingId={compact ? heading : undefined} /> : compact ? null : <button ref={composeTrigger} type="button" className={styles.composeTrigger} onClick={() => setComposing(true)} aria-label={introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}><span className={styles.composeIcon}><PenLine size={20} aria-hidden="true" /></span><span>{introduction ? introductionCopy.introductionPrompt : insightCopy?.insightPrompt ?? discoveryCopy(locale).writePrompt}</span><strong>{introduction ? introductionCopy.writeIntroduction : insightCopy?.insightTitle ?? copy.writePost}</strong></button>) : compact ? null : <FanAction href={`/login?locale=${locale}&returnTo=${encodeURIComponent(loginReturnTo)}`}>{copy.login}</FanAction>)}
-    {compact && composerOpen ? null : state.status === "ready" ? <>
+    {compact && composerOpen ? null : showPopular ? beforeFeed : state.status === "ready" ? <>
       {(resource.refreshFailed || (groupedBoard && !cursor && remainingNotices > 0 && (official.state.status === "error" || official.refreshFailed))) && <div className={feedStyles.sourceStatus} role="status"><p>{copy.failed}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}
       {state.data.unavailableSources.length > 0 && <div className={feedStyles.sourceStatus} role="status"><p>{feed.sourceError}</p><FanAction variant="text" onClick={refresh}>{copy.retry}</FanAction></div>}
       {state.data.items.length || shownPinned.length || officialItems.length ? <>{compact ? <CompactFeed pageImage={pageImage} pinned={shownPinned} items={groupedBoard ? [...officialItems, ...state.data.items] : state.data.items} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /> : <FanSurface as="div" appearance="list"><ul className={styles.list}>{state.data.items.map(item => <li key={`${item.kind}:${item.id}`}><FeedItemCard item={item} slug={slug} creatorName={creatorName} locale={locale} returnTo={returnTo} onChanged={resource.retry} officialPostLabel={officialPostLabel} /></li>)}</ul></FanSurface>}</> : !state.data.nextCursor && !state.data.unavailableSources.length ? <div className={styles.feedEmpty} role="status"><MessageCircle size={28} aria-hidden="true" /><p>{copy.empty}</p></div> : null}

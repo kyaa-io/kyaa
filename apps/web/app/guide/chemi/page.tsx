@@ -21,6 +21,17 @@ const copy = {
     album: "케미의 성장 탭에서 미니 최애의 방과 친밀 레벨을 볼 수 있어요. 미니 최애는 방구석 연습생에서 시작해 24단계를 올라요. 데뷔조, 방구석 스타가 되는 날 기념 앨범이 열려요.",
     start: "케미 시작하기",
   },
+  mn: {
+    title: "Кэмигийн гарын авлага",
+    intro: "Кэмид хайртай одтойгоо зурхай үзэж, бяцхан тоглоом тоглон мини одоо өсгөөрэй.",
+    beta: "Туршилтын хувилбар",
+    points: "Оноогоо хэрхэн ашиглах вэ?",
+    dates: "Өдрийн зурхайгаас огноо сонгож, 10 оноогоор тухайн өдрийн зурхайг нээнэ. Эхлээд үйл ажиллагааны оноог зарцуулна. Нээсэн зурхайгаа дахин үзэж болно. Тоглох эрх Солонгосын цагаар шөнө дунд шинэчлэгдэнэ.",
+    growth: "Мини одоо өсгөх",
+    growthDetail: "Нэвтэрч зурхайгаа үзэх эсвэл тоглоомоо дуусгахад сонгосон одтойгоо дотносох туршлага хуримтлуулна. Үйл ажиллагаа бүрээс нэг одонд өдөрт нэг удаа туршлага авна. Зурхайн төрөл бүрээс өдөрт гурав хүртэлх одонд туршлага авах боломжтой.",
+    album: "Өсөлт хэсгээс мини одныхоо өрөө болон дотно байдлын түвшнийг хараарай. Мини од гэртээ бэлтгэл хийж эхлээд 24 шатаар ахина. Дебют хийх багт орох болон гэрийн од болох үед дурсгалын цомогт зураг нэмэгдэнэ.",
+    start: "Кэмиг эхлүүлэх",
+  },
   en: {
     title: "Chemi guide",
     intro: "Read fortunes and play mini-games with your bias to raise your Mini Bias in Chemi.",
@@ -33,7 +44,7 @@ const copy = {
 };
 
 const albumGuide = {
-  ko: copy.ko.album, en: copy.en.album, mn: copy.en.album,
+  ko: copy.ko.album, en: copy.en.album, mn: copy.mn.album,
   ja: "ミニ推しは自宅練習生から始まり、24段階を上がっていくよ。デビュー組やおうちスターになると、記念アルバムに写真が追加されるよ。",
   "zh-Hans": "迷你偶像从居家练习生开始，一共可以成长24个阶段。加入出道组、成为卧室明星时，就能解锁纪念相册里的照片。",
   "zh-Hant": "迷你偶像從居家練習生開始，一共可以成長24個階段。加入出道組、成為臥室明星時，就能解鎖紀念相簿裡的照片。",
@@ -57,13 +68,13 @@ const art = {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const locale = parseAppLocale((await searchParams).locale);
-  const t = copy[locale === "ko" ? "ko" : "en"];
+  const t = copy[locale === "ko" || locale === "mn" ? locale : "en"];
   return publicMetadata({ path: "/guide/chemi", locale, title: `${t.title} | kyaa`, description: t.intro });
 }
 
 export default async function ChemiGuidePage({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
-  const language = locale === "ko" ? "ko" : "en";
+  const language = locale === "ko" || locale === "mn" ? locale : "en";
   const t = copy[language];
   const { home: names } = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
   return <FanAppFrame locale={locale} currentPath="/guide/chemi" mainId="chemi-guide">
@@ -84,7 +95,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
             <div className={styles.cardCopy}>
               <FanHeading as="h3"><a href={`${href}?locale=${locale}`}>{names[key]}</a></FanHeading>
               <FanText role="body">{names.descriptions[key]}</FanText>
-              <FanText role="meta">{locale === "ko" ? "친밀" : "Affinity"} +{EARN[key][1]}</FanText>
+              <FanText role="meta">{locale === "ko" ? "친밀" : locale === "mn" ? "Дотно байдал" : "Affinity"} +{EARN[key][1]}</FanText>
             </div>
           </article>)}
         </div>

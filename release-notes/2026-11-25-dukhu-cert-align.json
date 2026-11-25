@@ -1,0 +1,5 @@
+{
+  "changes": ["덕후인증 탭에서 동전과 +100P, 누적 인증 수가 한 줄에 가지런히 보여요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/changha",
+  "images": ["release-notes/images/2026-11-25-dukhu-cert-align-local.png"]
+}
