@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "모임 탭에서 ‘오늘의 팬페이지’ 배너가 화면 폭을 채워요. 내 아티스트와 Hot 게시글을 차례로 보고 나면 ‘최애와 케미 한 판’ 광고가 나와요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-25-groups-balance.png"]
+}
