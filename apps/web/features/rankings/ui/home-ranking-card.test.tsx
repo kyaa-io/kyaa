@@ -284,7 +284,7 @@ it("shows points as the coin asset and likes as the outlined star (never a heart
   const { container } = render(<HomeRankingCard locale="ko" />);
   await screen.findByText("가");
   const main = (kind: string) => container.querySelector(`li[data-row='${kind}-rank'] [data-metric]`) as HTMLElement;
-  expect(main("fan").querySelector("img[src='/images/economy/point-coin.webp']")).not.toBeNull();
+  expect(main("fan").querySelector("img[src='/images/economy/mileage-coin.webp']")).not.toBeNull();
   expect(main("fan").textContent).toBe("7,480");
   expect(main("creator").querySelector("[data-unit='likes'][data-icon='star']")).not.toBeNull();
   expect(main("creator").querySelector("[data-icon='thumbs-up'], img")).toBeNull();
