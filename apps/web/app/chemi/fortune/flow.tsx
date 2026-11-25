@@ -63,6 +63,11 @@ const talkChoice = [
   "dailySummary",
 ] as const;
 const mobileTalkArt = ["portrait", "calm", "laugh", "care"] as const;
+/**
+ * 입장 화면의 사진 → 캐릭터 변신 영상 판(`<최애>-photo-to-character-<판>`, 휴대폰 첫 입장에 한 번). 끝 프레임이 지금 입장 그림과 같은 것만 넣는다.
+ * 유나는 그림을 다시 고르는 중이라(11/25) 비워 두고, 창하는 변신 영상이 없다.
+ */
+const photoToCharacter: Partial<Record<FortuneCharacterId, string>> = { elina: "v1" };
 
 type Phase = "idle" | "calc" | "error";
 /** 오류 안내를 가른다: 로그인 만료, 서비스 거절, 연결 끊김. */
@@ -487,8 +492,8 @@ export function FortuneFlow({
             portrait={character === "changha" ? `${art}/fortune-portrait-v1.webp` : mobileArt}
             expression={expression}
           />
-          {step === "enter" && character === "elina" && (
-            <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
+          {step === "enter" && photoToCharacter[character] && (
+            <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-${photoToCharacter[character]}`} once mobileOnly objectPosition="center 25%" />
           )}
         </div>
         {phase === "error" ? (

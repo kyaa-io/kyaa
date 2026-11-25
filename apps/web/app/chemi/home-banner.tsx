@@ -20,8 +20,11 @@ const images = {
   run: "banner-run.webp",
 } satisfies Record<(typeof entries)[number][0], string>;
 
-/** 배너 반복 영상 판. v2 = 1080p 원본에서 다시 만든 움직임 큰 영상(11/23 사용자 '화질'·'동적인 느낌'). */
-const videoVersion = { fortune: "v2", saju: "v2", zodiac: "v2", tarot: "v1", pair: "v1", run: "v1" } satisfies Record<(typeof entries)[number][0], string>;
+/**
+ * 배너 반복 영상 판(`chemi-banner-<id>-loop-<판>`). v2 = 1080p 원본에서 다시 만든 움직임 큰 영상(11/23 사용자 '화질'·'동적인 느낌').
+ * null 이면 그림만 보인다: 운세는 지금 그림과 맞는 영상이 없고, 사주·타로는 창하·유나 그림을 다시 고르는 중이라(11/25) 그림이 정해진 뒤 그 그림으로 만든 판을 넣는다.
+ */
+const videoVersion = { fortune: null, saju: null, zodiac: "v2", tarot: null, pair: "v1", run: "v1" } satisfies Record<(typeof entries)[number][0], string | null>;
 
 export function HomeBanner({
   activities,
@@ -50,7 +53,7 @@ export function HomeBanner({
       onPointerUp={event => { if (event.pointerType !== "mouse") setPointerInside(false); }} onPointerCancel={() => setPointerInside(false)}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
-        {id !== "fortune" && id !== "saju" && id !== "tarot" && <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={resting} objectPosition={id === "zodiac" ? "center top" : "center"} />}
+        {videoVersion[id] && <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={resting} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />}
         <div className={styles.caption}>
           <div><span>{copy[type]}</span><div className={styles.faces}>{["changha", "elina", "yuna"].map(person => <img key={person} alt="" src={`/chemi/grow/face-${person}-v1.webp`} />)}</div><FanHeading as="h1">{copy[id]}</FanHeading></div>
           {href ? (
