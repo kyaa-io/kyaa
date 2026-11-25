@@ -34,6 +34,7 @@ function dependencies() {
         surveyReminders: true,
         benefitNotifications: true,
         replyNotifications: true, officialPostNotifications: true, scheduleNotifications: true, artistActivityNotifications: true, artistOnlineNotifications: true, socialNotifications: true, friendActivityNotifications: true, participationNotifications: true,
+        marketingNotifications: false,
         browserSubscription: "unsubscribed" as const,
       })),
       patchPreferences: vi.fn(async () => ({
@@ -41,6 +42,7 @@ function dependencies() {
         surveyReminders: true,
         benefitNotifications: true,
         replyNotifications: true, officialPostNotifications: true, scheduleNotifications: true, artistActivityNotifications: true, artistOnlineNotifications: true, socialNotifications: true, friendActivityNotifications: true, participationNotifications: true,
+        marketingNotifications: false,
         browserSubscription: "unsubscribed" as const,
       })),
       enqueueDue: vi.fn(async () => 0),
