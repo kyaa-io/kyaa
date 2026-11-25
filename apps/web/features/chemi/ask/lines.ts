@@ -337,13 +337,15 @@ export function askArt(content: AskContent, character: AskCharacter) {
 /**
  * 장면 배경 반복 영상(확장자 없는 주소, `SceneVideo` 가 mp4·webm 을 고른다). 가로 원화와 같은 구도·비율로 만든 것만 있어서
  * 가로 화면(1024px 이상)에서만 쓴다. 세로 반복 영상은 없다. 없는 조합은 그림만 보인다.
- * 도사 장면 영상은 도사는 그대로 두고 주변(촛불·낙엽·꽃잎·폭포·구름)만 움직인다. 창하·유나 장면은 새 화풍 원화(11/25 사용자 결정)로
- * 만든 영상이 나오면 여기에 넣는다.
+ * 도사 장면 영상은 도사는 그대로 두고 주변(촛불·낙엽·꽃잎·폭포·구름)만 움직인다. 창하·유나·엘리나 장면은 수채·파스텔 새 원화
+ * (11/25 사용자 선택)로 만든 판이다. 그림을 바꾸면 영상도 함께 새 판으로 바꾼다.
  */
 const loops: Partial<Record<`${AskContent}-${AskCharacter}`, string>> = {
   "saju-dosa": "chemi-ask-saju-dosa-loop-v1",
   "fortune-dosa": "chemi-ask-fortune-dosa-loop-v1",
-  "star-elina": "chemi-banner-zodiac-loop-v2",
+  "saju-changha": "chemi-ask-saju-changha-loop-v1",
+  "star-elina": "chemi-ask-star-elina-loop-v1",
+  "tarot-yuna": "chemi-ask-tarot-yuna-loop-v1",
   "star-dosa": "chemi-bg-star-sky-loop-v2",
   "tarot-dosa": "chemi-bg-tarot-room-loop-v2",
 };

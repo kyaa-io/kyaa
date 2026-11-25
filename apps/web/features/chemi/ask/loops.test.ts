@@ -13,7 +13,8 @@ it("points every scene loop at an MP4 and WebM pair that ships with the app", ()
     for (const ext of [".mp4", ".webm"]) expect(existsSync(join(__dirname, "../../../public", src + ext)), src + ext).toBe(true);
 });
 
-it("moves every dosa scene and leaves the creator saju and tarot scenes still until their new art", () => {
+it("moves every dosa scene and the creator scenes remade from the watercolor art", () => {
   expect(contents.map(content => askLoop(content, "dosa") !== null)).toEqual([true, true, true, true]);
-  expect([askLoop("saju", "changha"), askLoop("tarot", "yuna"), askLoop("saju", "yuna")]).toEqual([null, null, null]);
+  expect([askLoop("saju", "changha"), askLoop("star", "elina"), askLoop("tarot", "yuna"), askLoop("saju", "yuna")]).toEqual([
+    "/chemi/video/chemi-ask-saju-changha-loop-v1", "/chemi/video/chemi-ask-star-elina-loop-v1", "/chemi/video/chemi-ask-tarot-yuna-loop-v1", null]);
 });

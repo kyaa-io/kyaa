@@ -65,9 +65,9 @@ const talkChoice = [
 const mobileTalkArt = ["portrait", "calm", "laugh", "care"] as const;
 /**
  * 입장 화면의 사진 → 캐릭터 변신 영상 판(`<최애>-photo-to-character-<판>`, 휴대폰 첫 입장에 한 번). 끝 프레임이 지금 입장 그림과 같은 것만 넣는다.
- * 유나는 그림을 다시 고르는 중이라(11/25) 비워 두고, 창하는 변신 영상이 없다.
+ * 영상은 세로 원화와 같은 2:3 이라 정지 그림과 같은 자리에 겹친다. 도사는 사진이 없어 비운다.
  */
-const photoToCharacter: Partial<Record<FortuneCharacterId, string>> = { elina: "v1" };
+const photoToCharacter: Partial<Record<FortuneCharacterId, string>> = { changha: "v1", elina: "v2", yuna: "v2" };
 
 type Phase = "idle" | "calc" | "error";
 /** 오류 안내를 가른다: 로그인 만료, 서비스 거절, 연결 끊김. */

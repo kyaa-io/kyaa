@@ -1,3 +1,5 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
@@ -448,4 +450,28 @@ it("writes the result body in the chosen favorite's voice (DF-FORT-001)", async 
   expect(new Set(lines).size).toBe(4);
   expect(lines[3]).toContain("이오.");
   for (const line of lines) expect(line).not.toMatch(/일진|일간|식신/);
+});
+
+it("lays each creator's photo-to-character video, shipped as an MP4 and WebM pair, over the entrance art", async () => {
+  // SceneVideo 는 보일 때만 주소를 싣는다.
+  vi.stubGlobal("IntersectionObserver", class {
+    constructor(private callback: IntersectionObserverCallback) {}
+    observe() { this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as unknown as IntersectionObserver); }
+    disconnect() {}
+    unobserve() {}
+  });
+  vi.stubGlobal("matchMedia", () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
+  vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+  vi.spyOn(HTMLMediaElement.prototype, "canPlayType").mockReturnValue("maybe");
+  vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ participation: null })));
+  for (const [character, file] of [["changha", "changha-photo-to-character-v1"], ["elina", "elina-photo-to-character-v2"], ["yuna", "yuna-photo-to-character-v2"]]) {
+    window.history.replaceState(null, "", `/chemi/fortune?c=${character}`);
+    const view = render(<FortuneFlow locale="ko" />);
+    const base = `/public-assets/cms-assets/chemi/video/${file}`;
+    await waitFor(() => expect(view.container.querySelector("video[data-once]")?.getAttribute("src")).toBe(`${base}.mp4`));
+    for (const ext of [".mp4", ".webm"]) expect(existsSync(join(__dirname, "../../../public", base + ext)), base + ext).toBe(true);
+    view.unmount();
+  }
+  vi.restoreAllMocks();
 });
