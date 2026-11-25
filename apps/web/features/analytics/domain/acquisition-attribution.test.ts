@@ -26,6 +26,15 @@ describe("acquisition attribution", () => {
     expect(acquisitionLanding("/admin/dashboard")).toBeNull();
   });
 
+  it.each(["community", "kol"])("attributes raffle rules visits to %s", medium => {
+    expect(acquisitionLanding("/s/raffle/rules")).toBe("benefit");
+    expect(classifyAcquisitionChannel({
+      searchParams: new URLSearchParams({ utm_medium: medium }),
+      referrer: "https://www.reddit.com/",
+      siteOrigin: "https://kyaa.io",
+    })).toBe(medium);
+  });
+
   it("reduces query and referrer inputs to a bounded channel", () => {
     const secretQuery = new URLSearchParams({
       utm_source: "person@example.com",
