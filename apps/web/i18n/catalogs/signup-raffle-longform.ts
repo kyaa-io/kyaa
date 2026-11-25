@@ -35,7 +35,7 @@ const copy = {
     oddsRule: "Odds ≈ your chances ÷ all chances × 17 winners", oddsMine: "Your odds now about {pct} (your {mine} of {total} chances)",
     bonusTitle: "Boost your odds", bonusOnce: "Once", bonusLimit: "Up to 3 a day", plusOne: "+1", plusThree: "+3", getShort: "Get", joinShort: "Join",
     bonusPassport: "Fan Passport", bonusCommunity: "Join a community", bonusComment: "Comment", bonusAttend: "Check-in",
-    bonusInvite: "Invite friends", bonusInviteRule: "Each friend who joins and enters with your link (no limit)", inviteCta: "Share invite link", invitedFriends: "Friends invited: {0}",
+    bonusInvite: "Invite friends", bonusInviteRule: "Each friend who signs up and enters with your link (no limit)", inviteCta: "Share invite link", invitedFriends: "Friends invited: {0}",
     checkIn: "Check in", findPosts: "Go comment", myEntry: "Your entries: 1", myChancesLabel: "Your chances", chancesCount: "{0}", optional: "Optional",
     prizes: "Prizes", more: "More to enjoy", done: "Done",
     passportTitle: "Fan Passport", 

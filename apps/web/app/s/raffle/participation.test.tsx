@@ -68,7 +68,7 @@ it('shows my chances and invited friends only from the server, and shares my own
   const result = document.querySelector('[data-state="entered"][role="status"]')!;
   expect(result.querySelector('[data-raffle-chances]')?.textContent).toBe('내 당첨 기회8회');
   expect(result.querySelector('[data-fan-print="stamp"]')).toBeTruthy();
-  expect(screen.getByText('초대한 친구 2명')).toBeTruthy();
+  expect(screen.getByText('초대로 가입·응모한 친구 2명 · 받은 당첨 기회 +6회')).toBeTruthy();
   expect(calls.map(call => `${call.method} ${call.url}`)).toEqual(['GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code']);
   fireEvent.click(screen.getByRole('button', { name: '초대 링크 공유' }));
   await settle();
