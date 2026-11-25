@@ -133,12 +133,12 @@ it("shows vacant slots, no personal record, and an actual zero score separately"
   expect(screen.getByText("내 기록이 없어요")).toBeVisible();
 });
 
-it("lays a loop video only over the banners whose art has a matching loop", () => {
+it("lays a matching loop video over every banner", () => {
   render(<ChemiHome weeklyRankings preview copy={copy} locale="ko" growth={false} />);
   const shown: Record<string, boolean> = {};
   for (const id of ["fortune", "saju", "zodiac", "tarot", "pair", "run"] as const) {
     fireEvent.click(screen.getByRole("button", { name: copy[id] }));
     shown[id] = document.querySelector(`[data-content="${id}"] video`) !== null;
   }
-  expect(shown).toEqual({ fortune: false, saju: false, zodiac: true, tarot: false, pair: true, run: true });
+  expect(shown).toEqual({ fortune: true, saju: true, zodiac: true, tarot: true, pair: true, run: true });
 });

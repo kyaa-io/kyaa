@@ -21,10 +21,10 @@ const images = {
 } satisfies Record<(typeof entries)[number][0], string>;
 
 /**
- * 배너 반복 영상 판(`chemi-banner-<id>-loop-<판>`). v2 = 1080p 원본에서 다시 만든 움직임 큰 영상(11/23 사용자 '화질'·'동적인 느낌').
- * null 이면 그림만 보인다: 운세는 지금 그림과 맞는 영상이 없고, 사주·타로는 창하·유나 그림을 다시 고르는 중이라(11/25) 그림이 정해진 뒤 그 그림으로 만든 판을 넣는다.
+ * 배너 반복 영상 판(`chemi-banner-<id>-loop-<판>`). 첫·끝 프레임이 지금 배너 그림과 같은 판만 넣고, null 이면 그림만 보인다.
+ * 운세·사주·타로·별자리 v3 = 수채·파스텔 새 원화(11/25 사용자 선택)로 만든 판. 그림을 바꾸면 영상도 함께 새 판으로 바꾼다.
  */
-const videoVersion = { fortune: null, saju: null, zodiac: "v2", tarot: null, pair: "v1", run: "v1" } satisfies Record<(typeof entries)[number][0], string | null>;
+const videoVersion = { fortune: "v3", saju: "v3", zodiac: "v3", tarot: "v3", pair: "v1", run: "v1" } satisfies Record<(typeof entries)[number][0], string | null>;
 
 export function HomeBanner({
   activities,
