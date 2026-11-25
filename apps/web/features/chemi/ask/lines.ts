@@ -349,3 +349,23 @@ export function askLoop(content: AskContent, character: AskCharacter) {
   const name = loops[`${content}-${character}`];
   return name ? `/chemi/video/${name}` : null;
 }
+
+export const waitingLines: Record<AskCharacter, string> = {
+  changha: "네 얘기랑 딱 맞는 데가 어딘지 같이 보자.",
+  elina: "아까 해 준 얘기, 마음에 두고 보고 있어요.",
+  yuna: "여기서 네가 챙길 거 하나만 콕 짚어 볼게.",
+  dosa: "그대의 물음과 맞닿은 대목을 살피고 있소.",
+};
+
+export function askReply(reaction: AskReaction, who: AskCharacter, answer: string) {
+  const fallback = askLinesFor(who).react[reaction];
+  const excerpt = answer.trim().match(/^[^.!?。！？\n]{1,64}(?=[.!?。！？\n]|$)/u)?.[0]
+    ?? answer.match(/[\p{L}\p{N}]{2,24}/u)?.[0];
+  if (!excerpt || reaction !== "really") return fallback;
+  return {
+    changha: `응. “${excerpt}” 이 말 기억해 둬.`,
+    elina: `네. “${excerpt}” 이 부분을 떠올려 봐요.`,
+    yuna: `응. 아까 “${excerpt}” 이 대목이 포인트야.`,
+    dosa: `그렇소. “${excerpt}” 이 대목을 생각해 보시오.`,
+  }[who];
+}

@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
 import { FanAction } from "@/components/fan-ui/fan-action";
+import { FanText } from "@/components/fan-ui/fan-text";
 import { appendLoginContext } from "@/components/login-intent";
 import {
   getNicknameFormat,
@@ -1338,15 +1339,18 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
                 ["artistOnlineNotifications", artistNotificationSettingCopy[locale].artistOnlineNotifications],
                 ["socialNotifications", emailSettingsCopy(locale).socialNotifications],
                 ["friendActivityNotifications", emailSettingsCopy(locale).friendActivityNotifications],
-                ["marketingNotifications", marketingConsentCopy[locale]],
+                ["marketingNotifications", marketingConsentCopy[locale].title],
                 ["participationNotifications", emailSettingsCopy(locale).participationNotifications],
               ] as const
             ).map(([key, label]) => (
               <label key={key}>
-                <span>{label}</span>
+                {key === "marketingNotifications"
+                  ? <span className={styles.consentCopy}><span>{label}</span><FanText role="meta">{marketingConsentCopy[locale].detail}</FanText></span>
+                  : <span>{label}</span>}
                 <input
                   type="checkbox"
                   role="switch"
+                  aria-label={key === "marketingNotifications" ? label : undefined}
                   checked={preferences[key] ?? (key !== "marketingNotifications")}
                   disabled={preferencePending}
                   aria-describedby={preferencePending ? "preference-save-status" : undefined}

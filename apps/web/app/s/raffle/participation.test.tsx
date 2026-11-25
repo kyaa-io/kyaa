@@ -62,7 +62,8 @@ it('shows my chances and invited friends only from the server, and shares my own
   auth.authenticated = true;
   const calls = server({ entered: true, passportReceived: false, communityJoined: false, chances: 8, friends: 2 });
   const share = vi.fn(async (_data: { title?: string; url: string }) => {});
-  vi.stubGlobal('navigator', { ...navigator, share });
+  const writeText = vi.fn(async (_url: string) => {});
+  vi.stubGlobal('navigator', { ...navigator, share, clipboard: { writeText } });
   render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /><RaffleInvitedFriends /><RaffleBoostAction kind="invite" /></RaffleProvider>);
   expect(screen.queryByText(/내 당첨 기회/)).toBeNull();
   await settle();
@@ -71,7 +72,7 @@ it('shows my chances and invited friends only from the server, and shares my own
   const result = document.querySelector('[data-state="entered"][role="status"]')!;
   expect(result.querySelector('[data-raffle-chances]')?.textContent).toBe('내 당첨 기회8회');
   expect(result.querySelector('[data-fan-print="stamp"]')).toBeTruthy();
-  expect(screen.getByText('초대한 친구 2명')).toBeTruthy();
+  expect(screen.getByText('초대로 가입·응모한 친구 2명 · 받은 당첨 기회 +6회')).toBeTruthy();
   expect(calls.map(call => `${call.method} ${call.url}`).sort()).toEqual([
     'GET /api/notifications/preferences', 'GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code',
   ]);
@@ -81,8 +82,16 @@ it('shows my chances and invited friends only from the server, and shares my own
   await settle();
   expect(consent.checked).toBe(true);
   expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: true }));
+  fireEvent.click(consent);
+  await settle();
+  expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: false }));
   fireEvent.click(screen.getByRole('button', { name: '초대 링크 공유' }));
   await settle();
+  fireEvent.click(screen.getByRole('button', { name: '초대 링크 복사' }));
+  await settle();
+  expect(screen.getByText('링크를 복사했어요')).toBeTruthy();
+  expect(writeText).toHaveBeenCalledWith(share.mock.calls[0]![0].url);
+  expect(share).toHaveBeenCalledTimes(1);
   const url = new URL(share.mock.calls[0]![0].url);
   expect(url.pathname).toBe('/s/raffle');
   expect(url.searchParams.get('invite')).toBe(mine);
@@ -91,6 +100,7 @@ it('shows my chances and invited friends only from the server, and shares my own
 it('keeps a friend\'s invite code through sign-in and sends it with the entry once', async () => {
   // 비로그인으로 초대 주소에 들어옴: 코드를 적어 두고 로그인으로 보낸다
   const first = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} invite={friendCode}><RaffleEnterBlock /></RaffleProvider>);
+  expect(screen.getByText(/친구가 초대했어요/)).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
   expect(auth.login).toHaveBeenCalled();
   expect(window.localStorage.getItem('kyaa:raffle:invite')).toBe(friendCode);

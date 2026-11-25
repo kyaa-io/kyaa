@@ -152,7 +152,9 @@ export function MemberEventPopup() {
     const close = () => setRaffle(undefined);
     return <PageNoticeDialog open onClose={close} locale={locale} title={banner.title} description={banner.description}
       actionLabel={banner.ctaLabel} actionHref={localizedBannerHref("/s/raffle?enter=1", locale)}
-      secondary={<FanAction variant="text" onClick={close}>{hideRaffle[locale]}</FanAction>} />;
+      secondary={<FanAction variant="text" onClick={close}>{hideRaffle[locale]}</FanAction>}>
+      <picture><img src={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} alt={banner.alt} /></picture>
+    </PageNoticeDialog>;
   }
   if (!active || active.lookup !== lookup || closed.has(active.key)) return null;
   const { banner, key } = active;
