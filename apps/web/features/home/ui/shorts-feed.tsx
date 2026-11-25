@@ -72,7 +72,9 @@ export function ShortsFeed({ items, locale, initialVideo, onClose }: {
       }
     }}>
       {items.map((item, index) => <article data-outbound-placement="shorts-player" key={item.id} className={styles.slide}>
-        {index === active && item.platform !== "instagram" ? <ShortsPlayer item={item} locale={locale} onLike={() => like.current?.()} immersive /> :
+        {index === active ? (item.platform === "instagram"
+          ? <iframe className={styles.instagramPlayer} src={`https://www.instagram.com/p/${item.videoId}/embed/`} title={item.title} allow="autoplay; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+          : <ShortsPlayer item={item} locale={locale} onLike={() => like.current?.()} immersive />) :
           Math.abs(index - active) <= 1 && (item.thumbnail || shortCover(item)) && <img src={item.thumbnail ?? shortCover(item) ?? undefined} alt="" />}
         {index === active && <>
           <div className={styles.feedCaption}><CreatorGroupLink item={item} locale={locale} className={styles.viewerCreatorLink} />
