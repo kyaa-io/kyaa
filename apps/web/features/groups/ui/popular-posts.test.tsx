@@ -25,14 +25,14 @@ describe('popular posts',()=>{
   expect(screen.getByRole('heading',{name:'今日の人気の投稿'})).toBeInTheDocument();
   expect(screen.getByRole('button',{name:'週間'})).toBeInTheDocument();
  });
- it('draws no panel and no empty message for a page without any readable post',()=>{
+ it('keeps period navigation available for an empty period',()=>{
   resource.mockReturnValue({state:{status:'ready',data:{items:[]}}});
   const {container}=render(<PopularPosts slug='artist' locale='ko'/>);
-  expect(container).toBeEmptyDOMElement();
-  expect(screen.queryByText('아직 인기글이 없어요.')).toBeNull();
+  expect(container.querySelector('[role=status]')).toBeTruthy();
+  expect(screen.getByRole('button',{name:'주간'})).toBeInTheDocument();
  });
  it('passes the page image to the rows so a post without a photo shows it instead of the document icon',()=>{
-  resource.mockReturnValue({state:{status:'ready',data:{items:[post(1)]}}});
+  resource.mockReturnValue({state:{status:'ready',data:{items:[post(1,{author:{nickname:'팬'}})]}}});
   const {container}=render(<PopularPosts slug='artist' locale='ko' pageImage={<span data-testid='page-image'/>}/>);
   expect(container.querySelector('[data-fan-post-row] [data-testid="page-image"]')).not.toBeNull();
   expect(container.querySelector('[data-fan-post-row] svg.lucide-file-text')).toBeNull();

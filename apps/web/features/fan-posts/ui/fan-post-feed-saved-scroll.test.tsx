@@ -7,14 +7,15 @@ vi.mock("@/components/byus-session-provider", () => ({ useByUsSession: () => moc
 vi.mock("@/features/fanpage/ui/use-community-resource", () => ({ useCommunityResource: () => ({ state: { status: "ready", data: { items: [], nextCursor: null, unavailableSources: [] } }, retry: vi.fn() }) }));
 vi.mock("./post-composer", () => ({ PostComposer: ({ onSaved }: { onSaved: () => void }) => <button onClick={() => onSaved()}>Save</button> }));
 afterEach(cleanup);
-it("brings the list with the new row into view after a post is saved, and keeps the popular box mounted while writing", async () => {
+it("brings the list with the new row into view after a post is saved, and shows popular posts only through their filter", async () => {
   const scroll = vi.fn(); Element.prototype.scrollIntoView = scroll;
   render(<FanPostFeed slug="artist" locale="en" compact source="fans" beforeFeed={<p>Popular box</p>} />);
-  const popular = screen.getByText("Popular box"); const wrapper = popular.parentElement!;
+  expect(screen.queryByText("Popular box")).toBeNull();
+  expect(screen.getByRole("link", {name: "Popular posts"})).toHaveAttribute("href", expect.stringContaining("view=popular"));
   fireEvent.click(screen.getByRole("button", { name: /Write a post/ }));
-  expect(screen.getByText("Popular box")).toBe(popular); expect(wrapper).toHaveAttribute("hidden");
+  expect(screen.queryByRole("link", {name: "Popular posts"})).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "Save" }));
-  expect(wrapper).not.toHaveAttribute("hidden");
+  expect(screen.queryByText("Popular box")).toBeNull();
   await waitFor(() => expect(scroll).toHaveBeenCalledOnce());
   expect(scroll.mock.contexts[0]).toBe(screen.getByRole("navigation", { name: "Post type" }).parentElement);
 });
