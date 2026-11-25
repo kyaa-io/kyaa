@@ -1,3 +1,4 @@
+import { signupSourceFields } from "./signup-source";
 import { kolPropertiesSchema } from './x-mission-attribution';
 import { EVENT_SOURCE_EVENT_SOURCE, eventSourcePropertiesSchema } from './event-source-tag';
 import { z } from "zod";
@@ -69,6 +70,14 @@ function validateEventSource(event: {source:string;eventName:string;anonymousSes
  if (event.eventName !== 'creator_page_view' || event.anonymousSessionId !== null || !eventSourcePropertiesSchema.safeParse(event.properties).success) context.addIssue({code:'custom',message:'Invalid fan page event source'});
 }
 
+function validateAcquisition(event: {source:string;eventName:string;properties:Record<string, unknown>}, context:z.RefinementCtx) {
+  if (event.source !== "acquisition.session_landing" && event.source !== "acquisition.identified_handoff") return;
+  const fields = Object.entries(event.properties).filter(([key]) => Object.hasOwn(signupSourceFields.shape, key));
+  if (fields.length && (event.eventName !== "creator_page_view" || !signupSourceFields.safeParse(Object.fromEntries(fields)).success)) {
+    context.addIssue({code:"custom",message:"Invalid acquisition attribution"});
+  }
+}
+
 const productEventV1BaseSchema = z.object({
   schemaVersion: z.literal(1),
   eventName: productEventNameSchema,
@@ -88,6 +97,7 @@ export const productEventV1Schema = productEventV1BaseSchema.superRefine((event,
   if ((event.appUserId === null) === (event.anonymousSessionId === null)) {
     context.addIssue({ code: "custom", message: "Exactly one event owner is required" });
   }
+  validateAcquisition(event, context);
   validateKol(event, context);
   validateEventSource(event, context);
   validateSignupEvent(event, context);
@@ -100,7 +110,7 @@ export const clientProductEventV1Schema = productEventV1BaseSchema
   .refine((event) => clientProductEventNameSchema.safeParse(event.eventName).success, {
     message: "Completion events are server-only",
     path: ["eventName"],
-  }).superRefine(validateKol).superRefine(validateEventSource).superRefine(validateSignupEvent).superRefine(validateOutboundEvent).superRefine(validateFunnelClientEvent);
+  }).superRefine(validateAcquisition).superRefine(validateKol).superRefine(validateEventSource).superRefine(validateSignupEvent).superRefine(validateOutboundEvent).superRefine(validateFunnelClientEvent);
 
 export type ProductEventV1 = z.infer<typeof productEventV1Schema>;
 export type ClientProductEventV1 = z.infer<typeof clientProductEventV1Schema>;

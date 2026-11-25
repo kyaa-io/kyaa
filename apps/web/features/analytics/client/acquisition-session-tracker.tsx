@@ -10,6 +10,7 @@ import {
   readStoredAcquisitionTouch,
   type AcquisitionTouch,
 } from "../domain/acquisition-attribution";
+import { captureSignupSource } from "../domain/signup-source";
 import { recordProductEventV1 } from "./product-event-client";
 import { useByUsSession } from "@/components/byus-session-provider";
 
@@ -44,6 +45,7 @@ export function AcquisitionSessionTracker() {
           ? campaign : undefined;
         touch = {
           kol,
+          signupSource: captureSignupSource(pathname, searchParams, document.referrer),
           channel: classifyAcquisitionChannel({
             searchParams,
             referrer: document.referrer,
@@ -80,6 +82,7 @@ export function AcquisitionSessionTracker() {
             idempotencyKey: `acquisition:identified:${touch.eventNonce}`,
             occurredAt: touch.occurredAt,
             properties: {
+              ...touch.signupSource,
               ...(touch.kol && { kol: touch.kol }),
               channel: touch.channel,
               landing: touch.landing,
