@@ -25,30 +25,36 @@ export type FortuneLineInput = {
 /** 점수 구간. 80 이상 높음, 60~79 보통, 60 미만 낮음. */
 type Band = "high" | "mid" | "low";
 const band = (value: number): Band => (value >= 80 ? "high" : value >= 60 ? "mid" : "low");
-const easyGrades = ["쉬어 가는 날", "조심하면 괜찮은 날"];
 const brightGrades = ["좋은 날", "아주 좋은 날"];
 
 /**
- * 대화 선택지(팬이 최애에게 하는 말). 바로 앞 대사에서 나오는 질문이면서, 다음 대사가 그 질문에 답하도록
- * 다음 이야기의 점수 구간까지 보고 고른다.
- * 1/4 → 2/4(사람): 사람 점수 구간과 등급 · 1/4 → 3/4 건너뛰기: 덕질 얘기 먼저
- * 2/4 → 3/4(덕질·금전): 사람 점수 구간(혼자/편한 사람/덕질 친구) · 2/4 → 4/4 건너뛰기: 행운 시간이 있으면 '언제'
+ * 대화 선택지(팬이 최애에게 하는 말). 바로 앞 대사의 낱말을 받아 묻고, 다음 대사가 그 질문의 답이 된다.
+ * 1/4 → 2/4(사람): 앞 대사가 등급 한마디라 등급을 먼저 본다(쉬어 가는 날 '약속 하나' · 조심하면 괜찮은 날 '말·답장 조심'),
+ *   조심하면 괜찮은 날에 사람 점수가 높으면 '먼저 말 걸어도 돼?'(답이 '윗사람이 먼저 손 내민다'),
+ *   그 밖의 등급은 사람 점수 구간(보통 '약속' · 좋은 등급에 높음 '도와줄 사람' · 나머지 '사람 쪽도').
+ * 1/4 → 3/4 건너뛰기: 덕질 얘기 먼저
+ * 2/4 → 3/4(덕질·금전): 사람 점수 구간(낮음 '말 줄이기 → 혼자' · 보통 '짧게 있다 와 → 다녀와서' · 높음 '윗사람 → 덕질 친구도')
+ * 2/4 → 4/4 건너뛰기: 행운 시간이 있으면 '언제'(낮음은 줄인 말, 그 밖은 부탁), 없으면 나갈 때 챙길 것
  * 3/4 → 4/4(챙길 것): 금전 점수 구간
  */
-type Choices = {
-  peopleCareful: string;
-  peopleLow: string;
-  peopleMid: string;
-  /** 쉬어 가는 날: 1/4 에서 이미 '약속은 하나만'을 말했으므로 그 하나를 묻는다. */
-  peopleMidRest: string;
-  peopleHighBright: string;
-  peopleHigh: string;
-  fandomFirst: string;
-  fandom: Record<Band, string>;
-  when: string;
-  luckFirst: string;
-  bring: Record<Band, string>;
-};
+export type FortuneChoiceKey =
+  | "peopleRest"
+  | "peopleCareful"
+  | "peopleFirst"
+  | "peopleAlso"
+  | "peoplePlan"
+  | "peopleHelper"
+  | "fandomFirst"
+  | "fandomSolo"
+  | "fandomAfter"
+  | "fandomFriend"
+  | "whenSay"
+  | "whenAsk"
+  | "luckFirst"
+  | "bringInstead"
+  | "bringThen"
+  | "bringMore";
+type Choices = Record<FortuneChoiceKey, string>;
 
 type Tone = {
   enter: (who: string) => string;
@@ -112,17 +118,22 @@ const tones: Record<FortuneCharacterId, Tone> = {
     luck: (hour, color) =>
       hour ? `부탁할 거 있으면 ${hour}에 해. ${color}색 물건도 하나 챙기고, 그럼 오늘은 네 편이야.` : `${color}색 물건 하나 챙겨. 그럼 오늘은 네 편이야.`,
     choice: {
+      peopleRest: "누구랑 잡지?",
       peopleCareful: "누굴 조심해야 돼?",
-      peopleLow: "사람 쪽도 괜찮아?",
-      peopleMid: "약속 잡아도 돼?",
-      peopleMidRest: "누구랑 잡지?",
-      peopleHighBright: "누구 덕에?",
-      peopleHigh: "오늘 누구 만나?",
+      peopleFirst: "먼저 말 걸어도 돼?",
+      peopleAlso: "사람 쪽도 괜찮아?",
+      peoplePlan: "약속 잡아도 돼?",
+      peopleHelper: "도와줄 사람도 있어?",
       fandomFirst: "덕질부터 봐 줘",
-      fandom: { low: "혼자 덕질할까?", mid: "덕질은 뭐 할까?", high: "친구 만나도 돼?" },
-      when: "언제 말 걸까?",
-      luckFirst: "챙길 건 뭐야?",
-      bring: { low: "대신 뭘 챙겨?", mid: "그럼 뭘 챙길까?", high: "운 더 올리려면?" },
+      fandomSolo: "혼자 덕질할까?",
+      fandomAfter: "다녀와서 덕질할까?",
+      fandomFriend: "친구도 만날까?",
+      whenSay: "할 말은 언제 해?",
+      whenAsk: "부탁은 언제 해?",
+      luckFirst: "나갈 때 뭘 챙겨?",
+      bringInstead: "대신 뭘 챙겨?",
+      bringThen: "그럼 뭘 챙길까?",
+      bringMore: "운 더 올리려면?",
     },
   },
   elina: {
@@ -168,17 +179,22 @@ const tones: Record<FortuneCharacterId, Tone> = {
     luck: (hour, color) =>
       `${hour ? `부탁은 ${hour}가 좋아요. ` : ""}${color}색 물건 하나 챙겨요. 잊지 말고, 알았지?`,
     choice: {
-      peopleCareful: "누구 조심할까?",
-      peopleLow: "사람 쪽은 어때?",
-      peopleMid: "약속 잡아도 돼?",
-      peopleMidRest: "그건 누구랑?",
-      peopleHighBright: "누가 도와줄까?",
-      peopleHigh: "누구 만나게 돼?",
+      peopleRest: "약속은 누구랑?",
+      peopleCareful: "누구한테 말할 때?",
+      peopleFirst: "먼저 말 걸어도 돼?",
+      peopleAlso: "사람 쪽도 괜찮을까?",
+      peoplePlan: "약속 잡아도 돼?",
+      peopleHelper: "누가 도와줄까?",
       fandomFirst: "덕질 먼저 봐 줘",
-      fandom: { low: "혼자 덕질할까?", mid: "덕질은 뭐 할까?", high: "친구 만나도 돼?" },
-      when: "언제 말할까?",
-      luckFirst: "챙길 거 알려 줘",
-      bring: { low: "대신 뭘 챙길까?", mid: "뭘 챙기면 좋아?", high: "운 더 올리려면?" },
+      fandomSolo: "혼자 덕질할까?",
+      fandomAfter: "일찍 와서 덕질해?",
+      fandomFriend: "친구도 만날까?",
+      whenSay: "할 말은 언제 해?",
+      whenAsk: "부탁은 언제 해?",
+      luckFirst: "나갈 때 뭘 챙겨?",
+      bringInstead: "대신 뭘 챙길까?",
+      bringThen: "그럼 뭘 챙길까?",
+      bringMore: "운 더 올리려면?",
     },
   },
   yuna: {
@@ -224,17 +240,22 @@ const tones: Record<FortuneCharacterId, Tone> = {
     luck: (hour, color) =>
       `${hour ? `부탁은 ${hour}에 하면 돼. ` : ""}${color}색 물건 딱 하나만 챙겨. 많으면 소용없어.`,
     choice: {
-      peopleCareful: "누구 조심해?",
-      peopleLow: "사람 쪽은?",
-      peopleMid: "약속 잡아도 돼?",
-      peopleMidRest: "그 하나는 누구랑?",
-      peopleHighBright: "누가 도와줘?",
-      peopleHigh: "누구 만나?",
+      peopleRest: "그 하나는 누구랑?",
+      peopleCareful: "누구 답장 조심해?",
+      peopleFirst: "먼저 연락해도 돼?",
+      peopleAlso: "사람 쪽은?",
+      peoplePlan: "약속 잡아도 돼?",
+      peopleHelper: "누가 도와줘?",
       fandomFirst: "덕질부터 알려 줘",
-      fandom: { low: "혼자 덕질해?", mid: "덕질은 뭐 해?", high: "친구 만나도 돼?" },
-      when: "말은 언제 해?",
-      luckFirst: "챙길 건?",
-      bring: { low: "대신 뭐 챙겨?", mid: "뭐 챙겨?", high: "더 올릴 방법은?" },
+      fandomSolo: "혼자 덕질해?",
+      fandomAfter: "끝내고 덕질해?",
+      fandomFriend: "친구도 만나?",
+      whenSay: "할 말은 언제 해?",
+      whenAsk: "부탁은 언제 해?",
+      luckFirst: "나갈 때 뭐 챙겨?",
+      bringInstead: "대신 뭐 챙겨?",
+      bringThen: "그럼 뭐 챙겨?",
+      bringMore: "더 올릴 방법은?",
     },
   },
   dosa: {
@@ -243,17 +264,22 @@ const tones: Record<FortuneCharacterId, Tone> = {
     calc: "그대 생일은 기억하오. 잠시 하늘을 살피리다.",
     picked: { fandom: "덕질부터 묻는구려.", luck: "챙길 것부터 묻는구려." },
     choice: {
-      peopleCareful: "누굴 조심해요?",
-      peopleLow: "사람 운은요?",
-      peopleMid: "약속 잡아도 돼요?",
-      peopleMidRest: "사람 만나도 돼요?",
-      peopleHighBright: "누가 도와줘요?",
-      peopleHigh: "누굴 만나게 돼요?",
+      peopleRest: "사람 만나도 돼요?",
+      peopleCareful: "누굴 살필까요?",
+      peopleFirst: "먼저 다가가도 돼요?",
+      peopleAlso: "사람 운은요?",
+      peoplePlan: "약속 잡아도 돼요?",
+      peopleHelper: "누가 도와줘요?",
       fandomFirst: "덕질 운부터요",
-      fandom: { low: "혼자 덕질할까요?", mid: "덕질은 뭘 해요?", high: "친구 만나도 돼요?" },
-      when: "언제 말할까요?",
-      luckFirst: "챙길 건요?",
-      bring: { low: "대신 뭘 챙겨요?", mid: "뭘 챙길까요?", high: "더 올리려면요?" },
+      fandomSolo: "혼자 덕질할까요?",
+      fandomAfter: "돌아와 덕질해요?",
+      fandomFriend: "친구도 만날까요?",
+      whenSay: "할 말은 언제 해요?",
+      whenAsk: "부탁은 언제요?",
+      luckFirst: "나설 때 뭘 챙겨요?",
+      bringInstead: "대신 뭘 챙겨요?",
+      bringThen: "그럼 뭘 챙겨요?",
+      bringMore: "더 올리려면요?",
     },
     scoreLine: (score, grade) => `오늘은 ${score}점, ${grade}이구려.`,
     people: {
@@ -322,26 +348,41 @@ export function fortuneEnterLine(
 }
 
 /**
- * 한국어 대화의 선택지 글자. next = 다음 이야기로 가는 강조 버튼, skip = 한 이야기를 건너뛰는 버튼.
+ * 지금 대사 아래에 둘 선택지. next = 다음 이야기로 가는 강조 버튼, skip = 한 이야기를 건너뛰는 버튼.
  * 마지막 정리로 가는 버튼(3/4 건너뛰기, 4/4)은 null — 공통 글자(chemi.json dailySummary)를 쓴다.
  */
+export function fortuneChoiceKey(
+  talk: 1 | 2 | 3 | 4,
+  slot: "next" | "skip",
+  input: FortuneLineInput,
+): FortuneChoiceKey | null {
+  const people = band(input.people);
+  if (talk === 1) {
+    if (slot === "skip") return "fandomFirst";
+    if (input.grade === "쉬어 가는 날") return "peopleRest";
+    if (input.grade === "조심하면 괜찮은 날") return people === "high" ? "peopleFirst" : "peopleCareful";
+    if (people === "mid") return "peoplePlan";
+    return people === "high" && brightGrades.includes(input.grade) ? "peopleHelper" : "peopleAlso";
+  }
+  if (talk === 2) {
+    if (slot === "next") return ({ low: "fandomSolo", mid: "fandomAfter", high: "fandomFriend" } as const)[people];
+    if (!input.luckyHour) return "luckFirst";
+    return people === "low" ? "whenSay" : "whenAsk";
+  }
+  if (talk === 3 && slot === "next")
+    return ({ low: "bringInstead", mid: "bringThen", high: "bringMore" } as const)[band(input.money)];
+  return null;
+}
+
+/** 한국어 화면의 선택지 글자(최애 말투). 다른 언어는 같은 키의 공통 글자(chemi.json fortuneAsk_*)를 쓴다. */
 export function fortuneChoiceLabel(
   character: FortuneCharacterId,
   talk: 1 | 2 | 3 | 4,
   slot: "next" | "skip",
   input: FortuneLineInput,
 ) {
-  const choice = tones[character].choice;
-  if (talk === 1 && slot === "skip") return choice.fandomFirst;
-  if (talk === 1) {
-    const people = band(input.people);
-    if (people === "mid") return input.grade === "쉬어 가는 날" ? choice.peopleMidRest : choice.peopleMid;
-    if (people === "low") return easyGrades.includes(input.grade) ? choice.peopleCareful : choice.peopleLow;
-    return brightGrades.includes(input.grade) ? choice.peopleHighBright : choice.peopleHigh;
-  }
-  if (talk === 2) return slot === "next" ? choice.fandom[band(input.people)] : input.luckyHour ? choice.when : choice.luckFirst;
-  if (talk === 3 && slot === "next") return choice.bring[band(input.money)];
-  return null;
+  const key = fortuneChoiceKey(talk, slot, input);
+  return key && tones[character].choice[key];
 }
 
 export function fortuneCalcLine(character: FortuneCharacterId) {
@@ -367,7 +408,7 @@ export function fortuneTalkLine(
     const fandom = tone.fandom[band(input.fandom)][picked === "fandom" ? "mid" : band(input.people)];
     return `${picked === "fandom" ? `${tone.picked.fandom} ` : ""}${fandom} ${tone.money[band(input.money)]}`;
   }
-  // 행운 시간이 있으면 '언제 말 걸면 좋아?'에 바로 답하는 줄이라 받아 주는 말을 붙이지 않는다.
+  // 행운 시간이 있으면 '부탁은 언제 해?'·'할 말은 언제 해?'에 바로 답하는 줄이라 받아 주는 말을 붙이지 않는다.
   const ack = picked === "luck" && !input.luckyHour ? `${tone.picked.luck} ` : "";
   return `${ack}${tone.luck(hourText(input.luckyHour), input.color)}`;
 }

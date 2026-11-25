@@ -22,6 +22,10 @@ describe("chemi language scaffold", () => {
         required.push(`${scene}Enter_${character}`);
       }
     }
+    // 운세 대화 선택지: 앞 대사를 받는 질문 16개는 언어마다 채워져 있어야 한다(비면 영어로 떨어진다).
+    const asks = Object.keys(load("ko").readingUi).filter((key) => key.startsWith("fortuneAsk_"));
+    expect(asks).toHaveLength(16);
+    required.push(...asks);
     for (const key of required) {
       expect(catalog.readingUi[key]?.trim(), `${locale}.${key}`).toBeTruthy();
       if (locale !== "ko") expect(catalog.readingUi[key]).not.toMatch(/[가-힣]/);
