@@ -49,7 +49,7 @@ export function createGetPublicPopularPosts(dependencies: Pick<FanpageDependenci
         const [source, ...ref] = key.split(":");
         return [key, await pageImage!(source as "fan" | "group", ref.join(":"), locale.data).catch(() => null)] as const;
       })));
-      const avatars = await avatarsPending;
+      const avatars: Record<string, string> = await avatarsPending;
       const result = { ...data.data, items: data.data.items.map(item => {
         const avatarUrl = avatars[`${item.source}:${item.id}`];
         const pageImageUrl = images.get(`${item.source}:${item.pageRef}`);
