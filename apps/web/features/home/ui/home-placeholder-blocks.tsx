@@ -1,4 +1,3 @@
-import { OfficialBadge } from "@/components/fan-ui/official-badge";
 import type { CSSProperties, ReactNode } from "react";
 import { FanHeading, FanSectionHeader } from "@/components/fan-ui/fan-heading";
 import Image from "next/image";
@@ -113,10 +112,9 @@ export function GalleryImage({ photo, sizes, showNew = false }: { showNew?: bool
   const unoptimized = (photo.image.url.startsWith("/api/content-assets/") || photo.image.url.startsWith("/api/groups/media/")) || bypassImageOptimization(photo.image.url);
   const image = <Image className={styles.photoImage} src={photo.image.url} alt={photo.alt} width={photo.image.width} height={photo.image.height}
     sizes={sizes} loading="lazy" unoptimized={unoptimized} />;
-  const badge = (photo.source === "official_sns" || photo.source === "cms_upload") && <OfficialBadge />;
-  if (!photo.sourceHref) return badge ? <span className={styles.photoLink}>{image}{badge}</span> : image;
+  if (!photo.sourceHref) return image;
   return <Link className={styles.photoLink} href={photo.sourceHref as Route}>
-    {image}{badge}
+    {image}
     {showNew && photo.isNew && <FanTag tone="fan" className={styles.photoNew}><span lang="en">New</span></FanTag>}
   </Link>;
 }
