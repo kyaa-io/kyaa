@@ -153,9 +153,9 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=
     <header className={styles.discoveryIntro}><FanHeading as="h1">{c.title}</FanHeading></header>
     <CreatorPromoBanners locale={locale} order={promoOrder}/>
     <MyArtists locale={locale} loginPath={`/pages/groups?${directoryLoginQuery}`}/>
-    <ThinCarousel banners={banners} locale={locale}/>
     <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore} id="directory-explore" data-directory-explore="" data-filtered={holdHeight||undefined}>
       <HotPosts locale={locale}/>
+      <ThinCarousel banners={banners} locale={locale}/>
       <div className={styles.discoveryHeading}><h2>{t.explore}</h2>{!(search.trim()&&searchTab!=='artists')&&listData&&!resource.error&&<output aria-live="polite" className={styles.meta}>{t.all} {listedCount.toLocaleString(locale)}{listData.totalCount===undefined&&listData.nextCursor?'+':''}</output>}</div>
       <div className={directoryStyles.controls}>
       <form className={`${styles.search} ${directoryStyles.search}`} onSubmit={submit}><input className={`${styles.input} ${directoryStyles.searchInput}`} aria-label={t.searchPlaceholder} placeholder={t.searchPlaceholder} value={draft} onChange={e=>setDraft(e.target.value)} onCompositionStart={()=>setComposing(true)} onCompositionEnd={()=>setComposing(false)} maxLength={100}/><button className={directoryStyles.searchIcon} aria-label={t.search}><Search size={18}/></button></form>

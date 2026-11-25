@@ -17,8 +17,8 @@ it.each(['?search=Ru','?type=fan','?type=hobby','?type=fan&artistRole=idol&searc
  history.replaceState(null,'',`/pages/groups${query}`);render(<GroupDirectory locale='ko'/>);
  expect(screen.getByRole('heading',{level:1,name:'팬페이지와 모임 찾기'})).toBeInTheDocument();
  expect(screen.getByTestId('banners')).toBeInTheDocument();
- // 순서: 내 아티스트 → 얇은 배너 → Hot 게시글 → 페이지 둘러보기.
- const order=[screen.getByTestId('my-artists'),screen.getByTestId('banners'),screen.getByTestId('hot-posts'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})];
+ // 순서: 오늘의 팬페이지 → 내 아티스트 → Hot 게시글 → 케미 광고 → 페이지 둘러보기.
+ const order=[screen.getByRole('heading',{name:'오늘의 팬페이지'}),screen.getByTestId('my-artists'),screen.getByTestId('hot-posts'),screen.getByTestId('banners'),screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})];
  order.slice(1).forEach((node,i)=>expect(order[i]!.compareDocumentPosition(node)&Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy());
  expect(screen.getByRole('heading',{level:2,name:'페이지 둘러보기'})).toBeInTheDocument();
  // The type and role filters only exist while no search is typed; a search swaps them for the artists/posts tabs.
