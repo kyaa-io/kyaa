@@ -17,7 +17,6 @@ import { Plus } from "@/components/fan-ui/fan-icons";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
-import { FanSurface } from "@/components/fan-ui/fan-surface";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { FanPostRow } from "@/components/fan-ui/fan-post-row";
 import { FanState } from "@/components/fan-ui/fan-state";
@@ -89,7 +88,7 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
   const guest = session.ready && !session.authenticated;
   const items = joined.data?.items ?? [];
   const waiting = !session.ready || (session.authenticated && joined.loading && !joined.data);
-  return <FanSurface className={styles.card} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
+  return <section className={styles.artists} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
     <FanHeading id="directory-my-artists">{c.myArtists}</FanHeading>
     <div className={styles.row}>
     <ul className={styles.rail} {...drag}>
@@ -103,7 +102,7 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
     </ul>
     {guest ? <FanAction className={styles.login} variant="neutral" size="sm" href={fanLoginHref(locale, loginPath)}>{c.signIn}</FanAction> : null}
     </div>
-  </FanSurface>;
+  </section>;
 }
 
 /** The page's picture, or the default avatar asset: never an empty white ring. */
