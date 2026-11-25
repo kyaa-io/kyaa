@@ -1,0 +1,5 @@
+{
+  "changes": ["팬페이지 게시판에서 전체 글과 인기글을 한 곳에서 골라 볼 수 있어요. ‘인기’를 누르면 일간·주간·월간 인기글이 보여요.", "예시 데이터로 만든 로컬 화면입니다."],
+  "path": "/changha",
+  "images": ["release-notes/images/2026-11-25-fanpage-board-unify.png"]
+}

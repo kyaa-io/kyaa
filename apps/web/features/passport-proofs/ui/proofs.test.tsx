@@ -495,7 +495,7 @@ describe("proof tab (FB-N21)", () => {
   });
   it("reward panel shows the policy points, the page counts above zero and one submit action", () => {
     const { unmount } = render(<ProofReward locale="ko" slug="mina" points={173} summary={{ approvedCount: 17, monthFanCount: 0, proofTypes: [] }} />);
-    expect(screen.getByText("173")).toBeTruthy();
+    expect(screen.getByText("+173")).toBeTruthy();
     expect(screen.getByText("누적 인증")).toBeTruthy();
     expect(screen.queryByText("이번 달 인증 팬")).toBeNull();
     expect(screen.getAllByRole("link")).toHaveLength(1);
@@ -532,7 +532,7 @@ describe("proof tab (FB-N21)", () => {
     vi.stubGlobal("fetch", fetchMock);
     authState.authenticated = false;
     const { container } = render(<PublicProofsTab locale="ko" slug="mina" />);
-    expect(screen.getByText("173")).toBeTruthy();
+    expect(container.querySelector("[data-block=proof-reward] [data-number-role]")?.textContent).toBe("+173P");
     expect(screen.getByRole("link", { name: "인증하기" }).getAttribute("href")).toBe("/c/mina/proofs?locale=ko");
     await waitFor(() => expect(screen.getByText("누적 인증")).toBeTruthy());
     expect(screen.getByText("멤버십")).toBeTruthy();
