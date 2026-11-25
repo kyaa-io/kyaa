@@ -143,7 +143,14 @@
     "release-notes/2026-11-25-chemi-reading-language.json",
     "release-notes/2026-11-25-chemi-fan-copy.json",
     "release-notes/2026-11-25-chemi-mileage-price.json",
-    "release-notes/2026-11-25-chemi-mileage-extra-game.json"
+    "release-notes/2026-11-25-chemi-mileage-extra-game.json",
+    "release-notes/2026-11-25-chemi-stage-layout.json",
+    "release-notes/2026-11-25-chemi-pc-scene.json",
+    "release-notes/2026-11-25-chemi-match-favorites.json",
+    "release-notes/2026-11-25-chemi-ask-wait.json",
+    "release-notes/2026-11-25-chemi-run-retry.json",
+    "release-notes/2026-11-25-chemi-saju-languages.json",
+    "release-notes/2026-11-25-chemi-art-likeness.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
@@ -169,5 +176,8 @@
   ],
   "stamp-tier": [
     "release-notes/2026-11-25-stamp-tier.json"
+  ],
+  "goods-menu": [
+    "release-notes/2026-11-25-goods-menu.json"
   ]
 }

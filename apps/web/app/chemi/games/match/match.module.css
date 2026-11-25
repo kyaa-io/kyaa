@@ -10,6 +10,10 @@
   color: var(--color-ink);
   background: var(--color-surface);
 }
+.shell[data-stage="start"],
+.shell[data-stage="result"] {
+  padding-block-start: var(--analytics-consent-height, 0px);
+}
 .shell h1,
 .shell h2,
 .shell p,
@@ -815,7 +819,7 @@
   background: var(--color-accent-soft);
 }
 
-.roundTable, .levelGoal { display: grid; }
+.roundTable { display: grid; }
 .roundTable { gap: var(--space-2); }
 .ranking li:has(> div:only-child) { display: block; }
 @media (width >= 48rem) {
@@ -835,7 +839,16 @@
 .resultActions { display: flex; align-items: center; gap: var(--space-2); }
 .resultActions > * { min-width: 0; flex: 0 1 auto; }
 .resultActions > :first-child { flex: 1 1 0; }
-.roundTable .levelGoal { display: flex; align-items: baseline; flex-wrap: wrap; column-gap: var(--space-1); }
+.roundTable .levelGoal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+}
+.roundTable .levelGoal > span { white-space: normal; overflow-wrap: anywhere; }
+@media (width < 48rem) {
+  .roundTable .levelList { column-gap: var(--space-1); }
+  .roundTable .levelList li { grid-template-rows: auto 1fr; align-content: start; }
+}
 
 .card[data-variant="1"]::before, .card[data-variant="2"]::before, .card[data-variant="3"]::before {
   content: ""; position: absolute; z-index: 1; pointer-events: none; inset: 0 auto 0 0; width: var(--space-2);

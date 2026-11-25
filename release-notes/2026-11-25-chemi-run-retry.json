@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "최애 런에서 판을 받은 직후 오류가 나도 다시 누르면 같은 판을 열어요. 무료 판이 하나 더 줄거나 추가 판의 포인트가 한 번 더 빠지는 일을 막았어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/games/run",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-run-retry.png"
+  ]
+}

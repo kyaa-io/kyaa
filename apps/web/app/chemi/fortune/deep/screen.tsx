@@ -1,5 +1,6 @@
 "use client";
 
+import { pillarLabel } from "@/app/chemi/saju/terms-i18n";
 import type { ReactNode } from "react";
 import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -241,7 +242,7 @@ export function FortuneDeep(props: Props) {
           <header className={styles.head}>
             <FanText as="p" role="meta">
               {dayLabel(locale, day, { month: "long", day: "numeric", weekday: "long" })} ·{" "}
-              {text("pillarDay", { pillar: r.evidence.dayPillar })}
+              {text("pillarDay", { pillar: pillarLabel(r.evidence.dayPillar, locale) })}
             </FanText>
             <FanHeading as="h1">{text(summaryKeys[band(r.score)])}</FanHeading>
             <picture className={`${result.hero} ${styles.heroArt}`}>

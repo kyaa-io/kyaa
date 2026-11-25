@@ -800,7 +800,7 @@ function Session({
   const faces = facesFor(character);
   const paidStart = lobby?.freeRemaining === 0 && lobby.extraCost > 0;
   useEffect(() => {
-    if (stage === "play" && document.documentElement.style.getPropertyValue("--analytics-consent-height")) {
+    if ((stage === "play" || stage === "result" || stage === "start") && document.documentElement.style.getPropertyValue("--analytics-consent-height")) {
       window.scrollTo({ top: 0, behavior: "instant" });
     }
   }, [stage]);

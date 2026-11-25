@@ -1,7 +1,10 @@
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
+import { signupSourceFields } from "./signup-source";
 import { z } from "zod";
 
 export const acquisitionChannelSchema = z.enum([
+  "community",
+  "kol",
   "direct",
   "search",
   "social",
@@ -27,6 +30,7 @@ export const acquisitionTouchSchema = z.object({
   channel: acquisitionChannelSchema,
   landing: acquisitionLandingSchema,
   kol: z.string().regex(/^[a-z0-9_]{1,15}$/).optional(),
+  signupSource: signupSourceFields.optional(),
   anonymousRecorded: z.boolean(),
   identifiedRecorded: z.boolean(),
   eventNonce: z.uuid(),
@@ -67,7 +71,7 @@ function normalizedHostname(hostname: string): string {
 
 export function acquisitionLanding(pathname: string): AcquisitionLanding | null {
   if (pathname === "/") return "home";
-  if (/^\/s\/raffle\/?$/.test(pathname)) return "benefit";
+  if (/^\/s\/raffle(?:\/rules)?\/?$/.test(pathname)) return "benefit";
   if (pathname === "/celebrities") return "creator_directory";
   if (creatorSlugFromHomePath(pathname) !== null) return "creator";
   if (pathname === "/live") return "live_directory";
@@ -79,6 +83,8 @@ export function acquisitionLanding(pathname: string): AcquisitionLanding | null 
 
 function channelFromMedium(medium: string | null): AcquisitionChannel | null {
   switch (medium?.trim().toLowerCase()) {
+    case "community": return "community";
+    case "kol": return "kol";
     case "cpc":
     case "ppc":
     case "paid":

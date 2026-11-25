@@ -52,7 +52,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
 import {
   askArt, askExamples, askFollowups, askLinesFor, askLoop, askPages, askReaction, askReactionExpression, askRecall, askResultExamples, askResultLine,
-  askSubject, askVoice,
+  askSubject, askVoice, waitingLines, askReply,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
   type AskCharacter, type AskContent, type AskRecall, type AskTopic,
 } from "./lines";
@@ -138,6 +138,13 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [waitingFor, setWaitingFor] = useState<string | null>(null);
+  useEffect(() => {
+    setWaitingFor(null);
+    if (!draft || draft.failed) return;
+    const timer = window.setTimeout(() => setWaitingFor(draft.threadId), 6500);
+    return () => window.clearTimeout(timer);
+  }, [draft]);
   const [blocked, setBlocked] = useState<Thread | null>(null);
   const [input, setInput] = useState("");
   const [sheet, setSheet] = useState<"history" | "share" | "extra" | null>(null);
@@ -519,7 +526,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
           {/* 끊겼으면 최애의 대사 상자는 숨기고 토스트로만 알린다(기획 03-6 16). */}
           {draft.failed ? null : speak(
             <>
-              {line(lines.think(askSubject[where]), true)}
+              {line(waitingFor === draft.threadId ? waitingLines[who] : lines.think(askSubject[where]), true)}
               <span className={styles.dots} role="status" aria-label={text("askWriting", { name })}>
                 <i />
                 <i />
@@ -615,7 +622,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
       ...(shown.followupQuestion && shown.followupAnswer
         ? askPages(shown.followupAnswer, wide).map((body) => ({ question: shown.followupQuestion, tag: null, body, key: `${threadId}:follow` }))
         : []),
-      ...(react ? [{ question: askReaction(react, who), tag: null, body: lines.react[react], key: `${threadId}:react` }] : []),
+      ...(react ? [{ question: askReaction(react, who), tag: null, body: askReply(react, who, shown.followupAnswer || shown.answer), key: `${threadId}:react` }] : []),
       // 오늘 마지막 질문을 이어 묻기까지 다 썼으면 방금 받은 답 뒤에 작별 인사가 한 쪽 붙는다. 내일 알림을 신청하면 그 대답으로 바뀐다.
       ...(ending && complete && arrived ? [{ question: null, tag: null, body: state.reminded ? lines.reminded : lines.rest[where], key: `${threadId}:rest` }] : []),
     ];

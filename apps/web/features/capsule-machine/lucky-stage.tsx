@@ -1,4 +1,5 @@
 "use client";
+import { GOODS_MENU } from "@/features/groups/goods-menu";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CapsuleEngine, CapsuleFraming } from "./machine-art";
@@ -98,7 +99,7 @@ export function LuckyStage({ className, paused = false, locale = "en" }: { class
   const handleUnavailable = useCallback(() => setUnavailable(true), [setUnavailable]);
   const handleLost = useCallback(() => setLost(true), [setLost]);
   const handleRestored = useCallback(() => { setLost(false); setLive(false); setCanvasKey((key) => key + 1); }, [setLost, setLive, setCanvasKey]);
-  const showCanvas = !paused && wantsMachine && gpu === "ok";
+  const showCanvas = (!paused || GOODS_MENU) && !open && wantsMachine && gpu === "ok";
   const graphics = live && !lost && !reduced ? "3d" : "still";
 
   return <><div ref={setStage} className={className ? `${styles.stage} ${className}` : styles.stage} data-lucky-stage="" data-preview-enabled={paused || undefined} data-lucky-graphics={graphics}>

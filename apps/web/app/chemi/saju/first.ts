@@ -44,6 +44,9 @@ import {
 import { stemNotes } from "./copy";
 import { elementTerm, seatOf, seatPlain } from "./depth";
 import { tenGodPlain, tenGodShort } from "./terms";
+import { lifeStages, spiritStars } from "./terms-i18n";
+import type { Tx } from "./tx";
+
 
 /** 받침이 있으면 앞, 없으면 뒤(은/는, 이/가, 을/를, 과/와). ㄹ 받침은 '로'를 쓴다. */
 const hasFinal = (word: string) => {
@@ -74,7 +77,7 @@ export type SheetColumn =
       known: true;
       me: boolean;
       stemGod: string;
-      branchGod: TenGod;
+      branchGod: string;
       stem: SheetCell;
       branch: SheetCell;
       /** 지장간(여기·중기·정기), 마지막이 본기 */
@@ -83,11 +86,14 @@ export type SheetColumn =
       spirit: string | null;
     };
 
-export function sheetColumns(chart: Chart): SheetColumn[] {
+export function sheetColumns(chart: Chart, tx?: Tx | null): SheetColumn[] {
   const day = dayStem(chart);
+  const god = (value: TenGod) => (tx ? tx.t.god(value) : value);
   return pillarKeys.map((key) => {
     const pillar = chart.pillars[key];
-    const name = key === "day" ? "일주 · 나" : pillarName[key];
+    const name = tx
+      ? key === "day" ? `${tx.t.pillar(key)} · ${tx.t.me}` : tx.t.pillar(key)
+      : key === "day" ? "일주 · 나" : pillarName[key];
     if (!pillar) return { key, name, known: false };
     const detail = chart.details?.[key];
     return {
@@ -95,25 +101,34 @@ export function sheetColumns(chart: Chart): SheetColumn[] {
       name,
       known: true,
       me: key === "day",
-      stemGod: key === "day" ? "일간" : tenGod(day, pillar.heavenlyStem),
-      branchGod: tenGod(day, hiddenStemDays[pillar.earthlyBranch].at(-1)![0]),
+      stemGod: key === "day" ? (tx ? tx.t.stemSeat("day") : "일간") : god(tenGod(day, pillar.heavenlyStem)),
+      branchGod: god(tenGod(day, hiddenStemDays[pillar.earthlyBranch].at(-1)![0])),
       stem: { letter: pillar.heavenlyStem, hanja: stemHanja[pillar.heavenlyStem], element: stemElement[pillar.heavenlyStem] },
       branch: { letter: pillar.earthlyBranch, hanja: branchHanja[pillar.earthlyBranch], element: branchElement[pillar.earthlyBranch] },
       hidden: hiddenStemDays[pillar.earthlyBranch].map(([stem]) => stemHanja[stem]),
-      lifeStage: detail?.lifeStage ?? null,
-      spirit: detail?.spirit ?? null,
+      lifeStage: detail?.lifeStage ? (tx ? tx.t.stage(detail.lifeStage) : detail.lifeStage) : null,
+      spirit: detail?.spirit ? (tx ? tx.t.spirit(detail.spirit) : detail.spirit) : null,
     };
   });
 }
 
-export const sheetLabel = (chart: Chart) =>
-  "사주 여덟 글자. " +
-  pillarKeys
-    .map((key) => {
-      const pillar = chart.pillars[key];
-      return pillar ? `${pillarName[key]} ${pillar.heavenlyStem}${pillar.earthlyBranch}` : `${pillarName[key]} 모름`;
-    })
-    .join(", ");
+export const sheetLabel = (chart: Chart, tx?: Tx | null) =>
+  tx
+    ? tx.f("sheetLabel", {
+        list: pillarKeys
+          .map((key) => {
+            const pillar = chart.pillars[key];
+            return pillar ? `${tx.t.pillar(key)} ${tx.hanja(pillar)}` : tx.f("sheetUnknown", { pillar: tx.t.pillar(key) });
+          })
+          .join(", "),
+      })
+    : "사주 여덟 글자. " +
+      pillarKeys
+        .map((key) => {
+          const pillar = chart.pillars[key];
+          return pillar ? `${pillarName[key]} ${pillar.heavenlyStem}${pillar.earthlyBranch}` : `${pillarName[key]} 모름`;
+        })
+        .join(", ");
 
 const stagePlain: Record<string, string> = {
   장생: "새로 시작하는 자리",
@@ -157,19 +172,56 @@ export type SheetDetail = {
   basis: [string, string];
 };
 
-export function sheetDetail(chart: Chart): SheetDetail {
+export function sheetDetail(chart: Chart, tx?: Tx | null): SheetDetail {
   const columns = sheetColumns(chart).filter((column) => column.known);
   const stages: LegendItem[] = [];
   const spirits: LegendItem[] = [];
   for (const column of columns) {
-    const seat = `${branchSeat[column.key]}`;
+    const seat = tx ? tx.t.branchSeat(column.key) : `${branchSeat[column.key]}`;
     if (column.lifeStage)
-      stages.push({ seat, hanja: column.branch.hanja, name: column.lifeStage, plain: stagePlain[column.lifeStage] ?? "" });
+      stages.push({
+        seat,
+        hanja: column.branch.hanja,
+        name: tx ? tx.t.stage(column.lifeStage) : column.lifeStage,
+        plain: (tx ? tx.p.stage[lifeStages.indexOf(column.lifeStage as (typeof lifeStages)[number])] : stagePlain[column.lifeStage]) ?? "",
+      });
     if (column.spirit)
-      spirits.push({ seat, hanja: column.branch.hanja, name: column.spirit, plain: spiritPlain[column.spirit] ?? "" });
+      spirits.push({
+        seat,
+        hanja: column.branch.hanja,
+        name: tx ? tx.t.spirit(column.spirit) : column.spirit,
+        plain: (tx ? tx.p.spirit[spiritStars.indexOf(column.spirit as (typeof spiritStars)[number])] : spiritPlain[column.spirit]) ?? "",
+      });
   }
   const empty = voidOf(chart);
   const voidHanja = empty.branches.map((branch) => branchHanja[branch]).join("");
+  if (tx) {
+    const hour = chart.pillars.hour;
+    const month = chart.pillars.month;
+    return {
+      stages,
+      spirits,
+      void: {
+        hanja: voidHanja,
+        letters: "",
+        plain: empty.keys.length
+          ? tx.f("voidIn", { seats: empty.keys.map((key) => `${tx.t.branchSeat(key)} ${branchHanja[chart.pillars[key]!.earthlyBranch]}`).join(" · ") })
+          : tx.f("voidNone", { n: columns.length * 2 }),
+      },
+      basis: [
+        chart.timeKnown
+          ? hour ? tx.f("basisTime", { hour: branchHanja[hour.earthlyBranch] }) : tx.f("basisTimeOnly")
+          : tx.f(month ? "basisNoTime" : "basisNoTimeTerm"),
+        [
+          month ? tx.f("basisMonth", { term: tx.t.solarTerm(monthTerm[month.earthlyBranch]), branch: branchHanja[month.earthlyBranch] }) : null,
+          tx.f("basisDayChange"),
+          tx.f("basisEngine"),
+        ]
+          .filter(Boolean)
+          .join(" · "),
+      ],
+    };
+  }
   const voidPlain = empty.keys.length
     ? `${empty.keys.map((key) => `${branchSeat[key]} ${branchHanja[chart.pillars[key]!.earthlyBranch]}`).join(" · ")}가 공망이에요. 그 자리의 힘은 조금 덜어서 읽어요`
     : `${countWord[columns.length * 2]} 글자에 공망에 든 글자가 없어요`;
@@ -228,7 +280,7 @@ export type ElementView = {
   summary: Row[];
 };
 
-export function elementView(chart: Chart): ElementView {
+export function elementView(chart: Chart, tx?: Tx | null): ElementView {
   const ratio = elementRatio(chart);
   const counts = elementCounts(chart);
   const best = Math.max(...elements.map((element) => ratio[element]));
@@ -238,6 +290,56 @@ export function elementView(chart: Chart): ElementView {
   const balance = balanceElements(chart);
   const wanted = balance ? [balance.useful, balance.supportive] : [];
   const topLetters = letters.filter((letter) => letter.element === top).map((letter) => letter.hanja);
+  if (tx) {
+    const word = tx.t.element;
+    const trait = tx.p.element[top].trait;
+    const summary: Row[] = [
+      {
+        term: tx.f("topTerm"),
+        value: `${word(top)} ${ratio[top]}%`,
+        plain: topLetters.length
+          ? tx.f("topLetters", { letters: topLetters.join(" · "), n: topLetters.length, element: word(top), trait })
+          : tx.f("topHidden", { trait }),
+      },
+    ];
+    const none = elements.filter((element) => counts[element] === 0);
+    if (none.length) {
+      const names = none.map(word).join(" · ");
+      const fill = none.filter((element) => wanted.includes(element));
+      summary.push({
+        term: tx.f("noneTerm"),
+        value: tx.f("noneValue", { names }),
+        plain: tx.join([
+          tx.f("noneShown", { n: letters.length, names }),
+          ...none
+            .filter((element) => ratio[element] > 0)
+            .map((element) => {
+              const hosts = letters
+                .filter((letter) => letter.place === "branch")
+                .filter((letter) => hiddenStemDays[branchOf(letter.hanja)].some(([stem]) => stemElement[stem] === element))
+                .map((letter) => letter.hanja);
+              return tx.f("noneHidden", { hosts: [...new Set(hosts)].join(" · "), element: word(element), pct: ratio[element] });
+            }),
+          ...(fill.length ? [tx.f("noneFill", { names: fill.map(word).join(" · ") })] : []),
+        ]),
+      });
+    } else {
+      const low = Math.min(...elements.map((element) => ratio[element]));
+      const least = elements.find((element) => ratio[element] === low)!;
+      summary.push({ term: tx.f("leastTerm"), value: `${word(least)} ${ratio[least]}%`, plain: tx.f("leastPlain", { element: word(least) }) });
+    }
+    return {
+      rows: elements.map((element) => ({
+        element,
+        name: word(element),
+        hanja: elementHanja[element],
+        percent: ratio[element],
+        count: counts[element],
+        top: element === top,
+      })),
+      summary,
+    };
+  }
   const summary: Row[] = [
     {
       term: "가장 많은 기운",
@@ -300,6 +402,8 @@ const seasonOf: Record<Branch, string> = {
   신: "이른 가을", 유: "가을 한가운데", 술: "늦가을",
   해: "이른 겨울", 자: "겨울 한가운데", 축: "늦겨울",
 };
+/** seasonOf 와 같은 순서(인월부터). 언어 묶음의 season 배열 자리를 찾는다. */
+const seasonBranches: readonly Branch[] = ["인", "묘", "진", "사", "오", "미", "신", "유", "술", "해", "자", "축"];
 type MonthTie = "same" | "mother" | "child" | "wealth" | "officer";
 function monthTie(own: Element, month: Element): MonthTie {
   if (month === own) return "same";
@@ -315,11 +419,26 @@ const tieNature: Record<MonthTie, string> = {
   officer: "일간을 다잡는 달이라 스스로에게 엄격해요",
 };
 
-export function natureRows(chart: Chart): Row[] {
+export function natureRows(chart: Chart, tx?: Tx | null): Row[] {
   const stem = dayStem(chart);
   const note = stemNotes[stem];
   const month = chart.pillars.month;
   const day = chart.pillars.day!;
+  if (tx) {
+    const mine = tx.p.stem[stem];
+    return [
+      month
+        ? {
+            term: tx.f("reasonTerm"),
+            value: tx.f("natureMonth", { stem: stemHanja[stem], branch: branchHanja[month.earthlyBranch] }),
+            plain: tx.p.tie[monthTie(stemElement[stem], branchElement[month.earthlyBranch])].nature,
+          }
+        : { term: tx.f("reasonTerm"), value: tx.f("natureDay", { pillar: tx.pillar(day) }), plain: tx.p.seat[seatOf(chart)] },
+      { term: tx.f("strengthTerm"), value: mine.strength, plain: "" },
+      { term: tx.f("cautionTerm"), value: mine.caution, plain: "" },
+      { term: tx.f("fandomTerm"), value: mine.fandom, plain: "" },
+    ];
+  }
   const lead: Row = month
     ? {
         term: "근거",
@@ -357,13 +476,15 @@ const monthHelp: Record<MonthTie, string> = {
 export type StrengthView = {
   index: number;
   class: StrengthClass;
+  /** 화면에 적는 등급 이름(신약·중화·신강을 선택 언어로) */
+  className: string;
   label: string;
   helpers: number;
   drainers: number;
   rows: Row[];
 };
 
-export function strengthView(chart: Chart): StrengthView | null {
+export function strengthView(chart: Chart, tx?: Tx | null): StrengthView | null {
   const strength = strengthOf(chart);
   const balance = balanceElements(chart);
   const month = chart.pillars.month;
@@ -381,9 +502,45 @@ export function strengthView(chart: Chart): StrengthView | null {
   const useful = elementName[balance.useful];
   const supportive = elementName[balance.supportive];
   const adverse = elementName[balance.adverse];
+  if (tx) {
+    const word = tx.t.element;
+    return {
+      index: strength.index,
+      class: strength.class,
+      className: tx.t.strength(strength.class),
+      label: tx.p.classPlain[strength.class],
+      helpers: strength.helpers,
+      drainers: strength.drainers,
+      rows: [
+        {
+          term: tx.f("countTerm"),
+          value: tx.f("strengthCount", { helpers: strength.helpers, drainers: strength.drainers }),
+          plain: helperLetters.length
+            ? tx.f("helpersPlain", { letters: helperLetters.join(" · "), stem: stemHanja[stem], n: others })
+            : tx.f("helpersNone", { n: others }),
+        },
+        {
+          term: tx.f("bornMonthTerm"),
+          value: tx.f("bornMonth", { branch: branchHanja[month.earthlyBranch], season: tx.p.season[seasonBranches.indexOf(month.earthlyBranch)] }),
+          plain: tx.p.tie[tie].help,
+        },
+        {
+          term: tx.f("helpTerm"),
+          value: `${word(balance.useful)} ${elementHanja[balance.useful]} · ${word(balance.supportive)} ${elementHanja[balance.supportive]}`,
+          plain: tx.f(strength.leansStrong ? "helpStrong" : "helpWeak", { useful: word(balance.useful), supportive: word(balance.supportive) }),
+        },
+        {
+          term: tx.f("burdenTerm"),
+          value: `${word(balance.adverse)} ${elementHanja[balance.adverse]}`,
+          plain: tx.f(strength.leansStrong ? "burdenStrong" : "burdenWeak"),
+        },
+      ],
+    };
+  }
   return {
     index: strength.index,
     class: strength.class,
+    className: strength.class,
     label: classPlain[strength.class],
     helpers: strength.helpers,
     drainers: strength.drainers,
@@ -443,15 +600,16 @@ const groupNone: Record<TenGodGroup, string> = {
 };
 
 export type TenGodView = {
-  groups: { group: TenGodGroup; plain: string; count: number; letters: string[] }[];
+  groups: { group: TenGodGroup; name: string; plain: string; count: number; letters: string[] }[];
   rows: Row[];
 };
 
-export function tenGodView(chart: Chart): TenGodView {
+export function tenGodView(chart: Chart, tx?: Tx | null): TenGodView {
   const cells = tenGodCells(chart);
   const groups = tenGodDistribution(chart).map(({ group, count }) => ({
     group,
-    plain: groupPlain[group],
+    name: tx ? tx.t.group(group) : group,
+    plain: tx ? tx.p.group[group].plain : groupPlain[group],
     count,
     letters: cells
       .filter((cell) => groupOf(cell.god) === group)
@@ -459,6 +617,25 @@ export function tenGodView(chart: Chart): TenGodView {
   }));
   const max = Math.max(...groups.map((group) => group.count));
   const most = groups.filter((group) => group.count === max);
+  if (tx) {
+    const none = groups.filter((group) => group.count === 0);
+    const names = (list: typeof groups) => list.map((group) => group.name).join(" · ");
+    return {
+      groups,
+      rows: [
+        most.length === 1
+          ? { term: tx.f("manyTerm"), value: tx.f("groupCount", { name: most[0].name, n: max }), plain: tx.p.group[most[0].group].many }
+          : { term: tx.f("evenTerm"), value: tx.f("groupEach", { names: names(most), n: max }), plain: tx.f("evenPlain") },
+        ...(none.length
+          ? [{
+              term: tx.f("noGroupTerm"),
+              value: tx.f("noGroupValue", { names: names(none) }),
+              plain: tx.join([tx.f("noGroupPlain", { names: names(none) }), ...none.map((group) => tx.p.group[group.group].none)]),
+            }]
+          : []),
+      ],
+    };
+  }
   const rows: Row[] = [
     most.length === 1
       ? { term: "많은 묶음", value: `${most[0].group} ${max}개`, plain: groupMany[most[0].group] }
@@ -482,6 +659,8 @@ export function tenGodView(chart: Chart): TenGodView {
 
 export type RelationRow = {
   kind: ChartRelation["kind"];
+  /** 화면에 적는 이름(육합·충을 선택 언어로) */
+  kindName: string;
   where: string;
   tag: string;
   plain: string;
@@ -504,7 +683,12 @@ const relationPlain: Record<ChartRelation["kind"], string> = {
   형: "가까운 사이에서 말이 날카로워지기 쉬워요. 한 번 돌려 말해요",
   자형: "같은 글자가 겹쳐 스스로를 다그치기 쉬워요",
 };
-function relationTag(relation: ChartRelation) {
+const tagKey = {
+  천간합: "tagMerge", 육합: "tagMerge", 삼합: "tagBigMerge", 반합: "tagHalf", 방합: "tagSeason",
+  천간충: "tagStemClash", 충: "tagClash", 형: "tagPunish", 자형: "tagSelf",
+} as const;
+function relationTag(relation: ChartRelation, tx?: Tx | null) {
+  if (tx) return tx.f(tagKey[relation.kind], { element: relation.element ? tx.t.element(relation.element) : "" });
   const element = relation.element ? elementName[relation.element] : "";
   switch (relation.kind) {
     case "천간합":
@@ -530,22 +714,23 @@ function relationTag(relation: ChartRelation) {
 const seatRead = (chart: Chart, key: PillarKey, place: "stem" | "branch") =>
   place === "stem" ? chart.pillars[key]!.heavenlyStem : chart.pillars[key]!.earthlyBranch;
 const gwa = (chart: Chart, key: PillarKey, place: "stem" | "branch") => (hasFinal(seatRead(chart, key, place)) ? "과" : "와");
-const seatLetter = (chart: Chart, key: PillarKey, place: "stem" | "branch") => {
+const seatLetter = (chart: Chart, key: PillarKey, place: "stem" | "branch", tx?: Tx | null) => {
   const pillar = chart.pillars[key]!;
   return place === "stem"
-    ? `${stemSeat[key]} ${stemHanja[pillar.heavenlyStem]}`
-    : `${branchSeat[key]} ${branchHanja[pillar.earthlyBranch]}`;
+    ? `${tx ? tx.t.stemSeat(key) : stemSeat[key]} ${stemHanja[pillar.heavenlyStem]}`
+    : `${tx ? tx.t.branchSeat(key) : branchSeat[key]} ${branchHanja[pillar.earthlyBranch]}`;
 };
 
-export function relationRows(chart: Chart): RelationRow[] {
+export function relationRows(chart: Chart, tx?: Tx | null): RelationRow[] {
   return chartRelations(chart).map((relation) => {
     const place = stemKinds.has(relation.kind) ? "stem" : "branch";
     const keys = [...new Set(relation.keys)];
     return {
       kind: relation.kind,
-      where: keys.map((key) => seatLetter(chart, key, place)).join(keys.length > 2 ? " · " : " – "),
-      tag: relationTag(relation),
-      plain: relationPlain[relation.kind],
+      kindName: tx ? tx.t.relation(relation.kind) : relation.kind,
+      where: keys.map((key) => seatLetter(chart, key, place, tx)).join(keys.length > 2 ? " · " : " – "),
+      tag: relationTag(relation, tx),
+      plain: tx ? tx.p.relation[relation.kind].plain : relationPlain[relation.kind],
       keys,
       place,
       rough: roughKinds.has(relation.kind),
@@ -573,7 +758,7 @@ export type YearFlowView = {
   rows: Row[];
 };
 
-export function yearFlowView(chart: Chart, at: number): YearFlowView {
+export function yearFlowView(chart: Chart, at: number, tx?: Tx | null): YearFlowView {
   const season = seasonAt(at);
   const flow = season.yearPillar;
   const stem = dayStem(chart);
@@ -581,6 +766,56 @@ export function yearFlowView(chart: Chart, at: number): YearFlowView {
   const counts = elementCounts(chart);
   const flowElement = stemElement[flow.heavenlyStem];
   const scope = scopeWord(chart);
+  if (tx) {
+    const n = lettersOf(chart).length;
+    const word = tx.t.element;
+    const stemTerm = tx.f("stemOf", { letter: stemHanja[flow.heavenlyStem] });
+    const branchTerm = tx.f("branchOf", { letter: branchHanja[flow.earthlyBranch] });
+    const rows: Row[] = [
+      {
+        term: stemTerm,
+        value: `${tx.t.god(god)} · ${tx.p.god[god].short}`,
+        plain: tx.join([
+          counts[flowElement] === 0 ? tx.f(partial(chart) ? "flowAbsentPartial" : "flowAbsent", { element: word(flowElement), n }) : "",
+          tx.p.god[god].plain,
+        ]),
+      },
+    ];
+    const relations = flowRelations(chart, flow);
+    for (const relation of relations.filter((item) => stemKinds.has(item.kind)))
+      rows.push({
+        term: stemTerm,
+        value: tx.f(relation.kind === "천간합" ? "flowStemMerge" : "flowStemClash", {
+          seats: relation.natal.map((key) => seatLetter(chart, key, "stem", tx)).join(" · "),
+        }),
+        plain: tx.p.relation[relation.kind].flow,
+      });
+    const branchRelations = relations.filter((item) => !stemKinds.has(item.kind));
+    for (const relation of branchRelations) {
+      const keys = [...new Set(relation.natal)];
+      const fresh = relation.element && (relation.kind === "삼합" || relation.kind === "방합") && counts[relation.element] === 0;
+      rows.push({
+        term: branchTerm,
+        value:
+          tx.f("flowBranch", { kind: tx.t.relation(relation.kind), seats: keys.map((key) => seatLetter(chart, key, "branch", tx)).join(" · ") }) +
+          (relation.element ? ` (${word(relation.element)})` : ""),
+        plain: tx.join([tx.p.relation[relation.kind].flow, fresh ? tx.f("flowFresh", { element: word(relation.element!), n }) : ""]),
+      });
+    }
+    if (!branchRelations.length)
+      rows.push({ term: branchTerm, value: partial(chart) ? tx.f("flowNonePartial", { n }) : tx.f("flowNone"), plain: tx.f("flowNonePlain") });
+    const balance = balanceElements(chart);
+    if (balance && (flowElement === balance.useful || flowElement === balance.supportive))
+      rows.push({ term: tx.f("helpTerm"), value: tx.f("yearOf", { element: word(flowElement) }), plain: tx.f("flowHelpPlain") });
+    else if (balance && flowElement === balance.adverse)
+      rows.push({ term: tx.f("burdenTerm"), value: tx.f("yearOf", { element: word(flowElement) }), plain: tx.f("flowBurdenPlain") });
+    const mine = chart.pillars.day!;
+    return {
+      me: { pillar: mine, hanja: tx.hanja(mine) },
+      year: { label: season.year, pillar: flow, hanja: tx.hanja(flow) },
+      rows,
+    };
+  }
   const absent =
     counts[flowElement] === 0
       ? `${partial(chart) ? `확인한 ${scope}에는` : `${scope}에`} 없던 ${josa(elementName[flowElement], "이", "가")} 들어와요. `
@@ -645,17 +880,26 @@ export function yearFlowView(chart: Chart, at: number): YearFlowView {
 }
 
 /** 제목 아래 '戊土 · 무토 일간' 줄. */
-export function dayLine(chart: Chart) {
+export function dayLine(chart: Chart, tx?: Tx | null) {
   const stem = dayStem(chart);
   const element = stemElement[stem];
-  return { hanja: `${stemHanja[stem]}${elementHanja[element]}`, read: `${stem}${elementTerm[element]} 일간` };
+  return {
+    hanja: `${stemHanja[stem]}${elementHanja[element]}`,
+    read: tx ? tx.f("dayLine", { yinyang: tx.t.yinYang(stem), element: tx.t.element(element) }) : `${stem}${elementTerm[element]} 일간`,
+  };
 }
 
 /** 절기 날 + 시간 모름일 때 명식표 아래 한 번 적는 잠금 사유. */
-export function termNote(chart: Chart) {
+export function termNote(chart: Chart, tx?: Tx | null) {
   if (!chart.solarTerm || chart.pillars.month) return null;
   const at = new Date(chart.solarTerm.at).getTime();
   const { year, month, day } = kstParts(at);
+  if (tx)
+    return tx.f(chart.pillars.year ? "termNoteMonth" : "termNoteYearMonth", {
+      date: `${year}.${String(month).padStart(2, "0")}.${String(day).padStart(2, "0")}`,
+      term: tx.t.solarTerm(chart.solarTerm.name),
+      time: new Intl.DateTimeFormat(tx.locale, { timeZone: "Asia/Seoul", hour: "numeric", minute: "2-digit" }).format(at),
+    });
   const [hour, minute] = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
     .format(at)
     .split(":")
@@ -666,4 +910,5 @@ export function termNote(chart: Chart) {
 }
 
 /** 시주·월주가 비면 블록 제목 옆에 적는 계산 범위(여섯 글자 기준). 여덟 글자면 없다. */
-export const scopeLabel = (chart: Chart) => (partial(chart) ? `${scopeWord(chart)} 기준` : null);
+export const scopeLabel = (chart: Chart, tx?: Tx | null) =>
+  partial(chart) ? (tx ? tx.f("scopeLabel", { n: lettersOf(chart).length }) : `${scopeWord(chart)} 기준`) : null;

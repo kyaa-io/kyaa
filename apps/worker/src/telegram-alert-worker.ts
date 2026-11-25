@@ -238,6 +238,7 @@ const alertSchema = z.object({
     occupation: z.string().min(1).max(240),
   }).strict().optional(),
   detail: detailSchema.optional(),
+  signup_source_line: z.string().max(300).optional(),
   // PostgreSQL permits 4000 Unicode characters, up to 8000 UTF-16 units.
   message_body: z.string().min(1).max(8000).nullable().optional(),
 }).strict().superRefine((alert, context) => {
@@ -407,6 +408,11 @@ function safePrefix(value: string, length: number): string {
   return prefix;
 }
 
+function signupSourceLines(alert: TelegramAlertSnapshot): string[] {
+  if (alert.kind !== "member_joined" && alert.kind !== "raffle_entered") return [];
+  return [`  ${cleanPublicName(alert.signup_source_line ?? null, 300) || "유입: 직접 방문"}`];
+}
+
 function renderDetailedAlert(alert: TelegramAlertSnapshot, body: string | null, truncated = false): string[] {
   const detail = alert.detail!;
   const actorName = cleanPublicName(alert.actor_name, 48) || "닉네임 미설정";
@@ -428,6 +434,7 @@ function renderDetailedAlert(alert: TelegramAlertSnapshot, body: string | null, 
     ...(context ? [`  대상 내용: ${context}`] : []),
     ...(body === null ? [] : quotedBody(body, truncated)),
     ...(result ? [`  결과: ${result}`] : []),
+    ...signupSourceLines(alert),
     `  시각: ${kstTimestamp(alert.occurred_at)}`,
     `${SITE_URL}${detail.path}`,
   ];
@@ -509,7 +516,7 @@ function renderLegacyAlert(alert: TelegramAlertSnapshot): string[] {
         `  누적 ${alert.activity_quantity ?? 0}명`, `${ADMIN_URL}/${page}`];
     }
     return [`• ${label}`, ...(context ? [`  ${context}`] : []),
-      ...(alert.kind === "raffle_entered" ? [`  사용 응모권 ${alert.activity_quantity ?? 0}장`] : []), `${ADMIN_URL}/${page}`];
+      ...(alert.kind === "raffle_entered" ? [`  사용 응모권 ${alert.activity_quantity ?? 0}장`] : []), ...signupSourceLines(alert), `${ADMIN_URL}/${page}`];
   }
   if (alert.kind === "campaign_visited") {
     return ["• 캠페인 링크로 새 방문", `  ${cleanPublicName(alert.campaign_name ?? null, 80)}`, `  채널: ${cleanPublicName(alert.campaign_channel ?? null, 40)} · 브라우저 세션 1건`, `${ADMIN_URL}/campaigns`];
@@ -542,7 +549,7 @@ function renderLegacyAlert(alert: TelegramAlertSnapshot): string[] {
     case "live_reserved": event = `${prefix}예약`; break;
     case "live_attended": event = `${prefix}출석`; break;
   }
-  return [`• ${event}`, `  ${actorName}`, `  ${actorEmail}`];
+  return [`• ${event}`, `  ${actorName}`, `  ${actorEmail}`, ...signupSourceLines(alert)];
 }
 
 export function renderTelegramAlertMessage(input: readonly TelegramAlertSnapshot[]): string {
@@ -666,7 +673,7 @@ export class SupabaseTelegramAlertQueue implements TelegramAlertQueue {
   private async call(name: string, args?: Record<string, unknown>): Promise<unknown> {
     let result: { data: unknown; error: unknown };
     try { result = await this.db.rpc(this.csRoom ? ({
-      claim_telegram_alert_batch_with_cs_content: "claim_telegram_cs_alert_batch",
+      claim_telegram_alert_batch_with_signup_source: "claim_telegram_cs_alert_batch",
       begin_telegram_alert_send: "begin_telegram_cs_alert_send",
       reject_telegram_alert_rows: "reject_telegram_cs_alert_rows",
       finish_telegram_alert_batch: "finish_telegram_cs_alert_batch",
@@ -678,7 +685,7 @@ export class SupabaseTelegramAlertQueue implements TelegramAlertQueue {
   }
 
   async claim(chatId: string): Promise<TelegramAlertBatch | null> {
-    const data = await this.call("claim_telegram_alert_batch_with_cs_content", { p_chat_id: chatId });
+    const data = await this.call("claim_telegram_alert_batch_with_signup_source", { p_chat_id: chatId });
     if (data === null) return null;
     const parsed = claimedBatchSchema.safeParse(data);
     if (!parsed.success) throw new Error("TELEGRAM_ALERT_INVALID_BATCH");

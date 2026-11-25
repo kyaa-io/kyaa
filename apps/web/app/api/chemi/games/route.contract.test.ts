@@ -88,3 +88,20 @@ it("cancels an unseen play by its start key for the signed-in owner only", async
   expect(rpc).toHaveBeenCalledWith("chemi_cancel_play", { p_user: id, p_game: "match", p_request_key: id });
   expect((await post({ action: "cancel" })).status).toBe(400);
 });
+
+it("recovers an issued paid run by the original key after ticket lookup fails", async () => {
+  const body = { action: "start", game: "run", character: "elina", key: id, extra: true, expectedCost: 100 };
+  const issued = { playId: id, seed: 42, issuedAt: new Date().toISOString(), status: "issued" };
+  const start = () => POST(new Request("https://example.test/api/chemi/games?game=run", {
+    method: "POST", body: JSON.stringify(body), headers: { authorization: "Bearer fixture", "content-type": "application/json" },
+  }));
+  rpc.mockResolvedValueOnce({ playId: id, replayed: false })
+    .mockRejectedValueOnce(new Error("CHEMI_UNAVAILABLE"))
+    .mockResolvedValueOnce({ playId: id, replayed: true })
+    .mockResolvedValueOnce(issued);
+  const failure = await start();
+  expect(failure.status).toBe(503);
+  expect(await failure.json()).toEqual({ error: "CHEMI_RUN_START_RETRY" });
+  expect(await (await start()).json()).toEqual(issued);
+  expect(rpc.mock.calls.slice(2)).toEqual(rpc.mock.calls.slice(0, 2));
+});

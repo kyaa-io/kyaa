@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     if (!month || !/^20\d\d-(0[1-9]|1[012])$/.test(month)) return new Response(null, { status: 400, headers });
     const env = loadServerEnv();
     const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
-    const { data, error } = await db.rpc("read_admin_banner_month", {
+    const { data, error } = await db.rpc("read_admin_banner_month_v2", {
       p_actor: admin.appUserId, p_allowlist: admin.allowlistId, p_month: month + "-01",
     });
     if (error) throw error;

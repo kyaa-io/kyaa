@@ -3,10 +3,10 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isCreatorHandle } from '../apps/web/features/creator/domain/creator-navigation.ts';
+import { isAppLocale } from '../apps/web/i18n/locales.ts';
 
 const SITE = 'https://kyaa.io';
-const LOCALES = new Set(['ko','en','ja','zh-Hans','zh-Hant','es','id','vi','th','pt','fr']);
-const PRIVATE = /^\/(?:api|admin|my|passports|stamps|settings|notifications|onboarding|login|creator|connect|s)(?:\/|$)|^\/c\/[^/]+\/(?:verify|tickets)(?:\/|$)|^\/live\/[^/]+\/(?:missions|survey)(?:\/|$)/;
+const PRIVATE = /^\/(?:api|admin|my|passports|stamps|settings|notifications|onboarding|login|creator|connect|s|i)(?:\/|$)|^\/c\/[^/]+\/(?:verify|tickets)(?:\/|$)|^\/live\/[^/]+\/(?:missions|survey)(?:\/|$)/;
 const decode = (value) => value.replace(/&(?:amp|quot|apos|lt|gt|#\d+|#x[a-f0-9]+);/gi, (entity) => {
   const named = { '&amp;':'&','&quot;':'"','&apos;':"'",'&lt;':'<','&gt;':'>' };
   return named[entity] ?? String.fromCodePoint(entity.startsWith('&#x') ? parseInt(entity.slice(3,-1),16) : Number(entity.slice(2,-1)));
@@ -33,7 +33,7 @@ export function parsePublicSitemap(xml) {
     const url = new URL(address);
     assert(url.origin === SITE && !url.username && !url.password && !url.hash && !PRIVATE.test(url.pathname), 'SITEMAP_PUBLIC_URL_INVALID');
     assert(!/(?:^|[/-])(?:rehearsal|test|demo)(?:[/-]|$)/i.test(url.pathname), 'SITEMAP_REHEARSAL');
-    assert(LOCALES.has(url.searchParams.get('locale')) && [...url.searchParams].length === 1, 'SITEMAP_QUERY_INVALID');
+    assert(isAppLocale(url.searchParams.get('locale')) && [...url.searchParams].length === 1, 'SITEMAP_QUERY_INVALID');
     assert.equal(address, `${SITE}${url.pathname}?locale=${url.searchParams.get('locale')}`, 'SITEMAP_CANONICAL_INVALID');
   }
   return urls;

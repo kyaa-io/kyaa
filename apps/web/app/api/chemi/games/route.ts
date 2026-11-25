@@ -64,7 +64,11 @@ export async function POST(request: Request) {
         const ticket = await rpc("chemi_issue_play", {
           p_user, p_game: mode, p_request_key: body.key, p_character: body.character, p_extra: body.extra, p_expected_cost: body.expectedCost ?? null,
         }) as { playId: string };
-        const issued = await info(ticket.playId);
+        const issued = await info(ticket.playId).catch((error: unknown) => {
+          if (mode !== "run") throw error;
+          return null;
+        });
+        if (mode === "run" && !issued) return reply({ error: "CHEMI_RUN_START_RETRY" }, 503);
         return issued?.status === "issued" ? reply(issued) : reply({ error: "CHEMI_INVALID" }, 409);
       }
       case "finish": {

@@ -25,7 +25,7 @@ import { ReadingBasis, ReadingDomains } from "@/features/chemi/ui/result/reading
 import { askVoice } from "@/features/chemi/ask/lines";
 import { saveAdviceImage } from "./advice-image";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
-import { firstIntro } from "./first-locale";
+import { useSajuTx } from "./tx-context";
 import type { AppLocale } from "@/i18n/locales";
 import { controls, pillarKeys, branchHanja, elementRatio, tenGod, stemElement, branchElement, elementName, elements, generates, monthSpanAt, seasonAt, toHanja, type Chart, type Pillar } from "./chart";
 import {
@@ -38,7 +38,7 @@ import {
 import { sajuBasis, sajuDomains } from "./depth";
 import { dayLine } from "./first";
 import { ChartPanel, ElementBlock, ElementRows, NatureBlock, RelationBlock, RelationList, RelationRow, StrengthBlock, TenGodBlock, YearFlowBlock } from "./first-blocks";
-import { sajuOpening, sajuTone, type SajuCharacterId } from "./lines";
+import { sajuOpening, sajuReactIntl, sajuTone, type SajuCharacterId } from "./lines";
 import type { PairResult } from "./reading";
 import styles from "./result.module.css";
 import { useChemiFeatures } from "@/features/chemi/domain/features";
@@ -49,13 +49,15 @@ const pillarHanja = (pillar: Pillar) => toHanja(pillar.heavenlyStem + pillar.ear
 const positions = { hour: "시", day: "일", month: "월", year: "연" };
 
 function PairEvidence({ result, name, locale }: { result: PairResult; name: string; locale: AppLocale }) {
+  const tx = useSajuTx();
+  const uiText = useReadingCopy();
   const charts = result.charts;
   if (!charts) return null;
   const [a, b] = result.dayStems;
   const ea = stemElement[a],
     eb = stemElement[b];
   const owners = [
-    ["나", charts.self],
+    [tx ? uiText("me") : "나", charts.self],
     [name, charts.partner],
   ] as const;
   const counts = owners.map(([, pillars]) =>
@@ -63,16 +65,19 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
       p ? [stemElement[p.heavenlyStem], branchElement[p.earthlyBranch]] : [],
     ),
   );
-  const direction =
-    ea === eb
-      ? "두 일간의 오행이 같아요."
-      : generates[ea] === eb
-        ? "내 기운이 상대의 기운을 낳아요."
-        : generates[eb] === ea
-          ? "상대의 기운이 내 기운을 낳아요."
-          : controls[ea] === eb
-            ? "내 기운이 상대의 기운을 눌러요."
-            : "상대의 기운이 내 기운을 눌러요.";
+  const directionKey =
+    ea === eb ? "pairSame" : generates[ea] === eb ? "pairIGive" : generates[eb] === ea ? "pairTheyGive" : controls[ea] === eb ? "pairIPress" : "pairTheyPress";
+  const direction = tx
+    ? tx.f(directionKey)
+    : {
+        pairSame: "두 일간의 오행이 같아요.",
+        pairIGive: "내 기운이 상대의 기운을 낳아요.",
+        pairTheyGive: "상대의 기운이 내 기운을 낳아요.",
+        pairIPress: "내 기운이 상대의 기운을 눌러요.",
+        pairTheyPress: "상대의 기운이 내 기운을 눌러요.",
+      }[directionKey];
+  const stemMerge = ["갑기", "을경", "병신", "정임", "무계"].some((pair) => pair === a + b || pair === b + a);
+  const word = (element: (typeof elements)[number]) => (tx ? tx.t.element(element) : elementName[element]);
   return (
     <div className={styles.block} data-pair-evidence>
       <style>{`
@@ -81,7 +86,7 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
         [data-pair-evidence] .charts table { width: 100%; table-layout: fixed; text-align: center; overflow-wrap: anywhere; }
         [data-pair-evidence] [data-day] { border: 1px solid currentColor; }
       `}</style>
-      <FanHeading>두 사람의 명식</FanHeading>
+      <FanHeading>{tx ? tx.f("pairCharts") : "두 사람의 명식"}</FanHeading>
       <div className="charts">
         {owners.map(([owner, pillars], index) => (
           <table key={index}>
@@ -92,7 +97,7 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
               <tr>
                 {pillarKeys.map((k) => (
                   <th key={k}>
-                    <FanText role="meta">{positions[k]}주</FanText>
+                    <FanText role="meta">{tx ? tx.t.pillar(k) : `${positions[k]}주`}</FanText>
                   </th>
                 ))}
               </tr>
@@ -108,13 +113,15 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
                         </FanHanja><br />
                         <FanHanja role="glyph">{pillarHanja(pillars[k]!)[1]}</FanHanja>
                         <br />
-                        <FanText role="meta">
-                          {pillars[k]!.heavenlyStem}
-                          {pillars[k]!.earthlyBranch}
-                        </FanText>
+                        {!tx && (
+                          <FanText role="meta">
+                            {pillars[k]!.heavenlyStem}
+                            {pillars[k]!.earthlyBranch}
+                          </FanText>
+                        )}
                       </>
                     ) : (
-                      <FanText role="meta">모름</FanText>
+                      <FanText role="meta">{tx ? tx.f("unknown") : "모름"}</FanText>
                     )}
                   </td>
                 ))}
@@ -125,17 +132,25 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
       </div>
       {owners.some(([, pillars]) => !pillars.month) && (
         <FanText as="p" role="meta">
-          절기가 바뀌는 날에는 태어난 시간에 따라 월주가 달라져요. 모르는 칸은 풀이에서 뺐어요.
+          {tx ? tx.f("pairTermNote") : "절기가 바뀌는 날에는 태어난 시간에 따라 월주가 달라져요. 모르는 칸은 풀이에서 뺐어요."}
         </FanText>
       )}
-      <FanHeading>일간 관계</FanHeading>
+      <FanHeading>{tx ? tx.f("pairStemTitle") : "일간 관계"}</FanHeading>
       <FanText as="p" role="body">
-        {a}({elementName[ea]}) · {b}({elementName[eb]}) — {direction} 상대 일간의 십신은 ‘{tenGod(a, b)}’{directionParticle(tenGod(a, b))} 읽어요.
-        {["갑기", "을경", "병신", "정임", "무계"].some((pair) => pair === a + b || pair === b + a) &&
-          " 두 일간은 천간합을 이뤄요."}
+        {tx ? (
+          tx.join([
+            tx.f("pairStemBody", { a: toHanja(a, "stem"), ea: word(ea), b: toHanja(b, "stem"), eb: word(eb), direction, god: tx.t.god(tenGod(a, b)) }),
+            stemMerge ? tx.f("pairStemMerge") : "",
+          ])
+        ) : (
+          <>
+            {a}({elementName[ea]}) · {b}({elementName[eb]}) — {direction} 상대 일간의 십신은 ‘{tenGod(a, b)}’{directionParticle(tenGod(a, b))} 읽어요.
+            {stemMerge && " 두 일간은 천간합을 이뤄요."}
+          </>
+        )}
       </FanText>
-      <FanHeading>오행 보완</FanHeading>
-      <FanText as="p" role="meta">지장간을 포함한 오행 비율</FanText>
+      <FanHeading>{tx ? tx.f("pairElementTitle") : "오행 보완"}</FanHeading>
+      <FanText as="p" role="meta">{tx ? tx.f("pairElementNote") : "지장간을 포함한 오행 비율"}</FanText>
       <div className={styles.cols}>
         {owners.map(([owner, pillars], index) => {
           const ratio = elementRatio({ pillars });
@@ -146,7 +161,7 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
               <FanHeading as="h3">{owner}</FanHeading>
               <ElementRows locale={locale} rows={elements.map((element, i) => ({
                 element,
-                name: elementName[element],
+                name: word(element),
                 count: counts[index].filter((value) => value === element).length,
                 percent: values[i],
                 top: i === top && values[i] > 0,
@@ -161,13 +176,14 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
         return (
           missing.length > 0 && (
             <FanText key={i} as="p" role="body">
-              {owner} 쪽에 보이지 않는 {missing.map((e) => elementName[e]).join("·")} 기운이 {other} 쪽에
-              있어요.
+              {tx
+                ? tx.f("pairMissing", { owner, names: missing.map(word).join(" · "), other })
+                : `${owner} 쪽에 보이지 않는 ${missing.map((e) => elementName[e]).join("·")} 기운이 ${other} 쪽에 있어요.`}
             </FanText>
           )
         );
       })}
-      <FanHeading>지지 합·충</FanHeading>
+      <FanHeading>{tx ? tx.f("pairBranchTitle") : "지지 합·충"}</FanHeading>
       {result.relations?.length ? (
         <RelationList>
           {result.relations.map((r) => {
@@ -176,17 +192,24 @@ function PairEvidence({ result, name, locale }: { result: PairResult; name: stri
             return (
               <RelationRow
                 key={`${r.selfKey}:${r.partnerKey}:${r.kind}`}
-                kind={r.kind}
+                kind={tx ? tx.t.relation(r.kind) : r.kind}
                 rough={r.kind === "충"}
                 letters={[branchHanja[self], branchHanja[partner]]}
-                where={`내 ${positions[r.selfKey]}지 ${self}(${branchHanja[self]}) · 상대 ${positions[r.partnerKey]}지 ${partner}(${branchHanja[partner]})`}
+                where={
+                  tx
+                    ? tx.f("pairWhere", {
+                        mine: `${tx.t.branchSeat(r.selfKey)} ${branchHanja[self]}`,
+                        theirs: `${tx.t.branchSeat(r.partnerKey)} ${branchHanja[partner]}`,
+                      })
+                    : `내 ${positions[r.selfKey]}지 ${self}(${branchHanja[self]}) · 상대 ${positions[r.partnerKey]}지 ${partner}(${branchHanja[partner]})`
+                }
               />
             );
           })}
         </RelationList>
       ) : (
         <FanText as="p" role="item">
-          확인된 지지 사이에는 육합이나 충이 없어요.
+          {tx ? tx.f("pairNoRelation") : "확인된 지지 사이에는 육합이나 충이 없어요."}
         </FanText>
       )}
     </div>
@@ -255,11 +278,11 @@ export function SajuResult({
   const mobileAction = useMobileResultAction();
   const onAsk = useChemiFeatures().ask ? askHandler : undefined;
   const [shareOpen, setShareOpen] = useState(false);
+  const tx = useSajuTx();
   const name = creatorName(character, locale);
-  const first = { ...firstReading(chart, at), day: dayLine(chart) };
-  const intro = firstIntro(locale, first.stem);
-  const year = yearReading(chart, at);
-  const month = monthReading(chart, at);
+  const first = { ...firstReading(chart, at, tx), day: dayLine(chart, tx) };
+  const year = yearReading(chart, at, tx);
+  const month = monthReading(chart, at, tx);
   const compat =
     view === "pair" && pair
       ? pairReading(
@@ -267,6 +290,7 @@ export function SajuResult({
           pair.result.dayStems[1],
           pair.result.combinations.length,
           pair.result.clashes.length,
+          tx,
         )
       : null;
   const tone = sajuTone(character);
@@ -276,8 +300,8 @@ export function SajuResult({
       : view === "month"
         ? month.line[askVoice[character]]
         : compat && pair
-          ? tone.pairReact(compat.line(pair.name))
-          : tone.react({
+          ? tx ? compat.line(pair.name) : tone.pairReact(compat.line(pair.name))
+          : tx ? sajuReactIntl(tx, character, first.stem, year.title) : tone.react({
               image: first.image,
               trait: first.trait,
               strengthN: first.strengthN,
@@ -291,7 +315,7 @@ export function SajuResult({
       ? uiText("pairTitle", { name, partner: pair.name })
       : uiText("readingTitle", { name, topic: uiText(view === "year" ? "year" : view === "month" ? "month" : "sajuName") });
   const title =
-    view === "first" ? (intro?.title ?? first.headline) : view === "year" ? year.title : view === "month" ? month.title : compat!.title;
+    view === "first" ? first.headline : view === "year" ? year.title : view === "month" ? month.title : compat!.title;
   const bondKicker = { first: uiText("bondFirst", { name }), year: uiText("bondYear", { name }), month: uiText("bondMonth", { name }), pair: "" }[view];
   const bond = view === "first" ? first.bond : view === "year" ? year.bond : view === "month" ? month.bond : "";
 
@@ -356,16 +380,16 @@ export function SajuResult({
     view === "pair" ? null : (
       <>
         {view !== "first" && (
-          <ReadingBasis className={styles.section} title={uiText("basis")} rows={sajuBasis(chart, at, view)} />
+          <ReadingBasis className={styles.section} title={uiText("basis")} rows={sajuBasis(chart, at, view, tx)} />
         )}
         <ReadingDomains
           className={styles.section}
           openWide={view === "first"}
           title={uiText("areas")}
-          items={sajuDomains(chart, at, view).map((item) => ({
+          items={sajuDomains(chart, at, view, tx).map((item) => ({
             key: item.key,
             label: uiText(item.key),
-            meta: item.level,
+            meta: item.levelName,
             basis: item.basis,
             sentences: item.sentences,
           }))}
@@ -436,10 +460,10 @@ export function SajuResult({
                 <img src={hero(character)} alt="" />
               </picture>
               <FanText as="p" role="label" className={styles.dayLine}>
-                <FanHanja role="inline">{first.day.hanja}</FanHanja> · {intro?.day ?? first.day.read}
+                <FanHanja role="inline">{first.day.hanja}</FanHanja> · {first.day.read}
               </FanText>
               <FanText as="p" role="body" className={styles.opening}>
-                {character === "changha" && intro ? intro.changha : sajuOpening(character, first.stem)}
+                {sajuOpening(character, first.stem, tx)}
               </FanText>
             </>
           )}
@@ -457,7 +481,7 @@ export function SajuResult({
 
         {view === "first" && (
           <>
-            <ChartPanel locale={locale} chart={chart} art={hero(character)} onBirthTime={onBirthTime} />
+            <ChartPanel chart={chart} art={hero(character)} onBirthTime={onBirthTime} />
             <div className={styles.firstLead}>
               <dl className={`${styles.kv} ${styles.keywords}`} data-layout="cols">
                 {first.keywords.map((item) => (
@@ -571,6 +595,7 @@ export function SajuResult({
                       ...pair.result.dayStems,
                       pair.result.combinations.length,
                       pair.result.clashes.length,
+                      tx,
                     ).map((row) => (
                       <div className={styles.barRowWide} key={row.label}>
                         <FanText role="label">{row.label}</FanText>
@@ -586,7 +611,7 @@ export function SajuResult({
                         >
                           {row.label}
                         </FanText>
-                        <FanText role="item">{row.level}</FanText>
+                        <FanText role="item">{row.levelName ?? row.level}</FanText>
                         {bar(row.label, levelWidth[row.level], row.top)}
                       </div>
                     ))}

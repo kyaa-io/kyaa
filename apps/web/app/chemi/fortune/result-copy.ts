@@ -1,3 +1,5 @@
+import { pillarLabel } from "@/app/chemi/saju/terms-i18n";
+import type { AppLocale } from "@/i18n/locales";
 import { branchHanja, branches, stemHanja, stems } from "../saju/chart";
 import type { Branch, Stem } from "../saju/chart";
 /**
@@ -200,15 +202,5 @@ export function dayHeadline(tenGod: string, grade: string) {
   return tenGodHeadlines[tenGod] ?? null;
 }
 
-const romanizedStems = ["Gap", "Eul", "Byeong", "Jeong", "Mu", "Gi", "Gyeong", "Sin", "Im", "Gye"];
-const romanizedBranches = ["Ja", "Chuk", "In", "Myo", "Jin", "Sa", "O", "Mi", "Sin", "Yu", "Sul", "Hae"];
-
-export function localizedDayPillar(locale: string, pillar: string) {
-  if (locale === "ko") return pillar;
-  const [stem, branch] = Array.from(pillar) as [Stem, Branch];
-  const stemIndex = stems.indexOf(stem);
-  const branchIndex = branches.indexOf(branch);
-  if (stemIndex < 0 || branchIndex < 0) return pillar;
-  if (locale === "ja" || locale.startsWith("zh")) return stemHanja[stem] + branchHanja[branch];
-  return `${romanizedStems[stemIndex]}-${romanizedBranches[branchIndex].toLowerCase()}`;
-}
+/** 일진 이름(갑진)을 선택 언어로. 사주 용어 표(terms-i18n.ts) 하나를 같이 쓴다. */
+export const localizedDayPillar = (locale: string, pillar: string) => pillarLabel(pillar, locale as AppLocale);

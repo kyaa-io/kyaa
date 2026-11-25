@@ -11,9 +11,10 @@ import styles from "./web-analytics-dashboard.module.css";
 const rowsSchema = z.array(z.object({
   ad_id: z.uuid(), advertiser: z.enum(["beepio", "chillsa"]),
   impressions: z.number().int().nonnegative(), clicks: z.number().int().nonnegative(),
+  clicked_sessions: z.number().int().nonnegative(),
 }));
 type Rows = z.infer<typeof rowsSchema>;
-const rate = (row: Rows[number]) => row.impressions ? (row.clicks * 100 / row.impressions).toFixed(2) + "%" : "—";
+const rate = (row: Rows[number]) => row.impressions ? (row.clicked_sessions * 100 / row.impressions).toFixed(2) + "%" : "—";
 
 export function BannerMonthReport({ locale, refresh }: { locale: "ko" | "en"; refresh: number }) {
   const session = useAdminSession();
@@ -40,19 +41,23 @@ export function BannerMonthReport({ locale, refresh }: { locale: "ko" | "en"; re
     return () => controller.abort();
   }, [owner, month, getAccessToken, refresh]);
   if (!owner) return null;
-  const headers = ko ? ["광고주", "광고 ID", "노출", "클릭", "클릭률"] : ["Advertiser", "Ad ID", "Impressions", "Clicks", "CTR"];
+  const headers = ko ? ["광고주", "광고 ID", "노출 세션", "전체 클릭 수", "세션당 클릭률"] : ["Advertiser", "Ad ID", "Exposed sessions", "Total clicks", "Session click rate"];
   const rows = result?.owner === owner && result.month === month ? result.rows : undefined;
   const cells = rows?.map(row => [row.advertiser, row.ad_id, row.impressions, row.clicks, rate(row)]);
   const csv = [[ko ? "월(KST)" : "Month (KST)", ...headers], ...(cells ?? []).map(row => [month, ...row])].map(row => row.join(",")).join("\r\n");
   return <section className={base.panel}>
     <div className={base.panelHeading}><FanHeading>{ko ? "광고별 월간 성과" : "Monthly ad performance"}</FanHeading>
       <label>{ko ? "조회 월 (한국 시간)" : "Month (KST)"} <input type="month" value={month} onChange={e => setMonth(e.target.value)} /></label></div>
-    {cells?.length ? <><div className={styles.tableScroll}><table className={styles.table}>
+    {cells?.length ? <><div className={styles.tableScroll}><table className={`${styles.table} ${styles.bannerMonthTable}`}>
       <thead><tr>{headers.filter((_, i) => i !== 1).map(h => <th key={h} scope="col">{h}</th>)}</tr></thead>
       <tbody>{cells.map(([advertiser, id, impressions, clicks, ctr]) => <tr key={id}>
         <th scope="row" title={String(id)}>{advertiser}</th><td>{impressions}</td><td>{clicks}</td><td>{ctr}</td>
       </tr>)}</tbody>
-    </table></div><a download={'ad-report-' + month + '.csv'} href={'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + csv)}>{ko ? "CSV 받기" : "Download CSV"}</a></> :
+    </table></div>
+    <p className={styles.measurementNote}>{ko
+      ? "세션당 클릭률은 광고를 본 세션 중 광고를 클릭한 세션의 비율입니다. 전체 클릭 수에는 반복 클릭도 포함됩니다."
+      : "Session click rate is the share of sessions that saw the ad and clicked it. Total clicks include repeat clicks."}</p>
+    <a download={'ad-report-' + month + '.csv'} href={'data:text/csv;charset=utf-8,' + encodeURIComponent('\uFEFF' + csv)}>{ko ? "CSV 받기" : "Download CSV"}</a></> :
       rows === undefined ? <FanSkeletonRows rows={2} ariaLabel={ko ? "광고 성과 조회 중" : "Loading ad report"} /> : <p role="status">{rows === null ? (ko ? "광고 성과를 불러오지 못했습니다." : "Could not load report.") : (ko ? "조회할 광고가 없습니다." : "No ads.")}</p>}
   </section>;
 }

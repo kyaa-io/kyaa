@@ -337,15 +337,34 @@ export function askArt(content: AskContent, character: AskCharacter) {
 /**
  * 장면 배경 반복 영상(확장자 없는 주소, `SceneVideo` 가 mp4·webm 을 고른다). 가로 원화와 같은 구도·비율로 만든 것만 있어서
  * 가로 화면(1024px 이상)에서만 쓴다. 세로 반복 영상은 없다. 없는 조합은 그림만 보인다.
+ * 창하 사주·유나 타로 영상은 머리를 다시 그리기 전 원화로 만든 것이라 쓰지 않는다(새 원화로 다시 만들면 여기에 넣는다).
  */
 const loops: Partial<Record<`${AskContent}-${AskCharacter}`, string>> = {
-  "saju-changha": "chemi-banner-saju-loop-v2",
   "star-elina": "chemi-banner-zodiac-loop-v2",
   "star-dosa": "chemi-bg-star-sky-loop-v2",
-  "tarot-yuna": "chemi-banner-tarot-loop-v2",
   "tarot-dosa": "chemi-bg-tarot-room-loop-v2",
 };
 export function askLoop(content: AskContent, character: AskCharacter) {
   const name = loops[`${content}-${character}`];
   return name ? `/chemi/video/${name}` : null;
+}
+
+export const waitingLines: Record<AskCharacter, string> = {
+  changha: "네 얘기랑 딱 맞는 데가 어딘지 같이 보자.",
+  elina: "아까 해 준 얘기, 마음에 두고 보고 있어요.",
+  yuna: "여기서 네가 챙길 거 하나만 콕 짚어 볼게.",
+  dosa: "그대의 물음과 맞닿은 대목을 살피고 있소.",
+};
+
+export function askReply(reaction: AskReaction, who: AskCharacter, answer: string) {
+  const fallback = askLinesFor(who).react[reaction];
+  const excerpt = answer.trim().match(/^[^.!?。！？\n]{1,64}(?=[.!?。！？\n]|$)/u)?.[0]
+    ?? answer.match(/[\p{L}\p{N}]{2,24}/u)?.[0];
+  if (!excerpt || reaction !== "really") return fallback;
+  return {
+    changha: `응. “${excerpt}” 이 말 기억해 둬.`,
+    elina: `네. “${excerpt}” 이 부분을 떠올려 봐요.`,
+    yuna: `응. 아까 “${excerpt}” 이 대목이 포인트야.`,
+    dosa: `그렇소. “${excerpt}” 이 대목을 생각해 보시오.`,
+  }[who];
 }

@@ -33,6 +33,7 @@ import {
   termNote,
   yearFlowView,
 } from "./first";
+import { useSajuTx } from "./tx-context";
 import styles from "./first-blocks.module.css";
 
 const elementIcon: Record<Element, typeof Sprout> = { wood: Sprout, fire: Flame, earth: Mountain, metal: Gem, water: Droplet };
@@ -82,13 +83,14 @@ function FaintRows({ rows }: { rows: readonly (readonly [string, ...number[]])[]
 }
 
 /** 명식표 판. 1024px부터 오른쪽에 최애 장면 그림을 3 : 2 로 둔다. */
-export function ChartPanel({ chart, art, onBirthTime, locale }: { locale?: AppLocale; chart: Chart; art: string; onBirthTime: () => void }) {
+export function ChartPanel({ chart, art, onBirthTime }: { chart: Chart; art: string; onBirthTime: () => void }) {
   const uiText = useReadingCopy();
+  const tx = useSajuTx();
   const [open, setOpen] = useState(false);
   const detailId = useId();
   const termLocked = !chart.pillars.month;
-  const detail = sheetDetail(chart);
-  const note = termNote(chart);
+  const detail = sheetDetail(chart, tx);
+  const note = termNote(chart, tx);
   return (
     <section className={`${styles.panel} ${styles.chart}`} data-saju-chart="">
       <div className={styles.chartTop}>
@@ -100,7 +102,13 @@ export function ChartPanel({ chart, art, onBirthTime, locale }: { locale?: AppLo
               </FanSectionLink>
             )}
           </Head>
-          <PillarSheet locale={locale} columns={sheetColumns(chart)} label={sheetLabel(chart)} open={open} unknownLabel={uiText("unlockTime")} />
+          <PillarSheet
+            columns={sheetColumns(chart, tx)}
+            label={sheetLabel(chart, tx)}
+            open={open}
+            unknownLabel={uiText("unlockTime")}
+            terms={tx ? { rows: tx.t.row, element: tx.t.element } : undefined}
+          />
           {(note || !chart.timeKnown) && (
             <div className={styles.lockBox}>
               {note ? (
@@ -129,7 +137,7 @@ export function ChartPanel({ chart, art, onBirthTime, locale }: { locale?: AppLo
             <div className={styles.legend}>
               <div className={styles.legendGroup}>
                 <FanText as="p" role="label">
-                  12운성 <FanText role="meta">일간이 그 자리에서 갖는 힘</FanText>
+                  {tx ? tx.f("stageTitle") : "12운성"} <FanText role="meta">{tx ? tx.f("stageNote") : "일간이 그 자리에서 갖는 힘"}</FanText>
                 </FanText>
                 <ul>
                   {detail.stages.map((item) => (
@@ -146,7 +154,7 @@ export function ChartPanel({ chart, art, onBirthTime, locale }: { locale?: AppLo
               {detail.spirits.length > 0 && (
                 <div className={styles.legendGroup}>
                   <FanText as="p" role="label">
-                    12신살 <FanText role="meta">연지 기준</FanText>
+                    {tx ? tx.f("spiritTitle") : "12신살"} <FanText role="meta">{tx ? tx.f("spiritNote") : "연지 기준"}</FanText>
                   </FanText>
                   <ul>
                     {detail.spirits.map((item) => (
@@ -164,9 +172,9 @@ export function ChartPanel({ chart, art, onBirthTime, locale }: { locale?: AppLo
             </div>
             <ReadingBasisRows
               rows={[
-                { term: "지장간", value: "진한 글자가 본기예요", plain: "" },
-                { term: "공망", value: `${detail.void.hanja} ${detail.void.letters}`, plain: detail.void.plain },
-                { term: "계산 기준", value: detail.basis[0], plain: detail.basis[1] },
+                { term: tx ? tx.f("hiddenTerm") : "지장간", value: tx ? tx.f("hiddenNote") : "진한 글자가 본기예요", plain: "" },
+                { term: tx ? tx.f("voidTerm") : "공망", value: `${detail.void.hanja} ${detail.void.letters}`.trim(), plain: detail.void.plain },
+                { term: tx ? tx.f("basisTerm") : "계산 기준", value: detail.basis[0], plain: detail.basis[1] },
               ]}
             />
           </>
@@ -177,6 +185,7 @@ export function ChartPanel({ chart, art, onBirthTime, locale }: { locale?: AppLo
 }
 
 export function ElementBlock({ chart, locale }: { chart: Chart; locale: AppLocale }) {
+  const tx = useSajuTx();
   if (!chart.pillars.month)
     return (
       <section className={styles.section}>
@@ -191,13 +200,13 @@ export function ElementBlock({ chart, locale }: { chart: Chart; locale: AppLocal
             </div>
           ))}
         </div>
-        <FaintRows rows={[["가장 많은 기운", 28, 92, 46], ["없는 기운", 22, 94, 88]]} />
+        <FaintRows rows={[[tx ? tx.f("topTerm") : "가장 많은 기운", 28, 92, 46], [tx ? tx.f("noneTerm") : "없는 기운", 22, 94, 88]]} />
       </section>
     );
-  const view = elementView(chart);
+  const view = elementView(chart, tx);
   return (
     <section className={styles.section}>
-      <Head title={<ReadingText id="energy" />} scope={scopeLabel(chart)} />
+      <Head title={<ReadingText id="energy" />} scope={scopeLabel(chart, tx)} />
       <ElementRows rows={view.rows} locale={locale} />
       <ReadingBasisRows rows={view.summary} />
     </section>
@@ -208,6 +217,7 @@ export function ElementRows({ rows, locale }: {
   rows: readonly { element: Element; name: string; count: number; percent: number; top: boolean }[];
   locale: AppLocale;
 }) {
+  const tx = useSajuTx();
   return (
     <div className={styles.elements}>
       {rows.map((row) => (
@@ -218,7 +228,7 @@ export function ElementRows({ rows, locale }: {
             <i style={{ width: `${row.percent}%` }} />
           </span>
           <FanText role={row.count === 0 ? "label" : "meta"} className={styles.count}>
-            {row.count}자
+            {tx ? tx.f("chars", { n: row.count }) : `${row.count}자`}
           </FanText>
         </div>
       ))}
@@ -227,10 +237,11 @@ export function ElementRows({ rows, locale }: {
 }
 
 function ElementName({ element }: { element: Element }) {
+  const tx = useSajuTx();
   return (
     <span className={styles.elementName}>
       <FanIcon icon={elementIcon[element]} size={16} />
-      <FanText role="meta">{elementName[element]}</FanText>
+      <FanText role="meta">{tx ? tx.t.element(element) : elementName[element]}</FanText>
       <FanText role="body" className={styles.ink}>
         <FanHanja role="inline">{elementHanja[element]}</FanHanja>
       </FanText>
@@ -239,10 +250,11 @@ function ElementName({ element }: { element: Element }) {
 }
 
 export function NatureBlock({ chart }: { chart: Chart }) {
+  const tx = useSajuTx();
   return (
     <section className={styles.section}>
       <Head title={<ReadingText id="traits" />} />
-      <ReadingBasisRows rows={natureRows(chart)} />
+      <ReadingBasisRows rows={natureRows(chart, tx)} />
     </section>
   );
 }
@@ -254,16 +266,21 @@ const zones = [
 ] as const;
 
 export function StrengthBlock({ chart, locale }: { chart: Chart; locale: AppLocale }) {
-  const view = strengthView(chart);
+  const tx = useSajuTx();
+  const view = strengthView(chart, tx);
   const track = (pin: number | null, on?: string) => (
-    <div className={styles.track} role={pin == null ? undefined : "img"} aria-label={pin == null ? undefined : `신강 지수 ${pin}, ${on}`}>
+    <div
+      className={styles.track}
+      role={pin == null ? undefined : "img"}
+      aria-label={pin == null ? undefined : tx ? tx.f("strengthAria", { n: pin, class: view?.className ?? "" }) : `신강 지수 ${pin}, ${on}`}
+    >
       <span className={styles.rail} />
       <span className={styles.tick} style={{ "--at": "42%" } as CSSProperties} />
       <span className={styles.tick} style={{ "--at": "58%" } as CSSProperties} />
       {pin != null && <span className={styles.pin} style={{ "--at": `${pin}%` } as CSSProperties} />}
       {zones.map(([name, left]) => (
         <FanText key={name} role={name === on ? "label" : "meta"} className={styles.zone} data-on={name === on || undefined} style={{ "--at": `${left}%` } as CSSProperties}>
-          {name}
+          {tx ? tx.t.strength(name) : name}
         </FanText>
       ))}
     </div>
@@ -278,18 +295,24 @@ export function StrengthBlock({ chart, locale }: { chart: Chart; locale: AppLoca
           </div>
           {track(null)}
         </div>
-        <FaintRows rows={[["글자 수", 62, 90], ["태어난 달", 48, 92], ["도움 기운", 36, 94], ["부담 기운", 24, 90]]} />
+        <FaintRows
+          rows={
+            tx
+              ? [[tx.f("countTerm"), 62, 90], [tx.f("bornMonthTerm"), 48, 92], [tx.f("helpTerm"), 36, 94], [tx.f("burdenTerm"), 24, 90]]
+              : [["글자 수", 62, 90], ["태어난 달", 48, 92], ["도움 기운", 36, 94], ["부담 기운", 24, 90]]
+          }
+        />
       </section>
     );
   const [count, ...rest] = view.rows;
   return (
     <section className={styles.section}>
-      <Head title={<ReadingText id="strengthTitle" />} scope={scopeLabel(chart)} />
+      <Head title={<ReadingText id="strengthTitle" />} scope={scopeLabel(chart, tx)} />
       <div className={styles.strength}>
         <div className={styles.strengthTop}>
           <FanNumber locale={locale} value={view.index} size="lg" />
           <FanText role="meta">/ 100</FanText>
-          <FanTag tone="neutral">{view.class}</FanTag>
+          <FanTag tone="neutral">{view.className}</FanTag>
           <FanText role="label">{view.label}</FanText>
         </div>
         {track(view.index, view.class)}
@@ -318,6 +341,7 @@ export function StrengthBlock({ chart, locale }: { chart: Chart; locale: AppLoca
 }
 
 export function TenGodBlock({ chart }: { chart: Chart }) {
+  const tx = useSajuTx();
   if (!chart.pillars.month) {
     return (
       <section className={styles.section}>
@@ -325,19 +349,19 @@ export function TenGodBlock({ chart }: { chart: Chart }) {
       </section>
     );
   }
-  const view = tenGodView(chart);
+  const view = tenGodView(chart, tx);
   return (
     <details className={styles.section}>
       <summary className={styles.disclosure}>
         <FanIcon icon={ChevronDown} size={16} className={styles.disclosureIcon} />
         <FanHeading><ReadingText id="tenGodTitle" /></FanHeading>
-        <FanText role="meta">{view.groups.map(({ group, count }) => `${group} ${count}`).join(" · ")}</FanText>
+        <FanText role="meta">{view.groups.map(({ name, count }) => `${name} ${count}`).join(" · ")}</FanText>
       </summary>
-      <FanText role="meta">{scopeLabel(chart)}</FanText>
+      <FanText role="meta">{scopeLabel(chart, tx)}</FanText>
       <div className={styles.tenGods}>
         {view.groups.map((group) => (
           <div key={group.group} data-zero={group.count === 0 || undefined}>
-            <FanText role="label">{group.group}</FanText>
+            <FanText role="label">{group.name}</FanText>
             <FanText role="meta">{group.plain}</FanText>
             <span className={styles.letters}>
               {group.count ? (
@@ -347,7 +371,7 @@ export function TenGodBlock({ chart }: { chart: Chart }) {
                   </FanHanja>
                 ))
               ) : (
-                <FanText role="meta">없음</FanText>
+                <FanText role="meta">{tx ? tx.f("none") : "없음"}</FanText>
               )}
             </span>
             <FanText role="label" className={styles.n}>
@@ -391,6 +415,7 @@ export function RelationList({ children }: { children: ReactNode }) {
 }
 
 export function RelationBlock({ chart }: { chart: Chart }) {
+  const tx = useSajuTx();
   if (!chart.pillars.month) {
     return (
       <section className={styles.section}>
@@ -398,23 +423,23 @@ export function RelationBlock({ chart }: { chart: Chart }) {
       </section>
     );
   }
-  const rows = relationRows(chart);
+  const rows = relationRows(chart, tx);
   return (
     <details className={styles.section}>
       <summary className={styles.disclosure}>
         <FanIcon icon={ChevronDown} size={16} className={styles.disclosureIcon} />
         <FanHeading><ReadingText id="relationTitle" /></FanHeading>
         <FanText role="meta">
-          {rows.length ? [...new Set(rows.map((row) => row.kind))]
-            .map((kind) => `${kind} ${rows.filter((row) => row.kind === kind).length}`).join(" · ") : "합 · 충 · 형 없음"}
+          {rows.length ? [...new Set(rows.map((row) => row.kindName))]
+            .map((kind) => `${kind} ${rows.filter((row) => row.kindName === kind).length}`).join(" · ") : tx ? tx.f("noRelations") : "합 · 충 · 형 없음"}
         </FanText>
       </summary>
-      <FanText role="meta">{scopeLabel(chart)}</FanText>
+      <FanText role="meta">{scopeLabel(chart, tx)}</FanText>
       <RelationList>
         {rows.map((row) => (
           <RelationRow
             key={`${row.kind}:${row.where}`}
-            kind={row.kind}
+            kind={row.kindName}
             where={row.where}
             rough={row.rough}
             letters={row.keys.map((key) => {
@@ -433,31 +458,36 @@ export function RelationBlock({ chart }: { chart: Chart }) {
 }
 
 export function YearFlowBlock({ chart, at }: { chart: Chart; at: number }) {
-  const view = yearFlowView(chart, at);
+  const tx = useSajuTx();
+  const view = yearFlowView(chart, at, tx);
   return (
     <section className={styles.section}>
       <Head title={<ReadingText id="yearFlow" />} />
       <div className={styles.chips}>
         <span className={styles.chip} data-me="">
           <FanText role="meta" className={styles.chipLabel}>
-            내 일주
+            {tx ? tx.f("myDayPillar") : "내 일주"}
           </FanText>
           <FanHanja role="pair">{view.me.hanja}</FanHanja>
-          <FanText role="meta">
-            {view.me.pillar.heavenlyStem}
-            {view.me.pillar.earthlyBranch}
-          </FanText>
+          {!tx && (
+            <FanText role="meta">
+              {view.me.pillar.heavenlyStem}
+              {view.me.pillar.earthlyBranch}
+            </FanText>
+          )}
         </span>
         <FanText role="meta">×</FanText>
         <span className={styles.chip}>
           <FanText role="meta" className={styles.chipLabel}>
-            {view.year.label}년
+            {tx ? view.year.label : `${view.year.label}년`}
           </FanText>
           <FanHanja role="pair">{view.year.hanja}</FanHanja>
-          <FanText role="meta">
-            {view.year.pillar.heavenlyStem}
-            {view.year.pillar.earthlyBranch}
-          </FanText>
+          {!tx && (
+            <FanText role="meta">
+              {view.year.pillar.heavenlyStem}
+              {view.year.pillar.earthlyBranch}
+            </FanText>
+          )}
         </span>
       </div>
       <ReadingBasisRows rows={view.rows} />
