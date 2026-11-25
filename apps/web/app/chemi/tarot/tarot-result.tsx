@@ -20,7 +20,8 @@ import { useMobileResultAction, ResultActions, ShareSheet, type ShareVia } from 
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { TAROT_DECK_SIZE, tarotAlt, tarotFace, tarotTitle } from "@/features/chemi/tarot/deck";
-import { tarotBasis, tarotDetail, tarotRowMore } from "@/features/chemi/tarot/depth";
+import { tarotFieldNote } from "@/features/chemi/tarot/field-note";
+import { tarotBasis, tarotDetail } from "@/features/chemi/tarot/depth";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
 import { tarotCharacter, tarotFaceThumb, tarotLang, type TarotCharacter } from "@/features/chemi/tarot/script";
 import type { AppLocale } from "@/i18n/locales";
@@ -237,11 +238,12 @@ export function TarotResult({
                             {label}
                           </FanText>
                           <FanText as="dd" role="body">
-                            {[text, tarotRowMore(draw.card, label)].flatMap((line) => line ? [tarotDetail(line, character, readingLanguage)] : []).join(" ")}
+                            {tarotDetail(text, character, readingLanguage)}
                           </FanText>
                         </div>
                       ))}
                     </dl>
+                    <FanText as="p" role="body">{tarotFieldNote(draw.card, locale)}</FanText>
                   </>
                 ) : (
                   <Placeholder />

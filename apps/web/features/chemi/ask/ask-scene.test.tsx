@@ -268,7 +268,7 @@ it("답을 다 들으면 짧은 반응을 고를 수 있고, 최애가 한 마�
   render(<Host />);
   askGo({ step: "answer", thread: first.threadId });
   fireEvent.click(await screen.findByRole("button", { name: "진짜?" }));
-  expect(await screen.findByText("진짜야. 네 풀이에 그렇게 나와 있어.")).toBeTruthy();
+  expect(await screen.findByText("응. “네 일간은 병” 이 말 기억해 둬.")).toBeTruthy();
   // 고른 반응은 주소에 남아 새로 고쳐도 이어진다.
   expect(location.search).toContain("av=really");
   expect(screen.getByText("진짜?")).toBeTruthy();
