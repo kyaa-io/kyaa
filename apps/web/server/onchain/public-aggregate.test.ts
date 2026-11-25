@@ -32,6 +32,12 @@ function snapshot(actions = [action()], transactions: ActionLifecycleTransaction
 }
 
 describe("public chain-only projection", () => {
+  it("publishes the verifier's fact digest with its action and omits it when there is none", () => {
+    const facts = { digest: hash(30), bindingVersion: 2 };
+    const result = projectPublicOnchainSnapshot(snapshot([action({ verifiedFacts: facts }), action({ actionId: hash(9), occurrenceId: hash(13), sourceOccurrence: hash(14) })]));
+    expect(result.actions[0].facts).toEqual(facts);
+    expect(result.actions[1]).not.toHaveProperty("facts");
+  });
   it("keeps one original mint and three lifecycle transactions across correction", () => {
     const old = action({ status: "INVALIDATED", easRevocationTime: 1n, easIsAttestationValid: false });
     const next = action({ revision: 2, actionId: hash(9), txHash: hash(10), credentials: [{ ...old.credentials[0], linkOrigin: 1 }] });

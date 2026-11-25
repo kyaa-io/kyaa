@@ -19,6 +19,8 @@ export interface PublicOnchainAction {
   easUid: string; txHash: string; blockNumber: string; hubAddress: string; environmentId: string; sourceDeployment: string;
   status: "ACTIVE" | "INVALIDATED"; current: boolean; qa: boolean; origin: "NATIVE" | "HISTORICAL";
   credentials: { kind: number; nftContract: string; tokenId: string; linkOrigin: number; representativeAsset?: PublicRepresentativeAsset }[];
+  /** Digest of the verified transaction and mint facts; the next refresh reuses them while their block stays canonical. */
+  facts?: { digest: string; bindingVersion: number };
 }
 export interface PublicOnchainSnapshot {
   version: 2;
