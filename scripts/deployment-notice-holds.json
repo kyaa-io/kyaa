@@ -161,7 +161,8 @@
     "release-notes/2026-11-21-dev-telegram-certification-review.json"
   ],
   "home-banner-video": [
-    "release-notes/2026-11-23-home-banner-video.json"
+    "release-notes/2026-11-23-home-banner-video.json",
+    "release-notes/2026-11-26-admin-home-banners.json"
   ],
   "account-switch": [
     "release-notes/2026-11-25-account-switch.json"

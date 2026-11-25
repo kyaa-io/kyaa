@@ -4,7 +4,9 @@ import { authorizeAdminSession, type AdminSession } from "../admin/admin-session
 import { createSupabaseAdminSessionRepository } from "../admin/supabase-admin-session-repository";
 import { invalidatePublicContentCache } from "../cache/public-content-revalidation";
 import { loadServerEnv } from "../config/env";
+import { createClient } from "@/server/data/client";
 import { createHomeBannerManagerRepository, type HomeBannerManagerRepository } from "./home-banner-manager-repository";
+import type { HomeBannerVideoDependencies } from "./home-banner-video-route";
 
 export interface HomeBannerManagerDependencies {
   authorize(input: { authorization: string; correlationId: string }): Promise<AdminSession>;
@@ -25,4 +27,10 @@ export function createHomeBannerManagerDependencies(): HomeBannerManagerDependen
     authorize: (input) => authorizeAdminSession({ ...input, verifier, repository: sessions }),
     invalidatePublicContent: invalidatePublicContentCache,
   };
+}
+
+export function createHomeBannerVideoDependencies(): HomeBannerVideoDependencies {
+  const env = loadServerEnv();
+  const database = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } });
+  return { authorize: createHomeBannerManagerDependencies().authorize, storage: database.storage };
 }

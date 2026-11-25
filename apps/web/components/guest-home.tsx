@@ -15,12 +15,9 @@ import { additionalLocales } from "@/i18n/messages";
 import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 
 import { Suspense, use, type ReactNode } from "react";
-import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
-import { adminEventBanners, isLiveCampaignBanner, orderHomeBanners } from "../features/home/domain/event-banner-priority";
+import { adminEventBanners, isLiveCampaignBanner } from "../features/home/domain/event-banner-priority";
+import { FIRST_STEPS_BANNER_ID } from "../features/home/domain/first-steps-home-banner";
 import { HomeEventStrip } from "../features/home/ui/home-event-strip";
-import { xMissionHomeBanner } from "../features/home/domain/x-mission-home-banner";
-import { firstStepsHomeBanner } from "../features/home/domain/first-steps-home-banner";
-import { signupRaffleHomeBanner } from "../features/home/domain/signup-raffle-home-banner";
 import { useRouter } from "next/navigation";
 import { FanAppFrame } from "./fan-shell/fan-app-shell";
 import { LiveHeroCarousel } from "./live-hero-carousel";
@@ -114,17 +111,13 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
   return (<>          <section className={styles.heroSection} aria-labelledby="live-heading">
             <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span></span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
             {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
-            <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} liveEventBannerIds={liveEventBannerIds} locale={locale} elinaGuide={elinaGuide} />
+            {/* 보여 줄 배너가 없으면(전부 비공개·조회 실패) 빈 캐러셀 틀을 그리지 않는다. */}
+            {homeBanners.length === 0 && elinaGuide === null ? null : <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} liveEventBannerIds={liveEventBannerIds} locale={locale} elinaGuide={elinaGuide} />}
           </section>
 
 </>);
 }
-type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "fanPageApplications" | "jjinfanGauge" | "heartDonation" | "homeTop"> & { queries: HomeQueries; /** 이벤트 띠를 닫은 배너 id(쿠키). 같은 배너의 띠는 서버가 그리지 않는다. */ closedEventStrip?: string; /** 신규 가입 래플 배너를 첫 슬라이드로 둔다(서버 플래그가 켜진 환경만). */ signupRaffle?: boolean; /** 온보딩 첫 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘긴다. */ firstSteps?: boolean };
-
-/** 코드로 둔 홈 배너: 신규 가입 래플(플래그 켜짐) → 덕질하는 법 → X 이벤트 → 첫 걸음(아직 안 마친 브라우저). 진행 중인 관리자 이벤트와의 배치는 orderHomeBanners가 정한다. */
-function pinnedHomeBanners(locale: AppLocale, firstSteps: boolean, signupRaffle: boolean) {
-  return [...(signupRaffle ? [signupRaffleHomeBanner(locale)] : []), missionbookHomeBanner(locale), xMissionHomeBanner(locale), ...(firstSteps ? [firstStepsHomeBanner(locale)] : [])];
-}
+type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "fanPageApplications" | "jjinfanGauge" | "heartDonation" | "homeTop"> & { queries: HomeQueries; /** 이벤트 띠를 닫은 배너 id(쿠키). 같은 배너의 띠는 서버가 그리지 않는다. */ closedEventStrip?: string; /** 온보딩 첫 걸음 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘기고, 그 배너를 빼고 그린다. */ firstSteps?: boolean };
 
 export function StreamingGuestHome({ queries, closedEventStrip, ...props }: StreamingHomeProps) {
   return <HomeLayout locale={props.locale}><Suspense fallback={<div className={styles.pendingContent} aria-hidden="true" />}><ResolvedGuestHome {...props} queries={queries} closedEventStrip={closedEventStrip} /></Suspense></HomeLayout>;
@@ -135,9 +128,8 @@ function ResolvedGuestHome({ queries, closedEventStrip, ...props }: StreamingHom
   const managed = result.status === "fulfilled" ? result.value : [];
   const now = Date.now();
   const banner = adminEventBanners(managed, now)[0];
-  const pinned = pinnedHomeBanners(props.locale, props.firstSteps ?? false, props.signupRaffle ?? false);
-  const leadingCount = props.signupRaffle ? 2 : 0;
-  const homeBanners = [...pinned.slice(0, leadingCount), ...orderHomeBanners(pinned.slice(leadingCount), managed, now)];
+  // 홈 캐러셀은 관리자 배너 순서만 따른다(11/23 "코드가 아니라 어드민으로").
+  const homeBanners = props.firstSteps ? managed : managed.filter(item => item.id !== FIRST_STEPS_BANNER_ID);
   return <HomeContent locale={props.locale} fanPageApplications={props.fanPageApplications} jjinfanGauge={props.jjinfanGauge} heartDonation={props.heartDonation} homeTop={props.homeTop}
     eventStrip={banner && banner.id !== closedEventStrip ? <HomeEventStrip key={banner.id} banner={banner} locale={props.locale} /> : null}
     hero={<HomeHero {...props} celebrities={[]} homeBanners={homeBanners}

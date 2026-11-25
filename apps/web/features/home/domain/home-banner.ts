@@ -64,12 +64,16 @@ const copyFields = {
   ctaLabel: z.string().trim().max(80), href: z.string().trim().max(2048).refine(v => !v || isBannerHref(v), "INVALID_LINK"),
   alt: z.string().trim().max(300),
 };
+/** A loop uploaded from the banner manager: an extensionless MP4/WebM pair under this public path (SceneVideo). */
+export const HOME_BANNER_VIDEO_PREFIX = "/public-assets/cms-assets/home-banners/video/";
+const videoPathSchema = z.string().regex(/^\/public-assets\/cms-assets\/home-banners\/video\/[a-z0-9][a-z0-9-]{0,118}$/);
+const videoFields = { desktopVideo: videoPathSchema.nullable(), mobileVideo: videoPathSchema.nullable() };
 export const bannerLocalizationSchema = z.object({
-  ...copyFields, desktopImage: assetSchema.nullable(), mobileImage: assetSchema.nullable(),
+  ...copyFields, desktopImage: assetSchema.nullable(), mobileImage: assetSchema.nullable(), ...videoFields,
 }).strict();
 const writeLocalizationSchema = z.object({
-  ...copyFields, desktopAssetId: z.uuid().nullable(), mobileAssetId: z.uuid().nullable(),
-}).strict();
+  ...copyFields, desktopAssetId: z.uuid().nullable(), mobileAssetId: z.uuid().nullable(), ...videoFields,
+}).strict().refine(v => v.mobileVideo === null || v.desktopVideo !== null, "WIDE_VIDEO_REQUIRED");
 export const adminHomeBannerSchema = z.object({
   ...bannerMetadata, ...popupSchedule, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
   publicationStatus: z.enum(["draft", "published"]), sortOrder: z.number().int(), revision: z.number().int().positive(),

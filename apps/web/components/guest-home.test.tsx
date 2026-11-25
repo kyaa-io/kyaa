@@ -11,8 +11,11 @@ import { fireEvent, render, screen, waitFor, within } from "@testing-library/rea
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { formatPassportTier, GuestHome, StreamingGuestHome } from "./guest-home";
 import { SIGNUP_RAFFLE_BANNER_ID } from "../features/home/domain/signup-raffle-home-banner";
-import { FIRST_STEPS_BANNER_ID } from "../features/home/domain/first-steps-home-banner";
-const missionbook = "247861a1-27b0-4e0a-9039-b5f8f7bc1c48", xEvent = "fc1bd251-f675-4e69-82b0-26a8a73be41f";
+import { FIRST_STEPS_BANNER_ID, firstStepsHomeBanner } from "../features/home/domain/first-steps-home-banner";
+import { signupRaffleHomeBanner } from "../features/home/domain/signup-raffle-home-banner";
+import { missionbookHomeBanner } from "../features/home/domain/missionbook-home-banner";
+import { gggiHomeBanner } from "../features/home/domain/gggi-home-banner";
+const missionbook = "247861a1-27b0-4e0a-9039-b5f8f7bc1c48", gggi = "8bf2f180-cb32-4f00-93e2-e84b570ad450";
 import { notifyFanActivityUpdated } from "./fan-ui/fan-activity-updates";
 import { formatHeroLiveTitle, formatLiveCountdown } from "./live-hero-carousel";
 
@@ -418,28 +421,34 @@ describe("streamed Home sections", () => {
     expect(screen.queryByRole("link", { name: "엘리나와 함께 뱅크시 전시 보러 가요", hidden: true })).not.toBeInTheDocument();
   });
 
-  it("orders pinned banners signup raffle → missionbook → X event → first steps → CMS, in the finished carousel", async () => {
+  it("follows the admin banner order only, and leaves out the first-steps banner for a browser that finished it", async () => {
     const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
-    const raffle = SIGNUP_RAFFLE_BANNER_ID;
+    const managed = [signupRaffleHomeBanner("ko"), missionbookHomeBanner("ko"), bannerFixture, firstStepsHomeBanner("ko"), gggiHomeBanner("ko")];
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle firstSteps />); });
+    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" firstSteps />); });
     expect(ids(view)).toEqual([]);
-    const managed = ["아는공부캠프 설명회", "아는공부", "앙상블 패치워크", "최애와 케미 한 판"].map(title => ({
-      ...bannerFixture, id: title, title,
-    }));
     await act(async () => { home.pending.homeBanners.resolve(managed); });
-    expect(ids(view)).toEqual([raffle, missionbook, xEvent, FIRST_STEPS_BANNER_ID, ...managed.map(banner => banner.id)]);
-    expect(view.container.querySelectorAll("article[aria-roledescription=slide]")).toHaveLength(8);
+    expect(ids(view)).toEqual([SIGNUP_RAFFLE_BANNER_ID, missionbook, bannerFixture.id, FIRST_STEPS_BANNER_ID, gggi]);
     view.unmount();
-    const off = pendingHome();
-    await act(async () => { view = render(<StreamingGuestHome {...off} locale="ko" />); });
-    await act(async () => { off.pending.homeBanners.resolve([]); });
-    expect(ids(view)).not.toContain(raffle);
-    expect(ids(view)).toEqual([missionbook, xEvent]);
+    const done = pendingHome();
+    await act(async () => { view = render(<StreamingGuestHome {...done} locale="ko" firstSteps={false} />); });
+    await act(async () => { done.pending.homeBanners.resolve(managed); });
+    expect(ids(view)).toEqual([SIGNUP_RAFFLE_BANNER_ID, missionbook, bannerFixture.id, gggi]);
   });
 
-  it("puts the admin 'event' banner first and shows its strip under the header, closing it for good (cookie)", async () => {
+  it("draws no hero slides when no admin banner is published", async () => {
+    const home = pendingHome();
+    let view!: ReturnType<typeof render>;
+    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
+    await act(async () => { home.pending.homeBanners.resolve([]); home.pending.homeSlots.resolve({}); });
+    expect(view.container.querySelector("[data-managed-home-banner]")).toBeNull();
+    expect(view.container.querySelectorAll('[aria-roledescription="slide"]')).toHaveLength(0);
+    // 배너가 없으면 빈 캐러셀 틀(검은 상자와 '01 | 00')도 그리지 않는다.
+    expect(view.container.querySelector('[aria-roledescription="carousel"]')).toBeNull();
+  });
+
+  it("keeps the admin event banner in its configured position and shows its strip under the header, closing it for good (cookie)", async () => {
     const ids = (view: ReturnType<typeof render>) => [...view.container.querySelectorAll("[data-managed-home-banner]")].map(el => el.getAttribute("data-managed-home-banner"));
     const eventBanner = { ...bannerFixture, id: "77777777-7777-4777-8777-777777777777", title: "이벤트 × Kyaa", href: "/wena", category: "event" as const };
     const home = pendingHome();
@@ -447,7 +456,7 @@ describe("streamed Home sections", () => {
     await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
     expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture, eventBanner]); });
-    expect(ids(view)).toEqual([eventBanner.id, missionbook, xEvent, bannerFixture.id]);
+    expect(ids(view)).toEqual([bannerFixture.id, eventBanner.id]);
     const strip = view.container.querySelector("[data-home-event-strip]")!;
     expect(strip).toHaveAttribute("data-home-event-strip", eventBanner.id);
     expect(strip.querySelector("a")).toHaveAttribute("href", "/wena?locale=ko");
@@ -470,7 +479,7 @@ describe("streamed Home sections", () => {
   it("draws no strip when no admin banner is an event, or when the read fails", async () => {
     const home = pendingHome();
     let view!: ReturnType<typeof render>;
-    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" signupRaffle />); });
+    await act(async () => { view = render(<StreamingGuestHome {...home} locale="ko" />); });
     await act(async () => { home.pending.homeBanners.resolve([bannerFixture]); });
     expect(view.container.querySelector("[data-home-event-strip]")).toBeNull();
     view.unmount();
@@ -523,11 +532,12 @@ describe("streamed Home sections", () => {
     expect(screen.getByText("아직 숏폼 없음")).toBeInTheDocument();
   });
 
-  it("keeps the pinned banners when the managed banner query fails", async () => {
+  it("shows the home error without hero slides when the managed banner query fails", async () => {
     const home = pendingHome();
     await act(async () => { render(<StreamingGuestHome {...home} locale="ko" />); });
     await act(async () => { home.pending.homeBanners.reject(); });
-    expect(screen.getAllByRole("article", { hidden: true }).filter(article => article.getAttribute("aria-roledescription") === "slide")).toHaveLength(2);
+    expect(screen.queryAllByRole("article", { hidden: true }).filter(article => article.getAttribute("aria-roledescription") === "slide")).toHaveLength(0);
     expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(document.querySelector('[aria-roledescription="carousel"]')).toBeNull();
   });
 });

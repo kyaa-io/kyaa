@@ -3,7 +3,7 @@
 import { isScheduledPopup } from "@/features/home/domain/home-banner";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { ArrowDown, ArrowUp, ImagePlus, Plus, RefreshCw, Save, Send, Undo2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ImagePlus, Plus, RefreshCw, Save, Send, Undo2, Video, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import {
@@ -24,10 +24,11 @@ type Asset = BannerLocalization["desktopImage"];
 type DraftLocalization = BannerLocalization;
 type Draft = Omit<AdminHomeBanner, "id"> & { id: string };
 type ImageField = "desktopImage" | "mobileImage";
+type VideoField = "desktopVideo" | "mobileVideo";
 type SaveCommand = Extract<HomeBannerCommand, { action: "save" }>;
 
 const emptyLocalization = (): DraftLocalization => ({
-  title: "", description: "", ctaLabel: "", href: "", alt: "", desktopImage: null, mobileImage: null,
+  title: "", description: "", ctaLabel: "", href: "", alt: "", desktopImage: null, mobileImage: null, desktopVideo: null, mobileVideo: null,
 });
 const emptyDraft = (): Draft => ({
   id: "", placement: "home", category: "event", kind: "announcement", celebrityId: null, publicationStatus: "draft", sortOrder: 0, revision: 0,
@@ -45,6 +46,8 @@ const copy = {
     cta: "버튼 문구", href: "이동 링크", alt: "이미지 대체 텍스트", desktop: "데스크톱 이미지", mobile: "모바일 이미지 (선택)",
     upload: "이미지 업로드", remove: "이미지 제거", noImage: "등록된 이미지 없음", saved: "배너를 저장했습니다.",
     reordered: "배너 순서를 변경했습니다.", publicationChanged: "공개 상태를 변경했습니다.", failure: "배너 데이터를 처리하지 못했습니다.",
+    desktopVideo: "넓은 영상", mobileVideo: "정사각 영상 (선택)", uploadVideo: "MP4·WebM 올리기", removeVideo: "영상 제거", noVideo: "등록된 영상 없음",
+    videoPair: "MP4와 WebM 파일을 함께 골라 주세요.", videoTooLarge: "영상은 파일마다 1MB까지 올릴 수 있어요.", videoSound: "소리가 없는 영상만 올릴 수 있어요.", videoFailure: "영상을 올리지 못했어요.",
     uploadFailure: "이미지를 등록하지 못했습니다.", invalid: "정기 LIVE 배너는 크리에이터마다 하나만 공개할 수 있어요.", issues: "공개 전에 다음 항목을 입력해 주세요.",
     conflict: "다른 관리자가 먼저 변경했습니다. 현재 입력은 보존했습니다. 서버 데이터를 다시 불러오면 현재 입력이 사라집니다.", reload: "서버 데이터 다시 불러오기",
   },
@@ -57,6 +60,8 @@ const copy = {
     cta: "Button label", href: "Destination link", alt: "Image alternative text", desktop: "Desktop image", mobile: "Mobile image (optional · desktop image is used when empty)",
     upload: "Upload image", remove: "Remove image", noImage: "No image selected", saved: "Banner saved.",
     reordered: "Banner order updated.", publicationChanged: "Publication status updated.", failure: "Banner data could not be processed.",
+    desktopVideo: "Wide video", mobileVideo: "Square video (optional)", uploadVideo: "Upload MP4 + WebM", removeVideo: "Remove video", noVideo: "No video",
+    videoPair: "Choose an MP4 and a WebM file together.", videoTooLarge: "Each video file can be up to 1 MB.", videoSound: "Only videos without sound can be uploaded.", videoFailure: "The video could not be uploaded.",
     uploadFailure: "The image could not be uploaded.", invalid: "The banner could not be saved. Each creator can have at most one published regular LIVE banner; check the entered fields as well.", issues: "Complete these fields before publishing.",
     conflict: "Another administrator updated this data first. Your input is preserved. Reloading will replace your current input.", reload: "Reload server data",
   },
@@ -164,6 +169,7 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
       return [language, {
         title: item.title, description: item.description, ctaLabel: item.ctaLabel, href: isScheduledPopup(value.placement) ? value.localizations.ko.href : item.href, alt: item.alt,
         desktopAssetId: item.desktopImage?.id ?? null, mobileAssetId: item.mobileImage?.id ?? null,
+        desktopVideo: item.desktopVideo, mobileVideo: item.desktopVideo ? item.mobileVideo : null,
       }];
     })) as SaveCommand["localizations"];
     return { action: "save", id: value.id || null, expectedRevision: value.revision, kind: isScheduledPopup(value.placement) ? "announcement" : value.kind,
@@ -235,6 +241,30 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
     finally { setUploading(""); }
   }
 
+  async function uploadVideo(language: "ko" | "en", field: VideoField, event: ChangeEvent<HTMLInputElement>) {
+    const files = [...(event.target.files ?? [])];
+    event.target.value = "";
+    if (!files.length || !canWrite) return;
+    const mp4 = files.filter((file) => file.type === "video/mp4" || /\.mp4$/i.test(file.name));
+    const webm = files.filter((file) => file.type === "video/webm" || /\.webm$/i.test(file.name));
+    if (files.length !== 2 || mp4.length !== 1 || webm.length !== 1) { setError(t.videoPair); return; }
+    const key = `${language}.${field}`;
+    setUploading(key); setError(""); setMessage("");
+    try {
+      const body = new FormData(); body.set("mp4", mp4[0]); body.set("webm", webm[0]);
+      const response = await authorizedFetch("/api/admin/home-banner-videos", { method: "POST", body });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null) as { error?: { code?: string } } | null;
+        const code = payload?.error?.code;
+        setError(code === "VIDEO_TOO_LARGE" ? t.videoTooLarge : code === "VIDEO_HAS_SOUND" ? t.videoSound : code === "INVALID_VIDEO" ? t.videoPair : t.videoFailure);
+        return;
+      }
+      const payload = await response.json() as { video: string };
+      updateLocalization(language, { [field]: payload.video });
+    } catch { setError(t.videoFailure); }
+    finally { setUploading(""); }
+  }
+
   const index = data?.items.findIndex((item) => item.id === draft.id) ?? -1;
   return (
     <AdminOperationsShell locale={locale} adminRole={role}>
@@ -290,17 +320,34 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
                     {!isScheduledPopup(draft.placement) && <label className={styles.field}>{t.href}<input disabled={!canWrite} aria-invalid={attemptedPublish && issueSet.has(`${language}.href`)} maxLength={2048} placeholder="/live/…" value={localized.href} onChange={(e) => updateLocalization(language, { href: e.target.value })} /></label> }
                     <label className={styles.field}>{t.alt}<input disabled={!canWrite} aria-invalid={attemptedPublish && issueSet.has(`${language}.alt`)} maxLength={300} value={localized.alt} onChange={(e) => updateLocalization(language, { alt: e.target.value })} /></label>
                   </div>
-                  <div className={styles.images}>{(["desktopImage", "mobileImage"] as const).map((field) => {
-                    const asset = localized[field]; const key = `${language}.${field}`;
-                    return <section key={field} className={styles.imageCard} aria-label={field === "desktopImage" ? t.desktop : t.mobile}>
-                      <h3>{field === "desktopImage" ? t.desktop : t.mobile}</h3>
-                      <div className={`${styles.preview} ${isScheduledPopup(draft.placement) && asset ? styles.popupPreview : field === "mobileImage" ? styles.mobile : ""}`}>{asset ? <img src={asset.url} alt={localized.alt || ""} /> : <span>{t.noImage}</span>}</div>
-                      <div className={styles.imageActions}>
-                        <label className={styles.uploadLabel}><ImagePlus aria-hidden="true" />{uploading === key ? "…" : t.upload}<input type="file" accept="image/*" disabled={!canWrite || !!uploading} onChange={(event) => void upload(language, field, event)} /></label>
-                        {asset && <button className={styles.danger} type="button" disabled={!canWrite || !!uploading} onClick={() => updateLocalization(language, { [field]: null })}><X aria-hidden="true" />{t.remove}</button>}
-                      </div>
-                    </section>;
-                  })}</div>
+                  {/* Pictures, then the loops over the same scene (an MP4 + WebM pair each); one card layout for both. */}
+                  <div className={styles.images}>{[
+                    ...(["desktopImage", "mobileImage"] as const).map((field) => {
+                      const asset = localized[field];
+                      return { field, title: field === "desktopImage" ? t.desktop : t.mobile, filled: !!asset, locked: false, multiple: false, accept: "image/*",
+                        previewClass: isScheduledPopup(draft.placement) && asset ? styles.popupPreview : field === "mobileImage" ? styles.mobile : "",
+                        preview: asset ? <img src={asset.url} alt={localized.alt || ""} /> : <span>{t.noImage}</span>,
+                        icon: <ImagePlus aria-hidden="true" />, uploadText: t.upload, removeText: t.remove,
+                        onUpload: (event: ChangeEvent<HTMLInputElement>) => void upload(language, field, event),
+                        onRemove: () => updateLocalization(language, { [field]: null }) };
+                    }),
+                    ...(isScheduledPopup(draft.placement) ? [] : (["desktopVideo", "mobileVideo"] as const).map((field) => {
+                      const video = localized[field];
+                      return { field, title: field === "desktopVideo" ? t.desktopVideo : t.mobileVideo, filled: !!video, locked: field === "mobileVideo" && !localized.desktopVideo, multiple: true, accept: "video/mp4,video/webm",
+                        previewClass: field === "mobileVideo" ? styles.square : "",
+                        preview: video ? <video key={video} muted loop autoPlay playsInline aria-hidden="true" data-banner-video-preview={field}><source src={`${video}.webm`} type="video/webm" /><source src={`${video}.mp4`} type="video/mp4" /></video> : <span>{t.noVideo}</span>,
+                        icon: <Video aria-hidden="true" />, uploadText: t.uploadVideo, removeText: t.removeVideo,
+                        onUpload: (event: ChangeEvent<HTMLInputElement>) => void uploadVideo(language, field, event),
+                        onRemove: () => updateLocalization(language, field === "desktopVideo" ? { desktopVideo: null, mobileVideo: null } : { mobileVideo: null }) };
+                    })),
+                  ].map((card) => <section key={card.field} className={styles.imageCard} aria-label={card.title}>
+                    <h3>{card.title}</h3>
+                    <div className={`${styles.preview} ${card.previewClass}`}>{card.preview}</div>
+                    <div className={styles.imageActions}>
+                      <label className={styles.uploadLabel}>{card.icon}{uploading === `${language}.${card.field}` ? "…" : card.uploadText}<input type="file" multiple={card.multiple} accept={card.accept} disabled={!canWrite || !!uploading || card.locked} onChange={card.onUpload} /></label>
+                      {card.filled && <button className={styles.danger} type="button" disabled={!canWrite || !!uploading} onClick={card.onRemove}><X aria-hidden="true" />{card.removeText}</button>}
+                    </div>
+                  </section>)}</div>
                 </fieldset>;
               })}
               {attemptedPublish && issues.length > 0 && <div className={styles.issues} role="alert"><strong>{t.issues}</strong><ul>{issues.map((issue) => <li key={issue}>{labels[issue] ?? issue}</li>)}</ul></div>}

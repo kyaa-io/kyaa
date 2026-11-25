@@ -4,7 +4,7 @@ import { expect, it } from "vitest";
 import { bucketPolicies } from "./config";
 
 it("limits every public bucket to inert media formats", () => {
-  const allowed = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4"]);
+  const allowed = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"]);
   for (const policy of Object.values(bucketPolicies)) if (policy.public) {
     expect(policy.types.every(type => allowed.has(type))).toBe(true);
   }

@@ -19,8 +19,8 @@ function item(id: string, title: string, revision = 1) {
   return {
     id, kind: "regular_live" as const, celebrityId: creatorId, publicationStatus: "draft" as const, sortOrder: id === firstId ? 0 : 1, revision,
     localizations: {
-      ko: { title, description: "매주 금요일", ctaLabel: "방송 보기", href: "/live", alt: `${title} 정기 방송`, desktopImage: koDesktop, mobileImage: null },
-      en: { title: `${title} LIVE`, description: "Every Friday", ctaLabel: "View LIVE", href: "/live", alt: `${title} regular LIVE`, desktopImage: enDesktop, mobileImage: null },
+      ko: { title, description: "매주 금요일", ctaLabel: "방송 보기", href: "/live", alt: `${title} 정기 방송`, desktopImage: koDesktop, mobileImage: null, desktopVideo: null, mobileVideo: null },
+      en: { title: `${title} LIVE`, description: "Every Friday", ctaLabel: "View LIVE", href: "/live", alt: `${title} regular LIVE`, desktopImage: enDesktop, mobileImage: null, desktopVideo: null, mobileVideo: null },
     },
   };
 }
@@ -84,6 +84,49 @@ describe("HomeBannerManager", () => {
     const body = JSON.parse(String(saveCall?.[1]?.body));
     expect(body.localizations.ko.mobileAssetId).toBe(uploaded.id);
     expect(body.localizations.en.desktopAssetId).toBeNull();
+  });
+
+  it("uploads an MP4 + WebM pair as the wide loop, keeps the square loop locked until then, and saves both paths", async () => {
+    const data = fixture();
+    const loop = "/public-assets/cms-assets/home-banners/video/admin-0123456789abcdef0123456789abcdef";
+    const fetcher = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input) === "/api/admin/home-banner-videos") return Response.json({ video: loop }, { status: 201 });
+      if (init?.method === "POST") return Response.json({ ...data, items: [{ ...data.items[0], revision: 2 }, data.items[1]] });
+      return Response.json(data);
+    });
+    vi.stubGlobal("fetch", fetcher);
+    render(<HomeBannerManager locale="ko" role="operator" />);
+    await screen.findByDisplayValue("카라 LIVE");
+    const wide = screen.getAllByRole("region", { name: "넓은 영상" })[0];
+    const square = screen.getAllByRole("region", { name: "정사각 영상 (선택)" })[0];
+    expect(within(square).getByLabelText("MP4·WebM 올리기")).toBeDisabled();
+    fireEvent.change(within(wide).getByLabelText("MP4·WebM 올리기"), { target: { files: [new File(["a"], "loop.mp4", { type: "video/mp4" })] } });
+    expect(await screen.findByText("MP4와 WebM 파일을 함께 골라 주세요.")).toBeInTheDocument();
+    fireEvent.change(within(wide).getByLabelText("MP4·WebM 올리기"), { target: { files: [new File(["a"], "loop.mp4", { type: "video/mp4" }), new File(["b"], "loop.webm", { type: "video/webm" })] } });
+    await waitFor(() => expect(wide.querySelector("video source[type='video/mp4']")).toHaveAttribute("src", `${loop}.mp4`));
+    expect(within(square).getByLabelText("MP4·WebM 올리기")).toBeEnabled();
+    const upload = fetcher.mock.calls.find(([input]) => String(input) === "/api/admin/home-banner-videos");
+    expect([...(upload?.[1]?.body as FormData).keys()]).toEqual(["mp4", "webm"]);
+    fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
+    await waitFor(() => expect(fetcher.mock.calls.some(([input, init]) => init?.method === "POST" && String(input) === "/api/admin/home-banners")).toBe(true));
+    const saveCall = fetcher.mock.calls.find(([input, init]) => init?.method === "POST" && String(input) === "/api/admin/home-banners");
+    const body = JSON.parse(String(saveCall?.[1]?.body));
+    expect(body.localizations.ko).toMatchObject({ desktopVideo: loop, mobileVideo: null });
+    expect(body.localizations.en).toMatchObject({ desktopVideo: null, mobileVideo: null });
+  });
+
+  it("names the 1 MB limit and the sound check when the server refuses a loop", async () => {
+    const data = fixture();
+    let code = "VIDEO_TOO_LARGE";
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => String(input) === "/api/admin/home-banner-videos" ? Response.json({ error: { code } }, { status: 400 }) : Response.json(data)));
+    render(<HomeBannerManager locale="ko" role="operator" />);
+    await screen.findByDisplayValue("카라 LIVE");
+    const pick = () => fireEvent.change(within(screen.getAllByRole("region", { name: "넓은 영상" })[0]).getByLabelText("MP4·WebM 올리기"), { target: { files: [new File(["a"], "a.mp4", { type: "video/mp4" }), new File(["b"], "a.webm", { type: "video/webm" })] } });
+    pick();
+    expect(await screen.findByText("영상은 파일마다 1MB까지 올릴 수 있어요.")).toBeInTheDocument();
+    code = "VIDEO_HAS_SOUND";
+    pick();
+    expect(await screen.findByText("소리가 없는 영상만 올릴 수 있어요.")).toBeInTheDocument();
   });
 
   it("saves current copy before publication and can unpublish the result", async () => {
