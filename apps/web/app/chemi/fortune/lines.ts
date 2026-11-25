@@ -78,9 +78,9 @@ const tones: Record<FortuneCharacterId, Tone> = {
     gradeNotes: {
       "쉬어 가는 날": "오늘은 쉬엄쉬엄 가자. 약속은 하나만 잡아, 알았지?",
       "조심하면 괜찮은 날": "조심만 하면 괜찮아. 말하기 전에 딱 한 번만 더 생각해.",
-      "무난한 날": "평소처럼만 해도 충분해. 알지?",
+      "무난한 날": "리허설 하던 대로만 해도 충분한 날이야. 알지?",
       "좋은 날": "하던 일이 술술 풀려. 오늘은 내가 응원 제대로 해 줄게.",
-      "아주 좋은 날": "오늘 같은 날 망설이면 반칙이야. 미뤄 둔 일부터 해 봐.",
+      "아주 좋은 날": "오늘은 네가 센터야. 미뤄 둔 일부터 해 봐.",
     },
     people: {
       high: "선배나 윗사람이 먼저 손 내밀 수도 있어. 반갑게 받아 주면 돼.",
@@ -89,7 +89,7 @@ const tones: Record<FortuneCharacterId, Tone> = {
     },
     fandom: {
       high: {
-        low: "혼자 파기 딱 좋은 날이야. 지난 무대 직캠 정주행하고 제일 좋은 장면 저장해 둬.",
+        low: "밀린 떡밥 몰아 보기 딱이야. 좋았던 장면 하나만 골라 둘래?",
         mid: "응원 글 하나 길게 써 봐. 오늘은 마음이 잘 전해져.",
         high: "덕질 친구랑 직캠 같이 보면서 실컷 떠들어도 되는 날이야.",
       },
@@ -359,7 +359,7 @@ export function fortuneTalkLine(
   const tone = tones[character];
   if (talk === 1) {
     const note = tone.gradeNotes?.[input.grade] ?? (headline ? `${headline}.` : gradeNotes[input.grade] ?? "");
-    return `${tone.scoreLine(input.score, input.grade)} ${note}`.trim();
+    return `${tone.scoreLine(input.score, input.grade === "아주 좋은 날" ? "계 타는 날" : input.grade)} ${note}`.trim();
   }
   if (talk === 2) return tone.people[band(input.people)];
   if (talk === 3) {
