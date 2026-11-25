@@ -28,6 +28,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { BirthSheet, type BirthInput } from "./birth-sheet";
 import {
   fortuneCalcLine,
+  fortuneChoiceKey,
   fortuneChoiceLabel,
   fortuneCharacters,
   fortuneEnterLine,
@@ -448,10 +449,14 @@ export function FortuneFlow({
       : null;
 
   // 입장에서는 '응, 봐 줘', 대화에서는 다음 말로 가는 강조 버튼 하나만 둔다.
-  // 대화 선택지는 한국어에서 최애마다 다르다(나를 대하는 태도대로: 창하 장난스러운 응원, 엘리나 다정하게 챙김, 유나 솔직하게 콕 집음).
-  const choiceLabel = (key: (typeof talkChoice)[number]) =>
-    (locale === "ko" ? fortuneChoiceLabel(character, key) : null) ?? text(key);
-  const primaryLabel = entering ? text("readFortune") : talk ? choiceLabel(talkChoice[talk - 1]) : null;
+  // 대화 선택지는 바로 앞 대사를 받아 묻는 말이고, 다음 대사가 그 답이 되도록 등급·점수 구간을 보고 고른다(lines.ts).
+  // 한국어는 최애마다 다른 글자, 다른 언어는 같은 질문의 공통 글자(fortuneAsk_*)를 쓴다.
+  const choiceLabel = (slot: "next" | "skip", key: (typeof talkChoice)[number]) => {
+    const ask = talk && lineInput ? fortuneChoiceKey(talk, slot, lineInput) : null;
+    if (!ask || !talk || !lineInput) return text(key);
+    return locale === "ko" ? fortuneChoiceLabel(character, talk, slot, lineInput) ?? text(key) : text(`fortuneAsk_${ask}`);
+  };
+  const primaryLabel = entering ? text("readFortune") : talk ? choiceLabel("next", talkChoice[talk - 1]) : null;
 
 
 
@@ -653,7 +658,7 @@ export function FortuneFlow({
                 </FanAction>
                 {talk && talk < 4 && (
                   <FanAction variant="neutral" onClick={skipAhead}>
-                    {choiceLabel(talkChoice[talk as 1 | 2 | 3])}
+                    {choiceLabel("skip", talkChoice[talk as 1 | 2 | 3])}
                   </FanAction>
                 )}
               </div>

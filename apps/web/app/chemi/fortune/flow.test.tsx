@@ -2,6 +2,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { FortuneFlow } from "./flow";
+import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
+import en from "@/features/chemi/i18n/locales/en/chemi.json";
 import { todayKst } from "./reading";
 
 const { session, login, getAccessToken } = vi.hoisted(() => ({
@@ -83,12 +85,12 @@ it("saves the reading once, then walks the four talk steps", async () => {
   render(<FortuneFlow locale="ko" />);
   expect(await screen.findByText("오늘 128명이 봤어요")).toBeVisible();
   fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
-  expect(await screen.findByText("좋다, 더 말해 줘", {}, { timeout: 3000 })).toBeVisible();
+  expect(await screen.findByText("도와줄 사람도 있어?", {}, { timeout: 3000 })).toBeVisible();
   expect(window.location.search).toContain("step=talk-1");
   expect(window.location.search).toContain("r=reading");
   expect(request.mock.calls.filter(([path]) => path === "/api/chemi/readings")).toHaveLength(1);
-  fireEvent.click(screen.getByRole("button", { name: "좋다, 더 말해 줘" }));
-  expect(await screen.findByText("오늘 영상 봐도 돼?")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "도와줄 사람도 있어?" }));
+  expect(await screen.findByText("친구도 만날까?")).toBeVisible();
   expect(window.location.search).toContain("step=talk-2");
 });
 
@@ -347,7 +349,7 @@ it("resumes the calculation when the member goes back and then forward during it
   window.dispatchEvent(new PopStateEvent("popstate"));
   window.history.replaceState({ fortuneDepth: 1 }, "", "/chemi/fortune?step=calc&c=changha");
   window.dispatchEvent(new PopStateEvent("popstate"));
-  expect(await screen.findByText("좋다, 더 말해 줘", {}, { timeout: 4000 })).toBeVisible();
+  expect(await screen.findByText("도와줄 사람도 있어?", {}, { timeout: 4000 })).toBeVisible();
   expect(window.location.search).toContain("step=talk-1");
   expect(request.mock.calls.filter(([path]) => path === "/api/chemi/readings").length).toBeGreaterThanOrEqual(2);
 });
@@ -366,7 +368,7 @@ it("does not turn a new calculation for another character into the earlier resul
   window.history.replaceState(null, "", "/chemi/fortune?c=changha");
   render(<FortuneFlow locale="ko" />);
   fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
-  expect(await screen.findByText("좋다, 더 말해 줘", {}, { timeout: 3000 })).toBeVisible();
+  expect(await screen.findByText("도와줄 사람도 있어?", {}, { timeout: 3000 })).toBeVisible();
   // 다른 최애로 바꿔 새 계산을 시작한다. 응답은 아직 오지 않았다.
   window.history.replaceState(null, "", "/chemi/fortune?c=changha");
   window.dispatchEvent(new PopStateEvent("popstate"));
@@ -403,7 +405,7 @@ it("shows a loading shape, not the entrance, while a restored address loads", as
   expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
   await waitFor(() => expect(finish).not.toBe(undefined));
   await waitFor(() => finish(Response.json(stored())));
-  expect(await screen.findByText("오늘 영상 봐도 돼?")).toBeVisible();
+  expect(await screen.findByText("친구도 만날까?")).toBeVisible();
   expect(screen.queryByRole("button", { name: "응, 봐 줘" })).toBeNull();
 });
 
@@ -446,4 +448,19 @@ it("writes the result body in the chosen favorite's voice (DF-FORT-001)", async 
   expect(new Set(lines).size).toBe(4);
   expect(lines[3]).toContain("이오.");
   for (const line of lines) expect(line).not.toMatch(/일진|일간|식신/);
+});
+
+it("asks the same follow-up in other languages instead of the fixed three buttons (CHEMI-FORTUNE-CHOICE-CONTEXT-1126)", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (path: string) => (path === "/api/chemi/readings" ? Response.json(reading) : Response.json({}))));
+  render(
+    <ReadingCopyProvider value={en}>
+      <FortuneFlow locale="en" />
+    </ReadingCopyProvider>,
+  );
+  fireEvent.click(screen.getByRole("button", { name: en.readingUi.readFortune }));
+  // 좋은 날·사람 88: 1/4 '도와줄 사람', 2/4 '윗사람' 뒤 '친구도'·'부탁은 언제'.
+  fireEvent.click(await screen.findByRole("button", { name: "Who will help me?" }, { timeout: 3000 }));
+  expect(await screen.findByRole("button", { name: "Meet a fan friend too?" })).toBeVisible();
+  expect(screen.getByRole("button", { name: "When should I ask?" })).toBeVisible();
+  expect(screen.queryByText(en.readingUi.whatFandom)).toBeNull();
 });

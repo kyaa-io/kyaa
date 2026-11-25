@@ -162,7 +162,7 @@ export const stemKeywords: Record<Stem, { caution: Keyword; joy: Keyword }> = {
   },
   을: {
     caution: { name: "속마음 숨기기", act: "서운한 건 한 줄로 말하기" },
-    joy: { name: "조용히 챙기기", act: "놓친 영상에 댓글 하나 남기기" },
+    joy: { name: "조용히 챙기기", act: "아끼는 사람에게 안부 한 줄 남기기" },
   },
   병: {
     caution: { name: "서운함 쌓아 두기", act: "그날 일은 그날 털어놓기" },
@@ -170,15 +170,15 @@ export const stemKeywords: Record<Stem, { caution: Keyword; joy: Keyword }> = {
   },
   정: {
     caution: { name: "확 식는 마음", act: "멀어지고 싶을 땐 하루만 미루기" },
-    joy: { name: "깊게 파고들기", act: "본 영상에서 새 장면 하나 찾기" },
+    joy: { name: "깊게 파고들기", act: "좋아하는 것 하나만 오래 들여다보기" },
   },
   무: {
     caution: { name: "굳은 고집", act: "다른 의견 하나 끝까지 듣기" },
-    joy: { name: "오래 지켜보기", act: "처음 좋아한 날의 영상 다시 보기" },
+    joy: { name: "오래 지켜보기", act: "처음 좋아한 이유 한 줄 적기" },
   },
   기: {
     caution: { name: "남의 몫까지 떠안기", act: "부탁 하나는 내일로 미루기" },
-    joy: { name: "같이 키우는 응원", act: "팬 친구에게 영상 하나 보내기" },
+    joy: { name: "같이 키우는 응원", act: "팬 친구와 좋았던 장면 나누기" },
   },
   경: {
     caution: { name: "곧은 말", act: "보내기 전에 말끝 한 번 고치기" },
@@ -194,7 +194,7 @@ export const stemKeywords: Record<Stem, { caution: Keyword; joy: Keyword }> = {
   },
   계: {
     caution: { name: "혼자 하는 걱정", act: "걱정 하나는 누구에게 말하기" },
-    joy: { name: "밤의 덕질", act: "자기 전 영상 보고 좋았던 점 적기" },
+    joy: { name: "밤의 덕질", act: "자기 전 오늘 좋았던 것 하나 적기" },
   },
 };
 

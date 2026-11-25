@@ -8,6 +8,8 @@
     "release-notes/2026-11-21-admin-copy-apply.json"
   ],
   "chemi-tab": [
+    "release-notes/2026-11-26-chemi-fortune-choice-context.json",
+    "release-notes/2026-11-26-chemi-saju-opening.json",
     "release-notes/2026-11-21-chemi-ask.json",
     "release-notes/2026-11-21-chemi-dev-fix-r2b.json",
     "release-notes/2026-11-21-chemi-result-actions.json",
