@@ -1,4 +1,4 @@
-import { officialRules } from './rules/copy';
+import { officialRules, privacyLabel } from './rules/copy';
 import { rulesTitle } from './rules/titles';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
@@ -104,11 +104,11 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
         <div className={styles.sectionHead}>
           <FanHeading as="h2" id="raffle-notice"><FanDisplay role="heading">{rulesTitle[locale]}</FanDisplay></FanHeading>
         </div>
-        <ul className={styles.notice}>{(['notice1', 'notice2', 'notice3', 'notice9', 'notice8', 'notice4', 'notice5', 'notice7'] as const).map(key => <li key={key} data-row="raffle-terms"><FanDisplay role="caption">{t(key)}</FanDisplay></li>)}</ul>
+        {(locale === 'en' || locale === 'ko') && <ul className={styles.notice}>{(['notice1', 'notice2', 'notice3', 'notice9', 'notice8', 'notice4'] as const).map(key => <li key={key} data-row="raffle-terms"><FanDisplay role="caption">{t(key)}</FanDisplay></li>)}</ul>}
         <ul className={styles.notice}>
           {officialRules[locale].map(line => <li key={line} data-row="raffle-rule"><FanDisplay role="caption">{line}</FanDisplay></li>)}
         </ul>
-        <p><a href={`/privacy?locale=${locale}`}>{locale === 'ko' ? '개인정보 처리방침' : 'Privacy policy'}</a> · <a href="mailto:support@kyaa.io">support@kyaa.io</a></p>
+        <p><a href={`/privacy?locale=${locale}`}>{privacyLabel[locale]}</a> · <a href="mailto:support@kyaa.io">support@kyaa.io</a></p>
       </section>
     </div>
     <RaffleStickyCta />
