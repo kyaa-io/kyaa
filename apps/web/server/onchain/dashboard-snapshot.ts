@@ -1,12 +1,12 @@
 import { finishOnchainWork, runOnchainWork } from "../../../worker/src/onchain-work";
 import "server-only";
 import { createPublicClient, http } from "viem";
-import { readFinalizedActionSnapshot, snapshotClient, type SnapshotLogScan } from "../../../worker/src/action-public-snapshot";
+import { readFinalizedActionSnapshot, snapshotClient, type SnapshotLogScan, type VerifiedActionFacts } from "../../../worker/src/action-public-snapshot";
 import { projectPublicOnchainSnapshotAsync } from "./public-aggregate";
 import { readFinalizedCredentialReplacements, type CredentialReplacementConfig } from "./credential-replacements";
 import type { PublicOnchainSnapshot } from "./public-types";
 
-import { dashboardConfigFingerprint, parseDashboardSnapshot, readConfig, dashboardLogConfig, readVerifiedDashboardSnapshot, publishVerifiedSnapshot, type DashboardSnapshot, type DashboardOnchainResult } from "./verified-snapshot";
+import { dashboardConfigFingerprint, parseDashboardSnapshot, readConfig, dashboardLogConfig, readVerifiedDashboardSnapshot, readStoredActionFacts, publishVerifiedSnapshot, type DashboardSnapshot, type DashboardOnchainResult } from "./verified-snapshot";
 export { dashboardConfigFingerprint, parseDashboardSnapshot, dashboardSnapshotSchema, type DashboardSnapshot, type DashboardOnchainResult } from "./verified-snapshot";
 
 function* sanitizeDashboardSteps(source: PublicOnchainSnapshot): Generator<void, DashboardSnapshot> {
@@ -59,13 +59,18 @@ export function createDashboardLogScan(signal: AbortSignal): SnapshotLogScan {
   }) });
   return { client, chunkBlocks: dashboardLogConfig.chunkBlocks };
 }
+// Facts verified by this process. They outlive a run that hits its deadline, so a ledger that is too long
+// to verify in one run (first run, or after a reorg discarded the published facts) is caught up run by run.
+const verifiedFacts: VerifiedActionFacts = new Map();
 async function verifySnapshot(signal: AbortSignal): Promise<PublicOnchainSnapshot> {
   const started = Date.now();
-  let phase = "actions";
+  let phase = "facts";
   try {
+    if (verifiedFacts.size === 0) for (const [key, fact] of await readStoredActionFacts(signal)) verifiedFacts.set(key, fact);
+    phase = "actions";
     const client = snapshotClient(readConfig, signal);
     const logScan = createDashboardLogScan(signal);
-    const source = await readFinalizedActionSnapshot({ ...readConfig, client, logScan, deadlineMs: 420_000, signal });
+    const source = await readFinalizedActionSnapshot({ ...readConfig, client, logScan, deadlineMs: 420_000, signal, facts: verifiedFacts });
     const actionsMs = Date.now() - started;
     phase = "replacements";
     const representatives = readConfig.credentialReplacement.deployment
@@ -73,10 +78,10 @@ async function verifySnapshot(signal: AbortSignal): Promise<PublicOnchainSnapsho
     signal.throwIfAborted();
     phase = "projection";
     const projected = await projectPublicOnchainSnapshotAsync(source, new Date(), representatives, signal);
-    console.info("onchain_dashboard_verification", { state: "complete", actionsMs, elapsedMs: Date.now() - started });
+    console.info("onchain_dashboard_verification", { state: "complete", actionsMs, elapsedMs: Date.now() - started, verifiedFacts: verifiedFacts.size });
     return projected;
   } catch (error) {
-    console.warn("onchain_dashboard_verification", { state: "failed", phase, elapsedMs: Date.now() - started,
+    console.warn("onchain_dashboard_verification", { state: "failed", phase, elapsedMs: Date.now() - started, verifiedFacts: verifiedFacts.size,
       code: signal.aborted ? "CANCELLED_OR_TIMEOUT" : error instanceof Error && error.message === "Action public snapshot deadline exceeded" ? "ACTION_DEADLINE" : "VERIFICATION_FAILED" });
     throw error;
   }

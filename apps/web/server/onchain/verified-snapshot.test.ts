@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { dashboardConfigFingerprint, parseVerifiedSnapshot, validatePublication, validatePublicationAsync } from "./verified-snapshot";
+import { dashboardConfigFingerprint, parseVerifiedSnapshot, storedActionFacts, validatePublication, validatePublicationAsync } from "./verified-snapshot";
+import { verifiedActionFactKey } from "../../../worker/src/action-public-snapshot";
 import { onchainConfig } from "./public-config";
 import type { PublicOnchainSnapshot } from "./public-types";
 const hash = `0x${"1".repeat(64)}`;
@@ -60,6 +61,33 @@ it("round-trips nested credentials and keeps QA exclusion across recipient corre
   expect(parseVerifiedSnapshot(envelope(value))).toEqual(value);
   value.actions[1].qa = false; expect(() => parseVerifiedSnapshot(envelope(value))).toThrow();
   value.actions[1].qa = true; value.actions[0].credentials[0].kind = 0; expect(() => parseVerifiedSnapshot(envelope(value))).toThrow();
+});
+
+it("publishes one fact digest per action and hands the next run those facts anchored to the published block", async () => {
+  const value = snapshot(), digest = `0x${"a".repeat(64)}`, other = `0x${"2".repeat(64)}`;
+  const action = { actionId: hash, occurrenceId: hash, sourceOccurrence: `0x${"3".repeat(64)}`, revision: 1, actionCode: 10,
+    wallet: "0xd100000000000000000000000000000000000001", creatorId: hash, campaignId: hash, occurredDay: 20000, easUid: hash, txHash: hash,
+    blockNumber: value.blockNumber, hubAddress: onchainConfig.hubAddress, environmentId: onchainConfig.environmentId,
+    sourceDeployment: onchainConfig.deployments[1].label, status: "ACTIVE" as const, current: true, qa: false, origin: "NATIVE" as const,
+    credentials: [], facts: { digest, bindingVersion: 2 } };
+  // The second action comes from a publication made before facts existed.
+  const { facts: _facts, ...legacy } = { ...action, actionId: other, occurrenceId: other };
+  value.actions = [action, legacy]; value.deployments[1].actionCount = 2;
+  expect(parseVerifiedSnapshot(envelope(value))).toEqual(value);
+  const facts = await storedActionFacts(envelope(value));
+  expect([...facts]).toEqual([[verifiedActionFactKey(onchainConfig.hubAddress, hash), {
+    digest, bindingVersion: 2, sourceOccurrence: action.sourceOccurrence, anchorBlockNumber: 40000000n, anchorBlockHash: hash }]]);
+  for (const bad of [{ digest: "0x1", bindingVersion: 2 }, { digest, bindingVersion: -1 }, { digest, bindingVersion: 2, extra: 1 }, { digest }]) {
+    const changed = { ...value, actions: [{ ...action, facts: bad }, legacy] } as unknown as PublicOnchainSnapshot;
+    expect(() => parseVerifiedSnapshot(envelope(changed))).toThrow();
+    expect((await storedActionFacts(envelope(changed))).size).toBe(0);
+  }
+});
+it("hands over no facts from a missing, malformed or pre-fact publication", async () => {
+  const value = snapshot();
+  for (const payload of [undefined, null, {}, { snapshot: { ...value, blockHash: "0x1" } }, { snapshot: { ...value, actions: "none" } }, envelope(value)]) {
+    expect((await storedActionFacts(payload)).size).toBe(0);
+  }
 });
 
 it("keeps asynchronous publication validation fail-closed", async () => {

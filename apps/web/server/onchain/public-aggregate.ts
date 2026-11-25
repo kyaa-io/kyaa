@@ -120,6 +120,7 @@ function* projectPublicOnchainSteps(
           const representativeAsset = authorizedRepresentatives.has(key) ? representatives.get(key) : undefined;
           return { kind, nftContract, tokenId, linkOrigin, ...(representativeAsset ? { representativeAsset } : {}) };
         }),
+        ...(action.verifiedFacts ? { facts: action.verifiedFacts } : {}),
       };
     }),
     transactions: yield* mapOnchainWork(source.lifecycleTransactions, (tx) => ({

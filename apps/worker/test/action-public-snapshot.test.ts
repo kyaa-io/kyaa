@@ -359,7 +359,7 @@ it("rejects a standalone invalidation for an unknown action", async () => {
 
 it("fails closed when the action resource cap is exceeded", async () => {
   const repeatedLog = hubLog("FanActionRecorded", {});
-  const repeated = Array.from({ length: 10_001 }, () => repeatedLog);
+  const repeated = Array.from({ length: 50_001 }, () => repeatedLog);
   await expect(readFinalizedActionSnapshot(makeFixture({ logs: repeated }).options)).rejects.toThrow("action cap exceeded");
 });
 

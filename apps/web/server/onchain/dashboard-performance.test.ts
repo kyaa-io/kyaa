@@ -78,7 +78,9 @@ async function measureRefresh() {
     expect(result).toEqual({updated:true});
     const measurements={actions:source.actions.length,representatives:representatives.size,elapsedMs,eventLoopMaxMs:histogram.max/1e6,httpMaxMs:Math.max(...latencies),requests:latencies.length};
     if (process.env.ONCHAIN_PERF_OUTPUT) writeFileSync(process.env.ONCHAIN_PERF_OUTPUT, JSON.stringify({ ...measurements, stages, stalls }, null, 2));
-    expect(actual).toEqual(expected);
+    // Verification adds one fact digest per action; every other published value equals the direct projection.
+    expect(actual!.actions.every(action => /^0x[0-9a-f]{64}$/.test(action.facts?.digest ?? ''))).toBe(true);
+    expect({ ...actual, actions: actual!.actions.map(({ facts: _facts, ...action }) => action) }).toEqual(expected);
   } finally {
     active=false; await requests; histogram.disable(); clearInterval(tick);
     await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));

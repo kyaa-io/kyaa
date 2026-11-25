@@ -6,9 +6,11 @@ import { createClient } from "@/server/data/client";
 import { loadServerEnv } from "../config/env";
 import { onchainConfig } from "./public-config";
 import type { PublicOnchainSnapshot } from "./public-types";
+import { verifiedActionFactKey, type VerifiedActionFacts } from "../../../worker/src/action-public-snapshot";
 
-const MAX_PUBLIC_ACTIONS = 10_000;
-const MAX_PUBLIC_TRANSACTIONS = 50_000;
+// Same bound as the verifier's ledger cap; transactions add standalone invalidations to one per action.
+const MAX_PUBLIC_ACTIONS = 50_000;
+const MAX_PUBLIC_TRANSACTIONS = 100_000;
 const count = z.number().int().nonnegative().safe();
 const integer = z.string().regex(/^(0|[1-9][0-9]*)$/);
 const hash = z.string().regex(/^0x[0-9a-fA-F]{64}$/);
@@ -32,7 +34,7 @@ export const readConfig = { ...onchainConfig, rpcUrl: process.env.GIWA_PUBLIC_RE
 export const dashboardLogConfig = { rpcUrl: onchainConfig.rpcUrl, chunkBlocks: 10_000n, intervalMs: 125 };
 // Match the public cache namespace and every verification/exclusion input, including RPC scope.
 export function dashboardConfigFingerprint(config: unknown = readConfig): string {
-  return createHash("sha256").update(JSON.stringify({ verifierVersion: "kyaa-verified-onchain-v8-durable-full-ledger", config, dashboardLogConfig },
+  return createHash("sha256").update(JSON.stringify({ verifierVersion: "kyaa-verified-onchain-v9-reused-finalized-facts", config, dashboardLogConfig },
     (_key, value: unknown) => typeof value === "bigint" ? value.toString() : value)).digest("hex");
 }
 export function parseDashboardSnapshot(value: unknown, now = Date.now()): DashboardSnapshot {
@@ -61,7 +63,8 @@ const fullSnapshotSchema = z.object({
     hubAddress: address, environmentId: hash, sourceDeployment: z.string(), status: z.enum(["ACTIVE", "INVALIDATED"]),
     current: z.boolean(), qa: z.boolean(), origin: z.enum(["NATIVE", "HISTORICAL"]),
     credentials: z.array(z.object({ kind: z.number().int().min(0).max(2), nftContract: address, tokenId: integer,
-      linkOrigin: z.number().int().min(0).max(1), representativeAsset: representative.optional() }).strict()) }).strict()).max(MAX_PUBLIC_ACTIONS),
+      linkOrigin: z.number().int().min(0).max(1), representativeAsset: representative.optional() }).strict()),
+    facts: z.object({ digest: hash, bindingVersion: count }).strict().optional() }).strict()).max(MAX_PUBLIC_ACTIONS),
   transactions: z.array(z.object({ txHash: hash, blockNumber: integer, hubAddress: address,
     kind: z.enum(["record", "invalidate", "correct"]), qa: z.boolean(), origin: z.enum(["NATIVE", "HISTORICAL"]) }).strict()).max(MAX_PUBLIC_TRANSACTIONS),
 }).strict();
@@ -163,6 +166,37 @@ export async function readVerifiedDashboardSnapshot(): Promise<unknown> {
   const snapshot = parseDashboardSnapshot(data.dashboard_payload);
   assertStoredMetadata(data, snapshot.blockNumber, snapshot.blockHash, snapshot.verifiedAt);
   return data.dashboard_payload;
+}
+const storedFactsSchema = z.object({ snapshot: z.object({ blockNumber: integer, blockHash: hash, actions: z.array(z.unknown()).max(MAX_PUBLIC_ACTIONS) }) });
+const storedFactSchema = z.object({ hubAddress: address, actionId: hash, sourceOccurrence: hash, facts: z.object({ digest: hash, bindingVersion: count }).strict() });
+function* storedActionFactSteps(payload: unknown): Generator<void, VerifiedActionFacts> {
+  const facts: VerifiedActionFacts = new Map();
+  const stored = storedFactsSchema.safeParse(payload);
+  // No publication yet, or one from before facts were published: every action is verified in full.
+  if (!stored.success) return facts;
+  const anchorBlockNumber = BigInt(stored.data.snapshot.blockNumber), anchorBlockHash = stored.data.snapshot.blockHash as `0x${string}`;
+  for (const candidate of stored.data.snapshot.actions) {
+    yield;
+    const action = storedFactSchema.safeParse(candidate);
+    if (action.success) facts.set(verifiedActionFactKey(action.data.hubAddress, action.data.actionId), {
+      digest: action.data.facts.digest as `0x${string}`, bindingVersion: action.data.facts.bindingVersion,
+      sourceOccurrence: action.data.sourceOccurrence as `0x${string}`, anchorBlockNumber, anchorBlockHash });
+  }
+  return facts;
+}
+/** Facts of the last publication, anchored to its finalized block. The verifier checks each one before reuse. */
+export function storedActionFacts(payload: unknown, signal?: AbortSignal): Promise<VerifiedActionFacts> {
+  return runOnchainWork(storedActionFactSteps(payload), signal);
+}
+export async function readStoredActionFacts(signal?: AbortSignal): Promise<VerifiedActionFacts> {
+  const { data, error } = await database().from("onchain_verified_snapshot").select("public_payload,block_number,block_hash,verified_at").eq("id", true)
+    .abortSignal(signal ? AbortSignal.any([signal, AbortSignal.timeout(8000)]) : AbortSignal.timeout(8000)).maybeSingle();
+  if (error) throw new Error("VERIFIED_SNAPSHOT_READ_UNAVAILABLE");
+  if (!data) return new Map();
+  const snapshot = (data.public_payload as { snapshot?: { blockNumber?: unknown; blockHash?: unknown; generatedAt?: unknown } } | null)?.snapshot;
+  // A row whose columns disagree with its payload is not a publication this code wrote: verify in full.
+  try { assertStoredMetadata(data, String(snapshot?.blockNumber), String(snapshot?.blockHash), String(snapshot?.generatedAt)); } catch { return new Map(); }
+  return storedActionFacts(data.public_payload, signal);
 }
 export async function publishVerifiedSnapshot(source: PublicOnchainSnapshot, dashboard: DashboardSnapshot | null, signal?: AbortSignal): Promise<boolean> {
   const { publicPayload, dashboardPayload } = await validatePublicationAsync(source, dashboard, signal);
