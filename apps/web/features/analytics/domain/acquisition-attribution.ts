@@ -26,6 +26,7 @@ export type AcquisitionLanding = z.infer<typeof acquisitionLandingSchema>;
 export const acquisitionTouchSchema = z.object({
   channel: acquisitionChannelSchema,
   landing: acquisitionLandingSchema,
+  kol: z.string().regex(/^[a-z0-9_]{1,15}$/).optional(),
   anonymousRecorded: z.boolean(),
   identifiedRecorded: z.boolean(),
   eventNonce: z.uuid(),

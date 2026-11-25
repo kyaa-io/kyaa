@@ -58,6 +58,22 @@ describe("AcquisitionSessionTracker", () => {
     expect(JSON.stringify(payload)).not.toMatch(/person@example|private-campaign|oauth-secret/);
   });
 
+  it("carries the raffle handle through login after the query is gone", async () => {
+    mocks.pathname = "/s/raffle";
+    mocks.searchParams = new URLSearchParams("utm_source=x&utm_medium=kol&utm_campaign=EnzoHost");
+    const view = render(<AcquisitionSessionTracker />);
+    await waitFor(() => expect(mocks.record).toHaveBeenCalledTimes(1));
+
+    mocks.searchParams = new URLSearchParams();
+    mocks.authenticated = true;
+    mocks.session.ownerId = "owner-a";
+    view.rerender(<AcquisitionSessionTracker />);
+    await waitFor(() => expect(mocks.record).toHaveBeenCalledTimes(2));
+    expect(mocks.record.mock.calls[1]?.[0]).toMatchObject({
+      source: "acquisition.identified_handoff", properties: { kol: "enzohost" },
+    });
+  });
+
   it("does not turn a later internal navigation into a session landing", async () => {
     mocks.pathname = "/login";
     const view = render(<AcquisitionSessionTracker />);
