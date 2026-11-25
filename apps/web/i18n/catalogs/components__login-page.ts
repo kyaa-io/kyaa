@@ -62,6 +62,18 @@ export const messages = {
     ru: "Чтобы продолжить работу с Google , выберите «Открыть в браузере» в меню приложения. Или скопируйте ссылку для входа и откройте ее в Safari или Chrome."
 
   },
+  "mbrowserGoogle": {
+    "ja": "ブラウザで開くと Google でもログインできます。",
+    "zh-Hans": "在浏览器中打开即可使用 Google 登录。",
+    "zh-Hant": "在瀏覽器中開啟即可使用 Google 登入。",
+    "es": "Ábrelo en tu navegador para iniciar sesión con Google.",
+    "id": "Buka di browser untuk masuk dengan Google.",
+    "vi": "Mở trong trình duyệt để đăng nhập bằng Google.",
+    "th": "เปิดในเบราว์เซอร์เพื่อเข้าสู่ระบบด้วย Google",
+    "pt": "Abra no navegador para entrar com o Google.",
+    "fr": "Ouvrez dans le navigateur pour vous connecter avec Google.",
+    "ru": "Откройте в браузере, чтобы войти через Google."
+  },
   "mbrowserHandoffApple": {
     "ja": "アプリのメニューで「ブラウザで開く」を選んで Google ログインを続けるか、下の「Apple で続ける」を押してください。またはログインリンクをコピーし、Safari や Chrome で開いてください。",
     "zh-Hans": "请在应用菜单中选择“在浏览器中打开”以继续 Google 登录，或点击下方的“使用 Apple 继续”。也可以复制登录链接并在 Safari 或 Chrome 中打开。",
