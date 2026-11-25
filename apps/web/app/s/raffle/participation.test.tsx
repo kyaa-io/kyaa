@@ -1,3 +1,4 @@
+import { resetGa4ForTests, startGa4 } from '@/features/analytics/client/ga4-client';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const auth = vi.hoisted(() => ({ authenticated: false, ready: true, login: vi.fn(), getAccessToken: vi.fn(async () => 'token') }));
@@ -351,4 +352,34 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
     await settle();
     expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET', 'POST']);
   });
+});
+
+it.each([
+  [true, true, undefined, 'direct'],
+  [true, true, 'registered', 'invite'],
+  [true, false, 'registered', undefined],
+  [false, false, undefined, undefined],
+] as const)('measures only newly committed raffle entries (%s, %s, %s)', async (ok, newEntry, invite, method) => {
+  auth.authenticated = true;
+  window.history.replaceState(null, '', '/s/raffle?enter=1');
+  const gtag = vi.fn();
+  window.gtag = gtag;
+  startGa4('G-TEST', '/s/raffle');
+  try {
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.includes('invite-code')) return json({ code: mine, redeemed: false, redemptionState: 'none' });
+      if (init?.method === 'POST') return { ok, json: async () => ({ entered: true, newEntry, invite }) };
+      return json({ entered: false });
+    }));
+    render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now} invite={invite ? friendCode : undefined}><RaffleEnterBlock /></RaffleProvider>);
+    await settle();
+    expect(gtag.mock.calls.filter(([command]) => command === 'event')).toEqual(
+      method ? [['event', 'raffle_enter', { campaign: 'raffle-1125', method }]] : [],
+    );
+  } finally {
+    resetGa4ForTests();
+    delete window.gtag;
+    document.getElementById('kyaa-ga4')?.remove();
+    window.history.replaceState(null, '', '/');
+  }
 });
