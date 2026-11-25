@@ -5,6 +5,10 @@
  */
 import {
   branchElement,
+  branchHanja,
+  elementHanja,
+  stemHanja,
+  tenGodGroups,
   branchRelation,
   controls,
   dayBranch,
@@ -26,6 +30,7 @@ import {
 } from "./chart";
 import { godNotes, helping, monthReading, stemNotes, yearReading } from "./copy";
 import { tenGodPlain, tenGodShort } from "./terms";
+import type { Tx } from "./tx";
 
 /** 오행의 한자 이름(목·화·토·금·수). 일간을 "병화"처럼 부를 때 쓴다. */
 export const elementTerm: Record<Element, string> = { wood: "목", fire: "화", earth: "토", metal: "금", water: "수" };
@@ -36,7 +41,7 @@ export type BasisRow = { term: string; value: string; plain: string };
 export type DepthView = "first" | "year" | "month";
 export const depthDomains = ["love", "work", "money", "people", "health"] as const;
 export type DepthDomain = (typeof depthDomains)[number];
-export type DomainDetail = { key: DepthDomain; level: "좋음" | "보통" | "조심"; basis: string; sentences: string[] };
+export type DomainDetail = { key: DepthDomain; level: "좋음" | "보통" | "조심"; levelName: string; basis: string; sentences: string[] };
 
 const pillarName = (pillar: Pillar) => `${pillar.heavenlyStem}${pillar.earthlyBranch}`;
 
@@ -79,13 +84,14 @@ function countsLine(chart: Chart) {
 }
 
 /** 풀이 근거 줄. 용어(term) · 계산 값(value) · 쉬운 풀이(plain). */
-export function sajuBasis(chart: Chart, at: number, view: DepthView): BasisRow[] {
+export function sajuBasis(chart: Chart, at: number, view: DepthView, tx?: Tx | null): BasisRow[] {
   const stem = dayStem(chart);
   const branch = dayBranch(chart);
   const own = stemElement[stem];
   const season = seasonAt(at);
   const yearGod = tenGod(stem, season.yearPillar.heavenlyStem);
   const open = chart.locked.length === 0;
+  if (tx) return basisIntl(chart, at, view, tx);
   const helpRow: BasisRow = {
     term: "도움 기운",
     value: helping(chart),
@@ -166,6 +172,86 @@ export function sajuBasis(chart: Chart, at: number, view: DepthView): BasisRow[]
       plain: `이 주의 일진 ${week.days}일 가운데 일지와 합이 ${week.good}일, 충이 ${week.rough}일이에요`,
     });
   return rows;
+}
+
+function basisIntl(chart: Chart, at: number, view: DepthView, tx: Tx): BasisRow[] {
+  const stem = dayStem(chart);
+  const branch = dayBranch(chart);
+  const season = seasonAt(at);
+  const yearGod = tenGod(stem, season.yearPillar.heavenlyStem);
+  const word = tx.t.element;
+  const tieWord = (tie: Relation) => tx.t.relation(tie === "good" ? "합" : tie === "rough" ? "충" : "무난");
+  const tiePlain = (unit: "year" | "month", tie: Relation) =>
+    tx.f(`${unit}${tie === "good" ? "Good" : tie === "rough" ? "Rough" : "Plain"}` as "yearGood");
+  const yearRow: BasisRow = {
+    term: tx.f("yearLuckTerm"),
+    value: `${tx.f("pillarYear", { pillar: tx.pillar(season.yearPillar) })} · ${tx.t.god(yearGod)}`,
+    plain: tx.p.god[yearGod].plain,
+  };
+  if (view === "first") {
+    const rows: BasisRow[] = [
+      {
+        term: tx.t.stemSeat("day"),
+        value: `${stemHanja[stem]}${elementHanja[stemElement[stem]]} · ${tx.t.yinYang(stem)} ${word(stemElement[stem])}`,
+        plain: tx.f("dayStemPlain", { image: tx.p.stem[stem].image }),
+      },
+      { term: tx.f("dayBranchTerm"), value: `${branchHanja[branch]} · ${word(branchElement[branch])}`, plain: tx.p.seat[seatOf(chart)] },
+    ];
+    if (chart.locked.length === 0) {
+      const line = countsLine(chart);
+      const top = Math.max(...elements.map((element) => line.counts[element]));
+      rows.push({
+        term: tx.f("fiveTerm"),
+        value: elements.map((element) => `${word(element)} ${line.counts[element]}`).join(" · "),
+        plain: tx.join([
+          tx.f("countsMost", { names: line.most.map(word).join(" · "), n: top }),
+          line.none.length ? tx.f("countsNone", { names: line.none.map(word).join(" · ") }) : tx.f("countsAll"),
+        ]),
+      });
+      const strength = strengthOf(chart);
+      if (strength)
+        rows.push({
+          term: tx.t.strength(strength.leansStrong ? "신강" : "신약"),
+          value: tx.f(strength.leansStrong ? "strongValue" : "weakValue"),
+          plain: tx.f(strength.leansStrong ? "strongPlain" : "weakPlain"),
+        });
+      rows.push({ term: tx.f("helpTerm"), value: helping(chart, tx), plain: tx.f("helpBasisPlain") });
+    }
+    rows.push(yearRow);
+    return rows;
+  }
+  if (view === "year") {
+    const tie = branchRelation(branch, season.yearPillar.earthlyBranch);
+    return [
+      yearRow,
+      {
+        term: tx.f("yearVsDayTerm"),
+        value: `${branchHanja[season.yearPillar.earthlyBranch]}·${branchHanja[branch]} · ${tieWord(tie)}`,
+        plain: tiePlain("year", tie),
+      },
+      ...yearReading(chart, at, tx).basis.map((month) => ({
+        term: tx.f(month.kind === "good" ? "goodMonthTerm" : "restMonthTerm"),
+        value: `${month.label} ${month.pillar} · ${tx.t.god(month.god)}`,
+        plain: tx.p.god[month.god].plain,
+      })),
+    ];
+  }
+  const span = monthSpanAt(at);
+  const monthGod = tenGod(stem, span.pillar.heavenlyStem);
+  const tie = branchRelation(branch, span.pillar.earthlyBranch);
+  return [
+    { term: tx.f("monthLuckTerm"), value: `${tx.f("pillarMonth", { pillar: tx.pillar(span.pillar) })} · ${tx.t.god(monthGod)}`, plain: tx.p.god[monthGod].plain },
+    {
+      term: tx.f("monthVsDayTerm"),
+      value: `${branchHanja[span.pillar.earthlyBranch]}·${branchHanja[branch]} · ${tieWord(tie)}`,
+      plain: tiePlain("month", tie),
+    },
+    ...monthReading(chart, at, tx).basis.map((week) => ({
+      term: tx.f(week.kind === "good" ? "strongWeekTerm" : week.kind === "rest" ? "restWeekTerm" : "pastFlowTerm"),
+      value: week.range,
+      plain: tx.f("weekPlain", { days: week.days, good: week.good, rough: week.rough }),
+    })),
+  ];
 }
 
 /** 십신이 영역마다 어떻게 드러나는지. 한 칸에 한 문장. */
@@ -285,12 +371,20 @@ const restTip: Record<Element, string> = {
 };
 
 /** 사주표에서 그 영역을 보는 자리와 개수로 만든 문장. 시간·절기 때문에 잠긴 사주표는 일지만 읽는다. */
-function natalLine(chart: Chart, domain: DepthDomain): { tag: string; text: string } | null {
+function natalLine(chart: Chart, domain: DepthDomain, tx?: Tx | null): { tag: string; text: string } | null {
   const own = stemElement[dayStem(chart)];
   if (domain === "love") {
     const branch = dayBranch(chart);
     const seat = seatOf(chart);
     const easy = seat === "same" || seat === "supports" || seat === "spends";
+    if (tx)
+      return {
+        tag: tx.f("loveTag", { branch: branchHanja[branch] }),
+        text: tx.join([
+          tx.f("loveLine", { branch: branchHanja[branch], element: tx.t.element(branchElement[branch]) }),
+          tx.f(easy ? "loveEasy" : "loveHard"),
+        ]),
+      };
     return {
       tag: `일지 ${branch}`,
       text: `연애 자리인 일지가 ${branch}(${elementName[branchElement[branch]]})예요. ${
@@ -305,6 +399,11 @@ function natalLine(chart: Chart, domain: DepthDomain): { tag: string; text: stri
   if (domain === "health") {
     const line = countsLine(chart);
     const top = line.most[0];
+    if (tx)
+      return {
+        tag: tx.f("groupCount", { name: tx.t.element(top), n: counts[top] }),
+        text: tx.join([tx.f("healthLine", { element: tx.t.element(top), n: counts[top] }), tx.p.element[top].rest]),
+      };
     return {
       tag: `${elementName[top]} ${counts[top]}개`,
       text: `사주에 ${subject[top]} ${counts[top]}개로 가장 많아요. ${restTip[top]}`,
@@ -315,6 +414,13 @@ function natalLine(chart: Chart, domain: DepthDomain): { tag: string; text: stri
   const count = counts[target] - (domain === "people" ? 1 : 0);
   const name = elementName[target];
   const bucket = count === 0 ? 0 : count <= 2 ? 1 : 2;
+  if (tx) {
+    const group = tx.t.group(tenGodGroups[{ people: 0, money: 2, work: 3 }[domain]]);
+    return {
+      tag: `${group} · ${tx.f("groupCount", { name: tx.t.element(target), n: count })}`,
+      text: fillNatal(tx.p.natal[domain][bucket], tx.t.element(target), count),
+    };
+  }
   const text = {
     money: [
       `사주에 재성(내가 다루는 기운, ${name})이 없어요. 들어온 돈을 붙잡는 습관을 따로 만들어야 해요.`,
@@ -340,20 +446,26 @@ function natalLine(chart: Chart, domain: DepthDomain): { tag: string; text: stri
  * 영역별 풀이(연애·일·돈·관계·건강). 첫 풀이와 올해는 세운, 이달은 월운의 십신으로 읽고,
  * 사주표에서 그 영역을 보는 자리의 개수를 더한다. 영역마다 2~4문장.
  */
-export function sajuDomains(chart: Chart, at: number, view: DepthView): DomainDetail[] {
+const fillNatal = (template: string, name: string, count: number) =>
+  template.replaceAll("{name}", name).replaceAll("{count}", String(count));
+
+export function sajuDomains(chart: Chart, at: number, view: DepthView, tx?: Tx | null): DomainDetail[] {
   const stem = dayStem(chart);
   const monthly = view === "month";
   const god = tenGod(stem, monthly ? monthSpanAt(at).pillar.heavenlyStem : seasonAt(at).yearPillar.heavenlyStem);
   const [people, work, money, love] = godNotes[god].rate;
   const level: Record<DepthDomain, DomainDetail["level"]> = { love, work, money, people, health: healthLevel[god] };
   return depthDomains.map((key) => {
-    const natal = natalLine(chart, key);
-    const lead = `${monthly ? "월운" : "세운"} ${god}`;
+    const natal = natalLine(chart, key, tx);
+    const lead = tx ? `${tx.f(monthly ? "monthLuckTerm" : "yearLuckTerm")} ${tx.t.god(god)}` : `${monthly ? "월운" : "세운"} ${god}`;
     return {
       key,
       level: level[key],
+      levelName: tx ? tx.p.level[level[key]] : level[key],
       basis: natal ? `${lead} · ${natal.tag}` : lead,
-      sentences: [godDomain[god][key], ...(natal ? [natal.text] : []), action[key][level[key]]],
+      sentences: tx
+        ? [tx.p.god[god][key], ...(natal ? [natal.text] : []), tx.p.action[key][level[key]]]
+        : [godDomain[god][key], ...(natal ? [natal.text] : []), action[key][level[key]]],
     };
   });
 }
