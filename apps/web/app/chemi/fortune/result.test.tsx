@@ -84,7 +84,7 @@ it("copies the public share URL and records completion only after a successful c
   // 분야 점수는 한 판에 6줄이고, 요약은 가장 높은 분야(덕질 88)와 가장 낮은 분야(애정 75)에만 달린다.
   const rows = [...document.querySelectorAll("ul > li > [data-fan-collapsible] > button")];
   expect(rows.map((row) => row.textContent)).toEqual([
-    "덕질88혼자 깊게 팔수록 재밌는 날이야. 지난 무대 영상 정주행 가자.",
+    "덕질88혼자 깊게 팔수록 재밌는 날이야. 지난 무대 직캠 정주행 가자.",
     "사람81",
     "일·학업80",
     "건강·쉼83",

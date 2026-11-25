@@ -1,5 +1,6 @@
 "use client";
 
+import { matchTitle } from "../titles";
 import { SpentPoints } from "@/features/chemi/games/spent-points";
 import { VacantRank } from "@/features/chemi/games/vacant-rank";
 
@@ -1239,7 +1240,7 @@ function Session({
                 </div>
               )}
               {result?.titleStage && <div className={styles.detail}>
-                <b>{copy.round} {result.titleStage}</b>
+                <b>{matchTitle(locale, result.titleStage) ?? `${copy.round} ${result.titleStage}`}</b>
                 <FanAction disabled={working || equipped} onClick={() => void action(async () => {
                   await call({action: "equip", stage: result.titleStage});
                   setEquipped(true);

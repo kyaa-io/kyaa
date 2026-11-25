@@ -1,5 +1,6 @@
 "use client";
 
+import { runTitle } from "../titles";
 import { runDateLabel } from "@/features/chemi/i18n/calendar-label";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -94,7 +95,7 @@ export function ResultStage({ character, copy, locale, names, rows, loaded, stat
         </div>}
         {result.title ? <div>
           <FanText as="dt" role="meta">{copy.newTitle}</FanText>
-          <dd><FanText role="label" className={styles.badge}>{fill(copy.titleName, { n: number.format(result.title) })}</FanText></dd>
+          <dd><FanText role="label" className={styles.badge}>{runTitle(locale, result.title) ?? fill(copy.titleName, { n: number.format(result.title) })}</FanText></dd>
         </div> : null}
         <div className={styles.care}>
           <dt><img src={`${ART}/face-${character}-v1.png`} alt="" /></dt>
