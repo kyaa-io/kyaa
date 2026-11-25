@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 type Props = { searchParams: Promise<{ locale?: string | string[]; preview?: string | string[]; invite?: string | string[] }> };
 export async function generateMetadata({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
-  return { title: signupRaffleText(locale, 'title'), description: `US$400 · ${signupRaffleText(locale, 'winners')} · ${signupRaffleText(locale, 'deadline')}` };
+  return { openGraph: { images: [{ url: '/images/raffle/share.png', width: 1200, height: 630 }] }, twitter: { card: 'summary_large_image' as const, images: ['/images/raffle/share.png'] }, title: signupRaffleText(locale, 'title'), description: `US$400 · ${signupRaffleText(locale, 'winners')} · ${signupRaffleText(locale, 'deadline')}` };
 }
 const previews = ['in', 'entered', 'passport', 'done', 'error', 'won', 'lost'] as const;
 export default async function RafflePage({ searchParams }: Props) {
