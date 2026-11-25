@@ -150,7 +150,8 @@
     "release-notes/2026-11-25-chemi-run-retry.json",
     "release-notes/2026-11-25-chemi-saju-languages.json",
     "release-notes/2026-11-25-chemi-art-likeness.json",
-    "release-notes/2026-11-25-chemi-fortune-back.json"
+    "release-notes/2026-11-25-chemi-fortune-back.json",
+    "release-notes/2026-11-25-chemi-guide-languages.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

@@ -1,4 +1,10 @@
 {
+  "guide": {
+    "points": "How to use points",
+    "dates": "In Daily fortune, choose another date and spend 10P to read its fortune. Activity points are used first. You can reopen readings you’ve already unlocked. Game limits reset at midnight Korea time.",
+    "growth": "Raise your Mini Bias",
+    "growthDetail": "Sign in and finish a reading or game to earn bond EXP for the bias you chose. You can earn it once a day per activity and bias. Each kind of reading awards EXP to up to three biases per day."
+  },
   "menu": {
     "home": "HOME",
     "my": "MY"
