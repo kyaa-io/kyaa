@@ -14,21 +14,18 @@ type Props = { searchParams: Promise<{ locale?: string | string[] }> };
 const copy = {
   ko: {
     title: "케미 탭 안내",
-    intro: "케미는 최애와 운세를 보고 미니게임을 하면서 미니 최애를 키우는 탭이에요.",
     beta: "베타 운영 중",
     album: "케미의 성장 탭에서 미니 최애의 방과 친밀 레벨을 볼 수 있어요. 미니 최애는 방구석 연습생에서 시작해 24단계를 올라요. 데뷔조, 방구석 스타가 되는 날 기념 앨범이 열려요.",
     start: "케미 시작하기",
   },
   mn: {
     title: "Кэмигийн гарын авлага",
-    intro: "Кэмид хайртай одтойгоо зурхай үзэж, бяцхан тоглоом тоглон мини одоо өсгөөрэй.",
     beta: "Туршилтын хувилбар",
     album: "Өсөлт хэсгээс мини одныхоо өрөө болон дотно байдлын түвшнийг хараарай. Мини од гэртээ бэлтгэл хийж эхлээд 24 шатаар ахина. Дебют хийх багт орох болон гэрийн од болох үед дурсгалын цомогт зураг нэмэгдэнэ.",
     start: "Кэмиг эхлүүлэх",
   },
   en: {
     title: "Chemi guide",
-    intro: "Read fortunes and play mini-games with your bias to raise your Mini Bias in Chemi.",
     beta: "In beta",
     album: "Open Growth in Chemi to see your Mini Bias’s room and bond level. Your Mini Bias starts as a bedroom trainee and climbs 24 stages. Album photos unlock along the way.",
     start: "Start Chemi",
@@ -61,7 +58,8 @@ const art = {
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const locale = parseAppLocale((await searchParams).locale);
   const t = copy[locale === "ko" || locale === "mn" ? locale : "en"];
-  return publicMetadata({ path: "/guide/chemi", locale, title: `${t.title} | kyaa`, description: t.intro });
+  const { guide } = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
+  return publicMetadata({ path: "/guide/chemi", locale, title: `${t.title} | kyaa`, description: guide.intro });
 }
 
 export default async function ChemiGuidePage({ searchParams }: Props) {
@@ -75,7 +73,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
         <div className={styles.copy}>
           <FanText role="meta">{t.beta}</FanText>
           <FanHeading as="h1">{t.title}</FanHeading>
-          <FanText role="body">{t.intro}</FanText>
+          <FanText role="body">{guide.intro}</FanText>
         </div>
         <Image unoptimized className={styles.hero} src="/chemi/chemi-promo-trio.webp" width={1774} height={887} priority alt="" />
       </header>
