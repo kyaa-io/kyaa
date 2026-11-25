@@ -46,3 +46,15 @@ describe("gallery automatic loading", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });
+
+describe("official source mark", () => {
+  it("names official photos kyaa official with a 16px corner mark and leaves fan photos unmarked", () => {
+    const fan: HomeGalleryPhoto = { ...first[0]!, id: "fan-1", source: "fan_post" };
+    render(<HomeGalleryList locale="ko" firstPage={[first[0]!, fan]} firstCursor={null} />);
+    const mobile = document.querySelector('[data-gallery-layout="mobile"]')!;
+    const marks = mobile.querySelectorAll("[data-official-badge]");
+    expect(marks).toHaveLength(1);
+    expect(marks[0]!.textContent).toBe("kyaa official");
+    expect(marks[0]!.closest("li")!.textContent).toContain(first[0]!.creator!.name);
+  });
+});
