@@ -147,7 +147,6 @@ const businessCopy = {
     refund: "환불 정책",
     refundAria: "환불 정책 열기",
     mailOrderNumber: "통신판매업 신고번호",
-    mailOrderPending: "신고 준비 중",
     phone: "대표전화",
     email: "이메일",
     hosting: "호스팅 서비스 제공자",
@@ -162,7 +161,6 @@ const businessCopy = {
     refund: "Refund Policy",
     refundAria: "Open Refund Policy",
     mailOrderNumber: "Mail-order business report no.",
-    mailOrderPending: "Filing in progress",
     phone: "Phone",
     email: "Email",
     hosting: "Hosting provider",
@@ -227,7 +225,7 @@ function FanFooterBusinessInfo({ locale }: { locale: FanLocale }) {
         </div>
       </div>
       <dl className={styles.companyMore}>
-        <div><dt>{b.mailOrderNumber}</dt><dd>{info.mailOrderNumber ?? b.mailOrderPending}</dd></div>
+        <div><dt>{b.mailOrderNumber}</dt><dd>{info.mailOrderNumber}</dd></div>
         <div><dt>{b.phone}</dt><dd>{info.phone}</dd></div>
         <div><dt>{b.email}</dt><dd>{info.email}</dd></div>
         <div><dt>{b.hosting}</dt><dd lang="en">{info.hostingProvider}</dd></div>
