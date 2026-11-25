@@ -6,6 +6,8 @@ import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import type { HomeCopy } from "./home";
 import styles from "./home.module.css";
 
+import { extraGameUnit } from "@/features/chemi/ui/extra-play-copy";
+
 type Lobby = { freeRemaining: number; extraCost: number };
 
 export function GameStatusChip({ game, copy }: { game: "pair" | "run"; copy: HomeCopy }) {
@@ -34,6 +36,6 @@ export function GameStatusChip({ game, copy }: { game: "pair" | "run"; copy: Hom
   if (!authenticated || !result || result.owner !== owner) return null;
   const { freeRemaining, extraCost } = result.lobby;
   const label = freeRemaining > 0 ? copy.playsLeft.replace("{n}", String(freeRemaining))
-    : extraCost > 0 ? copy.extraCost.replace("{n}", String(extraCost)) : copy.playsDone;
+    : extraCost > 0 ? copy.extraCost.replace("{n}M", `${extraCost}${extraGameUnit(extraCost)}`) : copy.playsDone;
   return <FanText role="label" className={styles.statusChip} title={label}>{label}</FanText>;
 }

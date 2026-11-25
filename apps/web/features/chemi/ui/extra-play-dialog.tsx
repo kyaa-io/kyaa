@@ -8,7 +8,7 @@ import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Play } from "@/components/fan-ui/fan-icons";
 import type { AppLocale } from "@/i18n/locales";
-import { fillCount, getExtraPlayCopy } from "./extra-play-copy";
+import { extraGameUnit, fillCount, getExtraPlayCopy } from "./extra-play-copy";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import styles from "./extra-play-dialog.module.css";
 
@@ -31,9 +31,10 @@ const DAILY_EXTRA = 3;
 
 /** 추가 판 확인(짝 맞추기·최애 런·질문하기 공통). 남은 추가 판 칸 3개 중 이번에 쓸 칸을 한 번 비우고, 포인트는 쓴 뒤 값으로 한 번 굴린다. */
 export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, points, cost, extraRemaining: extra, art, labels }: ExtraPlayDialogProps) {
+  const unit = labels ? "M" : extraGameUnit(cost);
   const limited = extra !== undefined;
   const remaining = extra ?? 0;
-  const base = getExtraPlayCopy(locale, cost);
+  const base = getExtraPlayCopy(locale, cost, unit);
   const copy = labels ? { ...base, title: labels.title, left: labels.extra, confirm: labels.pay } : base;
   const number = new Intl.NumberFormat(locale);
   const after = points == null ? null : Math.max(0, points - cost);
@@ -63,10 +64,10 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
             <FanText as="dt" role="meta">{copy.points}</FanText>
             {/* 모자라면 빠질 것처럼 보이는 전후 값 대신 지금 값만 둔다(DF-GAME-007). */}
             <dd>{short
-              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}P</span>
+              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}{unit}</span>
               : <>
-                <FanText role="meta" className={styles.before}>{number.format(points)}P</FanText>
-                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}P`} duration={600} /></span>
+                <FanText role="meta" className={styles.before}>{number.format(points)}{unit}</FanText>
+                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}${unit}`} duration={600} /></span>
               </>}
             </dd>
           </div>

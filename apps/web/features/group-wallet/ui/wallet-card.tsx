@@ -7,7 +7,6 @@ import type { ReactNode } from "react";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
-import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
 import { POINT_COIN_SRC } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
 import { ticketSingular, walletCopy, walletHelpCopy } from "./copy";
@@ -49,11 +48,11 @@ export type WalletCardState =
 
 /** MY 내 지갑 (B13): points, tickets and hearts as three numbers in one fixed-height card; the whole card is one link (signed in: the 덕질 wallet, signed out: login).
  *  No exchange here: exchanging starts only in the 덕질 wallet card. Loading, signed-out, zero and failed balances keep the same 132px. */
-export function WalletCard({ locale, state, hearts, title, href, className }: { locale: AppLocale; state: WalletCardState; hearts: Slot; title: string; href: string; className?: string }) {
+export function WalletCard({ locale, state, title, href, className }: { locale: AppLocale; state: WalletCardState; hearts: Slot; title: string; href: string; className?: string }) {
   const w = walletCopy(locale);
   const points: Slot = state.kind === "ready" ? state.points : state.kind === "guest" ? "locked" : state.kind === "loading" ? "loading" : "missing";
   const tickets: Slot = state.kind === "ready" ? state.tickets : points;
-  const cells: [string, Slot, string | undefined][] = [[w.points, points, "P"], [w.tickets, tickets, locale === "ko" ? "장" : undefined], [dukjilText(locale, "stanFlowHearts"), state.kind === "ready" ? hearts : points, undefined]];
+  const cells: [string, Slot, string | undefined][] = [[w.points, points, "P"], [w.tickets, tickets, locale === "ko" ? "장" : undefined]];
   return <Link href={href as Route} className={[styles.my, className].filter(Boolean).join(" ")} data-wallet-card="my" aria-label={title}>
     <span className={styles.myHead}><FanHeading as="h2">{title}</FanHeading><span aria-hidden="true">›</span></span>
     <dl className={styles.myBalances}>{cells.map(([label, slot, unit]) => <div key={label} className={styles.myCell}><dt className={styles.label}>{label}</dt><Value locale={locale} slot={slot} unit={unit} compact className={styles.myValue} /></div>)}</dl>
