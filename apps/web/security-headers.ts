@@ -58,7 +58,7 @@ export const gleamWidgetPaths: ReadonlySet<string> = new Set(["/follow"]);
 
 
 export function withShortsPlayer(policy: string): string {
-  return policy.replace("script-src ", "script-src https://www.youtube.com/iframe_api https://www.youtube.com/s/player/ ");
+  return policy.replace("frame-src ", "frame-src https://www.instagram.com ").replace("script-src ", "script-src https://www.youtube.com/iframe_api https://www.youtube.com/s/player/ ");
 }
 
 export function withGleamWidget(policy: string): string {

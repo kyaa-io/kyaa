@@ -6,11 +6,17 @@ import type { AppLocale } from "@/i18n/locales";
 import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { CreatorGroupLink, navigation, shortCover } from "./home-shorts";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
+import { messages as instagramMessages } from "@/i18n/catalogs/components__instagram-recent-activity";
+import { translate } from "@/i18n/messages";
 import { ShortsPlayer } from "./shorts-player";
 import { ShortsEngagement } from "./shorts-engagement";
 import styles from "./home-shorts.module.css";
 
 type CaptionNode = { type: string; text?: string; content?: CaptionNode[] };
+
+function instagramSourceLabel(locale: AppLocale) {
+  return locale === "ko" ? "Instagram에서 보기, 새 창" : translate(locale, instagramMessages.mcacf27040a99, "View on Instagram, new window");
+}
 
 function ExpandedCaption({ item, locale }: { item: HomeShort; locale: AppLocale }) {
   const [text, setText] = useState(item.title);
@@ -66,13 +72,15 @@ export function ShortsFeed({ items, locale, initialVideo, onClose }: {
       }
     }}>
       {items.map((item, index) => <article data-outbound-placement="shorts-player" key={item.id} className={styles.slide}>
-        {index === active && item.platform !== "instagram" ? <ShortsPlayer item={item} locale={locale} onLike={() => like.current?.()} immersive /> :
+        {index === active ? (item.platform === "instagram"
+          ? <iframe className={styles.instagramPlayer} src={`https://www.instagram.com/p/${item.videoId}/embed/`} title={item.title} allow="autoplay; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" />
+          : <ShortsPlayer item={item} locale={locale} onLike={() => like.current?.()} immersive />) :
           Math.abs(index - active) <= 1 && (item.thumbnail || shortCover(item)) && <img src={item.thumbnail ?? shortCover(item) ?? undefined} alt="" />}
         {index === active && <>
           <div className={styles.feedCaption}><CreatorGroupLink item={item} locale={locale} className={styles.viewerCreatorLink} />
             <FanAction variant="text" type="button" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? fanUiText(locale, "close") : item.title}</FanAction>
             {expanded && <ExpandedCaption item={item} locale={locale} />}
-            <a href={item.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{item.platform === "instagram" ? "Instagram" : item.platform === "tiktok" ? "TikTok" : "YouTube"} ↗</a>
+            <a href={item.href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{item.platform === "instagram" ? instagramSourceLabel(locale) : item.platform === "tiktok" ? "TikTok" : "YouTube"} ↗</a>
           </div>
           <div className={styles.feedRail}><ShortsEngagement likeRef={like} videoId={item.videoId} locale={locale} offset={0} /></div>
         </>}
