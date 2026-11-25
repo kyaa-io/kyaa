@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "짝 맞추기 후반에는 카메라, 우산, 돛단배처럼 모양이 다른 소품 사진이 나와요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/games/match",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-match-objects.png"
+  ]
+}
