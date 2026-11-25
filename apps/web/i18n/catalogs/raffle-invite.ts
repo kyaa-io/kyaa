@@ -8,7 +8,8 @@ export const raffleInviteText = {
     "share": "공유",
     "welcome": "친구가 초대했어요. 가입하고 응모하면 친구도 당첨 기회 +3!",
     "stats": "초대로 가입·응모한 친구 {n}명 · 받은 당첨 기회 +{c}회",
-    "message": "Visa 기프트카드 래플에 응모하세요! 12월 13일 마감"
+    "message": "Visa 기프트카드 래플에 응모하세요! 12월 13일 마감",
+    "copied": "링크를 복사했어요"
   },
   "en": {
     "title": "Invite friends · +3 chances",
@@ -17,7 +18,8 @@ export const raffleInviteText = {
     "share": "Share",
     "welcome": "A friend invited you! Sign up and enter to give them 3 extra chances.",
     "stats": "Friends who signed up and entered: {n} · Chances earned: +{c}",
-    "message": "Enter the Visa gift card raffle by December 13!"
+    "message": "Enter the Visa gift card raffle by December 13!",
+    "copied": "Link copied"
   },
   "ja": {
     "title": "友達を招待 · 当選チャンス +3",
@@ -26,7 +28,8 @@ export const raffleInviteText = {
     "share": "共有",
     "welcome": "友達からの招待です。登録して応募すると友達に当選チャンスが3回追加されます。",
     "stats": "登録・応募した友達 {n}人 · 獲得したチャンス +{c}回",
-    "message": "Visaギフトカード抽選は12月13日まで！"
+    "message": "Visaギフトカード抽選は12月13日まで！",
+    "copied": "コピーしました"
   },
   "zh-Hans": {
     "title": "邀请好友 · 抽奖机会 +3",
@@ -35,7 +38,8 @@ export const raffleInviteText = {
     "share": "分享",
     "welcome": "好友邀请了你！注册并报名即可为好友增加3次抽奖机会。",
     "stats": "已注册并报名的好友 {n} 人 · 已获抽奖机会 +{c} 次",
-    "message": "参加 Visa 礼品卡抽奖，12月13日截止！"
+    "message": "参加 Visa 礼品卡抽奖，12月13日截止！",
+    "copied": "链接已复制"
   },
   "zh-Hant": {
     "title": "邀請好友 · 抽獎機會 +3",
@@ -44,7 +48,8 @@ export const raffleInviteText = {
     "share": "分享",
     "welcome": "好友邀請了你！註冊並報名即可為好友增加3次抽獎機會。",
     "stats": "已註冊並報名的好友 {n} 人 · 已獲抽獎機會 +{c} 次",
-    "message": "參加 Visa 禮物卡抽獎，12月13日截止！"
+    "message": "參加 Visa 禮物卡抽獎，12月13日截止！",
+    "copied": "已複製連結"
   },
   "es": {
     "title": "Invita a tus amigos · +3 oportunidades",
@@ -53,7 +58,8 @@ export const raffleInviteText = {
     "share": "Compartir",
     "welcome": "¡Te ha invitado un amigo! Regístrate y participa para darle 3 oportunidades más.",
     "stats": "Amigos registrados que participaron: {n} · Oportunidades ganadas: +{c}",
-    "message": "¡Participa en el sorteo de tarjetas regalo Visa hasta el 13 de diciembre!"
+    "message": "¡Participa en el sorteo de tarjetas regalo Visa hasta el 13 de diciembre!",
+    "copied": "Enlace copiado"
   },
   "id": {
     "title": "Undang teman · +3 peluang",
@@ -62,7 +68,8 @@ export const raffleInviteText = {
     "share": "Bagikan",
     "welcome": "Temanmu mengundangmu! Daftar dan ikut undian agar temanmu mendapat 3 peluang tambahan.",
     "stats": "Teman yang mendaftar dan ikut: {n} · Peluang diperoleh: +{c}",
-    "message": "Ikuti undian kartu hadiah Visa hingga 13 Desember!"
+    "message": "Ikuti undian kartu hadiah Visa hingga 13 Desember!",
+    "copied": "Tautan disalin"
   },
   "vi": {
     "title": "Mời bạn bè · +3 cơ hội",
@@ -71,7 +78,8 @@ export const raffleInviteText = {
     "share": "Chia sẻ",
     "welcome": "Bạn được một người bạn mời! Đăng ký và tham gia để người ấy nhận thêm 3 cơ hội.",
     "stats": "Bạn đã đăng ký và tham gia: {n} · Cơ hội đã nhận: +{c}",
-    "message": "Tham gia bốc thăm thẻ quà tặng Visa đến hết ngày 13 tháng 12!"
+    "message": "Tham gia bốc thăm thẻ quà tặng Visa đến hết ngày 13 tháng 12!",
+    "copied": "Đã sao chép liên kết"
   },
   "th": {
     "title": "ชวนเพื่อน · รับเพิ่ม 3 สิทธิ์",
@@ -80,7 +88,8 @@ export const raffleInviteText = {
     "share": "แชร์",
     "welcome": "เพื่อนชวนคุณมา! สมัครและเข้าร่วมเพื่อให้เพื่อนได้เพิ่ม 3 สิทธิ์",
     "stats": "เพื่อนที่สมัครและเข้าร่วม {n} คน · ได้รับเพิ่ม {c} สิทธิ์",
-    "message": "ร่วมลุ้นบัตรของขวัญ Visa ภายใน 13 ธันวาคม!"
+    "message": "ร่วมลุ้นบัตรของขวัญ Visa ภายใน 13 ธันวาคม!",
+    "copied": "คัดลอกลิงก์แล้ว"
   },
   "pt": {
     "title": "Convide amigos · +3 chances",
@@ -89,7 +98,8 @@ export const raffleInviteText = {
     "share": "Compartilhar",
     "welcome": "Um amigo convidou você! Cadastre-se e participe para dar a ele mais 3 chances.",
     "stats": "Amigos que se cadastraram e participaram: {n} · Chances recebidas: +{c}",
-    "message": "Participe do sorteio de cartões-presente Visa até 13 de dezembro!"
+    "message": "Participe do sorteio de cartões-presente Visa até 13 de dezembro!",
+    "copied": "Link copiado"
   },
   "fr": {
     "title": "Invitez vos amis · +3 chances",
@@ -98,7 +108,8 @@ export const raffleInviteText = {
     "share": "Partager",
     "welcome": "Un ami vous invite ! Inscrivez-vous et participez pour lui offrir 3 chances de plus.",
     "stats": "Amis inscrits ayant participé : {n} · Chances obtenues : +{c}",
-    "message": "Participez au tirage de cartes cadeaux Visa jusqu’au 13 décembre !"
+    "message": "Participez au tirage de cartes cadeaux Visa jusqu’au 13 décembre !",
+    "copied": "Lien copié"
   },
   "ru": {
     "title": "Пригласите друзей · +3 шанса",
@@ -107,7 +118,8 @@ export const raffleInviteText = {
     "share": "Поделиться",
     "welcome": "Вас пригласил друг! Зарегистрируйтесь и примите участие, чтобы дать ему ещё 3 шанса.",
     "stats": "Друзей зарегистрировалось и приняло участие: {n} · Получено шансов: +{c}",
-    "message": "Участвуйте в розыгрыше подарочных карт Visa до 13 декабря включительно!"
+    "message": "Участвуйте в розыгрыше подарочных карт Visa до 13 декабря включительно!",
+    "copied": "Ссылка скопирована"
   },
   "mn": {
     "title": "Найзаа урих · +3 боломж",
@@ -116,6 +128,7 @@ export const raffleInviteText = {
     "share": "Хуваалцах",
     "welcome": "Найз тань таныг урьжээ! Бүртгүүлж сугалаанд оролцвол найз тань 3 нэмэлт боломж авна.",
     "stats": "Бүртгүүлж оролцсон найз: {n} · Авсан боломж: +{c}",
-    "message": "12-р сарын 13-ныг дуустал Visa бэлгийн картын сугалаанд оролцоорой!"
+    "message": "12-р сарын 13-ныг дуустал Visa бэлгийн картын сугалаанд оролцоорой!",
+    "copied": "Холбоосыг хууллаа"
   }
-} satisfies Record<AppLocale, Record<"title" | "rule" | "copy" | "share" | "welcome" | "stats" | "message", string>>;
+} satisfies Record<AppLocale, Record<"title" | "rule" | "copy" | "share" | "welcome" | "stats" | "message" | "copied", string>>;

@@ -110,7 +110,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
         if (live && wants) setError(true);
       }
       if (live) setPending(false);
-      try { const mine = await communityStampAction(getAccessToken, 'invite-code', {}, value => communityInviteSchema.parse(value)); if (live) setInviteCode(raffleInviteCode(mine.code)); } catch { /* 코드가 없으면 일반 주소를 공유한다 */ }
+      try { const mine = await communityStampAction(getAccessToken, 'invite-code', {}, value => communityInviteSchema.parse(value)); if (live) setInviteCode(raffleInviteCode(mine.code)); } catch { /* 초대 버튼을 누르면 코드를 다시 요청한다. */ }
     })();
     return () => { live = false; };
   }, [p, closed, auth.ready, auth.authenticated, request, apply, getAccessToken]);
@@ -259,7 +259,7 @@ export function RaffleBoostAction({ kind }: { kind: 'comment' | 'attend' | 'invi
   const share = useRaffleShare();
   if (r.closed) return null;
   // 내 초대 링크는 로그인해야 생긴다: 비로그인은 로그인으로 보낸다(코드 없는 주소를 '초대 링크'라고 공유하지 않는다)
-  if (kind === 'invite') return <FanAction type="button" variant="neutral" size="sm" disabled={r.signedIn && !r.inviteCode} onClick={() => share.share()}>{share.copied ? r.t('copied') : r.t('inviteCta')}</FanAction>;
+  if (kind === 'invite') return <FanAction type="button" variant="neutral" size="sm" disabled={!r.ready} onClick={() => share.share()}>{share.failed ? r.t('retry') : share.copied ? raffleInviteText[r.locale].copied : r.t('inviteCta')}</FanAction>;
   return kind === 'attend'
     ? <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{r.t('checkIn')}</FanAction>
     : <FanAction href={`/?locale=${r.locale}`} variant="neutral" size="sm">{r.t('findPosts')}</FanAction>;
@@ -313,32 +313,40 @@ export function RaffleStickyCta() {
   </div>;
 }
 
-/** 공유: 로그인한 회원은 내 초대 코드가 붙은 주소(친구가 이 주소로 가입·응모하면 내 당첨 기회 +3), 아니면 일반 주소. 공유 시트가 없으면 주소를 복사한다. */
+/** 개인 초대 링크만 전달한다. 공유 시트가 없는 브라우저는 주소를 복사한다. */
 function useRaffleShare() {
   const r = useRaffle();
+  const { getAccessToken } = useByUsAuth();
   const [copied, setCopied] = useState(false);
+  const [failed, setFailed] = useState(false);
   async function share(copyOnly = false) {
     if (!r.signedIn) { r.login(); return; }
-    if (!r.inviteCode) return;
-    const url = `${location.origin}${raffleShareHref(r.inviteCode)}`;
+    setCopied(false);
+    setFailed(false);
     try {
+      const code = r.inviteCode ?? raffleInviteCode((await communityStampAction(getAccessToken, 'invite-code', {}, value => communityInviteSchema.parse(value))).code);
+      if (!code) throw new Error('invite code unavailable');
+      const url = `${location.origin}${raffleShareHref(code)}`;
       if (!copyOnly && navigator.share) { await navigator.share({ title: r.s('title'), text: raffleInviteText[r.locale].message, url }); return; }
       await navigator.clipboard.writeText(url); setCopied(true);
-    } catch { /* 공유 취소 */ }
+    } catch (error) {
+      if (!(error instanceof Error && error.name === 'AbortError')) setFailed(true);
+    }
   }
-  return { share, copied };
+  return { share, copied, failed };
 }
 
 export function RaffleShare() {
   const r = useRaffle();
-  const { share, copied } = useRaffleShare();
+  const { share, copied, failed } = useRaffleShare();
   const text = raffleInviteText[r.locale];
-  const disabled = !r.ready || (r.signedIn && !r.inviteCode);
+  const disabled = !r.ready;
   return <>
     <FanDisplay role="strong">{text.title}</FanDisplay>
     <FanDisplay role="caption">{text.rule}</FanDisplay>
     <FanAction type="button" variant="secondary" disabled={disabled} onClick={() => share(true)}>{text.copy}</FanAction>
     <FanAction type="button" variant="neutral" disabled={disabled} leadingIcon={<FanIcon icon={Share2} />} onClick={() => share()}>{text.share}</FanAction>
-    {copied && <span role="status">{r.t('copied')}</span>}
+    {failed && <span role="alert">{r.s('error')}</span>}
+    {copied && <span role="status">{text.copied}</span>}
   </>;
 }
