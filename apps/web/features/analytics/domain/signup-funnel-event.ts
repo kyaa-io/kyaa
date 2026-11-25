@@ -8,7 +8,7 @@ export const SIGNUP_SERVER_EVENT_NAMES = ["account_created", "profile_completed"
 export type SignupClientEventName = (typeof SIGNUP_CLIENT_EVENT_NAMES)[number];
 
 export const signupContextSchema = z.object({
-  channel: z.enum(["direct", "search", "social", "email", "paid", "referral", "internal", "unknown"]),
+  channel: z.enum(["community", "kol", "direct", "search", "social", "email", "paid", "referral", "internal", "unknown"]),
   landing: z.enum(["home", "creator_directory", "creator", "live_directory", "live", "benefit", "fan_guide", "unknown"]),
   guide: z.enum(["elina", "ifew", "none"]),
   browser: z.enum(["instagram", "threads", "facebook", "line", "x", "tiktok", "telegram", "webview", "kakao", "safari", "chrome", "other"]),

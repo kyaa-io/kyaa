@@ -22,6 +22,7 @@ const number = (value: number, locale: AdminLocale) =>
   new Intl.NumberFormat(locale).format(value);
 
 const channelLabels = {
+  community: { ko: "커뮤니티", en: "Community" }, kol: { ko: "KOL", en: "KOL" },
   direct: { ko: "직접 방문", en: "Direct" }, search: { ko: "검색", en: "Search" },
   social: { ko: "소셜", en: "Social" }, email: { ko: "이메일", en: "Email" },
   paid: { ko: "광고", en: "Paid" }, referral: { ko: "외부 사이트", en: "Referral" },
