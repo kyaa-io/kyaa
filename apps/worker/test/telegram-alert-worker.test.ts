@@ -143,6 +143,7 @@ describe("renderTelegramAlertMessage", () => {
       "• 신규 회원 가입",
       "  제이",
       "  jay@example.com",
+      "  유입: 직접 방문",
       "• 이퓨 팬 가입",
       "  닉네임 미설정",
       "  이메일 미등록",
@@ -483,8 +484,8 @@ describe("TelegramAlertWorker", () => {
       try {
         await expect(new TelegramAlertWorker(new SupabaseTelegramAlertQueue({ rpc }), sender, chat).runOnce()).resolves.toBe(2);
         expect(rpc.mock.calls.map((call) => call[0])).toEqual([
-          "claim_telegram_alert_batch_with_cs_content", "reject_telegram_alert_rows",
-          "begin_telegram_alert_send", "finish_telegram_alert_batch", "claim_telegram_alert_batch_with_cs_content",
+          "claim_telegram_alert_batch_with_signup_source", "reject_telegram_alert_rows",
+          "begin_telegram_alert_send", "finish_telegram_alert_batch", "claim_telegram_alert_batch_with_signup_source",
         ]);
         expect(rpc.mock.calls[1]![1]).toEqual({ p_batch_id: id, p_chat_id: chat, p_positions: [1] });
         expect(rpc.mock.calls[3]![1]).toMatchObject({ p_outcome: "sent" });
@@ -611,7 +612,7 @@ describe("SupabaseTelegramAlertQueue", () => {
     await expect(q.begin(claimed!.batchId, "-1001234567890")).resolves.toBe(true);
     await q.finish(claimed!.batchId, "sent", 321n, null);
     expect(rpc.mock.calls).toEqual([
-      ["claim_telegram_alert_batch_with_cs_content", { p_chat_id: "-1001234567890" }],
+      ["claim_telegram_alert_batch_with_signup_source", { p_chat_id: "-1001234567890" }],
       ["begin_telegram_alert_send", { p_batch_id: claimed!.batchId, p_chat_id: "-1001234567890" }],
       ["finish_telegram_alert_batch", { p_batch_id: claimed!.batchId, p_outcome: "sent", p_provider_message_id: 321, p_retry_after: null }],
     ]);
@@ -636,7 +637,7 @@ describe("SupabaseTelegramAlertQueue", () => {
       "-1001234567890",
     );
     await expect(worker.runOnce()).resolves.toBe(0);
-    expect(rpc.mock.calls.map((call) => call[0])).toEqual(["claim_telegram_alert_batch_with_cs_content", "reject_telegram_alert_rows"]);
+    expect(rpc.mock.calls.map((call) => call[0])).toEqual(["claim_telegram_alert_batch_with_signup_source", "reject_telegram_alert_rows"]);
     expect(rpc.mock.calls[1]?.[1]).toMatchObject({ p_positions: [1] });
     expect(sender.sendText).not.toHaveBeenCalled();
     log.mockRestore();

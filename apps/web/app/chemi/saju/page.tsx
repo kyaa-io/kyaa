@@ -12,6 +12,7 @@ import { mergeMyBirthCopy } from "@/features/chemi/ui/frame/birth-copy";
 import { parseAppLocale } from "@/i18n/locales";
 import { SajuFlow } from "./flow";
 import { SajuShared } from "./shared";
+import { SajuTxProvider } from "./tx-context";
 
 export const dynamic = "force-dynamic";
 export default async function SajuPage({
@@ -24,6 +25,8 @@ export default async function SajuPage({
   const locale = parseAppLocale(params.locale);
   // 결과 주소를 새로 열면 저장된 결과를 불러오는 동안 입장 화면이 아니라 불러오는 모양을 보인다.
   const catalog = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
+  // 사주 풀이 문장 묶음은 고른 언어 것만 싣는다. 한국어는 코드의 문장을 그대로 쓴다.
+  const sajuPack = locale === "ko" ? null : (await import(`@/features/chemi/i18n/locales/${locale}/saju.json`)).default;
   const birthCopy = mergeMyBirthCopy(koCatalog.myBirth, catalog.myBirth);
   const restoring = Boolean(params.r) && Boolean(params.step && params.step !== "enter");
   return (
@@ -36,7 +39,9 @@ export default async function SajuPage({
           ) : needsCreatorChoice(params.c, restoring) ? (
             <ReadingCreatorPicker content="saju" locale={locale} />
           ) : (
-            <SajuFlow locale={locale} birthCopy={birthCopy} restoring={restoring} />
+            <SajuTxProvider locale={locale} pack={sajuPack}>
+              <SajuFlow locale={locale} birthCopy={birthCopy} restoring={restoring} />
+            </SajuTxProvider>
           )}
         </FanContentContainer>
       </ReadingCopyProvider>

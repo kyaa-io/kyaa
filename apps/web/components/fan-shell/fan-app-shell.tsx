@@ -1,4 +1,5 @@
 "use client";
+import { GOODS_MENU } from "@/features/groups/goods-menu";
 import { HeaderDmLink } from "@/features/group-social/header-dm-link";
 import { GiftTabDot } from "@/features/gifts/ui/gift-tab-dot";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
@@ -23,7 +24,7 @@ import { communityCopy } from "@/i18n/catalogs/features__community";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "next";
 import Link from "../fan-ui/hover-prefetch-link";
-import { Bell, BookOpen, Heart, Home, Sparkles, UsersRound } from "lucide-react";
+import { Gift, Bell, BookOpen, Heart, Home, Sparkles, UsersRound } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { PencilHeaderIcon } from "./pencil-header-icon";
@@ -104,9 +105,9 @@ function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled:
   // 전체 랭킹은 덕질 탭과 안내에서 들어온다.
   const rankings = pathname === '/rankings' || pathname.startsWith('/rankings/');
   if(groupsEnabled)return [
-    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:current==="home"&&!rankings},
+    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:(current==="home"&&!rankings)||(GOODS_MENU&&rankings)},
     {id:"community",href:`/pages/groups${query}` as Route,label:"모임",icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:"덕질",icon:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||rankings},
+    {id:"favorites",href:`/benefits${query}` as Route,label:GOODS_MENU?"굿즈":"덕질",icon:GOODS_MENU?<Gift aria-hidden="true"/>:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||(!GOODS_MENU&&rankings)},
     {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [

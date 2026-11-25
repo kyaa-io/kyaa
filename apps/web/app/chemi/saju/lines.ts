@@ -6,6 +6,7 @@
  * 풀이 값(일간 비유·강점·올해 이름)만 끼우고, 같은 입력이면 같은 줄이 나온다.
  */
 import type { Stem } from "./chart";
+import { fill, type Tx } from "./tx";
 
 export const sajuCharacters = [
   { id: "changha", name: "창하" },
@@ -177,11 +178,26 @@ const openings: Record<SajuCharacterId, Record<Stem, string>> = {
   },
 };
 
-/** 첫 풀이 제목 아래 한마디. 같은 일간이면 같은 행동, 최애마다 다른 말투. */
-export const sajuOpening = (id: SajuCharacterId, stem: Stem) => openings[id][stem];
+/**
+ * 첫 풀이 제목 아래 한마디. 같은 일간이면 같은 행동, 최애마다 다른 말투.
+ * 한국어 밖 언어는 "즐거운 것" 행동 문장을 최애별 말 거는 틀에 끼운다(창하는 일간별 문장이 있으면 그것).
+ */
+export const sajuOpening = (id: SajuCharacterId, stem: Stem, tx?: Tx | null) => {
+  if (!tx) return openings[id][stem];
+  const own = id === "changha" ? (tx.p as { changha?: Partial<Record<Stem, string>> }).changha?.[stem] : null;
+  return own || fill(tx.p.opening[id], { act: tx.p.stem[stem].joyAct });
+};
+
+/** 결과 화면의 최애 한마디(한국어 밖 언어). 일간 비유·강점·올해 이름만 끼운다. */
+export const sajuReactIntl = (tx: Tx, id: SajuCharacterId, stem: Stem, yearTitle: string) =>
+  fill(tx.p.react[id], { image: tx.p.stem[stem].image, strength: tx.p.stem[stem].strength, yearTitle });
 
 /** 풀이 대화 1~4. 1·2는 타고난 모습, 3은 올해, 4는 둘 사이. */
-export function sajuTalkLine(id: SajuCharacterId, talk: 1 | 2 | 3 | 4, input: SajuLineInput) {
+export function sajuTalkLine(id: SajuCharacterId, talk: 1 | 2 | 3 | 4, input: SajuLineInput, tx?: Tx | null, stem?: Stem) {
+  if (tx && stem) {
+    const mine = tx.p.stem[stem];
+    return tx.f(`talk${talk}`, { image: mine.image, strength: mine.strength, caution: mine.caution, yearTitle: input.yearTitle, bond: mine.bond });
+  }
   const tone = tones[id];
   return [tone.t1, tone.t2, tone.t3, tone.t4][talk - 1](input);
 }

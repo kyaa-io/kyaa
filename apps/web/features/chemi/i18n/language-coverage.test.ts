@@ -47,3 +47,26 @@ describe("chemi screen copy in every language", () => {
     });
   }
 });
+
+/**
+ * 11회차: 저장 사주 결과의 문장 묶음(locales/{언어}/saju.json)도 언어마다 빠짐없이 있는지 본다.
+ * 영어와 글자까지 같은 문장은 자리표시만 있는 틀(×{n})과 계산 엔진 이름뿐이어야 한다.
+ */
+describe("saju reading pack in every language", () => {
+  const pack = (locale: string) => JSON.parse(readFileSync(resolve(__dirname, "locales", locale, "saju.json"), "utf8"));
+  const english = new Map(strings(pack("en")));
+  const words = (text: string) => text.replace(/\{\w+\}/g, "");
+  for (const locale of APP_LOCALES.filter((value) => value !== "ko")) {
+    it(locale, () => {
+      const rows = strings(pack(locale));
+      expect(rows.length).toBeGreaterThan(500);
+      for (const key of english.keys()) if (!key.startsWith("changha.")) expect(rows.map(([name]) => name), key).toContain(key);
+      expect(rows.filter(([key, text]) => key !== "join" && text.trim() === "").map(([key]) => key), "empty").toEqual([]);
+      expect(rows.filter(([, text]) => hangul.test(text)).map(([key]) => key), "Korean").toEqual([]);
+      if (locale === "en") return;
+      const same = rows.filter(([key, text]) => english.get(key) === text && /[A-Za-z]{3}/.test(words(text))).map(([key]) => key);
+      expect(same, `${locale} same as English`).toEqual([]);
+    });
+  }
+});
+
