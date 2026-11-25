@@ -1,3 +1,4 @@
+import { rulesTitle } from './rules/titles';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { raffleLongformText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
@@ -49,6 +50,7 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite }
           <FanDisplay role="caption" as="p" className={styles.muted}>{t('required')}</FanDisplay>
         </div>
         <RaffleEnterBlock />
+        <a href={`/s/raffle/rules?locale=${locale}`}>{rulesTitle[locale]}</a>
       </section>
 
       {/* 경품: 카드 네 묶음은 three.js로 떠 있다(준비 전·대체 상태는 같은 자리의 DOM 카드). 금액은 카드에, 인원은 카드 아래에 */}
