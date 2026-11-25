@@ -47,6 +47,9 @@ function server(status: Record<string, unknown>) {
   const calls: Array<{ url: string; method: string; body?: string }> = [];
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     calls.push({ url, method: init?.method ?? 'GET', body: typeof init?.body === 'string' ? init.body : undefined });
+    if (url === '/api/notifications/preferences') {
+      return json({ preferences: { marketingNotifications: init?.method === 'PATCH' } });
+    }
     if (url.includes('invite-code')) return json({ code: mine, redeemed: false, redemptionState: 'none' });
     return json(init?.method === 'POST' ? { ...status, entered: true, ...(init.body ? { invite: 'registered' } : {}) } : status);
   });
@@ -70,7 +73,18 @@ it('shows my chances and invited friends only from the server, and shares my own
   expect(result.querySelector('[data-raffle-chances]')?.textContent).toBe('내 당첨 기회8회');
   expect(result.querySelector('[data-fan-print="stamp"]')).toBeTruthy();
   expect(screen.getByText('초대로 가입·응모한 친구 2명 · 받은 당첨 기회 +6회')).toBeTruthy();
-  expect(calls.map(call => `${call.method} ${call.url}`)).toEqual(['GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code']);
+  expect(calls.map(call => `${call.method} ${call.url}`).sort()).toEqual([
+    'GET /api/notifications/preferences', 'GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code',
+  ]);
+  const consent = screen.getByRole('checkbox', { name: /이벤트·혜택/ }) as HTMLInputElement;
+  expect(consent.checked).toBe(false);
+  fireEvent.click(consent);
+  await settle();
+  expect(consent.checked).toBe(true);
+  expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: true }));
+  fireEvent.click(consent);
+  await settle();
+  expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: false }));
   fireEvent.click(screen.getByRole('button', { name: '초대 링크 공유' }));
   await settle();
   fireEvent.click(screen.getByRole('button', { name: '초대 링크 복사' }));

@@ -7,7 +7,7 @@ export type ChemiMaintenanceRpc = (name: string, args: Record<string, unknown>) 
 const claimedMail = z.object({
   id: z.uuid(),
   token: z.uuid(),
-  kind: z.enum(["friend", "remind", "receipt", "refund", "lucky_draw"]),
+  kind: z.enum(["friend", "remind", "receipt", "refund", "lucky_draw", "marketing_consent"]),
   destination: z.email(),
   body: z.string(),
   advertising: z.boolean(),
@@ -39,6 +39,7 @@ export async function drainChemiMail(
     if (row === null) break;
     const job = claimedMail.parse(row);
     const [title = "", ...lines] = job.body.replace(/^\[광고\] /, "").split("\n");
+    const consent = job.kind === "marketing_consent";
     const detail = lines.join("\n");
     let succeeded = false;
     testHash = null;
@@ -46,13 +47,13 @@ export async function drainChemiMail(
       await sender.send({
         id: job.id, notificationId: job.id, templateKey: `chemi_${job.kind}`,
         destination: job.destination, channel: "email", locale: "ko",
-        payload: { title, detail, deepLink: "/chemi", priority: job.advertising ? 3 : 1 },
+        payload: { title, detail, deepLink: consent ? "/settings" : "/chemi", priority: job.advertising ? 3 : 1 },
       }, {
         advertising: job.advertising,
         ...(job.advertising ? { senderInfo } : {}),
         copy: {
           subject: job.advertising ? `(광고) ${title}` : title,
-          title, detail, category: "케미", cta: "케미 확인하기",
+          title, detail, category: consent ? "알림 설정" : "케미", cta: consent ? "설정 확인하기" : "케미 확인하기",
           settings: "알림 설정", cardFallback: title,
         },
       });

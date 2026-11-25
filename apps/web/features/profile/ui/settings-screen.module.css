@@ -254,7 +254,14 @@
   font-size: 14px;
   font-weight: var(--fan-item-title-weight);
 }
+/* 선택 동의 행(이벤트·혜택 메일): 이름 아래 목적·수단·철회 방법 한 줄(FanText meta) */
+.toggles .consentCopy {
+  display: grid;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+}
 .toggles input {
+  flex: none;
   width: 46px;
   height: 26px;
   appearance: none;
