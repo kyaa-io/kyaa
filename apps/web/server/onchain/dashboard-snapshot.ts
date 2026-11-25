@@ -62,15 +62,20 @@ export function createDashboardLogScan(signal: AbortSignal): SnapshotLogScan {
 // Facts verified by this process. They outlive a run that hits its deadline, so a ledger that is too long
 // to verify in one run (first run, or after a reorg discarded the published facts) is caught up run by run.
 const verifiedFacts: VerifiedActionFacts = new Map();
+// Until this process has verified the whole ledger once, another task may be ahead of it: take the facts that task
+// published for the actions this process has not verified, so every task catches up from the best progress so far.
+let caughtUp = false;
 async function verifySnapshot(signal: AbortSignal): Promise<PublicOnchainSnapshot> {
   const started = Date.now();
   let phase = "facts";
   try {
-    if (verifiedFacts.size === 0) for (const [key, fact] of await readStoredActionFacts(signal)) verifiedFacts.set(key, fact);
+    if (!caughtUp) for (const [key, fact] of await readStoredActionFacts(signal)) if (!verifiedFacts.has(key)) verifiedFacts.set(key, fact);
     phase = "actions";
     const client = snapshotClient(readConfig, signal);
     const logScan = createDashboardLogScan(signal);
+    caughtUp = false;
     const source = await readFinalizedActionSnapshot({ ...readConfig, client, logScan, deadlineMs: 420_000, signal, facts: verifiedFacts });
+    caughtUp = true;
     const actionsMs = Date.now() - started;
     phase = "replacements";
     const representatives = readConfig.credentialReplacement.deployment

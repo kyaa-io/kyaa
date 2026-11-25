@@ -31,7 +31,12 @@ const MAX_HUB_LOGS = 4 * MAX_ACTIONS;
 const MAX_UNPROVEN_EVENT_BLOCKS = 5_000;
 const SNAPSHOT_DEADLINE_MS = 240_000;
 const READ_BATCH_SIZE = 64;
-const FACTS_VERSION = "kyaa-onchain-facts-v1";
+const FACTS_VERSION = "kyaa-onchain-facts-v2";
+// ERC-1967 implementation slot of the Hub proxy, and the codec pointer in the Hub's ERC-7201 storage
+// (byus.storage.ActionHub, field 6). hashRequest runs the implementation and staticcalls the codec.
+const HUB_IMPLEMENTATION_SLOT = "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";
+const HUB_CODEC_SLOT = "0x9b4561162b6d58cdaee430aa4073a2ec544ff4ca21320ef4e942bd0b419f7706";
+const MAX_UINT32 = 0xffff_ffff;
 // Each run verifies this many already verified actions again in full, so every stored fact is re-proven in rotation.
 const AUDIT_ACTIONS_PER_RUN = 128;
 const AUDIT_ROTATION_SECONDS = 600n;
@@ -309,10 +314,36 @@ function actionFactInputs(
   ]));
 }
 
-function sealActionFact(anchorBlockNumber: bigint, anchorBlockHash: Hash, inputs: Hash): Hash {
+/**
+ * Identity of the code that computes hashRequest at the pinned block: the proxy, its implementation and the codec.
+ * A fact sealed under one identity is never reused under another, so a Hub or codec upgrade sends every action
+ * back through the full check against the upgraded code.
+ */
+async function hubCodeIdentity(client: PublicClient, hubAddress: Address, blockNumber: bigint): Promise<Hash> {
+  const [implementationWord, codecWord, proxyCode] = await Promise.all([
+    client.getStorageAt({ address: hubAddress, slot: HUB_IMPLEMENTATION_SLOT, blockNumber }),
+    client.getStorageAt({ address: hubAddress, slot: HUB_CODEC_SLOT, blockNumber }),
+    client.getCode({ address: hubAddress, blockNumber }),
+  ]);
+  const pointer = /^0x0{24}[0-9a-fA-F]{40}$/;
+  if (!implementationWord || !codecWord || !pointer.test(implementationWord) || !pointer.test(codecWord)) {
+    throw new Error("Action public snapshot Hub code identity unavailable");
+  }
+  const [implementationCode, codecCode] = await Promise.all([implementationWord, codecWord].map((word) =>
+    client.getCode({ address: getAddress(`0x${word.slice(-40)}`), blockNumber })));
+  if (!proxyCode || proxyCode === "0x" || !implementationCode || implementationCode === "0x" || !codecCode || codecCode === "0x") {
+    throw new Error("Action public snapshot Hub code identity unavailable");
+  }
   return keccak256(encodeAbiParameters(
-    [{ type: "string" }, { type: "uint256" }, { type: "bytes32" }, { type: "bytes32" }],
-    [FACTS_VERSION, anchorBlockNumber, anchorBlockHash, inputs],
+    [{ type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }],
+    [implementationWord, codecWord, keccak256(proxyCode), keccak256(implementationCode), keccak256(codecCode)],
+  ));
+}
+
+function sealActionFact(anchorBlockNumber: bigint, anchorBlockHash: Hash, codeIdentity: Hash, inputs: Hash): Hash {
+  return keccak256(encodeAbiParameters(
+    [{ type: "string" }, { type: "uint256" }, { type: "bytes32" }, { type: "bytes32" }, { type: "bytes32" }],
+    [FACTS_VERSION, anchorBlockNumber, anchorBlockHash, codeIdentity, inputs],
   ));
 }
 
@@ -469,8 +500,9 @@ async function readFinalizedActionSnapshotInner(
   const facts = options.facts ?? new Map<string, VerifiedActionFact>();
   const canonicalAnchors = pinnedAnchors ?? await canonicalFactAnchors(client, facts, blockNumber, blockHash);
 
-  const [actualChainId, actualEnvironment, actualEas, logs] = await Promise.all([
+  const [actualChainId, codeIdentity, actualEnvironment, actualEas, logs] = await Promise.all([
     client.getChainId(),
+    hubCodeIdentity(client, options.hubAddress, blockNumber),
     client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "environmentId", blockNumber }),
     client.readContract({ address: options.hubAddress, abi: actionHubAbi, functionName: "eas", blockNumber }),
     pinnedLogs ?? loadHubLogs(client, options.hubAddress, options.fromBlock, blockNumber, signal, options.logScan),
@@ -634,10 +666,12 @@ async function readFinalizedActionSnapshotInner(
     const audited = (index + offset - auditStart + events.recorded.length) % events.recorded.length < AUDIT_ACTIONS_PER_RUN;
     const prior = audited ? undefined : facts.get(factKey);
     const reused = prior !== undefined
+      // A binding version no request can carry is not a fact this verifier sealed.
+      && Number.isInteger(prior.bindingVersion) && prior.bindingVersion >= 0 && prior.bindingVersion <= MAX_UINT32
       && canonicalAnchors.has(anchorKey(prior.anchorBlockNumber, prior.anchorBlockHash))
       && event.blockNumber <= prior.anchorBlockNumber
       && sameHex(canonicalOccurrenceId(options.chainId, options.hubAddress, options.environmentId, prior.sourceOccurrence), record.occurrenceId)
-      && sameHex(sealActionFact(prior.anchorBlockNumber, prior.anchorBlockHash,
+      && sameHex(sealActionFact(prior.anchorBlockNumber, prior.anchorBlockHash, codeIdentity,
         actionFactInputs(options, event, record, refs, previousActionId, prior.sourceOccurrence, prior.bindingVersion)), prior.digest);
     const { sourceOccurrence, bindingVersion } = reused ? prior
       : await verifyRecordedTransaction(client, options, event, record, events.corrected, blockNumber);
@@ -695,7 +729,7 @@ async function readFinalizedActionSnapshotInner(
       }
       assertMintLog(ref, record.fan, receipt, bindingAssets[ref.kind]!);
     }
-    const digest = sealActionFact(blockNumber, blockHash, actionFactInputs(options, event, record, refs, previousActionId, sourceOccurrence, bindingVersion));
+    const digest = sealActionFact(blockNumber, blockHash, codeIdentity, actionFactInputs(options, event, record, refs, previousActionId, sourceOccurrence, bindingVersion));
     facts.set(factKey, { digest, bindingVersion, sourceOccurrence, anchorBlockNumber: blockNumber, anchorBlockHash: blockHash });
 
     let original = event;

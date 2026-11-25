@@ -168,7 +168,8 @@ export async function readVerifiedDashboardSnapshot(): Promise<unknown> {
   return data.dashboard_payload;
 }
 const storedFactsSchema = z.object({ snapshot: z.object({ blockNumber: integer, blockHash: hash, actions: z.array(z.unknown()).max(MAX_PUBLIC_ACTIONS) }) });
-const storedFactSchema = z.object({ hubAddress: address, actionId: hash, sourceOccurrence: hash, facts: z.object({ digest: hash, bindingVersion: count }).strict() });
+// A request carries its binding version as uint32; any other stored value is not a fact the verifier sealed.
+const storedFactSchema = z.object({ hubAddress: address, actionId: hash, sourceOccurrence: hash, facts: z.object({ digest: hash, bindingVersion: count.max(0xffff_ffff) }).strict() });
 function* storedActionFactSteps(payload: unknown): Generator<void, VerifiedActionFacts> {
   const facts: VerifiedActionFacts = new Map();
   const stored = storedFactsSchema.safeParse(payload);

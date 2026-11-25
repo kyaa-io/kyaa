@@ -55,6 +55,8 @@ export function performanceRpcFixture() {
   const immutable: Record<string,unknown>={timelock:config.credentialReplacement.timelock,operator:config.credentialReplacement.operator,hub,legacyHub:config.deployments[0].hubAddress,environmentId:config.environmentId,oldPassport:config.assetBindings[1][0],oldStamp:config.assetBindings[1][1],newPassport:config.assetBindings[2][0],newStamp:config.assetBindings[2][1]};
   const client={
     getChainId:async()=>config.chainId,
+    getStorageAt:async()=>`0x${'0'.repeat(24)}${'1a'.repeat(20)}`,
+    getCode:async()=>'0x6000',
     getBlock:async()=>({number:source.blockNumber,hash:source.blockHash,timestamp:source.timestamp}),
     getLogs:async({address,fromBlock,toBlock}: {address:string|string[];fromBlock:bigint;toBlock:bigint})=> source.blockNumber<fromBlock||source.blockNumber>toBlock?[]:address===migrator?replacementLogs:logs,
     getTransaction:async({hash}:{hash:string})=>transactions.get(hash),

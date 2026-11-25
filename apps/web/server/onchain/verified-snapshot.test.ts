@@ -82,6 +82,13 @@ it("publishes one fact digest per action and hands the next run those facts anch
     expect(() => parseVerifiedSnapshot(envelope(changed))).toThrow();
     expect((await storedActionFacts(envelope(changed))).size).toBe(0);
   }
+  // A binding version above uint32 cannot be sealed: only that fact is dropped, so its action is verified in full.
+  for (const bindingVersion of [0x1_0000_0000, Number.MAX_SAFE_INTEGER]) {
+    const kept = { ...action, actionId: other, occurrenceId: other };
+    const stored = await storedActionFacts(envelope({ ...value, actions: [{ ...action, facts: { digest, bindingVersion } }, kept] }));
+    expect([...stored.keys()]).toEqual([verifiedActionFactKey(onchainConfig.hubAddress, other)]);
+  }
+  expect((await storedActionFacts(envelope({ ...value, actions: [{ ...action, facts: { digest, bindingVersion: 0xffff_ffff } }] }))).size).toBe(1);
 });
 it("hands over no facts from a missing, malformed or pre-fact publication", async () => {
   const value = snapshot();

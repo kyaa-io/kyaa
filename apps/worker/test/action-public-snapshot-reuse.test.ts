@@ -53,6 +53,11 @@ function makeLedger(count: number) {
     eventBlockHash: new Map<number, Hash>(),
     failTransactionsAfter: Number.POSITIVE_INFINITY,
     foreignInvalidationBlock: undefined as bigint | undefined,
+    implementation: address("1a"),
+    codec: address("1b"),
+    code: new Map<string, Hash>(),
+    // Actions whose request hash the upgraded Hub code computes differently.
+    upgradedRequestHash: new Set<number>(),
   };
   const indexByAction = new Map<string, number>();
   const indexByOccurrence = new Map<string, number>();
@@ -107,6 +112,14 @@ function makeLedger(count: number) {
       const number = blockTag === "finalized" ? state.headBlock : blockNumber!;
       return { number, hash: state.canonicalHash.get(number.toString()) ?? blockHashOf(number), timestamp: state.timestamp };
     }),
+    getStorageAt: vi.fn(async ({ slot, blockNumber }: { slot: Hash; blockNumber?: bigint }) => {
+      expect(blockNumber).toBe(state.headBlock);
+      return `0x${"0".repeat(24)}${(slot.endsWith("7706") ? state.codec : state.implementation).slice(2)}`;
+    }),
+    getCode: vi.fn(async ({ address: target, blockNumber }: { address: Address; blockNumber?: bigint }) => {
+      expect(blockNumber).toBe(state.headBlock);
+      return state.code.get(target.toLowerCase()) ?? `0x60${target.slice(2, 4)}`;
+    }),
     getTransaction: vi.fn(async ({ hash }: { hash: Hash }) => {
       const index = indexByTx.get(hash.toLowerCase())!;
       if (transactions.length >= state.failTransactionsAfter) throw new Error("RPC unavailable");
@@ -130,7 +143,10 @@ function makeLedger(count: number) {
       if (functionName === "getSchema") return schemaUid;
       if (functionName === "getAssetBinding") return stamp;
       if (functionName === "isAttestationValid") return true;
-      if (functionName === "hashRequest") return word(Number(BigInt((args![1] as { sourceOccurrence: Hash }).sourceOccurrence) & 0xffffffffn), 0x42);
+      if (functionName === "hashRequest") {
+        const index = Number(BigInt((args![1] as { sourceOccurrence: Hash }).sourceOccurrence) & 0xffffffffn);
+        return word(index, state.upgradedRequestHash.has(index) ? 0x43 : 0x42);
+      }
       if (functionName === "latestActionId") return actionIdOf(indexByOccurrence.get(String(args![0]).toLowerCase())!);
       if (functionName === "getAction") {
         const index = indexByAction.get(String(args![0]).toLowerCase())!;
@@ -240,7 +256,69 @@ it("never reuses a fact whose digest, source or binding was altered, and verifie
     expect(second.transactions, alter).toHaveLength(AUDITED + 1);
     expect(second.snapshot, alter).toEqual(await fullVerification(ledger));
   }
+}, 60_000);
+
+it("discards every fact when the Hub implementation, the codec or their code changes, and verifies the whole ledger against the new code", async () => {
+  const upgrades: Array<(state: ReturnType<typeof makeLedger>["state"]) => void> = [
+    (state) => { state.implementation = address("2a"); },
+    (state) => { state.codec = address("2b"); },
+    (state) => { state.code.set(state.implementation.toLowerCase(), "0x6099" as Hash); },
+    (state) => { state.code.set(state.codec.toLowerCase(), "0x6098" as Hash); },
+    (state) => { state.code.set(hub.toLowerCase(), "0x6097" as Hash); },
+  ];
+  for (const [position, upgrade] of upgrades.entries()) {
+    const ledger = makeLedger(300);
+    await ledger.run();
+    ledger.state.headBlock = 5_600n; ledger.state.timestamp = 6_000_600n;
+    upgrade(ledger.state);
+    const second = await ledger.run();
+    expect(second.transactions, String(position)).toHaveLength(300);
+    expect(second.requestHashes, String(position)).toBe(300);
+    expect(second.receipts, String(position)).toBe(300);
+    expect(second.snapshot, String(position)).toEqual(await fullVerification(ledger));
+    // The facts are sealed again under the new code, so the run after the upgrade reuses them.
+    ledger.state.headBlock = 6_200n; ledger.state.timestamp = 6_001_200n;
+    expect((await ledger.run()).transactions, String(position)).toHaveLength(AUDITED);
+  }
+}, 60_000);
+
+it("rejects the run, as a full verification does, when an upgrade changes the request hash of an action outside the audited window", async () => {
+  const ledger = makeLedger(300);
+  await ledger.run();
+  ledger.state.headBlock = 5_600n; ledger.state.timestamp = 6_000_600n;
+  // Without the upgrade this run reads 128 transactions and action 200 is not one of them.
+  const audited = (await ledger.run()).transactions;
+  expect(audited).toHaveLength(AUDITED);
+  expect(audited).not.toContain(200);
+  ledger.state.code.set(ledger.state.implementation.toLowerCase(), "0x6099" as Hash);
+  ledger.state.upgradedRequestHash.add(200);
+  await expect(ledger.run()).rejects.toThrow("transaction request hash mismatch");
+  await expect(fullVerification(ledger)).rejects.toThrow("transaction request hash mismatch");
 });
+
+it("stops when the Hub proxy does not expose an implementation and a codec with code", async () => {
+  const ledger = makeLedger(3);
+  ledger.state.code.set(ledger.state.codec.toLowerCase(), "0x" as Hash);
+  await expect(ledger.run()).rejects.toThrow("Hub code identity unavailable");
+  ledger.state.code.clear();
+  ledger.client.getStorageAt.mockResolvedValueOnce(`0x${"f".repeat(64)}` as never);
+  await expect(ledger.run()).rejects.toThrow("Hub code identity unavailable");
+});
+
+it("verifies an action in full when its stored binding version is not a uint32, instead of failing the run", async () => {
+  for (const bindingVersion of [0x1_0000_0000, Number.MAX_SAFE_INTEGER, -1, 1.5]) {
+    const ledger = makeLedger(300);
+    await ledger.run();
+    ledger.state.headBlock = 5_600n; ledger.state.timestamp = 6_000_600n;
+    const key = verifiedActionFactKey(hub, ledger.actionIdOf(200));
+    ledger.facts.set(key, { ...ledger.facts.get(key)!, bindingVersion });
+    const second = await ledger.run();
+    expect(second.transactions, String(bindingVersion)).toContain(200);
+    expect(second.transactions, String(bindingVersion)).toHaveLength(AUDITED + 1);
+    expect(second.snapshot, String(bindingVersion)).toEqual(await fullVerification(ledger));
+    expect(ledger.facts.get(key)!.bindingVersion).toBe(1);
+  }
+}, 60_000);
 
 it("fails exactly as a full verification does when the Hub record of a verified action changes", async () => {
   const ledger = makeLedger(300);
