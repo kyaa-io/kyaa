@@ -25,16 +25,25 @@ const creatorId = word(1, 0x25);
 const campaignId = word(1, 0x26);
 const AUDITED = 128;
 
+/** The fake chain derives the same values many times per run; hashing each once keeps the tests CPU-light. */
+const memo = <Result>(compute: (index: number) => Result) => {
+  const results = new Map<number, Result>();
+  return (index: number) => {
+    if (!results.has(index)) results.set(index, compute(index));
+    return results.get(index)!;
+  };
+};
+
 const blockHashOf = (number: bigint) => word(Number(number), 0x32);
 const sourceOf = (index: number) => word(index, 0x23);
 const txOf = (index: number) => word(index, 0x31);
 const easUidOf = (index: number) => word(index, 0x24);
 const eventBlockOf = (index: number) => 1_000n + BigInt(index);
-const occurrenceOf = (index: number) => keccak256(encodeAbiParameters(
+const occurrenceOf = memo((index) => keccak256(encodeAbiParameters(
   [{ type: "uint256" }, { type: "address" }, { type: "bytes32" }, { type: "bytes32" }],
   [91342n, hub, environmentId, sourceOf(index)],
-));
-const actionIdOf = (index: number) => keccak256(encodeAbiParameters([{ type: "bytes32" }, { type: "uint32" }], [occurrenceOf(index), 1]));
+)));
+const actionIdOf = memo((index) => keccak256(encodeAbiParameters([{ type: "bytes32" }, { type: "uint32" }], [occurrenceOf(index), 1])));
 
 const refComponents = [
   { name: "nftContract", type: "address" }, { name: "tokenId", type: "uint256" },
@@ -64,37 +73,47 @@ function makeLedger(count: number) {
   const indexByTx = new Map<string, number>();
   const indexByEas = new Map<string, number>();
   const refOf = (index: number) => ({ nftContract: stamp, tokenId: BigInt(index + 1), kind: 1, issuanceKey: word(index, 0x51), linkOrigin: 0 });
-  const attestationData = (index: number) => encodeAbiParameters([
+  const attestationData = memo((index) => encodeAbiParameters([
     { type: "bytes32" }, { type: "bytes32" }, { type: "uint32" }, { type: "uint16" },
     { type: "uint16" }, { type: "uint32" }, { type: "bytes32" }, { type: "bytes32" },
     { type: "bytes32" }, { type: "uint32" }, { type: "uint8" }, { type: "bytes32" },
     { type: "bytes32" }, { type: "bytes32" },
   ], [occurrenceOf(index), actionIdOf(index), 1, 10, 1, 1, environmentId, creatorId, campaignId, 1, 0, word(1, 0x41),
-    keccak256(encodeAbiParameters([{ type: "tuple[]", components: refComponents }], [[refOf(index)]])), zeroHash]);
+    keccak256(encodeAbiParameters([{ type: "tuple[]", components: refComponents }], [[refOf(index)]])), zeroHash]));
+  const recordHashOf = memo((index) => keccak256(attestationData(index)));
   const requestOf = (index: number) => ({
     sourceOccurrence: sourceOf(index), revision: 1, actionCode: 10, schemaVersion: 1, policyVersion: 1,
     fan, creatorId, campaignId, occurredDay: 1, evidenceCommitment: word(1, 0x41), migrationBatchId: zeroHash, bindingVersion: 1,
   });
   const invalidated = (index: number) => index === 0 && state.foreignInvalidationBlock !== undefined;
-  const logsOf = (index: number) => {
-    const location = { address: hub, transactionHash: txOf(index), blockNumber: eventBlockOf(index),
-      blockHash: state.eventBlockHash.get(index) ?? blockHashOf(eventBlockOf(index)), transactionIndex: 0 };
+  const encodedLogsOf = memo((index) => {
     const ref = refOf(index);
-    return [
-      { ...location, logIndex: 0,
+    return {
+      linked: {
         topics: encodeEventTopics({ abi: actionHubAbi, eventName: "CredentialLinked", args: { actionId: actionIdOf(index), nftContract: ref.nftContract, tokenId: ref.tokenId } }),
         data: encodeAbiParameters([{ type: "uint8" }, { type: "bytes32" }, { type: "uint8" }], [ref.kind, ref.issuanceKey, ref.linkOrigin]) },
-      { ...location, logIndex: 1,
+      recorded: {
         topics: encodeEventTopics({ abi: actionHubAbi, eventName: "FanActionRecorded", args: { actionId: actionIdOf(index), fan, campaignId } }),
         data: encodeAbiParameters([
           { type: "bytes32" }, { type: "uint32" }, { type: "bytes32" }, { type: "string" },
           { type: "uint16" }, { type: "uint32" }, { type: "bytes32" }, { type: "uint32" },
           { type: "uint8" }, { type: "bytes32" },
         ], [occurrenceOf(index), 1, creatorId, "DAILY_CHECKIN", 1, 1, easUidOf(index), 1, 0, zeroHash]) },
+      invalidated: {
+        topics: encodeEventTopics({ abi: actionHubAbi, eventName: "FanActionInvalidated", args: { actionId: actionIdOf(index), easUID: easUidOf(index) } }),
+        data: encodeAbiParameters([{ type: "uint16" }], [1]) },
+    };
+  });
+  const logsOf = (index: number) => {
+    const location = { address: hub, transactionHash: txOf(index), blockNumber: eventBlockOf(index),
+      blockHash: state.eventBlockHash.get(index) ?? blockHashOf(eventBlockOf(index)), transactionIndex: 0 };
+    const encoded = encodedLogsOf(index);
+    return [
+      { ...location, logIndex: 0, ...encoded.linked },
+      { ...location, logIndex: 1, ...encoded.recorded },
       // A log source that places a record transaction's invalidation in a block no transaction read has proven.
       ...(invalidated(index) ? [{ ...location, blockNumber: state.foreignInvalidationBlock!, blockHash: blockHashOf(state.foreignInvalidationBlock!), logIndex: 2,
-        topics: encodeEventTopics({ abi: actionHubAbi, eventName: "FanActionInvalidated", args: { actionId: actionIdOf(index), easUID: easUidOf(index) } }),
-        data: encodeAbiParameters([{ type: "uint16" }], [1]) }] : []),
+        ...encoded.invalidated }] : []),
     ];
   };
   for (let index = 0; index < count + 16; index++) {
@@ -103,6 +122,13 @@ function makeLedger(count: number) {
     indexByTx.set(txOf(index).toLowerCase(), index);
     indexByEas.set(easUidOf(index).toLowerCase(), index);
   }
+  const inputOf = memo((index) => encodeFunctionData({ abi: actionHubAbi, functionName: "recordAndIssue", args: [requestOf(index), [
+    { kind: 1, mode: 0, issuanceKey: refOf(index).issuanceKey, tokenId: refOf(index).tokenId, metadataUri: "" }]] }));
+  const transferLogOf = memo((index) => ({
+    address: stamp,
+    topics: encodeEventTopics({ abi: erc1155TransferAbi, eventName: "TransferSingle", args: { operator: hub, from: address("00"), to: fan } }),
+    data: encodeAbiParameters([{ type: "uint256" }, { type: "uint256" }], [refOf(index).tokenId, 1n]),
+  }));
   const transactions: number[] = [];
   const client = {
     getChainId: vi.fn(async () => 91342),
@@ -125,16 +151,11 @@ function makeLedger(count: number) {
       if (transactions.length >= state.failTransactionsAfter) throw new Error("RPC unavailable");
       transactions.push(index);
       return { hash, blockNumber: eventBlockOf(index), blockHash: blockHashOf(eventBlockOf(index)), to: hub,
-        input: encodeFunctionData({ abi: actionHubAbi, functionName: "recordAndIssue", args: [requestOf(index), [
-          { kind: 1, mode: 0, issuanceKey: refOf(index).issuanceKey, tokenId: refOf(index).tokenId, metadataUri: "" }]] }) };
+        input: inputOf(index) };
     }),
     getTransactionReceipt: vi.fn(async ({ hash }: { hash: Hash }) => {
       const index = indexByTx.get(hash.toLowerCase())!;
-      return { transactionHash: hash, blockNumber: eventBlockOf(index), blockHash: blockHashOf(eventBlockOf(index)), status: "success", logs: [{
-        address: stamp,
-        topics: encodeEventTopics({ abi: erc1155TransferAbi, eventName: "TransferSingle", args: { operator: hub, from: address("00"), to: fan } }),
-        data: encodeAbiParameters([{ type: "uint256" }, { type: "uint256" }], [refOf(index).tokenId, 1n]),
-      }] };
+      return { transactionHash: hash, blockNumber: eventBlockOf(index), blockHash: blockHashOf(eventBlockOf(index)), status: "success", logs: [transferLogOf(index)] };
     }),
     readContract: vi.fn(async ({ functionName, args, blockNumber }: { functionName: string; args?: readonly unknown[]; blockNumber?: bigint }) => {
       expect(blockNumber).toBe(state.headBlock);
@@ -151,7 +172,7 @@ function makeLedger(count: number) {
       if (functionName === "getAction") {
         const index = indexByAction.get(String(args![0]).toLowerCase())!;
         return { occurrenceId: occurrenceOf(index), actionId: actionIdOf(index), easUID: easUidOf(index),
-          requestHash: state.requestHash.get(index) ?? word(index, 0x42), recordHash: keccak256(attestationData(index)), schemaUID: schemaUid,
+          requestHash: state.requestHash.get(index) ?? word(index, 0x42), recordHash: recordHashOf(index), schemaUID: schemaUid,
           refUID: zeroHash, fan, revision: 1, actionCode: 10, schemaVersion: 1, policyVersion: 1, status: invalidated(index) ? 3 : 2, origin: 0, migrationBatchId: zeroHash };
       }
       if (functionName === "getAttestation") {
@@ -219,16 +240,17 @@ it("reuses finalized facts on the next run: only new actions and the audited win
 });
 
 it("re-verifies every stored fact in rotation as the finalized timestamp advances", async () => {
-  const ledger = makeLedger(300);
+  // The audited window advances by 128 actions per rotation, so two rotations cover a ledger of 200.
+  const ledger = makeLedger(200);
   await ledger.run();
   const audited = new Set<number>();
-  for (let round = 1; round <= 3; round++) {
+  for (let round = 1; round <= 2; round++) {
     ledger.state.headBlock += 600n; ledger.state.timestamp += 600n;
     const { transactions } = await ledger.run();
     expect(transactions).toHaveLength(AUDITED);
     for (const index of transactions) audited.add(index);
   }
-  expect(audited.size).toBe(300);
+  expect(audited.size).toBe(200);
 });
 
 it("returns to full verification when the previous finalized head is no longer canonical", async () => {
