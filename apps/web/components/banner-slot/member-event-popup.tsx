@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useAppLocale } from "@/components/locale-provider";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -9,6 +9,7 @@ import { PageNoticeDialog, pageNoticeBlocked } from "@/features/groups/ui/page-n
 import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { isChemiPromoHref, isMemberEventHref, localizedBannerHref, type HomeBanner } from "@/features/home/domain/home-banner";
 import { withRequestDeadline } from "@/features/reliability/client/request-deadline";
+import { signupRaffleHomeBanner } from "@/features/home/domain/signup-raffle-home-banner";
 import { parseBannerSlots } from "./banner-slot-source";
 
 import styles from "./banner-slot.module.css";
@@ -35,6 +36,12 @@ const durationLabel: typeof hideToday = {
   pt: "Duração (escolha no máximo uma opção)", fr: "Durée (un choix maximum)", ru: "Срок (не более одного варианта)",
 };
 
+const hideRaffle: typeof hideToday = {
+  ko: "다시 보지 않기", en: "Don’t show again", ja: "今後表示しない", "zh-Hans": "不再显示", "zh-Hant": "不再顯示",
+  es: "No volver a mostrar", id: "Jangan tampilkan lagi", vi: "Không hiển thị lại", th: "ไม่ต้องแสดงอีก",
+  pt: "Não mostrar novamente", fr: "Ne plus afficher", ru: "Больше не показывать", mn: "Дахин бүү харуул",
+};
+
 const day = 86_400_000;
 export function popupDismissalExpiry(now: number, duration: "today" | "week") {
   if (duration === "week") return now + 7 * day;
@@ -59,6 +66,8 @@ export function MemberEventPopup() {
   const member = authenticated && !/^(pending|guest):/.test(ownerKey);
   const promo = pathname === "/";
   const lookup = enabled && (member || promo) ? JSON.stringify([ownerKey, locale, pathname]) : null;
+  const attempted = useRef<string | undefined>(undefined);
+  const [raffle, setRaffle] = useState<string>();
   const [result, setResult] = useState<{ lookup: string; candidates: HomeBanner[] }>();
   const [active, setActive] = useState<{ banner: HomeBanner; key: string; lookup: string }>();
   const [closed, setClosed] = useState<ReadonlySet<string>>(() => new Set());
@@ -125,6 +134,26 @@ export function MemberEventPopup() {
     return () => { observer.disconnect(); cancelAnimationFrame(frame); clearInterval(interval); };
   }, [lookup, result, pathname, ownerKey, closed]);
 
+  useEffect(() => {
+    if (!member || !lookup || result?.lookup !== lookup || active || (pathname !== "/" && pathname !== "/groups")) return;
+    const check = () => {
+      if (attempted.current === ownerKey || document.visibilityState === "hidden" || pageNoticeBlocked()) return;
+      attempted.current = ownerKey;
+      void request("/api/signup-event/popup", { method: "POST" }).then(value => {
+        if (value?.show === true && !pageNoticeBlocked()) setRaffle(lookup);
+      }).catch(() => {});
+    };
+    const timer = setInterval(check, 1000);
+    return () => clearInterval(timer);
+  }, [lookup, member, ownerKey, active, pathname, request, result]);
+  useEffect(() => { setRaffle(undefined); }, [lookup]);
+  if (raffle && raffle === lookup && !active) {
+    const banner = signupRaffleHomeBanner(locale);
+    const close = () => setRaffle(undefined);
+    return <PageNoticeDialog open onClose={close} locale={locale} title={banner.title} description={banner.description}
+      actionLabel={banner.ctaLabel} actionHref={localizedBannerHref("/s/raffle?enter=1", locale)}
+      secondary={<FanAction variant="text" onClick={close}>{hideRaffle[locale]}</FanAction>} />;
+  }
   if (!active || active.lookup !== lookup || closed.has(active.key)) return null;
   const { banner, key } = active;
   return <PopupContent key={active.lookup + key} banner={banner} storageKey={key} locale={locale}

@@ -69,6 +69,7 @@ export const notificationPreferencesSchema = z.object({
   artistOnlineNotifications: z.boolean().default(true),
   socialNotifications: z.boolean().default(true),
   friendActivityNotifications: z.boolean().default(true),
+  marketingNotifications: z.boolean().default(false),
   participationNotifications: z.boolean().default(true),
   browserSubscription: z.enum(["subscribed", "unsubscribed"]),
 });

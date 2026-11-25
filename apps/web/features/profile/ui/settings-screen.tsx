@@ -51,11 +51,12 @@ import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { accountDeletionCopy } from "@/i18n/catalogs/features__profile__ui__account-deletion";
 import { parseSettingsSection, type SettingsSection } from "../domain/settings-navigation";
 import { artistNotificationSettingCopy } from "@/features/notification/artist-notification-copy";
+import { marketingConsentCopy } from "@/features/notification/marketing-consent-copy";
 import { emailSettingsCopy } from "@/features/notification/email-settings-copy";
 
 type Locale = AppLocale;
 type PreferenceKey =
-  "liveReminders" | "surveyReminders" | "benefitNotifications" | "replyNotifications" | "officialPostNotifications" | "scheduleNotifications" | "artistActivityNotifications" | "artistOnlineNotifications" | "socialNotifications" | "friendActivityNotifications" | "participationNotifications";
+  "liveReminders" | "surveyReminders" | "benefitNotifications" | "replyNotifications" | "officialPostNotifications" | "scheduleNotifications" | "artistActivityNotifications" | "artistOnlineNotifications" | "socialNotifications" | "friendActivityNotifications" | "participationNotifications" | "marketingNotifications";
 interface SettingsSummary {
   nickname: string;
   preferredLocale: "ko" | "en";
@@ -72,6 +73,7 @@ interface Preferences {
   artistOnlineNotifications?: boolean;
   socialNotifications?: boolean;
   friendActivityNotifications?: boolean;
+  marketingNotifications?: boolean;
   participationNotifications?: boolean;
   browserSubscription: "subscribed" | "unsubscribed";
 }
@@ -1336,6 +1338,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
                 ["artistOnlineNotifications", artistNotificationSettingCopy[locale].artistOnlineNotifications],
                 ["socialNotifications", emailSettingsCopy(locale).socialNotifications],
                 ["friendActivityNotifications", emailSettingsCopy(locale).friendActivityNotifications],
+                ["marketingNotifications", marketingConsentCopy[locale]],
                 ["participationNotifications", emailSettingsCopy(locale).participationNotifications],
               ] as const
             ).map(([key, label]) => (
@@ -1344,7 +1347,7 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
                 <input
                   type="checkbox"
                   role="switch"
-                  checked={preferences[key] ?? true}
+                  checked={preferences[key] ?? (key !== "marketingNotifications")}
                   disabled={preferencePending}
                   aria-describedby={preferencePending ? "preference-save-status" : undefined}
                   onChange={(event) =>
