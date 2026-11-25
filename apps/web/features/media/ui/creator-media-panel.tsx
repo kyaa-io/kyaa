@@ -1,5 +1,4 @@
 "use client";
-import { OfficialBadge } from "@/components/fan-ui/official-badge";
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { TranslatedText } from "@/features/content-safety/ui/use-automatic-translation";
@@ -105,21 +104,18 @@ export function CreatorMediaPanel({ slug, locale, channelId = slug === CHZZK_CRE
     const thumbnail = item.asset ? <ContentAssetImage asset={item.asset} locale={locale} alt={item.title} loading={leadingGalleryItem ? "eager" : "lazy"} anonymousPreview={!auth.ready} failure={thumbnailOnly || plainThumbnails ? "icon" : "text"} /> : <MediaThumbnail preferHighResolution title={item.title} key={`${item.image}:${item.href}`} image={item.image} href={item.href} kind={item.kind} source={item.source} locale={locale} priority={leadingGalleryItem} iconOnly={thumbnailOnly || plainThumbnails} onMissing={() => hideUncovered(item.id)} />;
     const captionless = item.kind === "photos" && !item.title;
     const captionlessLabel = thumbnailOnly ? item.title || `${c[item.kind]} · ${new Date(item.date).toLocaleDateString(locale)}` : captionless ? `${c.photos} · ${new Date(item.date).toLocaleDateString(locale)}` : undefined;
-    const badge = (gallery || compact) && !item.live && ["kyaa", "Instagram", "YouTube", "CHZZK"].includes(item.source ?? "") && <OfficialBadge />;
     const body = thumbnailOnly || captionless ? null : <span className={mediaStyles.cardBody}><strong>{item.title ? externalSource ? <span translate="no">{item.title.slice(0, 120)}</span> : <TranslatedText text={item.title.slice(0, 120)} locale={locale} controls={false} /> : c[item.kind]}</strong>{(!compact||!preview)&&<span className={mediaStyles.meta}>{item.source ? `${item.source} · ` : ""}{c[item.kind]}{!internal && <ArrowUpRight size={12} aria-hidden="true" />} · <time dateTime={item.date}>{new Date(item.date).toLocaleDateString(locale)}</time></span>}</span>;
     if (plainThumbnails) {
       const label = item.title ? item.title.slice(0, 120) : `${c[item.kind]} · ${new Date(item.date).toLocaleDateString(locale)}`;
       const external = { target: internal ? undefined : "_blank", rel: internal ? undefined : "noopener noreferrer", "data-outbound-kind": internal ? undefined : "external" };
       const portrait = item.kind !== "photos" && !youtubeVideoId(item.href);
       return <li key={item.id} data-row onClickCapture={onVideoSelect&&item.kind!=="photos"?event=>{event.preventDefault();event.stopPropagation();onVideoSelect(item);}:undefined} data-media-kind={item.kind} data-media-tile={preview && item.kind === "videos" && portrait ? "portrait" : "square"} data-content-asset-card={item.asset ? true : undefined}>
-        {badge}
         {item.asset ? <>{thumbnail}<a href={href} aria-label={label} {...external} /></> : <a href={href} aria-label={item.kind === "photos" ? label : `${playLabels[locale]} · ${label}`} {...external}>{thumbnail}{item.kind !== "photos" && <span className={mediaStyles.playIcon}><Play size={24} fill="currentColor" aria-hidden="true" /></span>}</a>}
       </li>;
     }
     return <li key={item.id} data-video-mark={compact&&item.kind!=="photos"&&!item.live&&!id?true:undefined} onClickCapture={onVideoSelect&&item.kind!=="photos"?event=>{event.preventDefault();event.stopPropagation();onVideoSelect(item);}:undefined} data-media-kind={item.kind} data-media-live={item.live||undefined} data-content-asset-card={item.asset ? true : undefined}>
       {item.asset ? <>{thumbnail}<a href={href} aria-label={captionlessLabel}>{body}</a></> : id ? <>{!compact&&activeVideo === item.id ? <iframe ref={videoFrame} className={mediaStyles.player} title={`${playLabels[locale]} · ${item.title}`} src={`https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&hl=${locale}`} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /> : <button type="button" className={mediaStyles.play} onClick={() => setActiveVideo(item.id)} aria-label={`${playLabels[locale]} · ${item.title}`}>{thumbnail}{item.live&&!thumbnailOnly&&<span className={mediaStyles.liveBadge}>● LIVE</span>}<span className={mediaStyles.playIcon}><Play size={24} fill="currentColor" aria-hidden="true" /></span></button>}{!gallery && !thumbnailOnly && <a href={href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{body}</a>}</>
         : item.live ? <><a className={mediaStyles.play} href={href} target="_blank" rel="noopener noreferrer" aria-label={`${playLabels[locale]} · ${item.title}`} data-outbound-kind="external">{thumbnail}{!thumbnailOnly && <span className={mediaStyles.liveBadge}>● LIVE</span>}<span className={mediaStyles.playIcon}><Play size={24} aria-hidden="true"/></span></a>{!gallery && !thumbnailOnly && <a href={href} target="_blank" rel="noopener noreferrer" data-outbound-kind="external">{body}</a>}</> : <a href={href} aria-label={captionlessLabel} target={internal ? undefined : "_blank"} rel={internal ? undefined : "noopener noreferrer"} data-outbound-kind={internal ? undefined : "external"}>{thumbnail}{body}</a>}
-      {badge}
       {compact&&item.kind!=="photos"&&!item.live&&!id&&<span className={mediaStyles.videoMark} aria-hidden="true"><Play size={12} fill="currentColor"/>{!thumbnailOnly && c.videos}</span>}
     </li>;
   }
