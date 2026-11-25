@@ -1,7 +1,5 @@
 {
   "guide": {
-    "points": "Cómo usar los puntos",
-    "dates": "Elige una fecha en la fortuna diaria y gasta 10P para ver la predicción de ese día. Se usan primero los puntos de actividad. Puedes volver a ver las predicciones que ya desbloqueaste. Las partidas se restablecen a medianoche en Corea.",
     "growth": "Cuida a tu mini",
     "growthDetail": "Inicia sesión y consulta el resultado de una lectura o termina una partida para ganar EXP de afinidad con tu favorito elegido. Puedes ganarla 1 vez al día por actividad y por favorito. Cada tipo de lectura permite ganar EXP de afinidad con hasta 3 favoritos al día."
   },
@@ -17,10 +15,12 @@
     "gameMinutes": "Las partidas gratis vuelven en {count} min"
   },
   "home": {
-    "gamePricing": "Cada juego incluye tres partidas gratis al día. Las tres primeras adicionales cuestan 100P, 300P y 500P. A partir de la cuarta, cada partida cuesta 1.000P, sin límite diario.",
+    "mileageGuideTitle": "Cómo usar tus millas",
+    "datePricing": "Consulta la fortuna de otra fecha por 10M. Primero se usan las millas que ganas en actividades. Puedes volver a ver las lecturas desbloqueadas. Las partidas se renuevan a medianoche en Corea.",
+    "gamePricing": "Cada juego incluye tres partidas gratis al día. Las tres primeras adicionales cuestan 10M, 30M y 50M. A partir de la cuarta, cada partida cuesta 100M, sin límite diario.",
     "todayResult": "Resultado de hoy",
     "playsLeft": "{n} gratis",
-    "extraCost": "Extra {n}P",
+    "extraCost": "Extra {n}M",
     "playsDone": "Vuelve mañana",
     "rankingError": "No se pudo cargar la clasificación.",
     "descriptions": {
@@ -412,11 +412,11 @@
     "askLoadFailed": "No se pudieron cargar las preguntas.",
     "askLimit": "Ya usaste todas las preguntas de hoy.",
     "askRemind": "Avísame mañana",
-    "askExtraCta": "1 más por {cost}P",
-    "askExtraTitle": "1 pregunta más por {cost}P",
+    "askExtraCta": "1 más por {cost}M",
+    "askExtraTitle": "1 pregunta más por {cost}M",
     "askExtraLabel": "Preguntas extra restantes",
-    "askExtraPay": "Usar {cost}P y preguntar",
-    "askExtraShort": "No tienes suficientes puntos",
+    "askExtraPay": "Usar {cost}M y preguntar",
+    "askExtraShort": "No tienes suficientes millas",
     "askReminded": "Aviso solicitado",
     "askRemindNoMail": "Verifica tu correo para recibir avisos",
     "askRemindFailed": "No se pudo solicitar el aviso",

@@ -93,9 +93,9 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
         </div>
       </section>)}
       <section className={styles.panel}>
-        <FanHeading>{guide.points}</FanHeading>
+        <FanHeading>{names.mileageGuideTitle}</FanHeading>
         <FanText role="body">{names.gamePricing}</FanText>
-        <FanText role="body">{guide.dates}</FanText>
+        <FanText role="body">{names.datePricing}</FanText>
       </section>
       <section className={styles.growth}>
         <Image unoptimized src="/chemi/grow/room-changha-v2.webp" width={320} height={320} alt="" />

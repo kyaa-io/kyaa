@@ -72,14 +72,14 @@ it('shows points, stamps and tier in one read-only row between the profile and t
   expect(before(name, stats)).toBe(true);
   expect(before(stats, passport)).toBe(true);
   const value = (label: string) => within(stats).getByText(label).closest('div')!.querySelector('dd')!.textContent;
-  expect(value('포인트')).toBe('375');
+  expect(value('마일리지')).toBe('375');
   expect(value('스탬프')).toBe('3/9');
-  expect(value('등급')).toBe('실버 1');
+  expect(value('등급')).toBe('실버 Ⅰ');
   expect(within(stats).queryByText('하트')).toBeNull();
   expect(within(stats).queryByText('응모권')).toBeNull();
   expect(within(stats).queryByRole('link')).toBeNull();
   // 등급 칸만 눌린다: 이름 옆 (i)와 같은 등급 안내 팝업을 연다.
-  const tier = within(stats).getByRole('button', { name: '실버 1' });
+  const tier = within(stats).getByRole('button', { name: '실버 Ⅰ' });
   expect(within(stats).getAllByRole('button')).toHaveLength(1);
   expect(screen.queryByRole('dialog', { name: '등급 체계를 알아볼까요?' })).toBeNull();
   fireEvent.click(tier);
@@ -113,10 +113,10 @@ it('shows stamp progress and the next tier with earned stamps in colour and the 
   expect(within(card).getByText('이번 쪽 3/9')).toBeInTheDocument();
   expect(within(card).getByRole('progressbar', { name: '패스포트 이번 쪽 스탬프 3/9칸' })).toHaveAttribute('aria-valuenow', '3');
   expect(within(card).getByRole('progressbar', { name: '패스포트 이번 쪽 스탬프 3/9칸' })).toHaveAttribute('aria-valuemax', '9');
-  expect(within(card).getByText('실버 2까지 도장 3칸')).toBeInTheDocument();
+  expect(within(card).getByText('실버 Ⅱ까지 도장 3칸')).toBeInTheDocument();
   // 다음 단계는 남은 도장 수만큼 빈 칸이다(0% 진행이라 전부 비어 있다).
-  expect(within(card).getByRole('progressbar', { name: '실버 2까지 도장 3칸' })).toHaveAttribute('aria-valuemax', '3');
-  expect(within(card).getByRole('progressbar', { name: '실버 2까지 도장 3칸' })).toHaveAttribute('aria-valuenow', '0');
+  expect(within(card).getByRole('progressbar', { name: '실버 Ⅱ까지 도장 3칸' })).toHaveAttribute('aria-valuemax', '3');
+  expect(within(card).getByRole('progressbar', { name: '실버 Ⅱ까지 도장 3칸' })).toHaveAttribute('aria-valuenow', '0');
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'filled')).toHaveLength(3);
   expect(within(card).getAllByRole('listitem').filter(item => item.getAttribute('data-state') === 'empty')).toHaveLength(6);
   expect(within(card).getByLabelText('출석, 찍힘')).toBeInTheDocument();

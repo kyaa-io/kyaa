@@ -15,7 +15,6 @@ import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { dukjilText } from "@/features/dukjil/ui/dukjil-copy";
-import { STAMPS_PER_HEART } from "@/features/groups/ui/stan-lucky-cheer";
 import type { AppLocale } from "@/i18n/locales";
 import { GROUP_WALLET_POINT_COST } from "@/server/group-wallet/domain";
 import { walletCopy } from "./copy";
@@ -62,7 +61,7 @@ function useRewardedAdReady() {
  *  `part` renders one card (tickets heads 럭키드로우, hearts heads 덕질 미션); without it both stack (fixtures). The button runs behind the
  *  rewarded ad (video icon in every state), is primary only when it can be pressed, and reads 준비 중 without an ad unit. A guest sees
  *  the same cells with locked values and the sign-in action in the button's place. */
-export function StanWallet({ locale, state, stamps, hearts, links, className, favoritePicker, part, loginHref }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode; part?: "tickets" | "hearts"; /** Signed out: the buttons and the received cell lead here (the login) instead of showing `state.action`. */ loginHref?: string }) {
+export function StanWallet({ locale, state, stamps, links, className, favoritePicker, part, loginHref }: { locale: AppLocale; state: WalletCardState; stamps: StanSlot; hearts: StanSlot; links: { hearts: string; claim?: string }; className?: string; favoritePicker?: ReactNode; part?: "tickets" | "hearts"; /** Signed out: the buttons and the received cell lead here (the login) instead of showing `state.action`. */ loginHref?: string }) {
   const w = walletCopy(locale), s = (key: Parameters<typeof dukjilText>[1], values?: unknown[]) => dukjilText(locale, key, values);
   const [open, setOpen] = useState(false), titleId = useId(), wide = useFanWide(), Overlay = wide ? Dialog : BottomSheet;
   const pendingRequest = usePendingExchange();
@@ -71,9 +70,6 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
   const points: StanSlot = state.kind === "ready" ? state.points : state.kind === "guest" ? "locked" : state.kind === "loading" ? "loading" : "missing";
   const tickets = state.kind === "ready" ? state.tickets : points;
   const ready = state.kind === "ready", affordable = ready && state.points >= pointCost;
-  const stampCount = typeof stamps === "number" ? stamps : 0, full = stampCount > 0 && stampCount % STAMPS_PER_HEART === 0;
-  const pageStamps = full ? STAMPS_PER_HEART : stampCount % STAMPS_PER_HEART;
-  const claimable = full && Boolean(links.claim) && adReady;
   const n = (value: number) => value.toLocaleString(locale);
   const ko = locale === "ko";
   /** 보유 N: the real balance (137P stays 137P past the cost), or the locked / loading mark in the same line. A balance that failed to load leaves the line empty (the section's own error and retry say so) — no dash. */
@@ -99,19 +95,18 @@ export function StanWallet({ locale, state, stamps, hearts, links, className, fa
     </div>
     {button}
   </div>;
-  const flashes = { points: useBalanceFlash(points), tickets: useBalanceFlash(tickets), stamps: useBalanceFlash(stamps), hearts: useBalanceFlash(hearts) };
+  const flashes = { points: useBalanceFlash(points), tickets: useBalanceFlash(tickets) };
   const show = (name: "tickets" | "hearts") => !part || part === name;
-  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? `${s("stanFlowStamps")} → ${s("stanFlowHearts")}` : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
+  return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? s("stanFlowStamps") : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
     {show("tickets") ? swap("tickets",
-      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}P` : ""), amount: amount("spend", pointCost, "P") },
+      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}M` : ""), amount: amount("spend", pointCost, "M") },
       { cell: "tickets", flash: flashes.tickets, kind: "ticket", name: w.tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("gain", 1, ko ? "장" : "") },
       `/my/raffles?locale=${locale}`,
       action(ko ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })) : null}
-    {show("hearts") ? favoritePicker ? <div className={`${styles.swap} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : swap("hearts",
-      { cell: "stamps", flash: flashes.stamps, kind: "stamp", name: s("stanFlowStamps"), held: held(stamps, `${pageStamps} / ${STAMPS_PER_HEART}`), amount: amount("spend", STAMPS_PER_HEART, ko ? "개" : "") },
-      { cell: "hearts", flash: flashes.hearts, kind: "heart", name: s("stanFlowHearts"), held: held(hearts, typeof hearts === "number" ? `${n(hearts)}${ko ? "개" : ""}` : ""), amount: amount("gain", 1, ko ? "개" : "") },
-      links.hearts,
-      action(s("stanClaim"), claimable, links.claim ? { href: links.claim } : null)) : null}
+    {show("hearts") ? favoritePicker ? <div className={`${styles.swap} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : <Link className={styles.cell} href={(state.kind === "guest" && loginHref ? loginHref : links.hearts) as Route}>
+      <RewardIcon kind="stamp" size={40} className={styles.cellAsset} />
+      <span>{s("stanFlowStamps")} {held(stamps, typeof stamps === "number" ? n(stamps) : "")}</span>
+    </Link> : null}
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
     <Overlay open={open && ready} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>
       {!wide && <span className={styles.handle} aria-hidden="true" />}

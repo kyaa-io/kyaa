@@ -1,7 +1,5 @@
 {
   "guide": {
-    "points": "Cách dùng điểm",
-    "dates": "Chọn ngày trong mục Vận may hằng ngày và dùng 10P để mở lời dự đoán của ngày đó. Hệ thống dùng điểm hoạt động trước. Bạn có thể xem lại những dự đoán đã mở. Lượt chơi được làm mới vào nửa đêm theo giờ Hàn Quốc.",
     "growth": "Nuôi dưỡng mini của bạn",
     "growthDetail": "Đăng nhập rồi xem kết quả dự đoán hoặc hoàn thành một ván để nhận EXP thân thiết với thần tượng đã chọn. Bạn có thể nhận EXP 1 lần mỗi ngày cho mỗi hoạt động với mỗi thần tượng. Mỗi loại dự đoán cho EXP thân thiết với tối đa 3 thần tượng mỗi ngày."
   },
@@ -17,10 +15,12 @@
     "gameMinutes": "Lượt chơi miễn phí mở lại sau {count} phút"
   },
   "home": {
-    "gamePricing": "Mỗi trò chơi có ba lượt miễn phí mỗi ngày. Ba lượt thêm đầu tiên lần lượt tốn 100P, 300P và 500P. Từ lượt thêm thứ tư, mỗi lượt tốn 1.000P và không giới hạn số lượt.",
+    "mileageGuideTitle": "Cách dùng dặm",
+    "datePricing": "Mở vận may của ngày khác với 10M. Dặm kiếm được từ hoạt động sẽ được dùng trước. Bạn có thể xem lại nội dung đã mở. Lượt chơi được đặt lại lúc nửa đêm theo giờ Hàn Quốc.",
+    "gamePricing": "Mỗi trò chơi có ba lượt miễn phí mỗi ngày. Ba lượt thêm đầu tiên lần lượt tốn 10M, 30M và 50M. Từ lượt thêm thứ tư, mỗi lượt tốn 100M và không giới hạn số lượt.",
     "todayResult": "Kết quả hôm nay",
     "playsLeft": "Miễn phí: {n}",
-    "extraCost": "Lượt thêm {n}P",
+    "extraCost": "Lượt thêm {n}M",
     "playsDone": "Mai chơi tiếp",
     "rankingError": "Không tải được bảng xếp hạng.",
     "descriptions": {
@@ -412,11 +412,11 @@
     "askLoadFailed": "Không tải được câu hỏi.",
     "askLimit": "Bạn đã dùng hết câu hỏi hôm nay.",
     "askRemind": "Nhắc tôi ngày mai",
-    "askExtraCta": "Thêm 1 với {cost}P",
-    "askExtraTitle": "Thêm 1 câu hỏi với {cost}P",
+    "askExtraCta": "Thêm 1 với {cost}M",
+    "askExtraTitle": "Thêm 1 câu hỏi với {cost}M",
     "askExtraLabel": "Câu hỏi thêm còn lại",
-    "askExtraPay": "Dùng {cost}P để hỏi",
-    "askExtraShort": "Không đủ điểm",
+    "askExtraPay": "Dùng {cost}M để hỏi",
+    "askExtraShort": "Không đủ dặm",
     "askReminded": "Đã đăng ký nhắc",
     "askRemindNoMail": "Xác minh email để nhận lời nhắc",
     "askRemindFailed": "Không đăng ký nhắc được",
@@ -488,7 +488,7 @@
     "star_people": "Quan hệ",
     "star_money": "Tiền bạc",
     "star_work": "Công việc và học tập",
-    "pointsShort": "Còn thiếu {points}P.",
+    "pointsShort": "Còn thiếu {points}M.",
     "testTopup": "Nạp thử",
     "depthHigh": "Chủ động bước tới",
     "depthMid": "Giữ nhịp quen thuộc",

@@ -29,7 +29,7 @@ describe("FanTierJourney", () => {
   });
   it("names the stage for a step inside a tier", () => {
     render(<FanTierJourney {...base} tier="Gold" stage={stage(["gold-1", "Gold", 1, 4, 1], ["gold-2", "Gold", 2, 5, 8], 5, "hearts", 28)} />);
-    expect(screen.getByText("골드 2까지 하트 5개")).toBeTruthy();
+    expect(screen.getByText("골드 Ⅱ까지 하트 5개")).toBeTruthy();
   });
   it("shows the tier alone without a stage projection", () => {
     render(<FanTierJourney {...base} tier="Silver" />);

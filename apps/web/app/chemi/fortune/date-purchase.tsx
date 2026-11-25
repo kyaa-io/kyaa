@@ -106,7 +106,7 @@ export function DatePurchase({
   }
   return (
     <section id="fortune-date" className={`${styles.panel} ${styles.purchase}`}>
-      <FanHeading as="h2">{uiText("anotherDate")}{standardPrice !== undefined && ` · ${standardPrice}P`}</FanHeading>
+      <FanHeading as="h2">{uiText("anotherDate")}{standardPrice !== undefined && ` · ${standardPrice}M`}</FanHeading>
       <BirthDateField
         label={uiText("date")}
         value={text}
