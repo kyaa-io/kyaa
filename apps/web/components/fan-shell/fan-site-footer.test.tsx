@@ -6,7 +6,6 @@ import { describe, expect, it } from "vitest";
 
 import { APP_LOCALES } from "@/i18n/locales";
 import { FanSiteFooter } from "./fan-site-footer";
-import { KOREA_BUSINESS_INFO } from "./korea-business-info";
 
 const footerCss = readFileSync(
   resolve(process.cwd(), "components/fan-shell/fan-site-footer.module.css"),
@@ -146,7 +145,8 @@ describe("FanSiteFooter", () => {
 
       const more = [...footer.querySelectorAll("dl > div")];
       expect(more).toHaveLength(4);
-      expect(more[0].querySelector("dd")?.textContent).toBe(KOREA_BUSINESS_INFO.mailOrderNumber ?? (locale === "ko" ? "신고 준비 중" : "Filing in progress"));
+      expect(more[0].querySelector("dd")?.textContent).toBe("제2026-서울강남-06769호");
+      expect(footer).not.toHaveTextContent(/신고 준비 중|Filing in progress/);
       expect(more[1].querySelector("dd")).toHaveTextContent("010-6434-8327");
       expect(more[2].querySelector("dd")).toHaveTextContent("support@kyaa.io");
       expect(more[3].querySelector("dd")).toHaveTextContent("Amazon Web Services");

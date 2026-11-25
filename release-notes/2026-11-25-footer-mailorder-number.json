@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "kyaa.io 바닥글에 통신판매업 신고번호(제2026-서울강남-06769호)가 표시됩니다.",
+    "신고 준비 중이라는 문구는 바닥글에서 없어졌어요. 화면의 다른 부분은 달라지지 않아요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/pricing",
+  "images": [
+    "release-notes/images/2026-11-25-footer-mailorder-390.png",
+    "release-notes/images/2026-11-25-footer-mailorder-1440.png"
+  ]
+}
