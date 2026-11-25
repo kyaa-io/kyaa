@@ -181,7 +181,8 @@ function makeLedger(count: number) {
 
 /** The same ledger verified with no stored facts: the reference result of a full verification. */
 async function fullVerification(ledger: ReturnType<typeof makeLedger>) {
-  return readFinalizedActionSnapshot({ ...ledger.options, facts: undefined });
+  const { facts: _stored, ...withoutFacts } = ledger.options;
+  return readFinalizedActionSnapshot(withoutFacts);
 }
 
 it("verifies every action in full on the first run, proves event blocks by their transactions and records one fact per action", async () => {
