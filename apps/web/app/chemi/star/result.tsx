@@ -27,7 +27,8 @@ import {
   overallHeadline,
   pickReasons,
   reasonView,
-  signNames,
+  starCopy,
+  starSignName,
   starCharacters,
   starSayLine,
   todayDo,
@@ -128,14 +129,14 @@ export function StarResult({
   const stars = result.stars;
   const best = bestDomain(stars);
   const worst = worstDomain(stars);
-  const sunName = signList(result.signs.sun, (sign) => signNames[sign].full);
-  const sunBare = signList(result.signs.sun, (sign) => signNames[sign].bare);
-  const moonBare = signList(result.signs.moon, (sign) => signNames[sign].bare);
+  const sunName = signList(result.signs.sun, (sign) => starSignName(locale, sign, "full"), locale);
+  const sunBare = signList(result.signs.sun, (sign) => starSignName(locale, sign, "bare"), locale);
+  const moonBare = signList(result.signs.moon, (sign) => starSignName(locale, sign, "bare"), locale);
   const signOf = useMemo(() => {
     const byBody = new Map(result.natal.map((planet) => [planet.body, planet.sign]));
     return (target: string) => byBody.get(target) ?? null;
   }, [result.natal]);
-  const reasons = pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate, character));
+  const reasons = pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate, character, locale));
 
   // 처음 만든 결과의 보상 연출과 오늘 받은 몫을 한 번 가져온다.
   useEffect(() => {
@@ -186,7 +187,7 @@ export function StarResult({
       if (!response.ok) throw Error();
       const card = await response.json();
       const href = new URL(card.url, location.origin).href;
-      if (via === "send") await navigator.share({ title: overallHeadline[stars.overall - 1], url: href });
+      if (via === "send") await navigator.share({ title: starCopy(locale, overallHeadline[stars.overall - 1]!), url: href });
       else {
         await navigator.clipboard.writeText(href);
         showFanToast({ title: uiText("copyDone"), tone: "success" });
@@ -236,7 +237,7 @@ export function StarResult({
             {uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate))})} · {sunName}
           </FanText>
           <div className={styles.titleRow}>
-            <FanHeading as="h1">{overallHeadline[stars.overall - 1]}</FanHeading>
+            <FanHeading as="h1">{starCopy(locale, overallHeadline[stars.overall - 1]!)}</FanHeading>
           </div>
           <FanText as="p" role="meta">
             {result.timeKnown ? uiText("withTime") : uiText("noTime")}
@@ -287,8 +288,8 @@ export function StarResult({
                   </div>
                   <FanText as="p" role="body">
                     {key === "overall"
-                      ? overallHeadline[stars.overall - 1]
-                      : starDomainText(key, stars[key], signOf, character)}
+                      ? starCopy(locale, overallHeadline[stars.overall - 1]!)
+                      : starDomainText(key, stars[key], signOf, character, locale)}
                   </FanText>
                 </li>
               );
@@ -330,7 +331,7 @@ export function StarResult({
         <Reaction
           character={character}
           name={name}
-          line={starSayLine(character, best, stars[best])}
+          line={starSayLine(character, best, stars[best], locale)}
           action={mobileAction ? null : primaryAction}
           extra={<div className={styles.desktopOnly}>{shareAction}</div>}
         />
@@ -344,7 +345,7 @@ export function StarResult({
                 <ul>
                   {todayDo[best].map((item) => (
                     <li data-row="star" key={item}>
-                      <FanText role="body">{item}</FanText>
+                      <FanText role="body">{starCopy(locale, item)}</FanText>
                     </li>
                   ))}
                 </ul>
@@ -354,7 +355,7 @@ export function StarResult({
                 <ul>
                   {todayDont[worst].map((item) => (
                     <li data-row="star" key={item}>
-                      <FanText role="body">{item}</FanText>
+                      <FanText role="body">{starCopy(locale, item)}</FanText>
                     </li>
                   ))}
                 </ul>
@@ -400,12 +401,12 @@ export function StarResult({
           character={character}
           name={name}
           dateText={uiText("skyBy", { name, subject: withParticle(name, "이가"), date: new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date(reading.kstDate))})}
-          headline={overallHeadline[stars.overall - 1]!}
+          headline={starCopy(locale, overallHeadline[stars.overall - 1]!)}
           overall={stars.overall}
           sign={sunName}
           best={best}
           bestStar={stars[best]}
-          line={starSayLine(character, best, stars[best])}
+          line={starSayLine(character, best, stars[best], locale)}
         />
       </FanDialog>
     </article>

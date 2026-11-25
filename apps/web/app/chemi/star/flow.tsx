@@ -32,7 +32,8 @@ import {
   overallHeadline,
   pickReasons,
   reasonView,
-  signNames,
+  starCopy,
+  starSignName,
   starBestLine,
   starCalcLine,
   starCharacters,
@@ -424,11 +425,11 @@ export function StarFlow({
     const signOf = (target: string) =>
       result.natal.find((planet) => planet.body === target)?.sign ?? null;
     return {
-      reasons: pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate, character)),
-      sunName: signList(result.signs.sun, (sign) => signNames[sign].full),
-      sunBare: signList(result.signs.sun, (sign) => signNames[sign].bare),
+      reasons: pickReasons(result.reasons).map((reason) => reasonView(reason, signOf, reading.kstDate, character, locale)),
+      sunName: signList(result.signs.sun, (sign) => starSignName(locale, sign, "full"), locale),
+      sunBare: signList(result.signs.sun, (sign) => starSignName(locale, sign, "bare"), locale),
     };
-  }, [reading, result, character]);
+  }, [reading, result, character, locale]);
 
   const firstStars = starTalkNumber(step) === 1 && !!result?.stars && phase === "idle";
   const [revealSettled, setRevealSettled] = useState(false);
@@ -493,23 +494,24 @@ export function StarFlow({
     : expressionFor.low;
   const line =
     step === "calc"
-      ? starCalcLine(character)
+      ? starCalcLine(character, locale)
       : talk === 1 && stars && derived
-        ? starSignLine(character, derived.sunName, overallHeadline[stars.overall - 1]!)
+        ? starSignLine(character, derived.sunName, starCopy(locale, overallHeadline[stars.overall - 1]!), locale)
         : talk === 2 && best && worst
-          ? starBestLine(character, domainLabels[best], domainLabels[worst])
+          ? starBestLine(character, starCopy(locale, domainLabels[best]), starCopy(locale, domainLabels[worst]), locale)
           : talk === 3
-            ? starWhyLine(character, picked === "why")
+            ? starWhyLine(character, picked === "why", locale)
             : talk === 4 && derived
               ? starPairLine(
                   character,
                   derived.sunBare,
-                  creator ? signNames[creator].bare : null,
+                  creator ? starSignName(locale, creator, "bare") : null,
                   picked === "pair",
                   stars?.overall,
+                  locale,
                 )
               : needBirth
-                ? starEnterLine(character, "birth", koNickname)
+                ? starEnterLine(character, "birth", koNickname, locale)
                 : koNickname
                   ? starEnterLine(character, "enter", koNickname)
                   : text(`starEnter_${character}`);
@@ -634,7 +636,7 @@ export function StarFlow({
                       />
                     </div>
                     <FanText as="p" role="body">
-                      {domainLine[key][stars[key] - 1]}
+                      {starCopy(locale, domainLine[key][stars[key] - 1])}
                     </FanText>
                   </li>
                 ))}
@@ -667,7 +669,7 @@ export function StarFlow({
                         {name}
                       </FanText>
                       <FanText as="span" role="meta">
-                        {signNames[creator].bare}
+                        {starSignName(locale, creator, "bare")}
                       </FanText>
                     </span>
                   </div>
