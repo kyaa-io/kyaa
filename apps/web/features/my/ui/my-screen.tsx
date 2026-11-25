@@ -1,4 +1,5 @@
 "use client";
+import { GOODS_MENU } from "@/features/groups/goods-menu";
 import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
 import { FanCollapsible, FanCollapsibleTrigger } from "@/components/fan-ui/fan-collapsible";
@@ -31,7 +32,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { myHomeText } from "./my-home-copy";
-import { MyHeartExchange } from "@/features/groups/ui/group-benefits-screen";
+import { MyDailyMissions, MyHeartExchange } from "@/features/groups/ui/group-benefits-screen";
 import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTierName } from "./my-passport-card";
 import { GiftNavLink } from "@/features/gifts/ui/gift-nav-link";
 import { GiftNotice } from "@/features/gifts/ui/gift-notice";
@@ -327,6 +328,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
         <div id="my-passport" className={styles.homeRow}>
           <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
+          {GOODS_MENU&&<MyDailyMissions locale={locale}/>}
           <MyHeartExchange locale={locale}/>
         </div>
       </div>
@@ -577,6 +579,7 @@ function MyGuest({ locale }: { locale: FanLocale }) {
   return <div className={styles.pencilMy}>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
+      {GOODS_MENU&&<MyDailyMissions locale={locale} signedOut/>}
       <MyHeartExchange locale={locale}/>
     </div>
     <MyShortcuts locale={locale} items={myShortcutItems(locale, loginTo)}/>

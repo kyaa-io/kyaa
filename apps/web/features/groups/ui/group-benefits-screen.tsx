@@ -1,4 +1,5 @@
 "use client";
+import { GOODS_MENU } from "@/features/groups/goods-menu";
 import {WalletBalances,WalletCard} from '@/features/group-wallet/ui/wallet-card';
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import {StanWallet,type StanSlot} from '@/features/group-wallet/ui/stan-wallet';
@@ -72,11 +73,11 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false,ba
  const auth=useGroupRequest(),c=groupBenefitsCopy(locale),bias=useStanBias(locale,initialHeart,signedOut);
  // 대표 11/14 01:53 (replaces 사용자 11/13 11:2x's login gate): signed out, the tab opens as it is — locked balances, public mission points, no 내역 — and each action (교환·받기·응모·덕질 행) leads to the login, which returns to /benefits.
  const guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated)||bias.status==='guest';
- const sections=<><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut} wallet={<BenefitsWallet key={`${locale}:${auth.ownerKey}:tickets`} part='tickets' locale={locale} signedOut={signedOut} bias={bias}/>}/>{banner&&<div className={styles.pBanner} data-dukjil-banner-slot=''><ThinBanner banner={banner} locale={locale} size='mid'/></div>}<BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/></>;
+ const sections=<><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut} wallet={GOODS_MENU?null:<BenefitsWallet key={`${locale}:${auth.ownerKey}:tickets`} part='tickets' locale={locale} signedOut={signedOut} bias={bias}/>}/>{banner&&<div className={styles.pBanner} data-dukjil-banner-slot=''><ThinBanner banner={banner} locale={locale} size='mid'/></div>}{!GOODS_MENU&&<BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/>}</>;
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page} data-dukjil-side={sideBanners.length?'':undefined}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
- <div className={styles.main} data-dukjil-banner={banner?'':undefined}>{sections}{!guest&&<BenefitsHistory locale={locale}/>}</div>
+ <div className={styles.main} data-dukjil-banner={banner?'':undefined}>{sections}{!GOODS_MENU&&!guest&&<BenefitsHistory locale={locale}/>}</div>
  </BenefitsSections></BenefitsAlerts>
  {sideBanners.length>0&&<aside className={styles.pSide} data-dukjil-side-slot=''>{sideBanners.map(banner=><ThinBanner key={banner.placement} banner={banner} locale={locale} size='side'/>)}</aside>}
  </FanContentContainer></FanAppFrame>;
@@ -103,6 +104,10 @@ function BenefitsLucky({locale,bias,signedOut,wallet}:{locale:AppLocale;bias:Sel
 /** 덕질 미션 section (대표 11/13 09:39): its header, the stamps → heart swap line, the mission book strip, then 오늘의 덕질 — every catalog
  *  activity for the viewer's favorite or first joined fan page; its rows lead to that page. Guests and viewers without a page see the same
  *  list and go to the login or the page directory. The header, swap line and strip stay when the attendance policy is off. */
+export function MyDailyMissions({locale,signedOut=false}:{locale:AppLocale;signedOut?:boolean}){
+ const bias=useStanBias(locale,null,signedOut);
+ return <BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/>;
+}
 function BenefitsDailyMissions({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
  const auth=useGroupRequest(),status=useDukjilStatus(locale),joined=useGroupResource(auth.authenticated?'/api/groups?mine=joined&limit=50':null,parseJoined),[attendance,setAttendance]=useState(false),allFailed=Boolean(useContext(SectionContext)?.allFailed);
  const {guest,passportId,stripSlots}=useStanNumbers(bias,signedOut),headingId=useId();
@@ -115,8 +120,8 @@ function BenefitsDailyMissions({locale,bias,signedOut}:{locale:AppLocale;bias:Se
  const page=chosen?{slug:chosen.slug,name:chosen.name}:first?{slug:first.slug,name:first.name}:null,slug=page?.slug??'',title=dukjilText(locale,'missionsTitle'),directory=`/pages/groups?locale=${locale}`;
  const favoriteAvatar=chosen?<CreatorAvatar slug={chosen.slug} src={chosen.image} photos={undefined} size={24}/>:null;
  const favorite=bias.status!=='guest'&&(stanFavorite(bias)||bias.options.length>0)?<span className={styles.favorite}><span aria-hidden="true">·</span>{bias.options.length?<FavoritePickMenu locale={locale} bias={bias} className={styles.favoritePick}>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name??dukjilText(locale,'heartPick')}</span><span aria-hidden="true">▾</span></FavoritePickMenu>:<>{favoriteAvatar}<span className={styles.favoriteName}>{stanFavorite(bias)?.name}</span></>}</span>:null;
- const list=pending?<div className={styles.missionsPending} aria-busy='true' data-missions-pending=''><FanHeading as='h3'>{title}</FanHeading><FanSkeletonRows rows={5}/></div>:status==='on'?<FanMissions all locale={locale} slug={slug} title={title} loginReturn={`/benefits?locale=${locale}`} titleSuffix={favorite} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>:null;
- return <section className={`${styles.pMissions} ${styles.missionsSection}`} hidden={allFailed} aria-labelledby={headingId} data-missions-section=''>{head}<DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}>{bias.selected?<StanPassportBook locale={locale} option={bias.selected}/>:<StanMissionStrip locale={locale} slots={stripSlots} href={stripHref}/>}{list}{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></section>;
+ const list=pending?<div className={styles.missionsPending} aria-busy='true' data-missions-pending=''><FanHeading as='h3'>{title}</FanHeading><FanSkeletonRows rows={5}/></div>:status==='on'?<FanMissions all locale={locale} slug={slug} title={title} loginReturn={`${GOODS_MENU?"/my":"/benefits"}?locale=${locale}`} titleSuffix={favorite} passportHref={`/passports?locale=${locale}`} proofHref={`/${slug}?tab=certifications&locale=${locale}`} noPage={slug?undefined:directory} onAttendance={()=>setAttendance(true)}/>:null;
+ return <section className={`${styles.pMissions} ${styles.missionsSection}`} hidden={allFailed} aria-label={GOODS_MENU?title:undefined} aria-labelledby={GOODS_MENU?undefined:headingId} data-missions-section=''>{!GOODS_MENU&&head}<DukjilProvider key={slug} slug={slug||undefined} accountToday={!slug} locale={locale}>{GOODS_MENU?null:bias.selected?<StanPassportBook locale={locale} option={bias.selected}/>:<StanMissionStrip locale={locale} slots={stripSlots} href={stripHref}/>}{list}{attendance&&page&&<CreatorAttendanceEntry slug={slug} pageName={page.name} locale={locale} reviewHref={`/c/${encodeURIComponent(slug)}/verify?locale=${locale}`} onClose={()=>setAttendance(false)}/>}</DukjilProvider></section>;
 }
 /** 내역 (#wallet-history): the signed-in member's own point/ticket ledger; a guest never reaches it (the screen does not render it), so no request is made. */
 function BenefitsHistory({locale}:{locale:AppLocale}){
