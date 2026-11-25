@@ -31,7 +31,7 @@ export const CERTIFICATION_KINDS: ReadonlyArray<{ key: DukjilCopyKey; art: strin
 ];
 
 /** 덕질 정책 v1 `proof.points` — the 인증 reward when neither the page nor the loaded catalog gives one. */
-export const DEFAULT_PROOF_POINTS = 100;
+export const DEFAULT_PROOF_POINTS = 1000;
 
 const STATE_KEY: Record<CertificationListItem["status"], DukjilCopyKey> = { available: "certAvailable", preparing: "certPreparing", closed: "certClosed" };
 
