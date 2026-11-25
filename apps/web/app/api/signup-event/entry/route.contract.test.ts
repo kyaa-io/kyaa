@@ -26,7 +26,9 @@ it('registers a friend invite code through the existing referral after the entry
  vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:owner});mocks.refresh.mockResolvedValue('created');mocks.read.mockResolvedValue(snapshot());
  const post=(invite:unknown)=>POST(new Request('http://localhost',{method:'POST',body:JSON.stringify({invite})}));
  mocks.rpc.mockResolvedValue({state:'registered_pending_fan_verification'});
+ const info=vi.spyOn(console,'info').mockImplementation(()=>{});
  expect(await (await post('ab2300000000000000000001')).json()).toMatchObject({entered:true,invite:'registered'});
+ expect(info).toHaveBeenCalledExactlyOnceWith('RAFFLE_INVITE_REGISTERED');info.mockRestore();
  expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith('redeem_community_stamp_invite',{p_app_user_id:owner,p_code:'AB2300000000000000000001'});
  expect(mocks.refresh.mock.invocationCallOrder[0]).toBeLessThan(mocks.rpc.mock.invocationCallOrder[0]);
  mocks.refresh.mockResolvedValue('existing');

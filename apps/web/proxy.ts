@@ -63,6 +63,8 @@ export function proxy(request: NextRequest): NextResponse {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-byus-locale", locale);
     requestHeaders.set("x-byus-pathname", request.nextUrl.pathname);
+    // Counts opened friend-invite addresses of the raffle in the server log (no code is written). Link-preview fetches by messengers are included.
+    if (request.method === "GET" && request.nextUrl.pathname === "/s/raffle" && request.nextUrl.searchParams.has("invite") && !request.headers.has("rsc")) console.info("RAFFLE_INVITE_LANDING");
     // Always overwritten here, so a browser cannot send it in: the layout loads AdSense only when this says 1.
     const adsense = isAwsHosting() && adsenseEnabled(viewerOrigin);
     // The snippet goes only on screens that have page content: not on sign-in, member-only or pass-through screens.

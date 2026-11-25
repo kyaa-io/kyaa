@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   // registered: 친구 초대로 등록됨 · refused: 등록할 수 없는 코드(본인·이미 등록·기존 회원 등, 다시 보내지 않는다) · pending: 잠시 뒤 다시(계정 준비 중 등)
   let inviteState:'registered'|'refused'|'pending'|undefined;
   if(invite){
-   try{await deps.rpc('redeem_community_stamp_invite',{p_app_user_id:actor.appUserId,p_code:invite});inviteState='registered';}
+   try{await deps.rpc('redeem_community_stamp_invite',{p_app_user_id:actor.appUserId,p_code:invite});inviteState='registered';console.info('RAFFLE_INVITE_REGISTERED');}
    catch(error){
     const code=error instanceof Error?error.message:'';
     inviteState=/^COMMUNITY_STAMP_(SELF_INVITE|ALREADY_REDEEMED|INVITE_INELIGIBLE|INVALID_REQUEST|UNAVAILABLE)$/.test(code)?'refused':'pending';
