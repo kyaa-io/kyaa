@@ -57,9 +57,12 @@ export function LandingBrowserDialog({locale}:{locale:AppLocale}) {
       sessionStorage.setItem("kyaa.browser.attempt","1");
     } catch { if (!source) { url.searchParams.set("kyaa_browser",embeddedApp(ua)); history.replaceState(history.state,"",url); } }
     const plan = landingHandoff(ua,url);
-    dialog.current?.showModal();
-    setFallback(plan.fallback);
-    measure("overlay",embeddedApp(ua));
+    // The sign-in page carries its own in-app guide with email first; a full-screen sheet over it hid that.
+    if (url.pathname.replace(/\/$/,"") !== "/login") {
+      dialog.current?.showModal();
+      setFallback(plan.fallback);
+      measure("overlay",embeddedApp(ua));
+    }
     if (plan.target && !source) {
       measure("attempt",embeddedApp(ua));
       try { location.assign(plan.target); } catch { /* Manual actions remain available. */ }

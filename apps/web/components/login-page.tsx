@@ -177,9 +177,9 @@ export function LoginPage({
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
   const iosInstagram = useSyncExternalStore(subscribeToBrowserPolicy, getIosInstagramSnapshot, getServerBrowserHandoffSnapshot);
+  // Email leads inside another app's browser only once Privy says it accepts email; before that the tap would end in "not allowed".
+  const [emailLoginAvailable, setEmailLoginAvailable] = useState(false);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
-  // Privy in-app mode: set once the Google hand-off was tried, so the copy-link notice shows if the app ignores it.
-  const [handoffTried, setHandoffTried] = useState(false);
   // Set while the browser leaves for Cognito; a second tap must not start another authorization.
   const [oauthStarting, setOauthStarting] = useState(false);
   const [reauthenticationStarting, setReauthenticationStarting] = useState(false);
@@ -231,9 +231,18 @@ export function LoginPage({
       : null);
   const restartOAuthPath = appendLoginContext("/login", { returnTo, locale, intent, entity, authIntent });
   // The sign-in address handed to another browser. Session storage stays behind, so the event tag travels in returnTo.
-  const handoffLoginUrl = useCallback(() => new URL(appendLoginContext("/login", {
-    returnTo: withStoredEventSourceReturn(returnTo), locale, intent, entity, authIntent,
-  }), window.location.origin).href, [authIntent, entity, intent, locale, returnTo]);
+  const handoffLoginUrl = useCallback(() => {
+    const handed = new URL(appendLoginContext("/login", {
+      returnTo: withStoredEventSourceReturn(returnTo), locale, intent, entity, authIntent,
+    }), window.location.origin);
+    // The campaign tag also rides on the sign-in address itself, so the browser it opens in records where the visit came from.
+    const tagged = new URL(returnTo, window.location.origin);
+    for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_content"]) {
+      const value = tagged.searchParams.get(key);
+      if (value) handed.searchParams.set(key, value);
+    }
+    return handed.href;
+  }, [authIntent, entity, intent, locale, returnTo]);
   const oauthReturnPending = privy !== null && ["privy_oauth_code", "privy_oauth_state", "privy_oauth_provider"].some((key) => searchParams.has(key));
   const privyLoginErrorMessage = appleLoginEnabled
     ? locale === "ko" ? "로그인을 완료하지 못했어요. Google 또는 Apple 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.mc426e8d8a8f2, "We couldn't complete sign-in. Check your Google or Apple account, then try again.")
@@ -247,7 +256,6 @@ export function LoginPage({
         setLinkCopyState("idle");
         setError(null);
         // The copy-link notice stays visible in in-app browsers, so a failed hand-off never leaves the user stuck.
-        setHandoffTried(true);
         if (plan.kind === "external") {
           if (iosInstagram) {
           // Copy inside the tap so the link is already on the clipboard if the app ignores the hand-off.
@@ -287,6 +295,13 @@ export function LoginPage({
     rememberSession(true);
     window.location.assign(new URL(`/api/auth/cognito/start?${new URLSearchParams({ provider, returnTo, locale })}`, window.location.origin).href);
   }, [handoffLoginUrl, iosInstagram, locale, oauthGuard, oauthStarting, privy, privyLoginErrorMessage, returnTo]);
+
+  useEffect(() => {
+    if (!embeddedBrowser || !privy) return;
+    let current = true;
+    void privy.emailLoginAvailable().then((available) => { if (current) setEmailLoginAvailable(available); });
+    return () => { current = false; };
+  }, [embeddedBrowser, privy]);
 
   useEffect(() => privy?.subscribeOAuth({
     // The OAuth result can arrive on the return page before Privy reports `authenticated`.
@@ -462,18 +477,20 @@ export function LoginPage({
     error: sessionStateError,
   });
   const inAppPrivy = embeddedBrowser && privy;
-  const appleFirst = embeddedBrowser && /iPhone|iPad|iPod/i.test(navigator.userAgent);
   // Apps with no working hand-off (X) get the notice in place of a Google link that would do nothing.
   const googleHandoff = Boolean(inAppPrivy) && planGoogleLogin(navigator.userAgent, handoffLoginUrl(), isStandalone()).kind === "external";
-  const emailCodeButton = inAppPrivy && <FanAction variant="secondary" type="button"
-    disabled={!ready || authenticated || oauthStarting} onClick={() => {
+  // Inside another app's browser, email is the method that works there, so it leads; Apple follows and Google goes to the browser.
+  const emailCodeButton = inAppPrivy && emailLoginAvailable && <FanAction variant="primary" className={styles.emailMethod} type="button"
+    disabled={!ready || authenticated || oauthStarting} ariaBusy={authenticated || oauthStarting} onClick={() => {
       loginMeasurementRef.current = signupFunnelTracker.beginLogin("email", "provider", toContentLocale(locale));
       inAppPrivy.openEmailLogin();
     }}>{emailLoginCopy(locale)[0]}</FanAction>;
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
-    <div className={styles.browserNotice}>
+    <div className={inAppPrivy ? `${styles.browserNotice} ${styles.browserNoticeBelowMethods}` : styles.browserNotice}>
       <p className={styles.error} role="status">
-        {appleLoginEnabled
+        {inAppPrivy
+          ? locale === "ko" ? "브라우저에서 열면 Google 로그인도 할 수 있어요." : translate(locale, localizedMessages.mbrowserGoogle, "Open in your browser to sign in with Google.")
+          : appleLoginEnabled
           ? locale === "ko" ? "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속하거나, 아래 ‘Apple로 계속하기’를 눌러 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요." : translate(locale, localizedMessages.mbrowserHandoffApple, "Choose ‘Open in browser’ in the app menu to continue with Google, or tap Continue with Apple below. Or copy the sign-in link and open it in Safari or Chrome.")
           : locale === "ko" ? "앱 메뉴에서 ‘브라우저에서 열기’를 선택해 Google 로그인을 계속해 주세요. 또는 로그인 링크를 복사해 Safari나 Chrome에서 열어 주세요." : translate(locale, localizedMessages.mbrowserHandoff, "Choose ‘Open in browser’ in the app menu to continue with Google. Or copy the sign-in link and open it in Safari or Chrome.")}
       </p>
@@ -637,7 +654,7 @@ export function LoginPage({
           <ArrowRight />
         </button>}
         {!inAppPrivy && browserHandoffNotice}
-        {!appleFirst && emailCodeButton}
+        {emailCodeButton}
         {cognitoKakaoEnabled && !privy && <button className={styles.googleButton} type="button"
           disabled={!ready || authenticated || oauthStarting}
           aria-busy={authenticated || oauthStarting}
@@ -657,11 +674,10 @@ export function LoginPage({
             <ArrowRight />
           </button>
         )}
-        {appleFirst && emailCodeButton}
         {inAppPrivy && googleHandoff && <FanAction type="button" variant="text" onClick={() => startOAuthLogin("google")}>
           Google · {/Android/i.test(navigator.userAgent) ? "Chrome" : "Safari"} ↗
         </FanAction>}
-        {inAppPrivy && (!googleHandoff || handoffTried) && browserHandoffNotice}
+        {inAppPrivy && browserHandoffNotice}
         {!privy && <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />}
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
     </div>
