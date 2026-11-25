@@ -349,9 +349,6 @@ function RaffleInvitedBanner() {
   </div>;
 }
 
-/** 제목 안의 '+3'만 강조 글자로(당첨 확률 올리기 행의 +3과 같은 색). 언어마다 자리가 달라 글자를 나눠 그린다. */
-const withPlus = (line: string) => line.split(/(\+3)/).map((part, index) => part === '+3' ? <span key={index} className={styles.plus}>{part}</span> : part);
-
 /** 친구 초대 카드: 혜택 한 줄(큰 글자) · 조건 한 줄 · 내 초대 현황 · 큰 버튼 하나(공유 시트, 없으면 복사) · 링크 복사. */
 export function RaffleInviteCard() {
   const r = useRaffle();
@@ -359,7 +356,7 @@ export function RaffleInviteCard() {
   const text = raffleInviteText[r.locale];
   if (r.closed) return null;
   return <FanSurface as="div" className={styles.invite} data-raffle-invite>
-    <FanHeading as="h3"><FanDisplay role="title" className={styles.inviteHeadline}>{withPlus(text.headline)}</FanDisplay></FanHeading>
+    <FanHeading as="h3"><FanDisplay role="title" className={styles.inviteHeadline}>{text.headline}</FanDisplay></FanHeading>
     <FanDisplay role="caption" as="p" className={styles.muted}>{text.rule}</FanDisplay>
     <RaffleInviteStatus />
     <div className={styles.inviteActions}>
