@@ -54,6 +54,7 @@ export const GA4_EVENT_PARAMETERS = {
   post_create: { board: ["fan", "group"] },
   cheer: {},
   share: { method: ["native", "copy"], content_type: shareContent },
+  raffle_enter: { campaign: ["raffle-1125"], method: ["direct", "invite"] },
   raffle_entry: { kind: ["claim", "application", "ticket"] },
 } as const satisfies Record<string, Record<string, "string" | readonly (string | number)[]>>;
 

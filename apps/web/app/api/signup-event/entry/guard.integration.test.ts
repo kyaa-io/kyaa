@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({ authorize: vi.fn(), refresh: vi.fn(), read: vi
 vi.mock('@/server/fanpage/dependencies', () => ({ createFanpageDependencies: () => ({ authorize: mocks.authorize }) }));
 vi.mock('@/server/data/client', () => ({ createClient: () => ({}) }));
 vi.mock('@/server/config/env', () => ({ loadServerEnv: () => ({}) }));
-vi.mock('@/server/signup-event/refresh', () => ({ refreshLocalSignupEvent: mocks.refresh }));
+vi.mock('@/server/signup-event/refresh', () => ({ enterSignupRaffle: mocks.refresh }));
 vi.mock('@/server/signup-event/local', async original => ({ ...await original<typeof import('@/server/signup-event/local')>(), readLocalSnapshot: mocks.read }));
 vi.mock('@/server/signup-event/database', () => ({
   createSignupRaffleDatabase: () => ({}),
@@ -36,7 +36,7 @@ it.skipIf(!process.env.RAFFLE_TEST_DATABASE)('keeps excluded personal entries an
     const policy = { startsAt: new Date(now - 86400000).toISOString(), closesAt: new Date(now + 86400000).toISOString() };
     const window = [policy.startsAt, policy.closesAt];
     await db.query('set local role service_role');
-    const refresh = async (_: unknown, id: string, enter: boolean) => (await db.query('select public.refresh_signup_raffle_participant($1,$2,$3,$4) as ok', [id, enter, ...window])).rows[0].ok;
+    const refresh = async (_: unknown, id: string) => (await db.query('select public.enter_signup_raffle($1,$2,$3) as outcome', [id, ...window])).rows[0].outcome;
     const read = async (id: string | null) => ({ ...(await db.query('select public.read_signup_raffle_snapshot($1,$2,$3) as snapshot', [id, ...window])).rows[0].snapshot, policy });
     mocks.authorize.mockResolvedValue({ appUserId: owner });
     mocks.refresh.mockImplementation(refresh);
@@ -47,7 +47,8 @@ it.skipIf(!process.env.RAFFLE_TEST_DATABASE)('keeps excluded personal entries an
       expect(response.status).toBe(200);
       expect(await response.json()).toMatchObject({ entered: true, chances: 1 });
     }
-    for (const id of [disabled, restricted, eligible]) expect(await refresh(null, id, true)).toBe(true);
+    expect(await refresh(null, owner)).toBe('existing');
+    for (const id of [disabled, restricted, eligible]) expect(await refresh(null, id)).toBe('created');
     await db.query('reset role');
     await db.query("update public.app_users set status='disabled' where id=$1", [disabled]);
     await db.query('set local role service_role');

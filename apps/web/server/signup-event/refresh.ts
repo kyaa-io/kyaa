@@ -16,3 +16,18 @@ export async function refreshLocalSignupEvent(database: Pick<DataClient, 'rpc'>,
     return false;
   }
 }
+
+export async function enterSignupRaffle(database: Pick<DataClient, 'rpc'>, userId: string): Promise<'created' | 'existing' | 'rejected'> {
+  if (!localSignupEnabled()) return 'rejected';
+  try {
+    const policy = rafflePolicySchema.parse({});
+    const result = await database.rpc('enter_signup_raffle', {
+      p_user_id: userId, p_starts_at: policy.startsAt, p_closes_at: policy.closesAt,
+    });
+    if (result.error) throw new Error('RAFFLE_ENTRY_UNAVAILABLE');
+    return result.data === 'created' || result.data === 'existing' ? result.data : 'rejected';
+  } catch (error) {
+    console.error('RAFFLE_ENTRY_FAILED', error instanceof Error ? error.message : 'unknown');
+    return 'rejected';
+  }
+}
