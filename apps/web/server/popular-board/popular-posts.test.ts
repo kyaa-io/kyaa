@@ -44,10 +44,11 @@ describe("popular posts route", () => {
     expect((await handler(new Request("http://x/api/public/popular-posts?period=today&period=week"))).status).toBe(400);
   });
 
-  it("keeps the viewer id and the flag together for signed-in readers", async () => {
-    const { rpc, handler } = make(false);
+  it("reads the shared list with the flag for signed-in readers and checks the sign-in", async () => {
+    const { rpc, authorize, handler } = make(false);
     await handler(new Request("http://x/api/public/popular-posts?locale=en", { headers: { authorization: "Bearer t" } }));
-    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_period", { p_app_user_id: "11111111-1111-4111-8111-111111111111", p_locale: "en", p_page: 1, p_include_groups: false, p_sort: "likes", p_period: "week" });
+    expect(authorize).toHaveBeenCalledWith("Bearer t");
+    expect(rpc).toHaveBeenCalledWith("read_public_popular_posts_period", { p_app_user_id: null, p_locale: "en", p_page: 1, p_include_groups: false, p_sort: "likes", p_period: "week" });
   });
 });
 
