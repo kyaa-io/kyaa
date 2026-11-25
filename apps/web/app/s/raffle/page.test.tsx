@@ -5,7 +5,7 @@ vi.mock('@/server/signup-event/local', () => ({ localSignupEnabled: () => true }
 vi.mock('@/server/signup-event/database', () => ({ createSignupRaffleDatabase: () => ({}), readRaffleInviterName: async () => null }));
 vi.mock('./participation', () => {
   const Null = () => null;
-  return { RaffleProvider: ({ children }: { children: ReactNode }) => children, RaffleEnterBlock: Null, RaffleBoostAction: Null, RaffleInvitedFriends: Null, RaffleMoreAction: Null, RaffleStickyCta: Null, RaffleShare: Null, RaffleInviteCard: Null, RaffleCountdown: Null, RaffleOdds: Null };
+  return { RaffleProvider: ({ children }: { children: ReactNode }) => children, RaffleEnterBlock: Null, RaffleBoostAction: Null, RaffleMoreAction: Null, RaffleStickyCta: Null, RaffleShare: Null, RaffleInviteCard: Null, RaffleCountdown: Null, RaffleOdds: Null };
 });
 vi.mock('@/features/raffle-cards/card-float', () => ({ RaffleCardFloat: () => null }));
 vi.mock('@/components/fan-shell/fan-app-shell', () => ({ FanAppFrame: ({ children }: { children: ReactNode }) => children }));

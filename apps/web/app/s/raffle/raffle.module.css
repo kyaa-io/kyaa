@@ -70,7 +70,7 @@
 .inviteStatus { display: flex; align-items: center; gap: var(--space-2); min-height: var(--space-10); word-break: keep-all; }
 .inviteActions { display: grid; justify-items: center; gap: var(--space-1); }
 .inviteError { color: var(--color-error); }
-.srOnly { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 /* 초대 링크로 들어온 친구: 응모 버튼 바로 위, 면 없이 초대 도장 + 두 줄(누가 초대했는지 · 응모하면 그 사람이 받는 것) */
 .invited { display: flex; align-items: center; gap: var(--space-3); min-width: 0; }
 .invitedText { display: grid; gap: var(--space-1); min-width: 0; word-break: keep-all; overflow-wrap: anywhere; }
@@ -137,6 +137,8 @@
   .body > [data-block="raffle-foot"] { grid-column: 1 / -1; }
   .prizeDesk { padding: var(--space-8) var(--space-8) var(--space-5); }
   .prizes { gap: var(--space-6); }
+  /* 초대 카드 제목은 PC에서 32px로 커진다: 응모 버튼 칸(320)보다 양옆 48씩 넓혀 두 줄 안팎으로(버튼 폭은 그대로) */
+  .invite { justify-self: center; width: calc(100% + var(--space-12) * 2); }
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
 @media (prefers-reduced-motion: reduce) {
