@@ -397,6 +397,17 @@ describe("granted point result on post and comment creation", () => {
     expect(response.status).toBe(201);
     expect(d.rpc).toHaveBeenCalledWith("post_fan_post_comment", { p_app_user_id: owner, p_post_id: id, p_parent_id: parent, p_body: "nice", p_idempotency_key: id });
   });
+  it("pays the reply point when the comment reward paid nothing, and says so in the response", async () => {
+    const d = dependencies(), parent = "92820000-0000-4000-8000-0000000000aa";
+    d.rpc.mockImplementation(async (name: string) => name === "post_fan_post_comment" ? { id, revision: 1, replayed: false }
+      : name === "record_social_earn" ? { points: 1, stampId: null, capped: false, reason: null, replayed: false } : null);
+    const response = await createContentHandlers(d).comments(request("POST", { ...comment, parentId: parent }), id);
+    expect(await response.json()).toEqual({ id, revision: 1, replayed: false, reward: { points: 1, stamps: 0 } });
+    expect(d.rpc).toHaveBeenCalledWith("record_social_earn", { p_actor: owner, p_action: "comment_reply", p_source: id });
+    d.rpc.mockClear();
+    await createContentHandlers(d).comments(request("POST", comment), id);
+    expect(d.rpc).not.toHaveBeenCalledWith("record_social_earn", expect.anything());
+  });
   it("adds the amount for a new comment", async () => {
     const d = rpcBy({ id, revision: 1, replayed: false }, () => ({ amount: 10 }));
     const response = await createContentHandlers(d).comments(request("POST", comment), id);

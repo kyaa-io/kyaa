@@ -6,6 +6,7 @@ import { waveAlbumSchema } from "@/features/fanpage/domain/wave-media";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { boundedJson, json } from "@/server/certification/certification-http";
 import { contentFailure } from "@/server/fan-posts/routes";
+import { awardSocialEarn } from "@/server/dukjil/social-earn";
 import { noticeSlugSchema } from "@/server/notice/notice-domain";
 import {
   clipWriteResultSchema, commentReactionResultSchema, createClipCommentSchema, createFanClipSchema,
@@ -167,9 +168,11 @@ export function createMobileContentHandlers(deps: MobileContentDependencies) {
     }),
     commentReaction: (request: Request, targetType: "fan_post_comment" | "fan_clip_comment", id: string) => run(async () => {
       const value = z.object({ emoji: reactionEmojiSchema.nullable() }).strict().parse(await boundedJson(request, 1024));
-      return json(checked(commentReactionResultSchema, await deps.rpc("set_mobile_content_comment_reaction", {
-        p_app_user_id: await owner(request), p_target_type: targetType, p_target_id: z.uuid().parse(id), p_emoji: value.emoji,
-      })), 200, headers);
+      const p_app_user_id = await owner(request), p_target_id = z.uuid().parse(id);
+      const result = checked(commentReactionResultSchema, await deps.rpc("set_mobile_content_comment_reaction", { p_app_user_id, p_target_type: targetType, p_target_id, p_emoji: value.emoji }));
+      // A heart on someone else's fan post comment pays once per comment; cancel and re-like never pays again (the database decides).
+      if (targetType === "fan_post_comment" && value.emoji !== null && p_app_user_id) await awardSocialEarn(deps, p_app_user_id, "comment_like", p_target_id);
+      return json(result, 200, headers);
     }),
   };
 }

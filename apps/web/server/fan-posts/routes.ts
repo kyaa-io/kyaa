@@ -13,6 +13,7 @@ import { MAX_PUBLIC_IMAGE_BYTES, MAX_PUBLIC_IMAGE_MULTIPART_BYTES, PublicImageEr
 import type { FanpageDependencies } from "@/server/fanpage/routes";
 import type { AppLocale } from "@/i18n/locales";
 import { parseNoticeDocument } from "@/server/notice/notice-domain";
+import { awardSocialEarn } from "@/server/dukjil/social-earn";
 import { awardDukjilAction, awardDukjilActionDetailed, dukjilBodyParams, dukjilSkipReason, type DukjilSkip } from "@/server/dukjil/award";
 import type { DukjilActionResult } from "@/features/passport/domain/dukjil-types";
 
@@ -277,7 +278,12 @@ export function createContentHandlers(deps: ContentDependencies) {
       }
       const value = createCommentSchema.parse(await boundedJson(request, 8192));
       const written = checked(writeSchema, await deps.rpc("post_fan_post_comment", { p_app_user_id, p_post_id: id, p_parent_id: value.parentId, p_body: value.body, p_idempotency_key: value.idempotencyKey }));
-      const award = written.replayed ? null : await awardCommentDetailed(deps, p_app_user_id, id, written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: rewardKeyId(id) });
+      let award = written.replayed ? null : await awardCommentDetailed(deps, p_app_user_id, id, written.id, { ...bodyParams(value.body), isReply: value.parentId != null, targetKey: rewardKeyId(id) });
+      // A reply the comment reward did not pay (a second comment on the same post, the daily cap) still pays the reply point.
+      if (!written.replayed && p_app_user_id && value.parentId != null && !(award?.result && award.result.points > 0)) {
+        const reply = await awardSocialEarn(deps, p_app_user_id, "comment_reply", written.id);
+        if (reply && !reply.replayed && (reply.points > 0 || reply.stampId)) award = { result: reply };
+      }
       return json({ ...written, ...await missionReward(deps, p_app_user_id, written, award) }, 201);
     }),
     editComment: (request: Request, id: string) => run(async () => {

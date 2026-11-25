@@ -122,4 +122,20 @@ describe("settings after profiles became public",()=>{
  it("saves without the old field",async()=>{const s=setup();expect((await s.handlers.setSettings(put({favoriteSlugs:[],dmPolicy:"requests"}))).status).toBe(200);expect(s.rpc).toHaveBeenCalledWith("set_owned_social_settings",expect.objectContaining({p_dm_policy:"requests",p_profile_visible:true}));});
  it("accepts an old client that still sends false, and does not pass it on",async()=>{const s=setup();expect((await s.handlers.setSettings(put({profileVisible:false,favoriteSlugs:[],dmPolicy:"friends"}))).status).toBe(200);expect(s.rpc).toHaveBeenCalledWith("set_owned_social_settings",expect.objectContaining({p_profile_visible:true}));});
  it("still rejects a wrong type and unknown fields",async()=>{for(const body of [{profileVisible:"no",favoriteSlugs:[],dmPolicy:"friends"},{favoriteSlugs:[],dmPolicy:"friends",extra:1}]){const s=setup();expect((await s.handlers.setSettings(put(body))).status).toBe(400);expect(s.rpc).not.toHaveBeenCalled();}});
+  it("pays the friend reward on acceptance only, and the chat reward for a newly sent message only", async () => {
+    rpc.mockResolvedValue({ id: other, status: "accepted", requestId: me });
+    expect((await api.resolveFriend(request("/api", { action: "accept", requestId: me }, "PATCH"), other)).status).toBe(200);
+    expect(rpc).toHaveBeenLastCalledWith("record_social_earn", { p_actor: me, p_action: "friend_add", p_source: other });
+    rpc.mockClear();
+    await api.resolveFriend(request("/api", { action: "reject", requestId: me }, "PATCH"), other);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    rpc.mockReset(); rpc.mockResolvedValueOnce({ id: other, createdAt: "2026-10-11T00:00:00Z", replayed: false }).mockRejectedValueOnce(new Error("down"));
+    const sent = await api.sendMessage(request("/api", { text: "hi", requestId: me }, "POST"), me);
+    expect(sent.status).toBe(200); expect((await sent.json()).id).toBe(other);
+    expect(rpc).toHaveBeenLastCalledWith("record_social_earn", { p_actor: me, p_action: "chat", p_source: other });
+    rpc.mockReset(); rpc.mockResolvedValue({ id: other, createdAt: "2026-10-11T00:00:00Z", replayed: true });
+    await api.sendMessage(request("/api", { text: "hi", requestId: me }, "POST"), me);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
 });
