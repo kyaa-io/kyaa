@@ -1,3 +1,4 @@
+import { captureSignupSource } from "./signup-source";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -72,5 +73,16 @@ describe("acquisition attribution", () => {
       eventNonce: crypto.randomUUID(),
       occurredAt: new Date().toISOString(),
     }))).toBeNull();
+  });
+});
+
+it("keeps only registered campaign values and a public route template", () => {
+  const params = new URLSearchParams("utm_source=x&utm_medium=community&utm_campaign=raffle-1125&utm_content=private@example.com");
+  expect(captureSignupSource("/benefits/private-id", params, "https://t.co/private?token=secret")).toEqual({
+    referrerHost: "t.co",
+    utmSource: "x",
+    utmMedium: "community",
+    utmCampaign: "raffle-1125",
+    landingPath: "/benefits/:benefit",
   });
 });
