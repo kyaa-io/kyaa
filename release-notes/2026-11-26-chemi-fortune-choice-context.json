@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "오늘의 운세 대화에서 선택지가 바로 앞 대사를 받아 묻도록 고쳤어요.",
+    "쉬어 가는 날의 '약속은 하나만' 뒤에는 '약속은 누구랑?', '처음 보는 자리만 짧게 있다 와' 뒤에는 '다녀와서 덕질할까?'처럼 물어요.",
+    "영어·일본어를 비롯한 12개 언어 화면의 선택지도 같은 질문으로 바뀌어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/fortune",
+  "images": [
+    "release-notes/images/2026-11-26-chemi-fortune-choice-context-people-390.png",
+    "release-notes/images/2026-11-26-chemi-fortune-choice-context-rest-390.png"
+  ]
+}

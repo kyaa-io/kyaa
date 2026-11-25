@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { maskBirthDate, parseBirthDate } from "./birth-sheet";
-import { fortuneChoiceLabel, fortuneTalkLine } from "./lines";
+import { fortuneChoiceKey, fortuneChoiceLabel, fortuneTalkLine } from "./lines";
 import {
   nextFortuneStep,
   parseFortuneStep,
@@ -137,15 +137,46 @@ it("asks what follows from the line just said and answers it on the next page (C
   expect(fortuneTalkLine("changha", 2, day)).toBe("오늘은 누구랑 있든 말 줄이는 게 좋아. 듣는 쪽이 편할 거야.");
   expect(fortuneChoiceLabel("changha", 1, "next", day)).toBe("사람 쪽도 괜찮아?");
   expect(fortuneChoiceLabel("changha", 2, "next", day)).toBe("혼자 덕질할까?");
-  expect(fortuneChoiceLabel("changha", 2, "skip", day)).toBe("언제 말 걸까?");
+  expect(fortuneChoiceLabel("changha", 2, "skip", day)).toBe("할 말은 언제 해?");
   expect(fortuneTalkLine("changha", 3, day)).toBe(
     "혼자 쉬엄쉬엄 하자. 갖고 있는 포카 정리하면 딱이야. 돈은 평소대로. 살 건 저녁에 한 번 더 보고 정해.",
   );
   expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "조심하면 괜찮은 날" })).toBe("누굴 조심해야 돼?");
   expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "쉬어 가는 날", people: 70 })).toBe("누구랑 잡지?");
-  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "좋은 날", people: 90 })).toBe("누구 덕에?");
-  expect(fortuneChoiceLabel("changha", 2, "next", { ...day, people: 90 })).toBe("친구 만나도 돼?");
-  expect(fortuneChoiceLabel("changha", 2, "skip", { ...day, luckyHour: null })).toBe("챙길 건 뭐야?");
+  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "좋은 날", people: 90 })).toBe("도와줄 사람도 있어?");
+  expect(fortuneChoiceLabel("changha", 2, "next", { ...day, people: 90 })).toBe("친구도 만날까?");
+  expect(fortuneChoiceLabel("changha", 2, "skip", { ...day, luckyHour: null })).toBe("나갈 때 뭘 챙겨?");
+});
+
+// 대표 제보 11/26: 앞 대사와 상관없이 붙는 선택지. 등급 한마디·사람 얘기·돈 얘기의 낱말을 받는 질문만 둔다.
+it("never asks about something the line just said nothing about (CHEMI-FORTUNE-CHOICE-CONTEXT-1126)", () => {
+  const day = { ...input, score: 74, grade: "무난한 날", people: 45, fandom: 57, money: 61 };
+  // 쉬어 가는 날의 한마디는 '약속은 하나만'이라, 사람 점수와 상관없이 그 약속을 묻는다(전에는 낮으면 '누굴 조심해야 돼?').
+  for (const people of bands) {
+    const rest = { ...day, grade: "쉬어 가는 날", people };
+    expect(fortuneChoiceLabel("changha", 1, "next", rest)).toBe("누구랑 잡지?");
+    expect(fortuneChoiceLabel("elina", 1, "next", rest)).toBe("약속은 누구랑?");
+    expect(fortuneChoiceLabel("yuna", 1, "next", rest)).toBe("그 하나는 누구랑?");
+  }
+  // 조심하면 괜찮은 날의 한마디는 '말·답장 조심'이다. 사람 점수가 높으면 답이 '윗사람이 먼저 손 내민다'라 먼저 말 걸어도 되는지 묻는다.
+  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "조심하면 괜찮은 날", people: 70 })).toBe("누굴 조심해야 돼?");
+  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "조심하면 괜찮은 날", people: 90 })).toBe("먼저 말 걸어도 돼?");
+  expect(fortuneChoiceLabel("yuna", 1, "next", { ...day, grade: "조심하면 괜찮은 날", people: 90 })).toBe("먼저 연락해도 돼?");
+  // '하던 대로' 뒤에 '오늘 누구 만나?'처럼 새 주제를 꺼내지 않는다.
+  expect(fortuneChoiceLabel("changha", 1, "next", { ...day, people: 90 })).toBe("사람 쪽도 괜찮아?");
+  // 2/4 '처음 보는 자리만 짧게 있다 와' 뒤에는 그 자리에서 돌아온 다음을 묻는다(전에는 '덕질은 뭐 할까?').
+  expect(fortuneChoiceLabel("changha", 2, "next", { ...day, people: 70 })).toBe("다녀와서 덕질할까?");
+  expect(fortuneChoiceLabel("elina", 2, "next", { ...day, people: 70 })).toBe("일찍 와서 덕질해?");
+  expect(fortuneChoiceLabel("yuna", 2, "next", { ...day, people: 70 })).toBe("끝내고 덕질해?");
+  expect(fortuneChoiceLabel("changha", 2, "skip", { ...day, people: 90 })).toBe("부탁은 언제 해?");
+  // 3/4 돈 얘기에서 챙길 것으로 넘어갈 때는 넘어가는 말(대신·그럼·더)을 붙인다.
+  for (const character of characters)
+    for (const money of bands)
+      expect(fortuneChoiceLabel(character, 3, "next", { ...day, money })).toMatch(/^(대신|그럼) |더 올/);
+  // 다른 언어 화면은 같은 질문의 공통 글자를 쓰므로 키가 최애와 무관하다.
+  expect(fortuneChoiceKey(2, "next", day)).toBe("fandomSolo");
+  expect(fortuneChoiceKey(2, "skip", day)).toBe("whenSay");
+  expect(fortuneChoiceKey(3, "skip", day)).toBeNull();
 });
 
 it("reads fan life as one concrete fan activity per score band and company, never the video-length formula", () => {
@@ -166,7 +197,8 @@ it("reads fan life as one concrete fan activity per score band and company, neve
               for (const slot of ["next", "skip"] as const) {
                 const label = fortuneChoiceLabel(character, talk, slot, day);
                 if (talk === 4 || (talk === 3 && slot === "skip")) expect(label).toBeNull();
-                else expect((label ?? "").length, `${character} ${talk} ${slot} ${label}`).toBeLessThanOrEqual(10);
+                // 390 화면에서 두 버튼이 한 줄에 놓이는 길이(실제 글꼴로 60쌍 실측, 11자까지).
+                else expect((label ?? "").length, `${character} ${talk} ${slot} ${label}`).toBeLessThanOrEqual(11);
               }
           }
     expect(fandomLines.size, character).toBe(9);
@@ -180,7 +212,7 @@ it("does not presuppose a meeting when the people page was skipped", () => {
   }
 });
 
-it("answers '언제 말 걸까?' directly and keeps the hand-off line when there is no lucky hour", () => {
+it("answers '부탁은 언제 해?' directly and keeps the hand-off line when there is no lucky hour", () => {
   expect(fortuneTalkLine("changha", 4, input, null, "luck")).toMatch(/^부탁할 거 있으면 9시에서 11시 사이에 해\./);
   expect(fortuneTalkLine("changha", 4, { ...input, luckyHour: null }, null, "luck")).toMatch(/^챙길 것부터 묻네\. 좋아\./);
   expect(fortuneTalkLine("dosa", 4, { ...input, luckyHour: null })).toBe("초록빛 물건 하나를 챙기시오.");
