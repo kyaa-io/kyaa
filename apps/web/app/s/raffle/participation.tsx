@@ -83,7 +83,7 @@ function RaffleEmailConsent({ locale }: { locale: AppLocale }) {
   return <div>
     <label><input type="checkbox" checked={consent === true} disabled={pending || consent === undefined}
       onChange={event => void update(event.currentTarget.checked)} /> {marketingConsentCopy[locale]}</label>
-    {failed && <p role="alert">{raffleLongformText(locale, 'error')}</p>}
+    {failed && <p role="alert">{signupRaffleText(locale, 'error')}</p>}
   </div>;
 }
 
@@ -261,6 +261,7 @@ export function RaffleEnterBlock() {
             : <p className={styles.enterStatus} data-state="entered"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>}
         </div>
       : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
+    {r.entered && <RaffleEmailConsent locale={r.locale} />}
   </div>;
 }
 
