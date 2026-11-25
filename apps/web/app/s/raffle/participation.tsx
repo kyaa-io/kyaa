@@ -6,7 +6,7 @@ import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import type { AppLocale } from '@/i18n/locales';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
-import { raffleLongformText, raffleOddsText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
+import { raffleInviteText, raffleLongformText, raffleOddsText, type SignupRaffleLongformKey } from '@/i18n/catalogs/signup-raffle-longform';
 import { raffleInviteCode, raffleShareHref } from '@/features/benefit/domain/signup-event';
 import { communityInviteSchema } from '@/features/community-stamps/domain/community-stamps';
 import { communityStampAction } from '@/features/community-stamps/ui/use-community-stamps';
@@ -16,7 +16,6 @@ import { requiresGoogleBrowserHandoff } from '@/components/login-browser-policy'
 import type { RaffleCapsuleResult } from '@/features/capsule-machine/raffle-result-capsule';
 import { RaffleResultEntry } from './result-entry';
 import { signupRaffleResultSchema } from '@/server/signup-event/result';
-import { raffleInviteText } from '@/i18n/catalogs/raffle-invite';
 import styles from './raffle.module.css';
 
 /** 개발 서버에서 로그인 없이 상태별 화면을 보기 위한 표시 전용 값(서버 규칙·API와 무관). */
