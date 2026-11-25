@@ -72,9 +72,10 @@
 .browserNotice { display: grid; min-width: 0; gap: 12px; }
 .sessionContents .browserNotice { width: min(100%, 440px); justify-self: center; }
 .browserNotice .emailButton { border-radius: var(--radius-pill); }
-/* Same width and height as the Apple button beside it. */
-button.emailMethod { width: 90%; min-height: 52px; justify-self: center; }
-@media (max-width: 23rem) { button.emailMethod { width: 100%; } }
+/* Same width as the Apple button: email above it, the browser hint and copy link below it. */
+button.emailMethod, .browserNoticeBelowMethods { width: 90%; justify-self: center; }
+button.emailMethod { min-height: 52px; }
+@media (max-width: 23rem) { button.emailMethod, .browserNoticeBelowMethods { width: 100%; } }
 .browserLink { display: grid; min-width: 0; gap: 8px; font-size: 14px; line-height: 1.6; }
 .browserLink input { width: 100%; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid var(--color-muted); border-radius: 8px; background: var(--color-surface); color: inherit; font: inherit; }
 .browserLink input:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }

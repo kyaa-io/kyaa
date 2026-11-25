@@ -486,7 +486,7 @@ export function LoginPage({
       inAppPrivy.openEmailLogin();
     }}>{emailLoginCopy(locale)[0]}</FanAction>;
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
-    <div className={styles.browserNotice}>
+    <div className={inAppPrivy ? `${styles.browserNotice} ${styles.browserNoticeBelowMethods}` : styles.browserNotice}>
       <p className={styles.error} role="status">
         {inAppPrivy
           ? locale === "ko" ? "브라우저에서 열면 Google 로그인도 할 수 있어요." : translate(locale, localizedMessages.mbrowserGoogle, "Open in your browser to sign in with Google.")
