@@ -1,0 +1,25 @@
+.badge {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 20px;
+  padding-inline: 3px 6px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-accent-ink);
+  font-size: var(--fan-badge-size);
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.badge::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  background: center / contain no-repeat image-set(url("/images/official/star.png") 1x, url("/images/official/star-2x.png") 2x, url("/images/official/star-3x.png") 3x);
+}
