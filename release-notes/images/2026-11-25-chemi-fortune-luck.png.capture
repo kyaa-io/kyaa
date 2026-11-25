@@ -1,0 +1,1 @@
+{"tool": "local-login", "mode": "login", "url": "http://localhost:3003/chemi/fortune", "capturedAt": "2026-11-25T09:55:51.002151+00:00", "sha256": "f1004d9903acbb16284a3cf838f72c4674981d29a2f81d3339143052a29d43cc", "description": "Local authenticated Playwright, synthetic reading response, stage crop"}

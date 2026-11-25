@@ -166,7 +166,10 @@ export function scanCss(code, file) {
     if (!disabledByComment(d, 'S1') && !/(logo|wordmark)/i.test(file) && /gradient\(/i.test(value)) add(out, `S1|${where}`);
     if (/^(-webkit-)?background-clip$/.test(prop) && /text/i.test(value)) add(out, `S1|${where}`);
     if (prop === '-webkit-text-fill-color' && /transparent/i.test(value)) add(out, `S1|${where}`);
-    if (prop === 'backdrop-filter' || prop === '-webkit-backdrop-filter') add(out, `S2|${where}`);
+    // DESIGN.md request #9 permits this treatment only on the fortune luck dialog.
+    const fortuneLuckGlass = file === 'apps/web/app/chemi/fortune/scene.module.css'
+      && rule.selector === '.controls[data-luck]' && value === 'blur(18px)';
+    if ((prop === 'backdrop-filter' || prop === '-webkit-backdrop-filter') && !fortuneLuckGlass) add(out, `S2|${where}`);
     if (!disabledByComment(d, 'S2') && prop === 'filter' && /blur\(/i.test(value)) add(out, `S2|${where}`);
     if (prop === 'filter' && /grayscale\(/i.test(value)) add(out, `S6|${where}`);
     if (prop === 'border-radius') { for (const m of value.matchAll(/var\(--radius-(control|collection|hero)\)/g)) radii.add(m[1]); }
