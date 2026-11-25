@@ -530,7 +530,7 @@ export function FortuneFlow({
             portrait={character === "changha" ? `${art}/fortune-portrait-v1.webp` : mobileArt}
             expression={expression}
           />
-          {step === "enter" && (character === "elina" || character === "yuna") && (
+          {step === "enter" && character === "elina" && (
             <SceneVideo src={`/public-assets/cms-assets/chemi/video/${character}-photo-to-character-v1`} once mobileOnly objectPosition="center 25%" />
           )}
         </div>

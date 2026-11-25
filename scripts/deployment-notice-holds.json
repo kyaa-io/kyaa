@@ -147,7 +147,8 @@
     "release-notes/2026-11-25-chemi-match-favorites.json",
     "release-notes/2026-11-25-chemi-ask-wait.json",
     "release-notes/2026-11-25-chemi-run-retry.json",
-    "release-notes/2026-11-25-chemi-saju-languages.json"
+    "release-notes/2026-11-25-chemi-saju-languages.json",
+    "release-notes/2026-11-25-chemi-art-likeness.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
