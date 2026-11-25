@@ -11,9 +11,11 @@ vi.mock('@/components/fan-shell/fan-app-shell', () => ({ FanAppFrame: ({ childre
 import Page from './page';
 it('matches approved prizes, steps and date without unconfirmed time or rewards', async () => {
   const view = render(await Page({ searchParams: Promise.resolve({ locale: 'ko' }) }));
+  expect(screen.getByRole('link', { name: '공식 규칙' }).getAttribute('href')).toBe('#rules');
+  expect(view.container.querySelector('#rules')?.textContent).toContain('무작위로 추첨');
   // v5.1: 키 비주얼 제목이 무슨 이벤트인지 말한다(사용자 2026-11-13 "상단에 신규 가입 이벤트")
   expect(screen.getByRole('heading', { level: 1, name: 'KYAA 래플 신규 가입 이벤트' })).toBeTruthy();
-  for (const text of ['US$400', '총 17명', '11월 10일 ~ 12월 13일', 'Visa 기프트카드', '참여 방법', '필수', 'US$100', 'US$50', 'US$25', 'US$10', '1명', '2명', '4명', '10명', '응모 및 당첨 안내', '하루 최대 3회', '당첨 확률 올리기', '선택']) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
+  for (const text of ['US$400', '총 17명', '11월 10일 ~ 12월 13일', 'Visa 기프트카드', '참여 방법', '필수', 'US$100', 'US$50', 'US$25', 'US$10', '1명', '2명', '4명', '10명', '공식 규칙', '하루 최대 3회', '당첨 확률 올리기', '선택']) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
   expect(screen.queryByText(/버튼 한 번이면 끝|팬 신분증|응모는 한 번|당첨 기회가 1번씩/)).toBeNull();
   expect(screen.queryByText(/상품 확정 전|당첨 기회 올리기/)).toBeNull();
   expect(screen.getAllByText('신규 가입 이벤트')).toHaveLength(1);
