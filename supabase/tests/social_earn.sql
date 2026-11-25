@@ -1,4 +1,5 @@
--- EARN-SOCIAL-ACTIONS-1126 (20270116040003): record_social_earn limits, duplicates, self actions and the on-chain stamp row.
+-- EARN-SOCIAL-ACTIONS-1126 (20270116040003) and EARN-SOCIAL-ONCHAIN-1126 (20270116040004, 20270116040005): record_social_earn limits,
+-- duplicates, self actions, the on-chain stamp row of all four actions, the no-favorite path and the grade exclusion.
 -- Local or disposable database only (loopback or Unix socket); everything rolls back. Needs a published creator with at least
 -- eight passport holders that have an embedded wallet (the local seed's s15-test-creator has them).
 do $$ begin if inet_server_addr() is not null and not inet_server_addr() << '127.0.0.0/8'::inet then
@@ -12,7 +13,8 @@ declare
   today date := public.dukjil_kst_date(public.dukjil_now());
   day_start timestamptz := public.dukjil_kst_date(public.dukjil_now())::timestamp at time zone 'Asia/Seoul';
   creator uuid; fans uuid[]; a uuid; b uuid; post uuid; ids uuid[] := '{}'; id uuid; r jsonb; i integer; n integer;
-  balance_before bigint; friendship uuid; conversation uuid; first_message uuid; second_message uuid; stamp uuid;
+  balance_before bigint; friendship uuid; conversation uuid; first_message uuid; second_message uuid; stamp uuid; chat_stamp uuid;
+  friend_stamp uuid; slot_count integer;
 begin
   select c.id into creator from public.celebrities c where c.status = 'published' and c.archived_at is null
     and (select count(*) from public.fan_passports fp join public.user_wallets w on w.app_user_id = fp.app_user_id
@@ -45,6 +47,9 @@ begin
     insert into public.mobile_content_comment_reactions(target_type, target_id, app_user_id, emoji) values ('fan_post_comment', id, a, '❤');
   end loop;
   set local session_replication_role = origin;
+
+  -- a's favorite is the fixture creator (fan_profile_public_fields); fans[8] names none.
+  insert into public.fan_profile_public_fields(app_user_id, favorite_celebrity_id) values (a, creator);
 
   -- comment_like: 20 a day, once per comment, the first one issues the day's reaction stamp with a chain lane.
   r := public.record_social_earn(a, 'comment_like', ids[1]);
@@ -106,6 +111,12 @@ begin
   balance_before := public.group_wallet_balance(a, 'fan_point');
   r := public.record_social_earn(b, 'friend_add', friendship);
   perform pg_temp.assert((r ->> 'points')::integer = 1, 'acceptance pays');
+  friend_stamp := (r ->> 'stampId')::uuid;
+  perform pg_temp.assert(friend_stamp is not null, 'the first friend reward issues a social_friend stamp');
+  perform pg_temp.assert(exists(select 1 from public.community_stamps s where s.id = friend_stamp and s.kind = 'social_friend' and s.celebrity_id = creator
+    and s.app_user_id = a and s.source_key = 'social:friend:' || least(a, b)::text || ':' || greatest(a, b)::text
+    and (s.blockchain_job_id is not null or to_jsonb(s) ->> 'fan_action_outbox_id' is not null or to_jsonb(s) ->> 'onchain_hold_reason' is not null)),
+    'friend stamp is the requester''s favorite creator and has a chain lane or a hold');
   perform pg_temp.assert(public.group_wallet_balance(a, 'fan_point') = balance_before + 1, 'the requester is the one paid');
   perform pg_temp.assert(not exists(select 1 from public.dukjil_action_log l where l.app_user_id = b and l.action_key = 'friend_add'), 'the accepter is not paid');
   r := public.record_social_earn(fans[8], 'friend_add', friendship);
@@ -115,6 +126,8 @@ begin
     r := public.record_social_earn(a, 'friend_add', id); n := n + (r ->> 'points')::integer;
   end loop;
   perform pg_temp.assert(n = 4 and (r ->> 'capped')::boolean, 'five friend rewards a day');
+  select count(*) into n from public.community_stamps s where s.app_user_id = a and s.kind = 'social_friend' and s.issued_at >= day_start;
+  perform pg_temp.assert(n = 1, 'one friend stamp a creator a day');
   -- unfriend, then the other side asks: the pair was paid already
   update public.social_friendships set status = 'unfriended', ended_at = now() where social_friendships.id = friendship;
   insert into public.social_friendships(requester_id, addressee_id, status, request_id, payload_hash, accepted_at)
@@ -135,12 +148,49 @@ begin
   r := public.record_social_earn(b, 'chat', first_message);
   perform pg_temp.assert(r ->> 'reason' = 'SOCIAL_EARN_NOT_FOUND', 'only the sender');
   r := public.record_social_earn(a, 'chat', first_message);
-  perform pg_temp.assert((r ->> 'points')::integer = 1 and r ->> 'stampId' is null and not (r ->> 'replayed')::boolean, 'first message of the day pays');
+  perform pg_temp.assert((r ->> 'points')::integer = 1 and not (r ->> 'replayed')::boolean, 'first message of the day pays');
+  chat_stamp := (r ->> 'stampId')::uuid;
+  perform pg_temp.assert(chat_stamp is not null and exists(select 1 from public.community_stamps s where s.id = chat_stamp and s.kind = 'social_chat'
+    and s.celebrity_id = creator and s.source_key = 'social:chat:' || conversation::text || ':' || today::text
+    and (s.blockchain_job_id is not null or to_jsonb(s) ->> 'fan_action_outbox_id' is not null or to_jsonb(s) ->> 'onchain_hold_reason' is not null)),
+    'first chat of the day issues a social_chat stamp with a chain lane or a hold');
   r := public.record_social_earn(a, 'chat', second_message);
   perform pg_temp.assert((r ->> 'replayed')::boolean, 'second message in the same conversation the same day replays');
   select count(*) into n from public.dukjil_action_log l where l.app_user_id = a and l.action_key = 'chat';
   perform pg_temp.assert(n = 1, 'one chat row');
+  -- no favorite: the points are paid and no stamp is issued
+  insert into public.social_friendships(requester_id, addressee_id, status, request_id, payload_hash, accepted_at)
+    values (fans[8], fans[7], 'accepted', extensions.gen_random_uuid(), repeat('2', 64), now()) returning social_friendships.id into id;
+  r := public.record_social_earn(fans[8], 'friend_add', id);
+  perform pg_temp.assert((r ->> 'points')::integer = 1 and r ->> 'stampId' is null, 'no favorite: friend point without a stamp');
+  insert into public.social_dm_conversations(user_low_id, user_high_id, requester_id, status, request_id, payload_hash)
+    values (least(fans[8], fans[7]), greatest(fans[8], fans[7]), fans[8], 'accepted', extensions.gen_random_uuid(), repeat('3', 64)) returning social_dm_conversations.id into conversation;
+  insert into public.social_dm_messages(conversation_id, sender_id, body, request_id, payload_hash)
+    values (conversation, fans[8], 'hi', extensions.gen_random_uuid(), repeat('4', 64)) returning social_dm_messages.id into first_message;
+  r := public.record_social_earn(fans[8], 'chat', first_message);
+  perform pg_temp.assert((r ->> 'points')::integer = 1 and r ->> 'stampId' is null, 'no favorite: chat point without a stamp');
+  perform pg_temp.assert(not exists(select 1 from public.community_stamps s where s.app_user_id = fans[8] and s.kind in ('social_friend', 'social_chat')), 'no favorite: no stamp rows');
+  -- a favorite whose passport the actor does not hold gives no stamp either
+  update public.fan_profile_public_fields set favorite_celebrity_id = (select c.id from public.celebrities c where c.status = 'published' and c.archived_at is null
+    and not exists(select 1 from public.fan_passports fp where fp.app_user_id = a and fp.celebrity_id = c.id) limit 1) where app_user_id = a;
+  perform pg_temp.assert(public.social_earn_favorite(a) is null, 'favorite without a passport is not used');
+  update public.fan_profile_public_fields set favorite_celebrity_id = creator where app_user_id = a;
+  perform pg_temp.assert(public.social_earn_favorite(a) = creator, 'favorite with a passport is used');
   set local session_replication_role = origin;
+
+  -- grade: no social stamp fills a passport slot (silver-1 and silver-2 count filled slots), and the shared list says so
+  select count(*) into slot_count from public.passport_page_slots sl join public.community_stamps s on s.id = sl.stamp_id
+    where s.app_user_id = a and s.source_key like 'social:%';
+  perform pg_temp.assert(slot_count = 0, 'no social stamp in a passport slot');
+  perform pg_temp.assert(not public.community_stamp_counts_for_tier('social_friend', 'social:friend:x')
+    and not public.community_stamp_counts_for_tier('social_chat', 'any')
+    and not public.community_stamp_counts_for_tier('reaction', 'social:comment-like:x')
+    and not public.community_stamp_counts_for_tier('comment', 'social:comment-reply:x')
+    and public.community_stamp_counts_for_tier('reaction', creator::text || ':2026-11-26')
+    and public.community_stamp_counts_for_tier('comment', creator::text || ':2026-11-26'), 'tier predicate');
+  -- the new kinds take chain code 12 like the other creator stamps; without a creator there is none
+  perform pg_temp.assert(public.community_stamp_onchain_code('social_friend', creator) = 12 and public.community_stamp_onchain_code('social_chat', creator) = 12
+    and public.community_stamp_onchain_code('social_chat', null) is null, 'chain code 12');
 
   -- every paid row is a wallet row the history can name
   perform pg_temp.assert(not exists(select 1 from public.dukjil_action_log l

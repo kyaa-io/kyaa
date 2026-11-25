@@ -37,7 +37,7 @@ const entityTypeSchema = z.enum(["passport", "stamp", "reaction", "collectible",
 // (canonical key "dukjil:<kind>:<source key>:<user>", checked in the database before enqueue). Same list as the database gate.
 const dukjilCommunityStampKinds = [
   "post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin", "event_review",
-  "cheer", "proof", "quiz", "steady_checkin", "subscription", "share",
+  "cheer", "proof", "quiz", "steady_checkin", "subscription", "share", "social_friend", "social_chat",
 ] as const;
 const dukjilSourceKey = /^dukjil:([a-z_]+):/;
 function communityStampKindAllowed(stampKind: string, canonicalSourceKey: string): boolean {

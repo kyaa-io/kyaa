@@ -3,10 +3,11 @@ import { communityStampKinds, communityStampPayloadV1Schema, type BlockchainJob,
 import { KYAA_CREDENTIAL_ASSET_BASE_URI, kyaaCredentialImage, renewalStampImageUri } from "../src/kyaa-credential-assets.js";
 import { renderMetadata } from "../src/metadata.js";
 
-const kinds = ["post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin", "event_review", "cheer", "proof", "quiz", "steady_checkin"] as const;
+const kinds = ["post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin", "event_review", "cheer", "proof", "quiz", "steady_checkin", "social_friend", "social_chat"] as const;
 const files: Record<string, string> = {
   post: "post", comment: "first-comment", reaction: "first-like", live_reserve: "reservation", live_attend: "attendance", survey: "survey",
   mission: "mission", event_checkin: "event-checkin", event_review: "event-review", cheer: "support", proof: "proof", quiz: "knowledge", steady_checkin: "steady-checkin",
+  social_friend: "invite", social_chat: "first-comment",
 };
 const payload = (stampKind: string) => ({ recipient: `0x${"1".repeat(40)}`, issuanceId: `0x${"2".repeat(64)}`, celebritySlug: "some-creator", stampKind }) as CommunityStampPayloadV1;
 const job = (p: CommunityStampPayloadV1) => ({ id: "j", entityType: "community_stamp", entityId: "e", operationKey: "k", payloadVersion: 1, payload: p, attempts: 0, maxAttempts: 3, txHash: null, leaseOwner: null, leaseExpiresAt: null }) as unknown as BlockchainJob;
