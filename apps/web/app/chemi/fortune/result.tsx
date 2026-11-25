@@ -571,7 +571,10 @@ export function FortuneResult({
           <ul className={styles.fields}>
             {fields.map(([label, key, value]) => {
               const [first, second] = exampleKeys[key];
-              const fieldNote = korean ? fortuneFieldNote(key, value, character) : englishFieldNotes[key][band(value)];
+              const level = band(value);
+              const fieldNote = korean ? fortuneFieldNote(key, value, character)
+                : key === "fandom" && level !== "mid" ? uiText(level === "high" ? "fieldFandomHigh" : "fieldFandomLow")
+                : englishFieldNotes[key][level];
               const note = key === highest || key === lowest ? fieldNote : null;
               const detail = korean ? fortuneFieldDetail(
                 key,

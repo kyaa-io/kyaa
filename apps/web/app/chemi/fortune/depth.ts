@@ -214,9 +214,9 @@ export function fortuneFlow(grade: string, evidence: FortuneEvidence) {
 const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, string>>> = {
   changha: {
     fandom: {
-      high: "혼자 깊게 팔수록 재밌는 날이야. 지난 무대 영상 정주행 가자.",
+      high: "혼자 깊게 팔수록 재밌는 날이야. 지난 무대 직캠 정주행 가자.",
       mid: "보고 싶던 영상 딱 하나만 골라 봐. 천천히 봐도 충분해.",
-      low: "오늘은 새로 파지 말고 좋아하던 거 다시 보자. 그게 편해.",
+      low: "오늘은 새 떡밥 말고 좋아하던 무대 다시 보자. 그게 편해.",
     },
     people: {
       high: "선배나 윗사람이 먼저 손 내밀 거야. 반갑게 받아.",
@@ -246,9 +246,9 @@ const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, st
   },
   elina: {
     fandom: {
-      high: "혼자 깊이 파고들수록 즐거운 날이에요. 지난 무대 영상 정주행해도 돼.",
+      high: "혼자 깊이 파고들수록 즐거운 날이에요. 지난 무대 직캠 정주행해도 돼.",
       mid: "보고 싶던 영상 하나만 골라 봐요. 천천히 즐겨도 충분해.",
-      low: "오늘은 새로 찾기보다 좋아하던 걸 다시 보는 게 편해요.",
+      low: "오늘은 새 떡밥보다 좋아하던 무대를 다시 보는 게 편해요.",
     },
     people: {
       high: "선배나 윗사람이 먼저 손을 내밀 거예요. 반갑게 받아 줘요.",
@@ -278,9 +278,9 @@ const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, st
   },
   yuna: {
     fandom: {
-      high: "혼자 깊게 팔수록 재밌는 날이야. 지난 무대 영상 정주행해.",
+      high: "혼자 깊게 팔수록 재밌는 날이야. 지난 무대 직캠 정주행해.",
       mid: "보고 싶던 영상 하나만 골라. 천천히 봐도 충분해.",
-      low: "새로 파는 건 오늘 아니야. 좋아하던 거 다시 봐.",
+      low: "새 떡밥은 나중에. 좋아하던 무대 다시 봐.",
     },
     people: {
       high: "선배나 윗사람이 먼저 손 내밀어. 반갑게 받으면 돼.",
@@ -310,9 +310,9 @@ const fieldBand: Record<FortuneCharacterId, Record<FortuneField, Record<Band, st
   },
   dosa: {
     fandom: {
-      high: "홀로 깊이 파고들수록 즐거운 날이오. 지난 무대 영상을 처음부터 보시오.",
+      high: "홀로 깊이 파고들수록 즐거운 날이오. 지난 무대 직캠을 처음부터 보시오.",
       mid: "보고 싶던 영상 하나만 골라 보시오. 천천히 즐기면 족하오.",
-      low: "오늘은 새로 찾기보다 좋아하던 것을 다시 보는 편이 낫소.",
+      low: "오늘은 새 소식보다 좋아하던 무대를 다시 보는 편이 낫소.",
     },
     people: {
       high: "손윗사람이 먼저 손을 내밀 것이오. 반갑게 맞으시오.",
