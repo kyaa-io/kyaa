@@ -31,3 +31,12 @@ for (const locale of APP_LOCALES) {
     expect(guide.growthDetail).toContain(three);
   });
 }
+
+for (const locale of APP_LOCALES) {
+  it(`writes the guide's first sentence in ${locale}`, () => {
+    const { guide } = JSON.parse(readFileSync(resolve(__dirname, "locales", locale, "chemi.json"), "utf8"));
+    expect(guide.intro?.trim(), "guide.intro").toBeTruthy();
+    if (locale !== "en") expect(guide.intro).not.toBe("Read fortunes and play mini-games with your bias to raise your Mini Bias in Chemi.");
+    if (locale !== "ko") expect(guide.intro).not.toMatch(/[가-힣]/);
+  });
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "케미 안내 페이지 첫 소개 문장을 일본어·중국어·스페인어·인도네시아어·베트남어·태국어·포르투갈어·프랑스어·러시아어로 볼 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/guide/chemi",
+  "images": [
+    "release-notes/images/2026-11-26-chemi-guide-intro-ja-1440.png",
+    "release-notes/images/2026-11-26-chemi-guide-intro-ja-390.png"
+  ]
+}
