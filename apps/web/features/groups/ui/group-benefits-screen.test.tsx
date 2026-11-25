@@ -255,7 +255,7 @@ it('사용자 결정 B: the stamp words never read as automatic — 9 − (n mod
 it.each([true,false])('keeps the passport link without a heart claim when claimed is %s',async(claimed)=>{
  withFavorite();roadmapBody={passportId:uid(900),celebrityId:uid(901),hearts:3,pages:[{pageNo:1,slots:Array.from({length:9},(_,i)=>({slotNo:i+1,kind:null,state:'filled',stampId:null,clearedAt:null})),filled:9,claimable:!claimed,claimed,locked:false,lockedReason:null}]};
  render(<MyHeartExchange locale='ko'/>);
- await waitFor(()=>expect(document.querySelector('[data-cell="stamps"] a')).toHaveAttribute('href',expect.stringContaining('/passports/')));
+ await waitFor(()=>expect(document.querySelector('[data-wallet-part="hearts"] a')).toHaveAttribute('href',expect.stringContaining('/passports/')));
  const card=document.querySelector('[data-wallet-part="hearts"]')!;
  expect(card.querySelector('[data-cell="hearts"]')).toBeNull();
  expect(card.querySelector('a')).toHaveAttribute('href',expect.stringContaining('/passports/'));
