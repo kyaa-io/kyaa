@@ -83,3 +83,13 @@ it('reads every stored entry and action page by page without refreshing anyone',
   expect(stored.actions).toEqual([{ userId: user(1), kind: 'community', sourceId: 'community:x', occurredAt: '2026-11-11T02:00:00Z' }]);
   expect(calls.sort()).toEqual(['signup_raffle_actions:0-999', 'signup_raffle_entries:0-999', 'signup_raffle_entries:1000-1999']);
 });
+it('reads the inviter nickname for an invite code: null when unknown or ineligible, shortened when long, fails closed on an error', async () => {
+  const { readRaffleInviterName } = await import('./database');
+  const code = 'ABCDEF0123456789ABCDEF01';
+  const rpc = vi.fn().mockResolvedValueOnce({ data: '보석', error: null }).mockResolvedValueOnce({ data: null, error: null }).mockResolvedValueOnce({ data: '가'.repeat(30), error: null });
+  expect(await readRaffleInviterName({ rpc }, code)).toBe('보석');
+  expect(rpc).toHaveBeenCalledWith('signup_raffle_inviter_nickname', { p_code: code });
+  expect(await readRaffleInviterName({ rpc }, code)).toBeNull();
+  expect(await readRaffleInviterName({ rpc }, code)).toBe(`${'가'.repeat(20)}…`);
+  await expect(readRaffleInviterName({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: 'x' } }) }, code)).rejects.toThrow('SIGNUP_RAFFLE_INVITER_READ_FAILED');
+});

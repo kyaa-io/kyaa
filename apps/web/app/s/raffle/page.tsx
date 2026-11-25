@@ -7,12 +7,16 @@ import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
 import { localSignupEnabled } from '@/server/signup-event/local';
 import { raffleInviteCode, rafflePolicySchema } from '@/features/benefit/domain/signup-event';
 import type { RafflePreview } from './participation';
+import { createSignupRaffleDatabase, readRaffleInviterName } from '@/server/signup-event/database';
 import styles from './raffle.module.css';
 export const dynamic = 'force-dynamic';
 type Props = { searchParams: Promise<{ locale?: string | string[]; preview?: string | string[]; invite?: string | string[] }> };
 export async function generateMetadata({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
   return { openGraph: { images: [{ url: '/images/raffle/share.png', width: 1200, height: 630 }] }, twitter: { card: 'summary_large_image' as const, images: ['/images/raffle/share.png'] }, title: signupRaffleText(locale, 'title'), description: `US$400 · ${signupRaffleText(locale, 'winners')} · ${signupRaffleText(locale, 'deadline')}` };
+}
+async function inviterNameOf(code: string) {
+  try { return await readRaffleInviterName(createSignupRaffleDatabase(), code) ?? undefined; } catch { return undefined; }
 }
 const previews = ['in', 'entered', 'passport', 'done', 'error', 'won', 'lost'] as const;
 export default async function RafflePage({ searchParams }: Props) {
@@ -25,10 +29,13 @@ export default async function RafflePage({ searchParams }: Props) {
   const requested = process.env.NODE_ENV === 'production' ? undefined : query.preview;
   const preview = previews.find(value => value === requested) as RafflePreview;
   const closed = now > closesAt || requested === 'closed' || preview === 'won' || preview === 'lost';
+  const invite = raffleInviteCode(query.invite);
+  // 초대 링크로 들어온 친구: 초대한 사람의 닉네임(못 읽으면 일반 문구). 마감 뒤에는 묻지 않는다
+  const inviterName = invite && !closed ? await inviterNameOf(invite) : undefined;
   return <FanAppFrame locale={locale} currentPath="/s/raffle" mainId="raffle-main">
     <div className={styles.stage}>
       <FanContentContainer as="main" id="raffle-main" className={styles.column}>
-        <RaffleContent locale={locale} closesAt={closesAt} now={now} closed={closed} preview={preview} invite={raffleInviteCode(query.invite)} />
+        <RaffleContent locale={locale} closesAt={closesAt} now={now} closed={closed} preview={preview} invite={invite} inviterName={inviterName} />
       </FanContentContainer>
     </div>
   </FanAppFrame>;
