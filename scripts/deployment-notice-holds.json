@@ -141,9 +141,7 @@
     "release-notes/2026-11-25-chemi-fortune-dialog.json",
     "release-notes/2026-11-25-chemi-growth-match.json",
     "release-notes/2026-11-25-chemi-reading-language.json",
-    "release-notes/2026-11-25-chemi-fan-copy.json",
-    "release-notes/2026-11-25-chemi-mileage-price.json",
-    "release-notes/2026-11-25-chemi-mileage-extra-game.json"
+    "release-notes/2026-11-25-chemi-fan-copy.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
@@ -166,9 +164,6 @@
   ],
   "revamp-search": [
     "release-notes/2026-11-25-revamp-search.json"
-  ],
-  "stamp-tier": [
-    "release-notes/2026-11-25-stamp-tier.json"
   ],
   "goods-menu": [
     "release-notes/2026-11-25-goods-menu.json"
