@@ -73,7 +73,7 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false,ba
  const auth=useGroupRequest(),c=groupBenefitsCopy(locale),bias=useStanBias(locale,initialHeart,signedOut);
  // 대표 11/14 01:53 (replaces 사용자 11/13 11:2x's login gate): signed out, the tab opens as it is — locked balances, public mission points, no 내역 — and each action (교환·받기·응모·덕질 행) leads to the login, which returns to /benefits.
  const guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated)||bias.status==='guest';
- const sections=<><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut} wallet={GOODS_MENU?null:<BenefitsWallet key={`${locale}:${auth.ownerKey}:tickets`} part='tickets' locale={locale} signedOut={signedOut} bias={bias}/>}/>{banner&&<div className={styles.pBanner} data-dukjil-banner-slot=''><ThinBanner banner={banner} locale={locale} size='mid'/></div>}{!GOODS_MENU&&<BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/>}</>;
+ const sections=<><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut} wallet={GOODS_MENU?<GoodsMileage key={auth.ownerKey} locale={locale}/>:<BenefitsWallet key={`${locale}:${auth.ownerKey}:tickets`} part='tickets' locale={locale} signedOut={signedOut} bias={bias}/>}/>{banner&&<div className={styles.pBanner} data-dukjil-banner-slot=''><ThinBanner banner={banner} locale={locale} size='mid'/></div>}{!GOODS_MENU&&<BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/>}</>;
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page} data-dukjil-side={sideBanners.length?'':undefined}>
  <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
@@ -81,6 +81,16 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false,ba
  </BenefitsSections></BenefitsAlerts>
  {sideBanners.length>0&&<aside className={styles.pSide} data-dukjil-side-slot=''>{sideBanners.map(banner=><ThinBanner key={banner.placement} banner={banner} locale={locale} size='side'/>)}</aside>}
  </FanContentContainer></FanAppFrame>;
+}
+function GoodsMileage({locale}:{locale:AppLocale}){
+ const auth=useGroupRequest();
+ const wallet=useGroupResource(auth.ready&&auth.authenticated?'/api/me/wallet':null,parseWallet);
+ useEffect(()=>{
+   window.addEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);
+   return ()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);
+ },[wallet.retry]);
+ if(!auth.authenticated||!wallet.data)return null;
+ return <p>{walletCopy(locale).points} · {wallet.data.points.toLocaleString(locale)}M</p>;
 }
 /** Where every signed-out action goes: the app's login (the /login modal route), back to this tab. */
 const benefitsLoginHref=(locale:AppLocale)=>fanLoginHref(locale,`/benefits?locale=${locale}`);
