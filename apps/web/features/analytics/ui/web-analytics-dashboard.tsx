@@ -32,6 +32,7 @@ const dimensionLabels: Record<string, Record<string, readonly [string, string]>>
     verification: ["팬 인증", "Fan verification"], other: ["기타", "Other"],
   },
   referrers: {
+    community: ["커뮤니티", "Community"], kol: ["KOL", "KOL"],
     direct: ["직접 방문", "Direct"], search: ["검색", "Search"], social: ["소셜", "Social"], email: ["이메일", "Email"],
     paid: ["광고", "Paid"], referral: ["외부 사이트", "Referral"], internal: ["사이트 내부", "Internal"],
   },

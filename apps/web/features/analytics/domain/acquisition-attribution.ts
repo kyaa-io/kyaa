@@ -2,6 +2,8 @@ import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navig
 import { z } from "zod";
 
 export const acquisitionChannelSchema = z.enum([
+  "community",
+  "kol",
   "direct",
   "search",
   "social",
@@ -66,7 +68,7 @@ function normalizedHostname(hostname: string): string {
 
 export function acquisitionLanding(pathname: string): AcquisitionLanding | null {
   if (pathname === "/") return "home";
-  if (/^\/s\/raffle\/?$/.test(pathname)) return "benefit";
+  if (/^\/s\/raffle(?:\/rules)?\/?$/.test(pathname)) return "benefit";
   if (pathname === "/celebrities") return "creator_directory";
   if (creatorSlugFromHomePath(pathname) !== null) return "creator";
   if (pathname === "/live") return "live_directory";
@@ -78,6 +80,8 @@ export function acquisitionLanding(pathname: string): AcquisitionLanding | null 
 
 function channelFromMedium(medium: string | null): AcquisitionChannel | null {
   switch (medium?.trim().toLowerCase()) {
+    case "community": return "community";
+    case "kol": return "kol";
     case "cpc":
     case "ppc":
     case "paid":
