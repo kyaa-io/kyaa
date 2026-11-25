@@ -27,6 +27,7 @@ import {
   type Stem,
   type TenGod,
 } from "./chart";
+import type { Tx } from "./tx";
 
 /** 최애 말투 셋: 창하·유나 반말, 엘리나 요체, kyaa 도사 하오체. */
 export type Voiced = { ban: string; yo: string; hao: string };
@@ -228,10 +229,11 @@ export function elementRows(chart: Chart) {
     top: counts[element] === top && top > 0,
   }));
 }
-export const helping = (chart: Chart) => {
+export const helping = (chart: Chart, tx?: Tx | null) => {
   const element = helpingElement(chart);
-  return `${elementName[element]} · ${elementColor[element]}`;
+  return tx ? `${tx.t.element(element)} · ${tx.p.element[element].color}` : `${elementName[element]} · ${elementColor[element]}`;
 };
+const levelWord = (tx: Tx, level: Level | "많이" | "조금") => tx.p.level[level];
 
 type Level = "좋음" | "보통" | "조심";
 type GodNote = {
@@ -369,7 +371,7 @@ export type FirstReading = {
   keywords: { kind: "caution" | "joy" | "luck"; label: string; basis: string; name: string; act: string }[];
 };
 
-export function firstReading(chart: Chart, at: number): FirstReading {
+export function firstReading(chart: Chart, at: number, tx?: Tx | null): FirstReading {
   const stem = dayStem(chart);
   const note = stemNotes[stem];
   const season = seasonAt(at);
@@ -377,6 +379,20 @@ export function firstReading(chart: Chart, at: number): FirstReading {
   const god = godNotes[relation];
   const marks = stemKeywords[stem];
   const luck = godLuck[relation];
+  if (tx) {
+    const mine = tx.p.stem[stem];
+    return {
+      ...firstReading(chart, at),
+      headline: mine.title,
+      image: mine.image,
+      bond: mine.bond,
+      keywords: [
+        { kind: "caution", label: tx.f("kwCaution"), basis: `stemNotes.${stem}.cautionN`, name: mine.cautionName, act: mine.cautionAct },
+        { kind: "joy", label: tx.f("kwJoy"), basis: `stemNotes.${stem}.strengthN+fandomR`, name: mine.joyName, act: mine.joyAct },
+        { kind: "luck", label: tx.f("kwLuck"), basis: `godNotes.${relation}.flow.${luck.from}`, ...tx.p.luck[relation] },
+      ],
+    };
+  }
   return {
     stem,
     headline: roughHeadline(stem),
@@ -458,7 +474,7 @@ function monthsOfSeason(chart: Chart, at: number) {
   return list;
 }
 
-export function yearReading(chart: Chart, at: number): YearReading {
+export function yearReading(chart: Chart, at: number, tx?: Tx | null): YearReading {
   const season = seasonAt(at);
   const stem = dayStem(chart);
   const god = godNotes[tenGod(stem, season.yearPillar.heavenlyStem)];
@@ -491,10 +507,43 @@ export function yearReading(chart: Chart, at: number): YearReading {
       };
   const row = (kind: "good" | "rest", m: (typeof months)[number]) => ({
     kind,
-    label: monthLabel(m.at),
-    pillar: pillarKorean(m.span.pillar),
+    label: tx ? tx.month(m.at) : monthLabel(m.at),
+    pillar: tx ? tx.pillar(m.span.pillar) : pillarKorean(m.span.pillar),
     god: tenGod(stem, m.span.pillar.heavenlyStem),
   });
+  if (tx) {
+    const yearGod = tx.p.god[tenGod(stem, season.yearPillar.heavenlyStem)];
+    const listed = (list: typeof months) => tx.list(list.map((m) => tx.month(m.at)));
+    const say = pastMonths.length
+      ? tx.f("yearLinePast", { past: listed(pastMonths), good: listed(goodMonths) })
+      : tx.join([tx.f("yearLine", { good: listed(goodMonths) }), restMonth ? tx.f("yearLineRest", { rest: tx.month(restMonth.at) }) : ""]);
+    const day = (time: number) => {
+      const parts = kstParts(time);
+      return `${parts.year}.${parts.month}.${parts.day}`;
+    };
+    const labels = tx.f("rateLabels").split("|");
+    return {
+      title: yearGod.yearTitle,
+      bond: yearGod.yearBond,
+      name: tx.f("yearName", { animal: tx.t.animal(season.yearPillar.earthlyBranch), element: tx.t.element(stemElement[season.yearPillar.heavenlyStem]) }),
+      span: `${tx.f("pillarYear", { pillar: `${season.year} ${tx.pillar(season.yearPillar)}` })} · ${day(season.startAt)} ~ ${day(season.endAt - 86400000)}`,
+      grade: yearGod.grade,
+      rate: labels.map((label, index) => ({ label, level: levelWord(tx, god.rate[index]) as Level })),
+      months: months.map((m) => ({
+        label: String(m.span.month),
+        mark: goodMonths.includes(m) ? "good" : m === restMonth ? "rest" : undefined,
+        current: m.at === current,
+        past: m.span.endAt <= at,
+      })),
+      good: goodMonths.map((m) => tx.month(m.at)).join(" · "),
+      rest: restMonth ? tx.f("restTag", { month: tx.month(restMonth.at) }) : null,
+      past: pastMonths.length ? pastMonths.map((m) => tx.month(m.at)).join(" · ") : null,
+      help: helping(chart, tx),
+      line: { ban: say, yo: say, hao: say },
+      beforeSpring: today !== season.year,
+      basis: [...goodMonths.map((m) => row("good", m)), ...(restMonth ? [row("rest", restMonth)] : [])],
+    };
+  }
   return {
     title: god.yearTitle,
     bond: god.yearBond,
@@ -538,7 +587,7 @@ export type MonthReading = {
   basis: { kind: "good" | "rest" | "past"; range: string; days: number; good: number; rough: number }[];
 };
 
-export function monthReading(chart: Chart, at: number): MonthReading {
+export function monthReading(chart: Chart, at: number, tx?: Tx | null): MonthReading {
   const span = monthSpanAt(at);
   const stem = dayStem(chart);
   const dayBr = dayBranch(chart);
@@ -611,6 +660,30 @@ export function monthReading(chart: Chart, at: number): MonthReading {
           yo: `${best.range} 주가 제일 힘 있어요. 미뤄 둔 일은 그때 해요.`,
           hao: `${best.range} 주가 가장 힘 있소. 미뤄 둔 일은 그때 하시오.`,
         };
+  if (tx) {
+    const monthGod = tx.p.god[tenGod(stem, span.pillar.heavenlyStem)];
+    const mark = (week: Week) => (week.current ? tx.f("thisWeekTag", { range: week.range }) : week.range);
+    const say = pastBest
+      ? tx.f("monthLinePast", { past: pastBest.range, best: best.current ? tx.f("thisWeek") : tx.f("weekOf", { range: best.range }) })
+      : best.current
+        ? tx.f("monthLineNow")
+        : tx.f("monthLineThen", { range: best.range });
+    const labels = tx.f("rateLabels").split("|");
+    return {
+      title: monthGod.monthTitle,
+      bond: monthGod.monthBond,
+      name: tx.f("thisMonth", { month: tx.month(span.startAt) }),
+      span: dateRange(span.startAt, span.endAt),
+      rate: labels.map((label, index) => ({ label, level: levelWord(tx, god.rate[index]) as Level })),
+      weeks,
+      strong: mark(best),
+      rest: worst ? mark(worst) : null,
+      past: pastBest ? pastBest.range : null,
+      nextTerm: tx.f("nextTerm", { date: tx.date(span.endAt), term: tx.t.solarTerm(span.nextTerm) }),
+      line: { ban: say, yo: say, hao: say },
+      basis: [row("good", best), ...(worst ? [row("rest", worst)] : []), ...(pastBest ? [row("past", pastBest)] : [])],
+    };
+  }
   return {
     title: god.monthTitle,
     bond: god.monthBond,
@@ -633,7 +706,7 @@ type Pair = "same" | "gives" | "controls";
 export type PairReading = {
   title: string;
   /** 서로 채움 · 마음 결 · 끌림 · 맞춰 갈 곳. top 은 가장 높은 칸(같으면 모두). */
-  rows: { label: string; level: "많이" | "보통" | "조금"; top: boolean }[];
+  rows: { label: string; level: "많이" | "보통" | "조금"; levelName?: string; top: boolean }[];
   /** 강조된 칸마다 그 칸의 설명 한 줄. */
   notes: { label: string; text: string }[];
   powers: string;
@@ -689,7 +762,7 @@ const pairTable: Record<
   },
 };
 
-export function pairReading(a: Stem, b: Stem, combinations: number, clashes: number): PairReading {
+export function pairReading(a: Stem, b: Stem, combinations: number, clashes: number, tx?: Tx | null): PairReading {
   const ea = stemElement[a];
   const eb = stemElement[b];
   const kind: Pair = ea === eb ? "same" : generates[ea] === eb || generates[eb] === ea ? "gives" : "controls";
@@ -703,6 +776,20 @@ export function pairReading(a: Stem, b: Stem, combinations: number, clashes: num
     level: levels[scores[index]],
     top: scores[index] === best,
   }));
+  if (tx) {
+    const mine = tx.p.pair[kind];
+    const labels = tx.f("pairLabels").split("|");
+    const named = rows.map((row, index) => ({ ...row, label: labels[index], levelName: levelWord(tx, row.level) }));
+    return {
+      title: mine.title,
+      rows: named,
+      notes: named.flatMap((row, index) => (row.top ? [{ label: row.label, text: mine.notes[index] }] : [])),
+      powers: `${tx.p.stem[a].image} × ${tx.p.stem[b].image}`,
+      clash: mine.clash,
+      together: mine.together,
+      line: (name) => tx.join([mine.line, tx.f("pairAsk", { name })]),
+    };
+  }
   return {
     title: table.title,
     rows,
@@ -715,9 +802,18 @@ export function pairReading(a: Stem, b: Stem, combinations: number, clashes: num
 }
 
 /** 궁합 기록에 두 명식이 있는 경우의 분야별 풀이. */
-export function pairJudgments(self: Stem, partner: Stem, combinations: number, clashes: number) {
+export function pairJudgments(self: Stem, partner: Stem, combinations: number, clashes: number, tx?: Tx | null) {
   const a = stemElement[self], b = stemElement[partner];
   const nourishing = generates[a] === b || generates[b] === a;
+  if (tx) {
+    const labels = tx.f("judgeLabels").split("|");
+    const good = [a === b || nourishing, combinations > 0];
+    return [
+      { label: labels[0], level: levelWord(tx, good[0] ? "좋음" : "보통") },
+      { label: labels[1], level: levelWord(tx, good[1] ? "좋음" : "보통") },
+      { label: labels[2], level: levelWord(tx, clashes > 0 ? "조심" : "보통") },
+    ];
+  }
   return [
     { label: "마음", level: a === b || nourishing ? "좋음" : "보통" },
     { label: "생활", level: combinations > 0 ? "좋음" : "보통" },

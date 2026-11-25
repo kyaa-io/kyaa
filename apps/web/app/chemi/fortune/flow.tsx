@@ -1,5 +1,6 @@
 "use client";
 
+import { pillarLabel } from "@/app/chemi/saju/terms-i18n";
 import { landscapeSrcSet } from "@/features/chemi/ui/scene-art";
 import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
@@ -568,7 +569,7 @@ export function FortuneFlow({
                 </div>
                 <FanText role="meta">
                   {seoulDate(locale, { month: "long", day: "numeric", weekday: "long" }, day)}{" "}
-                  · {text("pillarDay", { pillar: result.evidence.dayPillar })}
+                  · {text("pillarDay", { pillar: pillarLabel(result.evidence.dayPillar, locale) })}
                 </FanText>
                 {reading?.styled?.headline && (
                   <FanText role="item">{reading.styled.headline}</FanText>

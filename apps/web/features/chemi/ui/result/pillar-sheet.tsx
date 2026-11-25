@@ -9,7 +9,6 @@ import { LockKeyhole } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanHanja } from "@/components/fan-ui/fan-hanja";
 import { FanText } from "@/components/fan-ui/fan-text";
-import { pillarTerm } from "./pillar-terms";
 import styles from "./pillar-sheet.module.css";
 
 export type PillarElement = "wood" | "fire" | "earth" | "metal" | "water";
@@ -32,18 +31,19 @@ export type PillarColumn =
       spirit: string | null;
     };
 
-const rowNames = ["십신", "천간", "지지", "십신"] as const;
-const detailNames = ["지장간", "12운성", "12신살"] as const;
+/** 줄 이름 여섯 개(십신 천간 지지 지장간 12운성 12신살)와 오행 이름. 한국어 밖 언어는 부르는 쪽이 용어 표에서 넘긴다. */
+export type PillarSheetTerms = { rows: readonly string[]; element: (element: PillarElement) => string };
+const koreanRows = ["십신", "천간", "지지", "지장간", "12운성", "12신살"] as const;
 
-function Glyph({ cell, locale }: { cell: Cell; locale?: string }) {
+function Glyph({ cell, terms }: { cell: Cell; terms?: PillarSheetTerms }) {
   return (
     <span className={styles.glyph}>
       <FanHanja role="glyph">{cell.hanja}</FanHanja>
       <span className={styles.read}>
         {/* 한글 읽기(을·병)는 한국어 화면에서만. 다른 언어는 한자와 오행 이름으로 읽는다. */}
-        {locale !== "en" && locale !== "mn" && <FanText role="label">{cell.letter}</FanText>}
+        {!terms && <FanText role="label">{cell.letter}</FanText>}
         <img src={`/chemi/saju/elements/${cell.element}.webp`} width={24} height={24} alt="" />
-        <FanText role="meta">{pillarTerm(elementName[cell.element], locale)}</FanText>
+        <FanText role="meta">{terms ? terms.element(cell.element) : elementName[cell.element]}</FanText>
       </span>
     </span>
   );
@@ -54,7 +54,7 @@ export function PillarSheet({
   label,
   open,
   unknownLabel,
-  locale,
+  terms,
 }: {
   columns: readonly PillarColumn[];
   /** 표 전체를 읽어 주는 이름(사주 여덟 글자. 시주 …) */
@@ -63,9 +63,12 @@ export function PillarSheet({
   open: boolean;
   /** 모르는 기둥 칸의 읽기 이름 */
   unknownLabel: string;
-  locale?: string;
+  /** 한국어 밖 언어의 줄 이름·오행 이름. 없으면 한국어. */
+  terms?: PillarSheetTerms;
 }) {
   const showSpirit = columns.some((column) => column.known && column.spirit);
+  const [god, stem, branch, ...detailNames] = terms?.rows ?? koreanRows;
+  const rowNames = [god, stem, branch, god];
   const detailRows = open ? (showSpirit ? detailNames : detailNames.slice(0, 2)) : [];
   return (
     <div className={styles.sheet} role="img" aria-label={label} data-open={open || undefined} data-rows={5 + detailRows.length}>
@@ -73,7 +76,7 @@ export function PillarSheet({
         <span />
         {[...rowNames, ...detailRows].map((name, i) => (
           <FanText role="meta" className={styles.rowName} key={`${name}${i}`}>
-            {pillarTerm(name, locale)}
+            {name}
           </FanText>
         ))}
       </div>
@@ -81,15 +84,15 @@ export function PillarSheet({
         column.known ? (
           <div className={styles.col} data-me={column.me || undefined} key={column.key} aria-hidden="true">
             <FanText role={column.me ? "label" : "meta"} className={styles.name}>
-              {pillarTerm(column.name, locale)}
+              {column.name}
             </FanText>
             <FanText role={column.me ? "label" : "meta"} className={styles.god}>
-              {pillarTerm(column.stemGod, locale)}
+              {column.stemGod}
             </FanText>
-            <Glyph locale={locale} cell={column.stem} />
-            <Glyph locale={locale} cell={column.branch} />
+            <Glyph terms={terms} cell={column.stem} />
+            <Glyph terms={terms} cell={column.branch} />
             <FanText role="meta" className={styles.god}>
-              {pillarTerm(column.branchGod, locale)}
+              {column.branchGod}
             </FanText>
             {open && (
               <>
@@ -113,7 +116,7 @@ export function PillarSheet({
         ) : (
           <div className={styles.col} data-unknown="" key={column.key} aria-hidden="true">
             <FanText role="meta" className={styles.name}>
-              {pillarTerm(column.name, locale)}
+              {column.name}
             </FanText>
             <span className={styles.slot} title={unknownLabel}>
               <FanIcon icon={LockKeyhole} size={16} />

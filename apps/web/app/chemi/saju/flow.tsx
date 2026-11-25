@@ -52,6 +52,7 @@ import {
   type SajuReading,
 } from "./reading";
 import { SajuResult, type Pair, type ResultView } from "./result";
+import { useSajuTx } from "./tx-context";
 import resultStyles from "./result.module.css";
 import styles from "./scene.module.css";
 import sheetStyles from "./sheet.module.css";
@@ -141,6 +142,7 @@ export function SajuFlow({
   restoring?: boolean;
 }) {
   const text = useReadingCopy();
+  const tx = useSajuTx();
   const sceneCopy = useSajuSceneCopy();
   const ask = useAskLocation();
   const askOpen = useChemiFeatures().ask;
@@ -718,7 +720,7 @@ export function SajuFlow({
       </>
     );
 
-  const first = chart ? firstReading(chart, now) : null;
+  const first = chart ? firstReading(chart, now, tx) : null;
   const lineInput: SajuLineInput | null =
     chart && first
       ? {
@@ -727,7 +729,7 @@ export function SajuFlow({
           strengthN: first.strengthN,
           cautionN: first.cautionN,
           bond: first.bond,
-          yearTitle: yearReading(chart, now).title,
+          yearTitle: yearReading(chart, now, tx).title,
         }
       : null;
   const tone = sajuTone(character);
@@ -742,13 +744,13 @@ export function SajuFlow({
     phase === "pairCalc" || phase === "limit"
       ? phase === "limit"
         ? text("dailyLimit")
-        : tone.pairCalc(pairName)
+        : tx ? tx.f("pairCalc", { name: pairName }) : tone.pairCalc(pairName)
       : step === "calc"
-        ? tone.calc
+        ? tx ? tx.f("calc") : tone.calc
         : talk && lineInput
-          ? sajuTalkLine(character, talk, lineInput)
+          ? sajuTalkLine(character, talk, lineInput, tx, first?.stem)
           : needBirth
-            ? tone.birth
+            ? tx ? tx.f("birth") : tone.birth
             : again && entering
               ? text(greeting[character][1])
               : text(greeting[character][0]);
@@ -766,8 +768,8 @@ export function SajuFlow({
 
 
   function renderSheets() {
-    const year = chart ? yearReading(chart, now) : null;
-    const month = chart ? monthReading(chart, now) : null;
+    const year = chart ? yearReading(chart, now, tx) : null;
+    const month = chart ? monthReading(chart, now, tx) : null;
     return (
       <>
         <FanDialog

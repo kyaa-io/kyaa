@@ -1,5 +1,6 @@
 "use client";
 
+import { pillarLabel } from "@/app/chemi/saju/terms-i18n";
 import { useState } from "react";
 import { DeepResultAsk, useDeepResultAsk } from "@/features/chemi/ask/deep-result-ask";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -108,7 +109,7 @@ export function FortuneCard(props: Props) {
         [
           [text("cardDate"), date],
           [text("cardScore"), text("scoreGrade", { score, grade })],
-          [text("tableDaypillar"), text("pillarDay", { pillar: evidence.dayPillar })],
+          [text("tableDaypillar"), text("pillarDay", { pillar: pillarLabel(evidence.dayPillar, locale) })],
         ] as const
       ).map(([label, value]) => (
         <div key={label}>
