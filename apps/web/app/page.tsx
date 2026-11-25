@@ -1,5 +1,4 @@
 import { groupsEnabled } from "@/features/groups/domain/availability";
-import { xMissionHomeBanner } from "../features/home/domain/x-mission-home-banner";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { settleHomeQuery } from "../components/home-query-stream";
@@ -20,6 +19,8 @@ import { EVENT_STRIP_COOKIE } from "../features/home/domain/event-day";
 
 export const dynamic = "force-dynamic";
 
+const signupRaffleBanner = (banner: { id: string; href?: string }) => banner.id === SIGNUP_RAFFLE_BANNER_ID || banner.href?.split("?")[0] === "/s/raffle";
+
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ locale?: string | string[] }> }) {
   const locale = parseAppLocale((await searchParams).locale);
   return contentPageMetadata({ path: "/", locale, ...pageCopy.home[locale] });
@@ -37,14 +38,13 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const queries = {
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", async () => {
       const banners = await bannerRepository.list(toContentLocale(locale));
-      // The raffle and X event banners are pinned by the home itself; a CMS copy would show them twice.
-      const mission = xMissionHomeBanner(locale);
-      return banners.filter(banner => banner.id !== SIGNUP_RAFFLE_BANNER_ID && banner.id !== mission.id && !["/s/raffle", "/s/x", "/follow"].includes(banner.href.split("?")[0]));
+      // A raffle banner points at /s/raffle, which is closed while the server flag is off.
+      return signupRaffleEnabled() ? banners : banners.filter(banner => !signupRaffleBanner(banner));
     })),
     homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", async () => {
       const slots = await bannerRepository.listSlots(toContentLocale(locale), "home");
       if (signupRaffleEnabled()) return slots;
-      return Object.fromEntries(Object.entries(slots).filter(([, banner]) => banner?.id !== SIGNUP_RAFFLE_BANNER_ID && banner?.href?.split("?")[0] !== "/s/raffle"));
+      return Object.fromEntries(Object.entries(slots).filter(([, banner]) => !banner || !signupRaffleBanner(banner)));
     })),
     homeNotices: settleHomeQuery(measureHomeQuery("homeNotices", () => noticeRepository.listPublished(toContentLocale(locale), { limit: 5 }))),
     homeGallery: settleHomeQuery(measureHomeQuery("homeGallery", () => galleryRepository.listPublishedPool(toContentLocale(locale), { pages: 3 }))),
@@ -61,7 +61,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       queries={queries}
       locale={locale}
       jjinfanGauge={jjinfanGaugeEnabled()}
-      signupRaffle={signupRaffleEnabled()}
       heartDonation={heartDonationEvent()}
       homeTop={homeTopBanner()}
       firstSteps={!firstStepsDone}

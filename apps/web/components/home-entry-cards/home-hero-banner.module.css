@@ -134,13 +134,13 @@
 }
 
 /* 덕질미션북 그림을 슬라이드 전체에 채우고 제목과 행동을 겹친다. */
-.banner:is([data-kind="missionbook"], [data-kind="chemi"]) { color: var(--color-surface); }
-.banner:is([data-kind="missionbook"], [data-kind="chemi"]) .mobileBackdrop { display: none; }
-.banner:is([data-kind="missionbook"], [data-kind="chemi"]) .fullImage { inset: 0; width: 100%; }
-.banner:is([data-kind="missionbook"], [data-kind="chemi"]) .overlay { position: absolute; inset: 0; display: block; pointer-events: none; }
-.banner:is([data-kind="missionbook"], [data-kind="chemi"]) :is(.eyebrow, .description) { color: inherit; }
+.banner:is([data-kind="missionbook"], [data-kind="raffle"], [data-kind="chemi"]) { color: var(--color-surface); }
+.banner:is([data-kind="missionbook"], [data-kind="raffle"], [data-kind="chemi"]) .mobileBackdrop { display: none; }
+.banner:is([data-kind="missionbook"], [data-kind="raffle"], [data-kind="chemi"]) .fullImage { inset: 0; width: 100%; }
+.banner:is([data-kind="missionbook"], [data-kind="raffle"], [data-kind="chemi"]) .overlay { position: absolute; inset: 0; display: block; pointer-events: none; }
+.banner:is([data-kind="missionbook"], [data-kind="raffle"], [data-kind="chemi"]) :is(.eyebrow, .description) { color: inherit; }
 @media (width >= 48rem) {
-  .banner:is([data-kind="missionbook"], [data-kind="chemi"]) .overlay {
+  .banner:is([data-kind="missionbook"], [data-kind="raffle"], [data-kind="chemi"]) .overlay {
     /* design-lint-disable S1 -- 사진 위 제목·행동의 가독성 받침. */
     background: linear-gradient(90deg, var(--color-home-hero-shade), transparent 80%);
   }

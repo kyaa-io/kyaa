@@ -10,7 +10,6 @@ vi.mock("@/server/raffle/raffle-dependencies", () => ({ createRaffleDependencies
 vi.mock("@/features/home/ui/events-catalog-screen", () => ({ EventsCatalogScreen: () => null }));
 
 import EventsPage from "./page";
-import { gggiHomeBanner } from "@/features/home/domain/gggi-home-banner";
 
 describe("events page public content", () => {
   beforeEach(() => {
@@ -21,7 +20,7 @@ describe("events page public content", () => {
 
   it("preserves the app locale while reading the existing public content locale", async () => {
     const page = await EventsPage({ searchParams: Promise.resolve({ locale: "ja" }) });
-    expect(page.props).toMatchObject({ locale: "ja", homeBanners: [gggiHomeBanner("ja"), { id: "banner" }], elina: { slug: "elina" }, contentUnavailable: false });
+    expect(page.props).toMatchObject({ locale: "ja", homeBanners: [{ id: "banner" }], elina: { slug: "elina" }, contentUnavailable: false });
     expect(listBanners).toHaveBeenCalledWith("en");
     expect(listCelebrities).toHaveBeenCalledWith("en");
     expect(listRaffles).toHaveBeenCalledWith({ celebritySlug: "elina", locale: "en", now: expect.any(Date) });
@@ -31,19 +30,19 @@ describe("events page public content", () => {
     listRaffles.mockRejectedValue(new Error("unavailable"));
     const page = await EventsPage({ searchParams: Promise.resolve({ locale: "ko" }) });
     expect(page.props).toMatchObject({ elina: undefined, elinaRaffles: [], showElinaCampaign: false, contentUnavailable: true });
-    expect(page.props.homeBanners).toEqual([gggiHomeBanner("ko"), { id: "banner" }]);
+    expect(page.props.homeBanners).toEqual([{ id: "banner" }]);
   });
 
   it("keeps available campaign content when banners fail", async () => {
     listBanners.mockRejectedValue(new Error("unavailable"));
     const page = await EventsPage({ searchParams: Promise.resolve({}) });
-    expect(page.props).toMatchObject({ homeBanners: [gggiHomeBanner("ko")], elina: { slug: "elina" }, contentUnavailable: true });
+    expect(page.props).toMatchObject({ homeBanners: [], elina: { slug: "elina" }, contentUnavailable: true });
   });
 
   it("keeps guide banners out of the event list", async () => {
     listBanners.mockResolvedValue([{ id: "banner" }, { id: "guide", category: "guide" }, { id: "news", category: "announcement" }]);
     const page = await EventsPage({ searchParams: Promise.resolve({ locale: "ko" }) });
-    expect(page.props.homeBanners).toEqual([gggiHomeBanner("ko"), { id: "banner" }, { id: "news", category: "announcement" }]);
+    expect(page.props.homeBanners).toEqual([{ id: "banner" }, { id: "news", category: "announcement" }]);
   });
 
   it("retains the home campaign without a creator portrait", async () => {
@@ -55,22 +54,22 @@ describe("events page public content", () => {
   it("paginates banners and the final campaign as one ordered list", async () => {
     listBanners.mockResolvedValue(Array.from({ length: 20 }, (_, index) => ({ id: `banner-${index}` })));
     const first = await EventsPage({ searchParams: Promise.resolve({ locale: "ja" }) });
-    expect(first.props.homeBanners.map((banner: { id: string }) => banner.id)).toEqual([gggiHomeBanner("ja").id, ...Array.from({ length: 9 }, (_, index) => `banner-${index}`)]);
+    expect(first.props.homeBanners.map((banner: { id: string }) => banner.id)).toEqual(Array.from({ length: 10 }, (_, index) => `banner-${index}`));
     expect(first.props.showElinaCampaign).toBe(false);
     expect(first.props.pagination.props).toMatchObject({ locale: "ja", page: 1, pageCount: 3 });
 
     const second = await EventsPage({ searchParams: Promise.resolve({ locale: "ja", page: "2" }) });
-    expect(second.props.homeBanners.map((banner: { id: string }) => banner.id)).toEqual(Array.from({ length: 10 }, (_, index) => `banner-${index + 9}`));
+    expect(second.props.homeBanners.map((banner: { id: string }) => banner.id)).toEqual(Array.from({ length: 10 }, (_, index) => `banner-${index + 10}`));
     expect(second.props.showElinaCampaign).toBe(false);
 
     const last = await EventsPage({ searchParams: Promise.resolve({ locale: "ja", page: "3" }) });
-    expect(last.props.homeBanners).toEqual([{ id: "banner-19" }]);
+    expect(last.props.homeBanners).toEqual([]);
     expect(last.props.showElinaCampaign).toBe(true);
     expect(last.props.pagination.props).toMatchObject({ page: 3, pageCount: 3 });
   });
 
   it("keeps the final campaign when it is the only item on the last page", async () => {
-    listBanners.mockResolvedValue(Array.from({ length: 9 }, (_, index) => ({ id: `banner-${index}` })));
+    listBanners.mockResolvedValue(Array.from({ length: 10 }, (_, index) => ({ id: `banner-${index}` })));
     const page = await EventsPage({ searchParams: Promise.resolve({ page: "2" }) });
     expect(page.props).toMatchObject({ homeBanners: [], showElinaCampaign: true });
     expect(page.props.pagination.props).toMatchObject({ page: 2, pageCount: 2 });
@@ -85,7 +84,7 @@ describe("events page public content", () => {
     listRaffles.mockRejectedValue(new Error("unavailable"));
     const page = await EventsPage({ searchParams: Promise.resolve({ page: "999" }) });
     expect(page.props).toMatchObject({ showElinaCampaign: false, contentUnavailable: true });
-    expect(page.props.homeBanners).toHaveLength(2);
+    expect(page.props.homeBanners).toHaveLength(1);
     expect(page.props.pagination.props).toMatchObject({ page: 1, pageCount: 1 });
   });
 });

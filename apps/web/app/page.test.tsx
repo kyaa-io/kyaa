@@ -48,18 +48,16 @@ describe("Home server content isolation", () => {
     expect(props(await HomePage({ searchParams: Promise.resolve({}) })).firstSteps).toBe(false);
   });
 
-  it("passes the raffle opt-in to the home and drops the duplicate CMS raffle banner", async () => {
-    const cms = { id: "cms-raffle", href: "/s/raffle?utm_source=home" };
+  it("keeps the admin raffle banner in its admin place while the raffle is open, and leaves it out while the raffle flag is off", async () => {
+    const raffle = { id: "cms-raffle", href: "/s/raffle?utm_source=home" };
     const other = { id: "other", href: "/events" };
-    repositories.homeBanners.mockResolvedValue([cms, other]);
+    repositories.homeBanners.mockResolvedValue([raffle, other]);
     vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "false");
     const off = props(await HomePage({ searchParams: Promise.resolve({}) }));
-    expect(off.signupRaffle).toBe(false);
     expect(await off.queries.homeBanners).toEqual({ status: "fulfilled", value: [other] });
     vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "true");
     const on = props(await HomePage({ searchParams: Promise.resolve({}) }));
-    expect(on.signupRaffle).toBe(true);
-    expect(await on.queries.homeBanners).toEqual({ status: "fulfilled", value: [other] });
+    expect(await on.queries.homeBanners).toEqual({ status: "fulfilled", value: [raffle, other] });
   });
 
   it("reads the thin banner slot with the page and keeps the page when the slot read fails", async () => {

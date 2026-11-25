@@ -27,12 +27,12 @@ describe("independent home banner contract", () => {
     expect(isBannerHref("https://user@example.test")).toBe(false);
   });
   it("requires both languages before publishing and never borrows an image across languages", () => {
-    const ready = { title: "Title", description: "", ctaLabel: "Schedule", href: "/live/calendar", alt: "Artwork", desktopImage: bannerFixture.desktopImage, mobileImage: null };
+    const ready = { title: "Title", description: "", ctaLabel: "Schedule", href: "/live/calendar", alt: "Artwork", desktopImage: bannerFixture.desktopImage, mobileImage: null, desktopVideo: null, mobileVideo: null };
     expect(bannerPublicationIssues({ kind: "regular_live", celebrityId: bannerFixture.celebrityId, localizations: { ko: ready, en: ready } })).toEqual([]);
     expect(bannerPublicationIssues({ kind: "regular_live", celebrityId: bannerFixture.celebrityId, localizations: { ko: ready, en: { ...ready, desktopImage: null } } })).toEqual(["en.desktopImage"]);
   });
   it("permits an incomplete draft but requires a creator for regular broadcasts", () => {
-    const blank = { title: "", description: "", ctaLabel: "", href: "", alt: "", desktopAssetId: null, mobileAssetId: null };
+    const blank = { title: "", description: "", ctaLabel: "", href: "", alt: "", desktopAssetId: null, mobileAssetId: null, desktopVideo: null, mobileVideo: null };
     const command = { action: "save", id: null, expectedRevision: 0, kind: "announcement", celebrityId: null, localizations: { ko: blank, en: blank } };
     expect(homeBannerCommandSchema.safeParse(command).success).toBe(true);
     expect(homeBannerCommandSchema.safeParse({ ...command, kind: "regular_live" }).success).toBe(false);

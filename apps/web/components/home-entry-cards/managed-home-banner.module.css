@@ -43,11 +43,7 @@
   .root[data-first-steps] :is(.artwork img, .motion video) { object-fit:cover; object-position:62% 50%; }
 }
 
-/* 선택한 티켓 포켓의 중앙 카드와 로고를 문구 위에 온전히 남긴다. */
-.root[data-signup-raffle] :is(.artwork img, .motion video) { object-fit:contain; object-position:50% 50%; }
-@media (width < 48rem) {
-  .root[data-signup-raffle] [data-hero-full-image] { bottom:34%; }
-}
+.root[data-signup-raffle] :is(.artwork img, .motion video) { object-fit: cover; object-position: center; }
 
 .liveEvent {
   position: absolute;

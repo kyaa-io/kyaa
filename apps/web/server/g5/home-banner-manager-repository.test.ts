@@ -3,7 +3,7 @@ vi.mock("server-only", () => ({}));
 import { createHomeBannerManagerRepository } from "./home-banner-manager-repository";
 
 const actor = { appUserId: "11111111-1111-4111-8111-111111111111", allowlistId: "22222222-2222-4222-8222-222222222222", email: "admin@test", role: "admin" as const };
-const localization = { title: "", description: "", ctaLabel: "", href: "", alt: "", desktopAssetId: null, mobileAssetId: null };
+const localization = { title: "", description: "", ctaLabel: "", href: "", alt: "", desktopAssetId: null, mobileAssetId: null, desktopVideo: null, mobileVideo: null };
 describe("home banner manager repository", () => {
   it("maps save and revision fields to the atomic RPC", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: { id: "x", revision: 1 }, error: null });
