@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "짝 맞추기 후반에는 고른 최애의 옷과 소품이 카드에 나와요.",
+    "방문 통계 안내가 떠 있어도 뒤로 가기 버튼과 결과 제목을 볼 수 있어요. 결과 화면의 순위 이름은 ‘주간 순위’로 줄였어요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/games/match",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-match-favorites.png"
+  ]
+}
