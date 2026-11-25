@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const state = vi.hoisted(() => ({ status: "on" as "on" | "off" | "loading", catalog: undefined as unknown, resource: {} as Record<string, unknown>, proofs: undefined as unknown, request: vi.fn() }));
@@ -10,13 +10,6 @@ vi.mock("@/features/groups/ui/use-group-resource", () => ({
   useGroupRequest: () => ({ request: state.request }),
 }));
 
-// 대표 11/11: a heart claim runs behind the rewarded ad. The ad step is stubbed here (granted unless a test says otherwise); rewarded-session.test.ts covers it.
-const adRun = vi.hoisted(() => ({ outcome: "granted" as "granted" | "cancelled", paths: [] as unknown[] }));
-vi.mock("@/features/group-wallet/ui/rewarded-session", () => ({ runRewardedSession: async (deps: { paths?: unknown; onGranted(id: string): void; onState(s: string): void }) => {
-  adRun.paths.push(deps.paths);
-  if (adRun.outcome === "granted") deps.onGranted("77777777-7777-4777-8777-777777777777"); else deps.onState("cancelled");
-  return { show: () => true, cancel: () => {} };
-} }));
 import { PassportMissionBook, StackedStampPages, SLOT, missionHref } from "./passport-mission-book";
 
 const KINDS = ["quiz", "checkin", "post", "comment", "share", "invite", "subscription", "steady_checkin", "proof"];
@@ -29,7 +22,7 @@ beforeEach(() => { state.proofs = undefined; state.catalog = undefined; localSto
 afterEach(cleanup);
 
 describe("PassportMissionBook", () => {
-  it("DS-D 9/9: arriving with #mission-book moves to the claim button once the pages are drawn and focuses it", () => {
+  it("DS-D 9/9: arriving with #mission-book moves to the book title once the pages are drawn and focuses it", () => {
     const scroll = vi.fn(); const original = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = scroll;
     window.history.replaceState(null, "", "/passports/p1?locale=ko#mission-book");
     try {
@@ -38,8 +31,8 @@ describe("PassportMissionBook", () => {
       expect(scroll).not.toHaveBeenCalled();
       state.resource = { loading: false, error: false, data: data([page({})]), retry: vi.fn() };
       view.rerender(<PassportMissionBook passportId="p1" creatorSlug="c1" locale="ko" />);
-      const claim = screen.getByRole("button", { name: "하트 받기" });
-      expect(document.activeElement).toBe(claim);
+      const title = document.getElementById("mission-book-title");
+      expect(document.activeElement).toBe(title);
       expect(scroll).toHaveBeenCalledTimes(1);
       view.rerender(<PassportMissionBook passportId="p1" creatorSlug="c1" locale="ko" />);
       expect(scroll).toHaveBeenCalledTimes(1);
@@ -59,14 +52,13 @@ describe("PassportMissionBook", () => {
     state.status = "off"; expect(ui().container.innerHTML).toBe("");
     cleanup(); state.status = "loading"; expect(ui().container.innerHTML).toBe("");
   });
-  it("shows nine slots and claims a complete first page", async () => {
+  it("shows nine slots and retires claims on a complete first page", async () => {
     const retry = vi.fn();
     state.resource = { loading: false, error: false, data: data([page({})]), retry };
     ui();
     expect(screen.getAllByRole("listitem")).toHaveLength(9);
-    fireEvent.click(screen.getByRole("button", { name: "하트 받기" }));
-    await waitFor(() => expect(retry).toHaveBeenCalled());
-    expect(state.request.mock.calls[0][0]).toBe("/api/me/passports/p1/pages/1/claim");
+    expect(screen.queryByRole("button", { name: "하트 받기" })).toBeNull();
+    expect(state.request).not.toHaveBeenCalled();
   });
   it("names the check-in slot from the policy action instead of its slot number", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(2), filled: 2, claimable: false })]), retry: vi.fn() };
@@ -88,17 +80,6 @@ describe("PassportMissionBook", () => {
     expect(screen.getAllByRole("checkbox").every(el => el.getAttribute("aria-disabled") === "true" && !el.hasAttribute("tabindex"))).toBe(true);
     expect(container.querySelectorAll("[data-state='filled']:not([data-kind]) svg")).toHaveLength(3);
     expect(container.querySelectorAll("[data-state='empty']:not([data-kind]) svg")).toHaveLength(0);
-  });
-  it("explains a disabled claim with what is missing and leaves an open claim undescribed", () => {
-    state.resource = { loading: false, error: false, data: data([page({ slots: slots(4), filled: 4, claimable: false }), page({ pageNo: 2 })]), retry: vi.fn() };
-    const { container } = ui();
-    const open = screen.getByRole("button", { name: "하트 받기" }) as HTMLButtonElement;
-    expect(open.disabled).toBe(false);
-    expect(open.hasAttribute("aria-describedby")).toBe(false);
-    fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
-    const disabled = screen.getByRole("button", { name: "하트 받기" }) as HTMLButtonElement;
-    expect(disabled.disabled).toBe(true);
-    expect(container.textContent).not.toContain("9칸을 모두 채우면 하트를 받아요");
   });
   it("keeps the descriptions off the cards and opens them in a sheet with the way to the mission; later pages invent nothing", () => {
     state.resource = { loading: false, error: false, data: data([page({ slots: slots(2), filled: 2, claimable: false }), page({ pageNo: 2, slots: slots(0).map(slot => ({ ...slot, kind: null })), filled: 0, claimable: false })]), retry: vi.fn() };
@@ -134,13 +115,13 @@ describe("PassportMissionBook", () => {
     expect(container.querySelector("[data-current] [data-testid='passport-page-indicator']")?.textContent).toBe("2/2");
     expect((screen.getByRole("button", { name: "다음 쪽" }) as HTMLButtonElement).disabled).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: "이전 쪽" }));
-    expect(screen.getByText("하트 받음")).toBeTruthy();
+    expect(screen.queryByText("하트 받음")).toBeNull();
   });
   it("locks the second page until the jjinfan title and links to certifications", () => {
     state.resource = { loading: false, error: false, data: data([page({ claimed: true, claimable: false }), page({ pageNo: 2, slots: slots(3), filled: 3, claimable: false, locked: true, lockedReason: "jjinfan_required" })], 1), retry: vi.fn() };
     ui("en");
     fireEvent.click(screen.getByRole("button", { name: "Previous page" }));
-    expect(screen.getByText("Heart claimed")).toBeTruthy();
+    expect(screen.queryByText("Heart claimed")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Next page" }));
     const link = screen.getByRole("link", { name: "Claim after verifying" });
     expect(link.getAttribute("href")).toBe("/c/c1/certifications?locale=en");
@@ -149,7 +130,7 @@ describe("PassportMissionBook", () => {
   it("disables claim for an incomplete page", () => {
     state.resource = { loading: false, error: false, data: data([page({ filled: 4, slots: slots(4), claimable: false })]), retry: vi.fn() };
     ui();
-    expect((screen.getByRole("button", { name: "하트 받기" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.queryByRole("button", { name: "하트 받기" })).toBeNull();
   });
   it("shows an error with retry and a loading placeholder", () => {
     const retry = vi.fn();
@@ -160,13 +141,6 @@ describe("PassportMissionBook", () => {
     cleanup();
     state.resource = { loading: true, error: false, data: undefined, retry };
     expect(ui().container.querySelector("[aria-busy='true']")).not.toBeNull();
-  });
-  it("reports a failed claim", async () => {
-    state.request = vi.fn().mockRejectedValue(new Error("boom"));
-    state.resource = { loading: false, error: false, data: data([page({})]), retry: vi.fn() };
-    ui("ru");
-    fireEvent.click(screen.getAllByRole("button").at(-1)!);
-    expect((await screen.findByRole("alert")).textContent).toBe("Не удалось получить сердце");
   });
   it("stacks earned stamps nine a page while the policy is off, opening on the page still filling", () => {
     const stamps = Array.from({ length: 10 }, (_, i) => ({ id: `s${i}`, src: `/stamp-${i}.webp` }));

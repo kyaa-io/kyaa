@@ -22,7 +22,7 @@ export const fanStageSchema = z.object({
 });
 
 export const fanStageProgressSchema = z.object({
-  policyVersion: z.union([z.literal(2), z.literal(3)]),
+  policyVersion: z.union([z.literal(2), z.literal(3), z.literal(4)]),
   current: fanStageSchema,
   next: fanStageSchema.nullable(),
   remaining: z.number().int().nonnegative(),
@@ -30,10 +30,13 @@ export const fanStageProgressSchema = z.object({
   /** What `remaining` counts (20261220050000): filled mission slots up to Silver 2, hearts from Gold, points under policy 1 and 2. */
   unit: z.enum(["stamps", "hearts", "points"]),
 }).strict().superRefine((progress, context) => {
+  if (progress.policyVersion === 4 && progress.unit !== "stamps") {
+    context.addIssue({ code: "custom", message: "Stamp policy requires stamp progress" });
+  }
   // Slot-reached stages (Silver 1, Silver 2) share the heart minimum 0 with the stage before them.
   if (progress.next
     ? progress.next.rank !== progress.current.rank + 1
-      || (progress.unit === "stamps" ? progress.next.minimumScore < progress.current.minimumScore : progress.next.minimumScore <= progress.current.minimumScore)
+      || (progress.policyVersion !== 4 && progress.unit === "stamps" ? progress.next.minimumScore < progress.current.minimumScore : progress.next.minimumScore <= progress.current.minimumScore)
     : progress.current.key !== "diamond-1" || progress.remaining !== 0 || progress.progressPercent !== 100) {
     context.addIssue({ code: "custom", message: "Fan stage progress is inconsistent" });
   }
@@ -43,19 +46,17 @@ export type FanStageProgress = z.infer<typeof fanStageProgressSchema>;
 
 const labels = { Bronze: "브론즈", Silver: "실버", Gold: "골드", Platinum: "플래티넘", Diamond: "다이아몬드" };
 export function fanStageLabel(locale: AppLocale, stage: Pick<FanStage, "tier" | "subdivision">): string {
+  const numeral = ["Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ"][stage.subdivision - 1];
+  return `${fanTierName(locale, stage.tier)} ${numeral}`;
+}
+
+export function fanTierName(locale: AppLocale, tier: FanStage["tier"]): string {
   const translated = {
     Bronze: tierMessages.m860246902e14, Silver: tierMessages.mc0892217f397,
     Gold: tierMessages.me12a6f61ff09, Platinum: tierMessages.me2f02b0acb25,
     Diamond: tierMessages.mcc8c85f578b9,
   };
-  const tier = locale === "ko" ? labels[stage.tier] : locale === "en" || locale === "mn" ? stage.tier : translated[stage.tier][locale];
-  return stage.tier === "Bronze" || stage.tier === "Diamond" ? tier : `${tier} ${stage.subdivision}`;
-}
-
-/** The major tier's name alone (실버, Silver), for places that speak of the tier rather than a stage. */
-export function fanTierName(locale: AppLocale, tier: FanStage["tier"]): string {
-  const label = fanStageLabel(locale, { tier, subdivision: 1 });
-  return tier === "Bronze" || tier === "Diamond" ? label : label.replace(/\s*1$/, "");
+  return locale === "ko" ? labels[tier] : locale === "en" || locale === "mn" ? tier : translated[tier][locale];
 }
 
 /** An old API exposes only the attained major tier; use its entry artwork. */

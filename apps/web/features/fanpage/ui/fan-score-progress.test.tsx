@@ -26,7 +26,7 @@ describe("fan score details", () => {
     expect(screen.getAllByText("골드까지 하트 1개")[0]).toBeVisible();
     expect(screen.queryByText(/까지 \d+점/)).not.toBeInTheDocument();
     rerender(<FanScoreProgress passport={{ ...passport, tier: "Gold", score: 60, stageProgress: { ...bronze, current: stage("gold-1", "Gold", 1, 4, 1), next: stage("gold-2", "Gold", 2, 5, 8), remaining: 5, progressPercent: 28, unit: "hearts" as const } }} locale="ko" />);
-    expect(screen.getAllByText("골드 2까지 하트 5개")[0]).toBeVisible();
+    expect(screen.getAllByText("골드 Ⅱ까지 하트 5개")[0]).toBeVisible();
   });
 
   it("draws no next step without a stage projection", () => {

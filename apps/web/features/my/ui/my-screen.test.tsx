@@ -276,7 +276,7 @@ describe("unified MY hub", () => {
     const { container } = render(<MyScreen locale="ko" />);
 
     fireEvent.click(await screen.findByRole("button", { name: "Elina" }));
-    expect(screen.getByText("골드 2", { selector: "strong" })).toBeInTheDocument();
+    expect(screen.getByText("골드 Ⅱ", { selector: "strong" })).toBeInTheDocument();
     expect([...container.querySelectorAll("img")].some((image) => decodeURIComponent(image.src).includes("/medal-v2/gold-2.svg"))).toBe(true);
     expect(fetcher.mock.calls.some(([url]) => String(url) === "/api/me/summary?locale=ko&tierStages=1&hearts=1&gifts=1")).toBe(true);
   });

@@ -162,5 +162,8 @@
   ],
   "revamp-search": [
     "release-notes/2026-11-25-revamp-search.json"
+  ],
+  "stamp-tier": [
+    "release-notes/2026-11-25-stamp-tier.json"
   ]
 }

@@ -8,10 +8,10 @@ const progress = { policyVersion: 2, current: silver1, next: silver2, remaining:
 describe("server fan stage contract", () => {
   it("preserves server values and labels subdivisions without deriving score thresholds", () => {
     expect(fanStageProgressSchema.parse(progress)).toEqual(progress);
-    expect(fanStageLabel("ko", silver2)).toBe("실버 2");
-    expect(fanStageLabel("en", silver1)).toBe("Silver 1");
-    expect(fanStageLabel("ko", { tier: "Bronze", subdivision: 1 })).toBe("브론즈");
-    expect(fanStageLabel("en", { tier: "Diamond", subdivision: 1 })).toBe("Diamond");
+    expect(fanStageLabel("ko", silver2)).toBe("실버 Ⅱ");
+    expect(fanStageLabel("en", silver1)).toBe("Silver Ⅰ");
+    expect(fanStageLabel("ko", { tier: "Bronze", subdivision: 1 })).toBe("브론즈 Ⅰ");
+    expect(fanStageLabel("en", { tier: "Diamond", subdivision: 1 })).toBe("Diamond Ⅰ");
     expect(fanTierEntryKey("Gold")).toBe("gold-1");
   });
 
@@ -34,6 +34,14 @@ describe("server fan stage contract", () => {
     { ...progress, privateOwnerId: "private" },
   ])("rejects invalid stage projection %#", (value) => {
     expect(fanStageProgressSchema.safeParse(value).success).toBe(false);
+  });
+
+  it("requires ascending stamp thresholds and stamp units under policy 4", () => {
+    const stamps = { ...progress, policyVersion: 4, unit: "stamps",
+      current: { ...silver1, minimumScore: 30 }, next: { ...silver2, minimumScore: 60 } };
+    expect(fanStageProgressSchema.safeParse(stamps).success).toBe(true);
+    expect(fanStageProgressSchema.safeParse({ ...stamps, unit: "hearts" }).success).toBe(false);
+    expect(fanStageProgressSchema.safeParse({ ...stamps, next: { ...silver2, minimumScore: 30 } }).success).toBe(false);
   });
 
   it("accepts policy version 3", () => {
