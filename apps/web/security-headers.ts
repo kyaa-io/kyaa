@@ -43,7 +43,8 @@ const privyConnectSources = [
   "https://*.rpc.privy.systems",
   "https://explorer-api.walletconnect.com",
 ];
-export function privySignInEnabled(source: Record<string, string | undefined> = process.env): boolean {
+// Browser consumers of the AdSense constants can evaluate this module without a Node process global.
+export function privySignInEnabled(source: Record<string, string | undefined> = typeof process === "undefined" ? {} : process.env): boolean {
   return source.AUTH_PROVIDER !== "cognito";
 }
 export function withPrivySignIn(policy: string): string {
