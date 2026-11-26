@@ -122,5 +122,6 @@
 @media (max-width: 47.999rem) {
   .header[data-fan-layout] .identity { grid-template-rows: auto; }
   .header[data-fan-layout] .image { grid-row: 1; }
-  .header[data-fan-layout] .body { display: flex; grid-area: 1 / 2; flex-direction: column; gap: var(--space-3); min-width: 0; }
+  .header[data-fan-layout] .body { display: flex; grid-area: 1 / 2; flex-direction: column; justify-content: space-between; min-height: 96px; gap: var(--space-1); min-width: 0; }
+  .header[data-fan-layout] .links img { width: var(--space-4); height: var(--space-4); }
 }
