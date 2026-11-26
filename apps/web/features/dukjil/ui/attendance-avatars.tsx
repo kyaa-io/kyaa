@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { useRef, useState } from "react";
 import { FanActivityStamp } from "@/components/fan-ui/fan-activity-stamp";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -73,7 +74,7 @@ export function AttendanceAvatars({ locale, creators, byId, verifyHref, onChange
   }
   return <>
     <FanAction variant="primary" disabled={busy || !pending.length} onClick={checkAll}>{bulkCopy[locale][0].replace("{0}", String(pending.length))}</FanAction>
-    <div role="status">{error ? dukjilText(locale, "dukjilFailed") : items.length > 0 && `+${earned.reduce((sum, item) => sum + (item.points ?? 0), 0)}M · ${bulkCopy[locale][1].replace("{0}", String(earned.length))}`}</div>
+    <div role="status">{error ? dukjilText(locale, "dukjilFailed") : items.length > 0 && `${formatMileage(earned.reduce((sum, item) => sum + (item.points ?? 0), 0), locale, "always")} · ${bulkCopy[locale][1].replace("{0}", String(earned.length))}`}</div>
     <ul className={styles.list}>{creators.map(page => <AvatarItem key={page.id} failed={items.some(item => item.slug === page.slug && !item.ok)} page={page} locale={locale} item={byId.get(page.celebrityId!)} reviewHref={verifyHref(page)} onChanged={onChanged} />)}</ul>
   </>;
 }

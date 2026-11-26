@@ -305,7 +305,7 @@ it("찾을 수 없는 질문 번호로 열리면 주제 고르기로 돌아간�
   render(<Host />);
   askGo({ step: "answer", thread: "33333333-3333-4333-8333-333333333333" });
   await screen.findByRole("group", { name: "주제" });
-  expect(location.search).toContain("ask=topic");
+  await waitFor(() => expect(location.search).toContain("ask=topic"));
 });
 
 it("같은 날 다시 오면 인사가 짧고, 이어 묻기가 남은 오늘 질문으로 돌아가는 주 버튼이 있다", async () => {
@@ -402,18 +402,18 @@ it("질문을 다 쓴 뒤 최애는 한도·내일 이야기를 하지 않고 �
   }
 });
 
-it("무료를 다 쓴 화면: 주 버튼 '20M로 하나 더' → 공통 추가 판 창 → 고른 질문만 마일리지로 보낸다(CHEMI-ASK-POINTS-1123)", async () => {
+it("무료를 다 쓴 화면: 주 버튼 '20 마일리지로 하나 더' → 공통 추가 판 창 → 고른 질문만 마일리지로 보낸다(CHEMI-ASK-POINTS-1123)", async () => {
   serve((_url, body) => ({ thread: answered(body.threadId, { question: body.question }), state: state({ left: 0, extraLeft: 2, extraCost: 20, points: 30 }) }),
     state({ left: 0, extraLeft: 3, extraCost: 20, points: 50 }));
   render(<Host />);
   askGo({ step: "topic" });
-  const cta = await screen.findByRole("button", { name: "20M로 하나 더" });
+  const cta = await screen.findByRole("button", { name: "20 마일리지로 하나 더" });
   expect(screen.getByRole("button", { name: /자랑하기/ })).toBeTruthy();
   fireEvent.click(cta);
-  expect(await screen.findByText("20M로 질문 하나 더")).toBeTruthy();
-  expect(screen.getByText("50M")).toBeTruthy();
+  expect(await screen.findByText("20 마일리지로 질문 하나 더")).toBeTruthy();
+  expect(screen.getByText("50 마일리지")).toBeTruthy();
   expect(screen.getByRole("img", { name: "남은 추가 질문 3번 → 2번" })).toBeTruthy();
-  fireEvent.click(screen.getByRole("button", { name: "20M 쓰고 묻기" }));
+  fireEvent.click(screen.getByRole("button", { name: "20 마일리지 쓰고 묻기" }));
   fireEvent.click(await screen.findByRole("button", { name: "연애" }));
   fireEvent.change(await screen.findByLabelText("질문 입력"), { target: { value: "오늘 연락해도 될까?" } });
   fireEvent.click(screen.getByRole("button", { name: "보내기" }));
@@ -425,7 +425,7 @@ it("마일리지가 모자라면 창의 주 버튼이 꺼지고 모자란 만큼
   serve(() => ({}), state({ left: 0, extraLeft: 3, extraCost: 20, points: 5 }));
   render(<Host />);
   askGo({ step: "topic" });
-  fireEvent.click(await screen.findByRole("button", { name: "20M로 하나 더" }));
-  expect(await screen.findByText("마일리지가 15M 모자라요")).toBeTruthy();
-  expect((screen.getByRole("button", { name: "20M 쓰고 묻기" }) as HTMLButtonElement).disabled).toBe(true);
+  fireEvent.click(await screen.findByRole("button", { name: "20 마일리지로 하나 더" }));
+  expect(await screen.findByText("마일리지가 15 마일리지 모자라요")).toBeTruthy();
+  expect((screen.getByRole("button", { name: "20 마일리지 쓰고 묻기" }) as HTMLButtonElement).disabled).toBe(true);
 });

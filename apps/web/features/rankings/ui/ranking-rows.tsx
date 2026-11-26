@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
 import { ChevronDown, ChevronUp, Heart } from "@/components/fan-ui/fan-icons";
@@ -313,11 +314,11 @@ export const dayGainMark = (period: HomeRankingPeriod, dayGain: number | null | 
 function Main({ locale, metric, value, delay, gain }: { locale: AppLocale; metric: RankingMetric; value: number; delay: number; gain?: number }) {
   const n = value.toLocaleString(locale);
   const gainText = gain ? `+${gain.toLocaleString(locale)}` : null;
-  const base = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? rankingsText(locale, "rkPointsLabel", [n]) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
+  const base = metric === "hearts" ? rankingsText(locale, "rkHearts", [n]) : metric === "points" ? formatMileage(value, locale) : metric === "likes" ? rankingsText(locale, "rkLikesCount", [n]) : rankingsText(locale, "rkJjinfanCount", [n]);
   const label = gain ? `${base}, ${rankingsText(locale, "rkTodayGain", [gain.toLocaleString(locale)])}` : base;
   const template = metric === "fans" ? rankingsText(locale, "rkJjinfanCount", ["\u0000"]) : "\u0000";
   const [before, after] = template.split("\u0000");
-  return <span className={styles.main} aria-label={label} title={n} data-metric={metric} data-zero={value === 0 || undefined}>
+  return <span className={styles.main} aria-label={label} title={base} data-metric={metric} data-zero={value === 0 || undefined}>
     <span aria-hidden="true" className={styles.mainInner}>
       {gainText ? <FanText role="label" className={styles.gain} data-day-gain="" data-flash-target="gain">{gainText}</FanText> : null}
       {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
@@ -491,7 +492,7 @@ export function MyRank({ locale, ranking, metric }: { locale: AppLocale; ranking
       <strong className={styles.meRank}>{rankingsText(locale, "rkRank", [displayRank.toLocaleString(locale)])}</strong>
       <span className={styles.meValue}>
         {metric === "points"
-          ? <span className={styles.meHearts} aria-label={rankingsText(locale, "rkPointsLabel", [value.toLocaleString(locale)])}><RankUnit unit="points" /><span aria-hidden="true">{short(locale, value)}</span></span>
+          ? <span className={styles.meHearts} aria-label={formatMileage(value, locale)}><RankUnit unit="points" /><span aria-hidden="true">{short(locale, value)}</span></span>
           : <span className={styles.meHearts} aria-label={rankingsText(locale, "rkHearts", [value.toLocaleString(locale)])}>{heartIcon(16)}<span aria-hidden="true">{short(locale, value)}</span></span>}
         <span className={styles.dot} aria-hidden="true">·</span>
         <span className={styles.meGap}>{displayRank === 1 ? rankingsText(locale, "rkIsFirst") : gap <= 0 ? rankingsText(locale, "rkTiedFirst") : rankingsText(locale, "rkToFirst", [short(locale, gap)])}</span>

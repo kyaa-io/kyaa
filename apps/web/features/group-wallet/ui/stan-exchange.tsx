@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import { useEffect, useRef, useState } from "react";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
@@ -103,7 +104,7 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest, onSucc
   const pick = (n: number) => setPicked(Math.min(Math.max(1, n), maxQty));
   return <div className={styles.exchange}>
     <div className={styles.exchangeRate}>
-      <span>{pointCost.toLocaleString(locale)} P</span><span aria-hidden="true">→</span>
+      <span>{formatMileage(pointCost, locale)}</span><span aria-hidden="true">→</span>
       <span className={styles.exchangeTicket}><RewardIcon kind="ticket"  width={32} height={32} alt={w.tickets} />{unitsText(locale, 1)}</span>
     </div>
     <span className={styles.quantityLabel}>{q.quantity}</span>

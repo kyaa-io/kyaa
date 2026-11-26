@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 
 import { GROUP_WALLET_CHANGED_EVENT } from "@/features/groups/ui/wallet-events";
@@ -29,26 +30,26 @@ export type RewardCelebration = Readonly<{ locale: AppLocale; points?: number; s
 export const REWARD_MERGE_MS = 1200;
 const BADGE_MS = 900;
 
-const unit: Record<AppLocale, { points: (n: string) => string; stamps: (n: string, count: number) => string }> = {
-  ko: { points: n => `+${n}M`, stamps: n => `스탬프 ${n}` },
+const unit: Record<AppLocale, { stamps: (n: string, count: number) => string }> = {
+  ko: { stamps: n => `스탬프 ${n}` },
   get mn() { return this.en; },
-  en: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "stamp" : "stamps"}` },
-  ja: { points: n => `+${n}M`, stamps: n => `スタンプ ${n}` },
-  "zh-Hans": { points: n => `+${n}M`, stamps: n => `印章 ${n}` },
-  "zh-Hant": { points: n => `+${n}M`, stamps: n => `印章 ${n}` },
-  es: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "sello" : "sellos"}` },
-  id: { points: n => `+${n}M`, stamps: n => `${n} stempel` },
-  vi: { points: n => `+${n}M`, stamps: n => `${n} con dấu` },
-  th: { points: n => `+${n}M`, stamps: n => `ตราประทับ ${n}` },
-  pt: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "carimbo" : "carimbos"}` },
-  fr: { points: n => `+${n}M`, stamps: (n, c) => `${n} ${c === 1 ? "tampon" : "tampons"}` },
-  ru: { points: n => `+${n}M`, stamps: n => `Штампы: ${n}` },
+  en: { stamps: (n, c) => `${n} ${c === 1 ? "stamp" : "stamps"}` },
+  ja: { stamps: n => `スタンプ ${n}` },
+  "zh-Hans": { stamps: n => `印章 ${n}` },
+  "zh-Hant": { stamps: n => `印章 ${n}` },
+  es: { stamps: (n, c) => `${n} ${c === 1 ? "sello" : "sellos"}` },
+  id: { stamps: n => `${n} stempel` },
+  vi: { stamps: n => `${n} con dấu` },
+  th: { stamps: n => `ตราประทับ ${n}` },
+  pt: { stamps: (n, c) => `${n} ${c === 1 ? "carimbo" : "carimbos"}` },
+  fr: { stamps: (n, c) => `${n} ${c === 1 ? "tampon" : "tampons"}` },
+  ru: { stamps: n => `Штампы: ${n}` },
 };
 
 /** "+20P · 스탬프 1", "+20P", "스탬프 1", or "" when nothing was granted. */
 export function rewardSummary(locale: AppLocale, points = 0, stamps = 0) {
   const u = unit[locale] ?? unit.en, parts: string[] = [];
-  if (points > 0) parts.push(u.points(points.toLocaleString(locale)));
+  if (points > 0) parts.push(formatMileage(points, locale, "always"));
   if (stamps > 0) parts.push(u.stamps(stamps.toLocaleString(locale), stamps));
   return parts.join(" · ");
 }
@@ -68,7 +69,7 @@ export function celebrateReward({ locale, points = 0, stamps = 0, affinity, labe
   merged = { ...total, affinity: heart, at: now, toastId };
   // The badge is the point badge of the whole app (coin + "+20"); a stamp-only grant shows its words instead.
   if (heart) popBadge(`+${heart.amount.toLocaleString(locale)}`, false, anchor, false, true);
-  else popBadge(total.points > 0 ? `+${total.points.toLocaleString(locale)}` : title, total.points > 0, anchor);
+  else popBadge(total.points > 0 ? formatMileage(total.points, locale, "always") : title, total.points > 0, anchor);
 }
 
 /** The other half of `celebrateReward`: points the fan just spent (게임 추가 판). Same toast and coin badge, but the quoted debit and the badge sinks
@@ -77,9 +78,8 @@ export function celebrateSpend({ locale, points, label, anchor }: Readonly<{ loc
   const p = Number.isFinite(points) && points > 0 ? Math.floor(points) : 0;
   if (!p) return;
   window.dispatchEvent(new Event(GROUP_WALLET_CHANGED_EVENT));
-  const amount = p.toLocaleString(locale);
-  showFanToast({ title: `-${amount}M`, description: label, duration: 2800 });
-  popBadge(`-${amount}`, true, anchor, true);
+  showFanToast({ title: formatMileage(-p, locale), description: label, duration: 2800 });
+  popBadge(formatMileage(-p, locale), true, anchor, true);
 }
 
 function popBadge(text: string, coin: boolean, anchor?: Element | null, spend = false, heart = false) {

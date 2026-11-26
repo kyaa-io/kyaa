@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import { ArrowRight } from "lucide-react";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -19,25 +20,25 @@ export type Slot = "loading" | "locked" | "missing" | number;
 
 /** From 10,000 the MY card shows the short form (1.2만, 12K; exact numbers stay in 덕질) so three numbers fit one line at 390. */
 const COMPACT_FROM = 10_000;
-function Value({ locale, slot, unit, coin = false, compact = false, className = styles.value }: { locale: AppLocale; slot: Slot; unit?: string; coin?: boolean; compact?: boolean; className?: string }) {
+function Value({ locale, slot, unit, coin = false, mileage = false, compact = false, className = styles.value }: { locale: AppLocale; slot: Slot; unit?: string; coin?: boolean; mileage?: boolean; compact?: boolean; className?: string }) {
   if (slot === "loading") return <dd className={className}><FanSkeleton width={72} height={32} /></dd>;
   if (slot === "locked") return <dd className={className}><FanLockedValue locale={locale} /></dd>;
   if (slot === "missing") return <dd className={className}>—</dd>;
-  return <dd className={className}>{coin && <img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" />}{compact && slot >= COMPACT_FROM ? new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 0 }).format(slot) : slot.toLocaleString(locale)}{unit && <span className={styles.unit}>{unit}</span>}</dd>;
+  return <dd className={className} aria-label={mileage && compact && slot >= COMPACT_FROM ? formatMileage(slot, locale) : undefined}>{coin && <img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" />}{compact && slot >= COMPACT_FROM ? new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 0 }).format(slot) : slot.toLocaleString(locale)}{mileage ? <span className={styles.unit}>{formatMileage(slot, locale, "auto", "unit")}</span> : unit && <span className={styles.unit}>{unit}</span>}</dd>;
 }
 
 /** Two balance cells: points with the coin, group tickets. */
 export function WalletBalances({ locale, points, tickets }: { locale: AppLocale; points: Slot; tickets: Slot }) {
   const w = walletCopy(locale), h = walletHelpCopy(locale);
   return <dl className={styles.balances}>
-    <div className={styles.balance} data-summary="points"><dt className={styles.label}><span>{w.points}</span><HelpHint label={h.label} text={h.points} /></dt><Value locale={locale} slot={points} unit="P" coin /></div>
+    <div className={styles.balance} data-summary="points"><dt className={styles.label}><span>{w.points}</span><HelpHint label={h.label} text={h.points} /></dt><Value locale={locale} slot={points} mileage coin /></div>
     <div className={styles.balance}><dt className={styles.label}><RewardIcon kind="ticket" alt="" width={20} height={20} /><span>{locale === "ko" ? "응모권" : w.tickets}</span><HelpHint label={h.label} text={h.tickets} /></dt><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></div>
   </dl>;
 }
 
 export function WalletRate({ locale, pointCost }: { locale: AppLocale; pointCost: number }) {
   const w = walletCopy(locale);
-  return <div className={styles.rate}><span>{pointCost.toLocaleString(locale)} P</span><ArrowRight size={18} aria-hidden="true" /><span>{locale === "ko" ? "1장" : `1 ${ticketSingular[locale] ?? w.tickets}`}</span></div>;
+  return <div className={styles.rate}><span>{formatMileage(pointCost, locale)}</span><ArrowRight size={18} aria-hidden="true" /><span>{locale === "ko" ? "1장" : `1 ${ticketSingular[locale] ?? w.tickets}`}</span></div>;
 }
 
 export type WalletCardState =
@@ -52,9 +53,9 @@ export function WalletCard({ locale, state, title, href, className }: { locale: 
   const w = walletCopy(locale);
   const points: Slot = state.kind === "ready" ? state.points : state.kind === "guest" ? "locked" : state.kind === "loading" ? "loading" : "missing";
   const tickets: Slot = state.kind === "ready" ? state.tickets : points;
-  const cells: [string, Slot, string | undefined][] = [[w.points, points, "P"], [w.tickets, tickets, locale === "ko" ? "장" : undefined]];
+  const cells: [string, Slot, string | undefined][] = [[w.points, points, undefined], [w.tickets, tickets, locale === "ko" ? "장" : undefined]];
   return <Link href={href as Route} className={[styles.my, className].filter(Boolean).join(" ")} data-wallet-card="my" aria-label={title}>
     <span className={styles.myHead}><FanHeading as="h2">{title}</FanHeading><span aria-hidden="true">›</span></span>
-    <dl className={styles.myBalances}>{cells.map(([label, slot, unit]) => <div key={label} className={styles.myCell}><dt className={styles.label}>{label}</dt><Value locale={locale} slot={slot} unit={unit} compact className={styles.myValue} /></div>)}</dl>
+    <dl className={styles.myBalances}>{cells.map(([label, slot, unit], index) => <div key={label} className={styles.myCell}><dt className={styles.label}>{label}</dt><Value locale={locale} slot={slot} unit={unit} mileage={index === 0} compact className={styles.myValue} /></div>)}</dl>
   </Link>;
 }

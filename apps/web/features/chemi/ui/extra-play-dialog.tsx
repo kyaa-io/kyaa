@@ -8,7 +8,7 @@ import { RollingNumber } from "@/components/fan-ui/rolling-number";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { Play } from "@/components/fan-ui/fan-icons";
 import type { AppLocale } from "@/i18n/locales";
-import { extraGameUnit, fillCount, getExtraPlayCopy } from "./extra-play-copy";
+import { formatExtraGameCost, extraGameUnit, fillCount, getExtraPlayCopy } from "./extra-play-copy";
 import numberStyles from "@/components/fan-ui/fan-number.module.css";
 import styles from "./extra-play-dialog.module.css";
 
@@ -36,7 +36,7 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
   const remaining = extra ?? 0;
   const base = getExtraPlayCopy(locale, cost, unit);
   const copy = labels ? { ...base, title: labels.title, left: labels.extra, confirm: labels.pay } : base;
-  const number = new Intl.NumberFormat(locale);
+  const format = (value: number) => formatExtraGameCost(value, locale, unit);
   const after = points == null ? null : Math.max(0, points - cost);
   const [shown, setShown] = useState(points ?? 0);
   useEffect(() => {
@@ -64,10 +64,10 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
             <FanText as="dt" role="meta">{copy.points}</FanText>
             {/* 모자라면 빠질 것처럼 보이는 전후 값 대신 지금 값만 둔다(DF-GAME-007). */}
             <dd>{short
-              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{number.format(points)}{unit}</span>
+              ? <span className={[numberStyles.lg, styles.value].join(" ")}>{format(points)}</span>
               : <>
-                <FanText role="meta" className={styles.before}>{number.format(points)}{unit}</FanText>
-                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={(value) => `${number.format(value)}${unit}`} duration={600} /></span>
+                <FanText role="meta" className={styles.before}>{format(points)}</FanText>
+                <span className={[numberStyles.lg, styles.value].join(" ")}><RollingNumber value={shown} format={format} duration={600} /></span>
               </>}
             </dd>
           </div>
@@ -80,7 +80,7 @@ export function ExtraPlayDialog({ open, onOpenChange, onConfirm, busy, locale, p
           </div>}
         </dl>}
         {short && <p className={styles.short}>
-          <FanText role="meta">{fillCount(copy.short, cost - (points ?? 0))}</FanText>
+          <FanText role="meta">{unit === "M" ? copy.short.replace("{n}", format(cost - points)) : fillCount(copy.short, cost - points)}</FanText>
           <FanSectionLink href={`/benefits?locale=${locale}`}>{copy.earn}</FanSectionLink>
         </p>}
       </div>

@@ -24,7 +24,7 @@ const row = (key: string) => waitFor(() => { const el = rowNow(key); if (!el) th
 
 it("shows today's points as the coin badge, with no stamp icon box beside it (C8)", async () => {
   const { container } = ui();
-  expect(await screen.findByText("+22")).toBeInTheDocument();
+  expect(await screen.findByText("+22 마일리지", { selector: "[data-point-value]" })).toBeInTheDocument();
   const head = container.querySelector("[data-fan-missions] h2")!.parentElement!;
   expect(head.querySelector("svg.lucide-stamp")).toBeNull();
   expect(head).not.toHaveTextContent(/스탬프/);

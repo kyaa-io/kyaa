@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 import { Check, Stamp } from "lucide-react";
 import type { ReactNode } from "react";
@@ -39,19 +40,19 @@ export const POINT_COIN_SRC = REWARD_ICON_SRC.point;
 export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, remainingPer = "day", today = false, size, slot = false, className = "" }: EarnBadgeProps) {
   const cls = `${styles.badge} ${styles[variant]} ${className}`;
   // 포인트 표시는 이 알약 하나다(노란 바탕 · 동전 · `+N`). 버튼 모서리에 걸칠 때만 위치(`corner`)가 붙는다.
-  const pill = (coin: number) => <><img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" /><span aria-hidden="true" data-point-value="">+{(points ?? 0).toLocaleString(locale)}</span></>;
+  const pill = (coin: number) => <><img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" /><span aria-hidden="true" data-point-value="">{size === "sm" || slot ? `+${(points ?? 0).toLocaleString(locale)}` : formatMileage(points ?? 0, locale, "always")}</span></>;
   const pillClass = [cornerStyles.pill, size === "sm" ? cornerStyles.small : "", slot ? cornerStyles.slot : ""].filter(Boolean).join(" ");
   // S4 규칙 3: 오늘 받은 포인트가 0이면 배지를 그리지 않는다.
   if (variant === "inline" && today && (points ?? 0) <= 0) return null;
   if (variant === "done") {
     return <span className={cls} data-earn-badge="done"><Check size={12} aria-hidden="true" /><span>{dukjilText(locale, "dukjilBadgeDone")}</span></span>;
   }
-  const label = points === undefined ? undefined : dukjilText(locale, "dukjilEarnLabel", [points.toLocaleString(locale)]);
+  const label = points === undefined ? undefined : formatMileage(points, locale, "always");
   if (variant === "corner") {
     return <span className={[cornerStyles.pill, cornerStyles.badge, className].filter(Boolean).join(" ")} data-earn-badge="corner"><img src={POINT_COIN_SRC} width={16} height={16} alt="" aria-hidden="true" />{points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}</span>}{label && <span className={styles.srOnly}>{label}</span>}</span>;
   }
   if (variant === "balance") {
-    return <span className={cls} data-earn-badge="balance"><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" /><span className={styles.balanceValue}>{(points ?? 0).toLocaleString(locale)}</span><span className={styles.balanceUnit}>M</span></span>;
+    return <span className={cls} data-earn-badge="balance"><img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" /><span className={styles.balanceValue}>{(points ?? 0).toLocaleString(locale)}</span><span className={styles.balanceUnit}>{formatMileage(points ?? 0, locale, "auto", "unit")}</span></span>;
   }
   const coin = size === "sm" ? 12 : 16;
   // `오늘 +22P` 문구에서 `+` 앞 낱말(오늘·Today)만 알약 앞에 둔다. 숫자는 알약이 말한다.

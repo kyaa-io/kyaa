@@ -1,4 +1,7 @@
 {
+  "dev-mileage-label": [
+    "release-notes/2026-11-27-miles-label.json"
+  ],
   "adsense-display": [
     "release-notes/2026-11-26-adsense-units.json"
   ],

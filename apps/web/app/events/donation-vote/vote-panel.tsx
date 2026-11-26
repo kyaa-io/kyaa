@@ -1,5 +1,6 @@
 "use client";
 
+import { formatMileage } from "@/i18n/format-mileage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -62,9 +63,9 @@ function MemberPanel({ locale, auth }: { locale: keyof typeof voteCopy; auth: Re
     {!authenticated && <p>{signIn}</p>}
     {state && <>
       <FanHeading>{closed ? results : days ? "D−" + days : "D-day"}</FanHeading>
-      <p>{allowance} · {state.remaining.toLocaleString(locale)} M</p>
-      {open && <label>{vote} (1 M = 1) <input type="number" min={1} max={state.remaining} value={quantity || ""} onChange={e => setQuantity(Number(e.target.value))} /></label>}
-      <ol>{state.ranking.map(row => <li data-row key={row.id}>{row.slug} {row.fandom_name} · <FanNumber value={row.votes} locale={locale} countUp /> {open && <FanAction size="sm" disabled={busy || !Number.isInteger(quantity) || quantity < 1 || quantity > state.remaining} onClick={() => void submit(row.id)}>{vote} · {quantity} M</FanAction>}</li>)}</ol>
+      <p>{allowance} · {formatMileage(state.remaining, locale)}</p>
+      {open && <label>{vote} ({formatMileage(1, locale)} = 1) <input type="number" min={1} max={state.remaining} value={quantity || ""} onChange={e => setQuantity(Number(e.target.value))} /></label>}
+      <ol>{state.ranking.map(row => <li data-row key={row.id}>{row.slug} {row.fandom_name} · <FanNumber value={row.votes} locale={locale} countUp /> {open && <FanAction size="sm" disabled={busy || !Number.isInteger(quantity) || quantity < 1 || quantity > state.remaining} onClick={() => void submit(row.id)}>{vote} · {formatMileage(quantity, locale)}</FanAction>}</li>)}</ol>
     </>}
     <p role="status">{message}</p>
   </>;
