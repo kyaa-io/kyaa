@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import { useGroupRequest, useGroupResource } from "@/features/groups/ui/use-group-resource";
 import { AD_REWARD_POINTS, adRewardResultSchema, adRewardTodaySchema, isRewardedAd } from "@/features/home/domain/ad-reward";
@@ -18,7 +18,12 @@ export type AdRewardMark = "points" | "done" | null;
  */
 export function useAdReward(banner: Pick<HomeBanner, "id" | "category" | "placement">) {
   const rewarded = isRewardedAd(banner);
-  const { request, authenticated, ready } = useGroupRequest();
+  const auth = useGroupRequest();
+  const { request, authenticated } = auth;
+  // The server renders no badge; the first client render must match it, so the session counts as known only after mounting.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const ready = mounted && auth.ready;
   const today = useGroupResource(rewarded && ready && authenticated ? TODAY_PATH : null, parseToday);
   const [paid, setPaid] = useState(false);
   const sending = useRef(false);
