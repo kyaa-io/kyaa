@@ -1,0 +1,5 @@
+{
+  "changes": ["모바일 홈에서 배너 아래 랭킹 간격을 줄여 첫 화면에 2위까지 보이도록 했어요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-27-home-ranking-fold.png"]
+}

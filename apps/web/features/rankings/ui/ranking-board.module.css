@@ -16,3 +16,12 @@
 }
 /* 기간 알약: 틀 높이 48(칸 40 + 누르는 영역 위아래 5씩 = 50). FanTabs segment 기본 틀은 40이라 누르는 영역이 42였다. */
 .head nav, .tabs nav { height: 48px; }
+
+@media (width < 48rem) {
+  :global([data-home-ranking]) .head { flex-wrap: nowrap; gap: var(--space-2); }
+  :global([data-home-ranking]) .head h2 { min-width: 0; overflow-wrap: anywhere; }
+  :global([data-home-ranking]) .head nav { flex: none; }
+  :global([data-home-ranking]) :is(.head, .tabs) nav { height: var(--space-10); }
+  :global([data-home-ranking]) .column { gap: var(--space-1); }
+  :global([data-home-ranking]) .column > [data-metric-line] { min-height: 0; }
+}
