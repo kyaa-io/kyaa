@@ -3,7 +3,12 @@
     "개발 서버(dev.kyaa.io)에서 새해맞이 기부 투표 화면과 전체 이벤트 목록의 기부 투표 카드가 보여요.",
     "개발 서버에서 하단 메뉴의 덕질이 굿즈로 바뀌어요.",
     "PC 화면 상단 메뉴의 굿즈 아이콘이 빠지던 문제를 바로잡았어요.",
-    "운영 kyaa.io 화면과 동작은 달라지지 않아요."
+    "운영 kyaa.io 화면과 동작은 달라지지 않아요.",
+    "예시 데이터로 만든 로컬 화면입니다."
   ],
-  "path": "/events"
+  "path": "/events",
+  "images": [
+    "release-notes/images/2026-11-26-revamp-dev-flags-events-390.png",
+    "release-notes/images/2026-11-26-revamp-dev-flags-goods-390.png"
+  ]
 }
