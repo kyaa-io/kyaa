@@ -112,7 +112,16 @@ async function layout(page, width, screen, locale) {
       if (rect.width < 44 || rect.height < 44) return [`${label} ${rect.width}×${rect.height}`];
       const x = rect.x + rect.width / 2;
       const y = rect.y + rect.height / 2;
-      if (x >= 0 && x < innerWidth && y >= 0 && y < innerHeight &&
+      // 스크롤 목록 안에서 잘려 보이는 항목은 가운데가 목록 밖이라 가려진 것처럼 잡힌다. 목록을 굴려 닿으므로 뺀다.
+      const clipped = (element => {
+        for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+          if (getComputedStyle(parent).overflow === "visible") continue;
+          const box = parent.getBoundingClientRect();
+          if (x < box.left || x >= box.right || y < box.top || y >= box.bottom) return true;
+        }
+        return false;
+      })(node);
+      if (x >= 0 && x < innerWidth && y >= 0 && y < innerHeight && !clipped &&
           !node.contains(document.elementFromPoint(x, y))) return [`${label} intercepted`];
       return [];
     }));
@@ -239,6 +248,21 @@ async function motion(screen, path, selector, index, loops = false) {
 }
 
 /**
+ * 질문 장면의 첫 선택지까지 기다린다. 계정이 다른 날 물은 질문이 있으면 최애가 그 질문부터 되묻고
+ * 대답 버튼(잘됐어·아직이야·새로 물을래)이 나온다. 그 버튼 문구를 replies 에 모으고 '새로 물을래'(마지막)를 눌러 주제 칩까지 간다.
+ */
+async function askReady(page, replies) {
+  const timeout = Number(process.env.CHEMI_NAV_TIMEOUT ?? 12000) * 2;
+  const topics = page.locator('[data-ask-step] [role="group"] button').first();
+  const recall = page.locator('[data-ask-step] [class*="replies"] button');
+  await topics.or(recall.first()).waitFor({ timeout });
+  if (!await recall.count()) return;
+  replies.push(...await recall.evaluateAll(nodes => nodes.map(node => node.innerText.replace(/\s+/g, " ").trim()).filter(Boolean)));
+  await recall.last().click();
+  await topics.waitFor({ timeout });
+}
+
+/**
  * CHEMI_ASK_PATH 를 안 주면 로그인 상태 파일의 계정이 저장해 둔 사주 첫 풀이로 질문 주소를 만든다.
  * 세션 쿠키로 액세스 토큰을 받아 풀이 목록(최신순)에서 첫 풀이를 고른다. 계정에 저장된 풀이가 없으면 실패로 남는다.
  */
@@ -278,6 +302,7 @@ try {
         let english = [];
         for (const locale of captureOnly ? ["ko"] : ["en", ...locales.filter(locale => locale !== "en")].filter(locale => !onlyLocales || onlyLocales.includes(locale))) {
           let loaded = false;
+          const replies = [];
           await gate(screen, locale, `screen-${width}`, async () => {
             if (screen === "ask") {
               assert.ok(askPath && process.env.CHEMI_STORAGE_STATE,
@@ -286,7 +311,7 @@ try {
             await open(scenePage, path, locale);
             // 질문 장면은 저장된 풀이를 불러온 뒤에야 최애 대사와 칩이 나온다. 칩까지 기다린 뒤 검사한다.
             // 불러오기가 끊기면(서버가 다시 뜨는 중) 같은 주소를 두 번까지 다시 연다.
-            if (screen === "ask") await retry(() => scenePage.locator('[data-ask-step] [role="group"] button').first().waitFor({ timeout: Number(process.env.CHEMI_NAV_TIMEOUT ?? 12000) * 2 }),
+            if (screen === "ask") await retry(() => { replies.length = 0; return askReady(scenePage, replies); },
               scenePage, () => open(scenePage, path, locale));
             if (screen === "growth") {
               await scenePage.locator('main [data-chemi-hide-dm]:not([aria-busy="true"])').first().waitFor();
@@ -297,7 +322,7 @@ try {
           if (!captureOnly) await gate(screen, locale, `language-${width}`, async () => {
             const copy = await paragraphs(scenePage);
             // 질문 장면의 칩(주제·예시 질문)은 문단이 아니라 버튼이라 따로 모은다. 지난 질문 줄은 회원이 쓴 글이라 뺀다.
-            if (screen === "ask") copy.push(...await scenePage.locator('[data-ask-step] [role="group"] button')
+            if (screen === "ask") copy.push(...replies, ...await scenePage.locator('[data-ask-step] [role="group"] button')
               .evaluateAll(nodes => nodes.filter(node => node.checkVisibility()).map(node => node.innerText.replace(/\s+/g, " ").trim()).filter(Boolean)));
             assert.ok(copy.length, "no visible paragraphs or headings");
             if (locale === "en") english = copy.filter(line => /(?:[A-Za-z]+\s+){3}[A-Za-z]+/.test(line));
