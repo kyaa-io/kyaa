@@ -35,19 +35,20 @@ it("distinguishes explicit login cancellation from provider failures", () => {
   unsubscribe();
 });
 
-it("reports email sign-in only when the Privy app has it switched on, and treats a failed lookup as off", async () => {
-  const answers: Record<string, Response | Error> = { "on-app": Response.json({ email_auth: true }), "off-app": Response.json({ email_auth: false }), "down-app": new Error("offline"), "denied-app": new Response(null, { status: 403 }) };
+it("reports email and X sign-in only when the Privy app has them switched on, and treats a failed lookup as off", async () => {
+  const answers: Record<string, Response | Error> = { "on-app": Response.json({ email_auth: true, twitter_oauth: true }), "off-app": Response.json({ email_auth: false, twitter_oauth: false }), "email-app": Response.json({ email_auth: true }), "down-app": new Error("offline"), "denied-app": new Response(null, { status: 403 }) };
   const fetchMock = vi.fn(async (url: string) => { const answer = answers[new URL(url).pathname.split("/").at(-1)!]!; if (answer instanceof Error) throw answer; return answer; });
   vi.stubGlobal("fetch", fetchMock);
   try {
-    const results: Record<string, boolean> = {};
+    const results: Record<string, unknown> = {};
     for (const appId of Object.keys(answers)) {
       render(<Root appId={appId} appleLoginEnabled={false} testAccountLoginEnabled={false}><Consumer /></Root>);
-      results[appId] = await bridge!.emailLoginAvailable();
-      await bridge!.emailLoginAvailable();
+      results[appId] = await bridge!.loginMethodsAvailable();
+      await bridge!.loginMethodsAvailable();
     }
-    expect(results).toEqual({ "on-app": true, "off-app": false, "down-app": false, "denied-app": false });
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    const off = { email: false, twitter: false };
+    expect(results).toEqual({ "on-app": { email: true, twitter: true }, "off-app": off, "email-app": { email: true, twitter: false }, "down-app": off, "denied-app": off });
+    expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(fetchMock).toHaveBeenCalledWith("https://auth.privy.io/api/v1/apps/on-app", { headers: { "privy-app-id": "on-app" } });
   } finally { vi.unstubAllGlobals(); }
 });

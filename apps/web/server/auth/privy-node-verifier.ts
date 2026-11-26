@@ -1,5 +1,5 @@
 import "server-only";
-import { isEnabledRegionalSocialAccount, readPrivyCustomOAuthPolicy, type CustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
+import type { CustomOAuthPolicy } from "../../components/privy-custom-oauth-policy";
 
 import { PrivyClient } from "@privy-io/node";
 import { createHash } from "node:crypto";
@@ -141,14 +141,14 @@ function verifiedFanEmail(user: PrivyUserShape, config: PrivyNodeServerConfig): 
     const appleEmail = latestVerifiedAppleEmail(user);
     if (appleEmail) return appleEmail;
   }
-  const customPolicy = { ...readPrivyCustomOAuthPolicy(false), ...config };
-  if (user.linked_accounts.some((account) => isEnabledRegionalSocialAccount(account.type, customPolicy) && isVerifiedProviderAccount(account))) {
-    const email = user.linked_accounts.filter((account) => account.type === "email"
-      && typeof account.address === "string" && account.address.trim().length > 0
-      && typeof account.verified_at === "number" && Number.isFinite(account.verified_at) && account.verified_at > 0)
-      .sort((left, right) => (right.verified_at ?? 0) - (left.verified_at ?? 0))[0];
-    if (email?.address) return email.address;
-  }
+  // An address Privy confirmed with an emailed code (email sign-in, or the email an X or regional account added).
+  // Privy's own @privy.io Test Account addresses take the development-only path below.
+  const email = user.linked_accounts.filter((account) => account.type === "email"
+    && typeof account.address === "string" && account.address.trim().length > 0
+    && !account.address.trim().toLowerCase().endsWith("@privy.io")
+    && typeof account.verified_at === "number" && Number.isFinite(account.verified_at) && account.verified_at > 0)
+    .sort((left, right) => (right.verified_at ?? 0) - (left.verified_at ?? 0))[0];
+  if (email?.address) return email.address;
   if (!config.testAccountLoginEnabled) return null;
   if (config.appEnvironment !== "development") {
     throw new Error("Privy Test Account login requires a development Privy app");

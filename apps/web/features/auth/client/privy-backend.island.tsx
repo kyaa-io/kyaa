@@ -225,7 +225,7 @@ export function useIslandStore(): PrivyIslandStore {
 const INITIAL = { status: "initial" } as const;
 function firstValue(kind: HookKind, call: (name: string) => (...args: unknown[]) => unknown): unknown {
   switch (kind) {
-    case "usePrivy": return { ready: false, authenticated: false, user: null, login: call("login"), logout: call("logout"), getAccessToken: call("getAccessToken") };
+    case "usePrivy": return { ready: false, authenticated: false, user: null, login: call("login"), logout: call("logout"), getAccessToken: call("getAccessToken"), linkEmail: call("linkEmail") };
     case "useUser": return { user: null, refreshUser: call("refreshUser") };
     case "useCreateWallet": return { createWallet: call("createWallet") };
     case "useLogin": return { login: call("login") };

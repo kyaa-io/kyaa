@@ -10,7 +10,7 @@ import { usePageLocale } from "@/components/locale-provider";
 import { readAccountSwitch } from "@/features/auth/client/account-switch";
 
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { usePrivyBridge } from "@/features/auth/client/privy-bridge";
+import { usePrivyBridge, type PrivyLoginMethods } from "@/features/auth/client/privy-bridge";
 import { getOAuthStartGuard } from "../features/reliability/client/oauth-start";
 import Image, { getImageProps } from "next/image";
 import Link from "./fan-ui/hover-prefetch-link";
@@ -18,8 +18,8 @@ import type { Route } from "next";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { withLocalePath } from "./locale-path";
-import { X } from "lucide-react";
-import { AppleMark, ArrowRight, GoogleMark } from "./icons";
+import { Mail, X } from "lucide-react";
+import { AppleMark, ArrowRight, GoogleMark, XMark } from "./icons";
 import { appendLoginContext, sanitizeAuthIntentId, sanitizeEntity, sanitizeIntent, sanitizeReturnTo } from "./login-intent";
 import { BottomSheet, Dialog } from "./ui/overlay/accessible-overlay";
 import { FanSiteFooter } from "./fan-shell/fan-site-footer";
@@ -177,8 +177,8 @@ export function LoginPage({
   const [error, setError] = useState<string | null>(null);
   const embeddedBrowser = useSyncExternalStore(subscribeToBrowserPolicy, getBrowserHandoffSnapshot, getServerBrowserHandoffSnapshot);
   const iosInstagram = useSyncExternalStore(subscribeToBrowserPolicy, getIosInstagramSnapshot, getServerBrowserHandoffSnapshot);
-  // Email leads inside another app's browser only once Privy says it accepts email; before that the tap would end in "not allowed".
-  const [emailLoginAvailable, setEmailLoginAvailable] = useState(false);
+  // Email and X show only once Privy says they are switched on; before that a tap would end in "not allowed".
+  const [privyMethods, setPrivyMethods] = useState<PrivyLoginMethods>({ email: false, twitter: false });
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "failed">("idle");
   // Set while the browser leaves for Cognito; a second tap must not start another authorization.
   const [oauthStarting, setOauthStarting] = useState(false);
@@ -248,7 +248,7 @@ export function LoginPage({
     ? locale === "ko" ? "로그인을 완료하지 못했어요. Google 또는 Apple 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.mc426e8d8a8f2, "We couldn't complete sign-in. Check your Google or Apple account, then try again.")
     : locale === "ko" ? "로그인을 완료하지 못했어요. Google 계정을 확인한 뒤 다시 시도해 주세요." : translate(locale, localizedMessages.m2c842480d657, "We couldn't complete sign-in. Check your Google account, then try again.");
 
-  const startOAuthLogin = useCallback((provider: "google" | "apple" | "kakao") => {
+  const startOAuthLogin = useCallback((provider: "google" | "apple" | "kakao" | "twitter") => {
     if (provider === "google") {
       const loginUrl = handoffLoginUrl();
       const plan = planGoogleLogin(navigator.userAgent, loginUrl, isStandalone());
@@ -287,7 +287,7 @@ export function LoginPage({
         });
       return;
     }
-    if (oauthStarting) return;
+    if (oauthStarting || provider === "twitter") return;
     setError(null);
     setOauthStarting(true);
     loginMeasurementRef.current = signupFunnelTracker.beginLogin(provider, "provider", toContentLocale(locale));
@@ -297,11 +297,11 @@ export function LoginPage({
   }, [handoffLoginUrl, iosInstagram, locale, oauthGuard, oauthStarting, privy, privyLoginErrorMessage, returnTo]);
 
   useEffect(() => {
-    if (!embeddedBrowser || !privy) return;
+    if (!privy) return;
     let current = true;
-    void privy.emailLoginAvailable().then((available) => { if (current) setEmailLoginAvailable(available); });
+    void privy.loginMethodsAvailable().then((methods) => { if (current) setPrivyMethods(methods); });
     return () => { current = false; };
-  }, [embeddedBrowser, privy]);
+  }, [privy]);
 
   useEffect(() => privy?.subscribeOAuth({
     // The OAuth result can arrive on the return page before Privy reports `authenticated`.
@@ -460,6 +460,16 @@ export function LoginPage({
   }, [assertCurrentIdentity, authIntent, entity, getAccessToken, intent, locale, returnTo]);
 
   const sessionStateError = byUsSession.error ?? error;
+  // An X account brings no email. Privy adds one with an emailed code, then the same sign-in continues.
+  const xAccountNeedsEmail = sessionStateError === VERIFIED_EMAIL_REQUIRED && privy !== null && privyMethods.email
+    && Boolean(user?.linkedAccounts.some((account) => account.type === "twitter_oauth"));
+  const emailLinked = Boolean(user?.linkedAccounts.some((account) => account.type === "email"));
+  const emailLinkRetriedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!xAccountNeedsEmail || !emailLinked || !privyUserId || emailLinkRetriedRef.current === privyUserId) return;
+    emailLinkRetriedRef.current = privyUserId;
+    retrySessionSynchronization();
+  }, [emailLinked, privyUserId, retrySessionSynchronization, xAccountNeedsEmail]);
   const reauthenticationProviders = byUsSession.reauthenticationProviders;
   // Only in the iOS Instagram app the Google hand-off needs no session check, so a slow check must not replace the
   // sign-in buttons. A started sign-in keeps the usual neutral screen.
@@ -479,12 +489,23 @@ export function LoginPage({
   const inAppPrivy = embeddedBrowser && privy;
   // Apps with no working hand-off (X) get the notice in place of a Google link that would do nothing.
   const googleHandoff = Boolean(inAppPrivy) && planGoogleLogin(navigator.userAgent, handoffLoginUrl(), isStandalone()).kind === "external";
-  // Inside another app's browser, email is the method that works there, so it leads; Apple follows and Google goes to the browser.
-  const emailCodeButton = inAppPrivy && emailLoginAvailable && <FanAction variant="primary" className={styles.emailMethod} type="button"
-    disabled={!ready || authenticated || oauthStarting} ariaBusy={authenticated || oauthStarting} onClick={() => {
+  // Inside another app's browser, email and X are the methods that work there, so they lead; Apple follows and Google
+  // goes to the browser. In a regular browser the order is Google, email, X, Apple.
+  const methodDisabled = !ready || authenticated || oauthStarting;
+  const emailCodeButton = privy && privyMethods.email && (inAppPrivy ? <FanAction variant="primary" className={styles.emailMethod} type="button"
+    disabled={methodDisabled} ariaBusy={authenticated || oauthStarting} onClick={() => {
       loginMeasurementRef.current = signupFunnelTracker.beginLogin("email", "provider", toContentLocale(locale));
-      inAppPrivy.openEmailLogin();
-    }}>{emailLoginCopy(locale)[0]}</FanAction>;
+      privy.openEmailLogin();
+    }}>{emailLoginCopy(locale)[0]}</FanAction> : <FanAction className={styles.methodAction} type="button"
+    disabled={methodDisabled} ariaBusy={authenticated || oauthStarting} leadingIcon={<Mail />} onClick={() => {
+      loginMeasurementRef.current = signupFunnelTracker.beginLogin("email", "provider", toContentLocale(locale));
+      privy.openEmailLogin();
+    }}>{emailLoginCopy(locale)[0]}</FanAction>);
+  const xButton = privy && privyMethods.twitter && <FanAction className={styles.methodAction} type="button"
+    disabled={methodDisabled} ariaBusy={authenticated || oauthStarting} leadingIcon={<XMark />}
+    onClick={() => startOAuthLogin("twitter")}>
+    {locale === "ko" ? "X로 계속하기" : translate(locale, localizedMessages.mcontinueWithX, "Continue with X")}
+  </FanAction>;
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
     <div className={inAppPrivy ? `${styles.browserNotice} ${styles.browserNoticeBelowMethods}` : styles.browserNotice}>
       <p className={styles.error} role="status">
@@ -539,7 +560,9 @@ export function LoginPage({
         <FanState
           kind={sessionStateError ? "error" : "loading"}
           title={sessionCopy.title}
-          description={sessionStateError === APPLE_REAUTHENTICATION_REQUIRED && reauthenticationProviders.length === 0
+          description={xAccountNeedsEmail
+            ? locale === "ko" ? "X 계정에는 이메일이 없어요. 이메일로 받은 코드를 넣으면 이 X 계정으로 가입을 마칠 수 있어요." : translate(locale, localizedMessages.mxEmailRequired, "Your X account has no email. Enter the code we email you to finish joining with this X account.")
+            : sessionStateError === APPLE_REAUTHENTICATION_REQUIRED && reauthenticationProviders.length === 0
             ? locale === "ko" ? "연결된 로그인 수단을 사용할 수 없어 현재 이 계정으로 로그인할 수 없어요." : translate(locale, localizedMessages.m69fd6f288ef3, "The linked sign-in methods are unavailable, so this account cannot sign in right now.")
             : sessionStateError === APPLE_REAUTHENTICATION_REQUIRED && (reauthenticationFailed || searchParams.get("reauth") === "failed")
               ? locale === "ko" ? "인증을 완료하지 못했어요. 기존 계정으로 다시 인증해 주세요." : translate(locale, localizedMessages.ma29b99f941ec, "Verification wasn't completed. Please verify with your existing account again.")
@@ -557,6 +580,13 @@ export function LoginPage({
                   {locale === "ko" ? "다른 계정으로 로그인" : translate(locale, localizedMessages.m65e665466264, "Sign in with another account")}
                 </FanAction>
               )}
+            </>
+          ) : xAccountNeedsEmail && privy ? (
+            <>
+              <FanAction variant="neutral" onClick={() => privy.openEmailLink()}>{emailLoginCopy(locale)[0]}</FanAction>
+              <FanAction variant="text" onClick={restartLogin}>
+                {locale === "ko" ? "다른 계정으로 로그인" : translate(locale, localizedMessages.m65e665466264, "Sign in with another account")}
+              </FanAction>
             </>
           ) : sessionStateError ? (
             <FanAction
@@ -655,6 +685,7 @@ export function LoginPage({
         </button>}
         {!inAppPrivy && browserHandoffNotice}
         {emailCodeButton}
+        {xButton}
         {cognitoKakaoEnabled && !privy && <button className={styles.googleButton} type="button"
           disabled={!ready || authenticated || oauthStarting}
           aria-busy={authenticated || oauthStarting}

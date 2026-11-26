@@ -16,15 +16,22 @@ export interface PrivyOAuthListener {
   onError(reason?: "cancelled" | "provider_error"): void;
 }
 
+export interface PrivyLoginMethods {
+  email: boolean;
+  twitter: boolean;
+}
+
 export interface PrivyBridge {
   auth: ByUsAuth;
   oauthLoading: boolean;
-  startOAuth(provider: "google" | "apple"): Promise<void>;
+  startOAuth(provider: "google" | "apple" | "twitter"): Promise<void>;
   subscribeOAuth(listener: PrivyOAuthListener): () => void;
-  /** Whether the Privy app accepts email sign-in. With it off, Privy answers 403 "Login with email not allowed" on the first code request. */
-  emailLoginAvailable(): Promise<boolean>;
+  /** The sign-in methods switched on in the Privy dashboard. With email off, Privy answers 403 "Login with email not allowed" on the first code request. */
+  loginMethodsAvailable(): Promise<PrivyLoginMethods>;
   /** Privy's own email code window. */
   openEmailLogin(): void;
+  /** Privy's email code window that adds an address to the signed-in account (an X account has none). */
+  openEmailLink(): void;
   openGoogleLogin(): void;
   refreshUser(): Promise<PrivyLoginUser>;
   createWallet(): Promise<unknown>;
