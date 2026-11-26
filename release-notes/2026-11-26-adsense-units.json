@@ -3,5 +3,8 @@
     "홈과 게시글 옆 광고 자리에 Google 광고를 넣을 준비를 했어요.",
     "광고 설정을 켜기 전에는 화면 모양과 동작이 달라지지 않아요."
   ],
-  "path": "/"
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-26-adsense-units-home-390.png"
+  ]
 }
