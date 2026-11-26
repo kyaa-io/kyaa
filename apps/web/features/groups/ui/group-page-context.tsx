@@ -1,5 +1,6 @@
 "use client";
 import type { Route } from "next";
+import { DukjilEarnOff } from "@/features/dukjil/ui/dukjil-provider";
 import { useSearchParams } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useOptimistic, useRef, useState, startTransition, type ReactNode } from "react";
 import { fanLoginHref } from "@/components/login-href";
@@ -212,5 +213,7 @@ export function GroupPageProvider({ pageId, slug, celebrity: serverCelebrity, ce
     star, summary, presence, reserveMenu: Boolean(provisional && reserveMenu), signedInHint: reserveMenu, artistTag, publicPostsEmpty,
   }), [activeTab, answer, authenticated, celebrity, viewerDetail.data, detail.error, detail.failure, detail.loading, hrefFor, join, joinFailed, actionFailed, joinFormOpen, kind, linked.error, linked.retry, locale, membership, ownerKey, page, pageId, pageMatches, pending, preloadTab, presence, provisional, publicPostsEmpty, ready, refresh, reserveMenu, artistTag, selectTab, slug, star, startJoin, summary]);
   const presenceValue = useMemo(() => (presencePageId ? { pageId: presencePageId, result: presence } : null), [presence, presencePageId]);
-  return <GroupPageContext.Provider value={value}><GroupPresenceContext.Provider value={presenceValue}>{children}</GroupPresenceContext.Provider></GroupPageContext.Provider>;
+  // A fan-made (Unverified) creator page pays no 덕질 points, so its screens show no point badges.
+  const earnOff = Boolean(page?.unverified || celebrity?.unverified);
+  return <GroupPageContext.Provider value={value}><GroupPresenceContext.Provider value={presenceValue}><DukjilEarnOff off={earnOff}>{children}</DukjilEarnOff></GroupPresenceContext.Provider></GroupPageContext.Provider>;
 }

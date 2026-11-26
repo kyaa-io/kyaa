@@ -390,8 +390,8 @@ it("clears deep-linked filters from the URL so reloading cannot restore an old r
   authenticated = true;
   getAccessToken.mockResolvedValue("token");
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ passports: [ownedPassport] }) }));
-  window.history.replaceState({}, "", "/celebrities?locale=ko&role=show_host&q=missing&owned=1&sort=name-asc");
-  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialRole="show_host" initialQuery="missing" initialSort="name-asc" />);
+  window.history.replaceState({}, "", "/celebrities?locale=ko&role=creator&q=missing&owned=1&sort=name-asc");
+  render(<CelebrityDirectory celebrities={publishedCelebrityFixtures} locale="ko" initialRole="creator" initialQuery="missing" initialSort="name-asc" />);
   fireEvent.click(await screen.findByRole("button", { name: "필터 초기화" }));
   expect(screen.getAllByRole("article")).toHaveLength(3);
   expect(screen.getByRole("searchbox")).toHaveValue("");
@@ -400,8 +400,8 @@ it("clears deep-linked filters from the URL so reloading cannot restore an old r
   window.history.replaceState({}, "", "/");
 });
 
-it("places the five public roles after All and never offers My favorites as a filter", () => {
-  const roles = (["idol", "singer", "actor", "creator", "show_host"] as const).map((role, index) => ({
+it("places the four public roles after All and never offers My favorites as a filter", () => {
+  const roles = (["idol", "creator", "brand", "underground_idol"] as const).map((role, index) => ({
     ...publishedCelebrityFixtures[0],
     slug: `role-${role}`,
     name: role,
@@ -411,7 +411,7 @@ it("places the five public roles after All and never offers My favorites as a fi
   render(<CelebrityDirectory celebrities={roles} locale="en" />);
   const group = screen.getByRole("group", { name: "Browse by category" });
   expect(within(group).getAllByRole("button").map((button) => button.textContent)).toEqual([
-    "All", "Idols", "Singers", "Actors", "Creators", "Show hosts",
+    "All", "Idols", "Creators", "Brands", "Underground idols",
   ]);
 });
 

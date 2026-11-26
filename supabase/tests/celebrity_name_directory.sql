@@ -25,7 +25,7 @@ begin
  if jsonb_array_length(public.celebrity_name_suggest('없는이름',8,'ko')->'items')<>0 then raise exception 'unknown name listed';end if;
 
  -- A published fan page comes first with its address and replaces the same dictionary name. Hidden and gated pages stay out.
- insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)values(star,'iu-page','published','/x.png',now(),array['artist']::public.celebrity_role[],'singer'),(hidden,'iu-hidden','published','/x.png',now(),array['artist']::public.celebrity_role[],'singer');
+ insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role)values(star,'iu-page','published','/x.png',now(),array['artist']::public.celebrity_role[],'creator'),(hidden,'iu-hidden','published','/x.png',now(),array['artist']::public.celebrity_role[],'creator');
  insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)values(star,'ko','아이유','소개','사진'),(star,'en','IU','Intro','Photo'),(hidden,'ko','아이유 숨김','소개','사진');
  insert into public.group_pages(id,kind,celebrity_id,name,description,status)values(star,'fan',star,'아이유','소개','published'),(hidden,'fan',hidden,'아이유 숨김','소개','hidden')
   on conflict(id) do update set status=excluded.status;

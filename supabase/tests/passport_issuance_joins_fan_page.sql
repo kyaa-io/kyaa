@@ -5,7 +5,7 @@ do $$ begin
  if current_database()<>'byus_clean' or inet_server_addr() is not null then raise exception 'Disposable local database required'; end if;
 end $$;
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values
- ('fb130000-0000-4000-8000-000000000011','r1-fan','draft','/images/x.png',null,'{creator}','singer');
+ ('fb130000-0000-4000-8000-000000000011','r1-fan','draft','/images/x.png',null,'{creator}','creator');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)
  select 'fb130000-0000-4000-8000-000000000011',l::public.content_locale,'R1','소개','사진' from unnest(array['ko','en']) l;
 update public.celebrities set status='published',published_at=now() where id='fb130000-0000-4000-8000-000000000011';

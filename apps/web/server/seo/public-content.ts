@@ -8,12 +8,15 @@ import { createRaffleDependencies } from "@/server/raffle/raffle-dependencies";
 import { createBenefitRepositoryFromEnvironment } from "@/server/g4/benefit-repository";
 import { loadServerEnv } from "@/server/config/env";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
+import { readUnverifiedCreators } from "@/server/rankings/unlisted-creators";
 
 // Request-scoped only: anonymous content is shared between metadata and page,
 // never between users or across a publication change.
 export const loadSeoCreator = cache(async (slug: string, locale: SeoLocale) => {
   const creator = await createPublishedContentRepositoryFromEnvironment().findBySlug(toContentLocale(locale), slug);
-  return creator && { ...creator, name: creatorName(creator.slug, locale, creator.name) };
+  if (!creator) return creator;
+  const unverified = (await readUnverifiedCreators()).slugs.has(creator.slug);
+  return { ...creator, name: creatorName(creator.slug, locale, creator.name), ...(unverified ? { unverified } : {}) };
 });
 
 export const loadSeoRaffles = cache(async (slug: string, locale: SeoLocale) =>

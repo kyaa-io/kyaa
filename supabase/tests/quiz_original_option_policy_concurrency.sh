@@ -21,7 +21,7 @@ def payload(policy):
             **({} if policy is None else {'preserveOriginal':policy})) for o in range(1,5)]) for q in range(1,4)])
 def save(name, quiz, policy, actor_id=actor):
     return f"select public.{name}('{actor_id}',extensions.gen_random_uuid(),'{artist}',{quiz},$payload${payload(policy)}$payload$::jsonb)"
-sql(f"insert into public.admin_allowlist(id,email,role,active) values('{actor}','quiz-policy-race@example.test','admin',true),('{legacy_actor}','quiz-policy-race-legacy@example.test','admin',true); insert into public.celebrities(id,slug,image_url,roles,primary_role) values('{artist}','quiz-policy-race','/test.webp','{{artist}}','singer');")
+sql(f"insert into public.admin_allowlist(id,email,role,active) values('{actor}','quiz-policy-race@example.test','admin',true),('{legacy_actor}','quiz-policy-race-legacy@example.test','admin',true); insert into public.celebrities(id,slug,image_url,roles,primary_role) values('{artist}','quiz-policy-race','/test.webp','{{artist}}','creator');")
 sql(save('save_admin_quiz_version_v2','null',True))
 quiz=sql(f"select id from public.celebrity_quizzes where celebrity_id='{artist}'").stdout.strip()
 lock=subprocess.Popen(base,stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,bufsize=1)

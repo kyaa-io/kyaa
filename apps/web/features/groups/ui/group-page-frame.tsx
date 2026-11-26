@@ -74,6 +74,8 @@ export function GroupPageHead() {
   const stats = <GroupPresence linkMembers={fanNavigation} separateVisits={fanNavigation} pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
+  // 팬이 신청해 연 크리에이터 페이지(Unverified): kyaa official 표시 대신 '팬이 만든 페이지(비공식)'.
+  const unverified = Boolean(g.page?.unverified || g.celebrity?.unverified);
   const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;
   return <>{g.kind === "fan" ? <CreatorEntryToast /> : null}<FanPageHeader
     frameId={g.routePageId ?? g.routeSlug ?? g.page?.id}
@@ -88,7 +90,8 @@ export function GroupPageHead() {
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
     star={g.kind === "fan" && g.celebrity && g.authenticated && g.star?.state === "filled" ? undefined : g.star}
     badge={<GroupArtistBadge locale={g.locale} />}
-    verified={g.kind !== "hobby" && Boolean(g.page?.celebrityId ?? g.celebrity)}
+    verified={g.kind !== "hobby" && Boolean(g.page?.celebrityId ?? g.celebrity) && !unverified}
+    unofficial={g.kind === "fan" && unverified}
     links={[...(g.celebrity?.websiteUrl && g.celebrity.roles.includes("brand") ? [{ kind: "website", href: g.celebrity.websiteUrl }] : []), ...(g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url })) ?? []), ...(g.page?.externalLinks ?? []).map((room) => ({ kind: room.kind, href: room.url }))]}
     grade={g.kind === "fan" && g.celebrity ? g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : undefined : undefined}
     // 페이지 좋아요(옛 히어로의 '좋아요 남기기'): 누르면 이 페이지의 좋아요 수가 오르고 홈 크리에이터 랭킹(좋아요 순)에 반영된다.

@@ -197,6 +197,11 @@ jobs:
           BYUS_CLEAN_DB_PORT=55798 \
           BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase/tests/content_editor_read_lock_concurrency.sh \
           bash scripts/verify-clean-migration-chain.sh
+      - name: Verify page categories apply in one transaction over existing published rows
+        if: matrix.suite == 'core'
+        run: |
+          export PATH="$(pg_config --bindir):$PATH"
+          bash scripts/verify-verified-page-categories.sh
       - name: Replay migrations and exercise real role and concurrent quota boundaries
         if: matrix.suite == 'core'
         run: npm run security:backend-db

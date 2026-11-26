@@ -37,3 +37,11 @@ describe("official creator identity", () => {
     expect(view.container.querySelector("dl, img:not([data-verified-mark])")).toBeNull();
   });
 });
+
+describe("fan-made (Unverified) creator identity", () => {
+  it("drops the kyaa official mark and keeps the name", () => {
+    render(<CreatorFanIdentity slug="fan-made" name="팬이 연 페이지" locale="ko" unverified />);
+    expect(screen.getByRole("heading", { level: 1, name: "팬이 연 페이지" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "kyaa official" })).toBeNull();
+  });
+});

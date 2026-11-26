@@ -10,6 +10,7 @@ import { loadServerEnv } from "../config/env";
 import type { FanpageDependencies } from "./routes";
 import { withAuthorTiers } from "./author-tiers";
 import { withWaveDisplayNames } from "../byus-day/wave-display-names";
+import { readUnverifiedCreators } from "../rankings/unlisted-creators";
 
 export function createFanpageDependencies(request?: Request): FanpageDependencies {
   const env = loadServerEnv();
@@ -31,6 +32,7 @@ export function createFanpageDependencies(request?: Request): FanpageDependencie
       if (typeof owner === "string") await refreshLocalSignupEvent(database, owner);
       return withAuthorTiers(rpc, name, args, await withWaveDisplayNames(rpc, name, args, result), request);
     },
+    unverifiedCreators: () => readUnverifiedCreators(rpc),
     authorize: (authorization) => authorizeFanRequest({ authorization, verifier, repository: fans }),
     authorizeAdmin: (authorization, correlationId) => authorizeAdminSession({ authorization: authorization ?? "", correlationId, verifier, repository: admins }),
   };

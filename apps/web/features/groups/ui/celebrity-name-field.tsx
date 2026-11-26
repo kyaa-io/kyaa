@@ -37,7 +37,7 @@ export function CelebrityNameField({locale,label,initialValue='',disabled=false}
    <ul id={`${listId}-list`} role='listbox' aria-label={groupApplyText(locale,'nameSuggestions')} className={styles.list} hidden={!expanded}>
     {items.map((item,index)=><li key={`${item.name}:${item.category}:${item.page?.slug}`} id={`${listId}-option-${index}`} role='option' aria-selected={index===active} className={styles.option} data-active={index===active||undefined} onMouseDown={event=>event.preventDefault()} onClick={()=>choose(item)}>
      <span className={styles.names}><strong>{item.name}</strong>{item.secondaryName&&<span>{item.secondaryName}</span>}</span>
-     {item.page?<FanTag tone='fan'>{groupApplyText(locale,'pageExistsTag')}</FanTag>:item.category&&<FanTag tone='neutral'>{creatorRoleFilterLabel(item.category,locale)}</FanTag>}
+     {item.page?<FanTag tone='fan'>{groupApplyText(locale,'pageExistsTag')}</FanTag>:item.category&&<FanTag tone='neutral'>{creatorRoleFilterLabel(item.category === "singer" || item.category === "actor" ? "creator" : item.category,locale)}</FanTag>}
     </li>)}
    </ul>
   </div>

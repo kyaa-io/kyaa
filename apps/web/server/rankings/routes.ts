@@ -18,6 +18,8 @@ export interface RankingsDependencies {
   /** Development only: rebuild the snapshots from a read when they are older than REFRESH_AFTER_MS. Production leaves this off and relies on a scheduler. */
   refreshOnRead?: boolean;
   now?: () => number;
+  /** Fan-made (Unverified) creator pages, left out of the home creator lists. Absent: none are left out. */
+  unverifiedCreators?: () => Promise<{ slugs: ReadonlySet<string> }>;
 }
 
 export const REFRESH_AFTER_MS = 5 * 60 * 1000;
@@ -56,6 +58,12 @@ function favoriteIn(value: unknown, lang: string) {
   const names = obj(f.names);
   const name = [names[lang], names.ko, names.en].find((n): n is string => typeof n === "string" && n.trim() !== "");
   return { slug: f.slug, name: name ?? f.slug };
+}
+
+/** Home creator lists leave out fan-made (Unverified) pages and number the rest again from 1. */
+function withoutUnverified(rows: unknown[], hidden: ReadonlySet<string>) {
+  if (!hidden.size) return rows;
+  return rows.filter((row) => !hidden.has(String((row as { slug?: unknown }).slug))).map((row, index) => ({ ...(row as object), rank: index + 1 }));
 }
 
 export function createRankingsHandlers(deps: RankingsDependencies) {
@@ -121,6 +129,8 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     return id;
   };
 
+  const unverifiedSlugs = async () => (await deps.unverifiedCreators?.())?.slugs ?? new Set<string>();
+
   return {
     creators: (request: Request) => run(async () => {
       const p = period(request);
@@ -129,7 +139,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
         const limit = z.coerce.number().int().min(1).max(50).parse(one(request, "limit") ?? "10");
         const member = await viewer(request);
         const fans = obj(await deps.rpc("read_creator_fan_ranking", { p_locale: locale(request), p_limit: member ? limit : Math.min(limit, HOME_GUEST_LIMIT) }));
-        const rows = arr(fans.rows).map((row) => {
+        const rows = withoutUnverified(arr(fans.rows), await unverifiedSlugs()).map((row) => {
           const r = obj(row);
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, jjinfanCount: r.jjinfanCount, myHearts: null };
         });
@@ -139,7 +149,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
       const appUserId = await viewer(request);
       const raw = obj(await readFresh("read_creator_ranking", { p_period: p, p_viewer: appUserId, p_locale: locale(request) }));
       // The database answers every creator; signed out, the list stops at five.
-      const rows = arr(raw.rows).slice(0, appUserId ? undefined : HOME_GUEST_LIMIT).map((row) => {
+      const rows = withoutUnverified(arr(raw.rows), await unverifiedSlugs()).slice(0, appUserId ? undefined : HOME_GUEST_LIMIT).map((row) => {
         const r = obj(row);
         return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, jjinfanCount: r.jjinfanCount, myHearts: appUserId ? (r.myHearts ?? 0) : null };
       });
@@ -208,7 +218,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
           : period === "all"
           ? await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: creatorLimit })
           : await readHome("read_home_creator_ranking_period", { p_locale: lang, p_period: period, p_limit: creatorLimit }));
-        const rows = arr(raw.rows).map((row) => {
+        const rows = withoutUnverified(arr(raw.rows), await unverifiedSlugs()).map((row) => {
           const r = obj(row);
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
             ...(metric === "likes" ? { likes: r.likes, totalLikes: r.totalLikes } : {}) };

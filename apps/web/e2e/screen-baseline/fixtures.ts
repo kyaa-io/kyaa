@@ -6,7 +6,7 @@ export const FIXED_NOW = "2026-11-02T03:00:00.000Z";
 const creator = (slug: string, imageUrl: string, name: string, summary: string, displayOrder: number, fanCount: number): PublishedCelebrity => ({
   slug, locale: "ko", name, summary,
   image: { url: imageUrl, alt: name, position: "center" },
-  roles: ["singer"], websiteUrl: null, ticketUrl: null, themes: [], socialLinks: [], displayOrder, fanCount,
+  roles: ["creator"], websiteUrl: null, ticketUrl: null, themes: [], socialLinks: [], displayOrder, fanCount,
 });
 
 export const homeCelebrities: readonly PublishedCelebrity[] = [

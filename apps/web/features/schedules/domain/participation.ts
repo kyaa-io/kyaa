@@ -80,8 +80,11 @@ export function socialProfileKey(value: string): string | null {
 export const fanpageCheckSchema = z.object({ name: text(120).min(1), officialSocialUrl: httpsUrl.refine(value => socialProfileKey(value) !== null), locale: contentLocale }).strict();
 export const fanpageCheckResultSchema = z.object({ existingFanpage: artistLinkSchema.nullable(), possibleMatches: z.array(artistLinkSchema).max(5), artists: z.array(artistLinkSchema).max(5) }).strict();
 export const fanpageInputSchema = fanpageCheckSchema.extend({ subjectType: z.enum(["artist", "creator", "brand"]).default("artist"), note: text(2000), idempotencyKey: uuid });
+export const pageVerificationSchema = z.enum(["verified", "unverified"]);
 export const fanpageRequestSchema = z.object({ id: uuid, name: text(120).min(1), subjectType: z.enum(["artist", "creator", "brand"]), officialSocialUrl: httpsUrl, note: z.string(), locale: contentLocale,
-  status: reviewStatus, revision: z.number().int().positive(), reviewReason: z.string().nullable(), reviewedAt: instant.nullable(), artist: artistLinkSchema.nullable(), createdAt: instant }).strict();
+  status: reviewStatus, revision: z.number().int().positive(), reviewReason: z.string().nullable(), reviewedAt: instant.nullable(), artist: artistLinkSchema.nullable(), createdAt: instant,
+  // The linked page: Verified (kyaa official) or Unverified (fan-made). Absent before the 20270116070200 migration.
+  pageVerification: pageVerificationSchema.nullable().optional() }).strict();
 export const liveSubmissionSettingsSchema = z.object({ accepting: z.boolean(), closesAt: instant.nullable(), visibility: z.enum(["public", "members"]), revision: z.number().int().nonnegative() }).strict();
 export const legacyOwnedLiveSubmissionSchema = z.object({ id: uuid, kind: z.enum(["question", "cheer"]), body: z.string().nullable(), status: z.enum(["submitted", "selected", "hidden"]), revision: z.number().int().positive(), createdAt: instant, selectedAt: instant.nullable(), deletedAt: instant.nullable() }).strict();
 export const legacyLiveSubmissionSchema = z.object({ id: uuid, kind: z.enum(["question", "cheer"]), body: z.string(), nickname: z.string(), avatarUrl: z.string(), createdAt: instant, selectedAt: instant, revision: z.number().int().positive(), isOwner: z.boolean() }).strict();

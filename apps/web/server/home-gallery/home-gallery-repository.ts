@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/server/data/client";
 import { createCreatorAvatarReader, type CreatorAvatarReader } from "./creator-avatars";
 import { snsIngestSlug } from "@/server/sns-ingest/source-url";
+import { readUnverifiedCreators } from "@/server/rankings/unlisted-creators";
 import { homeGalleryPageSchema, homeShortsPageSchema, homeShortsSchema, type HomeGalleryPage, type HomeShort } from "@/features/home/domain/home-gallery";
 
 type Db = Pick<SupabaseClient, "rpc">;
@@ -39,7 +40,14 @@ export function decodeHomeGalleryCursor(value: string): Cursor | null {
 }
 
 export class HomeGalleryRepository {
-  constructor(private readonly db: Db, private readonly creatorAvatars?: CreatorAvatarReader) {}
+  constructor(private readonly db: Db, private readonly creatorAvatars?: CreatorAvatarReader,
+    /** Slugs of fan-made (Unverified) creator pages: their photos and videos stay off the home, gallery and shorts lists. */
+    private readonly unverifiedSlugs: () => Promise<ReadonlySet<string>> = async () => new Set()) {}
+
+  private async withoutUnverified<T extends { creator?: { slug: string } }>(items: T[]): Promise<T[]> {
+    const hidden = await this.unverifiedSlugs();
+    return hidden.size ? items.filter(item => !item.creator || !hidden.has(item.creator.slug)) : items;
+  }
 
   async listPublished(locale: "ko" | "en", input: { limit: number; cursor?: string | null }): Promise<HomeGalleryPage> {
     const cursor = input.cursor ? decodeHomeGalleryCursor(input.cursor) : { offset: 0 };
@@ -48,7 +56,7 @@ export class HomeGalleryRepository {
       ? { p_after_rank: cursor.after.rank, p_after_at: cursor.after.at, p_after_id: cursor.after.id }
       : { p_offset: cursor.offset };
     const page = await this.readPage(locale, input.limit, from);
-    return { items: page.items, nextCursor: page.hasMore && page.last ? encodeHomeGalleryCursor(page.last) : null };
+    return { items: await this.withoutUnverified(page.items), nextCursor: page.hasMore && page.last ? encodeHomeGalleryCursor(page.last) : null };
   }
 
   private async readPage(locale: "ko" | "en", limit: number, from: { p_offset: number } | { p_after_rank: number; p_after_at: string; p_after_id: string }, homePool = false) {
@@ -63,7 +71,7 @@ export class HomeGalleryRepository {
     const seen = new Set<string>();
     const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
     const last = pages.at(-1);
-    return { items, nextCursor: last?.hasMore && last.last ? encodeHomeGalleryCursor(last.last) : null };
+    return { items: await this.withoutUnverified(items), nextCursor: last?.hasMore && last.last ? encodeHomeGalleryCursor(last.last) : null };
   }
 
   /** The creator's own profile photo, so a short's caption shows the real avatar. A creator without one keeps the default icon. */
@@ -96,7 +104,7 @@ export class HomeGalleryRepository {
     const seen = new Set<string>();
     const items = pages.flatMap(page => page.items).filter(item => !seen.has(item.id) && seen.add(item.id));
     const shown = await this.withCoverRule(items);
-    return shown;
+    return this.withoutUnverified(shown);
   }
 
   /** Public like totals for the videos, a few reads of up to LIKES_BATCH ids; a video without a total (not public) counts 0. */
@@ -124,7 +132,7 @@ export class HomeGalleryRepository {
       const { data, error } = await this.db.rpc("read_public_home_shortform_page", { p_locale: locale, p_offset: offset, p_limit: SHORTS_READ });
       if (error) throw new HomeGalleryRepositoryError(error.message);
       const page = homeShortsPageSchema.parse(data);
-      items.push(...await this.withCoverRule(page.items));
+      items.push(...await this.withoutUnverified(await this.withCoverRule(page.items)));
       if (!page.hasMore) break;
     }
     const likes = await this.readLikeCounts(items.map(item => item.videoId));
@@ -145,7 +153,8 @@ export class HomeGalleryRepository {
 }
 
 export function createHomeGalleryRepository(config: { url: string | undefined; serviceRoleKey: string | undefined }, client?: Db) {
+  let unverified: Promise<ReadonlySet<string>> | undefined;
   return new HomeGalleryRepository(client ?? createClient(config.url, config.serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-  }), client ? undefined : createCreatorAvatarReader());
+  }), client ? undefined : createCreatorAvatarReader(), client ? undefined : () => unverified ??= readUnverifiedCreators().then(creators => creators.slugs));
 }

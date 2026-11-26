@@ -96,3 +96,13 @@ it('deduplicates stable source and post ID while preserving distinct posts with 
  const body=await(await handler(new Request('https://x/api/public/popular-posts'))).json();
  expect(body.items).toHaveLength(3);expect(body.items[0].viewCount).toBe(1);
 });
+
+describe("fan-made (Unverified) pages on the home board", () => {
+  it("leaves out posts of a fan-made creator page and keeps group posts and official pages", async () => {
+    const row = (source: "fan" | "group", id: string, pageRef: string) => ({ source, id, pageRef, pageName: pageRef, title: "글", nickname: "팬", createdAt: "2026-11-09T00:00:00Z", likeCount: 1, commentCount: 0, viewCount: null, asset: null });
+    const rpc = vi.fn(async () => ({ items: [row("fan", "a9600000-0000-4000-8000-000000000001", "fan-made"), row("fan", "a9600000-0000-4000-8000-000000000002", "elina"), row("group", "a9600000-0000-4000-8000-000000000003", "fan-made")], hasMore: false }));
+    const handler = createGetPublicPopularPosts({ rpc, authorize: vi.fn(), unverifiedCreators: async () => ({ ids: new Set<string>(), slugs: new Set(["fan-made"]) }) } as never, { groupsEnabled: true });
+    const body = await (await handler(new Request("http://x/api/public/popular-posts"))).json();
+    expect(body.items.map((item: { source: string; pageRef: string }) => `${item.source}:${item.pageRef}`)).toEqual(["fan:elina", "group:fan-made"]);
+  });
+});

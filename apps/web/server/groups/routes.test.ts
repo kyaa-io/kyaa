@@ -21,7 +21,7 @@ describe("group boundaries", () => {
     expect(s.rpc).toHaveBeenCalledTimes(1);
   });
  it("forwards a valid page language to name-reading operations only",async()=>{const s=setup();for(const operation of ["directory","detail"] as const){expect((await s.handler(operation,req("/api/groups?locale=ru",undefined,null),{id:me})).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({locale:"ru"})}));}expect((await s.handler("directory",req("/api/groups?locale=xx",undefined,null))).status).toBe(400);await s.handler("directory",req("/api/groups",undefined,null));expect(s.rpc.mock.lastCall?.[1].p_input).not.toHaveProperty("locale");});
- it("validates and forwards the artist role filter",async()=>{const s=setup();expect((await s.handler("directory",req("/api/groups?type=fan&artistRole=singer",undefined,null))).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({type:"fan",artistRole:"singer"})}));expect((await s.handler("directory",req("/api/groups?artistRole=unknown",undefined,null))).status).toBe(400);});
+ it("validates and forwards the artist role filter",async()=>{const s=setup();expect((await s.handler("directory",req("/api/groups?type=fan&artistRole=underground_idol",undefined,null))).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({type:"fan",artistRole:"underground_idol"})}));expect((await s.handler("directory",req("/api/groups?artistRole=unknown",undefined,null))).status).toBe(400);});
  it("accepts the hobby-and-brand directory filter",async()=>{const s=setup();expect((await s.handler("directory",req("/api/groups?type=nonfan&limit=20",undefined,null))).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_dispatch",expect.objectContaining({p_input:expect.objectContaining({type:"nonfan"})}));expect((await s.handler("directory",req("/api/groups?type=other",undefined,null))).status).toBe(400);});
  it("allows public bounded discovery without inventing owner", async () => { const s = setup(); expect((await s.handler("directory", req("/api/groups?limit=8&type=hobby", undefined, null))).status).toBe(200); expect(s.rpc).toHaveBeenCalledWith("groups_dispatch", expect.objectContaining({ p_actor: null, p_input: expect.objectContaining({ limit: 8, type: "hobby" }) })); expect(s.authorize).not.toHaveBeenCalled(); });
  it("rejects invalid supplied credentials on public reads", async () => { const s = setup(); expect((await s.handler("directory", req("/api/groups", undefined, "bad"))).status).toBe(401); expect(s.rpc).not.toHaveBeenCalled(); });
@@ -293,3 +293,26 @@ describe("K6: a group board post pays the 글쓰기 mission", () => {
 });
 
 it("accepts an authenticated photo-only room message and rejects empty or injected messages", async()=>{const s=setup();const input={body:"",assetId:other,requestId:me};expect((await s.handler("message",req("/api",input),{id:me,itemId:other})).status).toBe(200);expect(s.rpc).toHaveBeenLastCalledWith("groups_content_dispatch",expect.objectContaining({p_actor:me,p_input:input}));s.rpc.mockClear();for(const invalid of [{body:"",requestId:me},{...input,assetId:"bad"},{...input,actorId:other}])expect((await s.handler("message",req("/api",invalid),{id:me,itemId:other})).status).toBe(400);expect((await s.handler("message",req("/api",input,null),{id:me,itemId:other})).status).toBe(401);expect(s.rpc).not.toHaveBeenCalled();});
+
+describe("fan-made (Unverified) creator pages", () => {
+  const unverifiedCelebrity = "30000000-0000-4000-8000-000000000003";
+  const officialCelebrity = "30000000-0000-4000-8000-000000000004";
+  const page = (celebrityId: string | null) => ({ id: me, kind: "fan", celebrityId, slug: "fan-made", name: "Fan made" });
+  const handler = (rpc: (name: string, args: Record<string, unknown>) => Promise<unknown>) => createGroupHandler({ rpc, authorize: vi.fn(), authorizeAdmin: vi.fn(),
+    unverifiedCreators: async () => ({ ids: new Set([unverifiedCelebrity]), slugs: new Set(["fan-made"]) }) });
+
+  it("marks only the fan-made page in the directory and in the page detail", async () => {
+    const rpc = vi.fn().mockResolvedValueOnce({ items: [page(unverifiedCelebrity), page(officialCelebrity), page(null)], nextCursor: null })
+      .mockResolvedValueOnce({ page: page(unverifiedCelebrity), membership: null, bookmarked: false });
+    const list = await (await handler(rpc)("directory", req("/api/groups", undefined, null))).json();
+    expect(list.items.map((item: { unverified?: boolean }) => item.unverified ?? false)).toEqual([true, false, false]);
+    const detail = await (await handler(rpc)("detail", req("/api/groups/x", undefined, null), { id: me })).json();
+    expect(detail.page.unverified).toBe(true);
+  });
+
+  it("answers as before when no fan-made page list is wired", async () => {
+    const s = setup();
+    s.rpc.mockResolvedValueOnce({ items: [page(unverifiedCelebrity)], nextCursor: null });
+    expect((await (await s.handler("directory", req("/api/groups", undefined, null))).json()).items[0]).not.toHaveProperty("unverified");
+  });
+});

@@ -88,7 +88,7 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
     else assert.match(step.if ?? '', /^matrix\.suite != 'live'/, step.name ?? step.run ?? step.uses);
   }
   const grouped = jobs.database.steps.filter(step => step.if && !dependencySetup.includes(step));
-  assert.equal(grouped.length, 38);
+  assert.equal(grouped.length, 39);
   const counts = { core: 0, live: 0, events: 0, 'economy-1': 0, 'economy-2': 0 };
   for (const step of grouped) {
     const group = /^matrix\.suite == '(core|live|events|economy-1|economy-2)'$/.exec(step.if)?.[1];
@@ -97,7 +97,7 @@ test('SQL groups are disjoint, retain setup, and do not wait for unrelated API o
   }
   // core gained the steady check-in and the share-tag review replays (DUKJIL-POLICY, 2026-11-11); events gained the content translation cache replay (TRANSLATE-RECONCILE).
   // core gained the admin CMS read-lock concurrency replay (ADMIN-LOCK, 2026-11-17).
-  assert.deepEqual(counts, { core: 16, live: 1, events: 11, 'economy-1': 2, 'economy-2': 8 });
+  assert.deepEqual(counts, { core: 17, live: 1, events: 11, 'economy-1': 2, 'economy-2': 8 });
   const translation = grouped.filter(step => /content_translation_cache\.sh/.test(step.run ?? ''));
   assert.equal(translation.length, 1); assert.equal(translation[0].if, "matrix.suite == 'events'");
   assert.match(translation[0].run, /BYUS_CLEAN_DB_PORT=55681 \\\n\s*BYUS_CLEAN_DB_SHELL_ASSERTION_FILE=supabase\/tests\/content_translation_cache\.sh/);

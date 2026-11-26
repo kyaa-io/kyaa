@@ -40,7 +40,15 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
  * 팬페이지는 사진 옆에 이름·SNS와 팬 수·행동을 묶고, 전폭 소개 아래에 방문 통계를 둔다.
  */
-export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", locale, description, descriptionLabels, descriptionAction, star, badge, verified = false, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
+/** 팬이 신청해 연 페이지(Unverified)의 이름 줄 표지. kyaa official 표시 대신 붙는다. */
+const unofficialLabels: Record<AppLocale, string> = {
+  ko: "팬이 만든 페이지(비공식)", en: "Fan-made page (unofficial)", get mn() { return this.en; }, ja: "ファンが作ったページ（非公式）",
+  "zh-Hans": "粉丝创建的页面（非官方）", "zh-Hant": "粉絲建立的頁面（非官方）", es: "Página creada por fans (no oficial)",
+  id: "Halaman buatan penggemar (tidak resmi)", vi: "Trang do fan lập (không chính thức)", th: "เพจที่แฟนสร้าง (ไม่เป็นทางการ)",
+  pt: "Página criada por fãs (não oficial)", fr: "Page créée par des fans (non officielle)", ru: "Страница от фанатов (неофициальная)",
+};
+
+export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", locale, description, descriptionLabels, descriptionAction, star, badge, verified = false, unofficial = false, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
   image: FanPageImage;
   name: ReactNode;
   kind: FanPageKind;
@@ -56,6 +64,8 @@ export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", l
   badge?: ReactNode;
   /** kyaa가 등록한 크리에이터·브랜드의 페이지: 이름 바로 뒤에 kyaa official 표시. */
   verified?: boolean;
+  /** 팬이 신청해 연 페이지: kyaa official 표시 없이 '팬이 만든 페이지(비공식)' 표지를 단다. */
+  unofficial?: boolean;
   /** 이름 옆에 두는 로그인 사용자의 내 팬 등급. 비로그인에서는 넘기지 않는다. */
   grade?: ReactNode;
   links?: readonly FanPageHeaderLink[];
@@ -80,6 +90,7 @@ export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", l
         <div className={styles.titleRow}>
           <h1 className={styles.name}>{name}</h1>
           {verified ? <VerifiedMark className={styles.verified} /> : null}
+          {unofficial ? <FanTag tone="neutral">{unofficialLabels[locale]}</FanTag> : null}
           {kind === "fan" ? null : <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}
           {kind === "fan" ? null : badge}
           {grade}

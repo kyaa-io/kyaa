@@ -1,4 +1,4 @@
-import { beforeEach, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { createParticipationHandler } from "./routes";
@@ -114,4 +114,50 @@ it("uses legacy parsers for old fan/admin reads and admin PATCH responses", asyn
   expect((await (await run("admin-live-submissions", request("/api", undefined, true), { id })).json()).items).toEqual([adminItem]);
   rpc.mockResolvedValueOnce(adminItem);
   expect(await (await run("admin-live-submission", request("/api", { action: "select", expectedRevision: 1, reason: null }, true, "PATCH"), { id })).json()).toEqual(adminItem);
+});
+
+describe("fan page request approval: official or fan-made page", () => {
+  const celebrity = "30000000-0000-4000-8000-000000000003";
+  const approved = (pageVerification: "verified" | "unverified") => ({ item: { id, name: "Fan page", subjectType: "artist", officialSocialUrl: "https://x.com/fanpage", note: "", locale: "ko",
+    status: "approved", revision: 2, reviewReason: null, reviewedAt: "2026-11-26T09:00:00Z", artist: null, createdAt: "2026-11-25T09:00:00Z", pageVerification }, replayed: false });
+
+  it("opens the linked page as fan-made (unverified) unless the admin asks otherwise", async () => {
+    rpc.mockResolvedValueOnce(approved("unverified"));
+    const result = await run("admin-request", request("/api", { expectedRevision: 1, decision: "approve", reason: null, celebrityId: celebrity, locale: "ko" }, true, "PATCH"), { id });
+    expect(result.status).toBe(200);
+    expect((await result.json()).item.pageVerification).toBe("unverified");
+    expect(rpc).toHaveBeenCalledWith("fan_web_admin_review_fanpage_request", expect.objectContaining({ p_celebrity_id: celebrity, p_verification: "unverified", p_verification_reason: null }));
+  });
+
+  it("needs a reason to open the page as kyaa official", async () => {
+    const asked = { expectedRevision: 1, decision: "approve", reason: null, celebrityId: celebrity, locale: "ko", verification: "verified" };
+    expect((await run("admin-request", request("/api", asked, true, "PATCH"), { id })).status).toBe(422);
+    expect(rpc).not.toHaveBeenCalled();
+    rpc.mockResolvedValueOnce(approved("verified"));
+    expect((await run("admin-request", request("/api", { ...asked, verificationReason: "소속사 공식 계정 확인" }, true, "PATCH"), { id })).status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("fan_web_admin_review_fanpage_request", expect.objectContaining({ p_verification: "verified", p_verification_reason: "소속사 공식 계정 확인" }));
+  });
+
+  it("switches an approved request's page later, keeps viewers out and answers a missing reason as a bad request", async () => {
+    rpc.mockResolvedValueOnce(approved("verified"));
+    const switched = await run("admin-page-verification", request("/api", { verification: "verified", reason: "팀 동의 받음", locale: "ko" }, true, "PATCH"), { id });
+    expect(switched.status).toBe(200);
+    expect(rpc).toHaveBeenCalledWith("fan_web_admin_set_page_verification", expect.objectContaining({ p_request_id: id, p_verification: "verified", p_reason: "팀 동의 받음", p_locale: "ko" }));
+    rpc.mockRejectedValueOnce(new Error("FAN_WEB_INVALID_VERIFICATION_REASON"));
+    const missing = await run("admin-page-verification", request("/api", { verification: "unverified", reason: null, locale: "ko" }, true, "PATCH"), { id });
+    expect(missing.status).toBe(422);
+    expect(await missing.json()).toEqual({ error: { code: "FAN_WEB_INVALID_VERIFICATION_REASON" } });
+    rpc.mockClear();
+    authorizeAdmin.mockResolvedValueOnce({ appUserId: owner, allowlistId: id, role: "viewer", email: "admin@example.test" });
+    expect((await run("admin-page-verification", request("/api", { verification: "verified", reason: "x", locale: "ko" }, true, "PATCH"), { id })).status).toBe(403);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+});
+
+it("passes the database's own approval answer (local DB, 20270116070200) through the route schema", async () => {
+  const answer = (await import("./fixtures/fan_web_admin_review_fanpage_request.json")).default;
+  rpc.mockResolvedValueOnce(answer);
+  const result = await run("admin-request", request("/api", { expectedRevision: 1, decision: "approve", reason: null, celebrityId: "7e570000-0000-4000-8000-000000001126", locale: "ko" }, true, "PATCH"), { id: answer.item.id });
+  expect(result.status).toBe(200);
+  expect((await result.json()).item).toMatchObject({ status: "approved", pageVerification: "unverified" });
 });

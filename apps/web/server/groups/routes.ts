@@ -107,6 +107,17 @@ const inputSchemas = {
   "set-presence-setting":z.object({enabled:z.boolean().optional(),notifyEnabled:z.boolean().optional()}).strict().refine(v=>v.enabled!==undefined||v.notifyEnabled!==undefined),
   review: z.object({expectedRevision:z.number().int().min(1).optional(), action: z.enum(["approve", "reject", "request_changes", "start_review"]), reason: z.string().trim().max(1000).optional(), celebrityId: uuid.optional(), requestId }).strict(),
 };
+/** Fan pages opened from a fan's request (Unverified) answer `unverified: true` so the card and the page head leave out the kyaa official mark. */
+async function markUnverified(result: unknown, read: FanpageDependencies["unverifiedCreators"]) {
+  const record = (value: unknown) => value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+  const top = record(result);
+  if (!top || !read) return result;
+  const ids = (await read()).ids;
+  if (!ids.size) return result;
+  const mark = (value: unknown) => { const page = record(value); return page && ids.has(String(page.celebrityId)) ? { ...page, unverified: true } : value; };
+  return { ...(mark(top) as object), ...(Array.isArray(top.items) ? { items: top.items.map(mark) } : {}), ...(record(top.page) ? { page: mark(top.page) } : {}) };
+}
+
 export type GroupOperation = "directory" | "resolve" | "detail" | "applications" | "application-status" | "apply" | "revise" | "post-edit" | "join" | "leave" | "bookmark" | "unbookmark" | "members" | "role" | "transfer" | "posts" | "post" | "post-detail" | "post-remove" | "rooms" | "room" | "messages" | "message" | "settings" | "admin-applications" | "review" | "comments" | "comment" | "comment-edit" | "comment-remove" | "reaction" | "dislike" | "room-state" | "report" | "admin-reports" | "resolve-report" | "report-evidence" | "artist-bind" | "artist-unbind" | "artist-bindings" | "presence" | "heartbeat" | "presence-setting" | "set-presence-setting" | "notifications" | "set-notifications" | "room-read" | "page-reports" | "page-resolve-report" | "own-reports" | "operator-members" | "operator-members-export" | "notice-broadcast-status" | "mission-stats";
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 export const groupsUnavailable = () => Response.json({ error: { code: "GROUPS_UNAVAILABLE" } }, { status: 503, headers });
@@ -170,7 +181,7 @@ export function createGroupHandler(deps: FanpageDependencies) {
         const type=z.enum(["all", "fan", "hobby", "brand", "nonfan"]).parse(one("type") ?? "all");
         const search=z.string().max(100).parse(one("search") ?? "");
         const owned=z.enum(["1"]).optional().parse(one("owned")) === "1";
-        const artistRole=z.enum(["idol","singer","actor","creator","show_host"]).optional().parse(one("artistRole"));
+        const artistRole=z.enum(["idol","creator","brand","underground_idol"]).optional().parse(one("artistRole"));
         const cursor=one("cursor");
         if(sort==="discovery" && (mine || owned)) throw new SyntaxError("invalid discovery scope");
         if(sort==="visited" && (mine!=="joined" || !owner || type!=="all" || search!=="" || owned || artistRole)) throw new SyntaxError("invalid visited scope");
@@ -194,12 +205,13 @@ export function createGroupHandler(deps: FanpageDependencies) {
       if(operation === "directory" && payload.sort === "visited") {
         const data=z.object({items:z.array(z.unknown()),totalCount:z.number().int().nonnegative(),nextCursor:visitedCursor.nullable()}).passthrough().parse(result);
         if(data.nextCursor && data.nextCursor.owner!==owner) throw new SyntaxError("cursor owner mismatch");
-        return Response.json({...data,nextCursor:data.nextCursor?Buffer.from(JSON.stringify(data.nextCursor)).toString("base64url"):null},{headers});
+        return Response.json(await markUnverified({...data,nextCursor:data.nextCursor?Buffer.from(JSON.stringify(data.nextCursor)).toString("base64url"):null},deps.unverifiedCreators),{headers});
       }
       if(operation === "own-reports")return Response.json(groupOwnReportsSchema.parse(result),{headers});
       if(operation === "messages"){const messages=groupMessagesSchema.parse(result);return Response.json({...messages,items:messages.items.map(item=>({...item,mine:item.profileId===owner}))},{headers});}
       if (operation === "post" && owner && params.id) return Response.json({ ...(result as object), ...await awardGroupPost((name, args) => deps.rpc(name, args), owner, uuid.parse(params.id), result, payload) }, { headers });
       if (operation === "post-detail") return Response.json(richGroupPost(result), { headers });
+      if (["directory", "resolve", "detail"].includes(operation)) return Response.json(await markUnverified(result, deps.unverifiedCreators), { headers });
       return Response.json(result, { headers });
     } catch (error) {
       if (error instanceof AuthError) return Response.json({ error: { code: error.code } }, { status: error.status, headers });

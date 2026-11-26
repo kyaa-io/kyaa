@@ -19,7 +19,7 @@ begin
   insert into public.admin_allowlist(id,email,role,active) values(actor,'quiz-policy@example.test','admin',true);
   insert into public.app_users(id,privy_user_id,verified_email) values
     (owner_id,'did:privy:quiz-policy','quiz-policy@example.test'),(other_id,'did:privy:quiz-policy-other','quiz-policy-other@example.test');
-  insert into public.celebrities(id,slug,image_url,roles,primary_role) values(artist,'quiz-policy','/test.webp','{artist}','singer');
+  insert into public.celebrities(id,slug,image_url,roles,primary_role) values(artist,'quiz-policy','/test.webp','{artist}','creator');
   perform public.save_admin_quiz_version_v2(actor,extensions.gen_random_uuid(),artist,null,pg_temp.policy_questions());
   select id into strict quiz from public.celebrity_quizzes where celebrity_id=artist;
   data:=public.read_admin_quiz_cms_v2(actor,artist);
