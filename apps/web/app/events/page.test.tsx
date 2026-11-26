@@ -87,4 +87,13 @@ describe("events page public content", () => {
     expect(page.props.homeBanners).toHaveLength(1);
     expect(page.props.pagination.props).toMatchObject({ page: 1, pageCount: 1 });
   });
+  it("lists the donation vote card on the first page only while the switch is on", async () => {
+    vi.stubEnv("DONATION_VOTE_ENABLED", "true");
+    const on = await EventsPage({ searchParams: Promise.resolve({ locale: "ko" }) });
+    expect(on.props.donationVote).toEqual({ title: "새해맞이 기부 투표", description: expect.stringContaining("초록우산"), action: "투표" });
+    vi.stubEnv("DONATION_VOTE_ENABLED", "false");
+    const off = await EventsPage({ searchParams: Promise.resolve({ locale: "ko" }) });
+    expect(off.props.donationVote).toBeUndefined();
+    vi.unstubAllEnvs();
+  });
 });

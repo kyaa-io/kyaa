@@ -8,6 +8,7 @@ import { createPublishedContentRepositoryFromEnvironment } from "@/server/conten
 import { createRaffleDependencies } from "@/server/raffle/raffle-dependencies";
 import { withoutGuideBanners } from "@/features/home/domain/home-banner";
 import { EVENTS_PAGE_SIZE, EventsPagination } from "@/features/home/ui/events-pagination";
+import { voteCopy } from "./donation-vote/copy";
 
 export const dynamic = "force-dynamic";
 
@@ -36,12 +37,14 @@ export default async function EventsPage({ searchParams }: PageProps) {
   const page = Math.min(requestedPage, pageCount);
   const start = (page - 1) * EVENTS_PAGE_SIZE;
   const end = start + EVENTS_PAGE_SIZE;
+  const [voteTitle, , voteAction, , voteDescription] = voteCopy[locale];
   return <EventsCatalogScreen
     locale={locale}
     homeBanners={allBanners.slice(start, end)}
     elina={celebrities.status === "fulfilled" && raffles.status === "fulfilled" ? celebrities.value.find(celebrity => celebrity.slug === "elina") : undefined}
     elinaRaffles={raffles.status === "fulfilled" ? raffles.value.raffles : []}
     showElinaCampaign={hasElinaCampaign && allBanners.length >= start && allBanners.length < end}
+    donationVote={process.env.DONATION_VOTE_ENABLED === "true" && page === 1 ? { title: voteTitle, description: voteDescription, action: voteAction } : undefined}
     contentUnavailable={[banners, celebrities, raffles].some(result => result.status === "rejected")}
     pagination={<EventsPagination locale={locale} page={page} pageCount={pageCount} />}
   />;

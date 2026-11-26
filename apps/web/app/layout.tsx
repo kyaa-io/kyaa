@@ -14,6 +14,7 @@ import { accountSwitchEnabled } from "@/features/auth/domain/account-switch-avai
 import { DocumentLocale } from "../components/document-locale";
 import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progress";
 import { AuthRoot } from "@/features/auth/client/auth-root";
+import { GoodsMenuProvider } from "@/features/groups/goods-menu";
 import { publicRuntimeConfig } from "../server/config/public-runtime-config";
 import { isAwsHosting } from "../server/config/hosting";
 import { EarlyRaffleLandingTracker } from "../features/analytics/client/early-raffle-landing";
@@ -97,6 +98,7 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <ChemiReleaseProvider enabled={process.env.CHEMI_TAB === "true"}>
+        <GoodsMenuProvider enabled={process.env.KYAA_GOODS_MENU === "true"}>
         <AccountSwitchReleaseProvider enabled={accountSwitchEnabled({ APP_ENV: process.env.APP_ENV, NODE_ENV: process.env.NODE_ENV })}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
         <Suspense fallback={null}><EarlyRaffleLandingTracker /></Suspense>
@@ -123,6 +125,7 @@ export default async function RootLayout({
         </AdsenseUnitsProvider>
         </LuckyDrawPreviewProvider>
         </AccountSwitchReleaseProvider>
+        </GoodsMenuProvider>
         </ChemiReleaseProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>

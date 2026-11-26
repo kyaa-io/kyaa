@@ -25,6 +25,7 @@ type EventsCatalogProps = {
   elina?: PublishedCelebrity;
   elinaRaffles: RaffleList["raffles"];
   showElinaCampaign: boolean;
+  donationVote?: { title: string; description: string; action: string };
   contentUnavailable?: boolean;
   pagination?: ReactNode;
 };
@@ -52,7 +53,21 @@ function EventArtwork({ banner, priority }: { banner: HomeBanner; priority: bool
   </span>;
 }
 
-export function EventsCatalogScreen({ locale, homeBanners, elina, elinaRaffles, showElinaCampaign, contentUnavailable = false, pagination }: EventsCatalogProps) {
+// 배너 카드와 기부 투표 카드가 같은 모양을 쓴다. 그림이 없으면 글 한 칸으로 넓힌다.
+function EventCard({ href, title, description, action, artwork }: { href: string; title: string; description?: string | null; action: string; artwork?: ReactNode }) {
+  return <li className={styles.item}>
+    <Link className={styles.card} data-text-only={artwork ? undefined : ""} href={href as Route}>
+      <div className={styles.copy}>
+        <h2>{title}</h2>
+        {description ? <p>{description}</p> : null}
+        <span className={styles.action}>{action}<ArrowRight aria-hidden="true" /></span>
+      </div>
+      {artwork}
+    </Link>
+  </li>;
+}
+
+export function EventsCatalogScreen({ locale, homeBanners, elina, elinaRaffles, showElinaCampaign, donationVote, contentUnavailable = false, pagination }: EventsCatalogProps) {
   const t = eventsCatalogCopy(locale);
   const router = useRouter();
   const elinaCard = showElinaCampaign ? <li key="elina-guide" className={styles.campaign}><ElinaGuideCard locale={locale} elina={elina} raffles={elinaRaffles} variant="catalog" /></li> : null;
@@ -60,17 +75,10 @@ export function EventsCatalogScreen({ locale, homeBanners, elina, elinaRaffles, 
     <FanContentContainer as="main" id="events-content" className={styles.main}>
       <FanSectionHeader as="h1" title={t.title} />
       {contentUnavailable ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={() => router.refresh()}>{t.retry}</FanAction></div> : null}
-      {homeBanners.length || showElinaCampaign ? <ul className={styles.list}>
-        {homeBanners.map((banner, index) => <li key={banner.id} className={styles.item}>
-          <Link className={styles.card} href={localizedBannerHref(banner.href, locale) as Route}>
-            <div className={styles.copy}>
-              <h2>{banner.title}</h2>
-              {banner.description ? <p>{banner.description}</p> : null}
-              <span className={styles.action}>{banner.ctaLabel}<ArrowRight aria-hidden="true" /></span>
-            </div>
-            <EventArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={index === 0} />
-          </Link>
-        </li>)}
+      {homeBanners.length || showElinaCampaign || donationVote ? <ul className={styles.list}>
+        {donationVote ? <EventCard key="donation-vote" href={`/events/donation-vote?locale=${locale}`} title={donationVote.title} description={donationVote.description} action={donationVote.action} /> : null}
+        {homeBanners.map((banner, index) => <EventCard key={banner.id} href={localizedBannerHref(banner.href, locale)} title={banner.title} description={banner.description} action={banner.ctaLabel}
+          artwork={<EventArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={index === 0} />} />)}
         {elinaCard}
       </ul> : !contentUnavailable ? <p className={styles.state}>{t.empty}</p> : null}
       {pagination}

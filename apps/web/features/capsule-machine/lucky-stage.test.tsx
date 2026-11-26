@@ -3,7 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { LuckyStage } from "./lucky-stage";
 
 const goods = vi.hoisted(() => ({ enabled: false }));
-vi.mock("@/features/groups/goods-menu", () => ({ get GOODS_MENU() { return goods.enabled; } }));
+vi.mock("@/features/groups/goods-menu", () => ({ useGoodsMenu: () => goods.enabled }));
 const canvas = vi.hoisted(() => ({ props: [] as Array<Record<string, unknown>> }));
 const gpu = vi.hoisted(() => ({ ok: true, checks: 0 }));
 vi.mock("./gpu", () => ({ canRunCapsuleMachine: async () => { gpu.checks++; return gpu.ok; } }));

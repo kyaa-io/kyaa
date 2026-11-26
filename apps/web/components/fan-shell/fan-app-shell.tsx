@@ -1,5 +1,5 @@
 "use client";
-import { GOODS_MENU } from "@/features/groups/goods-menu";
+import { useGoodsMenu } from "@/features/groups/goods-menu";
 import { HeaderDmLink } from "@/features/group-social/header-dm-link";
 import { GiftTabDot } from "@/features/gifts/ui/gift-tab-dot";
 import { WAVE_FANPAGE_SLUG } from "@/features/fanpage/domain/wave-programs";
@@ -89,8 +89,9 @@ export function fanNavigationItems(
   pathname: string,
   groupsEnabled = false,
   chemiEnabled = false,
+  goodsMenu = false,
 ): readonly FanNavigationItem[] {
-  const items = baseNavigationItems(locale, pathname, groupsEnabled);
+  const items = baseNavigationItems(locale, pathname, groupsEnabled, goodsMenu);
   if (!chemiEnabled) return items;
   // 케미 sits right after the community tab (HOME · 모임 · 케미 · 덕질 · MY).
   const chemi: FanNavigationItem = { id: "chemi", href: `/chemi?locale=${locale}` as Route, label: groupsEnabled && !(locale === "en" && pathname === "/s/raffle") ? "케미" : chemiTabLabel(locale), icon: groupsEnabled ? <PencilHeaderIcon name="chemi" /> : undefined, isCurrent: activeFanSection(pathname) === "chemi" };
@@ -98,16 +99,16 @@ export function fanNavigationItems(
   return [...items.slice(0, at), chemi, ...items.slice(at)];
 }
 
-function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled: boolean): readonly FanNavigationItem[] {
+function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled: boolean, goodsMenu: boolean): readonly FanNavigationItem[] {
   const current = activeFanSection(pathname);
   const query = `?locale=${locale}`;
   const globalBenefits = pathname === '/benefits' || pathname.startsWith('/benefits/') || pathname === '/my/capsules' || pathname.startsWith('/my/capsules/');
   // 전체 랭킹은 덕질 탭과 안내에서 들어온다.
   const rankings = pathname === '/rankings' || pathname.startsWith('/rankings/');
   if(groupsEnabled)return [
-    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:(current==="home"&&!rankings)||(GOODS_MENU&&rankings)},
+    {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:(current==="home"&&!rankings)||(goodsMenu&&rankings)},
     {id:"community",href:`/pages/groups${query}` as Route,label:locale === "en" && pathname === "/s/raffle" ? groupsCopy(locale).groups : "모임",icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:GOODS_MENU ? "굿즈" : locale === "en" && pathname === "/s/raffle" ? translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES") : "덕질",icon:GOODS_MENU?<Gift aria-hidden="true"/>:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||(!GOODS_MENU&&rankings)},
+    {id:"favorites",href:`/benefits${query}` as Route,label:goodsMenu ? "굿즈" : locale === "en" && pathname === "/s/raffle" ? translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES") : "덕질",icon:goodsMenu?<Gift aria-hidden="true"/>:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||(!goodsMenu&&rankings)},
     {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [
@@ -186,11 +187,12 @@ export function FanAppHeader({
   const groupsEnabled = explicitGroupsEnabled ?? released;
   const chemiReleased = useChemiRelease();
   const chemiEnabled = explicitChemiEnabled ?? chemiReleased;
+  const goodsMenu = useGoodsMenu();
   const browserPathname = usePathname() || currentPath || "/";
   const searchParams = useSearchParams();
   const browserHash = useBrowserHash();
   const pathname = currentPath ?? browserPathname;
-  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled, chemiEnabled), locale, groupsEnabled);
+  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled, chemiEnabled, goodsMenu), locale, groupsEnabled);
   const notificationsLabel = locale === "ko" ? "알림" : translate(locale, footerMessages.m2c4e2b786e56, "Notifications");
   const nextLocale = locale === "ko" ? "en" : "ko";
   const languageHref = localeSwitchHref(
@@ -229,9 +231,10 @@ export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: exp
   const groupsEnabled = explicitGroupsEnabled ?? released;
   const chemiReleased = useChemiRelease();
   const chemiEnabled = explicitChemiEnabled ?? chemiReleased;
+  const goodsMenu = useGoodsMenu();
   const browserPathname = usePathname() || "/";
   const pathname = currentPath ?? browserPathname;
-  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled, chemiEnabled), locale, groupsEnabled).map((item) => ({
+  const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled, chemiEnabled, goodsMenu), locale, groupsEnabled).map((item) => ({
     ...item,
     icon: item.icon ?? icons[item.id as FanSection],
     label: <span>{groupsEnabled ? item.label : mobileLabel(item.id as FanSection, locale, groupsEnabled)}</span>,

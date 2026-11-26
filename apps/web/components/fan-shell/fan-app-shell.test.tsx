@@ -27,6 +27,10 @@ describe("fan app shell navigation", () => {
     expect(fanNavigationItems('ko',path,true).filter(item=>item.isCurrent).map(item=>item.id)).toEqual(['favorites']);
     expect(fanNavigationItems('ko',path,false).filter(item=>item.isCurrent).map(item=>item.id)).toEqual(['my']);
   });
+  it('names the 덕질 tab 굿즈 only when the goods switch is on',()=>{
+    expect(fanNavigationItems('ko','/',true,false,true).find(item=>item.id==='favorites')?.label).toBe('굿즈');
+    expect(fanNavigationItems('ko','/',true).find(item=>item.id==='favorites')?.label).toBe('덕질');
+  });
   it('does not match look-alike benefit paths',()=>{
     expect(fanNavigationItems('ko','/benefits-other',true).find(item=>item.id==='favorites')?.isCurrent).toBe(false);
   });

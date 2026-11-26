@@ -20,7 +20,7 @@ const GA4_STREAMS = { prod: 'G-HPXFR0PQP0', dev: 'G-WKSF9KP5QW' };
 const REWARDED_SESSION_ENV = ['KYAA_REWARDED_AD_SESSION_TTL_SECONDS', 'KYAA_REWARDED_AD_MIN_WATCH_SECONDS', 'KYAA_REWARDED_AD_ISSUE_LIMIT', 'KYAA_REWARDED_AD_ISSUE_WINDOW_SECONDS', 'KYAA_REWARDED_AD_DAILY_CAP'];
 const PUBLIC_RUNTIME_ENV = new Set([
   ...REWARDED_SESSION_ENV,
-  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED', 'CHEMI_TAB', 'CHEMI_WEEKLY_RANKINGS', 'CHEMI_ASK_AI', 'CHEMI_ASK_AI_MODEL', 'CHEMI_TOPUP_ENABLED', 'CHEMI_MAIL_SINK', 'KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE', 'KYAA_REWARDED_AD_UNIT', 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED',
+  'PRIVY_APP_ID', 'PRIVY_APP_ENVIRONMENT', 'BYUS_DATA_ENVIRONMENT', 'KYAA_GROUPS_ENABLED', 'CHEMI_TAB', 'CHEMI_WEEKLY_RANKINGS', 'CHEMI_ASK_AI', 'CHEMI_ASK_AI_MODEL', 'CHEMI_TOPUP_ENABLED', 'CHEMI_MAIL_SINK', 'KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE', 'KYAA_GOODS_MENU', 'DONATION_VOTE_ENABLED', 'KYAA_REWARDED_AD_UNIT', 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED',
   'FAN_SESSION_ISSUE', 'PRIVY_APPLE_LOGIN_ENABLED', 'PRIVY_KAKAO_LOGIN_ENABLED', 'PRIVY_WECHAT_LOGIN_ENABLED', 'PRIVY_LINE_LOGIN_ENABLED', 'PRIVY_FACEBOOK_LOGIN_ENABLED', 'PRIVY_NAVER_LOGIN_ENABLED', 'PRIVY_TEST_ACCOUNT_LOGIN_ENABLED', 'WEB_PUSH_VAPID_PUBLIC_KEY', 'GA4_MEASUREMENT_ID',
   // AdSense display unit IDs (data-ad-slot) for the home and board ad spaces; absent draws nothing.
   'ADSENSE_APPROVED', 'ADSENSE_SLOT_HOME_MID', 'ADSENSE_SLOT_BOARD_SIDE',
@@ -155,7 +155,7 @@ export function validateConfig(config, template) {
       if (key === 'CHEMI_ASK_AI' && (!['true', 'false'].includes(value) || (value === 'true' && config.environment !== 'dev'))) fail('CHEMI_ASK_AI can be enabled only in dev');
       if (key === 'CHEMI_ASK_AI_MODEL' && !/^gemini-[a-z0-9.-]{1,60}$/.test(value)) fail('CHEMI_ASK_AI_MODEL must be a Gemini model id');
       if (['CHEMI_TAB', 'CHEMI_WEEKLY_RANKINGS'].includes(key) && !['true', 'false'].includes(value)) fail(`${key} must be true or false`);
-      if (['KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE'].includes(key) && !['true', 'false'].includes(value)) fail(`${key} must be true or false`);
+      if (['KYAA_FEATURE_JJINFAN_GAUGE', 'KYAA_FEATURE_QUIZ_LEARN', 'KYAA_FEATURE_SIGNUP_RAFFLE', 'KYAA_GOODS_MENU', 'DONATION_VOTE_ENABLED'].includes(key) && !['true', 'false'].includes(value)) fail(`${key} must be true or false`);
       if (key === 'KYAA_REWARDED_TICKET_EXCHANGE_ENABLED' && !['true', 'false'].includes(value)) fail('KYAA_REWARDED_TICKET_EXCHANGE_ENABLED must be true or false');
       if (REWARDED_SESSION_ENV.includes(key) && !/^[1-9]\d{0,8}$/.test(value)) fail(`${key} must be a positive integer`);
       if (key === 'ADSENSE_APPROVED' && !['true', 'false'].includes(value)) fail('ADSENSE_APPROVED must be true or false');
@@ -177,6 +177,8 @@ export function validateConfig(config, template) {
     const prod = config.environment === 'prod';
     config.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE ??= prod ? 'false' : 'true';
     config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN ?? 'true';
+    // 개편 확인용(REVAMP-DEV-FLAGS-1126): DEV 에서만 기본으로 켠다. 운영은 키를 넣지 않아 꺼진 그대로다.
+    if (config.environment === 'dev') for (const key of ['KYAA_GOODS_MENU', 'DONATION_VOTE_ENABLED']) config.runtimeEnvironment[key] ??= 'true';
     if (config.runtimeEnvironment.BYUS_DATA_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('BYUS_DATA_ENVIRONMENT must match the environment');
     if (config.runtimeEnvironment.PRIVY_APP_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('PRIVY_APP_ENVIRONMENT must match the environment');
     const rewardedUnit = config.runtimeEnvironment.KYAA_REWARDED_AD_UNIT, rewardedOn = config.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED === 'true';
