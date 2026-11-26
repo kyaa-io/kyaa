@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "래플에 들어오면 당첨 인원과 상금, 무료 응모 버튼을 첫 화면에서 바로 볼 수 있어요.",
+    "영어 화면의 하단 메뉴가 영어로 표시되고, 방문 통계 동의 안내는 화면 아래에 떠요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/s/raffle",
+  "images": [
+    "release-notes/images/2026-11-26-raffle-landing-390.png",
+    "release-notes/images/2026-11-26-raffle-landing-1440.png"
+  ]
+}
