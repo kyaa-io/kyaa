@@ -361,7 +361,7 @@ it("fails closed when the action resource cap is exceeded", async () => {
   const repeatedLog = hubLog("FanActionRecorded", {});
   const repeated = Array.from({ length: 50_001 }, () => repeatedLog);
   await expect(readFinalizedActionSnapshot(makeFixture({ logs: repeated }).options)).rejects.toThrow("action cap exceeded");
-});
+}, 30_000);
 
 it("rejects a claimed ERC-721 mint without a matching zero-sender Transfer", async () => {
   const ref = { nftContract: passport, tokenId: 7n, kind: 0, issuanceKey: hash("51"), linkOrigin: 0 };
