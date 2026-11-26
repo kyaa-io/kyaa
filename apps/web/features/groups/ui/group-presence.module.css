@@ -58,3 +58,8 @@
 .line[data-wrap] > * + *::before { position: absolute; inset-inline-start: calc(-1 * var(--presence-gap)); width: var(--presence-gap); margin: 0; text-align: center; }
 
 .visits { min-height: 24px; grid-column: 1 / -1; display: flex; flex-wrap: wrap; }
+
+@media (width < 48rem) {
+  [data-fan-layout] .item.fanCount { height: 20px; }
+  [data-fan-layout] .fanLink::after { inset-block: -12px; }
+}

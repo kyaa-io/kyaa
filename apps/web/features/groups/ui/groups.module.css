@@ -356,3 +356,8 @@
     padding:var(--space-2) var(--space-4);
   }
 }
+
+@media (width < 48rem) {
+  .discoveryLayout { padding-bottom: var(--space-4); }
+  .discoveryAside { padding-top: var(--space-2); }
+}
