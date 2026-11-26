@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { landingHandoff, externalBrowserUrl, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
+import { embeddedApp, landingHandoff, externalBrowserUrl, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 
 const loginUrl = "https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve";
 
@@ -30,11 +30,27 @@ describe("X app browser", () => {
   it.each(["iosX", "androidX"] as const)("requires handoff for %s", (name) => {
     expect(requiresGoogleBrowserHandoff(agents[name])).toBe(true);
   });
-  // X drops x-safari-https:// and intent:// silently (0 of 118 hand-offs arrived, 2026-11-23), so it gets the manual notice.
-  it.each(["iosX", "androidX"] as const)("gives %s the manual notice instead of a hand-off the app ignores", (name) => {
-    expect(externalBrowserUrl(agents[name], loginUrl)).toBeNull();
-    expect(planGoogleLogin(agents[name], loginUrl)).toEqual({ kind: "notice" });
-    expect(landingHandoff(agents[name], new URL(loginUrl))).toEqual({ target: null, fallback: null });
+  // iPhone X ignores x-safari-https:// opened by script (0 of 118 automatic hand-offs arrived, 2026-11-23): no automatic
+  // try and no Google hand-off, only the tapped Safari link in the strip.
+  it("gives iPhone X a tap-only Safari link", () => {
+    expect(externalBrowserUrl(agents.iosX, loginUrl)).toBeNull();
+    expect(planGoogleLogin(agents.iosX, loginUrl)).toEqual({ kind: "notice" });
+    expect(landingHandoff(agents.iosX, new URL(loginUrl))).toEqual({
+      target: null,
+      fallback: "x-safari-https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve&kyaa_browser=x",
+      browser: "safari",
+      method: "safari",
+    });
+  });
+  it("opens Android X in Chrome by itself and in the default browser on a tap", () => {
+    const back = "https://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve&kyaa_browser=x";
+    expect(landingHandoff(agents.androidX, new URL(loginUrl))).toEqual({
+      target: `intent://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve&kyaa_browser=x#Intent;package=com.android.chrome;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(back)};end`,
+      fallback: `intent://kyaa.io/login?returnTo=%2Fko%2Fc%2Felina&locale=ko&intent=reserve&kyaa_browser=x#Intent;scheme=https;action=android.intent.action.VIEW;S.browser_fallback_url=${encodeURIComponent(back)};end`,
+      browser: null,
+      method: "intent",
+    });
+    expect(planGoogleLogin(agents.androidX, loginUrl).kind).toBe("external");
   });
   it.each(["iosInstagram", "iosKakao", "androidKakao"] as const)("keeps %s handoff", (name) => {
     expect(requiresGoogleBrowserHandoff(agents[name])).toBe(true);
@@ -131,5 +147,33 @@ describe("landing handoff", () => {
     const plan = landingHandoff(agents.androidInstagram,new URL(loginUrl));
     expect(plan.target).toContain("package=com.android.chrome");
     expect(plan.fallback).not.toContain("package=");
+  });
+  const tiktok = "Mozilla/5.0 (Linux; Android 14; SM-S921N Build/UP1A; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.58 Mobile Safari/537.36 trill_360505 JsSdk/1.0 NetType/WIFI AppName/trill BytedanceWebview/d8a21c6";
+  const iosThreads = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 Barcelona 350.0.0.10.80 (iPhone15,2; iOS 18_1)";
+  const androidLine = "Mozilla/5.0 (Linux; Android 14; SM-S921N; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.58 Mobile Safari/537.36 Line/14.19.1";
+  it.each([
+    ["iosX", agents.iosX, "x", null, "safari"], ["androidX", agents.androidX, "x", "intent://", "intent"],
+    ["iosInstagram", agents.iosInstagram, "instagram", "instagram://extbrowser/", "instagram"],
+    ["androidInstagram", agents.androidInstagram, "instagram", "intent://", "intent"],
+    ["iosFacebook", agents.iosFacebook, "facebook", "x-safari-https://", "safari"],
+    ["androidFacebook", agents.androidFacebook, "facebook", "intent://", "intent"],
+    ["iosThreads", iosThreads, "threads", "x-safari-https://", "safari"],
+    ["iosKakao", agents.iosKakao, "kakao", "kakaotalk://web/openExternal", "kakao"],
+    ["androidKakao", agents.androidKakao, "kakao", "kakaotalk://web/openExternal", "kakao"],
+    ["androidLine", androidLine, "line", "https://kyaa.io/s/raffle?", "line"],
+    ["androidTikTok", tiktok, "tiktok", "intent://", "intent"],
+  ] as const)("%s: app, automatic link and method", (_name, ua, app, prefix, method) => {
+    const raffle = new URL("https://kyaa.io/s/raffle?utm_source=x&utm_campaign=raffle-1125&invite=AB12CD&enter=1");
+    expect(requiresGoogleBrowserHandoff(ua)).toBe(true);
+    expect(embeddedApp(ua)).toBe(app);
+    const plan = landingHandoff(ua, raffle);
+    expect(plan.method).toBe(method);
+    if (prefix === null) expect(plan.target).toBeNull();
+    else expect(plan.target?.startsWith(prefix)).toBe(true);
+    // Campaign tags, the invite code and the entry intent all reach the outside browser.
+    expect(decodeURIComponent(plan.fallback!)).toContain("utm_source=x&utm_campaign=raffle-1125&invite=AB12CD&enter=1&kyaa_browser=" + app);
+  });
+  it("adds LINE's own external-browser flag", () => {
+    expect(landingHandoff(androidLine, new URL("https://kyaa.io/")).target).toBe("https://kyaa.io/?kyaa_browser=line&openExternalBrowser=1");
   });
 });

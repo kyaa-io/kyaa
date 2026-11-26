@@ -56,6 +56,10 @@ export const GA4_EVENT_PARAMETERS = {
   share: { method: ["native", "copy"], content_type: shareContent },
   raffle_enter: { campaign: ["raffle-1125"], method: ["direct", "invite"] },
   raffle_entry: { kind: ["claim", "application", "ticket"] },
+  inapp_external_open: {
+    app: ["instagram", "threads", "kakao", "facebook", "line", "tiktok", "telegram", "x", "webview"],
+    method: ["line", "kakao", "instagram", "safari", "intent", "copy"],
+  },
 } as const satisfies Record<string, Record<string, "string" | readonly (string | number)[]>>;
 
 export type Ga4EventName = keyof typeof GA4_EVENT_PARAMETERS;
