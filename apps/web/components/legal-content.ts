@@ -80,7 +80,7 @@ export const legalDocuments = {
       metadataDescription: "kyaa 개인정보처리방침",
       title: "개인정보처리방침",
       description: "Sallylab Inc.는 kyaa를 이용하는 팬의 개인정보를 필요한 범위에서만 처리하고 안전하게 보호하기 위해 다음과 같이 개인정보처리방침을 안내합니다.",
-      effectiveDate: "시행일: 2026년 11월 23일",
+      effectiveDate: "시행일: 2026년 11월 26일",
       sections: [
         {
           heading: "1. 처리하는 개인정보",
@@ -92,6 +92,7 @@ export const legalDocuments = {
             "LIVE 예약·출석·설문 참여 정보",
             "혜택 신청·수령·사용 상태와 알림 설정·구독 정보",
             "선택 사항: 카카오 알림톡 수신을 직접 등록한 경우 카카오 계정에서 확인한 국내 휴대전화번호, 마스킹된 표시값, 카카오 계정 식별자 해시, 동의·철회 및 발송 상태 정보",
+            "선택 사항: 이벤트·혜택 안내(광고성 정보) 이메일 수신에 동의한 경우 수신 동의 여부, 동의·철회 일시, 동의·철회 처리 결과 안내 메일의 발송 상태 정보. 이메일 주소는 위의 인증된 이메일 주소를 사용합니다.",
             "실물 혜택 배송 또는 현장 수령을 위한 이름·연락처와, 배송 시 우편번호·주소",
             "수동 팬 인증을 위해 직접 제출한 설명·증빙 이미지, 제출·심사 상태와 보상 기록",
             "공지 댓글 본문, 공개 닉네임·캐릭터, 팬 순위와 선택적으로 공개한 팬 활동",
@@ -112,13 +113,14 @@ export const legalDocuments = {
             "LIVE 예약·출석·설문 및 혜택 제공",
             "알림 발송, 문의 대응과 서비스 품질 개선",
             "카카오 알림톡 수신 동의를 확인하고 카카오 계정의 전화번호로 서비스 알림을 발송하며, 제공사 접수와 최종 배달 결과 확인",
+            "이용자가 선택하여 동의한 경우에 한해 래플·이벤트·혜택 안내(광고성 정보)를 이메일로 발송하고, 동의·철회 사실과 처리 결과를 이메일로 안내. 동의하지 않아도 회원가입과 서비스 이용에는 영향이 없습니다.",
             "케미의 사주·운세·별자리·궁합 풀이 계산과 풀이 기록 저장, 게임 순위 집계와 표시. 게임 순위와 도전 링크에는 닉네임(정하지 않았으면 '팬')과 점수가 표시되며, 로그인하지 않은 사람도 볼 수 있습니다.",
             "부정 이용 방지, 보안 사고 대응과 법적 의무 이행",
           ],
         },
         {
           heading: "3. 보유 및 이용 기간",
-          paragraphs: ["개인정보는 서비스 제공과 계정 유지에 필요한 기간 동안 보유하며, 처리 목적이 달성되거나 이용자가 삭제를 요청한 경우 지체 없이 파기합니다. 실물 혜택 수령 정보는 배송 또는 현장 수령 완료 후 30일이 지나면 삭제합니다. 카카오 알림톡 수신 동의를 철회하거나 Kakao 연결을 해제하면 kyaa 내부 저장소의 원본 전화번호와 완료되지 않은 등록 정보를 삭제합니다. 동의·철회 이력, 발송 대조값과 제공사 접수·결과 기록은 관계 법령 준수, 분쟁 또는 보안 대응에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다. 그 밖에 관계 법령에서 일정 기간 보관을 요구하는 경우에도 해당 목적에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다.", "케미에 저장한 생일 정보와 궁합 상대 정보는 MY > 내 생일 정보에서 언제든 지울 수 있으며, 지우면 그 생일로 계산한 풀이 기록도 함께 삭제합니다. 회원 탈퇴 시에도 함께 삭제합니다. 만 14세 미만으로 확인되는 생년월일은 저장하지 않습니다."],
+          paragraphs: ["개인정보는 서비스 제공과 계정 유지에 필요한 기간 동안 보유하며, 처리 목적이 달성되거나 이용자가 삭제를 요청한 경우 지체 없이 파기합니다. 실물 혜택 수령 정보는 배송 또는 현장 수령 완료 후 30일이 지나면 삭제합니다. 카카오 알림톡 수신 동의를 철회하거나 Kakao 연결을 해제하면 kyaa 내부 저장소의 원본 전화번호와 완료되지 않은 등록 정보를 삭제합니다. 동의·철회 이력, 발송 대조값과 제공사 접수·결과 기록은 관계 법령 준수, 분쟁 또는 보안 대응에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다. 이벤트·혜택 안내 이메일은 수신 동의가 유지되는 동안 발송하며, 동의를 철회하면 해당 이메일 발송을 중단합니다. 철회 후에도 수신 동의·철회 일시와 처리 결과 기록은 위와 같이 분리하여 보관할 수 있습니다. 그 밖에 관계 법령에서 일정 기간 보관을 요구하는 경우에도 해당 목적에 필요한 범위와 기간 동안 분리하여 보관할 수 있습니다.", "케미에 저장한 생일 정보와 궁합 상대 정보는 MY > 내 생일 정보에서 언제든 지울 수 있으며, 지우면 그 생일로 계산한 풀이 기록도 함께 삭제합니다. 회원 탈퇴 시에도 함께 삭제합니다. 만 14세 미만으로 확인되는 생년월일은 저장하지 않습니다."],
         },
         {
           heading: "4. 외부 서비스 이용 및 처리 위탁",
@@ -127,7 +129,7 @@ export const legalDocuments = {
         },
         {
           heading: "5. 이용자의 권리",
-          paragraphs: ["이용자는 자신의 개인정보에 대한 열람, 정정, 삭제, 처리 정지 및 동의 철회를 요청할 수 있습니다. 요청은 아래 이메일로 접수할 수 있으며, 회사는 본인 확인 후 관계 법령에 따라 처리합니다."],
+          paragraphs: ["이용자는 자신의 개인정보에 대한 열람, 정정, 삭제, 처리 정지 및 동의 철회를 요청할 수 있습니다. 요청은 아래 이메일로 접수할 수 있으며, 회사는 본인 확인 후 관계 법령에 따라 처리합니다.", "이벤트·혜택 안내(광고성 정보) 이메일 수신 동의는 선택 사항이며, 설정 > 알림에서 언제든 끄거나 다시 켤 수 있습니다. 동의 또는 철회가 처리되면 그 결과를 이메일로 알려 드립니다. 동의하지 않거나 철회해도 서비스 이용에는 영향이 없습니다."],
         },
         {
           heading: "6. 안전성 확보 조치",
@@ -153,7 +155,7 @@ export const legalDocuments = {
       metadataDescription: "kyaa Privacy Policy",
       title: "Privacy Policy",
       description: "Sallylab Inc. provides this Privacy Policy to explain how we process only the personal information necessary to operate kyaa and how we protect it securely.",
-      effectiveDate: "Effective date: November 23, 2026",
+      effectiveDate: "Effective date: November 26, 2026",
       sections: [
         {
           heading: "1. Personal Information We Process",
@@ -165,6 +167,7 @@ export const legalDocuments = {
             "LIVE reservations, attendance, and survey participation information",
             "Benefit application, receipt, and usage status, and notification settings and subscription information",
             "Optional: when you register for Kakao service notifications, the Korean mobile phone number confirmed through your Kakao account, its masked display value, a hash of the Kakao account identifier, and consent, withdrawal, and delivery status information",
+            "Optional: when you consent to receive event and offer announcement (advertising) emails, whether you consented, the time you consented or withdrew, and the delivery status of the email confirming that result. We use the verified email address listed above.",
             "Name and phone number for physical reward delivery or on-site pickup, plus postal code and address when shipping is required",
             "Descriptions and evidence images you submit for manual fan verification, review status, and reward records",
             "Notice comments, public nicknames and characters, fan rankings, and fan activity you choose to make public",
@@ -185,13 +188,14 @@ export const legalDocuments = {
             "Providing LIVE reservations, attendance, surveys, and benefits",
             "Sending notifications, responding to inquiries, and improving service quality",
             "Confirming consent for Kakao service notifications, sending service notifications to the phone number on the Kakao account, and checking provider acceptance and final delivery results",
+            "Only if you choose to consent, sending raffle, event, and offer announcements (advertising) by email, and confirming your consent or withdrawal and its result by email. You can sign up and use the service without consenting.",
             "Calculating Chemi saju, fortune, zodiac, and compatibility readings, saving reading records, and calculating and displaying game rankings. Game rankings and challenge links show your nickname (\"Fan\" if you have not set one) and score, and can be seen by people who are not signed in.",
             "Preventing misuse, responding to security incidents, and complying with legal obligations",
           ],
         },
         {
           heading: "3. Retention and Use Period",
-          paragraphs: ["We retain personal information for as long as necessary to provide the service and maintain your account. We delete it without undue delay when the purpose of processing has been fulfilled or when you request deletion. We delete physical reward recipient details 30 days after shipping or on-site pickup is completed. If you withdraw consent for Kakao service notifications or disconnect Kakao, we delete the original phone number from kyaa systems and any incomplete registration information. Consent and withdrawal history, delivery correlation values, and provider acceptance and result records may be stored separately for the scope and period necessary to comply with applicable laws, resolve disputes, or respond to security incidents. We may also store information separately where applicable laws require retention for a certain period.", "You can delete the birth details and compatibility partners you saved in Chemi at any time in MY > My birth details. Deleting them also deletes the reading records calculated from that birth date. They are also deleted when you delete your account. We do not save a date of birth that shows you are under 14."],
+          paragraphs: ["We retain personal information for as long as necessary to provide the service and maintain your account. We delete it without undue delay when the purpose of processing has been fulfilled or when you request deletion. We delete physical reward recipient details 30 days after shipping or on-site pickup is completed. If you withdraw consent for Kakao service notifications or disconnect Kakao, we delete the original phone number from kyaa systems and any incomplete registration information. Consent and withdrawal history, delivery correlation values, and provider acceptance and result records may be stored separately for the scope and period necessary to comply with applicable laws, resolve disputes, or respond to security incidents. We send event and offer announcement emails only while your consent remains in effect, and stop sending them when you withdraw it. After withdrawal, the consent and withdrawal times and result records may be stored separately as described above. We may also store information separately where applicable laws require retention for a certain period.", "You can delete the birth details and compatibility partners you saved in Chemi at any time in MY > My birth details. Deleting them also deletes the reading records calculated from that birth date. They are also deleted when you delete your account. We do not save a date of birth that shows you are under 14."],
         },
         {
           heading: "4. External Services and Processing Providers",
@@ -200,7 +204,7 @@ export const legalDocuments = {
         },
         {
           heading: "5. Your Rights",
-          paragraphs: ["You may request access to, correction or deletion of, restriction of processing of, or withdrawal of consent for your personal information. You may submit a request using the email address below. After verifying your identity, we will process the request in accordance with applicable laws."],
+          paragraphs: ["You may request access to, correction or deletion of, restriction of processing of, or withdrawal of consent for your personal information. You may submit a request using the email address below. After verifying your identity, we will process the request in accordance with applicable laws.", "Consent to receive event and offer announcement (advertising) emails is optional. You can turn it off or on again at any time in Settings > Notifications. When your consent or withdrawal is processed, we will email you the result. Not consenting, or withdrawing, does not affect your use of the service."],
         },
         {
           heading: "6. Security Measures",
