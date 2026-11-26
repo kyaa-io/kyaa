@@ -11,7 +11,7 @@ import { FanPrintReveal } from '@/components/fan-ui/fan-print-reveal';
 import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
 import { RaffleCardFloat } from '@/features/raffle-cards/card-float';
-import { RaffleBoostAction, RaffleEnterBlock, RaffleMoreAction, RaffleOdds, RaffleProvider, RaffleStickyCta, RaffleCountdown, type RafflePreview } from './participation';
+import { RaffleBoostAction, RaffleEnterBlock, RaffleHeroEnter, RaffleMoreAction, RaffleOdds, RaffleProvider, RaffleStickyCta, RaffleCountdown, type RafflePreview } from './participation';
 import styles from './raffle.module.css';
 
 const art = (name: string) => `/images/raffle/v4/${name}.webp`;
@@ -31,20 +31,22 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite, 
   const text = (key: Parameters<typeof signupRaffleText>[1], count?: number) => signupRaffleText(locale, key, count);
   const t = (key: SignupRaffleLongformKey, count?: number) => raffleLongformText(locale, key, count);
   return <RaffleProvider locale={locale} closed={closed} closesAt={closesAt} now={now} preview={preview} invite={invite} inviterName={inviterName}>
-    {/* v5.3 상세페이지 흐름: 키 비주얼(무슨 이벤트·얼마·몇 명·언제까지) → 참여 방법(필수, 큰 응모 버튼) → 경품 카드 → 당첨 확률 올리기 → 더 즐기기(선택) → 안내. 응모 버튼은 하단 고정 줄로 늘 보인다 */}
-    <FanPrintDesk className={styles.keyVisual} src={art('key-visual-tall')} wideSrc={art('key-visual-wide')} wideFrom="48rem" width={1131} height={1391} eager>
+    {/* v6 첫 화면(2026-11-26 광고 착지, 유료 도착 92%가 첫 화면만 보고 나감): 광고와 같은 제목(인원·금액 한 줄) → 무엇을·언제 → 응모 버튼 → 남은 시간 → 경품 사진.
+     * 390은 글자와 버튼이 사진 위가 아니라 흰 바탕 위, 사진은 봉투·카드가 있는 아래쪽만 짧게. 48rem부터는 가로 사진을 사용하고, 80rem부터 글자를 사진 왼쪽에 놓는다 */}
+    <div className={styles.hero}>
       {/* 왼쪽 정렬로 쌓이는 줄은 모두 optical: 첫 글자 잉크가 같은 세로선에서 시작한다(DESIGN.md 7-2 큰 글자 줄 왼쪽 광학 정렬) */}
       <header className={styles.keyText}>
-        <FanHeading as="h1"><FanDisplay role="title" optical>{text('title')}</FanDisplay>{' '}<FanDisplay role="figure" optical>{t('eventKind')}</FanDisplay></FanHeading>
-        {/* 총액·총인원은 이 화면에 여기 한 번(테스트로 고정) */}
-        <p className={styles.keyFacts}><FanDisplay role="lead" optical>US$400</FanDisplay><FanDisplay role="lead">{t('giftCard')}</FanDisplay><FanDisplay role="lead">{t('totalWinners')}</FanDisplay></p>
-        <FanDisplay role="strong" as="p" optical>{t('period')}</FanDisplay>
+        <FanHeading as="h1"><FanDisplay role="title" optical>{text('title')}</FanDisplay>{' '}<FanDisplay role="title" optical>{t('headline')}</FanDisplay></FanHeading>
+        {/* 총액·총인원은 제목 한 줄에 한 번(테스트로 고정). 아래 줄은 무엇을·언제 */}
+        <RaffleHeroEnter />
+        <p className={styles.keyFacts}><FanDisplay role="lead" optical>{t('giftCard')}</FanDisplay><FanDisplay role="lead">{t('period')}</FanDisplay></p>
         <RaffleCountdown hero />
       </header>
-    </FanPrintDesk>
+      <FanPrintDesk className={styles.keyVisual} src={art('key-visual-tall')} wideSrc={art('key-visual-wide')} wideFrom="48rem" width={1131} height={1391} eager />
+    </div>
 
     <div className={styles.body}>
-      {/* 참여 방법(필수)은 키 비주얼 바로 아래 첫 구역(대표 2026-11-23 X 홍보: 들어오자마자 큰 응모 버튼). 응모 버튼 + 두 걸음 + 친구에게 공유 + 마감까지 남은 시간 + 1인 1응모. 응모하면 이 자리에 도장이 찍힌다 */}
+      {/* 참여 방법(필수)은 첫 화면 바로 아래 첫 구역. 응모 버튼은 첫 화면(RaffleHeroEnter)에 있고 여기는 두 걸음 + 친구 초대 + 마감까지 남은 시간 + 1인 1응모. 응모하면 이 자리에 도장이 찍힌다 */}
       <section className={styles.section} data-block="raffle-enter" aria-labelledby="raffle-enter">
         <div className={styles.sectionHead}>
           <FanHeading as="h2" id="raffle-enter"><FanDisplay role="heading">{t('how')}</FanDisplay></FanHeading>

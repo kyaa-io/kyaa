@@ -97,6 +97,11 @@ describe("fan app shell navigation", () => {
     expect(ids).toEqual(["home", "community", "chemi", "favorites", "my", "home", "community", "chemi", "favorites", "my"]);
   });
 
+  it("uses English navigation on the English raffle landing", () => {
+    expect(fanNavigationItems("en", "/s/raffle", true, true).map((item) => item.label))
+      .toEqual(["HOME", "Groups", "Chemi", "FAVORITES", "MY"]);
+  });
+
   it("uses the same fixed desktop and mobile menu labels in every supported language", () => {
     for (const locale of APP_LOCALES) {
       render(

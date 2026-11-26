@@ -82,7 +82,7 @@ function ConsentBar({ onChoose }: { onChoose: (choice: AnalyticsConsent) => void
       root.style.removeProperty("--analytics-consent-height");
     };
   }, []);
-  return <section ref={bar} className={styles.bar} aria-label={copy.region}>
+  return <section ref={bar} className={styles.bar} data-raffle-analytics-consent={usePathname() === "/s/raffle" || undefined} aria-label={copy.region}>
     <div className={styles.inner}>
       <p className={styles.copy}>{copy.question} <Link href={privacy} className={styles.policy}>{copy.policy}</Link></p>
       <div className={styles.actions}>

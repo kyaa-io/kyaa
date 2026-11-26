@@ -93,7 +93,7 @@ export function fanNavigationItems(
   const items = baseNavigationItems(locale, pathname, groupsEnabled);
   if (!chemiEnabled) return items;
   // 케미 sits right after the community tab (HOME · 모임 · 케미 · 덕질 · MY).
-  const chemi: FanNavigationItem = { id: "chemi", href: `/chemi?locale=${locale}` as Route, label: groupsEnabled ? "케미" : chemiTabLabel(locale), icon: groupsEnabled ? <PencilHeaderIcon name="chemi" /> : undefined, isCurrent: activeFanSection(pathname) === "chemi" };
+  const chemi: FanNavigationItem = { id: "chemi", href: `/chemi?locale=${locale}` as Route, label: groupsEnabled && !(locale === "en" && pathname === "/s/raffle") ? "케미" : chemiTabLabel(locale), icon: groupsEnabled ? <PencilHeaderIcon name="chemi" /> : undefined, isCurrent: activeFanSection(pathname) === "chemi" };
   const at = items.findIndex((item) => item.id === "community") + 1;
   return [...items.slice(0, at), chemi, ...items.slice(at)];
 }
@@ -106,8 +106,8 @@ function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled:
   const rankings = pathname === '/rankings' || pathname.startsWith('/rankings/');
   if(groupsEnabled)return [
     {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:(current==="home"&&!rankings)||(GOODS_MENU&&rankings)},
-    {id:"community",href:`/pages/groups${query}` as Route,label:"모임",icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:GOODS_MENU?"굿즈":"덕질",icon:GOODS_MENU?<Gift aria-hidden="true"/>:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||(!GOODS_MENU&&rankings)},
+    {id:"community",href:`/pages/groups${query}` as Route,label:locale === "en" && pathname === "/s/raffle" ? groupsCopy(locale).groups : "모임",icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
+    {id:"favorites",href:`/benefits${query}` as Route,label:GOODS_MENU ? "굿즈" : locale === "en" && pathname === "/s/raffle" ? translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES") : "덕질",icon:GOODS_MENU?<Gift aria-hidden="true"/>:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||(!GOODS_MENU&&rankings)},
     {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [

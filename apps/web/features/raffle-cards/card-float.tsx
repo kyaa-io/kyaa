@@ -39,7 +39,8 @@ function useIdleReady() {
 export function RaffleCardFloat() {
   const [layer, setLayer] = useState<HTMLDivElement | null>(null);
   const desk = layer?.parentElement ?? null;
-  const [near, setNear] = useState(false), [onScreen, setOnScreen] = useState(false);
+  const [onScreen, setOnScreen] = useState(false);
+  const [hasAppeared, setHasAppeared] = useState(false);
   const [gpu, setGpu] = useState<"unknown" | "ok">("unknown");
   const [unavailable, setUnavailable] = useState(false), [lost, setLost] = useState(false), [canvasKey, setCanvasKey] = useState(0), [live, setLive] = useState(false);
   const reduced = useMedia("(prefers-reduced-motion: reduce)");
@@ -47,13 +48,16 @@ export function RaffleCardFloat() {
 
   useEffect(() => {
     if (!desk || typeof IntersectionObserver === "undefined") return;
-    const preload = new IntersectionObserver(([entry]) => { if (entry?.isIntersecting) { setNear(true); preload.disconnect(); } }, { rootMargin: "300px 0px" });
-    const visible = new IntersectionObserver(([entry]) => setOnScreen(Boolean(entry?.isIntersecting)));
-    preload.observe(desk); visible.observe(desk);
-    return () => { preload.disconnect(); visible.disconnect(); };
+    const visible = new IntersectionObserver(([entry]) => {
+      const intersecting = Boolean(entry?.isIntersecting);
+      setOnScreen(intersecting);
+      if (intersecting) setHasAppeared(true);
+    });
+    visible.observe(desk);
+    return () => visible.disconnect();
   }, [desk]);
 
-  const wants = near && idleReady && !reduced && !unavailable && !saveData();
+  const wants = hasAppeared && idleReady && !reduced && !unavailable && !saveData();
   useEffect(() => {
     if (!wants || gpu === "ok") return;
     let cancelled = false;

@@ -244,17 +244,26 @@ export function RaffleCountdown({ hero = false }: { hero?: boolean }) {
 /** 소품에 찍는 인쇄 문구(언어와 상관없이 같은 글자). */
 const stampPrint = 'ENTERED';
 
-/** 참여 방법 칸: 응모 버튼(응모 뒤에는 완료 표시 + 도장) · 친구에게 공유 · 마감과 남은 시간 · 한 줄(1인 1응모 / 내 응모 1회 / 오류와 다시 시도). */
+/** 첫 화면의 응모 버튼(광고 착지 2026-11-26: 제목 줄 바로 아래, 390 첫 화면 절반 안). 응모 뒤에는 같은 자리에 완료 표시. 마감 뒤에는 참여 방법 칸이 결과를 맡는다.
+ * 하단 고정 줄은 이 칸이 화면에 보이는 동안 숨는다(data-raffle-hero-action). */
+export function RaffleHeroEnter() {
+  const r = useRaffle();
+  if (r.closed) return null;
+  return <div className={styles.heroEnter} data-raffle-hero-action>
+    {/* 초대 링크로 들어온 친구: 누가 초대했는지와 응모하면 그 사람이 받는 것(+3)을 응모 버튼 바로 위에 */}
+    {r.invited && !r.entered && <RaffleInvitedBanner />}
+    <div className={styles.enterCta}><RaffleEnterAction size="lg" /></div>
+    <RaffleInAppGuide />
+  </div>;
+}
+
+/** 참여 방법 칸: 두 걸음 · 친구 초대 · 마감과 남은 시간 · 한 줄(1인 1응모 / 내 응모 1회 / 오류와 다시 시도) · 응모 뒤 도장. 응모 버튼은 첫 화면(RaffleHeroEnter). */
 export function RaffleEnterBlock() {
   const r = useRaffle();
   if (r.closed) return r.result ? <RaffleResultEntry locale={r.locale} result={r.result} /> : <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
-  return <div className={styles.enter} data-raffle-hero-action>
-    {/* 페이지 첫 행동(대표 2026-11-23 X 홍보): 큰 응모 버튼(56) 바로 아래 두 걸음 ① 응모 누르기 ② 가입·로그인. 끝낸 걸음은 체크 */}
+  return <div className={styles.enter}>
+    {/* 두 걸음 ① 응모 누르기 ② 가입·로그인. 끝낸 걸음은 체크 */}
     <div className={styles.enterActions}>
-      {/* 초대 링크로 들어온 친구: 누가 초대했는지와 응모하면 그 사람이 받는 것(+3)을 응모 버튼 바로 위에 */}
-      {r.invited && !r.entered && <RaffleInvitedBanner />}
-      <div className={styles.enterCta}><RaffleEnterAction size="lg" /></div>
-      <RaffleInAppGuide />
       <ol className={styles.steps}>
         <RaffleStep order={1} done={r.entered} label={r.t('stepEnter')} />
         <RaffleStep order={2} done={r.signedIn} label={r.t(r.signedIn ? 'stepLoggedIn' : 'stepLogin')} />
