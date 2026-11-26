@@ -108,6 +108,11 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
     try { return obj(await deps.rpc("read_celebrity_platform_followers", { p_slugs: slugs.filter((slug): slug is string => typeof slug === "string") })); }
     catch { return {}; }
   };
+  // Passports issued, stamps issued and 찐팬 인증 per creator (20270116070000), read on their own like the follower counts. A failed read leaves the rows without them.
+  const rankStats = async (slugs: unknown[]): Promise<Record<string, unknown>> => {
+    try { return obj(await deps.rpc("read_creator_rank_stats", { p_slugs: slugs.filter((slug): slug is string => typeof slug === "string") })); }
+    catch { return {}; }
+  };
   const locale = (request: Request) => z.string().regex(/^[A-Za-z-]{2,12}$/).parse(one(request, "locale") ?? "ko");
   const celebrity = async (idOrSlug: string) => {
     if (UUID.test(idOrSlug)) return idOrSlug;
@@ -209,8 +214,13 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
             ...(metric === "likes" ? { likes: r.likes, totalLikes: r.totalLikes } : {}) };
         });
         // Platform follower counts (20261227150001) are read on their own, so the three ranking functions stay as they are. A failed read leaves the rows without them.
-        const platforms = rows.length ? await platformFollowers(rows.map((row) => row.slug)) : {};
-        return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows: rows.map((row) => ({ ...row, ...(platforms[String(row.slug)] ? { platforms: platforms[String(row.slug)] } : {}) })) }), { headers: listHeaders(request, member) });
+        const slugs = rows.map((row) => row.slug);
+        const [platforms, stats] = rows.length ? await Promise.all([platformFollowers(slugs), rankStats(slugs)]) : [{}, {}];
+        const statsOf = (slug: unknown) => {
+          const s = obj(stats[String(slug)]);
+          return stats[String(slug)] ? { stats: { passports: s.passports, stamps: s.stamps, proofs: s.proofs } } : {};
+        };
+        return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows: rows.map((row) => ({ ...row, ...(platforms[String(row.slug)] ? { platforms: platforms[String(row.slug)] } : {}), ...statsOf(row.slug) })) }), { headers: listHeaders(request, member) });
       }
       // points (20261222140000): points earned in the period, any period. hearts (default) is the older list; a period list asked without points is by hearts.
       const asked = z.enum(HOME_FAN_METRICS).parse(one(request, "metric") ?? "hearts");

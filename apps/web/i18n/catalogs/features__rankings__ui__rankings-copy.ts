@@ -367,4 +367,7 @@ export const messages = {
   "rkPanelAttendance": {"ja": "出席日数", "zh-Hans": "签到天数", "zh-Hant": "簽到天數", "es": "Días de asistencia", "id": "Hari absen", "vi": "Ngày điểm danh", "th": "วันเช็กอิน", "pt": "Dias de presença", "fr": "Jours de présence", "ru": "Дней отметок"},
   "rkPanelPosts": {"ja": "投稿", "zh-Hans": "帖子", "zh-Hant": "貼文", "es": "Publicaciones", "id": "Postingan", "vi": "Bài viết", "th": "โพสต์", "pt": "Publicações", "fr": "Publications", "ru": "Публикации"},
   "rkPanelTotalLikes": {"ja": "星 累計", "zh-Hans": "累计星数", "zh-Hant": "累計星數", "es": "Estrellas totales", "id": "Total bintang", "vi": "Tổng sao", "th": "ดาวสะสม", "pt": "Estrelas no total", "fr": "Étoiles cumulées", "ru": "Всего звёзд"},
+  "rkPanelPassports": {"ja": "パスポート発行", "zh-Hans": "护照发放", "zh-Hant": "護照發放", "es": "Pasaportes emitidos", "id": "Paspor terbit", "vi": "Hộ chiếu đã cấp", "th": "ออกพาสปอร์ต", "pt": "Passaportes emitidos", "fr": "Passeports émis", "ru": "Выдано паспортов"},
+  "rkPanelStamps": {"ja": "スタンプ累計", "zh-Hans": "累计印章", "zh-Hant": "累計印章", "es": "Sellos totales", "id": "Total stempel", "vi": "Tổng con dấu", "th": "แสตมป์สะสม", "pt": "Selos no total", "fr": "Tampons cumulés", "ru": "Всего штампов"},
+  "rkPanelProofs": {"ja": "ガチ勢認証", "zh-Hans": "真粉认证", "zh-Hant": "真粉認證", "es": "Verificaciones de fan fiel", "id": "Verifikasi fan sejati", "vi": "Xác thực fan ruột", "th": "ยืนยันแฟนตัวจริง", "pt": "Verificações de fã fiel", "fr": "Vérifications de vrai fan", "ru": "Подтверждения фаната"},
 } satisfies Record<string, TranslatedMessage>;
