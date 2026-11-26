@@ -1,7 +1,7 @@
 "use client";
 
 import { VacantRank } from "@/features/chemi/games/vacant-rank";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { flashNumbers } from "@/features/rankings/ui/ranking-rows";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanText } from "@/components/fan-ui/fan-text";
@@ -31,10 +31,15 @@ export type GameRanking = {
   href?: string;
   status?: "loading" | "ready" | "error";
   leaders: readonly RecordRow[];
+  /** 상위 다섯 다음 순위(서버가 주는 상위 12·20명까지): '더 보기'로 펼친다. */
+  more?: readonly RecordRow[];
+  /** 끝낸 판이 있는 사람 수. 0이면 그 칸을 그리지 않는다(K-7ddb53). */
+  players?: { total: number; week: number } | null;
   mine: RecordRow | null;
 };
 
-const SLOTS = 3;
+/** 대표 11/26 193861: 세 자리만 보이면 세 명만 한 것처럼 보여 다섯 자리를 기본으로 둔다(빈 자리는 미등록). */
+const SLOTS = 5;
 
 export function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -66,7 +71,7 @@ export function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: 
   );
 }
 
-export function GameRankings({ games, label, weekLabel, mineLabel, vacantLabel = "미등록", empty, mineEmpty, start, error, retry, retryLabel }: {
+export function GameRankings({ games, label, weekLabel, mineLabel, vacantLabel = "미등록", empty, mineEmpty, start, error, retry, retryLabel, moreLabel, lessLabel, playersLabel }: {
   label: string;
   games: readonly GameRanking[];
   weekLabel?: string;
@@ -79,48 +84,67 @@ export function GameRankings({ games, label, weekLabel, mineLabel, vacantLabel =
   error?: string;
   retry?: () => void;
   retryLabel?: string;
+  moreLabel?: string;
+  lessLabel?: string;
+  /** 참여자 수 한 줄: 지금까지 n명 · 이번 주 n명. */
+  playersLabel?: (players: { total: number; week: number }) => string;
 }) {
   return (
     <aside className={styles.rankings} tabIndex={0} aria-label={label}>
-      {games.map((game) => {
-
-        const firstPlay = game.status === "ready" && !game.mine;
-        return (
-          <FanSurface className={styles.rankCard} key={game.game} aria-busy={game.status === "loading"}>
-            <header>
-              <img src={`/chemi/thumb-${game.game}-128-v2.webp`} alt="" />
-              <FanHeading as="h3">{game.title}</FanHeading>
-              {game.href && <FanSectionLink href={game.href} ariaLabel={firstPlay ? [game.title, game.leaders.length ? mineEmpty : empty, start].filter(Boolean).join(" · ") : `${game.title} ${weekLabel}`}>{firstPlay ? start : weekLabel}</FanSectionLink>}
-            </header>
-            {game.status === "loading" ? <div className={styles.leaders} data-status="loading"><FanSkeleton height={48} /></div> : game.status === "error" ? (
-              <div className={styles.leaders} data-status="error">
-                <FanText role="meta">{error}</FanText>
-                <FanAction size="sm" onClick={retry}>{retryLabel}</FanAction>
-              </div>
-            ) : (
-              <>
-                <div className={styles.leaders}>
-                  {Array.from({ length: SLOTS }, (_, index) => {
-                    const row = game.leaders[index] ?? {
-                      id: `empty-${index}`, place: index + 1, name: vacantLabel, vacant: true, change: 0, record: "",
-                    };
-                    return <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />;
-                  })}
-                </div>
-                {firstPlay && <FanText role="meta" className={styles.rankStatus}>{game.leaders.length ? mineEmpty : empty}</FanText>}
-                {game.mine && !game.leaders.some((row) => row.isMe) && (
-                  <div className={styles.rankMine}>
-                    <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
-                    <span className={styles.rankAvatar} aria-hidden="true"><RankAvatar nickname={game.mine.initial === null ? null : game.mine.name} url={game.mine.avatar} /></span>
-                    <FanText role="body">{mineLabel}</FanText>
-                    <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
-                  </div>
-                )}
-              </>
-            )}
-          </FanSurface>
-        );
-      })}
+      {games.map((game) => <RankCard key={game.game} game={game} weekLabel={weekLabel} mineLabel={mineLabel} vacantLabel={vacantLabel} empty={empty}
+        mineEmpty={mineEmpty} start={start} error={error} retry={retry} retryLabel={retryLabel} moreLabel={moreLabel} lessLabel={lessLabel} playersLabel={playersLabel} />)}
     </aside>
+  );
+}
+
+function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, start, error, retry, retryLabel, moreLabel, lessLabel, playersLabel }: {
+  game: GameRanking; weekLabel?: string; mineLabel?: string; vacantLabel: string; empty?: string; mineEmpty?: string; start?: string; error?: string;
+  retry?: () => void; retryLabel?: string; moreLabel?: string; lessLabel?: string; playersLabel?: (players: { total: number; week: number }) => string;
+}) {
+  const [open, setOpen] = useState(false);
+  const firstPlay = game.status === "ready" && !game.mine;
+  const more = game.more ?? [];
+  const shown = open ? [...game.leaders, ...more] : game.leaders;
+  const players = game.status === "ready" && game.players && game.players.total > 0 && playersLabel ? playersLabel(game.players) : null;
+  return (
+    <FanSurface className={styles.rankCard} aria-busy={game.status === "loading"}>
+      <header>
+        <img src={`/chemi/thumb-${game.game}-128-v2.webp`} alt="" />
+        <FanHeading as="h3">{game.title}</FanHeading>
+        {game.href && <FanSectionLink href={game.href} ariaLabel={firstPlay ? [game.title, game.leaders.length ? mineEmpty : empty, start].filter(Boolean).join(" · ") : `${game.title} ${weekLabel}`}>{firstPlay ? start : weekLabel}</FanSectionLink>}
+      </header>
+      {game.status === "loading" ? <div className={styles.leaders} data-status="loading"><FanSkeleton height={48} /></div> : game.status === "error" ? (
+        <div className={styles.leaders} data-status="error">
+          <FanText role="meta">{error}</FanText>
+          <FanAction size="sm" onClick={retry}>{retryLabel}</FanAction>
+        </div>
+      ) : (
+        <>
+          {players && <FanText role="meta" className={styles.rankPlayers}>{players}</FanText>}
+          <div className={styles.leaders}>
+            {Array.from({ length: Math.max(SLOTS, shown.length) }, (_, index) => {
+              const row = shown[index] ?? {
+                id: `empty-${index}`, place: index + 1, name: vacantLabel, vacant: true, change: 0, record: "",
+              };
+              return <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />;
+            })}
+          </div>
+          {more.length > 0 && moreLabel && lessLabel && (
+            <FanAction variant="text" size="sm" className={styles.rankMore} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+              {open ? lessLabel : moreLabel}
+            </FanAction>
+          )}
+          {firstPlay && <FanText role="meta" className={styles.rankStatus}>{game.leaders.length ? mineEmpty : empty}</FanText>}
+          {game.mine && !shown.some((row) => row.isMe) && (
+            <div className={styles.rankMine}>
+              <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
+              <span className={styles.rankAvatar} aria-hidden="true"><RankAvatar nickname={game.mine.initial === null ? null : game.mine.name} url={game.mine.avatar} /></span>
+              <FanText role="body">{mineLabel}</FanText>
+              <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
+            </div>
+          )}
+        </>
+      )}
+    </FanSurface>
   );
 }

@@ -29,13 +29,3 @@ export function FanTierBadge({ tier, stageKey, locale, size, adjacentLabel = tru
     aria-hidden={adjacentLabel ? "true" : undefined}
   />;
 }
-
-/** Roman numeral of the stage inside its tier (Ⅰ~Ⅳ), drawn in the tier badge's outline colour; sits right after the badge. */
-export const fanTierNumeralSrc = (key: string) => `/images/passport/tier-numerals-v1/${key}.svg`;
-const NUMERAL_WIDTH = [25, 40, 55, 64];
-
-export function FanTierNumeral({ tier, stageKey, height, className }: Pick<Props, "tier" | "stageKey" | "className"> & { height: number }) {
-  const key = stageKey ?? fanTierEntryKey(tier);
-  const width = Math.round(NUMERAL_WIDTH[Number(key.split("-").at(-1)) - 1]! * height / 64);
-  return <Image className={className} unoptimized loading="eager" src={fanTierNumeralSrc(key)} width={width} height={height} alt="" aria-hidden="true" />;
-}

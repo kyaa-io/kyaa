@@ -257,3 +257,10 @@
     gap: var(--space-6);
   }
 }
+/* 사용자 11/26 193853 "컴포넌트 사이 gap 을 일정하게": 아이콘 버튼은 44 칸에 20 그림이라 양옆이 12씩 비어 있다. 글자 칸(등급·포인트, 언어)과 아바타 앞에도
+   같은 12를 두어, 보이는 글자·그림 사이가 모두 같게 한다(1440: 12 + 칸 사이 4 + 12 = 28). */
+@media (min-width: 48rem) {
+  .groupsNavigation .actions > [data-header-status],
+  .groupsNavigation .actions > .headerLanguage > * { padding-inline: var(--space-3); }
+  .groupsNavigation .actions [data-account-trigger="avatar"] { margin-left: var(--space-3); }
+}

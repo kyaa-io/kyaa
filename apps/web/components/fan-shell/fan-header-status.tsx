@@ -11,8 +11,8 @@ import { GROUP_WALLET_CHANGED_EVENT, useGroupRequest, useGroupResource } from "@
 import { walletCopy } from "@/features/group-wallet/ui/copy";
 import { defaultPassport } from "@/features/selected-bias/domain/selected-bias-pick";
 import { useSelectedBias, type SelectedBias } from "@/features/selected-bias/ui/use-selected-bias";
-import { fanStageLabel, fanTierEntryKey } from "@/features/rewards/domain/fan-stage";
-import { FanTierBadge, FanTierNumeral } from "@/features/rewards/ui/fan-tier-badge";
+import { fanTierEntryKey, fanTierName } from "@/features/rewards/domain/fan-stage";
+import { FanTierBadge } from "@/features/rewards/ui/fan-tier-badge";
 import { walletSchema } from "@/server/group-wallet/domain";
 import type { AppLocale } from "@/i18n/locales";
 import { headerStatusCopy } from "./fan-header-status-copy";
@@ -21,8 +21,9 @@ import styles from "./fan-header-status.module.css";
 const parseWallet = (value: unknown) => walletSchema.parse(value);
 const compactNumber = (value: number, locale: AppLocale) => new Intl.NumberFormat(locale, value >= 10_000 ? { notation: "compact", maximumFractionDigits: 1 } : {}).format(value);
 
-/** The named favorite's passport; with none named, the highest-stage passport (대표 11/23 191773: the grade must show at the top right). */
-function headerTier(bias: SelectedBias) {
+/** The named favorite's passport; with none named, the highest-stage passport (대표 11/23 191773: the grade must show at the top right).
+ * The header names the tier only (브론즈·실버·골드), no stage numeral (사용자 11/26 193853); the avatar ring carries its colour (대표 193862). */
+export function headerTier(bias: SelectedBias) {
   return bias.status === "ready" ? bias.selected ?? defaultPassport(bias.options) : null;
 }
 
@@ -54,7 +55,7 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
   const tier = passport?.tier;
   const myHref = `/my?locale=${locale}${passport ? `&passport=${encodeURIComponent(passport.slug)}#my-passport` : ""}`;
   const stageKey = tier ? passport?.stage?.key ?? fanTierEntryKey(tier) : null;
-  const grade = tier && stageKey ? fanStageLabel(locale, { tier, subdivision: Number(stageKey.split("-").at(-1)) }) : "";
+  const grade = tier ? fanTierName(locale, tier) : "";
   const points = wallet.data?.points;
   useChangeFlash(chip, [grade || undefined, points]);
   // A stale authenticated session must never keep a previously read member balance/tier on screen.
@@ -73,7 +74,7 @@ function OwnedHeaderStatus({ locale }: { locale: AppLocale }) {
     event.preventDefault();
     window.dispatchEvent(new Event("hashchange"));
   }} data-header-status="" aria-label={summary}>
-    {tier && <span className={styles.grade} data-header-tier={tier} title={grade}><FanTierBadge tier={tier} stageKey={stageKey} locale={locale} size={16} eager /><FanTierNumeral tier={tier} stageKey={stageKey} height={12} /></span>}
+    {tier && <span className={styles.grade} data-header-tier={tier} title={grade}><FanTierBadge tier={tier} stageKey={stageKey} locale={locale} size={16} eager /><span>{grade}</span></span>}
     <span className={styles.value}><RewardIcon kind="point" alt="" width={16} height={16} />{points === undefined ? null : <RollingNumber value={points} format={format} />}</span>
   </Link>;
 }

@@ -29,4 +29,5 @@ export const fanUiSource = {
   details: { ko: "자세히", en: "Details" },
   viewAll: { ko: "전체 보기", en: "View all" },
   collapse: { ko: "접기", en: "Show less" },
+  showMore: { ko: "더 보기", en: "Show more" },
 } as const;

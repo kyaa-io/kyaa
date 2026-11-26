@@ -77,8 +77,16 @@
   --color-accent-ink: #ad1457;
   --color-tier-gold-ink: oklch(43% .09 75);
   --color-tier-platinum-ink: oklch(40% .08 195);
+  /* 헤더 아바타 등급 테두리(11/26): 등급 메달(medal-v2) 몸통색. */
+  --color-tier-bronze: #a9582b;
+  --color-tier-silver: #a7b1bf;
+  --color-tier-gold: #f0ae00;
+  --color-tier-platinum: #6fd1c8;
+  --color-tier-diamond: #8c9bff;
   /* GGGI 캠페인 배너 아트 색(4차 배너 원본, UI 강조색이 아님). */
   --color-campaign-art: #073d33;
+  /* 홈 '팬페이지 개설 신청' 배너 그림 왼쪽 바탕색(PC에서 그림 왼쪽 빈자리를 채움, UI 강조색이 아님). */
+  --color-fanpage-apply-art: #fdb4c3;
   --color-page-accent: var(--color-accent);
   --color-coin: #ffc83d;
   --color-coin-ink: #4a3500;

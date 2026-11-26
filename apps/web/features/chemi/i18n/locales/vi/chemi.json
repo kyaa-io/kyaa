@@ -54,7 +54,9 @@
     "rankings": "Bảng xếp hạng tuần",
     "rankingOf": "Xếp hạng {game}",
     "thisWeek": "Tuần này",
-    "myRecord": "Thành tích của tôi"
+    "myRecord": "Thành tích của tôi",
+    "playersTotal": "{n} người đã tham gia",
+    "playersWeek": "{n} người tuần này"
   },
   "myBirth": {
     "title": "Thông tin ngày sinh của tôi",

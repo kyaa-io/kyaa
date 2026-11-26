@@ -2,6 +2,7 @@
 import { useDukjilStatus } from '@/features/dukjil/ui/dukjil-provider';
 import { dukjilText } from '@/features/dukjil/ui/dukjil-copy';
 import { useSelectedBias } from '@/features/selected-bias/ui/use-selected-bias';
+import { headerTier } from '@/components/fan-shell/fan-header-status';
 import { POINT_COIN_SRC } from '@/features/dukjil/ui/earn-badge';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -45,8 +46,9 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
  const identity=<>{avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={48}/>:<AvatarPlaceholder size={48}/>}<span dir="auto" className={styles.menuName}>{profile.data?.profile.nickname ?? profileLabel}</span></>;
  const refreshWallet=wallet.retry;
  const ko=locale==='ko',dukjilStatus=useDukjilStatus(locale),dukjilOn=dukjilStatus==='on';
+ // The avatar is ringed in the header grade's colour (대표 11/26 193862 'Bingkai Profil' frame): the same passport the status chip names.
  // The attendance item names the fan's own favorite page ("{page} 출석체크"), or the plain 출석체크 without one — never a fixed page.
- const favorite=useSelectedBias(locale).selected,attendanceLabel=favorite?dukjilText(locale,'dukjilPageTitle',[favorite.name]):dukjilText(locale,'dukjilTitle');
+ const bias=useSelectedBias(locale),favorite=bias.selected,attendanceLabel=favorite?dukjilText(locale,'dukjilPageTitle',[favorite.name]):dukjilText(locale,'dukjilTitle');
  useEffect(()=>{const refresh=()=>refreshWallet();window.addEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,refresh);},[refreshWallet]);
  const pathname=usePathname()||'/',query=useSearchParams()?.toString(),here=`${pathname}${query?`?${query}`:''}`,loginHref=fanLoginHref(locale,here);
  const switchCopy=accountSwitchCopy(locale),nickname=profile.data?.profile.nickname??null,profileSettled=profile.data!==undefined||profile.error;
@@ -61,7 +63,7 @@ export function GroupHeaderAccount({locale,actions,actionsAreIdentity=false,lang
  return <>
   {auth.authenticated&&!actionsAreIdentity&&actions}
   {/* Feedback F: signed in, the avatar is the menu trigger (one control, not avatar + ☰); signed out it is ☰. */}
-  <Menu.Root><Menu.Trigger ref={trigger} className={`${styles.menuTrigger} ${auth.authenticated?styles.avatarTrigger:''}`} data-account-trigger={auth.authenticated?'avatar':'menu'} aria-label={ko?'계정 메뉴':'Account menu'}>{auth.authenticated?(avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={44}/>:<AvatarPlaceholder size={44}/>):<PencilHeaderIcon name="menu" size={20}/>}</Menu.Trigger><Menu.Portal><Menu.Positioner className={styles.positioner} sideOffset={8} align='end'><Menu.Popup className={styles.menu}>
+  <Menu.Root><Menu.Trigger ref={trigger} className={`${styles.menuTrigger} ${auth.authenticated?styles.avatarTrigger:''}`} data-account-trigger={auth.authenticated?'avatar':'menu'} data-tier={auth.authenticated?headerTier(bias)?.tier?.toLowerCase():undefined} aria-label={ko?'계정 메뉴':'Account menu'}>{auth.authenticated?(avatar.state.status==='ready'?<Avatar avatar={avatar.state.avatar} imageUrl={avatar.state.imageUrl} label='' size={44}/>:<AvatarPlaceholder size={44}/>):<PencilHeaderIcon name="menu" size={20}/>}</Menu.Trigger><Menu.Portal><Menu.Positioner className={styles.positioner} sideOffset={8} align='end'><Menu.Popup className={styles.menu}>
   {auth.authenticated&&<Menu.Item className={styles.menuIdentity} aria-label={profile.data?.profile.nickname ? `${profileLabel} · ${profile.data.profile.nickname}` : profileLabel} onClick={openProfile}>{identity}</Menu.Item>}
   {auth.authenticated&&switchOn&&<Menu.Item className={styles.menuItem} data-account-action='switch' onClick={()=>{if(trigger.current)rememberOverlayTrigger(trigger.current);setSwitchOpen(true);}}><PencilHeaderIcon name='switch' size={20}/>{switchCopy.switchAccount}</Menu.Item>}
   {auth.authenticated&&dukjilOn&&<Menu.Item className={styles.menuItem} data-earn='attendance' render={<Link href={`/my/wallet?view=attendance&locale=${locale}` as Route}/>}><PencilHeaderIcon name='points' size={20}/>{attendanceLabel}</Menu.Item>}

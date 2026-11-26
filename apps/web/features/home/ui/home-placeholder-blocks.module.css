@@ -20,7 +20,7 @@
 .photoNew { position: absolute; inset-block-start: var(--space-2); inset-inline-start: var(--space-2); pointer-events: none; }
 .photoLink { position: relative; display: block; border-radius: var(--radius-card, 12px); }
 .photoLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
-.photoImage { display: block; width: 100%; height: auto; border-radius: var(--radius-card, 12px); }
+.photoImage { display: block; width: 100%; height: auto; aspect-ratio: var(--gallery-photo-ratio); object-fit: cover; border-radius: var(--radius-card, 12px); }
 .desktopOnly { display: none; }
 @media (min-width: 64rem) {
   .photoColumns { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }

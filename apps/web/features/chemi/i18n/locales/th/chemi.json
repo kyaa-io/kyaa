@@ -54,7 +54,9 @@
     "rankings": "อันดับประจำสัปดาห์",
     "rankingOf": "อันดับ {game}",
     "thisWeek": "สัปดาห์นี้",
-    "myRecord": "สถิติของฉัน"
+    "myRecord": "สถิติของฉัน",
+    "playersTotal": "ผู้เล่นทั้งหมด {n} คน",
+    "playersWeek": "สัปดาห์นี้ {n} คน"
   },
   "myBirth": {
     "title": "ข้อมูลวันเกิดของฉัน",
