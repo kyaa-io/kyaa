@@ -5,6 +5,7 @@ import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { AD_REWARD_POINTS, adRewardResultSchema, adRewardTodaySchema, isRewardedAd, type AdRewardToday } from "@/features/home/domain/ad-reward";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 import type { AppLocale } from "@/i18n/locales";
+import styles from "./ad-reward.module.css";
 
 const TODAY_PATH = "/api/me/dukjil/ad-reward";
 
@@ -65,7 +66,8 @@ export function useAdReward(banner: Pick<HomeBanner, "id" | "category" | "placem
 
 /** The badge on an ad banner: the shared point pill (+5) or the shared done badge. */
 export function AdRewardBadge({ mark, locale, className }: { mark: AdRewardMark; locale: AppLocale; className?: string }) {
-  if (mark === "points") return <span className={className} data-ad-reward="points"><EarnBadge variant="inline" locale={locale} points={AD_REWARD_POINTS} /></span>;
-  if (mark === "done") return <span className={className} data-ad-reward="done"><EarnBadge variant="done" locale={locale} /></span>;
+  const cls = [styles.mark, className].filter(Boolean).join(" ");
+  if (mark === "points") return <span className={cls} data-ad-reward="points"><EarnBadge variant="inline" locale={locale} points={AD_REWARD_POINTS} /></span>;
+  if (mark === "done") return <span className={cls} data-ad-reward="done"><EarnBadge variant="done" locale={locale} /></span>;
   return null;
 }
