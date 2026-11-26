@@ -122,8 +122,9 @@ it("shows the saved card as a revisit for a member and settles the reward once",
   expect(ask).toHaveAttribute("href", "/chemi/tarot/spread?locale=ko&c=changha");
   expect(ask).toHaveTextContent("첫 1번 무료");
   expect(screen.getByText("또 왔네? 이번엔 세 장으로 물어볼래?")).toBeVisible();
-  expect(screen.getByRole("button", { name: "도감" })).toBeVisible();
-  expect(screen.getByRole("button", { name: "친구와" })).toBeVisible();
+  // 도감·친구와는 누르면 '준비 중' 알림만 뜨므로 열릴 때까지 보이지 않는다.
+  expect(screen.queryByRole("button", { name: "도감" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "친구와" })).toBeNull();
   expect(screen.getByText("XIII 죽음")).toBeVisible();
   expect(screen.getByText("역방향")).toBeVisible();
   fireEvent.click(screen.getByRole("link", { name: /오늘 카드: / }));

@@ -23,7 +23,6 @@ import { showFanToast } from "@/components/fan-ui/fan-toast";
 import { celebrateReward } from "@/components/fan-ui/reward-celebration";
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
-import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { useMobileResultAction, ResultActions, ShareSheet, type ShareVia } from "@/features/chemi/ui/result/result-actions";
 import { ShareLanding } from "@/features/chemi/ui/result/share-landing";
 import { completeShare } from "@/features/chemi/ui/complete-share";
@@ -365,7 +364,6 @@ export function FortuneResult({
       luckyHour: result.luck.luckyHour,
       color: result.luck.color,
     });
-  const soon = (title: string) => () => showFanToast({ title });
   // 오늘 날짜의 결과에만 그날의 카드(기념 카드·응원 부적)와 내일·이번 주 줄을 건다.
   const isToday = reading.kstDate === todayKst();
   const cardKind = isToday ? dayCardKind(result.score) : null;
@@ -624,9 +622,9 @@ export function FortuneResult({
           </ul>
         </section>
         {paidPreview && <DatePurchase key={character} character={character} locale={locale} />}
-        <nav className={styles.nextList} aria-label={uiText("more")}>
-          {isToday &&
-            (["tomorrow", "week"] as const).map((view) => (
+        {isToday && (
+          <nav className={styles.nextList} aria-label={uiText("more")}>
+            {(["tomorrow", "week"] as const).map((view) => (
               <FanAction variant="text" key={view} className={styles.nextItem} href={deepHref(view, deepTarget)}>
                 <span className={styles.nextRow}>
                   <FanText role="item">
@@ -636,22 +634,8 @@ export function FortuneResult({
                 </span>
               </FanAction>
             ))}
-          {[uiText("friends"), uiText("history"), uiText("charm")].map(
-            (label) => (
-              <FanAction
-                variant="text"
-                key={label}
-                className={styles.nextItem}
-                onClick={soon(uiText("comingSoon", { subject: withTopic(label), label }))}
-              >
-                <span className={styles.nextRow}>
-                  <FanText role="item">{label}</FanText>
-                  <FanIcon icon={ChevronRight} />
-                </span>
-              </FanAction>
-            ),
-          )}
-        </nav>
+          </nav>
+        )}
         <footer className={styles.legal}>
           <FanText as="p" role="meta">
             <ReadingText id="fun" />

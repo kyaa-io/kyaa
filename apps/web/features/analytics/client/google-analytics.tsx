@@ -5,7 +5,7 @@ import { usePageLocale } from "@/components/locale-provider";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { readGa4MeasurementId } from "../domain/ga4";
 import {
   analyticsConsentText,
@@ -68,7 +68,8 @@ function ConsentBar({ onChoose }: { onChoose: (choice: AnalyticsConsent) => void
   };
   const privacy = (locale === "ko" ? "/privacy" : `/privacy?locale=${locale}`) as Route;
   const bar = useRef<HTMLElement>(null);
-  useEffect(() => {
+  // Before paint, so a screen that moves down by this height never shows one frame with the bar over its first buttons.
+  useLayoutEffect(() => {
     const element = bar.current;
     if (!element) return;
     const root = document.documentElement;

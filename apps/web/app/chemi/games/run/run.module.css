@@ -1,9 +1,11 @@
 .shell {
   min-height: 100dvh;
+  /* 분석 동의 배너는 이 화면 맨 위(머리줄 자리)에 고정돼 있다. 답하기 전에는 배너 높이만큼 내려 뒤로·소리·최애 고르기를 가리지 않는다. */
+  padding-block-start: var(--analytics-consent-height, 0px);
   background: var(--color-surface);
   color: var(--color-ink);
 }
-.shell[data-stage="run"] { height: 100dvh; overflow: hidden; }
+.shell[data-stage="run"] { box-sizing: border-box; height: 100dvh; overflow: hidden; }
 .nav {
   display: grid;
   grid-template-columns: var(--min-target) minmax(0, 1fr) var(--min-target);

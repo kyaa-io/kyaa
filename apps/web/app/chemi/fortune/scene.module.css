@@ -1,10 +1,12 @@
 /* 오늘의 운세 입장·대화 장면(승인 시안 04-2). 390은 한 열, 768+는 그림이 장면을 채우고 말풍선 패널이 왼쪽 아래에 앉는다. */
 .page {
+  /* 분석 동의 배너가 사이트 머리줄(68) 위를 덮는다. 문구가 길어 배너가 그보다 높으면(ru·mn) 넘친 만큼 내려 소리·최애 고르기를 가리고, 장면 높이는 그만큼 줄여 아래 버튼이 탭 바 밑으로 밀리지 않게 한다. */
+  --consent-shift: max(0px, calc(var(--analytics-consent-height, 0px) - var(--fan-header-height, 68px)));
   display: grid;
   grid-template-rows: auto 1fr;
   gap: var(--space-3);
-  min-height: calc(100svh - var(--chemi-scene-chrome, 8rem));
-  padding-block: var(--space-3) var(--space-4);
+  min-height: calc(100svh - var(--chemi-scene-chrome, 8rem) - var(--consent-shift));
+  padding-block: calc(var(--space-3) + var(--consent-shift)) var(--space-4);
 }
 .chips {
   display: flex;
@@ -91,7 +93,7 @@
   display: grid;
   align-items: end;
   overflow: hidden;
-  min-height: min(72svh, 40rem);
+  min-height: min(calc(72svh - var(--consent-shift, 0px)), 40rem);
   border-radius: var(--radius-card);
   background: var(--color-accent-soft);
 }
