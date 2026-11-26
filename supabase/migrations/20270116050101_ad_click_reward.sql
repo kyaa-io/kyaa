@@ -9,7 +9,7 @@
 -- A refusal answers points 0 with a reason and writes nothing. The anonymous outbound_link_click stays as it is: this is a separate,
 -- signed-in record (plan line 54), and ad_reward_click_daily counts it apart for the advertiser report ("reward clicks").
 -- Rows go to dukjil_action_log (action 'ad_click', target 'banner:<id>') and the wallet as 'dukjil_action', like record_social_earn.
--- Rollback: supabase/rollback/20270116041100_ad_click_reward.sql
+-- Rollback: supabase/rollback/20270116050101_ad_click_reward.sql
 begin;
 set local lock_timeout = '5s';
 

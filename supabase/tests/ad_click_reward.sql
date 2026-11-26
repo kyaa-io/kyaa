@@ -1,4 +1,4 @@
--- AD-CLICK-REWARD-1126 (20270116041100): record_ad_click_reward pays 5 once per banner per KST day, 10 a day over every ad reward
+-- AD-CLICK-REWARD-1126 (20270116050101): record_ad_click_reward pays 5 once per banner per KST day, 10 a day over every ad reward
 -- (ad_video counted too), nothing for a draft or non-ad banner, the today read and the report view.
 -- Local or disposable database only (loopback or Unix socket); everything rolls back.
 do $$ begin if inet_server_addr() is not null and not inet_server_addr() << '127.0.0.0/8'::inet then
