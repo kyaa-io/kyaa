@@ -46,7 +46,9 @@
     "rankings": "本周排名",
     "rankingOf": "{game}排名",
     "thisWeek": "本周",
-    "myRecord": "我的成绩"
+    "myRecord": "我的成绩",
+    "playersTotal": "累计{n}人参与",
+    "playersWeek": "本周{n}人"
   },
   "myBirth": {
     "title": "",

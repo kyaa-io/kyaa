@@ -46,7 +46,9 @@
     "rankings": "이번 주 랭킹",
     "rankingOf": "{game} 랭킹",
     "thisWeek": "이번 주",
-    "myRecord": "내 기록"
+    "myRecord": "내 기록",
+    "playersTotal": "지금까지 {n}명 참여",
+    "playersWeek": "이번 주 {n}명"
   },
   "myBirth": {
     "title": "내 생일 정보",

@@ -79,6 +79,8 @@
   --color-tier-platinum-ink: oklch(40% .08 195);
   /* GGGI 캠페인 배너 아트 색(4차 배너 원본, UI 강조색이 아님). */
   --color-campaign-art: #073d33;
+  /* 홈 '팬페이지 개설 신청' 배너 그림 왼쪽 바탕색(PC에서 그림 왼쪽 빈자리를 채움, UI 강조색이 아님). */
+  --color-fanpage-apply-art: #fdb4c3;
   --color-page-accent: var(--color-accent);
   --color-coin: #ffc83d;
   --color-coin-ink: #4a3500;

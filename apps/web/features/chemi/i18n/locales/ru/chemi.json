@@ -46,7 +46,9 @@
     "rankings": "Рейтинг недели",
     "rankingOf": "Рейтинг: {game}",
     "thisWeek": "Эта неделя",
-    "myRecord": "Мой результат"
+    "myRecord": "Мой результат",
+    "playersTotal": "Всего участников: {n}",
+    "playersWeek": "На этой неделе: {n}"
   },
   "myBirth": {
     "title": "",

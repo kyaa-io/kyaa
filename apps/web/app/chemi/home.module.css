@@ -147,7 +147,7 @@
 }
 /* 불러오는 중·오류도 세 줄 + 내 줄과 같은 높이를 차지해 카드 높이가 바뀌지 않는다. */
 .leaders[data-status] {
-  min-block-size: calc(var(--rank-row) * 3 + var(--rank-gap) + var(--rank-mine));
+  min-block-size: calc(var(--rank-row) * 5 + var(--rank-gap) + var(--rank-mine));
   align-content: center;
   justify-items: center;
   gap: var(--space-2);
@@ -167,6 +167,16 @@
 }
 .rankRow[data-me] {
   color: var(--color-accent-ink);
+}
+/* 참여자 수 한 줄(대표 11/26 193861): 순위 위, 회색 보조 글자. */
+.rankPlayers {
+  color: var(--color-muted);
+}
+/* 더 보기·접기: 순위 아래 왼쪽, 글자 버튼(누르는 자리 44). */
+.rankMore {
+  justify-self: start;
+  align-self: flex-start;
+  translate: calc(var(--space-2) * -1) 0;
 }
 .rankStatus {
   display: flex;
@@ -228,18 +238,29 @@
   }
   .banner { width: 100%; }
   .home > .banner { grid-area: 1 / 1; }
+  /* 사용자 11/26 193857: 배너 높이 2/3(1440 1048×466 → 1048×311)·배너와 목록 사이 간격 48 → 16(점 줄 44 가 이미 띄운다).
+     얼굴이 위쪽에 있어 잘리는 자리는 아래로 둔다(타로·별자리는 위 맞춤 그대로). */
   .home[data-ranked="true"] {
-    row-gap: var(--fan-section-gap);
+    row-gap: var(--space-4);
     grid-template-rows: auto 1fr;
   }
+  .home[data-ranked="true"] .banner img {
+    aspect-ratio: 27 / 8;
+    object-position: center 25%;
+  }
+  .home[data-ranked="true"] .artwork:is([data-content="tarot"], [data-content="zodiac"]) img {
+    object-position: center top;
+  }
   .home[data-ranked="true"] > section:last-child { grid-area: 2 / 1; }
+  /* 대표 11/26 193861·193868: 다섯 자리를 보이면서 배너·두 랭킹·콘텐츠 목록이 1440×800 한 화면에 들게 — 줄 52 → 32, 아바타 36 → 24,
+     카드 안 여백 24 → 16, 칸 사이 12 → 8, 머리 그림 64 → 40. */
   .rankings, .rankRow {
-    --rank-row: calc(var(--space-12) + var(--space-1));
-    --rank-avatar: calc(var(--space-8) + var(--space-1));
+    --rank-row: var(--space-8);
+    --rank-avatar: var(--space-6);
   }
   .rankings {
-    --rank-mine: calc(var(--rank-row) + var(--space-3));
-    --rank-gap: var(--space-3);
+    --rank-mine: calc(var(--rank-row) + var(--space-2));
+    --rank-gap: var(--space-2);
     grid-area: 1 / 2 / 3 / 3;
     align-self: start;
     display: grid;
@@ -251,33 +272,30 @@
     display: flex;
     flex-direction: column;
     gap: var(--rank-gap);
+    padding: var(--space-4);
   }
   .rankMine {
     min-height: var(--rank-mine);
-    padding-top: var(--space-3);
+    padding-top: var(--space-2);
   }
   .rankCard header {
-    padding-bottom: var(--space-2);
+    padding-bottom: 0;
     display: grid;
-    grid-template-columns: var(--space-16) minmax(0, 1fr);
+    grid-template-columns: var(--space-10) minmax(0, 1fr) auto;
+    align-items: center;
     column-gap: var(--space-3);
     row-gap: 0;
   }
   .rankCard header img {
     display: block;
-    grid-row: 1 / 3;
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
     border-radius: var(--radius-small);
   }
-  .rankCard header h3 {
-    align-self: end;
-  }
   .rankCard header a {
-    justify-self: start;
-    align-self: start;
-    translate: calc(var(--space-2) * -1) 0;
+    justify-self: end;
+    translate: var(--space-2) 0;
   }
   .rankRow,
   .rankMine {

@@ -5,3 +5,10 @@
 @media (max-width: 47.99rem) {
   .link { width: calc(100% + 2 * var(--space-4)); margin-inline: calc(var(--space-4) - var(--space-8)); }
 }
+/* 1024+ (사용자 11/26 193855 "홈 배너 사이즈 정도로"): 칸은 줄 전체 폭에 높이 240(홈 중간 배너 1360×240과 같은 높이). 그림(600×240, 5:2 그대로 — 늘이거나 자르지 않는다)은 가운데,
+   남는 양옆은 그림 가장자리 색(`--promo-left`·`--promo-right`, 칸 가운데에서 갈린다)으로 채운다. 클릭 영역·반경은 채움을 포함한 칸 전체. */
+@media (min-width: 64rem) {
+  .link { display: flex; justify-content: center; height: 240px; aspect-ratio: auto; background-color: var(--promo-right); }
+  .link::before { content: ""; position: absolute; inset: 0 50% 0 0; background-color: var(--promo-left); }
+  .link img { position: relative; flex: none; width: auto; aspect-ratio: 5 / 2; }
+}

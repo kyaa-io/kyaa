@@ -47,7 +47,9 @@
     "rankings": "Weekly rankings",
     "rankingOf": "{game} ranking",
     "thisWeek": "This week",
-    "myRecord": "My record"
+    "myRecord": "My record",
+    "playersTotal": "Нийт {n} хүн оролцсон",
+    "playersWeek": "Энэ долоо хоногт {n}"
   },
   "myBirth": {
     "title": "",

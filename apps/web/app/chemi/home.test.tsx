@@ -120,6 +120,7 @@ it("shows vacant slots, no personal record, and an actual zero score separately"
       empty="아직 주간 기록이 없어요" mineEmpty="내 기록이 없어요" />
   );
   const view = render(renderRankings(game));
+  // The top three places stay as 미등록; places four and five appear only with a record.
   expect(screen.getAllByRole("img", { name: "미등록" })).toHaveLength(3);
   expect(screen.getAllByText("미등록")).toHaveLength(3);
   expect(screen.getByText("아직 주간 기록이 없어요")).toBeVisible();
@@ -131,4 +132,35 @@ it("shows vacant slots, no personal record, and an actual zero score separately"
   expect(screen.getAllByText("미등록")).toHaveLength(2);
   expect(screen.getByText("0")).toBeVisible();
   expect(screen.getByText("내 기록이 없어요")).toBeVisible();
+  view.rerender(renderRankings({
+    ...game,
+    leaders: [1, 2, 3, 4].map((place) => ({ id: `r${place}`, name: `팬${place}`, place, change: 0, record: "10" })),
+  }));
+  expect(screen.queryByText("미등록")).toBeNull();
+  expect(screen.getAllByText("10")).toHaveLength(4);
+});
+
+it("opens the places after the top five with 더 보기 and counts real players above the list", () => {
+  const row = (place: number, isMe = false) => ({ id: `r${place}`, name: `팬${place}`, place, change: 0, record: String(1000 - place), isMe });
+  const game: GameRanking = {
+    game: "run", title: "최애 런 랭킹", status: "ready", leaders: [1, 2, 3, 4, 5].map((place) => row(place)), more: [6, 7].map((place) => row(place, place === 7)),
+    players: { total: 128, week: 12 }, mine: row(7, true),
+  };
+  render(<GameRankings label={copy.rankings} games={[game]} mineLabel="내 기록" moreLabel="더 보기" lessLabel="접기"
+    playersLabel={({ total, week }) => `지금까지 ${total}명 참여 · 이번 주 ${week}명`} />);
+  expect(screen.getByText("지금까지 128명 참여 · 이번 주 12명")).toBeVisible();
+  expect(screen.queryByText("팬6")).toBeNull();
+  expect(screen.getByText("내 기록")).toBeVisible();
+  fireEvent.click(screen.getByRole("button", { name: "더 보기" }));
+  expect(screen.getByText("팬6")).toBeVisible();
+  expect(screen.getByText("팬7")).toBeVisible();
+  expect(screen.queryByText("내 기록")).toBeNull();
+  expect(screen.getByRole("button", { name: "접기" })).toHaveAttribute("aria-expanded", "true");
+});
+
+it("draws no player count when nobody has finished a game", () => {
+  const game: GameRanking = { game: "pair", title: "짝 맞추기 랭킹", status: "ready", leaders: [], players: { total: 0, week: 0 }, mine: null };
+  render(<GameRankings label={copy.rankings} games={[game]} playersLabel={({ total }) => `지금까지 ${total}명 참여`} />);
+  expect(screen.queryByText(/명 참여/)).toBeNull();
+  expect(screen.queryByRole("button", { name: "더 보기" })).toBeNull();
 });

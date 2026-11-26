@@ -46,7 +46,9 @@
     "rankings": "週間ランキング",
     "rankingOf": "{game}ランキング",
     "thisWeek": "今週",
-    "myRecord": "自分の記録"
+    "myRecord": "自分の記録",
+    "playersTotal": "これまで{n}人が参加",
+    "playersWeek": "今週{n}人"
   },
   "myBirth": {
     "title": "",

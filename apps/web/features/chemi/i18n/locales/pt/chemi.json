@@ -46,7 +46,9 @@
     "rankings": "Classificação semanal",
     "rankingOf": "Ranking de {game}",
     "thisWeek": "Esta semana",
-    "myRecord": "Meu recorde"
+    "myRecord": "Meu recorde",
+    "playersTotal": "{n} participantes no total",
+    "playersWeek": "{n} nesta semana"
   },
   "myBirth": {
     "title": "",
