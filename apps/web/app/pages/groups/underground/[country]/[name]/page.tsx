@@ -9,8 +9,11 @@ import { parseAppLocale, type AppLocale } from "@/i18n/locales";
 export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
 
-// Legal review is required before this route can serve any survey record.
-const surveyPublicationApproved = false;
+// Legal review is required before this route can serve any survey record in production.
+// Until then it opens only on the DEV deployment (APP_ENV=dev) and local development, for review.
+function surveyPagesOpen() {
+  return process.env.APP_ENV === "dev" || (process.env.APP_ENV === undefined && process.env.NODE_ENV === "development");
+}
 
 const calendar: Record<AppLocale, string> = {
   ko: "공연 일정", en: "Show calendar", ja: "ライブ予定", "zh-Hans": "演出日程", "zh-Hant": "演出日程",
@@ -28,8 +31,10 @@ export default async function Page({ params, searchParams }: {
   params: Promise<{ country: string; name: string }>;
   searchParams: Promise<{ locale?: string }>;
 }) {
-  if (!surveyPublicationApproved) notFound();
-  const { country, name } = await params;
+  if (!surveyPagesOpen()) notFound();
+  const { country, name: encodedName } = await params;
+  // Dynamic segments arrive percent-encoded; most survey names are Japanese or Korean.
+  const name = decodeURIComponent(encodedName);
   if (!["JP", "KR"].includes(country)) notFound();
   const locale = parseAppLocale((await searchParams).locale);
   const env = loadServerEnv();
