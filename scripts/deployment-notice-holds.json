@@ -169,7 +169,9 @@
     "release-notes/2026-11-25-chemi-fortune-luck.json",
     "release-notes/2026-11-27-chemi-one-screen.json",
     "release-notes/2026-11-27-header-badge-banners.json",
-    "release-notes/2026-11-27-chemi-rank-vacant.json"
+    "release-notes/2026-11-27-chemi-rank-vacant.json",
+    "release-notes/2026-11-27-chemi-top-five.json",
+    "release-notes/2026-11-27-badge-banners-gallery.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
