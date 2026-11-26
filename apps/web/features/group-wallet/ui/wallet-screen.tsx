@@ -1,4 +1,5 @@
 "use client";
+import { useMileageDisplay } from "@/i18n/mileage-display";
 import { formatMileage } from "@/i18n/format-mileage";
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
@@ -91,6 +92,7 @@ export function WalletAttendanceDialog({locale,open,onClose}:{locale:AppLocale;o
  </FanSheet></DukjilProvider>;
 }
 function OwnedWallet({ locale, attendance, localProfile, localPresentation, embedded=false }: { locale: AppLocale; attendance: boolean; embedded?:boolean;localProfile?:{nickname:string;avatarUrl:string};localPresentation?:WalletLocalPresentation }) {
+ const mileage = useMileageDisplay();
  const a=attendanceCopy(locale),c = walletCopy(locale), wallet = useGroupResource("/api/me/wallet", parseWallet);
  const [pending, setPending] = useState<Pending | null>(null), [storageReady, setStorageReady] = useState(false), [busy, setBusy] = useState(false), [feedback, setFeedback] = useState<"error" | "success" | null>(null);
  const [lastOperation,setLastOperation]=useState<Pending['operation']|null>(null);
@@ -129,7 +131,7 @@ function OwnedWallet({ locale, attendance, localProfile, localPresentation, embe
   finally { running.current = false; if (alive.current) setBusy(false); }
  }
  if (wallet.loading) return <WalletLoading label={c.loading} kind={attendance?"attendance":"wallet"}/>;
- if (!wallet.data) return <SourceStatePanel sourceId="QnIgR" title={locale==='ko'?'잔액을 불러오지 못했어요':c.error} description={locale==='ko'?'내 포인트·응모권을 다시 확인해 주세요.':c.error} icon={<CircleAlert size={24}/>} feedback="danger" role="alert" actions={[{label:locale==='ko'?'잔액 다시 확인':c.retry,onClick:wallet.retry,variant:'primary'}]}><dl>{[c.points,c.tickets].map(label=><div key={label} style={{display:'flex',justifyContent:'space-between'}}><dt>{label}</dt><dd>—</dd></div>)}</dl></SourceStatePanel>;
+ if (!wallet.data) return <SourceStatePanel sourceId="QnIgR" title={locale==='ko'?'잔액을 불러오지 못했어요':c.error} description={locale==='ko'?(mileage ? '내 마일리지·응모권을 다시 확인해 주세요.' : '내 포인트·응모권을 다시 확인해 주세요.'):c.error} icon={<CircleAlert size={24}/>} feedback="danger" role="alert" actions={[{label:locale==='ko'?'잔액 다시 확인':c.retry,onClick:wallet.retry,variant:'primary'}]}><dl>{[c.points,c.tickets].map(label=><div key={label} style={{display:'flex',justifyContent:'space-between'}}><dt>{label}</dt><dd>—</dd></div>)}</dl></SourceStatePanel>;
  const data = wallet.data, earned=data.attendance.days.find(day=>day.date===data.attendance.date)?.points, rewardsPending=Boolean(data.rewardsStartOn&&data.attendance.date<data.rewardsStartOn), locked = busy || Boolean(pending) || data.writeFenced || !storageReady;
  return <div className={`${styles.shell} ${localPresentation?styles.sourceWallet:''} ${embedded?styles.embeddedSupport:''}`}><PointRewardBurst locale={locale} points={rewardBurst?.points??0} burstKey={rewardBurst?.key} onDone={clearReward} announce={false}/><div className={styles.layout}>
  {!attendance&&<WalletCard locale={locale} title={c.wallet} href={localPresentation?.benefitsHref??`/benefits?locale=${locale}#wallet`} hearts="missing" state={{kind:"ready",points:data.points,tickets:data.tickets,pointCost:data.pointCost}}/>}
