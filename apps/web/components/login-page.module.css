@@ -79,7 +79,9 @@ button.emailMethod { min-height: 52px; }
 /* Email and X in an ordinary browser: the same row size as the Google and Apple buttons around them. */
 button.methodAction { width: 90%; min-height: 52px; justify-self: center; justify-content: space-between; }
 button.methodAction > span:not([aria-hidden]) { flex: 1; }
-@media (max-width: 47.999rem) { button.methodAction { width: 100%; } }
+/* An empty slot the size of the icon keeps the label centred like the Google and Apple rows. */
+button.methodAction::after { width: var(--space-4); flex: none; content: ""; }
+@media (max-width: 23rem) { button.methodAction { width: 100%; } }
 .browserLink { display: grid; min-width: 0; gap: 8px; font-size: 14px; line-height: 1.6; }
 .browserLink input { width: 100%; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 8px; border: 1px solid var(--color-muted); border-radius: 8px; background: var(--color-surface); color: inherit; font: inherit; }
 .browserLink input:focus-visible { outline: 3px solid var(--color-ink); outline-offset: 3px; }
