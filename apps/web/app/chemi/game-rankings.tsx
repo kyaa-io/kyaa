@@ -38,8 +38,8 @@ export type GameRanking = {
   mine: RecordRow | null;
 };
 
-/** 대표 11/26 193861: 세 자리만 보이면 세 명만 한 것처럼 보여 다섯 자리를 기본으로 둔다(빈 자리는 미등록). */
-const SLOTS = 5;
+/** 상위 세 자리는 기록이 없어도 미등록으로 채운다(DESIGN 케미 홈 11/24). 4·5위는 기록이 있을 때만 그린다(감독 11/27: 빈 자리 숨김). */
+const SLOTS = 3;
 
 export function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string }) {
   const ref = useRef<HTMLDivElement>(null);

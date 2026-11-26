@@ -120,18 +120,24 @@ it("shows vacant slots, no personal record, and an actual zero score separately"
       empty="아직 주간 기록이 없어요" mineEmpty="내 기록이 없어요" />
   );
   const view = render(renderRankings(game));
-  // 대표 11/26 193861: five places by default, vacant ones drawn as 미등록.
-  expect(screen.getAllByRole("img", { name: "미등록" })).toHaveLength(5);
-  expect(screen.getAllByText("미등록")).toHaveLength(5);
+  // The top three places stay as 미등록; places four and five appear only with a record.
+  expect(screen.getAllByRole("img", { name: "미등록" })).toHaveLength(3);
+  expect(screen.getAllByText("미등록")).toHaveLength(3);
   expect(screen.getByText("아직 주간 기록이 없어요")).toBeVisible();
   expect(screen.queryByText("0")).toBeNull();
   view.rerender(renderRankings({
     ...game,
     leaders: [{ id: "fan", name: "별", place: 1, change: 0, record: "0" }],
   }));
-  expect(screen.getAllByText("미등록")).toHaveLength(4);
+  expect(screen.getAllByText("미등록")).toHaveLength(2);
   expect(screen.getByText("0")).toBeVisible();
   expect(screen.getByText("내 기록이 없어요")).toBeVisible();
+  view.rerender(renderRankings({
+    ...game,
+    leaders: [1, 2, 3, 4].map((place) => ({ id: `r${place}`, name: `팬${place}`, place, change: 0, record: "10" })),
+  }));
+  expect(screen.queryByText("미등록")).toBeNull();
+  expect(screen.getAllByText("10")).toHaveLength(4);
 });
 
 it("opens the places after the top five with 더 보기 and counts real players above the list", () => {
