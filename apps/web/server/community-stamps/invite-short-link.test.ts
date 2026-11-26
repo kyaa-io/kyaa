@@ -25,6 +25,10 @@ it("opens the same landing as the long address, keeps only campaign tags, and hi
   expect(url.searchParams.get("destination")).toBe(`/pages/groups/${page}`);
   expect(url.searchParams.get("utm_source")).toBe("kakao");
   expect(url.searchParams.has("next")).toBe(false);
+  const own = new URL((await resolveInviteShortLink("ab2cdef", "ko", { rpc }))!, "https://kyaa.io");
+  expect(Object.fromEntries([...own.searchParams].filter(([key]) => key !== "locale" && key !== "destination"))).toEqual({
+    code: "22FAA88E23ACE107E6105E21", utm_source: "share", utm_medium: "referral", utm_content: "group_invite", ref: "22FAA88E23ACE107E6105E21",
+  });
   expect(await resolveInviteShortLink("ab2cdef", "ko", { rpc: vi.fn(async () => { throw new Error("COMMUNITY_STAMP_NOT_FOUND"); }) })).toBeNull();
   const untouched = vi.fn();
   expect(await resolveInviteShortLink("../../x", "ko", { rpc: untouched })).toBeNull();

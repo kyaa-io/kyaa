@@ -29,7 +29,7 @@ describe("SharePassport", () => {
     await waitFor(() => expect(action).toHaveBeenCalledTimes(1));
     expect(action).toHaveBeenCalledWith(auth.getAccessToken, "share-link", { creator: "elina" }, expect.any(Function));
     expect(share).not.toHaveBeenCalled(); expect(copy).not.toHaveBeenCalled();
-    expect(await screen.findByDisplayValue(/\/s\/a{32}\?locale=en$/)).toBeInTheDocument();
+    expect(await screen.findByDisplayValue(/\/s\/a{32}\?locale=en&utm_source=share&utm_medium=referral&utm_content=passport$/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Share" }));
     await waitFor(() => expect(share).toHaveBeenCalledOnce());
   });

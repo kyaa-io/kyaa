@@ -1,30 +1,19 @@
 import { SITE_URL } from "@/seo/metadata";
+import { shortLink, shortLinkDestination } from "@/features/analytics/domain/short-links";
 import { isOutboundPreview, recordOutboundVisit } from "../outbound-visit";
 
 export const dynamic = "force-dynamic";
-
-const campaigns = new Map([
-  ["vtuber", "streamer_outreach"],
-  ["idol", "idol_outreach_kr"],
-  ["idol-jp", "idol_outreach_jp"],
-  ["news", "newstip"],
-  ["ig", "instagram_dm"],
-]);
 
 type Context = { params: Promise<{ code: string }> };
 
 export async function GET(request: Request, { params }: Context): Promise<Response> {
   const { code } = await params;
-  const campaign = campaigns.get(code);
-  const destination = new URL("/", SITE_URL);
-  if (campaign && !isOutboundPreview(request)) {
-    destination.search = new URLSearchParams({
-      utm_source: "x",
-      utm_medium: "dm",
-      utm_campaign: campaign,
-    }).toString();
-    // The existing visit table accepts hyphens, while UTM names use underscores.
-    if (request.method === "GET") await recordOutboundVisit(campaign.replaceAll("_", "-"));
+  const link = shortLink(code);
+  // Link previews get the same page without tags, so the card matches where the click goes.
+  let destination = new URL(link?.path ?? "/", SITE_URL);
+  if (link && !isOutboundPreview(request)) {
+    destination = shortLinkDestination(link, SITE_URL);
+    if (request.method === "GET") await recordOutboundVisit(link.visit);
   }
 
   return new Response(null, {

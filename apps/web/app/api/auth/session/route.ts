@@ -5,6 +5,7 @@ import { createPrivyNodeSessionResolver } from "../../../../server/auth/privy-no
 import { syncAuthenticatedSession } from "../../../../server/auth/session-sync";
 import { createSupabaseSessionSyncRepository } from "../../../../server/auth/supabase-session-sync-repository";
 import { loadServerEnv } from "../../../../server/config/env";
+import { FIRST_TOUCH_COOKIE, LAST_TOUCH_COOKIE, cookieValue, decodeTouch } from "../../../../features/analytics/domain/first-touch";
 import { AppleReauthenticationRequiredError } from "../../../../server/auth/apple-notifications/apple-lifecycle";
 import {
   createSessionTimingDiagnostics,
@@ -38,7 +39,14 @@ export async function POST(request: Request): Promise<Response> {
         appEnvironment: env.PRIVY_APP_ENVIRONMENT,
         testAccountLoginEnabled: env.PRIVY_TEST_ACCOUNT_LOGIN_ENABLED, appleLoginEnabled: env.PRIVY_APPLE_LOGIN_ENABLED,
       })),
-      repository: diagnostics.wrapRepository(createSupabaseSessionSyncRepository({ url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY })),
+      repository: diagnostics.wrapRepository(createSupabaseSessionSyncRepository({
+        url: env.SUPABASE_URL, serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
+        // First-visit cookies from the proxy; the database keeps them only for an account created in the last hour.
+        touches: {
+          first: decodeTouch(cookieValue(request.headers.get("cookie"), FIRST_TOUCH_COOKIE)),
+          last: decodeTouch(cookieValue(request.headers.get("cookie"), LAST_TOUCH_COOKIE)),
+        },
+      })),
     }), SESSION_REQUEST_TIMEOUT_MS);
     const { appUserId, ...profile } = synchronized;
     if (includeAppUserId && !z.uuid().safeParse(appUserId).success) {

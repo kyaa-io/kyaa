@@ -21,6 +21,7 @@ import { checkShareProofUrl, shareProofListSchema, shareProofResultSchema, type 
 import { shareProofCopy, sharePlatformName } from "./share-proof-copy";
 import gridStyles from "@/features/certification/ui/certification-grid.module.css";
 import styles from "./share-proof.module.css";
+import { shareTagged } from "@/features/analytics/domain/share-tag";
 
 const parseList = (value: unknown) => shareProofListSchema.parse(value);
 const statusText = (c: ReturnType<typeof shareProofCopy>, locale: AppLocale, item: ShareProofItem) => item.status === "pending" ? c.pending : item.status === "rejected" ? c.rejected : item.status === "revoked" ? c.revoked : item.points ? <EarnBadge variant="inline" locale={locale} points={item.points} /> : c.noPoints;
@@ -61,7 +62,7 @@ export function ShareProofDialog({ slug, locale, onClose }: { slug: string; loca
     setLinkBusy(true);
     try {
       const { token } = communityShareLinkSchema.parse(await request("/api/community-stamps/share-link", { method: "POST", body: JSON.stringify({ creator: slug }) }));
-      const link = `${window.location.origin}/s/${token}?locale=${locale}`;
+      const link = shareTagged(`${window.location.origin}/s/${token}?locale=${locale}`, "share_proof");
       if (typeof navigator.share === "function") { try { await navigator.share({ url: link }); recordShareCompleted("native", "share_proof", getAccessToken); return; } catch (error) { if ((error as { name?: string } | null)?.name === "AbortError") return; } }
       await navigator.clipboard.writeText(link);
       recordShareCompleted("copy", "share_proof", getAccessToken);

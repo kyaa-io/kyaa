@@ -47,7 +47,15 @@ const weeklyData: WeeklyMetricsData = {
   })),
 };
 const response = (payload: unknown, status = 200) => Promise.resolve(new Response(JSON.stringify(payload), { status }));
-const analyticsResponse = (url: string, web = data) => url.includes("/weekly") ? response(weeklyData) : url.includes("/outbound")
+const signupTouchesData = {
+  days: 7, from: "2026-09-05T15:00:00Z", to: "2026-09-12T00:00:00Z", timeZone: "Asia/Seoul", total: 3,
+  paths: [{ label: "x / kol / alina", signups: 2 }, { label: "direct", signups: 1 }],
+  apps: [{ label: "x", signups: 2 }, { label: "browser", signups: 1 }],
+  daily: [{ date: "2026-09-11", signups: 3 }],
+  hourly: Array.from({ length: 24 }, (_, hour) => ({ hour, signups: hour === 18 ? 3 : 0 })),
+  pathHours: [{ label: "x / kol / alina", date: "2026-09-11", hour: 18, signups: 2 }, { label: "direct", date: "2026-09-11", hour: 18, signups: 1 }],
+};
+const analyticsResponse = (url: string, web = data) => url.includes("/signup-touches") ? response({ ...signupTouchesData, days: url.includes("days=30") ? 30 : 7 }) : url.includes("/weekly") ? response(weeklyData) : url.includes("/outbound")
   ? response({ ...outboundData, days: url.includes("days=30") ? 30 : 7 })
   : url.includes("/funnel")
     ? response({ ...funnelData, days: url.includes("days=30") ? 30 : 7 })
