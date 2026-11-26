@@ -22,10 +22,22 @@ export type Slot = "loading" | "locked" | "missing" | number;
 /** From 10,000 the MY card shows the short form (1.2만, 12K; exact numbers stay in 덕질) so three numbers fit one line at 390. */
 const COMPACT_FROM = 10_000;
 function Value({ locale, slot, unit, coin = false, mileage = false, compact = false, className = styles.value }: { locale: AppLocale; slot: Slot; unit?: string; coin?: boolean; mileage?: boolean; compact?: boolean; className?: string }) {
+  const showMileageCoin = useMileageDisplay() && mileage;
   if (slot === "loading") return <dd className={className}><FanSkeleton width={72} height={32} /></dd>;
   if (slot === "locked") return <dd className={className}><FanLockedValue locale={locale} /></dd>;
   if (slot === "missing") return <dd className={className}>—</dd>;
-  return <dd className={className} aria-label={mileage && compact && slot >= COMPACT_FROM ? formatMileage(slot, locale) : undefined}>{coin && <img src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" />}{compact && slot >= COMPACT_FROM ? new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 0 }).format(slot) : slot.toLocaleString(locale)}{mileage ? <span className={styles.unit}>{formatMileage(slot, locale, "auto", "unit")}</span> : unit && <span className={styles.unit}>{unit}</span>}</dd>;
+  const isCompact = compact && slot >= COMPACT_FROM;
+  const number = isCompact
+    ? new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 0 }).format(slot)
+    : slot.toLocaleString(locale);
+  const spokenAmount = mileage && (showMileageCoin || isCompact) ? formatMileage(slot, locale) : undefined;
+  return <dd className={className} aria-label={spokenAmount}>
+    {(coin || showMileageCoin) && <img className={showMileageCoin ? styles.mileageCoin : undefined} src={POINT_COIN_SRC} width={20} height={20} alt="" aria-hidden="true" />}
+    {number}
+    {mileage
+      ? !showMileageCoin && <span className={styles.unit}>{formatMileage(slot, locale, "auto", "unit")}</span>
+      : unit && <span className={styles.unit}>{unit}</span>}
+  </dd>;
 }
 
 /** Two balance cells: points with the coin, group tickets. */

@@ -20,3 +20,5 @@
   .balance { padding-inline:var(--space-4); }
   .my { padding-inline:var(--space-4); }
 }
+
+.value .mileageCoin, .myValue .mileageCoin { width: 1em; height: 1em; flex: none; margin-inline-end: var(--space-1); }
