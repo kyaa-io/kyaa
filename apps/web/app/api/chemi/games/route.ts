@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     if (body.action === "ranking") {
       const authorization = request.headers.get("authorization");
       const viewer = authorization ? (await authorize(authorization)).appUserId : null;
-      // 참여자 수(20270116060000)는 따로 읽어, 못 읽어도 순위는 그대로 보낸다.
+      // 참여자 수(20270116070300)는 따로 읽어, 못 읽어도 순위는 그대로 보낸다.
       const [ranking, players] = await Promise.all([
         rpc(`chemi_${mode}_ranking`, { p_viewer: viewer, p_friend: null }),
         rpc("chemi_game_players", { p_game: mode }).catch(() => null),
