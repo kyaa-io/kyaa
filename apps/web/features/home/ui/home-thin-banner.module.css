@@ -4,7 +4,8 @@
 .link:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
 .link picture, .link img { display: block; width: 100%; height: 100%; }
 .link img { object-fit: cover; object-position: center; }
-.tag { position: absolute; top: var(--space-2); right: var(--space-2); }
+/* 오른쪽 위: 광고 보상 배지(EarnBadge)와 광고 표시(FanTag)를 한 줄로. */
+.marks { position: absolute; top: var(--space-2); right: var(--space-2); display: flex; align-items: center; gap: var(--space-1); }
 @media (min-width: 64rem) { .link { aspect-ratio: 2720 / 240; } }
 /* 중간 배너(홈배너2·덕질배너1): 찐팬100 줄과 같은 칸 — 390 358×160(716×320 원본), 768+ 1360×240(2720×480 원본), 모서리 16. 위 간격은 놓는 쪽이 정한다. */
 .stripMid { margin-top: 0; }
