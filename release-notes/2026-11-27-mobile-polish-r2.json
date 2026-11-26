@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "모바일 모임 탭에서 개설 신청 배너 위아래 여백을 같은 크기로 줄였어요.",
+    "모바일 팬페이지에서 이름, SNS, 좋아요가 놓인 열의 위아래를 프로필 사진에 맞췄어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-27-mobile-r2-groups-login.png",
+    "release-notes/images/2026-11-27-mobile-r2-member.png"
+  ]
+}

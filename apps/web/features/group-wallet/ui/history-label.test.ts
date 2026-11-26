@@ -1,8 +1,27 @@
+import {readdirSync,readFileSync} from 'node:fs';
+import {join,resolve} from 'node:path';
 import {expect,it} from 'vitest';
 import {APP_LOCALES} from '@/i18n/locales';
 import {walletHistoryLabel} from './history-label';
 it('labels known ledger reasons in every locale without inventing an unknown reason',()=>{
- for(const locale of APP_LOCALES)for(const source of ['chemi_game_extra','chemi_game_refund','chemi_date','group_check_in','group_exchange','group_capsule','group_raffle_entry','group_raffle_refund','dukjil_action','group_mission','live_attendance','live_participation','live_reservation','passport_verification','mission_completion','journey_completion','manual_certification','activity','fan_point_exchange'])expect(walletHistoryLabel(locale,source)).toBeTruthy();
+ const knownSources = [
+  'activity','benefit_entry','benefit_entry_refund','correction','dukjil_action','dukjil_correction','dukjil_proof',
+  'exchange','fan_activity_reward','fan_point_exchange','group_raffle_refund','journey_completion','live_attendance',
+  'live_participation','live_reservation','manual_certification','mission_completion','passport_verification','support','group_support',
+ ];
+ // Include literal producer kinds automatically so a new wallet write cannot silently ship without copy.
+ const migrations = resolve(process.cwd(), '../../supabase/migrations');
+ for (const file of readdirSync(migrations).filter(file=>file.endsWith('.sql'))) {
+  const sql = readFileSync(join(migrations,file),'utf8');
+  for (const match of sql.matchAll(/group_wallet_post\([^;]*?,\s*'(?:fan_point|ticket|support_voucher)'\s*,[^;]*?,\s*'([a-z_]+)'\s*,/g)) {
+   knownSources.push(match[1]);
+  }
+ }
+ expect(knownSources).toContain('chemi_reward');
+ for(const locale of APP_LOCALES)for(const source of new Set(knownSources)){
+  expect(walletHistoryLabel(locale,source)?.trim(),`${locale}: ${source}`).toBeTruthy();
+ }
+ expect(walletHistoryLabel('ko','chemi_reward')).toBe('케미 게임 보상');
  expect(walletHistoryLabel('ko','group_raffle_refund')).toBe('응모권 환급');
  expect(walletHistoryLabel('ko','passport_verification')).toBe('팬 인증');
  expect(walletHistoryLabel('ko','group_mission')).toBe('덕질 참여');
@@ -27,7 +46,7 @@ it('names a dukjil row after its real activity in every locale, each activity di
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'quiz'})).toBe('입국 심사 퀴즈');
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:'checkin'})).toBe('출석체크');
  expect(walletHistoryLabel('en','dukjil_action',{actionKey:'comment'})).toBe('Comment');
- expect(walletHistoryLabel('ko','dukjil_proof')).toBe('찐팬 스탬프 인증');
+ expect(walletHistoryLabel('ko','dukjil_proof')).toBe(walletHistoryLabel('ko','dukjil_action',{actionKey:'proof'}));
 });
 it('keeps the generic name when the activity is unknown (older rows, a tier bonus without its tier, unknown keys)',()=>{
  expect(walletHistoryLabel('ko','dukjil_action',{actionKey:null})).toBe('활동 참여');

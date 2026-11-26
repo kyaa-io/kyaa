@@ -31,6 +31,10 @@ const reclaimed={
 } satisfies Record<string,Record<AppLocale,string>>;
 // Same names the ticket history screen already shows for these earning sources (ko/en inline, other locales from its catalog).
 const names={
+ chemiReward:{ko:'케미 게임 보상',mn:'Кэми тоглоомын шагнал',en:'Chemi game reward',ja:'ケミゲーム報酬','zh-Hans':'化学反应游戏奖励','zh-Hant':'化學反應遊戲獎勵',es:'Recompensa del juego Chemi',id:'Hadiah gim Chemi',vi:'Thưởng trò chơi Chemi',th:'รางวัลเกม Chemi',pt:'Recompensa do jogo Chemi',fr:'Récompense du jeu Chemi',ru:'Награда за игру Chemi'},
+ chemiAsk:{ko:'케미 추가 질문',mn:'Кэмигийн нэмэлт асуулт',en:'Extra Chemi question',ja:'ケミの追加質問','zh-Hans':'化学反应追加提问','zh-Hant':'化學反應追加提問',es:'Pregunta extra de Chemi',id:'Pertanyaan tambahan Chemi',vi:'Câu hỏi thêm trong Chemi',th:'คำถามเพิ่มเติมใน Chemi',pt:'Pergunta extra no Chemi',fr:'Question supplémentaire dans Chemi',ru:'Дополнительный вопрос в Chemi'},
+ donationVote:{ko:'기부 투표',mn:'Хандивын санал',en:'Donation vote',ja:'寄付投票','zh-Hans':'捐赠投票','zh-Hant':'捐贈投票',es:'Voto de donación',id:'Suara donasi',vi:'Bình chọn quyên góp',th:'โหวตบริจาค',pt:'Voto de doação',fr:'Vote de don',ru:'Голос за пожертвование'},
+ support:{ko:'응원',mn:'Дэмжлэг',en:'Support',ja:'応援','zh-Hans':'应援','zh-Hant':'應援',es:'Apoyo',id:'Dukungan',vi:'Ủng hộ',th:'การสนับสนุน',pt:'Apoio',fr:'Soutien',ru:'Поддержка'},
  dateReading:{'ko':'다른 날짜 운세',mn: 'Fortune for another date', 'en':'Fortune for another date','ja':'別の日の運勢','zh-Hans':'其他日期的运势','zh-Hant':'其他日期的運勢','es':'Horóscopo de otra fecha','id':'Ramalan untuk tanggal lain','vi':'Vận may ngày khác','th':'ดวงชะตาวันอื่น','pt':'Horóscopo de outra data','fr':'Horoscope pour une autre date','ru':'Гороскоп на другую дату'},
  playRefund:{'ko':'게임 추가 판 환불',mn: 'Extra round refund', 'en':'Extra round refund','ja':'追加プレイの返金','zh-Hans':'额外游戏局退款','zh-Hant':'額外遊戲局退款','es':'Reembolso de partida extra','id':'Pengembalian poin ronde tambahan','vi':'Hoàn điểm lượt chơi thêm','th':'คืนแต้มรอบเกมเพิ่มเติม','pt':'Reembolso da rodada extra','fr':'Remboursement de partie supplémentaire','ru':'Возврат за дополнительную игру'},
  extraPlay:{'ko':'게임 추가 판',mn: 'Extra game round', 'en':'Extra game round','ja':'ゲームの追加プレイ','zh-Hans':'额外游戏局','zh-Hant':'額外遊戲局','es':'Partida extra','id':'Ronde tambahan','vi':'Lượt chơi thêm','th':'รอบเกมเพิ่มเติม','pt':'Rodada extra','fr':'Partie supplémentaire','ru':'Дополнительная игра'},
@@ -51,6 +55,11 @@ function activityName(locale:AppLocale,actionKey:string|null|undefined):string|n
  return actionKey&&GUIDE_ACTIVITIES.has(actionKey)?activityLabel(locale,actionKey as GuideActivityKey):null;
 }
 export function walletHistoryLabel(locale:AppLocale,sourceType:string,detail:WalletHistoryDetail={}):string|null {
+ if(sourceType==='donation_vote')return names.donationVote[locale];
+ if(sourceType==='chemi_reward')return names.chemiReward[locale];
+ if(sourceType==='chemi_ask_extra')return names.chemiAsk[locale];
+ if(sourceType==='support'||sourceType==='group_support')return names.support[locale];
+ if(sourceType==='correction')return groupEarningsCopy(locale).statuses.corrected;
  if(sourceType==='chemi_game_extra')return names.extraPlay[locale];
  if(sourceType==='chemi_game_refund')return names.playRefund[locale];
  if(sourceType==='chemi_date')return names.dateReading[locale];
@@ -77,7 +86,7 @@ export function walletHistoryLabel(locale:AppLocale,sourceType:string,detail:Wal
  if(sourceType==='journey_completion')return names.journeyDone[locale];
  if(sourceType==='manual_certification')return names.certified[locale];
  if(sourceType==='group_mission')return groupEarningsCopy(locale).kinds.mission;
- if(sourceType==='activity'||sourceType==='dukjil_action'||sourceType==='live_participation')return groupEarningsCopy(locale).kinds.activity;
+ if(sourceType==='fan_activity_reward'||sourceType==='activity'||sourceType==='dukjil_action'||sourceType==='live_participation')return groupEarningsCopy(locale).kinds.activity;
  if(sourceType==='exchange'||sourceType==='fan_point_exchange')return walletCopy(locale).exchange;
  return null;
 }

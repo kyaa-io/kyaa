@@ -1,0 +1,14 @@
+{
+  "changes": [
+    "덕질 적립·사용 내역에서 케미 게임 보상 이름을 확인할 수 있어요.",
+    "모바일 모임 탭에서 페이지 개설 신청 배너와 주변 여백을 줄였어요.",
+    "모바일 팬페이지에서는 이름, SNS, 팬 수와 좋아요를 프로필 사진 높이에 맞췄어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-27-mobile-history.png",
+    "release-notes/images/2026-11-27-mobile-banners.png",
+    "release-notes/images/2026-11-27-mobile-header.png"
+  ]
+}

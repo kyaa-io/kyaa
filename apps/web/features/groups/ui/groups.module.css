@@ -355,3 +355,9 @@
     padding:var(--space-2) var(--space-4);
   }
 }
+
+@media (width < 48rem) {
+  .page:has(> .discoveryLayout) { padding-bottom: var(--space-5); }
+  .discoveryLayout { padding-bottom: 0; }
+  .discoveryAside { padding-top: var(--space-3); }
+}
