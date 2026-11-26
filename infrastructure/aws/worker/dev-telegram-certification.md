@@ -6,7 +6,17 @@ DEV 워커와 DEV 웹의 기존 비밀 설정에 `TELEGRAM_DEV_CERTIFICATION_BOT
 `TELEGRAM_DEV_CERTIFICATION_ADMIN_MAP`을 추가한다. 매핑은 Telegram 숫자 사용자 ID를
 키로, 관리자 앱 사용자 UUID를 값으로 가지는 JSON 객체다.
 
-DEV 전용 봇이 DEV 시험 방에만 참여하는지 확인한 뒤, Telegram `setWebhook`의
+사용자 결정(2026-11-26)에 따라 카드는 기존 CS 봇과 CS 방(KYAA 고객 문의)으로 보낼 수 있다.
+이때 두 값에 각각 `TELEGRAM_CS_BOT_TOKEN`, `TELEGRAM_CS_CHAT_ID`와 같은 값을 넣는다. CS 방에는
+인증 요청 카드만 보내고 배포 안내 등 다른 글은 보내지 않는다. DEV 카드 앞에는 `[DEV 시험]`이 붙는다.
+
+webhook은 봇 하나에 하나뿐이고 설정되면 그 봇의 `getUpdates`가 멈춘다. 그래서 코드는
+`TELEGRAM_BOT_TOKEN`·`TELEGRAM_ALERT_BOT_TOKEN`(명령·인증 버튼을 `getUpdates`로 받음)과
+`TELEGRAM_BUG_REPORT_BOT_TOKEN`(이미 webhook 사용)과 같은 토큰을 거부한다. DEV 비밀에는
+운영 토큰이 없을 수 있으므로 `setWebhook` 전에 운영 비밀의 세 봇과 CS 봇의 `getMe` ID가 모두
+다른지, `getWebhookInfo`의 `url`이 비어 있는지 확인한다. 하나라도 같거나 비어 있지 않으면 멈춘다.
+
+봇이 대상 방에만 참여하는지 확인한 뒤, Telegram `setWebhook`의
 `url`을 `https://dev.kyaa.io/api/telegram/certification/webhook`으로 설정한다.
 `secret_token`에는 DEV 웹과 같은 값을, `allowed_updates`에는
 `["callback_query"]`를 전달한다. 명령 기록과 로그에 설정값이 남지 않게 한다.

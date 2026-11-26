@@ -16,8 +16,10 @@ export async function runDevTelegramCertificationOnce(env: NotificationWorkerEnv
   const { devCertificationToken: token, devCertificationChatId: chat } = env.telegram;
   if (env.NOTIFICATION_EXTERNAL_ENVIRONMENT !== "dev" || env.BYUS_DATA_ENVIRONMENT !== "development" || !token || !chat) return 0;
   if (!/^\d+:[\w-]+$/.test(token) || !/^-[1-9]\d*$/.test(chat)
-    || [env.telegram.token, env.telegram.csToken, env.telegram.alertToken].includes(token)
-    || [env.telegram.chatId, env.telegram.csChatId].includes(chat)) {
+    // The CS bot and CS room are allowed (user 11/26): that bot only sends. Bots that
+    // poll getUpdates must never receive this card's callback webhook.
+    || [env.telegram.token, env.telegram.alertToken].includes(token)
+    || chat === env.telegram.chatId) {
     throw new Error("DEV_TELEGRAM_CERTIFICATION_CONFIG_INVALID");
   }
   const db = createWorkerClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, env, {
@@ -32,7 +34,7 @@ export async function runDevTelegramCertificationOnce(env: NotificationWorkerEnv
   const path = card.proof ? "proof-review" : "certifications";
   const hint = card.assistHint === "possible_duplicate" ? "\n심사 참고 · 증빙 중복 가능성 확인"
     : card.assistHint === "original_check" ? "\n심사 참고 · 관리자 화면에서 원본 확인" : "";
-  const caption = `${card.proof ? "패스포트 스탬프 증빙" : "덕후인증"} 심사 요청 · ${date.format(new Date(card.submittedAt))} (한국 시각) · 신청자 ${card.nickname}${hint}`;
+  const caption = `[DEV 시험] ${card.proof ? "패스포트 스탬프 증빙" : "덕후인증"} 심사 요청 · ${date.format(new Date(card.submittedAt))} (한국 시각) · 신청자 ${card.nickname}${hint}`;
   const keyboard = { inline_keyboard: [
     [{ text: "승인", callback_data: `approve:${card.id}` }, { text: "반려", callback_data: `reasons:${card.id}` }],
     [{ text: "관리자에서 보기", url: `https://dev.kyaa.io/admin/${path}` }],
