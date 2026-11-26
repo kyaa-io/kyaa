@@ -1,4 +1,5 @@
 import "server-only";
+import type { UnverifiedCreators } from "@/server/rankings/unlisted-creators";
 import { z } from "zod";
 import { AuthError } from "../../features/auth/domain/auth-errors";
 import { celebritySlugSchema, commentAuthorSchema, commentReactionResultSchema, commentReactionSchema, commentsSchema, fanpageSummarySchema, leaderboardCategorySchema, leaderboardResponseSchema, postCommentSchema } from "../../features/fanpage/domain/community";
@@ -11,6 +12,8 @@ export interface FanpageDependencies {
   authorizeAdmin(authorization: string | null, correlationId: string): Promise<AdminSession>;
   /** Tests only: the creator id of a slug for the reward call (the award resolves it itself otherwise). */
   resolveCreatorId?: (slug: string) => Promise<string | null>;
+  /** Fan-made (Unverified) creator pages, for the lists and marks that leave them out. Absent: none are left out. */
+  unverifiedCreators?: () => Promise<UnverifiedCreators>;
 }
 /**
  * A reaction or a comment on a notice (아티스트 소식) pays by the fan board's rules through the same `record_dukjil_action` call: the

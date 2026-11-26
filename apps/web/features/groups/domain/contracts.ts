@@ -16,6 +16,8 @@ export const groupPageSchema = z.object({
   liveNow: z.boolean().nullable().optional(),
   lastActiveAt: z.iso.datetime({offset:true}).nullable().optional(),
   externalLinks: externalRoomLinksRead,
+  // A fan page opened from a fan's request and not yet made official (no kyaa official mark). Set by the server, absent on official pages.
+  unverified: z.literal(true).optional(),
 });
 export const groupListSchema = z.object({ items: z.array(groupPageSchema), totalCount: z.number().int().nonnegative().optional(), nextCursor: z.union([z.string().uuid(),z.string().regex(/^[A-Za-z0-9_-]{1,512}$/)]).nullable() });
 export const groupDetailSchema = z.object({ page: groupPageSchema, membership: z.object({ role: z.enum(["owner", "manager", "member"]), joinedAt: z.string() }).nullable(), bookmarked: z.boolean() });

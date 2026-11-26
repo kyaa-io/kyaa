@@ -25,7 +25,7 @@ const REFILL_PAGES = 2;
 const postKey = (item: PopularPost) => `${item.source}:${item.id}`;
 const postIds = (items: PopularPost[], source: "fan" | "group") => items.flatMap(item => item.source === source ? [item.id] : []);
 
-export function createGetPublicPopularPosts(dependencies: Pick<FanpageDependencies, "rpc" | "authorize">, options: { groupsEnabled: boolean; pageImage?: PageImage; publicCache?: PopularPostCache }) {
+export function createGetPublicPopularPosts(dependencies: Pick<FanpageDependencies, "rpc" | "authorize" | "unverifiedCreators">, options: { groupsEnabled: boolean; pageImage?: PageImage; publicCache?: PopularPostCache }) {
   return async (request: Request): Promise<Response> => {
     const query = new URL(request.url).searchParams;
     const locales = query.getAll("locale");
@@ -44,6 +44,9 @@ export function createGetPublicPopularPosts(dependencies: Pick<FanpageDependenci
       // RPC joins can repeat a post; preserve the first ranked row by its stable source and ID.
       const seen = new Set<string>();
       data.data.items = data.data.items.filter(item => { const key = postKey(item); if (seen.has(key)) return false; seen.add(key); return true; });
+      // Posts on fan-made (Unverified) creator pages stay on their page and off the home board.
+      const unverified = (await dependencies.unverifiedCreators?.())?.slugs;
+      if (unverified?.size) data.data.items = data.data.items.filter(item => item.source !== "fan" || !unverified.has(item.pageRef));
       // Each row carries its writer's picture. It is extra: when it cannot be read (the app is deployed before the function) the board still loads.
       const ids = (source: "fan" | "group") => postIds(data.data.items, source);
       const avatarsPending = !data.data.items.length ? {} : Promise.resolve(dependencies.rpc("public_post_author_avatars", { p_fan_post_ids: ids("fan"), p_group_post_ids: ids("group") }))

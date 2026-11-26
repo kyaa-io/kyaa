@@ -5,6 +5,6 @@ import { loadServerEnv } from "@/server/config/env";
 import { createRankingsHandlers } from "./routes";
 
 export function createRankingsRouteHandlers() {
-  const { rpc, authorize } = createFanpageDependencies();
-  return createRankingsHandlers({ profileRefSecret: loadServerEnv().PRIVY_APP_SECRET, rpc, authorize, resolveCreatorId, refreshOnRead: process.env.APP_ENV === "dev" });
+  const { rpc, authorize, unverifiedCreators } = createFanpageDependencies();
+  return createRankingsHandlers({ profileRefSecret: loadServerEnv().PRIVY_APP_SECRET, rpc, authorize, resolveCreatorId, refreshOnRead: process.env.APP_ENV === "dev", unverifiedCreators });
 }

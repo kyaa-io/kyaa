@@ -148,3 +148,19 @@ describe("home gallery pool", () => {
     expect(rpc).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("fan-made (Unverified) pages", () => {
+  it("leave their shorts out of the home rail, the shorts catalog and its pages", async () => {
+    const list = [video(1, "official"), video(2, "fan-made"), video(3, "official")];
+    const rpc = vi.fn(async (name: string, args: { p_offset?: number; p_limit?: number }) => {
+      if (name === "read_public_video_thumbnails") return { data: {}, error: null };
+      if (name === "read_public_shortform_like_counts") return { data: {}, error: null };
+      const offset = args.p_offset ?? 0, limit = args.p_limit ?? 12;
+      return { data: { items: list.slice(offset, offset + limit), hasMore: false }, error: null };
+    });
+    const repository = new HomeGalleryRepository({ rpc } as never, undefined, async () => new Set(["fan-made"]));
+    expect((await repository.listShorts("ko", { limit: 12 })).map(item => item.creator.slug)).toEqual(["official", "official"]);
+    expect((await repository.listShortsCatalog("ko")).items.map(item => item.creator.slug)).toEqual(["official", "official"]);
+    expect((await repository.listShortsPage("ko", { offset: 0, limit: 12 })).items.map(item => item.creator.slug)).toEqual(["official", "official"]);
+  });
+});

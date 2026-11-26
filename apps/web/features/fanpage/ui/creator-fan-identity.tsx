@@ -15,9 +15,11 @@ const fandomLabels: Record<AppLocale, string> = {
 
 };
 
-export function CreatorFanIdentity({ slug, name, locale }: { slug: string; name: string; locale: AppLocale }) {
+export function CreatorFanIdentity({ slug, name, locale, unverified = false }: { slug: string; name: string; locale: AppLocale; unverified?: boolean }) {
   const identity = creatorIdentity(slug);
-  if (!identity) return <h1 id="celebrity-heading">{name}<VerifiedMark className={styles.headingMark} /></h1>;
+  // A fan-made (Unverified) page has no kyaa official mark.
+  const mark = unverified ? null : <VerifiedMark className={styles.headingMark} />;
+  if (!identity) return <h1 id="celebrity-heading">{name}{mark}</h1>;
   const primary = identity.logo || locale !== "ko" ? identity.en : identity.ko;
   // 한국어 화면은 한글·영문을 함께, 다른 언어 화면은 공식 영문 아래에 그 언어 표기만 둔다(한글을 보이지 않음).
   const local = creatorName(slug, locale);
@@ -25,7 +27,7 @@ export function CreatorFanIdentity({ slug, name, locale }: { slug: string; name:
   return <div className={styles.artistIdentity}>
     <div className={styles.artistName}>
       {identity.logo && <Image className={styles.artistLogo} src={identity.logo} alt="" width={80} height={80} />}
-      <h1 id="celebrity-heading">{primary}<VerifiedMark className={styles.headingMark} />{secondary && <span>{secondary}</span>}</h1>
+      <h1 id="celebrity-heading">{primary}{mark}{secondary && <span>{secondary}</span>}</h1>
     </div>
     {identity.fandom && <dl className={styles.fandom}>
       <dt>{fandomLabels[locale]}</dt>

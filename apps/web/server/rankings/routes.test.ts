@@ -197,6 +197,17 @@ describe("rankings routes", () => {
     expect(body.rows[0]).toMatchObject({ hearts: 7, points: null, fans: 2, liveNow: true, delta: 0, weekGain: 0, isNew: false });
   });
 
+  it("leaves fan-made (Unverified) pages out of the home creator lists and numbers the rest from 1", async () => {
+    const row = (rank: number, slug: string) => ({ rank, slug, name: slug, imageUrl: null, score: 2, hearts: 7, points: null, fans: 2, liveNow: false, isNew: false, challenge: false, delta: 0, weekGain: 0, jjinfanCount: 0 });
+    const unverifiedCreators = async () => ({ slugs: new Set(["b"]) });
+    const home = make((name) => name === "read_celebrity_platform_followers" ? {} : { ...head({ metric: "fans", weekGainDays: 1 }), rows: [row(1, "a"), row(2, "b"), row(3, "c")] }, { ...fresh, unverifiedCreators });
+    const homeBody = await (await home.handlers.home(req("/x?kind=creators"))).json();
+    expect(homeBody.rows.map((r: { slug: string; rank: number }) => [r.slug, r.rank])).toEqual([["a", 1], ["c", 2]]);
+    const card = make(() => ({ period: "week", periodStart: "2026-11-02", computedAt: null, rows: [row(1, "b"), row(2, "a")] }), { unverifiedCreators });
+    const cardBody = await (await card.handlers.creators(req("/api/rankings/creators?metric=fans"))).json();
+    expect(cardBody.rows.map((r: { slug: string; rank: number }) => [r.slug, r.rank])).toEqual([["a", 1]]);
+  });
+
   describe("platform follower counts on the creator list", () => {
     const row = (slug: string) => ({ rank: 1, slug, name: slug, imageUrl: null, score: 2, hearts: 7, points: null, fans: 2, liveNow: false, isNew: false, challenge: false, delta: 0, weekGain: 0 });
     const withRows = (followers: (args: Record<string, unknown>) => unknown) => make((name, args) =>

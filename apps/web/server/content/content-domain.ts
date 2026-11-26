@@ -86,6 +86,8 @@ export type PublishedCelebrity = Readonly<{
   }>[];
   displayOrder: number;
   fanCount: number;
+  /** A fan-made page opened from a request (Unverified): no kyaa official mark. Set where the page is read for display. */
+  unverified?: boolean;
 }>;
 
 export type PublishedCelebrityLive = Readonly<{

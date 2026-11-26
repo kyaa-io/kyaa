@@ -198,6 +198,7 @@
     "release-notes/2026-11-25-goods-menu.json"
   ],
   "verified-pages": [
-    "release-notes/2026-11-25-verified-pages.json"
+    "release-notes/2026-11-25-verified-pages.json",
+    "release-notes/2026-11-26-fan-made-pages.json"
   ]
 }

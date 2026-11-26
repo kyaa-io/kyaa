@@ -140,7 +140,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=
   const pageCard = (page: GroupList["items"][number]) => {
     const isFan = page.kind === "fan";
     // kyaa official: a fan or brand page tied to a creator or brand record kyaa registered. Pages people open themselves have no such record.
-    const verified = page.kind !== "hobby" && Boolean(page.celebrityId);
+    const verified = page.kind !== "hobby" && Boolean(page.celebrityId) && !page.unverified;
     const challenge = isFan && (page.challenge ?? (!!page.slug && challengeSlugs.has(page.slug)));
     const event = isFan && page.slug && eventTime !== undefined && openPageLikeEvent(page.slug, eventTime);
     const badge = event

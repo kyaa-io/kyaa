@@ -11,7 +11,7 @@ import { createOperatorAuthorizer } from "../operator/operator-dependencies";
 import { importOfficialSchedule } from "./official-import";
 
 export type ParticipationOperation = "schedules" | "schedule" | "subscription" | "suggestions" | "suggestion-options" | "suggestion-import" | "place-search" | "requests" | "request-check" | "live-submissions" | "live-submission"
-  | "admin-schedules" | "operator-schedules" | "admin-suggestions" | "admin-suggestion" | "admin-requests" | "admin-request" | "admin-live-submissions" | "admin-live-settings" | "admin-live-submission" | "admin-replay";
+  | "admin-schedules" | "operator-schedules" | "admin-suggestions" | "admin-suggestion" | "admin-requests" | "admin-request" | "admin-page-verification" | "admin-live-submissions" | "admin-live-settings" | "admin-live-submission" | "admin-replay";
 type Params = { id?: string; slug?: string };
 const headers = { "cache-control": "private, no-store", vary: "Authorization" };
 const json = (body: unknown, status = 200) => Response.json(body, { status, headers });
@@ -137,9 +137,16 @@ export function createParticipationHandler(deps: ParticipationDependencies) {
         }
         case "admin-requests": return json(await paged("fan_web_admin_list_fanpage_requests", { ...actor, p_status: s.reviewStatus.nullable().parse(url.searchParams.get("status")), p_locale: locale, ...page }, s.fanpageRequestSchema));
         case "admin-request": {
-          const input = z.object({ expectedRevision: revision, decision: z.enum(["approve", "reject"]), reason: nullableReason, celebrityId: s.uuid.nullable(), locale: s.contentLocale }).strict().parse(body);
+          // A page linked by approval opens Unverified (fan-made) unless the admin switches it to Verified with a reason.
+          const input = z.object({ expectedRevision: revision, decision: z.enum(["approve", "reject"]), reason: nullableReason, celebrityId: s.uuid.nullable(), locale: s.contentLocale,
+            verification: s.pageVerificationSchema.default("unverified"), verificationReason: nullableReason.default(null) }).strict().parse(body);
           if (input.decision === "approve" ? !input.celebrityId : input.celebrityId !== null || !input.reason) throw new SyntaxError("Invalid review");
-          return json(s.mutationSchema(s.fanpageRequestSchema).parse(await rpc("fan_web_admin_review_fanpage_request", { ...actor, p_request_id: id(), p_expected_revision: input.expectedRevision, p_decision: input.decision, p_reason: input.reason, p_celebrity_id: input.celebrityId, p_locale: input.locale })));
+          if (input.decision === "approve" && input.verification === "verified" && !input.verificationReason) throw new SyntaxError("Missing reason");
+          return json(s.mutationSchema(s.fanpageRequestSchema).parse(await rpc("fan_web_admin_review_fanpage_request", { ...actor, p_request_id: id(), p_expected_revision: input.expectedRevision, p_decision: input.decision, p_reason: input.reason, p_celebrity_id: input.celebrityId, p_locale: input.locale, p_verification: input.verification, p_verification_reason: input.verificationReason })));
+        }
+        case "admin-page-verification": {
+          const input = z.object({ verification: s.pageVerificationSchema, reason: nullableReason, locale: s.contentLocale }).strict().parse(body);
+          return json(s.mutationSchema(s.fanpageRequestSchema).parse(await rpc("fan_web_admin_set_page_verification", { ...actor, p_request_id: id(), p_verification: input.verification, p_reason: input.reason, p_locale: input.locale })));
         }
         case "admin-live-submissions": return json(encodePage(s.rpcPage(adminSubmission).extend({ settings: s.liveSubmissionSettingsSchema }).parse(await rpc("fan_web_admin_list_live_submissions", { ...actor, p_live_event_id: id(), p_status: z.enum(["submitted", "selected", "hidden"]).nullable().parse(url.searchParams.get("status")), ...page, ...extension }))));
         case "admin-live-settings": {
