@@ -120,7 +120,7 @@ declare
     "imagePosition":"center",
     "displayOrder":502,
     "fanCount":1,
-    "primaryRole":"actor",
+    "primaryRole":"creator",
     "localizations":{
       "ko":{"name":"인물 검증","summary":"인물 팬페이지","imageAlt":"인물 사진"},
       "en":{"name":"Person proof","summary":"Person fan page","imageAlt":"Person photo"}
@@ -214,7 +214,7 @@ begin
   select id into quiz_id from public.celebrity_quizzes where celebrity_id=brand_id and version=1;
   perform public.publish_admin_quiz_version(actor,correlation,brand_id,quiz_id);
   perform pg_temp.expect_error(format(
-    'update public.celebrities set primary_role=''actor'',roles=''{artist}'' where id=%L',brand_id
+    'update public.celebrities set primary_role=''creator'',roles=''{artist}'' where id=%L',brand_id
   ), 'existing person and brand profiles cannot be converted');
   perform pg_temp.expect_error(format(
     'update public.celebrities set roles=''{artist}'' where id=%L',brand_id
@@ -448,8 +448,8 @@ begin
     'select public.set_admin_celebrity_publication(%L,%L,%L,true)',actor,correlation,person_id
   ), 'requires exactly one published quiz');
   result := public.save_admin_celebrity(actor,correlation,person_id,
-    jsonb_set(person_payload,'{primaryRole}','"singer"'));
-  if result->>'primaryRole' <> 'singer' then raise exception 'person role edit regressed'; end if;
+    jsonb_set(person_payload,'{primaryRole}','"idol"'));
+  if result->>'primaryRole' <> 'idol' then raise exception 'person role edit regressed'; end if;
   perform pg_temp.expect_error(format(
     'select public.save_admin_celebrity(%L,%L,%L,%L::jsonb)',
     actor,correlation,person_id,jsonb_set(person_payload,'{primaryRole}','"brand"')::text

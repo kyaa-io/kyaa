@@ -7,7 +7,7 @@ insert into public.admin_allowlist(id,email,role) values('fa110000-0000-4000-800
 insert into public.group_pages(id,kind,name) values('fa120000-0000-4000-8000-000000000001','hobby','Dirsync hobby');
 
 -- A draft creator has no page.
-insert into public.celebrities(id,slug,status,image_url,roles,primary_role) values('fa100000-0000-4000-8000-000000000001','dirsync-fan-a','draft','/images/dirsync-a.jpg','{creator}','singer');
+insert into public.celebrities(id,slug,status,image_url,roles,primary_role) values('fa100000-0000-4000-8000-000000000001','dirsync-fan-a','draft','/images/dirsync-a.jpg','{creator}','creator');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
  ('fa100000-0000-4000-8000-000000000001','ko','디어싱크','디어싱크 소개','디어싱크 사진'),
  ('fa100000-0000-4000-8000-000000000001','en','Dirsync','About Dirsync','Dirsync photo');
@@ -115,8 +115,8 @@ end $$;
 
 -- A summary written by SQL may end in spaces. Its own check measures it trimmed, the page check does not, so publishing must trim.
 insert into public.celebrities(id,slug,status,image_url,roles,primary_role) values
- ('fa100000-0000-4000-8000-000000000041','dirsync-trim-long','draft','/images/dirsync-trim.jpg','{creator}','singer'),
- ('fa100000-0000-4000-8000-000000000042','dirsync-trim-short','draft','/images/dirsync-trim.jpg','{creator}','singer');
+ ('fa100000-0000-4000-8000-000000000041','dirsync-trim-long','draft','/images/dirsync-trim.jpg','{creator}','creator'),
+ ('fa100000-0000-4000-8000-000000000042','dirsync-trim-short','draft','/images/dirsync-trim.jpg','{creator}','creator');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
  ('fa100000-0000-4000-8000-000000000041','ko','긴 소개',repeat('가',1000)||'  ','사진'),
  ('fa100000-0000-4000-8000-000000000041','en','Long','About','Photo'),

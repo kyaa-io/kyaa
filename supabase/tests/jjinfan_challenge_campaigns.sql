@@ -7,7 +7,7 @@ insert into public.admin_allowlist(id,email,role) values
  ('fb110000-0000-4000-8000-000000000003','jjgauge-admin@example.test','admin'),
  ('fb110000-0000-4000-8000-000000000004','jjgauge-viewer@example.test','viewer');
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values
- ('fb100000-0000-4000-8000-000000000001','jjgauge-on','draft','/images/x.png',null,'{creator}','singer');
+ ('fb100000-0000-4000-8000-000000000001','jjgauge-on','draft','/images/x.png',null,'{creator}','creator');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt) values
  ('fb100000-0000-4000-8000-000000000001','ko','게이지','게이지 소개','게이지 사진'),
  ('fb100000-0000-4000-8000-000000000001','en','Gauge','About gauge','Gauge photo');

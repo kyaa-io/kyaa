@@ -14,9 +14,9 @@ create policy jj_fn_plain_reads_creators on public.celebrities for select to jj_
 insert into public.app_users(id,privy_user_id,verified_email) values('fb120000-0000-4000-8000-000000000001','did:privy:jjowner-admin','jjowner-admin@example.test');
 insert into public.admin_allowlist(id,email,role) values('fb120000-0000-4000-8000-000000000002','jjowner-admin@example.test','admin');
 insert into public.celebrities(id,slug,status,image_url,published_at,roles,primary_role) values
- ('fb120000-0000-4000-8000-000000000011','jjowner-on','draft','/images/x.png',null,'{creator}','singer'),
- ('fb120000-0000-4000-8000-000000000012','jjowner-off','draft','/images/x.png',null,'{creator}','singer'),
- ('fb120000-0000-4000-8000-000000000013','jjowner-unset','draft','/images/x.png',null,'{creator}','singer');
+ ('fb120000-0000-4000-8000-000000000011','jjowner-on','draft','/images/x.png',null,'{creator}','creator'),
+ ('fb120000-0000-4000-8000-000000000012','jjowner-off','draft','/images/x.png',null,'{creator}','creator'),
+ ('fb120000-0000-4000-8000-000000000013','jjowner-unset','draft','/images/x.png',null,'{creator}','creator');
 insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)
  select c.id,l.locale::public.content_locale,'게이지','게이지 소개','게이지 사진' from public.celebrities c cross join (values('ko'),('en')) l(locale) where c.slug like 'jjowner-%';
 update public.celebrities set status='published',published_at=now() where slug like 'jjowner-%';

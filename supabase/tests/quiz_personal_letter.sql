@@ -44,7 +44,7 @@ begin
   insert into public.user_wallets(app_user_id,chain_id,address,provider,wallet_type)
     values(legacy_user,91342,'0x'||repeat('9',40),'privy','embedded');
   insert into public.celebrities(id,slug,status,image_url,roles,primary_role)
-    values(artist,'quiz-personal-letter','draft','/test.webp','{artist}','singer');
+    values(artist,'quiz-personal-letter','draft','/test.webp','{artist}','creator');
   insert into public.celebrity_quizzes(id,celebrity_id,version,status)
     values(quiz,artist,1,'draft');
 

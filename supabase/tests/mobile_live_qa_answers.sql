@@ -32,7 +32,7 @@ begin
     (operator_allow,'live-qa-operator@example.test','operator',true),
     (viewer_allow,'live-qa-viewer@example.test','viewer',true);
   insert into public.celebrities(id,slug,status,image_url,roles,primary_role)
-    values(creator,'live-qa-artist','draft','/artist.webp','{artist}','singer');
+    values(creator,'live-qa-artist','draft','/artist.webp','{artist}','creator');
   insert into public.celebrity_localizations(celebrity_id,locale,name,summary,image_alt)values
     (creator,'ko','답변 아티스트','설명','아티스트'),(creator,'en','Answer Artist','Summary','Artist');
   update public.celebrities set status='published',published_at=clock_timestamp()where id=creator;
