@@ -9,7 +9,7 @@ import { clearResources } from "@/components/fan-ui/resource-cache";
 import { RankingBoard } from "./ranking-board";
 
 const fanRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, score: 60 - rank, hearts: 60 - rank, points: null, nickname: `하트팬${rank}`, characterId: "c1", tier: null, isMe: false, delta: null, favorite: null, weekGain: null, dayGain: 0, ...extra });
-const creatorRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, slug: `c${rank}`, name: `크리에이터${rank}`, imageUrl: null, score: 3, hearts: 40, fans: 3, challenge: false, delta: null, weekGain: null, dayGain: 0, ...extra });
+const creatorRow = (rank: number, extra: Record<string, unknown> = {}) => ({ rank, slug: `c${rank}`, name: `크리에이터${rank}`, imageUrl: null, score: 3, hearts: 40, fans: 3, challenge: false, delta: null, weekGain: null, dayGain: 0, stats: { passports: 12, stamps: 48, proofs: 2 }, ...extra });
 const head = { state: "ready", day: "2026-11-09", computedAt: "2026-11-09T00:00:00Z", fetchedAt: "2026-11-09T00:01:00Z", comparable: true, weekGainDays: 7 };
 
 function stub(rowsFor: (kind: string, limit: number) => number = (_, limit) => limit) {
@@ -107,7 +107,7 @@ it("a row is one line: movement beside the name, LIVE, the value with today's ga
   expect(row("일등").querySelector("[data-metric] [data-unit='likes'][data-icon='star']")).not.toBeNull();
   expect(row("일등").querySelector("[data-metric] img")).toBeNull();
   fireEvent.click(row("삼등").querySelector("button")!);
-  // 대표 11/15 17:19: the stars list opens 찐팬하트·찐팬·SNS only; the way to first place is not repeated.
+  // 대표 11/15 17:19: the stars list opens its totals and SNS only; the way to first place is not repeated.
   expect(row("삼등").querySelector("[data-rank-panel]")?.textContent ?? "").not.toContain("1위까지");
   expect(row("삼등").querySelector("[data-rank-panel]")!.textContent).not.toContain("오늘");
   expect(row("새얼굴").textContent).not.toContain("신규");
@@ -325,10 +325,11 @@ it("draws no gauge bar on any row, and no way-to-first text in the line", async 
   expect(container.querySelector("li[data-row='fan-rank'] [class*='gap']")).toBeNull();
 });
 
-it("opens a fan row with 찐팬하트 and entry tickets, a creator row with 찐팬하트 and 찐팬 count under a star like count; zero stays out and no follower count is made up", async () => {
+it("opens a fan row with 찐팬하트 and entry tickets, a creator row with passports, stamps and 찐팬 인증 under a star like count; zero stays out and no follower count is made up", async () => {
   stubRows(
     [fanRow(1, { points: 900, score: 900, hearts: 12, tickets: 3, totalPoints: 900 }), fanRow(2, { nickname: "빈팬", points: 400, score: 400, hearts: 0, tickets: 0, totalPoints: 400 })],
-    [creatorRow(1, { name: "좋아요일등", likes: 50, score: 50, hearts: 77, fans: 9, totalLikes: 50 })],
+    [creatorRow(1, { name: "좋아요일등", likes: 50, score: 50, hearts: 77, fans: 9, totalLikes: 50, stats: { passports: 1234, stamps: 5678, proofs: 10 } }),
+      creatorRow(2, { slug: "c-empty", name: "인증없음", likes: 4, score: 4, hearts: 3, fans: 1, totalLikes: 4, stats: { passports: 3, stamps: 7, proofs: 0 } })],
   );
   const view = render(<RankingBoard locale="ko" />);
   await inRow("좋아요일등");
@@ -346,11 +347,13 @@ it("opens a fan row with 찐팬하트 and entry tickets, a creator row with 찐�
   expect(creator.querySelector("[data-metric='likes']")).toHaveAttribute("aria-label", "별점수 50");
   fireEvent.click(creator.querySelector("button")!);
   const creatorPanel = creator.querySelector("[data-rank-panel]")!.textContent!;
-  // 대표 11/15 16:47: "찐팬하트 ♥ 77 · 찐팬 9명"; the page likes are a star, never a heart.
-  expect(creatorPanel).toContain("찐팬하트77");
-  expect(creatorPanel).toContain("찐팬9명");
-  expect(creatorPanel.match(/하트/g)).toHaveLength(1);
-  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).toHaveAttribute("width", "20");
+  // 대표 11/26 22:17: "패스포트 발급 100, 누적 스탬프 500, 찐팬 인증 10" in that order, in place of 찐팬하트 and the 찐팬 head count; the page likes are a star, never a heart.
+  expect(creatorPanel).toBe("패스포트 발급1,234누적 스탬프5,678찐팬 인증10");
+  expect(creatorPanel).not.toMatch(/하트|명/);
+  expect(creator.querySelector("[data-rank-panel] [data-unit='hearts']")).toBeNull();
+  const noProof = view.container.querySelector("li[data-row='creator-rank']:has([title='인증없음'])") as HTMLElement;
+  fireEvent.click(noProof.querySelector("button")!);
+  expect(noProof.querySelector("[data-rank-panel]")!.textContent).toBe("패스포트 발급3누적 스탬프7");
   expect(creator.querySelector("[data-metric] [data-unit]")).toHaveAttribute("data-unit", "likes");
   expect(creator.querySelector("[data-metric] [data-unit='likes']")).toHaveAttribute("data-icon", "star");
   expect(creator.querySelector("[data-metric] [data-unit='likes']")).toHaveAttribute("fill", "none");

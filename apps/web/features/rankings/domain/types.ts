@@ -159,6 +159,8 @@ export const homeCreatorRankingRowSchema = z.object({
   totalLikes: count.optional(),
   /** Follower counts the platforms show, confirmed ones only, in a fixed platform order (public: count, rounding and the platform's wording). Absent from an older server. */
   platforms: z.array(platformFollowerSchema).max(12).optional(),
+  /** Passports issued, stamps issued all time and 찐팬 인증 (approved proofs) for the creator (대표 11/26 22:17). Absent from an older server. */
+  stats: z.object({ passports: count, stamps: count, proofs: count }).optional(),
 });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,
