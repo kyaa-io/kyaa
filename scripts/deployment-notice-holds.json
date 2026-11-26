@@ -168,7 +168,8 @@
     "release-notes/2026-11-26-chemi-ask-languages.json",
     "release-notes/2026-11-25-chemi-fortune-luck.json",
     "release-notes/2026-11-27-chemi-one-screen.json",
-    "release-notes/2026-11-27-header-badge-banners.json"
+    "release-notes/2026-11-27-header-badge-banners.json",
+    "release-notes/2026-11-27-chemi-rank-vacant.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
