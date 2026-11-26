@@ -18,7 +18,7 @@ export function renewalStampImageBaseUri(workerEnvironment: string | undefined):
 export const renewalStampImageNames = {
   post: "post", comment: "first-comment", reaction: "first-like", live_reserve: "reservation", live_attend: "attendance",
   survey: "survey", mission: "mission", event_checkin: "event-checkin", event_review: "event-review", cheer: "support",
-  proof: "proof", quiz: "knowledge", steady_checkin: "steady-checkin",
+  proof: "proof", quiz: "knowledge", steady_checkin: "steady-checkin", social_friend: "invite", social_chat: "first-comment",
 } as const;
 export function renewalStampImageUri(kind: string, workerEnvironment: string | undefined): string | undefined {
   const name = (renewalStampImageNames as Record<string, string>)[kind];

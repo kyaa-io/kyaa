@@ -23,6 +23,13 @@ const b3={
  repostReclaimed:{ko:'리포스트 회수',mn: 'Reclaimed: repost', en:'Reclaimed: repost',ja:'リポストの回収','zh-Hans':'转发奖励已收回','zh-Hant':'轉發獎勵已收回',es:'Retirado: republicación',id:'Ditarik: repost',vi:'Thu hồi: đăng lại',th:'เรียกคืน: รีโพสต์',pt:'Retirado: repost',fr:'Repris : republication',ru:'Возвращено: репост'},
  tierBonus:{ko:(t:string)=>`${t} 달성 보너스`,mn: (t:string)=>`${t} tier bonus`, en:(t:string)=>`${t} tier bonus`,ja:(t:string)=>`${t}達成ボーナス`,'zh-Hans':(t:string)=>`${t}达成奖励`,'zh-Hant':(t:string)=>`${t}達成獎勵`,es:(t:string)=>`Bono por llegar a ${t}`,id:(t:string)=>`Bonus mencapai ${t}`,vi:(t:string)=>`Thưởng đạt hạng ${t}`,th:(t:string)=>`โบนัสถึงระดับ ${t}`,pt:(t:string)=>`Bônus por chegar a ${t}`,fr:(t:string)=>`Bonus niveau ${t}`,ru:(t:string)=>`Бонус за уровень ${t}`},
 } satisfies Record<string,Record<AppLocale,string|((tier:string)=>string)>>;
+// Social actions that pay 1 point (dukjil_action_log action keys written by record_social_earn).
+const social:Record<string,Record<AppLocale,string>>={
+ friend_add:{ko:'친구 추가',mn:'Friend added',en:'Friend added',ja:'友だち追加','zh-Hans':'添加好友','zh-Hant':'加入好友',es:'Amistad añadida',id:'Tambah teman',vi:'Kết bạn',th:'เพิ่มเพื่อน',pt:'Amizade adicionada',fr:'Ami ajouté',ru:'Добавление в друзья'},
+ chat:{ko:'대화',mn:'Chat',en:'Chat',ja:'トーク','zh-Hans':'聊天','zh-Hant':'聊天',es:'Chat',id:'Obrolan',vi:'Trò chuyện',th:'แชต',pt:'Conversa',fr:'Discussion',ru:'Чат'},
+ comment_like:{ko:'댓글 좋아요',mn:'Comment like',en:'Comment like',ja:'コメントへのいいね','zh-Hans':'点赞评论','zh-Hant':'留言按讚',es:'Me gusta en un comentario',id:'Suka komentar',vi:'Thích bình luận',th:'ถูกใจคอมเมนต์',pt:'Curtida em comentário',fr:"J'aime sur un commentaire",ru:'Лайк комментария'},
+ comment_reply:{ko:'답글',mn:'Reply',en:'Reply',ja:'返信','zh-Hans':'回复','zh-Hant':'回覆',es:'Respuesta',id:'Balasan',vi:'Trả lời',th:'ตอบกลับ',pt:'Resposta',fr:'Réponse',ru:'Ответ'},
+};
 // Reclaimed points after a post/comment is deleted or hidden (dukjil_point_corrections.void_reason content_deleted / content_hidden).
 const reclaimed={
  post:{ko:'글 삭제로 회수',mn: 'Reclaimed: post deleted', en:'Reclaimed: post deleted',ja:'投稿の削除により回収','zh-Hans':'因删除帖子而收回','zh-Hant':'因刪除貼文而收回',es:'Retirado por eliminar la publicación',id:'Ditarik karena postingan dihapus',vi:'Thu hồi do xóa bài viết',th:'ถูกเรียกคืนเพราะลบโพสต์',pt:'Retirado por exclusão da publicação',fr:'Repris suite à la suppression de la publication',ru:'Возвращено из-за удаления публикации'},
@@ -48,6 +55,7 @@ function activityName(locale:AppLocale,actionKey:string|null|undefined):string|n
  if(actionKey==='invite_friend')return invitedFriend[locale];
  if(actionKey==='cheer')return b3.cheer[locale];
  if(actionKey==='insta_repost')return b3.repost[locale];
+ if(actionKey&&Object.hasOwn(social,actionKey))return social[actionKey][locale];
  return actionKey&&GUIDE_ACTIVITIES.has(actionKey)?activityLabel(locale,actionKey as GuideActivityKey):null;
 }
 export function walletHistoryLabel(locale:AppLocale,sourceType:string,detail:WalletHistoryDetail={}):string|null {

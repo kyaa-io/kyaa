@@ -2,6 +2,7 @@ import "server-only";
 
 import { z } from "zod";
 import { AuthError } from "@/features/auth/domain/auth-errors";
+import { awardSocialEarn } from "@/server/dukjil/social-earn";
 import { celebritySlugSchema } from "@/features/fanpage/domain/community";
 import { publicAvatarUrlSchema } from "@/features/profile/domain/avatar";
 import { mobileAccountLevelSchema, mobileActivityCursorSchema, mobileActivitySchema } from "@/server/mobile-profile/domain";
@@ -150,7 +151,11 @@ export function createSocialHandlers(deps: SocialDependencies) {
     async setSettings(request: Request) { try { const appUserId = await owner(request, deps); const input = privacyInput.parse(await body(request)); return json(await deps.rpc("set_owned_social_settings", { p_app_user_id: appUserId, p_profile_visible: true, p_favorite_slugs: input.favoriteSlugs, p_dm_policy: input.dmPolicy })); } catch (error) { return failure(error); } },
     async listFriends(request: Request) { try { const url = new URL(request.url); const facts = z.enum(["facts"]).optional().parse(one(url, "fields") ?? undefined) === "facts"; return json(await deps.rpc(facts ? "read_owned_social_friends_facts" : "read_owned_social_friends", { p_app_user_id: await owner(request, deps), p_locale: locale.parse(one(url, "locale") ?? "ko") })); } catch (error) { return failure(error); } },
     async requestFriend(request: Request) { try { const input = friendInput.parse(await body(request)); return json(await deps.rpc("request_social_friend", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_celebrity_slug: input.celebritySlug ?? null, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
-    async resolveFriend(request: Request, id: string) { try { const input = resolveInput.parse(await body(request)); return json(await deps.rpc("resolve_social_friend", { p_app_user_id: await owner(request, deps), p_friendship_id: uuid.parse(id), p_action: input.action, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
+    async resolveFriend(request: Request, id: string) { try { const input = resolveInput.parse(await body(request)); const appUserId = await owner(request, deps), friendshipId = uuid.parse(id);
+      const result = await deps.rpc("resolve_social_friend", { p_app_user_id: appUserId, p_friendship_id: friendshipId, p_action: input.action, p_request_id: input.requestId });
+      // An accepted request pays the member who asked, once per pair (the database reads the friendship).
+      if (input.action === "accept") await awardSocialEarn(deps, appUserId, "friend_add", friendshipId);
+      return json(result); } catch (error) { return failure(error); } },
     async listBlocks(request: Request) { try { const url = new URL(request.url); const closed = z.enum(["closed"]).optional().parse(one(url, "fields") ?? undefined) === "closed"; const appUserId = await owner(request, deps); return json(closed ? checked(closedBlocksSchema, await deps.rpc("read_owned_social_blocks_closed", { p_app_user_id: appUserId })) : await deps.rpc("read_owned_social_blocks", { p_app_user_id: appUserId })); } catch (error) { return failure(error); } },
     /** GET /api/profiles/by-ref: the profile window from a content ref, signed in or out. Never writes. */
     async profileByRef(request: Request) { try {
@@ -173,7 +178,12 @@ export function createSocialHandlers(deps: SocialDependencies) {
     async requestDm(request: Request) { try { const input = dmRequestInput.parse(await body(request)); if (input.assetId) throw new SyntaxError("First DM attachments require accepted conversation"); return json(await deps.rpc("request_social_dm", { p_app_user_id: await owner(request, deps), p_profile_id: input.profileId, p_body: input.text, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async resolveDm(request: Request, id: string) { try { const input = dmResolveInput.parse(await body(request)); return json(await deps.rpc("resolve_social_dm", { p_app_user_id: await owner(request, deps), p_conversation_id: uuid.parse(id), p_action: input.action, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async messages(request: Request, id: string) { try { const url = new URL(request.url); const cursor = decodeCursor(one(url, "cursor")); return json(await deps.rpc("read_social_dm_messages", { p_app_user_id: await owner(request, deps), p_conversation_id: uuid.parse(id), p_after: cursor?.at ?? null, p_after_id: cursor?.id ?? null, p_limit: z.coerce.number().int().min(1).max(100).parse(one(url, "limit") ?? 50) })); } catch (error) { return failure(error); } },
-    async sendMessage(request: Request, id: string) { try { const input = messageInput.parse(await body(request)); return json(await deps.rpc("send_social_dm_message", { p_app_user_id: await owner(request, deps), p_conversation_id: uuid.parse(id), p_body: input.text, p_asset_id: input.assetId ?? null, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
+    async sendMessage(request: Request, id: string) { try { const input = messageInput.parse(await body(request)); const appUserId = await owner(request, deps);
+      const result = await deps.rpc("send_social_dm_message", { p_app_user_id: appUserId, p_conversation_id: uuid.parse(id), p_body: input.text, p_asset_id: input.assetId ?? null, p_request_id: input.requestId });
+      // The first message to each conversation a day pays the sender (the database reads the message).
+      const sent = z.object({ id: uuid, replayed: z.literal(false) }).safeParse(result);
+      if (sent.success) await awardSocialEarn(deps, appUserId, "chat", sent.data.id);
+      return json(result); } catch (error) { return failure(error); } },
     async react(request: Request, id: string) { try { const input = reactionInput.parse(await body(request)); return json(await deps.rpc("react_social_dm_message", { p_app_user_id: await owner(request, deps), p_message_id: uuid.parse(id), p_reaction: input.reaction, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
     async removeMessage(request: Request, id: string) { try { return json(await deps.rpc("delete_owned_social_dm_message", { p_app_user_id: await owner(request, deps), p_message_id: uuid.parse(id) })); } catch (error) { return failure(error); } },
     async reportMessage(request: Request, id: string) { try { const input = reportInput.parse(await body(request)); return json(await deps.rpc("report_social_dm_message", { p_app_user_id: await owner(request, deps), p_message_id: uuid.parse(id), p_reason: input.reason, p_details: input.details ?? null, p_request_id: input.requestId })); } catch (error) { return failure(error); } },
