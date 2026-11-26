@@ -130,7 +130,7 @@ describe("canonical 03 guest home", () => {
     const jjinfan = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" homeSlots={{ home_mid: adBanner, home_below_board: thinBanner }} />);
     order(jjinfan.container, [hero, '[data-banner-size="mid"]', "#home-ranking", '[data-banner-slot="home_top"] [data-banner-slot="home-below-ranking"]', '[data-banner-size="thin"]']);
   });
-  it("shows the ad as picture only with a top-right 광고 mark, a new-tab sponsored link and alt text", () => {
+  it("shows the ad as picture only with a top-right 광고 mark and +5 reward badge, a new-tab sponsored link and alt text", () => {
     const { container } = render(<GuestHome {...defaultProps} homeSlots={{ home_mid: adBanner }} />);
     const strip = container.querySelector('[data-banner-size="mid"]')!;
     const link = strip.querySelector("a")!;
@@ -139,7 +139,8 @@ describe("canonical 03 guest home", () => {
     expect(link.getAttribute("rel")).toContain("sponsored");
     expect(link).toHaveAttribute("data-outbound-placement", "content");
     expect(strip.querySelector("img")).toHaveAttribute("alt", "로컬바이브 광고");
-    expect(link.textContent).toBe("광고");
+    expect(link.querySelector("[data-fan-tag]")).toHaveTextContent("광고");
+    expect(link.querySelector("[data-ad-reward=points]")).toHaveTextContent("+5");
   });
   it("draws nothing for the ad slot when empty, and the ranking follows the hero directly", () => {
     const donation = render(<GuestHome {...defaultProps} jjinfanGauge />);
