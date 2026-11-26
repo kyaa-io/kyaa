@@ -1,5 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-import { htmlLimitedBots } from "@/seo/bots";
+import { isOutboundPreview, recordOutboundVisit } from "../outbound-visit";
 
 export const dynamic = "force-dynamic";
 
@@ -10,30 +9,8 @@ const headers = {
 };
 
 export async function GET(request: Request): Promise<Response> {
-  // ponytail: header filtering excludes known previews, not all bots; add verified bot detection if abuse affects reporting.
-  const userAgent = request.headers.get("user-agent") ?? "";
-  // Instagram-only campaign: Meta scans rotate Chrome UAs but refer from Facebook.
-  // Facebook referrals (including real ones) are outside this campaign's count.
-  const facebookLinkScan = /^https:\/\/(?:www\.)?facebook\.com(?:[/?#]|$)/i
-    .test(request.headers.get("referer") ?? "");
-  const preview = htmlLimitedBots.test(userAgent) || /bot|crawler|spider|meta-external/i.test(userAgent)
-    || facebookLinkScan
-    || /prefetch|prerender/i.test(`${request.headers.get("purpose") ?? ""} ${request.headers.get("sec-purpose") ?? ""}`)
-    || request.headers.has("next-router-prefetch");
-
-  if (request.method === "GET" && !preview) {
-    try {
-      const database = createClient(process.env.SUPABASE_URL ?? "", process.env.SUPABASE_SERVICE_ROLE_KEY ?? "", {
-        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-      });
-      const { error } = await database.from("outbound_link_visits")
-        .insert({ campaign: "elina-banksy-instagram" })
-        .abortSignal(AbortSignal.timeout(1_500));
-      if (error) throw error;
-    } catch {
-      // Keep the destination reachable even when measurement is unavailable.
-      console.error("outbound_link_visit_failed", { campaign: "elina-banksy-instagram" });
-    }
+  if (request.method === "GET" && !isOutboundPreview(request)) {
+    await recordOutboundVisit("elina-banksy-instagram");
   }
 
   return new Response(null, { status: 302, headers: { ...headers, location: destination } });
