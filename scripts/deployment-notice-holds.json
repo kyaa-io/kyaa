@@ -182,7 +182,8 @@
     "release-notes/2026-11-26-admin-home-banners.json"
   ],
   "account-switch": [
-    "release-notes/2026-11-25-account-switch.json"
+    "release-notes/2026-11-25-account-switch.json",
+    "release-notes/2026-11-27-my-header.json"
   ],
   "donation-vote": [
     "release-notes/2026-11-25-new-year-donation-vote.json",

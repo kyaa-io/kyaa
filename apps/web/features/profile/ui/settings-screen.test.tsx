@@ -5,6 +5,8 @@ import {
   resolveBrowserPermissionState,
   SettingsScreen,
 } from "./settings-screen";
+import { AccountSwitchReleaseProvider } from "@/features/auth/client/account-switch-release";
+import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import type { SettingsSection } from "../domain/settings-navigation";
 
 const { authState, sessionState, enablePushNotifications } = vi.hoisted(() => ({
@@ -156,6 +158,22 @@ describe("FAN-020 settings", () => {
         });
       throw new Error(`Unexpected URL ${url}`);
     });
+  });
+
+  it("opens account switch from the settings menu when enabled", async () => {
+    render(
+      <GroupsReleaseProvider enabled>
+        <AccountSwitchReleaseProvider enabled>
+          <SettingsScreen locale="ko" />
+        </AccountSwitchReleaseProvider>
+      </GroupsReleaseProvider>,
+    );
+
+    fireEvent.click(await screen.findByRole("button", { name: "계정 전환" }));
+    expect(await screen.findByRole("dialog", { name: "계정 전환" })).toHaveTextContent(settings.nickname);
+    fireEvent.click(screen.getByRole("button", { name: "다른 계정으로 로그인" }));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith("/login?locale=ko&returnTo=%2F%3Flocale%3Dko"));
+    expect(logout).toHaveBeenCalledTimes(1);
   });
 
   it("shows one stable loading state until the owner session is resolved", () => {
