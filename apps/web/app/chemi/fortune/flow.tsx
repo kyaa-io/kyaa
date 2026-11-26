@@ -47,6 +47,7 @@ import {
   type Participation,
 } from "./reading";
 import { kstDate, kstDayStart } from "./result-copy";
+import { gradeKey, luckValue } from "./deep/copy";
 import { AskScene } from "@/features/chemi/ask/ask-scene";
 import { exitFortune } from "./exit";
 import { askGo, useAskLocation } from "@/features/chemi/ask/location";
@@ -362,7 +363,7 @@ export function FortuneFlow({
         character={character}
         readingId={reading.readingId}
         at={ask}
-        result={reading.result.locked ? undefined : text("scoreGrade", { score: reading.result.score, grade: reading.result.grade.name })}
+        result={reading.result.locked ? undefined : text("scoreGrade", { score: reading.result.score, grade: locale === "ko" ? reading.result.grade.name : text(gradeKey(reading.result.score)) })}
       />
     );
   if (step === "result" && reading)
@@ -563,9 +564,9 @@ export function FortuneFlow({
               <dl className={styles.luck}>
                 {(
                   [
-                    [text("color"), result.luck.color],
+                    [text("color"), luckValue(result.luck.color, locale)],
                     [text("number"), result.luck.number],
-                    [text("direction"), result.luck.direction],
+                    [text("direction"), luckValue(result.luck.direction, locale)],
                     [
                       text("luckyTime"),
                       result.luck.luckyHour &&

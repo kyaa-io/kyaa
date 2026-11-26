@@ -28,8 +28,8 @@ import { ShareLanding } from "@/features/chemi/ui/result/share-landing";
 import { completeShare } from "@/features/chemi/ui/complete-share";
 import { CHEMI_PASSPORT_DAILY_POINTS } from "@/features/chemi/domain/reward";
 import { ReadingBasisRows } from "@/features/chemi/ui/result/reading-depth";
-import { flowKey, gradeKey, periodKey } from "./deep/copy";
-import { englishFieldNotes, englishFortuneBasis, englishFortuneFlow, englishFortuneVoice, englishHeadline, englishSpirits, englishStages, englishValue } from "./result.en";
+import { flowKey, gradeKey, luckValue, periodKey } from "./deep/copy";
+import { englishFieldNotes, englishFortuneBasis, englishFortuneFlow, englishFortuneVoice, englishHeadline, englishSpirits, englishStages } from "./result.en";
 import { fortuneBasis, fortuneFieldDetail, fortuneFieldNote, fortuneFlow } from "./depth";
 import { fortuneCharacters, fortuneTalkLine, type FortuneCharacterId } from "./lines";
 import { parseNewFortune, todayKst, type FortuneReading as Reading } from "./reading";
@@ -528,10 +528,10 @@ export function FortuneResult({
           <FanDisclosure label={uiText("luck")} defaultOpen={focus === "luck"}>
             <dl className={styles.facts}>
               {Object.entries({
-                [uiText("tableColor")]: korean ? result.luck.color : englishValue(result.luck.color),
+                [uiText("tableColor")]: luckValue(result.luck.color, locale),
                 [uiText("tableNumber")]: result.luck.number,
-                [uiText("tableDirection")]: korean ? result.luck.direction : englishValue(result.luck.direction),
-                [uiText("tableItem")]: korean ? result.luck.item : englishValue(result.luck.item),
+                [uiText("tableDirection")]: luckValue(result.luck.direction, locale),
+                [uiText("tableItem")]: luckValue(result.luck.item, locale),
                 [uiText("tableLuckyhour")]:
                   result.luck.luckyHour &&
                   uiText("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),

@@ -1,8 +1,12 @@
 /**
- * 질문하기 장면에서 최애가 하는 말과 주제별 예시 질문. 다른 케미 대화 줄(fortune/lines.ts 등)처럼 한국어 원문만 둔다.
+ * 질문하기 장면에서 최애가 하는 말과 주제별 예시 질문. 한국어 원문은 이 파일에, 다른 12개 언어는 locales/ 에 둔다
+ * (언어를 안 주면 한국어: 서버가 한국어 프롬프트를 만들 때 쓴다).
  * 최애는 한도·오류·결제를 말하지 않는다(L158): 그런 안내는 화면 글자(chemi.json readingUi.ask*)가 맡는다.
  */
 import type { Expression } from "@/features/chemi/ui/scene-expression";
+import type { AppLocale } from "@/i18n/locales";
+import { askPacks } from "./locales";
+import type { AskPack, Pair } from "./locales/types";
 
 export const ASK_TOPICS = ["love", "work", "money", "people", "month", "free"] as const;
 export type AskTopic = (typeof ASK_TOPICS)[number];
@@ -150,11 +154,32 @@ const askOwn: Partial<Record<AskCharacter, Partial<(typeof askLines)[Voice]>>> =
   },
 };
 
+type Lines = (typeof askLines)[Voice];
+
+/** 한국어 밖 언어의 문구 묶음. 한국어면 null. */
+const packOf = (locale: AppLocale): AskPack | null => (locale === "ko" ? null : askPacks[locale]);
+/** 반말로 답하는 최애에게는 앞 글, 나머지는 뒤 글. 글이 하나뿐이면 그대로. */
+const pick = (pair: Pair, character: AskCharacter) => (typeof pair === "string" ? pair : pair[askVoice[character] === "ban" ? 0 : 1]);
+const fill = (template: string, values: Record<string, string | number>) => template.replace(/\{(\w+)\}/g, (match, key: string) => String(values[key] ?? match));
+
 /** 질문하기에서 그 최애가 하는 말. */
-export const askLinesFor = (character: AskCharacter) => ({ ...askLines[askVoice[character]], ...askOwn[character] });
+export function askLinesFor(character: AskCharacter, locale: AppLocale = "ko"): Lines {
+  const pack = packOf(locale);
+  if (!pack) return { ...askLines[askVoice[character]], ...askOwn[character] };
+  const voice = pack.voices[askVoice[character]];
+  const own = character === "dosa" ? null : pack.own[character];
+  return {
+    ...voice,
+    topic: own?.topic ?? voice.topic,
+    follow: own?.follow ?? voice.follow,
+    think: (what) => fill(own?.think ?? voice.think, { what }),
+    recall: (days) => (days > 1 ? fill(voice.recallDays, { days }) : voice.recallFirst),
+  };
+}
 
 /** 답을 기다리는 말에 넣는 이름: 최애가 다시 펼쳐 보는 것. */
 export const askSubject: Record<AskContent, string> = { saju: "사주", fortune: "운세", star: "별자리", tarot: "카드" };
+export const askSubjectFor = (content: AskContent, locale: AppLocale = "ko") => packOf(locale)?.subject[content] ?? askSubject[content];
 
 /** 누르면 입력칸에 채워지는 예시. 반말로 답하는 최애에게는 반말, 나머지는 존댓말. */
 const examples: Record<AskTopic, readonly (readonly [ban: string, yo: string])[]> = {
@@ -195,7 +220,8 @@ const reactions: Record<AskReaction, readonly [ban: string, yo: string]> = {
   really: ["진짜?", "정말요?"],
   worried: ["좀 걱정돼", "조금 걱정돼요"],
 };
-export const askReaction = (kind: AskReaction, character: AskCharacter) => reactions[kind][askVoice[character] === "ban" ? 0 : 1];
+export const askReaction = (kind: AskReaction, character: AskCharacter, locale: AppLocale = "ko") =>
+  packOf(locale) ? pick(packOf(locale)!.reactions[kind], character) : reactions[kind][askVoice[character] === "ban" ? 0 : 1];
 
 /** 반응 칩마다 최애 표정: 고마워 = 웃음, 진짜? = 놀람, 좀 걱정돼 = 기본(달래는 말에 웃거나 놀라지 않는다). */
 export const askReactionExpression = {
@@ -209,7 +235,8 @@ const recalls: Record<AskRecall, readonly [ban: string, yo: string]> = {
   notyet: ["아직이야", "아직이에요"],
   skip: ["새로 물을래", "새로 물을래요"],
 };
-export const askRecall = (kind: AskRecall, character: AskCharacter) => recalls[kind][askVoice[character] === "ban" ? 0 : 1];
+export const askRecall = (kind: AskRecall, character: AskCharacter, locale: AppLocale = "ko") =>
+  packOf(locale) ? pick(packOf(locale)!.recalls[kind], character) : recalls[kind][askVoice[character] === "ban" ? 0 : 1];
 
 /**
  * 이어 묻기에서 누르면 입력칸에 채워지는 말. 방금 고른 반응에 맞는 말이 맨 앞에 온다
@@ -220,9 +247,10 @@ const followups: Record<AskReaction, readonly [ban: string, yo: string]> = {
   worried: ["뭘 조심하면 돼?", "뭘 조심하면 돼요?"],
   thanks: ["하나만 더 알려 줘", "하나만 더 알려 줘요"],
 };
-export function askFollowups(character: AskCharacter, first: AskReaction | null) {
+export function askFollowups(character: AskCharacter, first: AskReaction | null, locale: AppLocale = "ko") {
   const order = first ? [first, ...ASK_REACTIONS.filter((kind) => kind !== first)] : (["really", "worried", "thanks"] as const);
-  return order.map((kind) => followups[kind][askVoice[character] === "ban" ? 0 : 1]);
+  const pack = packOf(locale);
+  return order.map((kind) => (pack ? pick(pack.followups[kind], character) : followups[kind][askVoice[character] === "ban" ? 0 : 1]));
 }
 
 /** 한 쪽에 담는 글자 수. 대화 상자 다섯 줄(390px)에 들어간다: 근거 한 줄과 조언 두 문장이 한 쪽에 놓인다. */
@@ -244,8 +272,8 @@ export function askPages(answer: string, wide = false) {
   return pages.map((page) => page.trim()).filter(Boolean);
 }
 
-export const askExamples = (topic: AskTopic, character: AskCharacter) =>
-  examples[topic].map((pair) => pair[askVoice[character] === "ban" ? 0 : 1]);
+export const askExamples = (topic: AskTopic, character: AskCharacter, locale: AppLocale = "ko") =>
+  (packOf(locale)?.examples[topic] ?? examples[topic]).map((pair) => pick(pair, character));
 
 /** 결과 화면에서 온 질문의 예시(기획 03-6 33): 결과 종류마다 6개, 날마다 3개를 돌려 보인다. */
 const resultExamples: Record<AskContent, readonly (readonly [ban: string, yo: string])[]> = {
@@ -283,10 +311,10 @@ const resultExamples: Record<AskContent, readonly (readonly [ban: string, yo: st
   ],
 };
 /** day = 한국 날짜(YYYY-MM-DD). 같은 날에는 같은 3개. */
-export function askResultExamples(content: AskContent, character: AskCharacter, day: string) {
-  const list = resultExamples[content];
+export function askResultExamples(content: AskContent, character: AskCharacter, day: string, locale: AppLocale = "ko") {
+  const list = packOf(locale)?.resultExamples[content] ?? resultExamples[content];
   const start = Number(day.slice(8, 10)) % 2 ? 3 : 0;
-  return list.slice(start, start + 3).map((pair) => pair[askVoice[character] === "ban" ? 0 : 1]);
+  return list.slice(start, start + 3).map((pair) => pick(pair, character));
 }
 
 /** 결과 화면에서 바로 들어왔을 때 최애의 첫 마디: 방금 본 결과를 이어받아 묻는다. */
@@ -310,7 +338,8 @@ const resultLines: Record<Voice, Record<AskContent, string>> = {
     tarot: "방금 뽑은 카드로 답하겠소. 바라는 것 하나를 말해 보시오.",
   },
 };
-export const askResultLine = (content: AskContent, character: AskCharacter) => resultLines[askVoice[character]][content];
+export const askResultLine = (content: AskContent, character: AskCharacter, locale: AppLocale = "ko") =>
+  (packOf(locale)?.resultLines ?? resultLines)[askVoice[character]][content];
 
 /** 장면 그림(세로·가로)과 대화판 얼굴. 네 콘텐츠가 이미 쓰는 승인 원화를 그대로 쓴다. */
 export function askArt(content: AskContent, character: AskCharacter) {
@@ -360,12 +389,15 @@ export const waitingLines: Record<AskCharacter, string> = {
   yuna: "여기서 네가 챙길 거 하나만 콕 짚어 볼게.",
   dosa: "그대의 물음과 맞닿은 대목을 살피고 있소.",
 };
+export const askWaiting = (character: AskCharacter, locale: AppLocale = "ko") => (packOf(locale)?.waiting ?? waitingLines)[character];
 
-export function askReply(reaction: AskReaction, who: AskCharacter, answer: string) {
-  const fallback = askLinesFor(who).react[reaction];
+export function askReply(reaction: AskReaction, who: AskCharacter, answer: string, locale: AppLocale = "ko") {
+  const fallback = askLinesFor(who, locale).react[reaction];
   const excerpt = answer.trim().match(/^[^.!?。！？\n]{1,64}(?=[.!?。！？\n]|$)/u)?.[0]
     ?? answer.match(/[\p{L}\p{N}]{2,24}/u)?.[0];
   if (!excerpt || reaction !== "really") return fallback;
+  const pack = packOf(locale);
+  if (pack) return fill(pack.quote[who], { q: excerpt });
   return {
     changha: `응. “${excerpt}” 이 말 기억해 둬.`,
     elina: `네. “${excerpt}” 이 부분을 떠올려 봐요.`,

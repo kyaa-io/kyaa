@@ -11,6 +11,8 @@ import { BirthDateField } from "@/features/chemi/ui/frame/birth-fields";
 import { DateShortage } from "./date-shortage";
 import { parseNewFortune, todayKst, type FortuneReading } from "./reading";
 import { flowNotes } from "./result-copy";
+import { luckValue } from "./deep/copy";
+import type { AppLocale } from "@/i18n/locales";
 import styles from "./result.module.css";
 
 /** 숫자 8자리(YYYY.MM.DD)가 실제 있는 날짜면 YYYY-MM-DD, 아니면 null. */
@@ -133,7 +135,7 @@ export function DatePurchase({
           </FanText>
           <p>{flowNotes[saved.result.grade.name]}</p>
           <p>{uiText("fortuneScore", { score: saved.result.score })}</p>
-          <p>{uiText("luckyPair", { color: saved.result.luck.color, number: saved.result.luck.number })}</p>
+          <p>{uiText("luckyPair", { color: luckValue(saved.result.luck.color, locale as AppLocale), number: saved.result.luck.number })}</p>
         </div>
       ) : quote ? (
         <div aria-live="polite">

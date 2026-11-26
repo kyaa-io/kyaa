@@ -205,6 +205,21 @@ async function motion(screen, path, selector, index, loops = false) {
   }
 }
 
+/**
+ * CHEMI_ASK_PATH 를 안 주면 로그인 상태 파일의 계정이 저장해 둔 사주 첫 풀이로 질문 주소를 만든다.
+ * 세션 쿠키로 액세스 토큰을 받아 풀이 목록(최신순)에서 첫 풀이를 고른다. 계정에 저장된 풀이가 없으면 실패로 남는다.
+ */
+async function savedAskPath(context) {
+  const session = await context.request.get(new URL("/api/auth/cognito/session", base).href);
+  const { accessToken } = session.ok() ? await session.json() : {};
+  assert.ok(accessToken, "the saved login state has no live session; renew CHEMI_STORAGE_STATE");
+  const list = await context.request.get(new URL("/api/chemi/readings?content=saju", base).href, { headers: { Authorization: `Bearer ${accessToken}` } });
+  assert.ok(list.ok(), `reading list returned ${list.status()}`);
+  const first = (await list.json()).find(row => row.kind === "first" && row.character && row.readingId);
+  assert.ok(first, "the test account has no saved Saju reading; open /chemi/saju once with it");
+  return `/chemi/saju?step=result&c=${first.character}&r=${first.readingId}&ask=topic`;
+}
+
 try {
   if (!captureOnly) await catalogChecks();
   for (const width of [390, 1440]) {
@@ -219,7 +234,10 @@ try {
         storageState: process.env.CHEMI_STORAGE_STATE,
       }) : page;
       askPage.setDefaultTimeout(5000);
-      for (const [screen, path] of Object.entries(routes)) {
+      let askPath = process.env.CHEMI_ASK_PATH;
+      if (askPage !== page && !askPath) await gate("ask", "-", `seed-${width}`, async () => { askPath = await savedAskPath(askPage.context()); });
+      for (const [screen, route] of Object.entries(routes)) {
+        const path = screen === "ask" && askPath ? askPath : route;
         const scenePage = screen === "ask" ? askPage : page;
         if (captureOnly && !["entry", "match", "run"].includes(screen)) continue;
         let english = [];
@@ -227,8 +245,8 @@ try {
           let loaded = false;
           await gate(screen, locale, `screen-${width}`, async () => {
             if (screen === "ask") {
-              assert.ok(process.env.CHEMI_ASK_PATH && process.env.CHEMI_STORAGE_STATE,
-                "set CHEMI_ASK_PATH and CHEMI_STORAGE_STATE for a seeded test account");
+              assert.ok(askPath && process.env.CHEMI_STORAGE_STATE,
+                "set CHEMI_STORAGE_STATE (kyaa-t3 chemi-check fills it for DEV) for a seeded test account");
             }
             await open(scenePage, path, locale);
             if (screen === "ask") await scenePage.locator('[data-ask-step]').waitFor();
