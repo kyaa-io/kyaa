@@ -1,7 +1,7 @@
 import {render,screen,waitFor} from '@testing-library/react';
 import {beforeEach,expect,it,vi} from 'vitest';
 import {RequestTimeoutError} from '@/features/reliability/client/request-deadline';
-import {DukjilProvider,resetDukjilCatalogCache,useDukjilStatus} from './dukjil-provider';
+import {DukjilEarnOff,DukjilProvider,resetDukjilCatalogCache,useDukjil,useDukjilStatus} from './dukjil-provider';
 const state=vi.hoisted(()=>({request:undefined as any,today:0,ready:true}));
 vi.mock('@/features/groups/ui/use-group-resource',()=>({useGroupRequest:()=>({authenticated:true,ready:state.ready,ownerKey:'u',request:state.request}),useGroupResource:(path:string|null)=>{if(path)state.today+=1;return {data:undefined,failure:undefined,retry:()=>{}};}}));
 function Probe(){const s=useDukjilStatus('ko');return <p data-testid='s'>{s}</p>;}
@@ -49,4 +49,16 @@ it('a catalog read cut off by the sign-in handoff is read again and never shows 
  await waitFor(()=>expect(screen.getByTestId('s').textContent).toBe('on'));
  expect(seen).not.toContain('off');
  expect(state.request).toHaveBeenCalledTimes(2);
+});
+
+it('a fan-made (Unverified) page reads as policy off: no catalog points and no today read',async()=>{
+ state.request=vi.fn().mockResolvedValue({version:1,rules:{checkin:{points:2}},missionBook:null});
+ function Points(){const d=useDukjil();return <p data-testid='p'>{d?.status}:{String((d?.catalog?.rules.checkin as {points?:number}|undefined)?.points)}</p>;}
+ const view=render(<DukjilProvider slug='a' locale='ko'><Points/></DukjilProvider>);
+ await waitFor(()=>expect(screen.getByTestId('p').textContent).toBe('on:2'));
+ const todayReads=state.today;
+ view.unmount();
+ render(<DukjilEarnOff off><DukjilProvider slug='a' locale='ko'><Points/></DukjilProvider></DukjilEarnOff>);
+ await waitFor(()=>expect(screen.getByTestId('p').textContent).toBe('off:undefined'));
+ expect(state.today).toBe(todayReads);
 });

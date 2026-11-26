@@ -60,18 +60,28 @@ function useCatalog(locale: AppLocale) {
   return { catalog: ready ? state?.catalog : undefined, settled: ready, ready: auth.ready, authenticated: auth.authenticated, ownerKey: auth.ownerKey };
 }
 
+/** A fan-made (Unverified) creator page pays no 덕질 points. Providers under it act as if no policy were active: no point badges, no `today` read. */
+const EarnOffContext = createContext(false);
+export function DukjilEarnOff({ off, children }: { off: boolean; children: ReactNode }) {
+  return <EarnOffContext.Provider value={off}>{children}</EarnOffContext.Provider>;
+}
+
 /** One catalog read and (with a slug) one `today` read; every badge, tile and the dialog reads from here. */
 /** `accountToday`: without a slug, still read the account-wide `today` (the head of the mission card on a page that has no creator). */
 type ProviderProps = { slug?: string; locale: AppLocale; hasPassport?: boolean; accountToday?: boolean; children: ReactNode };
 /** A provider for the same creator and locale already above this one is reused, so nested screens share one catalog and one `today` read. */
 export function DukjilProvider(props: ProviderProps) {
   const parent = useDukjil();
-  if (parent && parent.slug === props.slug && parent.locale === props.locale && props.hasPassport === undefined) return <>{props.children}</>;
+  const earnOff = useContext(EarnOffContext);
+  if (parent && (!earnOff || parent.status === "off") && parent.slug === props.slug && parent.locale === props.locale && props.hasPassport === undefined) return <>{props.children}</>;
   return <DukjilProviderRoot {...props} />;
 }
 
 function DukjilProviderRoot({ slug, locale, hasPassport, accountToday = false, children }: ProviderProps) {
-  const { catalog, settled, ready, authenticated, ownerKey } = useCatalog(locale);
+  const read = useCatalog(locale);
+  const earnOff = useContext(EarnOffContext);
+  const { settled, ready, authenticated, ownerKey } = read;
+  const catalog = earnOff ? undefined : read.catalog;
   const catalogOn = catalogIsActive(catalog);
   const today = useGroupResource(authenticated && catalogOn && (slug || accountToday) ? `/api/me/dukjil/today${slug ? `?creator=${encodeURIComponent(slug)}` : ""}` : null, parseDukjilToday);
   const scope = JSON.stringify([ownerKey, slug]);
