@@ -16,7 +16,6 @@ import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import type { AppLocale } from "@/i18n/locales";
 import { DatePurchase } from "../date-purchase";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
-import { englishValue } from "../result.en";
 import type { FortuneCharacterId } from "../lines";
 import { band } from "../result-copy";
 import result from "../result.module.css";
@@ -26,6 +25,7 @@ import {
   deepArt,
   flowKey,
   gradeKey,
+  luckValue,
   periodKey,
   scoreLevel,
   voiced,
@@ -60,17 +60,6 @@ const periods = [
   ["afternoon", 11, 17],
   ["night", 17, 23],
 ] as const;
-
-const mongolianLuck: Record<string,string> = {
-  초록: "Ногоон", 빨강: "Улаан", 노랑: "Шар", 하양: "Цагаан", 검정: "Хар",
-  "나무 연필": "Модон харандаа", "빨간 펜": "Улаан үзэг", "도자기 컵": "Шаазан аяга",
-  "금속 책갈피": "Металл хавчуурга", 물병: "Усны сав",
-};
-
-function luckValue(value: string, locale: AppLocale) {
-  if (locale === "mn") return mongolianLuck[value] ?? value;
-  return locale === "en" ? englishValue(value) ?? value : value;
-}
 
 export function deepHref(view: View | "card", props: { character: string; locale: string; readingId?: string }) {
   const query = new URLSearchParams({ locale: props.locale, c: props.character });

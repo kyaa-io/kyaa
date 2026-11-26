@@ -7,9 +7,11 @@ kyaa-t3 chemi-check https://dev.kyaa.io
 kyaa-t3 chemi-check http://localhost:3479
 ```
 
+`CHEMI_SCREENS=ask,guide` limits the run to the named screens (and skips the catalogue check), which helps on a slow local dev server. `CHEMI_LOCALES=en,ja` limits the languages the same way. `CHEMI_NAV_TIMEOUT=<ms>` raises the 12-second page load limit for the same reason.
+
 The portable equivalent is `node apps/web/e2e/chemi-regression/check.mjs <url>`. Run from the checkout containing the suite. Each failure reports screen, locale, check and reason. Exit 1 means at least one check failed. The catalogue is read from the checkout, so target the matching deployment when reviewing candidate copy.
 
-For the question screen, set `CHEMI_STORAGE_STATE` to a private Playwright storage-state file for a seeded test account, and `CHEMI_ASK_PATH` to its same-origin saved result route with `ask=topic`. Keep the file and reading ID outside Git. The test requires the actual question step to render. The optional `CHEMI_FORTUNE_SCENE_PATH` selects the fortune scene to inspect.
+For the question screen, set `CHEMI_STORAGE_STATE` to a private Playwright storage-state file for a seeded test account (`kyaa-t3 chemi-check` fills it for DEV). The suite builds the question route from that account's newest saved Saju reading; set `CHEMI_ASK_PATH` to a same-origin saved result route with `ask=topic` only to pin a different one. Keep the file and reading ID outside Git. The test requires the actual question step to render. The optional `CHEMI_FORTUNE_SCENE_PATH` selects the fortune scene to inspect.
 
 The translation checks detect missing or empty catalogue keys, Hangul in non-Korean visible copy, and visible English reference paragraphs reused in other locales. They are fallback detectors based on source strings and a rendered English control, with no semantic language classification. Browser variants cover 390×844 and 1440×900 at DPR 1. Motion uses real media advancement on first play and verifies zero playback and no media attachment on stopped visits. The entry banner videos repeat on every visit, so their revisit check expects playback; only the one-time first-transformation videos must stay stopped on a revisit.
 

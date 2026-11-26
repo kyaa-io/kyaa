@@ -52,7 +52,7 @@ import type { AppLocale } from "@/i18n/locales";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
 import {
   askArt, askExamples, askFollowups, askLinesFor, askLoop, askPages, askReaction, askReactionExpression, askRecall, askResultExamples, askResultLine,
-  askSubject, askVoice, waitingLines, askReply,
+  askSubjectFor, askVoice, askWaiting, askReply,
   ASK_REACTIONS, ASK_RECALLS, ASK_TOPICS,
   type AskCharacter, type AskContent, type AskRecall, type AskTopic,
 } from "./lines";
@@ -190,7 +190,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
   const who = shown?.character ?? character;
   const where = shown?.content ?? content;
   const name = creatorName(who, locale);
-  const lines = askLinesFor(who);
+  const lines = askLinesFor(who, locale);
   const art = askArt(where, who);
   // 토큰 함수가 그릴 때마다 새로 만들어져도 상태를 다시 읽지 않게 최신 함수만 기억해 둔다.
   const token = useRef(getAccessToken);
@@ -526,7 +526,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
           {/* 끊겼으면 최애의 대사 상자는 숨기고 토스트로만 알린다(기획 03-6 16). */}
           {draft.failed ? null : speak(
             <>
-              {line(waitingFor === draft.threadId ? waitingLines[who] : lines.think(askSubject[where]), true)}
+              {line(waitingFor === draft.threadId ? askWaiting(who, locale) : lines.think(askSubjectFor(where, locale)), true)}
               <span className={styles.dots} role="status" aria-label={text("askWriting", { name })}>
                 <i />
                 <i />
@@ -608,8 +608,8 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
     const guarded = shown.status === "blocked";
     // 실제 인물·사생활 질문은 내 연애 질문으로, 무관·메타 질문은 이 풀이의 질문으로 돌린다. 괴롭힘·남의 사주는 돌리지 않는다.
     const redirect = !guarded || state.left === 0 ? null
-      : shown.klass === "privacy" ? { examples: askExamples("love", who).slice(0, 2), to: { step: "write", topic: "love" } as const }
-      : shown.klass === "off_topic" || shown.klass === "prompt" ? { examples: askResultExamples(where, who, today).slice(0, 2), to: { step: "result" } as const }
+      : shown.klass === "privacy" ? { examples: askExamples("love", who, locale).slice(0, 2), to: { step: "write", topic: "love" } as const }
+      : shown.klass === "off_topic" || shown.klass === "prompt" ? { examples: askResultExamples(where, who, today, locale).slice(0, 2), to: { step: "result" } as const }
       : null;
     const threadId = shown.threadId;
     const complete = Boolean(shown.followupAnswer);
@@ -622,7 +622,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
       ...(shown.followupQuestion && shown.followupAnswer
         ? askPages(shown.followupAnswer, wide).map((body) => ({ question: shown.followupQuestion, tag: null, body, key: `${threadId}:follow` }))
         : []),
-      ...(react ? [{ question: askReaction(react, who), tag: null, body: askReply(react, who, shown.followupAnswer || shown.answer), key: `${threadId}:react` }] : []),
+      ...(react ? [{ question: askReaction(react, who, locale), tag: null, body: askReply(react, who, shown.followupAnswer || shown.answer, locale), key: `${threadId}:react` }] : []),
       // 오늘 마지막 질문을 이어 묻기까지 다 썼으면 방금 받은 답 뒤에 작별 인사가 한 쪽 붙는다. 내일 알림을 신청하면 그 대답으로 바뀐다.
       ...(ending && complete && arrived ? [{ question: null, tag: null, body: state.reminded ? lines.reminded : lines.rest[where], key: `${threadId}:rest` }] : []),
     ];
@@ -730,7 +730,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
                   setPage({ of: view, index: beats.length });
                 }}
               >
-                {askReaction(kind, who)}
+                {askReaction(kind, who, locale)}
               </FanAction>
             ))}
           </div>
@@ -765,7 +765,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
           {speak(line(lines.follow, true), shown.topic ? text(topicKey[shown.topic]) : undefined)}
         </section>
         <div className={`${styles.choices} ${styles.examples} ${styles.reveal}`} data-shown={saidAll(lines.follow, true) ? "" : undefined} role="group" aria-label={text("askExamples")}>
-          {askFollowups(who, picked).map((example) => (
+          {askFollowups(who, picked, locale).map((example) => (
             <FanAction
               key={example}
               variant="text"
@@ -815,8 +815,8 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
   }
   else if (at.step === "write" || at.step === "result") {
     // 질문 쓰기: 주제를 골라 왔으면 주제 칩, 결과 화면에서 왔으면 '이 결과' 칩(기획 03-6 23·24·33). ×는 1단계로, 쓰던 글은 그대로.
-    const said = at.step === "write" ? lines.reask[at.topic] : askResultLine(where, who);
-    const examples = at.step === "write" ? askExamples(at.topic, character) : askResultExamples(where, who, today);
+    const said = at.step === "write" ? lines.reask[at.topic] : askResultLine(where, who, locale);
+    const examples = at.step === "write" ? askExamples(at.topic, character, locale) : askResultExamples(where, who, today, locale);
     const chip = (
       <span className={styles.chip}>
         {at.step === "result" ? (
@@ -885,7 +885,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
           <div className={`${styles.replies} ${styles.reveal}`} data-shown={spoken ? "" : undefined}>
             {ASK_RECALLS.map((kind) => (
               <FanAction key={kind} size="sm" className={styles.reply} onClick={() => setRecall(kind)}>
-                {askRecall(kind, character)}
+                {askRecall(kind, character, locale)}
               </FanAction>
             ))}
           </div>
