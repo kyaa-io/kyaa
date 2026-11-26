@@ -395,12 +395,16 @@ export function FortuneFlow({
     luckyHour: result.luck.luckyHour,
     color: result.luck.color,
   };
+  // 4/4 는 2/4 에서 건너뛰어 왔으면 그때의 보조 선택지, 아니면 3/4 의 강조 선택지를 누르고 온 장면이다.
+  const lastAsk = talk === 4 && lineInput
+    ? picked === "luck" ? fortuneChoiceKey(2, "skip", lineInput) : fortuneChoiceKey(3, "next", lineInput)
+    : null;
   const entering = step === "enter" && !needBirth;
   const line =
     step === "calc"
       ? fortuneCalcLine(character)
       : talk && lineInput
-        ? fortuneTalkLine(character, talk, lineInput, reading?.styled?.headline, picked)
+        ? fortuneTalkLine(character, talk, lineInput, reading?.styled?.headline, picked, lastAsk)
         : needBirth
           ? fortuneEnterLine(character, koNickname, "birth")
           : koNickname
