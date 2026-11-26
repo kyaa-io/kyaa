@@ -1,3 +1,7 @@
-.dialog { box-sizing:border-box; position:fixed; inset:0; margin:0; width:100%; max-width:none; height:100dvh; max-height:none; border:0; padding:var(--space-6); color:var(--color-ink); background:var(--color-surface); }
-.dialog[open] { display:flex; flex-direction:column; justify-content:center; align-items:center; gap:var(--space-4); text-align:center; }
-.arrow { width:24px; height:24px; transform:rotate(-45deg); position:absolute; top:var(--space-6); right:var(--space-6); }
+/* 앱 안 브라우저에서만 페이지 맨 위(헤더 위)에 놓이는 한 줄. 흰 면 + accent-line 아래 선, 행 높이는 누름 면 44. 헤더 안에는 넣지 않는다(헤더 동결). */
+.strip { box-sizing: border-box; display: flex; flex-direction: column; gap: var(--space-1); padding: 0 var(--shell-inset); border-bottom: 1px solid var(--color-accent-line); background: var(--color-surface); color: var(--color-ink); }
+.row { display: flex; align-items: center; gap: var(--space-2); min-height: var(--min-target); }
+.copy { flex: none; white-space: nowrap; }
+.close { flex: none; margin-left: auto; }
+.menu { margin: 0; padding-bottom: var(--space-2); }
+.address { box-sizing: border-box; width: 100%; min-width: 0; min-height: var(--min-target); margin-bottom: var(--space-2); padding: var(--space-2); border: 1px solid var(--color-muted); border-radius: var(--radius-small); background: var(--color-surface); color: inherit; font: inherit; }
