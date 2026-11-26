@@ -27,9 +27,10 @@ export function externalBrowserUrl(userAgent: string, loginUrl: string): string 
     return null;
   }
   if (url.protocol !== "https:" || url.username || url.password) return null;
-  // The X app drops both x-safari-https:// (iOS) and intent:// (Android) without a prompt or an error the page can see:
-  // 0 of 118 hand-offs arrived in 7 days (2026-11-23). X gets the manual "··· → Open in browser" notice instead.
-  if (isXBrowser(userAgent)) return null;
+  // X on iPhone ignores x-safari-https:// opened by script: 0 of 118 automatic hand-offs arrived in 7 days (2026-11-23,
+  // iPhone and Android counted together). A tap on the page's own link is the only chance there (landingHandoff).
+  // Android X hands intent:// to the system like other WebView apps, so it keeps the hand-off below.
+  if (isXBrowser(userAgent) && !/Android/i.test(userAgent)) return null;
   const target = `${url.host}${url.pathname}${url.search}`;
   // KakaoTalk's own link for opening a page in the phone's browser, the same on iOS and Android.
   if (/KAKAOTALK/i.test(userAgent)) return `kakaotalk://web/openExternal?url=${encodeURIComponent(url.href)}`;
@@ -65,16 +66,29 @@ export function embeddedApp(ua: string) {
   return isXBrowser(ua) ? "x" : appMarkers.find(([, marker]) => marker.test(ua))?.[0] ?? "webview";
 }
 
-export function landingHandoff(ua: string, address: URL) {
+export type HandoffMethod = "line" | "kakao" | "instagram" | "safari" | "intent";
+
+// `target` opens by itself on arrival; `fallback` is the link the person taps. `browser` is "safari" when the tap link
+// can only open Safari (x-safari-https), for the button label; other links open the phone's own browser.
+export function landingHandoff(ua: string, address: URL): { target: string | null; fallback: string | null; browser: "safari" | null; method: HandoffMethod | null } {
   const marked = new URL(address);
   marked.searchParams.set("kyaa_browser", embeddedApp(ua));
   if (/\bLine\//i.test(ua)) {
     marked.searchParams.set("openExternalBrowser", "1");
-    return { target: marked.href, fallback: marked.href };
+    return { target: marked.href, fallback: marked.href, browser: null, method: "line" };
+  }
+  const ios = /iPhone|iPad|iPod/i.test(ua);
+  if (ios && isXBrowser(ua) && marked.protocol === "https:") {
+    // iPhone X: no automatic attempt (see externalBrowserUrl). A real tap may still get iOS's "Open in Safari?" prompt.
+    return { target: null, fallback: `x-safari-https://${marked.host}${marked.pathname}${marked.search}`, browser: "safari", method: "safari" };
   }
   const fallback = externalBrowserUrl(ua, marked.href);
-  const target = fallback?.startsWith("intent://")
-    ? fallback.replace("#Intent;", "#Intent;package=com.android.chrome;")
-    : fallback;
-  return { target, fallback };
+  if (!fallback) return { target: null, fallback: null, browser: null, method: null };
+  if (fallback.startsWith("intent://")) {
+    // The automatic try names Chrome; without Chrome, browser_fallback_url reloads this page with kyaa_browser set, which
+    // stops a second try. The tapped link names no package, so the phone's default browser or chooser answers it.
+    return { target: fallback.replace("#Intent;", "#Intent;package=com.android.chrome;"), fallback, browser: null, method: "intent" };
+  }
+  const method: HandoffMethod = fallback.startsWith("kakaotalk:") ? "kakao" : fallback.startsWith("instagram:") ? "instagram" : "safari";
+  return { target: fallback, fallback, browser: method === "safari" ? "safari" : null, method };
 }

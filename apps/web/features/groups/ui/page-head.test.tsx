@@ -28,6 +28,15 @@ describe("page head presence line (U1, N18)", () => {
 });
 
 describe("page head (U1)", () => {
+  it("puts the kyaa official mark right after the name of a verified page, outside the heading, and nothing on other pages", () => {
+    const { rerender } = render(<FanPageHeader image={{ src: null, alt: "" }} name="엘리나" kind="fan" locale="ko" verified />);
+    const heading = screen.getByRole("heading", { level: 1, name: "엘리나" });
+    const mark = screen.getByRole("img", { name: "kyaa official" });
+    expect(heading.nextElementSibling).toBe(mark);
+    rerender(<FanPageHeader image={{ src: null, alt: "" }} name="동네 러닝" kind="hobby" locale="ko" />);
+    expect(screen.queryByRole("img", { name: "kyaa official" })).toBeNull();
+  });
+
   it("draws no introduction line without source text, and puts the social icons on their own row below the introduction, not in the name block or the fan-count line (대표 11/15 23:37)", () => {
     const { container } = render(<FanPageHeader image={{ src: null, alt: "" }} name="Hiroro" kind="fan" locale="ko" links={[{ kind: "tiktok", href: "https://www.tiktok.com/@x" }]} />);
     expect(container.querySelector("p")).toBeNull();

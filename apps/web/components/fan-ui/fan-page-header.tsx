@@ -6,6 +6,7 @@ import { FanPageImageSlot, fanPageKindLabel, fanPageKindTone, type FanPageImage,
 import { FanSkeleton } from "./fan-skeleton";
 import { FanStarAction, type FanStarActionProps } from "./fan-star-action";
 import { FanTag } from "./fan-tag";
+import { VerifiedMark } from "./verified-mark";
 import styles from "./fan-page-header.module.css";
 
 export type FanPageHeaderLink = Readonly<{ kind: string; href: string }>;
@@ -39,7 +40,7 @@ function Description({ children, labels, action }: Readonly<{ children: ReactNod
  * 팬페이지·모임·취미·브랜드가 함께 쓰는 머리(261107-2 U1). 사진이 주인공이다(390 96px, 768+ 128px).
  * 팬페이지는 사진 옆에 이름·SNS와 팬 수·행동을 묶고, 전폭 소개 아래에 방문 통계를 둔다.
  */
-export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", locale, description, descriptionLabels, descriptionAction, star, badge, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
+export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", locale, description, descriptionLabels, descriptionAction, star, badge, verified = false, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
   image: FanPageImage;
   name: ReactNode;
   kind: FanPageKind;
@@ -53,6 +54,8 @@ export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", l
   descriptionAction?: ReactNode;
   star?: FanStarActionProps;
   badge?: ReactNode;
+  /** kyaa가 등록한 크리에이터·브랜드의 페이지: 이름 바로 뒤에 kyaa official 표시. */
+  verified?: boolean;
   /** 이름 옆에 두는 로그인 사용자의 내 팬 등급. 비로그인에서는 넘기지 않는다. */
   grade?: ReactNode;
   links?: readonly FanPageHeaderLink[];
@@ -76,6 +79,7 @@ export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", l
       <div className={styles.headline}>
         <div className={styles.titleRow}>
           <h1 className={styles.name}>{name}</h1>
+          {verified ? <VerifiedMark className={styles.verified} /> : null}
           {kind === "fan" ? null : <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}
           {kind === "fan" ? null : badge}
           {grade}
