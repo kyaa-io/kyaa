@@ -36,6 +36,7 @@ const brightGrades = ["좋은 날", "아주 좋은 날"];
  * 2/4 → 3/4(덕질·금전): 사람 점수 구간(낮음 '말 줄이기 → 혼자' · 보통 '짧게 있다 와 → 다녀와서' · 높음 '윗사람 → 덕질 친구도')
  * 2/4 → 4/4 건너뛰기: 행운 시간이 있으면 '언제'(낮음은 줄인 말, 그 밖은 부탁), 없으면 나갈 때 챙길 것
  * 3/4 → 4/4(챙길 것): 금전 점수 구간
+ * 4/4 대사는 누르고 온 선택지가 묻는 것부터 말한다: '뭘 챙겨?'류는 챙길 물건, '언제?'류는 행운 시간('할 말은 언제'면 할 말).
  */
 export type FortuneChoiceKey =
   | "peopleRest"
@@ -66,7 +67,10 @@ type Tone = {
   fandom: Record<Band, Record<Band, string>>;
   /** 금전 풀이: 점수 구간마다 오늘 할 일 하나. */
   money: Record<Band, string>;
-  luck: (hour: string | null, color: string) => string;
+  /** 4/4 시간 문장: 부탁(say 면 할 말)하기 좋은 행운 시간. */
+  time: (hour: string, say: boolean) => string;
+  /** 4/4 챙길 것 문장: 행운색 물건. afterTime 은 시간 문장 뒤에 이어 말할 때다. */
+  item: (color: string, afterTime: boolean) => string;
   /** 두 번째 선택지로 이야기를 골라 들었을 때 그 선택을 먼저 받아 주는 한마디. */
   picked: { fandom: string; luck: string };
   /** 등급별 한 마디. 세 최애는 자기 태도(features/chemi/persona.ts)대로 말한다. */
@@ -115,8 +119,9 @@ const tones: Record<FortuneCharacterId, Tone> = {
       mid: "돈은 평소대로. 살 건 저녁에 한 번 더 보고 정해.",
       low: "돈은 아끼자. 굿즈는 장바구니에만 담아 둬.",
     },
-    luck: (hour, color) =>
-      hour ? `부탁할 거 있으면 ${hour}에 해. ${color}색 물건도 하나 챙기고, 그럼 오늘은 네 편이야.` : `${color}색 물건 하나 챙겨. 그럼 오늘은 네 편이야.`,
+    time: (hour, say) => `${say ? "할 말은" : "부탁할 거 있으면"} ${hour}에 해.`,
+    item: (color, afterTime) =>
+      afterTime ? `${color}색 물건도 하나 챙기고, 그럼 오늘은 네 편이야.` : `${color}색 물건 하나 챙겨. 그럼 오늘은 네 편이야.`,
     choice: {
       peopleRest: "누구랑 잡지?",
       peopleCareful: "누굴 조심해야 돼?",
@@ -176,8 +181,8 @@ const tones: Record<FortuneCharacterId, Tone> = {
       mid: "돈은 평소처럼 써요. 살 건 하룻밤 자고 정해요.",
       low: "돈은 아끼는 날이에요. 굿즈는 장바구니에만 담아 둬요.",
     },
-    luck: (hour, color) =>
-      `${hour ? `부탁은 ${hour}가 좋아요. ` : ""}${color}색 물건 하나 챙겨요. 잊지 말고, 알았지?`,
+    time: (hour, say) => `${say ? "할 말은" : "부탁은"} ${hour}가 좋아요.`,
+    item: (color) => `${color}색 물건 하나 챙겨요. 잊지 말고, 알았지?`,
     choice: {
       peopleRest: "약속은 누구랑?",
       peopleCareful: "누구한테 말할 때?",
@@ -237,8 +242,8 @@ const tones: Record<FortuneCharacterId, Tone> = {
       mid: "돈은 평소대로. 살 건 하나만 골라.",
       low: "돈은 아껴. 굿즈는 장바구니까지만.",
     },
-    luck: (hour, color) =>
-      `${hour ? `부탁은 ${hour}에 하면 돼. ` : ""}${color}색 물건 딱 하나만 챙겨. 많으면 소용없어.`,
+    time: (hour, say) => `${say ? "할 말은" : "부탁은"} ${hour}에 하면 돼.`,
+    item: (color) => `${color}색 물건 딱 하나만 챙겨. 많으면 소용없어.`,
     choice: {
       peopleRest: "그 하나는 누구랑?",
       peopleCareful: "누구 답장 조심해?",
@@ -309,8 +314,8 @@ const tones: Record<FortuneCharacterId, Tone> = {
       mid: "돈은 평소대로 쓰시오. 살 것은 하룻밤 두고 정하시오.",
       low: "돈은 아끼시오. 장바구니는 내일까지 두시오.",
     },
-    luck: (hour, color) =>
-      hour ? `${hour}가 청하기 좋소. ${color}빛 물건도 챙기시오.` : `${color}빛 물건 하나를 챙기시오.`,
+    time: (hour, say) => (say ? `할 말은 ${hour}에 하시오.` : `${hour}가 청하기 좋소.`),
+    item: (color, afterTime) => (afterTime ? `${color}빛 물건도 챙기시오.` : `${color}빛 물건 하나를 챙기시오.`),
     gradeNotes: {
       "쉬어 가는 날": "오늘은 걸음을 늦추고 쉬어 가시오.",
       "조심하면 괜찮은 날": "한 번만 더 살피면 무난히 지나가기 쉽소.",
@@ -396,6 +401,8 @@ export function fortuneTalkLine(
   headline?: string | null,
   /** 두 번째 선택지로 고른 이야기. 그 이야기를 들려줄 때 선택을 받아 주는 한마디가 앞에 붙는다. */
   picked?: "fandom" | "luck" | null,
+  /** 4/4 로 오면서 누른 선택지. 결과 화면·공유 카드의 한마디처럼 선택지 없이 부르면 시간부터 말한다. */
+  asked?: FortuneChoiceKey | null,
 ) {
   const tone = tones[character];
   if (talk === 1) {
@@ -408,7 +415,9 @@ export function fortuneTalkLine(
     const fandom = tone.fandom[band(input.fandom)][picked === "fandom" ? "mid" : band(input.people)];
     return `${picked === "fandom" ? `${tone.picked.fandom} ` : ""}${fandom} ${tone.money[band(input.money)]}`;
   }
-  // 행운 시간이 있으면 '부탁은 언제 해?'·'할 말은 언제 해?'에 바로 답하는 줄이라 받아 주는 말을 붙이지 않는다.
-  const ack = picked === "luck" && !input.luckyHour ? `${tone.picked.luck} ` : "";
-  return `${ack}${tone.luck(hourText(input.luckyHour), input.color)}`;
+  const hour = hourText(input.luckyHour);
+  // 행운 시간이 있으면 선택지에 바로 답하는 줄이라 받아 주는 말을 붙이지 않는다.
+  if (!hour) return `${picked === "luck" ? `${tone.picked.luck} ` : ""}${tone.item(input.color, false)}`;
+  if (asked?.startsWith("bring")) return `${tone.item(input.color, false)} ${tone.time(hour, false)}`;
+  return `${tone.time(hour, asked === "whenSay")} ${tone.item(input.color, true)}`;
 }

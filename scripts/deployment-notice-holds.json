@@ -160,7 +160,8 @@
     "release-notes/2026-11-26-chemi-person-video.json",
     "release-notes/2026-11-26-chemi-fortune-choice-context.json",
     "release-notes/2026-11-26-chemi-saju-opening.json",
-    "release-notes/2026-11-26-chemi-first-visit-header.json"
+    "release-notes/2026-11-26-chemi-first-visit-header.json",
+    "release-notes/2026-11-26-chemi-fortune-talk4.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

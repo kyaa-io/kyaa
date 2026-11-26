@@ -217,3 +217,33 @@ it("answers '부탁은 언제 해?' directly and keeps the hand-off line when th
   expect(fortuneTalkLine("changha", 4, { ...input, luckyHour: null }, null, "luck")).toMatch(/^챙길 것부터 묻네\. 좋아\./);
   expect(fortuneTalkLine("dosa", 4, { ...input, luckyHour: null })).toBe("초록빛 물건 하나를 챙기시오.");
 });
+
+// 운영 확인(PROD-VERIFY-CHEMI-COPY-1126): '그럼 뭐 챙겨?'로 와도 4/4 가 '부탁은 19시에서…'로 시작했다.
+it("opens the fourth page with what the pressed choice asked for (CHEMI-FORTUNE-TALK4-1126)", () => {
+  const first = (line: string) => line.split(/(?<=[.?]) /)[0];
+  const openings = {
+    changha: ["할 말은 9시에서 11시 사이에 해.", "부탁할 거 있으면 9시에서 11시 사이에 해.", "초록색 물건 하나 챙겨."],
+    elina: ["할 말은 9시에서 11시 사이가 좋아요.", "부탁은 9시에서 11시 사이가 좋아요.", "초록색 물건 하나 챙겨요."],
+    yuna: ["할 말은 9시에서 11시 사이에 하면 돼.", "부탁은 9시에서 11시 사이에 하면 돼.", "초록색 물건 딱 하나만 챙겨."],
+    dosa: ["할 말은 9시에서 11시 사이에 하시오.", "9시에서 11시 사이가 청하기 좋소.", "초록빛 물건 하나를 챙기시오."],
+  } as const;
+  for (const character of characters) {
+    const [say, ask, bring] = openings[character];
+    expect(first(fortuneTalkLine(character, 4, input, null, "luck", "whenSay"))).toBe(say);
+    expect(first(fortuneTalkLine(character, 4, input, null, "luck", "whenAsk"))).toBe(ask);
+    for (const asked of ["bringInstead", "bringThen", "bringMore"] as const)
+      for (const picked of [null, "fandom"] as const) {
+        const line = fortuneTalkLine(character, 4, input, null, picked, asked);
+        expect(first(line), `${character} ${asked}`).toBe(bring);
+        // 시간 안내는 빠지지 않고 뒤로 간다.
+        expect(line).toContain("9시에서 11시 사이");
+      }
+    // 행운 시간이 없으면 시간 말 없이 챙길 것만. '나갈 때 뭘 챙겨?'로 건너뛰어 오면 받아 주는 한마디가 앞에 붙는다.
+    const noHour = { ...input, luckyHour: null };
+    expect(first(fortuneTalkLine(character, 4, noHour, null, null, "bringThen"))).toBe(bring);
+    expect(fortuneTalkLine(character, 4, noHour, null, "luck", "luckFirst")).toContain(bring);
+    expect(fortuneTalkLine(character, 4, noHour, null, "luck", "luckFirst")).not.toMatch(/시에서|할 말|부탁|청하/);
+    // 결과 화면·공유 카드의 한마디(선택지 없음)는 전과 같이 시간부터 말한다.
+    expect(first(fortuneTalkLine(character, 4, input))).toBe(ask);
+  }
+});

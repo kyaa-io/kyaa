@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "오늘의 운세 대화 마지막 대사가 방금 고른 질문에 먼저 답하도록 고쳤어요.",
+    "'그럼 뭐 챙겨?'를 고르면 챙길 물건부터, '부탁은 언제 해?'를 고르면 좋은 시간부터 말해요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/chemi/fortune",
+  "images": [
+    "release-notes/images/2026-11-26-chemi-fortune-talk4-bring-390.png",
+    "release-notes/images/2026-11-26-chemi-fortune-talk4-when-390.png"
+  ]
+}
