@@ -5,6 +5,10 @@ set primary_role = 'creator', roles = array['creator'::public.celebrity_role]
 where primary_role in ('singer','actor','show_host')
    or slug in ('aryeom','hyunji','park-myungho','thisisj-official');
 
+-- The update above queues deferred constraint triggers on existing rows (publication check, welcome notice).
+-- Run them now: ALTER TABLE refuses a table with pending trigger events when the file is applied in one transaction.
+set constraints all immediate;
+
 alter table public.celebrities add constraint celebrities_current_category
   check (primary_role not in ('singer','actor','show_host'));
 
