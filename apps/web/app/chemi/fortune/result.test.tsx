@@ -92,6 +92,9 @@ it("copies the public share URL and records completion only after a successful c
     "금전79",
   ]);
   expect(screen.queryByText("한 걸음 먼저")).toBeNull();
+  // 열리지 않은 기능(친구와 오늘·지난 풀이·특별 부적)은 누르면 '준비 중' 알림만 뜨므로 열릴 때까지 보이지 않는다.
+  for (const name of ["친구와 오늘", "지난 기록", "특별 부적 만들기"]) expect(screen.queryByText(name)).toBeNull();
+  for (const item of document.querySelectorAll("nav[aria-label] [data-fan-action]")) expect(item).toHaveAttribute("href");
   expect(rows[1]).toHaveAttribute("aria-expanded", "false");
   fireEvent.click(rows[1]!);
   expect(rows[1]).toHaveAttribute("aria-expanded", "true");

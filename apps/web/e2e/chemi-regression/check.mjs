@@ -153,7 +153,8 @@ async function selectBanner(page, index) {
   await page.mouse.move(0, 0);
 }
 
-async function motion(screen, path, selector, index) {
+// loops: the entry banner videos repeat on every visit (they are not one-time introductions), so a revisit keeps playing.
+async function motion(screen, path, selector, index, loops = false) {
   for (const reducedMotion of ["no-preference", "reduce"]) {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion });
     page.setDefaultTimeout(5000);
@@ -183,10 +184,20 @@ async function motion(screen, path, selector, index) {
             return video && !video.paused && video.currentTime > 0;
           }, selector);
         });
-        await gate(screen, "ko", "revisit-stopped", async () => {
-          await page.clock.install();
-          await stopped(await load());
-        });
+        if (loops) {
+          await gate(screen, "ko", "revisit-playing", async () => {
+            await load();
+            await page.waitForFunction(selector => {
+              const video = document.querySelector(selector);
+              return video && !video.paused && video.currentTime > 0;
+            }, selector);
+          });
+        } else {
+          await gate(screen, "ko", "revisit-stopped", async () => {
+            await page.clock.install();
+            await stopped(await load());
+          });
+        }
       }
     } finally {
       await page.close();
@@ -262,7 +273,7 @@ try {
     }
   }
   if (!captureOnly) {
-    await motion("entry", routes.entry, '[data-content="zodiac"] video', 2);
+    await motion("entry", routes.entry, '[data-content="zodiac"] video', 2, true);
     await motion("first-transformation-elina", routes.fortune, "video[data-once]");
     await motion("first-transformation-yuna", "/chemi/fortune?c=yuna", "video[data-once]");
     await motion("fortune-scene", process.env.CHEMI_FORTUNE_SCENE_PATH ?? "/chemi/fortune?c=changha", "[data-fortune-flow] video");

@@ -25,8 +25,6 @@ import {
   tarotLang,
   type TarotCharacter,
 } from "@/features/chemi/tarot/script";
-import { showFanToast } from "@/components/fan-ui/fan-toast";
-import { withTopic } from "@/features/chemi/domain/korean-particle";
 import { CardRail } from "./card-rail";
 import type { TarotMeaning } from "./use-tarot-meaning";
 import type { TarotDraw, TarotStep } from "./types";
@@ -109,7 +107,6 @@ export function TarotStage(props: Props) {
 
   const spreadEntry = revisit ? props.spread : undefined;
   const voice = ({ ban: "Ban", yo: "Yo", hao: "Hao" } as const)[person.voice];
-  const soon = (label: string) => () => showFanToast({ title: uiText("comingSoon", { subject: withTopic(label), label }) });
   let dialogLine: string;
   if (spreadEntry && !spreadEntry.used && isChemiPersona(character))
     dialogLine = chemiPersona[character].tarotRevisit[tarotLang(props.locale)];
@@ -240,16 +237,6 @@ export function TarotStage(props: Props) {
                 primary!.label
               )}
             </FanAction>
-            {spreadEntry ? (
-              <div className={styles.returnMore}>
-                <FanAction onClick={soon(uiText("tarotBook"))}>
-                  <ReadingText id="tarotBook" />
-                </FanAction>
-                <FanAction onClick={soon(uiText("withFriend"))}>
-                  <ReadingText id="withFriend" />
-                </FanAction>
-              </div>
-            ) : null}
           </div>
         ) : null}
 
