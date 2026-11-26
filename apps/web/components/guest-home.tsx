@@ -3,6 +3,7 @@
 import type { RaffleList } from "@/features/benefit/domain/raffle";
 import type { AppLocale } from "@/i18n/locales";
 import type { BannerSlotMap, HomeBanner } from "../features/home/domain/home-banner";
+import { AdsenseUnit } from "../features/adsense/ui/adsense-unit";
 import type { HomeQueries } from "./home-query-stream";
 import type { PublishedCelebrity, PublishedCelebrityLive } from "../server/content/content-domain";
 
@@ -148,7 +149,8 @@ function HomeThinBanner({ banner, locale }: { banner: HomeBanner | undefined; lo
 }
 /** 홈배너2(외부 광고 칸): 메인 배너 바로 아래, 랭킹 바로 위(위 16px). 등록·공개된 배너가 없거나 읽기에 실패하면 구역도 간격도 그리지 않는다. */
 function HomeMidBanner({ banner, locale }: { banner: HomeBanner | undefined; locale: AppLocale }) {
-  return banner ? <div className={styles.midBanner}><ThinBanner banner={banner} locale={locale} size="mid" /></div> : null;
+  // Without a registered banner the space may carry an AdSense unit; with no unit ID it is not drawn either.
+  return banner ? <div className={styles.midBanner}><ThinBanner banner={banner} locale={locale} size="mid" /></div> : <AdsenseUnit placement="home_mid" locale={locale} className={styles.midBanner} />;
 }
 function StreamHomeMidBanner({ queries, locale }: Pick<StreamingHomeProps, "queries" | "locale">) {
   const result = use(queries.homeSlots);

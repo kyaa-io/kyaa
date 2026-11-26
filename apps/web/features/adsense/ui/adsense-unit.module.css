@@ -1,0 +1,9 @@
+/* AdSense unit in an existing ad space. The height is fixed before the ad loads (no layout shift); the parent spaces it. */
+.space { display: grid; gap: var(--space-1); min-width: 0; }
+.label { justify-self: end; }
+.unit { display: block; width: 100%; height: 100px; overflow: hidden; box-sizing: border-box; border: 1px solid var(--color-line); border-radius: var(--radius-card); background: var(--color-surface); }
+@media (min-width: 48rem) { .unit { height: 90px; } }
+/* 덕질배너2 column of the board on PC: the 360×600 side space. */
+.space[data-adsense-placement="board_side"] .unit { height: 600px; }
+/* No ad for this space (before approval, no demand): hide the whole space, label included. */
+.space:has(> ins[data-ad-status="unfilled"]) { display: none; }

@@ -309,15 +309,15 @@
 @media(max-width:1023px){.discoveryAside .discoveryAttendance{display:none}.discoveryLayout{/* design-lint-disable N4 -- User 2026-11-10: mobile bottom navigation clearance. */ padding-bottom:var(--space-16)}}
 
 .boardOnlyLayout{grid-template-columns:minmax(0,1fr)}
-.creatorPostLayout:not(:has(> aside, > [data-board-ad-rail])),
-.creatorPostDetailLayout:has(>[data-post-detail-more][data-inline]):not(:has(> [data-post-detail-more] [data-banner-slot], > [data-post-detail-more] [data-board-ad-rail])) { grid-template-columns: minmax(0, 1fr); }
+.creatorPostLayout:not(:has(> aside, > [data-board-ad-rail] > :not([data-adsense-placement]), > [data-board-ad-rail] ins:not([data-ad-status="unfilled"]))),
+.creatorPostDetailLayout:has(>[data-post-detail-more][data-inline]):not(:has(> [data-post-detail-more] [data-banner-slot], > [data-post-detail-more] [data-board-ad-rail] > :not([data-adsense-placement]), > [data-post-detail-more] [data-board-ad-rail] ins:not([data-ad-status="unfilled"]))) { grid-template-columns: minmax(0, 1fr); }
 
 /* 광고가 없는 게시판 목록은 기존 920px 목록 띠를 사용한다. */
-.creatorPostLayout:not(:has(> aside, > [data-board-ad-rail])), .boardOnlyLayout { width:100%; max-width:var(--band-list); margin-inline:auto; }
+.creatorPostLayout:not(:has(> aside, > [data-board-ad-rail] > :not([data-adsense-placement]), > [data-board-ad-rail] ins:not([data-ad-status="unfilled"]))), .boardOnlyLayout { width:100%; max-width:var(--band-list); margin-inline:auto; }
 /* 글 상세(2026-11-11 사용자 "게시판 좌우 여백이 어색함. 다른 글 추천", 2026-11-12 14:24 "옆으로 채워져야"): PC는 본문 열이 프로필·탭 줄의 왼쪽 선에서 시작하고 다른 글·배너 레일 360가 오른쪽 끝선까지 닿는다. 좌우 빈 공간 없음, 간격 R5. 1024 미만은 위 규칙대로 한 열(레일은 본문 아래). */
 [data-fan-layout]:has(+ .creatorPostDetailLayout) { margin-bottom: var(--space-1); }
 .creatorPostDetailLayout{padding-top:0}
-.creatorPostDetailLayout > [data-post-detail-more][data-inline]:not(:has([data-banner-slot], [data-board-ad-rail])) { position: static; width:100%; max-width:var(--band-read); }
+.creatorPostDetailLayout > [data-post-detail-more][data-inline]:not(:has([data-banner-slot], [data-board-ad-rail] > :not([data-adsense-placement]), [data-board-ad-rail] ins:not([data-ad-status="unfilled"]))) { position: static; width:100%; max-width:var(--band-read); }
 @media (width >= 64rem){.creatorPostDetailLayout{grid-template-columns:minmax(0,1fr) var(--rail-md);column-gap:var(--col-gap)}}
 
 @media(width < 64rem){.discoveryAttendance [data-fan-action]{width:44px;height:44px;min-height:44px;padding:0}.discoveryAside .discoveryAttendance{bottom:calc(var(--space-16) + var(--space-4) + var(--space-14) + env(safe-area-inset-bottom))}}
@@ -331,11 +331,12 @@
 .boardAdRail { display: none; }
 @media (width >= 80rem) {
   .boardAdRail { display: grid; min-width: 0; gap: var(--space-3); max-width: var(--rail-md); margin-inline-start: auto; width: 100%; }
-  .creatorPostLayout:has(> [data-board-ad-rail]) {
+  .boardAdRail:has(> [data-adsense-placement] > ins[data-ad-status="unfilled"]) { display: none; }
+  .creatorPostLayout:has(> [data-board-ad-rail] > :not([data-adsense-placement]), > [data-board-ad-rail] ins:not([data-ad-status="unfilled"])) {
     grid-template-columns: minmax(0, 1fr) var(--rail-md);
     column-gap: var(--col-gap);
   }
-  .creatorPostDetailLayout > [data-post-detail-more]:has([data-board-ad-rail]) { position: static; }
+  .creatorPostDetailLayout > [data-post-detail-more]:has([data-board-ad-rail] > :not([data-adsense-placement]), [data-board-ad-rail] ins:not([data-ad-status="unfilled"])) { position: static; }
 }
 
 @media (min-width:1024px) {
