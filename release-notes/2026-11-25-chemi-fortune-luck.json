@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "오늘의 운세에서 최애와 나누는 마지막 대화에 행운의 색, 숫자, 방향, 시간을 그림 카드로 보여 줘요.",
+    "말풍선 뒤로 장면이 은은하게 비쳐요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi/fortune",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-fortune-luck.png"
+  ]
+}

@@ -162,7 +162,8 @@
     "release-notes/2026-11-26-chemi-saju-opening.json",
     "release-notes/2026-11-26-chemi-first-visit-header.json",
     "release-notes/2026-11-26-chemi-fortune-talk4.json",
-    "release-notes/2026-11-26-chemi-ask-languages.json"
+    "release-notes/2026-11-26-chemi-ask-languages.json",
+    "release-notes/2026-11-25-chemi-fortune-luck.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

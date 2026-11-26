@@ -6,7 +6,7 @@ import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { useReadingCopy, ReadingText, ReadingTitle } from "@/features/chemi/i18n/reading-ui";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ChevronLeft } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { FanAction } from "@/components/fan-ui/fan-action";
@@ -58,6 +58,10 @@ import { creatorName } from "@/features/fanpage/domain/creator-names";
 import { useChemiNickname } from "@/features/chemi/use-chemi-nickname";
 
 const art = "/chemi/fortune";
+const luckColors: Record<string, string> = {
+  초록: "#38734e", 빨강: "#b43d47", 노랑: "#e4ad39", 하양: "#fff8ea", 검정: "#242424",
+};
+const luckAngles: Record<string, number> = { 북: 0, 동: 90, 남: 180, 서: 270 };
 const talkChoice = [
   "tellMore",
   "whatFandom",
@@ -524,7 +528,7 @@ export function FortuneFlow({
             }
           />
         ) : (
-          <div className={styles.controls}>
+          <div className={styles.controls} data-luck={talk === 4 && result ? "" : undefined}>
             {entering && (
               <div className={styles.title}>
                 <FanHeading as="h1"><ReadingTitle id="fortune" /></FanHeading>
@@ -564,34 +568,6 @@ export function FortuneFlow({
                 ))}
               </div>
             )}
-            {talk === 4 && result && (
-              <dl className={styles.luck}>
-                {(
-                  [
-                    [text("color"), luckValue(result.luck.color, locale)],
-                    [text("number"), result.luck.number],
-                    [text("direction"), luckValue(result.luck.direction, locale)],
-                    [
-                      text("luckyTime"),
-                      result.luck.luckyHour &&
-                        text("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),
-                    ],
-                  ] as const
-                ).map(
-                  ([label, value]) =>
-                    value != null && (
-                      <div key={label}>
-                        <FanText as="dt" role="meta">
-                          {label}
-                        </FanText>
-                        <FanText as="dd" role="item">
-                          {value}
-                        </FanText>
-                      </div>
-                    ),
-                )}
-              </dl>
-            )}
             <section className={styles.dialog} aria-live="polite">
               <p className={styles.who} data-face={face ? "" : undefined}>
                 {face && <img className={styles.face} src={face} alt="" />}
@@ -611,6 +587,48 @@ export function FortuneFlow({
                 )}
               </FanText>
             </section>
+            {talk === 4 && result && (
+              <dl className={styles.luck}>
+                {(
+                  [
+                    ["color", text("color"), luckValue(result.luck.color, locale)],
+                    ["number", text("number"), result.luck.number],
+                    ["direction", text("direction"), luckValue(result.luck.direction, locale)],
+                    [
+                      "time",
+                      text("luckyTime"),
+                      result.luck.luckyHour &&
+                        text("hourRange", { start: result.luck.luckyHour.start, end: result.luck.luckyHour.end }),
+                    ],
+                  ] as const
+                ).map(
+                  ([asset, label, value]) =>
+                    value != null && (
+                      <div key={asset}>
+                        <div className={styles.luckArt} aria-hidden="true">
+                          <img src={`/images/chemi/fortune-luck/${asset}.webp`} alt="" />
+                          {asset === "color" && Object.hasOwn(luckColors, result.luck.color) && (
+                            <span className={styles.gem} style={{ "--gem-color": luckColors[result.luck.color] } as CSSProperties} />
+                          )}
+                          {asset === "number" && <FanNumber className={styles.luckDigit} locale={locale} value={result.luck.number} />}
+                          {asset === "direction" && Object.hasOwn(luckAngles, result.luck.direction) && (
+                            <span className={styles.needle} style={{ "--luck-angle": `${luckAngles[result.luck.direction]}deg` } as CSSProperties} />
+                          )}
+                          {asset === "time" && result.luck.luckyHour && (
+                            <span className={styles.hand} style={{ "--luck-angle": `${result.luck.luckyHour.start * 30}deg` } as CSSProperties} />
+                          )}
+                        </div>
+                        <FanText as="dt" role="meta">
+                          {label}
+                        </FanText>
+                        <FanText as="dd" role="item">
+                          {value}
+                        </FanText>
+                      </div>
+                    ),
+                )}
+              </dl>
+            )}
             {primaryLabel && (
               <div className={styles.choices}>
                 {entering && (
