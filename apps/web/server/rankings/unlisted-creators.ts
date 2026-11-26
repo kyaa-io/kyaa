@@ -8,7 +8,7 @@ export async function readUnlistedCreatorSlugs(rpc: (name: string, args: Record<
 }
 
 /**
- * Published creator pages without the kyaa official mark (fan-made pages opened from a request, 20270116060100).
+ * Published creator pages without the kyaa official mark (fan-made pages opened from a request, 20270116060300).
  * Home, gallery and shorts leave them out and 덕질 actions on them pay nothing. A failed read counts as none: until the
  * migration runs there are no such pages, and the lists keep working.
  */

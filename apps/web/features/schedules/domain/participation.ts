@@ -83,7 +83,7 @@ export const fanpageInputSchema = fanpageCheckSchema.extend({ subjectType: z.enu
 export const pageVerificationSchema = z.enum(["verified", "unverified"]);
 export const fanpageRequestSchema = z.object({ id: uuid, name: text(120).min(1), subjectType: z.enum(["artist", "creator", "brand"]), officialSocialUrl: httpsUrl, note: z.string(), locale: contentLocale,
   status: reviewStatus, revision: z.number().int().positive(), reviewReason: z.string().nullable(), reviewedAt: instant.nullable(), artist: artistLinkSchema.nullable(), createdAt: instant,
-  // The linked page: Verified (kyaa official) or Unverified (fan-made). Absent before the 20270116060100 migration.
+  // The linked page: Verified (kyaa official) or Unverified (fan-made). Absent before the 20270116060300 migration.
   pageVerification: pageVerificationSchema.nullable().optional() }).strict();
 export const liveSubmissionSettingsSchema = z.object({ accepting: z.boolean(), closesAt: instant.nullable(), visibility: z.enum(["public", "members"]), revision: z.number().int().nonnegative() }).strict();
 export const legacyOwnedLiveSubmissionSchema = z.object({ id: uuid, kind: z.enum(["question", "cheer"]), body: z.string().nullable(), status: z.enum(["submitted", "selected", "hidden"]), revision: z.number().int().positive(), createdAt: instant, selectedAt: instant.nullable(), deletedAt: instant.nullable() }).strict();
