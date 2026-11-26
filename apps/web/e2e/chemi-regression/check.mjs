@@ -105,7 +105,7 @@ async function layout(page, width, screen, locale) {
   });
   await gate(screen, locale, `hit-area-${width}`, async () => {
     const buttons = page.locator('main button:enabled:visible, main [role="button"]:visible');
-    const issues = await buttons.evaluateAll(nodes => nodes.flatMap(node => {
+    const measure = () => buttons.evaluateAll(nodes => nodes.flatMap(node => {
       const rect = node.getBoundingClientRect();
       const label = node.getAttribute("aria-label") || node.textContent.trim();
       if (node.closest('[aria-hidden="true"], [inert]') || node.getAttribute("aria-disabled") === "true") return [];
@@ -121,10 +121,20 @@ async function layout(page, width, screen, locale) {
         }
         return false;
       })(node);
-      if (x >= 0 && x < innerWidth && y >= 0 && y < innerHeight && !clipped &&
-          !node.contains(document.elementFromPoint(x, y))) return [`${label} intercepted`];
+      const hit = x >= 0 && x < innerWidth && y >= 0 && y < innerHeight && !clipped ? document.elementFromPoint(x, y) : node;
+      if (!node.contains(hit)) {
+        const cover = hit?.closest("[class]") ?? hit;
+        return [`${label} intercepted by ${cover ? cover.tagName.toLowerCase() + "." + cover.classList[0] : "nothing"}`];
+      }
       return [];
     }));
+    // 움직임 줄이기에서는 사이트 공통 규칙이 모든 전환을 0.01ms 로 줄일 뿐 없애지 않는다. 동의 배너가 늦게 뜨면 화면이 그 높이만큼
+    // 내려가는 것이 한 프레임 뒤에 끝나, 그 사이에 재면 배너가 머리줄을 가린 것으로 잡힌다. 걸리면 잠시 뒤 다시 재고, 남는 것만 실패로 본다.
+    let issues = await measure();
+    if (issues.length) {
+      await page.waitForTimeout(500);
+      issues = await measure();
+    }
     assert.ok(!issues.length, issues.join(", "));
   });
 }
