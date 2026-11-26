@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
-import { SupabaseSessionSyncRepository } from "./supabase-session-sync-repository";
+import { SupabaseSessionSyncRepository, recordAcquisitionTouch } from "./supabase-session-sync-repository";
 
 const identity = { privyUserId: "did:privy:user-1", providerAccounts: [{ issuer: "https://accounts.google.com" as const, subject: "google-user-1" }], verifiedEmail: "fan@example.com", googleLinked: true };
 const wallet = { chainId: 91342, address: "0x82162619589cfe3e0dcc58c43dfbf121844f8e9c" };
@@ -170,5 +170,22 @@ describe("SupabaseSessionSyncRepository profile state", () => {
     const rejected = expect(result).rejects.toMatchObject({ name: "RequestTimeoutError" });
     await vi.advanceTimersByTimeAsync(20_000);
     await rejected;
+  });
+});
+
+describe("recordAcquisitionTouch", () => {
+  const touch = { src: "x", med: "kol", cmp: "alina", app: "x" as const, lp: "/s/raffle", at: "2026-11-26T10:00:00.000Z" };
+
+  it("hands both visit cookies to the database, which keeps them only for a new account", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: true, error: null });
+    await recordAcquisitionTouch({ rpc }, "user-1", { first: touch, last: null });
+    expect(rpc).toHaveBeenCalledWith("record_app_user_acquisition_touch", { p_app_user_id: "user-1", p_first: touch, p_last: null });
+  });
+
+  it("never fails sign-in when recording fails", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    await expect(recordAcquisitionTouch({ rpc: vi.fn().mockResolvedValue({ data: null, error: { message: "down" } }) }, "user-1", { first: null, last: null })).resolves.toBeUndefined();
+    await expect(recordAcquisitionTouch({ rpc: vi.fn().mockRejectedValue(new TypeError("fetch failed")) }, "user-1", { first: touch, last: touch })).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith("[fan-flow] recovery required", expect.objectContaining({ stage: "session.acquisition" }));
   });
 });

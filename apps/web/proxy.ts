@@ -8,6 +8,8 @@ import { isAwsHosting } from "./server/config/hosting";
 import { releaseSha } from "./server/config/release-sha";
 import { readGa4MeasurementId } from "./features/analytics/domain/ga4-id";
 import { isNativeAppAvailable, openAppWebPath } from "./server/app-link/open-app-redirect";
+import { htmlLimitedBots } from "./seo/bots";
+import { FIRST_TOUCH_COOKIE, LAST_TOUCH_COOKIE, TOUCH_MAX_AGE_SECONDS, captureTouch, encodeTouch, isExternalEntry } from "./features/analytics/domain/first-touch";
 
 const LEGACY_APP_ORIGINS = new Set(["https://byus.kr", "https://www.byus.kr"]);
 const OAUTH_RETURN_PARAMETERS = new Set(["code", "state", "error", "error_description"]);
@@ -29,6 +31,25 @@ function preservesLegacyOrigin(request: NextRequest): boolean {
     || /\.[a-z0-9]+$/i.test(path)
     || [...request.nextUrl.searchParams.keys()].some((key) =>
       OAUTH_RETURN_PARAMETERS.has(key) || key.startsWith("privy_oauth_"));
+}
+
+// Pass-through, admin and account screens are not where a visitor arrives from outside.
+const NOT_A_LANDING = /^\/(?:go|i|t|o|admin|operator|creator|connect|open-app|callback)(?:\/|$)/;
+
+/** First page request: keep where the visitor came from in first-party cookies, before any script or sign-in SDK loads. */
+function rememberTouch(request: NextRequest, response: NextResponse, isPage: boolean): void {
+  if (request.method !== "GET" || !isPage || NOT_A_LANDING.test(request.nextUrl.pathname)) return;
+  if (request.headers.has("rsc") || request.headers.has("next-router-prefetch")
+    || /prefetch|prerender/i.test(`${request.headers.get("purpose") ?? ""} ${request.headers.get("sec-purpose") ?? ""}`)) return;
+  const userAgent = request.headers.get("user-agent") ?? "";
+  if (!userAgent || htmlLimitedBots.test(userAgent) || /bot|crawler|spider|meta-external|preview/i.test(userAgent)) return;
+  const hasFirst = request.cookies.has(FIRST_TOUCH_COOKIE);
+  const touch = captureTouch({ url: request.nextUrl, referer: request.headers.get("referer"), userAgent, now: new Date() });
+  if (hasFirst && !isExternalEntry(touch)) return;
+  const cookie = { httpOnly: true, sameSite: "lax", secure: request.nextUrl.protocol === "https:" || request.headers.get("x-forwarded-proto") === "https", path: "/", maxAge: TOUCH_MAX_AGE_SECONDS } as const;
+  const value = encodeTouch(touch);
+  if (!hasFirst) response.cookies.set(FIRST_TOUCH_COOKIE, value, cookie);
+  response.cookies.set(LAST_TOUCH_COOKIE, value, cookie);
 }
 
 export function proxy(request: NextRequest): NextResponse {
@@ -126,6 +147,7 @@ export function proxy(request: NextRequest): NextResponse {
       response.headers.set("Referrer-Policy", "no-referrer");
       response.headers.set("X-Frame-Options", "DENY");
     }
+    rememberTouch(request, response, isPage);
     return response;
   }
 

@@ -56,7 +56,7 @@ const recoveryStages = new Set([
   "quiz.load", "quiz.submit", "quiz.reconcile",
   "raffle.token", "raffle.submit", "raffle.reconcile",
   "storage.read", "storage.write", "profile.load", "profile.save",
-  "session.request", "session.identity", "session.locale", "session.notification", "session.notification_fallback", "session.profile",
+  "session.request", "session.identity", "session.acquisition", "session.locale", "session.notification", "session.notification_fallback", "session.profile",
 ]);
 
 export function reportRecoveryFailure(stage: string, error: unknown): void {

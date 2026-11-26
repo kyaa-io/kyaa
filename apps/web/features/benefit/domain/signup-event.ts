@@ -25,7 +25,7 @@ export function raffleInviteCode(value: unknown): string | undefined {
 }
 /** 내 초대 코드가 붙은 공유 주소. 코드가 없으면(비로그인) 일반 공유 주소. */
 export function raffleShareHref(code?: string) {
-  const query = new URLSearchParams({ utm_source: 'share', utm_medium: 'social', utm_campaign: signupEvent.id, utm_content: 'content.share' });
+  const query = new URLSearchParams({ utm_source: 'share', utm_medium: 'referral', utm_campaign: signupEvent.id, utm_content: 'content.share' });
   const invite = raffleInviteCode(code);
   if (invite) query.set('invite', invite);
   return `${signupEvent.href}?${query}`;

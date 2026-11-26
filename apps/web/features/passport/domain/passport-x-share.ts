@@ -4,9 +4,9 @@ import type { AppLocale } from "@/i18n/locales";
 export const X_SHARE_MENTION = "@kyaa_app";
 export const X_SHARE_HASHTAGS = ["kyaa"] as const;
 
-/** The link a post carries: the shared Passport landing, marked as coming from X so the visit is counted as social. */
+/** The link a post carries: the shared Passport landing, marked as a member share posted on X. */
 export function passportShareUrl(origin: string, token: string, locale: AppLocale) {
-  return `${origin}/s/${token}?${new URLSearchParams({ locale, utm_source: "x", utm_medium: "social", utm_campaign: "passport-share" })}`;
+  return `${origin}/s/${token}?${new URLSearchParams({ locale, utm_source: "share", utm_medium: "referral", utm_campaign: "passport-share", utm_content: "passport_x" })}`;
 }
 
 export function passportShareText(locale: AppLocale, creatorName: string) {

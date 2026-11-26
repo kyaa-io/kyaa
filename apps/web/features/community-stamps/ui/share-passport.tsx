@@ -12,6 +12,7 @@ import { communityShareLinkSchema } from "../domain/community-stamps";
 import { communityStampAction } from "./use-community-stamps";
 import { DukjilProvider } from "@/features/dukjil/ui/dukjil-provider";
 import styles from "./share-passport.module.css";
+import { shareTagged } from "@/features/analytics/domain/share-tag";
 
 type Locale = AppLocale;
 type Creator = { slug: string; name?: string; image?: { url: string; alt: string } };
@@ -41,7 +42,7 @@ function SharePassportInner({creator, locale, getAccessToken, quiet = false }: {
     setBusy(true); setFailed(false); setMessage("");
     try {
       const result = await communityStampAction(getAccessToken, "share-link", { creator: creator.slug }, (value) => communityShareLinkSchema.parse(value));
-      if (alive.current) { setUrl(`${window.location.origin}/s/${result.token}?locale=${locale}`); setMessage(c.ready); }
+      if (alive.current) { setUrl(shareTagged(`${window.location.origin}/s/${result.token}?locale=${locale}`, "passport")); setMessage(c.ready); }
     } catch (error) {
       const code = error instanceof Error ? error.message : "";
       if (alive.current) { setFailed(true); setMessage(code === "COMMUNITY_STAMP_PASSPORT_REQUIRED" ? c.unavailable : c.failed); }

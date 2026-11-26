@@ -59,6 +59,31 @@ describe("outbound short links", () => {
     },
   );
 
+  it.each([
+    ["mail-raffle", "s/raffle?utm_source=email&utm_medium=email&utm_campaign=raffle_mail", "mail-raffle"],
+    ["newstip", "?utm_source=newstip&utm_medium=email&utm_campaign=newstip", "newstip"],
+    ["x-dm", "?utm_source=x&utm_medium=dm&utm_campaign=dm_outreach", "x-dm"],
+    ["soompi", "?utm_source=soompi&utm_medium=referral&utm_campaign=media", "soompi"],
+    ["kol-alina", "s/raffle?utm_source=x&utm_medium=kol&utm_campaign=alina&utm_content=kol-alina", "kol-alina"],
+    ["qr-run-music", "?utm_source=qr&utm_medium=offline&utm_campaign=run_music", "qr-run-music"],
+    ["sweeps-giveaway-frenzy", "s/raffle?utm_source=giveaway_frenzy&utm_medium=referral&utm_campaign=sweeps_listing", "sweeps-giveaway-frenzy"],
+  ])("opens %s with its own tags and records the code", async (code, location, visit) => {
+    const response = await GET(request(code), context(code));
+    expect(response.headers.get("location")).toBe(`${home}${location}`);
+    expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ campaign: visit });
+  });
+
+  it.each(["qr-", "qr-Run", "qr-a--b", "sweeps-x_y", `qr-${"a".repeat(60)}`, "kol-unknown"])("treats %s as unknown", async (code) => {
+    expect((await GET(request(code), context(code))).headers.get("location")).toBe(home);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it("gives a link preview the raffle page without tags", async () => {
+    const response = await GET(request("kol-luna", { "user-agent": "Twitterbot/1.0" }), context("kol-luna"));
+    expect(response.headers.get("location")).toBe(`${home}s/raffle`);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
   it("skips speculative requests and HEAD", async () => {
     await GET(request("ig", { "sec-purpose": "prefetch" }), context("ig"));
     expect((await HEAD(request("ig"), context("ig"))).status).toBe(302);
