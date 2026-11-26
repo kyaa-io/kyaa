@@ -10,6 +10,7 @@ import { FanLockedValue } from "@/components/fan-ui/fan-locked-value";
 import { FanSkeleton } from "@/components/fan-ui/fan-skeleton";
 import { POINT_COIN_SRC } from "@/features/dukjil/ui/earn-badge";
 import type { AppLocale } from "@/i18n/locales";
+import { useMileageDisplay } from "@/i18n/mileage-display";
 import { ticketSingular, walletCopy, walletHelpCopy } from "./copy";
 import { HelpHint } from "./help-hint";
 import styles from "./wallet-card.module.css";
@@ -29,7 +30,7 @@ function Value({ locale, slot, unit, coin = false, mileage = false, compact = fa
 
 /** Two balance cells: points with the coin, group tickets. */
 export function WalletBalances({ locale, points, tickets }: { locale: AppLocale; points: Slot; tickets: Slot }) {
-  const w = walletCopy(locale), h = walletHelpCopy(locale);
+  const w = walletCopy(locale), h = walletHelpCopy(locale, useMileageDisplay());
   return <dl className={styles.balances}>
     <div className={styles.balance} data-summary="points"><dt className={styles.label}><span>{w.points}</span><HelpHint label={h.label} text={h.points} /></dt><Value locale={locale} slot={points} mileage coin /></div>
     <div className={styles.balance}><dt className={styles.label}><RewardIcon kind="ticket" alt="" width={20} height={20} /><span>{locale === "ko" ? "응모권" : w.tickets}</span><HelpHint label={h.label} text={h.tickets} /></dt><Value locale={locale} slot={tickets} unit={locale === "ko" ? "장" : undefined} /></div>

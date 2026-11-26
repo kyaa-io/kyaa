@@ -1,4 +1,5 @@
 "use client";
+import { useMileageDisplay } from "@/i18n/mileage-display";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -36,11 +37,11 @@ export function notificationSentence(item: NotificationItem, locale: AppLocale) 
 }
 
 /** 2줄 `출처`: 공식 글은 크리에이터 이름, 그 밖에는 칩 이름(최애 칩은 최애 이름). */
-export function notificationSource(item: NotificationItem, locale: AppLocale, favoriteName: string | null) {
+export function notificationSource(item: NotificationItem, locale: AppLocale, favoriteName: string | null, mileage = false) {
   const chip = notificationChip(item.kind);
   if (chip === "favorite" && item.actor && item.actor.profileId === null) return item.actor.nickname;
   if (chip === "favorite" && item.target?.type === "celebrity" && item.target.label) return item.target.label;
-  return chip === "favorite" ? favoriteName ?? inboxCopy(locale).chips.favorite : inboxCopy(locale).chips[chip];
+  return chip === "favorite" ? favoriteName ?? inboxCopy(locale).chips.favorite : inboxCopy(locale, mileage).chips[chip];
 }
 
 export function NotificationInbox({ locale, inbox, favoriteName = null, headingLevel = "h2", showTitle = true, onNavigate, returnTo }: Readonly<{
@@ -53,7 +54,8 @@ export function NotificationInbox({ locale, inbox, favoriteName = null, headingL
   onNavigate?: () => void;
   returnTo: string;
 }>) {
-  const c = inboxCopy(locale);
+  const mileage = useMileageDisplay();
+  const c = inboxCopy(locale, mileage);
   const [chip, setChip] = useState<NotificationChip>("all");
   const [limit, setLimit] = useState(PAGE);
   const { state, unread } = inbox;
@@ -124,7 +126,8 @@ function Line({ text, translated, locale }: { text: string; translated: boolean;
 }
 
 function Entry({ entry, locale, favoriteName, inbox, onNavigate }: { entry: InboxEntry; locale: AppLocale; favoriteName: string | null; inbox: Inbox; onNavigate?: () => void }) {
-  const c = inboxCopy(locale);
+  const mileage = useMileageDisplay();
+  const c = inboxCopy(locale, mileage);
   const [open, setOpen] = useState(false);
   if (entry.type === "item") return <li data-row="notice"><Row item={entry.item} locale={locale} favoriteName={favoriteName} inbox={inbox} onNavigate={onNavigate} /></li>;
   const first = entry.items[0];
@@ -137,7 +140,7 @@ function Entry({ entry, locale, favoriteName, inbox, onNavigate }: { entry: Inbo
         <Leading item={first} />
         <span className={styles.copy}>
           <Line text={text} translated={entry.kind !== "stamp_issued" && said.translated} locale={locale} />
-          <span className={styles.line2} data-meta="">{notificationSource(first, locale, favoriteName)} · {notificationDate(first.createdAt)}</span>
+          <span className={styles.line2} data-meta="">{notificationSource(first, locale, favoriteName, mileage)} · {notificationDate(first.createdAt)}</span>
         </span>
         <span className={styles.end} data-row-end="">
           {unread ? <span className={styles.dot} data-dot="" aria-hidden="true" /> : null}
@@ -150,7 +153,8 @@ function Entry({ entry, locale, favoriteName, inbox, onNavigate }: { entry: Inbo
 }
 
 function Row({ item, locale, favoriteName, inbox, onNavigate }: { item: NotificationItem; locale: AppLocale; favoriteName: string | null; inbox: Inbox; onNavigate?: () => void }) {
-  const c = inboxCopy(locale);
+  const mileage = useMileageDisplay();
+  const c = inboxCopy(locale, mileage);
   const said = notificationSentence(item, locale);
   const action = isActionNotification(item.kind);
   const end: ReactNode = action
@@ -170,7 +174,7 @@ function Row({ item, locale, favoriteName, inbox, onNavigate }: { item: Notifica
     <Leading item={item} />
     <span className={styles.copy}>
       <Line text={said.text} translated={said.translated} locale={locale} />
-      <span className={styles.line2} data-meta=""><span className={styles.source}>{notificationSource(item, locale, favoriteName)}</span> · <time dateTime={item.createdAt}>{notificationTime(item.createdAt)}</time></span>
+      <span className={styles.line2} data-meta=""><span className={styles.source}>{notificationSource(item, locale, favoriteName, mileage)}</span> · <time dateTime={item.createdAt}>{notificationTime(item.createdAt)}</time></span>
     </span>
     <span className={styles.end} data-row-end="">
       {end}

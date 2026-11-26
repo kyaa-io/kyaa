@@ -201,7 +201,17 @@ const copy: Record<AppLocale, Copy> = {
   },
 };
 
-export const inboxCopy = (locale: AppLocale): Copy => copy[locale] ?? copy.en;
+const mileageStampChip: Record<AppLocale, string> = {
+  ko: "스탬프·마일리지", en: "Stamps & miles", mn: "Тамга ба миль",
+  ja: "スタンプ・マイル", "zh-Hans": "印章·里程", "zh-Hant": "印章·里程",
+  es: "Sellos y millas", id: "Stempel & mil", vi: "Tem & dặm",
+  th: "แสตมป์·ไมล์", pt: "Selos e milhas", fr: "Tampons et miles", ru: "Штампы и мили",
+};
+
+export function inboxCopy(locale: AppLocale, mileage = false): Copy {
+  const localized = copy[locale] ?? copy.en;
+  return mileage ? { ...localized, chips: { ...localized.chips, stamp: mileageStampChip[locale] } } : localized;
+}
 
 const sentenceKey: Partial<Record<NotificationItem["kind"], [keyof Copy["said"], keyof Copy["said"] | null]>> = {
   content_reply: ["reply", "replyNoTarget"],

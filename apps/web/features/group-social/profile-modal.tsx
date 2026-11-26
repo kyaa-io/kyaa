@@ -1,4 +1,6 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
+import { useMileageDisplay } from "@/i18n/mileage-display";
 import { RewardIcon } from "@/components/fan-ui/reward-icon";
 import Link from "../../components/fan-ui/hover-prefetch-link";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
@@ -58,13 +60,14 @@ export type ProfileModalPerson = { profileId?: string; ref?: ProfileRef; nicknam
 
 /** Hearts, points and stamps: label above, number below, a line between cells. Fixed height while loading. */
 function ProfileStats({ card, loading, locale }: { card: SocialProfileCard | null | undefined; loading: boolean; locale: AppLocale }) {
+  const mileage = useMileageDisplay();
   if (loading) return <div className={styles.stats} aria-busy="true">{[0, 1, 2].map(index => <div key={index} className={styles.stat}><FanSkeleton width={40} height={16}/><FanSkeleton width={56} height={24}/></div>)}</div>;
   if (card === null) return <p className={styles.statsError} role="status">{fanProfileText(locale, "profStatsFailed")}</p>;
   const stats = card?.stats;
   if (!stats) return null;
   return <dl className={styles.stats}>
     <div className={styles.stat}><dt>{fanProfileText(locale, "profHearts")}</dt><dd><FanNumber value={stats.hearts} size="lg" locale={locale} icon={<RewardIcon kind="heart" alt="" width={20} height={20}/>}/></dd></div>
-    <div className={styles.stat}><dt>{fanProfileText(locale, "profPoints")}</dt><dd><FanNumber value={stats.points} size="lg" locale={locale} unit="P"/></dd></div>
+    <div className={styles.stat}><dt>{mileage ? formatMileage(10, locale, "auto", "unit") : fanProfileText(locale, "profPoints")}</dt><dd><FanNumber value={stats.points} size="lg" locale={locale} unit={mileage ? " " + formatMileage(stats.points, locale, "auto", "unit") : "P"}/></dd></div>
     <div className={styles.stat}><dt>{fanProfileText(locale, "profStamps")}</dt><dd><FanNumber value={stats.stamps} size="lg" locale={locale}/></dd></div>
   </dl>;
 }

@@ -1,4 +1,5 @@
 "use client";
+import { useMileageDisplay } from "@/i18n/mileage-display";
 import { formatMileage } from "@/i18n/format-mileage";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 
@@ -265,11 +266,32 @@ const CAPTION = { all: "rkCumulativeHearts", day: "rkGainDay", week: "rkGainWeek
 /** The list's caption by what it counts: points earned by fans, page likes of creators (20261222140000), else hearts. */
 const CAPTIONS = { points: { all: "rkCumulativePoints", day: "rkPointsDay", week: "rkPointsWeek" }, likes: { all: "rkCumulativeLikes", day: "rkLikesDay", week: "rkLikesWeek" } } as const;
 /** What the list counts (cumulative hearts, or hearts gained today / in seven days), then how old the snapshot is. */
+const mileageCaptions: Record<AppLocale, readonly [string, string, string]> = {
+  ko: ["누적 마일리지", "오늘 모은 마일리지", "7일간 모은 마일리지"],
+  en: ["All-time miles", "Miles today", "Miles in 7 days"],
+  mn: ["Нийт миль", "Өнөөдрийн миль", "7 хоногийн миль"],
+  ja: ["累計マイル", "今日のマイル", "7日間のマイル"],
+  "zh-Hans": ["累计里程", "今日里程", "7天内的里程"],
+  "zh-Hant": ["累計里程", "今日里程", "7天內的里程"],
+  es: ["Millas totales", "Millas de hoy", "Millas en 7 días"],
+  id: ["Total mil", "Mil hari ini", "Mil dalam 7 hari"],
+  vi: ["Tổng số dặm", "Số dặm hôm nay", "Số dặm trong 7 ngày"],
+  th: ["ไมล์สะสม", "ไมล์วันนี้", "ไมล์ใน 7 วัน"],
+  pt: ["Total de milhas", "Milhas de hoje", "Milhas em 7 dias"],
+  fr: ["Miles cumulés", "Miles du jour", "Miles sur 7 jours"],
+  ru: ["Всего миль", "Мили за сегодня", "Мили за 7 дней"],
+};
+
+function mileageCaption(locale: AppLocale, period: HomeRankingPeriod) {
+  return mileageCaptions[locale][{ all: 0, day: 1, week: 2 }[period]];
+}
+
 export function MetricLine({ locale, computedAt, stale = false, period = "all", metric }: { locale: AppLocale; computedAt: string | null; stale?: boolean; period?: HomeRankingPeriod; metric?: RankingMetric }) {
+  const mileage = useMileageDisplay();
   const now = useNow();
   const text = computedAt ? updatedAgoLabel(locale, computedAt, now, stale) : null;
   return <div className={styles.metricLine} data-metric-line="">
-    <p className={styles.caption}><span>{rankingsText(locale, metric === "points" || metric === "likes" ? CAPTIONS[metric][period] : CAPTION[period])}</span>{text ? <><span aria-hidden="true">·</span><time dateTime={computedAt!}>{text}</time></> : null}</p>
+    <p className={styles.caption}><span>{metric === "points" && mileage ? mileageCaption(locale, period) : rankingsText(locale, metric === "points" || metric === "likes" ? CAPTIONS[metric][period] : CAPTION[period])}</span>{text ? <><span aria-hidden="true">·</span><time dateTime={computedAt!}>{text}</time></> : null}</p>
   </div>;
 }
 
