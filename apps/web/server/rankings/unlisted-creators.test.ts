@@ -11,7 +11,7 @@ it("reads the unlisted slugs and refuses an odd answer", async () => {
 });
 
 it("reads the fan-made (Unverified) pages from the database answer and treats a failed read as none", async () => {
-  // list_unverified_creators() on the local DB after 20270116060300 with one approved fan page request.
+  // list_unverified_creators() on the local DB after 20270116070200 with one approved fan page request.
   const answer = [{ id: "7e570000-0000-4000-8000-000000001126", slug: "fan-made-1126" }];
   const read = await readUnverifiedCreators(async () => answer);
   expect([...read.ids]).toEqual([answer[0]!.id]);

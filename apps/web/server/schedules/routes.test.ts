@@ -154,7 +154,7 @@ describe("fan page request approval: official or fan-made page", () => {
   });
 });
 
-it("passes the database's own approval answer (local DB, 20270116060300) through the route schema", async () => {
+it("passes the database's own approval answer (local DB, 20270116070200) through the route schema", async () => {
   const answer = (await import("./fixtures/fan_web_admin_review_fanpage_request.json")).default;
   rpc.mockResolvedValueOnce(answer);
   const result = await run("admin-request", request("/api", { expectedRevision: 1, decision: "approve", reason: null, celebrityId: "7e570000-0000-4000-8000-000000001126", locale: "ko" }, true, "PATCH"), { id: answer.item.id });

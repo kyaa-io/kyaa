@@ -1,4 +1,4 @@
--- Rollback of 20270116060300_fanpage_verification.sql. Roll the web back first (it sends p_verification and reads
+-- Rollback of 20270116070200_fanpage_verification.sql. Roll the web back first (it sends p_verification and reads
 -- list_unverified_creators). Pages switched to Unverified become ordinary (official) pages again when the column goes.
 begin;
 set local lock_timeout = '5s';

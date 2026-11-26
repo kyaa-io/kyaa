@@ -14,7 +14,7 @@ commit;
 
 -- DEV applies each migration file in one transaction. Do the same here, then roll back so the chain applies it as usual.
 begin;
-\ir ../migrations/20270116060200_verified_page_categories.sql
+\ir ../migrations/20270116070100_verified_page_categories.sql
 do $$ begin
   if exists(select 1 from public.celebrities where id in ('fa300000-0000-4000-8000-000000000001','fa300000-0000-4000-8000-000000000002')
             and primary_role is distinct from 'creator') then

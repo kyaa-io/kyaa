@@ -4,7 +4,7 @@
 -- Unverified pages keep their fan page and their place in the groups directory, but carry no kyaa official mark,
 -- stay off the home, gallery and shorts lists, and pay no 덕질 points. The app reads list_unverified_creators() for the lists;
 -- record_dukjil_action (B3 pair 12) and attend_creator refuse an Unverified page in the database.
--- Rollback: supabase/rollback/20270116060300_fanpage_verification.sql.
+-- Rollback: supabase/rollback/20270116070200_fanpage_verification.sql.
 begin;
 set local lock_timeout = '5s';
 
