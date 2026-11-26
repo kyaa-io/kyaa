@@ -200,8 +200,18 @@ async function contrast(page, id) {
 }
 
 async function selectBanner(page, index) {
-  await page.locator('main button[aria-pressed]').filter({ has: page.locator('span[aria-hidden="true"]') }).nth(index).click();
-  await page.locator(`[data-content="${activities[index]}"]`).waitFor();
+  const tab = page.locator('main button[aria-pressed]').filter({ has: page.locator('span[aria-hidden="true"]') }).nth(index);
+  const banner = page.locator(`[data-content="${activities[index]}"]`);
+  // 서버가 그린 탭은 화면 스크립트가 붙기 전(열고 0.2초 안)에 누르면 가끔 무시된다. 배너가 안 바뀌었으면 다시 누른다.
+  for (let attempt = 0; ; attempt++) {
+    await tab.click();
+    try {
+      await banner.waitFor({ timeout: 2000 });
+      break;
+    } catch (error) {
+      if (attempt === 2) throw error;
+    }
+  }
   await page.mouse.move(0, 0);
 }
 
