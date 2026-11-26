@@ -1,9 +1,11 @@
+"use client";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { FanTag } from "@/components/fan-ui/fan-tag";
 import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
 import { localizedBannerHref, type HomeBanner } from "@/features/home/domain/home-banner";
 import type { AppLocale } from "@/i18n/locales";
+import { AdRewardBadge, useAdReward } from "./ad-reward";
 import styles from "./home-thin-banner.module.css";
 
 /**
@@ -20,10 +22,12 @@ export function ThinBanner({ banner, locale, size = "thin" }: { banner: HomeBann
     <source media={size === "side" ? "(min-width: 80rem)" : size === "thin" ? "(min-width: 64rem)" : "(min-width: 48rem)"} srcSet={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} />
     <img src={size === "side" ? undefined : mobile.url} width={mobile.width} height={mobile.height} alt={banner.alt || banner.title} loading="lazy" decoding="async" />
   </picture>;
-  const mark = ad ? <FanTag tone="neutral" className={styles.tag}>{bannerCategoryLabel("ad", locale)}</FanTag> : null;
+  const reward = useAdReward(banner);
+  const tag = ad ? <FanTag tone="neutral">{bannerCategoryLabel("ad", locale)}</FanTag> : null;
+  const mark = tag || reward.mark ? <span className={styles.marks}><AdRewardBadge mark={reward.mark} locale={locale} />{tag}</span> : null;
   return <div className={size === "mid" ? `${styles.strip} ${styles.stripMid}` : size === "side" ? `${styles.strip} ${styles.stripSide}` : styles.strip} data-home-thin-banner data-banner-id={banner.id} data-ad-banner={banner.category === "ad" ? banner.id : undefined} data-banner-size={size}>
     {external
-      ? <a className={styles.link} href={href} target="_blank" rel={ad ? "sponsored noopener noreferrer" : "noopener noreferrer"} data-outbound-placement="content" data-outbound-kind="external">{picture}{mark}</a>
-      : <Link className={styles.link} href={href as Route}>{picture}{mark}</Link>}
+      ? <a className={styles.link} href={href} target="_blank" rel={ad ? "sponsored noopener noreferrer" : "noopener noreferrer"} data-outbound-placement="content" data-outbound-kind="external" onClick={reward.claim}>{picture}{mark}</a>
+      : <Link className={styles.link} href={href as Route} onClick={reward.claim}>{picture}{mark}</Link>}
   </div>;
 }

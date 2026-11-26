@@ -7,6 +7,7 @@ import { FanTag } from "@/components/fan-ui/fan-tag";
 import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
 import { localizedBannerHref, type BannerSlot as BannerSlotKey, type HomeBanner } from "@/features/home/domain/home-banner";
 import type { AppLocale } from "@/i18n/locales";
+import { AdRewardBadge, useAdReward } from "@/features/home/ui/ad-reward";
 import { useBannerSlots } from "./banner-slot-source";
 import styles from "./banner-slot.module.css";
 
@@ -23,6 +24,7 @@ export function BannerSlot({ slot, locale, className }: { slot: BannerSlotKey; l
 
 export function BannerSlotCard({ banner, slot, locale, className }: { banner: HomeBanner; slot: BannerSlotKey; locale: AppLocale; className?: string }) {
   const [failed, setFailed] = useState(false);
+  const reward = useAdReward(banner);
   const href = localizedBannerHref(banner.href, locale);
   const external = !href.startsWith("/");
   const mobile = banner.mobileImage ?? banner.desktopImage;
@@ -32,7 +34,7 @@ export function BannerSlotCard({ banner, slot, locale, className }: { banner: Ho
       <img src={mobile.url} width={mobile.width} height={mobile.height} alt={banner.alt} loading="lazy" decoding="async" onError={() => setFailed(true)}/>
     </picture>}
     <span className={styles.copy}>
-      {banner.category === "ad" && <FanTag tone="neutral" className={styles.tag}>{bannerCategoryLabel("ad", locale)}</FanTag>}
+      {(banner.category === "ad" || reward.mark) && <span className={styles.marks}>{banner.category === "ad" && <FanTag tone="neutral">{bannerCategoryLabel("ad", locale)}</FanTag>}<AdRewardBadge mark={reward.mark} locale={locale}/></span>}
       <strong className={styles.title}>{banner.title}</strong>
       {banner.description && <span className={styles.description}>{banner.description}</span>}
       <span className={styles.action}>{banner.ctaLabel}{external ? <ArrowUpRight size={16} aria-hidden="true"/> : <ArrowRight size={16} aria-hidden="true"/>}</span>
@@ -40,7 +42,7 @@ export function BannerSlotCard({ banner, slot, locale, className }: { banner: Ho
   </>;
   return <div className={[styles.slot, className].filter(Boolean).join(" ")} data-banner-slot={slot} data-banner-id={banner.id} data-ad-banner={banner.category === "ad" ? banner.id : undefined} data-image-failed={failed || undefined}>
     {external
-      ? <a className={styles.card} href={href} target="_blank" rel="noopener noreferrer" data-outbound-placement="content" data-outbound-kind="external">{body}</a>
-      : <Link className={styles.card} href={href as Route}>{body}</Link>}
+      ? <a className={styles.card} href={href} target="_blank" rel="noopener noreferrer" data-outbound-placement="content" data-outbound-kind="external" onClick={reward.claim}>{body}</a>
+      : <Link className={styles.card} href={href as Route} onClick={reward.claim}>{body}</Link>}
   </div>;
 }

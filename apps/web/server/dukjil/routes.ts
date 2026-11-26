@@ -7,6 +7,7 @@ import {
 } from "@/features/passport/domain/dukjil-types";
 import { resolveCreatorId, resolveCreatorIds } from "./creator-id";
 import { boundedJson, CertificationBodyError } from "@/server/certification/certification-http";
+import { adRewardRequestSchema, adRewardResultSchema, adRewardTodaySchema } from "@/features/home/domain/ad-reward";
 
 export interface DukjilDependencies {
   rpc(name: string, args: Record<string, unknown>): Promise<unknown>;
@@ -121,6 +122,18 @@ export function createDukjilHandlers(deps: DukjilDependencies) {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));
       const raw = obj(await deps.rpc("cheer_dukjil_favorite", { p_user: appUserId }));
       return Response.json(checked(dukjilCheerResultSchema, { earned: raw.earned, stamped: raw.stamped, replayed: raw.replayed, celebrity: { slug: raw.celebritySlug } }), { headers: privateHeaders });
+    }),
+    // GET /api/me/dukjil/ad-reward: the ad banners already paid today and what is left of the 10.
+    adRewardToday: (request: Request) => run(async () => {
+      const { appUserId } = await deps.authorize(request.headers.get("authorization"));
+      return Response.json(checked(adRewardTodaySchema, await deps.rpc("read_ad_click_rewards_today", { p_actor: appUserId })), { headers: privateHeaders });
+    }),
+    // POST /api/me/dukjil/ad-reward { bannerId }: a click on an ad banner. The database checks the banner, the day's key and the limit;
+    // a refusal is an answer with points 0, not an error, so the link the member clicked is never the thing that fails.
+    adReward: (request: Request) => run(async () => {
+      const { appUserId } = await deps.authorize(request.headers.get("authorization"));
+      const { bannerId } = adRewardRequestSchema.parse(await boundedJson(request, 1024));
+      return Response.json(checked(adRewardResultSchema, await deps.rpc("record_ad_click_reward", { p_actor: appUserId, p_banner: bannerId })), { headers: privateHeaders });
     }),
     attendAll: (request: Request) => run(async () => {
       const { appUserId } = await deps.authorize(request.headers.get("authorization"));

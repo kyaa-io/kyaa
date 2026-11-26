@@ -86,6 +86,6 @@ it('names the B3 payouts and the repost take-back, in every locale',()=>{
  }
 });
 it('names the four social rewards in every locale',()=>{
- expect(['friend_add','chat','comment_like','comment_reply'].map(actionKey=>walletHistoryLabel('ko','dukjil_action',{actionKey}))).toEqual(['친구 추가','대화','댓글 좋아요','답글']);
- for(const locale of APP_LOCALES)for(const actionKey of ['friend_add','chat','comment_like','comment_reply'])expect(walletHistoryLabel(locale,'dukjil_action',{actionKey}),locale).toBeTruthy();
+ expect(['friend_add','chat','comment_like','comment_reply','ad_click'].map(actionKey=>walletHistoryLabel('ko','dukjil_action',{actionKey}))).toEqual(['친구 추가','대화','댓글 좋아요','답글','광고 클릭']);
+ for(const locale of APP_LOCALES)for(const actionKey of ['friend_add','chat','comment_like','comment_reply','ad_click'])expect(walletHistoryLabel(locale,'dukjil_action',{actionKey}),locale).toBeTruthy();
 });

@@ -20,6 +20,7 @@ import { EventDayEyebrow } from "../../features/home/ui/event-day-eyebrow";
 import motionStyles from "../fan-ui/event-blink.module.css";
 import { liveEventLabel } from "../../features/home/domain/event-day";
 import { HomeHeroBanner } from "./home-hero-banner";
+import { AdRewardBadge, useAdReward } from "@/features/home/ui/ad-reward";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { bypassImageOptimization, homeHeroCampaignSizes, homeHeroSizes } from "../fan-ui/public-image-policy";
 import styles from "./managed-home-banner.module.css";
@@ -65,11 +66,12 @@ export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent 
   const raffle = banner.id === SIGNUP_RAFFLE_BANNER_ID;
   const missionbook = banner.id === MISSIONBOOK_BANNER_ID;
   const creatorWelcome = banner.kind === "announcement" && banner.celebrityId !== null && banner.desktopImage.width === banner.desktopImage.height;
+  const reward = useAdReward(banner);
   const artwork = <BannerArtwork key={`${banner.desktopImage.id}:${banner.mobileImage?.id ?? ""}`} banner={banner} priority={priority} creatorWelcome={creatorWelcome} campaign={gggiCampaign} />;
   return <div className={styles.root} data-managed-home-banner={banner.id} data-signup-raffle={raffle || undefined} data-creator-welcome={creatorWelcome} data-guide-art={guideArt && !chemi || undefined} data-chemi-art={chemi || undefined} data-missionbook={missionbook || undefined} data-first-steps={banner.id === FIRST_STEPS_BANNER_ID || undefined} data-gggi-campaign={gggiCampaign || undefined}>
     <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={chemi ? "chemi" : raffle ? "raffle" : missionbook ? "missionbook" : ["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
       eyebrow={chemi ? (locale === "ko" ? "케미 베타" : "Chemi beta") : isAdminEventBanner(banner) ? <EventDayEyebrow locale={locale} /> : banner.category && ['event','group','fanpage','ad'].includes(banner.category) || guideArt ? bannerCategoryLabel(banner.category ?? "guide", locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={missionbook ? <MissionbookLikeCount locale={locale} tone="banner" /> : banner.description}
-      action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
+      eyebrowBadge={<AdRewardBadge mark={reward.mark} locale={locale} />} action={<Link href={localizedBannerHref(banner.href, locale) as Route} onClick={reward.claim}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
   </div>;
 }

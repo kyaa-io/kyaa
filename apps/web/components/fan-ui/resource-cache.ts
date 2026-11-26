@@ -103,6 +103,8 @@ const narrowWrites: [RegExp, RegExp][] = [
   [/^\/api\/post-comments\/[^/]+(?:\/reaction)?$/, /\/comments(?:[?/]|$)|\/api\/post-comments\//],
 ];
 function narrowScope(pathname: string): RegExp | null {
+  // An ad banner reward changes my values only (the wallet and today's ad rewards).
+  if (pathname === "/api/me/dukjil/ad-reward") return new RegExp(MINE);
   for (const [write, extra] of narrowWrites) {
     const match = write.exec(pathname);
     if (!match) continue;
