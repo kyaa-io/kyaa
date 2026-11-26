@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { useGoodsMenu } from "@/features/groups/goods-menu";
 import {WalletBalances,WalletCard} from '@/features/group-wallet/ui/wallet-card';
 import { EarnBadge } from "@/features/dukjil/ui/earn-badge";
@@ -90,7 +91,7 @@ function GoodsMileage({locale}:{locale:AppLocale}){
    return ()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,wallet.retry);
  },[wallet.retry]);
  if(!auth.authenticated||!wallet.data)return null;
- return <p>{walletCopy(locale).points} · {wallet.data.points.toLocaleString(locale)}M</p>;
+ return <p>{walletCopy(locale).points} · {formatMileage(wallet.data.points, locale)}</p>;
 }
 /** Where every signed-out action goes: the app's login (the /login modal route), back to this tab. */
 const benefitsLoginHref=(locale:AppLocale)=>fanLoginHref(locale,`/benefits?locale=${locale}`);

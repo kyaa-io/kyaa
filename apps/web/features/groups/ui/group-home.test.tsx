@@ -59,7 +59,7 @@ it('promises only what the server pays on a group: check-in points, no post or c
 it('reads today without a creator for a signed-in fan and shows it in the head',async()=>{
  h.auth=true;
  home();
- await screen.findByText('+22');
+ await screen.findByText('+22 마일리지', { selector: '[data-point-value]' });
  expect(h.urls).toContain('/api/me/dukjil/today');
 });
 

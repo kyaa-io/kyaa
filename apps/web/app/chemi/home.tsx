@@ -74,7 +74,7 @@ export function ChemiHome({
                     </span>
                     <FanText role="meta">{copy.descriptions[id]}</FanText>
                     {saved && <FanText role="label" className={styles.statusChip}>{copy.todayResult}</FanText>}
-                    {href && (id === "pair" || id === "run") && <GameStatusChip game={id} copy={copy} />}
+                    {href && (id === "pair" || id === "run") && <GameStatusChip game={id} copy={copy} locale={locale} />}
                   </span>
                 </>
               );

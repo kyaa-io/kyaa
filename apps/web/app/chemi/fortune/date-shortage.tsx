@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { ReadingText, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import styles from "./result.module.css";
@@ -20,7 +21,7 @@ export function DateShortage({
   const text = useReadingCopy();
   return (
     <>
-      <p>{text("pointsShort", { points: shortBy })}</p>
+      <p>{text("pointsShort", { points: formatMileage(shortBy, locale) })}</p>
       <div className={styles.purchaseActions}>
         {topupHref && (
           <FanAction

@@ -6,7 +6,7 @@ import type { DukjilCatalogView, DukjilTodayView } from "../domain/dukjil-ui";
 
 it("names the points and the remaining count for screen readers, and draws only the amount (S4: no ×N)", () => {
   const { container } = render(<EarnBadge variant="inline" locale="ko" points={20} stamp remaining={2} />);
-  expect(screen.getByText("포인트 20 적립, 오늘 2번 남음")).toBeInTheDocument();
+  expect(screen.getByText("+20 마일리지, 오늘 2번 남음")).toBeInTheDocument();
   expect(container.textContent).not.toMatch(/×/);
   expect(screen.getByText(/스탬프/)).toBeInTheDocument();
 });
@@ -18,7 +18,7 @@ it("done badge carries text, not colour only, and no remaining count", () => {
 it("inline variant is the same pill as the corner badge: coin and +points without the P suffix, fixed width in a list", () => {
   const { container } = render(<><EarnBadge variant="inline" locale="ko" points={2} slot /><EarnBadge variant="inline" locale="ko" points={1200} /></>);
   const pills = [...container.querySelectorAll('[data-earn-badge="inline"] [data-point-pill]')];
-  expect(pills.map(pill => pill.querySelector("[data-point-value]")!.textContent)).toEqual(["+2", "+1,200"]);
+  expect(pills.map(pill => pill.querySelector("[data-point-value]")!.textContent)).toEqual(["+2", "+1,200 마일리지"]);
   expect(pills[0]!.querySelector("img")).toHaveAttribute("src", "/images/economy/mileage-coin.webp");
   expect(pills[0]!.className).not.toBe(pills[1]!.className);
   expect(container.textContent).not.toMatch(/\+\d[\d,]*P/);
@@ -28,11 +28,11 @@ it("corner variant shows the coin and +points without the P suffix or a remainin
   expect(container.querySelector('[data-earn-badge="corner"] img')).toHaveAttribute("src", "/images/economy/mileage-coin.webp");
   expect(screen.getByText("+20")).toBeInTheDocument();
   expect(container.textContent).not.toMatch(/×|\+20P/);
-  expect(screen.getByText("포인트 20 적립")).toBeInTheDocument();
+  expect(screen.getByText("+20 마일리지")).toBeInTheDocument();
 });
 it("a monthly cap says this month, never today", () => {
   render(<EarnBadge variant="inline" locale="ko" points={100} remaining={2} remainingPer="month" />);
-  expect(screen.getByText("포인트 100 적립, 이번 달 2회 남음")).toBeInTheDocument();
+  expect(screen.getByText("+100 마일리지, 이번 달 2회 남음")).toBeInTheDocument();
   expect(screen.queryByText(/오늘/)).toBeNull();
 });
 it("EarnRemaining names the month for a monthly cap in ko and en", () => {

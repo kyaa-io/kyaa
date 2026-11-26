@@ -1,5 +1,6 @@
 "use client";
 
+import { formatMileage } from "@/i18n/format-mileage";
 import { SceneVideo } from "@/features/chemi/ui/scene-video";
 import { chemiPersona, isChemiPersona } from "@/features/chemi/persona";
 import { useReadingCopy, ReadingText } from "@/features/chemi/i18n/reading-ui";
@@ -377,7 +378,7 @@ function RewardRow({ character, name, rewards, locale }: { character: TarotChara
   if (points <= 0 && character !== "dosa")
     return (
       <Link className={styles.rewardRow} data-link="" href={`/c/${character}`}>
-        <FanText className={styles.go} role="label">{uiText("passportReward", { points: CHEMI_PASSPORT_DAILY_POINTS })}</FanText>
+        <FanText className={styles.go} role="label">{uiText("passportReward", { points: formatMileage(CHEMI_PASSPORT_DAILY_POINTS, locale) })}</FanText>
         {reward.exp ? <AffinityBadge size="sm" amount={reward.exp} label={`${name} ${uiText("affinityGain", { exp: reward.exp })}`} /> : null}
         <FanIcon icon={ChevronRight} size={16} className={styles.goArrow} />
       </Link>

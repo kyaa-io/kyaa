@@ -8,6 +8,7 @@
  * 남은 질문 수·차감·한도는 서버(/api/chemi/ask)가 정하고, 이 화면은 받은 값만 그린다.
  * 유료 구매 자리는 결제 수단이 붙기 전이라 두지 않는다.
  */
+import { formatMileage } from "@/i18n/format-mileage";
 import { SceneSound } from "@/features/chemi/ui/scene-sound";
 import { expressionFor, SceneExpression } from "@/features/chemi/ui/scene-expression";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
@@ -406,7 +407,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
   const extraCost = state?.extraCost ?? 0;
   const extraMain = () =>
     state && (state.extraLeft ?? 0) > 0 && extraCost > 0
-      ? { label: text("askExtraCta", { cost: extraCost }), icon: Coins, onClick: () => setSheet("extra") }
+      ? { label: text("askExtraCta", { cost: formatMileage(extraCost, locale) }), icon: Coins, onClick: () => setSheet("extra") }
       : null;
   const restMain = () =>
     state?.reminded
@@ -1017,7 +1018,7 @@ function AskConversation({ locale, content, character, readingId, at, result }: 
         points={state?.points}
         cost={extraCost}
         extraRemaining={state?.extraLeft ?? 0}
-        labels={{ title: text("askExtraTitle", { cost: extraCost }), extra: text("askExtraLabel"), pay: text("askExtraPay", { cost: extraCost }) }}
+        labels={{ title: text("askExtraTitle", { cost: formatMileage(extraCost, locale) }), extra: text("askExtraLabel"), pay: text("askExtraPay", { cost: formatMileage(extraCost, locale) }) }}
       />
       <FanSheet
         open={sheet === "share"}

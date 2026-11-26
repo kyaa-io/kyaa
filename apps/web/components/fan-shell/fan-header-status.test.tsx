@@ -44,7 +44,7 @@ describe("header capsule", () => {
     state.wallet.data = { points: 987654321 };
     render(<FanHeaderStatus locale="ko" />);
     const link = chip();
-    expect(link).toHaveAccessibleName(/골드.*마일리지 987,654,321/);
+    expect(link).toHaveAccessibleName(/골드.*987,654,321 마일리지/);
     expect(link).not.toHaveAccessibleName(/하트/);
     // 사용자 11/26 193853: the tier is named in words (골드), never with a stage numeral.
     expect(link.querySelector("[data-header-tier]")).toHaveTextContent(/^골드$/);
@@ -129,7 +129,7 @@ describe("header capsule", () => {
     render(<FanHeaderStatus locale="ko" />);
     expect(chip()).not.toHaveTextContent("1,234,567");
     expect(chip()).not.toHaveAccessibleName(/하트 1,234,567/);
-    expect(chip()).toHaveAccessibleName(/마일리지 1,234,567/);
+    expect(chip()).toHaveAccessibleName(/1,234,567 마일리지/);
   });
 
   it.each([["ko", "브론즈"], ["en", "Bronze"], ["ja", "ブロンズ"]] as const)("displays the grade name in %s", (locale, grade) => {

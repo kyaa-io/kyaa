@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "마일리지 금액을 한국어에서는 ‘10 마일리지’, 영어에서는 ‘10 miles’처럼 표시해요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/my/wallet",
+  "images": [
+    "release-notes/images/2026-11-27-miles-label-390.png",
+    "release-notes/images/2026-11-27-miles-label-1440.png"
+  ]
+}

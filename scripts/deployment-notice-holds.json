@@ -204,5 +204,8 @@
   "verified-pages": [
     "release-notes/2026-11-25-verified-pages.json",
     "release-notes/2026-11-26-fan-made-pages.json"
+  ],
+  "dev-mileage-label": [
+    "release-notes/2026-11-27-miles-label.json"
   ]
 }

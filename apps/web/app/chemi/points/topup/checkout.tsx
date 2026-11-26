@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -47,7 +48,7 @@ export function Checkout({ locale }: { locale: string }) {
         if (!ok) throw Error();
         setBalance(result.balances[0]);
         setMessage({
-          text: result.status === "DONE" ? "100P가 충전됐어요." : "충전이 취소됐어요.",
+          text: result.status === "DONE" ? `${formatMileage(100, locale)}가 충전됐어요.` : "충전이 취소됐어요.",
           alert: false,
         });
         history.replaceState(null, "", location.pathname);
@@ -92,27 +93,27 @@ export function Checkout({ locale }: { locale: string }) {
   }
 
   const rows: [string, number | undefined][] = [
-    ["활동 포인트", balance?.activity_points],
-    ["유료 포인트", balance?.paid_points],
+    ["활동 마일리지", balance?.activity_points],
+    ["유료 마일리지", balance?.paid_points],
   ];
   return (
     <div className={styles.page}>
-      <FanHeading as="h1">시험 포인트 충전</FanHeading>
-      <section className={styles.panel} aria-label="포인트 충전">
+      <FanHeading as="h1">시험 마일리지 충전</FanHeading>
+      <section className={styles.panel} aria-label="마일리지 충전">
         <dl className={styles.balances}>
           {rows.map(([label, value]) => (
             <div key={label}>
               <FanText as="dt" role="body">{label}</FanText>
-              <dd><FanNumber value={value ?? 0} unit="P" locale={locale} countUp /></dd>
+              <dd><FanNumber value={value ?? 0} unit={formatMileage(value ?? 0, locale, "auto", "unit")} locale={locale} countUp /></dd>
             </div>
           ))}
           <div>
             <FanText as="dt" role="item">합계</FanText>
-            <dd><FanNumber value={balance?.total_points ?? 0} unit="P" size="lg" locale={locale} countUp /></dd>
+            <dd><FanNumber value={balance?.total_points ?? 0} unit={formatMileage(balance?.total_points ?? 0, locale, "auto", "unit")} size="lg" locale={locale} countUp /></dd>
           </div>
         </dl>
         <div className={styles.product}>
-          <FanText role="item">유료 포인트 100P</FanText>
+          <FanText role="item">{formatMileage(100, locale)}</FanText>
           <FanText role="item">1,000원</FanText>
         </div>
         <div className={styles.actions}>

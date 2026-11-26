@@ -18,7 +18,7 @@ it("draws the policy points of the proof action as a corner badge beside the lab
   const { container } = render(<ProofTabLabel label="덕후인증" locale="ko" />);
   expect(screen.getByText("덕후인증")).toBeInTheDocument();
   await waitFor(() => expect(container.querySelector('[data-earn-badge="corner"]')).toHaveTextContent("+100"));
-  expect(container.querySelector('[data-earn-badge="corner"]')).toHaveTextContent("포인트 100 적립");
+  expect(container.querySelector('[data-earn-badge="corner"]')).toHaveTextContent("+100 마일리지");
   expect(catalog.calls).toEqual(["/api/dukjil/catalog?locale=ko"]);
 });
 

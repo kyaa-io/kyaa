@@ -1,5 +1,6 @@
 "use client";
 
+import { formatMileage } from "@/i18n/format-mileage";
 import { exitFortune } from "./exit";
 import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
@@ -387,7 +388,7 @@ export function FortuneResult({
     <FanAction variant="text" className={styles.passportRow} href={`/c/${character}?locale=${locale}`} trailingIcon={<FanIcon icon={ChevronRight} size={16} />}>
       <span className={styles.rewardRow}>
         <FanText role="label" className={styles.go}>
-          {uiText("passportReward", { points: CHEMI_PASSPORT_DAILY_POINTS })}
+          {uiText("passportReward", { points: formatMileage(CHEMI_PASSPORT_DAILY_POINTS, locale) })}
         </FanText>
         {Boolean(reading.reward?.exp) && (
           <AffinityBadge amount={reading.reward?.exp ?? 0} label={uiText("affinityGain", { exp: reading.reward?.exp ?? 0 })} />

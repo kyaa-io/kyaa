@@ -16,7 +16,7 @@ describe("home ranking row: today's gain next to the value", () => {
   it("fan row: +7 beside the value, with a thousands separator and a screen-reader reading", () => {
     const { container } = render(<FanRows locale="ko" ranking={fans(7)} metric="points" scope="t" period="all" />);
     expect(gainNode(container)?.textContent).toBe("+7");
-    expect(container.querySelector("[data-metric]")?.getAttribute("aria-label")).toBe("포인트 1,234, 오늘 7 늘어남");
+    expect(container.querySelector("[data-metric]")?.getAttribute("aria-label")).toBe("1,234 마일리지, 오늘 7 늘어남");
     const big = render(<FanRows locale="ko" ranking={fans(1234)} metric="points" scope="t2" period="week" />);
     expect(gainNode(big.container)?.textContent).toBe("+1,234");
   });

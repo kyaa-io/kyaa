@@ -86,7 +86,7 @@ it('UI019 attendance dialog shows refreshed actual balance after a local receipt
  render(<WalletScreen locale='ko' attendance/>);
  expect(await screen.findByRole('dialog',{name:'출석체크'})).toBeInTheDocument();
  expect(methods).not.toContain('POST');fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
- expect(await screen.findByText('마일리지 270 M')).toBeInTheDocument();expect(methods.filter(x=>x==='POST')).toHaveLength(1);
+ expect(await screen.findByText('마일리지 270 마일리지')).toBeInTheDocument();expect(methods.filter(x=>x==='POST')).toHaveLength(1);
 });
 it('UI019 attendance retries a lost receipt without another check-in',async()=>{
  let key='',checked=false;const writes:string[]=[];
@@ -98,7 +98,7 @@ it('UI019 attendance retries a lost receipt without another check-in',async()=>{
  }));
  const view=render(<WalletScreen locale='ko' attendance/>);fireEvent.click(await screen.findByRole('button',{name:'오늘 출석하고 마일리지 받기'}));
  fireEvent.click(await screen.findByRole('button',{name:'처리 결과 확인'}));
- expect(await screen.findByText('마일리지 270 M')).toBeInTheDocument();expect(writes).toEqual(['/api/me/wallet/check-in']);view.unmount();
+ expect(await screen.findByText('마일리지 270 마일리지')).toBeInTheDocument();expect(writes).toEqual(['/api/me/wallet/check-in']);view.unmount();
 });
 it('wallet page shows the balance card without any exchange',async()=>{
  vi.stubGlobal('fetch',vi.fn(async(url:string)=>Response.json(url.endsWith('/history')?{entries:[]}:wallet)));
@@ -168,5 +168,5 @@ it('names history rows after the real activity and the correction reason, with t
  await screen.findByText('글 쓰기');
  const text=view.container.textContent??'';
  expect(text).toContain('글 삭제로 회수');expect(text).toContain('공감 누르기');expect(text).toContain('활동 참여');
- expect(text).toContain('-20 M');
+ expect(text).toContain('-20 마일리지');
 });

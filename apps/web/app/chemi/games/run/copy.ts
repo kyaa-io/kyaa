@@ -1,4 +1,4 @@
-import { extraGameUnit, getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
+import { formatExtraGameCost, extraGameUnit, getExtraPlayCopy } from "@/features/chemi/ui/extra-play-copy";
 import type { AppLocale } from "@/i18n/locales";
 import { creatorName } from "@/features/fanpage/domain/creator-names";
 
@@ -161,7 +161,7 @@ const comboLines: Record<AppLocale, [string, string]> = {
 };
 
 export function getRunCopy(locale: AppLocale, cost?: number, character: import("./shared").Character = "changha"): RunCopy {
-  const copy = Object.fromEntries(keys.map((key, i) => [key, table[locale][i]!.replace("{cost}P", `{cost}${extraGameUnit(cost ?? 0)}`).replace("{cost}", cost?.toLocaleString(locale) ?? "—")])) as RunCopy;
+  const copy = Object.fromEntries(keys.map((key, i) => [key, table[locale][i]!.replace("{cost}P", cost === undefined ? "—" : formatExtraGameCost(cost, locale, extraGameUnit(cost)))])) as RunCopy;
   copy.extraCta = getExtraPlayCopy(locale, cost ?? 0).cta;
   if (character !== "changha") {
     const index = character === "elina" ? 0 : 1;

@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { RewardIcon, REWARD_ICON_SRC } from "@/components/fan-ui/reward-icon";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
@@ -75,8 +76,8 @@ export function StanWallet({ locale, state, stamps, links, className, favoritePi
   /** 보유 N: the real balance (137P stays 137P past the cost), or the locked / loading mark in the same line. A balance that failed to load leaves the line empty (the section's own error and retry say so) — no dash. */
   const held = (slot: StanSlot, text: string) => typeof slot === "number" ? s("stanHeld", [text]) : slot === "loading" ? <FanSkeleton width={64} height={16} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : null;
   /** The amount carries a word, not a sign (대표 11/13 20:36: −100P read as a loss): 포인트 100P 사용 → 응모권 1장 획득. */
-  const amount = (side: "spend" | "gain", value: number, unit: string) => <span className={styles.amount}>
-    <FanNumber size="lg" value={value} unit={unit || undefined} locale={locale} />
+  const amount = (side: "spend" | "gain", value: number, unit?: string) => <span className={styles.amount}>
+    {side === "spend" ? <FanNumber size="lg" value={value} locale={locale} unit={formatMileage(value, locale, "auto", "unit")} /> : <FanNumber size="lg" value={value} unit={unit || undefined} locale={locale} />}
     <FanText role="meta" className={styles.amountLabel}>{s(side === "spend" ? "stanSpend" : "stanGain")}</FanText>
   </span>;
   type Side = { cell: string; kind: keyof typeof WALLET_ASSETS; name: string; held: ReactNode; amount: ReactNode; flash: [boolean, (event: AnimationEvent) => void] };
@@ -99,7 +100,7 @@ export function StanWallet({ locale, state, stamps, links, className, favoritePi
   const show = (name: "tickets" | "hearts") => !part || part === name;
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? s("stanFlowStamps") : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
     {show("tickets") ? swap("tickets",
-      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? `${n(points)}M` : ""), amount: amount("spend", pointCost, "M") },
+      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? formatMileage(points, locale) : ""), amount: amount("spend", pointCost, undefined) },
       { cell: "tickets", flash: flashes.tickets, kind: "ticket", name: w.tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("gain", 1, ko ? "장" : "") },
       `/my/raffles?locale=${locale}`,
       action(ko ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })) : null}
@@ -110,7 +111,7 @@ export function StanWallet({ locale, state, stamps, links, className, favoritePi
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
     <Overlay open={open && ready} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>
       {!wide && <span className={styles.handle} aria-hidden="true" />}
-      <div className={styles.sheetTitle}><FanHeading id={titleId}>{rewardedExchangeCopy(locale).action}</FanHeading></div><div className={styles.sheetBalance}><div className={styles.sheetLabel}>{w.points}</div><div className={styles.sheetValue}><Value locale={locale} slot={points} unit="P" /></div></div>
+      <div className={styles.sheetTitle}><FanHeading id={titleId}>{rewardedExchangeCopy(locale).action}</FanHeading></div><div className={styles.sheetBalance}><div className={styles.sheetLabel}>{w.points}</div><div className={styles.sheetValue}><Value locale={locale} slot={points} unit={typeof points === "number" ? formatMileage(points, locale, "auto", "unit") : undefined} /></div></div>
       {ready && <StanExchange locale={locale} points={state.points} pointCost={pointCost} pendingRequest={pendingRequest} onSuccess={() => setOpen(false)} />}
     </Overlay>
   </section>;

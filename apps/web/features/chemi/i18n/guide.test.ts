@@ -24,7 +24,7 @@ for (const locale of APP_LOCALES) {
     const { guide, home } = JSON.parse(readFileSync(resolve(__dirname, "locales", locale, "chemi.json"), "utf8"));
     expect(guide, "guide section").toBeDefined();
     const [midnight, activityFirst, once, three] = milestones[locale];
-    expect(home.datePricing.match(/\d+\s*M\b/g)).toEqual(["10M"]);
+    expect(home.datePricing.match(/\{mileage\d+\}/g)).toEqual(["{mileage10}"]);
     expect(home.datePricing).toContain(midnight);
     expect(home.datePricing).toContain(activityFirst);
     expect(guide.growthDetail).toContain(once);

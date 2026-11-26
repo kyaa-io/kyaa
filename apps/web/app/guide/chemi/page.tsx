@@ -1,3 +1,4 @@
+import { formatMileage } from "@/i18n/format-mileage";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
@@ -48,6 +49,7 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
   const locale = parseAppLocale((await searchParams).locale);
   const t = copy[locale];
   const { home: names, guide } = (await import(`@/features/chemi/i18n/locales/${locale}/chemi.json`)).default;
+  const pricing = (template: string) => template.replace(/\{mileage(\d+)\}/g, (_, amount) => formatMileage(Number(amount), locale));
   return <FanAppFrame locale={locale} currentPath="/guide/chemi" mainId="chemi-guide">
     <FanContentContainer as="main" id="chemi-guide" tabIndex={-1} className={styles.page}>
       <header className={styles.intro}>
@@ -73,8 +75,8 @@ export default async function ChemiGuidePage({ searchParams }: Props) {
       </section>)}
       <section className={styles.panel}>
         <FanHeading>{names.mileageGuideTitle}</FanHeading>
-        <FanText role="body">{names.gamePricing}</FanText>
-        <FanText role="body">{names.datePricing}</FanText>
+        <FanText role="body">{pricing(names.gamePricing)}</FanText>
+        <FanText role="body">{pricing(names.datePricing)}</FanText>
       </section>
       <section className={styles.growth}>
         <Image unoptimized src="/chemi/grow/room-changha-v2.webp" width={320} height={320} alt="" />

@@ -1,4 +1,5 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
 import { useReadingBirthCopy, useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
 import { useEffect, useState } from "react";
@@ -108,7 +109,7 @@ export function DatePurchase({
   }
   return (
     <section id="fortune-date" className={`${styles.panel} ${styles.purchase}`}>
-      <FanHeading as="h2">{uiText("anotherDate")}{standardPrice !== undefined && ` · ${standardPrice}M`}</FanHeading>
+      <FanHeading as="h2">{uiText("anotherDate")}{standardPrice !== undefined && ` · ${formatMileage(standardPrice, locale)}`}</FanHeading>
       <BirthDateField
         label={uiText("date")}
         value={text}
@@ -140,11 +141,11 @@ export function DatePurchase({
       ) : quote ? (
         <div aria-live="polite">
           <p>
-            {uiText("priceBalance", { price: quote.price, balance: quote.balance })}
+            {uiText("priceBalance", { price: formatMileage(quote.price, locale), balance: formatMileage(quote.balance, locale) })}
           </p>
           {quote.balance >= quote.price ? (
             <>
-              <p>{uiText("afterPurchase", { balance: quote.balance - quote.price })}</p>
+              <p>{uiText("afterPurchase", { balance: formatMileage(quote.balance - quote.price, locale) })}</p>
               <div className={`${styles.purchaseActions} ${styles.purchaseConfirm}`}>
                 <FanAction
                   variant="primary"
@@ -152,7 +153,7 @@ export function DatePurchase({
                   disabled={busy}
                   onClick={() => request(true)}
                 >
-                  {uiText("openPaid", { price: quote.price })}
+                  {uiText("openPaid", { price: formatMileage(quote.price, locale) })}
                 </FanAction>
                 <FanAction variant="text" disabled={busy} onClick={() => reset("")}>
                   <ReadingText id="cancel" />
