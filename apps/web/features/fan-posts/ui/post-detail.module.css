@@ -14,10 +14,10 @@
 .facts > * + *::before { content: "│"; margin-inline-end: var(--space-2); color: var(--color-line); }
 .menu { grid-area: menu; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); min-height: 36px; }
 /* The header row is 36 high; the press areas stay 44 through the pseudo element. */
-.menu [class*="moreTrigger"], .menu [class*="translationButton"] { position: relative; min-width: 0; min-height: 36px; }
-.menu [class*="moreTrigger"] { width: 36px; height: 36px; }
+.menu [class*="translationButton"] { position: relative; min-width: 0; min-height: 36px; }
+.menu [class*="moreTrigger"] { width: 44px; height: 44px; }
 .menu [class*="translationButton"] { padding-block: 0; }
-.menu [class*="moreTrigger"]::after, .menu [class*="translationButton"]::after { content: ""; position: absolute; inset: -4px 0; }
+.menu [class*="translationButton"]::after { content: ""; position: absolute; inset: -4px 0; }
 
 /* 11/12 hotfix: one low row of small chips under the body (thumbs up, thumbs down, share), no extra top gap: the article's own 16px gap already separates it. */
 .bodyEnd { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
@@ -49,12 +49,11 @@
 .commentList { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; min-width: 0; }
 .commentList > li { position: relative; min-width: 0; margin: 0; padding-block: var(--space-2); padding-inline: var(--space-10) 0; border: 0; border-top: 1px solid var(--color-line); border-radius: 0; background: transparent; box-shadow: none; }
 .commentList > li:first-child { border-top: 0; }
-.commentList > li > :first-child > img { position: absolute; top: var(--space-2); left: 0; width: 32px; height: 32px; margin-top: 0; border-radius: 50%; object-fit: cover; }
+.commentList > li .commentMeta > img { position: absolute; inset-inline-start: calc(var(--space-10) * -1); top: 50%; transform: translateY(-50%); width: 32px; height: 32px; margin-top: 0; border-radius: 50%; object-fit: cover; }
 .commentList > li[data-reply] { margin-inline-start: var(--space-10); padding-inline-start: var(--space-10); }
-.commentList > li[data-reply] > :first-child > img { width: 28px; height: 28px; }
+.commentList > li[data-reply] .commentMeta > img { width: 28px; height: 28px; }
 /* 11/13 아티스트 댓글: 그 페이지 아티스트의 댓글은 핑크 틴트 면으로 눈에 띄게(선택 면과 같은 --color-accent-soft). 아바타와 글을 면 안으로 12 들인다. */
 .commentList > li[data-artist] { padding-inline: calc(var(--space-10) + var(--space-3)) var(--space-3); border-top-color: transparent; border-radius: var(--radius-media); background: var(--color-accent-soft); }
-.commentList > li[data-artist] > :first-child > img { left: var(--space-3); }
 .commentList > li[data-artist] + li { border-top-color: transparent; }
 .commentList > li p { margin: 0; overflow-wrap: anywhere; white-space: pre-wrap; }
 .commentAction { position: relative; display: inline-flex; align-items: center; min-height: 32px; padding: 0 var(--space-2); border: 0; background: transparent; color: var(--color-muted); font: 700 13px/20px "Pretendard Variable", system-ui, sans-serif; text-decoration: none; cursor: pointer; }
@@ -64,9 +63,8 @@
 .commentActions { display: flex; flex-wrap: wrap; align-items: center; margin-inline-start: calc(var(--space-2) * -1); }
 /* Small visible rows; the press area stays 44 through the pseudo element. */
 .commentActions :is(button, a) { position: relative; min-height: 32px; min-width: 0; padding-block: 0; padding-inline: var(--space-2); }
-.commentMeta [class*="moreTrigger"] { position: relative; width: 32px; height: 32px; }
-.commentActions :is(button, a)::after, .commentMeta [class*="moreTrigger"]::after { content: ""; position: absolute; inset: -6px 0; }
-.commentMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); min-height: 32px; min-width: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; }
+.commentActions :is(button, a)::after { content: ""; position: absolute; inset: -6px 0; }
+.commentMeta { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); min-height: 44px; min-width: 0; color: var(--color-muted); font-size: var(--fan-metadata-size); line-height: 20px; }
 .commentIdentity { display: inline-flex; align-items: center; gap: var(--space-1); min-width: 0; }
 .commentMeta strong { min-width: 0; overflow: hidden; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); text-overflow: ellipsis; white-space: nowrap; }
 :is(.author, .commentIdentity) strong > button, :is(.author, .commentIdentity) strong > button > span { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-wrap: nowrap; }
@@ -82,7 +80,6 @@
 .translatedMedia { margin-top: var(--space-4); min-width: 0; }
 .inlineVideo { position: relative; max-width: 100%; }
 .inlineVideo img { display: block; max-width: 100%; max-height: 640px; width: auto; height: auto; border-radius: var(--radius-media); }
-.commentMeta > :last-child:not(time):not(strong):not(.editedMark) { margin-inline-start: auto; }
 .readColumn { width: min(100%, 720px); min-width: 0; }
 .skeleton { display: grid; gap: var(--space-4); width: 100%; }
 .skeletonComments { margin-top: var(--space-4); }
