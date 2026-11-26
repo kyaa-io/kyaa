@@ -41,6 +41,8 @@ import {
 import styles from "./settings-screen.module.css";
 import type { NotificationConnections } from "../../notification/domain/connected-account";
 import { PhoneSmsEnrollment } from "./phone-sms-enrollment";
+import { AccountSwitchSettingsRow } from "@/features/groups/ui/account-switch-dialog";
+import { Avatar, AvatarPlaceholder } from "./avatar";
 import { AvatarSettings } from "./avatar-settings";
 import { ProfilePublicFields } from "@/features/fan-profile/ui/profile-public-fields";
 import { AccountDeletion } from "./account-deletion";
@@ -1063,7 +1065,16 @@ export function SettingsScreen({ locale, initialSection = null }: { locale: Loca
       </FanContentContainer></FanAppFrame>
     );
 
-  if(groupsEnabled&&!section)return <FanAppFrame locale={locale} groupsEnabled mainId="settings-content"><GroupSettingsMenu locale={locale} onSelect={openSection}/></FanAppFrame>;
+  if (groupsEnabled && !section) {
+    const avatar = avatarResource.state.status === "ready"
+      ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label="" size={48} />
+      : <AvatarPlaceholder size={48} />;
+    return <FanAppFrame locale={locale} groupsEnabled mainId="settings-content">
+      <GroupSettingsMenu locale={locale} onSelect={openSection} accountAction={
+        <AccountSwitchSettingsRow key={ownerId} locale={locale} name={settings?.nickname || t.account} avatar={avatar} />
+      } />
+    </FanAppFrame>;
+  }
 
   const blockedLabel = contentCopy(locale).block;
   const deletionLabel = accountDeletionCopy[locale].title;

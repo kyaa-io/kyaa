@@ -1,9 +1,8 @@
 "use client";
 import { useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FanAction } from "@/components/fan-ui/fan-action";
-import { PencilHeaderIcon } from "@/components/fan-shell/pencil-header-icon";
 import { untypedRouter } from "@/lib/navigation/untyped";
+import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanDialog } from "@/components/fan-ui/fan-dialog";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -54,14 +53,13 @@ export function AccountSwitchDialog({ locale, avatar, name, path, onClose }: { l
   </FanDialog>;
 }
 
-/** Below 768 there is no header account menu (header frozen), so MY carries the same line under the member's name. */
-export function AccountSwitchLine({ locale, avatar, name, className }: { locale: AppLocale; avatar: ReactNode; name: string; className?: string }) {
+export function AccountSwitchSettingsRow({ locale, avatar, name }: { locale: AppLocale; avatar: ReactNode; name: string }) {
   const [open, setOpen] = useState(false);
   const enabled = useAccountSwitchRelease();
   const pathname = usePathname() || "/", query = useSearchParams()?.toString();
   if (!enabled) return null;
   return <>
-    <FanAction variant="text" size="sm" className={`${styles.line} ${className ?? ""}`} leadingIcon={<PencilHeaderIcon name="switch" size={16} />} onClick={() => setOpen(true)}>{accountSwitchCopy(locale).switchAccount}</FanAction>
+    <FanAction variant="text" onClick={() => setOpen(true)}>{accountSwitchCopy(locale).switchAccount}</FanAction>
     {open ? <AccountSwitchDialog locale={locale} avatar={avatar} name={name} path={`${pathname}${query ? `?${query}` : ""}`} onClose={() => setOpen(false)} /> : null}
   </>;
 }
