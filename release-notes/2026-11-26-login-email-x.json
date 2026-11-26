@@ -1,0 +1,15 @@
+{
+  "changes": [
+    "이메일로 받은 코드만으로 kyaa에 가입하고 로그인할 수 있어요.",
+    "로그인 화면에 ‘X로 계속하기’ 버튼이 생겼고, X로 처음 가입할 때는 이메일 코드를 한 번 확인해요.",
+    "X·인스타그램 같은 앱 안에서 연 로그인 화면은 이메일, X, Apple 순서로 보여요.",
+    "일반 브라우저의 로그인 화면은 Google, 이메일, X, Apple 순서로 보여요.",
+    "예시 데이터로 만든 로컬 화면입니다."
+  ],
+  "path": "/login",
+  "images": [
+    "release-notes/images/2026-11-26-login-email-x-inapp-390.png",
+    "release-notes/images/2026-11-26-login-email-x-browser-390.png",
+    "release-notes/images/2026-11-26-login-x-email-step-390.png"
+  ]
+}

@@ -46,6 +46,13 @@ describe("managed home banner", () => {
     expect(render(<ManagedHomeBanner banner={xMissionHomeBanner("ko")} locale="ko" />).container.querySelector('[data-hero-full-image] [data-banner-video="all"]')).not.toBeNull();
     expect(render(<ManagedHomeBanner banner={guide()} locale="ko" />).container.querySelector("video")).toBeNull();
   });
+  it("heads an outside ad banner with the ad label, not the kyaa news label", () => {
+    const eyebrow = (category: string, locale: "ko" | "en" | "ja") => render(<ManagedHomeBanner banner={guide({ category, kind: "announcement", href: "/yuna" })} locale={locale} />).container.querySelector("[class*=eyebrow]");
+    expect(eyebrow("ad", "ko")).toHaveTextContent(/^광고$/);
+    expect(eyebrow("ad", "en")).toHaveTextContent(/^Ad$/);
+    expect(eyebrow("ad", "ja")).toHaveTextContent(/^広告$/);
+    expect(eyebrow("announcement", "ko")).toHaveTextContent(/^kyaa 소식$/);
+  });
   it("keeps other banners on the live layout", () => {
     const { container } = render(<ManagedHomeBanner banner={guide({ category: "announcement" })} locale="ko" />);
     expect(container.querySelector("[data-guide-art]")).toBeNull();

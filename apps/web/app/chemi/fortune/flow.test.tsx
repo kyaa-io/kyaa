@@ -5,6 +5,8 @@ import { FortuneFlow } from "./flow";
 import { ReadingCopyProvider } from "@/features/chemi/i18n/reading-ui";
 import en from "@/features/chemi/i18n/locales/en/chemi.json";
 import { todayKst } from "./reading";
+import { fortuneChoiceLabel } from "./lines";
+import ko from "@/features/chemi/i18n/locales/ko/chemi.json";
 
 const { session, login, getAccessToken } = vi.hoisted(() => ({
   session: { authenticated: true },
@@ -84,6 +86,7 @@ it("saves the reading once, then walks the four talk steps", async () => {
   vi.stubGlobal("fetch", request);
   render(<FortuneFlow locale="ko" />);
   expect(await screen.findByText("오늘 128명이 봤어요")).toBeVisible();
+  const entryCount = window.history.length;
   fireEvent.click(screen.getByRole("button", { name: "응, 봐 줘" }));
   expect(await screen.findByText("도와줄 사람도 있어?", {}, { timeout: 3000 })).toBeVisible();
   expect(window.location.search).toContain("step=talk-1");
@@ -92,6 +95,7 @@ it("saves the reading once, then walks the four talk steps", async () => {
   fireEvent.click(screen.getByRole("button", { name: "도와줄 사람도 있어?" }));
   expect(await screen.findByText("친구도 만날까?")).toBeVisible();
   expect(window.location.search).toContain("step=talk-2");
+  expect(window.history.length).toBe(entryCount);
 });
 
 it("opens the birth sheet when the profile has no birth yet", async () => {
@@ -463,4 +467,30 @@ it("asks the same follow-up in other languages instead of the fixed three button
   expect(await screen.findByRole("button", { name: "Meet a fan friend too?" })).toBeVisible();
   expect(screen.getByRole("button", { name: "When should I ask?" })).toBeVisible();
   expect(screen.queryByText(en.readingUi.whatFandom)).toBeNull();
+});
+
+it("starts page four with the item after a 챙길 것 choice and with the hour after a 언제 choice (CHEMI-FORTUNE-TALK4-1126)", async () => {
+  vi.stubGlobal("fetch", vi.fn(async (path: string) => (path === "/api/chemi/readings" ? Response.json(reading) : Response.json({}))));
+  const input = {
+    score: reading.result.score, grade: reading.result.grade.name, fandom: reading.result.fields.fandom,
+    money: reading.result.fields.money, people: reading.result.fields.people,
+    luckyHour: reading.result.luck.luckyHour, color: reading.result.luck.color,
+  };
+  const press = async (talk: 1 | 2 | 3, slot: "next" | "skip") =>
+    fireEvent.click(await screen.findByRole("button", { name: fortuneChoiceLabel("changha", talk, slot, input)! }, { timeout: 3000 }));
+  for (const route of ["bring", "when"] as const) {
+    window.history.replaceState(null, "", "/chemi/fortune");
+    const view = render(<FortuneFlow locale="ko" />);
+    fireEvent.click(screen.getByRole("button", { name: ko.readingUi.readFortune }));
+    await press(1, "next");
+    if (route === "bring") {
+      await press(2, "next");
+      await press(3, "next");
+      expect(await screen.findByText(new RegExp(`^${input.color}색 물건 하나 챙겨\\.`))).toBeVisible();
+    } else {
+      await press(2, "skip");
+      expect(await screen.findByText(/^부탁할 거 있으면 \d+시에서 \d+시 사이에 해\./)).toBeVisible();
+    }
+    view.unmount();
+  }
 });

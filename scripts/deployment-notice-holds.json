@@ -8,6 +8,7 @@
     "release-notes/2026-11-21-admin-copy-apply.json"
   ],
   "chemi-tab": [
+    "release-notes/2026-11-26-chemi-fortune-talk4.json",
     "release-notes/2026-11-26-chemi-fortune-choice-context.json",
     "release-notes/2026-11-26-chemi-saju-opening.json",
     "release-notes/2026-11-21-chemi-ask.json",
@@ -40,7 +41,8 @@
     "release-notes/2026-11-24-chemi-r8b.json",
     "release-notes/2026-11-24-chemi-ranking-hour.json",
     "release-notes/2026-11-24-chemi-run-gauge.json",
-    "release-notes/2026-11-24-chemi-scene-quality.json"
+    "release-notes/2026-11-24-chemi-scene-quality.json",
+    "release-notes/2026-11-25-chemi-fortune-back.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

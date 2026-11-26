@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "오늘의 운세에서 뒤로 가면 대화를 한 단계씩 되짚지 않고 이전 화면으로 돌아가요. 결과를 바로 열었다면 왼쪽 위 화살표로 케미 목록에 갈 수 있어요."
+  ],
+  "path": "/chemi/fortune",
+  "images": [
+    "release-notes/images/2026-11-25-chemi-fortune-back.png"
+  ]
+}

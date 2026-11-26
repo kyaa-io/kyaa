@@ -17476,5 +17476,17 @@
     "ko": "작성 이름",
     "source": "features/fanpage/ui/notice-comments",
     "id": "features/fanpage/ui/notice-comments:m6c1f0a9d4e27"
+  },
+  "mcontinueWithX": {
+    "en": "Continue with X",
+    "ko": "X로 계속하기",
+    "source": "components/login-page",
+    "id": "components/login-page:inline.mcontinueWithX"
+  },
+  "mxEmailRequired": {
+    "en": "Your X account has no email. Enter the code we email you to finish joining with this X account.",
+    "ko": "X 계정에는 이메일이 없어요. 이메일로 받은 코드를 넣으면 이 X 계정으로 가입을 마칠 수 있어요.",
+    "source": "components/login-page",
+    "id": "components/login-page:inline.mxEmailRequired"
   }
 }

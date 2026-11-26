@@ -593,5 +593,29 @@ export const messages = {
     "fr": "Impossible de terminer la connexion. Vérifiez votre compte Google, puis réessayez.",
     ru: "Нам не удалось завершить вход в систему. Проверьте свою учетную запись Google и попробуйте снова."
 
+  },
+  "mcontinueWithX": {
+    "ja": "Xで続ける",
+    "zh-Hans": "使用X继续",
+    "zh-Hant": "使用X繼續",
+    "es": "Continuar con X",
+    "id": "Lanjutkan dengan X",
+    "vi": "Tiếp tục với X",
+    "th": "ดำเนินการต่อด้วย X",
+    "pt": "Continuar com X",
+    "fr": "Continuer avec X",
+    "ru": "Продолжить с X"
+  },
+  "mxEmailRequired": {
+    "ja": "X アカウントにはメールアドレスがありません。メールで届くコードを入力すると、この X アカウントで登録を完了できます。",
+    "zh-Hans": "你的 X 账号没有邮箱。输入发送到邮箱的验证码，即可用这个 X 账号完成注册。",
+    "zh-Hant": "你的 X 帳號沒有電子郵件。輸入寄到電子郵件的驗證碼，即可用這個 X 帳號完成註冊。",
+    "es": "Tu cuenta de X no tiene correo. Introduce el código que te enviamos por correo para terminar de unirte con esta cuenta de X.",
+    "id": "Akun X kamu tidak punya email. Masukkan kode yang kami kirim ke email untuk menyelesaikan pendaftaran dengan akun X ini.",
+    "vi": "Tài khoản X của bạn chưa có email. Nhập mã gửi tới email để hoàn tất đăng ký bằng tài khoản X này.",
+    "th": "บัญชี X ของคุณไม่มีอีเมล ใส่รหัสที่ส่งไปทางอีเมลเพื่อสมัครด้วยบัญชี X นี้ให้เสร็จ",
+    "pt": "Sua conta do X não tem e-mail. Digite o código que enviamos por e-mail para concluir o cadastro com esta conta do X.",
+    "fr": "Votre compte X n’a pas d’adresse e-mail. Saisissez le code envoyé par e-mail pour terminer l’inscription avec ce compte X.",
+    "ru": "У вашего аккаунта X нет почты. Введите код из письма, чтобы завершить регистрацию с этим аккаунтом X."
   }
 } satisfies Record<string, TranslatedMessage>;

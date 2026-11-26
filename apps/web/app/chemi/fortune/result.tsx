@@ -1,5 +1,6 @@
 "use client";
 
+import { exitFortune } from "./exit";
 import { AffinityBadge } from "@/features/chemi/ui/affinity-badge";
 import { useReadingCopy } from "@/features/chemi/i18n/reading-ui";
 import { ReadingText } from "@/features/chemi/i18n/reading-ui";
@@ -244,6 +245,7 @@ export function FortuneResult({
     <div className={styles.toolbar}>
       <FanAction
         href={back}
+        onClick={exitFortune}
         ariaLabel={uiText("back")}
         leadingIcon={<FanIcon icon={ChevronLeft} />}
         className={styles.round}
