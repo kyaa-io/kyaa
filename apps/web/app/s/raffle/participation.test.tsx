@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const auth = vi.hoisted(() => ({ authenticated: false, ready: true, login: vi.fn(), getAccessToken: vi.fn(async () => 'token') }));
 vi.mock('@/features/auth/client/cognito-auth', () => ({ useByUsAuth: () => auth }));
-import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleInvitedFriends, RaffleMoreAction, RaffleOdds, RaffleProvider, raffleCountdown } from './participation';
+import { RaffleBoostAction, RaffleCountdown, RaffleEnterBlock, RaffleHeroEnter, RaffleInvitedFriends, RaffleMoreAction, RaffleOdds, RaffleProvider, raffleCountdown } from './participation';
 import { raffleOddsText } from '@/i18n/catalogs/signup-raffle-longform';
 
 const closesAt = Date.parse('2026-11-30T23:59:59.999+09:00'), now = Date.parse('2026-11-13T02:00:00+09:00');
@@ -25,9 +25,9 @@ it('ticks every second and disappears once the raffle closes', () => {
 });
 
 it('lands the entry stamp on the status only after entering', () => {
-  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} preview="in"><RaffleEnterBlock /></RaffleProvider>);
+  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} preview="in"><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   expect(view.container.querySelector('[data-fan-print="stamp"]')).toBeNull();
-  fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '무료로 응모하기' }));
   act(() => { vi.advanceTimersByTime(500); });
   expect(screen.getByText('응모 완료')).toBeTruthy();
   expect(view.container.querySelector('[data-fan-print="stamp"]')?.getAttribute('aria-hidden')).toBe('true');
@@ -35,7 +35,7 @@ it('lands the entry stamp on the status only after entering', () => {
 });
 
 it('shows only the closed line after the deadline', () => {
-  const view = render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closesAt + 1}><RaffleEnterBlock /><RaffleCountdown /></RaffleProvider>);
+  const view = render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closesAt + 1}><RaffleHeroEnter /><RaffleEnterBlock /><RaffleCountdown /></RaffleProvider>);
   expect(screen.getByText('응모가 마감됐어요')).toBeTruthy();
   expect(view.container.querySelector('button, [role="timer"]')).toBeNull();
 });
@@ -64,7 +64,7 @@ it('shows my chances and invited friends only from the server, and shares my own
   const share = vi.fn(async (_data: { title?: string; url: string }) => {});
   const writeText = vi.fn(async (_url: string) => {});
   vi.stubGlobal('navigator', { ...navigator, share, clipboard: { writeText } });
-  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /><RaffleInvitedFriends /><RaffleBoostAction kind="invite" /></RaffleProvider>);
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /><RaffleInvitedFriends /><RaffleBoostAction kind="invite" /></RaffleProvider>);
   expect(screen.queryByText(/내 당첨 기회/)).toBeNull();
   await settle();
   expect(screen.getByText('응모 완료')).toBeTruthy();
@@ -99,16 +99,16 @@ it('shows my chances and invited friends only from the server, and shares my own
 
 it('keeps a friend\'s invite code through sign-in and sends it with the entry once', async () => {
   // 비로그인으로 초대 주소에 들어옴: 코드를 적어 두고 로그인으로 보낸다
-  const first = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} invite={friendCode}><RaffleEnterBlock /></RaffleProvider>);
+  const first = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} invite={friendCode}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   expect(screen.getByText(/친구가 초대했어요/)).toBeTruthy();
-  fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '무료로 응모하기' }));
   expect(auth.login).toHaveBeenCalled();
   expect(window.localStorage.getItem('kyaa:raffle:invite')).toBe(friendCode);
   first.unmount();
   // 가입하고 돌아옴(주소에 코드 없음): 다시 누르지 않아도 응모하고, 적어 둔 코드를 함께 보낸다
   auth.authenticated = true;
   const calls = server({ entered: false, passportReceived: false, communityJoined: false, chances: 0, friends: 0 });
-  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   await settle();
   const post = calls.find(call => call.method === 'POST' && call.url === '/api/signup-event/entry')!;
   expect(JSON.parse(post.body!)).toEqual({ invite: friendCode });
@@ -127,7 +127,7 @@ it('sends a signed-out fan to sign in instead of sharing a link without a code',
 });
 
 it('ignores a malformed invite code from the address', () => {
-  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} invite={'<script>'}><RaffleEnterBlock /></RaffleProvider>);
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} invite={'<script>'}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   expect(window.localStorage.getItem('kyaa:raffle:invite')).toBeNull();
 });
 
@@ -146,7 +146,7 @@ describe('result after the draw', () => {
   ])('shows 결과 확인 only once the server has a stored draw for an entrant (%o)', async (body, hidden) => {
     auth.authenticated = true;
     answer(body);
-    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleEnterBlock /></RaffleProvider>);
+    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
     await settle();
     expect(screen.getByText('응모가 마감됐어요')).toBeTruthy();
     expect(screen.queryByRole('button', { name: '결과 확인' }) === null).toBe(hidden);
@@ -154,13 +154,13 @@ describe('result after the draw', () => {
   });
   it('asks nothing before the close or without sign-in, and hides the entry when the result cannot be read', async () => {
     answer({ state: 'won', usd: 10 });
-    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleEnterBlock /></RaffleProvider>);
+    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
     await settle();
     expect(fetch).not.toHaveBeenCalled();
     cleanup();
     auth.authenticated = true;
     answer(null, false);
-    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleEnterBlock /></RaffleProvider>);
+    render(<RaffleProvider locale="ko" closed closesAt={closesAt} now={closedAt}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
     await settle();
     expect(screen.queryByRole('button', { name: '결과 확인' })).toBeNull();
   });
@@ -185,11 +185,11 @@ it('rounds small odds to one decimal', () => {
 });
 
 it('numbers the two steps and checks the first one after entering', () => {
-  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} preview="in"><RaffleEnterBlock /></RaffleProvider>);
+  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} preview="in"><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   const steps = () => [...view.container.querySelectorAll('[data-row="raffle-step"]')];
-  expect(steps().map(step => step.textContent)).toEqual(['1래플 응모하기 누르기', '로그인 완료']);
+  expect(steps().map(step => step.textContent)).toEqual(['1무료로 응모하기 누르기', '로그인 완료']);
   expect(steps()[1]!.hasAttribute('data-done')).toBe(true);
-  fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '무료로 응모하기' }));
   act(() => { vi.advanceTimersByTime(500); });
   expect(steps()[0]!.hasAttribute('data-done')).toBe(true);
 });
@@ -202,20 +202,20 @@ it('shows the same ticking clock large in the key visual', () => {
 });
 
 it('shows a signed-out fan the two steps: enter, then sign up or log in', () => {
-  const view = render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
-  expect([...view.container.querySelectorAll('[data-row="raffle-step"]')].map(step => step.textContent)).toEqual(['1Tap Enter the raffle', "2Sign up or log in and you're entered"]);
-  expect(view.container.querySelector('button.lg, button')?.textContent).toBe('Enter the raffle');
+  const view = render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
+  expect([...view.container.querySelectorAll('[data-row="raffle-step"]')].map(step => step.textContent)).toEqual(['1Tap Enter free', "2Sign up or log in and you're entered"]);
+  expect(view.container.querySelector('button.lg, button')?.textContent).toBe('Enter free');
 });
 
 it('enters right after coming back from sign-up when the fan tapped Enter signed out', async () => {
-  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
-  fireEvent.click(screen.getByRole('button', { name: '래플 응모하기' }));
+  const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
+  fireEvent.click(screen.getByRole('button', { name: '무료로 응모하기' }));
   expect(auth.login).toHaveBeenCalledTimes(1);
   expect(window.sessionStorage.getItem('kyaa:raffle:enter')).toBe('1');
   view.unmount();
   auth.authenticated = true;
   const calls = server({ entered: false, passportReceived: false, communityJoined: false });
-  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   await settle();
   expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET', 'POST']);
   expect(screen.getByText('응모 완료')).toBeTruthy();
@@ -225,10 +225,10 @@ it('enters right after coming back from sign-up when the fan tapped Enter signed
 it('does not enter a signed-in fan who never tapped Enter', async () => {
   auth.authenticated = true;
   const calls = server({ entered: false, passportReceived: false, communityJoined: false });
-  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   await settle();
   expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET']);
-  expect(screen.getByRole('button', { name: '래플 응모하기' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: '무료로 응모하기' })).toBeTruthy();
 });
 
 // RAFFLE-FUNNEL-CHECK-1123: X 앱 안 브라우저에서는 로그인이 끝나지 않고, 브라우저를 옮기면 sessionStorage의 응모 의도가 사라졌다.
@@ -238,7 +238,7 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
   const at = (path: string) => window.history.replaceState(null, '', path);
   const asAgent = (ua: string) => vi.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(ua);
   afterEach(() => { vi.restoreAllMocks(); at('/'); });
-  const block = (locale: 'en' | 'ko' = 'en') => render(<RaffleProvider locale={locale} closed={false} closesAt={closesAt} now={now}><RaffleEnterBlock /></RaffleProvider>);
+  const block = (locale: 'en' | 'ko' = 'en') => render(<RaffleProvider locale={locale} closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
 
   it.each([
     ['X', xApp], ['Instagram', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 Mobile/22B83 Instagram 350.0.2.15.84'],
@@ -250,7 +250,7 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
     const view = block();
     const guide = view.container.querySelector('[data-raffle-inapp]')!;
     expect(guide.textContent).toContain('Open in your browser to enter: tap ··· (top right) → Open in browser');
-    expect(guide.previousElementSibling?.textContent).toBe('Enter the raffle');
+    expect(guide.previousElementSibling?.textContent).toBe('Enter free');
     expect(screen.getByRole('button', { name: 'Copy link' })).toBeTruthy();
   });
 
@@ -299,7 +299,7 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
   it('puts ?enter=1 in the address before sending a signed-out fan to sign in, so the login return carries it', () => {
     at('/s/raffle?locale=en');
     block();
-    fireEvent.click(screen.getByRole('button', { name: 'Enter the raffle' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Enter free' }));
     expect(auth.login).toHaveBeenCalledOnce();
     expect(window.location.pathname + window.location.search).toBe('/s/raffle?locale=en&enter=1');
     expect(window.sessionStorage.getItem('kyaa:raffle:enter')).toBe('1');
@@ -339,7 +339,7 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
     await settle();
     expect(calls).toEqual([]);
     expect(window.location.search).toBe('?enter=1');
-    expect(screen.getByRole('button', { name: 'Enter the raffle' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Enter free' })).toBeTruthy();
   });
 
   it('shows the error row with Try again when the automatic entry fails', async () => {

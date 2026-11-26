@@ -3,23 +3,9 @@
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect } from "react";
-import {
-  acquisitionLanding,
-  acquisitionTouchSchema,
-  classifyAcquisitionChannel,
-  readStoredAcquisitionTouch,
-  type AcquisitionTouch,
-} from "../domain/acquisition-attribution";
-import { captureSignupSource } from "../domain/signup-source";
-import { recordProductEventV1 } from "./product-event-client";
 import { useByUsSession } from "@/components/byus-session-provider";
-
-const STORAGE_KEY = "byus.acquisition.session.v1";
-const ENTRY_EVALUATED_KEY = "byus.acquisition.entry-evaluated.v1";
-
-function storeTouch(touch: AcquisitionTouch): void {
-  window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(acquisitionTouchSchema.parse(touch)));
-}
+import { recordProductEventV1 } from "./product-event-client";
+import { earlyRaffleLanding, readOrCaptureTouch, recordAnonymousLanding, storeTouch } from "./early-raffle-landing";
 
 export function AcquisitionSessionTracker() {
   const pathname = usePathname();
@@ -31,35 +17,14 @@ export function AcquisitionSessionTracker() {
 
   useEffect(() => {
     let cancelled = false;
-    let touch: AcquisitionTouch | null;
-    try {
-      touch = readStoredAcquisitionTouch(window.sessionStorage.getItem(STORAGE_KEY));
-      if (!touch) {
-        if (window.sessionStorage.getItem(ENTRY_EVALUATED_KEY)) return;
-        window.sessionStorage.setItem(ENTRY_EVALUATED_KEY, "1");
-        const landing = acquisitionLanding(pathname);
-        if (!landing) return;
-        touch = {
-          signupSource: captureSignupSource(pathname, searchParams, document.referrer),
-          channel: classifyAcquisitionChannel({
-            searchParams,
-            referrer: document.referrer,
-            siteOrigin: window.location.origin,
-          }),
-          landing,
-          anonymousRecorded: false,
-          identifiedRecorded: false,
-          eventNonce: window.crypto.randomUUID(),
-          occurredAt: new Date().toISOString(),
-        };
-        storeTouch(touch);
-      }
-    } catch {
-      return;
-    }
-    if (!ready) return;
+    const initialTouch = readOrCaptureTouch(pathname, searchParams);
+    if (!ready || !initialTouch) return;
 
     void (async () => {
+      if (earlyRaffleLanding) await earlyRaffleLanding;
+      if (cancelled) return;
+      const touch = readOrCaptureTouch(pathname, searchParams);
+      if (!touch) return;
       if (identifiedReady) {
         if (touch.identifiedRecorded) return;
         const token = await getAccessToken();
@@ -89,23 +54,7 @@ export function AcquisitionSessionTracker() {
         return;
       }
 
-      if (touch.anonymousRecorded) return;
-      const recorded = await recordProductEventV1({
-        eventName: "creator_page_view",
-        celebrityId: null,
-        liveEventId: null,
-        missionId: null,
-        benefitId: null,
-        source: "acquisition.session_landing",
-        idempotencyKey: `acquisition:anonymous:${touch.eventNonce}`,
-        occurredAt: touch.occurredAt,
-        properties: {
-          channel: touch.channel,
-          landing: touch.landing,
-          attribution: "session_first_touch",
-        },
-      });
-      if (!cancelled && recorded) storeTouch({ ...touch, anonymousRecorded: true });
+      await recordAnonymousLanding(touch);
     })().catch(() => undefined);
     return () => { cancelled = true; };
   }, [getAccessToken, identifiedReady, ownerId, pathname, ready, searchParams, session.generation]);

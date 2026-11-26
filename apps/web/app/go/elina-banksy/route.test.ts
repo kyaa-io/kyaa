@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, HEAD } from "./route";
 
+vi.mock("server-only", () => ({}));
+
 const destination = "https://www.ehyundai.com/newCulture/EH/EH000001_V.do?seq=2092865&bbsCd=210&eventState=";
 const fetcher = vi.fn();
 const request = (headers: HeadersInit = {}) => new Request(

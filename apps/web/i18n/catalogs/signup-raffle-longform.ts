@@ -1,14 +1,14 @@
 import type { AppLocale } from "../locales";
 
-/** 래플 상세 페이지의 짧은 이벤트 카피. 한국어·영어를 직접 쓰고 나머지 언어는 영어로 보인다. */
+/** 래플 상세 페이지의 짧은 이벤트 카피. 한국어·영어를 직접 쓰고 나머지 언어는 영어로 보인다(첫 화면 제목·응모 버튼은 아래 landingText). */
 const copy = {
   ko: {
-    eventKind: "신규 가입 이벤트", period: "11월 10일 ~ 12월 13일", how: "참여 방법", required: "필수", ended: "응모가 마감됐어요", kst: "한국 시간",
+    headline: "K팝 팬 17명에게 US$400", period: "11월 10일 ~ 12월 13일", how: "참여 방법", required: "필수", ended: "응모가 마감됐어요", kst: "한국 시간",
     closesAt: "12월 13일 23:59 마감", giftCard: "Visa 기프트카드", total: "총", totalWinners: "총 17명",
-    enterCta: "래플 응모하기", entered: "응모 완료", retry: "다시 시도",
+    enterCta: "무료로 응모하기", entered: "응모 완료", retry: "다시 시도",
     flowOnce: "1인 1응모",
     inAppGuide: "브라우저에서 열어 응모하세요: 오른쪽 위 ··· → 브라우저에서 열기", copyLink: "링크 복사",
-    stepEnter: "래플 응모하기 누르기", stepLogin: "가입하거나 로그인하면 응모 완료", stepLoggedIn: "로그인 완료",
+    stepEnter: "무료로 응모하기 누르기", stepLogin: "가입하거나 로그인하면 응모 완료", stepLoggedIn: "로그인 완료",
     oddsRule: "당첨 확률 ≈ 내 당첨 기회 ÷ 전체 당첨 기회 × 17명", oddsMine: "지금 내 확률 약 {pct} (내 기회 {mine}회 · 전체 {total}회)",
     bonusTitle: "당첨 확률 올리기", bonusOnce: "한 번", bonusLimit: "하루 최대 3회", plusOne: "+1", plusThree: "+3", getShort: "받기", joinShort: "가입",
     bonusPassport: "Fan Passport", bonusCommunity: "커뮤니티 가입", bonusComment: "댓글", bonusAttend: "출석",
@@ -26,12 +26,12 @@ const copy = {
     resultClaim: "가입 이메일로 수령 안내를 보내 드려요", resultClaimCta: "수령 안내 보기",
   },
   en: {
-    eventKind: "New member event", period: "Nov 10 – Dec 13", how: "How to enter", required: "Required", ended: "This raffle has ended", kst: "Korea time",
+    headline: "17 K-pop fans win US$400", period: "Nov 10 – Dec 13", how: "How to enter", required: "Required", ended: "This raffle has ended", kst: "Korea time",
     closesAt: "Ends Dec 13, 23:59", giftCard: "Visa gift card", total: "Total", totalWinners: "17 winners",
-    enterCta: "Enter the raffle", entered: "You're in", retry: "Try again",
+    enterCta: "Enter free", entered: "You're in", retry: "Try again",
     flowOnce: "One entry per person",
     inAppGuide: "Open in your browser to enter: tap ··· (top right) → Open in browser", copyLink: "Copy link",
-    stepEnter: "Tap Enter the raffle", stepLogin: "Sign up or log in and you're entered", stepLoggedIn: "Logged in",
+    stepEnter: "Tap Enter free", stepLogin: "Sign up or log in and you're entered", stepLoggedIn: "Logged in",
     oddsRule: "Odds ≈ your chances ÷ all chances × 17 winners", oddsMine: "Your odds now about {pct} (your {mine} of {total} chances)",
     bonusTitle: "Boost your odds", bonusOnce: "Once", bonusLimit: "Up to 3 a day", plusOne: "+1", plusThree: "+3", getShort: "Get", joinShort: "Join",
     bonusPassport: "Fan Passport", bonusCommunity: "Join a community", bonusComment: "Comment", bonusAttend: "Check-in",
@@ -58,6 +58,21 @@ const prizeRegionNotice: Partial<Record<AppLocale, string>> = {
   es: "Los premios se entregan como tarjetas regalo virtuales Visa, válidas para pagos en línea",
 };
 
+/** 첫 화면 제목·응모 버튼(광고 헤드라인 "Enter free · 17 fans win US$400"과 같은 말, 2026-11-26)은 13개 언어로 직접 쓴다. 금액·인원은 signupEvent.prizes 합계(시험으로 고정). */
+const landingText: Partial<Record<AppLocale, Record<"headline" | "enterCta" | "stepEnter", string>>> = {
+  ja: { headline: "K-POPファン17人にUS$400", enterCta: "無料で応募", stepEnter: "「無料で応募」を押す" },
+  "zh-Hans": { headline: "17位K-pop粉丝赢取US$400", enterCta: "免费报名", stepEnter: "点击“免费报名”" },
+  "zh-Hant": { headline: "17位K-pop粉絲贏得US$400", enterCta: "免費報名", stepEnter: "點擊「免費報名」" },
+  es: { headline: "17 fans del K-pop ganan US$400", enterCta: "Participa gratis", stepEnter: "Toca Participa gratis" },
+  id: { headline: "17 fans K-pop raih US$400", enterCta: "Ikut gratis", stepEnter: "Ketuk Ikut gratis" },
+  vi: { headline: "17 fan K-pop nhận US$400", enterCta: "Tham gia miễn phí", stepEnter: "Nhấn Tham gia miễn phí" },
+  th: { headline: "แฟน K-pop 17\u00a0คน รับ US$400", enterCta: "ร่วมฟรี", stepEnter: "แตะ ร่วมฟรี" },
+  pt: { headline: "17 fãs de K-pop ganham US$400", enterCta: "Participe grátis", stepEnter: "Toque em Participe grátis" },
+  fr: { headline: "17 fans K-pop gagnent US$400", enterCta: "Participer gratuitement", stepEnter: "Touchez Participer gratuitement" },
+  ru: { headline: "US$400 для 17 фанатов K-pop", enterCta: "Участвовать бесплатно", stepEnter: "Нажмите «Участвовать бесплатно»" },
+  mn: { headline: "K-pop-ын 17 фен US$400 хожно", enterCta: "Үнэгүй оролцох", stepEnter: "«Үнэгүй оролцох» дарах" },
+};
+
 export type SignupRaffleLongformKey = keyof typeof copy.ko;
 /** 지금 내 확률 한 줄. 확률(0~1)은 서버가 추첨 방식대로 센 값, 내 기회·전체 기회도 서버 값이다. */
 export function raffleOddsText(locale: AppLocale, chance: number, mine: number, total: number): string {
@@ -68,6 +83,10 @@ export function raffleOddsText(locale: AppLocale, chance: number, mine: number, 
 }
 export function raffleLongformText(locale: AppLocale, key: SignupRaffleLongformKey, count?: number): string {
   if (key === "notice8" && prizeRegionNotice[locale]) return prizeRegionNotice[locale];
+  const landing = landingText[locale];
+  // 제목의 "K-pop"은 줄 끝에서 "K-"와 "pop"으로 갈라지지 않게 붙인다(단어 결합 문자 U+2060)
+  if (key === "headline") return (landing?.headline ?? (locale === "ko" ? copy.ko : copy.en).headline).replace(/K-(pop|POP)/g, "K-\u2060$1");
+  if (landing && (key === "enterCta" || key === "stepEnter")) return landing[key];
   const table = locale === "ko" ? copy.ko : copy.en;
   return table[key].replace("{0}", String(count ?? ""));
 }

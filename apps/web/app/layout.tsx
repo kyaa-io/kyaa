@@ -14,6 +14,7 @@ import { FanNavigationProgress } from "@/components/fan-ui/fan-navigation-progre
 import { AuthRoot } from "@/features/auth/client/auth-root";
 import { publicRuntimeConfig } from "../server/config/public-runtime-config";
 import { isAwsHosting } from "../server/config/hosting";
+import { EarlyRaffleLandingTracker } from "../features/analytics/client/early-raffle-landing";
 import { AcquisitionSessionTracker } from "../features/analytics/client/acquisition-session-tracker";
 import { OutboundLinkTracker } from "../features/analytics/client/outbound-link-tracker";
 import { PageViewTracker } from "../features/analytics/client/page-view-tracker";
@@ -92,6 +93,7 @@ export default async function RootLayout({
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <ChemiReleaseProvider enabled={process.env.CHEMI_TAB === "true"}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
+        <Suspense fallback={null}><EarlyRaffleLandingTracker /></Suspense>
         <AuthRoot authProvider={authProvider} privyAppId={privyAppId} appleLoginEnabled={appleLoginEnabled} testAccountLoginEnabled={testAccountLoginEnabled}>
           <DeferredRootClients slot="before" />
           {isAwsHosting() && <AwsPerformanceTelemetry />}

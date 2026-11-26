@@ -12,11 +12,15 @@
 .column :is(a, button) { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .muted { color: var(--color-muted); }
 
-/* 키 비주얼: 포스터 사진 위에 이벤트 이름·종류·기간만 HTML로 얹는다. 사진의 빈 쪽(모바일 위, 48rem부터 왼쪽)이 글자 자리 */
-.keyVisual { aspect-ratio: 1131 / 1391; border-radius: var(--radius-card); margin-block: var(--space-4) var(--fan-section-gap); min-width: 0; }
-.keyText { position: absolute; inset: 0; display: grid; align-content: start; gap: var(--space-3); padding: var(--space-6) var(--space-5); }
-.keyText h1 { display: grid; gap: var(--space-2); }
-/* 얼마·무엇을·몇 명: 한 줄, 사이 1px 선 */
+/* 첫 화면(v6, 2026-11-26 광고 착지): 제목(광고와 같은 인원·금액 한 줄) → 무엇을·언제 → 응모 버튼 → 남은 시간 → 경품 사진.
+ * 390: 글자·버튼은 흰 바탕, 사진은 봉투·카드가 있는 아래쪽만(위쪽 빈 크림 바탕은 글자 자리였으므로 잘라 낸다). 48rem부터: 가로 사진 위 왼쪽 빈 자리에 같은 순서 */
+.hero { display: grid; gap: var(--space-5); margin-block: var(--space-4) var(--fan-section-gap); min-width: 0; }
+.keyText { display: grid; align-content: start; justify-items: start; gap: var(--space-3); min-width: 0; }
+.keyText h1 { display: grid; gap: var(--space-2); text-wrap: balance; }
+.heroEnter { display: grid; gap: var(--space-2); justify-self: stretch; max-width: calc(var(--rail-narrow) + var(--space-8)); margin-top: var(--space-2); }
+.keyVisual { aspect-ratio: 1131 / 760; border-radius: var(--radius-card); min-width: 0; }
+.hero .keyVisual img { object-position: 50% 100%; }
+/* 무엇을·언제: 한 줄, 사이 1px 선 */
 .keyFacts { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); }
 .keyFacts > span + span { padding-inline-start: var(--space-3); border-inline-start: 1px solid var(--color-muted); }
 
@@ -111,10 +115,11 @@
 .stickyRow { display: flex; align-items: center; justify-content: center; gap: var(--space-3); width: 100%; min-width: 0; }
 .stickyCta { flex: 1; display: grid; min-width: 0; max-width: var(--rail-narrow); }
 
-/* 48rem부터: 키 비주얼은 가로 사진(글자 왼쪽), 경품 카드 네 묶음 한 줄 */
+/* 48rem부터: 첫 화면 사진은 가로 사진(글자·버튼은 그 위 흰 바탕), 경품 카드 네 묶음 한 줄 */
 @media (width >= 48rem) {
   .keyVisual { aspect-ratio: 1920 / 640; }
-  .keyText { align-content: center; padding: var(--space-8) var(--space-10); }
+  .hero .keyVisual img { object-position: 50% 50%; }
+  .heroEnter { justify-self: start; width: 100%; }
   .prizeDesk { padding: var(--space-8) var(--space-6) var(--space-5); }
   .prizes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
@@ -122,8 +127,7 @@
 /* PC(64rem 이상): 구역은 위→아래로 흐르되 구역 안은 가로로 써서 낮게. 경품 책상 8 | 참여 방법 4(세로), 당첨 확률 7 | 더 즐기기 5, 안내 2열 */
 @media (width >= 64rem) {
   .sticky { bottom: 0; }
-  .keyVisual { margin-block: var(--space-6) var(--space-8); }
-  .keyText { padding-inline: var(--space-16); }
+  .hero { margin-block: var(--space-6) var(--space-8); }
   .body { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--space-12); row-gap: var(--space-8); align-items: start; }
   .body > [data-block="raffle-prize"], .body > [data-block="raffle-enter"] { grid-column: 1 / -1; }
   .body > [data-block="raffle-bonus"] { grid-column: span 7; }
@@ -133,6 +137,18 @@
   .prizes { gap: var(--space-6); }
   .notice { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-12); }
 }
+/* 80rem부터: 글자·버튼을 가로 사진 왼쪽 빈 자리에 얹는다(사진 오른쪽 45%가 카드 묶음). 더 좁으면 글자가 카드에 닿아 위아래로 둔다 */
+@media (width >= 80rem) {
+  .hero { grid-template-areas: "stack"; gap: 0; }
+  .hero > * { grid-area: stack; }
+  .keyVisual { align-self: stretch; justify-self: stretch; width: 100%; }
+
+  .keyText { /* design-lint-disable N4 -- Desktop hero text uses the picture inset. */ z-index: 1; align-content: center; width: 56%; padding: var(--space-8) var(--space-16); }
+}
 @media (prefers-reduced-motion: reduce) {
   .sticky { transition: none; }
+}
+
+:global(body:has([data-raffle-analytics-consent])) .sticky {
+  transform: translateY(calc(-1 * var(--analytics-consent-height, 0px)));
 }

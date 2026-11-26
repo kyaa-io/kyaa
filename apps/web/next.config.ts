@@ -81,6 +81,10 @@ const nextConfig: NextConfig = {
         headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
       })),
       {
+        source: "/go/:code",
+        headers: [{ key: "Referrer-Policy", value: "no-referrer" }],
+      },
+      {
         source: "/_next/image",
         // Embed only known public artwork; optimizer URLs for private resources stay isolated.
         has: [{ type: "query", key: "url",
