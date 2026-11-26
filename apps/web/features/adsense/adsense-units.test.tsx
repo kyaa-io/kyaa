@@ -4,14 +4,15 @@ import { adsenseUnits } from "./adsense-units";
 import { AdsenseUnit, AdsenseUnitsProvider } from "./ui/adsense-unit";
 
 describe("adsenseUnits", () => {
-  const env = { ADSENSE_SLOT_HOME_MID: "1234567890", ADSENSE_SLOT_BOARD_SIDE: "9876543210" };
+  const env = { ADSENSE_APPROVED: "true", ADSENSE_SLOT_HOME_MID: "1234567890", ADSENSE_SLOT_BOARD_SIDE: "9876543210" };
   it("gives the unit IDs only on a page that carries the AdSense snippet", () => {
     expect(adsenseUnits(env, true, true)).toEqual({ home_mid: "1234567890", board_side: "9876543210" });
     expect(adsenseUnits(env, false, true)).toBeNull();
+    expect(adsenseUnits({ ...env, ADSENSE_APPROVED: undefined }, true, true)).toBeNull();
   });
   it("is empty without IDs, and ignores values that are not AdSense unit IDs", () => {
     expect(adsenseUnits({}, true, true)).toBeNull();
-    expect(adsenseUnits({ ADSENSE_SLOT_HOME_MID: "ca-pub-1", ADSENSE_SLOT_BOARD_SIDE: " 1234567 " }, true, true)).toEqual({ board_side: "1234567" });
+    expect(adsenseUnits({ ...env, ADSENSE_SLOT_HOME_MID: "ca-pub-1", ADSENSE_SLOT_BOARD_SIDE: " 1234567 " }, true, true)).toEqual({ board_side: "1234567" });
   });
   it("draws the reserved spaces for a local preview, never on AWS", () => {
     expect(adsenseUnits({ ...env, ADSENSE_UNIT_PREVIEW: "1" }, false, false)).toEqual({ home_mid: "1234567890", board_side: "9876543210" });

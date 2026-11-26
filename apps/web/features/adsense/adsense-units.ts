@@ -16,7 +16,7 @@ const ENV_KEYS: Record<AdsensePlacement, string> = {
  */
 export function adsenseUnits(env: Record<string, string | undefined>, pageCarriesAdsense: boolean, awsHosting: boolean): AdsenseUnits | null {
   const preview = !awsHosting && env.ADSENSE_UNIT_PREVIEW === "1";
-  if (!pageCarriesAdsense && !preview) return null;
+  if (!preview && (!pageCarriesAdsense || env.ADSENSE_APPROVED !== "true")) return null;
   const units: AdsenseUnits = {};
   for (const placement of ADSENSE_PLACEMENTS) {
     const value = env[ENV_KEYS[placement]]?.trim() ?? "";
