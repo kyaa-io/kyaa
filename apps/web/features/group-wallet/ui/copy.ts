@@ -1,3 +1,4 @@
+import { formatMileage } from "@/i18n/format-mileage";
 import type { AppLocale } from "@/i18n/locales";
 const keys = ["wallet","points","tickets","exchange","quantity","cost","remaining","attendance","checkIn","checkedIn","bonus","history","passport","stamps","error","retry","loading","login","recover","pending","success","empty"] as const;
 const copy = {
@@ -28,7 +29,7 @@ export function attendanceStreakLabel(locale:AppLocale,days:number){
 }
 
 /** ? 도움말 문구(WALLET-HELP-IMPL). 하트는 지갑 자산이 아니므로 포인트 문구에서 하트 경로는 약속하지 않는다. */
-export function walletHelpCopy(locale:AppLocale){
+export function walletHelpCopy(locale:AppLocale, mileage = false){
  const v:Record<AppLocale,readonly[string,string,string]>={
   ko:['도움말','출석체크·모임 덕질·댓글 같은 활동으로 모아요. 광고를 본 뒤 100P를 응모권 1장으로 바꿀 수 있어요.','크리에이터·모임 럭키드로우에 응모하거나 캡슐을 열 때 써요.'],
   get mn() { return this.en; },
@@ -44,7 +45,7 @@ export function walletHelpCopy(locale:AppLocale){
   fr:['Aide','Gagnez-les par des activités comme la présence, les missions du groupe et les commentaires. Après une publicité, 100P s’échangent contre 1 ticket de tirage.','Servent à participer aux tirages des créateurs et des groupes ou à ouvrir des capsules.'],
   ru:['Справка','Начисляются за активность: отметки, задания группы, комментарии. После просмотра рекламы 100P можно обменять на 1 билет розыгрыша.','Нужны для участия в розыгрышах авторов и групп и открытия капсул.']
  };
- const [label,points,tickets]=v[locale];return {label,points,tickets};
+ const [label,points,tickets]=v[locale];return {label,points: mileage ? points.replace("100P", formatMileage(100, locale)) : points,tickets};
 }
 /** Singular ticket noun for the locales whose plural differs; others reuse `tickets`. */
 export const ticketSingular: Partial<Record<AppLocale, string>> = { get mn() { return this.en; }, en: 'Ticket', es: 'Boleto', fr: 'Billet', pt: 'Bilhete', ru: 'Билет' };

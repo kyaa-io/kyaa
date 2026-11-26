@@ -1,3 +1,4 @@
+import { MileageDisplayProvider } from "@/i18n/mileage-display";
 import { MemberEventPopup } from "@/components/banner-slot/member-event-popup";
 import { rewardedExchangeDecision } from "@/features/group-wallet/rewarded-config";
 import { defaultShareImage, SITE_URL, NO_INDEX, isNoContentPath, isPrivatePath, isRehearsalPath, openGraphLocale } from "@/seo/metadata";
@@ -98,6 +99,7 @@ export default async function RootLayout({
         <LocaleProvider initialLocale={locale}>
         <GroupsReleaseProvider enabled={process.env.KYAA_GROUPS_ENABLED === "true"}>
         <ChemiReleaseProvider enabled={process.env.CHEMI_TAB === "true"}>
+        <MileageDisplayProvider value={process.env.BYUS_DATA_ENVIRONMENT === "development"}>
         <GoodsMenuProvider enabled={process.env.KYAA_GOODS_MENU === "true"}>
         <AccountSwitchReleaseProvider enabled={accountSwitchEnabled({ APP_ENV: process.env.APP_ENV, NODE_ENV: process.env.NODE_ENV })}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
@@ -126,6 +128,7 @@ export default async function RootLayout({
         </LuckyDrawPreviewProvider>
         </AccountSwitchReleaseProvider>
         </GoodsMenuProvider>
+        </MileageDisplayProvider>
         </ChemiReleaseProvider>
         </GroupsReleaseProvider>
         </LocaleProvider>

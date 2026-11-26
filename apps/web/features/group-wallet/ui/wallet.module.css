@@ -149,3 +149,12 @@
 .historyDay strong{font-variant-numeric:tabular-nums;white-space:nowrap}
 .historyDay strong[data-tone="earn"]{color:var(--color-accent-ink)}
 .historyDay strong[data-tone="spend"]{color:var(--color-ink)}
+
+.history .historyDay li.mileageHistoryRow {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+}
+.mileageHistoryRow > img, .mileageHistoryRow > strong { flex: none; }
+.mileageHistoryRow .historyReason { overflow-wrap: anywhere; }
+.mileageHistoryRow > strong { display: inline-flex; align-items: center; gap: var(--space-1); }

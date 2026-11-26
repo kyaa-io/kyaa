@@ -1,4 +1,6 @@
 "use client";
+import { formatMileage } from "@/i18n/format-mileage";
+import { useMileageDisplay } from "@/i18n/mileage-display";
 import { SortedFans } from "./sorted-fans";
 import { fanListCopy } from "./fan-list-copy";
 import { rankingsText } from "@/features/rankings/ui/rankings-copy";
@@ -33,12 +35,12 @@ export type GroupMembersPresentation = { overview?: ReactNode; creatorName: stri
  * points and stamps on this page. A missing favorite is left out; 0 points and 0 stamps stay, so rows compare.
  * Pages without grades show the role alone.
  */
-function personMeta(row: Row, t: ReturnType<typeof groupMembersCopy>, locale: AppLocale) {
+function personMeta(row: Row, t: ReturnType<typeof groupMembersCopy>, locale: AppLocale, mileage: boolean) {
   // 소유자·운영진은 이름 옆 역할 배지가 맡는다(피드백 I ⑤). 같은 말을 둘째 줄에 다시 쓰지 않는다.
   if (!row.tier) return row.role === "member" ? t.member : undefined;
   const parts = [
     row.favorite ? fanProfileText(locale, "profFavorite", [row.favorite.name]) : null,
-    row.fanPoints == null ? null : fanProfileText(locale, "profPointsValue", [row.fanPoints.toLocaleString(locale)]),
+    row.fanPoints == null ? null : mileage ? formatMileage(row.fanPoints, locale) : fanProfileText(locale, "profPointsValue", [row.fanPoints.toLocaleString(locale)]),
     row.stamps == null ? null : fanProfileText(locale, "rowStamps", [row.stamps.toLocaleString(locale)]),
   ].filter(Boolean);
   return parts.length ? parts.join(" · ") : undefined;
@@ -59,6 +61,7 @@ function MyRankRow({ slug, locale, listed }: { slug: string; locale: AppLocale; 
 }
 
 export function GroupMembers({ pageId, locale, member, presentation, inTab = false, onJoin, joinPending = false, joinLabel, rankingsSlug, gaugeAbove = false }: { rankingsSlug?: string | null; /** The caller draws the 찐팬 100 gauge above, outside its own loading state. */ gaugeAbove?: boolean; pageId: string; locale: AppLocale; member: boolean; presentation?: GroupMembersPresentation; inTab?: boolean; onJoin?: () => void; joinPending?: boolean; joinLabel?: string }) {
+  const mileage = useMileageDisplay();
   const t = { ...groupMembersCopy(locale), ...fanListCopy(locale) };
   const presence = useOptionalGroupPage()?.presence.data;
   const artistIds = useMemo(() => new Set(presence?.artists.map((artist) => artist.profileId) ?? []), [presence]);
@@ -94,7 +97,7 @@ export function GroupMembers({ pageId, locale, member, presentation, inTab = fal
     {mode !== "ranking" && (member || mode !== "friends") ? <SortedFans key={`${pageId}:${resource.ownerKey}`} pageId={pageId} mode={mode} search={search} locale={locale}/> : !member ? <GroupPublicPeople mode={mode} pageId={pageId} slug={rankingsSlug} locale={locale} authenticated={resource.authenticated} onJoin={onJoin} joinPending={joinPending} joinLabel={joinLabel}/> : <div className={styles.body}>
       {modeTitle && <div className={styles.modeHead}><h3 className={styles.modeTitle}>{modeTitle}</h3>{mode === "ranking" && <p className={styles.scope}>{t.topScope}</p>}</div>}
       {resource.error ? <div className={styles.state} role="alert"><p>{t.error}</p><FanAction onClick={resource.retry}>{t.retry}</FanAction></div>
-        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} badge={<RowBadges role={pageRoleOf(row, artistIds)} tier={row.tier} locale={locale}/>} meta={personMeta(row, t, locale)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : row.hearts != null ? <GroupPersonHearts hearts={row.hearts} locale={locale}/> : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier, pageId })}/>)}</ul>
+        : shown.length ? <ul className={`${styles.list} ${mode === "ranking" ? styles.rankingList : ""}`} aria-busy={resource.loading || undefined}>{shown.map(row => <GroupPersonRow key={row.profileId} nickname={row.nickname} avatarUrl={row.avatarUrl} rank={row.rank} rankLabel={row.rank === null ? undefined : `${t.ranking} ${row.rank}`} badge={<RowBadges role={pageRoleOf(row, artistIds)} tier={row.tier} locale={locale}/>} meta={personMeta(row, t, locale, mileage)} score={mode === "ranking" && row.points !== null ? `${row.points.toLocaleString(locale)}${locale === "ko" ? " 점" : ""}` : row.hearts != null ? <GroupPersonHearts hearts={row.hearts} locale={locale}/> : undefined} selected={presentation?.selectedProfileId === row.profileId} onOpen={() => setOpened({ profileId: row.profileId, nickname: row.nickname, avatarUrl: row.avatarUrl, tier: row.tier, pageId })}/>)}</ul>
         : resource.loading ? <FanSkeletonRows rows={6} variant="member" className={styles.skeleton}/>
         : <div className={styles.state}>{mode === "ranking" ? <Trophy size={32} aria-hidden="true"/> : <UsersRound size={32} aria-hidden="true"/>}<p>{mode === "ranking" && ranking && !ranking.available ? t[ranking.reason === "creator_required" ? "creatorRequired" : "threshold"] : mode === "friends" && !search ? t.noFriends : t.empty}</p>{mode === "friends" && !search && <FanAction href={`/my/friends?locale=${locale}`} trailingIcon={<ArrowRight size={18}/>}>{t.manageFriends}</FanAction>}</div>}
       {mode === "ranking" && rankingsSlug && <MyRankRow slug={rankingsSlug} locale={locale} listed={shown.length > 0}/>}

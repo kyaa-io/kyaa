@@ -206,6 +206,7 @@
     "release-notes/2026-11-26-fan-made-pages.json"
   ],
   "dev-mileage-label": [
-    "release-notes/2026-11-27-miles-label.json"
+    "release-notes/2026-11-27-miles-label.json",
+    "release-notes/2026-11-27-mileage-copy.json"
   ]
 }

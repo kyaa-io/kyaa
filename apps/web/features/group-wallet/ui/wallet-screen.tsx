@@ -1,4 +1,5 @@
 "use client";
+import { useMileageDisplay } from "@/i18n/mileage-display";
 import { formatMileage } from "@/i18n/format-mileage";
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { FanSheet } from "@/components/fan-ui/fan-dialog";
@@ -66,6 +67,7 @@ function useMinWidth(px:number){
  return match;
 }
 export function WalletHistoryPanel({locale,localRows,preview,className}:{locale:AppLocale;localRows?:{label:string;value:string}[];preview?:WalletHistoryPreview;className?:string}) {
+ const mileage = useMileageDisplay();
  const c=walletCopy(locale),history=useGroupResource("/api/me/wallet/history", parseHistory),[expanded,setExpanded]=useState(false),scrolled=useRef(false),retryRef=useRef(history.retry),failureRef=useRef(preview?.onFailure),hasPreview=preview!==undefined,wide=useMinWidth(1024),previewRows=preview?(wide&&preview.wideRows?preview.wideRows:preview.rows):0;
  useEffect(()=>{retryRef.current=history.retry;failureRef.current=preview?.onFailure;});
  useEffect(()=>{window.addEventListener(GROUP_WALLET_CHANGED_EVENT,history.retry);return()=>window.removeEventListener(GROUP_WALLET_CHANGED_EVENT,history.retry);},[history.retry]);
@@ -76,7 +78,22 @@ export function WalletHistoryPanel({locale,localRows,preview,className}:{locale:
  useEffect(()=>{if(!hasPreview||!expanded||!settled||scrolled.current||window.location.hash!=='#wallet-history')return;scrolled.current=true;document.getElementById('wallet-history')?.scrollIntoView?.({block:'start'});},[hasPreview,expanded,settled]);
  const entries=history.data?.entries??[],shown=preview&&!expanded?entries.slice(0,previewRows):entries,toggle=Boolean(preview&&!history.loading&&!history.error&&!localRows&&entries.length>previewRows);
  const title=locale==="ko"?"내역":c.history,errorTitle=locale==='ko'?'지급 내역을 확인할 수 없어요':c.error;
- const body=history.loading ? (preview?<div className={styles.historySkeleton} role="status" aria-busy="true" aria-label={c.loading}><div aria-hidden="true">{Array.from({length:previewRows},(_,item)=><i key={item}/>)}</div></div>:<WalletLoading label={c.loading} kind="history"/>) : history.error ? (preview?.hideError?null:preview?<FanState inline compact kind="error" title={locale==='ko'?'내역을 불러오지 못했어요':errorTitle} actions={<FanAction variant="text" onClick={history.retry}>{c.retry}</FanAction>}/>:<FanState inline kind="error" title={errorTitle} description={locale==='ko'?c.error:undefined} actions={<FanAction onClick={history.retry}>{c.retry}</FanAction>}/>) : localRows ? <ul>{localRows.map(row=><li key={row.label}><span>{row.label}</span><strong>{row.value}</strong></li>)}</ul> : !entries.length ? <FanState inline compact={Boolean(preview)} kind="empty" title={c.empty} action={preview?{label:dukjilText(locale,'missionsTitle'),href:`/my?locale=${locale}`}:undefined}/> : <>{groupByDay(shown,locale).map(day=><div key={day.key} className={styles.historyDay}><h3><time dateTime={day.key}>{day.label}</time></h3><ul>{day.rows.map(entry => <li key={entry.id}>{<img src={isTicketAsset(entry.asset) ? REWARD_ICON_SRC.ticket : POINT_COIN_SRC} alt="" width={20} height={20}/>}<span>{walletHistoryLabel(locale,entry.sourceType,entry)&&<span className={styles.historyReason}>{walletHistoryLabel(locale,entry.sourceType,entry)}</span>}</span><strong data-tone={entry.amount>0?"earn":"spend"}>{entry.asset === "fan_point" ? formatMileage(entry.amount, locale, "exceptZero") : `${entry.amount > 0 ? "+" : "-"}${Math.abs(entry.amount).toLocaleString(locale)} ${isTicketAsset(entry.asset) ? (Math.abs(entry.amount) === 1 ? ticketSingular[locale] ?? c.tickets : c.tickets) : ""}`}</strong></li>)}</ul></div>)}</>;
+ const body=history.loading ? (preview?<div className={styles.historySkeleton} role="status" aria-busy="true" aria-label={c.loading}><div aria-hidden="true">{Array.from({length:previewRows},(_,item)=><i key={item}/>)}</div></div>:<WalletLoading label={c.loading} kind="history"/>) : history.error ? (preview?.hideError?null:preview?<FanState inline compact kind="error" title={locale==='ko'?'내역을 불러오지 못했어요':errorTitle} actions={<FanAction variant="text" onClick={history.retry}>{c.retry}</FanAction>}/>:<FanState inline kind="error" title={errorTitle} description={locale==='ko'?c.error:undefined} actions={<FanAction onClick={history.retry}>{c.retry}</FanAction>}/>) : localRows ? <ul>{localRows.map(row=><li key={row.label}><span>{row.label}</span><strong>{row.value}</strong></li>)}</ul> : !entries.length ? <FanState inline compact={Boolean(preview)} kind="empty" title={c.empty} action={preview?{label:dukjilText(locale,'missionsTitle'),href:`/my?locale=${locale}`}:undefined}/> : <>{groupByDay(shown,locale).map(day=><div key={day.key} className={styles.historyDay}><h3><time dateTime={day.key}>{day.label}</time></h3><ul>{day.rows.map(entry => {
+  const showMileage = mileage && entry.asset === "fan_point";
+  const reason = walletHistoryLabel(locale, entry.sourceType, entry);
+  return <li key={entry.id} className={mileage ? styles.mileageHistoryRow : undefined}>
+    <img src={isTicketAsset(entry.asset) ? REWARD_ICON_SRC.ticket : POINT_COIN_SRC} alt="" width={20} height={20} />
+    <span>{reason && <span className={styles.historyReason}>{reason}</span>}</span>
+    <strong data-tone={entry.amount > 0 ? "earn" : "spend"} aria-label={showMileage ? formatMileage(entry.amount, locale, "exceptZero") : undefined}>
+      {showMileage ? <>
+        {entry.amount.toLocaleString(locale, { signDisplay: "exceptZero", useGrouping: "always" })}
+        <img src={POINT_COIN_SRC} alt="" width={16} height={16} />
+      </> : entry.asset === "fan_point"
+        ? formatMileage(entry.amount, locale, "exceptZero")
+        : `${entry.amount > 0 ? "+" : "-"}${Math.abs(entry.amount).toLocaleString(locale)} ${isTicketAsset(entry.asset) ? (Math.abs(entry.amount) === 1 ? ticketSingular[locale] ?? c.tickets : c.tickets) : ""}`}
+    </strong>
+  </li>;
+ })}</ul></div>)}</>;
  if(preview)return <section className={`${styles.history} ${styles.historyPreview} ${className??""}`}><div className={styles.historyHead}><h2 id="wallet-history">{title}</h2>{toggle&&<FanAction variant="text" aria-expanded={expanded} onClick={()=>setExpanded(value=>!value)}>{expanded?preview.lessLabel:preview.moreLabel}{" "}<span aria-hidden="true">›</span></FanAction>}</div><div className={styles.historyCard}><HistoryTabs locale={locale} active="ledger"/><div className={styles.historyBody} data-history-rows={previewRows}>{body}</div></div></section>;
  return <section className={`${styles.panel} ${styles.history}`}><h2 id="wallet-history">{title}</h2><HistoryTabs locale={locale} active="ledger"/>{body}</section>;
 }
@@ -91,6 +108,7 @@ export function WalletAttendanceDialog({locale,open,onClose}:{locale:AppLocale;o
  </FanSheet></DukjilProvider>;
 }
 function OwnedWallet({ locale, attendance, localProfile, localPresentation, embedded=false }: { locale: AppLocale; attendance: boolean; embedded?:boolean;localProfile?:{nickname:string;avatarUrl:string};localPresentation?:WalletLocalPresentation }) {
+ const mileage = useMileageDisplay();
  const a=attendanceCopy(locale),c = walletCopy(locale), wallet = useGroupResource("/api/me/wallet", parseWallet);
  const [pending, setPending] = useState<Pending | null>(null), [storageReady, setStorageReady] = useState(false), [busy, setBusy] = useState(false), [feedback, setFeedback] = useState<"error" | "success" | null>(null);
  const [lastOperation,setLastOperation]=useState<Pending['operation']|null>(null);
@@ -129,7 +147,7 @@ function OwnedWallet({ locale, attendance, localProfile, localPresentation, embe
   finally { running.current = false; if (alive.current) setBusy(false); }
  }
  if (wallet.loading) return <WalletLoading label={c.loading} kind={attendance?"attendance":"wallet"}/>;
- if (!wallet.data) return <SourceStatePanel sourceId="QnIgR" title={locale==='ko'?'잔액을 불러오지 못했어요':c.error} description={locale==='ko'?'내 포인트·응모권을 다시 확인해 주세요.':c.error} icon={<CircleAlert size={24}/>} feedback="danger" role="alert" actions={[{label:locale==='ko'?'잔액 다시 확인':c.retry,onClick:wallet.retry,variant:'primary'}]}><dl>{[c.points,c.tickets].map(label=><div key={label} style={{display:'flex',justifyContent:'space-between'}}><dt>{label}</dt><dd>—</dd></div>)}</dl></SourceStatePanel>;
+ if (!wallet.data) return <SourceStatePanel sourceId="QnIgR" title={locale==='ko'?'잔액을 불러오지 못했어요':c.error} description={locale==='ko'?(mileage ? '내 마일리지·응모권을 다시 확인해 주세요.' : '내 포인트·응모권을 다시 확인해 주세요.'):c.error} icon={<CircleAlert size={24}/>} feedback="danger" role="alert" actions={[{label:locale==='ko'?'잔액 다시 확인':c.retry,onClick:wallet.retry,variant:'primary'}]}><dl>{[c.points,c.tickets].map(label=><div key={label} style={{display:'flex',justifyContent:'space-between'}}><dt>{label}</dt><dd>—</dd></div>)}</dl></SourceStatePanel>;
  const data = wallet.data, earned=data.attendance.days.find(day=>day.date===data.attendance.date)?.points, rewardsPending=Boolean(data.rewardsStartOn&&data.attendance.date<data.rewardsStartOn), locked = busy || Boolean(pending) || data.writeFenced || !storageReady;
  return <div className={`${styles.shell} ${localPresentation?styles.sourceWallet:''} ${embedded?styles.embeddedSupport:''}`}><PointRewardBurst locale={locale} points={rewardBurst?.points??0} burstKey={rewardBurst?.key} onDone={clearReward} announce={false}/><div className={styles.layout}>
  {!attendance&&<WalletCard locale={locale} title={c.wallet} href={localPresentation?.benefitsHref??`/benefits?locale=${locale}#wallet`} hearts="missing" state={{kind:"ready",points:data.points,tickets:data.tickets,pointCost:data.pointCost}}/>}

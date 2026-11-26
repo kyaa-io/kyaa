@@ -1,3 +1,5 @@
+import { MileageDisplayProvider } from "@/i18n/mileage-display";
+import { MetricLine } from "./ranking-rows";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
@@ -370,4 +372,18 @@ it("signed out, an opened creator row's picture and name still lead to the fan p
   expect(link).toHaveAttribute("href", "/elina?locale=ko");
   fireEvent.click(link);
   expect(view.container.querySelectorAll("[data-rank-panel]")).toHaveLength(1);
+});
+
+
+it("uses mileage captions for each period only when the display switch is enabled", () => {
+  const caption = (period: "all" | "day" | "week", enabled: boolean) =>
+    <MileageDisplayProvider value={enabled}><MetricLine locale="ko" metric="points" period={period} computedAt={null} /></MileageDisplayProvider>;
+  const view = render(caption("all", false));
+  expect(view.container.textContent).toBe("누적 포인트");
+  view.rerender(caption("all", true));
+  expect(view.container.textContent).toBe("누적 마일리지");
+  view.rerender(caption("day", true));
+  expect(view.container.textContent).toBe("오늘 모은 마일리지");
+  view.rerender(caption("week", true));
+  expect(view.container.textContent).toBe("7일간 모은 마일리지");
 });
