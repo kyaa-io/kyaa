@@ -1,5 +1,5 @@
 "use client";
-import { GOODS_MENU } from "@/features/groups/goods-menu";
+import { useGoodsMenu } from "@/features/groups/goods-menu";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CapsuleEngine, CapsuleFraming } from "./machine-art";
@@ -46,6 +46,7 @@ function useIdleReady() {
 /** 정지 그림 위에 three.js 기계를 겹친다. 정지 그림은 reduced-motion·GPU 0등급·데이터 절약·컨텍스트 손실·장면 실패의 대체이고,
  * 캔버스가 준비되면 불투명도만 바꿔 감춘다(칸 크기 변화 0). `CapsuleMachineBlock`의 순서를 따른다. */
 export function LuckyStage({ className, paused = false, locale = "en" }: { className?: string; paused?: boolean; locale?: AppLocale }) {
+  const goodsMenu = useGoodsMenu();
   const [open, setOpen] = useState(false);
   const [demoEngine, setDemoEngine] = useState<CapsuleEngine | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -99,7 +100,7 @@ export function LuckyStage({ className, paused = false, locale = "en" }: { class
   const handleUnavailable = useCallback(() => setUnavailable(true), [setUnavailable]);
   const handleLost = useCallback(() => setLost(true), [setLost]);
   const handleRestored = useCallback(() => { setLost(false); setLive(false); setCanvasKey((key) => key + 1); }, [setLost, setLive, setCanvasKey]);
-  const showCanvas = (!paused || GOODS_MENU) && !open && wantsMachine && gpu === "ok";
+  const showCanvas = (!paused || goodsMenu) && !open && wantsMachine && gpu === "ok";
   const graphics = live && !lost && !reduced ? "3d" : "still";
 
   return <><div ref={setStage} className={className ? `${styles.stage} ${className}` : styles.stage} data-lucky-stage="" data-preview-enabled={paused || undefined} data-lucky-graphics={graphics}>

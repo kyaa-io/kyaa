@@ -595,3 +595,21 @@ test('weekly rankings can be switched off in production runtime configuration', 
   production.runtimeEnvironment.CHEMI_WEEKLY_RANKINGS = 'off';
   assert.throws(() => validateConfig(production, template), /CHEMI_WEEKLY_RANKINGS/);
 });
+
+test('revamp preview switches turn on only in the dev web task; staging and production get no key', async () => {
+  const template = await loadTemplate('environment');
+  const keys = ['KYAA_GOODS_MENU', 'DONATION_VOTE_ENABLED'];
+  const webEnv = (source) => Object.fromEntries(renderTemplate(source, template).Resources.TaskDefinition.Properties.ContainerDefinitions[0].Environment.map(({ Name, Value }) => [Name, Value]));
+  const dev = webEnv(config());
+  for (const key of keys) assert.equal(dev[key], 'true');
+  for (const environment of ['staging', 'prod']) {
+    const env = webEnv(config('environment', environment));
+    for (const key of keys) assert.equal(env[key], undefined);
+  }
+  for (const key of keys) {
+    const off = config(); off.runtimeEnvironment[key] = 'false';
+    assert.equal(webEnv(off)[key], 'false');
+    const invalid = config(); invalid.runtimeEnvironment[key] = 'yes';
+    assert.throws(() => validateConfig(invalid, template), new RegExp(`${key} must be true or false`));
+  }
+});

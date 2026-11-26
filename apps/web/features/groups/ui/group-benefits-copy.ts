@@ -1,4 +1,3 @@
-import { GOODS_MENU } from "@/features/groups/goods-menu";
 import type {AppLocale} from '@/i18n/locales';
 import {messages as stanMessages} from '@/i18n/catalogs/features__groups__ui__group-benefits-copy';
 /** D1: the 덕질 tab name comes from the key `navStan` (source-messages.json and its catalog); change English "Stan" there. */
@@ -18,7 +17,8 @@ const labels:Record<AppLocale,readonly [string,string,string,string,string,strin
  fr:['Stan','Tirages au sort','Événements à points','Voir les détails','Aucune publication pour le moment.','Historique de participation','Historique'],
  ru:['Стэн','Розыгрыши','События с баллами','Подробнее','Публикаций пока нет.','История участия','История']
 };
-export function groupBenefitsCopy(locale:AppLocale){const [,lucky,events,details,empty,history,historyLink]=labels[locale];return {title:GOODS_MENU?"굿즈":stan[locale],lucky,events,details,empty,history,historyLink,listing:eventLists[locale],soon:comingSoon[locale]};}
+/** goods: 굿즈 메뉴 스위치(useGoodsMenu). 켜지면 화면 이름이 굿즈가 된다. */
+export function groupBenefitsCopy(locale:AppLocale,goods=false){const [,lucky,events,details,empty,history,historyLink]=labels[locale];return {title:goods?"굿즈":stan[locale],lucky,events,details,empty,history,historyLink,listing:eventLists[locale],soon:comingSoon[locale]};}
 
 const raffleStates:Record<AppLocale,readonly [string,string]>={ko:['준비 중','응모 접수 중'],mn: ['Preparing','Open for entries'], en:['Preparing','Open for entries'],ja:['準備中','応募受付中'],'zh-Hans':['准备中','可报名'],'zh-Hant':['準備中','可報名'],es:['En preparación','Inscripciones abiertas'],id:['Dalam persiapan','Pendaftaran dibuka'],vi:['Đang chuẩn bị','Đang nhận đăng ký'],th:['กำลังเตรียม','เปิดรับสมัคร'],pt:['Em preparação','Inscrições abertas'],fr:['En préparation','Inscriptions ouvertes'],ru:['Подготовка','Приём заявок открыт']};
 export function benefitsRaffleState(locale:AppLocale,status:'preparing'|'open'){return raffleStates[locale][status==='preparing'?0:1];}

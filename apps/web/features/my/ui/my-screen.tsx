@@ -1,5 +1,5 @@
 "use client";
-import { GOODS_MENU } from "@/features/groups/goods-menu";
+import { useGoodsMenu } from "@/features/groups/goods-menu";
 import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
 import { FanCollapsible, FanCollapsibleTrigger } from "@/components/fan-ui/fan-collapsible";
@@ -258,6 +258,7 @@ function OwnerScopedDashboard({ summary, fallback, locale, avatarResource, refre
 
 function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSlug, onSelectSlug, ownerKey }: { ownerKey: string; summary: MySummary; locale: FanLocale; avatarResource: ReturnType<typeof useAvatar>; refreshSummary: () => void; selectedSlug: string | null; onSelectSlug: (slug: string) => void }) {
   const groupsEnabled=useGroupsRelease();
+  const goodsMenu = useGoodsMenu();
   const chemiOn = useChemiRelease();
   const t = copy[locale];
   const w = walletCopy(locale);
@@ -317,7 +318,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
   if (groupsEnabled) {
     const labels = { title: t.myPassport, detail: myHomeText(locale, "viewDetails"), noCreators: t.noCreators, findCreator: t.findCreator, loadError: w.error, retry: w.retry, creators: t.creators };
     const stamps = communityStamps.state.status === "ready" ? communityStamps.state.data.stamps : [];
-    return <DukjilProvider locale={locale} accountToday={GOODS_MENU}><div className={styles.pencilMy}>
+    return <DukjilProvider locale={locale} accountToday={goodsMenu}><div className={styles.pencilMy}>
       <div className={styles.pencilSummary}>
         <header className={styles.pencilProfile}>
           <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
@@ -328,7 +329,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
         <div id="my-passport" className={styles.homeRow}>
           <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
-          {GOODS_MENU&&<MyDailyMissions locale={locale}/>}
+          {goodsMenu&&<MyDailyMissions locale={locale}/>}
           <MyHeartExchange locale={locale}/>
         </div>
       </div>
@@ -574,12 +575,13 @@ const hrefWithLocale = (locale: FanLocale) => (path: string) => `${path}${path.i
 
 /** 비로그인 MY. 로그인 화면과 같은 구역·순서(프로필 → 패스포트 → 최애 → 바로가기)를 두고, 내 값은 잠근 칸으로, 공개 구성(미션북 9칸)은 실제로 보여 준다. */
 function MyGuest({ locale }: { locale: FanLocale }) {
+  const goodsMenu = useGoodsMenu();
   const t = copy[locale];
   const loginTo = (path: string) => fanLoginHref(locale, hrefWithLocale(locale)(path));
   return <div className={styles.pencilMy}>
     <div className={styles.homeRow}>
       <MyGuestPassportCard locale={locale} labels={{ title: t.myPassport, detail: myHomeText(locale, "viewDetails") }}/>
-      {GOODS_MENU&&<MyDailyMissions locale={locale} signedOut/>}
+      {goodsMenu&&<MyDailyMissions locale={locale} signedOut/>}
       <MyHeartExchange locale={locale}/>
     </div>
     <MyShortcuts locale={locale} items={myShortcutItems(locale, loginTo)}/>

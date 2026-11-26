@@ -27,6 +27,7 @@ import { raffleCopy, raffleRulesCopy, raffleOutcomeCopy, raffleRecipientSubmitte
 import { groupRaffleDetailSchema, entryReceiptSchema, pendingEntrySchema, recipientsSchema } from './domain';
 import styles from '@/features/groups/ui/groups.module.css';
 import { sendGa4Event } from "@/features/analytics/client/ga4-client";
+import { useGoodsMenu } from "@/features/groups/goods-menu";
 const parse=(v:unknown)=>groupRaffleDetailSchema.parse(v),parseWallet=(v:unknown)=>walletSchema.parse(v),parseRecipients=(v:unknown)=>recipientsSchema.parse(v),parseCatalog=(v:unknown)=>groupBenefitsCatalogSchema.parse(v);
 export function GroupRaffleScreen({pageId,raffleId,locale,localPresentation}:{pageId:string;raffleId:string;locale:AppLocale;localPresentation?:GroupActivityPresentation&{totalEntries?:number}}){
  const auth=useGroupRequest(),t=groupsCopy(locale),c=raffleCopy(locale);
@@ -43,6 +44,7 @@ function OwnedRaffle({pageId,raffleId,locale,sourcePresentation=false,totalEntri
  const rules=raffleRulesCopy(locale),page=useOptionalGroupPage();
  const [confirmAmount,setConfirmAmount]=useState<number|null>(null),[acceptedAmount,setAcceptedAmount]=useState<number|null>(null),[acceptedTotal,setAcceptedTotal]=useState<number|null>(null);
  const t=groupsCopy(locale),c=raffleCopy(locale),w=walletCopy(locale),outcome=raffleOutcomeCopy[locale],status=raffleStateCopy(locale),balanceLabels=raffleBalanceCopy(locale),base=`/api/groups/${pageId}/raffles/${raffleId}`,detail=useGroupResource(base,parse),wallet=useGroupResource(detail.data?.raffle.entryMode==='free'?null:'/api/me/wallet',parseWallet),recipients=useGroupResource(detail.data?.canManage?`${base}/recipients`:null,parseRecipients);
+ const goodsMenu=useGoodsMenu();
  const [now,setNow]=useState(Date.now);
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer);},[]);
  const [entryError,setEntryError]=useState<string>();
@@ -56,7 +58,7 @@ function OwnedRaffle({pageId,raffleId,locale,sourcePresentation=false,totalEntri
   finally{running.current=false;if(alive.current)setBusy(false);}
  }
  async function recipient(e:FormEvent<HTMLFormElement>){e.preventDefault();if(busy||!detail.data?.consentVersion)return;const f=new FormData(e.currentTarget);setBusy(true);setFeedback(null);recipientRequest.current??=crypto.randomUUID();try{await wallet.request(`${base}/recipient`,{method:'POST',body:JSON.stringify({requestId:recipientRequest.current,name:f.get('name'),phone:f.get('phone'),address:f.get('address')||null,consented:true,consentVersion:detail.data.consentVersion})});if(alive.current){recipientRequest.current=undefined;detail.retry();setFeedback('recipient');}}catch{if(alive.current)setFeedback('error');}finally{if(alive.current)setBusy(false);}}
- if(!detail.data||(detail.data.raffle.entryMode!=='free'&&!wallet.data))return <section className={styles.status}>{(detail.error||wallet.error)&&<h1>{c.title}</h1>}<p role={detail.error||wallet.error?'alert':'status'}>{detail.error||wallet.error?t.error:t.loading}</p>{(detail.error||wallet.error)&&<><FanAction onClick={()=>{detail.retry();wallet.retry();}}>{t.retry}</FanAction><FanAction href={`/benefits?locale=${locale}`}>{groupBenefitsCopy(locale).title}</FanAction></>}</section>;
+ if(!detail.data||(detail.data.raffle.entryMode!=='free'&&!wallet.data))return <section className={styles.status}>{(detail.error||wallet.error)&&<h1>{c.title}</h1>}<p role={detail.error||wallet.error?'alert':'status'}>{detail.error||wallet.error?t.error:t.loading}</p>{(detail.error||wallet.error)&&<><FanAction onClick={()=>{detail.retry();wallet.retry();}}>{t.retry}</FanAction><FanAction href={`/benefits?locale=${locale}`}>{groupBenefitsCopy(locale,goodsMenu).title}</FanAction></>}</section>;
  const availableTickets=wallet.data?.tickets??0;
  const d=detail.data,r=d.raffle,free=r.entryMode==='free',amount=free?1:Number(quantity),limit=free?1:r.perFanTicketLimit??10000,remaining=limit-d.enteredTickets,valid=Number.isInteger(amount)&&amount>0&&amount<=remaining&&(free||amount<=availableTickets),locked=busy||Boolean(pending)||!ready||(!free&&Boolean(wallet.data?.writeFenced)),deadline=r.entryClosesAt?Date.parse(r.entryClosesAt):Infinity,closed=r.status==='closed'||r.status==='cancelled'||now>=deadline,upcoming=now<Date.parse(r.opensAt??r.entryOpensAt??'1970-01-01'),approvalBlocked=r.approvalStatus!=='approved';
  const progress=r.conditions.map(condition=>d.conditionProgress.find(item=>item.type===condition.type)??{...condition,current:0,met:false}),conditionsMet=progress.every(item=>item.met),blocked=locked||closed||upcoming||approvalBlocked||!conditionsMet||d.canEnter===false;
