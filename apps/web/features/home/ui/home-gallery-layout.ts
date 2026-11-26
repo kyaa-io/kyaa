@@ -1,10 +1,10 @@
 import type { HomeGalleryPhoto } from "@/features/home/domain/home-gallery";
 
 /**
- * Stacks every photo at its original ratio (image-framing.md: no empty tile) and evens out the column bottoms.
+ * Stacks every photo at its tile ratio (`galleryTileRatio`: the original ratio varied per photo, 11/26) and evens out the column bottoms.
  * Heights are in units of the column width. The home block grows with its photos; a placeholder tile exists only while the read is
  * loading, failed or found nothing. `gap` is the 8px (mobile) and 12px (desktop) column gap in the same units.
- * Nothing is cropped or stretched to level the bottoms: the leftover under a shorter column (`spread`) is whatever the photo ratios leave.
+ * Nothing is cropped or stretched to level the bottoms: the leftover under a shorter column (`spread`) is whatever the tile ratios leave.
  */
 export const homeGalleryLayouts = {
   mobile: { columns: 2, gap: 0.046 },
@@ -13,7 +13,18 @@ export const homeGalleryLayouts = {
 
 type Layout = { columns: number; gap: number };
 
-const ratio = (photo: HomeGalleryPhoto) => photo.image.height / photo.image.width;
+/**
+ * 사용자 11/26 193859·193860 (Pinterest 참고): 원본 크기가 모두 같아도 칸 높이가 서로 다른 모자이크로 보이게, 사진마다 높이 배율을 하나 정해
+ * 원본 비율에 곱한다(세로/가로 0.75~1.5 안, 넘치는 부분만 가운데 기준으로 잘림). 배율은 사진 id 로 정해 같은 사진은 어느 페이지에서도 같은 칸 모양이다.
+ */
+const TILE_FACTORS = [1, 0.8, 1.15, 0.9, 1.1, 0.85] as const;
+export function galleryTileRatio(photo: HomeGalleryPhoto) {
+  let hash = 0;
+  for (const char of photo.id) hash = (hash * 31 + char.charCodeAt(0)) | 0;
+  const factor = TILE_FACTORS[Math.abs(hash) % TILE_FACTORS.length]!;
+  return Math.min(1.5, Math.max(0.75, (photo.image.height / photo.image.width) * factor));
+}
+const ratio = galleryTileRatio;
 const columnHeight = (heights: readonly number[], gap: number) => heights.reduce((sum, h) => sum + h, 0) + gap * Math.max(0, heights.length - 1);
 
 /** Each photo's size class (0 flattest, 2 tallest) by tercile of the ratios in the list, so a gallery of mostly tall photos still has three groups. */

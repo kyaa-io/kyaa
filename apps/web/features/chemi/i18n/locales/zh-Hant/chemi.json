@@ -54,7 +54,9 @@
     "rankings": "本週排名",
     "rankingOf": "{game}排名",
     "thisWeek": "本週",
-    "myRecord": "我的紀錄"
+    "myRecord": "我的紀錄",
+    "playersTotal": "累計{n}人參與",
+    "playersWeek": "本週{n}人"
   },
   "myBirth": {
     "title": "我的生日資訊",

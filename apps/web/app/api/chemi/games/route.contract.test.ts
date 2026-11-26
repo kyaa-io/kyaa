@@ -53,11 +53,19 @@ it("does not persist unverified client scores", async () => {
 });
 
 it("returns the pre-start ranking without viewer or friend identity", async () => {
-  rpc.mockResolvedValue([]);
+  rpc.mockImplementation(async (name: string) => name === "chemi_game_players" ? { total: 12, week: 3 } : []);
   const response = await post({ action: "ranking", p_viewer:id }, false);
-  expect(await response.json()).toEqual({ ranking:[] });
+  expect(await response.json()).toEqual({ ranking:[], players:{ total:12, week:3 } });
+  expect(rpc).toHaveBeenCalledWith("chemi_game_players", { p_game:"match" });
   expect(authorize).not.toHaveBeenCalled();
   expect(rpc).toHaveBeenCalledWith("chemi_match_ranking", { p_viewer:null, p_friend:null });
+});
+
+it("still answers the ranking when the participant count cannot be read", async () => {
+  rpc.mockImplementation(async (name: string) => { if (name === "chemi_game_players") throw new Error("missing"); return []; });
+  const response = await post({ action: "ranking" }, false);
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ ranking:[], players:null });
 });
 
 it("uses the authenticated viewer for a personal rank", async () => {

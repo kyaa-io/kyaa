@@ -10,7 +10,7 @@ import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { HomeShorts } from "./home-shorts";
 import type { HomeNoticeSummary } from "@/features/home/domain/home-notice";
 import { NoticeCard, formatHomeNoticeDate } from "./notice-card";
-import { allocateGalleryColumns, appendToGalleryColumns, homeGalleryLayouts } from "./home-gallery-layout";
+import { allocateGalleryColumns, appendToGalleryColumns, galleryTileRatio, homeGalleryLayouts } from "./home-gallery-layout";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./home-placeholder-blocks.module.css";
 
@@ -110,7 +110,7 @@ export function GalleryColumns({ columns, layout, caption, itemClassName, showNe
 export function GalleryImage({ photo, sizes, showNew = false }: { showNew?: boolean; photo: HomeGalleryPhoto; sizes: string }) {
   // Content assets recheck visibility on every request (private, no-store). Do not put them in the shared optimizer cache.
   const unoptimized = (photo.image.url.startsWith("/api/content-assets/") || photo.image.url.startsWith("/api/groups/media/")) || bypassImageOptimization(photo.image.url);
-  const image = <Image className={styles.photoImage} src={photo.image.url} alt={photo.alt} width={photo.image.width} height={photo.image.height}
+  const image = <Image className={styles.photoImage} style={{ "--gallery-photo-ratio": `1 / ${galleryTileRatio(photo)}` } as CSSProperties} src={photo.image.url} alt={photo.alt} width={photo.image.width} height={photo.image.height}
     sizes={sizes} loading="lazy" unoptimized={unoptimized} />;
   if (!photo.sourceHref) return image;
   return <Link className={styles.photoLink} href={photo.sourceHref as Route}>
@@ -124,7 +124,7 @@ function GalleryReservation({ photos, layout }: { photos: readonly HomeGalleryPh
   const columns = homeColumns(photos, layout);
   return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-reservation={layout} aria-hidden="true">
     {columns.map((column, index) => <ul key={index} className={styles.photoColumn}>
-      {column.map(photo => <li key={photo.id} className={`${styles.photo} ${styles.tile} ${styles.reservationTile}`} data-row="photo-placeholder" style={{ "--gallery-photo-ratio": `${photo.image.width} / ${photo.image.height}` } as CSSProperties} />)}
+      {column.map(photo => <li key={photo.id} className={`${styles.photo} ${styles.tile} ${styles.reservationTile}`} data-row="photo-placeholder" style={{ "--gallery-photo-ratio": `1 / ${galleryTileRatio(photo)}` } as CSSProperties} />)}
     </ul>)}
   </div>;
 }

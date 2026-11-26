@@ -6,7 +6,7 @@ import page from "@/server/home-gallery/fixtures/read_public_home_gallery_photos
 import relativePage from "@/server/home-gallery/fixtures/read_public_home_gallery_photos_relative.json";
 import shortsRows from "@/server/home-gallery/fixtures/read_public_home_shorts.json";
 import { homeShortsSchema, type HomeGalleryPhoto } from "@/features/home/domain/home-gallery";
-import { allocateGalleryColumns, appendToGalleryColumns, homeGalleryLayouts } from "./home-gallery-layout";
+import { allocateGalleryColumns, appendToGalleryColumns, galleryTileRatio, homeGalleryLayouts } from "./home-gallery-layout";
 import { HomeGalleryScreen } from "./home-gallery-page";
 import { HomeGallery } from "./home-placeholder-blocks";
 
@@ -151,8 +151,9 @@ describe("home gallery block", () => {
     expect(screen.queryByText("아직 숏폼 없음")).not.toBeInTheDocument();
   });
   it("preserves images within the portrait shortform card", () => {
+    // Only the gallery photo fills its tile (사용자 11/26 193860: varied tile heights even for same-size photos); nothing else in the block crops.
     const css = readFileSync(resolve(__dirname, "home-placeholder-blocks.module.css"), "utf8").split("\n").filter(line => /object-fit:\s*cover/.test(line));
-    expect(css).toEqual([]);
+    expect(css.map(line => line.split(" {")[0])).toEqual([".photoImage"]);
     expect(readFileSync(resolve(__dirname, "home-shorts.module.css"), "utf8")).toContain("aspect-ratio:9/16");
     expect(readFileSync(resolve(__dirname, "home-gallery-page.module.css"), "utf8")).not.toMatch(/object-fit:\s*cover/);
   });
@@ -174,6 +175,16 @@ describe("/gallery", () => {
   });
 });
 
+describe("gallery tile ratio", () => {
+  it("varies the tile height of same-size photos, keeps it per photo, and stays within 0.75 to 1.5", () => {
+    const same = Array.from({ length: 12 }, (_, i) => photo(100 + i, 3000, 4000));
+    const ratios = same.map(galleryTileRatio);
+    expect(new Set(ratios.map(value => value.toFixed(3))).size).toBeGreaterThanOrEqual(3);
+    expect(ratios.every(value => value >= 0.75 && value <= 1.5)).toBe(true);
+    expect(same.map(galleryTileRatio)).toEqual(ratios);
+  });
+});
+
 describe("appending a later gallery page", () => {
   const sized = (id: number, width: number, height: number): HomeGalleryPhoto => ({ ...photos[2]!, id: `q${id}`, image: { ...photos[2]!.image, width, height } });
   it("keeps every photo already placed where it was and keeps the column bottoms within about one photo", () => {
@@ -185,7 +196,7 @@ describe("appending a later gallery page", () => {
         columns.forEach((column, index) => expect(column.slice(0, before[index]!.length).map(item => item.id)).toEqual(before[index]));
         expect(columns.flat()).toHaveLength(24 * (page + 1));
       }
-      const heights = columns.map(column => column.reduce((sum, item) => sum + item.image.height / item.image.width, 0));
+      const heights = columns.map(column => column.reduce((sum, item) => sum + galleryTileRatio(item), 0));
       expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(3);
     }
   });

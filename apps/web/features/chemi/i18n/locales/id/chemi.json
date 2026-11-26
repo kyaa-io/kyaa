@@ -54,7 +54,9 @@
     "rankings": "Peringkat mingguan",
     "rankingOf": "Peringkat {game}",
     "thisWeek": "Minggu ini",
-    "myRecord": "Rekor saya"
+    "myRecord": "Rekor saya",
+    "playersTotal": "{n} pemain sejauh ini",
+    "playersWeek": "{n} minggu ini"
   },
   "myBirth": {
     "title": "Info lahirku",

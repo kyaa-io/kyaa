@@ -29,3 +29,13 @@
 @media (max-width: 47.999rem) { [data-header-status] .points::before { margin: 0 calc(var(--space-1) / 2); } [data-header-status] .points img { width: 16px; height: 16px; } }
 .avatarTrigger { padding: 0; background: transparent; overflow: hidden; }
 .avatarTrigger:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* 등급 테두리(대표 11/26 193862): 아바타 바깥 3px 등급색 + 안쪽 1px 흰 띠. 색은 등급 메달 그림의 몸통색. */
+.avatarTrigger[data-tier] { position: relative; }
+.avatarTrigger[data-tier]::before, .avatarTrigger[data-tier]::after { content: ""; position: absolute; border-radius: 50%; pointer-events: none; }
+.avatarTrigger[data-tier]::before { inset: 0; border: 3px solid var(--tier-ring); }
+.avatarTrigger[data-tier]::after { inset: 3px; border: 1px solid var(--color-surface); }
+.avatarTrigger[data-tier="bronze"] { --tier-ring: var(--color-tier-bronze); }
+.avatarTrigger[data-tier="silver"] { --tier-ring: var(--color-tier-silver); }
+.avatarTrigger[data-tier="gold"] { --tier-ring: var(--color-tier-gold); }
+.avatarTrigger[data-tier="platinum"] { --tier-ring: var(--color-tier-platinum); }
+.avatarTrigger[data-tier="diamond"] { --tier-ring: var(--color-tier-diamond); }

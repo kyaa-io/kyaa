@@ -12,6 +12,7 @@ const photos: HomeGalleryPhoto[] = [[3024, 4032], [2075, 2766], [3072, 4096], [3
 }));
 
 describe("home-placeholder-blocks", () => {
+  // The reserved tiles take each photo's tile ratio (galleryTileRatio, 11/26), the same shape the loaded photo is drawn at.
   it.each(APP_LOCALES)("reserves the final photo geometry in %s without loading the images twice", locale => {
     const pending = render(<HomeGalleryPlaceholder locale={locale} expectedPhotos={photos} />);
     const shapes = ["mobile", "desktop"].map(layout => [...pending.container.querySelector(`[data-gallery-reservation="${layout}"]`)!.children].map(column => [...column.children].map(tile => (tile as HTMLElement).style.getPropertyValue("--gallery-photo-ratio"))));
@@ -19,7 +20,7 @@ describe("home-placeholder-blocks", () => {
     pending.unmount();
     const loaded = render(<HomeGallery locale={locale} photos={photos} hasMore={false} shorts={[]} />);
     for (const [index, layout] of ["mobile", "desktop"].entries()) {
-      const actual = [...loaded.container.querySelector(`[data-gallery-layout="${layout}"]`)!.children].map(column => [...column.querySelectorAll("img")].map(img => `${img.getAttribute("width")} / ${img.getAttribute("height")}`));
+      const actual = [...loaded.container.querySelector(`[data-gallery-layout="${layout}"]`)!.children].map(column => [...column.querySelectorAll("img")].map(img => img.style.getPropertyValue("--gallery-photo-ratio")));
       expect(shapes[index]).toEqual(actual);
     }
   });

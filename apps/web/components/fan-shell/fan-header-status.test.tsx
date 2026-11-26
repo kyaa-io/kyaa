@@ -46,10 +46,11 @@ describe("header capsule", () => {
     const link = chip();
     expect(link).toHaveAccessibleName(/골드.*마일리지 987,654,321/);
     expect(link).not.toHaveAccessibleName(/하트/);
-    expect(link).not.toHaveTextContent("골드");
-    expect(link.querySelectorAll("img")).toHaveLength(3);
+    // 사용자 11/26 193853: the tier is named in words (골드), never with a stage numeral.
+    expect(link.querySelector("[data-header-tier]")).toHaveTextContent(/^골드$/);
+    expect(link.querySelectorAll("img")).toHaveLength(2);
     expect(link.querySelector('img[src*="/tiers/medal-v2/gold-1.svg"]')).not.toBeNull();
-    expect(link.querySelector('img[src*="/tiers/medal-v2/gold-1.svg"]')!.nextElementSibling).toHaveAttribute("src", "/images/passport/tier-numerals-v1/gold-1.svg");
+    expect(link.querySelector('img[src*="tier-numerals"]')).toBeNull();
   });
 
   it("shows the named favorite grade before points even with a higher passport", () => {
@@ -67,8 +68,8 @@ describe("header capsule", () => {
     state.bias.options = [selected, gold];
     render(<FanHeaderStatus locale="ko" />);
     expect(chip()).toHaveAttribute("href", "/my?locale=ko&passport=other#my-passport");
-    expect(chip().querySelector("[data-header-tier]")).toHaveAttribute("title", "골드 Ⅱ");
-    expect(chip().querySelector('img[src="/images/passport/tier-numerals-v1/gold-2.svg"]')).not.toBeNull();
+    expect(chip().querySelector("[data-header-tier]")).toHaveAttribute("title", "골드");
+    expect(chip().querySelector("[data-header-tier]")).toHaveTextContent(/^골드$/);
     expect(chip().querySelector('img[src*="/tiers/medal-v2/gold-2.svg"]')).not.toBeNull();
   });
 
