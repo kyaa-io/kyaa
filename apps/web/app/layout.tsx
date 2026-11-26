@@ -29,6 +29,8 @@ import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
 import { FanToastProvider } from "../components/fan-ui/fan-toast";
 import { parseAppLocale, type AppLocale } from "../i18n/locales";
 import { ADSENSE_SCRIPT_SRC } from "../security-headers";
+import { adsenseUnits } from "../features/adsense/adsense-units";
+import { AdsenseUnitsProvider } from "../features/adsense/ui/adsense-unit";
 import "./globals.css";
 
 const DESCRIPTIONS: Record<AppLocale, string> = {
@@ -84,11 +86,12 @@ export default async function RootLayout({
   const requestHeaders = await headers();
   const locale = parseAppLocale(requestHeaders.get("x-byus-locale"));
   const rewardedExchange = rewardedExchangeDecision(process.env);
+  const pageCarriesAdsense = requestHeaders.get("x-byus-adsense") === "1";
   const { authProvider, privyAppId, appleLoginEnabled, testAccountLoginEnabled, ga4MeasurementId } = publicRuntimeConfig();
   return (
     <html lang={locale}>
       {/* AdSense site ownership: the snippet in the server HTML head of every page, on kyaa.io only (proxy decides x-byus-adsense). */}
-      {requestHeaders.get("x-byus-adsense") === "1" ? <head><script async src={ADSENSE_SCRIPT_SRC} crossOrigin="anonymous" /></head> : null}
+      {pageCarriesAdsense ? <head><script async src={ADSENSE_SCRIPT_SRC} crossOrigin="anonymous" /></head> : null}
       <body>
         {rewardedExchange.enabled && <meta name="kyaa-rewarded-ad-unit" content={rewardedExchange.adUnit} />}
         <LocaleProvider initialLocale={locale}>
@@ -97,6 +100,7 @@ export default async function RootLayout({
         <AccountSwitchReleaseProvider enabled={accountSwitchEnabled({ APP_ENV: process.env.APP_ENV, NODE_ENV: process.env.NODE_ENV })}>
         <LuckyDrawPreviewProvider preview={luckyDrawEntryPreview(process.env)}>
         <Suspense fallback={null}><EarlyRaffleLandingTracker /></Suspense>
+        <AdsenseUnitsProvider units={adsenseUnits(process.env, pageCarriesAdsense, isAwsHosting())}>
         <AuthRoot authProvider={authProvider} privyAppId={privyAppId} appleLoginEnabled={appleLoginEnabled} testAccountLoginEnabled={testAccountLoginEnabled}>
           <DeferredRootClients slot="before" />
           {isAwsHosting() && <AwsPerformanceTelemetry />}
@@ -116,6 +120,7 @@ export default async function RootLayout({
           <FanToastProvider />
           <DeferredRootClients slot="after" />
         </AuthRoot>
+        </AdsenseUnitsProvider>
         </LuckyDrawPreviewProvider>
         </AccountSwitchReleaseProvider>
         </ChemiReleaseProvider>

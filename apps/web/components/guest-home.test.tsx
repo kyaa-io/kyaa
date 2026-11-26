@@ -1,4 +1,5 @@
 import type { BannerSlotMap, HomeBanner } from "@/features/home/domain/home-banner";
+import { AdsenseUnitsProvider } from "@/features/adsense/ui/adsense-unit";
 import { settleHomeQuery, type HomeQueries } from "./home-query-stream";
 import { groupApplyText } from "@/features/groups/ui/group-apply-copy";
 import { APP_LOCALES } from "@/i18n/locales";
@@ -151,6 +152,20 @@ describe("canonical 03 guest home", () => {
     const jjinfan = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" />);
     expect(jjinfan.container.querySelector('[data-banner-size="mid"]')).toBeNull();
     order(jjinfan.container, ['[aria-labelledby="live-heading"]', "#home-ranking", '[data-banner-slot="home_top"]']);
+  });
+  it("puts an AdSense unit in the empty ad slot only when its unit ID is set, and keeps the external ad when one is registered", () => {
+    const withUnit = render(<AdsenseUnitsProvider units={{ home_mid: "1234567890" }}><GuestHome {...defaultProps} jjinfanGauge /></AdsenseUnitsProvider>);
+    order(withUnit.container, ['[aria-labelledby="live-heading"]', '[data-adsense-placement="home_mid"]', "#home-ranking"]);
+    expect(withUnit.container.querySelector('[data-adsense-placement="home_mid"] ins.adsbygoogle')).toHaveAttribute("data-ad-slot", "1234567890");
+    expect(withUnit.container.querySelector('[data-adsense-placement="home_mid"]')?.textContent).toBe("광고");
+    withUnit.unmount();
+    const external = render(<AdsenseUnitsProvider units={{ home_mid: "1234567890" }}><GuestHome {...defaultProps} homeSlots={{ home_mid: adBanner }} /></AdsenseUnitsProvider>);
+    expect(external.container.querySelector("[data-adsense-placement]")).toBeNull();
+    expect(external.container.querySelector('[data-banner-size="mid"]')).not.toBeNull();
+    external.unmount();
+    const unset = render(<AdsenseUnitsProvider units={null}><GuestHome {...defaultProps} /></AdsenseUnitsProvider>);
+    expect(unset.container.querySelector("[data-adsense-placement]")).toBeNull();
+    expect(unset.container.querySelector("ins")).toBeNull();
   });
   it("draws the thin banner from the slot read with the page, before the notices, and nothing when the slot is empty", () => {
     const thin = { ...bannerFixture, id: "44444444-4444-4444-8444-444444444444", title: "얇은 띠", placement: "home_below_board" as const };
