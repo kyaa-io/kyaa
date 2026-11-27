@@ -115,6 +115,9 @@
   scroll-snap-type: x mandatory;
 }
 .rankCard {
+  --fan-section-size: var(--fan-body-size);
+  --fan-action-label-size: var(--fan-metadata-size);
+  --fan-action-weight: var(--fan-body-weight);
   display: grid;
   align-content: start;
   gap: var(--rank-gap);
@@ -167,6 +170,11 @@
   gap: var(--space-2);
   min-height: var(--rank-row);
   font-variant-numeric: tabular-nums;
+}
+.rankCard :is(.rankRow, .rankMine) {
+  --fan-body-size: var(--fan-metadata-size);
+  --fan-item-title-size: var(--fan-metadata-size);
+  --fan-item-title-weight: var(--fan-body-weight);
 }
 .rankRow[data-me] {
   color: var(--color-accent-ink);
@@ -267,10 +275,6 @@
     flex-shrink: 0;
     align-self: center;
     translate: none;
-  }
-  .rankCard {
-    --fan-item-title-size: var(--fan-metadata-size);
-    --fan-body-size: var(--fan-metadata-size);
   }
   .rankMine {
     min-height: var(--rank-row);
