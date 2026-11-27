@@ -75,6 +75,10 @@
 }
 .scorePanel {
   order: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  padding-block: var(--space-2);
 }
 .fieldsSec {
   order: 3;
@@ -495,13 +499,13 @@
 }
 .scorePanel > .passportRow {
   justify-content: space-between;
-  width: 100%;
+  gap: var(--space-2);
   min-height: var(--min-target);
   padding: 0;
   text-align: start;
 }
 .passportRow .rewardRow {
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 .go {
   color: var(--color-accent-ink);
@@ -537,11 +541,6 @@
   gap: var(--space-1);
   min-width: 0;
 }
-/* 보상 줄만 있는 판은 한 줄 높이로(빈 흰 칸처럼 보이지 않게). */
-.scorePanel:not(:has(.score)) {
-  padding-block: var(--space-2);
-}
-
 .mobileCta {
   composes: mobileDock from "../../../features/chemi/ui/result/result-actions.module.css";
 }
