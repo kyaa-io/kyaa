@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "휴대폰에서 케미 놀기의 배너와 순위, 놀이 목록 사이 여백을 줄였어요.",
+    "성장 탭에서는 미니 최애의 방을 줄여 아래 친밀 활동이 더 일찍 보여요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/2026-11-28-chemi-density-step1-play.png",
+    "release-notes/images/2026-11-28-chemi-density-step1-growth.png"
+  ]
+}

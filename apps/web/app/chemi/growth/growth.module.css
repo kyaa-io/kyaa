@@ -40,6 +40,18 @@
   border-radius: var(--radius-card);
   background: var(--color-accent-soft);
 }
+@media (width < 48rem) {
+  .grow {
+    padding-block: var(--space-3);
+  }
+  .stage {
+    gap: var(--space-3);
+  }
+  .room:lang(ko) {
+    width: 80%;
+    margin-inline: auto;
+  }
+}
 .roomImage {
   position: absolute;
   inset: 0;
@@ -332,7 +344,7 @@
   display: flex;
   align-items: baseline;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 .earn,
 .album {

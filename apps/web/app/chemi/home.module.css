@@ -1,7 +1,7 @@
 .home {
   display: grid;
-  gap: var(--space-8);
-  padding-block: var(--space-4);
+  gap: var(--space-6);
+  padding-block: var(--space-3);
 }
 .banner {
   position: relative;
@@ -48,7 +48,7 @@
 }
 .list {
   display: grid;
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
   column-gap: var(--space-6);
 }
 .row {
@@ -145,9 +145,12 @@
   align-content: start;
   justify-items: start;
 }
-/* 불러오는 중·오류도 세 줄 + 내 줄과 같은 높이를 차지해 카드 높이가 바뀌지 않는다. */
+.rankFooter { display: contents; }
+.leaders[data-collapsed] > :nth-child(n + 4) {
+  display: none;
+}
 .leaders[data-status] {
-  min-block-size: calc(var(--rank-row) * 5 + var(--rank-gap) + var(--rank-mine));
+  min-block-size: calc(var(--rank-row) * 3 + var(--rank-gap) + var(--min-target));
   align-content: center;
   justify-items: center;
   gap: var(--space-2);
@@ -217,18 +220,66 @@
   text-overflow: ellipsis;
 }
 @media (width < 64rem) {
-  .rankCard .desktopOnly { display: none; }
+  .home[data-ranked="true"] {
+    row-gap: var(--space-1);
+  }
+  .home[data-ranked="true"] > section:last-child {
+    margin-block-start: var(--space-5);
+  }
+  .rankings {
+    --rank-gap: var(--space-1);
+  }
+  .rankings .rankCard {
+    padding: var(--space-2) var(--space-3);
+  }
+  .rankCard header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-content: center;
+    column-gap: var(--space-2);
+    row-gap: 0;
+    min-block-size: var(--min-target);
+  }
+  .rankCard header a {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    max-inline-size: calc(var(--space-12) * 2);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: end;
+    translate: none;
+  }
+  .rankPlayers {
+    grid-column: 1;
+  }
+  .rankFooter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-block-size: var(--min-target);
+  }
+  .rankFooter .rankStatus {
+    min-height: 0;
+    border-top: 0;
+  }
+  .rankMore {
+    flex-shrink: 0;
+    align-self: center;
+    translate: none;
+  }
   .rankCard {
     --fan-item-title-size: var(--fan-metadata-size);
     --fan-body-size: var(--fan-metadata-size);
   }
   .rankMine {
-    min-height: var(--rank-mine);
+    min-height: var(--rank-row);
   }
 }
 
 @media (min-width: 64rem) {
   .home {
+    padding-block: var(--space-4);
     grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 6);
     align-items: start;
     column-gap: var(--space-6);
@@ -271,9 +322,6 @@
     gap: var(--rank-gap);
     padding: var(--space-4);
   }
-  .leaders[data-collapsed] > :nth-child(n + 4) {
-    display: none;
-  }
   .leaders[data-status] {
     min-block-size: calc(var(--rank-row) * 3 + var(--rank-gap) + var(--rank-mine));
   }
@@ -291,8 +339,9 @@
     grid-template-columns: var(--space-10) minmax(0, 1fr) auto;
     align-items: center;
     column-gap: var(--space-3);
-    row-gap: 0;
+    row-gap: var(--rank-gap);
   }
+  .rankPlayers { grid-column: 1 / -1; }
   .rankCard header img {
     display: block;
     width: 100%;
