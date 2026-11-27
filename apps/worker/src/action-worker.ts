@@ -1,6 +1,6 @@
 import { buildCanonicalActionPayload, assertSnapshotMatchesCanonical } from "./action-builder.js";
 import { parseActionSourceSnapshot, parseCanonicalActionPayload, type CanonicalActionPayloadV1, type FanActionJob } from "./action-domain.js";
-import type { ActionChainPort, ActionMetadataPort, ActionQueuePort } from "./action-ports.js";
+import type { ActionChainPort, ActionMetadataPort, ActionQueuePort, SubmissionNonceState } from "./action-ports.js";
 import { classifyError, type PreparedSubmission, WorkerError } from "./domain.js";
 import type { ClockPort } from "./ports.js";
 
@@ -73,7 +73,13 @@ export class ActionWorker {
         job = await this.queue.recordPrepared(job, prepared);
       }
       if (!(await this.queue.admitDispatch(job))) return;
-      const broadcastHash = await this.chain.broadcast(prepared.signedTransaction);
+      let broadcastHash: string;
+      try {
+        broadcastHash = await this.chain.broadcast(prepared.signedTransaction);
+      } catch (error) {
+        if (await this.supersedeRejected(job, prepared, error)) return;
+        throw error;
+      }
       if (broadcastHash.toLowerCase() !== prepared.txHash.toLowerCase()) {
         throw new WorkerError("TRANSACTION_HASH_MISMATCH", `Broadcast hash ${broadcastHash} did not match prepared hash ${prepared.txHash}`, false);
       }
@@ -88,12 +94,36 @@ export class ActionWorker {
       throw new WorkerError("ACTION_RECEIPT_PENDING", `Receipt was not available for ${prepared.txHash}`, true);
     } catch (error) {
       const classified = classifyError(error);
+      if (job.signedTransaction && job.attempts >= job.maxAttempts) {
+        console.error(JSON.stringify({ event: "fan_action_signed_transaction_over_budget", alert: true, jobId: job.id, txHash: job.txHash, attempts: job.attempts, maxAttempts: job.maxAttempts, errorCode: classified.code }));
+      }
       await this.queue.retry(job, classified.code, classified.message, classified.retryable);
     } finally {
       if (writerHeld && chainId !== null) {
         await this.queue.releaseWriter(job, chainId, this.chain.relayerAddress);
       }
     }
+  }
+
+  // A rejected broadcast whose nonce the relayer already used elsewhere can never be included, so
+  // its stored bytes would otherwise block every writer on this relayer. Once the chain shows the
+  // nonce consumed, or the retry budget is spent while the RPC does not know the transaction, the
+  // database archives the bytes and the next claim re-signs; the Hub dedupes by actionId.
+  private async supersedeRejected(job: FanActionJob, prepared: PreparedSubmission, error: unknown): Promise<boolean> {
+    if (!(error instanceof WorkerError) || error.code !== "GIWA_ACTION_BROADCAST_FAILED") return false;
+    let state: SubmissionNonceState;
+    let nextStatus: "RETRYING" | "FAILED";
+    try {
+      state = await this.chain.submissionNonceState(prepared.signedTransaction);
+      if (state.known || (state.chainNonce <= state.txNonce && job.attempts < job.maxAttempts)) return false;
+      nextStatus = await this.queue.supersede(job, prepared, state);
+    } catch (inspection) {
+      // Keep the broadcast error as the job's reason; the next attempt inspects again.
+      console.error(JSON.stringify({ event: "fan_action_supersede_check_failed", jobId: job.id, error: classifyError(inspection).code }));
+      return false;
+    }
+    console.error(JSON.stringify({ event: "fan_action_signed_transaction_superseded", alert: true, jobId: job.id, txHash: prepared.txHash, txNonce: state.txNonce.toString(), chainNonce: state.chainNonce.toString(), attempts: job.attempts, maxAttempts: job.maxAttempts, nextStatus, broadcastError: error.message.slice(0, 300) }));
+    return true;
   }
 
   private readSubmission(job: FanActionJob, payload: CanonicalActionPayloadV1): PreparedSubmission | null {

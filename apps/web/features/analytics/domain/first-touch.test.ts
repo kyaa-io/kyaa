@@ -24,6 +24,27 @@ describe("in-app browser kind", () => {
 });
 
 describe("captureTouch", () => {
+  it.each(["kyaa.io", "www.kyaa.io", "dev.kyaa.io", "staging.kyaa.io"])(
+    "treats %s as internal behind a proxy",
+    (host) => {
+      const touch = captureTouch({
+        url: new URL("http://web.internal:3000/elina"),
+        referer: `https://${host}/`, userAgent: chrome, now,
+      });
+      expect(touch.rh).toBeUndefined();
+      expect(isExternalEntry(touch)).toBe(false);
+    },
+  );
+
+  it.each(["t.co", "instagram.com", "notkyaa.io"])("retains external host %s behind a proxy", (host) => {
+    const touch = captureTouch({
+      url: new URL("http://web.internal:3000/"),
+      referer: `https://${host}/`, userAgent: chrome, now,
+    });
+    expect(touch.rh).toBe(host);
+    expect(isExternalEntry(touch)).toBe(true);
+  });
+
   it("keeps tags, click id kind, invite code, outside host, app kind, hand-off and a path pattern", () => {
     const touch = captureTouch({
       url: new URL("https://kyaa.io/s/raffle?utm_source=X&utm_medium=kol&utm_campaign=alina&utm_content=kol-alina&twclid=abc123&invite=22FAA88E23ACE107E6105E21&kyaa_browser=x"),
@@ -67,7 +88,7 @@ describe("captureTouch", () => {
 
 describe("proxy visit cookies", () => {
   const visit = (path: string, headers: Record<string, string> = {}) =>
-    proxy(new NextRequest(`https://kyaa.io${path}`, { headers: { "user-agent": chrome, ...headers } }));
+    proxy(new NextRequest(`https://web.internal${path}`, { headers: { "user-agent": chrome, ...headers } }));
 
   it("sets the first and latest visit on the first page request, for 90 days, http-only", () => {
     const response = visit("/s/raffle?utm_source=x&utm_medium=kol&utm_campaign=luna", { referer: "https://t.co/a" });

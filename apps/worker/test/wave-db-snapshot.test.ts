@@ -23,7 +23,7 @@ it("builds the actual DB-generated WAVE snapshot with unchanged context and miss
       const occurrenceId = localOccurrenceId(payload.chainId, payload.hubProxy as `0x${string}`, payload.environmentId as `0x${string}`, payload.request.sourceOccurrence as `0x${string}`);
       return { occurrenceId, actionId: localActionId(occurrenceId, payload.request.revision), requestHash: `0x${"00".repeat(32)}` };
     },
-    findExisting: unused, prepare: unused, broadcast: unused, receipt: unused,
+    findExisting: unused, prepare: unused, broadcast: unused, submissionNonceState: unused, receipt: unused,
   };
   const payload = await buildCanonicalActionPayload(job, snapshot, {
     pin: async document => { documents.push(document); return "ipfs://wave-engineering-metadata"; },

@@ -14,6 +14,7 @@ import {
   keccak256,
   parseTransaction,
   recoverTransactionAddress,
+  TransactionNotFoundError,
   TransactionReceiptNotFoundError,
   type Address,
   type Hash,
@@ -22,7 +23,7 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { credentialKinds, linkOrigins, localActionId, localOccurrenceId, origins, type CanonicalActionPayloadV1 } from "../action-domain.js";
-import type { ActionChainPort, ActionCredentialReceipt, ActionHashResult, ActionReceipt } from "../action-ports.js";
+import type { ActionChainPort, ActionCredentialReceipt, ActionHashResult, ActionReceipt, SubmissionNonceState } from "../action-ports.js";
 import { WorkerError, type PreparedSubmission } from "../domain.js";
 import { assertMintFeePolicy, DEFAULT_MINT_FEE_POLICY, validateMintFeePolicy, type MintFeePolicy } from "../fee-policy.js";
 import { actionHubAbi, credentialRefComponents, easAbi } from "../action-abi.js";
@@ -123,8 +124,24 @@ export class ViemActionHubAdapter implements ActionChainPort {
       if (error instanceof WorkerError) throw error;
       const message = error instanceof Error ? error.message : String(error);
       if (message.toLowerCase().includes("already known")) return keccak256(signedTransaction as Hex);
-      throw new WorkerError("GIWA_ACTION_BROADCAST_FAILED", message, true, { cause: error });
+      // viem's message embeds the whole request body (the signed bytes) before the node's reason,
+      // so the stored 500-character error lost "nonce too low". Keep the reason instead.
+      const reason = error instanceof BaseError ? [error.shortMessage, error.details].filter(Boolean).join(" Details: ") : message;
+      throw new WorkerError("GIWA_ACTION_BROADCAST_FAILED", reason, true, { cause: error });
     }
+  }
+
+  async submissionNonceState(signedTransaction: string): Promise<SubmissionNonceState> {
+    const transaction = parseTransaction(signedTransaction as Hex);
+    if (transaction.nonce === undefined) throw new WorkerError("PREPARED_ACTION_TRANSACTION_MISMATCH", "Stored action transaction has no nonce", false);
+    const [known, chainNonce] = await Promise.all([
+      this.client.getTransaction({ hash: keccak256(signedTransaction as Hex) }).then(() => true, (error: unknown) => {
+        if (error instanceof TransactionNotFoundError) return false;
+        throw error;
+      }),
+      this.client.getTransactionCount({ address: this.account.address, blockTag: "latest" }),
+    ]);
+    return { known, txNonce: BigInt(transaction.nonce), chainNonce: BigInt(chainNonce) };
   }
 
   async receipt(payload: CanonicalActionPayloadV1, submission: PreparedSubmission): Promise<ActionReceipt | null> {
