@@ -1,2 +1,4 @@
 /* Sits on the name's baseline and never shrinks, so a long name ellipsizes before the mark is cut. */
 .mark { display: inline-block; flex: none; width: var(--verified-mark-size, 16px); height: var(--verified-mark-size, 16px); vertical-align: -0.15em; }
+/* Original check weight in the official artwork’s 852.8-unit viewBox. */
+.check { stroke-width: 85; }
