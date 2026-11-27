@@ -79,11 +79,10 @@
   border-radius: 50%;
 }
 
-/* ── 운세 결과: 점수 줄 오른쪽 카드 입구 */
+/* ── 운세 결과: 보상 옆 카드 입구 */
 .cardLink {
   align-self: center;
   gap: var(--space-1);
-  margin-left: auto;
   padding: 0;
   color: var(--color-accent-ink);
 }

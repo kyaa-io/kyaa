@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "스크롤할 때 상단 메뉴 아래에 가는 구분선이 보여요.",
+    "오늘의 운세에서 기념 카드와 응원 부적을 보상 옆에 표시해요. 자리가 좁으면 다음 줄 왼쪽에서 볼 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi/fortune",
+  "images": ["release-notes/images/2026-11-28-header-solid-chemi-card.png"]
+}
