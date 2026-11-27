@@ -339,6 +339,11 @@
   .creatorPostDetailLayout > [data-post-detail-more]:has([data-board-ad-rail] > :not([data-adsense-placement]), [data-board-ad-rail] ins:not([data-ad-status="unfilled"])) { position: static; }
 }
 
+/* The shortcuts are visually first (order -1). Compact only their gap to the gallery. */
+.creatorHomeMain:has(> .creatorShortcuts) > [data-creator-media-preview]:first-child {
+  margin-block-start: calc(var(--space-4) - var(--fan-section-gap));
+}
+
 @media (min-width:1024px) {
   .creatorHomeMain:has(> .creatorShortcuts) {
     --fan-section-gap: var(--space-8);
