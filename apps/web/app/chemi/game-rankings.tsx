@@ -105,6 +105,8 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
   const firstPlay = game.status === "ready" && !game.mine;
   const more = game.more ?? [];
   const shown = open ? [...game.leaders, ...more] : game.leaders;
+  const mineIndex = shown.findIndex((row) => row.isMe);
+  const mineInDesktopOverflow = !open && mineIndex >= SLOTS;
   const players = game.status === "ready" && game.players && game.players.total > 0 && playersLabel ? playersLabel(game.players) : null;
   return (
     <FanSurface className={styles.rankCard} aria-busy={game.status === "loading"}>
@@ -121,7 +123,7 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
       ) : (
         <>
           {players && <FanText role="meta" className={styles.rankPlayers}>{players}</FanText>}
-          <div className={styles.leaders}>
+          <div className={styles.leaders} data-collapsed={!open || undefined}>
             {Array.from({ length: Math.max(SLOTS, shown.length) }, (_, index) => {
               const row = shown[index] ?? {
                 id: `empty-${index}`, place: index + 1, name: vacantLabel, vacant: true, change: 0, record: "",
@@ -129,14 +131,14 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
               return <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />;
             })}
           </div>
-          {more.length > 0 && moreLabel && lessLabel && (
-            <FanAction variant="text" size="sm" className={styles.rankMore} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+          {(more.length > 0 || game.leaders.length > SLOTS) && moreLabel && lessLabel && (
+            <FanAction variant="text" size="sm" className={more.length ? styles.rankMore : `${styles.rankMore} ${styles.desktopOnly}`} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
               {open ? lessLabel : moreLabel}
             </FanAction>
           )}
           {firstPlay && <FanText role="meta" className={styles.rankStatus}>{game.leaders.length ? mineEmpty : empty}</FanText>}
-          {game.mine && !shown.some((row) => row.isMe) && (
-            <div className={styles.rankMine}>
+          {game.mine && (mineIndex === -1 || mineInDesktopOverflow) && (
+            <div className={mineInDesktopOverflow ? `${styles.rankMine} ${styles.desktopOnly}` : styles.rankMine}>
               <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
               <span className={styles.rankAvatar} aria-hidden="true"><RankAvatar nickname={game.mine.initial === null ? null : game.mine.name} url={game.mine.avatar} /></span>
               <FanText role="body">{mineLabel}</FanText>

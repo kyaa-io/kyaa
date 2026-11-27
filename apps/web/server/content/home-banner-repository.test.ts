@@ -37,3 +37,24 @@ it("reads home_mid with the home slots", async()=>{
  const slots=await createHomeBannerRepository({url:undefined,serviceRoleKey:undefined}, {rpc} as never).listSlots('en','home');
  expect(slots.home_mid?.id).toBe(valid.id);
 });
+
+it("normalizes slot RPC video fields while keeping strict validation", async () => {
+  const desktop = "/public-assets/cms-assets/home-banners/video/wide";
+  const mobile = "/public-assets/cms-assets/home-banners/video/narrow";
+  const image = { ...valid, placement: "home_below_board", category: "ad" };
+  const video = { ...valid, placement: "home_mid", video: { desktop, mobile } };
+  const rpc = vi.fn().mockResolvedValue({ data: {
+    home_below_board: { ...image, desktopVideo: null, mobileVideo: null },
+    home_mid: video,
+    home_between_events: { ...valid, placement: "home_between_events", desktopVideo: null, mobileVideo: mobile },
+  }, error: null });
+  const repo = createHomeBannerRepository({ url: undefined, serviceRoleKey: undefined }, { rpc } as never);
+  expect(await repo.listSlots("ko", "home")).toEqual({ home_below_board: image, home_mid: video });
+
+  const { video: _, ...poster } = video;
+  rpc.mockResolvedValue({ data: {
+    home_mid: { ...poster, desktopVideo: desktop, mobileVideo: mobile },
+    home_below_board: { ...image, desktopVideo: null, mobileVideo: null, unexpected: true },
+  }, error: null });
+  expect(await repo.listSlots("ko", "home")).toEqual({ home_mid: video });
+});

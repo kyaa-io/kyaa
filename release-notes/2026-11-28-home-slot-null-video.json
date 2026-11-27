@@ -1,0 +1,5 @@
+{
+  "changes": ["이미지만 있는 광고도 홈의 랭킹과 공지 사이에 표시되도록 고쳤어요. 첨부 이미지는 개발 환경에서 확인한 화면이에요."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-28-home-slot-null-video.png"]
+}
