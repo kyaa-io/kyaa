@@ -53,13 +53,17 @@
 
 `CommonRules`의 `CrossSiteScripting_BODY`는 Count로 두고, 그 라벨(`awswaf:managed:aws:core-rule-set:CrossSiteScripting_Body`)이 붙은 요청을 `BlockCrossSiteScriptingBody`(우선순위 12)가 막는다. 예외는 `BlockOversizeBodies`의 multipart 업로드 예외(메서드·경로·`multipart/form-data;`)와 같은 문장이다. 업로드 이미지 안의 C2PA 메타데이터(`caBX` 안의 `<svg`)가 XSS로 오탐돼 업로드가 403이 났기 때문이다(2026-11-07 dev). 업로드 경로 밖의 본문 XSS 차단은 그대로다. 업로드 경로를 바꾸면 두 규칙이 같은 예외를 쓰는지 `scripts/aws-release-edge-security.test.mjs`가 확인한다.
 
+### edge-security User-Agent 규칙
+
+`CommonRules`의 `NoUserAgent_HEADER`는 Count로 집계하고, `BlockNoUserAgent`(우선순위 13)는 해당 라벨이 붙은 요청을 차단한다. 대소문자를 구분해 URI 경로가 `/api/telegram/`로 시작하는 요청은 이 차단에서 제외한다. 텔레그램 웹훅의 비밀 헤더 검증과 다른 WAF 규칙은 계속 적용된다. [AWS 관리형 규칙 라벨](https://docs.aws.amazon.com/waf/latest/developerguide/aws-managed-rule-groups-baseline.html)
+
 ### edge-security 환경별 요청 한도
 
 `RateLimitMode`가 IP당 5분 요청량 규칙(`RateLimit`, 우선순위 20)의 동작을 정한다.
 
 | 모드 | 렌더 결과 |
 | --- | --- |
-| `off`(기본) | 규칙 없음. 규칙은 `CommonRules`, `BlockOversizeBodies`, `BlockCrossSiteScriptingBody` 셋뿐 |
+| `off`(기본) | `RateLimit` 없음. `CommonRules`, `BlockOversizeBodies`, `BlockCrossSiteScriptingBody`, `BlockNoUserAgent` 적용 |
 | `count` | `RateLimit`이 있되 Count(집계만, 차단 없음) |
 | `block` | `RateLimit`이 있고 Block(한도 초과 시 차단) |
 

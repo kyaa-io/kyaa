@@ -91,6 +91,12 @@
                     }
                   },
                   {
+                    "Name": "NoUserAgent_HEADER",
+                    "ActionToUse": {
+                      "Count": {}
+                    }
+                  },
+                  {
                     "Name": "CrossSiteScripting_BODY",
                     "ActionToUse": {
                       "Count": {}
@@ -595,6 +601,49 @@
               "CloudWatchMetricsEnabled": true,
               "SampledRequestsEnabled": false,
               "MetricName": "BlockCrossSiteScriptingBody"
+            }
+          },
+          {
+            "Name": "BlockNoUserAgent",
+            "Priority": 13,
+            "Action": {
+              "Block": {}
+            },
+            "Statement": {
+              "AndStatement": {
+                "Statements": [
+                  {
+                    "LabelMatchStatement": {
+                      "Scope": "LABEL",
+                      "Key": "awswaf:managed:aws:core-rule-set:NoUserAgent_Header"
+                    }
+                  },
+                  {
+                    "NotStatement": {
+                      "Statement": {
+                        "ByteMatchStatement": {
+                          "SearchString": "/api/telegram/",
+                          "FieldToMatch": {
+                            "UriPath": {}
+                          },
+                          "PositionalConstraint": "STARTS_WITH",
+                          "TextTransformations": [
+                            {
+                              "Priority": 0,
+                              "Type": "NONE"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "VisibilityConfig": {
+              "CloudWatchMetricsEnabled": true,
+              "SampledRequestsEnabled": false,
+              "MetricName": "BlockNoUserAgent"
             }
           },
           {
