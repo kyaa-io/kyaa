@@ -35,7 +35,7 @@ it("reads 0 honestly for no challenge or a failed read, and still links to the e
     h.state = state;
     render(<HomeHeartDonation locale="ko" />);
     expect(screen.getByRole("link")).toHaveAttribute("href", "/events/heart-donation?locale=ko");
-    expect(screen.getByRole("link").textContent).toContain("엘리나와 함께 찐팬 하트로 불우이웃 후원하기");
+    expect(screen.getByRole("link").textContent).toContain("엘리나와 함께 불우이웃 후원하자");
     expect(screen.getByRole("link").textContent).toContain("0/100");
     expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "0");
     cleanup();
@@ -49,7 +49,7 @@ it("fills by the hearts of the creator the settings name, not the first challeng
   const link = screen.getByRole("link");
   expect(link.textContent).toContain("37/100");
   expect(link.textContent).not.toContain("5/100");
-  expect(link.textContent).toContain("하트 100개가 모이면 1개당 1,000원을 후원해요");
+  expect(link.getAttribute("title")).toContain("하트 100개가 모이면 1개당 1,000원을 후원해요");
   expect(link.textContent).not.toContain("찐팬 100");
   expect(screen.getAllByRole("meter")).toHaveLength(1);
   expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "37");
@@ -59,7 +59,7 @@ it("fills by the hearts of the creator the settings name, not the first challeng
 it("takes the creator and the cause from the settings", () => {
   h.state = { status: "ready", data: { items: [item("wena", 1, 12)] } };
   render(<HomeHeartDonation locale="ko" event={{ creatorSlug: "wena", creatorName: "설정이름", cause: "유기동물", recipient: null }} />);
-  expect(screen.getByRole("link").textContent).toContain("웬아와 함께 찐팬 하트로 유기동물 후원하기");
+  expect(screen.getByRole("link").textContent).toContain("웬아와 함께 유기동물 후원하자");
   expect(screen.getByRole("link").textContent).toContain("12/100");
 });
 
