@@ -118,7 +118,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | 기능색(사용자 승인) | `--color-reaction-comment`(댓글·▼), `--color-rank-up/-down`, `--color-heart`, `--color-translation-link`, `--color-brand-link`, `--color-artist-reaction(-ink)`(게시판 행 크리에이터 반응 별 한 곳 전용, 사용자 승인 11/13) | 강조색이 아니다. 지정된 자리만 |
 | 화면 전용 | `--color-shortform-*`, `--color-home-caption`, `--color-home-hero-shade`, `--color-first-steps-shade`(첫 걸음 배너 390 글자 받침, accent-ink 30% + hero-shade), `--color-campaign-art` | 그 화면만 |
 | 비활성 | `--fan-disabled-opacity` .4 | 면·글자색은 그대로 두고 불투명도만 |
-| 등급 배지 그림(`FanTierBadge`, `public/images/passport/tiers/medal-v2/*.svg`, 대표 11/23) | 배지 그림 안에서만. 면은 위→아래 두 색, 테두리·별 선·단계 점은 테두리색 | 브론즈 원 #E8A27A→#A9582B·#6B3214 / 실버 팔각 #FAFBFD→#A7B1BF·#4F5A6B / 골드 톱니 원 #FFE57A→#F0AE00·#9A6400 / 플래티넘 방패 #E9FBF8→#6FD1C8·#17706B / 다이아몬드 마름모 #D8F0FF→#8C9BFF·#3B3AA6(반짝임 1개). 같은 등급 안 단계는 별 아래 점 1~4개 |
+| 등급 배지 그림(`FanTierBadge`, `public/images/passport/tiers/medal-v2/*.svg`, 대표 11/23) | 배지 그림 안에서만. 왼쪽 위 27% 밝은 광택 띠, 35% 주조색. 브론즈 원 #FF963B, 실버 팔각 #B6DAFA, 골드 톱니 원 #FFCD00, 플래티넘 방패 #64E4C9, 다이아 마름모 #91CEFF. 64단위 기준 외곽선 2, 별 선 1.65. 정적 표시. 같은 등급 안 단계는 별 아래 점 1~4개 |
 
 - 회색 채움 면 0: 칩·레일·카드·자리표시·스켈레톤·게이지 바탕은 흰 면 또는 `--color-accent-soft`.
 - 호버·눌림은 `--color-accent-soft` 또는 `scale(.97)`, 호버는 `@media (hover: hover) and (pointer: fine)` 안에서만.
