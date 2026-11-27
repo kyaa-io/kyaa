@@ -20,7 +20,7 @@ export function ThinBanner({ banner, locale, sponsored = false, size = "thin" }:
   const ad = sponsored || banner.category === "ad";
   const mobile = size === "side" ? banner.desktopImage : banner.mobileImage ?? banner.desktopImage;
   const picture = <picture>
-    <source media={size === "side" ? "(min-width: 80rem)" : size === "thin" ? "(min-width: 64rem)" : "(min-width: 48rem)"} srcSet={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} />
+    {size !== "sidebar-ad" && <source media={size === "side" ? "(min-width: 80rem)" : size === "thin" ? "(min-width: 64rem)" : "(min-width: 48rem)"} srcSet={banner.desktopImage.url} width={banner.desktopImage.width} height={banner.desktopImage.height} />}
     <img src={size === "side" ? undefined : mobile.url} width={mobile.width} height={mobile.height} alt={banner.alt || banner.title} loading="lazy" decoding="async" />
   </picture>;
   const reward = useAdReward(banner);
