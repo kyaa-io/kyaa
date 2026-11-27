@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-<defs><linearGradient id="g-platinum" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9FBF8"/><stop offset="1" stop-color="#6FD1C8"/></linearGradient></defs>
-<g fill="url(#g-platinum)" stroke="#17706B" stroke-width="3"><path d="M32 2.5 57.5 10.5V30c0 16-10.8 26.6-25.5 31.5C17.3 56.6 6.5 46 6.5 30V10.5Z"/></g>
-<g fill="none" stroke="#17706B" stroke-width="1.4" opacity=".55"><path d="M32 9 51.5 15V30c0 12.4-8 21-19.5 25C20.5 51 12.5 42.4 12.5 30V15Z"/></g>
-<polygon points="32.00,14.00 35.53,23.15 45.31,23.67 37.71,29.85 40.23,39.33 32.00,34.00 23.77,39.33 26.29,29.85 18.69,23.67 28.47,23.15" fill="#FFFFFF" stroke="#17706B" stroke-width="2.4" stroke-linejoin="round"/>
+<defs><linearGradient id="g-platinum" x1="15%" y1="0%" x2="76%" y2="100%">
+  <stop offset="0%" stop-color="#75ECD9"/>
+  <stop offset="27%" stop-color="#F1FFFC"/>
+  <stop offset="35%" stop-color="#64E4C9"/>
+  <stop offset="76%" stop-color="#B2FFF0"/>
+  <stop offset="100%" stop-color="#54D4C5"/>
+</linearGradient></defs>
+<g fill="url(#g-platinum)" stroke="#17706B" stroke-width="2"><path d="M32 2.5 57.5 10.5V30c0 16-10.8 26.6-25.5 31.5C17.3 56.6 6.5 46 6.5 30V10.5Z"/></g>
+<g fill="none" stroke="#17706B" stroke-width="1.4" opacity=".38"><path d="M32 9 51.5 15V30c0 12.4-8 21-19.5 25C20.5 51 12.5 42.4 12.5 30V15Z"/></g>
+<polygon points="32.00,14.00 35.53,23.15 45.31,23.67 37.71,29.85 40.23,39.33 32.00,34.00 23.77,39.33 26.29,29.85 18.69,23.67 28.47,23.15" fill="#FFFFFF" stroke="#17706B" stroke-width="1.65" stroke-linejoin="round"/>
 <circle cx="25" cy="45" r="2.8" fill="#17706B"/><circle cx="32" cy="45" r="2.8" fill="#17706B"/><circle cx="39" cy="45" r="2.8" fill="#17706B"/>
 </svg>

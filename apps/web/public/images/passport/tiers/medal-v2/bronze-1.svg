@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-<defs><linearGradient id="g-bronze" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8A27A"/><stop offset="1" stop-color="#A9582B"/></linearGradient></defs>
-<g fill="url(#g-bronze)" stroke="#6B3214" stroke-width="3"><circle cx="32" cy="32" r="29"/></g>
-<g fill="none" stroke="#6B3214" stroke-width="1.4" opacity=".55"><circle cx="32" cy="32" r="23.5"/></g>
-<polygon points="32.00,16.00 35.53,25.15 45.31,25.67 37.71,31.85 40.23,41.33 32.00,36.00 23.77,41.33 26.29,31.85 18.69,25.67 28.47,25.15" fill="#FFF4EA" stroke="#6B3214" stroke-width="2.4" stroke-linejoin="round"/>
+<defs><linearGradient id="g-bronze" x1="15%" y1="0%" x2="76%" y2="100%">
+  <stop offset="0%" stop-color="#FFAE65"/>
+  <stop offset="27%" stop-color="#FFF5D9"/>
+  <stop offset="35%" stop-color="#FF963B"/>
+  <stop offset="76%" stop-color="#FFBD72"/>
+  <stop offset="100%" stop-color="#E97C38"/>
+</linearGradient></defs>
+<g fill="url(#g-bronze)" stroke="#6B3214" stroke-width="2"><circle cx="32" cy="32" r="29"/></g>
+<g fill="none" stroke="#6B3214" stroke-width="1.4" opacity=".38"><circle cx="32" cy="32" r="23.5"/></g>
+<polygon points="32.00,16.00 35.53,25.15 45.31,25.67 37.71,31.85 40.23,41.33 32.00,36.00 23.77,41.33 26.29,31.85 18.69,25.67 28.47,25.15" fill="#FFF4EA" stroke="#6B3214" stroke-width="1.65" stroke-linejoin="round"/>
 
 </svg>
