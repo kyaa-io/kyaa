@@ -1,7 +1,7 @@
 .home {
   display: grid;
-  gap: var(--space-8);
-  padding-block: var(--space-4);
+  gap: var(--space-6);
+  padding-block: var(--space-3);
 }
 .banner {
   position: relative;
@@ -48,7 +48,7 @@
 }
 .list {
   display: grid;
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
   column-gap: var(--space-6);
 }
 .row {
@@ -229,6 +229,7 @@
 
 @media (min-width: 64rem) {
   .home {
+    padding-block: var(--space-4);
     grid-template-columns: minmax(0, 1fr) calc(var(--space-12) * 6);
     align-items: start;
     column-gap: var(--space-6);
