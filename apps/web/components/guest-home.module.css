@@ -30,19 +30,19 @@
 .headerActions { display: flex; align-items: center; gap: 0; }
 .languageButton { display: inline-grid; width: 44px; height: 44px; padding: 0; place-items: center; border: 0; border-radius: 12px; background: transparent; color: var(--ink); cursor: pointer; }
 
-.shell { display: grid; width: min(100%, var(--shell-max-width)); margin-inline: auto; padding: 24px 16px var(--fan-section-gap); padding-inline: var(--shell-inset); }
+.shell { display: grid; width: min(100%, var(--shell-max-width)); margin-inline: auto; padding: var(--space-6) var(--shell-inset) var(--fan-section-gap-compact); }
 .main { min-width: 0; }
 /* Keep the footer below the first viewport while the banner and event strip resolve together. */
 .pendingContent { min-block-size: 100svh; }
 .heroSection, .contentSection { scroll-margin-top: calc(var(--header-height) + 16px); }
-.contentSection { margin-top: var(--fan-section-gap); }
+.contentSection { margin-top: var(--fan-section-gap-compact); }
 /* 대표 2026-11-17: 찐팬 하트 후원 줄(홈배너1)은 랭킹 카드 바로 아래, 위 16px. 다음 구역과의 간격은 그쪽이 가진다. */
 .jjinfanStrip { margin-top: var(--space-4); }
 /* 홈배너2(home_mid, 외부 광고): 메인 배너 바로 아래, 위 16px. 광고가 있으면 랭킹도 16px 아래에 붙는다. 없으면 구역도 간격도 그리지 않는다. */
 .midBanner { margin-top: var(--space-4); }
 .midBanner + .contentSection { margin-top: var(--space-4); }
 /* An AdSense unit with no ad hides itself; the ranking then keeps the gap it has without the space. */
-.midBanner:has(> ins[data-ad-status="unfilled"]) + .contentSection { margin-top: var(--fan-section-gap); }
+.midBanner:has(> ins[data-ad-status="unfilled"]) + .contentSection { margin-top: var(--fan-section-gap-compact); }
 
 @media (width < 48rem) {
   .contentSection:has(> [data-home-ranking]) { margin-top: var(--space-4); }
@@ -159,10 +159,10 @@
 .favoriteReferenceContent .loginHint { max-width: 240px; justify-self: center; text-align: center; }
 .signInButton { width: min(280px, 100%); min-height: 44px; justify-self: center; font-weight: var(--fan-item-title-weight); }
 
-.mobilePersonalization { margin-top: var(--fan-section-gap); }
+.mobilePersonalization { margin-top: var(--fan-section-gap-compact); }
 /* L2 (2026-11-09 03:36): the ranking and the 찐팬 100 cards sat flush (0px), so the ranking read as cut off. 16px between them, Weverse home card gap. */
 :is(.mobilePersonalization, .contextPanel) > [data-home-challenges] { margin-top: var(--space-4); }
-.mobileGuides { margin-top: var(--fan-section-gap); }
+.mobileGuides { margin-top: var(--fan-section-gap-compact); }
 .mobilePersonalization > .mobileContextActions { margin-top: 0; }
 .signedInSummary {
   overflow: hidden;

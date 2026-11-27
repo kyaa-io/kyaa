@@ -11,6 +11,12 @@ export const homeGalleryLayouts = {
   desktop: { columns: 4, gap: 0.035 },
 } as const;
 
+/** The home preview shows more photos at a smaller width than the full gallery. */
+export const homeGalleryPreviewLayouts = {
+  mobile: { columns: 3, gap: 0.07 },
+  desktop: { columns: 6, gap: 0.055 },
+} as const;
+
 type Layout = { columns: number; gap: number };
 
 /**

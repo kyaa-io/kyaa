@@ -199,7 +199,7 @@ describe("canonical 03 guest home", () => {
     expect(notices.querySelectorAll("li")).toHaveLength(0);
     expect(within(gallery as HTMLElement).getByRole("heading", { name: "갤러리" })).toBeInTheDocument();
     expect(within(gallery as HTMLElement).getByRole("heading", { name: "숏폼" })).toBeInTheDocument();
-    expect(gallery.querySelectorAll("[data-row=photo-placeholder]")).toHaveLength(8);
+    expect(gallery.querySelectorAll("[data-row=photo-placeholder]")).toHaveLength(6);
     expect(gallery.querySelectorAll("[data-row=short-placeholder]")).toHaveLength(0);
     expect(notices.compareDocumentPosition(gallery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
@@ -541,7 +541,7 @@ describe("streamed Home sections", () => {
     expect(view.container.querySelectorAll('[data-row="short"]')).toHaveLength(shorts.length);
     view.unmount();
     await act(async () => { view = render(<StreamingGuestHome queries={{ ...pendingHome().queries, homeBanners: settleHomeQuery(Promise.resolve([])), homeGallery: Promise.resolve({ status: "rejected" }), homeShorts: Promise.resolve({ status: "rejected" }) }} locale="ko" />); });
-    expect(view.container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
+    expect(view.container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(6);
     expect(view.container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     // A failed read is not "none yet".
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();
