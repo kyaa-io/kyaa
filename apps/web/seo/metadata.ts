@@ -71,6 +71,11 @@ export function isNoContentPath(path: string): boolean {
     || /^\/live\/[^/]+\/suggestions(?:\/|$)/.test(path);
 }
 
+/** This short announcement points readers to the fan page for the actual content. */
+export function isIndexableHomeNotice(slug: string): boolean {
+  return slug !== "creator-wena-open";
+}
+
 /** A regular LIVE that ended more than a day ago and has no replay. Each one is the same schedule page with another date,
  * so it stays reachable by link but is not offered to search. */
 export function isEndedRegularLive(live: { liveType?: string | null; startsAt: string; endsAt: string | null; replay: boolean }, now: number): boolean {
