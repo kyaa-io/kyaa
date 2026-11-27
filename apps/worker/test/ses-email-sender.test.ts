@@ -30,12 +30,18 @@ function mockSend() {
   return vi.fn<SesV2SendClient["send"]>();
 }
 
-function sender(send: SesV2SendClient["send"], trustedOrigin?: string, fromEmail = "notifications@byus.kr") {
+function sender(
+  send: SesV2SendClient["send"],
+  trustedOrigin?: string,
+  fromEmail = "notifications@byus.kr",
+  now?: () => Date,
+) {
   return new SesEmailSender({
     region: "ap-northeast-2",
     fromEmail,
     unsubscribeSecret,
     ...(trustedOrigin ? { trustedOrigin } : {}),
+    ...(now ? { now } : {}),
     client: { send },
     fetcher: vi.fn().mockResolvedValue(new Response(new Uint8Array([255,216,255,224]), {headers:{"content-type":"image/jpeg"}})),
   });
@@ -102,12 +108,13 @@ describe("SES email sender", () => {
   it("keeps the request unchanged without feedback and tags only the delivery id and env with it", async () => {
     const send = mockSend().mockResolvedValue({ MessageId: "message" });
     const sameJob = { ...job, id: "8d4f1c2e-1b7a-4c3d-9e8f-0a1b2c3d4e5f" };
-    await sender(send).send(sameJob);
+    const now = () => new Date("2026-11-28T00:00:00Z");
+    await sender(send, undefined, undefined, now).send(sameJob);
     const plain = send.mock.calls[0]![0].input;
     expect(Object.keys(plain)).toEqual(["FromEmailAddress", "Destination", "ReplyToAddresses", "Content"]);
     const tagged = mockSend().mockResolvedValue({ MessageId: "message" });
     await new SesEmailSender({
-      region: "ap-northeast-2", fromEmail: "notifications@kyaa.io", unsubscribeSecret, client: { send: tagged },
+      region: "ap-northeast-2", fromEmail: "notifications@kyaa.io", unsubscribeSecret, client: { send: tagged }, now,
       feedback: { configurationSetName: "byus-notification-prod", environment: "prod" },
       fetcher: vi.fn().mockResolvedValue(new Response(new Uint8Array([255,216,255,224]), {headers:{"content-type":"image/jpeg"}})),
     }).send(sameJob);
@@ -115,6 +122,7 @@ describe("SES email sender", () => {
     expect(input.ConfigurationSetName).toBe("byus-notification-prod");
     expect(input.EmailTags).toEqual([{ Name: "delivery_id", Value: "8d4f1c2e-1b7a-4c3d-9e8f-0a1b2c3d4e5f" }, { Name: "env", Value: "prod" }]);
     expect(JSON.stringify(input.EmailTags)).not.toMatch(/fan@example\.com|live_reserved|notification/);
+    expect(input.Content!.Simple!.Headers).toEqual(plain.Content!.Simple!.Headers);
     expect({ ...input, ConfigurationSetName: undefined, EmailTags: undefined, FromEmailAddress: plain.FromEmailAddress }).toEqual(plain);
   });
 
