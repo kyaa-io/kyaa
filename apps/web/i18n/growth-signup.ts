@@ -13,5 +13,5 @@ export const growthSignupCopy = {
   pt: { google: "Continuar com Google no navegador", hint: "Entre na sua conta para participar do sorteio", enter: "Participe grátis" },
   fr: { google: "Continuer avec Google dans le navigateur", hint: "Connectez-vous pour participer au tirage", enter: "Participer gratuitement" },
   ru: { google: "Продолжить с Google в браузере", hint: "Войдите, чтобы участвовать в розыгрыше", enter: "Участвовать бесплатно" },
-  mn: { google: "Хөтөч дээр Google-ээр үргэлжлүүлэх", hint: "Сугалаанд оролцохын тулд нэвтэрнэ үү", enter: "Үнэгүй оролцох" },
+  mn: { google: "Continue with Google in browser", hint: "Сугалаанд оролцохын тулд нэвтэрнэ үү", enter: "Үнэгүй оролцох" },
 } satisfies Record<AppLocale, { google: string; hint: string; enter: string }>;

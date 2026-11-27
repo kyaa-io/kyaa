@@ -3,6 +3,8 @@ import "@testing-library/jest-dom/vitest";
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("next/navigation", () => ({ usePathname: () => window.location.pathname }));
+
 const recorded = vi.hoisted(() => vi.fn().mockResolvedValue(undefined));
 const ga4 = vi.hoisted(() => vi.fn());
 vi.mock("@/features/analytics/client/product-event-client", () => ({ recordProductEventV1: recorded }));
@@ -66,10 +68,10 @@ describe("in-app browser strip", () => {
     expect(decodeURIComponent(target.split("S.browser_fallback_url=")[1]!)).toBe("https://kyaa.io/login?returnTo=%2Fs%2Fraffle%3Fenter%3D1&utm_source=x&kyaa_browser=x;end");
     expect(ga4).toHaveBeenCalledWith("inapp_external_open", { app: "x", method: "intent" });
     cleanup();
-    // browser_fallback_url reloads the same page with kyaa_browser=x: the strip stays, no second try.
+    // browser_fallback_url reloads the same page with kyaa_browser=x: the login page owns the manual action.
     open("/login?returnTo=%2Fs%2Fraffle%3Fenter%3D1&utm_source=x&kyaa_browser=x", androidX, true);
     expect(assign).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Open in browser" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Open in browser" })).toBeNull();
   });
 
   it("keeps Instagram's automatic hand-off", () => {

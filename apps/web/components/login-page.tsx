@@ -3,6 +3,7 @@
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { rememberSession } from "@/features/auth/client/session-hint";
 import { toContentLocale } from "@/i18n/locales";
+import { measureHandoffAttempt } from "./landing-browser-dialog";
 import { growthSignupCopy } from "@/i18n/growth-signup";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__login-page";
@@ -490,7 +491,7 @@ export function LoginPage({
   const inAppPrivy = embeddedBrowser && privy;
   // Apps with no working hand-off (X) get the notice in place of a Google link that would do nothing.
   const inXBrowser = embeddedBrowser && isXBrowser(navigator.userAgent);
-  const xHandoff = inXBrowser ? landingHandoff(navigator.userAgent, new URL(handoffLoginUrl())).fallback : null;
+  const xHandoff = inXBrowser ? landingHandoff(navigator.userAgent, new URL(handoffLoginUrl())) : null;
   const googleHandoff = !inXBrowser && Boolean(inAppPrivy) && planGoogleLogin(navigator.userAgent, handoffLoginUrl(), isStandalone()).kind === "external";
   // Inside another app's browser, email and X are the methods that work there, so they lead; Apple follows and Google
   // goes to the browser. In a regular browser the order is Google, email, X, Apple.
@@ -511,7 +512,7 @@ export function LoginPage({
   </FanAction>;
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
     <div className={inAppPrivy ? `${styles.browserNotice} ${styles.browserNoticeBelowMethods}` : styles.browserNotice}>
-      {xHandoff && <Link className={styles.emailButton} href={xHandoff as Route} prefetch={false} data-outbound-tracking="off">
+      {xHandoff?.fallback && xHandoff.method && <Link className={styles.emailButton} href={xHandoff.fallback as Route} onClick={() => { if (xHandoff.method) measureHandoffAttempt("x", xHandoff.method); }} prefetch={false} data-outbound-tracking="off">
         {growthSignupCopy[locale].google}
       </Link>}
       <p className={styles.error} role="status">
@@ -691,6 +692,7 @@ export function LoginPage({
         </button>}
         {!inAppPrivy && browserHandoffNotice}
         {emailCodeButton}
+        {inAppPrivy && inXBrowser && browserHandoffNotice}
         {xButton}
         {cognitoKakaoEnabled && !privy && <button className={styles.googleButton} type="button"
           disabled={!ready || authenticated || oauthStarting}
@@ -714,7 +716,7 @@ export function LoginPage({
         {inAppPrivy && googleHandoff && <FanAction type="button" variant="text" onClick={() => startOAuthLogin("google")}>
           Google · {/Android/i.test(navigator.userAgent) ? "Chrome" : "Safari"} ↗
         </FanAction>}
-        {inAppPrivy && browserHandoffNotice}
+        {inAppPrivy && !inXBrowser && browserHandoffNotice}
         {!privy && !inXBrowser && <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />}
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
     </div>
