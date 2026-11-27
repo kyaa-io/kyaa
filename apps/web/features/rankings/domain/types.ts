@@ -162,8 +162,10 @@ export const homeCreatorRankingRowSchema = z.object({
   /** Passports issued, stamps issued all time and 찐팬 인증 (approved proofs) for the creator (대표 11/26 22:17). Absent from an older server. */
   stats: z.object({ passports: count, stamps: count, proofs: count }).optional(),
 });
+export const newCreatorSchema = z.object({ imageUrl: z.string().nullish(), slug: z.string(), name: z.string().min(1) });
 export const homeCreatorRankingSchema = z.object({
   ...homeHead,
+  newCreators: z.array(newCreatorSchema).max(2).optional(),
   metric: z.enum(HOME_CREATOR_METRICS).optional(),
   /** Days the weekGain comparison spans: 7 once a week of days is kept, fewer in the first week, null when there is nothing to compare. */
   weekGainDays: z.number().int().min(1).max(7).nullable(),

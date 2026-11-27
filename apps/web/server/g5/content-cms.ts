@@ -18,6 +18,7 @@ const localization = z.object({
   imageAlt: z.string().trim().min(1).max(300),
 });
 export const celebrityPayload = z.object({
+  excludeFromNewCreators: z.boolean().optional(),
   slug: z.string().refine(isCreatorHandle, "invalid or reserved celebrity slug"),
   imageUrl: z
     .string()

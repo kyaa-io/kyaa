@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { ChevronDown, ChevronUp, Heart } from "@/components/fan-ui/fan-icons";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { ProfileModal, type ProfileModalPerson } from "@/features/group-social/profile-modal";
+import Link from "@/components/fan-ui/hover-prefetch-link";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { RollingNumber } from "@/components/fan-ui/rolling-number";
@@ -347,7 +348,14 @@ const gapToFirst = (first: boolean, value: number, top: number) => first ? null 
 function RowToggle({ label, panelId, open, onToggle }: { label: string; panelId: string; open: boolean; onToggle: () => void }) {
   return <FanAction variant="text" className={styles.toggle} ariaLabel={label} aria-expanded={open} aria-controls={open ? panelId : undefined} onClick={onToggle} />;
 }
-function RowFace({ open, me, kind, children }: { open: boolean; me?: boolean; kind: RankingsTab; children: ReactNode }) {
+type RowFaceProps = { children: ReactNode } & (
+  | { href: string }
+  | { open: boolean; me?: boolean; kind: RankingsTab }
+);
+
+export function RowFace(props: RowFaceProps) {
+  if ("href" in props) return <Link className={styles.rowFace} href={props.href}>{props.children}</Link>;
+  const { open, me, kind, children } = props;
   return <span className={styles.rowFace} data-kind={kind} data-me={me || undefined}>
     {children}
     <FanIcon icon={open ? ChevronUp : ChevronDown} size={16} className={styles.chevron} />

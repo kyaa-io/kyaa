@@ -61,3 +61,31 @@ describe("home ranking by period", () => {
     expect(rpc).not.toHaveBeenCalled();
   });
 });
+
+describe("home creator introductions", () => {
+  it.each(["all", "day", "week"] as const)("opts in for %s without changing the ranking rows", async (period) => {
+    const candidate = { slug: "new-creator", name: "New creator" };
+    const { rpc, handlers } = make((name) => name === "read_home_new_creators" ? [candidate] : sql.creators_week);
+    const url = `/api/rankings/home?kind=creators&metric=likes&limit=10&period=${period}`;
+    const regular = await handlers.home(req(url));
+    const regularBody = await regular.json();
+    expect(regularBody.rows.length).toBeGreaterThan(0);
+    expect(regularBody).not.toHaveProperty("newCreators");
+    expect(rpc.mock.calls.some(([name]) => name === "read_home_new_creators")).toBe(false);
+    const home = await handlers.home(req(url + "&includeNew=1"));
+    expect(home.headers.get("cache-control")).toContain("no-store");
+    expect((await home.json())).toMatchObject({ rows: regularBody.rows, newCreators: [candidate] });
+  });
+
+  it("keeps the existing rows when the introduction reader is unavailable", async () => {
+    const { handlers } = make((name) => {
+      if (name === "read_home_new_creators") throw new Error("missing reader");
+      return sql.creators_week;
+    });
+    const response = await handlers.home(req("/api/rankings/home?kind=creators&metric=likes&limit=10&includeNew=1"));
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.rows.length).toBeGreaterThan(0);
+    expect(body.newCreators).toEqual([]);
+  });
+});

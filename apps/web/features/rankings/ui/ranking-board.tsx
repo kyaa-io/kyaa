@@ -3,14 +3,17 @@
 import { useRef, useState, type ReactNode } from "react";
 
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
+import { HOME_CREATOR_SLOTS } from "../domain/new-creators";
+import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
+import { FanTag } from "@/components/fan-ui/fan-tag";
+import { FanText } from "@/components/fan-ui/fan-text";
+import row from "./ranking-rows.module.css";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { Avatar } from "@/features/profile/ui/avatar";
 import type { AppLocale } from "@/i18n/locales";
 import { homeCreatorRankingSchema, homeFanRankingSchema, type HomeRankingPeriod } from "../domain/types";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
-import { fanAvatar } from "./rankings-content";
-import { CreatorRows, EmptyRows, FailedRows, FanRows, Foot, LoadingRows, MetricLine, MyRank, rankingUrl, useLiveRanking, type Live } from "./ranking-rows";
+import { RowFace, CreatorRows, EmptyRows, FailedRows, FanRows, Foot, LoadingRows, MetricLine, MyRank, rankingUrl, useLiveRanking, type Live } from "./ranking-rows";
 import { rankingsText } from "./rankings-copy";
 import styles from "./ranking-board.module.css";
 
@@ -31,7 +34,7 @@ function List<T extends { computedAt: string | null; rows: readonly unknown[] }>
  * place and an opening row. Below 1024px one list at a time behind a 찐팬 | 크리에이터 segment; from 1024px both side by side, each filling half of the card's inner width.
  * Signed out: the rows the API gives and one way to sign in under the list (one for the pair on PC).
  */
-export function RankingBoard({ locale, scope = "home-ranking", heading }: { locale: AppLocale; scope?: string; heading?: ReactNode }) {
+export function RankingBoard({ locale, scope = "home-ranking", heading, includeNewCreators = false }: { includeNewCreators?: boolean; locale: AppLocale; scope?: string; heading?: ReactNode }) {
   const auth = useByUsAuth();
   const guest = auth.ready && !auth.authenticated;
   const [period, setPeriod] = useState<HomeRankingPeriod>("all");
@@ -56,7 +59,7 @@ export function RankingBoard({ locale, scope = "home-ranking", heading }: { loca
     </section>
     <section className={styles.column} data-column="creators" data-active={tab === "creators"} aria-labelledby={`${scope}-creators`}>
       <FanHeading as="h3" id={`${scope}-creators`}>{rankingsText(locale, "rkCreatorTabShort")}</FanHeading>
-      <CreatorPanel locale={locale} guest={guest} scope={scope} period={period} />
+      <CreatorPanel includeNewCreators={includeNewCreators} locale={locale} guest={guest} scope={scope} period={period} />
     </section>
   </div></>;
 }
@@ -74,14 +77,35 @@ function FanPanel({ locale, guest, scope, period }: { locale: AppLocale; guest: 
   </>;
 }
 
-function CreatorPanel({ locale, guest, scope, period }: { locale: AppLocale; guest: boolean; scope: string; period: HomeRankingPeriod }) {
+function CreatorPanel({ locale, guest, scope, period, includeNewCreators }: { includeNewCreators: boolean; locale: AppLocale; guest: boolean; scope: string; period: HomeRankingPeriod }) {
   const entryRef = useRef(false);
-  const live = useLiveRanking(rankingUrl("creators", "likes", locale, LIST_ROWS, period), parseCreators);
+  const live = useLiveRanking(rankingUrl("creators", "likes", locale, LIST_ROWS, period) + (includeNewCreators ? "&includeNew=1" : ""), parseCreators);
   const data = live.state.status === "ready" ? live.state.data : null;
+  const introductions = includeNewCreators ? data?.newCreators ?? [] : [];
+  const slots = HOME_CREATOR_SLOTS - introductions.length;
   return <>
     <MetricLine locale={locale} period={period} metric="likes" computedAt={data?.computedAt ?? null} stale={data?.state === "stale"} />
     <div className={styles.board}>
-      <List locale={locale} live={live}>{(ranking) => <CreatorRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="likes" scope={scope} challengeTag guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
+      {data && introductions.length > 0 && data.rows.length === 0 ? null : (
+        <List locale={locale} live={live}>{(ranking) => <CreatorRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="likes" scope={scope} challengeTag guest={guest} period={period} show={slots} fill={guest || period !== "all" ? undefined : slots} />}</List>
+      )}
+      {introductions.length > 0 && (
+        <section className={styles.introductions} aria-labelledby={`${scope}-new-creators`}>
+          <h4 className={row.caption} id={`${scope}-new-creators`}>{rankingsText(locale, "rkNewCreators")}</h4>
+          <ul className={row.rows}>
+            {introductions.map(({ slug, name, imageUrl }) => (
+              <li key={slug} className={row.item} data-row="new-creator">
+                <RowFace href={creatorHomeHref(slug, locale)}>
+                  <FanTag tone="fan" className={styles.newBadge}>NEW</FanTag>
+                  <CreatorAvatar slug={slug} size={28} src={imageUrl} photos={{ profile: null }} />
+                  <span className={row.name} title={name}>{name}</span>
+                  <FanText role="meta" className={styles.destination}>{rankingsText(locale, "rkGoFanpage")} ›</FanText>
+                </RowFace>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   </>;
 }

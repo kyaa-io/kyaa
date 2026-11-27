@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "홈 크리에이터 랭킹 아래에서 최근 14일 안에 처음 공개한 크리에이터를 최대 두 명 만나볼 수 있어요. 분홍색 NEW 표시와 프로필 사진으로 새 크리에이터를 알아볼 수 있고, 줄을 누르면 팬페이지로 이동해요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-28-home-new-creators-390.png",
+    "release-notes/images/2026-11-28-home-new-creators-1440.png"
+  ]
+}

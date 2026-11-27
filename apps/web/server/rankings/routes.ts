@@ -8,6 +8,9 @@ import {
 } from "@/features/rankings/domain/types";
 import { creatorSlugSchema } from "@/features/passport/domain/dukjil-types";
 
+import { newCreatorSchema } from "@/features/rankings/domain/types";
+import { HOME_CREATOR_SLOTS, selectNewCreators } from "@/features/rankings/domain/new-creators";
+
 import { signHomeProfileRef } from "./home-profile-ref";
 
 export interface RankingsDependencies {
@@ -218,7 +221,17 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
           : period === "all"
           ? await readHome("read_home_creator_ranking_v2", { p_locale: lang, p_metric: metric, p_limit: creatorLimit })
           : await readHome("read_home_creator_ranking_period", { p_locale: lang, p_period: period, p_limit: creatorLimit }));
-        const rows = withoutUnverified(arr(raw.rows), await unverifiedSlugs()).map((row) => {
+        const hidden = await unverifiedSlugs();
+        const ranked = withoutUnverified(arr(raw.rows), hidden);
+        const includeNew = metric === "likes" && limit === HOME_CREATOR_SLOTS && one(request, "includeNew") === "1";
+        const newCreators = includeNew ? await deps.rpc("read_home_new_creators", {
+          p_locale: lang,
+          p_top_slugs: ranked.slice(0, HOME_CREATOR_SLOTS - 2).map((row) => obj(row).slug),
+        }).then((value) => {
+          const candidates = z.array(newCreatorSchema).parse(value).filter(({ slug }) => !hidden.has(slug));
+          return selectNewCreators(ranked.map((row) => ({ slug: String(obj(row).slug) })), candidates);
+        }).catch(() => []) : undefined;
+        const rows = ranked.map((row) => {
           const r = obj(row);
           return { rank: r.rank, slug: r.slug, name: r.name, imageUrl: r.imageUrl ?? null, score: r.score, hearts: r.hearts, points: r.points ?? null, fans: r.fans, liveNow: r.liveNow === true, isNew: r.isNew === true, challenge: r.challenge === true, delta: r.delta ?? null, weekGain: r.weekGain ?? null, dayGain: r.dayGain ?? null,
             ...(metric === "likes" ? { likes: r.likes, totalLikes: r.totalLikes } : {}) };
@@ -230,7 +243,7 @@ export function createRankingsHandlers(deps: RankingsDependencies) {
           const s = obj(stats[String(slug)]);
           return stats[String(slug)] ? { stats: { passports: s.passports, stamps: s.stamps, proofs: s.proofs } } : {};
         };
-        return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), weekGainDays: raw.weekGainDays ?? null, rows: rows.map((row) => ({ ...row, ...(platforms[String(row.slug)] ? { platforms: platforms[String(row.slug)] } : {}), ...statsOf(row.slug) })) }), { headers: listHeaders(request, member) });
+        return Response.json(checked(homeCreatorRankingSchema, { ...head(raw, metric), newCreators, weekGainDays: raw.weekGainDays ?? null, rows: rows.map((row) => ({ ...row, ...(platforms[String(row.slug)] ? { platforms: platforms[String(row.slug)] } : {}), ...statsOf(row.slug) })) }), { headers: includeNew ? privateHeaders : listHeaders(request, member) });
       }
       // points (20261222140000): points earned in the period, any period. hearts (default) is the older list; a period list asked without points is by hearts.
       const asked = z.enum(HOME_FAN_METRICS).parse(one(request, "metric") ?? "hearts");

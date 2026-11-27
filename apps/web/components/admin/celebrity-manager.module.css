@@ -122,3 +122,17 @@
 .registration p { margin: 4px 0 0; color: var(--muted); }
 .registration button { min-height: 44px; }
 .registration button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+form label.newCreatorExclusion {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  gap: var(--space-2);
+}
+form label.newCreatorExclusion input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  accent-color: var(--color-accent);
+}

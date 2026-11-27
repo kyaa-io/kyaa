@@ -53,6 +53,7 @@ type Celebrity = {
   primaryRole: CreatorRole | null;
   websiteUrl?: string | null;
   ticketUrl?: string | null;
+  excludeFromNewCreators?: boolean;
   everPublishedAt?: string | null;
   archivedAt: string | null;
   updatedAt: string;
@@ -237,6 +238,7 @@ function CelebrityCms({
     if (current)
       setDraft({
         slug: current.slug,
+        excludeFromNewCreators: current.excludeFromNewCreators,
         imageUrl: current.imageUrl,
         imagePosition: current.imagePosition,
         displayOrder: current.displayOrder,
@@ -503,6 +505,16 @@ function CelebrityCms({
           >
             <fieldset disabled={!canEdit || !!current?.archivedAt}>
               <legend>{locale === "ko" ? "기본 정보" : "Profile"}</legend>
+              {current && (
+                <label className={localStyles.newCreatorExclusion}>
+                  <input
+                    type="checkbox"
+                    checked={draft.excludeFromNewCreators ?? (current.slug === "aya")}
+                    onChange={(event) => setDraft((value) => ({ ...value, excludeFromNewCreators: event.target.checked }))}
+                  />
+                  <span>{locale === "ko" ? "새 크리에이터 칸 제외" : "Exclude from New creators"}</span>
+                </label>
+              )}
               <label>
                 <span>{lang === "ko" ? "이름" : "Name"}</span>
                 <input
