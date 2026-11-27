@@ -6,8 +6,8 @@
     "관리자 로그인, 콘텐츠 신고, 활동 기록, 알림 전송 화면의 긴 안내를 줄이고 같은 기능은 같은 이름으로 표시해요.",
     "예시 데이터로 만든 로컬 화면입니다."
   ],
-  "path": "/admin/fans",
+  "path": "/admin/content-reports",
   "images": [
-    "release-notes/images/2026-11-25-admin-copy-rest-fans.png"
+    "release-notes/images/2026-11-27-admin-copy-rest-reports.png"
   ]
 }
