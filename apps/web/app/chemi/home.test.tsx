@@ -113,6 +113,23 @@ it("opens the enabled match game from the games tab and the runner", () => {
   }
 });
 
+it("keeps ranking nicknames and initials in their original language", () => {
+  const game: GameRanking = {
+    game: "run",
+    title: "최애 런 랭킹",
+    status: "ready",
+    leaders: [{ id: "leader", name: "Étoile", place: 1, change: 0, record: "900" }],
+    mine: { id: "me", name: "星明り", place: 4, change: 0, record: "600" },
+  };
+
+  render(<GameRankings label={copy.rankings} games={[game]} mineLabel="내 기록" />);
+
+  expect(screen.getByText("Étoile")).toHaveAttribute("translate", "no");
+  expect(screen.getByText("É")).toHaveAttribute("translate", "no");
+  expect(screen.getByText("星")).toHaveAttribute("translate", "no");
+  expect(screen.getByText("내 기록")).not.toHaveAttribute("translate");
+});
+
 it("shows vacant slots, no personal record, and an actual zero score separately", () => {
   const game: GameRanking = { game: "run", title: "최애 런 랭킹", status: "ready", leaders: [], mine: null };
   const renderRankings = (ranking: GameRanking) => (

@@ -41,7 +41,7 @@ export type GameRanking = {
 /** 상위 세 자리는 기록이 없어도 미등록으로 채운다(DESIGN 케미 홈 11/24). 4·5위는 기록이 있을 때만 그린다(감독 11/27: 빈 자리 숨김). */
 const SLOTS = 3;
 
-function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string }) {
+export function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const previous = useRef(row);
   useEffect(() => {
@@ -55,9 +55,9 @@ function RankingRow({ row, vacantLabel }: { row: RecordRow; vacantLabel: string 
     <div className={styles.rankRow} ref={ref} data-me={row.isMe || undefined}>
       {row.vacant ? <VacantRank place={row.place} label={vacantLabel} avatarClassName={styles.rankAvatar} /> : <>
         <FanText role="body" data-flash-target="gain">{row.place}</FanText>
-        <span className={styles.rankAvatar} aria-hidden="true"><RankAvatar nickname={row.initial === null ? null : row.name} url={row.avatar} /></span>
+        <span className={styles.rankAvatar} aria-hidden="true" translate="no"><RankAvatar nickname={row.initial === null ? null : row.name} url={row.avatar} /></span>
         <div>
-          <FanText role="item">{row.name}</FanText>
+          <FanText role="item" translate="no">{row.name}</FanText>
           {row.change !== 0 && (
             <FanText role="meta">
               {row.change > 0 ? "▲" : "▼"}
@@ -106,7 +106,7 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
   const more = game.more ?? [];
   const shown = open ? [...game.leaders, ...more] : game.leaders;
   const mineIndex = shown.findIndex((row) => row.isMe);
-  const mineInDesktopOverflow = !open && mineIndex >= SLOTS;
+  const mineInCollapsedOverflow = !open && mineIndex >= SLOTS;
   const players = game.status === "ready" && game.players && game.players.total > 0 && playersLabel ? playersLabel(game.players) : null;
   return (
     <FanSurface className={styles.rankCard} aria-busy={game.status === "loading"}>
@@ -114,6 +114,7 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
         <img src={`/chemi/thumb-${game.game}-128-v2.webp`} alt="" />
         <FanHeading as="h3">{game.title}</FanHeading>
         {game.href && <FanSectionLink href={game.href} ariaLabel={firstPlay ? [game.title, game.leaders.length ? mineEmpty : empty, start].filter(Boolean).join(" · ") : `${game.title} ${weekLabel}`}>{firstPlay ? start : weekLabel}</FanSectionLink>}
+        {players && <FanText role="meta" className={styles.rankPlayers}>{players}</FanText>}
       </header>
       {game.status === "loading" ? <div className={styles.leaders} data-status="loading"><FanSkeleton height={48} /></div> : game.status === "error" ? (
         <div className={styles.leaders} data-status="error">
@@ -122,7 +123,6 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
         </div>
       ) : (
         <>
-          {players && <FanText role="meta" className={styles.rankPlayers}>{players}</FanText>}
           <div className={styles.leaders} data-collapsed={!open || undefined}>
             {Array.from({ length: Math.max(SLOTS, shown.length) }, (_, index) => {
               const row = shown[index] ?? {
@@ -131,16 +131,18 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
               return <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />;
             })}
           </div>
-          {(more.length > 0 || game.leaders.length > SLOTS) && moreLabel && lessLabel && (
-            <FanAction variant="text" size="sm" className={more.length ? styles.rankMore : `${styles.rankMore} ${styles.desktopOnly}`} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
-              {open ? lessLabel : moreLabel}
-            </FanAction>
-          )}
-          {firstPlay && <FanText role="meta" className={styles.rankStatus}>{game.leaders.length ? mineEmpty : empty}</FanText>}
-          {game.mine && (mineIndex === -1 || mineInDesktopOverflow) && (
-            <div className={mineInDesktopOverflow ? `${styles.rankMine} ${styles.desktopOnly}` : styles.rankMine}>
+          <div className={styles.rankFooter}>
+            {(more.length > 0 || game.leaders.length > SLOTS) && moreLabel && lessLabel && (
+              <FanAction variant="text" size="sm" className={styles.rankMore} aria-expanded={open} onClick={() => setOpen((value) => !value)}>
+                {open ? lessLabel : moreLabel}
+              </FanAction>
+            )}
+            {firstPlay && <FanText role="meta" className={styles.rankStatus}>{game.leaders.length ? mineEmpty : empty}</FanText>}
+          </div>
+          {game.mine && (mineIndex === -1 || mineInCollapsedOverflow) && (
+            <div className={styles.rankMine}>
               <FanText role="body" data-flash-target="gain">{game.mine.place}</FanText>
-              <span className={styles.rankAvatar} aria-hidden="true"><RankAvatar nickname={game.mine.initial === null ? null : game.mine.name} url={game.mine.avatar} /></span>
+              <span className={styles.rankAvatar} aria-hidden="true" translate="no"><RankAvatar nickname={game.mine.initial === null ? null : game.mine.name} url={game.mine.avatar} /></span>
               <FanText role="body">{mineLabel}</FanText>
               <FanText role="item" data-flash-target="value">{game.mine.record}</FanText>
             </div>

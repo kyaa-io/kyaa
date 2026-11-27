@@ -2,17 +2,20 @@
 .block { display: block; margin-top: var(--fan-section-gap); }
 .note { color: var(--color-muted); font-size: var(--fan-action-label-size); font-weight: var(--fan-body-weight); }
 .block[data-home-block="notices"] > [data-fan-section-header] { margin-bottom: 0; }
-.photos { display: grid; height: 1230px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
+.photos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
 .tile { display: grid; place-items: center; border-radius: var(--radius-card, 12px); background: var(--color-surface); outline: 1px solid var(--color-line); outline-offset: -1px; }
-.photos > .tile:nth-child(n + 5) { display: none; }
+.photos > .tile { aspect-ratio: 1; }
 .shelf { margin-top: var(--fan-section-gap); }
 .shortHead { display:flex; min-width:0; align-items:center; justify-content:space-between; gap:var(--space-3); }
 @media (min-width: 64rem) {
-  .photos { height: 712px; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-3); }
-  .photos > .tile:nth-child(n + 5) { display: grid; }
+  .photos { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-3); }
 }
 
-/* R8-DATA N2: 사진 구역. 사진은 원본 비율 그대로(cover 없음)로 모두 쌓고 높이는 사진을 따른다. 자리표시는 흰색 면과 선 토큰만 쓴다. */
+/* 사진마다 기존 모자이크 비율을 유지하고 홈 미리보기의 열만 늘린다. */
+.block[data-home-block="gallery"] > .photoColumns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (min-width: 64rem) {
+  .block[data-home-block="gallery"] > .photoColumns { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+}
 .photoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
 .photoColumn { display: flex; min-width: 0; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .photo { flex: none; }

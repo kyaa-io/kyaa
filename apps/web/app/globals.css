@@ -174,6 +174,10 @@
   --fan-body-weight: 400;
   --fan-tab-weight: 700;
   --fan-section-gap: 32px;
+  --fan-section-gap-compact: var(--space-6);
+  --fan-surface-padding-compact: var(--space-4);
+  --fan-row-gap-compact: 0px;
+  --home-shorts-rail-width: 176px;
   --fan-metadata-size: 13px;
   --fan-metadata-leading: 1.4;
   --fan-badge-size: 12px;
@@ -276,7 +280,7 @@ img[data-artist-avatar] {
   overflow-wrap: anywhere;
 }
 
-@media (min-width: 48rem) { :root { --fan-section-gap: 48px; } }
+@media (min-width: 48rem) { :root { --fan-section-gap: 48px; --fan-section-gap-compact: var(--space-10); --fan-surface-padding-compact: var(--space-5); --home-shorts-rail-width: 232px; } }
 /* Shell width: the header, page body and footer all use this max width and side inset (DESIGN.md, Grid & Container). */
 :root { --shell-max-width: 1440px; --shell-inset: 16px; }
 @media (min-width: 48rem) { :root { --shell-inset: 32px; } }

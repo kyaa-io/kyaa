@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "홈에서 구역 사이 여백을 줄이고 오늘의 랭킹을 더 촘촘하게 정리했어요.",
+    "홈 갤러리에 더 많은 사진을 한 줄에 보여 주고, 숏츠 표지의 높이를 낮췄어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-28-home-density.png",
+    "release-notes/images/2026-11-28-home-density-gallery.png",
+    "release-notes/images/2026-11-28-home-density-shorts.png"
+  ]
+}
