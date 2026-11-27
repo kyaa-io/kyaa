@@ -2,6 +2,8 @@ import { expect, it, vi } from "vitest";
 import { AuthError } from "@/features/auth/domain/auth-errors";
 import { POST } from "./route";
 
+vi.mock("server-only", () => ({}));
+
 const { authorize, findPublished, insert } = vi.hoisted(() => ({
   authorize: vi.fn(), findPublished: vi.fn(), insert: vi.fn(),
 }));

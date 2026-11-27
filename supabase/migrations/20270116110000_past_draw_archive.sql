@@ -2,6 +2,11 @@ create table public.past_draw_archive (
   round_key text primary key check (round_key ~ '^[a-z0-9][a-z0-9-]{0,119}$'),
   source_kind text not null check (source_kind in ('live_campaign', 'group_raffle', 'runmusic', 'notice')),
   source_id text not null check (length(source_id) between 1 and 120),
+  check (case source_kind
+    when 'notice' then source_id = notice_slug
+    when 'runmusic' then source_id = 'runmusic-2026'
+    else source_id ~ '^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$'
+  end),
   notice_slug text not null check (notice_slug ~ '^[a-z0-9][a-z0-9-]{0,119}$'),
   closes_at timestamptz not null check (isfinite(closes_at)),
   results_notice_slug text check (results_notice_slug ~ '^[a-z0-9][a-z0-9-]{0,119}$'),
@@ -19,7 +24,7 @@ revoke all on public.past_draw_archive, public.past_draw_test_rounds from public
 grant select, insert on public.past_draw_archive to service_role;
 grant select on public.past_draw_test_rounds to service_role;
 
-create view public.past_draw_public_items with (security_invoker = true) as
+create view public.past_draw_public_items with (security_barrier = true) as
 select i.id, c.id as campaign_id, c.entry_closes_at
 from public.live_benefit_campaign_items i
 join public.live_benefit_campaigns c on c.id = i.campaign_id
