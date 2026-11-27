@@ -1,4 +1,5 @@
 "use client";
+import { goodsMenuLabel } from "@/features/groups/goods-menu-copy";
 import { useGoodsMenu } from "@/features/groups/goods-menu";
 import { HeaderDmLink } from "@/features/group-social/header-dm-link";
 import { GiftTabDot } from "@/features/gifts/ui/gift-tab-dot";
@@ -108,7 +109,7 @@ function baseNavigationItems(locale: FanLocale, pathname: string, groupsEnabled:
   if(groupsEnabled)return [
     {id:"home",href:`/${query}` as Route,label:"HOME",icon:<PencilHeaderIcon name="home"/>,isCurrent:(current==="home"&&!rankings)||(goodsMenu&&rankings)},
     {id:"community",href:`/pages/groups${query}` as Route,label:locale === "en" && pathname === "/s/raffle" ? groupsCopy(locale).groups : "모임",icon:<PencilHeaderIcon name="groups"/>,isCurrent:pathname.startsWith('/pages/groups')||current==='community'},
-    {id:"favorites",href:`/benefits${query}` as Route,label:goodsMenu ? "굿즈" : locale === "en" && pathname === "/s/raffle" ? translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES") : "덕질",icon:goodsMenu?<Gift aria-hidden="true"/>:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||(!goodsMenu&&rankings)},
+    {id:"favorites",href:`/benefits${query}` as Route,label:goodsMenu ? goodsMenuLabel[locale] : locale === "en" && pathname === "/s/raffle" ? translate(locale, localizedMessages.m0f4f77a0db44, "FAVORITES") : "덕질",icon:goodsMenu?<Gift aria-hidden="true"/>:<PencilHeaderIcon name="favorites"/>,isCurrent:globalBenefits||(!goodsMenu&&rankings)},
     {id:"my",href:`/my${query}` as Route,label:"MY",icon:<PencilHeaderIcon name="my"/>,isCurrent:current==='my'&&!globalBenefits},
   ];
   return [
