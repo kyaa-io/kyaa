@@ -21,6 +21,15 @@ const resultSchema = z.object({
   status: z.enum(["pending", "in_review", "changes_requested", "approved", "rejected", "reasons"]),
   photo: z.boolean(),
 });
+const safeTelegramDescriptions = new Set([
+  "Bad Request: query is too old and response timeout expired or query ID is invalid",
+  "Bad Request: message to edit not found",
+  "Bad Request: message can't be edited",
+  "Bad Request: chat not found",
+  "Forbidden: bot was kicked from the supergroup chat",
+  "Unauthorized",
+]);
+
 const labels = {
   pending: "관리자 화면에서 처리해 주세요.",
   in_review: "관리자 화면에서 심사 중이에요.",
@@ -50,16 +59,30 @@ export async function POST(request: Request): Promise<Response> {
   if (!parsed.success) return new Response(null, { status: 204 });
   const query = parsed.data.callback_query;
   if (String(query.message.chat.id) !== chat) return new Response(null, { status: 204 });
-  async function telegram(method: string, payload: Record<string, unknown>) {
-    const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload), redirect: "error", signal: AbortSignal.timeout(8000),
-    });
-    const result = await response.json().catch(() => null);
-    if (response.ok && result?.ok === true) return;
-    if (method.startsWith("editMessage") && response.status === 400
-      && result?.description?.startsWith("Bad Request: message is not modified")) return;
-    throw new Error("DEV_TELEGRAM_CERTIFICATION_API_FAILED");
+  async function telegram(
+    method: "answerCallbackQuery" | "editMessageReplyMarkup" | "editMessageCaption" | "editMessageText",
+    payload: Record<string, unknown>,
+  ): Promise<boolean> {
+    let status: number | null = null;
+    let description = "Telegram request failed before a response";
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${token}/${method}`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload), redirect: "error", signal: AbortSignal.timeout(8000),
+      });
+      status = response.status;
+      const result = await response.json().catch(() => null);
+      if (response.ok && result?.ok === true) return true;
+      const detail = result?.description;
+      if (method !== "answerCallbackQuery" && status === 400
+        && typeof detail === "string" && detail.startsWith("Bad Request: message is not modified")) return true;
+      description = safeTelegramDescriptions.has(detail) ? detail : "Telegram error description unavailable or redacted";
+    } catch {
+      // Fetch errors may include the URL containing the bot token.
+    }
+    const stage = method === "answerCallbackQuery" ? "answer" : method;
+    console.warn(JSON.stringify({ event: "dev_telegram_certification_failure", stage, status, description }));
+    return false;
   }
 
   let actors: z.infer<typeof actorMap>;
@@ -73,12 +96,13 @@ export async function POST(request: Request): Promise<Response> {
   if (!z.uuid().safeParse(card).success) return new Response(null, { status: 204 });
   const answer = (message?: string) => telegram("answerCallbackQuery", {
     callback_query_id: query.id, text: message, show_alert: Boolean(message),
-  }).catch(() => undefined);
+  });
   if (!actor) {
     await answer("심사 권한이 없어요.");
     return new Response(null, { status: 204 });
   }
 
+  let stage = "rpc";
   try {
     const env = loadServerEnv();
     const db = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
@@ -89,14 +113,16 @@ export async function POST(request: Request): Promise<Response> {
       p_telegram: query.from.id, p_actor: actor, p_action: action,
     });
     if (error) {
+      console.warn(JSON.stringify({ event: "dev_telegram_certification_failure", stage }));
       await answer("처리 상태를 관리자 화면에서 확인해 주세요.");
       return new Response(null, { status: error.code === "P0001" ? 204 : 503 });
     }
+    stage = "rpc-parse";
     const result = resultSchema.parse(data);
     const target = { chat_id: chat, message_id: query.message.message_id };
     await answer();
     if (result.status === "reasons") {
-      await telegram("editMessageReplyMarkup", {
+      const edited = await telegram("editMessageReplyMarkup", {
         ...target,
         reply_markup: { inline_keyboard: [
           [{ text: "증빙 확인 어려움", callback_data: `unclear:${card}` }],
@@ -105,6 +131,8 @@ export async function POST(request: Request): Promise<Response> {
           [{ text: "승인", callback_data: `approve:${card}` }],
         ] },
       });
+      if (!edited) return new Response(null, { status: 503 });
+      stage = "status-recheck";
       // A concurrent approval may have completed while the reason menu was being edited.
       const current = await db.rpc("review_dev_telegram_certification", {
         p_card: card, p_chat: chat, p_message: query.message.message_id,
@@ -114,13 +142,17 @@ export async function POST(request: Request): Promise<Response> {
       result.status = resultSchema.parse(current.data).status;
       if (result.status === "reasons") return new Response(null, { status: 204 });
     }
-    await telegram(result.photo ? "editMessageCaption" : "editMessageText", {
+    const editMethod = result.photo ? "editMessageCaption" : "editMessageText";
+    const editPayload = {
       ...target, [result.photo ? "caption" : "text"]: labels[result.status],
       reply_markup: { inline_keyboard: [] },
-    });
+    };
+    if (!(await telegram(editMethod, editPayload))) await telegram(editMethod, editPayload);
     return new Response(null, { status: 204 });
   } catch {
-    await answer("처리 상태를 관리자 화면에서 확인해 주세요.");
+    console.warn(JSON.stringify({ event: "dev_telegram_certification_failure", stage }));
+    if (stage === "rpc") await answer("처리 상태를 관리자 화면에서 확인해 주세요.");
+    if (stage === "rpc-parse") await answer();
     return new Response(null, { status: 503 });
   }
 }

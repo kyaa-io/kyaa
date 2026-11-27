@@ -110,10 +110,40 @@ describe("DEV Telegram certification webhook", () => {
     expect(rpc).toHaveBeenCalledTimes(1);
   });
 
-  it("allows Telegram to retry an edit failure", async () => {
-    rpc.mockResolvedValue({ data: { status: "rejected", photo: false }, error: null });
-    api.mockImplementationOnce(async () => Response.json({ ok: true }))
-      .mockImplementationOnce(async () => Response.json({ ok: false }, { status: 500 }));
-    expect((await POST(callback({ action: "missing" }))).status).toBe(503);
+  it.each([
+    ["approve", '{"photo": true, "status": "approved"}', "editMessageCaption"],
+    ["unclear", '{"photo": false, "status": "rejected"}', "editMessageText"],
+    ["reasons", '{"photo": false, "status": "reasons"}', "editMessageReplyMarkup"],
+  ])("accepts the first DEV RPC result for %s", async (action, json, method) => {
+    rpc.mockResolvedValue({ data: JSON.parse(json), error: null });
+    expect((await POST(callback({ action }))).status).toBe(204);
+    expect(api.mock.calls[1][0]).toMatch(new RegExp(`/${method}$`));
+  });
+
+  it("acknowledges a committed decision quietly when Telegram fails", async () => {
+    const log = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      rpc.mockResolvedValue({ data: { status: "rejected", photo: false }, error: null });
+      api.mockRejectedValueOnce(new Error("URL with 1:test_bot"));
+      api.mockImplementation(async () => Response.json({
+        ok: false, description: "Bad Request: message to edit not found",
+      }, { status: 400 }));
+
+      expect((await POST(callback({ action: "missing" }))).status).toBe(204);
+      expect(rpc).toHaveBeenCalledTimes(1);
+      expect(api).toHaveBeenCalledTimes(3);
+      const answers = api.mock.calls.filter(([url]) => url.endsWith("/answerCallbackQuery"));
+      expect(answers.map(([, init]) => JSON.parse(init.body))).toEqual([
+        { callback_query_id: "callback-123", show_alert: false },
+      ]);
+      expect(log.mock.calls.map(([line]) => JSON.parse(line))).toEqual([
+        expect.objectContaining({ stage: "answer", status: null }),
+        expect.objectContaining({ stage: "editMessageText", status: 400, description: "Bad Request: message to edit not found" }),
+        expect.objectContaining({ stage: "editMessageText", status: 400 }),
+      ]);
+      expect(JSON.stringify(log.mock.calls)).not.toContain("1:test_bot");
+    } finally {
+      log.mockRestore();
+    }
   });
 });
