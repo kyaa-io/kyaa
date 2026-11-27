@@ -43,3 +43,9 @@
   .stripAd .link { aspect-ratio: auto; min-height: 144px; }
   .adCopy > strong { -webkit-line-clamp: 1; }
 }
+
+.sidebarAd { margin-top: 0; }
+.sidebarAd .link { display: flex; flex-direction: column-reverse; aspect-ratio: auto; border: 1px solid var(--color-line); }
+.sidebarAd .link picture img { height: auto; }
+.sidebarAd .adCopy { box-sizing: border-box; inline-size: 100%; }
+.sidebarAd .adCopy > strong { display: block; }

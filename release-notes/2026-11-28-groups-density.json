@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "모임에서 가입한 아티스트가 없을 때 제목과 버튼을 한 줄에 모았어요. PC에서는 출석 카드 아래에서 나영석 PD 숏츠를 볼 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-28-groups-density.png"
+  ]
+}

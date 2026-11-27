@@ -6,6 +6,7 @@ import {WalletAttendanceDialog} from "@/features/group-wallet/ui/wallet-screen";
 import motionStyles from "@/components/fan-ui/event-blink.module.css";
 import { liveEventLabel } from "@/features/home/domain/event-day";
 import { openPageLikeEvent, pageLikeEventWindows } from "@/features/reaction/domain/page-like-event";
+import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
@@ -70,7 +71,7 @@ const parseList = (value:unknown)=>groupListSchema.parse(value);
 const SEARCH_DELAY_MS=300;
 const ROLE_FILTERS=['all','idol','creator','brand','underground_idol'] as const;
 const searchTabs:Record<AppLocale,{artists:string;posts:string}>={ko:{artists:'아티스트',posts:'게시글'},get mn() { return this.en; }, en:{artists:'Artists',posts:'Posts'},ja:{artists:'アーティスト',posts:'投稿'},'zh-Hans':{artists:'艺人',posts:'帖子'},'zh-Hant':{artists:'藝人',posts:'貼文'},es:{artists:'Artistas',posts:'Publicaciones'},id:{artists:'Artis',posts:'Postingan'},vi:{artists:'Nghệ sĩ',posts:'Bài viết'},th:{artists:'ศิลปิน',posts:'โพสต์'},pt:{artists:'Artistas',posts:'Publicações'},fr:{artists:'Artistes',posts:'Publications'},ru:{artists:'Артисты',posts:'Публикации'}};
-export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=[],initialList}:{locale:AppLocale;banners?:HomeBanner[];promoOrder?:readonly string[];initialList?:GroupList;initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
+export function GroupDirectory({locale,initialOwned=false,banners=[],sidebarBanner,promoOrder=[],initialList}:{locale:AppLocale;banners?:HomeBanner[];sidebarBanner?:HomeBanner;promoOrder?:readonly string[];initialList?:GroupList;initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);
  const attendanceTrigger=useRef<HTMLAnchorElement|null>(null);
@@ -173,6 +174,7 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],promoOrder=
       </>}
     </section><aside className={styles.discoveryAside}>
       <section className={styles.discoveryAttendance}><div><h3>{c.attendance}</h3></div><DukjilProvider locale={locale}><CheckinCorner locale={locale}>{attendanceAction}</CheckinCorner></DukjilProvider></section>
+      {sidebarBanner && <div className={directoryStyles.sidebarAd}><ThinBanner locale={locale} banner={sidebarBanner} sponsored size="sidebar-ad" /></div>}
       <div className={creationStyles.creation}>
         {(['fan', 'hobby'] as const).map(kind => {
           const title=groupApplyText(locale,kind==='fan'?'fanPageApply':'hobbyBrandPageApply');
