@@ -1,10 +1,10 @@
 "use client";
 
 import { useByUsAuth as usePrivy } from "@/features/auth/client/cognito-auth";
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 import { z } from "zod";
 
-const channelSchema = z.object({ id: z.uuid(), slug: z.string(), status: z.enum(["draft", "published"]), nameKo: z.string(), nameEn: z.string() });
+const channelSchema = z.object({ id: z.guid(), slug: z.string(), status: z.enum(["draft", "published"]), nameKo: z.string(), nameEn: z.string() });
 const payloadSchema = z.object({ kind: z.enum(["admin", "operator"]), role: z.string(), celebrities: z.array(channelSchema) });
 export type OperatorChannel = z.infer<typeof channelSchema>;
 export type OperatorChannelsState =
@@ -13,10 +13,10 @@ export type OperatorChannelsState =
   | { status: "denied" }
   | { status: "authorized"; kind: "admin" | "operator"; role: string; channels: OperatorChannel[] };
 
-export function useOperatorChannels(): OperatorChannelsState {
+export function useOperatorChannels({ synchronizeSession = true } = {}): OperatorChannelsState {
   const { ready, authenticated, getAccessToken: legacyGetAccessToken, getPrivyAccessToken, user } = usePrivy();
   // The operator gate refuses the own-session sentinel, so it always gets a Privy token.
-  const getAccessToken = getPrivyAccessToken ?? legacyGetAccessToken;
+  const getAccessToken = useEffectEvent(() => (getPrivyAccessToken ?? legacyGetAccessToken)());
   const [owner, setOwner] = useState<string | null>(null);
   const [state, setState] = useState<OperatorChannelsState>({ status: "loading" });
 
@@ -29,8 +29,10 @@ export function useOperatorChannels(): OperatorChannelsState {
       try {
         const token = await getAccessToken();
         if (!token) { if (active) setState({ status: "unauthenticated" }); return; }
-        const sync = await fetch("/api/auth/session", { method: "POST", headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal });
-        if (!sync.ok) throw new Error("Session synchronization failed");
+        if (synchronizeSession) {
+          const sync = await fetch("/api/auth/session", { method: "POST", headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal });
+          if (!sync.ok) throw new Error("Session synchronization failed");
+        }
         const response = await fetch("/api/operator/channels", { method: "GET", headers: { authorization: `Bearer ${token}` }, cache: "no-store", signal: controller.signal });
         if (!active) return;
         if (response.status === 401) { setState({ status: "unauthenticated" }); return; }
@@ -45,7 +47,7 @@ export function useOperatorChannels(): OperatorChannelsState {
       }
     })();
     return () => { active = false; controller.abort(); };
-  }, [authenticated, getAccessToken, ready, user?.id]);
+  }, [authenticated, ready, synchronizeSession, user?.id]);
 
   if (!ready) return { status: "loading" };
   if (!authenticated) return { status: "unauthenticated" };

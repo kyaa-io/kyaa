@@ -1,4 +1,5 @@
 "use client";
+import { FanPageOperatorLink } from "@/components/operator/operator-entry-links";
 import { usesFanPageNavigation } from "./fan-page-navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { LockKeyhole } from "lucide-react";
@@ -95,7 +96,7 @@ export function GroupPageHead() {
     links={[...(g.celebrity?.websiteUrl && g.celebrity.roles.includes("brand") ? [{ kind: "website", href: g.celebrity.websiteUrl }] : []), ...(g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url })) ?? []), ...(g.page?.externalLinks ?? []).map((room) => ({ kind: room.kind, href: room.url }))]}
     grade={g.kind === "fan" && g.celebrity ? g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : undefined : undefined}
     // 페이지 좋아요(옛 히어로의 '좋아요 남기기'): 누르면 이 페이지의 좋아요 수가 오르고 홈 크리에이터 랭킹(좋아요 순)에 반영된다.
-    utility={g.kind === "fan" && g.celebrity ? <ReactionAction slug={g.celebrity.slug} locale={g.locale} variant="header" showRewardDialog={g.celebrity.slug !== "gggi"} /> : undefined}
+    utility={g.kind === "fan" && g.celebrity ? <><ReactionAction slug={g.celebrity.slug} locale={g.locale} variant="header" showRewardDialog={g.celebrity.slug !== "gggi"} /><FanPageOperatorLink slug={g.celebrity.slug} locale={g.locale} /></> : undefined}
     menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : g.reserveMenu ? <span aria-hidden="true" /> : undefined}
     stats={stats}
     tabs={tabs}
