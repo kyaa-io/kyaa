@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SITE_URL } from "@/lib/site-url";
 import { inAppBrowserKind } from "@/components/login-browser-policy";
 
 /**
@@ -34,6 +35,7 @@ export const touchSchema = z.object({
 }).strict();
 export type Touch = z.infer<typeof touchSchema>;
 
+const SITE_HOST = new URL(SITE_URL).hostname;
 const CLICK_IDS = ["gclid", "twclid", "fbclid", "ttclid", "msclkid"] as const;
 
 function tokenValue(value: string | null): string | undefined {
@@ -51,7 +53,9 @@ function referrerHost(referer: string | null, siteHost: string): string | undefi
   try {
     const host = new URL(referer).hostname.toLowerCase().replace(/\.$/, "");
     const site = siteHost.toLowerCase().replace(/^www\./, "");
-    if (host === site || host.endsWith(`.${site}`)) return undefined;
+    if (host === SITE_HOST || host.endsWith(`.${SITE_HOST}`) || host === site || host.endsWith(`.${site}`)) {
+      return undefined;
+    }
     return touchSchema.shape.rh.safeParse(host).data;
   } catch {
     return undefined;
