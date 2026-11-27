@@ -55,6 +55,41 @@ test('CLI check batches a release with more than ten images instead of rejecting
     assert.match(result.stdout, /\n\n---\n\n/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+const localDisclosure = '예시 데이터로 만든 확인용 화면입니다.';
+for (const { name, mode, url, disclosures, error } of [
+  { name: 'accepts a disclosed guest capture', mode: 'guest', disclosures: [localDisclosure] },
+  { name: 'accepts a disclosed login capture', mode: 'login', disclosures: [localDisclosure] },
+  { name: 'requires disclosure for a guest capture', mode: 'guest', error: 'INVALID_CAPTURE_DISCLOSURE' },
+  { name: 'rejects duplicate disclosure', mode: 'guest', disclosures: [localDisclosure, localDisclosure], error: 'INVALID_CAPTURE_DISCLOSURE' },
+  { name: 'rejects a non-loopback guest capture', mode: 'guest', url: 'https://dev.kyaa.io/groups', disclosures: [localDisclosure], error: 'INVALID_CAPTURE_RECEIPT' },
+  { name: 'rejects an admin capture', mode: 'admin', disclosures: [localDisclosure], error: 'INVALID_CAPTURE_RECEIPT' },
+]) {
+  test(`CLI check ${name}`, () => {
+    const dir = mkdtempSync(join(tmpdir(), 'notice-local-capture-'));
+    const git = (...args) => execFileSync(process.env.GIT_EXECUTABLE || 'git', args, { cwd: dir, encoding: 'utf8' }).trim();
+    const png = Buffer.from('89504e470d0a1a0a0000000d494844520000000a0000000a0000000000000000', 'hex');
+    const image = 'release-notes/images/capture.png';
+    try {
+      git('init', '-q'); git('config', 'user.name', 'Test'); git('config', 'user.email', 'test@example.invalid');
+      git('commit', '--allow-empty', '-qm', 'base');
+      const base = git('rev-parse', 'HEAD');
+      mkdirSync(join(dir, 'release-notes/images'), { recursive: true });
+      writeFileSync(join(dir, image), png);
+      writeFileSync(join(dir, image + '.capture'), JSON.stringify({
+        tool: 'local-login', mode, url: url ?? 'http://localhost:3000/groups',
+        capturedAt: '2026-11-28T00:00:00Z', sha256: createHash('sha256').update(png).digest('hex'),
+      }));
+      writeFileSync(join(dir, 'release-notes/capture.json'), JSON.stringify({
+        ...note, path: '/groups', changes: [...note.changes, ...(disclosures ?? [])], images: [image],
+      }));
+      git('add', '.'); git('commit', '-qm', 'capture');
+      const head = git('rev-parse', 'HEAD');
+      const result = spawnSync(process.execPath, [join(process.cwd(), 'scripts/deployment-notices.mjs'), 'check', base, head], { cwd: dir, encoding: 'utf8' });
+      assert.equal(result.status, error ? 1 : 0, result.stderr);
+      if (error) assert.match(result.stderr, new RegExp(error));
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+}
 function harness({ existing, prior, sendError, saveError } = {}) {
   const receipts = new Map();
   if (existing) receipts.set(sha, [existing]);
