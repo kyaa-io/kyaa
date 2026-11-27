@@ -1,0 +1,54 @@
+.panel {
+  max-width: var(--band-read);
+  margin-inline: auto;
+}
+
+.ranking {
+  padding-inline-start: var(--space-8);
+}
+
+.ranking li {
+  border-bottom: 1px solid var(--color-line);
+  padding-block: var(--space-2);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.row > span:first-child {
+  overflow-wrap: anywhere;
+}
+
+.guest {
+  padding-bottom: calc(var(--space-16) + var(--space-8));
+}
+
+.loginBar {
+  position: fixed;
+  z-index: var(--z-sticky-header);
+  inset-inline: 0;
+  bottom: calc(var(--fan-bottom-nav-height) + env(safe-area-inset-bottom));
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+}
+
+.loginBar > a {
+  display: flex;
+  margin-inline: auto;
+}
+
+.ranking a:focus-visible,
+.ranking button:focus-visible {
+  scroll-margin-bottom: 160px;
+}
+
+@media (min-width: 64rem) {
+  .loginBar {
+    bottom: env(safe-area-inset-bottom);
+  }
+}
