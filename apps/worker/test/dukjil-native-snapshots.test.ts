@@ -20,6 +20,7 @@ class HashChain implements ActionChainPort {
   async findExisting(): Promise<ActionReceipt | null> { return null; }
   async prepare(): Promise<PreparedSubmission> { throw new Error("unused"); }
   async broadcast(): Promise<string> { throw new Error("unused"); }
+  async submissionNonceState(): Promise<never> { throw new Error("unused"); }
   async receipt(): Promise<ActionReceipt | null> { return null; }
 }
 

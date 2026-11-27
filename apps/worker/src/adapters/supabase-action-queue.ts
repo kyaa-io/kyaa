@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createWorkerClient, type WorkerDataSource } from "../data-client.js";
 import type { CanonicalActionPayloadV1, FanActionJob } from "../action-domain.js";
-import type { ActionQueuePort, ActionReceipt } from "../action-ports.js";
+import type { ActionQueuePort, ActionReceipt, SubmissionNonceState } from "../action-ports.js";
 import type { PreparedSubmission } from "../domain.js";
 import { WorkerError } from "../domain.js";
 
@@ -132,6 +132,19 @@ export class SupabaseActionQueueAdapter implements ActionQueuePort {
       p_receipt: receiptJson(receipt),
     });
     if (error) throw dbError("complete_fan_action_job", error);
+  }
+
+  async supersede(job: FanActionJob, submission: PreparedSubmission, state: SubmissionNonceState): Promise<"RETRYING" | "FAILED"> {
+    const { data, error } = await this.client.rpc("supersede_fan_action_transaction", {
+      p_job_id: job.id,
+      p_worker_id: job.leaseOwner,
+      p_tx_hash: submission.txHash.toLowerCase(),
+      p_tx_nonce: state.txNonce.toString(),
+      p_chain_nonce: state.chainNonce.toString(),
+    });
+    if (error) throw dbError("supersede_fan_action_transaction", error);
+    if (data !== "RETRYING" && data !== "FAILED") throw dbError("supersede_fan_action_transaction", { message: "database returned no superseded status" });
+    return data;
   }
 
   async retry(job: FanActionJob, code: string, message: string, retryable: boolean): Promise<void> {

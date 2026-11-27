@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { ActionWorker } from "../src/action-worker.js";
 import { localActionId, localOccurrenceId, sourceOccurrenceId, type CanonicalActionPayloadV1, type FanActionJob } from "../src/action-domain.js";
-import type { ActionChainPort, ActionQueuePort, ActionReceipt } from "../src/action-ports.js";
+import type { ActionChainPort, ActionQueuePort, ActionReceipt, SubmissionNonceState } from "../src/action-ports.js";
+import { WorkerError } from "../src/domain.js";
 import type { PreparedSubmission } from "../src/domain.js";
 
 const h = (v: string) => `0x${v.repeat(64)}`.slice(0, 66);
@@ -21,13 +22,17 @@ class Queue implements ActionQueuePort {
   async recordPrepared(job: FanActionJob, submission: PreparedSubmission) { this.events.push("record-signed"); const next = { ...job, txHash: submission.txHash, signedTransaction: submission.signedTransaction }; this.jobs = [next]; return next; }
   async complete() { this.events.push("complete"); this.completed += 1; }
   async retry(_job: FanActionJob, code: string) { this.retried.push(code); }
+  superseded: SubmissionNonceState[] = [];
+  async supersede(job: FanActionJob, _submission: PreparedSubmission, state: SubmissionNonceState) { this.events.push("supersede"); this.superseded.push(state); this.jobs = [{ ...job, txHash: null, signedTransaction: null, attempts: 0 }]; return "RETRYING" as const; }
 }
 class Chain implements ActionChainPort {
   relayerAddress = address("f"); events: string[] = []; existing: ActionReceipt | null = null; receiptResult: ActionReceipt | null = resultReceipt; prepareCalls = 0; broadcastCalls = 0;
   async canonicalHashes(payload: Parameters<ActionChainPort["canonicalHashes"]>[0]) { const occurrenceId = localOccurrenceId(payload.chainId, payload.hubProxy as `0x${string}`, payload.environmentId as `0x${string}`, payload.request.sourceOccurrence as `0x${string}`); return { occurrenceId, actionId: localActionId(occurrenceId, payload.request.revision), requestHash: h("d") }; }
   async findExisting() { return this.existing; }
   async prepare() { this.events.push("prepare"); this.prepareCalls += 1; return { txHash, signedTransaction }; }
-  async broadcast() { this.events.push("broadcast"); this.broadcastCalls += 1; return txHash; }
+  broadcastError: Error | null = null; nonceState: SubmissionNonceState = { known: false, txNonce: 5n, chainNonce: 5n };
+  async broadcast() { this.events.push("broadcast"); this.broadcastCalls += 1; if (this.broadcastError) throw this.broadcastError; return txHash; }
+  async submissionNonceState() { this.events.push("nonce-state"); return this.nonceState; }
   async receipt() { return this.receiptResult; }
 }
 const metadata = { pin: vi.fn(async () => "ipfs://attendance") };
@@ -77,5 +82,50 @@ describe("ActionWorker", () => {
     await worker(queue, chain).runOnce();
     expect(queue.completed).toBe(1); expect(admission).toHaveBeenCalledTimes(2);
     expect(chain.prepareCalls).toBe(1); expect(chain.broadcastCalls).toBe(0);
+  });
+  describe("rejected stored transaction", () => {
+    const rejected = () => new WorkerError("GIWA_ACTION_BROADCAST_FAILED", "Missing or invalid parameters. Details: nonce too low", true);
+    function signedSetup(attempts: number) {
+      const queue = new Queue(); const chain = new Chain(); chain.receiptResult = null; chain.broadcastError = rejected();
+      queue.jobs = [{ ...makeJob(), attempts }];
+      return { queue, chain };
+    }
+    it("archives bytes whose nonce another transaction already used and stops retrying them", async () => {
+      const { queue, chain } = signedSetup(2); chain.nonceState = { known: false, txNonce: 15450n, chainNonce: 15451n };
+      const alerts = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      await worker(queue, chain).runOnce();
+      expect(queue.superseded).toEqual([{ known: false, txNonce: 15450n, chainNonce: 15451n }]);
+      expect(queue.retried).toEqual([]);
+      expect(queue.events.slice(-2)).toEqual(["supersede", "release-writer"]);
+      expect(alerts.mock.calls.some(([line]) => String(line).includes("fan_action_signed_transaction_superseded"))).toBe(true);
+      alerts.mockRestore();
+    });
+    it("keeps retrying while the nonce is free and the budget remains", async () => {
+      const { queue, chain } = signedSetup(2);
+      await worker(queue, chain).runOnce();
+      expect(queue.superseded).toEqual([]); expect(queue.retried).toEqual(["GIWA_ACTION_BROADCAST_FAILED"]);
+    });
+    it("archives unknown bytes once the retry budget is spent and raises an alert", async () => {
+      const { queue, chain } = signedSetup(8);
+      const alerts = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      await worker(queue, chain).runOnce();
+      expect(queue.superseded).toHaveLength(1); expect(queue.retried).toEqual([]);
+      alerts.mockRestore();
+    });
+    it("never archives a transaction the RPC still knows about", async () => {
+      const { queue, chain } = signedSetup(8); chain.nonceState = { known: true, txNonce: 5n, chainNonce: 6n };
+      const alerts = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      await worker(queue, chain).runOnce();
+      expect(queue.superseded).toEqual([]); expect(queue.retried).toEqual(["GIWA_ACTION_BROADCAST_FAILED"]);
+      expect(alerts.mock.calls.some(([line]) => String(line).includes("fan_action_signed_transaction_over_budget"))).toBe(true);
+      alerts.mockRestore();
+    });
+    it("keeps the broadcast error when the nonce check itself fails", async () => {
+      const { queue, chain } = signedSetup(8); vi.spyOn(chain, "submissionNonceState").mockRejectedValue(new Error("rpc down"));
+      const alerts = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      await worker(queue, chain).runOnce();
+      expect(queue.superseded).toEqual([]); expect(queue.retried).toEqual(["GIWA_ACTION_BROADCAST_FAILED"]);
+      alerts.mockRestore();
+    });
   });
 });
