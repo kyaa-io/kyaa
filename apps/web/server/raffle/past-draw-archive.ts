@@ -5,7 +5,8 @@ import { createClient } from "@/server/data/client";
 import { createPublicHomeNoticeRepository } from "@/server/home-notice/home-notice-dependencies";
 import { isStaticNoticeImage } from "@/server/notice/notice-domain";
 import { creatorRaffleHref } from "@/features/benefit/domain/raffle-navigation";
-import { listPublicPastRaffles } from "./public-past-raffles";
+import { raffleStatus } from "@/features/benefit/domain/raffle";
+import { listPublicRaffles } from "./public-past-raffles";
 
 const slug = z.string().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 export const archiveRegistration = z.object({
@@ -30,7 +31,7 @@ type ArchiveItem = { key: string; title: string; closesAt: string; image: string
 export async function readPastDrawArchive(locale: "ko" | "en", now: Date) {
   const db = archiveDatabase(), notices = createPublicHomeNoticeRepository();
   const [raffles, archive] = await Promise.all([
-    listPublicPastRaffles(locale, now),
+    listPublicRaffles(locale, now),
     db.from("past_draw_published_archive").select("*").lte("closes_at", now.toISOString()),
   ]);
   if (archive.error) throw archive.error;
@@ -51,7 +52,16 @@ export async function readPastDrawArchive(locale: "ko" | "en", now: Date) {
     });
   }));
 
-  const byId = new Map(raffles.map(entry => [entry.raffle.id, entry]));
+  const byId = new Map(raffles
+    .filter(({ raffle }) => raffleStatus(raffle, now.getTime()) === "closed" && raffle.entryClosesAt)
+    .map(entry => [entry.raffle.id, entry]));
+  // A benefit may appear in multiple rounds. The detail page opens the first
+  // matching public item, so link only when it resolves to this archive row.
+  const detailItems = new Map<string, string>();
+  for (const { raffle, creator } of raffles) {
+    const detailKey = `${creator.slug}:${raffle.benefitId}`;
+    if (raffle.benefitId && !detailItems.has(detailKey)) detailItems.set(detailKey, raffle.id);
+  }
   const ids = [...byId.keys()];
   for (let offset = 0; offset < ids.length; offset += 100) {
     const { data, error } = await db.from("past_draw_public_items").select("id,campaign_id")
@@ -66,6 +76,7 @@ export async function readPastDrawArchive(locale: "ko" | "en", now: Date) {
         key, title: raffle.title, closesAt: entry.raffle.entryClosesAt,
         image: raffle.imageUrl,
         resultPath: raffle.benefitId && raffle.resultsPublishedAt && Date.parse(raffle.resultsPublishedAt) <= now.getTime()
+          && detailItems.get(`${creator.slug}:${raffle.benefitId}`) === raffle.id
           ? creatorRaffleHref(creator.slug, raffle.benefitId, locale).split("?")[0]! : null,
       });
     }
