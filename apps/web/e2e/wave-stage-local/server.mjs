@@ -1,3 +1,4 @@
+import { listenLocal } from '../listen-local.mjs';
 import path from "node:path";
 import { realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -41,7 +42,7 @@ export async function startHarness({ port = 4216 } = {}) {
       { find: /^.*\/auth-fallback$/, replacement: path.join(here, "privy.ts") },
       ...["next/link", "next/image", "next/navigation", "server-only"].map(name => ({ find: name, replacement: path.join(web, "e2e/mission-local", { "next/link": "next-link.tsx", "next/image": "next-image.tsx", "next/navigation": "next-navigation.ts", "server-only": "server-only.ts" }[name]) })),
     ] }, server: { host: "127.0.0.1", port, strictPort: true, fs: { allow: [web, realpathSync(path.resolve(web, "../../node_modules"))] } } });
-  await server.listen();
-  return { baseURL: `http://127.0.0.1:${port}`, close: () => server.close() };
+  const boundPort = await listenLocal(server);
+  return { baseURL: `http://127.0.0.1:${boundPort}`, close: () => server.close() };
 }
 if (process.argv.includes("--serve")) { const harness = await startHarness(); console.log(harness.baseURL); }

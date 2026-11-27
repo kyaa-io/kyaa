@@ -1,4 +1,5 @@
 // Loopback-only preview: actual product components, local browser fixtures, no DB.
+import { listenLocal } from '../listen-local.mjs';
 import { createRequire } from "node:module";
 import { realpathSync } from "node:fs";
 import path from "node:path";
@@ -29,8 +30,8 @@ export async function startHarness(port = 4198) {
       });
     } }],
   });
-  await server.listen();
-  return { server, baseURL: `http://127.0.0.1:${port}` };
+  const boundPort = await listenLocal(server);
+  return { server, baseURL: `http://127.0.0.1:${boundPort}` };
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const { baseURL } = await startHarness();

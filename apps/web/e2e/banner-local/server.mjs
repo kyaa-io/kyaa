@@ -1,3 +1,4 @@
+import { listenLocal } from '../listen-local.mjs';
 import path from "node:path";
 import { readFile } from "node:fs/promises";
 import { realpathSync } from "node:fs";
@@ -41,6 +42,6 @@ export async function startHarness({ port = 4193 } = {}) {
     define: { "process.env.NEXT_PUBLIC_APP_URL": JSON.stringify(`http://localhost:${port}`) },
   });
 
-  await server.listen();
-  return { baseURL: `http://127.0.0.1:${port}`, close: () => server.close() };
+  const boundPort = await listenLocal(server);
+  return { baseURL: `http://127.0.0.1:${boundPort}`, close: () => server.close() };
 }

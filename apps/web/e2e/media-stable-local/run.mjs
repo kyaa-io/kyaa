@@ -1,6 +1,7 @@
 // Regression gate for the "photos flash" reports (2026-11-12): on the post detail and the notice (아티스트 소식) detail, a click anywhere, the window
 // regaining focus (a re-read of the post), a like, and the original/translation switch must keep every photo node mounted and request no media again.
 // Real components in a real browser; sign-in and API answers are synthetic. Usage: node apps/web/e2e/media-stable-local/run.mjs [OUT_DIR]
+import { listenLocal } from '../listen-local.mjs';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
@@ -19,7 +20,7 @@ const alias = [
   ...['link', 'image', 'navigation'].map(name => ({ find: `next/${name}`, replacement: path.join(here, `../mission-local/next-${name}.${name === 'navigation' ? 'ts' : 'tsx'}`) })),
   { find: '@', replacement: web }];
 const server = await createServer({ configFile: false, root: here, publicDir: path.join(web, 'public'), cacheDir: path.join(out, 'vite-cache'), esbuild: { jsx: 'automatic' }, resolve: { alias }, server: { watch: null, hmr: false, host: '127.0.0.1', port: PORT, strictPort: true, fs: { allow: [root] } } });
-await server.listen();
+const boundPort = await listenLocal(server);
 
 const png = color => sharp({ create: { width: 960, height: 640, channels: 3, background: color } }).png().toBuffer();
 const photos = { a: await png('#f7b6c8'), b: await png('#9fd3c7'), c: await png('#c9b8f0') };
@@ -65,7 +66,7 @@ async function open(browser, screen, width) {
     }
     return json({ error: { code: 'NOT_FOUND' } }, 404);
   });
-  await page.goto(`http://127.0.0.1:${PORT}/?screen=${screen}`);
+  await page.goto(`http://127.0.0.1:${boundPort}/?screen=${screen}`);
   return { context, page, errors, media, reads, writes };
 }
 

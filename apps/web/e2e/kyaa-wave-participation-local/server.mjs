@@ -1,4 +1,5 @@
 // Real UI and styles; isolated synthetic auth/API for browser state coverage.
+import { listenLocal } from '../listen-local.mjs';
 import { createServer } from 'vite';
 import path from 'node:path';
 import { realpathSync } from 'node:fs';
@@ -18,6 +19,6 @@ export async function startHarness(port = 4197) {
   if (!req.url?.startsWith('/api/')) return next();
   res.statusCode = 503; res.setHeader('content-type', 'application/json'); res.end(JSON.stringify({ error: { code: 'LOCAL_FIXTURE_ONLY' } }));
  });
- await server.listen(); return { server, baseURL: `http://127.0.0.1:${port}` };
+ const boundPort = await listenLocal(server); return { server, baseURL: `http://127.0.0.1:${boundPort}` };
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) { const harness = await startHarness(); console.log(harness.baseURL); }

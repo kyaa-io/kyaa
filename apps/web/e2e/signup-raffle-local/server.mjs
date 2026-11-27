@@ -1,3 +1,4 @@
+import { listenLocal } from '../listen-local.mjs';
 import path from 'node:path';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -14,6 +15,6 @@ export async function startHarness() {
    { find: 'next/image', replacement: path.join(web, 'e2e/mission-local/next-image.tsx') },
   ] }, server: { host: '127.0.0.1', port: 4198, strictPort: true, fs: { allow: [web, realpathSync(path.resolve(web, '../../node_modules'))] } },
  });
- await server.listen(); return { close: () => server.close(), baseURL: 'http://127.0.0.1:4198' };
+ const port = await listenLocal(server); return { close: () => server.close(), baseURL: `http://127.0.0.1:${port}` };
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) await startHarness();

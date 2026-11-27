@@ -1,4 +1,5 @@
 // Real community, frame and post components; loopback synthetic reads only.
+import { listenLocal } from '../listen-local.mjs';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { realpathSync } from 'node:fs';
@@ -38,6 +39,6 @@ export async function startServer() {
   }
   return reply({ error: { code: 'FIXTURE_UNHANDLED' } }, 404);
  }); } }], server: { host: '127.0.0.1', port: 4228, strictPort: true, fs: { allow: [web, path.resolve(web, '../..'), realpathSync(path.join(web, 'node_modules')), realpathSync(path.resolve(web, '../../node_modules'))] } } });
- await server.listen(); return server;
+ await listenLocal(server); return server;
 }
 if (process.argv[1] === import.meta.filename) { await startServer(); console.log('http://127.0.0.1:4228/community?creator=elina&locale=ko'); }
