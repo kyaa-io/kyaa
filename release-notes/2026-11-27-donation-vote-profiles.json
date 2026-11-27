@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "새해맞이 기부 투표에 크리에이터 이름과 사용이 확인된 프로필 사진을 보여 줘요.",
+    "득표가 있고 동률이 아닌 후보에만 순위 번호를 표시해요.",
+    "굿즈 메뉴가 선택한 언어로 표시돼요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/events/donation-vote",
+  "images": ["release-notes/images/2026-11-27-donation-vote-profiles.png"]
+}

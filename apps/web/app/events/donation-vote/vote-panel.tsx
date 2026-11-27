@@ -2,6 +2,8 @@
 
 import { formatMileage } from "@/i18n/format-mileage";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { PublishedCelebrity } from "@/server/content/content-domain";
+import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { FanNumber } from "@/components/fan-ui/fan-number";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -13,12 +15,17 @@ import { voteCopy } from "./copy";
 type Snapshot = { remaining?: number; startsAt: string | null; endsAt: string; ranking: { id: string; slug: string; fandom_name: string | null; votes: number }[] };
 const endpoint = "/api/events/donation-vote";
 
-export function VotePanel({ locale }: { locale: keyof typeof voteCopy }) {
+type PanelProps = {
+  locale: keyof typeof voteCopy;
+  profiles: Record<string, { name: string; image?: PublishedCelebrity["image"] }>;
+};
+
+export function VotePanel(props: PanelProps) {
   const auth = useByUsAuth();
-  return <MemberPanel key={auth.user?.id ?? "guest"} locale={locale} auth={auth} />;
+  return <MemberPanel key={auth.user?.id ?? "guest"} {...props} auth={auth} />;
 }
 
-function MemberPanel({ locale, auth }: { locale: keyof typeof voteCopy; auth: ReturnType<typeof useByUsAuth> }) {
+function MemberPanel({ locale, profiles, auth }: PanelProps & { auth: ReturnType<typeof useByUsAuth> }) {
   const [title, allowance, vote, results, donation, signIn, retry, success] = voteCopy[locale];
   const [state, setState] = useState<Snapshot>();
   const [quantity, setQuantity] = useState(1);
@@ -70,17 +77,25 @@ function MemberPanel({ locale, auth }: { locale: keyof typeof voteCopy; auth: Re
       <FanHeading>{closed ? results : days ? "D−" + days : "D-day"}</FanHeading>
       {authenticated && <p>{allowance} · {formatMileage(remaining, locale)}</p>}
       {authenticated && open && <label>{vote} ({formatMileage(1, locale)} = 1) <input type="number" min={1} max={remaining} value={quantity || ""} onChange={e => setQuantity(Number(e.target.value))} /></label>}
-      <ol className={styles.ranking}>{state.ranking.map(row => (
-        <li data-row key={row.id}>
-          <div className={styles.row}>
-            <span>{row.slug}{row.fandom_name && <> · {row.fandom_name}</>}</span>
-            <FanNumber value={row.votes} locale={locale} countUp />
-            {guest && !closed
-              ? <FanAction size="sm" href={loginHref}>{vote}</FanAction>
-              : open && <FanAction size="sm" disabled={busy || !Number.isInteger(quantity) || quantity < 1 || quantity > remaining} onClick={() => void submit(row.id)}>{vote} · {formatMileage(quantity, locale)}</FanAction>}
-          </div>
-        </li>
-      ))}</ol>
+      <ol className={styles.ranking} role="list">{state.ranking.map((row, index, ranking) => {
+        const profile = profiles[row.slug];
+        const ranked = row.votes > 0 && row.votes !== ranking[index - 1]?.votes && row.votes !== ranking[index + 1]?.votes;
+        return (
+          <li data-row key={row.id}>
+            <div className={styles.row}>
+              <div className={styles.identity}>
+                {ranked && <span className={styles.rank}>{new Intl.NumberFormat(locale).format(index + 1)}.</span>}
+                <CreatorAvatar slug={row.slug} src={profile?.image?.url} photos={profile?.image?.photos} position={profile?.image?.position} size={32} />
+                <span>{profile?.name ?? row.slug}{row.fandom_name && <> · {row.fandom_name}</>}</span>
+              </div>
+              <FanNumber value={row.votes} locale={locale} countUp />
+              {guest && !closed
+                ? <FanAction size="sm" href={loginHref}>{vote}</FanAction>
+                : open && <FanAction size="sm" disabled={busy || !Number.isInteger(quantity) || quantity < 1 || quantity > remaining} onClick={() => void submit(row.id)}>{vote} · {formatMileage(quantity, locale)}</FanAction>}
+            </div>
+          </li>
+        );
+      })}</ol>
     </>}
     <p role="status">{message}</p>
     {guest && !closed && <div className={styles.loginBar}>
