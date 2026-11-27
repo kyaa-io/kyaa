@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "페이지 운영자는 MY의 내 채널 운영이나 팬페이지의 운영하기를 눌러 해당 채널의 공지와 공식 일정을 관리할 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/my",
+  "images": [
+    "release-notes/images/2026-11-27-operator-my-390.png",
+    "release-notes/images/2026-11-27-operator-fan-390.png"
+  ]
+}

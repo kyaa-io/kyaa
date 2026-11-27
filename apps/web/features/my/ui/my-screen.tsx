@@ -1,4 +1,6 @@
 "use client";
+
+import { MyOperatorLinks } from "@/components/operator/operator-entry-links";
 import { useGoodsMenu } from "@/features/groups/goods-menu";
 import { TierGuideInfo } from "@/features/rewards/ui/tier-guide-info";
 
@@ -324,6 +326,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
           <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
           <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
         </header>
+        <MyOperatorLinks locale={locale} />
         <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
         <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
         <div id="my-passport" className={styles.homeRow}>
@@ -354,6 +357,7 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
         <Link className={styles.notificationLink} href={`/settings?locale=${locale}` as Route}><Settings aria-hidden="true"/><span>{t.settings}</span></Link>
       </div>
     </header>
+    <MyOperatorLinks locale={locale} />
 
     <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
 

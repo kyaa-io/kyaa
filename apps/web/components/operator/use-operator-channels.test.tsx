@@ -25,4 +25,15 @@ describe("useOperatorChannels", () => {
     expect(fetchMock.mock.calls.map((call) => (call[1] as RequestInit).headers)).toEqual([{ authorization: "Bearer privy-access-token" }, { authorization: "Bearer privy-access-token" }]);
     expect(getAccessToken).not.toHaveBeenCalled();
   });
+
+  it("looks up shortcut permissions without synchronizing the login session", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(Response.json({ error: "FORBIDDEN" }, { status: 403 }));
+    const { result } = renderHook(() => useOperatorChannels({ synchronizeSession: false }));
+    await waitFor(() => expect(result.current.status).toBe("denied"));
+    expect(fetchMock).toHaveBeenCalledExactlyOnceWith("/api/operator/channels", expect.objectContaining({
+      method: "GET",
+      headers: { authorization: "Bearer privy-access-token" },
+    }));
+  });
 });
