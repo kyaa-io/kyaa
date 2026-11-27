@@ -6,6 +6,22 @@ import { bannerSlotsByArea, homeBannerSchema, type BannerSlotArea, type BannerSl
 
 type RpcClient = Pick<SupabaseClient, "rpc">;
 
+// Slot RPCs return flat video fields. Public banners use the carousel's video shape.
+function parsePublishedBanner(row: unknown) {
+  if (row && typeof row === "object" && !Array.isArray(row) &&
+      ("desktopVideo" in row || "mobileVideo" in row)) {
+    const { desktopVideo, mobileVideo, ...banner } = row as Record<string, unknown>;
+    if (desktopVideo === null && mobileVideo === null) return homeBannerSchema.safeParse(banner);
+    if (!("video" in banner)) {
+      return homeBannerSchema.safeParse({
+        ...banner,
+        video: { desktop: desktopVideo, mobile: mobileVideo ?? null },
+      });
+    }
+  }
+  return homeBannerSchema.safeParse(row);
+}
+
 export function createHomeBannerRepository(
   config: { url: string | undefined; serviceRoleKey: string | undefined },
   client?: RpcClient,
@@ -19,7 +35,7 @@ export function createHomeBannerRepository(
       if (error) throw new Error(`HOME_BANNER_READ_FAILED: ${error.message}`);
       if (!Array.isArray(data)) throw new Error("HOME_BANNER_READ_FAILED: invalid RPC response");
       return data.flatMap((row) => {
-        const parsed = homeBannerSchema.safeParse(row);
+        const parsed = parsePublishedBanner(row);
         return parsed.success ? [parsed.data] : [];
       });
     },
@@ -30,7 +46,7 @@ export function createHomeBannerRepository(
       if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("HOME_BANNER_READ_FAILED: invalid RPC response");
       const slots: BannerSlotMap = {};
       for (const slot of bannerSlotsByArea[area]) {
-        const parsed = homeBannerSchema.safeParse((data as Record<string, unknown>)[slot]);
+        const parsed = parsePublishedBanner((data as Record<string, unknown>)[slot]);
         if (parsed.success && parsed.data.placement === slot) slots[slot] = parsed.data;
       }
       return slots;
