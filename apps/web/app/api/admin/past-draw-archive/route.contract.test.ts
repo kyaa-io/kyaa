@@ -8,7 +8,8 @@ const { authorize, findPublished, insert } = vi.hoisted(() => ({
   authorize: vi.fn(), findPublished: vi.fn(), insert: vi.fn(),
 }));
 vi.mock("@/server/home-notice/home-notice-dependencies", () => ({
-  createHomeNoticeAdminDependencies: () => ({ authorize, repository: { findPublished } }),
+  createHomeNoticeAdminDependencies: () => ({ authorize }),
+  createPublicHomeNoticeRepository: () => ({ findPublished }),
 }));
 vi.mock("@/server/raffle/past-draw-archive", async importOriginal => ({
   ...(await importOriginal<typeof import("@/server/raffle/past-draw-archive")>()),
@@ -32,7 +33,7 @@ it("rejects unsigned viewers and read-only administrators before writing", async
 });
 
 it("requires a public notice and reports concurrent duplicate registration", async () => {
-  authorize.mockResolvedValue({ role: "editor" });
+  authorize.mockResolvedValue({ role: "operator" });
   findPublished.mockResolvedValueOnce(null);
   expect((await post()).status).toBe(422);
   expect(insert).not.toHaveBeenCalled();

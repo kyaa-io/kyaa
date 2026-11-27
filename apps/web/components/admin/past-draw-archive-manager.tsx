@@ -52,7 +52,7 @@ export function PastDrawArchiveManager({ locale }: { locale: AdminLocale }) {
   }
 
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale={locale} />;
-  const canWrite = session.admin.role === "admin" || session.admin.role === "editor";
+  const canWrite = session.admin.role === "admin" || session.admin.role === "operator";
   return <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
     <FanHeading as="h1">{title}</FanHeading>
     {canWrite ? <form onSubmit={submit}>
