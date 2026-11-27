@@ -1,0 +1,12 @@
+{
+  "changes": [
+    "전체 이벤트에서 새해맞이 기부 투표 페이지를 열 수 있어요.",
+    "휴대폰 하단과 PC 상단의 덕질 메뉴가 굿즈로 바뀌고, 오늘의 미션은 MY에서 볼 수 있어요.",
+    "첨부 이미지는 DEV 확인 화면이에요."
+  ],
+  "path": "/events",
+  "images": [
+    "release-notes/images/2026-11-28-revamp-prod-flags-390.png",
+    "release-notes/images/2026-11-28-revamp-prod-flags-1440.png"
+  ]
+}
