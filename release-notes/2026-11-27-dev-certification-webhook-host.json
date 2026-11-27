@@ -1,0 +1,4 @@
+{
+  "changes": ["개발 환경에서 텔레그램 인증 심사 버튼을 누르면 승인이나 반려 요청이 정상적으로 접수돼요."],
+  "path": "/api/telegram/certification/webhook"
+}

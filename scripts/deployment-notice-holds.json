@@ -177,7 +177,8 @@
     "release-notes/2026-11-21-telegram-certification-summary.json",
     "release-notes/2026-11-21-dev-telegram-certification-review.json",
     "release-notes/2026-11-26-cert-review-cs-room.json",
-    "release-notes/2026-11-27-dev-telegram-certification-webhook.json"
+    "release-notes/2026-11-27-dev-telegram-certification-webhook.json",
+    "release-notes/2026-11-27-dev-certification-webhook-host.json"
   ],
   "home-banner-video": [
     "release-notes/2026-11-23-home-banner-video.json",

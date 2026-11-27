@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
+import { DEV_SITE_URL } from "@/lib/site-url";
 import { loadServerEnv } from "@/server/config/env";
 import { createClient } from "@/server/data/client";
 
@@ -33,7 +34,7 @@ export async function POST(request: Request): Promise<Response> {
   const token = source.TELEGRAM_DEV_CERTIFICATION_BOT_TOKEN;
   const chat = source.TELEGRAM_DEV_CERTIFICATION_CHAT_ID;
   const secret = source.TELEGRAM_DEV_CERTIFICATION_WEBHOOK_SECRET;
-  if (new URL(request.url).hostname !== "dev.kyaa.io" || source.BYUS_DATA_ENVIRONMENT !== "development"
+  if (source.APP_URL !== DEV_SITE_URL || source.BYUS_DATA_ENVIRONMENT !== "development"
     || !token || !/^\d+:[\w-]+$/.test(token) || !chat || !/^-[1-9]\d*$/.test(chat)
     // The CS bot may own this webhook; polling bots and the bug-report webhook bot may not.
     || [source.TELEGRAM_BOT_TOKEN, source.TELEGRAM_ALERT_BOT_TOKEN, source.TELEGRAM_BUG_REPORT_BOT_TOKEN].includes(token)

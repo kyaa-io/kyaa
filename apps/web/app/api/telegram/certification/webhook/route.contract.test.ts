@@ -11,7 +11,7 @@ const actor = "cd87323f-5926-414b-9175-af96a1efd421";
 const api = vi.fn();
 
 function callback({ header = secret, user = 42, chat = -123, action = "approve" } = {}) {
-  return new Request("https://dev.kyaa.io/api/telegram/certification/webhook", {
+  return new Request("http://web.internal:3000/api/telegram/certification/webhook", {
     method: "POST",
     headers: { "x-telegram-bot-api-secret-token": header },
     body: JSON.stringify({
@@ -24,6 +24,7 @@ function callback({ header = secret, user = 42, chat = -123, action = "approve" 
 }
 
 beforeEach(() => {
+  vi.stubEnv("APP_URL", "https://dev.kyaa.io");
   vi.stubEnv("BYUS_DATA_ENVIRONMENT", "development");
   vi.stubEnv("TELEGRAM_DEV_CERTIFICATION_BOT_TOKEN", "1:test_bot");
   vi.stubEnv("TELEGRAM_DEV_CERTIFICATION_CHAT_ID", "-123");
@@ -40,6 +41,29 @@ afterEach(() => {
 });
 
 describe("DEV Telegram certification webhook", () => {
+  it("accepts an empty update behind the DEV proxy", async () => {
+    const request = new Request("http://web.internal:3000/api/telegram/certification/webhook", {
+      method: "POST",
+      headers: { "x-telegram-bot-api-secret-token": secret },
+      body: "{}",
+    });
+    expect((await POST(request)).status).toBe(204);
+    expect(rpc).not.toHaveBeenCalled();
+    expect(api).not.toHaveBeenCalled();
+  });
+
+  it("rejects production data even with the DEV URL and credentials", async () => {
+    vi.stubEnv("BYUS_DATA_ENVIRONMENT", "production");
+    expect((await POST(callback())).status).toBe(404);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-DEV deployments even with development data and DEV credentials", async () => {
+    vi.stubEnv("APP_URL", "https://staging.kyaa.io");
+    expect((await POST(callback())).status).toBe(404);
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
   it("checks the secret, room and mapped actor before accessing the decision RPC", async () => {
     expect((await POST(callback({ header: "wrong" }))).status).toBe(403);
     expect((await POST(callback({ chat: -456 }))).status).toBe(204);
