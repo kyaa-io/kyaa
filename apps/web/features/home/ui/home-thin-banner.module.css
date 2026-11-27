@@ -31,5 +31,15 @@
   color: var(--color-ink);
 }
 .adCopy > strong, .adCopy > span { color: inherit; }
+.adCopy > strong {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-inline-size: 100%;
+  overflow: hidden;
+}
 .adLabels { display: flex; flex-wrap: wrap; gap: var(--space-1); align-items: center; }
-@media (min-width: 48rem) { .stripAd .link { aspect-ratio: auto; min-height: 144px; } }
+@media (min-width: 48rem) {
+  .stripAd .link { aspect-ratio: auto; min-height: 144px; }
+  .adCopy > strong { -webkit-line-clamp: 1; }
+}
