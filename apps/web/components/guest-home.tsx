@@ -15,7 +15,7 @@ import { additionalLocales } from "@/i18n/messages";
 
 import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 
-import { Suspense, use, useEffect, useState, type ReactNode } from "react";
+import { Suspense, use, type ReactNode } from "react";
 import { adminEventBanners, isLiveCampaignBanner } from "../features/home/domain/event-banner-priority";
 import { FIRST_STEPS_BANNER_ID } from "../features/home/domain/first-steps-home-banner";
 import { HomeEventStrip } from "../features/home/ui/home-event-strip";
@@ -38,22 +38,23 @@ import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 import { homeGalleryPostPhotos } from "@/features/home/domain/home-gallery-order";
+import { formatHomeScaleCompact } from "@/features/home/domain/home-scale-format";
 import styles from "./guest-home.module.css";
 
-const scaleLabels: Record<AppLocale, [string, string, string]> = {
-  ko: ["회원 {n}명", "래플 응모 {n}명", "오늘 가입 {n}명"],
-  en: ["Members {n}", "Raffle entrants {n}", "Joined today {n}"],
-  ja: ["会員{n}人", "応募者{n}人", "本日の登録{n}人"],
-  "zh-Hans": ["会员{n}人", "抽奖参与者{n}人", "今日注册{n}人"],
-  "zh-Hant": ["會員{n}人", "抽獎參加者{n}人", "今日註冊{n}人"],
-  es: ["Miembros {n}", "Participantes {n}", "Altas de hoy {n}"],
-  id: ["Anggota {n}", "Peserta undian {n}", "Bergabung hari ini {n}"],
-  vi: ["Thành viên {n}", "Người dự thưởng {n}", "Tham gia hôm nay {n}"],
-  th: ["สมาชิก {n} คน", "ผู้ร่วมจับรางวัล {n} คน", "สมัครวันนี้ {n} คน"],
-  pt: ["Membros {n}", "Participantes {n}", "Inscrições hoje {n}"],
-  fr: ["Membres {n}", "Participants {n}", "Inscrits aujourd’hui {n}"],
-  ru: ["Участники {n}", "В розыгрыше {n}", "Сегодня вступили {n}"],
-  mn: ["Гишүүд {n}", "Сугалаанд оролцогчид {n}", "Өнөөдөр элссэн {n}"],
+const scaleLabels: Record<AppLocale, [string, string, string, string, string]> = {
+  ko: ["누적", "가입자 {n}명", "패스포트 발급 {n}건", "가입자 {n}", "패스포트 발급 {n}"],
+  en: ["Total", "{n} members", "{n} passports issued", "{n} members", "{n} passports"],
+  ja: ["累計", "登録者{n}人", "パスポート発行{n}件", "登録者{n}", "パスポート発行{n}"],
+  "zh-Hans": ["累计", "注册用户{n}人", "发放护照{n}份", "注册{n}", "护照{n}"],
+  "zh-Hant": ["累計", "註冊用戶{n}人", "發放護照{n}份", "註冊{n}", "護照{n}"],
+  es: ["Total", "{n} miembros", "{n} pasaportes emitidos", "{n} miembros", "{n} pasaportes"],
+  id: ["Total", "{n} anggota", "{n} paspor diterbitkan", "{n} anggota", "{n} paspor"],
+  vi: ["Tổng cộng", "{n} thành viên", "{n} hộ chiếu đã cấp", "{n} thành viên", "{n} hộ chiếu"],
+  th: ["สะสม", "สมาชิก {n} คน", "ออกพาสปอร์ต {n} เล่ม", "สมาชิก {n}", "พาสปอร์ต {n}"],
+  pt: ["Total", "{n} membros", "{n} passaportes emitidos", "{n} membros", "{n} passaportes"],
+  fr: ["Total", "{n} membres", "{n} passeports délivrés", "{n} membres", "{n} passeports"],
+  ru: ["Всего", "{n} участников", "Выдано паспортов: {n}", "{n} участников", "{n} паспортов"],
+  mn: ["Нийт", "{n} гишүүн", "{n} паспорт олгосон", "{n} гишүүн", "{n} паспорт"],
 };
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
@@ -115,26 +116,25 @@ function HomeContent({ locale, jjinfanGauge = false, heartDonation, homeTop = "d
 
 function ScaleNumbers({ query, locale }: { query: NonNullable<HomeQueries["scale"]>; locale: AppLocale }) {
   const result = use(query);
-  const deadline = result.status === "fulfilled" && result.value.entrants !== null ? Date.parse(result.value.closesAt) + 1 : null;
-  const [expiredAt, setExpiredAt] = useState<number | null>(null);
-  useEffect(() => {
-    if (!deadline) return;
-    let timer: ReturnType<typeof setTimeout>;
-    function check(endsAt: number) {
-      const remaining = endsAt - Date.now();
-      if (remaining <= 0) setExpiredAt(endsAt);
-      else timer = setTimeout(() => check(endsAt), Math.min(remaining, 2147483647));
-    }
-    check(deadline);
-    return () => clearTimeout(timer);
-  }, [deadline]);
   if (result.status === "rejected") return null;
-  const { members, today } = result.value;
-  const entrants = deadline !== null && expiredAt === deadline ? null : result.value.entrants;
-  const labels = scaleLabels[locale];
-  return <span className={styles.scaleNumbers}>{[members, entrants, today].map((count, index) =>
-    count === null ? null : <span key={index} className={index === 2 ? styles.desktopMetric : undefined}>{labels[index].replace("{n}", count.toLocaleString(locale))}</span>
-  )}</span>;
+  const { members, passports } = result.value;
+  if (members === null && passports === null) return null;
+  const [total, membersFull, passportsFull, membersShort, passportsShort] = scaleLabels[locale];
+  const metrics = [
+    { count: members, full: membersFull, short: membersShort },
+    { count: passports, full: passportsFull, short: passportsShort },
+  ];
+  return <span className={styles.scaleNumbers}>
+    <span className={styles.scaleCaption} aria-hidden="true">{total}</span>
+    <span className={styles.scaleItems}>{metrics.map(({ count, full, short }) => {
+      if (count === null) return null;
+      const fullLabel = `${total} ${full.replace("{n}", count.toLocaleString(locale))}`;
+      return <span key={full} className={styles.scaleItem}>
+        <span className={styles.scaleFull}>{fullLabel}</span>
+        <span className={styles.scaleShort} aria-hidden="true">{short.replace("{n}", formatHomeScaleCompact(count, locale))}</span>
+      </span>;
+    })}</span>
+  </span>;
 }
 
 function HomeHero({ scale, locale, homeBanners = [], celebrities, elinaRaffles, contentErrors = {}, elinaGuide, liveEventBannerIds }: GuestHomeProps & { scale?: ReactNode; elinaGuide?: ReactNode; liveEventBannerIds?: string[] }) {

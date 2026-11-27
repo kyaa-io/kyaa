@@ -36,7 +36,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const noticeRepository = createHomeNoticeRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
   const galleryRepository = createHomeGalleryRepository({ url: environment.SUPABASE_URL, serviceRoleKey: environment.SUPABASE_SERVICE_ROLE_KEY });
   const queries = {
-    scale: settleHomeQuery(readHomeScale(signupRaffleEnabled())),
+    scale: settleHomeQuery(readHomeScale()),
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", async () => {
       const banners = await bannerRepository.list(toContentLocale(locale));
       // A raffle banner points at /s/raffle, which is closed while the server flag is off.
