@@ -101,7 +101,7 @@ describe("home gallery block", () => {
   });
   it("shows the empty text only when the read found nothing", () => {
     const { container } = render(<HomeGallery locale="ko" photos={[]} hasMore={false} shorts={[]} />);
-    expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
+    expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(6);
     expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     expect(screen.getByText("아직 사진 없음")).toBeInTheDocument();
     expect(screen.queryByText("아직 숏폼 없음")).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe("home gallery block", () => {
   });
   it.each(["loading", "error"] as const)("keeps the same placeholders without any empty text while %s (a failure is never shown as zero)", (state) => {
     const { container } = render(<HomeGallery locale="ko" photos={state} hasMore={false} shorts={state} />);
-    expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(8);
+    expect(container.querySelectorAll('[data-row="photo-placeholder"]')).toHaveLength(6);
     expect(container.querySelectorAll('[data-row="short-placeholder"]')).toHaveLength(0);
     expect(container.querySelector(`[data-home-state="${state}"]`)).not.toBeNull();
     expect(screen.queryByText("아직 사진 없음")).not.toBeInTheDocument();

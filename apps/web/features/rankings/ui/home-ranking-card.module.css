@@ -1,11 +1,13 @@
-/* 홈 오늘의 랭킹 카드: 흰 면 + 1px 선, 안쪽 20(챌린지 카드와 같은 값). 제목·기간·본문은 ranking-board.module.css. */
-.card { display: grid; align-content: start; gap: var(--space-4); box-sizing: border-box; min-width: 0; padding: var(--space-5); border-radius: var(--radius-card); box-shadow: inset 0 0 0 1px var(--color-line); background: var(--color-surface); }
+/* 홈 랭킹은 공통 압축 카드 여백과 44px 행을 사용한다. */
+.card {
+  --rank-row-height: var(--min-target);
+  --rank-row-gap: var(--fan-row-gap-compact);
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  min-width: 0;
+}
 
 @media (width < 48rem) {
-  .card {
-    --rank-row-height: var(--min-target);
-    --rank-row-gap: var(--space-1);
-    gap: var(--space-2);
-    padding: var(--space-4);
-  }
+  .card { gap: var(--space-2); }
 }

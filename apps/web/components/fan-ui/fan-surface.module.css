@@ -5,6 +5,8 @@
 .card[data-tone="focus"] { border-color:var(--color-line); background:var(--color-surface-focus); }
 @media(min-width:48rem) { .card { padding:var(--space-6); } }
 
+.card[data-density="compact"] { padding:var(--fan-surface-padding-compact); }
+
 /* 목록 카드: 행이 자기 여백과 구분선을 가진다. 마지막 행의 구분선은 카드 선이 대신한다. */
 .card[data-appearance="list"] { padding:0; overflow:hidden; }
 .card[data-appearance="list"] > :is(ul, ol) { margin:0; padding:0; list-style:none; }

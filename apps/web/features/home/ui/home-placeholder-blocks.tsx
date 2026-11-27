@@ -10,7 +10,7 @@ import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { HomeShorts } from "./home-shorts";
 import type { HomeNoticeSummary } from "@/features/home/domain/home-notice";
 import { NoticeCard, formatHomeNoticeDate } from "./notice-card";
-import { allocateGalleryColumns, appendToGalleryColumns, galleryTileRatio, homeGalleryLayouts } from "./home-gallery-layout";
+import { allocateGalleryColumns, appendToGalleryColumns, galleryTileRatio, homeGalleryPreviewLayouts } from "./home-gallery-layout";
 import type { AppLocale } from "@/i18n/locales";
 import styles from "./home-placeholder-blocks.module.css";
 
@@ -61,8 +61,8 @@ export function HomeNoticesPlaceholder({ locale, state = "loading" }: { locale: 
 /** Loading or a failed read: the same placeholder tiles, without the "none yet" text (that text is only for a read that found nothing). */
 export type HomeBlockPending = "loading" | "error";
 
-function homeColumns(photos: readonly HomeGalleryPhoto[], layout: keyof typeof homeGalleryLayouts) {
-  const sizes = homeGalleryLayouts[layout];
+function homeColumns(photos: readonly HomeGalleryPhoto[], layout: keyof typeof homeGalleryPreviewLayouts) {
+  const sizes = homeGalleryPreviewLayouts[layout];
   if (photos.some(photo => photo.source === "fan_post" || photo.source === "group_post")) {
     return appendToGalleryColumns([], photos, sizes).filter(column => column.length);
   }
@@ -85,12 +85,12 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
   return <section className={styles.block} aria-labelledby="home-gallery-heading" data-home-block="gallery">
     <FanSectionHeader variant="editorial" id="home-gallery-heading" title={v[1]!} action={more ? { href: `/gallery?locale=${locale}`, label: homeGalleryCopy[locale].viewAll } : undefined} />
     {mobile && desktop ? <>
-      <GalleryColumns columns={mobile} layout="mobile" showNew />
-      <GalleryColumns columns={desktop} layout="desktop" showNew />
+      <GalleryColumns columns={mobile} layout="mobile" showNew preview />
+      <GalleryColumns columns={desktop} layout="desktop" showNew preview />
     </> : reservation ? <>
       <GalleryReservation photos={reservation} layout="mobile" />
       <GalleryReservation photos={reservation} layout="desktop" />
-    </> : <div className={styles.photos} data-home-measure="photos" data-home-state={typeof photos === "string" ? photos : "empty"}>{Array.from({ length: 8 }, (_, i) => <span key={i} className={styles.tile} data-row="photo-placeholder" aria-hidden={i > 0 || list === null || undefined}>{i === 0 && list ? <span className={styles.note}>{v[4]}</span> : null}</span>)}</div>}
+    </> : <div className={styles.photos} data-home-measure="photos" data-home-state={typeof photos === "string" ? photos : "empty"}>{Array.from({ length: 6 }, (_, i) => <span key={i} className={styles.tile} data-row="photo-placeholder" aria-hidden={i > 0 || list === null || undefined}>{i === 0 && list ? <span className={styles.note}>{v[4]}</span> : null}</span>)}</div>}
     <div className={styles.shelf} data-home-measure="shorts">
       <div className={styles.shortHead}><FanHeading as="h3">{v[2]}</FanHeading>{shortList?.length ? <FanSectionLink reloadDocument href={`/shorts?locale=${locale}`}>{homeGalleryCopy[locale].viewAll}</FanSectionLink> : null}</div>
       {shortList?.length ? <HomeShorts items={shortList} locale={locale} hasMore={shortList.length >= 12} /> : shortList ? <p className={styles.note}>{v[5]}</p> : <div data-home-state={typeof shorts === "string" ? shorts : undefined} />}
@@ -99,10 +99,13 @@ export function HomeGallery({ locale, photos, hasMore, shorts, expectedPhotos }:
 }
 
 /** The photos laid into the layout's columns (`allocateGalleryColumns`). `caption` adds a line under each photo; `itemClassName` styles that item. */
-export function GalleryColumns({ columns, layout, caption, itemClassName, showNew = false }: { showNew?: boolean; columns: readonly (readonly HomeGalleryPhoto[])[]; layout: "mobile" | "desktop"; caption?: (photo: HomeGalleryPhoto) => ReactNode; itemClassName?: string }) {
+export function GalleryColumns({ columns, layout, caption, itemClassName, showNew = false, preview = false }: { showNew?: boolean; preview?: boolean; columns: readonly (readonly HomeGalleryPhoto[])[]; layout: "mobile" | "desktop"; caption?: (photo: HomeGalleryPhoto) => ReactNode; itemClassName?: string }) {
+  const sizes = layout === "mobile"
+    ? (preview ? "calc((100vw - 48px) / 3)" : "calc(50vw - 20px)")
+    : (preview ? "217px" : "340px");
   return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-layout={layout}>
     {columns.map((photos, index) => <ul key={index} className={styles.photoColumn}>
-      {photos.map(photo => <li key={photo.id} className={[styles.photo, itemClassName].filter(Boolean).join(" ")} data-row="photo"><GalleryImage photo={photo} showNew={showNew} sizes={layout === "mobile" ? "calc(50vw - 20px)" : "340px"} />{caption?.(photo)}</li>)}
+      {photos.map(photo => <li key={photo.id} className={[styles.photo, itemClassName].filter(Boolean).join(" ")} data-row="photo"><GalleryImage photo={photo} showNew={showNew} sizes={sizes} />{caption?.(photo)}</li>)}
     </ul>)}
   </div>;
 }

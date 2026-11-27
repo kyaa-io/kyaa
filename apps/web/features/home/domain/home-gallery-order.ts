@@ -1,6 +1,6 @@
 import { fanPostPath, groupPostPath, type HomeGalleryPhoto } from "./home-gallery";
 
-/** Only original posts belong in the home photo selection. Filter before ranking and taking the first twelve. */
+/** Only original posts belong in the home photo selection. Filter before ranking and applying the preview limit. */
 export function homeGalleryPostPhotos(photos: readonly HomeGalleryPhoto[]) {
   const ranked = photos.filter(photo =>
     (photo.source === "fan_post" && fanPostPath.test(photo.sourceHref ?? "")) ||
