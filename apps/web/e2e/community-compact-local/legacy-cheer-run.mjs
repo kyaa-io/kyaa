@@ -12,7 +12,7 @@ page.on('pageerror', error => errors.push(error.message));
 try {
   for (const width of [390, 1440]) for (const locale of ['ko', 'en', 'vi']) {
     await page.setViewportSize({ width, height: 1000 });
-    await page.goto(`http://127.0.0.1:4228/community?creator=yuna&locale=${locale}&legacy=1`);
+    await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/community?creator=yuna&locale=${locale}&legacy=1`);
     await expect(page.locator('article')).toHaveCount(1);
     await page.locator('section nav button').last().click();
     const card = page.locator('[data-cheer-id]');
@@ -39,7 +39,7 @@ try {
       assert.deepEqual(result.violations, []);
     }
   }
-  await page.goto('http://127.0.0.1:4228/community?creator=yuna&locale=en&legacy=1&auth=off');
+  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/community?creator=yuna&locale=en&legacy=1&auth=off`);
   await page.locator('section nav button').last().click();
   const card = page.locator('[data-cheer-id]');
   await expect(card.locator('button[class*="likeButton"]')).toBeDisabled();
