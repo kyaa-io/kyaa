@@ -1,1 +1,10 @@
-{"changes":["PC 모임 화면의 출석 카드 아래에서 나영석 PD의 얼굴을 더 크게 볼 수 있어요. 사진은 개발 화면의 광고 소재로 확인한 예시예요."],"path":"/pages/groups","images":["release-notes/images/2026-11-28-groups-sidebar-img.png"]}
+{
+  "changes": [
+    "PC 모임 화면의 출석 카드 아래 광고에서 나영석 PD의 얼굴을 더 크게 볼 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": [
+    "release-notes/images/2026-11-28-groups-sidebar-img.png"
+  ]
+}
