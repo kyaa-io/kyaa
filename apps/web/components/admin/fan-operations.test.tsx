@@ -113,9 +113,7 @@ describe("FanOperations", () => {
     expect(screen.getByRole("columnheader", { name: "로그인 수단" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "회원 관리" })).toBeInTheDocument();
     expect(screen.getByText("현재 불러온 2명")).toBeInTheDocument();
-    expect(
-      screen.getByText("다음 결과를 불러올 수 있습니다."),
-    ).toBeInTheDocument();
+    expect(screen.queryByText("다음 결과를 불러올 수 있습니다.")).not.toBeInTheDocument();
     expect(
       screen.getByText("개인정보 조회 기준").closest("details"),
     ).not.toHaveAttribute("open");

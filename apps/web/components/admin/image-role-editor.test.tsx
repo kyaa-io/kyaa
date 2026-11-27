@@ -41,8 +41,8 @@ describe("ImageRoleEditor", () => {
 
     fireEvent.change(within(landscape).getByRole("textbox", { name: "한국어 대체 텍스트" }), { target: { value: "무대 위 셀럽" } });
     fireEvent.change(within(landscape).getByRole("textbox", { name: "English alt text" }), { target: { value: "Celebrity on stage" } });
-    for (const select of within(landscape).getAllByRole("combobox", { name: "맞춤 방식" })) fireEvent.change(select, { target: { value: "cover" } });
-    for (const checkbox of within(landscape).getAllByRole("checkbox", { name: "이 원본과 위치로 크롭 승인" })) fireEvent.click(checkbox);
+    for (const select of within(landscape).getAllByRole("combobox", { name: "채우는 방식" })) fireEvent.change(select, { target: { value: "cover" } });
+    for (const checkbox of within(landscape).getAllByRole("checkbox", { name: "이 모습으로 승인" })) fireEvent.click(checkbox);
     fireEvent.click(within(landscape).getByRole("button", { name: /이 역할 적용/ }));
 
     await waitFor(() => expect(screen.getByText("이미지 역할을 적용했습니다.")).toBeInTheDocument());

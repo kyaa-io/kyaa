@@ -100,8 +100,6 @@ const copy = {
     error: "팬 정보를 불러오지 못했습니다.",
     retry: "다시 시도",
     loadedCount: (count: number) => `현재 불러온 ${count}명`,
-    moreResults: "다음 결과를 불러올 수 있습니다.",
-    endOfResults: "현재 조건의 마지막 결과입니다.",
     filteredBy: "검색 조건",
     emailFilterApplied: "이메일 검색 중",
     sort: "정렬",
@@ -157,8 +155,6 @@ const copy = {
     error: "Fan data could not be loaded.",
     retry: "Try again",
     loadedCount: (count: number) => `${count} currently loaded`,
-    moreResults: "You can load the next results.",
-    endOfResults: "This is the end of the current results.",
     filteredBy: "Active filters",
     emailFilterApplied: "Email filter applied",
     sort: "Sort loaded members",
@@ -496,7 +492,6 @@ export function FanOperations() {
           <div className={styles.resultToolbar}>
             <div className={styles.resultSummary}>
               <strong>{t.loadedCount(fans.length)}</strong>
-              <span>{nextCursor ? t.moreResults : t.endOfResults}</span>
               {(query || status) && (
                 <span>
                   {t.filteredBy}:{" "}

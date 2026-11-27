@@ -38,7 +38,7 @@ const cloneDraft = (banner: AdminHomeBanner): Draft => structuredClone(banner);
 
 const copy = {
   ko: {
-    title: "배너 관리", description: "홈과 모임 탐색에 표시할 배너와 이동 링크, 분류, 공개 순서를 관리합니다.",
+    title: "배너 관리",
     new: "새 배너", list: "배너 목록", empty: "등록된 배너가 없습니다.", regular: "정기 방송", announcement: "안내",
     creator: "크리에이터", chooseCreator: "크리에이터 선택", kind: "배너 종류", draft: "비공개", published: "공개",
     save: "초안 저장", saveChanges: "저장", publish: "공개", unpublish: "비공개로", up: "위로", down: "아래로",
@@ -52,7 +52,7 @@ const copy = {
     conflict: "다른 관리자가 먼저 바꿨어요. 새로고침하면 입력한 내용이 사라져요.", reload: "새로고침",
   },
   en: {
-    title: "Banner manager", description: "Manage banners, destinations, categories and display order for Home and group discovery.",
+    title: "Banner manager",
     new: "New banner", list: "Banners", empty: "No banners have been added.", regular: "Regular LIVE", announcement: "Announcement",
     creator: "Creator", chooseCreator: "Select a creator", kind: "Banner type", draft: "Hidden", published: "Published",
     save: "Save draft", saveChanges: "Save changes", publish: "Publish", unpublish: "Unpublish", up: "Move up", down: "Move down",

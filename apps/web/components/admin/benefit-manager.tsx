@@ -184,7 +184,6 @@ const blankCampaign: CampaignForm = {
 const copy = {
   ko: {
     title: "혜택 관리",
-    desc: "혜택의 공개 조건, 재고, 전달과 선정을 안전하게 운영합니다.",
     new: "새 혜택",
     list: "혜택 목록",
     save: "초안 저장",
@@ -211,7 +210,6 @@ const copy = {
   },
   en: {
     title: "Benefit manager",
-    desc: "Operate benefit eligibility, inventory, delivery, and selection safely.",
     new: "New benefit",
     list: "Benefits",
     save: "Save draft",
@@ -493,7 +491,6 @@ function BenefitManager({
         <div>
           <p>ADM-007</p>
           <h1>{t.title}</h1>
-          <span>{t.desc}</span>
         </div>
         <button
           type="button"

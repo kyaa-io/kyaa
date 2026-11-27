@@ -27,7 +27,7 @@ const copy = {
       { label: "현황", items: [["/admin", "서비스 현황", LayoutDashboard, true], ["/admin/traffic", "방문 통계", Globe], ["/admin/campaigns", "유입 링크", ExternalLink], ["/admin/dashboard", "상세 통계", BarChart3]] },
       { label: "회원", items: [["/admin/inquiries", "회원 문의", MessageSquareText], ["/admin/fans", "회원 관리", UsersRound], ["/admin/certifications", adminReviewLabels.ko.certifications, BadgeCheck], ["/admin/fanpage-requests", "팬페이지 신청", UsersRound], ["/admin/content-reports", "콘텐츠 신고", ShieldCheck]] },
       { label: "콘텐츠", items: [["/admin/celebrities", "크리에이터 관리", Sparkles], ["/admin/lives", "LIVE 관리", Clapperboard], ["/admin/schedules", "일정 관리", CalendarDays], ["/admin/schedule-suggestions", "일정 제보 검토", CalendarDays], ["/admin/home-banners", "홈 배너", Images], ["/admin/home-media", "홈 갤러리·숏폼", Images], ["/admin/image-assets", "이미지 자산", Images], ["/admin/home-notices", "홈 공지", Megaphone], ["/admin/benefits", "경품", Gift], ["/admin/notice-comments", "공지 댓글", MessageSquareText], ["/admin/lounge-messages", "라운지 메시지", MessageSquareText]] },
-      { label: "행사 운영", items: [["/admin/byus-day-rsvps", "kyaa wave 참가 신청", CalendarDays], ["/admin/event-participants", "이벤트 참여자 명단", UsersRound], ["/admin/kyaa-wave-draw", "kyaa wave 추첨", Gift], ["/admin/jjinfan-challenge", "찐팬 100명 표시 설정", Gift], ["/admin/wave-stage", "팬 이벤트 무대", Clapperboard], ["/admin/runmusic", "RUN&MUSIC 응모", Gift]] },
+      { label: "행사 운영", items: [["/admin/byus-day-rsvps", "kyaa wave 참가 신청", CalendarDays], ["/admin/event-participants", "행사 참가자 명단", UsersRound], ["/admin/kyaa-wave-draw", "kyaa wave 추첨", Gift], ["/admin/jjinfan-challenge", "찐팬 100명 표시 설정", Gift], ["/admin/wave-stage", "팬 이벤트 무대", Clapperboard], ["/admin/runmusic", "RUN&MUSIC 응모", Gift]] },
       { label: "운영 관리", items: [["/admin/system", "시스템 상태", Activity], ["/admin/blockchain-jobs", "디지털 발급", Blocks], ["/admin/notifications", "알림 전송 현황", Bell], ["/admin/audit", "활동 기록", ScrollText]] },
     ],
   },
@@ -62,7 +62,7 @@ export function AdminOperationsShell({ locale, children, adminRole }: { locale: 
         : []),
   }));
 
-  if (groupsEnabled) groups.splice(2, 0, { label: locale === "ko" ? "모임 운영" : "Groups", items: [
+  if (groupsEnabled) groups.splice(2, 0, { label: locale === "ko" ? "모임" : "Groups", items: [
     { href: "/admin/groups/overview", icon: LayoutDashboard, label: adminReviewLabels[locale].groupOverview, exact: true },
     { href: "/admin/groups", icon: UsersRound, label: adminReviewLabels[locale].groupApplications, exact: true },
     { href: "/admin/groups/gift-applications", icon: Gift, label: adminReviewLabels[locale].giftApplications },
