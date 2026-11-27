@@ -860,3 +860,20 @@
   .roundTable .stepName { flex-direction: row; align-items: end; }
   .layout[data-lobby="true"] .roundTable .levelList li { align-items: end; }
 }
+
+.layout[data-lobby="true"] .ranking li:not([data-gap]) {
+  grid-template-columns: var(--space-6) var(--space-6) minmax(0, 1fr) auto auto;
+  min-height: 28px;
+  height: auto;
+  column-gap: var(--space-2);
+  padding-inline: var(--space-3);
+}
+.layout[data-lobby="true"] .ranking li {
+  --fan-item-title-size: var(--fan-metadata-size);
+  --fan-item-title-weight: var(--fan-body-weight);
+}
+.layout[data-lobby="true"] .ranking li > :last-child { text-align: end; }
+.layout[data-lobby="true"] .ranking .avatar { width: var(--space-6); height: var(--space-6); }
+@media (min-width: 1024px) {
+  .layout[data-lobby="true"] .ranking li:not([data-gap]) { min-height: var(--space-8); }
+}

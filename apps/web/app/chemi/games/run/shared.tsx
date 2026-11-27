@@ -48,13 +48,14 @@ export function Scene({ resultScene = false, character, pose, props = [], floor,
   return <canvas ref={canvas} role="img" aria-label={label} />;
 }
 
-export function Ranking({ rows, loaded, loading = false, copy, locale, names, near, onAll, footer }: {
-  rows: Rank[]; loaded: boolean; loading?: boolean; copy: RunCopy; locale: string; names: Record<Character, string>; near: boolean; onAll?: () => void; footer?: string;
+export function Ranking({ rows, loaded, loading = false, copy, locale, names, near, lobby = false, onAll, footer }: {
+  rows: Rank[]; loaded: boolean; loading?: boolean; copy: RunCopy; locale: string; names: Record<Character, string>; near: boolean; lobby?: boolean; onAll?: () => void; footer?: string;
 }) {
   const number = new Intl.NumberFormat(locale);
   const me = rows.find((row) => row.isMe);
-  const leaders = rows.filter((row) => row.place <= 3);
-  const around = me && me.place > 3 ? rows.filter((row) => row.place > 3 && Math.abs(row.place - me.place) <= 1) : [];
+  const limit = lobby ? 5 : 3;
+  const places = lobby && loaded ? [1, 2, 3, 4, 5].slice(0, Math.max(3, rows.length)) : [1, 2, 3];
+  const around = me && me.place > limit ? rows.filter((row) => row.place > limit && Math.abs(row.place - me.place) <= 1) : [];
   const above = me && rows.find((row) => row.place === me.place - 1);
   const line = (row: Rank | undefined, key: string, slot?: "near", place?: number) => row ? (
     <li data-row="" key={key} data-me={row.isMe} data-slot={slot && !row.isMe ? "near" : undefined} data-top={row.place <= 3}>
@@ -74,10 +75,10 @@ export function Ranking({ rows, loaded, loading = false, copy, locale, names, ne
       {onAll && rows.length > 0 && <FanSectionLink onClick={onAll}>{copy.allRanks}</FanSectionLink>}
     </header>
     <ol>
-      {[1, 2, 3].map((place) => line(loaded ? leaders.find((row) => row.place === place) : undefined, `top${place}`, undefined, loaded ? place : undefined))}
+      {places.map((place) => line(loaded ? rows.find((row) => row.place === place) : undefined, `top${place}`, undefined, loaded ? place : undefined))}
       {near && around.length > 0 && <>
-        <li data-row="" data-gap="true" data-slot="near" aria-hidden="true">{me && me.place > 5 && <FanText role="meta">···</FanText>}</li>
-        {line(around.find((row) => row.place === me!.place - 1), "near0", "near")}
+        <li data-row="" data-gap="true" data-slot="near" aria-hidden="true">{me && me.place > limit + 2 && <FanText role="meta">···</FanText>}</li>
+        {(!lobby || me!.place > limit + 1) && line(around.find((row) => row.place === me!.place - 1), "near0", "near")}
         {line(around.find((row) => row.isMe), "mine")}
         {line(around.find((row) => row.place === me!.place + 1), "near1", "near")}
       </>}

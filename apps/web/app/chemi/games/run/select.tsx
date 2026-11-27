@@ -44,7 +44,7 @@ export function SelectStage({ character, pickDisabled, onPick, copy, locale, nam
       <div className={styles.how}><Legend copy={copy} layout="list" /></div>
     </section>
     <div className={styles.side}>
-      <Ranking rows={rows} loaded={loaded} loading={loading} copy={copy} locale={locale} names={names} near onAll={onAllRanks} footer={footer} />
+      <Ranking lobby rows={rows} loaded={loaded} loading={loading} copy={copy} locale={locale} names={names} near onAll={onAllRanks} footer={footer} />
       <div className={styles.sideLegend}><Legend copy={copy} layout="list" /></div>
       <div className={styles.cta}>
         {errorLine}
