@@ -1,4 +1,6 @@
 "use client";
+import type { ReactNode } from "react";
+import commentStyles from "@/features/fan-posts/ui/post-comments.module.css";
 import { OwnedCommentActions } from "@/features/fan-posts/ui/owned-comment-actions";
 import { EditedMark } from "@/features/fan-posts/ui/edited-mark";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -108,15 +110,15 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
     </div>}
     {r.error ? <SourceStatePanel fill sourceId="CqipF" title={locale === "ko" ? "댓글을 불러오지 못했어요" : t.error} description={t.error} role="alert" actions={[{ label: t.retry, onClick: r.retry, variant: "primary" }]} />
       : r.loading && !comments.length ? <FanSkeletonRows rows={2} variant="member" />
-      : ordered.length > 0 && <ul className={detailStyles.commentList}>{ordered.map(comment => <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
-        <div className={detailStyles.commentMeta}><img src={comment.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" width={32} height={32} data-artist-avatar={comment.artist || undefined} /><strong>{comment.nickname}</strong>{comment.artist ? <GroupArtistMark locale={locale} /> : comment.operator ? <GroupOperatorMark locale={locale} /> : null}<RelativeTime value={comment.createdAt} locale={locale} absolute={(value, language) => new Date(value).toLocaleString(language, { dateStyle: "medium", timeStyle: "short" })} /></div>
-        {comment.editedAt && <EditedMark locale={locale} />}{comment.isOwner ? <OwnedCommentActions url={`${base}/${comment.id}`} body={comment.body} locale={locale} refresh={refresh} maxLength={2000}><p>{comment.body}</p></OwnedCommentActions> : <p>{comment.body}</p>}
+      : ordered.length > 0 && <ul className={detailStyles.commentList}>{ordered.map(comment => {
+          const header = (action: ReactNode) => <div className={commentStyles.header}><div className={detailStyles.commentMeta}><img src={comment.avatarUrl ?? "/images/avatars/star-pink.webp"} alt="" width={32} height={32} data-artist-avatar={comment.artist || undefined} /><strong>{comment.nickname}</strong>{comment.artist ? <GroupArtistMark locale={locale} /> : comment.operator ? <GroupOperatorMark locale={locale} /> : null}<RelativeTime value={comment.createdAt} locale={locale} absolute={(value, language) => new Date(value).toLocaleString(language, { dateStyle: "medium", timeStyle: "short" })} />{comment.editedAt && <EditedMark locale={locale} />}</div><div className={commentStyles.headerAction}>{action}</div></div>;
+          const body = <p>{comment.body}</p>;
+          return <li key={comment.id} id={`comment-${comment.id}`} data-reply={comment.parentId ? "" : undefined}>
+          {comment.isOwner ? <OwnedCommentActions renderHeader={header} url={`${base}/${comment.id}`} body={comment.body} locale={locale} refresh={refresh} maxLength={2000}>{body}</OwnedCommentActions> : <>{header(r.authenticated && <FanAction variant="text" onClick={() => setReporting({ id: comment.id, reason: "" })}>{b.report}</FanAction>)}{body}</>}
         {comment.assets?.map(asset => <GroupPostAsset className={detailStyles.commentAsset} key={asset.id} asset={asset} locale={locale} />)}
-        <div className={detailStyles.commentActions}>
-          {!comment.parentId && (canWrite ? <FanAction variant="text" aria-expanded={reply?.parentId === comment.id} onClick={() => toggleReply(comment.id)}>{c.reply}</FanAction> : !r.authenticated && <a className={detailStyles.commentAction} href={fanLoginHref(locale, returnTo)}>{c.reply}</a>)}
-          {!comment.isOwner && r.authenticated && <FanAction variant="text" onClick={() => setReporting({ id: comment.id, reason: "" })}>{b.report}</FanAction>}
-
-        </div>
+        {!comment.parentId && (canWrite || !r.authenticated) && <div className={detailStyles.commentActions}>
+          {canWrite ? <FanAction variant="text" aria-expanded={reply?.parentId === comment.id} onClick={() => toggleReply(comment.id)}>{c.reply}</FanAction> : !r.authenticated && <a className={detailStyles.commentAction} href={fanLoginHref(locale, returnTo)}>{c.reply}</a>}
+        </div>}
         {reply?.parentId === comment.id && <form className={`${detailStyles.commentForm} ${detailStyles.replyForm}`} data-expanded="" data-filled={reply.draft.length > 0 || undefined} onSubmit={submitReply}>
           <label className={detailStyles.srOnly} htmlFor={`${comment.id}-reply`}>{k.replyTo.replace("{0}", comment.nickname)}</label>
           <textarea id={`${comment.id}-reply`} value={reply.draft} onChange={event => setReply({ parentId: comment.id, draft: event.target.value })} maxLength={2000} disabled={busy === "reply"} required rows={3} autoFocus />
@@ -126,7 +128,8 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
             <FanAction type="submit" variant="neutral" ariaBusy={busy === "reply"} loading={busy === "reply"} disabled={Boolean(busy) || !reply.draft.trim()}>{sendLabel[locale]}</FanAction>
           </div>
         </form>}
-      </li>)}</ul>}
+      </li>;
+        })}</ul>}
     {r.data?.nextCursor && <FanAction variant="neutral" onClick={() => { setPrevious({ key: r.ownerKey, items: comments }); setCursor(r.data!.nextCursor ?? undefined); }}>{t.more}</FanAction>}
     <FanDialog open={reporting !== null} onOpenChange={open => { if (!open) setReporting(null); }} size="sm" title={b.report} closeLabel={fanUiText(locale, "close")} primary={{ label: b.report, onClick: () => { void report(); }, loading: actionBusy, disabled: !reporting?.reason.trim() }} secondary={{ label: t.cancel, onClick: () => setReporting(null) }}>
       <label className={detailStyles.commentLabel} htmlFor={`${postId}-report`}>{b.reason}</label>
