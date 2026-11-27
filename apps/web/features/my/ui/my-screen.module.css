@@ -389,13 +389,13 @@
 .guestProfile>nav{width:100%;justify-content:flex-end}
 .guestProfile .pencilProfileCopy{flex:1 1 calc(100% - 60px)}
 }
-/* Give the nickname the full identity column on narrow screens. */
+/* Align the title and actions on the first row. */
 @media(max-width:599px){
 .pencilSummary .pencilProfile { display:grid; grid-template-columns:48px minmax(0,1fr) auto; row-gap:0; }
 .pencilSummary .pencilName { display:contents; }
-.pencilSummary .pencilName > h1 { grid-area:1 / 2 / 2 / -1; }
-.pencilSummary .pencilName > span { grid-area:2 / 2; justify-self:start; max-inline-size:100%; }
-.pencilSummary .pencilProfile > nav { grid-area:2 / 3; }
+.pencilSummary .pencilName > h1 { grid-area:1 / 2; }
+.pencilSummary .pencilName > span { grid-area:2 / 2 / 3 / -1; justify-self:start; max-inline-size:100%; }
+.pencilSummary .pencilProfile > nav { grid-area:1 / 3; }
 .pencilMy .pencilProfile nav{gap:var(--space-1)}
 .pencilMy .pencilProfile nav>a{min-width:44px;justify-content:center}
 .pencilMy .pencilProfile nav [data-nav-label]{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
@@ -416,11 +416,7 @@
 .pencilSummary { display:grid; grid-template-columns:minmax(0,1fr); min-width:0; gap:var(--space-2); }
 .pencilMy .pencilSummary .pencilProfile nav > a { justify-content:center; }
 @media (width < 48rem) {
-  .pencilSummary { gap:var(--space-2); }
   .pencilSummary .pencilProfile { column-gap:var(--space-2); }
 }
 
 .homeRow[id] { scroll-margin-top: var(--fan-header-height); }
-/* ACCOUNT-SWITCH-S1: the 390 account-switch line is the third row under the name and tier tag, flush with the name. */
-.pencilSummary .pencilName > .switchLine { grid-area:3 / 2 / 4 / -1; justify-self:start; }
-.switchLine.switchLine { padding-inline:0; }
