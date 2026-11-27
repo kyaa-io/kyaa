@@ -35,8 +35,9 @@ export async function POST(request: Request): Promise<Response> {
   const secret = source.TELEGRAM_DEV_CERTIFICATION_WEBHOOK_SECRET;
   if (new URL(request.url).hostname !== "dev.kyaa.io" || source.BYUS_DATA_ENVIRONMENT !== "development"
     || !token || !/^\d+:[\w-]+$/.test(token) || !chat || !/^-[1-9]\d*$/.test(chat)
-    || [source.TELEGRAM_BOT_TOKEN, source.TELEGRAM_CS_BOT_TOKEN, source.TELEGRAM_ALERT_BOT_TOKEN].includes(token)
-    || [source.TELEGRAM_CHAT_ID, source.TELEGRAM_CS_CHAT_ID].includes(chat)
+    // The CS bot may own this webhook; polling bots and the bug-report webhook bot may not.
+    || [source.TELEGRAM_BOT_TOKEN, source.TELEGRAM_ALERT_BOT_TOKEN, source.TELEGRAM_BUG_REPORT_BOT_TOKEN].includes(token)
+    || chat === source.TELEGRAM_CHAT_ID
     || !secret || !/^[A-Za-z0-9_-]{32,256}$/.test(secret)) return new Response(null, { status: 404 });
   const expected = Buffer.from(secret);
   const incoming = Buffer.from(request.headers.get("x-telegram-bot-api-secret-token") ?? "");

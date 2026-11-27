@@ -70,6 +70,22 @@ describe("DEV Telegram certification webhook", () => {
       .toEqual(["unclear", "mismatch", "missing", "approve"]);
   });
 
+  it("accepts the CS bot and room but never a polling or bug-report bot", async () => {
+    vi.stubEnv("TELEGRAM_CS_BOT_TOKEN", "1:test_bot");
+    vi.stubEnv("TELEGRAM_CS_CHAT_ID", "-123");
+    rpc.mockResolvedValue({ data: { status: "approved", photo: false }, error: null });
+    expect((await POST(callback())).status).toBe(204);
+    expect(rpc).toHaveBeenCalledTimes(1);
+    for (const name of ["TELEGRAM_BOT_TOKEN", "TELEGRAM_ALERT_BOT_TOKEN", "TELEGRAM_BUG_REPORT_BOT_TOKEN"]) {
+      vi.stubEnv(name, "1:test_bot");
+      expect((await POST(callback())).status).toBe(404);
+      vi.stubEnv(name, "");
+    }
+    vi.stubEnv("TELEGRAM_CHAT_ID", "-123");
+    expect((await POST(callback())).status).toBe(404);
+    expect(rpc).toHaveBeenCalledTimes(1);
+  });
+
   it("allows Telegram to retry an edit failure", async () => {
     rpc.mockResolvedValue({ data: { status: "rejected", photo: false }, error: null });
     api.mockImplementationOnce(async () => Response.json({ ok: true }))
