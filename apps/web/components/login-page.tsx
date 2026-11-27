@@ -3,6 +3,8 @@
 import { untypedRouter } from "@/lib/navigation/untyped";
 import { rememberSession } from "@/features/auth/client/session-hint";
 import { toContentLocale } from "@/i18n/locales";
+import { measureHandoffAttempt } from "./landing-browser-dialog";
+import { growthSignupCopy } from "@/i18n/growth-signup";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__login-page";
 import { additionalLocales, translate } from "@/i18n/messages";
@@ -40,7 +42,7 @@ import {
 } from "../features/reliability/client/request-deadline";
 import { signupFunnelTracker, type LoginMeasurementAttempt } from "../features/analytics/client/signup-funnel-tracker";
 import { customSocialContinue } from "@/i18n/catalogs/components__custom-social-auth";
-import { isIosInstagram, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
+import { isIosInstagram, isXBrowser, landingHandoff, planGoogleLogin, requiresGoogleBrowserHandoff } from "./login-browser-policy";
 import { withStoredEventSourceReturn } from "../features/analytics/client/use-event-source-tag";
 import styles from "./login-page.module.css";
 import { emailLoginCopy } from "@/i18n/catalogs/components__email-login";
@@ -484,7 +486,9 @@ export function LoginPage({
   });
   const inAppPrivy = embeddedBrowser && privy;
   // Apps with no working hand-off (X) get the notice in place of a Google link that would do nothing.
-  const googleHandoff = Boolean(inAppPrivy) && planGoogleLogin(navigator.userAgent, handoffLoginUrl(), isStandalone()).kind === "external";
+  const inXBrowser = embeddedBrowser && isXBrowser(navigator.userAgent);
+  const xHandoff = inXBrowser ? landingHandoff(navigator.userAgent, new URL(handoffLoginUrl())) : null;
+  const googleHandoff = !inXBrowser && Boolean(inAppPrivy) && planGoogleLogin(navigator.userAgent, handoffLoginUrl(), isStandalone()).kind === "external";
   // Inside another app's browser, email and X are the methods that work there, so they lead; Apple follows and Google
   // goes to the browser. In a regular browser the order is Google, email, X, Apple.
   const methodDisabled = !ready || authenticated || oauthStarting;
@@ -504,6 +508,9 @@ export function LoginPage({
   </FanAction>;
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
     <div className={inAppPrivy ? `${styles.browserNotice} ${styles.browserNoticeBelowMethods}` : styles.browserNotice}>
+      {xHandoff?.fallback && xHandoff.method && <Link className={styles.emailButton} href={xHandoff.fallback as Route} onClick={() => { if (xHandoff.method) measureHandoffAttempt("x", xHandoff.method); }} prefetch={false} data-outbound-tracking="off">
+        {growthSignupCopy[locale].google}
+      </Link>}
       <p className={styles.error} role="status">
         {inAppPrivy
           ? locale === "ko" ? "브라우저에서 열면 Google 로그인도 할 수 있어요." : translate(locale, localizedMessages.mbrowserGoogle, "Open in your browser to sign in with Google.")
@@ -668,7 +675,7 @@ export function LoginPage({
         <div className={styles.copy}>
           <h1 id="login-heading">{locale === "ko" ? "최애와 함께한 순간을 기록하세요." : translate(locale, localizedMessages.m25a4dd3e23d7, "Keep a record of moments with your favorites.")}</h1>
         </div>
-        {!inAppPrivy && <button
+        {!inAppPrivy && !inXBrowser && <button
           className={styles.googleButton}
           type="button"
           disabled={authenticated || (!ready && !waitingForSdk) || oauthStarting}
@@ -681,6 +688,7 @@ export function LoginPage({
         </button>}
         {!inAppPrivy && browserHandoffNotice}
         {emailCodeButton}
+        {inAppPrivy && inXBrowser && browserHandoffNotice}
         {xButton}
         {cognitoKakaoEnabled && !privy && <button className={styles.googleButton} type="button"
           disabled={!ready || authenticated || oauthStarting}
@@ -704,8 +712,8 @@ export function LoginPage({
         {inAppPrivy && googleHandoff && <FanAction type="button" variant="text" onClick={() => startOAuthLogin("google")}>
           Google · {/Android/i.test(navigator.userAgent) ? "Chrome" : "Safari"} ↗
         </FanAction>}
-        {inAppPrivy && browserHandoffNotice}
-        {!privy && <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />}
+        {inAppPrivy && !inXBrowser && browserHandoffNotice}
+        {!privy && !inXBrowser && <EmailLoginForm locale={locale} disabled={authenticated || oauthStarting} />}
         {loginError && <p ref={errorRef} className={styles.error} role="alert" tabIndex={-1}>{loginError}</p>}
     </div>
   );

@@ -205,6 +205,7 @@ it('shows a signed-out fan the two steps: enter, then sign up or log in', () => 
   const view = render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
   expect([...view.container.querySelectorAll('[data-row="raffle-step"]')].map(step => step.textContent)).toEqual(['1Tap Enter free', "2Sign up or log in and you're entered"]);
   expect(view.container.querySelector('button.lg, button')?.textContent).toBe('Enter free');
+  expect(screen.getByText('Sign in to enter the draw').previousElementSibling?.textContent).toBe('Enter free');
 });
 
 it('enters right after coming back from sign-up when the fan tapped Enter signed out', async () => {

@@ -140,9 +140,12 @@ describe("sitemap URL inclusion", () => {
     const map = buildSitemap([
       { path: "/ifew", locale: "ko" }, { path: "/ifew", locale: "en" }, { path: "/ifew", locale: "ko" },
       { path: "/live/ended-event", locale: "ko" }, { path: "/live/ifew-rehearsal", locale: "ko" },
+      { path: "/notices/creator-wena-open", locale: "ko" }, { path: "/notices/creator-wena-open", locale: "en" },
+      { path: "/ifew?tab=calendar&month=2026-11", locale: "ko" },
+      { path: "/live/ended-event/suggestions", locale: "en" },
       { path: "/my", locale: "ko" }, { path: "/c/ifew/verify", locale: "ko" },
     ]);
-    expect(map.some(({ url }) => url.includes("/pages/ifew-fan-guide"))).toBe(false);
+    expect(map.some(({ url }) => /creator-wena-open|tab=calendar|suggestions/.test(url))).toBe(false);
     // Ten Korean/English content pages (nine fixed and the directory), six pages translated into every language, and three content rows.
     expect(map).toHaveLength(10 * 2 + 6 * APP_LOCALES.length + 3);
     expect(map.some(({ url }) => url === "https://kyaa.io/?locale=ja" || url === "https://kyaa.io/pages/groups?locale=ja")).toBe(false);

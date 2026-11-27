@@ -1,5 +1,6 @@
 "use client";
 
+import { growthSignupCopy } from "@/i18n/growth-signup";
 import type { AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/components__home-entry-cards__managed-home-banner";
 import { translate } from "@/i18n/messages";
@@ -69,6 +70,6 @@ export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent 
     <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={chemi ? "chemi" : missionbook ? "missionbook" : ["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
       eyebrow={chemi ? (locale === "ko" ? "케미 베타" : "Chemi beta") : isAdminEventBanner(banner) ? <EventDayEyebrow locale={locale} /> : banner.category && ['event','group','fanpage','ad'].includes(banner.category) || guideArt ? bannerCategoryLabel(banner.category ?? "guide", locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={missionbook ? <MissionbookLikeCount locale={locale} tone="banner" /> : banner.description}
-      action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
+      action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.href.split(/[?#]/)[0] === "/s/raffle" ? growthSignupCopy[locale].enter : banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
   </div>;
 }

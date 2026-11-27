@@ -219,6 +219,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 래플 v3·v4에서 사용자 지적("FONT 촌스럽고", "굵은 heavy 숫자 금지", "자산이 비어 있다")을 풀려고 만든 부품이라 정당한 패턴으로 등록한다. 다만 앱 전체 규칙과 부딪히지 않게 범위를 좁힌다.
 - **범위**: 이벤트·캠페인 상세 페이지(`/s/*`, 이벤트 상세)만. 앱 탭 화면에는 쓰지 않는다. 예외 한 곳: MY 이벤트 현황 줄의 응모 도장 `FanPrintStamp` 40(래플 페이지에서 찍은 같은 도장, 11/13).
 - **글자**: 값은 `--fan-display-*` 토큰만. 굵기는 300(큰 금액·숫자)·400(본문·캡션·순번)·600(제목 줄) 셋. 지금 코드의 500(title·lead·strong)은 다음 래플 작업에서 600(title) / 400(lead·strong)으로 합친다. 화면당 `amount`는 1개.
+- 래플 첫 응모 버튼 바로 아래에는 비로그인 방문자의 로그인 안내를 `FanDisplay caption`으로 표시하고 버튼과의 간격은 `--space-2`를 쓴다. 앱 내 브라우저 안내가 표시될 때는 그 안내가 같은 자리를 쓴다.
 - **소품**: 종이·잉크·도장 빨강·접촉 그림자(`drop-shadow`)·광택 그라데이션·폭 비례 반경(`cqw`)은 `FanPrint` 안에서만. 소품은 이벤트 정보(금액·마감·인원·순번)를 담는다. 빈 소품 금지.
 - **바탕**: 페이지 바탕은 흰색. 래플 브랜치의 `--raffle-sky`·`--raffle-cream` 페이지 틴트는 등록하지 않는다(색 면은 사진·소품 안에서).
 - **버튼**: 이벤트 상세도 `FanAction primary` 44/48 하나. 56 높이 버튼은 쓰지 않는다.
@@ -1708,6 +1709,8 @@ Use two equal columns from 768px with 8px row / 16px column gaps, 12px card corn
 
 #### Custom social sign-in preparation · 2026-11-02
 
+X 앱 로그인에서는 이메일이 활성화되면 첫 행동으로 표시한다. 그 아래에 Google 외부 브라우저 링크 하나, 짧은 안내, 복사 버튼을 차례로 둔다.
+
 Kakao/WeChat sign-in is gated off by default. Enabled provider buttons reuse the existing 90%-width, minimum 52px, White outlined pill treatment and 3px Near Black focus outline, with provider names in each locale; they do not alter the Google artwork. The focused email-link step uses the existing 440px task width, 20px mobile / 24px desktop section heading, 16px explanatory text, 14px field labels, 48px fields with 16px input text, 12px corners and 16px related-control gaps. Errors are associated with inputs and announced. Existing-account sign-in links live in Settings → Account and reuse `FanAction` with 32px mobile / 48px desktop section spacing; notification consent is a separate surface. OAuth account linking keeps the same DID and embedded EVM wallet. Actual browser verification and release evidence must distinguish local fixtures from live enabled authentication.
 
 - 비밀방 대화 `EU2Nf`는 선택한 방의 제목·방 전환 메뉴·380px 스크롤 대화 영역·48px 입력창으로 분리한다. PC24px·모바일16px 대화 패딩,20px 메시지 간격을 사용한다. 내 메시지는 서버가 인증된 회원 ID와 작성자를 비교해 결정하고 오른쪽 연분홍 말풍선으로 표시한다. 전송 실패 상태와 조회 오류를 분리해 새 조회가 실패 안내를 지우지 않게 한다. 참여 회원·아티스트 표시와 읽기 전용 운영자 발언은 후속 구현이며 원본 완전 일치로 판정하지 않는다.
@@ -3010,3 +3013,13 @@ MY 팬 패스포트 목록에서 등급은 제목 오른쪽 열의 위쪽에 고
 ### 모바일 모임 신청과 팬페이지 머리 (FB-1127-MOBILE-POLISH)
 
 768px 미만에서 모임 신청 배너는 64px 이상, 그림은 48px, 배너 사이는 8px다. 긴 제목은 줄바꿈할 수 있다. 목록 구분선에서 첫 배너까지와 마지막 배너에서 바닥글 구분선까지 각각 20px 여백을 둔다. 팬페이지 사진과 이름·SNS와 팬 수·행동 열의 위아래를 맞춘다. 사진 폭과 최소 높이는 96px이고, 긴 이름이나 여러 행동으로 오른쪽 열이 커지면 사진 높이도 함께 늘어난다. 줄 사이는 최소 4px다. SNS 그림은 16px, 링크는 44px이고 팬 수 칩은 20px 높이다.
+DEV 마일리지 모드의 지갑 요약 잔액은 숫자 글자 높이에 맞춘 M 동전과 숫자를 표시한다. 지갑 내역 행은 왼쪽에 자산 아이콘과 내역 이름, 오른쪽 끝에 부호 있는 수량과 작은 M 동전을 같은 줄에 둔다. 두 곳 모두 판독기 이름은 공통 포맷의 단위를 포함한다. 안내 문장과 알림의 금액은 언어별 단위를 글자로 표시한다.
+
+### 댓글 행의 더보기와 신고
+
+팬게시판 글 상세, 모임 글 상세, 팬페이지 공지 댓글에서 작성자 정보와 시간은 머리 줄의 시작에 둔다. 내 댓글의 더보기와 다른 댓글의 신고는 머리 줄 끝에서 세로 가운데를 맞춘다. 답글은 본문과 작성자 정보를 들여쓰고 같은 목록 안에서 버튼의 오른쪽 끝을 맞춘다. 버튼은 최소 44×44px이며, 긴 작성자 정보가 줄바꿈될 때도 버튼 공간을 확보한다. 더보기는 화면 경계를 고려해 버튼 끝에 맞춰 펼친다. 머리 줄 다음에는 댓글 본문과 답글·반응이 이어진다. 글 자체의 더보기 역시 상세 머리 영역의 오른쪽 끝에서 최소 44×44px을 확보한다.
+
+| 레퍼런스 | 따온 것 |
+| --- | --- |
+| `board/references/ui-layout/img/post-detail-0023--weverse-post-fan-390.png` | 아바타·닉네임·배지·시간을 본문 위에 묶는 구성 |
+| `board/references/community-leader/img/board-creator-1113--post-detail-390.png` | 글과 댓글의 더보기를 각 머리 줄의 오른쪽에 배치 |

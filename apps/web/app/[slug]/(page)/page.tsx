@@ -24,7 +24,7 @@ import { jjinfanGaugeEnabled } from "@/server/config/feature-flags";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string; share?: string }> }) {
+export async function generateMetadata({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ locale?: string; share?: string; tab?: string | string[] }> }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
   if (!isCreatorHandle(slug)) notFound();
   const locale = toContentLocale(parseAppLocale(query.locale));
@@ -41,6 +41,7 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   const challenge = query.share === JJINFAN_SHARE_VALUE ? await readSharedJjinfanChallenge(slug).catch(() => null) : null;
   return publicMetadata({ path: creatorHomeHref(slug), locale, title: challenge ? `${challenge.campaign.title} · ${celebrity.name} | kyaa` : `${celebrity.name} | kyaa`, description: challenge?.campaign.description || celebrity.summary,
     image: challenge ? new URL(jjinfanShareImagePath(slug, challenge.count, parseAppLocale(query.locale)), shareOrigin()).href : photo.src, imageAlt: challenge ? challenge.campaign.title : photo.alt ?? celebrity.image.alt,
+    indexable: parseFanPageTab(query.tab) !== "calendar",
     locales: translated ? ["ko", "en"] : [toContentLocale(locale)] });
 }
 

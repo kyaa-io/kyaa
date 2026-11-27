@@ -17,3 +17,8 @@
 
 .form { display: flex; flex-wrap: wrap; gap: var(--space-2); width: 100%; }
 .form textarea { flex-basis: 100%; min-width: 0; min-height: 80px; padding: var(--space-3); border: 1px solid var(--color-line); border-radius: var(--radius-media); font: inherit; }
+
+.header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-width: 0; }
+.headerAction { display: flex; flex: none; align-items: center; }
+.headerAction:empty { display: none; }
+.headerAction > button { min-width: 44px; min-height: 44px; }

@@ -12,8 +12,8 @@ import { useContentMutation } from "@/features/content-safety/ui/use-content-mut
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import type { AppLocale } from "@/i18n/locales";
 
-export function OwnedCommentActions({ url, body, locale, refresh, children, maxLength = 1000 }: {
-  children: ReactNode; url: string; body: string; locale: AppLocale; refresh: () => void; maxLength?: number;
+export function OwnedCommentActions({ url, body, locale, refresh, children, renderHeader, maxLength = 1000 }: {
+  children: ReactNode; renderHeader: (menu: ReactNode) => ReactNode; url: string; body: string; locale: AppLocale; refresh: () => void; maxLength?: number;
 }) {
   const copy = contentCopy(locale), labels = groupCommentCopy(locale), mutation = useContentMutation(locale);
   const [draft, setDraft] = useState<string | null>(null);
@@ -24,10 +24,11 @@ export function OwnedCommentActions({ url, body, locale, refresh, children, maxL
     }
   }
   return <>
-    {draft === null ? <>{children}<FanMenu label={labels.menu} trigger={<FanIconButton aria-label={labels.menu}><FanIcon icon={MoreHorizontal} size={20} /></FanIconButton>}>
+    {renderHeader(draft === null && <FanMenu label={labels.menu} trigger={<FanIconButton aria-label={labels.menu}><FanIcon icon={MoreHorizontal} size={20} /></FanIconButton>}>
       <FanMenu.Item onSelect={() => setDraft(body)}>{copy.edit}</FanMenu.Item>
       <FanMenu.Item destructive onSelect={() => setRemoving(true)}>{copy.delete}</FanMenu.Item>
-    </FanMenu></> : <form className={styles.form} onSubmit={e => { e.preventDefault(); void submit("PATCH"); }}>
+    </FanMenu>)}
+    {draft === null ? children : <form className={styles.form} onSubmit={e => { e.preventDefault(); void submit("PATCH"); }}>
       <textarea aria-label={copy.edit} autoFocus required maxLength={maxLength} value={draft} disabled={mutation.busy} onChange={e => setDraft(e.target.value)} />
       <FanAction type="button" disabled={mutation.busy} onClick={() => setDraft(null)}>{copy.cancel}</FanAction>
       <FanAction type="submit" disabled={mutation.busy || !draft.trim()}>{copy.save}</FanAction>
