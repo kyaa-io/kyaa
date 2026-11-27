@@ -1,7 +1,6 @@
 import type { BannerSlotMap, HomeBanner } from "@/features/home/domain/home-banner";
 import { AdsenseUnitsProvider } from "@/features/adsense/ui/adsense-unit";
 import { settleHomeQuery, type HomeQueries } from "./home-query-stream";
-import { groupApplyText } from "@/features/groups/ui/group-apply-copy";
 import { APP_LOCALES } from "@/i18n/locales";
 import { bannerFixture } from "../e2e/banner-local/fixture";
 import "@testing-library/jest-dom/vitest";
@@ -131,6 +130,17 @@ describe("canonical 03 guest home", () => {
     const jjinfan = render(<GuestHome {...defaultProps} jjinfanGauge homeTop="jjinfan100" homeSlots={{ home_mid: adBanner, home_below_board: thinBanner }} />);
     order(jjinfan.container, [hero, '[data-banner-size="mid"]', "#home-ranking", '[data-banner-slot="home_top"] [data-banner-slot="home-below-ranking"]', '[data-banner-size="thin"]']);
   });
+  it("shows the moved ad once between the rankings and notices with its tracking ID and original link", () => {
+    const { container } = render(<GuestHome {...defaultProps} homeSlots={{ home_below_board: { ...adBanner, placement: "home_below_board" } }} />);
+    const slot = '[data-banner-size="below-ranking-ad"]';
+    order(container, ["#home-ranking", slot, "[data-home-block=notices]"]);
+    const ad = container.querySelector(slot)!;
+    expect(ad).toHaveAttribute("data-ad-banner", adBanner.id);
+    expect(ad.querySelector("[data-fan-tag]")).toHaveTextContent("광고");
+    expect(ad.querySelector("a")).toHaveAttribute("href", adBanner.href);
+    expect(container.querySelectorAll(`a[href="${adBanner.href}"]`)).toHaveLength(1);
+    expect(container.querySelector("[data-banner-slot=fanpage_apply]")).toBeNull();
+  });
   it("shows the ad as picture only with a top-right 광고 mark and +5 reward badge, a new-tab sponsored link and alt text", () => {
     const { container } = render(<GuestHome {...defaultProps} homeSlots={{ home_mid: adBanner }} />);
     const strip = container.querySelector('[data-banner-size="mid"]')!;
@@ -192,12 +202,6 @@ describe("canonical 03 guest home", () => {
     expect(gallery.querySelectorAll("[data-row=photo-placeholder]")).toHaveLength(8);
     expect(gallery.querySelectorAll("[data-row=short-placeholder]")).toHaveLength(0);
     expect(notices.compareDocumentPosition(gallery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it.each(APP_LOCALES)("links to the fan page application in %s", (locale) => {
-    render(<GuestHome {...defaultProps} locale={locale} fanPageApplications />);
-    expect(screen.getByRole("link", { name: groupApplyText(locale, "fanPageApply") }))
-      .toHaveAttribute("href", `/pages/groups/apply?locale=${locale}&kind=fan`);
   });
 
   it.each(APP_LOCALES)("shows the approved Kyaa slogan in %s", (locale) => {

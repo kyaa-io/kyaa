@@ -1,4 +1,3 @@
-import { groupsEnabled } from "@/features/groups/domain/availability";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
 import { settleHomeQuery } from "../components/home-query-stream";
@@ -57,7 +56,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       dangerouslySetInnerHTML={{ __html: serializeStructuredData(homeStructuredData()) }}
     />
     <StreamingGuestHome
-      fanPageApplications={groupsEnabled()}
       queries={queries}
       locale={locale}
       jjinfanGauge={jjinfanGaugeEnabled()}
