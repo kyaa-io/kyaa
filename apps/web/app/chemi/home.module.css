@@ -216,7 +216,8 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-@media (max-width: 63.99rem) {
+@media (width < 64rem) {
+  .rankCard .desktopOnly { display: none; }
   .rankCard {
     --fan-item-title-size: var(--fan-metadata-size);
     --fan-body-size: var(--fan-metadata-size);
@@ -256,21 +257,31 @@
   }
   .rankings {
     --rank-mine: calc(var(--rank-row) + var(--space-2));
-    --rank-gap: var(--space-2);
+    --rank-gap: calc(var(--space-3) / 2);
     grid-area: 1 / 2 / 3 / 3;
     align-self: start;
     display: grid;
     grid-auto-rows: 1fr;
     overflow: visible;
   }
-  .rankCard {
+  .rankings .rankCard {
     flex: 1 0 auto;
     display: flex;
     flex-direction: column;
     gap: var(--rank-gap);
     padding: var(--space-4);
   }
+  .leaders[data-collapsed] > :nth-child(n + 4) {
+    display: none;
+  }
+  .leaders[data-status] {
+    min-block-size: calc(var(--rank-row) * 3 + var(--rank-gap) + var(--rank-mine));
+  }
+  .rankStatus {
+    min-height: var(--space-6);
+  }
   .rankMine {
+    grid-template-columns: var(--space-6) var(--rank-avatar) minmax(0, 1fr) auto;
     min-height: var(--rank-mine);
     padding-top: var(--space-2);
   }
@@ -292,6 +303,14 @@
   .rankCard header a {
     justify-self: end;
     translate: var(--space-2) 0;
+    max-inline-size: calc(var(--space-12) * 2);
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-align: end;
+  }
+  .rankCard .rankRow div > :first-child {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .rankRow,
   .rankMine {
