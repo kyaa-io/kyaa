@@ -72,6 +72,7 @@
 .browserNotice { display: grid; min-width: 0; gap: 12px; }
 .sessionContents .browserNotice { width: min(100%, 440px); justify-self: center; }
 .browserNotice .emailButton { border-radius: var(--radius-pill); }
+.browserNotice a.emailButton { box-sizing: border-box; text-align: center; text-decoration: none; }
 /* Same width as the Apple button: email above it, the browser hint and copy link below it. */
 button.emailMethod, .browserNoticeBelowMethods { width: 90%; justify-self: center; }
 button.emailMethod { min-height: 52px; }

@@ -425,9 +425,8 @@ describe("login page (Cognito)", () => {
       const writeText = vi.fn().mockResolvedValue(undefined);
       Object.defineProperty(window.navigator, "clipboard", { configurable: true, value: { writeText } });
       render(<LoginPage appleLoginEnabled />);
-      // X ignores x-safari-https://, so tapping Google starts nothing and the copy-link notice carries the address.
-      fireEvent.click(screen.getByRole("button", { name: /Google/ }));
-      expect(assign).not.toHaveBeenCalled();
+      const external = screen.getByRole("link", { name: "브라우저에서 Google로 계속" });
+      expect(external.getAttribute("href")).toMatch(/^x-safari-https:\/\/kyaa\.io\/login\?/);
       fireEvent.click(screen.getByRole("button", { name: "로그인 링크 복사" }));
       await waitFor(() => expect(writeText).toHaveBeenCalledOnce());
       const handed = new URL(String(writeText.mock.calls[0]?.[0]));
