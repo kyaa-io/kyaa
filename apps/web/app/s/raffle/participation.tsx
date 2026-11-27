@@ -9,6 +9,7 @@ import { FanHeading } from '@/components/fan-ui/fan-heading';
 import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { FanIcon } from '@/components/fan-ui/fan-icon';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
+import { growthSignupCopy } from '@/i18n/growth-signup';
 import type { AppLocale } from '@/i18n/locales';
 import { marketingConsentCopy } from '@/features/notification/marketing-consent-copy';
 import { signupRaffleText } from '@/i18n/catalogs/signup-raffle';
@@ -300,7 +301,8 @@ function RaffleInAppGuide() {
     const standalone = (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia?.('(display-mode: standalone)').matches === true;
     setInApp(requiresGoogleBrowserHandoff(navigator.userAgent, standalone));
   }, []);
-  if (!inApp || !r.ready || r.signedIn || r.entered) return null;
+  if (!r.ready || r.signedIn || r.entered) return null;
+  if (!inApp) return <FanDisplay role="caption" as="p" className={styles.signInHint}>{growthSignupCopy[r.locale].hint}</FanDisplay>;
   const href = () => raffleEnterHref(window.location.href);
   return <div className={styles.inApp} data-raffle-inapp>
     <FanDisplay role="body" as="p">{r.t('inAppGuide')}</FanDisplay>
