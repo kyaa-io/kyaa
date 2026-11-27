@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "새해맞이 기부 투표에서 로그인 전에도 후보와 현재 순위, 득표 수를 볼 수 있어요.",
+    "후보 옆 투표 버튼이나 화면 아래의 로그인 버튼을 누르면 로그인 후 기부 투표 화면으로 돌아와요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/events/donation-vote",
+  "images": ["release-notes/images/2026-11-27-donation-vote-loggedout.png"]
+}

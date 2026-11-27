@@ -10,7 +10,21 @@ async function handle(request: Request) {
   if (process.env.DONATION_VOTE_ENABLED !== "true") return new Response(null, { status: 404, headers });
   try {
     const deps = createFanpageDependencies();
-    const actor = await deps.authorize(request.headers.get("authorization"));
+    const authorization = request.headers.get("authorization");
+    if (request.method === "GET" && authorization === null) {
+      const snapshot = await deps.rpc("donation_vote_state", { p_user: null, p_event: event }) as {
+        startsAt: string | null;
+        endsAt: string;
+        ranking: { id: string; slug: string; fandom_name: string | null; votes: number }[];
+      } | null;
+      if (!snapshot) return new Response(null, { status: 404, headers });
+      const { startsAt, endsAt, ranking } = snapshot;
+      return Response.json({
+        startsAt, endsAt,
+        ranking: ranking.map(({ id, slug, fandom_name, votes }) => ({ id, slug, fandom_name, votes })),
+      }, { headers });
+    }
+    const actor = await deps.authorize(authorization);
     const args = { p_user: actor.appUserId, p_event: event };
     if (request.method === "GET") {
       return Response.json(await deps.rpc("donation_vote_state", args), { headers });

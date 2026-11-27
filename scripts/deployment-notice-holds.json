@@ -186,7 +186,8 @@
   ],
   "donation-vote": [
     "release-notes/2026-11-25-new-year-donation-vote.json",
-    "release-notes/2026-11-26-revamp-dev-flags.json"
+    "release-notes/2026-11-26-revamp-dev-flags.json",
+    "release-notes/2026-11-27-donation-vote-loggedout.json"
   ],
   "lucky-mileage": [
     "release-notes/2026-11-25-lucky-ticket-conversion.json"
