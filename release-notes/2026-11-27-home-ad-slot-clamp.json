@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 랭킹 아래 광고의 긴 제목은 모바일에서 두 줄, 큰 화면에서 한 줄까지 보이고 끝에 말줄임표가 표시돼요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-27-home-ad-slot-clamp-390.png", "release-notes/images/2026-11-27-home-ad-slot-clamp-1440.png"]
+}
