@@ -132,7 +132,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
           <h1>{locale === "ko" ? "팬 퀴즈" : "Fan quiz"}</h1>
           <span>
             {locale === "ko"
-              ? "발행된 버전은 보존되며 수정 시 새 버전을 만듭니다."
+              ? "고치면 새 버전이 생겨요. 공개한 버전은 그대로 남아요."
               : "Published versions stay immutable; clone to edit."}
           </span>
         </div>
@@ -172,7 +172,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
             }}
           >
             <Plus aria-hidden="true" />{" "}
-            {locale === "ko" ? "새 버전" : "New version"}
+            {locale === "ko" ? "새로 만들기" : "New version"}
           </button>
         )}
       </div>
@@ -247,7 +247,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
                 />
               </label>
               {learningEnabled && <label>
-                <span>{locale === "ko" ? "힌트 (선택, 정답 제외)" : "Hint (optional · do not reveal the answer)"}</span>
+                <span>{locale === "ko" ? "힌트 (선택)" : "Hint (optional · do not reveal the answer)"}</span>
                 <textarea maxLength={1000} value={q.hint ?? ""} onChange={(event) => setQuestions((items) => items.map((item, i) => i === index ? { ...item, hint: event.target.value } : item))} />
               </label>}
               <div className={styles.quizOptions}>
@@ -345,13 +345,13 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
                     <label className={`${styles.quizOptionActive} ${styles.quizOptionPolicy}`}>
                       <input
                         type="checkbox"
-                        aria-label={locale === "ko" ? `${oi + 1}번 선택지 원문 유지` : `Preserve option ${oi + 1} original`}
+                        aria-label={locale === "ko" ? `${oi + 1}번 선택지 번역하지 않음` : `Preserve option ${oi + 1} original`}
                         checked={o.preserveOriginal !== false}
                         onChange={(e) => setQuestions((items) => items.map((item, questionIndex) => questionIndex === index
                           ? { ...item, options: item.options.map((value, optionIndex) => optionIndex === oi ? { ...value, preserveOriginal: e.target.checked } : value) }
                           : item))}
                       />
-                      <span>{locale === "ko" ? "곡명·작품명 원문 유지" : "Keep song or artwork title unchanged"}</span>
+                      <span>{locale === "ko" ? "곡명·작품명 번역하지 않음" : "Keep song or artwork title unchanged"}</span>
                     </label>
                   </div>
                 ))}

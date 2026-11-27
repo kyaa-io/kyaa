@@ -36,7 +36,7 @@ describe("Wave draw operations", () => {
   it("does not read or show private results before admin authorization", () => {
     state.session.status = "denied";
     render(<WaveDrawManager locale="ko" />);
-    expect(screen.getByText("접근 권한을 확인할 수 없습니다")).toBeInTheDocument();
+    expect(screen.getByText("권한을 확인할 수 없어요")).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
   it("requires confirmation, prevents duplicate execution, retries with the same request ID and never offers a reroll", async () => {
@@ -100,7 +100,7 @@ describe("Wave draw operations", () => {
   it("clears results and write actions if an API read loses admin access", async () => {
     vi.mocked(fetch).mockResolvedValue(Response.json({}, { status: 403 }));
     render(<WaveDrawManager locale="ko" />);
-    expect(await screen.findByText("접근 권한을 확인할 수 없습니다")).toBeInTheDocument();
+    expect(await screen.findByText("권한을 확인할 수 없어요")).toBeInTheDocument();
     expect(screen.queryByText("엠블룩 의류")).not.toBeInTheDocument();
   });
   it("displays the final state without another publish action", async () => {

@@ -41,8 +41,8 @@ describe("RaffleWinnerOperations", () => {
   it.each(["ko", "en"] as const)("distinguishes account and winner IDs for digital delivery without revealing contacts (%s)", async locale => {
     fetchMock.mockResolvedValueOnce(Response.json(winner({ method: "digital", status: "ready", recipient: null, recipientDeadlineAt: "2020-01-01T00:00:00+09:00" })));
     render(<RaffleWinnerOperations winnerId={winnerId} appUserId={appUserId} method="digital" title="Coffee coupon" status="ready" canWrite published onSaved={async () => undefined} locale={locale} />);
-    expect(screen.getByText(locale === "ko" ? "계정 ID" : "Account ID").nextSibling).toHaveTextContent(appUserId);
-    expect(screen.getByText(locale === "ko" ? "당첨 ID" : "Winner ID").nextSibling).toHaveTextContent(winnerId);
+    expect(screen.getByText(locale === "ko" ? "계정 번호" : "Account ID").nextSibling).toHaveTextContent(appUserId);
+    expect(screen.getByText(locale === "ko" ? "당첨 번호" : "Winner ID").nextSibling).toHaveTextContent(winnerId);
     expect(screen.getByText(locale === "ko" ? "Coffee coupon · 전달 대기" : "Coffee coupon · Awaiting delivery")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: locale === "ko" ? "수령 정보 조회" : "View recipient details" }));
@@ -75,7 +75,7 @@ describe("RaffleWinnerOperations", () => {
     vi.stubGlobal("URL", { ...URL, createObjectURL, revokeObjectURL });
     vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
     render(<PickupRosterExport campaignId="campaign-a" canWrite locale="ko" />);
-    fireEvent.change(screen.getByLabelText("이용 목적"), { target: { value: " 현장 수령자 본인 대조 목적 " } });
+    fireEvent.change(screen.getByLabelText("이용 목적(10자 이상)"), { target: { value: " 현장 수령자 본인 대조 목적 " } });
     fireEvent.click(screen.getByRole("button", { name: "명단 CSV 다운로드" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const init = fetchMock.mock.calls[0]?.[1];
@@ -97,7 +97,7 @@ describe("RaffleWinnerOperations", () => {
       .mockResolvedValueOnce(Response.json(winner({ recipient: { name: "김팬", phone: "010-1234-5678" } })))
       .mockResolvedValueOnce(new Response(null, { status: 503 }));
     renderWinner();
-    fireEvent.click(screen.getByRole("button", { name: "개인정보 보기 · 조회 기록" }));
+    fireEvent.click(screen.getByRole("button", { name: "개인정보 보기(조회 기록 남음)" }));
     expect(await screen.findByText("010-1234-5678")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "수령 정보 조회" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("처리하지 못했습니다");

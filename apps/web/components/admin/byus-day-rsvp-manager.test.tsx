@@ -130,7 +130,7 @@ describe("separate private participation list", () => {
       .mockResolvedValueOnce(Response.json({ participants: [{ ...participant, name: "다음 확인 성함" }], nextCursor: null }));
     render(<ByusDayRsvpManager locale="ko" />);
     await screen.findByText(participant.name); await screen.findByText("접수자 0");
-    const region = screen.getByRole("table", { name: "참여 확인" });
+    const region = screen.getByRole("table", { name: "현장 확인" });
     expect(within(region).getByText(participant.name)).toBeInTheDocument();
     expect(within(region).queryByText("접수자 0")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "다음 참여 명단" }));
@@ -150,7 +150,7 @@ describe("separate private participation list", () => {
     participationFetchMock.mockResolvedValueOnce(Response.json({ participants: [participant], nextCursor: null }));
     render(<ByusDayRsvpManager locale="ko" />); await screen.findByText(participant.name);
     participationFetchMock.mockResolvedValueOnce(Response.json({}, { status: 403 }));
-    fireEvent.click(screen.getByRole("button", { name: "참여 명단 새로고침" }));
+    fireEvent.click(screen.getByRole("button", { name: "현장 확인 명단 새로고침" }));
     await screen.findByText("access:denied"); expect(screen.queryByText(participant.name)).not.toBeInTheDocument();
   });
 });

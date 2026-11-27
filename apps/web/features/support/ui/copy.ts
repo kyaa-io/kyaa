@@ -2,7 +2,7 @@ import { messages as localizedMessages } from "@/i18n/catalogs/features__support
 import { additionalLocales } from "@/i18n/messages";
 export const supportCopy = {
   ko: {
-    title: "문의 내역", adminTitle: "CS 문의",
+    title: "문의 내역", adminTitle: "회원 문의",
     adminIntro: "접수된 문의를 확인하고 답변하세요.", new: "새 문의", cancel: "취소", subject: "제목", body: "문의 내용",
     subjectHelp: "어떤 도움이 필요한지 간단히 적어주세요.", bodyHelp: "문제가 생긴 상황을 자세히 적어주세요. 비밀번호나 인증번호는 보내지 마세요.",
     submit: "문의 보내기", reply: "메시지", send: "메시지 보내기", sending: "보내는 중…", sent: "메시지를 보냈어요.",

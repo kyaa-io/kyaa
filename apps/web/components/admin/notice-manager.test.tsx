@@ -41,7 +41,7 @@ describe("notice manager mutations", () => {
     render(<NoticeManager celebrityId="brand-1" celebrityName="브랜드" role="operator" locale="ko" isBrand />);
     await screen.findByText("공지가 없습니다.");
 
-    const postType = screen.getByRole("combobox", { name: "글 구분" });
+    const postType = screen.getByRole("combobox", { name: "글 종류" });
     expect(postType).toHaveTextContent("브랜드 소식");
     expect(postType).not.toHaveTextContent("아티스트 글");
     const visibility = screen.getByRole("combobox", { name: "공개 범위" });
@@ -123,7 +123,7 @@ describe("notice manager mutations", () => {
     expect(screen.getByRole("status")).toHaveTextContent("저장하는 중입니다");
     resolveRefresh(new Response(null, { status: 500 }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("변경은 처리됐지만 최신 상태를 불러오지 못했습니다");
+    expect(await screen.findByRole("alert")).toHaveTextContent("저장했어요. 새로고침해 주세요.");
     expect(screen.queryByText("공지를 저장했습니다.")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^저장$/ })).toBeDisabled();
     const recovery = screen.getByRole("button", { name: "최신 상태 불러오기" });

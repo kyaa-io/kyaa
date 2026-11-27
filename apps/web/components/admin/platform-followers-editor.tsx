@@ -61,8 +61,8 @@ export function PlatformFollowersEditor({ celebrityId, rows, locale, canEdit, un
               />
               <small className={localStyles.fieldHelp}>
                 {row
-                  ? `${ko ? "확인" : "Checked"} ${day(row.checkedAt)} · ${row.sourceKind === "collector" ? (ko ? "자동 수집" : "Collected") : (ko ? "직접 입력" : "Entered")}`
-                  : ko ? "미확인" : "Unconfirmed"}
+                  ? `${ko ? "확인" : "Checked"} ${day(row.checkedAt)} · ${row.sourceKind === "collector" ? (ko ? "자동" : "Collected") : (ko ? "직접 입력" : "Entered")}`
+                  : ko ? "확인 전" : "Unconfirmed"}
               </small>
             </label>
           );

@@ -30,7 +30,7 @@ it("rejects with the chosen reason", async () => {
 it("cannot approve a post on a network whose official account is not confirmed", async () => {
   const tiktok = answer([row({ platform: "tiktok", url: "https://www.tiktok.com/@fan/video/7430000000000000555" })]) as never;
   render(<ShareProofAdminPanel locale="ko" request={tiktok} canWrite />);
-  expect(await screen.findByText("공식 계정을 확인하지 못해 승인할 수 없습니다.")).toBeInTheDocument();
+  expect(await screen.findByText("공식 계정이 확인되지 않아 승인할 수 없어요.")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "승인·지급" })).toBeDisabled();
   expect(screen.getByRole("button", { name: "반려" })).toBeEnabled();
 });

@@ -21,7 +21,7 @@ const TEXT = {
     reason: "회수 사유", revoke: "회수", empty: "리포스트가 없습니다.", more: "더 보기", failed: "처리하지 못했습니다.", captureFailed: "캡처를 열지 못했습니다.",
     SELF_REVIEW_FORBIDDEN: "본인 리포스트는 확인할 수 없습니다.", REVIEW_FORBIDDEN: "이 리포스트를 확인할 권한이 없습니다.", REVIEW_STALE: "다른 관리자가 먼저 처리했어요. 목록을 새로 불러왔어요.",
     SHARE_PROOF_NOT_ACCEPTED: "승인된 리포스트만 회수할 수 있습니다.", CLAWBACK_WINDOW_CLOSED: "승인 후 7일이 지나 회수할 수 없어요.", REASON_REQUIRED: "회수 사유를 3자 이상 적어 주세요.",
-    corrected: "회수했습니다.", review: "포인트 회수 심사로 넘겼어요.", stamp_voided: "스탬프를 무효로 했어요.", none: "회수할 지급이 없어 상태만 바꿨습니다.", replayed: "이미 회수된 리포스트입니다." },
+    corrected: "회수했습니다.", review: "포인트 회수 심사로 넘겼어요.", stamp_voided: "스탬프를 무효로 했어요.", none: "지급한 것이 없어 상태만 바꿨어요.", replayed: "이미 회수된 리포스트입니다." },
   en: { title: "Instagram reposts", pending: "To review", accepted: "Approved", rejected: "Rejected", revoked: "Revoked", all: "All", member: "Member", submitted: "Submitted",
     hours: (n: number) => `${n}h ago`, feed: "Feed", reel: "Reel", story: "Story", capture: "View capture", accept: "Approve", reject: "Reject", rejectAs: "Reject reason",
     no_hashtag: "No hashtag", private_account: "Private account", duplicate: "Duplicate", unrelated: "Unrelated post", duplicateCount: (n: number) => `Also sent by ${n}`,

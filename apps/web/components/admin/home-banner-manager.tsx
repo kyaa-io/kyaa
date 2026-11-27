@@ -38,7 +38,7 @@ const cloneDraft = (banner: AdminHomeBanner): Draft => structuredClone(banner);
 
 const copy = {
   ko: {
-    title: "배너 관리", description: "홈과 모임 탐색에 표시할 배너와 이동 링크, 분류, 공개 순서를 관리합니다.",
+    title: "배너 관리",
     new: "새 배너", list: "배너 목록", empty: "등록된 배너가 없습니다.", regular: "정기 방송", announcement: "안내",
     creator: "크리에이터", chooseCreator: "크리에이터 선택", kind: "배너 종류", draft: "비공개", published: "공개",
     save: "초안 저장", saveChanges: "저장", publish: "공개", unpublish: "비공개로", up: "위로", down: "아래로",
@@ -49,10 +49,10 @@ const copy = {
     desktopVideo: "넓은 영상", mobileVideo: "정사각 영상 (선택)", uploadVideo: "MP4·WebM 올리기", removeVideo: "영상 제거", noVideo: "등록된 영상 없음",
     videoPair: "MP4와 WebM 파일을 함께 골라 주세요.", videoTooLarge: "영상은 파일마다 1MB까지 올릴 수 있어요.", videoSound: "소리가 없는 영상만 올릴 수 있어요.", videoFailure: "영상을 올리지 못했어요.",
     uploadFailure: "이미지를 등록하지 못했습니다.", invalid: "정기 LIVE 배너는 크리에이터마다 하나만 공개할 수 있어요.", issues: "공개 전에 다음 항목을 입력해 주세요.",
-    conflict: "다른 관리자가 먼저 변경했습니다. 현재 입력은 보존했습니다. 서버 데이터를 다시 불러오면 현재 입력이 사라집니다.", reload: "서버 데이터 다시 불러오기",
+    conflict: "다른 관리자가 먼저 바꿨어요. 새로고침하면 입력한 내용이 사라져요.", reload: "새로고침",
   },
   en: {
-    title: "Banner manager", description: "Manage banners, destinations, categories and display order for Home and group discovery.",
+    title: "Banner manager",
     new: "New banner", list: "Banners", empty: "No banners have been added.", regular: "Regular LIVE", announcement: "Announcement",
     creator: "Creator", chooseCreator: "Select a creator", kind: "Banner type", draft: "Hidden", published: "Published",
     save: "Save draft", saveChanges: "Save changes", publish: "Publish", unpublish: "Unpublish", up: "Move up", down: "Move down",
@@ -300,7 +300,7 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
                     }} />
                   </label>
                   {(["startsAt", "endsAt"] as const).map(field => <label key={field} className={styles.field}>
-                    {field === "startsAt" ? (locale === "ko" ? "노출 시작 (한국 시간)" : "Starts (Korea time)") : (locale === "ko" ? "노출 종료 (한국 시간)" : "Ends (Korea time)")}
+                    {field === "startsAt" ? (locale === "ko" ? "표시 시작 (한국 시간)" : "Starts (Korea time)") : (locale === "ko" ? "표시 종료 (한국 시간)" : "Ends (Korea time)")}
                     <input type="datetime-local" disabled={!canWrite} value={draft[field] ? new Date(Date.parse(draft[field]) + 9 * 3600000).toISOString().slice(0, 16) : ""} onChange={event => updateRoot({[field]: event.target.value ? new Date(event.target.value + "+09:00").toISOString() : null})} />
                   </label>)}
                 </>}

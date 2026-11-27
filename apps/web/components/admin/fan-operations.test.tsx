@@ -104,7 +104,7 @@ describe("FanOperations", () => {
     const row = screen.getByText("Kamilia").closest("tr");
     expect(row).toHaveTextContent("kamilia@example.com");
     expect(row).toHaveTextContent("Google");
-    expect(row).not.toHaveTextContent("이용 가능");
+    expect(row).not.toHaveTextContent("이용 중");
     expect(row).not.toHaveTextContent("minted");
     const disabledRow = screen.getByText("Alpha").closest("tr");
     expect(disabledRow).toHaveTextContent("Apple");
@@ -113,21 +113,19 @@ describe("FanOperations", () => {
     expect(screen.getByRole("columnheader", { name: "로그인 수단" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "회원 관리" })).toBeInTheDocument();
     expect(screen.getByText("현재 불러온 2명")).toBeInTheDocument();
-    expect(
-      screen.getByText("다음 결과를 불러올 수 있습니다."),
-    ).toBeInTheDocument();
+    expect(screen.queryByText("다음 결과를 불러올 수 있습니다.")).not.toBeInTheDocument();
     expect(
       screen.getByText("개인정보 조회 기준").closest("details"),
     ).not.toHaveAttribute("open");
     expect(
-      screen.getByRole("columnheader", { name: "패스포트 여정" }),
+      screen.getByRole("columnheader", { name: "패스포트" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("columnheader", { name: "점수" }),
     ).toBeInTheDocument();
     const loadMore = screen.getByRole("button", { name: "다음 회원 불러오기" });
     expect(loadMore).toBeEnabled();
-    const sort = screen.getByRole("combobox", { name: "현재 목록 정렬" });
+    const sort = screen.getByRole("combobox", { name: "정렬" });
     expect(sort).toHaveValue("recent");
     fireEvent.change(sort, { target: { value: "score" } });
     const dataRows = within(screen.getByRole("table")).getAllByRole("row").slice(1);
@@ -155,7 +153,7 @@ describe("FanOperations", () => {
     ).toHaveAttribute("href", "/admin/fans");
   });
   it.each([
-    ["", "패스포트 미발급", "아직 발급된 패스포트가 없습니다.", "회원 상세: New member"],
+    ["", "미발급", "아직 패스포트가 없어요.", "회원 상세: New member"],
     ["lang=en", "No Passport issued", "This member has not issued a Passport yet.", "Member detail: New member"],
   ])("shows members without passports and their empty detail (%s)", async (params, label, description, trigger) => {
     searchParamsState.current = params;
@@ -249,7 +247,7 @@ describe("FanOperations", () => {
       await screen.findByRole("button", { name: "회원 상세: Kamilia" }),
     );
     const dialog = await screen.findByRole("dialog");
-    const submit = within(dialog).getByRole("button", { name: "교정 기록" });
+    const submit = within(dialog).getByRole("button", { name: "조정하기" });
     expect(within(dialog).getByText("디지털 패스포트")).toBeInTheDocument();
     expect(
       within(dialog).getByRole("heading", { name: "스탬프" }),
@@ -337,8 +335,8 @@ describe("FanOperations", () => {
     expect(
       screen.getByRole("textbox", { name: "닉네임 또는 정확한 이메일" }),
     ).toHaveValue(email);
-    expect(screen.getByText(/적용된 조건:/)).toHaveTextContent(
-      "이메일 검색 적용",
+    expect(screen.getByText(/검색 조건:/)).toHaveTextContent(
+      "이메일 검색 중",
     );
     expect(document.body).not.toHaveTextContent(email);
   });

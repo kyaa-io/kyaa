@@ -12061,7 +12061,7 @@
   },
   "m8178eceb771e": {
     "en": "Customer support",
-    "ko": "CS 문의",
+    "ko": "회원 문의",
     "source": "features/support/ui/copy",
     "id": "features/support/ui/copy:supportCopy.adminTitle"
   },

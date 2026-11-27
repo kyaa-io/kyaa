@@ -100,7 +100,7 @@ describe("AdminOperationsShell navigation", () => {
     expect(within(navigation).getByText("회원")).toBeInTheDocument();
     expect(within(navigation).getByText("콘텐츠")).toBeInTheDocument();
     expect(within(navigation).getByText("운영 관리")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "서비스 열기" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "서비스 보기" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("navigation", { name: "현재 위치" })).toHaveTextContent("서비스 현황");
   });
 

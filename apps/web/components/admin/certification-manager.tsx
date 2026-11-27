@@ -98,9 +98,9 @@ function membershipPreset(platform: MembershipPlatform) {
     category: "유료 멤버십",
     titleKo: `${name} 유료 멤버십 인증`,
     titleEn: `${name} paid membership verification`,
-    descriptionKo: `${name} 유료 멤버십 상태를 인증하고 팬 점수와 멤버십 스탬프를 받으세요.`,
+    descriptionKo: `${name} 유료 멤버십을 인증하면 팬 점수와 멤버십 스탬프를 받아요.`,
     descriptionEn: `Verify your paid ${name} membership to earn fan score and a Membership Stamp.`,
-    instructionsKo: `${name}에서 가입한 멤버십의 정보 화면을 캡처해 주세요. 관리자가 자료를 확인한 뒤 스탬프와 점수를 지급합니다.`,
+    instructionsKo: `${name} 멤버십 정보 화면을 캡처해 올려 주세요. 관리자가 승인하면 스탬프와 점수를 드려요.`,
     instructionsEn: `Capture the membership information screen in ${name}. Your Stamp and fan score are awarded after an administrator approves your proof.`,
     scorePoints: 1,
     ticketAmount: 0,
@@ -242,7 +242,7 @@ function CertificationManager({
     pendingRef.current = true;
     setPending(true);
     setMessageIsError(false);
-    setMessage(locale === "ko" ? "처리 중입니다." : "Processing.");
+    setMessage(locale === "ko" ? "저장 중…" : "Processing.");
     let postSucceeded = false;
     try {
       const result = await request("/api/admin/certification-missions", "POST", body);
@@ -369,7 +369,7 @@ function CertificationManager({
         </header>
         <ReviewNavigation locale={locale} />
         <div className={styles.toolbar}>
-          <div className={styles.tabs} role="tablist" aria-label={locale === "ko" ? "인증 관리" : "Certification management"} onKeyDown={event => {
+          <div className={styles.tabs} role="tablist" aria-label={locale === "ko" ? "인증 심사 메뉴" : "Verification review sections"} onKeyDown={event => {
             if (pending || needsRefresh || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
             event.preventDefault();
             const next = event.key === "Home" ? "review" : event.key === "End" ? "missions" : tab === "review" ? "missions" : "review";
@@ -390,7 +390,7 @@ function CertificationManager({
             <div className={styles.sectionHeading}>
               <h2>{locale === "ko" ? "인증 미션" : "Missions"}</h2>
               <button type="button" disabled={pending || needsRefresh} onClick={() => setForm({ ...blank, immutableKey: `cert-${crypto.randomUUID()}` })}>
-                <Plus /> {locale === "ko" ? "새 미션" : "New"}
+                <Plus /> {locale === "ko" ? "새 인증 미션" : "New"}
               </button>
             </div>
             <AdminListSearch value={missionQuery} onChange={setMissionQuery} locale={locale} disabled={pending || needsRefresh} />
@@ -418,10 +418,10 @@ function CertificationManager({
             <h2>
               {form.id
                 ? locale === "ko"
-                  ? "미션 편집"
+                  ? "인증 미션 수정"
                   : "Edit mission"
                 : locale === "ko"
-                  ? "새 미션"
+                  ? "새 인증 미션"
                   : "New mission"}
             </h2>
             <label>

@@ -29,7 +29,7 @@ const queryOf = (key: Selection): EventParticipantQuery => {
 };
 const copy = {
   ko: {
-    title: "이벤트 참여자", total: "참여자", unit: "명", refresh: "새로고침", exportCsv: "CSV 내려받기", exporting: "내려받는 중…", more: "더 보기",
+    title: "행사 참가자 명단", total: "참여자", unit: "명", refresh: "새로고침", exportCsv: "CSV 내려받기", exporting: "내려받는 중…", more: "더 보기",
     events: {
       "x-mission": "X 이벤트", "signup-raffle": "래플 이벤트", "x-opening-1116": "Opening 11/16", "elina-onboarding-1117": "엘리나 11/17",
       "changha-onboarding-1118": "창하 11/18", "yuna-onboarding-1119": "유나 11/19", "elina-passport-1120": "엘리나 패스포트 11/20~21", "changha-photo-1122": "창하 미공개사진 11/22~23",
@@ -38,11 +38,11 @@ const copy = {
       "x-mission": "X 미션 이벤트 참여자", "signup-raffle": "신규 가입 래플 응모자", "x-opening-1116": "X Opening 이벤트 참여자", "elina-onboarding-1117": "엘리나 팬페이지 좋아요 참여자",
       "changha-onboarding-1118": "창하 팬페이지 좋아요 참여자", "yuna-onboarding-1119": "유나 팬페이지 좋아요 참여자", "elina-passport-1120": "엘리나 패스포트 발급자", "changha-photo-1122": "창하 미공개사진 이벤트 참여자",
     },
-    order: { "x-mission": "좋아요 완료 최신순", "signup-raffle": "응모 최신순", "page-like": "좋아요 최신순", "passport-issued": "발급 최신순" },
-    nickname: "닉네임", signedUpAt: "가입일", sourceHeading: "유입 출처", sourceColumn: "유입", noSource: "태그 없음", sources: { telegram: "텔레그램", x: "X", kol: "KoL" } as Record<string, string>, participatedAt: { "x-mission": "참여 시각", "signup-raffle": "응모 시각", "page-like": "좋아요 시각", "passport-issued": "발급 시각" }, status: "상태",
+    order: { "x-mission": "최신순", "signup-raffle": "최신순", "page-like": "최신순", "passport-issued": "최신순" },
+    nickname: "닉네임", signedUpAt: "가입일", sourceHeading: "가입 경로", sourceColumn: "경로", noSource: "표시 없음", sources: { telegram: "텔레그램", x: "X", kol: "KoL" } as Record<string, string>, participatedAt: { "x-mission": "참여 시각", "signup-raffle": "응모 시각", "page-like": "좋아요 시각", "passport-issued": "발급 시각" }, status: "상태",
     state: { completed: "완료", entered: "응모", issued: "발급" },
     noNickname: "닉네임 없음",
-    loading: "참여자 목록을 가져오고 있어요.", error: "참여자 목록을 불러오지 못했습니다.", retry: "다시 시도",
+    loading: "참여자 목록을 가져오고 있어요.", error: "참여자 목록을 불러오지 못했어요.", retry: "다시 시도",
     empty: "아직 참여자가 없습니다.", exportError: "CSV를 내려받지 못했습니다.",
   },
   en: {

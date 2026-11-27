@@ -19,11 +19,11 @@ it("protects unclassified saved options and sends explicit policies for saved an
     return Response.json({ data: document });
   }));
   render(<SurveyBuilder liveEventId="live" />);
-  const policies = await screen.findAllByRole("checkbox", { name: "곡명·작품명 원문 유지" });
+  const policies = await screen.findAllByRole("checkbox", { name: "곡명·작품명 번역하지 않음" });
   expect(policies[0]).toBeChecked();
   expect(policies[1]).not.toBeChecked();
   fireEvent.click(screen.getByRole("button", { name: /^Option$/ }));
-  expect(screen.getAllByRole("checkbox", { name: "곡명·작품명 원문 유지" })[2]).not.toBeChecked();
+  expect(screen.getAllByRole("checkbox", { name: "곡명·작품명 번역하지 않음" })[2]).not.toBeChecked();
   fireEvent.click(policies[1]);
   fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
   await waitFor(() => expect(writes).toHaveLength(1));

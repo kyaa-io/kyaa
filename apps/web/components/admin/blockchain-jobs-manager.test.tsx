@@ -17,7 +17,7 @@ describe("ADM-011 blockchain jobs", () => {
     render(<BlockchainJobsManager />);
     fireEvent.click(await screen.findByRole("button", { name: /작업 상세/ }));
     expect(screen.getByText("Provider request could not be completed.")).toBeInTheDocument();
-    expect(screen.getByText("아직 제출된 트랜잭션이 없습니다.")).toBeInTheDocument();
+    expect(screen.getByText("아직 거래 번호가 없어요.")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "재시도 요청" }));
     expect(screen.getByRole("alertdialog", { name: "이 작업을 재시도할까요?" })).toBeInTheDocument();
   });
@@ -26,7 +26,7 @@ describe("ADM-011 blockchain jobs", () => {
     render(<BlockchainJobsManager />);
     fireEvent.click(await screen.findByRole("button", { name: /작업 상세/ }));
     expect(screen.getByRole("button", { name: "재시도 요청" })).toBeDisabled();
-    expect(screen.getByText("Viewer 역할은 조회만 가능합니다.")).toBeInTheDocument();
+    expect(screen.getByText("조회 전용 계정은 볼 수만 있어요.")).toBeInTheDocument();
   });
   it("retains language while resetting filters", async () => {
     query = "lang=en&status=FAILED";

@@ -15,7 +15,7 @@ import { scheduleWriteSchema, type AdminSchedule, type ScheduleSuggestion, type 
 import { participationCopy } from "@/i18n/catalogs/features__schedules__ui__participation";
 import styles from "@/features/schedules/ui/participation.module.css";
 export { styles };
-export function ParticipationAdmin({ locale, title, description, children, className, groupLayout = false }: { groupLayout?: boolean; locale: AdminLocale; title: string; description: string; className?: string; children: (role: string) => ReactNode }) {
+export function ParticipationAdmin({ locale, title, description, children, className, groupLayout = false }: { groupLayout?: boolean; locale: AdminLocale; title: string; description?: string; className?: string; children: (role: string) => ReactNode }) {
   const session = useAdminSession(), auth = usePrivy();
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale={locale} />;
   if (groupLayout) return <AdminOperationsShell locale={locale} adminRole={session.admin.role}><div className={className} key={auth.user?.id}>{children(session.admin.role)}</div></AdminOperationsShell>;

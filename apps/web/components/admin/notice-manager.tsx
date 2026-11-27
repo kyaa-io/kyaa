@@ -198,7 +198,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       setNeedsRefresh(true);
       if (!(await load())) throw new Error(locale === "ko" ? "저장 후 공지를 다시 불러오지 못했습니다." : "Could not refresh after saving.");
       setSelectedId(result.id); recoveryTargetRef.current = null; setNeedsRefresh(false); setMessageIsError(false); setMessage(locale === "ko" ? "공지를 저장했습니다." : "Notice saved.");
-    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "변경은 처리됐지만 최신 상태를 불러오지 못했습니다." : "The change was processed, but the latest state could not be loaded.") : error instanceof Error ? error.message : "Save failed"); }
+    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "저장했어요. 새로고침해 주세요." : "Saved. Please refresh.") : error instanceof Error ? error.message : "Save failed"); }
     finally { endOperation(); }
   }
   async function state(action: "publish" | "unpublish" | "archive") {
@@ -214,7 +214,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       setNeedsRefresh(true);
       if (!(await load())) throw new Error(locale === "ko" ? "상태 변경 후 공지를 다시 불러오지 못했습니다." : "Could not refresh after updating state.");
       recoveryTargetRef.current = null; setNeedsRefresh(false); setMessageIsError(false); setMessage(locale === "ko" ? "공지 상태를 변경했습니다." : "Notice state updated.");
-    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "변경은 처리됐지만 최신 상태를 불러오지 못했습니다." : "The change was processed, but the latest state could not be loaded.") : error instanceof Error ? error.message : "State update failed"); }
+    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "저장했어요. 새로고침해 주세요." : "Saved. Please refresh.") : error instanceof Error ? error.message : "State update failed"); }
     finally { endOperation(); }
   }
   async function upload(file: File) {
@@ -223,8 +223,8 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     try {
       if (operatorChannelId && file.size > 8 * 1024 * 1024) throw new Error(copy.size);
       if (operatorChannelId && !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error(copy.type);
-      const alt = prompt(locale === "ko" ? "이미지 대체 텍스트를 입력하세요." : "Enter image alt text.");
-      if (!alt?.trim()) throw new Error(locale === "ko" ? "이미지 대체 텍스트가 필요합니다." : "Image alt text is required.");
+      const alt = prompt(locale === "ko" ? "이미지 설명을 적어 주세요." : "Enter image alt text.");
+      if (!alt?.trim()) throw new Error(locale === "ko" ? "이미지 설명을 적어 주세요." : "Image alt text is required.");
       const token = await getAccessToken();
       if (!token) throw new Error(locale === "ko" ? "로그인이 필요합니다." : "Authentication required.");
       const data = new FormData(); data.set("file", file);
@@ -281,14 +281,14 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
         <div className={styles.language}><button type="button" disabled={interactionLocked} aria-pressed={language === "ko"} onClick={() => setLanguage("ko")}>KO</button><button type="button" disabled={interactionLocked} aria-pressed={language === "en"} onClick={() => setLanguage("en")}>EN</button></div>
         <div className={styles.fields}><label><span>{locale === "ko" ? "주소" : "URL name"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={slug} pattern="[a-z0-9]+(-[a-z0-9]+)*" onChange={(event) => setSlug(event.target.value)} /></label><label><span>{locale === "ko" ? "제목" : "Title"}</span><input disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} value={titles[language]} onChange={(event) => setTitles((value) => ({ ...value, [language]: event.target.value }))} /></label><label className={styles.pin}><input type="checkbox" disabled={!canEdit || interactionLocked || !!current?.archivedAt || current?.publicationStatus === "published"} checked={pinned} onChange={(event) => setPinned(event.target.checked)} /><Pin />{locale === "ko" ? "상단 고정" : "Pin Notice"}</label></div>
         {categories ? <div className={styles.fields}>
-          <label><span>{locale === "ko" ? "구분" : "Category"}</span><select disabled={toolbarDisabled} value={category} onChange={event => setCategory(event.target.value)}>{categories.map(value => <option key={value} value={value}>{categoryLabels?.[value] ?? value}</option>)}</select></label>
-          {linkable && <label><span>{locale === "ko" ? "연결 팬페이지" : "Linked fan page"}</span><select disabled={toolbarDisabled} value={linkedPageId ?? ""} onChange={event => setLinkedPageId(event.target.value || null)}>
+          <label><span>{locale === "ko" ? "종류" : "Category"}</span><select disabled={toolbarDisabled} value={category} onChange={event => setCategory(event.target.value)}>{categories.map(value => <option key={value} value={value}>{categoryLabels?.[value] ?? value}</option>)}</select></label>
+          {linkable && <label><span>{locale === "ko" ? "연결할 팬페이지" : "Linked fan page"}</span><select disabled={toolbarDisabled} value={linkedPageId ?? ""} onChange={event => setLinkedPageId(event.target.value || null)}>
             <option value="">{locale === "ko" ? "연결 안 함(공지 상세로 이동)" : "None (opens the notice)"}</option>
             {linkedPageId && !linkTargets.some(target => target.id === linkedPageId) && <option value={linkedPageId}>{locale === "ko" ? "지금 연결할 수 없는 팬페이지" : "Fan page not linkable now"}</option>}
             {linkTargets.map(target => <option key={target.id} value={target.id}>{target.name} (/{target.slug})</option>)}
           </select></label>}
         </div> : <div className={styles.fields}>
-          <label><span>{locale === "ko" ? "글 구분" : "Post type"}</span><select disabled={toolbarDisabled} value={postType} onChange={event => setPostType(event.target.value as Notice["postType"])}><option value="notice">{locale === "ko" ? "공지" : "Notice"}</option><option value="artist_post">{isBrand ? locale === "ko" ? "브랜드 소식" : "Brand update" : locale === "ko" ? "아티스트 글" : "Artist post"}</option></select></label>
+          <label><span>{locale === "ko" ? "글 종류" : "Post type"}</span><select disabled={toolbarDisabled} value={postType} onChange={event => setPostType(event.target.value as Notice["postType"])}><option value="notice">{locale === "ko" ? "공지" : "Notice"}</option><option value="artist_post">{isBrand ? locale === "ko" ? "브랜드 소식" : "Brand update" : locale === "ko" ? "아티스트 글" : "Artist post"}</option></select></label>
           <label><span>{locale === "ko" ? "공개 범위" : "Visibility"}</span><select disabled={toolbarDisabled} value={isBrand ? "public" : visibility} onChange={event => setVisibility(event.target.value as Notice["visibility"])}><option value="public">{locale === "ko" ? "전체 공개" : "Public"}</option>{!isBrand && <option value="members">{locale === "ko" ? "회원 공개" : "Members only"}</option>}</select></label>
         </div>}
         <div className={styles.toolbar} aria-label={locale === "ko" ? "본문 형식" : "Body formatting"}>

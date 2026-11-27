@@ -35,12 +35,12 @@ type Registration = {
   canRetry: boolean;
 };
 const registrationLabels: Record<Registration["status"], [string, string]> = {
-  queued: ["등록 대기", "Registration queued"],
-  preparing: ["등록 준비 중", "Preparing registration"],
-  submitted: ["등록 결과 확인 중", "Checking registration"],
-  confirmed: ["등록 성공 · 최종 확인 중", "Registered · awaiting final confirmation"],
-  finalized: ["등록 완료", "Registration complete"],
-  failed: ["확인 필요", "Needs attention"],
+  queued: ["디지털 등록 대기", "Registration queued"],
+  preparing: ["준비 중", "Preparing registration"],
+  submitted: ["확인 중", "Checking registration"],
+  confirmed: ["마무리 중", "Registered · awaiting final confirmation"],
+  finalized: ["완료", "Registration complete"],
+  failed: ["다시 확인 필요", "Needs attention"],
 };
 type Celebrity = {
   id: string;
@@ -299,13 +299,8 @@ function CelebrityCms({
     <AdminOperationsShell locale={locale} adminRole={role}>
       <div className={styles.cmsHeading}>
         <div>
-          <p>{locale === "ko" ? "콘텐츠 관리" : "Content management"} · {environment === "Production" ? (locale === "ko" ? "운영 환경" : "Production") : environment === "Preview" ? (locale === "ko" ? "미리보기 환경" : "Preview") : (locale === "ko" ? "개발 환경" : "Development")}</p>
+          <p>{locale === "ko" ? "콘텐츠 관리" : "Content management"} · {environment === "Production" ? (locale === "ko" ? "운영 서버" : "Production") : environment === "Preview" ? (locale === "ko" ? "테스트 서버" : "Preview") : (locale === "ko" ? "개발 서버" : "Development")}</p>
           <h1>{locale === "ko" ? "크리에이터 관리" : "Creator management"}</h1>
-          <span>
-            {locale === "ko"
-              ? "프로필을 미리 보고 공개 상태와 팬 퀴즈를 관리합니다."
-              : "Preview profiles, publication, and fan quizzes."}
-          </span>
         </div>
         {canEdit && (
           <button
@@ -474,7 +469,7 @@ function CelebrityCms({
                 <strong>{registrationLabels[current.onchainRegistration.status]?.[locale === "ko" ? 0 : 1]}</strong>
                 <p>{current.onchainRegistration.likesEnabled
                   ? locale === "ko" ? "좋아요를 누를 수 있습니다." : "Fans can now like this page."
-                  : locale === "ko" ? "등록이 확인되면 좋아요를 누를 수 있습니다. 페이지 공개 상태는 그대로 유지됩니다." : "Likes become available when registration is confirmed. Publication is unchanged."}</p>
+                  : locale === "ko" ? "등록을 확인하면 좋아요를 누를 수 있어요. 페이지 공개 상태는 그대로 유지됩니다." : "Likes become available when registration is confirmed. Publication is unchanged."}</p>
                 {current.onchainRegistration.status === "failed" && (
                   <p>{locale === "ko" ? "등록을 완료하지 못했습니다. 다시 시도해도 기존 처리 기록은 유지됩니다." : "Registration could not finish. Retrying preserves the existing transaction record."}</p>
                 )}
@@ -493,7 +488,7 @@ function CelebrityCms({
               if (!draftIsValid) {
                 setMessage(
                   locale === "ko"
-                    ? "한국어·영어 필수 정보와 주소, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인해 주세요."
+                    ? "빠졌거나 형식이 맞지 않는 항목을 확인해 주세요. 한국어·영어 필수 정보, 주소, 이미지, 직군, 링크, 테마를 봐 주세요."
                     : "Check required KO and EN fields, slug, image, role, website and ticket links, theme, and channel formats.",
                 );
                 return;
@@ -539,12 +534,12 @@ function CelebrityCms({
               </label>
               <div className={styles.fieldGrid}>
                 <label>
-                  <span>{locale === "ko" ? "주소 경로" : "URL path"}</span>
+                  <span>{locale === "ko" ? "주소" : "URL path"}</span>
                   <input
                     required
                     pattern="[a-z0-9]+(-[a-z0-9]+)*"
                     disabled={Boolean(current?.everPublishedAt)}
-                    aria-label={locale === "ko" ? "주소 경로" : "URL path"}
+                    aria-label={locale === "ko" ? "주소" : "URL path"}
                     aria-describedby="celebrity-slug-help"
                     value={draft.slug}
                     onChange={(e) =>
@@ -553,7 +548,7 @@ function CelebrityCms({
                   />
                   <small id="celebrity-slug-help">
                     {locale === "ko"
-                      ? "소문자 영문, 숫자, 하이픈만 사용할 수 있으며 최초 공개 후에는 변경할 수 없습니다."
+                      ? "영문 소문자·숫자·- 만. 공개 후 변경 불가"
                       : "Use lowercase letters, numbers, and hyphens. The path cannot change after first publication."}
                   </small>
                 </label>
@@ -598,7 +593,7 @@ function CelebrityCms({
               <label>
                 <span>
                   {locale === "ko"
-                    ? "기본 이미지 URL (초안 생성용)"
+                    ? "처음 이미지 주소"
                     : "Fallback image URL (draft creation)"}
                 </span>
                 <input
@@ -606,7 +601,7 @@ function CelebrityCms({
                   disabled={Boolean(current)}
                   aria-label={
                     locale === "ko"
-                      ? "기본 이미지 URL (초안 생성용)"
+                      ? "처음 이미지 주소"
                       : "Fallback image URL (draft creation)"
                   }
                   value={draft.imageUrl}
@@ -646,15 +641,15 @@ function CelebrityCms({
             </fieldset>
             <fieldset disabled={!canEdit || !!current?.archivedAt}>
               <legend>
-                {locale === "ko" ? "분류와 채널" : "Category and channels"}
+                {locale === "ko" ? "분류와 링크" : "Category and links"}
               </legend>
               <label>
                 <span>{locale === "ko" ? "대표 분류" : "Primary category"}</span>
                 <select required value={draft.primaryRole ?? ""} onChange={(event) => setDraft((d) => ({ ...d, primaryRole: event.target.value as CreatorRole }))}>
-                  <option value="" disabled>{locale === "ko" ? "분류를 선택하세요" : "Select a category"}</option>
+                  <option value="" disabled>{locale === "ko" ? "분류 선택" : "Select a category"}</option>
                   {CREATOR_ROLES.map((role) => <option key={role} value={role} disabled={Boolean(current?.primaryRole) && (current?.primaryRole === "brand") !== (role === "brand")}>{creatorRoleLabel(role, locale)}</option>)}
                 </select>
-                {current?.primaryRole && <small>{locale === "ko" ? "저장된 항목은 인물과 브랜드 사이에서 전환할 수 없습니다." : "Saved profiles cannot switch between person and brand."}</small>}
+                {current?.primaryRole && <small>{locale === "ko" ? "저장 후에는 인물↔브랜드를 바꿀 수 없어요." : "Saved profiles cannot switch between person and brand."}</small>}
               </label>
               <label>
                 <span>{locale === "ko" ? "공식 웹사이트" : "Official website"}</span>
@@ -706,7 +701,7 @@ function CelebrityCms({
               </h3>
               <small className={localStyles.fieldHelp}>
                 {locale === "ko"
-                  ? `HTTPS 채널을 최대 4개까지 등록할 수 있습니다. (${draft.socialLinks.length}/4)`
+                  ? `링크는 https 주소로 최대 4개 (${draft.socialLinks.length}/4)`
                   : `Add up to 4 HTTPS channels. (${draft.socialLinks.length}/4)`}
               </small>
               {(["youtube", "tiktok", "instagram", "chzzk"] as const).map(
@@ -782,7 +777,7 @@ function CelebrityCms({
                     ? "필수 정보가 입력되어 저장할 수 있습니다."
                     : "Required information is complete and ready to save."
                   : locale === "ko"
-                    ? "한국어·영어 필수 정보와 주소, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인해 주세요."
+                    ? "빠졌거나 형식이 맞지 않는 항목을 확인해 주세요. 한국어·영어 필수 정보, 주소, 이미지, 직군, 링크, 테마를 봐 주세요."
                     : "Check required KO and EN fields, slug, image, role, website and ticket links, theme, and channel formats."}
               </p>
             )}
@@ -828,10 +823,10 @@ function CelebrityCms({
                     >
                       {current.status === "published"
                         ? locale === "ko"
-                          ? "공개 중지"
+                          ? "비공개로"
                           : "Unpublish"
                         : locale === "ko"
-                          ? "공개하기"
+                          ? "공개"
                           : "Publish"}
                     </button>
                   )}

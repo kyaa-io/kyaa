@@ -12,8 +12,8 @@ describe("ADM-012 audit log", () => {
   beforeEach(() => vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [item], nextCursor: "next" }) })));
   it("states immutability and renders redacted before/after detail", async () => {
     render(<AuditLogManager />);
-    expect(await screen.findByText("감사 로그는 추가만 가능하며 수정하거나 삭제할 수 없습니다.")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /로그 상세/ }));
+    expect(await screen.findByText("활동 기록은 수정하거나 삭제할 수 없습니다.")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /기록 상세/ }));
     expect(screen.getByRole("heading", { name: "변경 전" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "변경 후" })).toBeInTheDocument();
     expect(screen.getByText(/\[REDACTED\]/)).toBeInTheDocument();

@@ -91,12 +91,12 @@ export function MissionBuilder({ liveEventId }: { liveEventId: string }) {
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale="ko" />;
   return <AdminOperationsShell locale="ko" adminRole={session.admin.role}>
     <div className={styles.page}>
-    <header className={styles.heading}><p>라이브 운영</p><h1>미션 빌더</h1><span>퀴즈·설문·투표의 노출 기간과 한국어·영어 문항을 구성합니다.</span></header>
-    {session.admin.role === "viewer" && <p className={styles.notice}>Viewer 역할은 미션 현황만 조회할 수 있습니다.</p>}
+    <header className={styles.heading}><h1>미션 만들기</h1></header>
+    {session.admin.role === "viewer" && <p className={styles.notice}>조회 전용 계정은 미션 현황을 볼 수만 있어요.</p>}
     {message && <p className={styles.message} role="status">{message}</p>}
     <section className={styles.card} aria-labelledby="mission-settings"><h2 id="mission-settings">기본 설정</h2><div className={styles.localeGrid}>
       <label><span>미션 유형</span><select value={type} onChange={event => setType(event.target.value as MissionType)}><option value="quiz">퀴즈</option><option value="survey">설문</option><option value="vote">투표</option></select></label>
-      <label><span>출석 조건</span><select value={attendanceRequirement} onChange={event => setAttendanceRequirement(event.target.value as typeof attendanceRequirement)}><option value="not_required">필수 아님</option><option value="required">필수</option></select></label>
+      <label><span>출석 조건</span><select value={attendanceRequirement} onChange={event => setAttendanceRequirement(event.target.value as typeof attendanceRequirement)}><option value="not_required">없음</option><option value="required">필수</option></select></label>
       <Text label="제목" value={titleKo} set={setTitleKo}/><Text label="Title" value={titleEn} set={setTitleEn}/>
       <Text label="설명" value={descriptionKo} set={setDescriptionKo}/><Text label="Description" value={descriptionEn} set={setDescriptionEn}/>
       <DateTime label="공개 시작" value={visibleFrom} set={setVisibleFrom}/><DateTime label="공개 종료" value={visibleUntil} set={setVisibleUntil}/>
@@ -109,7 +109,7 @@ export function MissionBuilder({ liveEventId }: { liveEventId: string }) {
         {type === "quiz" && <label className={styles.radioLabel}><span>정답</span><input type="radio" name={`correct-${questionIndex}`} checked={item.correctIndex === optionIndex} onChange={() => updateQuestion(questionIndex, { correctIndex: optionIndex })}/></label>}
         <Text label={`선택지 ${optionIndex + 1}`} value={value.labelKo} set={labelKo => updateOption(questionIndex, optionIndex, { labelKo })}/>
         <Text label={`Option ${optionIndex + 1}`} value={value.labelEn} set={labelEn => updateOption(questionIndex, optionIndex, { labelEn })}/>
-        <label className={styles.optionPolicy}><input type="checkbox" checked={value.preserveOriginal} onChange={event => updateOption(questionIndex, optionIndex, { preserveOriginal: event.target.checked })}/><span>곡명·작품명 원문 유지</span></label>
+        <label className={styles.optionPolicy}><input type="checkbox" checked={value.preserveOriginal} onChange={event => updateOption(questionIndex, optionIndex, { preserveOriginal: event.target.checked })}/><span>곡명·작품명 번역하지 않음</span></label>
         <label><span>Display</span><select value={value.displayMode} onChange={event=>updateOption(questionIndex,optionIndex,{displayMode:event.target.value as OptionDraft["displayMode"]})}><option value="text">Text</option><option value="media">Media only</option><option value="text_media">Text + media</option></select></label>
         <MediaFields type={value.mediaType} url={value.mediaUrl} set={(mediaType, mediaUrl) => updateOption(questionIndex, optionIndex, { mediaType, mediaUrl })}/>
         {item.options.length > 2 && <button type="button" onClick={() => updateQuestion(questionIndex, { options: item.options.filter((_, index) => index !== optionIndex), correctIndex: 0 })}>Remove option</button>}

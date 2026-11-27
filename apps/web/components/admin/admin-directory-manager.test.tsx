@@ -85,7 +85,7 @@ describe("AdminDirectoryManager", () => {
     const roleSelect = await screen.findByRole("combobox", { name: "역할: ops@byus.test" });
     fireEvent.change(roleSelect, { target: { value: "viewer" } });
     fireEvent.click(screen.getAllByRole("button", { name: "역할 저장" }).find((button) => !button.hasAttribute("disabled"))!);
-    expect(screen.getByRole("alertdialog")).toHaveTextContent("ops@byus.test의 역할을 viewer로 변경합니다.");
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("ops@byus.test의 새 역할은 조회 전용입니다.");
     fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "변경" }));
 
     expect(await screen.findByText("역할을 변경했습니다.")).toBeInTheDocument();
@@ -103,10 +103,10 @@ describe("AdminDirectoryManager", () => {
     await screen.findByText("ops@byus.test");
     const otherRow = screen.getByText("ops@byus.test").closest("tr")!;
     fireEvent.click(within(otherRow).getByRole("button", { name: "권한 해제" }));
-    expect(screen.getByRole("alertdialog")).toHaveTextContent("회원 계정과 변경 이력은 유지됩니다.");
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("회원 계정과 변경 기록은 그대로예요.");
     fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "변경" }));
 
-    expect(await screen.findByText("관리자 접근 권한을 해제했습니다.")).toBeInTheDocument();
+    expect(await screen.findByText("관리자 권한을 해제했어요.")).toBeInTheDocument();
     expect(screen.getByText("권한 해제", { selector: "span" })).toBeInTheDocument();
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === "PATCH")!;
     expect(JSON.parse(String(patch[1]?.body))).toEqual({ id: otherId, role: "operator", active: false, expectedUpdatedAt: updatedAt });
@@ -122,11 +122,11 @@ describe("AdminDirectoryManager", () => {
     render(<AdminDirectoryManager />);
     await screen.findByText("ops@byus.test");
     const otherRow = screen.getByText("ops@byus.test").closest("tr")!;
-    fireEvent.click(within(otherRow).getByRole("button", { name: "재활성화" }));
-    expect(screen.getByRole("alertdialog")).toHaveTextContent("관리자를 재활성화할까요?");
+    fireEvent.click(within(otherRow).getByRole("button", { name: "다시 켜기" }));
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("관리자 권한을 다시 켤까요?");
     fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "변경" }));
 
-    expect(await screen.findByText("관리자를 재활성화했습니다.")).toBeInTheDocument();
+    expect(await screen.findByText("관리자 권한을 다시 켰어요.")).toBeInTheDocument();
     const patch = fetchMock.mock.calls.find(([, init]) => init?.method === "PATCH")!;
     expect(JSON.parse(String(patch[1]?.body))).toEqual({ id: otherId, role: "operator", active: true, expectedUpdatedAt: updatedAt });
   });

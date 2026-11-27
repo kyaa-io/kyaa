@@ -65,7 +65,7 @@ describe("admin business overview", () => {
   it("does not request data for an unauthorized session", () => {
     auth.session = "unauthenticated";
     render(<AdminOverviewDashboard />);
-    expect(screen.getByRole("heading", { name: "관리자 로그인이 필요합니다" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "관리자 로그인이 필요해요" })).toBeInTheDocument();
     expect(fetch).not.toHaveBeenCalled();
   });
   it("hides prior-member data while a different account reloads", async () => {

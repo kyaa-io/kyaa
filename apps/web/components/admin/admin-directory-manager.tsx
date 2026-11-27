@@ -30,20 +30,24 @@ type PendingChange =
   | { kind: "role"; item: DirectoryItem; role: AdminRole }
   | { kind: "active"; item: DirectoryItem; active: boolean };
 
+const roleLabels = {
+  ko: { admin: "전체 관리자", operator: "운영자", viewer: "조회 전용" },
+  en: { admin: "Full administrator", operator: "Operator", viewer: "View only" },
+};
 const roles: readonly AdminRole[] = ["admin", "operator", "viewer"];
 
 const copy = {
   ko: {
     title: "관리자 권한", addTitle: "관리자 추가", email: "이메일", emailPlaceholder: "admin@example.com", role: "역할", add: "관리자 추가", adding: "추가 중…",
     search: "이메일 검색", searchPlaceholder: "이메일로 검색", count: (visible: number, total: number) => `${total}명 중 ${visible}명`,
-    status: "상태", active: "활성", inactive: "권한 해제", updated: "최근 변경", actions: "작업", saveRole: "역할 저장", saving: "저장 중…",
-    deactivate: "권한 해제", reactivate: "재활성화", self: "내 계정", selfHelp: "내 계정은 바꿀 수 없어요.",
+    status: "상태", active: "사용 중", inactive: "권한 해제", updated: "최근 변경", actions: "변경", saveRole: "역할 저장", saving: "저장 중…",
+    deactivate: "권한 해제", reactivate: "다시 켜기", self: "내 계정", selfHelp: "내 계정은 바꿀 수 없어요.",
     loading: "관리자 명단을 불러오는 중입니다.", empty: "등록된 관리자가 없습니다.", emptySearch: "검색 결과가 없습니다.",
     emptyHelp: "위 양식에서 첫 관리자를 추가하세요.", emptySearchHelp: "다른 이메일로 검색해 보세요.", loadError: "관리자 명단을 불러오지 못했습니다.", retry: "다시 시도",
-    added: "관리자를 추가했습니다.", roleSaved: "역할을 변경했습니다.", deactivated: "관리자 접근 권한을 해제했습니다.", reactivated: "관리자를 재활성화했습니다.",
-    confirmRoleTitle: "역할을 변경할까요?", confirmRoleBody: (email: string, role: AdminRole) => `${email}의 역할을 ${role}로 변경합니다.`,
-    confirmDeactivateTitle: "관리자 접근을 해제할까요?", confirmDeactivateBody: (email: string) => `${email}은 더 이상 관리자 도구에 접근할 수 없습니다. 회원 계정과 변경 이력은 유지됩니다.`,
-    confirmReactivateTitle: "관리자를 재활성화할까요?", confirmReactivateBody: (email: string) => `${email}의 관리자 접근 권한을 다시 활성화합니다.`,
+    added: "관리자를 추가했습니다.", roleSaved: "역할을 변경했습니다.", deactivated: "관리자 권한을 해제했어요.", reactivated: "관리자 권한을 다시 켰어요.",
+    confirmRoleTitle: "역할을 변경할까요?", confirmRoleBody: (email: string, role: AdminRole) => `${email}의 새 역할은 ${roleLabels.ko[role]}입니다.`,
+    confirmDeactivateTitle: "관리자 권한을 해제할까요?", confirmDeactivateBody: (email: string) => `${email} 계정은 관리자 화면에 들어올 수 없어요. 회원 계정과 변경 기록은 그대로예요.`,
+    confirmReactivateTitle: "관리자 권한을 다시 켤까요?", confirmReactivateBody: (email: string) => `${email} 계정이 다시 관리자 화면에 들어올 수 있어요.`,
     cancel: "취소", confirm: "변경", refresh: "목록 새로고침",
     errors: {
       INVALID_INPUT: "이메일과 역할을 확인해 주세요.", ADMIN_DIRECTORY_DUPLICATE_EMAIL: "이미 등록된 이메일입니다.",
@@ -51,8 +55,8 @@ const copy = {
       ADMIN_DIRECTORY_SELF_CHANGE: "현재 로그인한 계정의 역할이나 상태는 변경할 수 없습니다.",
       ADMIN_DIRECTORY_LAST_ADMIN: "마지막 관리자의 역할을 낮추거나 권한을 해제할 수 없어요.",
       ADMIN_DIRECTORY_CONFLICT: "다른 관리자가 먼저 변경했습니다. 목록을 새로고침한 뒤 다시 시도해 주세요.",
-      ADMIN_DIRECTORY_UNAVAILABLE: "관리자 관리 기능을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.",
-      FORBIDDEN: "관리자 관리 권한이 없습니다.", UNAUTHENTICATED: "관리자 로그인이 필요합니다.",
+      ADMIN_DIRECTORY_UNAVAILABLE: "지금은 쓸 수 없어요. 잠시 후 다시 시도해 주세요.",
+      FORBIDDEN: "관리자 권한을 바꿀 수 있는 계정이 아니에요.", UNAUTHENTICATED: "관리자 로그인이 필요합니다.",
     },
   },
   en: {
@@ -63,7 +67,7 @@ const copy = {
     loading: "Loading administrators.", empty: "No administrators are registered.", emptySearch: "No administrators match your search.",
     emptyHelp: "Add the first administrator using the form above.", emptySearchHelp: "Try another email address.", loadError: "Administrators could not be loaded.", retry: "Try again",
     added: "Administrator added.", roleSaved: "Role updated.", deactivated: "Administrator access revoked.", reactivated: "Administrator reactivated.",
-    confirmRoleTitle: "Change this role?", confirmRoleBody: (email: string, role: AdminRole) => `Change ${email} to the ${role} role.`,
+    confirmRoleTitle: "Change this role?", confirmRoleBody: (email: string, role: AdminRole) => `Change ${email} to the ${roleLabels.en[role]} role.`,
     confirmDeactivateTitle: "Revoke administrator access?", confirmDeactivateBody: (email: string) => `${email} will no longer be able to access admin tools. Their member account and audit history will remain.`,
     confirmReactivateTitle: "Reactivate this administrator?", confirmReactivateBody: (email: string) => `Restore administrator access for ${email}.`,
     cancel: "Cancel", confirm: "Confirm", refresh: "Refresh list",
@@ -246,7 +250,7 @@ function DirectoryContent({ locale, getAccessToken, onAccessDenied }: { locale: 
       <h2 id="add-administrator-title">{t.addTitle}</h2>
       <form onSubmit={add}>
         <label className={styles.emailField}><span>{t.email}</span><input type="email" autoComplete="email" required value={newEmail} placeholder={t.emailPlaceholder} disabled={busy} onChange={(event) => setNewEmail(event.target.value)} /></label>
-        <label><span>{t.role}</span><select value={newRole} disabled={busy} onChange={(event) => setNewRole(event.target.value as AdminRole)}>{roles.map((role) => <option key={role} value={role}>{role}</option>)}</select></label>
+        <label><span>{t.role}</span><select value={newRole} disabled={busy} onChange={(event) => setNewRole(event.target.value as AdminRole)}>{roles.map((role) => <option key={role} value={role}>{roleLabels[locale][role]}</option>)}</select></label>
         <button className={styles.primaryButton} type="submit" disabled={busy || !newEmail.trim()}><UserPlus aria-hidden="true" />{busy ? t.adding : t.add}</button>
       </form>
     </section>
@@ -259,7 +263,7 @@ function DirectoryContent({ locale, getAccessToken, onAccessDenied }: { locale: 
       {state === "ready" && filtered.length > 0 && <div className={styles.tableWrap}><table><thead><tr><th>{t.email}</th><th>{t.role}</th><th>{t.status}</th><th>{t.updated}</th><th>{t.actions}</th></tr></thead><tbody>{pagination.items.map((item) => {
         const self = item.id === actorId;
         const draftRole = draftRoles[item.id] ?? item.role;
-        return <tr key={item.id} className={!item.active ? styles.inactiveRow : undefined}><td data-label={t.email}><strong>{item.email}</strong>{self && <span className={styles.selfBadge}>{t.self}</span>}{self && <small>{t.selfHelp}</small>}</td><td data-label={t.role}><select aria-label={`${t.role}: ${item.email}`} value={draftRole} disabled={busy || self} onChange={(event) => setDraftRoles((current) => ({ ...current, [item.id]: event.target.value as AdminRole }))}>{roles.map((role) => <option key={role} value={role}>{role}</option>)}</select></td><td data-label={t.status}><span className={item.active ? styles.activeBadge : styles.inactiveBadge}><i aria-hidden="true" />{item.active ? t.active : t.inactive}</span></td><td data-label={t.updated}><time dateTime={item.updatedAt}>{formatDate(item.updatedAt, locale)}</time></td><td data-label={t.actions}><div className={styles.rowActions}><button type="button" disabled={busy || self || draftRole === item.role} onClick={() => setPending({ kind: "role", item, role: draftRole })}>{t.saveRole}</button><button className={item.active ? styles.revokeButton : undefined} type="button" disabled={busy || self} onClick={() => setPending({ kind: "active", item, active: !item.active })}>{item.active ? t.deactivate : t.reactivate}</button></div></td></tr>;
+        return <tr key={item.id} className={!item.active ? styles.inactiveRow : undefined}><td data-label={t.email}><strong>{item.email}</strong>{self && <span className={styles.selfBadge}>{t.self}</span>}{self && <small>{t.selfHelp}</small>}</td><td data-label={t.role}><select aria-label={`${t.role}: ${item.email}`} value={draftRole} disabled={busy || self} onChange={(event) => setDraftRoles((current) => ({ ...current, [item.id]: event.target.value as AdminRole }))}>{roles.map((role) => <option key={role} value={role}>{roleLabels[locale][role]}</option>)}</select></td><td data-label={t.status}><span className={item.active ? styles.activeBadge : styles.inactiveBadge}><i aria-hidden="true" />{item.active ? t.active : t.inactive}</span></td><td data-label={t.updated}><time dateTime={item.updatedAt}>{formatDate(item.updatedAt, locale)}</time></td><td data-label={t.actions}><div className={styles.rowActions}><button type="button" disabled={busy || self || draftRole === item.role} onClick={() => setPending({ kind: "role", item, role: draftRole })}>{t.saveRole}</button><button className={item.active ? styles.revokeButton : undefined} type="button" disabled={busy || self} onClick={() => setPending({ kind: "active", item, active: !item.active })}>{item.active ? t.deactivate : t.reactivate}</button></div></td></tr>;
       })}</tbody></table></div>}
       {state === "ready" && <AdminPagination {...pagination} locale={locale} disabled={busy} />}
     </section>

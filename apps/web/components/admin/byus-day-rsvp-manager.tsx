@@ -15,11 +15,10 @@ import styles from "./byus-day-rsvp-manager.module.css";
 
 const copy = {
   ko: {
-    title: "kyaa wave 참가 신청", total: "누적 접수", unit: "명",
-    attendees: "참가자 명단", order: "최신 접수순", refresh: "새로고침", name: "접수자", affiliation: "소속", occupation: "직책", contact: "연락처", nationality: "국적", date: "접수일 (KST)",
+    title: "kyaa wave 참가 신청", total: "신청 수", unit: "명",
+    attendees: "참가자 명단", order: "최신 접수순", refresh: "새로고침", name: "신청자", affiliation: "소속", occupation: "직책", contact: "연락처", nationality: "국적", date: "접수일 (KST)",
     loading: "접수 명단을 불러오는 중입니다.", error: "접수 명단을 불러오지 못했습니다.", retry: "다시 시도",
     empty: "아직 접수된 참가자가 없습니다.", noResults: "검색 결과가 없습니다.", clear: "검색 초기화",
-    scroll: "표를 좌우로 움직여 전체 정보를 확인하세요.",
     exportCsv: "전체 명단 CSV", koreanName: "한글 이름", englishName: "영문 이름", phone: "전화번호", email: "이메일",
   },
   en: {
@@ -27,7 +26,6 @@ const copy = {
     attendees: "Attendee list", order: "Newest first", refresh: "Refresh", name: "Attendee", affiliation: "Organization", occupation: "Role", contact: "Contact", nationality: "Nationality", date: "Registered (KST)",
     loading: "Loading registrations.", error: "Registrations could not be loaded.", retry: "Try again",
     empty: "No one has registered yet.", noResults: "No registrations match your search.", clear: "Clear search",
-    scroll: "Scroll horizontally to see all attendee details.",
     exportCsv: "Export all to CSV", koreanName: "Korean name", englishName: "English name", phone: "Phone", email: "Email",
   },
 } as const;
@@ -122,8 +120,8 @@ function Attendees({ locale, adminRole, getAccessToken }: {
         : state.status === "error" ? <div className={shared.stateMessage} role="alert"><p>{t.error}</p><button type="button" onClick={refresh}>{t.retry}</button></div>
           : filtered.length === 0 ? <div className={shared.stateMessage} role="status"><UsersRound aria-hidden="true" /><h3>{attendees.length ? t.noResults : t.empty}</h3>{attendees.length > 0 && <button type="button" onClick={() => setQuery("")}>{t.clear}</button>}</div>
             : <>
-              <p id="rsvp-scroll-help" className={styles.scrollHelp}>{t.scroll}</p>
-              <div className={styles.tableScroll} role="region" aria-label={t.attendees} aria-describedby="rsvp-scroll-help" tabIndex={0}>
+              
+              <div className={styles.tableScroll} role="region" aria-label={t.attendees} tabIndex={0}>
                 <table className={styles.table}>
                   <caption className={shared.srOnly}>{t.attendees} · {t.order}</caption>
                   <thead><tr>{[t.name, t.affiliation, t.occupation, t.contact, t.nationality, t.date].map(label => <th scope="col" key={label}>{label}</th>)}</tr></thead>
@@ -146,7 +144,7 @@ function Attendees({ locale, adminRole, getAccessToken }: {
 
 function ParticipationList({ locale, adminRole, getAccessToken }: { locale: AdminLocale; adminRole: string; getAccessToken: () => Promise<string | null> }) {
   const t = copy[locale];
-  const labels = locale === "ko" ? { title: "참여 확인", empty: "아직 참여 확인을 마친 분이 없어요.", loading: "참여 확인 명단을 불러오고 있어요.", error: "참여 확인 명단을 불러오지 못했어요.", next: "다음 참여 명단", first: "처음부터 보기", name: "성함", date: "확인 일시 (KST)" }
+  const labels = locale === "ko" ? { title: "현장 확인", empty: "아직 참여 확인을 마친 분이 없어요.", loading: "참여 확인 명단을 불러오고 있어요.", error: "참여 확인 명단을 불러오지 못했어요.", next: "다음 참여 명단", first: "처음부터 보기", name: "성함", date: "확인 일시 (KST)" }
     : { title: "Participation confirmations", empty: "No participation confirmations yet.", loading: "Loading participation confirmations.", error: "Participation confirmations could not be loaded.", next: "Next confirmations", first: "Back to first page", name: "Name", date: "Confirmed at (KST)" };
   const [page, setPage] = useState<ReturnType<typeof participationAdminPageSchema.parse> | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error" | "unauthenticated" | "denied">("loading");
@@ -173,7 +171,7 @@ function ParticipationList({ locale, adminRole, getAccessToken }: { locale: Admi
   }, [getAccessToken, cursor, revision]);
   return <section className={`${styles.panel} ${styles.participationPanel}`} aria-labelledby="participation-list-heading">
     <div className={styles.panelHeading}><div><h2 id="participation-list-heading">{labels.title}</h2></div>
-      <button className={shared.secondaryButton} type="button" disabled={status === "loading"} onClick={() => { setCursor(null); setRevision(value => value + 1); }}>{locale === "ko" ? "참여 명단 새로고침" : "Refresh confirmations"}</button></div>
+      <button className={shared.secondaryButton} type="button" disabled={status === "loading"} onClick={() => { setCursor(null); setRevision(value => value + 1); }}>{locale === "ko" ? "현장 확인 명단 새로고침" : "Refresh confirmations"}</button></div>
     {status === "unauthenticated" || status === "denied" ? <AdminAccessState status={status} locale={locale} />
       : status === "loading" ? <p role="status">{labels.loading}</p>
         : status === "error" ? <div role="alert"><p>{labels.error}</p><button className={shared.secondaryButton} type="button" onClick={() => setRevision(value => value + 1)}>{t.retry}</button></div>

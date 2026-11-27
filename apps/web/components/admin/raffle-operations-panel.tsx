@@ -20,12 +20,12 @@ type Request = (path: string, body?: unknown) => Promise<Response>;
 const copy = {
   ko: {
     auth: "로그인이 필요합니다.", conflict: "상태가 변경되었거나 처리 조건을 충족하지 않습니다. 새로 조회해 주세요.", failed: "처리하지 못했습니다. 다시 시도해 주세요.",
-    policyOpen: "수령 조건 조회·설정", version: "정책 버전", shipping: "대한민국 주소로만 배송 · 응모 전 확인 필수", pickup: "현장 수령 · 성명과 휴대폰 뒤 4자리 확인", digital: "디지털 전달",
+    policyOpen: "수령 조건", version: "정책 번호", shipping: "대한민국 주소로만 배송 · 응모 전 확인 필수", pickup: "현장 수령 · 성명과 휴대폰 뒤 4자리 확인", digital: "디지털 전달",
     policyHelp: "수령 정보는 실제 당첨 발표부터 7일간 입력할 수 있습니다. 응모가 시작된 정책은 변경할 수 없습니다.", pickupEnd: "방문 수령 종료일 (한국 시간)", venue: "수령 장소", instructions: "수령 안내", policySave: "수령 조건 저장",
-    roster: "현장 수령 명단", rosterHelp: "경품·성명·휴대폰 뒤 4자리·수령 상태만 포함합니다.", purpose: "이용 목적", purposeHelp: "명단을 사용하는 이유를 10자 이상 입력해 주세요.", rosterDownload: "명단 CSV 다운로드", rosterDone: "명단을 내려받았습니다. 조회 목적과 명단 버전이 감사 기록에 남았습니다.",
-    read: "수령 정보 조회", reveal: "개인정보 보기 · 조회 기록", hide: "정보 숨기기", deadline: "입력 마감", name: "성명", phone: "연락처", address: "배송지", notSubmitted: "수령 정보가 아직 제출되지 않았습니다.", memo: "처리 사유", memoError: "처리 사유를 10자 이상 입력해 주세요.", carrier: "택배사", tracking: "운송장 번호", process: "처리", verify: "현장에서 성명과 휴대폰 뒤 4자리 일치를 확인했습니다.", complete: "수령 완료", review: "확인 필요 기록", close: "미수령으로 종결", closed: "미수령 종결",
-    closeConfirm: "미수령으로 종결할까요? 이후 수령 처리가 차단됩니다.", reviewConfirm: "확인이 필요한 건으로 기록할까요? 수령 완료 처리되지 않습니다.", completeConfirm: "성명과 휴대폰 뒤 4자리를 확인했습니다. 수령 완료로 처리할까요?",
-    accountId: "계정 ID", winnerId: "당첨 ID", digitalReady: "전달 대기",
+    roster: "현장 수령 명단", rosterHelp: "경품·성명·휴대폰 뒤 4자리·수령 상태만 포함합니다.", purpose: "이용 목적(10자 이상)", purposeHelp: "명단을 사용하는 이유를 10자 이상 입력해 주세요.", rosterDownload: "명단 CSV 다운로드", rosterDone: "명단을 내려받았습니다. 조회 목적과 명단 버전이 감사 기록에 남았습니다.",
+    read: "수령 정보 조회", reveal: "개인정보 보기(조회 기록 남음)", hide: "숨기기", deadline: "입력 마감", name: "성명", phone: "연락처", address: "배송지", notSubmitted: "수령 정보가 아직 제출되지 않았습니다.", memo: "처리 사유", memoError: "처리 사유를 10자 이상 입력해 주세요.", carrier: "택배사", tracking: "운송장 번호", process: "처리", verify: "현장에서 성명과 휴대폰 뒤 4자리 일치를 확인했습니다.", complete: "수령 완료", review: "확인 필요 기록", close: "미수령으로 종결", closed: "미수령 종결",
+    closeConfirm: "미수령으로 끝낼까요? 이후 수령 처리할 수 없어요.", reviewConfirm: "확인 필요로 표시할까요? 수령 완료는 아니에요.", completeConfirm: "성명과 휴대폰 뒤 4자리를 확인했습니다. 수령 완료로 처리할까요?",
+    accountId: "계정 번호", winnerId: "당첨 번호", digitalReady: "전달 대기",
   },
   en: {
     auth: "Sign-in is required.", conflict: "The status changed or the operation is no longer allowed. Refresh and try again.", failed: "We couldn’t complete the operation. Try again.",
