@@ -2,6 +2,7 @@
 export const rankingsSource = {
   rkHomeUpdated: { ko: "업데이트 {0}", en: "Updated {0}" },
   rkHomeTitle: { ko: "오늘의 랭킹", en: "Today's rankings" },
+  rkNewCreators: { ko: "새 크리에이터", en: "New creators" },
   rkHomeFans: { ko: "찐팬", en: "True fans" },
   rkHomeLocked: { ko: "로그인하고 보기", en: "Sign in to view" },
   rkDayGain: { ko: "오늘 하트 {0}", en: "Today's hearts {0}" },
