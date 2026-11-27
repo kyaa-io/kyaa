@@ -38,7 +38,7 @@ try {
           state: "ready", day: date.slice(0, 10), computedAt: date, fetchedAt: date,
           comparable: true, weekGainDays: null, period: "day", me: null, metric: creators ? "likes" : "points", rows,
           ...(creators ? { newCreators: Array.from({ length: count }, (_, i) => ({
-            slug: `new-sample-${i + 1}`, name: i === 0 ? longName : "예시 크리에이터",
+            slug: `new-sample-${i + 1}`, imageUrl: i === 0 ? "/chemi/fortune/avatar-elina-v1.jpg" : null, name: i === 0 ? longName : "예시 크리에이터",
           })) } : {}),
         } });
       });
@@ -63,18 +63,22 @@ try {
             await expect(link).toHaveAttribute("href", /new-sample-1/);
             const box = await link.boundingBox();
             const ranked = await page.locator('[data-row="creator-rank"]').last().boundingBox();
-            assert(box.height >= 44);
+            assert(box.height >= 44 && box.height === ranked.height);
             assert(Math.abs(box.x - ranked.x) < 1 && Math.abs(box.width - ranked.width) < 1);
             assert(await link.evaluate((element) => {
-              const name = element.firstElementChild;
+              const name = element.querySelector("[title]");
               return element.getAnimations({ subtree: true }).length === 0 && name.scrollWidth > name.clientWidth;
             }));
             await page.locator('[data-row="creator-rank"]').last().getByRole("button").first().focus();
             await page.keyboard.press("Tab");
             await expect(link).toBeFocused();
+            assert(await link.evaluate((element) => getComputedStyle(element).outlineStyle === "solid"));
+            await expect.poll(() => link.locator("img").evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+            if (count === 2) await expect(intro.getByRole("link").last().locator("[data-creator-avatar] svg")).toBeVisible();
           }
-          if (period === "all" && !member && count !== 1) {
-            await page.screenshot({ fullPage: true, path: `${output}/${width}-${count ? "after" : "before"}.png` });
+          if (period === "all" && !member) {
+            await page.evaluate(() => document.activeElement?.blur());
+            await page.screenshot({ fullPage: true, path: `${output}/${width}-${count}.png` });
           }
         }
       }

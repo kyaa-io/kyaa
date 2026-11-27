@@ -39,10 +39,10 @@ end $$;
 
 create function public.read_home_new_creators(p_locale text, p_top_slugs text[])
 returns jsonb language sql stable security definer set search_path = '' as $$
-  select coalesce(jsonb_agg(jsonb_build_object('slug', candidate.slug, 'name', candidate.name)
+  select coalesce(jsonb_agg(jsonb_build_object('slug', candidate.slug, 'name', candidate.name, 'imageUrl', candidate.image_url)
     order by candidate.ever_published_at desc, candidate.id), '[]'::jsonb)
   from (
-    select c.id, c.slug, c.ever_published_at,
+    select c.id, c.slug, g.image_url, c.ever_published_at,
       coalesce(nullif(btrim(nl.name), ''), nullif(btrim(nk.name), ''), nullif(btrim(ne.name), ''), c.slug) as name
     from public.celebrities c
     join public.group_pages g on g.celebrity_id = c.id and g.kind = 'fan'

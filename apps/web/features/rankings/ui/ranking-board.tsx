@@ -5,16 +5,15 @@ import { useRef, useState, type ReactNode } from "react";
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
 import { HOME_CREATOR_SLOTS } from "../domain/new-creators";
 import { creatorHomeHref } from "@/features/creator/domain/creator-navigation";
-import Link from "@/components/fan-ui/hover-prefetch-link";
+import { FanTag } from "@/components/fan-ui/fan-tag";
 import { FanText } from "@/components/fan-ui/fan-text";
+import row from "./ranking-rows.module.css";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
-import { Avatar } from "@/features/profile/ui/avatar";
 import type { AppLocale } from "@/i18n/locales";
 import { homeCreatorRankingSchema, homeFanRankingSchema, type HomeRankingPeriod } from "../domain/types";
 import { FanTabs } from "@/components/fan-ui/fan-tabs";
-import { fanAvatar } from "./rankings-content";
-import { CreatorRows, EmptyRows, FailedRows, FanRows, Foot, LoadingRows, MetricLine, MyRank, rankingUrl, useLiveRanking, type Live } from "./ranking-rows";
+import { RowFace, CreatorRows, EmptyRows, FailedRows, FanRows, Foot, LoadingRows, MetricLine, MyRank, rankingUrl, useLiveRanking, type Live } from "./ranking-rows";
 import { rankingsText } from "./rankings-copy";
 import styles from "./ranking-board.module.css";
 
@@ -92,10 +91,17 @@ function CreatorPanel({ locale, guest, scope, period, includeNewCreators }: { in
       )}
       {introductions.length > 0 && (
         <section className={styles.introductions} aria-labelledby={`${scope}-new-creators`}>
-          <h4 id={`${scope}-new-creators`}><FanText role="item">{rankingsText(locale, "rkNewCreators")}</FanText></h4>
-          <ul>
-            {introductions.map(({ slug, name }) => (
-              <li key={slug} data-row="new-creator"><Link href={creatorHomeHref(slug, locale)}><FanText role="item" title={name}>{name}</FanText></Link></li>
+          <h4 className={row.caption} id={`${scope}-new-creators`}>{rankingsText(locale, "rkNewCreators")}</h4>
+          <ul className={row.rows}>
+            {introductions.map(({ slug, name, imageUrl }) => (
+              <li key={slug} className={row.item} data-row="new-creator">
+                <RowFace href={creatorHomeHref(slug, locale)}>
+                  <FanTag tone="fan" className={styles.newBadge}>NEW</FanTag>
+                  <CreatorAvatar slug={slug} size={28} src={imageUrl} photos={{ profile: null }} />
+                  <span className={row.name} title={name}>{name}</span>
+                  <FanText role="meta" className={styles.destination}>{rankingsText(locale, "rkGoFanpage")} ›</FanText>
+                </RowFace>
+              </li>
             ))}
           </ul>
         </section>
