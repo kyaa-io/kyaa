@@ -78,7 +78,7 @@ const placementOptions: readonly (readonly [NonNullable<Draft["placement"]>, str
   ["chemi_promo_popup", "케미 홍보 팝업", "Chemi promotion popup"],
   ["member_event_popup", "회원 이벤트 팝업", "Member event popup"],
   ["home", "홈", "Home"], ["groups", "모임 탐색", "Group discovery"], ["both", "홈과 모임 탐색", "Home and group discovery"],
-  ["home_below_board", "홈 슬롯 · 팬게시판 아래", "Home slot · below the board"], ["home_between_events", "홈 슬롯 · 이벤트 카드 사이", "Home slot · between event cards"],
+  ["home_below_board", "홈 슬롯 · 랭킹 아래 · 공지 위", "Home slot · below rankings, above notices"], ["home_between_events", "홈 슬롯 · 이벤트 카드 사이", "Home slot · between event cards"],
   ["home_mid", "홈배너2 · 랭킹 위 (외부 광고, 모바일 716 x 320, PC 2720 x 480)", "Home banner 2 · above the ranking (external ad, mobile 716 x 320, PC 2720 x 480)"],
   ["fanpage_below_gallery", "팬페이지 슬롯 · 갤러리 아래", "Fan page slot · below the gallery"], ["fanpage_second", "팬페이지 슬롯 · 팬들의 이야기 아래", "Fan page slot · below fan stories"],
   ["dukjil_mid", "덕질배너1 · 덕질 탭 가운데 (같은 크기)", "Dukjil banner 1 · middle of the Dukjil tab (same size)"],

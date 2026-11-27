@@ -1,5 +1,4 @@
 import { readHomeScale } from "../server/signup-event/home-scale";
-import { groupsEnabled } from "@/features/groups/domain/availability";
 import { xMissionHomeBanner } from "../features/home/domain/x-mission-home-banner";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
@@ -59,7 +58,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       dangerouslySetInnerHTML={{ __html: serializeStructuredData(homeStructuredData()) }}
     />
     <StreamingGuestHome
-      fanPageApplications={groupsEnabled()}
       queries={queries}
       locale={locale}
       jjinfanGauge={jjinfanGaugeEnabled()}

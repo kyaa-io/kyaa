@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "홈 랭킹과 공지 사이에 로컬바이브 광고 자리를 마련했어요. 휴대폰과 PC에 맞춘 이미지로 제품과 로고, 할인가를 한눈에 볼 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-27-home-ad-slot-r3-390.png",
+    "release-notes/images/2026-11-27-home-ad-slot-r3-1440.png"
+  ]
+}

@@ -1,6 +1,5 @@
 import type { BannerSlotMap, HomeBanner } from "@/features/home/domain/home-banner";
 import { settleHomeQuery, type HomeQueries } from "./home-query-stream";
-import { groupApplyText } from "@/features/groups/ui/group-apply-copy";
 import { APP_LOCALES } from "@/i18n/locales";
 import { bannerFixture } from "../e2e/banner-local/fixture";
 import "@testing-library/jest-dom/vitest";
@@ -173,12 +172,6 @@ describe("canonical 03 guest home", () => {
     expect(gallery.querySelectorAll("[data-row=photo-placeholder]")).toHaveLength(8);
     expect(gallery.querySelectorAll("[data-row=short-placeholder]")).toHaveLength(0);
     expect(notices.compareDocumentPosition(gallery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-  });
-
-  it.each(APP_LOCALES)("links to the fan page application in %s", (locale) => {
-    render(<GuestHome {...defaultProps} locale={locale} fanPageApplications />);
-    expect(screen.getByRole("link", { name: groupApplyText(locale, "fanPageApply") }))
-      .toHaveAttribute("href", `/pages/groups/apply?locale=${locale}&kind=fan`);
   });
 
   it.each(APP_LOCALES)("shows the approved Kyaa slogan in %s", (locale) => {
