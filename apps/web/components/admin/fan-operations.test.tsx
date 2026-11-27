@@ -153,7 +153,7 @@ describe("FanOperations", () => {
     ).toHaveAttribute("href", "/admin/fans");
   });
   it.each([
-    ["", "미발급", "아직 발급된 패스포트가 없습니다.", "회원 상세: New member"],
+    ["", "미발급", "아직 패스포트가 없어요.", "회원 상세: New member"],
     ["lang=en", "No Passport issued", "This member has not issued a Passport yet.", "Member detail: New member"],
   ])("shows members without passports and their empty detail (%s)", async (params, label, description, trigger) => {
     searchParamsState.current = params;

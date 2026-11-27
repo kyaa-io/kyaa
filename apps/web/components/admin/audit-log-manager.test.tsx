@@ -13,7 +13,7 @@ describe("ADM-012 audit log", () => {
   it("states immutability and renders redacted before/after detail", async () => {
     render(<AuditLogManager />);
     expect(await screen.findByText("활동 기록은 수정하거나 삭제할 수 없습니다.")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /로그 상세/ }));
+    fireEvent.click(screen.getByRole("button", { name: /기록 상세/ }));
     expect(screen.getByRole("heading", { name: "변경 전" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "변경 후" })).toBeInTheDocument();
     expect(screen.getByText(/\[REDACTED\]/)).toBeInTheDocument();

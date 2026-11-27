@@ -12,7 +12,7 @@ it("reads authorized entries with pagination without calling draw", async () => 
  request.mockResolvedValueOnce(Response.json({ entrySource: "cheer", total: 2, totalWeight: 3, participants: [row(first, 1)], nextOffset: 1 })).mockResolvedValueOnce(Response.json({ entrySource: "cheer", total: 2, totalWeight: 3, participants: [row(second, 2)], nextOffset: null }));
  render(<CheerEventParticipants campaignId="campaign" locale="ko" />);
  expect(request).not.toHaveBeenCalled();
- fireEvent.click(screen.getByRole("button", { name: "응원댓글 참여 내역 조회" }));
+ fireEvent.click(screen.getByRole("button", { name: "응원 댓글 참여 보기" }));
  expect(await screen.findByText(first)).toBeInTheDocument();
  expect(screen.getByText("참여 2명 · 총 추첨 가중치 3")).toBeInTheDocument();
  fireEvent.click(screen.getByRole("button", { name: "더 보기" }));

@@ -19,7 +19,7 @@ export function ContentReportAlert({ locale }: { locale: "ko" | "en" }) {
     return () => { clearInterval(timer); window.removeEventListener("focus", update); document.removeEventListener("visibilitychange", update); };
   }, [refresh]);
   if (resource.state.status === "loading") return null;
-  if (resource.state.status === "error" || resource.refreshFailed) return <Link className={styles.reportAlert} href="/admin/content-reports">{locale === "ko" ? "신고 알림 확인 필요" : "Check report notifications"}</Link>;
+  if (resource.state.status === "error" || resource.refreshFailed) return <Link className={styles.reportAlert} href="/admin/content-reports">{locale === "ko" ? "신고 수를 불러오지 못했어요" : "Check report notifications"}</Link>;
   const { openCount, overdueCount } = resource.state.data;
-  return <Link className={styles.reportAlert} href="/admin/content-reports" aria-live="polite">{locale === "ko" ? `미처리 신고 ${openCount}건${overdueCount ? ` · 기한 초과 ${overdueCount}건` : ""}` : `${openCount} open reports${overdueCount ? ` · ${overdueCount} overdue` : ""}`}</Link>;
+  return <Link className={styles.reportAlert} href="/admin/content-reports" aria-live="polite">{locale === "ko" ? `처리할 신고 ${openCount}건${overdueCount ? ` · 기한 지남 ${overdueCount}건` : ""}` : `${openCount} open reports${overdueCount ? ` · ${overdueCount} overdue` : ""}`}</Link>;
 }

@@ -24,8 +24,8 @@ export function CheerEventParticipants({ campaignId, locale }: { campaignId: str
     } catch { setData(null); setError(true); }
     finally { setPending(false); }
   }
-  return <section className={styles.panel} aria-label={ko ? "응원댓글 참여 내역" : "Cheer comment entries"}>
-    <button type="button" disabled={pending} onClick={() => void load()}>{ko ? "응원댓글 참여 내역 조회" : "View cheer comment entries"}</button>
+  return <section className={styles.panel} aria-label={ko ? "응원 댓글 참여" : "Cheer comment entries"}>
+    <button type="button" disabled={pending} onClick={() => void load()}>{ko ? "응원 댓글 참여 보기" : "View cheer comment entries"}</button>
     {data && <>
       <p>{ko ? `참여 ${data.total}명 · 총 추첨 가중치 ${data.totalWeight}` : `${data.total} participants · total draw weight ${data.totalWeight}`}</p>
       <p>{ko ? "계정당 댓글 한 건으로 응모할 수 있어요. 해당 LIVE 예약자는 추첨 기회가 2배예요." : "Each account enters once. Reservations for this LIVE have a draw weight of 2."}</p>

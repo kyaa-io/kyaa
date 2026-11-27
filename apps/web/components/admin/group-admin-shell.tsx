@@ -3,5 +3,5 @@ import Link from "../fan-ui/hover-prefetch-link";
 import {ShieldCheck} from 'lucide-react';
 import styles from './group-admin.module.css';
 export function GroupAdminShell({locale,children}:{locale:'ko'|'en';children:ReactNode}){
- return <div className={styles.platformShell}><header className={styles.platformHeader}><Link href={locale==='ko'?'/admin/groups/overview':'/admin/groups/overview?lang=en'}><ShieldCheck size={28} aria-hidden="true"/><span>{locale==='ko'?'Kyaa 전체 관리':'Kyaa administration'}</span></Link><span>{locale==='ko'?'전체 관리자 전용':'Platform administrators only'}</span></header><main>{children}</main></div>;
+ return <div className={styles.platformShell}><header className={styles.platformHeader}><Link href={locale==='ko'?'/admin/groups/overview':'/admin/groups/overview?lang=en'}><ShieldCheck size={28} aria-hidden="true"/><span>{locale==='ko'?'모임 관리':'Kyaa administration'}</span></Link><span>{locale==='ko'?'전체 관리자 전용':'Platform administrators only'}</span></header><main>{children}</main></div>;
 }

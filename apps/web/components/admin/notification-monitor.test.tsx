@@ -59,7 +59,7 @@ describe("notification monitor retry lifecycle", () => {
     expect(screen.getByText("알림 전송을 재시도하는 중입니다.")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
     resolveToken("token");
-    expect(await screen.findByRole("alert")).toHaveTextContent("재시도하지 못했습니다");
+    expect(await screen.findByRole("alert")).toHaveTextContent("재시도하지 못했어요");
     fireEvent.click(screen.getByRole("button", { name: `재시도 ${id}` }));
     await waitFor(() => expect(retryKeys(fetchMock)).toHaveLength(2));
     expect(retryKeys(fetchMock)[1]).toBe(retryKeys(fetchMock)[0]);

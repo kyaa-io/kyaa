@@ -123,7 +123,7 @@ describe("notice manager mutations", () => {
     expect(screen.getByRole("status")).toHaveTextContent("저장하는 중입니다");
     resolveRefresh(new Response(null, { status: 500 }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent("변경은 처리됐지만 최신 상태를 불러오지 못했습니다");
+    expect(await screen.findByRole("alert")).toHaveTextContent("저장했어요. 새로고침해 주세요.");
     expect(screen.queryByText("공지를 저장했습니다.")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /^저장$/ })).toBeDisabled();
     const recovery = screen.getByRole("button", { name: "최신 상태 불러오기" });

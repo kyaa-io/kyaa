@@ -117,7 +117,7 @@ const copy = {
     emailProvider: "이메일",
     journey: "패스포트",
     noPassport: "미발급",
-    noPassportDescription: "아직 발급된 패스포트가 없습니다.",
+    noPassportDescription: "아직 패스포트가 없어요.",
     score: "점수",
     activity: "활동",
     benefit: "혜택",

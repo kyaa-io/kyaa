@@ -247,7 +247,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
                 />
               </label>
               {learningEnabled && <label>
-                <span>{locale === "ko" ? "힌트 (선택, 정답 제외)" : "Hint (optional · do not reveal the answer)"}</span>
+                <span>{locale === "ko" ? "힌트 (선택)" : "Hint (optional · do not reveal the answer)"}</span>
                 <textarea maxLength={1000} value={q.hint ?? ""} onChange={(event) => setQuestions((items) => items.map((item, i) => i === index ? { ...item, hint: event.target.value } : item))} />
               </label>}
               <div className={styles.quizOptions}>
@@ -345,13 +345,13 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
                     <label className={`${styles.quizOptionActive} ${styles.quizOptionPolicy}`}>
                       <input
                         type="checkbox"
-                        aria-label={locale === "ko" ? `${oi + 1}번 선택지 원문 유지` : `Preserve option ${oi + 1} original`}
+                        aria-label={locale === "ko" ? `${oi + 1}번 선택지 번역하지 않음` : `Preserve option ${oi + 1} original`}
                         checked={o.preserveOriginal !== false}
                         onChange={(e) => setQuestions((items) => items.map((item, questionIndex) => questionIndex === index
                           ? { ...item, options: item.options.map((value, optionIndex) => optionIndex === oi ? { ...value, preserveOriginal: e.target.checked } : value) }
                           : item))}
                       />
-                      <span>{locale === "ko" ? "곡명·작품명 원문 유지" : "Keep song or artwork title unchanged"}</span>
+                      <span>{locale === "ko" ? "곡명·작품명 번역하지 않음" : "Keep song or artwork title unchanged"}</span>
                     </label>
                   </div>
                 ))}

@@ -21,7 +21,7 @@ const copy = {
     actions: "작업", revoke: "권한 해제", revoking: "해지 중…", cancel: "취소", loading: "운영자 명단을 불러오는 중입니다.",
     empty: "지정된 운영자가 없습니다.", loadError: "운영자 명단을 불러오지 못했습니다.", retry: "다시 시도", noChannels: "지정할 수 있는 채널이 없습니다.",
     granted_ok: "운영자를 지정했습니다.", replayed: "이미 지정된 운영자입니다.", revoked_ok: "운영자를 해지했습니다.",
-    confirmTitle: "운영자를 해지할까요?", confirmBody: (email: string) => `${email}은 이 채널을 더 이상 운영할 수 없습니다.`,
+    confirmTitle: "운영자를 해지할까요?", confirmBody: (email: string) => `${email} 계정은 이 크리에이터를 더 이상 운영할 수 없어요.`,
     inviteTitle: "초대 메일을 보낼까요?", inviteBody: (email: string, channel: string) => `${email}은 아직 가입하지 않았습니다. 이 이메일로 가입하면 ${channel} 운영자로 지정됩니다.`,
     invite: "초대 메일 보내기", inviting: "보내는 중…", invited_ok: (email: string) => `${email}을 초대했습니다.`,
     invitations: "초대", expires: "만료일", mail: "메일", cancelInvite: "초대 취소", cancelling: "취소 중…", cancelled_ok: "초대를 취소했습니다.",

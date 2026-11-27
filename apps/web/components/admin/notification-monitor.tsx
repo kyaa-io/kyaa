@@ -103,8 +103,8 @@ export function NotificationMonitor() {
       retryKeysRef.current.delete(id);
     } catch {
       setRetryError(postSucceeded
-        ? "재시도 요청은 접수됐지만 최신 상태를 불러오지 못했습니다."
-        : "알림 전송을 재시도하지 못했습니다. 잠시 후 다시 시도하세요.");
+        ? "재시도했어요. 새로고침해 주세요."
+        : "재시도하지 못했어요. 잠시 후 다시 시도해 주세요.");
     } finally {
       retryingIdsRef.current.delete(id);
       setRetryingIds((current) => {

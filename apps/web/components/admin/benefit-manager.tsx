@@ -183,7 +183,7 @@ const blankCampaign: CampaignForm = {
 };
 const copy = {
   ko: {
-    title: "혜택 관리",
+    title: "경품 관리",
     new: "새 혜택",
     list: "혜택 목록",
     save: "초안 저장",
@@ -433,7 +433,7 @@ function BenefitManager({
         if (!preview.ok) throw new Error();
         const candidates = cheerEventParticipantsSchema.parse(await preview.json());
         if (candidates.total === 0) { setError(locale === "ko" ? "응모한 회원이 없어 추첨할 수 없어요." : "There are no participants to draw from yet."); return; }
-        if (!window.confirm(locale === "ko" ? `${campaignLabel(target)}\n현재 참여자 ${candidates.total}명 · 총 추첨 가중치 ${candidates.totalWeight}\n지금 참여를 마감하고 현장 추첨할까요? 실행 시점의 참여자와 예약 가중치가 확정됩니다. 추첨은 되돌릴 수 없으며 결과 공개는 별도로 진행합니다.` : `${campaignLabel(target)}\n${candidates.total} participants · total draw weight ${candidates.totalWeight}\nClose entries now and draw? Participants and reservation weights will be finalized at execution. The draw cannot be undone. Results are published separately.`)) return;
+        if (!window.confirm(locale === "ko" ? `${campaignLabel(target)}\n현재 참여자 ${candidates.total}명 · 총 추첨 가중치 ${candidates.totalWeight}\n지금 응모를 마감하고 추첨할까요? 지금 참여자와 예약 가중치로 확정되고 되돌릴 수 없어요. 결과 공개는 따로 해요.` : `${campaignLabel(target)}\n${candidates.total} participants · total draw weight ${candidates.totalWeight}\nClose entries now and draw? Participants and reservation weights will be finalized at execution. The draw cannot be undone. Results are published separately.`)) return;
       }
       const idempotencyKey = drawKeys.current[campaignId] ??= crypto.randomUUID();
       const response = await fetch(`/api/admin/benefit-campaigns/${campaignId}/draw`, {
@@ -550,7 +550,7 @@ function BenefitManager({
                 {campaign.source === "live" ? <Field label="LIVE event ID" value={campaign.liveEventId} set={(liveEventId) => setCampaign((c) => ({ ...c, liveEventId }))} /> : null}
                 <Field type="datetime-local" label="Entry opens (UTC)" value={campaign.entryOpensAt} set={(entryOpensAt) => setCampaign((c) => ({ ...c, entryOpensAt }))} />
                 <Field type="datetime-local" label="Entry closes (UTC)" value={campaign.entryClosesAt} set={(entryClosesAt) => setCampaign((c) => ({ ...c, entryClosesAt }))} />
-                <label><input type="checkbox" checked={campaign.publicTeaser} onChange={(event) => setCampaign((current) => ({ ...current, publicTeaser: event.target.checked }))} />{locale === "ko" ? "일정 미정 티저 공개" : "Show undated teaser"}</label>
+                <label><input type="checkbox" checked={campaign.publicTeaser} onChange={(event) => setCampaign((current) => ({ ...current, publicTeaser: event.target.checked }))} />{locale === "ko" ? "일정 미정으로 미리 공개" : "Show undated teaser"}</label>
               </div>
               {campaign.benefits.map((item, index) => (
                 <div className={styles.grid} key={`${index}-${item.benefitId}`}>

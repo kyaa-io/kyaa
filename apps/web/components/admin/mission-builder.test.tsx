@@ -41,7 +41,7 @@ describe("MissionBuilder", () => {
     for (const [name, value] of [["제목", "투표"], ["Title", "Vote"], ["질문", "무엇을 고를까요?"], ["Question", "Choose one"], ["선택지 1", "Love Rat"], ["Option 1", "Love Rat"], ["선택지 2", "다음 작품"], ["Option 2", "Next artwork"], ["공개 시작", "2026-10-01T10:00"], ["공개 종료", "2026-10-02T10:00"]]) {
       fireEvent.change(screen.getByLabelText(name, { exact: true }), { target: { value } });
     }
-    const policies = screen.getAllByRole("checkbox", { name: "곡명·작품명 원문 유지" });
+    const policies = screen.getAllByRole("checkbox", { name: "곡명·작품명 번역하지 않음" });
     expect(policies[0]).not.toBeChecked();
     fireEvent.click(policies[0]);
     fireEvent.click(screen.getByRole("button", { name: "초안 만들기" }));

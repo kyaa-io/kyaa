@@ -46,7 +46,6 @@ const copy = {
     loading: "설문 구성을 불러오는 중입니다.",
     error: "설문을 불러오지 못했습니다.",
     empty: "아직 설문 버전이 없습니다.",
-    emptyHelp: "새 초안을 만들면 공통 질문 4개가 자동으로 준비됩니다.",
     required: "필수",
     ko: "한국어",
     en: "English",
@@ -81,7 +80,6 @@ const copy = {
     loading: "Loading survey configuration.",
     error: "Survey configuration could not be loaded.",
     empty: "No survey version exists yet.",
-    emptyHelp: "Create a draft to start with the four canonical questions.",
     required: "Required",
     ko: "한국어",
     en: "English",
@@ -272,7 +270,6 @@ export function SurveyBuilder({ liveEventId }: { liveEventId: string }) {
             {!document?.versions.length && (
               <div className={styles.empty}>
                 <strong>{t.empty}</strong>
-                <p>{t.emptyHelp}</p>
               </div>
             )}
           </aside>
@@ -626,7 +623,7 @@ function QuestionEditor({
               )}
               <label className={styles.optionPolicy}>
                 <input type="checkbox" checked={o.preserveOriginal ?? true} onChange={(event) => onChange({ options: q.options.map((value, j) => j === i ? { ...value, preserveOriginal: event.target.checked } : value) })} />
-                {locale === "ko" ? "곡명·작품명 원문 유지" : "Keep song or artwork title unchanged"}
+                {locale === "ko" ? "곡명·작품명 번역하지 않음" : "Keep song or artwork title unchanged"}
               </label>
             </div>
           ))}

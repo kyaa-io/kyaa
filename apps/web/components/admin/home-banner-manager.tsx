@@ -300,7 +300,7 @@ export function HomeBannerManager({ locale, role }: { locale: AdminLocale; role:
                     }} />
                   </label>
                   {(["startsAt", "endsAt"] as const).map(field => <label key={field} className={styles.field}>
-                    {field === "startsAt" ? (locale === "ko" ? "노출 시작 (한국 시간)" : "Starts (Korea time)") : (locale === "ko" ? "노출 종료 (한국 시간)" : "Ends (Korea time)")}
+                    {field === "startsAt" ? (locale === "ko" ? "표시 시작 (한국 시간)" : "Starts (Korea time)") : (locale === "ko" ? "표시 종료 (한국 시간)" : "Ends (Korea time)")}
                     <input type="datetime-local" disabled={!canWrite} value={draft[field] ? new Date(Date.parse(draft[field]) + 9 * 3600000).toISOString().slice(0, 16) : ""} onChange={event => updateRoot({[field]: event.target.value ? new Date(event.target.value + "+09:00").toISOString() : null})} />
                   </label>)}
                 </>}

@@ -16,7 +16,7 @@ it("treats a block as unverified and never offers global hiding", async () => {
   expect(screen.queryByRole("checkbox", { name: /숨김/ })).not.toBeInTheDocument();
   expect(screen.getByText(/검증용 작성자/)).toBeInTheDocument();
   expect(screen.getByText("context-1")).toBeInTheDocument();
-  expect(screen.getByText(/차단만으로 위반이 확정되지는/)).toBeInTheDocument();
+  expect(screen.getByText(/차단만으로는 위반이 아니니/)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("checkbox", { name: /위반을 확인했으며/ }));
   fireEvent.change(screen.getByLabelText("처리 사유 (10자 이상)"), { target: { value: "반복된 괴롭힘 행위를 확인했습니다." } });
   fireEvent.click(screen.getByRole("button", { name: "저장" }));

@@ -58,13 +58,13 @@ export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAcces
 
         {isDenied ? (
           <div className={styles.deniedNotice} role="alert">
-            <strong>등록된 관리자 계정이 아닙니다</strong>
-            <p>관리자 데이터는 표시되지 않았습니다. 권한이 필요하다면 kyaa 운영 책임자에게 계정 등록을 요청해 주세요.</p>
+            <strong>등록된 관리자가 아니에요</strong>
+            <p>운영 책임자에게 계정 등록을 요청해 주세요.</p>
           </div>
         ) : isChecking ? (
           <div className={styles.checkingNotice} role="status" aria-live="polite">
             <ShieldCheck aria-hidden="true" />
-            <div><strong>관리자 권한을 확인합니다</strong><p>서버에서 등록된 이메일과 역할을 확인한 뒤에만 운영 화면을 엽니다.</p></div>
+            <div><strong>권한 확인 중</strong></div>
           </div>
         ) : (
           <>
@@ -77,7 +77,6 @@ export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAcces
             >
               <GoogleMark /><span>{session.status === "loading" ? "로그인 준비 중" : "Google로 관리자 로그인"}</span><ArrowRight aria-hidden="true" />
             </button>
-            <p className={styles.securityNote}>로그인 후 서버에서 관리자 권한을 확인합니다.</p>
           </>
         )}
 

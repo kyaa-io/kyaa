@@ -23,14 +23,13 @@ describe("AdminLogin", () => {
     expect(destination.pathname).toBe("/api/auth/cognito/start");
     expect(destination.searchParams.get("provider")).toBe("google");
     expect(destination.searchParams.get("returnTo")).toBe("/admin/login?returnTo=%2Fadmin%2Fusers");
-    expect(screen.getByText("로그인 후 서버에서 관리자 권한을 확인합니다.")).toBeInTheDocument();
     expect(screen.queryByText("관리자 로그인 완료")).not.toBeInTheDocument();
   });
 
   it("renders an explicit denial without exposing admin navigation", () => {
     render(<AdminLogin access="denied" />);
 
-    expect(screen.getByRole("alert")).toHaveTextContent("등록된 관리자 계정이 아닙니다");
+    expect(screen.getByRole("alert")).toHaveTextContent("등록된 관리자가 아니에요");
     expect(screen.queryByRole("navigation", { name: "관리자 메뉴" })).not.toBeInTheDocument();
   });
 });

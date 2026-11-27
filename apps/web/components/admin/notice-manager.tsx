@@ -198,7 +198,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       setNeedsRefresh(true);
       if (!(await load())) throw new Error(locale === "ko" ? "저장 후 공지를 다시 불러오지 못했습니다." : "Could not refresh after saving.");
       setSelectedId(result.id); recoveryTargetRef.current = null; setNeedsRefresh(false); setMessageIsError(false); setMessage(locale === "ko" ? "공지를 저장했습니다." : "Notice saved.");
-    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "변경은 처리됐지만 최신 상태를 불러오지 못했습니다." : "The change was processed, but the latest state could not be loaded.") : error instanceof Error ? error.message : "Save failed"); }
+    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "저장했어요. 새로고침해 주세요." : "Saved. Please refresh.") : error instanceof Error ? error.message : "Save failed"); }
     finally { endOperation(); }
   }
   async function state(action: "publish" | "unpublish" | "archive") {
@@ -214,7 +214,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
       setNeedsRefresh(true);
       if (!(await load())) throw new Error(locale === "ko" ? "상태 변경 후 공지를 다시 불러오지 못했습니다." : "Could not refresh after updating state.");
       recoveryTargetRef.current = null; setNeedsRefresh(false); setMessageIsError(false); setMessage(locale === "ko" ? "공지 상태를 변경했습니다." : "Notice state updated.");
-    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "변경은 처리됐지만 최신 상태를 불러오지 못했습니다." : "The change was processed, but the latest state could not be loaded.") : error instanceof Error ? error.message : "State update failed"); }
+    } catch (error) { setMessageIsError(true); setMessage(postSucceeded ? (locale === "ko" ? "저장했어요. 새로고침해 주세요." : "Saved. Please refresh.") : error instanceof Error ? error.message : "State update failed"); }
     finally { endOperation(); }
   }
   async function upload(file: File) {
@@ -223,8 +223,8 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     try {
       if (operatorChannelId && file.size > 8 * 1024 * 1024) throw new Error(copy.size);
       if (operatorChannelId && !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error(copy.type);
-      const alt = prompt(locale === "ko" ? "이미지 대체 텍스트를 입력하세요." : "Enter image alt text.");
-      if (!alt?.trim()) throw new Error(locale === "ko" ? "이미지 대체 텍스트가 필요합니다." : "Image alt text is required.");
+      const alt = prompt(locale === "ko" ? "이미지 설명을 적어 주세요." : "Enter image alt text.");
+      if (!alt?.trim()) throw new Error(locale === "ko" ? "이미지 설명을 적어 주세요." : "Image alt text is required.");
       const token = await getAccessToken();
       if (!token) throw new Error(locale === "ko" ? "로그인이 필요합니다." : "Authentication required.");
       const data = new FormData(); data.set("file", file);

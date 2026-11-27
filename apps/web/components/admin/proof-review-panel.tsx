@@ -22,7 +22,7 @@ const TEXT = {
     pointReviews: "포인트 회수 심사", member: "회원", page: "페이지", stamp: "스탬프", points: "포인트", pointReason: "사유", at: "시각", more: "더 보기", pointEmpty: "회수할 포인트가 없어요.", body: "게시글", viewImage: "이미지 보기", hideImage: "이미지 닫기", imageAlt: "제출 이미지", imageFailed: "이미지를 불러오지 못했습니다.", NOT_FOUND: "이미지를 찾을 수 없습니다.", reason: "사유", approve: "승인", reject: "반려", changes: "보완 요청", refresh: "새로고침",
     done: "처리했습니다.", replayed: "이미 처리됨",
     REVISION_CONFLICT: "다른 관리자가 먼저 처리했습니다. 새로고침하세요.", INVALID_TRANSITION: "이 상태에서는 처리할 수 없습니다.",
-    PROOF_STAMP_UNAVAILABLE: "스탬프를 줄 수 없어 승인하지 못했어요.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "이용 제한 회원이라 승인할 수 없어요.", GROUP_WALLET_UNAVAILABLE: "지갑 기능이 꺼져 있어 처리하지 못했어요.", GROUP_WALLET_WRITE_FENCED: "지갑 쓰기가 잠시 막혀 있어 처리하지 못했어요.", REASON_REQUIRED: "사유를 3자 이상 적어 주세요.",
+    PROOF_STAMP_UNAVAILABLE: "스탬프를 줄 수 없어 승인하지 못했어요.", FAN_WEB_ACTIVE_ACCOUNT_REQUIRED: "이용 제한 회원이라 승인할 수 없어요.", GROUP_WALLET_UNAVAILABLE: "지갑 기능이 꺼져 있어 처리하지 못했어요.", GROUP_WALLET_WRITE_FENCED: "지갑 변경이 잠시 멈춰 있어요. 잠시 후 다시 시도해 주세요.", REASON_REQUIRED: "사유를 3자 이상 적어 주세요.",
     ADMIN_REQUIRED: "관리자 권한이 필요합니다.", failed: "처리하지 못했습니다.", PROOF_ALREADY_APPROVED: "같은 플랫폼으로 이미 승인된 인증이 있습니다.",
     voidTitle: "스탬프 무효", stampId: "스탬프 번호", sanction: "제재도 함께 적용", voidRun: "무효로 하기", voided: "무효 처리했습니다.", titleRevoked: "찐팬 칭호를 뺐어요.", noTitle: "해제할 찐팬 칭호가 없습니다.",
     STAMP_NOT_FOUND: "스탬프를 찾을 수 없습니다.", correction: "포인트 회수", review: "심사가 필요한 포인트 회수예요.", corrected: "포인트를 회수했어요.", none: "회수할 포인트가 없어요.",

@@ -299,7 +299,7 @@ function CelebrityCms({
     <AdminOperationsShell locale={locale} adminRole={role}>
       <div className={styles.cmsHeading}>
         <div>
-          <p>{locale === "ko" ? "콘텐츠 관리" : "Content management"} · {environment === "Production" ? (locale === "ko" ? "운영 환경" : "Production") : environment === "Preview" ? (locale === "ko" ? "미리보기 환경" : "Preview") : (locale === "ko" ? "개발 환경" : "Development")}</p>
+          <p>{locale === "ko" ? "콘텐츠 관리" : "Content management"} · {environment === "Production" ? (locale === "ko" ? "운영 서버" : "Production") : environment === "Preview" ? (locale === "ko" ? "테스트 서버" : "Preview") : (locale === "ko" ? "개발 서버" : "Development")}</p>
           <h1>{locale === "ko" ? "크리에이터 관리" : "Creator management"}</h1>
         </div>
         {canEdit && (
@@ -488,7 +488,7 @@ function CelebrityCms({
               if (!draftIsValid) {
                 setMessage(
                   locale === "ko"
-                    ? "한국어·영어 필수 정보와 주소, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인해 주세요."
+                    ? "빠졌거나 형식이 맞지 않는 항목을 확인해 주세요. 한국어·영어 필수 정보, 주소, 이미지, 직군, 링크, 테마를 봐 주세요."
                     : "Check required KO and EN fields, slug, image, role, website and ticket links, theme, and channel formats.",
                 );
                 return;
@@ -641,12 +641,12 @@ function CelebrityCms({
             </fieldset>
             <fieldset disabled={!canEdit || !!current?.archivedAt}>
               <legend>
-                {locale === "ko" ? "분류와 채널" : "Category and channels"}
+                {locale === "ko" ? "분류와 링크" : "Category and links"}
               </legend>
               <label>
                 <span>{locale === "ko" ? "대표 분류" : "Primary category"}</span>
                 <select required value={draft.primaryRole ?? ""} onChange={(event) => setDraft((d) => ({ ...d, primaryRole: event.target.value as CreatorRole }))}>
-                  <option value="" disabled>{locale === "ko" ? "분류를 선택하세요" : "Select a category"}</option>
+                  <option value="" disabled>{locale === "ko" ? "분류 선택" : "Select a category"}</option>
                   {CREATOR_ROLES.map((role) => <option key={role} value={role} disabled={Boolean(current?.primaryRole) && (current?.primaryRole === "brand") !== (role === "brand")}>{creatorRoleLabel(role, locale)}</option>)}
                 </select>
                 {current?.primaryRole && <small>{locale === "ko" ? "저장 후에는 인물↔브랜드를 바꿀 수 없어요." : "Saved profiles cannot switch between person and brand."}</small>}
@@ -701,7 +701,7 @@ function CelebrityCms({
               </h3>
               <small className={localStyles.fieldHelp}>
                 {locale === "ko"
-                  ? `HTTPS 채널을 최대 4개까지 등록할 수 있습니다. (${draft.socialLinks.length}/4)`
+                  ? `링크는 https 주소로 최대 4개 (${draft.socialLinks.length}/4)`
                   : `Add up to 4 HTTPS channels. (${draft.socialLinks.length}/4)`}
               </small>
               {(["youtube", "tiktok", "instagram", "chzzk"] as const).map(
@@ -777,7 +777,7 @@ function CelebrityCms({
                     ? "필수 정보가 입력되어 저장할 수 있습니다."
                     : "Required information is complete and ready to save."
                   : locale === "ko"
-                    ? "한국어·영어 필수 정보와 주소, 이미지, 직군, 웹사이트·예매 링크, 테마·채널 형식을 확인해 주세요."
+                    ? "빠졌거나 형식이 맞지 않는 항목을 확인해 주세요. 한국어·영어 필수 정보, 주소, 이미지, 직군, 링크, 테마를 봐 주세요."
                     : "Check required KO and EN fields, slug, image, role, website and ticket links, theme, and channel formats."}
               </p>
             )}
