@@ -188,20 +188,20 @@ const copy = {
     new: "새 혜택",
     list: "혜택 목록",
     save: "초안 저장",
-    publish: "발행",
-    unpublish: "발행 취소",
+    publish: "공개",
+    unpublish: "비공개로",
     archive: "보관",
-    codes: "코드 등록",
+    codes: "경품 코드 넣기",
     clearCodes: "코드 전체 삭제",
-    apps: "신청 및 선정",
-    claims: "수령 및 사용 이력",
-    campaigns: "혜택 캠페인",
-    campaignSave: "캠페인 초안 저장",
-    campaignPublish: "캠페인 발행",
+    apps: "신청과 당첨",
+    claims: "수령·사용 기록",
+    campaigns: "응모 이벤트",
+    campaignSave: "초안 저장",
+    campaignPublish: "공개",
     campaignNoLimit: "경품별 응모 한도 (비우면 제한 없음)",
-    draw: "추첨 실행",
-    select: "선정",
-    reject: "미선정",
+    draw: "추첨하기",
+    select: "당첨",
+    reject: "낙첨",
     used: "사용 완료로 표시",
     readonly: "조회 전용 계정은 볼 수만 있어요.",
     secret:
@@ -743,7 +743,7 @@ function BenefitManager({
                   selected?.publicationStatus === "published"
                 }
               >
-                <legend>한국어 · English</legend>
+                <legend>한국어·영어</legend>
                 <div className={styles.localeGrid}>
                   <Locale lang="한국어" form={form} suffix="Ko" set={set} />
                   <Locale lang="English" form={form} suffix="En" set={set} />

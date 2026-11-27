@@ -27,7 +27,7 @@ describe('group application review',()=>{
   const asset='e9700000-0000-4000-8000-00000000000a';
   (fixture.items[0] as Record<string,unknown>).qualification={hasExistingPage:true,evidenceUrl:'https://cafe.example.test/club',assetIds:[asset]};
   const {container}=render(<GroupApplicationManager locale="ko"/>);
-  expect(screen.getByText('기존에 운영하던 페이지').nextElementSibling).toHaveTextContent('있음');
+  expect(screen.getByText('기존 팬페이지').nextElementSibling).toHaveTextContent('있음');
   expect(screen.getByRole('link',{name:'https://cafe.example.test/club'})).toHaveAttribute('rel','noopener noreferrer');
   expect(container.querySelector(`[src*="${asset}"]`)).not.toBeNull();
   expect(screen.queryByText('커뮤니티 이름')).not.toBeInTheDocument();
@@ -35,8 +35,8 @@ describe('group application review',()=>{
  it('shows no link or screenshot rows when there is no earlier page',()=>{
   (fixture.items[0] as Record<string,unknown>).qualification={hasExistingPage:false};
   render(<GroupApplicationManager locale="ko"/>);
-  expect(screen.getByText('기존에 운영하던 페이지').nextElementSibling).toHaveTextContent('없음');
-  expect(screen.queryByText('운영 페이지 링크')).not.toBeInTheDocument();
+  expect(screen.getByText('기존 팬페이지').nextElementSibling).toHaveTextContent('없음');
+  expect(screen.queryByText('기존 팬페이지 링크')).not.toBeInTheDocument();
  });
  it('keeps showing an application saved in the earlier form',()=>{
   (fixture.items[0] as Record<string,unknown>).qualification={communityName:'Old club',evidenceUrl:'https://cafe.example.test/old',introduction:'Earlier answer',assetIds:[]};

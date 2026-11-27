@@ -39,7 +39,7 @@ const copy = {
       "changha-onboarding-1118": "창하 팬페이지 좋아요 참여자", "yuna-onboarding-1119": "유나 팬페이지 좋아요 참여자", "elina-passport-1120": "엘리나 패스포트 발급자", "changha-photo-1122": "창하 미공개사진 이벤트 참여자",
     },
     order: { "x-mission": "좋아요 완료 최신순", "signup-raffle": "응모 최신순", "page-like": "좋아요 최신순", "passport-issued": "발급 최신순" },
-    nickname: "닉네임", signedUpAt: "가입일", sourceHeading: "유입 출처", sourceColumn: "유입", noSource: "태그 없음", sources: { telegram: "텔레그램", x: "X", kol: "KoL" } as Record<string, string>, participatedAt: { "x-mission": "참여 시각", "signup-raffle": "응모 시각", "page-like": "좋아요 시각", "passport-issued": "발급 시각" }, status: "상태",
+    nickname: "닉네임", signedUpAt: "가입일", sourceHeading: "가입 경로", sourceColumn: "경로", noSource: "표시 없음", sources: { telegram: "텔레그램", x: "X", kol: "KoL" } as Record<string, string>, participatedAt: { "x-mission": "참여 시각", "signup-raffle": "응모 시각", "page-like": "좋아요 시각", "passport-issued": "발급 시각" }, status: "상태",
     state: { completed: "완료", entered: "응모", issued: "발급" },
     noNickname: "닉네임 없음",
     loading: "참여자 목록을 가져오고 있어요.", error: "참여자 목록을 불러오지 못했습니다.", retry: "다시 시도",

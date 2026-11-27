@@ -91,8 +91,8 @@ export function MissionBuilder({ liveEventId }: { liveEventId: string }) {
   if (session.status !== "authorized") return <AdminAccessState status={session.status} locale="ko" />;
   return <AdminOperationsShell locale="ko" adminRole={session.admin.role}>
     <div className={styles.page}>
-    <header className={styles.heading}><p>라이브 운영</p><h1>미션 빌더</h1><span>퀴즈·설문·투표의 노출 기간과 한국어·영어 문항을 구성합니다.</span></header>
-    {session.admin.role === "viewer" && <p className={styles.notice}>Viewer 역할은 미션 현황만 조회할 수 있습니다.</p>}
+    <header className={styles.heading}><p>LIVE 운영</p><h1>미션 만들기</h1></header>
+    {session.admin.role === "viewer" && <p className={styles.notice}>조회 전용 계정은 미션 현황을 볼 수만 있어요.</p>}
     {message && <p className={styles.message} role="status">{message}</p>}
     <section className={styles.card} aria-labelledby="mission-settings"><h2 id="mission-settings">기본 설정</h2><div className={styles.localeGrid}>
       <label><span>미션 유형</span><select value={type} onChange={event => setType(event.target.value as MissionType)}><option value="quiz">퀴즈</option><option value="survey">설문</option><option value="vote">투표</option></select></label>

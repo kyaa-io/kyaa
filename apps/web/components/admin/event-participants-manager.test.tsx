@@ -21,24 +21,24 @@ describe("event participants source tags", () => {
     answer(page([row(1), row(2), row(3), row(4)]));
     render(<EventParticipantsManager locale="ko" />);
     await screen.findByText("팬1");
-    expect(screen.queryByText("유입 출처")).not.toBeInTheDocument(); // X mission: no campaign, no source column
+    expect(screen.queryByText("가입 경로")).not.toBeInTheDocument(); // X mission: no campaign, no source column
     expect(fetchMock.mock.calls[0][0]).not.toContain("campaign=");
 
     answer(page([row(1, { source: "telegram", content: "cgaa" }), row(2, { source: "telegram", content: "cgaa" }), row(3, { source: "kol", content: "kol1" }), row(4, null)],
       [{ source: "telegram", content: "cgaa", count: 2 }, { source: "kol", content: "kol1", count: 1 }]));
     fireEvent.click(screen.getByRole("button", { name: "엘리나 11/17" }));
-    const totals = await screen.findByRole("region", { name: "유입 출처" });
+    const totals = await screen.findByRole("region", { name: "가입 경로" });
     await waitFor(() => expect(fetchMock.mock.calls.at(-1)?.[0]).toContain("campaign=elina-onboarding-1117"));
     const items = within(totals).getAllByRole("listitem").map(item => item.textContent);
-    expect(items).toEqual(["텔레그램 · cgaa2명", "KoL · kol11명", "태그 없음1명"]);
+    expect(items).toEqual(["텔레그램 · cgaa2명", "KoL · kol11명", "표시 없음1명"]);
     const rows = screen.getAllByRole("row").slice(1).map(tr => within(tr).getAllByRole("cell").at(-1)?.textContent);
-    expect(rows).toEqual(["텔레그램 · cgaa", "텔레그램 · cgaa", "KoL · kol1", "태그 없음"]);
+    expect(rows).toEqual(["텔레그램 · cgaa", "텔레그램 · cgaa", "KoL · kol1", "표시 없음"]);
   });
   it("counts everyone as untagged when no tag was recorded", async () => {
     answer(page([row(1, null), row(2, null)], []));
     render(<EventParticipantsManager locale="ko" />);
     fireEvent.click(await screen.findByRole("button", { name: "엘리나 11/17" }));
-    const totals = await screen.findByRole("region", { name: "유입 출처" });
-    expect(within(totals).getAllByRole("listitem").map(item => item.textContent)).toEqual(["태그 없음2명"]);
+    const totals = await screen.findByRole("region", { name: "가입 경로" });
+    expect(within(totals).getAllByRole("listitem").map(item => item.textContent)).toEqual(["표시 없음2명"]);
   });
 });

@@ -132,7 +132,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
           <h1>{locale === "ko" ? "팬 퀴즈" : "Fan quiz"}</h1>
           <span>
             {locale === "ko"
-              ? "발행된 버전은 보존되며 수정 시 새 버전을 만듭니다."
+              ? "고치면 새 버전이 생겨요. 공개한 버전은 그대로 남아요."
               : "Published versions stay immutable; clone to edit."}
           </span>
         </div>
@@ -172,7 +172,7 @@ export function QuizManager({ celebrityId, learningEnabled = false }: { celebrit
             }}
           >
             <Plus aria-hidden="true" />{" "}
-            {locale === "ko" ? "새 버전" : "New version"}
+            {locale === "ko" ? "새로 만들기" : "New version"}
           </button>
         )}
       </div>

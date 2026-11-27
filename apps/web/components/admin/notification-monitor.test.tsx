@@ -116,7 +116,7 @@ describe("notification monitor retry lifecycle", () => {
   it("labels provider acceptance as awaiting delivery confirmation", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ ...data, items: [{ ...data.items[0], channel: "kakao", providerStatus: "accepted", providerStatusCode: "2000" }] })));
     render(<NotificationMonitor />);
-    expect(await screen.findByText("접수 완료 / 배달 확인 중 · 2000")).toBeInTheDocument();
+    expect(await screen.findByText("전송 서비스 접수 · 도착 확인 중 · 2000")).toBeInTheDocument();
   });
 
   it("loads an older cursor page and appends it to the table", async () => {

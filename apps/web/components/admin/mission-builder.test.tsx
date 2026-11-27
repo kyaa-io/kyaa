@@ -24,7 +24,7 @@ describe("MissionBuilder", () => {
     const { container } = render(<MissionBuilder liveEventId="live-1" />);
 
     expect(await screen.findByText("아직 집계된 미션 통계가 없습니다.")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "미션 빌더" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "미션 만들기" })).toBeInTheDocument();
     expect(screen.getByRole("combobox", { name: "미션 유형" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "초안 만들기" })).toBeDisabled();
     expect(container.querySelector("main main")).toBeNull();

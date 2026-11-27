@@ -29,7 +29,7 @@ export function CheerEventParticipants({ campaignId, locale }: { campaignId: str
     {data && <>
       <p>{ko ? `참여 ${data.total}명 · 총 추첨 가중치 ${data.totalWeight}` : `${data.total} participants · total draw weight ${data.totalWeight}`}</p>
       <p>{ko ? "계정당 댓글 한 건으로 응모할 수 있어요. 해당 LIVE 예약자는 추첨 기회가 2배예요." : "Each account enters once. Reservations for this LIVE have a draw weight of 2."}</p>
-      <ol>{data.participants.map(row => <li key={row.appUserId}><code>{row.appUserId}</code> · <time dateTime={row.enteredAt}>{new Date(row.enteredAt).toLocaleString(locale)}</time> · {ko ? "가중치" : "Weight"} {row.weight}</li>)}</ol>
+      <ol>{data.participants.map(row => <li key={row.appUserId}><code>{row.appUserId}</code> · <time dateTime={row.enteredAt}>{new Date(row.enteredAt).toLocaleString(locale)}</time> · {ko ? "배수" : "Weight"} {row.weight}</li>)}</ol>
       {data.nextOffset !== null && <button type="button" disabled={pending} onClick={() => void load(data.nextOffset!)}>{ko ? "더 보기" : "Show more"}</button>}
     </>}
     {error && <p role="alert" className={styles.error}>{ko ? "참여 내역을 불러오지 못했습니다. 다시 시도해 주세요." : "Couldn’t load entries. Please try again."}</p>}

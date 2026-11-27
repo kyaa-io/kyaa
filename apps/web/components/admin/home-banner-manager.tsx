@@ -49,7 +49,7 @@ const copy = {
     desktopVideo: "넓은 영상", mobileVideo: "정사각 영상 (선택)", uploadVideo: "MP4·WebM 올리기", removeVideo: "영상 제거", noVideo: "등록된 영상 없음",
     videoPair: "MP4와 WebM 파일을 함께 골라 주세요.", videoTooLarge: "영상은 파일마다 1MB까지 올릴 수 있어요.", videoSound: "소리가 없는 영상만 올릴 수 있어요.", videoFailure: "영상을 올리지 못했어요.",
     uploadFailure: "이미지를 등록하지 못했습니다.", invalid: "정기 LIVE 배너는 크리에이터마다 하나만 공개할 수 있어요.", issues: "공개 전에 다음 항목을 입력해 주세요.",
-    conflict: "다른 관리자가 먼저 변경했습니다. 현재 입력은 보존했습니다. 서버 데이터를 다시 불러오면 현재 입력이 사라집니다.", reload: "서버 데이터 다시 불러오기",
+    conflict: "다른 관리자가 먼저 바꿨어요. 새로고침하면 입력한 내용이 사라져요.", reload: "새로고침",
   },
   en: {
     title: "Banner manager", description: "Manage banners, destinations, categories and display order for Home and group discovery.",

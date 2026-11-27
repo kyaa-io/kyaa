@@ -26,7 +26,7 @@ type TrendKey = "newFans" | "passports" | "reactions" | "reservations" | "attend
 
 function value(metric: Metric<number>, locale: AdminLocale) {
   return metric.state === "available" ? metric.value!.toLocaleString(locale)
-    : metric.state === "suppressed" ? (locale === "ko" ? "표본 보호" : "Suppressed")
+    : metric.state === "suppressed" ? (locale === "ko" ? "인원이 적어 숨김" : "Suppressed")
     : metric.state === "not_applicable" ? (locale === "ko" ? "해당 없음" : "N/A")
     : locale === "ko" ? "조회 불가" : "Unavailable";
 }
@@ -44,11 +44,11 @@ function Card({ label, description, metric, locale }: { label: string; descripti
 function DataState({ state, locale }: { state: Exclude<Metric<unknown>["state"], "available">; locale: AdminLocale }) {
   const ko = locale === "ko";
   const message = state === "suppressed"
-    ? (ko ? "소규모 표본을 보호하기 위해 표시하지 않습니다." : "Hidden to protect a small cohort.")
+    ? (ko ? "대상 인원이 적어 개인정보 보호를 위해 숨겨요." : "Hidden to protect a small cohort.")
     : state === "not_applicable"
       ? (ko ? "이 항목에는 적용되지 않는 지표입니다." : "This metric does not apply.")
       : (ko ? "현재 데이터를 조회할 수 없습니다." : "Data is currently unavailable.");
-  return <div className={styles.dataState} data-state={state}><strong>{state === "suppressed" ? (ko ? "표본 보호" : "Suppressed") : state === "not_applicable" ? (ko ? "해당 없음" : "N/A") : (ko ? "조회 불가" : "Unavailable")}</strong><p>{message}</p></div>;
+  return <div className={styles.dataState} data-state={state}><strong>{state === "suppressed" ? (ko ? "인원이 적어 숨김" : "Suppressed") : state === "not_applicable" ? (ko ? "해당 없음" : "N/A") : (ko ? "조회 불가" : "Unavailable")}</strong><p>{message}</p></div>;
 }
 
 function TrendSection({ data, locale }: { data: PlatformAnalytics["trend"]; locale: AdminLocale }) {
@@ -163,10 +163,10 @@ export function PlatformDashboardContent({ data, locale = "ko" }: { data: Platfo
       <section className={styles.section}><div className={styles.sectionHeading}><div><h2>{ko ? "기간 추이" : "Trend"}</h2><p>{ko ? "단위가 같은 지표를 하나씩 선택해 실제 규모로 비교합니다." : "Select one like-for-like metric to view its true scale."}</p></div></div><TrendSection data={data.trend} locale={locale} /></section>
       <div className={styles.split}>
         <section className={styles.section}><div className={styles.sectionHeading}><div><h2>{ko ? "크리에이터 성과" : "Creator performance"}</h2><p>{ko ? "누적 팬은 선택 기간과 관계없이 현재까지 팬 관계를 맺은 회원이며, 나머지 항목은 선택 기간의 기록입니다." : "Cumulative fans cover all time; the remaining columns cover the selected period."}</p></div></div><CreatorPerformance data={data.creators} locale={locale} /></section>
-        <section className={styles.section}><div className={styles.sectionHeading}><div><h2>{ko ? "LIVE 성과" : "LIVE performance"}</h2><p>{ko ? "예약과 출석, 온체인 처리를 LIVE별로 확인합니다." : "Review reservations, attendance, and on-chain processing by LIVE."}</p></div></div><LivePerformance data={data.lives} locale={locale} /></section>
+        <section className={styles.section}><div className={styles.sectionHeading}><div><h2>{ko ? "LIVE 성과" : "LIVE performance"}</h2></div></div><LivePerformance data={data.lives} locale={locale} /></section>
       </div>
       <section className={styles.section}>
-        <div className={styles.sectionHeading}><div><h2>{ko ? "온체인 상태" : "On-chain status"}</h2><p>{ko ? "발급 작업의 처리 결과와 실패 건을 확인합니다." : "Check issuance outcomes and failed work."}</p></div></div>
+        <div className={styles.sectionHeading}><div><h2>{ko ? "디지털 발급 상태" : "Digital issuance status"}</h2></div></div>
         <div className={styles.metricGrid}>
           <Card label={ko ? "전체 발급 작업" : "Total issuance jobs"} description={ko ? "선택 기간에 생성된 전체 작업입니다." : "All jobs created in the selected period."} metric={data.chain.total} locale={locale} />
           <Card label={ko ? "발급 회원" : "Members issued to"} description={ko ? "발급 작업이 연결된 고유 회원입니다." : "Unique members linked to issuance jobs."} metric={data.chain.uniqueFans} locale={locale} />
@@ -214,7 +214,7 @@ export function PlatformDashboard({ locale = "ko" }: { locale?: AdminLocale }) {
   return (
     <AdminOperationsShell locale={locale} adminRole={session.admin.role}>
       <div className={styles.dashboard}>
-        <header className={styles.hero}><div><p className={styles.eyebrow}>{ko ? "상세 분석" : "Detailed analytics"}</p><h1>{ko ? "팬 여정 성과" : "Fan journey performance"}</h1><p>{ko ? "팬 성장과 LIVE 참여, 운영 작업을 한국 시간 기준으로 확인합니다." : "Review fan growth, LIVE participation, and operations in Asia/Seoul time."}</p></div></header>
+        <header className={styles.hero}><div><h1>{ko ? "상세 통계" : "Detailed analytics"}</h1><p>{ko ? "한국 시간 기준" : "Asia/Seoul time"}</p></div></header>
         <AnalyticsWindowControl value={windowValue} onApply={setWindow} locale={locale} />
         {state.loading ? <p className={styles.status} role="status">{ko ? "분석 불러오는 중" : "Loading analytics"}</p>
           : state.error ? <p className={styles.status} data-error role="alert">{ko ? "분석을 불러오지 못했습니다" : "Analytics unavailable"} · {state.error}</p>

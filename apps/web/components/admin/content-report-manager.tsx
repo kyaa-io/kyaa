@@ -56,7 +56,7 @@ function ReportsForOwner() {
           {resolution === "resolved" && report.targetType !== "user_block" && report.targetType !== "user_profile" && <label className={styles.moderationChoice}><input type="checkbox" checked={hideTarget} disabled={busy} onChange={event => setHideTarget(event.target.checked)} />위 {targetLabels[report.targetType]} 숨김</label>}
           {resolution === "resolved" && session.admin.role === "admin" && <label className={styles.moderationChoice}><input type="checkbox" checked={restrictAuthor} disabled={busy} onChange={event => setRestrictAuthor(event.target.checked)} />위반을 확인했으며 작성자의 서비스 이용을 제한합니다.</label>}
           <label htmlFor="report-resolution-reason">처리 사유 (10자 이상)</label><textarea id="report-resolution-reason" minLength={10} maxLength={500} required value={reason} disabled={busy} onChange={event => setReason(event.target.value)} />
-          <div><button type="button" disabled={busy} onClick={clear}>취소</button><button type="submit" disabled={busy || reason.trim().length < 10}>{busy ? "저장 중…" : "처리 저장"}</button></div>
+          <div><button type="button" disabled={busy} onClick={clear}>취소</button><button type="submit" disabled={busy || reason.trim().length < 10}>{busy ? "저장 중…" : "저장"}</button></div>
         </form>}
       </article>)}
       <nav className={listStyles.pagination} aria-label="신고 페이지 이동"><button type="button" disabled={busy || cursors.length === 0} onClick={() => { clear(); setCursors(value => value.slice(0, -1)); }}>이전 페이지</button>{resource.state.data.nextCursor && <button type="button" disabled={busy} onClick={nextPage}>다음 페이지</button>}</nav>

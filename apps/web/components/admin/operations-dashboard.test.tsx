@@ -63,7 +63,7 @@ describe("Admin operations surfaces", () => {
 
   it("preserves scope inputs when switching locale and creator/brand tabs", () => {
     const { rerender } = render(<AdminAnalytics />);
-    const scope = screen.getByLabelText("셀럽 ID");
+    const scope = screen.getByLabelText("크리에이터 번호");
     fireEvent.change(scope, {
       target: { value: "11111111-1111-4111-8111-111111111111" },
     });
@@ -119,25 +119,25 @@ describe("Admin operations surfaces", () => {
       ),
     );
     render(<AdminAnalytics initialView="brand" />);
-    fireEvent.change(screen.getByLabelText("브랜드 ID"), {
+    fireEvent.change(screen.getByLabelText("브랜드 번호"), {
       target: { value: "11111111-1111-4111-8111-111111111111" },
     });
     fireEvent.click(screen.getByRole("button", { name: "분석 조회" }));
     await waitFor(() =>
       expect(
-        screen.getByRole("heading", { name: "브랜드 참여 퍼널" }),
+        screen.getByRole("heading", { name: "브랜드 참여 흐름" }),
       ).toBeInTheDocument(),
     );
     expect(
-      screen.getByRole("heading", { name: "예약 참여" }).parentElement
+      screen.getByRole("heading", { name: "예약" }).parentElement
         ?.parentElement,
     ).toHaveTextContent("0");
     expect(
-      screen.getByRole("heading", { name: "출석 참여" }).parentElement
+      screen.getByRole("heading", { name: "출석" }).parentElement
         ?.parentElement,
     ).toHaveTextContent("0");
     expect(screen.getByText("출처: live_reservations")).toBeInTheDocument();
-    expect(screen.getByText(/표본 보호/)).toBeInTheDocument();
+    expect(screen.getByText(/인원이 적어 숨김/)).toBeInTheDocument();
     expect(document.querySelector("time")).toHaveAttribute(
       "datetime",
       "2026-07-21T08:00:00.000Z",
@@ -160,7 +160,7 @@ describe("Admin operations surfaces", () => {
       }),
     );
     render(<AdminAnalytics />);
-    fireEvent.change(screen.getByLabelText("셀럽 ID"), {
+    fireEvent.change(screen.getByLabelText("크리에이터 번호"), {
       target: { value: "11111111-1111-4111-8111-111111111111" },
     });
     fireEvent.click(screen.getByRole("button", { name: "분석 조회" }));
@@ -185,7 +185,7 @@ describe("Admin operations surfaces", () => {
       ).toBeInTheDocument(),
     );
     expect(
-      screen.queryByRole("heading", { name: "브랜드 참여 퍼널" }),
+      screen.queryByRole("heading", { name: "브랜드 참여 흐름" }),
     ).not.toBeInTheDocument();
   });
 
@@ -196,7 +196,7 @@ describe("Admin operations surfaces", () => {
     });
     fireEvent.change(screen.getByLabelText("종료"), { target: { value: "" } });
     fireEvent.click(screen.getByRole("button", { name: "분석 조회" }));
-    expect(screen.getByLabelText("셀럽 ID")).toHaveAttribute(
+    expect(screen.getByLabelText("크리에이터 번호")).toHaveAttribute(
       "aria-describedby",
       "analytics-scope-error",
     );

@@ -242,7 +242,7 @@ function CertificationManager({
     pendingRef.current = true;
     setPending(true);
     setMessageIsError(false);
-    setMessage(locale === "ko" ? "처리 중입니다." : "Processing.");
+    setMessage(locale === "ko" ? "저장 중…" : "Processing.");
     let postSucceeded = false;
     try {
       const result = await request("/api/admin/certification-missions", "POST", body);
@@ -390,7 +390,7 @@ function CertificationManager({
             <div className={styles.sectionHeading}>
               <h2>{locale === "ko" ? "인증 미션" : "Missions"}</h2>
               <button type="button" disabled={pending || needsRefresh} onClick={() => setForm({ ...blank, immutableKey: `cert-${crypto.randomUUID()}` })}>
-                <Plus /> {locale === "ko" ? "새 미션" : "New"}
+                <Plus /> {locale === "ko" ? "새 인증 미션" : "New"}
               </button>
             </div>
             <AdminListSearch value={missionQuery} onChange={setMissionQuery} locale={locale} disabled={pending || needsRefresh} />
@@ -418,10 +418,10 @@ function CertificationManager({
             <h2>
               {form.id
                 ? locale === "ko"
-                  ? "미션 편집"
+                  ? "인증 미션 수정"
                   : "Edit mission"
                 : locale === "ko"
-                  ? "새 미션"
+                  ? "새 인증 미션"
                   : "New mission"}
             </h2>
             <label>

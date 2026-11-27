@@ -11,7 +11,7 @@ import styles from "./operations.module.css";
 type Status = "pending" | "processing" | "sent" | "failed";
 type ProviderStatus = "prepared"|"sending"|"accepted"|"unknown"|"delivered"|"failed"|"suppressed";
 type Delivery = { id:string; channel:"push"|"email"|"kakao"; kind:string; status:Status; attemptCount:number; nextAttemptAt:string; destinationLabel:string; errorCode:string|null; createdAt:string; sentAt:string|null; manuallyRetryable:boolean; providerStatus?:ProviderStatus|null;providerMessageId?:string|null;providerStatusCode?:string|null };
-const providerStatusLabel:Record<ProviderStatus,string>={prepared:"준비됨",sending:"전송 중",accepted:"접수 완료 / 배달 확인 중",unknown:"결과 확인 필요",delivered:"배달 완료",failed:"배달 실패",suppressed:"전송 제외"};
+const providerStatusLabel:Record<ProviderStatus,string>={prepared:"준비됨",sending:"전송 중",accepted:"전송 서비스 접수 · 도착 확인 중",unknown:"결과 확인 필요",delivered:"도착 확인",failed:"전달 실패",suppressed:"전송 제외"};
 const statusLabel:Record<Status,string>={pending:"대기",processing:"처리 중",sent:"전송 완료",failed:"실패"};
 const channelLabel:Record<Delivery["channel"],string>={push:"푸시",email:"이메일",kakao:"카카오"};
 const kindLabel:Record<string,string>={live_reserved:"LIVE 예약",live_changed:"LIVE 변경",live_cancelled:"LIVE 취소",live_24h:"LIVE 24시간 전",live_10m:"LIVE 10분 전",survey_reminder:"설문 알림",level_up:"레벨 상승",benefit_unlocked:"혜택 잠금 해제",benefit_won:"혜택 당첨",recipient_information_required:"수령 정보 요청",fulfillment_meaningful_update:"수령 진행 변경",collectible_claim_available:"컬렉터블 수령 가능",collectible_claim_expiring:"컬렉터블 수령 만료 임박",benefit_available:"혜택 사용 가능"};

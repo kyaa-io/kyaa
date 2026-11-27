@@ -52,47 +52,47 @@ describe("NoticeManager for home notices", () => {
     homeManager();
     await screen.findByRole("button", { name: /초안 E/ });
     expect(fetchMock.mock.calls[0]![0]).toBe("/api/admin/home-notices");
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue("guide");
-    expect(screen.queryByRole("combobox", { name: "글 구분" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue("guide");
+    expect(screen.queryByRole("combobox", { name: "글 종류" })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: "공개 범위" })).not.toBeInTheDocument();
-    expect(within(screen.getByRole("combobox", { name: "구분" })).getAllByRole("option").map(option => option.textContent)).toEqual(["안내", "크리에이터", "이벤트", "업데이트"]);
+    expect(within(screen.getByRole("combobox", { name: "종류" })).getAllByRole("option").map(option => option.textContent)).toEqual(["안내", "크리에이터", "이벤트", "업데이트"]);
   });
 
   it("restores each notice's category on selection and resets to the first category for a new notice", async () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     homeManager();
     fireEvent.click(await screen.findByRole("button", { name: /최신 D/ }));
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue(published.category);
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue(published.category);
     fireEvent.click(screen.getByRole("button", { name: /초안 E/ }));
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue("guide");
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue("guide");
     fireEvent.click(screen.getByRole("button", { name: /고정 C/ }));
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue("update");
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue("update");
     fireEvent.click(screen.getByRole("button", { name: "새 공지" }));
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue(homeNoticeCategories[0]);
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue(homeNoticeCategories[0]);
   });
 
   it("treats a category-only change as unsaved: beforeunload, confirm on leave, cancel keeps it, reverting clears it", async () => {
     const confirm = vi.spyOn(window, "confirm").mockReturnValue(false);
     homeManager();
     fireEvent.click(await screen.findByRole("button", { name: /초안 E/ }));
-    const field = screen.getByRole("combobox", { name: "구분" });
+    const field = screen.getByRole("combobox", { name: "종류" });
     fireEvent.change(field, { target: { value: "event" } });
     const unload = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(unload);
     expect(unload.defaultPrevented).toBe(true);
     fireEvent.click(screen.getByRole("button", { name: /최신 D/ }));
     expect(confirm).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue("event");
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue("event");
     fireEvent.click(screen.getByRole("button", { name: "새 공지" }));
     expect(confirm).toHaveBeenCalledTimes(2);
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue("event");
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue("event");
     confirm.mockReturnValue(true);
     fireEvent.click(screen.getByRole("button", { name: /최신 D/ }));
-    expect(screen.getByRole("combobox", { name: "구분" })).toHaveValue(published.category);
+    expect(screen.getByRole("combobox", { name: "종류" })).toHaveValue(published.category);
     fireEvent.click(screen.getByRole("button", { name: /초안 E/ }));
     confirm.mockClear();
-    fireEvent.change(screen.getByRole("combobox", { name: "구분" }), { target: { value: "event" } });
-    fireEvent.change(screen.getByRole("combobox", { name: "구분" }), { target: { value: "guide" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "종류" }), { target: { value: "event" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "종류" }), { target: { value: "guide" } });
     const clean = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(clean);
     expect(clean.defaultPrevented).toBe(false);
@@ -104,7 +104,7 @@ describe("NoticeManager for home notices", () => {
     vi.spyOn(window, "prompt").mockReturnValueOnce("r8data archive reason").mockReturnValueOnce("공지 이미지");
     const { container } = homeManager();
     fireEvent.click(await screen.findByRole("button", { name: /초안 E/ }));
-    fireEvent.change(screen.getByRole("combobox", { name: "구분" }), { target: { value: "creator" } });
+    fireEvent.change(screen.getByRole("combobox", { name: "종류" }), { target: { value: "creator" } });
     fireEvent.click(screen.getByRole("button", { name: "저장" }));
     await screen.findByText("공지를 저장했습니다.");
     const [saved] = postBodies(fetchMock);
@@ -163,12 +163,12 @@ describe("NoticeManager linked fan page (home notices)", () => {
     vi.spyOn(window, "confirm").mockReturnValue(true);
     render(<NoticeManager celebrityId="home" celebrityName="kyaa" role="admin" locale="ko" endpoint="/api/admin/home-notices" categories={homeNoticeCategories} categoryLabels={labels} linkable />);
     fireEvent.click(await screen.findByRole("button", { name: /최신 D/ }));
-    const field = screen.getByRole("combobox", { name: "연결 팬페이지" });
+    const field = screen.getByRole("combobox", { name: "연결할 팬페이지" });
     expect(field).toHaveValue(targets[0]!.id);
     expect(within(field).getAllByRole("option")).toHaveLength(targets.length + 1);
     fireEvent.click(screen.getByRole("button", { name: /초안 E/ }));
-    expect(screen.getByRole("combobox", { name: "연결 팬페이지" })).toHaveValue("");
-    fireEvent.change(screen.getByRole("combobox", { name: "연결 팬페이지" }), { target: { value: targets[1]!.id } });
+    expect(screen.getByRole("combobox", { name: "연결할 팬페이지" })).toHaveValue("");
+    fireEvent.change(screen.getByRole("combobox", { name: "연결할 팬페이지" }), { target: { value: targets[1]!.id } });
     const unload = new Event("beforeunload", { cancelable: true });
     window.dispatchEvent(unload);
     expect(unload.defaultPrevented).toBe(true);
@@ -177,13 +177,13 @@ describe("NoticeManager linked fan page (home notices)", () => {
     const body = JSON.parse(String(fetchMock.mock.calls.find(([, init]) => init?.method === "POST")![1]!.body));
     expect(body).toMatchObject({ action: "save", linkedGroupPageId: targets[1]!.id });
     fireEvent.click(screen.getByRole("button", { name: "새 공지" }));
-    expect(screen.getByRole("combobox", { name: "연결 팬페이지" })).toHaveValue("");
+    expect(screen.getByRole("combobox", { name: "연결할 팬페이지" })).toHaveValue("");
   });
   it("has no link field and sends no linkedGroupPageId without linkable", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ role: "admin", notices: rows })));
     homeManager();
     await screen.findByRole("button", { name: /초안 E/ });
-    expect(screen.queryByRole("combobox", { name: "연결 팬페이지" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "연결할 팬페이지" })).not.toBeInTheDocument();
   });
 });
 
@@ -208,8 +208,8 @@ describe("NoticeManager channel operator path stays as it was", () => {
     const { container } = render(<NoticeManager celebrityId="channel-1" celebrityName="채널" role="operator" locale="ko" apiBase="/api/operator/channels" />);
     fireEvent.click(await screen.findByRole("button", { name: /첫 공지/ }));
     expect(fetchMock.mock.calls[0]![0]).toBe("/api/operator/channels/channel-1/notices");
-    expect(screen.queryByRole("combobox", { name: "구분" })).not.toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "글 구분" })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "종류" })).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "글 종류" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "저장" }));
     await screen.findByText("공지를 저장했습니다.");
     const saved = postBodies(fetchMock)[0]!;

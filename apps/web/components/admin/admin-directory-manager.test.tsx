@@ -85,7 +85,7 @@ describe("AdminDirectoryManager", () => {
     const roleSelect = await screen.findByRole("combobox", { name: "역할: ops@byus.test" });
     fireEvent.change(roleSelect, { target: { value: "viewer" } });
     fireEvent.click(screen.getAllByRole("button", { name: "역할 저장" }).find((button) => !button.hasAttribute("disabled"))!);
-    expect(screen.getByRole("alertdialog")).toHaveTextContent("ops@byus.test의 역할을 viewer로 변경합니다.");
+    expect(screen.getByRole("alertdialog")).toHaveTextContent("ops@byus.test의 새 역할은 조회 전용입니다.");
     fireEvent.click(within(screen.getByRole("alertdialog")).getByRole("button", { name: "변경" }));
 
     expect(await screen.findByText("역할을 변경했습니다.")).toBeInTheDocument();

@@ -14,13 +14,13 @@ const application = z.object({ applicant:z.object({id:z.uuid(),nickname:z.string
 const parse = (value: unknown) => z.object({ items: z.array(application), nextCursor: z.string().nullable() }).parse(value);
 const reviewResult = z.object({ id: z.uuid(), status: z.string(), pageId: z.uuid().nullable() });
 const copy = {
- ko: { title: adminReviewLabels.ko.groupApplications, description: "신청 내용을 검토하고 승인한 페이지의 소유자를 지정합니다.", all: "전체", submitted: "검토 대기", reviewing: "검토 중", start_review: "검토 시작", changes_requested: "보완 요청", approved: "승인", rejected: "반려", fan: "팬페이지", hobby: "취미", brand: "브랜드", reason: "검토 의견", decision: "처리", approve: "승인", reject: "반려", request_changes: "보완 요청", save: "검토 결과 저장", question: "가입 질문" },
- en: { title: adminReviewLabels.en.groupApplications, description: "Review applications and assign ownership when approving a page.", all: "All", submitted: "Pending", reviewing: "In review", start_review: "Start review", changes_requested: "Changes requested", approved: "Approved", rejected: "Rejected", fan: "Fan page", hobby: "Hobby", brand: "Brand", reason: "Review notes", decision: "Decision", approve: "Approve", reject: "Reject", request_changes: "Request changes", save: "Save review", question: "Join question" },
+ ko: { title: adminReviewLabels.ko.groupApplications, all: "전체", submitted: "대기", reviewing: "심사 중", start_review: "심사 시작", changes_requested: "보완 요청", approved: "승인", rejected: "반려", fan: "팬페이지", hobby: "취미", brand: "브랜드", reason: "검토 의견", decision: "처리", approve: "승인", reject: "반려", request_changes: "보완 요청", save: "검토 결과 저장", question: "가입 질문" },
+ en: { title: adminReviewLabels.en.groupApplications, all: "All", submitted: "Pending", reviewing: "In review", start_review: "Start review", changes_requested: "Changes requested", approved: "Approved", rejected: "Rejected", fan: "Fan page", hobby: "Hobby", brand: "Brand", reason: "Review notes", decision: "Decision", approve: "Approve", reject: "Reject", request_changes: "Request changes", save: "Save review", question: "Join question" },
 };
 export type GroupApplicationPresentation=Record<string,{creatorName?:string;materialsLabel?:string;materialsHref?:string;relationship?:string}>;
 export function GroupApplicationManager({ locale,presentation }: { locale: "ko" | "en";presentation?:GroupApplicationPresentation }) {
  const c = copy[locale];
- return <ParticipationAdmin groupLayout className={groupStyles.applicationSurface} locale={locale} title={c.title} description={c.description}>{role => <Manager locale={locale} role={role} presentation={presentation} />}</ParticipationAdmin>;
+ return <ParticipationAdmin groupLayout className={groupStyles.applicationSurface} locale={locale} title={c.title}>{role => <Manager locale={locale} role={role} presentation={presentation} />}</ParticipationAdmin>;
 }
 function Applicant({ item, locale }: { item: z.infer<typeof application>; locale: "ko" | "en" }) {
  const user = item.applicant;
@@ -47,7 +47,7 @@ function OperatingExperience({ item, locale }: { item: z.infer<typeof applicatio
  const images=(ids:string[])=><dd>{ids.map(id=><GroupImage key={id} locale={locale} src={`/api/groups/images/${id}`} width={180} height={135} style={{objectFit:"contain",maxWidth:"100%"}} alt=""/>)}</dd>;
  const link=(href:string)=><dd><a href={href} target="_blank" rel="noopener noreferrer">{href}</a></dd>;
  if(isLegacyQualification(q))return <><div><dt>{t[5]}</dt><dd>{q.communityName}</dd></div><div><dt>{t[7]}</dt>{link(q.evidenceUrl)}</div><div><dt>{t[8]}</dt><dd>{q.introduction}</dd></div><div><dt>{t[9]}</dt>{images(q.assetIds)}</div></>;
- return <><div><dt>{ko?"기존에 운영하던 페이지":"Page they already run"}</dt><dd>{q.hasExistingPage?(ko?"있음":"Yes"):(ko?"없음":"No")}</dd></div>{q.hasExistingPage&&<><div><dt>{ko?"운영 페이지 링크":"Page link"}</dt>{link(q.evidenceUrl)}</div><div><dt>{ko?"운영 페이지 캡처":"Page screenshots"}</dt>{images(q.assetIds)}</div></>}</>;
+ return <><div><dt>{ko?"기존 팬페이지":"Page they already run"}</dt><dd>{q.hasExistingPage?(ko?"있음":"Yes"):(ko?"없음":"No")}</dd></div>{q.hasExistingPage&&<><div><dt>{ko?"기존 팬페이지 링크":"Page link"}</dt>{link(q.evidenceUrl)}</div><div><dt>{ko?"운영 페이지 캡처":"Page screenshots"}</dt>{images(q.assetIds)}</div></>}</>;
 }
 const creatorNameKey=(value:string)=>value.normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]+/gu,"");
 function Review({ item, role, locale, creators, refresh,reloadCreators,presentation }: { item: z.infer<typeof application>; role: string; locale: "ko" | "en"; creators: Parameters<typeof CreatorSelect>[0]["creators"]; refresh: () => void;reloadCreators: () => void;presentation?:GroupApplicationPresentation[string] }) {

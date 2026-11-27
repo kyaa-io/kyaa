@@ -52,7 +52,7 @@ export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAcces
           <span className={styles.iconTile} aria-hidden="true"><LockKeyhole /></span>
           <div>
             <p className={styles.productLabel}>kyaa Admin</p>
-            <h1 id="admin-login-heading">운영자 로그인</h1>
+            <h1 id="admin-login-heading">관리자 로그인</h1>
           </div>
         </div>
 
@@ -68,7 +68,7 @@ export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAcces
           </div>
         ) : (
           <>
-            <p className={styles.loginDescription}>등록된 Sallylab Google 계정으로만 접근할 수 있습니다. 팬 계정 로그인과 별도로 관리자 권한을 다시 확인합니다.</p>
+            <p className={styles.loginDescription}>등록된 Sallylab Google 계정으로 로그인해 주세요.</p>
             <button
               className={styles.googleButton}
               type="button"
@@ -81,7 +81,7 @@ export function AdminLogin({ access = "unauthenticated" }: { access?: AdminAcces
           </>
         )}
 
-        <Link className={styles.backLink} href="/"><ArrowLeft aria-hidden="true" /> 팬 화면으로 돌아가기</Link>
+        <Link className={styles.backLink} href="/"><ArrowLeft aria-hidden="true" /> 서비스로 돌아가기</Link>
       </section>
     </main>
   );

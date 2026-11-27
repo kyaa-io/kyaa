@@ -19,8 +19,8 @@ describe("PlatformFollowersEditor", () => {
     expect(input("TikTok").value).toBe("0");
     expect(input("YouTube").value).toBe("1088");
     expect(input("치지직").value).toBe("");
-    expect(screen.getByText("미확인")).toBeTruthy();
-    expect(screen.getByText("확인 2026-11-14 · 자동 수집")).toBeTruthy();
+    expect(screen.getByText("확인 전")).toBeTruthy();
+    expect(screen.getByText("확인 2026-11-14 · 자동")).toBeTruthy();
   });
 
   it("saves only the platforms that changed; clearing a box sends an empty text (back to unconfirmed)", async () => {

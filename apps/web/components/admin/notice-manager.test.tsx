@@ -41,7 +41,7 @@ describe("notice manager mutations", () => {
     render(<NoticeManager celebrityId="brand-1" celebrityName="브랜드" role="operator" locale="ko" isBrand />);
     await screen.findByText("공지가 없습니다.");
 
-    const postType = screen.getByRole("combobox", { name: "글 구분" });
+    const postType = screen.getByRole("combobox", { name: "글 종류" });
     expect(postType).toHaveTextContent("브랜드 소식");
     expect(postType).not.toHaveTextContent("아티스트 글");
     const visibility = screen.getByRole("combobox", { name: "공개 범위" });

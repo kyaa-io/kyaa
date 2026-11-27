@@ -89,37 +89,35 @@ type LoadState<T> =
 
 const copy = {
   ko: {
-    overview: "운영 개요",
-    analytics: "분석",
+    overview: "개요",
+    analytics: "통계",
     creator: "크리에이터",
     brand: "브랜드",
-    content: "셀럽 콘텐츠",
-    jobs: "디지털 발급 내역",
-    audit: "관리자 활동 기록",
-    signedIn: "활성 관리자 세션",
+    content: "크리에이터 콘텐츠",
+    jobs: "디지털 발급",
+    audit: "활동 기록",
+    signedIn: "접속 중인 관리자",
     heading: "시스템 상태",
-    headingBody:
-      "발급·알림 처리와 정기 작업 결과를 확인하세요.",
-    dashboardHeading: "성과 분석",
+    dashboardHeading: "상세 통계",
     dashboardBody:
-      "조회 범위와 데이터 출처를 함께 확인하세요. 0은 측정된 값이며 N/A와 조회 불가는 별도 상태입니다.",
+      "0은 실제 집계값이에요. 집계 대상이 없거나 조회할 수 없는 경우는 따로 표시해요.",
     loginTitle: "관리자 로그인이 필요합니다",
     loginBody: "운영 정보는 권한이 확인된 관리자에게만 표시됩니다.",
     login: "관리자 로그인",
     refreshing: "조회 중",
     refresh: "새로고침",
     updated: "마지막 확인",
-    unavailable: "조회 불가",
-    suppressed: "표본 보호",
+    unavailable: "볼 수 없음",
+    suppressed: "인원이 적어 숨김",
     na: "N/A",
-    measured: "측정됨",
+    measured: "집계됨",
     source: "출처",
-    numerator: "분자",
-    denominator: "분모",
+    numerator: "해당 수",
+    denominator: "전체 수",
     noData: "조회 조건을 입력하면 집계 결과가 표시됩니다.",
     scope: "조회 범위",
-    creatorId: "셀럽 ID",
-    brandId: "브랜드 ID",
+    creatorId: "크리에이터 번호",
+    brandId: "브랜드 번호",
     liveId: "라이브 ID (선택)",
     from: "시작",
     to: "종료",
@@ -128,7 +126,6 @@ const copy = {
     jobsTitle: "디지털 발급 작업",
     jobsBody: "실패 또는 재시도 상태를 확인합니다.",
     auditTitle: "감사 기록",
-    auditBody: "최근 운영 변경 기록의 조회 가능 여부를 확인합니다.",
     healthyJobs: "최근 조회 범위에 실패한 작업이 없습니다.",
     warningJobs: "실패 또는 재시도 중인 작업이 있습니다.",
     auditReady: "최근 감사 기록을 조회할 수 있습니다.",
@@ -138,8 +135,8 @@ const copy = {
     notificationWarning: "최종 실패한 외부 알림을 확인하세요.",
     purgeTitle: "수신자 정보 삭제",
     purgeCadence: "실행 주기",
-    purgeSuccess: "최근 성공",
-    purgeError: "최근 오류",
+    purgeSuccess: "마지막 성공",
+    purgeError: "마지막 오류",
   },
   en: {
     overview: "Operations",
@@ -151,9 +148,7 @@ const copy = {
     audit: "Audit log",
     signedIn: "Active admin session",
     heading: "System status",
-    headingBody:
-      "Only facts returned by live operations APIs are shown. Missing values are never estimated.",
-    dashboardHeading: "Performance analytics",
+    dashboardHeading: "Detailed analytics",
     dashboardBody:
       "Review scope and source together. Zero is measured; N/A and unavailable are distinct states.",
     loginTitle: "Admin sign-in required",
@@ -181,7 +176,6 @@ const copy = {
     jobsTitle: "Minting jobs",
     jobsBody: "Checks for failed or retrying work.",
     auditTitle: "Audit trail",
-    auditBody: "Checks whether recent operational changes are available.",
     healthyJobs: "No failed jobs in the returned range.",
     warningJobs: "Some jobs are failed or retrying.",
     auditReady: "Recent audit records are available.",
@@ -318,7 +312,6 @@ export function AdminOverview({ locale = "ko" }: { locale?: Locale }) {
         <div>
           <p>{t.overview}</p>
           <h1>{t.heading}</h1>
-          <span>{t.headingBody}</span>
         </div>
         <button
           type="button"
@@ -422,7 +415,7 @@ export function AdminOverview({ locale = "ko" }: { locale?: Locale }) {
               <Trash2 aria-hidden="true" />
               <div>
                 <h2>{t.purgeTitle}</h2>
-                {ready.data.purge ? <><p>{locale === "ko" ? ({ healthy: "정상 실행", never_run: "실행 이력 없음", overdue: "실행 지연", error: "실행 오류" })[ready.data.purge.state] : ({ healthy: "Running normally", never_run: "Not run yet", overdue: "Overdue", error: "Run failed" })[ready.data.purge.state]}</p><dl><div><dt>{t.purgeCadence}</dt><dd>{ready.data.purge.cadenceHours}h</dd></div><div><dt>{t.purgeSuccess}</dt><dd>{ready.data.purge.lastSuccessAt ? new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "short" }).format(new Date(ready.data.purge.lastSuccessAt)) : "—"}</dd></div><div><dt>{t.purgeError}</dt><dd>{ready.data.purge.lastErrorCode ?? "—"}</dd></div></dl></> : <p>{t.unavailable}</p>}
+                {ready.data.purge ? <><p>{locale === "ko" ? ({ healthy: "정상", never_run: "아직 실행 안 함", overdue: "늦어짐", error: "오류" })[ready.data.purge.state] : ({ healthy: "Running normally", never_run: "Not run yet", overdue: "Overdue", error: "Run failed" })[ready.data.purge.state]}</p><dl><div><dt>{t.purgeCadence}</dt><dd>{ready.data.purge.cadenceHours}h</dd></div><div><dt>{t.purgeSuccess}</dt><dd>{ready.data.purge.lastSuccessAt ? new Intl.DateTimeFormat(locale, { dateStyle: "short", timeStyle: "short" }).format(new Date(ready.data.purge.lastSuccessAt)) : "—"}</dd></div><div><dt>{t.purgeError}</dt><dd>{ready.data.purge.lastErrorCode ?? "—"}</dd></div></dl></> : <p>{t.unavailable}</p>}
               </div>
             </section>
             <section className={styles.operation}>
@@ -795,17 +788,17 @@ function AnalyticsResults({
           data={data}
           locale={locale}
           title={
-            locale === "ko" ? "브랜드 참여 퍼널" : "Brand engagement funnel"
+            locale === "ko" ? "브랜드 참여 흐름" : "Brand engagement funnel"
           }
         />
         <div className={styles.metricGrid}>
           <Metric
-            label={locale === "ko" ? "예약 참여" : "Reservation participations"}
+            label={locale === "ko" ? "예약" : "Reservation participations"}
             metric={funnel.reservationCount}
             locale={locale}
           />
           <Metric
-            label={locale === "ko" ? "출석 참여" : "Attendance participations"}
+            label={locale === "ko" ? "출석" : "Attendance participations"}
             metric={funnel.attendanceCount}
             locale={locale}
           />
@@ -829,7 +822,7 @@ function AnalyticsResults({
             locale={locale}
           />
           <Metric
-            label={locale === "ko" ? "수동 구매" : "Manual commerce"}
+            label={locale === "ko" ? "직접 구매" : "Manual commerce"}
             metric={funnel.manualCommerce}
             locale={locale}
           />
@@ -846,16 +839,16 @@ function AnalyticsResults({
       <AnalyticsHeader
         data={data}
         locale={locale}
-        title={locale === "ko" ? "크리에이터 집계" : "Creator aggregates"}
+        title={locale === "ko" ? "크리에이터별 수" : "Creator aggregates"}
       />
       <div className={styles.metricGrid}>
         <Metric
-          label={locale === "ko" ? "예약 참여" : "Reservation participations"}
+          label={locale === "ko" ? "예약" : "Reservation participations"}
           metric={metrics.reservationCount}
           locale={locale}
         />
         <Metric
-          label={locale === "ko" ? "출석 참여" : "Attendance participations"}
+          label={locale === "ko" ? "출석" : "Attendance participations"}
           metric={metrics.attendanceCount}
           locale={locale}
         />
@@ -879,7 +872,7 @@ function AnalyticsResults({
           locale={locale}
         />
         <Metric
-          label={locale === "ko" ? "발급 패스포트" : "Passports issued"}
+          label={locale === "ko" ? "패스포트 발급" : "Passports issued"}
           metric={metrics.passportsIssued}
           locale={locale}
         />
@@ -887,7 +880,7 @@ function AnalyticsResults({
       <SurveyBreakdown metric={metrics.surveyAggregates} locale={locale} />
       <div className={styles.breakdowns}>
         <div className={styles.distribution}>
-          <h3>{locale === "ko" ? "팬 레벨 분포" : "Fan level distribution"}</h3>
+          <h3>{locale === "ko" ? "레벨별 인원" : "Fan level distribution"}</h3>
           {levels.state === "available" && levels.value ? (
             <dl>
               {(
@@ -910,7 +903,7 @@ function AnalyticsResults({
           </p>
         </div>
         <div className={styles.distribution}>
-          <h3>{locale === "ko" ? "스탬프 유형" : "Stamp types"}</h3>
+          <h3>{locale === "ko" ? "스탬프 종류" : "Stamp types"}</h3>
           {stamps.state === "available" && stamps.value ? (
             <dl>
               {(
@@ -974,7 +967,7 @@ function SurveyBreakdown({
   return (
     <div className={styles.distribution}>
       <h3>
-        {locale === "ko" ? "설문 공통 문항 집계" : "Common survey aggregates"}
+        {locale === "ko" ? "설문 공통 질문" : "Common survey aggregates"}
       </h3>
       {value ? (
         <dl>
@@ -985,7 +978,7 @@ function SurveyBreakdown({
             </dd>
           </div>
           <div>
-            <dt>{locale === "ko" ? "구매 의향 Yes" : "Purchase intent Yes"}</dt>
+            <dt>{locale === "ko" ? "구매 의향 있음" : "Purchase intent Yes"}</dt>
             <dd>
               {value.purchaseIntentRate === null
                 ? t.na
@@ -994,7 +987,7 @@ function SurveyBreakdown({
             </dd>
           </div>
           <div>
-            <dt>{locale === "ko" ? "향후 참여 Yes" : "Future interest Yes"}</dt>
+            <dt>{locale === "ko" ? "다음 참여 의향 있음" : "Future interest Yes"}</dt>
             <dd>
               {value.futureInterestRate === null
                 ? t.na

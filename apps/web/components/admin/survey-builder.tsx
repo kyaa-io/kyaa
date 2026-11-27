@@ -42,7 +42,7 @@ const copy = {
     desktop: "PC",
     mobile: "모바일",
     add: "선택 질문 추가",
-    viewer: "Viewer 역할은 설문을 조회하고 미리보기만 할 수 있습니다.",
+    viewer: "조회 전용 계정은 설문을 보고 미리 볼 수만 있어요.",
     loading: "설문 구성을 불러오는 중입니다.",
     error: "설문을 불러오지 못했습니다.",
     empty: "아직 설문 버전이 없습니다.",
@@ -56,9 +56,9 @@ const copy = {
     draft: "초안",
     closed: "마감",
     archived: "보관",
-    confirmPublish: "발행 후 질문과 선택지는 변경할 수 없습니다. 발행할까요?",
+    confirmPublish: "공개하면 질문과 선택지를 고칠 수 없어요. 공개할까요?",
     confirmClose:
-      "마감하면 팬이 더 이상 응답할 수 없으며 되돌릴 수 없습니다. 마감할까요?",
+      "마감하면 응답을 받을 수 없고 되돌릴 수 없어요. 마감할까요?",
     confirmArchive: "보관한 설문 버전은 다시 활성화할 수 없습니다. 계속할까요?",
   },
   en: {

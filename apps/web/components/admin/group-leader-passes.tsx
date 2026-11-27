@@ -9,7 +9,7 @@ import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import styles from "./group-leader-passes.module.css";
 
 const text = {
-  ko: { title: "방장 패스", label: "방 이름", make: "패스 만들기", copy: "링크 복사", copied: "복사했어요", revoke: "취소", error: "처리하지 못했습니다", empty: "만든 패스가 없습니다", open: "열린 모임", status: { active: "사용 전", used: "사용됨", expired: "만료", revoked: "취소됨" } },
+  ko: { title: "방장 패스", label: "모임 이름", make: "패스 만들기", copy: "링크 복사", copied: "복사했어요", revoke: "취소", error: "처리하지 못했습니다", empty: "만든 패스가 없습니다", open: "열린 모임", status: { active: "사용 전", used: "사용함", expired: "만료", revoked: "취소됨" } },
   en: { title: "Leader passes", label: "Room name", make: "Create pass", copy: "Copy link", copied: "Copied", revoke: "Revoke", error: "Something went wrong", empty: "No passes yet", open: "Opened group", status: { active: "Unused", used: "Used", expired: "Expired", revoked: "Revoked" } },
 } as const;
 const day = (iso: string) => iso.slice(0, 10).replaceAll("-", ".");

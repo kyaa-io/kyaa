@@ -22,7 +22,7 @@ type RawItem = readonly [Route, string, LucideIcon, boolean?];
 const copy = {
   ko: {
     menu: "관리자 메뉴", admin: "관리자", breadcrumb: "현재 위치",
-    language: "English", environment: "운영", openService: "서비스 열기",
+    language: "English", environment: "운영", openService: "서비스 보기",
     groups: [
       { label: "현황", items: [["/admin", "서비스 현황", LayoutDashboard, true], ["/admin/traffic", "방문 통계", Globe], ["/admin/campaigns", "유입 링크", ExternalLink], ["/admin/dashboard", "상세 통계", BarChart3]] },
       { label: "회원", items: [["/admin/inquiries", "회원 문의", MessageSquareText], ["/admin/fans", "회원 관리", UsersRound], ["/admin/certifications", adminReviewLabels.ko.certifications, BadgeCheck], ["/admin/fanpage-requests", "팬페이지 신청", UsersRound], ["/admin/content-reports", "콘텐츠 신고", ShieldCheck]] },

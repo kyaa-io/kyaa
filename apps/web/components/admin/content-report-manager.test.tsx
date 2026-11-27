@@ -19,7 +19,7 @@ it("treats a block as unverified and never offers global hiding", async () => {
   expect(screen.getByText(/차단만으로 위반이 확정되지는/)).toBeInTheDocument();
   fireEvent.click(screen.getByRole("checkbox", { name: /위반을 확인했으며/ }));
   fireEvent.change(screen.getByLabelText("처리 사유 (10자 이상)"), { target: { value: "반복된 괴롭힘 행위를 확인했습니다." } });
-  fireEvent.click(screen.getByRole("button", { name: "처리 저장" }));
+  fireEvent.click(screen.getByRole("button", { name: "저장" }));
   await waitFor(() => expect(request).toHaveBeenCalledWith("/api/admin/content-reports/report-1", "PATCH", expect.objectContaining({ hideTarget: false, restrictAuthor: true })));
 });
 it("offers DM hiding but limits account restriction to administrators", () => {

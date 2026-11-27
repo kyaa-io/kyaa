@@ -16,9 +16,9 @@ import styles from "./admin-directory-manager.module.css";
 
 const copy = {
   ko: {
-    eyebrow: "접근 권한", title: "채널 운영자", channel: "채널", email: "이메일", emailPlaceholder: "operator@example.com",
-    grant: "운영자 지정", granting: "지정 중…", status: "상태", active: "운영 중", revoked: "해지됨", granted: "지정일", revokedAt: "해지일",
-    actions: "작업", revoke: "해지", revoking: "해지 중…", cancel: "취소", loading: "운영자 명단을 불러오는 중입니다.",
+    eyebrow: "권한", title: "크리에이터 운영자", channel: "크리에이터", email: "이메일", emailPlaceholder: "operator@example.com",
+    grant: "운영자 지정", granting: "지정 중…", status: "상태", active: "운영 중", revoked: "해제됨", granted: "지정일", revokedAt: "해제일",
+    actions: "작업", revoke: "권한 해제", revoking: "해지 중…", cancel: "취소", loading: "운영자 명단을 불러오는 중입니다.",
     empty: "지정된 운영자가 없습니다.", loadError: "운영자 명단을 불러오지 못했습니다.", retry: "다시 시도", noChannels: "지정할 수 있는 채널이 없습니다.",
     granted_ok: "운영자를 지정했습니다.", replayed: "이미 지정된 운영자입니다.", revoked_ok: "운영자를 해지했습니다.",
     confirmTitle: "운영자를 해지할까요?", confirmBody: (email: string) => `${email}은 이 채널을 더 이상 운영할 수 없습니다.`,

@@ -172,7 +172,7 @@ describe("HomeBannerManager", () => {
     await screen.findByDisplayValue("카라 LIVE");
     fireEvent.change(screen.getAllByRole("textbox", { name: "제목" })[0], { target: { value: "충돌 뒤에도 보존" } });
     fireEvent.click(screen.getByRole("button", { name: "공개" }));
-    expect(await screen.findByText(/현재 입력은 보존했습니다/)).toBeInTheDocument();
+    expect(await screen.findByText(/다른 관리자가 먼저 바꿨어요/)).toBeInTheDocument();
     expect(screen.getByDisplayValue("충돌 뒤에도 보존")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "공개" }));
     await waitFor(() => expect(bodies).toHaveLength(4));
@@ -200,9 +200,9 @@ describe("HomeBannerManager", () => {
     expect(screen.getByDisplayValue("정렬 중에도 보존")).toBeInTheDocument();
     fireEvent.change(title, { target: { value: "수정 중인 제목" } });
     fireEvent.click(screen.getByRole("button", { name: "초안 저장" }));
-    expect(await screen.findByText(/현재 입력은 보존했습니다/)).toBeInTheDocument();
+    expect(await screen.findByText(/다른 관리자가 먼저 바꿨어요/)).toBeInTheDocument();
     expect(screen.getByDisplayValue("수정 중인 제목")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "서버 데이터 다시 불러오기" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "새로고침" })).toBeInTheDocument();
   });
 });
 
