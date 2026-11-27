@@ -1,4 +1,5 @@
 "use client";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { AppLocale } from "@/i18n/locales";
 import { embeddedApp, landingHandoff, requiresGoogleBrowserHandoff, type HandoffMethod } from "./login-browser-policy";
@@ -51,10 +52,14 @@ export function handoffAllowed(url: URL) {
     [...url.searchParams.keys()].every(key => HANDOFF_QUERY.test(key));
 }
 
-// Called inside the tap (or on arrival for the automatic try) so the app sees the person's own action.
-function handOff(target: string, app: string, method: HandoffMethod, timer: { current: number | undefined }, onStuck: () => void) {
+export function measureHandoffAttempt(app: string, method: HandoffMethod) {
   measure("attempt",app);
   sendGa4Event("inapp_external_open",{app,method});
+}
+
+// Called inside the tap (or on arrival for the automatic try) so the app sees the person's own action.
+function handOff(target: string, app: string, method: HandoffMethod, timer: { current: number | undefined }, onStuck: () => void) {
+  measureHandoffAttempt(app, method);
   window.clearTimeout(timer.current);
   let left = false;
   const away = () => { left = true; };
@@ -73,6 +78,7 @@ type Shown = { app: string; tap: string | null; method: HandoffMethod | null; sa
 /** In another app's browser: one strip above the page with the hand-off link, address copy and close. On Android it
  *  first opens the page in Chrome by itself, once per tab (kyaa_browser in the address or session storage stops a loop). */
 export function LandingBrowserDialog({locale}:{locale:AppLocale}) {
+  const pathname = usePathname();
   const [shown,setShown] = useState<Shown|null>(null);
   const [stuck,setStuck] = useState(false);
   const [copied,setCopied] = useState(false);
@@ -118,7 +124,7 @@ export function LandingBrowserDialog({locale}:{locale:AppLocale}) {
   },[]);
   useEffect(() => () => window.clearTimeout(timer.current),[]);
 
-  if (!shown) return null;
+  if (!shown || (shown.app === "x" && /^\/login\/?$/.test(pathname ?? location.pathname))) return null;
   const close = () => {
     try { sessionStorage.setItem("kyaa.browser.attempt","continue"); } catch { /* Storage unavailable. */ }
     measure("continue",shown.app);
