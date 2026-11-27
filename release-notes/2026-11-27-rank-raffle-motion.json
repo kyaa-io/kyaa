@@ -1,0 +1,5 @@
+{
+  "changes": ["오늘의 랭킹에서 점수가 바뀌면 해당 숫자 뒤에 분홍빛이 한 번 나타나요.", "래플 상세에서는 처음 보이는 기프트카드가 살짝 떠올랐다 내려와요. 동작 줄이기를 켜면 두 효과 모두 쉬어요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-27-rank-motion.png", "release-notes/images/2026-11-27-raffle-motion.png"]
+}
