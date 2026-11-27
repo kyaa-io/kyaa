@@ -1,3 +1,4 @@
+import { SITE_URL } from "@/lib/site-url";
 import { APP_LOCALES, toContentLocale, type AppLocale } from "@/i18n/locales";
 import { messages as localizedMessages } from "@/i18n/catalogs/seo__metadata";
 import { additionalLocales } from "@/i18n/messages";
@@ -6,7 +7,7 @@ import { bypassImageOptimization } from "@/components/fan-ui/public-image-policy
 import { runtimeEnvironment } from "@/server/config/hosting";
 
 export type SeoLocale = AppLocale;
-export const SITE_URL = "https://kyaa.io";
+export { SITE_URL };
 /** The production default picture. Other environments use `defaultShareImage()`. */
 export const DEFAULT_SHARE_IMAGE = `${SITE_URL}/share/default.png`;
 export const NO_INDEX: Metadata["robots"] = { index: false, follow: false };
