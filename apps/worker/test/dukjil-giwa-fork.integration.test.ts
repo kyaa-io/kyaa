@@ -59,7 +59,7 @@ class MemoryQueue implements ActionQueuePort {
   async complete(job: FanActionJob, receipt: ActionReceipt) { const stored = this.jobs.get(job.id)!; stored.status = "COMPLETED"; stored.receipt = receipt; }
   async retry(job: FanActionJob, code: string, _message: string, retryable: boolean) {
     const stored = this.jobs.get(job.id)!; stored.status = retryable ? "RETRYING" : "FAILED"; stored.lastError = code;
-  }
+  }  async supersede(): Promise<never> { throw new Error("unused"); }
 }
 
 /** Fails once at a chosen point: after signing (crash before broadcast) or after the node accepted it (response lost). */
@@ -71,6 +71,7 @@ class FaultyChain implements ActionChainPort {
   findExisting(payload: CanonicalActionPayloadV1) { return this.inner.findExisting(payload); }
   prepare(payload: CanonicalActionPayloadV1) { return this.inner.prepare(payload); }
   receipt(payload: CanonicalActionPayloadV1, submission: PreparedSubmission) { return this.inner.receipt(payload, submission); }
+  submissionNonceState(signed: string) { return this.inner.submissionNonceState(signed); }
   async broadcast(signed: string) {
     if (!this.fired && this.fault === "beforeBroadcast") { this.fired = true; throw Object.assign(new Error("worker stopped after signing"), { code: "TEST_CRASH" }); }
     const hash = await this.inner.broadcast(signed);

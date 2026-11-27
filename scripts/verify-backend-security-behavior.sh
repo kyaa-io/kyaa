@@ -29,6 +29,7 @@ BYUS_COMMUNITY_STAMP_CONCURRENCY_MODE=1 bash "$root_dir/scripts/verify-community
 BYUS_COMMUNITY_STAMP_SHARE_RACE_MODE=1 bash "$root_dir/scripts/verify-community-stamp-share-concurrency.sh"
 
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_action_ledger.sql"
+psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_action_superseded_transactions.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/fan_action_producers.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/quiz_personal_letter.sql"
 psql -X -v ON_ERROR_STOP=1 -f "$root_dir/supabase/tests/quiz_original_option_policy.sql"

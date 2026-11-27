@@ -10,6 +10,13 @@ export interface ActionQueuePort {
   recordPrepared(job: FanActionJob, submission: PreparedSubmission): Promise<FanActionJob>;
   complete(job: FanActionJob, receipt: ActionReceipt): Promise<void>;
   retry(job: FanActionJob, code: string, message: string, retryable: boolean): Promise<void>;
+  supersede(job: FanActionJob, submission: PreparedSubmission, state: SubmissionNonceState): Promise<"RETRYING" | "FAILED">;
+}
+
+export interface SubmissionNonceState {
+  known: boolean;
+  txNonce: bigint;
+  chainNonce: bigint;
 }
 
 export interface ActionMetadataPort {
@@ -51,5 +58,6 @@ export interface ActionChainPort {
   findExisting(payload: CanonicalActionPayloadV1): Promise<ActionReceipt | null>;
   prepare(payload: CanonicalActionPayloadV1): Promise<PreparedSubmission>;
   broadcast(signedTransaction: string): Promise<string>;
+  submissionNonceState(signedTransaction: string): Promise<SubmissionNonceState>;
   receipt(payload: CanonicalActionPayloadV1, submission: PreparedSubmission): Promise<ActionReceipt | null>;
 }

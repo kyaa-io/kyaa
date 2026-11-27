@@ -272,4 +272,21 @@ suite("ActionWorker to ActionHub local Anvil", () => {
     await expect(chain.receipt(payload, submission)).rejects.toMatchObject({ code: "EAS_ATTESTATION_MISMATCH" });
     await expect(new ViemActionLogReader({ rpcUrl, chainId: 91342, hubAddress: hub, fromBlock: 0n, client: publicClient }).read(environmentId)).rejects.toThrow("EAS record mismatch");
   }, 120_000);
+
+  it("reports a stored signature whose nonce another transaction already used (11/27 incident)", async () => {
+    const hubAddress = privateKeyToAccount(privateKeys[2]).address;
+    const chain = new ViemActionHubAdapter({ rpcUrl, chainId: 91342, privateKey: privateKeys[0], hubAddress, deploymentBlock: 0n, client: publicClient, feePolicy: { maxGas: 5_000_000n, maxFeePerGasWei: 10_000_000_000n, maxPriorityFeePerGasWei: 10_000_000_000n, maxExecutionFeeWei: 50_000_000_000_000_000n } });
+    const nonce = await publicClient.getTransactionCount({ address: account.address, blockTag: "pending" });
+    const fees = await publicClient.estimateFeesPerGas();
+    const stale = await account.signTransaction({ chainId: 91342, type: "eip1559", to: hubAddress, data: "0x01", nonce, gas: 100_000n, maxFeePerGas: fees.maxFeePerGas, maxPriorityFeePerGas: fees.maxPriorityFeePerGas });
+    await expect(chain.submissionNonceState(stale)).resolves.toEqual({ known: false, txNonce: BigInt(nonce), chainNonce: BigInt(nonce) });
+    const other = await wallet.sendTransaction({ to: privateKeyToAccount(privateKeys[1]).address, value: 1n, nonce, account });
+    await publicClient.waitForTransactionReceipt({ hash: other });
+    (chain as unknown as { approvedTransactions: Set<string> }).approvedTransactions.add(keccak256(stale).toLowerCase());
+    const rejected = await chain.broadcast(stale).then(() => null, (error: unknown) => error as { code: string; message: string });
+    expect(rejected?.code).toBe("GIWA_ACTION_BROADCAST_FAILED");
+    expect(rejected?.message.toLowerCase()).toContain("nonce");
+    expect(rejected?.message).not.toContain(stale.slice(2, 40));
+    await expect(chain.submissionNonceState(stale)).resolves.toEqual({ known: false, txNonce: BigInt(nonce), chainNonce: BigInt(nonce + 1) });
+  }, 60_000);
 });
