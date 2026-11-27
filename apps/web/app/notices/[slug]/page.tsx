@@ -5,7 +5,7 @@ import { HomeNoticeDetailScreen, homeNoticePageCopy } from "@/features/home/ui/h
 import { MISSIONBOOK_NOTICE_SLUG } from "@/features/home/domain/missionbook-likes";
 import { followEventPath } from "@/app/follow/follow-event";
 import { parseAppLocale, toContentLocale } from "@/i18n/locales";
-import { contentPageMetadata } from "@/seo/metadata";
+import { contentPageMetadata, isIndexableHomeNotice } from "@/seo/metadata";
 import { createPublicHomeNoticeRepository } from "@/server/home-notice/home-notice-dependencies";
 import { noticeSlugSchema } from "@/server/notice/notice-domain";
 
@@ -21,7 +21,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const locale = parseAppLocale(query.locale);
   const notice = await load(slug, toContentLocale(locale)).catch(() => null);
   const title = notice?.title ?? homeNoticePageCopy[locale].title;
-  return contentPageMetadata({ path: `/notices/${slug}`, locale, title: `${title} | kyaa`, description: title });
+  return contentPageMetadata({ path: `/notices/${slug}`, locale, title: `${title} | kyaa`, description: title, indexable: notice != null && isIndexableHomeNotice(slug) });
 }
 
 export default async function HomeNoticeDetailPage({ params, searchParams }: Props) {

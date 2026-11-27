@@ -33,6 +33,21 @@ describe("brand public page routing", () => {
   });
 });
 
+it("keeps the calendar out of search and points to the tabless page in the content language", async () => {
+  const { generateMetadata } = await import("./page");
+  const before = mocks.creator;
+  Object.assign(mocks, { creator: { slug: "wena", roles: ["creator"], name: "We;Na", summary: "Introduction", image: { url: "/wena.jpg", alt: "We;Na" } } });
+  try {
+    const meta = await generateMetadata({
+      params: Promise.resolve({ slug: "wena" }),
+      searchParams: Promise.resolve({ locale: "ja", tab: "calendar", month: "2026-11" }),
+    });
+    expect(meta.robots).toMatchObject({ index: false, follow: true });
+    expect(meta.alternates?.canonical).toBe("https://kyaa.io/wena?locale=en");
+    expect(meta.alternates?.languages).toEqual({ ko: "https://kyaa.io/wena?locale=ko", en: "https://kyaa.io/wena?locale=en" });
+  } finally { Object.assign(mocks, { creator: before }); }
+});
+
 it("does not load private Wave lives or cheers into the server payload", async () => {
   mocks.listPrimaryLives.mockClear();
   const { readPublicCheerEvent } = await import("@/server/fanpage/public-cheer-event");

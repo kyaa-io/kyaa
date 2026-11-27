@@ -1,7 +1,7 @@
 import { APP_LOCALES } from "@/i18n/locales";
 import type { MetadataRoute } from "next";
 import { creatorSlugFromHomePath } from "@/features/creator/domain/creator-navigation";
-import { CONTENT_SEO_LOCALES, canonicalUrl, isNoContentPath, isPrivatePath, isRehearsalPath, languageAlternates, type SeoLocale } from "./metadata";
+import { CONTENT_SEO_LOCALES, canonicalUrl, isIndexableHomeNotice, isNoContentPath, isPrivatePath, isRehearsalPath, languageAlternates, type SeoLocale } from "./metadata";
 
 /** Pages whose own text is written in every app language. */
 export const TRANSLATED_PUBLIC_PATHS = ["/guide", "/guide/jjinfan", "/pages/us-fanmeetings", "/pages/creator-onboarding", "/pages/partners", "/pages/onchain"];
@@ -22,6 +22,7 @@ export function buildSitemap(content: readonly { path: string; locale: SeoLocale
   ];
   for (const { path, locale } of all) {
     if (isPrivatePath(path) || isRehearsalPath(path) || isNoContentPath(path)) continue;
+    if (path.startsWith("/notices/") && !isIndexableHomeNotice(path.slice("/notices/".length))) continue;
     const creatorHome = !path.startsWith("/c/") && creatorSlugFromHomePath(path) !== null;
     if (!STATIC_PUBLIC_PATHS.includes(path) && path !== directory && !creatorHome && !DYNAMIC_PUBLIC_PATH.test(path)) continue;
     const locales = paths.get(path) ?? new Set<SeoLocale>();
@@ -30,6 +31,7 @@ export function buildSitemap(content: readonly { path: string; locale: SeoLocale
   }
   return [...paths].flatMap(([path, available]) => {
     const locales = [...available].sort() as SeoLocale[];
+    // Google expects an entry for every genuine translation, with the same alternate set.
     return locales.map((locale) => ({ url: canonicalUrl(path, locale), alternates: { languages: languageAlternates(path, locales) } }));
   });
 }
