@@ -11,6 +11,12 @@ const TEMPLATE_DIR = join(ROOT, 'infrastructure/aws/platform');
 const ENVIRONMENTS = ['dev', 'staging', 'prod'];
 const KINDS = ['network', 'edge-security', 'environment'];
 const REQUIRED_SECRET_KEYS = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'PRIVY_APP_SECRET'];
+const DEV_CERTIFICATION_SECRET_KEYS = [
+  'TELEGRAM_DEV_CERTIFICATION_BOT_TOKEN',
+  'TELEGRAM_DEV_CERTIFICATION_CHAT_ID',
+  'TELEGRAM_DEV_CERTIFICATION_WEBHOOK_SECRET',
+  'TELEGRAM_DEV_CERTIFICATION_ADMIN_MAP',
+];
 const RESERVED_ENV = ['PORT', 'HOSTNAME', 'NODE_ENV', 'APP_ENV', 'APP_URL', 'HOSTING_PROVIDER'];
 const FORBIDDEN_ENV = /^(AWS_|NEXT_PUBLIC_|NODE_|LD_|PATH$|HOME$|SHELL$|SUPABASE_ANON_KEY$)/;
 // Google's public sample network; its units never earn real rewards.
@@ -143,6 +149,9 @@ export function validateConfig(config, template) {
     const required = requiredRuntimeSecrets(config);
     const secrets = config.runtimeSecretKeys ?? required;
     if (!Array.isArray(secrets) || new Set(secrets).size !== secrets.length || !required.every((key) => secrets.includes(key))) fail('runtimeSecretKeys must include each required key exactly once');
+    if (config.environment !== 'dev' && DEV_CERTIFICATION_SECRET_KEYS.some((key) => secrets.includes(key))) {
+      fail('DEV Telegram certification runtime secrets are only allowed in dev');
+    }
     for (const key of secrets) if (typeof key !== 'string' || !KEY.test(key) || RESERVED_ENV.includes(key) || FORBIDDEN_ENV.test(key)) fail('Invalid runtime secret key name');
     for (const [key, value] of Object.entries(config.runtimeEnvironment ?? {})) {
       const permittedAwsSetting = ['AWS_REGION', 'AWS_STORAGE_ENABLED'].includes(key);
@@ -205,7 +214,11 @@ export function renderTemplate(config, source) {
   if (config.kind !== 'environment') return template;
   const web = template.Resources.TaskDefinition.Properties.ContainerDefinitions[0];
   for (const [Name, Value] of Object.entries(config.runtimeEnvironment ?? {})) web.Environment.push({ Name, Value });
-  web.Secrets = (config.runtimeSecretKeys ?? requiredRuntimeSecrets(config)).map((Name) => ({ Name, ValueFrom: { 'Fn::Sub': `\${RuntimeConfigSecretArn}:${Name}::` } }));
+  const secretKeys = new Set(config.runtimeSecretKeys ?? requiredRuntimeSecrets(config));
+  if (config.environment === 'dev') {
+    for (const key of DEV_CERTIFICATION_SECRET_KEYS) secretKeys.add(key);
+  }
+  web.Secrets = [...secretKeys].map((Name) => ({ Name, ValueFrom: { 'Fn::Sub': `\${RuntimeConfigSecretArn}:${Name}::` } }));
   return template;
 }
 

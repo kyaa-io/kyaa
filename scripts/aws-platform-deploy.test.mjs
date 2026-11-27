@@ -54,9 +54,9 @@ test('wrong account/region/environment fail before AWS', async () => {
   assert.doesNotThrow(() => verifyIdentity(config(), { Account: nonprodAccount }));
 });
 
-test('only explicit public configuration and secret key names enter web task', async () => {
+test('only explicit public configuration and secret key names enter a staging web task', async () => {
   const t = await loadTemplate('environment');
-  const c = config();
+  const c = config('environment', 'staging');
   const web = renderTemplate(c, t).Resources.TaskDefinition.Properties.ContainerDefinitions[0];
   assert.equal(web.User, '1001:1001');
   assert.deepEqual(web.Secrets.map((s) => s.Name), ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'PRIVY_APP_SECRET']);
@@ -611,5 +611,26 @@ test('revamp preview switches turn on only in the dev web task; staging and prod
     assert.equal(webEnv(off)[key], 'false');
     const invalid = config(); invalid.runtimeEnvironment[key] = 'yes';
     assert.throws(() => validateConfig(invalid, template), new RegExp(`${key} must be true or false`));
+  }
+});
+
+test('DEV certification secrets are injected once in dev and excluded from other environments', async () => {
+  const template = await loadTemplate('environment');
+  const keys = [
+    'TELEGRAM_DEV_CERTIFICATION_BOT_TOKEN',
+    'TELEGRAM_DEV_CERTIFICATION_CHAT_ID',
+    'TELEGRAM_DEV_CERTIFICATION_WEBHOOK_SECRET',
+    'TELEGRAM_DEV_CERTIFICATION_ADMIN_MAP',
+  ];
+  const baseKeys = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'PRIVY_APP_SECRET'];
+  for (const environment of ['dev', 'staging', 'prod']) {
+    const c = config('environment', environment);
+    c.runtimeSecretKeys = baseKeys;
+    const secrets = () => renderTemplate(c, template).Resources.TaskDefinition.Properties.ContainerDefinitions[0].Secrets;
+    const entries = (names) => names.map((Name) => ({ Name, ValueFrom: { 'Fn::Sub': `\${RuntimeConfigSecretArn}:${Name}::` } }));
+    assert.deepEqual(secrets(), entries(environment === 'dev' ? [...baseKeys, ...keys] : baseKeys));
+    c.runtimeSecretKeys = [...baseKeys, keys[0]];
+    if (environment === 'dev') assert.deepEqual(secrets(), entries([...baseKeys, ...keys]));
+    else assert.throws(secrets, /only allowed in dev/);
   }
 });
