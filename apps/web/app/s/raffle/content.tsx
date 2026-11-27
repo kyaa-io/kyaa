@@ -7,10 +7,9 @@ import { FanHeading } from '@/components/fan-ui/fan-heading';
 import { FanDisplay } from '@/components/fan-ui/fan-display';
 import { FanPrintDesk, FanPrintGiftCard } from '@/components/fan-ui/fan-print';
 import { FanActivityStamp } from '@/components/fan-ui/fan-activity-stamp';
-import { FanPrintReveal } from '@/components/fan-ui/fan-print-reveal';
+import { PrizeList } from './prize-list';
 import { FanSurface } from '@/components/fan-ui/fan-surface';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
-import { RaffleCardFloat } from '@/features/raffle-cards/card-float';
 import { RaffleBoostAction, RaffleEnterBlock, RaffleHeroEnter, RaffleMoreAction, RaffleOdds, RaffleProvider, RaffleStickyCta, RaffleCountdown, type RafflePreview } from './participation';
 import styles from './raffle.module.css';
 
@@ -60,11 +59,10 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite, 
       <section className={styles.prize} data-block="raffle-prize" aria-labelledby="raffle-prize">
         <div className={styles.sectionHead}><FanHeading as="h2" id="raffle-prize"><FanDisplay role="heading">{t('prizes')}</FanDisplay></FanHeading></div>
         <FanPrintDesk className={styles.prizeDesk} src={art('prize-desk-tall')} wideSrc={art('prize-desk-wide')} wideFrom="48rem" width={1122} height={1402}>
-          <FanPrintReveal as="ol" inView="stack" label={t('prizes')} className={styles.prizes}>{signupEvent.prizes.map((prize, order) => <li key={prize.usd} data-row="raffle-prize" data-tier={prize.usd}>
+          <PrizeList label={t('prizes')} className={styles.prizes}>{signupEvent.prizes.map((prize, order) => <li key={prize.usd} data-row="raffle-prize" data-tier={prize.usd}>
             <FanPrintGiftCard label={print.giftCard} amount={`US$${prize.usd}`} note={print.giftNote} count={prize.quantity} envelope={prize.usd === 100} material={art(`mat-card-${prize.usd}`)} order={order} />
             <FanDisplay role="strong" as="p">{text('prizeCount', prize.quantity)}</FanDisplay>
-          </li>)}</FanPrintReveal>
-          <RaffleCardFloat />
+          </li>)}</PrizeList>
         </FanPrintDesk>
       </section>
 

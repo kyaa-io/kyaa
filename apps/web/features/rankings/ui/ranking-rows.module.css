@@ -61,7 +61,8 @@
 .mainInner { display: flex; align-items: center; justify-content: flex-end; width: 100%; gap: 0; color: var(--color-ink); font-size: var(--fan-description-size); font-weight: var(--fan-item-title-weight); line-height: var(--fan-metadata-leading); white-space: nowrap; }
 .main .gain { flex: none; border-radius: var(--radius-small); margin-inline-end: var(--space-2); color: var(--color-rank-up); font-variant-numeric: tabular-nums; }
 .main[data-zero] .mainInner { color: var(--color-muted); }
-.flashBox { display: inline-flex; border-radius: var(--radius-small); }
+.scoreHighlight { position: absolute; inset: 0 -2px; border-radius: inherit; background: var(--color-accent-line); opacity: 0; z-index: -1; pointer-events: none; }
+.flashBox { position: relative; isolation: isolate; display: inline-flex; border-radius: var(--radius-small); }
 .main .mainNumber { font-size: inherit; font-weight: inherit; font-variant-numeric: tabular-nums; }
 .heart { flex: none; color: var(--color-accent); }
 .chevron { justify-self: end; color: var(--color-muted); }

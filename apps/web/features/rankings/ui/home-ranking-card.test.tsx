@@ -166,18 +166,17 @@ it("does not claim hidden ranks or draw login rows for short/empty answers", asy
   expect(screen.queryByText(/6~10/)).toBeNull();
 });
 
-it("flashes only the numbers whose value changed between two answers of one visit: the class is on while it runs and off when it ends, twice at 300ms, once under reduced motion", async () => {
+it("highlights only a changed score once for 480ms and skips reduced motion", async () => {
   const rect = visibleRows();
   auth.value = { ...auth.value, authenticated: true, user: { id: "viewer" } };
-  const finishers: Array<() => void> = [];
-  const animate = vi.fn(function (this: HTMLElement) { const animation = { cancel() {}, onfinish: null as null | (() => void), oncancel: null as null | (() => void) }; finishers.push(() => animation.onfinish?.()); return animation as unknown as Animation; });
+  const animate = vi.fn((_frames: Keyframe[], _duration: number) => ({ cancel() {} }));
   Element.prototype.animate = animate as unknown as typeof Element.prototype.animate;
   const now = vi.spyOn(Date, "now");
   let clock = Date.parse("2026-11-08T03:00:00Z"); now.mockImplementation(() => clock);
-  const flashes = () => animate.mock.calls.filter(call => JSON.stringify(call).includes("accent-line")) as unknown as Array<[Array<{ offset?: number }>, { duration: number; delay?: number }]>;
+  const flashes = () => animate.mock.calls.filter(([, duration]) => duration === 480);
   try {
     for (const reduced of [false, true]) {
-      clearResources(); animate.mockClear(); finishers.length = 0; window.localStorage.clear();
+      clearResources(); animate.mockClear(); window.localStorage.clear();
       vi.stubGlobal("matchMedia", () => ({ matches: reduced, addEventListener() {}, removeEventListener() {} }));
       let answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나" })]);
       vi.stubGlobal("fetch", vi.fn(async (url: RequestInfo | URL) => Response.json(String(url).includes("kind=fans") ? answer : creators())));
@@ -185,22 +184,16 @@ it("flashes only the numbers whose value changed between two answers of one visi
       await screen.findByText("가");
       expect(flashes()).toHaveLength(0); // the first look flashes nothing
       expect(view.container.querySelector("[data-flash]")).toBeNull();
-      animate.mockClear(); finishers.length = 0;
+      animate.mockClear();
       answer = fans([fanRow(1, { nickname: "가" }), fanRow(2, { nickname: "나", hearts: 99, score: 99 })]);
       clock += 11 * 60 * 1000;
       document.dispatchEvent(new Event("visibilitychange"));
-      await waitFor(() => expect(flashes()).toHaveLength(1));
-      const [keyframes, timing] = flashes()[0]!;
-      expect(timing.duration).toBe(reduced ? 900 : 600);
-      // twice: two separate rises to the colour (not reduced), one pass (reduced); never a rotation.
-      const rises = keyframes.filter((frame, i) => i > 0 && JSON.stringify(frame).includes("accent-line") && !JSON.stringify(keyframes[i - 1]).includes("accent-line")).length;
-      expect(rises).toBe(reduced ? 1 : 2);
-      expect(JSON.stringify(keyframes)).not.toContain("rotate");
-      const second = view.container.querySelectorAll("li[data-row='fan-rank']")[1]!;
-      expect(second.querySelector("[data-flash-target='value']")).toHaveAttribute("data-flash");
-      expect(view.container.querySelectorAll("li[data-row='fan-rank'] [data-flash]")).toHaveLength(1);
-      finishers.forEach((finish) => finish());
-      expect(view.container.querySelector("[data-flash]")).toBeNull();
+      await waitFor(() => expect(view.container.querySelectorAll("li[data-row='fan-rank']")[1]?.querySelector("[data-metric]")?.getAttribute("aria-label")).toContain("99"));
+      expect(flashes()).toHaveLength(reduced ? 0 : 1);
+      if (!reduced) {
+        expect(flashes()[0]?.[0]).toEqual([{ opacity: 0 }, { opacity: 1, offset: 0.25 }, { opacity: 0 }]);
+        expect(animate.mock.contexts[animate.mock.calls.indexOf(flashes()[0]!)]).toBe(view.container.querySelectorAll("li[data-row='fan-rank'] [data-score-highlight]")[1]);
+      }
       view.unmount();
     }
   } finally {
