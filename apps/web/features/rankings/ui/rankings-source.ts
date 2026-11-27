@@ -65,6 +65,7 @@ export const rankingsSource = {
   jjCopyFailed: { ko: "링크를 복사하지 못했어요", en: "Couldn't copy the link" },
   jjTag: { ko: "찐팬 100 도전 중", en: "100 True Fans challenge" },
   jjCheer: { ko: "응원하러 가기", en: "Go cheer" },
+  hdHomeTitle: { ko: "{0} 함께 {1} 후원하자", en: "Help {1} with {0}" },
   hdTitle: { ko: "{0} 함께 찐팬 하트로 {1} 후원하기", en: "Donate to {1} with True Fan hearts, together with {0}" },
   hdCreatorDefault: { ko: "엘리나", en: "Elina" },
   hdCauseDefault: { ko: "불우이웃", en: "people in need" },
