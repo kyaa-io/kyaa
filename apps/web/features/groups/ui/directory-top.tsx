@@ -88,7 +88,7 @@ export function MyArtists({ locale, loginPath }: { locale: AppLocale; loginPath:
   const guest = session.ready && !session.authenticated;
   const items = joined.data?.items ?? [];
   const waiting = !session.ready || (session.authenticated && joined.loading && !joined.data);
-  return <section className={styles.artists} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
+  return <section className={styles.artists} data-compact={(!waiting && !items.length) || undefined} aria-labelledby="directory-my-artists" data-directory-block="my-artists">
     <FanHeading id="directory-my-artists">{c.myArtists}</FanHeading>
     <div className={styles.row}>
     <ul className={styles.rail} {...drag}>
