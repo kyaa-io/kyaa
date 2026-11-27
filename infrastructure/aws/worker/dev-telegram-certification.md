@@ -6,6 +6,16 @@ DEV 워커와 DEV 웹의 기존 비밀 설정에 `TELEGRAM_DEV_CERTIFICATION_BOT
 `TELEGRAM_DEV_CERTIFICATION_ADMIN_MAP`을 추가한다. 매핑은 Telegram 숫자 사용자 ID를
 키로, 관리자 앱 사용자 UUID를 값으로 가지는 JSON 객체다.
 
+DEV 웹을 배포하기 전에 AWS Secrets Manager의 `byus/dev/web` JSON에 위 네 키를
+모두 설정한다. `aws-platform.yml`의 CloudFormation 배포 단계에서
+`scripts/aws-platform-deploy.mjs`가 `Environment=dev`로 검증된 설정에만 네 키의
+참조를 ECS 웹 작업 정의에 추가한다. 참조는 `RuntimeConfigSecretArn`의 개별 JSON 키를
+가리킨다. 운영과 스테이징 설정은 이 네 키를 허용하지 않는다.
+
+DEV의 필수 키가 빠지면 새 ECS 작업이 시작되지 않는다. 누락된 키를 채운 뒤 DEV를
+다시 배포한다. 비밀의 값을 변경했을 때도 새 웹 작업을 띄워야 반영된다. 정상 배포 후
+DEV 웹의 반영 버전을 확인하고 시험 카드의 버튼을 눌러 심사 반영을 확인한다.
+
 사용자 결정(2026-11-26)에 따라 카드는 기존 CS 봇과 CS 방(KYAA 고객 문의)으로 보낼 수 있다.
 이때 두 값에 각각 `TELEGRAM_CS_BOT_TOKEN`, `TELEGRAM_CS_CHAT_ID`와 같은 값을 넣는다. CS 방에는
 인증 요청 카드만 보내고 배포 안내 등 다른 글은 보내지 않는다. DEV 카드 앞에는 `[DEV 시험]`이 붙는다.
