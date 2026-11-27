@@ -5,7 +5,7 @@ describe("passport X share", () => {
   it("marks the shared landing link as a visit from X", () => {
     const url = new URL(passportShareUrl("https://kyaa.io", "a".repeat(32), "ko"));
     expect(url.pathname).toBe(`/s/${"a".repeat(32)}`);
-    expect(Object.fromEntries(url.searchParams)).toEqual({ locale: "ko", utm_source: "x", utm_medium: "social", utm_campaign: "passport-share" });
+    expect(Object.fromEntries(url.searchParams)).toEqual({ locale: "ko", utm_source: "share", utm_medium: "referral", utm_campaign: "passport-share", utm_content: "passport_x" });
   });
 
   it("mentions the official account in Korean and in every other language", () => {

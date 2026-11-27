@@ -32,6 +32,8 @@ const communityStampMetadata = {
   proof: { credential: "Proof Stamp", asset: "proof" },
   quiz: { credential: "Quiz Stamp", asset: "knowledge" },
   steady_checkin: { credential: "Steady Check-in Stamp", asset: "steady-checkin" },
+  social_friend: { credential: "Friend Stamp", asset: "invite" },
+  social_chat: { credential: "Chat Stamp", asset: "first-comment" },
 } as const;
 
 export function renderMetadata(job: BlockchainJob, payload: JobPayload, assetBaseUri: string, workerEnvironment?: string): MetadataDocument {

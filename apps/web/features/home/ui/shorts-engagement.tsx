@@ -19,6 +19,7 @@ import { useCommunityResource } from "@/features/fanpage/ui/use-community-resour
 import { contentCopy } from "@/i18n/catalogs/features__fan_posts__ui";
 import { toContentLocale, type AppLocale } from "@/i18n/locales";
 import styles from "./home-shorts.module.css";
+import { shareTagged } from "@/features/analytics/domain/share-tag";
 
 const reactionSchema = z.object({ reaction: z.enum(["like", "dislike"]).nullable(), likeCount: z.number(), dislikeCount: z.number(), commentCount: z.number() });
 const commentsSchema = z.object({ items: z.array(z.object({ id: z.string(), body: z.string(), createdAt: z.string(), isOwner: z.boolean(), author: z.object({ nickname: z.string(), avatarUrl: z.string().nullable().optional() }) })), nextCursor: z.string().nullable() });
@@ -45,7 +46,7 @@ export function ShortsEngagement({ videoId, locale, offset, likeRef }: { videoId
     if (await mutation.request(`/api/shorts/${encodeURIComponent(videoId)}/comments`, "POST", { body: value, idempotencyKey: attempt.current.key })) { setBody(""); attempt.current = null; setCursor(null); comments.retry(); reactions.retry(); }
   };
   const remove = async (id: string) => { if (window.confirm(copy.deleteConfirm) && await mutation.request(`/api/short-comments/${encodeURIComponent(id)}`, "DELETE")) { comments.retry(); reactions.retry(); } };
-  const share = async () => { setShareError(false); try { const link = new URL(url, window.location.origin).href; if (navigator.share) await navigator.share({ url: link }); else await navigator.clipboard.writeText(link); } catch (error) { if (!(error instanceof DOMException && error.name === "AbortError")) setShareError(true); } };
+  const share = async () => { setShareError(false); try { const link = shareTagged(new URL(url, window.location.origin).href, "shorts"); if (navigator.share) await navigator.share({ url: link }); else await navigator.clipboard.writeText(link); } catch (error) { if (!(error instanceof DOMException && error.name === "AbortError")) setShareError(true); } };
   return <div className={styles.engagement}>
     <span className={styles.brand}>kyaa</span>
     {reactions.state.status === "ready" ? <PostReactions compact={!!likeRef} locale={locale} {...reactions.state.data} busy={mutation.busy || !auth.ready} loginHref={auth.ready && !auth.authenticated ? loginHref : undefined} onChange={choice => void change(choice)} /> : reactions.state.status === "error" ? <FanAction variant="text" onClick={reactions.retry}>{copy.retry}</FanAction> : <span aria-live="polite">…</span>}

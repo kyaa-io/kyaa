@@ -16,5 +16,7 @@ export async function resolveInviteShortLink(slug: string, locale: AppLocale, de
   const path = groupReferralPath(locale, target.code, target.destination);
   // Campaign tags someone added to the short address travel on to the landing; nothing else from the request does.
   const utm = [...(query?.entries() ?? [])].filter(([key]) => /^utm_(source|medium|campaign|content|term)$/.test(key));
-  return utm.length ? `${path}&${new URLSearchParams(utm)}` : path;
+  // Untagged, the address is a member's own invite: count it as a share with the inviter's code.
+  if (!utm.length) return `${path}&${new URLSearchParams({ utm_source: "share", utm_medium: "referral", utm_content: "group_invite", ref: target.code })}`;
+  return `${path}&${new URLSearchParams(utm)}`;
 }

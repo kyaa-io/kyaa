@@ -91,11 +91,27 @@ describe("home ranking public data contract", () => {
       }
       expect(body.rows[0]).not.toHaveProperty("profileId");
       expect(authorize).toHaveBeenCalledTimes(authenticated ? 1 : 0);
-      // The creator list also reads the platform follower counts (20261227150001), in a call of its own.
-      expect(rpc).toHaveBeenCalledTimes(kind === "creators" ? 2 : 1);
-      if (kind === "creators") expect(rpc).toHaveBeenLastCalledWith("read_celebrity_platform_followers", { p_slugs: [creator.slug] });
+      // The creator list also reads the platform follower counts (20261227150001) and the passport, stamp and 찐팬 인증 counts (20270116070000), each in a call of its own.
+      expect(rpc).toHaveBeenCalledTimes(kind === "creators" ? 3 : 1);
+      if (kind === "creators") {
+        expect(rpc).toHaveBeenCalledWith("read_celebrity_platform_followers", { p_slugs: [creator.slug] });
+        expect(rpc).toHaveBeenCalledWith("read_creator_rank_stats", { p_slugs: [creator.slug] });
+      }
     });
   }
+
+  it("creators/likes: passes read_creator_rank_stats through as stats, with only its three counts, and leaves a creator it does not answer without them", async () => {
+    // read_creator_rank_stats(array['elina','changha','yuna','nope']) on the local database (2026-11-26), plus a key the route must drop.
+    const sqlStats = { yuna: { proofs: 0, stamps: 0, passports: 0 }, elina: { proofs: 0, stamps: 6, passports: 1, extra: 9 } };
+    const rows = [{ ...creator, slug: "elina", likes: 2, totalLikes: 2 }, { ...creator, rank: 2, slug: "yuna", likes: 1, totalLikes: 1 }, { ...creator, rank: 3, slug: "nope", likes: 0, totalLikes: 0 }];
+    const rpc = vi.fn(async (name: string) => name === "read_creator_rank_stats" ? sqlStats : name === "read_celebrity_platform_followers" ? {} : { ...head, rows });
+    const handlers = createRankingsHandlers({ profileRefSecret, rpc, authorize: async () => ({ appUserId: viewer }), resolveCreatorId: async () => null, now: () => Date.parse(head.computedAt) });
+    const body = await (await handlers.home(new Request("http://localhost/api/rankings/home?kind=creators&metric=likes", { headers: { authorization: "Bearer fixture" } }))).json();
+    expect(homeCreatorRankingSchema.safeParse(body).success).toBe(true);
+    expect(body.rows[0].stats).toEqual({ passports: 1, stamps: 6, proofs: 0 });
+    expect(body.rows[1].stats).toEqual({ passports: 0, stamps: 0, proofs: 0 });
+    expect(body.rows[2]).not.toHaveProperty("stats");
+  });
 
   it("opens the signed-in ranking ref using ProfileModal's existing by-ref endpoint", async () => {
     const authorize = async () => ({ appUserId: viewer });

@@ -30,6 +30,9 @@ export const communityStampKinds = [
   "proof",
   "quiz",
   "steady_checkin",
+  // Social earn stamps (supabase/migrations/20270116040004_social_earn_stamp_kinds.sql): a friend added or a chat started.
+  "social_friend",
+  "social_chat",
 ] as const;
 export const communityStampKindSchema = z.enum(communityStampKinds);
 

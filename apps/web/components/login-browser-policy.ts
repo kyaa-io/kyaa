@@ -66,6 +66,10 @@ export function embeddedApp(ua: string) {
   return isXBrowser(ua) ? "x" : appMarkers.find(([, marker]) => marker.test(ua))?.[0] ?? "webview";
 }
 
+export function inAppBrowserKind(ua: string) {
+  return isXBrowser(ua) || EMBEDDED_APP.test(ua) ? embeddedApp(ua) : "browser";
+}
+
 export type HandoffMethod = "line" | "kakao" | "instagram" | "safari" | "intent";
 
 // `target` opens by itself on arrival; `fallback` is the link the person taps. `browser` is "safari" when the tap link

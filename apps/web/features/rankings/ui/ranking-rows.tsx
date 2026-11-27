@@ -429,10 +429,15 @@ const fanStats = (locale: AppLocale, row: HomeFanRankingRow, metric: RankingMetr
   ] : []),
 ];
 
-/** Creators by likes (대표 11/15 16:47 예시 "찐팬하트 ♥ 29 · 찐팬 10명"): the 찐팬 hearts first, with the heart asset and the word 찐팬하트 (a page like is a star), then the 찐팬 head count, then all-time likes when the list counts a period.
- * The platforms' follower counts follow on their own line (RankRowPanel, confirmed counts only). */
+/** Creators by likes (대표 11/26 22:17 "패스포트 발급 100, 누적 스탬프 500, 찐팬 인증 10"): passports issued, stamps issued all time and 찐팬 인증 in that order — the large counts first —
+ * in place of 찐팬 hearts and the 찐팬 head count, then all-time likes when the list counts a period. The platforms' follower counts follow on their own line (RankRowPanel, confirmed counts only). */
 const creatorStats = (locale: AppLocale, row: HomeCreatorRankingRow, metric: RankingMetric, period: HomeRankingPeriod) => metric === "likes"
-  ? [...statCell(locale, "hearts", rankingsText(locale, "rkPanelHearts"), row.hearts, "hearts").map((cell) => ({ ...cell, size: 20 as const })), ...(typeof row.fans === "number" && row.fans > 0 ? [{ key: "fans", label: rankingsText(locale, "rkPanelJjinfan"), value: rankingsText(locale, "rkPanelFanCount", [row.fans.toLocaleString(locale)]) }] : []), ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes"))] : [];
+  ? [
+    ...countCell(locale, "passports", rankingsText(locale, "rkPanelPassports"), row.stats?.passports),
+    ...countCell(locale, "stamps", rankingsText(locale, "rkPanelStamps"), row.stats?.stamps),
+    ...countCell(locale, "proofs", rankingsText(locale, "rkPanelProofs"), row.stats?.proofs),
+    ...(period === "all" ? [] : statCell(locale, "totalLikes", rankingsText(locale, "rkPanelTotalLikes"), row.totalLikes, "likes")),
+  ] : [];
 
 /** Creators: name, movement (and LIVE and the 찐팬 100 challenge tag where they apply) and the metric's value on one line; the row opens a panel whose action goes to the page. */
 export function CreatorRows({ locale, ranking, metric, show, fill, scope, challengeTag = false, guest = false, period = "all", entryRef }: { locale: AppLocale; ranking: HomeCreatorRanking; guest?: boolean; metric: HomeCreatorMetric; show?: number; fill?: number; scope: string; challengeTag?: boolean; period?: HomeRankingPeriod; entryRef?: { current: boolean } }) {

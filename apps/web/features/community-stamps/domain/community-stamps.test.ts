@@ -34,7 +34,7 @@ describe("community stamp projection", () => {
 
 describe("dukjil stamp kinds", () => {
  const base = { id: "11111111-1111-4111-8111-111111111111", celebritySlug: "elina", issuedAt: "2026-09-12T15:00:00Z", mint: stamp.mint };
- it.each(["post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin", "event_review", "cheer", "proof", "quiz", "steady_checkin"])("registers %s with artwork", kind => {
+ it.each(["post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin", "event_review", "cheer", "proof", "quiz", "steady_checkin", "social_friend", "social_chat"])("registers %s with artwork", kind => {
   expect(communityStampSchema.parse({ ...base, kind }).kind).toBe(kind);
   expect(communityStampAsset(kind as never)).toMatch(/^\/images\/stamps\/ink-v1\/[a-z-]+\.webp$/);
  });

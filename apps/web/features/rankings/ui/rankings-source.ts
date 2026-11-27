@@ -123,4 +123,7 @@ export const rankingsSource = {
   rkPanelAttendance: { ko: "출석일", en: "Check-in days" },
   rkPanelPosts: { ko: "게시글", en: "Posts" },
   rkPanelTotalLikes: { ko: "누적 별점수", en: "All-time stars" },
+  rkPanelPassports: { ko: "패스포트 발급", en: "Passports issued" },
+  rkPanelStamps: { ko: "누적 스탬프", en: "Stamps issued" },
+  rkPanelProofs: { ko: "찐팬 인증", en: "True fan proofs" },
 } as const;

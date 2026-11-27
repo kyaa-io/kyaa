@@ -202,7 +202,7 @@ describe("passport fan screens", () => {
 
     expect(await screen.findByRole("button", { name: "스탬프 보기" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "공유 링크 만들기" }));
-    expect(await screen.findByDisplayValue(/\/s\/a{32}\?locale=ko$/)).toBeInTheDocument();
+    expect(await screen.findByDisplayValue(/\/s\/a{32}\?locale=ko&utm_source=share&utm_medium=referral&utm_content=passport$/)).toBeInTheDocument();
     expect(fetcher).toHaveBeenCalledWith("/api/community-stamps/share-link", expect.objectContaining({ method: "POST" }));
   });
 

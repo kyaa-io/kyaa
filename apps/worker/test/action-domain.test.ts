@@ -57,7 +57,7 @@ describe("canonical fan action domain", () => {
   });
 
   const dukjilKinds = ["post", "comment", "reaction", "live_reserve", "live_attend", "survey", "mission", "event_checkin",
-    "event_review", "cheer", "proof", "quiz", "steady_checkin", "subscription", "share"];
+    "event_review", "cheer", "proof", "quiz", "steady_checkin", "subscription", "share", "social_friend", "social_chat"];
   const dukjilSnapshot = (kind: string, keyKind = kind) => ({ ...communitySnapshot(kind),
     canonicalSourceKey: `dukjil:${keyKind}:quiz:0f0e0d0c-0000-4000-8000-000000000001:0f0e0d0c-0000-4000-8000-000000000002` });
 

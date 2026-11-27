@@ -43,7 +43,7 @@ begin
       enum_range(null::public.community_stamp_kind)) kind) is distinct from
     array['welcome','first_comment','subscription','support','share','invite','daily_checkin','first_clip','wave_mission',
       'post','comment','reaction','live_reserve','live_attend','survey','mission','event_checkin','event_review',
-      'cheer','proof','quiz','steady_checkin']::text[] then
+      'cheer','proof','quiz','steady_checkin','social_friend','social_chat']::text[] then
     raise exception 'community stamp kinds changed';
   end if;
   if public.community_stamp_kst_date('2026-09-12 14:59:59+00')<>'2026-09-12'

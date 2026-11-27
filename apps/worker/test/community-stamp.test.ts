@@ -50,6 +50,8 @@ const names = {
   proof: "kyaa Proof Stamp",
   quiz: "kyaa Quiz Stamp",
   steady_checkin: "kyaa Steady Check-in Stamp",
+  social_friend: "kyaa Friend Stamp",
+  social_chat: "kyaa Chat Stamp",
 } as const;
 
 const assets = {
@@ -75,6 +77,8 @@ const assets = {
   proof: "proof",
   quiz: "knowledge",
   steady_checkin: "steady-checkin",
+  social_friend: "invite",
+  social_chat: "first-comment",
 } as const;
 
 describe("community stamp payload v1", () => {

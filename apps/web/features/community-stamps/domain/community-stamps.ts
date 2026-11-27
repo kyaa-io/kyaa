@@ -29,6 +29,9 @@ export const communityStampKindSchema = z.enum([
   "proof",
   "quiz",
   "steady_checkin",
+  // Social earn stamps (20270116040004): a friend added, a chat started. Awarded by the server only.
+  "social_friend",
+  "social_chat",
 ]);
 export type CommunityStampKind = z.infer<typeof communityStampKindSchema>;
 export const communityCreatorSlugSchema = z
@@ -286,8 +289,8 @@ export const COMMUNITY_STAMPS = {
 
 // External verification is not public until the matching server proof exists.
 export const AVAILABLE_COMMUNITY_STAMPS: readonly (keyof typeof COMMUNITY_STAMPS)[] = ["welcome", "first_comment", "daily_checkin", "share", "invite"];
-const DUKJIL_STAMP_ART = { post: "post", comment: "first-comment", reaction: "first-like", live_reserve: "reservation", live_attend: "attendance", survey: "survey", mission: "mission", event_checkin: "event-checkin", event_review: "event-review", cheer: "support", proof: "proof", quiz: "knowledge", steady_checkin: "steady-checkin" } as const;
-const DUKJIL_STAMP_LABEL = { post: ["글쓰기", "Post"], comment: ["댓글", "Comment"], reaction: ["좋아요", "Like"], live_reserve: ["LIVE 예약", "LIVE reservation"], live_attend: ["LIVE 출석", "LIVE attendance"], survey: ["설문", "Survey"], mission: ["덕질", "Mission"], event_checkin: ["행사 체크인", "Event check-in"], event_review: ["행사 후기", "Event review"], cheer: ["응원", "Cheer"], proof: ["인증", "Proof"], quiz: ["퀴즈", "Quiz"], steady_checkin: ["꾸준 출석", "Steady check-in"] } as const;
+const DUKJIL_STAMP_ART = { post: "post", comment: "first-comment", reaction: "first-like", live_reserve: "reservation", live_attend: "attendance", survey: "survey", mission: "mission", event_checkin: "event-checkin", event_review: "event-review", cheer: "support", proof: "proof", quiz: "knowledge", steady_checkin: "steady-checkin", social_friend: "invite", social_chat: "first-comment" } as const;
+const DUKJIL_STAMP_LABEL = { post: ["글쓰기", "Post"], comment: ["댓글", "Comment"], reaction: ["좋아요", "Like"], live_reserve: ["LIVE 예약", "LIVE reservation"], live_attend: ["LIVE 출석", "LIVE attendance"], survey: ["설문", "Survey"], mission: ["덕질", "Mission"], event_checkin: ["행사 체크인", "Event check-in"], event_review: ["행사 후기", "Event review"], cheer: ["응원", "Cheer"], proof: ["인증", "Proof"], quiz: ["퀴즈", "Quiz"], steady_checkin: ["꾸준 출석", "Steady check-in"], social_friend: ["친구 추가", "Friend added"], social_chat: ["대화", "Chat"] } as const;
 type DukjilStampKind = keyof typeof DUKJIL_STAMP_ART;
 const isDukjilKind = (kind: CommunityStampKind): kind is DukjilStampKind => kind in DUKJIL_STAMP_ART;
 export function communityStampAsset(kind: CommunityStampKind) { if (kind === "wave_mission") return "/images/credentials/v2/mission.png"; return `/images/stamps/ink-v1/${isDukjilKind(kind) ? DUKJIL_STAMP_ART[kind] : COMMUNITY_STAMPS[kind].asset}.webp`; }

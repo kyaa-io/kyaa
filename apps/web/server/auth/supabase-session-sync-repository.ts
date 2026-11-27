@@ -16,11 +16,13 @@ import {
 } from "../../features/reliability/client/request-deadline";
 import type { SessionSyncRepository } from "./session-sync";
 import { canDeferNotificationSync } from "./notification-sync-recovery";
+import type { Touch } from "@/features/analytics/domain/first-touch";
 
 const SESSION_STAGE_TIMEOUT_MS = 20_000;
 const OPTIONAL_SYNC_TIMEOUT_MS = 2_000;
 
 type SessionSyncStage =
+  | "session.acquisition"
   | "session.identity"
   | "session.locale"
   | "session.notification"
@@ -152,10 +154,32 @@ export class SupabaseSessionSyncRepository implements SessionSyncRepository {
   }
 }
 
-export function createSupabaseSessionSyncRepository(config: { url?: string; serviceRoleKey?: string }): SessionSyncRepository {
+/** Copies the visit cookies onto a member created in the last hour (the database decides). Never blocks sign-in. */
+export async function recordAcquisitionTouch(
+  client: { rpc(name: string, parameters: Record<string, unknown>): PromiseLike<{ error: unknown }> },
+  userId: string,
+  touches: { first: Touch | null; last: Touch | null },
+): Promise<void> {
+  try {
+    const { error } = await withOperationDeadline(Promise.resolve(client.rpc("record_app_user_acquisition_touch", {
+      p_app_user_id: userId, p_first: touches.first, p_last: touches.last,
+    })), OPTIONAL_SYNC_TIMEOUT_MS);
+    if (error) throw new Error("Acquisition touch was not recorded");
+  } catch (error) {
+    reportRecoveryFailure("session.acquisition", error);
+  }
+}
+
+export function createSupabaseSessionSyncRepository(config: { url?: string; serviceRoleKey?: string; touches?: { first: Touch | null; last: Touch | null } }): SessionSyncRepository {
   const client = createClient(config.url, config.serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const touches = config.touches;
   return new SupabaseSessionSyncRepository(client as unknown as SessionSyncRpcClient, {
-    afterSync: async userId => { await refreshLocalSignupEvent(client, userId); },
+    afterSync: async userId => {
+      await Promise.all([
+        refreshLocalSignupEvent(client, userId),
+        touches ? recordAcquisitionTouch(client, userId, touches) : undefined,
+      ]);
+    },
     canDeferNotificationSync: (ownerId, identity) => canDeferNotificationSync(client, ownerId, identity),
   });
 }
