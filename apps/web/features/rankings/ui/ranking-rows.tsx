@@ -126,49 +126,26 @@ function saveSeen(memory: string, seen: Seen) {
  * the same frame; only rows on screen move. Nothing moves on the first answer, on a row whose place did not change, or under reduced motion. Tops are read on every commit,
  * so opening a row's panel never counts as a move. A metric change remounts the rows.
  * `entryRef` is the panel's own flag: the first answer the panel draws plays the entrance (rows on screen at once, the others when they reach the screen); a period switch does not. */
-function useRowMotion(order: readonly string[], values: readonly number[], gains: readonly number[], ranks: readonly number[], memory: string, entryRef?: { current: boolean }) {
+function useRowMotion(order: readonly string[], values: readonly number[], ranks: readonly number[], memory: string, entryRef?: { current: boolean }) {
   const nodes = useRef(new Map<string, HTMLElement>());
   const seen = useRef<Map<string, number> | null>(null);
-  const seenRanks = useRef<Map<string, number> | null>(null);
-  const seenGains = useRef<Map<string, number> | null>(null);
-  const emphasized = useRef(new Map<string, string>());
   // Where each row stood when the visitor last looked, read once: a row that moved since then shows its ▲▼ for this visit.
   const [lastVisit] = useState(() => typeof window === "undefined" ? null : readSeen(memory));
-  // The flash runs only for a later answer of the same visit (the minute re-read): the rows whose value or today's gain changed since the previous answer, or that came in.
-  // The first answer flashes nothing; what moved since the last visit is told by its ▲▼, and a row that only changed place is told by its slide. A row not on screen waits until it is, then flashes once.
   useLayoutEffect(() => {
-    const now = new Map(order.map((key, i) => [key, values[i]!]));
     const before = seen.current;
-    const beforeRanks = seenRanks.current;
-    const beforeGains = seenGains.current;
+    const now = new Map(order.map((key, i) => [key, values[i]!]));
     seen.current = now;
-    seenRanks.current = new Map(order.map((key, i) => [key, ranks[i]!]));
-    seenGains.current = new Map(order.map((key, i) => [key, gains[i]!]));
     if (!now.size) return;
-    saveSeen(memory, { values: now, ranks: seenRanks.current });
-    if (!before || !beforeRanks || !beforeGains) return;
-    const due = order.flatMap((key, i) => {
-      const kinds = new Set<FlashKind>();
-      if (before.get(key) !== values[i]) kinds.add("value");
-      if (gains[i]! > 0 && beforeGains.get(key) !== gains[i]) kinds.add("gain");
-      if (!kinds.size) return [];
-      const signature = `${values[i]}|${gains[i]}`;
-      if (emphasized.current.get(key) === signature) return [];
-      emphasized.current.set(key, signature);
-      return [[key, i, kinds] as const];
-    });
-    due.forEach(([key, i, kinds]) => {
+    saveSeen(memory, { values: now, ranks: new Map(order.map((key, i) => [key, ranks[i]!])) });
+    if (!before || reducedMotion()) return;
+    for (const [key, value] of now) {
+      if (!before.has(key) || before.get(key) === value) continue;
       const node = nodes.current.get(key);
-      if (!node) return;
-      if (inView(node)) { flashNumbers(node, kinds, rowDelay(i)); return; }
-      if (typeof IntersectionObserver !== "function") return;
-      const cleanup = () => { watch.disconnect(); pending.current.delete(cleanup); document.removeEventListener("visibilitychange", show); };
-      const show = () => { if (!inView(node)) return; cleanup(); flashNumbers(node, kinds); };
-      const watch = new IntersectionObserver(show, { threshold: 0.6 });
-      watch.observe(node);
-      pending.current.add(cleanup);
-      document.addEventListener("visibilitychange", show);
-    });
+      if (!node || !inView(node)) continue;
+      const ink = node.querySelector<HTMLElement>("[data-score-highlight]");
+      ink?.getAnimations?.().forEach(animation => animation.cancel());
+      ink?.animate?.([{ opacity: 0 }, { opacity: 1, offset: 0.25 }, { opacity: 0 }], 480);
+    }
   });
   const pending = useRef(new Set<() => void>());
   useEffect(() => () => { for (const cleanup of pending.current) cleanup(); }, []);
@@ -321,7 +298,7 @@ function Main({ locale, metric, value, delay, gain }: { locale: AppLocale; metri
     <span aria-hidden="true" className={styles.mainInner}>
       {gainText ? <FanText role="label" className={styles.gain} data-day-gain="" data-flash-target="gain">{gainText}</FanText> : null}
       {unitMark(metric)}{before?.trim() ? <span>{before.trim()}</span> : null}
-      <span className={styles.flashBox} data-flash-target="value"><RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} /></span>{after?.trim() ? <span>{after.trim()}</span> : null}
+      <span className={styles.flashBox} data-flash-target="value"><span className={styles.scoreHighlight} data-score-highlight="" /><RollingNumber value={value} format={(v) => v >= 10000 ? short(locale, v) : v.toLocaleString(locale)} className={styles.mainNumber} duration={ROLL_MS} easing={ROLL_EASE} delay={delay} /></span>{after?.trim() ? <span>{after.trim()}</span> : null}
     </span>
   </span>;
 }
@@ -379,7 +356,7 @@ export function FanRows({ locale, ranking, metric, show, fill, scope, guest = fa
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const ranks = listPlaces(shown.length);
   const keys = shown.map((row, i) => fanKey(row, i, shown));
-  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), shown.map((row) => dayGainMark(period, row.dayGain) ?? 0), ranks, `fans:${metric}:${period}`, entryRef);
+  const { place, movedSince } = useRowMotion(keys, shown.map((row) => fanValue(row, metric)), ranks, `fans:${metric}:${period}`, entryRef);
   const top = ranking.rows[0] ? fanValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest && !ranking.me;
   const days = ranking.weekGainDays ?? 0;
@@ -444,7 +421,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
   const { openKey, toggle } = useRankExpand();
   const shown = show === undefined ? ranking.rows : ranking.rows.slice(0, show);
   const ranks = listPlaces(shown.length);
-  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), shown.map((row) => dayGainMark(period, row.dayGain) ?? 0), ranks, `creators:${metric}:${period}`, entryRef);
+  const { place, movedSince } = useRowMotion(shown.map((row) => row.slug), shown.map((row) => creatorValue(row, metric)), ranks, `creators:${metric}:${period}`, entryRef);
   const top = ranking.rows[0] ? creatorValue(ranking.rows[0], metric) : 0;
   const accentFirst = !guest;
   const days = ranking.weekGainDays ?? 0;

@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-<defs><linearGradient id="g-diamond" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D8F0FF"/><stop offset="1" stop-color="#8C9BFF"/></linearGradient></defs>
-<g fill="url(#g-diamond)" stroke="#3B3AA6" stroke-width="3"><path d="M32 1.5 62.5 32 32 62.5 1.5 32Z" stroke-linejoin="round"/></g>
-<g fill="none" stroke="#3B3AA6" stroke-width="1.4" opacity=".55"><path d="M32 9.5 54.5 32 32 54.5 9.5 32Z"/></g>
-<polygon points="32.00,16.00 35.53,25.15 45.31,25.67 37.71,31.85 40.23,41.33 32.00,36.00 23.77,41.33 26.29,31.85 18.69,25.67 28.47,25.15" fill="#FFFFFF" stroke="#3B3AA6" stroke-width="2.4" stroke-linejoin="round"/>
+<defs><linearGradient id="g-diamond" x1="15%" y1="0%" x2="76%" y2="100%">
+  <stop offset="0%" stop-color="#9DBDFF"/>
+  <stop offset="27%" stop-color="#F5FFFF"/>
+  <stop offset="35%" stop-color="#91CEFF"/>
+  <stop offset="76%" stop-color="#DBDFFF"/>
+  <stop offset="100%" stop-color="#A6A8FA"/>
+</linearGradient></defs>
+<g fill="url(#g-diamond)" stroke="#3B3AA6" stroke-width="2"><path d="M32 1.5 62.5 32 32 62.5 1.5 32Z" stroke-linejoin="round"/></g>
+<g fill="none" stroke="#3B3AA6" stroke-width="1.4" opacity=".38"><path d="M32 9.5 54.5 32 32 54.5 9.5 32Z"/></g>
+<polygon points="32.00,16.00 35.53,25.15 45.31,25.67 37.71,31.85 40.23,41.33 32.00,36.00 23.77,41.33 26.29,31.85 18.69,25.67 28.47,25.15" fill="#FFFFFF" stroke="#3B3AA6" stroke-width="1.65" stroke-linejoin="round"/>
 <path d="M50 9.5 51.3 13.2 55 14.5 51.3 15.8 50 19.5 48.7 15.8 45 14.5 48.7 13.2Z" fill="#FFFFFF" stroke="#3B3AA6" stroke-width="1.2" stroke-linejoin="round"/>
 </svg>

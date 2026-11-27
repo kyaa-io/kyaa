@@ -39,6 +39,16 @@ const channels = ([
   code, group: "channel", path, visit: code, utm: { source, medium, campaign },
 }));
 
+const raffleChannels = ([
+  ["ig-dm-raffle", "instagram", "dm"],
+  ["newstip-raffle", "newstip", "email"],
+  ["x-dm-raffle", "x", "dm"],
+  ["tg-raffle", "telegram", "channel"],
+] as const).map(([code, source, medium]): ShortLink => ({
+  code, group: "channel", path: RAFFLE, visit: code,
+  utm: { source, medium, campaign: "raffle-1125", content: code },
+}));
+
 /** Paid raffle posts on X. The handle is the campaign, which the raffle page already reads as the KOL. */
 export const KOL_HANDLES = [
   "alina", "luna", "chae", "robin", "cj", "cgaa", "enzo", "poelzem", "dafren", "nisa", "yuna", "lailology", "ayo", "lyxx",
@@ -48,7 +58,7 @@ const kols = KOL_HANDLES.map((handle): ShortLink => ({
   utm: { source: "x", medium: "kol", campaign: handle, content: `kol-${handle}` },
 }));
 
-export const SHORT_LINKS: readonly ShortLink[] = [...outreach, ...channels, ...kols];
+export const SHORT_LINKS: readonly ShortLink[] = [...outreach, ...channels, ...raffleChannels, ...kols];
 const byCode = new Map(SHORT_LINKS.map((link) => [link.code, link]));
 
 /** Codes made on the spot: qr-<event> for a printed QR, sweeps-<site> for a giveaway listing site. */

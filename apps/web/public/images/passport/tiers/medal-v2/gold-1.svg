@@ -1,7 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-<defs><linearGradient id="g-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE57A"/><stop offset="1" stop-color="#F0AE00"/></linearGradient></defs>
-<g fill="url(#g-gold)" stroke="#9A6400" stroke-width="3"><polygon points="32.00,1.50 37.90,6.16 45.23,4.52 48.52,11.28 55.85,12.98 55.88,20.50 61.74,25.21 58.50,32.00 61.74,38.79 55.88,43.50 55.85,51.02 48.52,52.72 45.23,59.48 37.90,57.84 32.00,62.50 26.10,57.84 18.77,59.48 15.48,52.72 8.15,51.02 8.12,43.50 2.26,38.79 5.50,32.00 2.26,25.21 8.12,20.50 8.15,12.98 15.48,11.28 18.77,4.52 26.10,6.16" stroke-linejoin="round"/></g>
-<g fill="none" stroke="#9A6400" stroke-width="1.4" opacity=".55"><circle cx="32" cy="32" r="21.5"/></g>
-<polygon points="32.00,16.00 35.53,25.15 45.31,25.67 37.71,31.85 40.23,41.33 32.00,36.00 23.77,41.33 26.29,31.85 18.69,25.67 28.47,25.15" fill="#FFFBEA" stroke="#9A6400" stroke-width="2.4" stroke-linejoin="round"/>
+<defs><linearGradient id="g-gold" x1="15%" y1="0%" x2="76%" y2="100%">
+  <stop offset="0%" stop-color="#FFDA28"/>
+  <stop offset="27%" stop-color="#FFFEDB"/>
+  <stop offset="35%" stop-color="#FFCD00"/>
+  <stop offset="76%" stop-color="#FFE965"/>
+  <stop offset="100%" stop-color="#F9BB0A"/>
+</linearGradient></defs>
+<g fill="url(#g-gold)" stroke="#9A6400" stroke-width="2"><polygon points="32.00,1.50 37.90,6.16 45.23,4.52 48.52,11.28 55.85,12.98 55.88,20.50 61.74,25.21 58.50,32.00 61.74,38.79 55.88,43.50 55.85,51.02 48.52,52.72 45.23,59.48 37.90,57.84 32.00,62.50 26.10,57.84 18.77,59.48 15.48,52.72 8.15,51.02 8.12,43.50 2.26,38.79 5.50,32.00 2.26,25.21 8.12,20.50 8.15,12.98 15.48,11.28 18.77,4.52 26.10,6.16" stroke-linejoin="round"/></g>
+<g fill="none" stroke="#9A6400" stroke-width="1.4" opacity=".38"><circle cx="32" cy="32" r="21.5"/></g>
+<polygon points="32.00,16.00 35.53,25.15 45.31,25.67 37.71,31.85 40.23,41.33 32.00,36.00 23.77,41.33 26.29,31.85 18.69,25.67 28.47,25.15" fill="#FFFBEA" stroke="#9A6400" stroke-width="1.65" stroke-linejoin="round"/>
 <circle cx="32" cy="47" r="2.8" fill="#9A6400"/>
 </svg>

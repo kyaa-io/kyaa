@@ -52,7 +52,7 @@
 }
 
 .brandTitle { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; }
-.brandSlogan { color:var(--muted); font-size:var(--fan-metadata-size); font-weight:var(--fan-body-weight); line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
+.brandSlogan, .scaleNumbers { color:var(--muted); font-size:var(--fan-metadata-size); font-weight:var(--fan-body-weight); line-height:1.4; letter-spacing:normal; text-wrap:pretty; }
 .heroCarousel { position: relative; color: var(--color-surface); }
 .heroCarousel[data-has-controls="true"] { margin-bottom: 44px; }
 /* 홈 배너 규격(2026-11-09 사용자 피드백): 본문 폭 안, 390 높이 200, 768+ 폭의 28%(380 상한). 왼쪽 글·오른쪽 그림은 home-hero-banner.module.css. */
@@ -427,3 +427,8 @@
 
 .heroCarousel[data-compact] .heroTrack { gap:var(--space-1); }
 .heroCarousel[data-compact] .heroCard { background:var(--color-soft); }
+
+.scaleNumbers:empty { display: none; }
+.scaleNumbers > span { white-space: nowrap; }
+.scaleNumbers > span + span::before { content: " · "; }
+@media (width < 48rem) { .desktopMetric { display: none; } }

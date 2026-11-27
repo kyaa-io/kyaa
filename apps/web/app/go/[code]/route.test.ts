@@ -62,13 +62,19 @@ describe("outbound short links", () => {
   it.each([
     ["mail-raffle", "s/raffle?utm_source=email&utm_medium=email&utm_campaign=raffle_mail", "mail-raffle"],
     ["newstip", "?utm_source=newstip&utm_medium=email&utm_campaign=newstip", "newstip"],
+    ["ig-dm", "?utm_source=instagram&utm_medium=dm&utm_campaign=dm_outreach", "ig-dm"],
     ["x-dm", "?utm_source=x&utm_medium=dm&utm_campaign=dm_outreach", "x-dm"],
     ["soompi", "?utm_source=soompi&utm_medium=referral&utm_campaign=media", "soompi"],
+    ["ig-dm-raffle", "s/raffle?utm_source=instagram&utm_medium=dm&utm_campaign=raffle-1125&utm_content=ig-dm-raffle", "ig-dm-raffle"],
+    ["newstip-raffle", "s/raffle?utm_source=newstip&utm_medium=email&utm_campaign=raffle-1125&utm_content=newstip-raffle", "newstip-raffle"],
+    ["x-dm-raffle", "s/raffle?utm_source=x&utm_medium=dm&utm_campaign=raffle-1125&utm_content=x-dm-raffle", "x-dm-raffle"],
+    ["tg-raffle", "s/raffle?utm_source=telegram&utm_medium=channel&utm_campaign=raffle-1125&utm_content=tg-raffle", "tg-raffle"],
     ["kol-alina", "s/raffle?utm_source=x&utm_medium=kol&utm_campaign=alina&utm_content=kol-alina", "kol-alina"],
     ["qr-run-music", "?utm_source=qr&utm_medium=offline&utm_campaign=run_music", "qr-run-music"],
     ["sweeps-giveaway-frenzy", "s/raffle?utm_source=giveaway_frenzy&utm_medium=referral&utm_campaign=sweeps_listing", "sweeps-giveaway-frenzy"],
   ])("opens %s with its own tags and records the code", async (code, location, visit) => {
     const response = await GET(request(code), context(code));
+    expect(response.status).toBe(302);
     expect(response.headers.get("location")).toBe(`${home}${location}`);
     expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ campaign: visit });
   });
