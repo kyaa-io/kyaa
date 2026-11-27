@@ -1,0 +1,4 @@
+{
+  "changes": ["개발 서버에서 텔레그램 인증 심사 버튼의 요청이 전달되도록 보안 규칙에 예외를 추가했어요."],
+  "path": "/api/telegram/certification/webhook"
+}

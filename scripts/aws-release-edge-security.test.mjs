@@ -8,6 +8,8 @@ const rules = stack.Resources.WebAcl.Properties.Rules;
 const common = rules.find(rule => rule.Name === 'CommonRules');
 const guard = rules.find(rule => rule.Name === 'BlockOversizeBodies');
 const xss = rules.find(rule => rule.Name === 'BlockCrossSiteScriptingBody');
+const noUserAgent = rules.find(rule => rule.Name === 'BlockNoUserAgent');
+const NO_USER_AGENT_LABEL = 'awswaf:managed:aws:core-rule-set:NoUserAgent_Header';
 const XSS_LABEL = 'awswaf:managed:aws:core-rule-set:CrossSiteScripting_Body';
 // CloudFormation resolves Conditions on its own; this resolves only the pieces the template uses (Ref, Fn::If, Fn::Not, Fn::Equals, AWS::NoValue).
 function renderRules(parameters = {}) {
@@ -85,12 +87,13 @@ function blocked(method, path, contentType = 'multipart/form-data; boundary=test
   return matches(guard.Statement, { method, path, contentType, bodyBytes });
 }
 
-test('only body-size and body-XSS managed actions change; other managed protections and rate limit remain active', () => {
+test('only body-size, body-XSS and missing User-Agent managed actions change; other managed protections and rate limit remain active', () => {
   assert.deepEqual(common.OverrideAction, { None: {} });
   assert.deepEqual(common.Statement.ManagedRuleGroupStatement, {
     VendorName: 'AWS', Name: 'AWSManagedRulesCommonRuleSet',
     RuleActionOverrides: [
       { Name: 'SizeRestrictions_BODY', ActionToUse: { Count: {} } },
+      { Name: 'NoUserAgent_HEADER', ActionToUse: { Count: {} } },
       { Name: 'CrossSiteScripting_BODY', ActionToUse: { Count: {} } },
     ],
   });
@@ -98,7 +101,7 @@ test('only body-size and body-XSS managed actions change; other managed protecti
   assert.equal(guard.Priority, 11);
   assert.deepEqual(guard.Action, { Block: {} });
   assert(!rules.some(rule => rule.Action?.Allow));
-  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody']);
+  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody', 'BlockNoUserAgent']);
   assert.deepEqual(stack.Resources.WebAcl.Properties.AssociationConfig, {
     RequestBody: { CLOUDFRONT: { DefaultSizeInspectionLimit: 'KB_64' } },
   });
@@ -210,14 +213,14 @@ test('RateLimitMode defaults to off, so a stack update without the parameter cre
     Description: stack.Parameters.RateLimitMode.Description,
   });
   assert.deepEqual(stack.Parameters.RateLimitPerFiveMinutes, { Type: 'Number', Default: 2000, MinValue: 100, MaxValue: 2000000 });
-  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody']);
-  assert.deepEqual(names(renderRules({ RateLimitMode: 'off', RateLimitPerFiveMinutes: 20000 })), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody']);
+  assert.deepEqual(names(renderRules()), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody', 'BlockNoUserAgent']);
+  assert.deepEqual(names(renderRules({ RateLimitMode: 'off', RateLimitPerFiveMinutes: 20000 })), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody', 'BlockNoUserAgent']);
 });
 
 test('count mode measures only and block mode rejects; the limit and per-IP key follow the parameter', () => {
   for (const [mode, action] of [['count', { Count: {} }], ['block', { Block: {} }]]) {
     const list = renderRules({ RateLimitMode: mode, RateLimitPerFiveMinutes: 20000 });
-    assert.deepEqual(names(list), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody', 'RateLimit']);
+    assert.deepEqual(names(list), ['CommonRules', 'BlockOversizeBodies', 'BlockCrossSiteScriptingBody', 'BlockNoUserAgent', 'RateLimit']);
     const rate = list.find(rule => rule.Name === 'RateLimit');
     assert.equal(rate.Priority, 20);
     assert.deepEqual(rate.Action, action);
@@ -229,7 +232,7 @@ test('count mode measures only and block mode rejects; the limit and per-IP key 
 
 test('the other rules render identically in every mode', () => {
   const base = renderRules();
-  for (const mode of ['count', 'block']) assert.deepEqual(renderRules({ RateLimitMode: mode }).slice(0, 3), base);
+  for (const mode of ['count', 'block']) assert.deepEqual(renderRules({ RateLimitMode: mode }).slice(0, base.length), base);
   assert.throws(() => renderRules({ RateLimitMode: 'on' }));
 });
 
@@ -280,4 +283,18 @@ test('requests without the XSS label are untouched by the body-XSS rule', () => 
     assert.equal(xssBlocked(method, path, 'application/json', []), false, path);
     assert.equal(xssBlocked(method, path, 'application/json', ['awswaf:managed:aws:core-rule-set:SizeRestrictions_Body']), false, path);
   }
+});
+
+test('missing User-Agent blocks only outside the Telegram path prefix', () => {
+  assert.deepEqual(noUserAgent.Action, { Block: {} });
+  assert.equal(noUserAgent.Priority, 13);
+  assert.equal(noUserAgent.VisibilityConfig.MetricName, 'BlockNoUserAgent');
+  const path = '/api/telegram/certification/webhook';
+  const labels = [NO_USER_AGENT_LABEL];
+  assert.equal(matches(noUserAgent.Statement, { path, labels }), false);
+  for (const path of ['/api/health/live', '/api/telegram', '/api/telegram-other/webhook', '/api/Telegram/webhook']) {
+    assert.equal(matches(noUserAgent.Statement, { path, labels }), true, path);
+    assert.equal(matches(noUserAgent.Statement, { path }), false, path);
+  }
+  assert.equal(matches(xss.Statement, { path, method: 'POST', contentType: 'application/json', labels: [...labels, XSS_LABEL] }), true);
 });
