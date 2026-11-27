@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 상단에서 전체 회원 수와 진행 중인 래플에 응모한 인원수를 확인할 수 있어요. PC에서는 오늘 가입한 회원 수도 함께 보여요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-27-home-scale-390.png", "release-notes/images/2026-11-27-home-scale-1440.png"]
+}

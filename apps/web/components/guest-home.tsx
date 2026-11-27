@@ -15,7 +15,7 @@ import { additionalLocales } from "@/i18n/messages";
 
 import { type CreatorRoleFilter } from "@/features/creator/domain/creator-role";
 
-import { Suspense, use, type ReactNode } from "react";
+import { Suspense, use, useEffect, useState, type ReactNode } from "react";
 import { adminEventBanners, isLiveCampaignBanner } from "../features/home/domain/event-banner-priority";
 import { FIRST_STEPS_BANNER_ID } from "../features/home/domain/first-steps-home-banner";
 import { HomeEventStrip } from "../features/home/ui/home-event-strip";
@@ -40,10 +40,26 @@ import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 import { homeGalleryPostPhotos } from "@/features/home/domain/home-gallery-order";
 import styles from "./guest-home.module.css";
 
+const scaleLabels: Record<AppLocale, [string, string, string]> = {
+  ko: ["회원 {n}명", "래플 응모 {n}명", "오늘 가입 {n}명"],
+  en: ["Members {n}", "Raffle entrants {n}", "Joined today {n}"],
+  ja: ["会員{n}人", "応募者{n}人", "本日の登録{n}人"],
+  "zh-Hans": ["会员{n}人", "抽奖参与者{n}人", "今日注册{n}人"],
+  "zh-Hant": ["會員{n}人", "抽獎參加者{n}人", "今日註冊{n}人"],
+  es: ["Miembros {n}", "Participantes {n}", "Altas de hoy {n}"],
+  id: ["Anggota {n}", "Peserta undian {n}", "Bergabung hari ini {n}"],
+  vi: ["Thành viên {n}", "Người dự thưởng {n}", "Tham gia hôm nay {n}"],
+  th: ["สมาชิก {n} คน", "ผู้ร่วมจับรางวัล {n} คน", "สมัครวันนี้ {n} คน"],
+  pt: ["Membros {n}", "Participantes {n}", "Inscrições hoje {n}"],
+  fr: ["Membres {n}", "Participants {n}", "Inscrits aujourd’hui {n}"],
+  ru: ["Участники {n}", "В розыгрыше {n}", "Сегодня вступили {n}"],
+  mn: ["Гишүүд {n}", "Сугалаанд оролцогчид {n}", "Өнөөдөр элссэн {n}"],
+};
+
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
 
 export type HomeContentErrors = { homeBanners?: boolean };
-const allEvents = { ko: "전체 이벤트", en: "All events", mn: "All events", ...localizedMessages.allEvents };
+const allEvents = { ko: "전체 이벤트", en: "All events", mn: "All events", ...localizedMessages.allEvents, ja: "全イベント" };
 
 const copy = {
   ko: { skip: "본문으로 바로가기", language: "언어 선택, 현재 한국어", liveHeading: "Kyaa.", liveSub: "Every Fan Moment Counts.", noneStatus: "공개된 LIVE 없음", noneTitle: "새로운 LIVE를 준비하고 있어요.", reserve: "라이브 예약하기", details: "LIVE 상세보기", context: "로그인 및 팬 패스포트 시작", favorites: "당신의 최애", all: "전체 보기", celebrityList: "셀럽 목록", social: "공식 채널", liveNow: "LIVE 진행중", liveUpcoming: "LIVE 예정", noCelebrities: "현재 공개된 셀럽이 없습니다.", myFavoritesGuest: "내 최애를 보려면 로그인해 주세요.", myFavoritesLoading: "보유한 팬 패스포트를 확인하고 있어요.", myFavoritesError: "보유한 팬 패스포트를 확인하지 못했어요.", myFavoritesEmpty: "아직 보유한 팬 패스포트가 없어요.", myFavoritesUnavailable: "지금 공개된 내 최애가 없어요.", myFavoritesUnavailableHelp: "전체에서 다른 최애를 만나보세요.", myFavoritesHelp: "전체 최애를 둘러보고 팬 패스포트를 만들어 보세요.", signIn: "로그인하기", guestPanel: "로그인 전 팬 활동", soon: "곧 만날 최애", loginHint: "로그인하고 예약한 LIVE를 확인해 보세요.", signedInPanel: "나의 팬 활동", welcome: "반가워요.", myPassport: "내 패스포트", allPassports: "패스포트 전체 보기", reservedLive: "예약한 LIVE", liveDetails: "LIVE 상세 보기", noPassport: "아직 발급된 패스포트가 없어요.", passportPreview: "발급 전 팬 패스포트 미리보기", passportPreviewHint: "팬 인증 완료 후 발급돼요.", findFavorite: "팬 인증할 최애 찾기", noReservation: "예약한 LIVE가 없어요.", browseLive: "LIVE 둘러보기", retryTitle: "팬 활동을 불러오지 못했어요.", retryHelp: "잠시 후 다시 시도해 주세요.", retry: "다시 시도", loading: "팬 활동을 불러오는 중이에요.", stamps: "스탬프", recentNine: "최근 9개 표시" },
@@ -97,11 +113,35 @@ function HomeContent({ locale, jjinfanGauge = false, heartDonation, homeTop = "d
   );
 }
 
-function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, contentErrors = {}, elinaGuide, liveEventBannerIds }: GuestHomeProps & { elinaGuide?: ReactNode; liveEventBannerIds?: string[] }) {
+function ScaleNumbers({ query, locale }: { query: NonNullable<HomeQueries["scale"]>; locale: AppLocale }) {
+  const result = use(query);
+  const deadline = result.status === "fulfilled" && result.value.entrants !== null ? Date.parse(result.value.closesAt) + 1 : null;
+  const [expiredAt, setExpiredAt] = useState<number | null>(null);
+  useEffect(() => {
+    if (!deadline) return;
+    let timer: ReturnType<typeof setTimeout>;
+    function check(endsAt: number) {
+      const remaining = endsAt - Date.now();
+      if (remaining <= 0) setExpiredAt(endsAt);
+      else timer = setTimeout(() => check(endsAt), Math.min(remaining, 2147483647));
+    }
+    check(deadline);
+    return () => clearTimeout(timer);
+  }, [deadline]);
+  if (result.status === "rejected") return null;
+  const { members, today } = result.value;
+  const entrants = deadline !== null && expiredAt === deadline ? null : result.value.entrants;
+  const labels = scaleLabels[locale];
+  return <span className={styles.scaleNumbers}>{[members, entrants, today].map((count, index) =>
+    count === null ? null : <span key={index} className={index === 2 ? styles.desktopMetric : undefined}>{labels[index].replace("{n}", count.toLocaleString(locale))}</span>
+  )}</span>;
+}
+
+function HomeHero({ scale, locale, homeBanners = [], celebrities, elinaRaffles, contentErrors = {}, elinaGuide, liveEventBannerIds }: GuestHomeProps & { scale?: ReactNode; elinaGuide?: ReactNode; liveEventBannerIds?: string[] }) {
   const t = copy[locale];
   const localeQuery = `?locale=${locale}`;
   return (<>          <section className={styles.heroSection} aria-labelledby="live-heading">
-            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span></span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
+            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span>{scale}</span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
             {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
             {/* 보여 줄 배너가 없으면(전부 비공개·조회 실패) 빈 캐러셀 틀을 그리지 않는다. */}
             {homeBanners.length === 0 && elinaGuide === null ? null : <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} liveEventBannerIds={liveEventBannerIds} locale={locale} elinaGuide={elinaGuide} />}
@@ -124,7 +164,7 @@ function ResolvedGuestHome({ queries, closedEventStrip, ...props }: StreamingHom
   const homeBanners = props.firstSteps ? managed : managed.filter(item => item.id !== FIRST_STEPS_BANNER_ID);
   return <HomeContent locale={props.locale} jjinfanGauge={props.jjinfanGauge} heartDonation={props.heartDonation} homeTop={props.homeTop}
     eventStrip={banner && banner.id !== closedEventStrip ? <HomeEventStrip key={banner.id} banner={banner} locale={props.locale} /> : null}
-    hero={<HomeHero {...props} celebrities={[]} homeBanners={homeBanners}
+    hero={<HomeHero {...props} scale={queries.scale && <Suspense fallback={null}><ScaleNumbers query={queries.scale} locale={props.locale} /></Suspense>} celebrities={[]} homeBanners={homeBanners}
       liveEventBannerIds={managed.filter(item => isLiveCampaignBanner(item, now)).map(item => item.id)}
       contentErrors={{ homeBanners: result.status === "rejected" }}
       elinaGuide={null} />}
