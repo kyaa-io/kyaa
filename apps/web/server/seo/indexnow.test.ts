@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
+import { buildSitemap } from "@/seo/sitemap";
 import { createIndexNowHandler, runIndexNow, validatePublicationSnapshot } from "./indexnow";
 
 const first = "https://kyaa.io/elina?locale=ko";
@@ -14,12 +15,18 @@ function dependencies(previous: Record<string,string> = {}, current: Record<stri
 }
 
 describe("IndexNow publication boundary", () => {
+  it.each(["/pages/groups", "/celebrities"] as const)("accepts sitemap URLs for %s", async (directory) => {
+    const pages = buildSitemap([{ path: "/notices/fan-update", locale: "ko" }], directory);
+    expect(pages.some(({ url }) => url.includes("/notices/fan-update?"))).toBe(true);
+    const deps = dependencies({}, Object.fromEntries(pages.map(({ url }) => [url, hash])));
+    expect((await runIndexNow(deps)).status).toBe("submitted");
+  });
   it("sends changed and removed public URLs then acknowledges the entire snapshot", async () => {
     const deps = dependencies({ [first]: "b".repeat(64), [second]: hash });
     expect(await runIndexNow(deps)).toEqual({ status: "submitted", submitted: 2 });
     const [url, request] = deps.transport.mock.calls[0];
     expect(url).toBe("https://api.indexnow.org/indexnow");
-    expect(request.redirect).toBe("error");
+    expect(request.redirect).toBe("manual");
     expect(request.headers).toEqual({ "content-type": "application/json" });
     const body = JSON.parse(request.body);
     expect(body.host).toBe("kyaa.io");
@@ -41,7 +48,7 @@ describe("IndexNow publication boundary", () => {
     await runIndexNow(deps);
     expect(deps.store.acknowledge).toHaveBeenCalledOnce();
   });
-  it.each([201, 403, 429, 500])("retains retry state on response %s", async (status) => {
+  it.each([201, 302, 403, 422])("retains retry state on response %s", async (status) => {
     const deps = dependencies(); deps.transport.mockResolvedValue(new Response(null, { status }));
     await expect(runIndexNow(deps)).rejects.toThrow("INDEXNOW_REJECTED");
     expect(deps.store.acknowledge).not.toHaveBeenCalled();
@@ -59,8 +66,8 @@ describe("IndexNow publication boundary", () => {
   it("fences expired workers and preserves retry state on network failure", async () => {
     const deps = dependencies(); deps.store.acknowledge.mockResolvedValueOnce(false);
     await expect(runIndexNow(deps)).rejects.toThrow("INDEXNOW_LEASE_EXPIRED");
-    deps.transport.mockRejectedValueOnce(new Error("network failed"));
-    await expect(runIndexNow(deps)).rejects.toThrow("network failed");
+    deps.transport.mockRejectedValueOnce(new TypeError("network failed"));
+    expect(await runIndexNow(deps)).toEqual({ status: "deferred", submitted: 0 });
     expect(deps.store.release).toHaveBeenCalledTimes(2);
   });
   it("bounds batches and retains the whole prior snapshot if a later batch fails", async () => {
@@ -68,7 +75,7 @@ describe("IndexNow publication boundary", () => {
     const deps = dependencies({}, current);
     deps.transport.mockResolvedValueOnce(new Response(null, { status: 200 }))
       .mockResolvedValueOnce(new Response(null, { status: 429 }));
-    await expect(runIndexNow(deps)).rejects.toThrow("INDEXNOW_REJECTED");
+    expect(await runIndexNow(deps)).toEqual({ status: "deferred", submitted: 0 });
     expect(deps.transport.mock.calls.map(([, request]) => JSON.parse(request.body).urlList.length)).toEqual([10_000, 1]);
     expect(deps.store.acknowledge).not.toHaveBeenCalled();
     expect(deps.store.release).toHaveBeenCalledOnce();
@@ -98,6 +105,22 @@ describe("IndexNow cron authorization", () => {
     const preview = createIndexNowHandler({ secret, production: false, execute });
     expect((await preview(request)).status).toBe(409);
     expect(execute).not.toHaveBeenCalled();
+  });
+  it("returns 200 for unchanged work and 202 for upstream backpressure", async () => {
+    const request = new Request("https://kyaa.io/api/internal/seo/indexnow", { headers: { authorization: `Bearer ${secret}` } });
+    const deps = dependencies({ [first]: hash });
+    const handler = createIndexNowHandler({ secret, production: true, execute: () => runIndexNow(deps) });
+    expect((await handler(request)).status).toBe(200);
+    deps.store.claim.mockResolvedValue({});
+    deps.transport.mockResolvedValue(new Response(null, { status: 503 }));
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      expect((await handler(request)).status).toBe(202);
+      expect(warning).toHaveBeenCalledWith({ event: "indexnow_failure", stage: "submit", code: "INDEXNOW_REJECTED", retry: true, upstreamStatus: 503 });
+      expect(deps.store.acknowledge).toHaveBeenCalledOnce();
+    } finally {
+      warning.mockRestore();
+    }
   });
   it("returns only no-store counts or sanitized failure codes", async () => {
     const request = new Request("https://kyaa.io/api/internal/seo/indexnow", { headers: { authorization: `Bearer ${secret}` } });
