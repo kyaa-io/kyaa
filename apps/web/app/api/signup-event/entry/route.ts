@@ -5,6 +5,7 @@ import { AuthError } from '@/features/auth/domain/auth-errors';
 import { raffleInviteCode } from '@/features/benefit/domain/signup-event';
 import { localSignupEnabled, raffleChances, raffleOthers, raffleWinChance, readLocalSnapshot, type LocalSnapshot } from '@/server/signup-event/local';
 import { signupEvent } from '@/features/benefit/domain/signup-event';
+import { raffleDaily } from '@/server/signup-event/daily';
 import { createSignupRaffleDatabase, readSignupRaffleStored } from '@/server/signup-event/database';
 import { enterSignupRaffle } from '@/server/signup-event/refresh';
 const headers={'cache-control':'private, no-store',vary:'Authorization'};
@@ -24,7 +25,7 @@ async function status(appUserId:string){
  const mine=raffleChances(snapshot).find(row=>row.userId===appUserId);
  let odds:{totalChances:number;winChance:number}|undefined;
  if(mine){try{const others=raffleOthers(await storedSnapshot(),appUserId);odds={totalChances:others.reduce((sum,entries)=>sum+entries,mine.entries),winChance:Math.round(raffleWinChance(others,mine.entries,winners)*1000)/1000};}catch{console.warn('RAFFLE_TOTAL_UNAVAILABLE');}}
- return {entered:!!mine,passportReceived:user?.passportReceived??false,communityJoined:user?.communityJoined??false,chances:mine?.entries??0,friends:mine?.friends??0,...odds};
+ return {entered:!!mine,passportReceived:user?.passportReceived??false,communityJoined:user?.communityJoined??false,chances:mine?.entries??0,friends:mine?.friends??0,...odds,...(mine?raffleDaily(snapshot,appUserId):{})};
 }
 /** 친구의 초대 코드(body.invite)는 기존 친구 초대 등록 그대로 처리한다(본인 코드·이미 등록·기존 회원 거절은 그 규칙을 따른다). 등록에 실패해도 응모는 된다. */
 async function inviteFrom(request:Request){

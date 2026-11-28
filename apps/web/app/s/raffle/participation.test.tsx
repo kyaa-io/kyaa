@@ -73,11 +73,10 @@ it('shows my chances and invited friends only from the server, and shares my own
   const result = document.querySelector('[data-state="entered"][role="status"]')!;
   expect(result.querySelector('[data-raffle-chances]')?.textContent).toBe('내 당첨 기회8회');
   expect(result.querySelector('[data-fan-print="stamp"]')).toBeTruthy();
-  // 초대 카드: 혜택 한 줄(제목) · 조건 · 내 현황(서버 값 2명 → +6회)
-  const card = document.querySelector('[data-raffle-invite]')!;
-  expect(screen.getByRole('heading', { level: 3, name: '친구 1명 초대할 때마다 당첨 기회 +3' })).toBeTruthy();
-  expect(card.textContent).toContain('이벤트 기간에 내 링크로 새로 가입하고 응모한 친구만 해당돼요');
-  expect(card.querySelector('[data-raffle-friends="2"]')?.textContent).toBe('2명 참여 · 당첨 기회 +6회');
+  // 응모 뒤에는 초대 카드와 두 걸음 줄이 사라지고, 초대는 '오늘 기회 늘리기'의 한 단계다(서버 값 2명 → +6회)
+  expect(document.querySelector('[data-raffle-invite]')).toBeNull();
+  expect(document.querySelector('[data-row="raffle-step"]')).toBeNull();
+  expect(document.querySelector('[data-raffle-next-friends]')?.textContent).toBe('2명 참여 · 당첨 기회 +6회');
   expect(calls.map(call => `${call.method} ${call.url}`).sort()).toEqual([
     'GET /api/notifications/preferences', 'GET /api/signup-event/entry', 'POST /api/community-stamps/invite-code',
   ]);
@@ -90,15 +89,13 @@ it('shows my chances and invited friends only from the server, and shares my own
   fireEvent.click(consent);
   await settle();
   expect(calls.at(-1)?.body).toBe(JSON.stringify({ marketingNotifications: false }));
-  // 응모 뒤에는 초대 버튼이 화면의 다음 행동(primary)
-  const invite = screen.getByRole('button', { name: '친구 초대하기' });
-  expect(invite.getAttribute('data-fan-action-emphasis')).toBe('primary');
+  // 최애 고르기·출석이 아직이라 첫 단계(최애 고르기)가 다음 행동(primary), 초대는 보조. 초대 단계는 내 링크를 공유한다
+  const next = document.querySelector('[data-raffle-next]')!;
+  expect(next.querySelector('[data-step="pick"] a')?.getAttribute('data-fan-action-emphasis')).toBe('primary');
+  const invite = next.querySelector('[data-step="invite"] button') as HTMLButtonElement;
+  expect(invite.getAttribute('data-fan-action-emphasis')).toBeNull();
   fireEvent.click(invite);
   await settle();
-  fireEvent.click(screen.getByRole('button', { name: '초대 링크 복사' }));
-  await settle();
-  expect(screen.getByRole('button', { name: '링크를 복사했어요' })).toBeTruthy();
-  expect(writeText).toHaveBeenCalledWith(share.mock.calls[0]![0].url);
   expect(share).toHaveBeenCalledTimes(1);
   const url = new URL(share.mock.calls[0]![0].url);
   expect(url.pathname).toBe('/s/raffle');
@@ -236,7 +233,9 @@ it('numbers the two steps and checks the first one after entering', () => {
   expect(steps()[1]!.hasAttribute('data-done')).toBe(true);
   fireEvent.click(screen.getByRole('button', { name: '무료로 응모하기' }));
   act(() => { vi.advanceTimersByTime(500); });
-  expect(steps()[0]!.hasAttribute('data-done')).toBe(true);
+  // 응모하면 두 걸음은 모두 끝났으니 줄이 사라지고 '오늘 기회 늘리기'가 이어진다
+  expect(steps()).toEqual([]);
+  expect(view.container.querySelector('[data-raffle-next]')).toBeTruthy();
 });
 
 it('shows the same ticking clock large in the key visual', () => {
@@ -295,7 +294,8 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
     asAgent(ua);
     const view = block();
     const guide = view.container.querySelector('[data-raffle-inapp]')!;
-    expect(guide.textContent).toContain('Open in your browser to enter: tap ··· (top right) → Open in browser');
+    expect(guide.textContent).toContain('Tap ··· (top right) → Open in browser');
+    expect(guide.querySelector('svg[data-in-app-art]')?.getAttribute('aria-hidden')).toBe('true');
     expect(guide.previousElementSibling?.textContent).toBe('Enter free');
     expect(screen.getByRole('button', { name: 'Copy link' })).toBeTruthy();
   });
@@ -328,7 +328,7 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
   it('shows the Korean guide too, and nothing in an ordinary browser or once signed in', async () => {
     asAgent(xApp);
     const ko = block('ko');
-    expect(ko.container.querySelector('[data-raffle-inapp]')?.textContent).toContain('브라우저에서 열어 응모하세요: 오른쪽 위 ··· → 브라우저에서 열기');
+    expect(ko.container.querySelector('[data-raffle-inapp]')?.textContent).toContain('오른쪽 위 ··· → 브라우저에서 열기');
     ko.unmount();
     vi.restoreAllMocks(); asAgent(safari);
     const plain = block();
@@ -441,4 +441,71 @@ it.each([
     document.getElementById('kyaa-ga4')?.remove();
     window.history.replaceState(null, '', '/');
   }
+});
+
+describe('after entering: today\'s steps, the promise for tomorrow and the measured follow-up', () => {
+  const nextDayAt = Date.parse('2026-11-13T15:00:00Z');
+  const entered = { entered: true, passportReceived: true, communityJoined: false, chances: 3, friends: 0, attendedToday: 1, streak: 4, nextDayAt, daysSinceEntry: 0 };
+
+  it('shows only server values: checks passport and today\'s check-in, the streak and the days left', async () => {
+    auth.authenticated = true;
+    server(entered);
+    render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
+    await settle();
+    expect(document.querySelector('[data-raffle-next-count]')?.textContent).toBe('2/3');
+    expect(document.querySelector('[data-step="invite"] button')?.getAttribute('data-fan-action-emphasis')).toBe('primary');
+    expect(document.querySelector('[data-raffle-streak="4"]')?.textContent).toBe('4-day streak');
+    expect(document.querySelector('[data-raffle-dday]')?.textContent).toBe('D-17');
+    expect(screen.getByRole('checkbox', { name: /Email me event/ })).toBeTruthy();
+  });
+
+  it('draws no promise numbers before the server has answered', () => {
+    const view = render(<RaffleProvider locale="ko" closed={false} closesAt={closesAt} now={now} preview="entered"><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
+    expect(view.container.querySelector('[data-raffle-next-count]')?.textContent).toBe('0/3');
+    expect(view.container.querySelector('[data-raffle-streak]')).toBeNull();
+    expect(view.container.querySelector('[data-raffle-opens]')).toBeNull();
+  });
+
+  it('sends the step tap, the notification choice and the day-after return to GA4 with enum-only parameters', async () => {
+    auth.authenticated = true;
+    const gtag = vi.fn();
+    window.gtag = gtag;
+    startGa4('G-TEST', '/s/raffle');
+    try {
+      server({ ...entered, daysSinceEntry: 4 });
+      render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
+      await settle();
+      await act(async () => { vi.advanceTimersByTime(600); });
+      const sent = () => gtag.mock.calls.filter(([command]) => command === 'event').map(([, name, params]) => [name, params]);
+      expect(sent()).toContainEqual(['raffle_return', { day: 3 }]);
+      fireEvent.click(document.querySelector('[data-step="invite"] button')!);
+      fireEvent.click(screen.getByRole('checkbox', { name: /Email me event/ }));
+      await settle();
+      expect(sent()).toContainEqual(['raffle_next_step', { step: 'invite' }]);
+      expect(sent()).toContainEqual(['raffle_notify', { choice: 'on' }]);
+      expect(sent().filter(([name]) => name === 'raffle_return')).toHaveLength(1);
+    } finally {
+      resetGa4ForTests();
+      delete window.gtag;
+      document.getElementById('kyaa-ga4')?.remove();
+    }
+  });
+
+  it('does not report a return on the day of entry', async () => {
+    auth.authenticated = true;
+    const gtag = vi.fn();
+    window.gtag = gtag;
+    startGa4('G-TEST', '/s/raffle');
+    try {
+      server(entered);
+      render(<RaffleProvider locale="en" closed={false} closesAt={closesAt} now={now}><RaffleHeroEnter /><RaffleEnterBlock /></RaffleProvider>);
+      await settle();
+      await act(async () => { vi.advanceTimersByTime(6000); });
+      expect(gtag.mock.calls.some(([, name]) => name === 'raffle_return')).toBe(false);
+    } finally {
+      resetGa4ForTests();
+      delete window.gtag;
+      document.getElementById('kyaa-ga4')?.remove();
+    }
+  });
 });

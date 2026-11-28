@@ -48,6 +48,7 @@ import { withStoredEventSourceReturn } from "../features/analytics/client/use-ev
 import styles from "./login-page.module.css";
 import { emailLoginCopy } from "@/i18n/catalogs/components__email-login";
 import { EmailLoginForm } from "./email-login-form";
+import { InAppBrowserArt } from "./in-app-browser-art";
 
 const loginBackground = {
   desktop: "/images/login/spectrum-light.webp",
@@ -512,6 +513,7 @@ export function LoginPage({
   </FanAction>;
   const browserHandoffNotice = !authenticated && embeddedBrowser ? (
     <div className={inAppPrivy ? `${styles.browserNotice} ${styles.browserNoticeBelowMethods}` : styles.browserNotice}>
+      <InAppBrowserArt />
       {xHandoff?.fallback && xHandoff.method && <Link className={styles.emailButton} href={xHandoff.fallback as Route} onClick={() => { if (xHandoff.method) measureHandoffAttempt("x", xHandoff.method); }} prefetch={false} data-outbound-tracking="off">
         {growthSignupCopy[locale].google}
       </Link>}

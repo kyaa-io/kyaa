@@ -79,7 +79,7 @@ const fanWebCatalogs = new Set([
   "features__benefit__ui__raffle-discovery.ts", "features__gifts__ui__gift-copy.ts", "features__fanpage__brand.ts", "features__fanpage__ui__leaderboard-activities.ts",
   "app__account-deletion__page.ts",
   // `messages` 대신 함수로 문구를 내는 카탈로그(로케일 행 또는 로케일별 객체).
-  "components__email-login.ts", "signup-raffle.ts", "signup-raffle-longform.ts",
+  "components__email-login.ts", "signup-raffle.ts", "signup-raffle-longform.ts", "raffle-next-steps.ts",
 ]);
 
 describe("localized messages", () => {

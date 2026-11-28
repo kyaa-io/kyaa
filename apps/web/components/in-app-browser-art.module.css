@@ -1,0 +1,12 @@
+/* 앱 안 브라우저 안내 그림: 선만 쓴다(회색 채움 면 0). 강조는 눌러야 할 ···의 분홍 하나 */
+.art { display: block; width: 100%; max-width: calc(var(--space-16) * 3 + var(--space-12)); height: auto; margin-inline: auto; }
+.frame { fill: var(--color-surface); stroke: var(--color-line); stroke-width: 1.5; }
+.address { fill: none; stroke: var(--color-line); stroke-width: 1.5; }
+.target { fill: var(--color-accent-soft); stroke: var(--color-accent-line); stroke-width: 1.5; }
+.dot { fill: var(--color-accent); }
+.arrow { fill: none; stroke: var(--color-accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.compass { fill: none; stroke: var(--color-ink); stroke-width: 1.75; }
+.needle { fill: var(--color-accent); stroke: none; }
+.target { transform-box: fill-box; transform-origin: center; animation: pulse 1.8s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@media (prefers-reduced-motion: reduce) { .target { animation: none; } }

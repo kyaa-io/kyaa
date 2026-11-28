@@ -43,6 +43,7 @@
 /* 응모 결과 줄(v5.3): 도장 40 + 내 당첨 기회. 도장은 버튼 밖으로 걸치지 않고 이 줄 안에서 한 번 내려앉는다 */
 /* 앱 안 브라우저 안내(비로그인만): 응모 버튼 바로 아래 한 줄 + 링크 복사. 면·카드 없이 글자와 공통 보조 버튼만 */
 .inApp { display: grid; justify-items: center; gap: var(--space-2); text-align: center; word-break: keep-all; }
+.inAppActions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2); }
 .inAppLink { width: 100%; min-width: 0; min-height: var(--min-target); box-sizing: border-box; padding: var(--space-2); border: 1px solid var(--color-muted); border-radius: var(--radius-small); background: var(--color-surface); color: inherit; font: inherit; }
 .enterResult { display: flex; align-items: center; justify-content: center; gap: var(--space-3); min-height: var(--space-12); }
 .enterStamp { flex: none; width: var(--space-10); rotate: -6deg; }
@@ -71,6 +72,23 @@
 .consent label { display: flex; align-items: center; gap: var(--space-2); min-height: var(--min-target); cursor: pointer; }
 .consent input { flex: none; width: var(--space-5); height: var(--space-5); margin: 0; accent-color: var(--color-ink); }
 .consent > p { margin: 0; padding-inline-start: calc(var(--space-5) + var(--space-2)); }
+/* 응모 직후 '오늘 기회 늘리기' 3단계 + '내일 다시 오면'(GROWTH-ONBOARD-RETAIN-1128): 공통 카드(흰 면·선·반경 16) 하나.
+ * 행은 스탬프 32 · 이름+기회 · 오른쪽 버튼 또는 완료 표시. 아직인 첫 단계의 버튼만 primary. 아래 선 하나로 갈라 '내일'과 알림 동의 */
+.next { display: grid; gap: var(--space-3); width: 100%; max-width: var(--rail-wide); text-align: start; }
+.nextHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.nextCount { font-variant-numeric: tabular-nums; }
+.nextRows { list-style: none; padding: 0; display: grid; }
+.nextRows li { display: grid; grid-template-columns: auto minmax(0, 1fr) max-content; align-items: center; column-gap: var(--space-3); padding-block: var(--space-3); }
+.nextRows li:first-child { padding-top: 0; }
+.nextRows li + li { border-top: 1px solid var(--color-line); }
+.nextRows li:last-child { padding-bottom: var(--space-3); }
+.nextAction { display: grid; }
+.nextAction > :is(a, button) { white-space: nowrap; }
+.nextRows li > p.doneMark { justify-self: end; }
+.tomorrow { display: grid; gap: var(--space-1); padding-top: var(--space-3); border-top: 1px solid var(--color-line); word-break: keep-all; }
+.tomorrowFacts { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); color: var(--color-muted); font-variant-numeric: tabular-nums; }
+.tomorrowFacts > span + span { padding-inline-start: var(--space-2); border-inline-start: 1px solid var(--color-line); }
+.next .consent { max-width: none; margin-top: 0; }
 /* 친구 초대 카드(사용자 11/25 "토스처럼"): 응모 버튼 아래 공통 카드(흰 면·선·반경 16) 하나. 혜택 한 줄이 가장 크고, 조건 한 줄, 내 현황, 꽉 찬 버튼 하나, 링크 복사 글자 버튼.
  * 옅은 분홍 면은 당첨 확률 올리기 하나뿐이라 이 카드는 흰 면이다. 응모 뒤에는 버튼이 primary(응모 버튼이 완료 표시로 바뀌어 화면의 분홍 면은 여전히 하나) */
 .invite { display: grid; gap: var(--space-3); margin-top: var(--space-2); text-align: start; }
