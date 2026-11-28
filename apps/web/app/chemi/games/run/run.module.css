@@ -340,3 +340,20 @@
 @keyframes run-hint { 92% { opacity: 1; } to { opacity: 0; } }
 
 .scoreLine { display: flex; align-items: center; gap: var(--space-2); }
+
+.select .rank li:not([data-gap]) {
+  grid-template-columns: var(--space-6) var(--space-6) minmax(0, 1fr) auto auto;
+  min-height: 28px;
+  height: auto;
+  column-gap: var(--space-2);
+  padding-inline: var(--space-3);
+}
+.select .rank li {
+  --fan-item-title-size: var(--fan-metadata-size);
+  --fan-item-title-weight: var(--fan-body-weight);
+}
+.select .rank li > :last-child { text-align: end; }
+.select .rank .avatar { width: var(--space-6); height: var(--space-6); }
+@media (min-width: 1024px) {
+  .select .rank li:not([data-gap]) { min-height: var(--space-8); }
+}

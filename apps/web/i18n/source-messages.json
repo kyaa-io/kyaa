@@ -17105,6 +17105,12 @@
     "source": "features/rankings/ui/rankings-copy",
     "id": "features/rankings/ui/rankings-copy:jjCheer"
   },
+  "hdHomeTitle": {
+    "en": "Help {1} with {0}",
+    "ko": "{0} 함께 {1} 후원하자",
+    "source": "features/rankings/ui/rankings-copy",
+    "id": "features/rankings/ui/rankings-copy:hdHomeTitle"
+  },
   "hdTitle": {
     "en": "Donate to {1} with True Fan hearts, together with {0}",
     "ko": "{0} 함께 찐팬 하트로 {1} 후원하기",

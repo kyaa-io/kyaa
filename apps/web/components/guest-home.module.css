@@ -422,7 +422,11 @@
 .heroCarousel[data-compact] .heroTrack { gap:var(--space-1); }
 .heroCarousel[data-compact] .heroCard { background:var(--color-soft); }
 
-.scaleNumbers:empty { display: none; }
-.scaleNumbers > span { white-space: nowrap; }
-.scaleNumbers > span + span::before { content: " · "; }
-@media (width < 48rem) { .desktopMetric { display: none; } }
+.scaleNumbers { max-inline-size: 100%; }
+.scaleCaption, .scaleShort { display: none; }
+.scaleItems { display: flex; flex-wrap: wrap; gap: 0 var(--space-2); }
+.scaleItem + .scaleItem { border-inline-start: 1px solid var(--color-line); padding-inline-start: var(--space-2); }
+@media (width < 48rem) {
+  .scaleCaption, .scaleShort { display: block; }
+  .scaleFull { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}

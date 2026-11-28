@@ -8,6 +8,7 @@
     "release-notes/2026-11-21-admin-copy-apply.json"
   ],
   "chemi-tab": [
+    "release-notes/2026-11-28-header-solid-chemi-card.json",
     "release-notes/2026-11-28-chemi-rank-font.json",
     "release-notes/2026-11-28-chemi-density-step1.json",
     "release-notes/2026-11-28-chemi-density-step1-r2.json",
@@ -49,7 +50,8 @@
     "release-notes/2026-11-25-chemi-fortune-back.json",
     "release-notes/2026-11-27-chemi-top-five.json",
     "release-notes/2026-11-27-badge-banners-gallery.json",
-    "release-notes/2026-11-27-chemi-rank-vacant.json"
+    "release-notes/2026-11-27-chemi-rank-vacant.json",
+    "release-notes/2026-11-28-chemi-run-rank5.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

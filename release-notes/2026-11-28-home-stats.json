@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 상단에 누적 가입자와 발급된 크리에이터 팬 패스포트 수를 표시해요. 오늘 가입과 래플 응모 수는 홈 상단에서 빠졌어요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-28-home-stats-390.png", "release-notes/images/2026-11-28-home-stats-1440.png"]
+}

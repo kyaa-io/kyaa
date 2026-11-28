@@ -103,9 +103,9 @@ export function GalleryColumns({ columns, layout, caption, itemClassName, showNe
   const sizes = layout === "mobile"
     ? (preview ? "calc((100vw - 48px) / 3)" : "calc(50vw - 20px)")
     : (preview ? "217px" : "340px");
-  return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-layout={layout}>
+  return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-layout={layout} style={preview ? { "--preview-columns": columns.length } as CSSProperties : undefined}>
     {columns.map((photos, index) => <ul key={index} className={styles.photoColumn}>
-      {photos.map(photo => <li key={photo.id} className={[styles.photo, itemClassName].filter(Boolean).join(" ")} data-row="photo"><GalleryImage photo={photo} showNew={showNew} sizes={sizes} />{caption?.(photo)}</li>)}
+      {photos.map(photo => <li key={photo.id} className={[styles.photo, itemClassName].filter(Boolean).join(" ")} style={preview ? { "--gallery-photo-ratio": `1 / ${galleryTileRatio(photo)}` } as CSSProperties : undefined} data-row="photo"><GalleryImage photo={photo} showNew={showNew} sizes={sizes} />{caption?.(photo)}</li>)}
     </ul>)}
   </div>;
 }
@@ -125,7 +125,7 @@ export function GalleryImage({ photo, sizes, showNew = false }: { showNew?: bool
 /** Same allocation, responsive column widths and per-image ratios as the loaded gallery. */
 function GalleryReservation({ photos, layout }: { photos: readonly HomeGalleryPhoto[]; layout: "mobile" | "desktop" }) {
   const columns = homeColumns(photos, layout);
-  return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-reservation={layout} aria-hidden="true">
+  return <div className={`${styles.photoColumns} ${layout === "mobile" ? styles.mobileOnly : styles.desktopOnly}`} data-home-measure="photos" data-gallery-reservation={layout} style={{ "--preview-columns": columns.length } as CSSProperties} aria-hidden="true">
     {columns.map((column, index) => <ul key={index} className={styles.photoColumn}>
       {column.map(photo => <li key={photo.id} className={`${styles.photo} ${styles.tile} ${styles.reservationTile}`} data-row="photo-placeholder" style={{ "--gallery-photo-ratio": `1 / ${galleryTileRatio(photo)}` } as CSSProperties} />)}
     </ul>)}

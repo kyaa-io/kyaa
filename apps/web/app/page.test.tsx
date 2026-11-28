@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../server/signup-event/home-scale", () => ({ readHomeScale: async () => ({ members: 0, today: 0, entrants: null, asOf: "2026-11-27T00:00:00Z" }) }));
+vi.mock("../server/signup-event/home-scale", () => ({ readHomeScale: async () => ({ members: 0, passports: null, asOf: "2026-11-27T00:00:00Z" }) }));
 vi.mock("server-only", () => ({}));
 
 const repositories = vi.hoisted(() => ({

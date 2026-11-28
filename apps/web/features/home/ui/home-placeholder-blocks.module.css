@@ -11,14 +11,15 @@
   .photos { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--space-3); }
 }
 
-/* 사진마다 기존 모자이크 비율을 유지하고 홈 미리보기의 열만 늘린다. */
-.block[data-home-block="gallery"] > .photoColumns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (min-width: 64rem) {
-  .block[data-home-block="gallery"] > .photoColumns { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-}
+.block[data-home-block="gallery"] > .photoColumns { grid-template-columns: repeat(var(--preview-columns), minmax(0, 1fr)); }
 .photoColumns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-2); margin-top: var(--space-4); }
 .photoColumn { display: flex; min-width: 0; flex-direction: column; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
 .photo { flex: none; }
+/* Distribute the remaining column height over its photos, including reserved tiles. */
+.block[data-home-block="gallery"] .photo { flex: 1 0 auto; position: relative; }
+.block[data-home-block="gallery"] .photo:has(.photoImage)::before { content: ""; display: block; aspect-ratio: var(--gallery-photo-ratio); }
+.block[data-home-block="gallery"] .photoImage,
+.block[data-home-block="gallery"] .photoLink { position: absolute; inset: 0; width: 100%; height: 100%; }
 .reservationTile { aspect-ratio: var(--gallery-photo-ratio); }
 .photoNew { position: absolute; inset-block-start: var(--space-2); inset-inline-start: var(--space-2); pointer-events: none; }
 .photoLink { position: relative; display: block; border-radius: var(--radius-card, 12px); }

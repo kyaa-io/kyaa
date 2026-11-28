@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "최애 런과 짝 맞추기를 시작하기 전에 이번 주 5위까지 한눈에 볼 수 있어요. 이름과 점수를 작은 글씨로 표시하고 내 순위는 색으로 강조해요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi/games/run",
+  "images": ["release-notes/images/2026-11-28-chemi-run-rank5.png"]
+}

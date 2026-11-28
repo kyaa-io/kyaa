@@ -300,15 +300,18 @@ function Rankings({
   rows,
   copy,
   full,
+  lobby,
   locale,
 }: {
   rows: Row[];
   copy: MatchCopy;
   full: boolean;
+  lobby: boolean;
   locale: string;
 }) {
   const me = rows.find((row) => row.isFriend) ?? rows.find((row) => row.isMe);
-  const displayed = full ? rows : rows.slice(0, 3);
+  const limit = lobby ? 5 : 3;
+  const displayed = full ? rows : rows.slice(0, limit);
   const mineOutside = me && !displayed.includes(me);
   return (
     <section className={styles.ranking} aria-label={copy.ranking}>
@@ -324,7 +327,7 @@ function Rankings({
               full && i >= 3 && !(row.isMe || row.isFriend)
                 ? styles.wideOnly
                 : "",
-              i >= 3 && (row.isMe || row.isFriend) ? styles.mineGap : "",
+              i >= limit && (row.isMe || row.isFriend) ? styles.mineGap : "",
             ].join(" ")}
           >
             <b>{row.place}</b>
@@ -332,13 +335,13 @@ function Rankings({
               <RankAvatar nickname={row.nickname} url={row.avatarUrl} />
             </span>
             <span>
-              {rankName(row.nickname, locale)}
+              {lobby ? <FanText role="item">{rankName(row.nickname, locale)}</FanText> : rankName(row.nickname, locale)}
               {(row.isMe || row.isFriend) && (
                 <FanText role="meta"> · {row.isFriend ? copy.friend : copy.me}</FanText>
               )}
             </span>
             <FanText role="meta">{copy[row.character]}</FanText>
-            <b>{row.score?.toLocaleString() ?? clock(row.ticks)}</b>
+            {lobby ? <FanText role="item">{row.score?.toLocaleString() ?? clock(row.ticks)}</FanText> : <b>{row.score?.toLocaleString() ?? clock(row.ticks)}</b>}
           </li>
         ))}
         {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, index) => (
@@ -1278,7 +1281,7 @@ function Session({
         {stage !== "empty" && stage !== "pause" &&
           stage !== "reminder" && stage !== "guide" &&
           (rankingLoaded ? (
-            <Rankings rows={rows} copy={copy} full={Boolean(active)} locale={locale} />
+            <Rankings rows={rows} copy={copy} full={Boolean(active)} lobby={stage === "start" && !share} locale={locale} />
           ) : (
             <section aria-busy={!error} className={styles.ranking}>
               <FanHeading as="h2">{copy.ranking}</FanHeading>
