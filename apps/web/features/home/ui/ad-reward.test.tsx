@@ -30,7 +30,7 @@ it("shows a signed-out viewer the +5 pill and lets the link open without asking 
   expect(state.request).not.toHaveBeenCalled();
 });
 
-it("pays a signed-in member's first click once and then shows the done badge", async () => {
+it("pays a signed-in member's first click once and then hides the point offer", async () => {
   state.authenticated = true; state.today = today([]);
   state.post.mockResolvedValue({ points: 5, capped: false, reason: null, replayed: false });
   const { container } = render(<ThinBanner banner={banner()} locale="ko" />);
@@ -39,13 +39,14 @@ it("pays a signed-in member's first click once and then shows the done badge", a
   fireEvent.click(screen.getByRole("link"));
   expect(posts()).toHaveLength(1);
   expect(state.request).toHaveBeenCalledWith("/api/me/dukjil/ad-reward", expect.objectContaining({ method: "POST", body: JSON.stringify({ bannerId: AD }), keepalive: true }));
-  await waitFor(() => expect(container.querySelector("[data-ad-reward=done]")).toBeInTheDocument());
+  await waitFor(() => expect(container.querySelector("[data-ad-reward]")).toBeNull());
 });
 
-it("shows done for a banner paid earlier today and nothing once the day's 10 are used", async () => {
+it("hides the point offer for a banner paid earlier today and nothing once the day's 10 are used", async () => {
   state.authenticated = true; state.today = today([AD], 9);
   const first = render(<ThinBanner banner={banner()} locale="ko" />);
-  await waitFor(() => expect(first.container.querySelector("[data-ad-reward=done]")).toBeInTheDocument());
+  await waitFor(() => expect(state.request).toHaveBeenCalledTimes(1));
+  expect(first.container.querySelector("[data-ad-reward]")).toBeNull();
   fireEvent.click(screen.getByRole("link"));
   expect(posts()).toHaveLength(0);
   first.unmount();

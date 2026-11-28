@@ -5,7 +5,6 @@ import { useGroupRequest } from "@/features/groups/ui/use-group-resource";
 import { AD_REWARD_POINTS, adRewardResultSchema, adRewardTodaySchema, isRewardedAd, type AdRewardToday } from "@/features/home/domain/ad-reward";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 import type { AppLocale } from "@/i18n/locales";
-import styles from "./ad-reward.module.css";
 
 const TODAY_PATH = "/api/me/dukjil/ad-reward";
 
@@ -24,7 +23,7 @@ function readToday(ownerKey: string, request: ReturnType<typeof useGroupRequest>
 export const resetAdRewardReads = () => todayReads.clear();
 
 /** "points": the +5 pill. "done": paid today. null: nothing (not an ad, the session or today's read is not known yet, or the 10 are used). */
-export type AdRewardMark = "points" | "done" | null;
+export type AdRewardMark = "points" | null;
 
 /**
  * The reward of one ad banner. `claim` is the banner link's click handler: a signed-in member's first click of the day asks the server
@@ -51,7 +50,7 @@ export function useAdReward(banner: Pick<HomeBanner, "id" | "category" | "placem
   const done = paid || (todayData?.claimed.includes(banner.id) ?? false);
   const mark: AdRewardMark = !rewarded || !ready ? null
     : !authenticated ? "points"
-      : done ? "done"
+      : done ? null
         : todayData && todayData.remaining > 0 ? "points" : null;
   const claim = useCallback(() => {
     if (!rewarded || !ready || !authenticated || done || sending.current) return;
@@ -64,10 +63,8 @@ export function useAdReward(banner: Pick<HomeBanner, "id" | "category" | "placem
   return { mark, claim };
 }
 
-/** The badge on an ad banner: the shared point pill (+5) or the shared done badge. */
-export function AdRewardBadge({ mark, locale, className }: { mark: AdRewardMark; locale: AppLocale; className?: string }) {
-  const cls = [styles.mark, className].filter(Boolean).join(" ");
-  if (mark === "points") return <span className={cls} data-ad-reward="points"><EarnBadge variant="inline" locale={locale} points={AD_REWARD_POINTS} /></span>;
-  if (mark === "done") return <span className={cls} data-ad-reward="done"><EarnBadge variant="done" locale={locale} /></span>;
-  return null;
+/** Shows the point offer while an ad is eligible for a reward. */
+export function AdRewardBadge({ mark, locale }: { mark: AdRewardMark; locale: AppLocale }) {
+  if (!mark) return null;
+  return <span data-ad-reward="points"><EarnBadge variant="inline" locale={locale} points={AD_REWARD_POINTS} /></span>;
 }

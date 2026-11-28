@@ -1,2 +1,0 @@
-/* 광고 배너는 사진 위라 공통 '오늘 완료'(투명 바탕·회색 글자)가 안 보인다. 옆 '광고' 표시(FanTag neutral)와 같은 흰 바탕·테두리를 깐다. */
-.mark [data-earn-badge="done"] { border: 1px solid var(--color-line); background: var(--color-surface); color: var(--color-muted); }
