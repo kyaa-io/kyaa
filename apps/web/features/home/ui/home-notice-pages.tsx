@@ -1,3 +1,5 @@
+import { PD_NOTICE_SLUG } from "../domain/pd-shorts-banner";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import type { Route } from "next";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import { paginationCopy } from "@/i18n/catalogs/common__pagination";
@@ -11,7 +13,7 @@ import type { AppLocale } from "@/i18n/locales";
 import type { TiptapDocument } from "@/server/notice/notice-domain";
 import { NoticeCard, formatHomeNoticeDate } from "./notice-card";
 import { FanActivityGuide } from "./fan-activity-guide";
-import { HomeNoticeParticipation } from "./home-notice-participation";
+import { HomeNoticeParticipation, PdNoticeParticipation } from "./home-notice-participation";
 import styles from "./home-notice-pages.module.css";
 
 export const homeNoticePageCopy: Record<AppLocale, { title: string; empty: string; more: string; recent: string; others: string }> = {
@@ -52,14 +54,25 @@ export function HomeNoticeListScreen({ locale, items, nextCursor, page = 1, page
 
 export function HomeNoticeDetailScreen({ locale, notice, others }: { locale: AppLocale; notice: HomeNoticeSummary & { body: TiptapDocument }; others: readonly HomeNoticeSummary[] }) {
   const copy = homeNoticePageCopy[locale];
+  const pd = notice.slug === PD_NOTICE_SLUG;
+  const media = pd ? notice.body.content.findIndex(node => node.type === "noticeMedia") : -1;
+  const Participation = pd ? PdNoticeParticipation : HomeNoticeParticipation;
+  const participation = <Participation slug={notice.slug} title={notice.title} locale={locale} />;
   return <div className={styles.page}>
     <FanAction variant="text" className={styles.back} href={`/notices?locale=${locale}`} leadingIcon={<ChevronLeft aria-hidden="true" />}>{copy.title}</FanAction>
     <article className={styles.article}>
       <div className={styles.meta}><strong>{homeNoticeCategoryLabels[locale][notice.category]}</strong><time dateTime={notice.publishedAt}>{formatHomeNoticeDate(notice.publishedAt, locale)}</time></div>
       <FanHeading as="h1">{notice.title}</FanHeading>
-      {notice.slug === "service-guide" ? <FanActivityGuide locale={locale} /> : <NoticeBody document={notice.body} locale={locale} />}
+      {pd && notice.viewCount !== undefined && notice.commentCount !== undefined && <div className={styles.meta}>
+        {locale === "mn" ? `Үзэлт ${notice.viewCount.toLocaleString(locale)}` : fanUiText(locale, "viewsLabel", [notice.viewCount.toLocaleString(locale)])} · {locale === "mn" ? `Сэтгэгдэл ${notice.commentCount.toLocaleString(locale)}` : fanUiText(locale, "commentsLabel", [notice.commentCount.toLocaleString(locale)])}
+      </div>}
+      {media >= 0 ? <>
+        <NoticeBody document={{ ...notice.body, content: notice.body.content.slice(0, media + 1) }} locale={locale} />
+        {participation}
+        {media + 1 < notice.body.content.length && <NoticeBody document={{ ...notice.body, content: notice.body.content.slice(media + 1) }} locale={locale} />}
+      </> : notice.slug === "service-guide" ? <FanActivityGuide locale={locale} /> : <NoticeBody document={notice.body} locale={locale} />}
     </article>
-    <HomeNoticeParticipation slug={notice.slug} title={notice.title} locale={locale} />
+    {media < 0 && participation}
     {others.length > 0 && <div className={styles.related} data-block="notice-related"><NoticeCard locale={locale} items={others} headingId="notice-others-heading" title={copy.others} headAction={{ href: `/notices?locale=${locale}`, label: copy.recent }} /></div>}
   </div>;
 }
