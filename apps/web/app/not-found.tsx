@@ -8,7 +8,7 @@ import styles from "../components/public-content-state.module.css";
 
 export default function NotFound() {
   const { locale } = useAppLocale();
-  return <main className={styles.page} lang={locale}>
+  return <main data-fan-route-not-found="" className={styles.page} lang={locale}>
     <div className={styles.state}>
       <span className={styles.wordmark}>kyaa</span>
       <h1>{locale === "ko" ? "페이지를 찾을 수 없어요." : translate(locale, localizedMessages.m1e9d04c47536, "We couldn't find this page.")}</h1>

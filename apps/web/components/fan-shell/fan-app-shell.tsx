@@ -22,7 +22,7 @@ import { fanLoginHref } from "@/components/login-href";
 import { communityCopy } from "@/i18n/catalogs/features__community";
 
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useContext, useEffect, useState, type MouseEventHandler, type ReactNode } from "react";
 import type { Route } from "next";
 import Link from "../fan-ui/hover-prefetch-link";
 import { Gift, Bell, BookOpen, Heart, Home, Sparkles, UsersRound } from "lucide-react";
@@ -39,11 +39,13 @@ import {
 } from "./fan-navigation";
 import { FanSiteFooter } from "./fan-site-footer";
 import styles from "./fan-app-shell.module.css";
+import { createPortal } from "react-dom";
+import { FanHeaderActionContext, FanLayoutContext } from "./fan-layout-context";
 
 export type FanLocale = AppLocale;
 export type FanSection = "home" | "community" | "chemi" | "favorites" | "my";
 
-function useBrowserHash() {
+function useBrowserHash(pathname: string, query: string) {
   const [hash, setHash] = useState("");
 
   useEffect(() => {
@@ -51,7 +53,7 @@ function useBrowserHash() {
     updateHash();
     window.addEventListener("hashchange", updateHash);
     return () => window.removeEventListener("hashchange", updateHash);
-  }, []);
+  }, [pathname, query]);
 
   return hash;
 }
@@ -184,25 +186,27 @@ export function FanAppHeader({
   groupsEnabled?: boolean;
   chemiEnabled?: boolean;
 }) {
+  const persistent = useContext(FanLayoutContext);
   const released = useGroupsRelease();
   const groupsEnabled = explicitGroupsEnabled ?? released;
   const chemiReleased = useChemiRelease();
   const chemiEnabled = explicitChemiEnabled ?? chemiReleased;
   const goodsMenu = useGoodsMenu();
   const browserPathname = usePathname() || currentPath || "/";
-  const searchParams = useSearchParams();
-  const browserHash = useBrowserHash();
+  const query = useSearchParams()?.toString() ?? "";
+  const browserHash = useBrowserHash(browserPathname, query);
   const pathname = currentPath ?? browserPathname;
   const items = withGiftDot(fanNavigationItems(locale, pathname, groupsEnabled, chemiEnabled, goodsMenu), locale, groupsEnabled);
   const notificationsLabel = locale === "ko" ? "알림" : translate(locale, footerMessages.m2c4e2b786e56, "Notifications");
   const nextLocale = locale === "ko" ? "en" : "ko";
   const languageHref = localeSwitchHref(
     browserPathname,
-    searchParams?.toString() ?? "",
+    query,
     nextLocale,
     browserHash,
   );
 
+  if (persistent) return null;
   return (
     <FanHeader
       className={[styles.header, groupsEnabled ? styles.groupsNavigation : ""].filter(Boolean).join(" ")}
@@ -228,6 +232,7 @@ export function FanAppHeader({
 export { FanContentContainer } from "./fan-content-container";
 
 export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: explicitGroupsEnabled, chemiEnabled: explicitChemiEnabled }: { locale: FanLocale; currentPath?: string; groupsEnabled?: boolean; chemiEnabled?: boolean }) {
+  const persistent = useContext(FanLayoutContext);
   const released = useGroupsRelease();
   const groupsEnabled = explicitGroupsEnabled ?? released;
   const chemiReleased = useChemiRelease();
@@ -240,6 +245,7 @@ export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: exp
     icon: item.icon ?? icons[item.id as FanSection],
     label: <span>{groupsEnabled ? item.label : mobileLabel(item.id as FanSection, locale, groupsEnabled)}</span>,
   }));
+  if (persistent) return null;
   return (
     <FanBottomNavigation
       activeItemClassName={styles.activeBottomItem}
@@ -251,9 +257,9 @@ export function FanAppBottomNavigation({ locale, currentPath, groupsEnabled: exp
   );
 }
 
-export function FanSkipLink({ locale, mainId }: { locale: FanLocale; mainId: string }) {
+export function FanSkipLink({ locale, mainId, onClick }: { locale: FanLocale; mainId: string; onClick?: MouseEventHandler<HTMLAnchorElement> }) {
   return (
-    <a className={styles.skipLink} href={`#${mainId}`}>
+    <a className={styles.skipLink} href={`#${mainId}`} onClick={onClick}>
       {locale === "ko" ? "본문으로 바로가기" : translate(locale, localizedMessages.ma938d26ac3b9, "Skip to content")}
     </a>
   );
@@ -280,23 +286,26 @@ export function FanAppFrame({
   groupsEnabled?: boolean;
   chemiEnabled?: boolean;
 }) {
+  const persistent = useContext(FanLayoutContext);
+  const actionContainer = useContext(FanHeaderActionContext);
   const released = useGroupsRelease();
   const resolvedGroupsEnabled = groupsEnabled ?? released;
   return (
     <div
-      className={[styles.frame, resolvedGroupsEnabled ? styles.groupsNavigation : "", className].filter(Boolean).join(" ")}
+      className={[styles.frame, persistent ? styles.routeFrame : "", resolvedGroupsEnabled ? styles.groupsNavigation : "", className].filter(Boolean).join(" ")}
       data-fan-surface
       lang={locale}
     >
-      {mainId ? (
+      {!persistent && mainId ? (
         <a className={styles.skipLink} href={`#${mainId}`}>
           {locale === "ko" ? "본문으로 바로가기" : translate(locale, localizedMessages.ma938d26ac3b9, "Skip to content")}
         </a>
       ) : null}
-      <FanAppHeader locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} chemiEnabled={chemiEnabled} />
+      {!persistent && <FanAppHeader locale={locale} actions={actions} actionsAreIdentity={actionsAreIdentity} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} chemiEnabled={chemiEnabled} />}
+      {persistent && actionContainer && actions ? createPortal(actions, actionContainer) : null}
       {children}
       <FanSiteFooter locale={locale} />
-      <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} chemiEnabled={chemiEnabled} />
+      {!persistent && <FanAppBottomNavigation locale={locale} currentPath={currentPath} groupsEnabled={resolvedGroupsEnabled} chemiEnabled={chemiEnabled} />}
     </div>
   );
 }

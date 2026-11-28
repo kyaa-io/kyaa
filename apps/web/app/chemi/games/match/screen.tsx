@@ -852,7 +852,7 @@ function Session({
     reminder: copy.reminder,
   }[stage];
   return (
-    <main className={styles.shell} data-stage={stage}>
+    <main className={styles.shell} data-stage={stage} data-fan-route-immersive="">
       <ExtraPlayDialog open={paying} onOpenChange={setPaying} busy={working} locale={parseAppLocale(locale)}
         points={lobby?.points} cost={lobby?.extraCost ?? 0} art={art.portrait}
         onConfirm={() => { setPaying(false); void start(character, true); }} />

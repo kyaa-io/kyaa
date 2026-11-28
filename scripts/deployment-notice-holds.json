@@ -184,7 +184,8 @@
     "release-notes/2026-11-28-chemi-fortune-picker.json",
     "release-notes/2026-11-28-chemi-carousel-hover-video.json",
     "release-notes/2026-11-28-chemi-rank-card-gap.json",
-    "release-notes/2026-11-28-chemi-persona-rules.json"
+    "release-notes/2026-11-28-chemi-persona-rules.json",
+    "release-notes/2026-11-28-persistent-fan-layout.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

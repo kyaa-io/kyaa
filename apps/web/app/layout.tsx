@@ -28,6 +28,7 @@ import { DeferredRootClients } from "../components/deferred-root-clients";
 import { BYUS_BRAND_ICONS } from "./brand-icons";
 import { LandingBrowserDialog } from "../components/landing-browser-dialog";
 import { AuthTransitionBoundary } from "../components/auth-transition-boundary";
+import { PersistentFanLayout } from "@/components/fan-shell/persistent-fan-layout";
 import { FanToastProvider } from "../components/fan-ui/fan-toast";
 import { parseAppLocale, type AppLocale } from "../i18n/locales";
 import { ADSENSE_SCRIPT_SRC } from "../security-headers";
@@ -119,7 +120,7 @@ export default async function RootLayout({
             <DocumentLocale />
           </Suspense>
           <Suspense fallback={null}><FanNavigationProgress /></Suspense>
-          <AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary>
+          <PersistentFanLayout><AuthTransitionBoundary modal={modal}>{children}</AuthTransitionBoundary></PersistentFanLayout>
           <Suspense fallback={null}><MemberEventPopup /></Suspense>
           <FanToastProvider />
           <DeferredRootClients slot="after" />

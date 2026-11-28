@@ -1,5 +1,6 @@
 import { APP_LOCALES } from "@/i18n/locales";
 import styles from "./fan-app-shell.module.css";
+import { PersistentFanLayout, usesPersistentFanLayout } from "./persistent-fan-layout";
 import { GroupsReleaseProvider } from "@/features/groups/ui/groups-release";
 import { ChemiReleaseProvider } from "@/features/chemi/ui/chemi-release";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
@@ -19,6 +20,7 @@ const push = vi.hoisted(() => vi.fn());
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
   usePathname: () => pathname,
+  useSelectedLayoutSegments: () => pathname.split("/").filter(Boolean),
   useSearchParams: () => new URLSearchParams(search),
 }));
 
@@ -269,3 +271,66 @@ describe("fan app shell navigation", () => {
   for(const link of screen.getAllByRole('link',{name:'모임'}))expect(link).toHaveAttribute('aria-current','page');
   for(const label of ['HOME','최애'])for(const link of screen.getAllByRole('link',{name:label}))expect(link).not.toHaveAttribute('aria-current');
  });
+
+describe("persistent fan layout", () => {
+  it.each(APP_LOCALES)("keeps the header and tabs through the main fan journey in %s", (locale) => {
+    pathname = "/";
+    search = `locale=${locale}`;
+    const view = (id: string) => (
+      <GroupsReleaseProvider enabled>
+        <ChemiReleaseProvider enabled>
+          <PersistentFanLayout>
+            <FanAppFrame key={id} locale={locale} mainId={id}><main id={id} tabIndex={-1} /></FanAppFrame>
+          </PersistentFanLayout>
+        </ChemiReleaseProvider>
+      </GroupsReleaseProvider>
+    );
+    const result = render(view("home-main"));
+    const header = screen.getByRole("banner");
+    const [desktopNav, mobileNav] = screen.getAllByRole("navigation").filter(nav => nav.querySelector("[data-fan-navigation-id]"));
+    expect(desktopNav).toBeDefined();
+    expect(mobileNav).toBeDefined();
+    for (const [index, path] of ["/pages/groups", "/changha", "/c/changha/community/post", "/notices/notice", "/chemi", "/my"].entries()) {
+      pathname = path;
+      const id = `screen-${index}`;
+      result.rerender(view(id));
+      expect(screen.getByRole("banner")).toBe(header);
+      expect(header.contains(desktopNav)).toBe(true);
+      expect(mobileNav.isConnected).toBe(true);
+      fireEvent.click(document.querySelector<HTMLAnchorElement>('a[href="#fan-route-content"]')!);
+      expect(document.activeElement).toBe(document.getElementById(id));
+    }
+  });
+
+  it("preserves the current fragment when changing locale after navigation", async () => {
+    pathname = "/";
+    search = "locale=ko";
+    window.history.replaceState(null, "", "/?locale=ko#home");
+    const view = render(<PersistentFanLayout><main /></PersistentFanLayout>);
+    pathname = "/notices";
+    search = "locale=ko&page=2";
+    window.history.replaceState(null, "", "/notices?locale=ko&page=2#recent");
+    view.rerender(<PersistentFanLayout><main /></PersistentFanLayout>);
+
+    fireEvent.click(screen.getByRole("combobox", { name: "언어 선택, 현재 한국어" }));
+    const english = await screen.findByRole("option", { name: "English" });
+    fireEvent.pointerDown(english, { button: 0, pointerType: "mouse" });
+    fireEvent.click(english);
+    expect(push).toHaveBeenCalledWith("/notices?locale=en&page=2#recent");
+  });
+
+  it("places the notification action inside the persistent header", () => {
+    pathname = "/notifications";
+    search = "";
+    render(
+      <PersistentFanLayout>
+        <FanAppFrame locale="ko" actions={<button>Notification settings</button>}><main /></FanAppFrame>
+      </PersistentFanLayout>
+    );
+    expect(within(screen.getByRole("banner")).getByRole("button", { name: "Notification settings" })).toBeTruthy();
+  });
+
+  it.each(["/login", "/share/chemi", "/s/opaque-token", "/admin", "/operator", "/chemi/games/run"])("keeps %s outside the fan layout", (path) => {
+    expect(usesPersistentFanLayout(path, true, true)).toBe(false);
+  });
+});
