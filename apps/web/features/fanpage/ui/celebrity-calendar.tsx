@@ -221,6 +221,7 @@ export function CelebrityMiniCalendar({
     : upcomingEvents;
   const hasDisplayedReservation = displayedEvents.some((event) => event.reservationState === "reserved");
   const calendarId = useId();
+  if (embedded && month === initialMonth && state.status === "ready" && schedules.status === "ready" && upcomingEvents.length === 0) return <p>{participation.empty}</p>;
   const calendarListId = `${calendarId}-events`;
 
   return (

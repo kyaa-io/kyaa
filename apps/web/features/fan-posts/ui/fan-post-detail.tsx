@@ -137,7 +137,7 @@ function DetailForOwner({ postId, locale, presentation: requestedPresentation, e
   const composer = <CommentComposer key={parentId ?? ""} fieldId={fieldId} locale={locale} readDraft={readDraft} onDraft={keepDraft} replyTarget={replyTarget} gated={gated} gate={gated && gateOpen ? <MemberGate slug={data.celebritySlug} locale={locale} inline /> : null}
     busy={mutation.busy} error={replyTarget ? mutationError : null} onGate={setGateOpen} onSubmit={submit} onCancel={cancelReply} />;
   return <section className={`${styles.section} ${styles.postDetail} ${presentation === "board" ? boardStyles.detail : ""}`}>
-    <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{presentation === "board" ? boardCopy(locale).back : copy.back}</FanAction>
+    <FanAction href={communityHref} variant="text" leadingIcon={<ArrowLeft />}>{artistName ?? (presentation === "board" ? boardCopy(locale).back : copy.back)}</FanAction>
     {presentation !== "board" && <FanHeading as="h1" variant="personal-page">{copy.community}</FanHeading>}{data.celebritySlug === WAVE_FANPAGE_SLUG && <WavePrivacyNotice locale={locale} />}<PostCard presentation={presentation} post={data} locale={locale} returnTo={communityHref} onChanged={refresh} onDeleted={() => untypedRouter(router).replace(communityHref)} detail />
     {post.refreshFailed && online && <p role="status" className={styles.status}>{copy.failed}<button type="button" className={styles.button} onClick={post.retry}>{copy.retry}</button></p>}
     <PassportRequiredDialog failure={mutation.failure} slug={data.celebritySlug} locale={locale} onClose={mutation.dismiss} />

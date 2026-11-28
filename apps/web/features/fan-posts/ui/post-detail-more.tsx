@@ -6,7 +6,7 @@ import { FanTabs } from "@/components/fan-ui/fan-tabs";
 import { FanText } from "@/components/fan-ui/fan-text";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FanIcon } from "@/components/fan-ui/fan-icon";
 import { BookOpen } from "@/components/fan-ui/fan-icons";
@@ -101,11 +101,14 @@ function MoreRow({ item, slug, locale, tab }: { item: Item; slug: string; locale
 type MoreProps = { slug: string; postId: string; locale: AppLocale; banner?: boolean; ads?: boolean };
 
 export function PostDetailMore(props: MoreProps) {
-  const tab = useSearchParams().get("more") === "latest" ? "latest" : "popular";
-  return <MoreList key={`${props.slug}:${props.postId}:${props.locale}`} {...props} tab={tab} />;
+  const requested = useSearchParams().get("more");
+  const [fallback, setFallback] = useState<string | null>(null);
+  const key = JSON.stringify([props.slug, props.postId, props.locale]);
+  const tab = requested === "latest" || (requested !== "popular" && fallback === key) ? "latest" : "popular";
+  return <MoreList key={`${props.slug}:${props.postId}:${props.locale}`} {...props} tab={tab} onEmptyPopular={() => setFallback(key)} />;
 }
 
-function MoreList({ slug, postId, locale, banner = true, ads, tab }: MoreProps & { tab: Tab }) {
+function MoreList({ slug, postId, locale, banner = true, ads, tab, onEmptyPopular }: MoreProps & { tab: Tab; onEmptyPopular: () => void }) {
   // Keep the controls in the same column after the reader switches tabs.
   const [tabPlacement, setTabPlacement] = useState<boolean | null>(null);
   const [pagination, setPagination] = useState<{ tab: Tab; offset: number; cursor: string | null }>({ tab, offset: 0, cursor: null });
@@ -132,17 +135,20 @@ function MoreList({ slug, postId, locale, banner = true, ads, tab }: MoreProps &
   const nextCursor = data?.nextCursor;
   const hasMore = !resource.pending && (tab === "popular" ? eligible.length > start + MORE_ROWS : Boolean(nextCursor));
   const empty = data !== null && items.length === 0 && !hasMore;
+  useEffect(() => {
+    if (empty && !resource.pending && tab === "popular") onEmptyPopular();
+  }, [empty, resource.pending, tab, onEmptyPopular]);
   const inline = tabPlacement ?? (data === null || empty);
   function selectTab(next: Tab) {
     if (next === tab) return;
     setTabPlacement(inline);
     const url = new URL(window.location.href);
     if (next === "latest") url.searchParams.set("more", "latest");
-    else url.searchParams.delete("more");
+    else url.searchParams.set("more", "popular");
     window.history.replaceState(null, "", url);
   }
   return <aside className={styles.rail} data-post-detail-more="" data-inline={inline ? "" : undefined} data-empty={empty ? "" : undefined}>
-    <section aria-busy={resource.pending || undefined} className={styles.panel} aria-labelledby={`post-more-${postId}`}>
+    {!empty && <section aria-busy={resource.pending || undefined} className={styles.panel} aria-labelledby={`post-more-${postId}`}>
       <header><FanText role="item" as="strong" id={`post-more-${postId}`}>{title}</FanText><FanTabs variant="segment" label={title} current={tab} className={styles.tabs} items={[{ key: "popular", label: popularLabel, onSelect: () => selectTab("popular") }, { key: "latest", label: latestLabel, onSelect: () => selectTab("latest") }]} /></header>
       {resource.state.status === "ready"
         ? items.length > 0 ? <ul className={styles.list}>{items.map(item => <MoreRow key={item.id} item={item} slug={slug} locale={locale} tab={visiblePage.tab} />)}</ul> : <div role="status"><FanText as="p" role="meta" className={styles.empty}>{copy.moreEmpty}</FanText></div>
@@ -153,7 +159,7 @@ function MoreList({ slug, postId, locale, banner = true, ads, tab }: MoreProps &
         if (tab === "popular") setPagination({ ...page, offset: start + MORE_ROWS });
         else if (nextCursor) setPagination({ ...page, cursor: nextCursor });
       }}>{copy.more}</FanAction></div>}
-    </section>
+    </section>}
     {ads && <BoardAdRail locale={locale} />}
     {banner && <BannerSlot slot="fanpage_second" locale={locale} />}
   </aside>;

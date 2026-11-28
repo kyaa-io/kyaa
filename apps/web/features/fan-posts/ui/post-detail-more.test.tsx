@@ -88,12 +88,12 @@ it("leaves a zero count out, and the whole count line when both are zero", () =>
   expect(screen.getAllByRole("link").map(row => row.textContent)).toEqual(["a 제목좋아요 2", "b 제목"]);
 });
 
-it("allows switching tabs when the selected list is empty", () => {
+it("hides recommendation controls when only the current post exists", () => {
   state.answer = () => ({ status: "ready", data: { items: [post("current")] } });
   render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
   expect(screen.queryByRole("link")).toBeNull();
   expect(screen.getByRole("complementary")).toHaveAttribute("data-empty");
-  expect(screen.getByRole("button", { name: "최신" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "최신" })).toBeNull();
   expect(screen.getByTestId("banner")).toBeTruthy();
 });
 
@@ -150,19 +150,10 @@ it("uses the board post schema for ranking and cursor pages", () => {
   expect(moreTitle({ body: "첫 줄\n둘째 줄" })).toBe("첫 줄");
 });
 
-it("keeps the empty panel inline when another tab starts loading and then finds posts", () => {
+it("checks latest when the week ranking is empty and hides an empty recommendation section", () => {
   state.answer = () => ({ status: "ready", data: { items: [] } });
-  const view = <PostDetailMore slug="elina" postId="current" locale="ko" />;
-  const { rerender } = render(view);
-  expect(screen.getByText("추천할 글이 없어요.")).toBeVisible();
-  fireEvent.click(screen.getByRole("button", { name: "최신" }));
-
-  state.answer = () => ({ status: "loading" });
-  rerender(<PostDetailMore {...view.props} />);
-  expect(screen.getByRole("complementary")).toHaveAttribute("data-inline");
-
-  state.answer = () => ({ status: "ready", data: { items: [post("a")] } });
-  rerender(<PostDetailMore {...view.props} />);
-  expect(screen.getByRole("complementary")).toHaveAttribute("data-inline");
-  expect(screen.getByRole("link")).toBeVisible();
+  render(<PostDetailMore slug="elina" postId="current" locale="ko" />);
+  expect(state.urls.some(url => url.includes("/posts?"))).toBe(true);
+  expect(screen.queryByText("이 페이지의 다른 글")).toBeNull();
+  expect(screen.getByTestId("banner")).toBeVisible();
 });

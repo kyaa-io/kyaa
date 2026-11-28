@@ -39,7 +39,7 @@ type Props = PostReactionState & {
   /** Signed in but not a member: both thumbs start joining (disabled when joining is not offered or is pending). */
   join?: { onJoin?: () => void; pending?: boolean };
   onChange: (choice: PostReactionChoice) => void;
-  /** Show the point badge on both thumbs (a first reaction on this post pays the same for a like and a dislike). */
+  /** Show the point badge on the like action. */
   reward?: boolean;
   compact?: boolean;
 };
@@ -66,5 +66,5 @@ export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy 
     dislike = <FanAction {...dislikeProps} aria-pressed={reaction === "dislike"} disabled={busy} onClick={() => onChange(nextReaction(reaction, "dislike"))}>{dislikeNumber}</FanAction>;
   }
   const earn = (button: ReactNode) => reward ? <EarnBadgeCorner action="reaction" locale={locale}>{button}</EarnBadgeCorner> : button;
-  return <>{earn(like)}{earn(dislike)}</>;
+  return <>{earn(like)}{dislike}</>;
 }
