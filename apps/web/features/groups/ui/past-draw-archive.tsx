@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 import type { Route } from "next";
+import { ChevronRight } from "@/components/fan-ui/fan-icons";
+import { FanIcon } from "@/components/fan-ui/fan-icon";
+import Link from "@/components/fan-ui/hover-prefetch-link";
 import { z } from "zod";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -43,17 +46,24 @@ export function PastDrawArchive({ locale }: { locale: AppLocale }) {
       archive.error ? <FanState inline compact kind="error" title={dukjilText(locale, "luckyLoadError")}
         actions={<FanAction variant="text" onClick={archive.retry}>{groupsCopy(locale).retry}</FanAction>} /> :
       archive.data?.items.length ? <ul className={styles.archiveRows} aria-live="polite">
-        {archive.data.items.map(item => <li data-row className={styles.pastCard} key={item.key}>
-          {item.image ? <img src={item.image} className={styles.thumbnail} width={56} height={56} alt="" loading="lazy" />
-            : <RewardIcon kind="ticket" className={styles.thumbnail} size={56} />}
-          <div className={styles.pastCopy}>
-            <FanText as="strong" role="item">{item.title}</FanText>
-            <time className={styles.meta} dateTime={item.closesAt}>{dukjilText(locale, "luckyClosesAt", [format.format(Date.parse(item.closesAt))])}</time>
-          </div>
-          {item.resultPath && <FanAction variant="text" href={`${item.resultPath}?locale=${locale}` as Route}>
-            {ko ? "당첨 결과 보기" : dukjilText(locale, "luckyResults")}
-          </FanAction>}
-        </li>)}
+        {archive.data.items.map(item => {
+          const row = <>
+            {item.image ? <img src={item.image} className={styles.thumbnail} width={56} height={56} alt="" loading="lazy" />
+              : <RewardIcon kind="ticket" className={styles.thumbnail} size={56} />}
+            <div className={styles.pastCopy}>
+              <FanText as="strong" role="item">{item.title}</FanText>
+              <time className={styles.meta} dateTime={item.closesAt}>{dukjilText(locale, "luckyClosesAt", [format.format(Date.parse(item.closesAt))])}</time>
+            </div>
+          </>;
+          return <li data-row key={item.key}>
+            {item.resultPath
+              ? <Link className={styles.pastCard} href={`${item.resultPath}?locale=${locale}` as Route}>
+                {row}<span className={styles.archiveResultLabel}>{dukjilText(locale, "luckyResults")}</span>
+                <FanIcon icon={ChevronRight} size={20} className={styles.archiveChevron} />
+              </Link>
+              : <div className={styles.pastCard}>{row}</div>}
+          </li>;
+        })}
       </ul> : <FanState inline compact kind="empty" title={ko ? "지난 럭키드로우가 없습니다." : "There are no past lucky draws."} />}
     {page > 0 && <nav className={styles.archiveHeader} aria-label={title}>
       <FanAction variant="text" disabled={page === 1} onClick={() => setPage(page - 1)}>{ko ? "이전" : "Previous"}</FanAction>

@@ -219,7 +219,8 @@
   "goods-menu": [
     "release-notes/2026-11-25-goods-menu.json",
     "release-notes/2026-11-28-goods-header.json",
-    "release-notes/2026-11-28-past-draws-archive.json"
+    "release-notes/2026-11-28-past-draws-archive.json",
+    "release-notes/2026-11-28-lucky-raffle-cleanup.json"
   ],
   "verified-pages": [
     "release-notes/2026-11-25-verified-pages.json",

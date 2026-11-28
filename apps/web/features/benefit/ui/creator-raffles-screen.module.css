@@ -37,6 +37,7 @@
 .support{display:grid;grid-template-columns:1fr 1fr;gap:36px;border-top:1px solid var(--color-line-subtle);margin-top:34px;padding-top:24px}
 .support a{display:flex;align-items:center;gap:16px;padding:10px 0;text-decoration:none;color:var(--color-ink);min-width:0}
 .support svg{width:22px;height:22px;flex:none}.support a>span{flex:1}.support strong{display:block;font-size:15px}.support small{display:block;font-size:12px;line-height:1.6;color:var(--color-muted);margin-top:6px}
+.detailHero:not(:has(.largeArtwork)){grid-template-columns:minmax(0,1fr)}
 .detailHero{display:grid;grid-template-columns:1.2fr 1fr;gap:48px;align-items:center;margin:8px 0 34px}
 .largeArtwork{height:430px;border-radius:18px}.detailCopy{min-width:0}.detailTop{display:flex;justify-content:space-between;align-items:center;gap:12px}.status{background:var(--color-soft);border-radius:99px;font-size:11px;font-weight:var(--fan-item-title-weight);padding:6px 12px;white-space:nowrap}
 .detailCopy h1{margin:24px 0 18px}.facts{border-block:1px solid var(--color-line-subtle);display:grid;gap:14px;padding:20px 0;margin:22px 0 18px;font-size:var(--fan-metadata-size)}
