@@ -87,8 +87,8 @@ it('대표 11/11: the tickets result links to my raffles and the points under it
  const card=document.querySelector('[data-wallet-card]')!;
  expect(card.querySelector('[data-cell="tickets"]')).toHaveAttribute('href','/my/raffles?locale=ko');
  expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('보유 137 마일리지');expect(card.querySelector('[data-cell="points"]')).toHaveTextContent('100마일리지사용');
- // 대표 11/13 09:39 swap line: the real count stays in view; ready is the 교환 button turning primary (no 교환 가능 label).
- expect(within(card as HTMLElement).getByRole('button',{name:'교환'})).toHaveAttribute('data-fan-action-emphasis','primary');
+ // 대표 11/13 09:39 swap line: the real count stays in view; ready is the 광고보기 교환 button turning primary (no 교환 가능 label).
+ expect(within(card as HTMLElement).getByRole('button',{name:'광고보기 교환'})).toHaveAttribute('data-fan-action-emphasis','primary');
  // 대표 11/14 18:22 N8: no bar under the count, only the balance text.
  expect(card.querySelector('[role="progressbar"]')).toBeNull();
 });
@@ -101,7 +101,7 @@ it('without an ad unit the ticket exchange stays disabled and stamps have no cla
   const preparing=[...document.querySelectorAll('[data-wallet-card]')].flatMap(card=>within(card as HTMLElement).queryAllByRole('button',{name:'준비 중'}));
   expect(preparing.map(b=>b.closest('[data-column]')?.getAttribute('data-column'))).toEqual(['tickets']);
   expect(preparing.every(b=>(b as HTMLButtonElement).disabled)).toBe(true);
-  expect(within(document.body).queryByRole('button',{name:'교환'})).toBeNull();
+  expect(within(document.body).queryByRole('button',{name:'광고보기 교환'})).toBeNull();
   expect(within(document.body).queryByRole('link',{name:'받기'})).toBeNull();
  }finally{adUnit.value='/123/rewarded';}
 });
@@ -203,20 +203,20 @@ it('DUO: with no draw the past-draws link still opens and the resting button sen
 });
 it('DUO: opens exchange only from its tile, restores focus on Escape and makes no mutation on open',async()=>{
  duoData();render(<GroupBenefitsScreen locale='ko'/>);
- const trigger=await screen.findByRole('button',{name:'교환'});await waitFor(()=>expect(trigger).toBeEnabled());
+ const trigger=await screen.findByRole('button',{name:'광고보기 교환'});await waitFor(()=>expect(trigger).toBeEnabled());
  expect(screen.queryByRole('dialog')).toBeNull();trigger.focus();fireEvent.click(trigger);
  const dialog=await screen.findByRole('dialog',{name:'교환하기'});
  expect(within(dialog).getByRole('group',{name:'수량'})).toHaveTextContent('1장');
- expect(within(dialog).getByRole('button',{name:'교환하기'})).toBeInTheDocument();
+ expect(within(dialog).getByRole('button',{name:'광고보기 교환'})).toBeInTheDocument();
  fireEvent.keyDown(dialog,{key:'Escape'});await waitFor(()=>expect(screen.queryByRole('dialog')).toBeNull());
  expect(trigger).toHaveFocus();expect(requests.some(p=>p.includes('/exchange')||p.includes('/ad-session'))).toBe(false);
 });
 it('DUO: keeps unaffordable exchange disabled and enables it after the shared wallet event',async()=>{
  duoData();const base=fetch;let points=99;
  vi.stubGlobal('fetch',vi.fn((url:string,init?:RequestInit)=>url==='/api/me/wallet'?Promise.resolve(Response.json({...wallet,points})):base(url,init)));
- render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('보유 99 마일리지');expect(screen.getByRole('button',{name:'교환'})).toBeDisabled();
+ render(<GroupBenefitsScreen locale='ko'/>);await screen.findByText('보유 99 마일리지');expect(screen.getByRole('button',{name:'광고보기 교환'})).toBeDisabled();
  points=100;act(()=>window.dispatchEvent(new Event('kyaa:group-wallet-changed')));
- await waitFor(()=>expect(screen.getByRole('button',{name:'교환'})).toBeEnabled());
+ await waitFor(()=>expect(screen.getByRole('button',{name:'광고보기 교환'})).toBeEnabled());
 });
 it.each(APP_LOCALES)('DUO: keeps the signed-out layout and locks balances in %s without private reads',async(locale)=>{
  auth.authenticated=false;session.ownerId=null as any;bias.value={...bias.value,status:'guest'};

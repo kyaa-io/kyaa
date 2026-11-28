@@ -14,6 +14,11 @@ describe("FanLockedValue", () => {
     expect(value.closest("a, button")).toBeNull();
   });
 
+  it("is a 16 icon beside a title (대표 11/28 195099)", () => {
+    render(<FanLockedValue locale="en" size="title" />);
+    expect(screen.getByRole("img", { name: "Sign in to view" }).querySelector("svg")).toHaveAttribute("width", "16");
+  });
+
   it("has a distinct accessible name in every locale", () => {
     const names = APP_LOCALES.map((locale) => {
       const { unmount } = render(<FanLockedValue locale={locale} />);

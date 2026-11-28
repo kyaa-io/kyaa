@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { StanExchange } from './stan-exchange';
 import { StanWallet } from './stan-wallet';
@@ -44,19 +44,19 @@ it('defaults to one ticket and keeps the stepper inside 1..max', () => {
   expect(screen.getByRole('button', { name: '수량 늘리기' })).toBeDisabled();
   fireEvent.click(screen.getByRole('button', { name: '수량 줄이기' })); fireEvent.click(screen.getByRole('button', { name: '수량 줄이기' }));
   expect(output).toHaveTextContent('1장'); expect(screen.getByRole('button', { name: '수량 줄이기' })).toBeDisabled();
-  expect(screen.getByRole('button', { name: '교환하기' })).toBeEnabled();
+  expect(screen.getByRole('button', { name: '광고보기 교환' })).toBeEnabled();
 });
 
 it('shows 0장 with the stepper and the exchange disabled below 100 points', () => {
   serve(receipt); view(99);
   expect(screen.getByRole('group', { name: '수량' }).querySelector('output')).toHaveTextContent('0장');
-  for (const name of ['수량 줄이기', '수량 늘리기', '교환하기']) expect(screen.getByRole('button', { name })).toBeDisabled();
+  for (const name of ['수량 줄이기', '수량 늘리기', '광고보기 교환']) expect(screen.getByRole('button', { name })).toBeDisabled();
 });
 
 it('one press runs one ad and one exchange for all N tickets, then a toast and no dialog', async () => {
   serve(receipt); view(350);
   fireEvent.click(screen.getByRole('button', { name: '수량 늘리기' })); fireEvent.click(screen.getByRole('button', { name: '수량 늘리기' }));
-  fireEvent.click(screen.getByRole('button', { name: '교환하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '응모권 +3장', tone: 'success' }));
   expect(ad.requests).toBe(1); expect(sessions()).toHaveLength(1);
   expect(exchanges()).toHaveLength(1); expect(exchanges()[0].body).toMatchObject({ target: 'ticket', units: 3, adSessionId: SESSION, policyVersion: 'group-wallet-v1' });
@@ -66,7 +66,7 @@ it('one press runs one ad and one exchange for all N tickets, then a toast and n
 
 it('a double press starts one session', async () => {
   serve(receipt); view(200);
-  const button = screen.getByRole('button', { name: '교환하기' });
+  const button = screen.getByRole('button', { name: '광고보기 교환' });
   fireEvent.click(button); fireEvent.click(button);
   await waitFor(() => expect(toast).toHaveBeenCalled());
   expect(sessions()).toHaveLength(1); expect(exchanges()).toHaveLength(1);
@@ -77,7 +77,7 @@ it.each([
   ['no-fill', '지금은 볼 수 있는 광고가 없어요. 포인트는 차감되지 않았어요.'],
 ])('an ad that ends as %s never reaches the debit and keeps the existing message', async (outcome, title) => {
   ad.outcome = outcome; serve(receipt); view(300);
-  fireEvent.click(screen.getByRole('button', { name: '교환하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title, tone: 'error' })));
   expect(exchanges()).toHaveLength(0);
 });
@@ -86,7 +86,7 @@ it('keeps the existing daily-limit text when the server refuses the session', as
   serve(receipt);
   const refuse = vi.fn(async (url: string) => url === '/api/me/wallet/ad-session' ? Response.json({ error: { code: 'GROUP_WALLET_AD_DAILY_LIMIT' } }, { status: 429 }) : Response.json({}));
   vi.stubGlobal('fetch', refuse); view(300);
-  fireEvent.click(screen.getByRole('button', { name: '교환하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith(expect.objectContaining({ title: '오늘은 더 교환할 수 없어요. 포인트는 차감되지 않았어요.', tone: 'error' })));
   expect(ad.requests).toBe(0);
 });
@@ -96,7 +96,7 @@ it('a lost answer keeps the request; the check resends the same key and session 
   serve(body => { if (first) { first = false; throw new TypeError('network'); } return receipt(body); });
   view(300);
   fireEvent.click(screen.getByRole('button', { name: '수량 늘리기' })); fireEvent.click(screen.getByRole('button', { name: '수량 늘리기' }));
-  fireEvent.click(screen.getByRole('button', { name: '교환하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
   const check = await screen.findByRole('button', { name: '처리 결과 확인' });
   expect(JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!)).toMatchObject({ units: 3, adSessionId: SESSION });
   expect(screen.getByRole('button', { name: '수량 줄이기' })).toBeDisabled();
@@ -109,15 +109,15 @@ it('a lost answer keeps the request; the check resends the same key and session 
 
 it('a refusal of the whole request drops the saved request', async () => {
   serve(() => Response.json({ error: { code: 'GROUP_WALLET_INSUFFICIENT_BALANCE' } }, { status: 409 })); view(300);
-  fireEvent.click(screen.getByRole('button', { name: '교환하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '요청을 완료하지 못했어요.', tone: 'error' }));
-  expect(sessionStorage.length).toBe(0); expect(screen.getByRole('button', { name: '교환하기' })).toBeInTheDocument();
+  expect(sessionStorage.length).toBe(0); expect(screen.getByRole('button', { name: '광고보기 교환' })).toBeInTheDocument();
 });
 
 it('names the toast with the ticket word in other languages', async () => {
   serve(receipt); view(200, 'en');
   fireEvent.click(screen.getByRole('button', { name: 'Increase quantity' }));
-  fireEvent.click(screen.getByRole('button', { name: 'Exchange' }));
+  fireEvent.click(screen.getByRole('button', { name: 'Exchange with ad' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: 'Tickets +2', tone: 'success' }));
 });
 
@@ -133,8 +133,8 @@ it('reopens the wallet below cost and checks the same saved request after a lost
   let first = true;
   serve(body => { if (first) { first = false; throw new TypeError('response lost after server commit'); } return receipt(body); });
   const initial = walletView(149);
-  fireEvent.click(screen.getByRole('button', { name: '교환' }));
-  fireEvent.click(await screen.findByRole('button', { name: '교환하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
+  fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '광고보기 교환' }));
   await screen.findByRole('button', { name: '처리 결과 확인' });
   const saved = JSON.parse(sessionStorage.getItem('kyaa-wallet-pending:owner-a')!);
   expect(saved).toMatchObject({ units: 1, adSessionId: SESSION });
@@ -143,8 +143,8 @@ it('reopens the wallet below cost and checks the same saved request after a lost
   // Reconnecting sees the debit (49P) while the same request is still unresolved locally.
   walletView(49);
   expect(screen.queryByRole('dialog')).toBeNull();
-  expect(screen.getByRole('button', { name: '교환' })).toBeEnabled();
-  fireEvent.click(screen.getByRole('button', { name: '교환' }));
+  expect(screen.getByRole('button', { name: '광고보기 교환' })).toBeEnabled();
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
   fireEvent.click(await screen.findByRole('button', { name: '처리 결과 확인' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '응모권 +1장', tone: 'success' }));
   expect(exchanges()).toHaveLength(2);
@@ -160,10 +160,10 @@ it('closes the wallet sheet after a successful exchange and announces the wallet
   let before = -1; const changed = vi.fn(); window.addEventListener('kyaa:group-wallet-changed', changed);
   serve(body => { before = changed.mock.calls.length; return receipt(body); });
   walletView(350);
-  fireEvent.click(screen.getByRole('button', { name: '교환' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
   expect(await screen.findByRole('dialog')).toBeInTheDocument();
   expect(screen.getByRole('group', { name: '수량' }).querySelector('output')).toHaveTextContent('1장');
-  fireEvent.click(screen.getByRole('button', { name: '교환하기' }));
+  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: '광고보기 교환' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '응모권 +1장', tone: 'success' }));
   await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   expect(exchanges()[0].body).toMatchObject({ units: 1 });
@@ -175,8 +175,8 @@ it('keeps the wallet sheet open and announces no wallet change when the exchange
   let before = -1; const changed = vi.fn(); window.addEventListener('kyaa:group-wallet-changed', changed);
   serve(() => { before = changed.mock.calls.length; return Response.json({ error: { code: 'GROUP_WALLET_INSUFFICIENT_BALANCE' } }, { status: 409 }); });
   walletView(350);
-  fireEvent.click(screen.getByRole('button', { name: '교환' }));
-  fireEvent.click(await screen.findByRole('button', { name: '교환하기' }));
+  fireEvent.click(screen.getByRole('button', { name: '광고보기 교환' }));
+  fireEvent.click(within(await screen.findByRole('dialog')).getByRole('button', { name: '광고보기 교환' }));
   await waitFor(() => expect(toast).toHaveBeenCalledWith({ title: '요청을 완료하지 못했어요.', tone: 'error' }));
   expect(screen.getByRole('dialog')).toBeInTheDocument();
   expect(changed.mock.calls.length).toBe(before);
@@ -187,7 +187,7 @@ it.each(['invalid', 'other-owner'])('does not unlock a low-balance wallet for %s
   const saved = { operation: 'exchange', requestKey: '40000000-0000-4000-8000-000000000004', policyVersion: 'group-wallet-v1', target: 'ticket', units: 1, adSessionId: SESSION };
   sessionStorage.setItem(kind === 'other-owner' ? 'kyaa-wallet-pending:owner-b' : 'kyaa-wallet-pending:owner-a', JSON.stringify(kind === 'invalid' ? { ...saved, requestKey: 'invalid' } : saved));
   serve(receipt); walletView(49);
-  expect(screen.getByRole('button', { name: '교환' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: '광고보기 교환' })).toBeDisabled();
   expect(exchanges()).toHaveLength(0);
 });
 

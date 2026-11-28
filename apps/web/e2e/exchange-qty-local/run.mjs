@@ -16,7 +16,7 @@ const server = await createServer({ configFile: false, root: here, publicDir: pa
   server: { host: '127.0.0.1', port: 4192, strictPort: true, fs: { allow: [root] } } });
 await server.listen();
 const browser = await chromium.launch({ headless: true }); const log = [];
-const exchangeName = { ko: '교환하기', en: 'Exchange', ru: 'Обменять', th: 'แลก', fr: 'Échanger', es: 'Canjear', pt: 'Trocar' };
+const exchangeName = { ko: '광고보기 교환', en: 'Exchange with ad', ru: 'Обмен за рекламу', th: 'ดูโฆษณาแล้วแลก', fr: 'Échanger via pub', es: 'Canje con anuncio', pt: 'Trocar com anúncio' };
 async function open(w, qs) { const ctx = await browser.newContext({ viewport: { width: w, height: 900 } }), page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message)); page.on('console', m => m.type() === 'error' && errs.push(m.text()));
   await page.goto('http://127.0.0.1:4192/?' + qs); await page.locator('[data-wallet-card="stan"] output').waitFor({ timeout: 15000 }); await page.waitForTimeout(400); return { ctx, page, errs }; }
 const shot = (page, w, name) => page.screenshot({ path: path.join(out, `${name}-${w}.png`) });

@@ -190,7 +190,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `FanCollapsible` · `FanDisclosure` | 눌러 여는 긴 내용 | `defaultOpen` `persistKey` `trigger` | `<details>` 새로 쓰지 않음 |
 | `FanState` | 빈 상태(한 줄 78)·오류(`다시 시도`)·잠금(로그인 primary 1) | `kind` empty·error·auth, empty의 `action {label, href}` 하나 | `kind="loading"`·아이콘·설명 없음 |
 | `FanSkeleton` · `FanSkeletonRows` · `FanSkeletonPage` | 로딩(실제와 같은 자리·크기, 핑크 틴트 숨쉬기) | `variant` post·entity·member·tile·plain, `rows` | `불러오는 중` 글자 |
-| `FanLockedValue` · `FanLockedRows` | 비로그인의 내 값 자리 | `rows` 2·3·5 | — |
+| `FanLockedValue` · `FanLockedRows` | 비로그인의 내 값 자리. 값 칸(통계 숫자 자리)은 24 아이콘, 제목·이름 줄이나 한 줄 글 옆은 `size="title"` 16 아이콘. 자물쇠 때문에 줄을 새로 만들지 않는다(덕질 교환 칸은 비로그인에 `사용`·`획득` 바로 뒤에 붙고 칸 높이를 64 이상 자산 높이에 맞춘다, 대표 11/28) | `size` value·title, `rows` 2·3·5 | 잠금만 있는 줄 |
 | `FanTag` | 유형·공지·인증 표시 | `tone` fan·artist·neutral·notice, `icon` | 숫자·설명 넣지 않음 |
 | `FanCount` · `FanDot` | 알림함 안 개수 / 헤더·탭바 새 소식 점 | `value` `max` / `label` | 지갑 잔액은 `FanNumber` |
 | 작성자 댓글 메뉴 | 팬페이지 게시판·모임 게시판·공지에서 내 댓글의 `FanMenu`에 수정·삭제를 둔다. 수정 중에는 본문 자리에 입력창과 저장·취소를 표시한다. 삭제는 `FanDialog`에서 확인한다. | 타인 댓글 신고와 관리자 숨김은 작성자 메뉴와 구분 |
@@ -317,7 +317,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 `--z-sticky-header` 20 · `--z-bottom-nav` 30 · `--z-dropdown` 35 · `--z-backdrop` 40 · `--z-drawer` 45 · `--z-dialog` 50 · `--z-alertdialog` 55 · `--z-tooltip` 60 · `--z-toast` 1100. 이 토큰만 쓴다(T8).
 
 ## 11. 문구·아이콘 (요약)
-- 내비·탭·구역 제목은 한국어 명사 2~7자. 버튼은 동사 2~6자, 버튼 안 조건 문구·화살표 글리프 0.
+- 내비·탭·구역 제목은 한국어 명사 2~7자. 버튼은 동사 2~6자, 버튼 안 조건 문구·화살표 글리프 0. 광고를 보고 교환하는 버튼은 할 일을 그대로 적는다: `광고보기 교환`(교환 줄과 수량 창의 실행 버튼, 공통 버튼 글자 크기, 대표 11/28).
 - 상태는 값 + 조건(`응모 가능 3장`). 빈 상태·오류는 `~습니다` 한 문장, 토스트는 `~요`.
 - 대문자 영문 라벨 0. 한국어 화면은 `스탬프`(도장 단독 표기 금지).
 - 아이콘은 lucide 한 세트, 선 1.5, 16·20·24, `FanIcon` 경유. 이모지 0. 도장 그림은 아이콘이 아니라 애셋(`data-art="stamp"`).
