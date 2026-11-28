@@ -15,9 +15,9 @@
 .stripSide { margin-top: 0; }
 .stripSide .link { aspect-ratio: 3 / 5; border-radius: var(--radius-card); }
 
-/* Full-width artwork behind the managed campaign copy. */
+/* Full-width artwork behind the managed campaign copy. 광고 가로 배너 최소 높이(제보 195096): 390 358×160, 768+ 최소 192 — 상품 그림이 읽히게 한다. 그림은 오른쪽 기준 cover라 높이만큼 상품이 커진다. */
 .stripAd { margin-top: var(--space-4); }
-.stripAd .link { aspect-ratio: 716 / 216; min-height: 108px; display: grid; align-items: center; isolation: isolate; background: var(--color-surface); }
+.stripAd .link { aspect-ratio: 716 / 320; min-height: 160px; display: grid; align-items: center; isolation: isolate; background: var(--color-surface); }
 .stripAd picture { position: absolute; inset: 0; z-index: -1; }
 .stripAd .link picture img { object-position: right center; }
 .adCopy {
@@ -40,7 +40,7 @@
 }
 .adLabels { display: flex; flex-wrap: wrap; gap: var(--space-1); align-items: center; }
 @media (min-width: 48rem) {
-  .stripAd .link { aspect-ratio: auto; min-height: 144px; }
+  .stripAd .link { aspect-ratio: auto; min-height: 192px; }
   .adCopy > strong { -webkit-line-clamp: 1; }
 }
 
