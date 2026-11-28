@@ -23,6 +23,19 @@ describe("shorts viewer", () => {
     expect(within(dialog).getByRole("button", { name: "다음 영상" })).toBeDisabled();
     expect(zone).toBeTruthy();
   });
+  it.each(["rail", "grid"] as const)("marks original text in the %s cards", layout => {
+    const item = { ...items[0]!, platform: "tiktok" as const, creator: { slug: "a", name: "크리에이터" } };
+    render(<HomeShorts items={[item]} locale="en" layout={layout} />);
+    const expectOriginal = (element: HTMLElement) => {
+      expect(element).toHaveAttribute("translate", "no");
+      expect(element).toHaveAttribute("data-user-content");
+    };
+    expectOriginal(screen.getByText(item.title));
+    if (layout === "rail") {
+      expectOriginal(screen.getByText(item.creator.name));
+      expect(screen.getByText(/TikTok/).closest('[translate="no"],[data-user-content]')).toBeNull();
+    }
+  });
   it("requests the full-size stored cover in the home rail", () => {
     const thumbnail = "/api/public/notice-media/20000000-0000-4000-8000-000000000002?variant=thumbnail";
     const item = { id: "t1", platform: "tiktok", videoId: "7690854938997558549", title: "원문 제목", href: "https://www.tiktok.com/@ifewknow/video/7690854938997558549", creator: { slug: "a", name: "A" }, thumbnail } as HomeShort;

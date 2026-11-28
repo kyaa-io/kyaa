@@ -469,7 +469,7 @@ export function CreatorRows({ locale, ranking, metric, show, fill, scope, challe
         <NameTarget active={open} label={`${row.name}, ${rankingsText(locale, "rkGoFanpage")}`} href={creatorHomeHref(row.slug, locale)}>
           <span className={styles.avatar} data-first={(accentFirst && i === 0) || undefined}><CreatorAvatar slug={row.slug} src={row.imageUrl} size={28} photos={undefined} /></span>
           <span className={styles.body}>
-            <span className={styles.nameLine}><span className={styles.name} title={row.name}>{row.name}</span>
+            <span className={styles.nameLine}><span className={styles.name} title={row.name} translate="no" data-user-content="">{row.name}</span>
               {row.liveNow ? <LiveMark locale={locale} name={row.name} /> : null}
               {online.has(row.slug) ? <OnlineMark locale={locale} /> : null}
               {challengeTag && row.challenge ? <FanTag tone="fan" className={styles.challenge}>{rankingsText(locale, "jjTag")}</FanTag> : null}</span>

@@ -100,9 +100,9 @@ export function HomeShorts({ items: firstItems, locale, layout = "rail", initial
   const grid = layout === "grid";
   const cards = items.map(item => {
     const cover = <span className={`${styles.cover} ${mediaFillClass}`}><MediaThumbnail image={item.thumbnail ?? shortCover(item)} href={item.href} kind="videos" locale={locale} backdrop preferHighResolution={!grid && Boolean(item.thumbnail)} onMissing={() => hideUncovered(item.id)} /><span className={styles.play} aria-hidden="true"><FanIcon icon={Play} filled /></span></span>;
-    const caption = grid ? <span className={`${styles.title} ${styles.gridTitle}`}>{item.title}</span> : <span className={styles.caption}>
+    const caption = grid ? <span className={`${styles.title} ${styles.gridTitle}`} translate="no" data-user-content="">{item.title}</span> : <span className={styles.caption}>
       <CreatorAvatar slug={item.creator.slug} src={item.creator.avatar?.src ?? null} photos={item.creator.avatar?.photos} size={32} />
-      <span className={styles.details}><span className={styles.title}>{item.title}</span><FanText role="meta" className={styles.meta}>{item.creator.name} · {platformName(item)}</FanText></span>
+      <span className={styles.details}><span className={styles.title} translate="no" data-user-content="">{item.title}</span><FanText role="meta" className={styles.meta}><span translate="no" data-user-content="">{item.creator.name}</span> · {platformName(item)}</FanText></span>
     </span>;
     const linkToFeed = !grid;
     const linkToSource = grid && !onSelectVideo && !playsInViewer(item);
