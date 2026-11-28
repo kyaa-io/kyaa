@@ -170,7 +170,7 @@ type ComposerProps = { showRewards?: boolean; fieldId: string; locale: AppLocale
 export const CommentComposer = memo(function CommentComposer({ showRewards = true, fieldId, locale, readDraft, onDraft, replyTarget, gated, gate, busy, error, onGate, onSubmit, onCancel }: ComposerProps) {
   const copy = contentCopy(locale), rc = postReactionCopy(locale), target = replyTarget?.id ?? "";
   const [draft, setDraft] = useState(() => readDraft(target));
-  return <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-filled={draft.length > 0 || undefined} data-expanded={replyTarget ? "" : undefined} aria-busy={busy} onSubmit={event => { event.preventDefault(); void onSubmit(draft).then(sent => { if (sent) setDraft(""); }); }}>
+  return <form className={`${commentStyles.composer} ${detailStyles.commentForm}`} data-floating-dm-avoid="" data-filled={draft.length > 0 || undefined} data-expanded={replyTarget ? "" : undefined} aria-busy={busy} onSubmit={event => { event.preventDefault(); void onSubmit(draft).then(sent => { if (sent) setDraft(""); }); }}>
     <fieldset className={styles.gateFields}>
     {replyTarget && <div id={`${fieldId}-reply-target`} className={commentStyles.target}>
       <span>{copy.replying}: <strong>{replyTarget.nickname}</strong></span>

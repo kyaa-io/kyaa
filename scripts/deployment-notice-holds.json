@@ -179,7 +179,8 @@
     "release-notes/2026-11-27-chemi-top-five.json",
     "release-notes/2026-11-27-badge-banners-gallery.json",
     "release-notes/2026-11-28-chemi-run-rank5.json",
-    "release-notes/2026-11-28-chemi-game-limits.json"
+    "release-notes/2026-11-28-chemi-game-limits.json",
+    "release-notes/2026-11-28-mobile-common.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",

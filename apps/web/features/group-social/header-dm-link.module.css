@@ -3,3 +3,5 @@
 /* 케미 몰입 장면(타로 뽑기·질문하기)은 장면이 화면 아래 끝까지 차서 떠 있는 버튼을 두지 않는다. */
 :global(body:has([data-chemi-immersive], [data-chemi-hide-dm], [data-chemi-list-link])) .floating { display: none; }
 @media (min-width: 1024px) { .floating { display: none; } }
+
+:global(body:has(textarea:focus, input:not([type="checkbox"], [type="radio"], [type="button"], [type="submit"]):focus, [contenteditable="true"]:focus)) .floating { display: none; }

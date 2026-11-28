@@ -3,9 +3,11 @@ import { togetherWith, type HeartDonationEvent } from "../domain/heart-donation"
 import { rankingsText } from "./rankings-copy";
 import { creatorName, creatorNameSlugs } from "@/features/fanpage/domain/creator-names";
 
-/** `엘리나와 함께 찐팬 하트로 불우이웃 후원하기`: the name the page itself carries (`pageName`, in the viewer's language) wins over the setting, which wins over the default. */
+/** `엘리나와 함께 찐팬 하트로 불우이웃 후원하기`: Use the page name when available, including the shared localized form for known creators. */
 export function heartDonationTitle(locale: AppLocale, event: HeartDonationEvent, pageName?: string) {
-  const creator = pageName || heartDonationCreator(locale, event);
+  const creator = pageName
+    ? creatorName(event.creatorSlug, locale, pageName)
+    : heartDonationCreator(locale, event);
   return rankingsText(locale, "hdTitle", [togetherWith(locale, creator), event.cause || rankingsText(locale, "hdCauseDefault")]);
 }
 

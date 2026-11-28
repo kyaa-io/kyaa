@@ -109,7 +109,7 @@ export function MemberEventPopup() {
       return [{ banner, key, lookup: requestLookup }];
     });
     const check = () => {
-      if (document.querySelector("[data-page-notice-priority]")) {
+      if (document.querySelector("[data-page-notice-priority], [data-analytics-consent-bar]")) {
         setActive(undefined);
         return;
       }
