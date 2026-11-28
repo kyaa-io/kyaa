@@ -34,19 +34,19 @@ it("pays a signed-in member's first click once and then shows the paid amount", 
   state.authenticated = true; state.today = { ...today([]), points: 7 };
   state.post.mockResolvedValue({ points: 8, capped: false, reason: null, replayed: false });
   const { container } = render(<ThinBanner banner={banner()} locale="ko" />);
-  await waitFor(() => expect(container.querySelector("[data-ad-reward=points]")).toHaveTextContent("광고 보고 +7 마일리지"));
+  await waitFor(() => expect(container.querySelector("[data-ad-reward=points]")).toHaveTextContent("광고 +7"));
   fireEvent.click(screen.getByRole("link"));
   fireEvent.click(screen.getByRole("link"));
   expect(posts()).toHaveLength(1);
   expect(state.request).toHaveBeenCalledWith("/api/me/dukjil/ad-reward", expect.objectContaining({ method: "POST", body: JSON.stringify({ bannerId: AD }), keepalive: true }));
-  await waitFor(() => expect(container.querySelector("[data-ad-reward=received]")).toHaveTextContent("+8 마일리지 받음"));
+  await waitFor(() => expect(container.querySelector("[data-ad-reward=received]")).toHaveTextContent("+8 받음"));
 });
 
 it("shows a previously paid banner even at the daily limit", async () => {
   state.authenticated = true; state.today = today([AD], 0);
   const first = render(<ThinBanner banner={banner()} locale="ko" />);
   await waitFor(() => expect(state.request).toHaveBeenCalledTimes(1));
-  await waitFor(() => expect(first.container.querySelector("[data-ad-reward=received]")).toHaveTextContent("+5 마일리지 받음"));
+  await waitFor(() => expect(first.container.querySelector("[data-ad-reward=received]")).toHaveTextContent("+5 받음"));
   fireEvent.click(screen.getByRole("link"));
   expect(posts()).toHaveLength(0);
   first.unmount();
