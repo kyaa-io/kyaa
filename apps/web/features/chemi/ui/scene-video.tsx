@@ -9,6 +9,8 @@ type SceneVideoProps = {
   mobileOnly?: boolean;
   once?: boolean;
   paused?: boolean;
+  /** Keep a decoded frame on screen when explicitly paused or motion is reduced. */
+  freezeFrame?: boolean;
   objectPosition?: string;
 };
 const seen = new Set<string>();
@@ -17,7 +19,7 @@ export function SceneVideo(props: SceneVideoProps) {
   return <Playback key={props.src} {...props} />;
 }
 
-function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoProps) {
+function Playback({ src, mobileOnly, once, paused, freezeFrame, objectPosition }: SceneVideoProps) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
@@ -35,13 +37,20 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
     let revision = 0;
     const update = () => {
       const attempt = ++revision;
-      if (!visible || document.hidden || paused || failed || motion.matches || (mobileOnly && wide.matches) ||
+      if (!visible || document.hidden || (paused && !freezeFrame && !motion.matches) || failed || (motion.matches && freezeFrame === undefined) || (mobileOnly && wide.matches) ||
           nav.connection?.saveData || (nav.deviceMemory ?? 8) <= 2 || (nav.hardwareConcurrency || 8) <= 2) {
         video.pause();
         setPlaying(false);
         return;
       }
+      const frozen = freezeFrame === true || motion.matches;
+      video.preload = frozen ? "auto" : "none";
       if (!video.hasAttribute("src")) video.src = src + (video.canPlayType("video/mp4") ? ".mp4" : ".webm");
+      if (frozen) {
+        video.pause();
+        if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) setPlaying(true);
+        return;
+      }
       video.play()?.catch(() => { if (revision === attempt) setPlaying(false); });
     };
     const sizeLoop = () => {
@@ -59,6 +68,10 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
         try { sessionStorage.setItem(key, "1"); } catch {}
       }
     };
+    const showStillFrame = () => {
+      if (freezeFrame === true || (freezeFrame !== undefined && motion.matches)) update();
+    };
+    video.addEventListener("loadeddata", showStillFrame);
     const finish = () => { failed = true; setPlaying(false); };
     const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; update(); });
     observer.observe(video);
@@ -72,12 +85,13 @@ function Playback({ src, mobileOnly, once, paused, objectPosition }: SceneVideoP
       window.removeEventListener("resize", sizeLoop);
       observer.disconnect();
       video.pause();
+      video.removeEventListener("loadeddata", showStillFrame);
       video.removeEventListener("playing", start);
       video.removeEventListener("ended", finish);
       video.removeEventListener("error", finish);
       for (const [target, event] of events) target?.removeEventListener(event, update);
     };
-  }, [src, once, mobileOnly, paused]);
+  }, [src, once, mobileOnly, paused, freezeFrame]);
   return <video ref={ref} muted playsInline loop={!once} preload="none" aria-hidden="true"
     className={styles.video} data-scene-loop={src.startsWith("/chemi/video/") || undefined} data-once={once || undefined} data-playing={playing || undefined}
     style={{ "--scene-focus": objectPosition } as CSSProperties} />;
