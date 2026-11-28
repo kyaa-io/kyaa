@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "홈, 모임, 팬페이지, 공지, 케미, MY를 오갈 때 상단 메뉴가 이어지고 포인트와 알림 숫자가 화면 이동 때문에 비었다가 나타나는 현상을 줄였어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/notices",
+  "images": [
+    "release-notes/images/2026-11-28-persistent-fan-layout.png"
+  ]
+}

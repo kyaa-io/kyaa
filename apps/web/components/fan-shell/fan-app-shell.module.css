@@ -278,3 +278,17 @@
   .groupsNavigation .actions > .headerLanguage > * { padding-inline: var(--space-3); }
   .groupsNavigation .actions [data-account-trigger="avatar"] { margin-left: var(--space-3); }
 }
+
+.persistentLayout {
+  --fan-header-height: 68px;
+  --fan-ink: var(--color-ink);
+  --fan-line: var(--color-line);
+  --fan-muted: var(--color-muted);
+}
+.routeFrame { min-height: calc(100dvh - var(--fan-header-height)); }
+.headerActionSlot { display: contents; }
+.persistentLayout:has([data-chemi-immersive], [data-fan-bottom-navigation-hidden]) > .bottomNavigation,
+.persistentLayout:has([data-fan-route-not-found], [data-fan-route-immersive]) > :is(.header, .skipLink, .bottomNavigation) { display: none; }
+@media (min-width: 1024px) {
+  .persistentLayout { --fan-header-height: 88px; }
+}
