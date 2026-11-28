@@ -21,6 +21,7 @@ import { CreatorFanGrade, CreatorFanGradePlaceholder } from "./creator-fan-grade
 import { GroupArtistBadge } from "./group-artist-badge";
 import { GroupPageMenu } from "./group-page-menu";
 import { GroupPageProvider, useGroupPage } from "./group-page-context";
+import { FanProfileMetrics } from "./fan-profile-metrics";
 import { GroupPresence, GroupVisitLine } from "./group-presence";
 import { CreatorEntryToast } from "./creator-entry-toast";
 import { pageHeadCopy } from "./page-head-copy";
@@ -87,6 +88,7 @@ export function GroupPageHead() {
     kind={g.kind}
     locale={g.locale}
     fanLayout={fanNavigation}
+    metrics={combineLikes && <FanProfileMetrics fans={memberCount} data={g.presence?.data} locale={g.locale}/>}
     visits={fanNavigation ? <>{combineLikes && stats}<GroupVisitLine data={g.presence?.data} locale={g.locale}/></> : undefined}
     description={summary}
     descriptionLabels={pageHeadCopy(g.locale)}

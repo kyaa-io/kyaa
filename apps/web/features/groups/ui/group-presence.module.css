@@ -67,3 +67,11 @@
 /* Once the count sits in the like button, only visible presence details need a row. */
 .line.withoutCount { grid-column: 1 / -1; }
 .line.withoutCount:not(:has(.artist, .error, [data-challenge-stat])) { display: none; }
+
+.profileCounts { display:flex; flex-wrap:wrap; gap:var(--space-4); margin:0; }
+.profileCounts div { display:flex; flex-direction:column-reverse; align-items:center; }
+.profileCounts dt { color:var(--color-muted); }
+.profileCounts dd { margin:0; }
+@media (min-width:1024px) {
+ [data-fan-page-header="fan"]:has(.profileCounts) .visits { display:none; }
+}
