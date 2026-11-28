@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "짝 맞추기와 최애 런의 시작 화면에 게임마다 하루 무료 3판이라는 한도를 표시해요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi/games/match",
+  "images": ["release-notes/images/2026-11-28-chemi-game-limits.png"]
+}

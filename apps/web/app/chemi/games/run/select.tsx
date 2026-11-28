@@ -1,5 +1,7 @@
 "use client";
 
+import { dailyGameLimit } from "../daily-limit";
+
 import { runDateLabel } from "@/features/chemi/i18n/calendar-label";
 import { rankName } from "@/features/chemi/games/rank-name";
 import type { ReactNode } from "react";
@@ -47,6 +49,7 @@ export function SelectStage({ character, pickDisabled, onPick, copy, locale, nam
       <Ranking lobby rows={rows} loaded={loaded} loading={loading} copy={copy} locale={locale} names={names} near onAll={onAllRanks} footer={footer} />
       <div className={styles.sideLegend}><Legend copy={copy} layout="list" /></div>
       <div className={styles.cta}>
+        <FanText as="p" role="meta">{dailyGameLimit(locale)}</FanText>
         {errorLine}
         {waiting ? !errorLine && <FanSkeleton shape="block" className={styles.ctaSkeleton} /> : spent ? <>
           <FanText as="p" role="item">{copy.done}</FanText>
