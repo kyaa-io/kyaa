@@ -1,3 +1,4 @@
+import { PD_SHORTS_BANNER_ID, PD_SHORTS_POST_URL } from "@/features/home/domain/pd-shorts-banner";
 import { createHomeBannerRepository } from "@/server/content/home-banner-repository";
 import { loadServerEnv } from "@/server/config/env";
 import { toContentLocale } from "@/i18n/locales";
@@ -31,5 +32,7 @@ export default async function Page({searchParams}:{searchParams:Promise<Query>})
   const bannerRepository=createHomeBannerRepository({url:environment.SUPABASE_URL,serviceRoleKey:environment.SUPABASE_SERVICE_ROLE_KEY});
   const unfiltered=!query.mine&&!query.type&&!query.search&&!query.sort&&!query.owned&&!query.artistRole;
   const [discoveryBanners,homeBanners,todayFanpages,initialList]=await Promise.all([bannerRepository.list(toContentLocale(locale),"groups"),bannerRepository.list(toContentLocale(locale),"home"),loadTodayFanpages(toContentLocale(locale)),unfiltered?readGuestDirectory(toContentLocale(locale)):undefined]);
-  return <GroupDirectory initialList={initialList} promoOrder={todayFanpages.map(item=>item.slug)} banners={withHomeGuideBanners(discoveryBanners,homeBanners)} locale={parseAppLocale(query.locale)} initialType={query.type==="fan"||query.type==="brand"||query.type==="hobby"?query.type:"all"} initialSearch={query.search??""} initialSort={query.sort==="popular"?"popular":"recent"} initialOwned={query.owned==="1"} initialMine={query.mine==="joined"||query.mine==="bookmarked"?query.mine:undefined}/>;
+  const shorts = homeBanners.find(banner => banner.id === PD_SHORTS_BANNER_ID);
+  const sidebarBanner = shorts && { ...shorts, href: /\.mp4(?:$|[?#])/i.test(shorts.href) ? PD_SHORTS_POST_URL : shorts.href };
+  return <GroupDirectory sidebarBanner={sidebarBanner} initialList={initialList} promoOrder={todayFanpages.map(item=>item.slug)} banners={withHomeGuideBanners(discoveryBanners,homeBanners)} locale={parseAppLocale(query.locale)} initialType={query.type==="fan"||query.type==="brand"||query.type==="hobby"?query.type:"all"} initialSearch={query.search??""} initialSort={query.sort==="popular"?"popular":"recent"} initialOwned={query.owned==="1"} initialMine={query.mine==="joined"||query.mine==="bookmarked"?query.mine:undefined}/>;
 }

@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "휴대폰 모임 화면에서 Hot 게시글 마지막 줄과 홍보 카드 사이에 페이지 버튼만 들어가도록 여백을 줄였어요. 글이 없을 때는 페이지 버튼을 숨겨요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-28-groups-mobile-gap.png"]
+}
