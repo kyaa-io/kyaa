@@ -1,5 +1,7 @@
 "use client";
 
+import { dailyGameLimit } from "../daily-limit";
+
 import { matchTitle } from "../titles";
 import { SpentPoints } from "@/features/chemi/games/spent-points";
 import { VacantRank } from "@/features/chemi/games/vacant-rank";
@@ -963,6 +965,7 @@ function Session({
                 <section className={styles.roundTable}><FanHeading as="h2">{locale === "ko" ? `${LEVELS.length}라운드` : `${copy.round} · ${LEVELS.length}`}</FanHeading>
                 {levelList}</section>
                 <div className={styles.startAction}>
+                  <FanText as="p" role="meta">{dailyGameLimit(locale)}</FanText>
                   {lobby && !ended && <FanText role="meta" className={styles.freeCount}>{copy.freePlays} {lobby.freeRemaining}</FanText>}
                   {exhausted && <FanText role="meta">{copy.nextFree} {hms(untilKstMidnight(now))}</FanText>}
                   <StageAction disabled={exhausted || working || !auth.ready || (auth.authenticated && !lobby)} loading={working} onClick={() => paidStart ? setPaying(true) : void start(character)}>
