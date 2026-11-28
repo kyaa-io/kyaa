@@ -3,9 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { decorateOutboundUrl, outboundCampaign, outboundKindSchema, outboundPlacementSchema, outboundTrackingAllowed } from "../domain/outbound-link";
-import { advertiserForBanner } from "../domain/banner-ad";
 import { observeAdImpressions } from "./observe-ad-impressions";
-import { recordProductEventV1 } from "./product-event-client";
+import { recordLinkClick } from "./record-link-click";
 
 const REACT_FIBER = "__reactFiber$", REACT_PROPS = "__reactProps$";
 const ownKey = (node: Element, prefix: string) => Object.keys(node).find((key) => key.startsWith(prefix));
@@ -85,13 +84,8 @@ export function trackOutboundLinks(root: Document, pathname: string) {
     if (!anchor) return;
     const result = decorate(anchor);
     if (!result) return;
-    try {
-      // No awaited identity lookup: keepalive starts before same-tab navigation.
-      const adId = anchor.closest<HTMLElement>("[data-ad-banner]")?.dataset.adBanner;
-      const advertiser = adId && advertiserForBanner(adId);
-      void recordProductEventV1({ eventName: "outbound_link_click", source: "web.outbound", idempotencyKey: `outbound:${crypto.randomUUID()}`,
-        celebrityId: null, liveEventId: null, missionId: null, benefitId: null, properties: advertiser && adId ? { ...result.properties, adId, advertiser } : result.properties });
-    } catch { /* Analytics must never prevent navigation. */ }
+    const adId = anchor.closest<HTMLElement>("[data-ad-banner]")?.dataset.adBanner;
+    recordLinkClick(result.properties, adId);
   }
   root.addEventListener("click", click);
   root.addEventListener("auxclick", click);

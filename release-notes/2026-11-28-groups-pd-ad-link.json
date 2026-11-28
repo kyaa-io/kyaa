@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "PC 모임 화면 오른쪽의 나영석 PD 광고를 누르면 공지 게시판에서 영상을 보고 댓글을 남길 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-28-groups-pd-ad-link.png"]
+}
