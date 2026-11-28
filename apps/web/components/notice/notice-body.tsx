@@ -8,6 +8,7 @@ import React, { createContext, useContext, useMemo, type ReactNode } from "react
 import { TranslationControl, useAutomaticTranslation } from "@/features/content-safety/ui/use-automatic-translation";
 import { shouldOfferTranslation } from "@/features/content-safety/domain/translation-eligibility";
 import type { TiptapDocument } from "../../server/notice/notice-domain";
+import { noticeMedia, noticePoster } from "./notice-media";
 import { noticeExtensions } from "./tiptap-extensions";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
 import { isPrivateNoticeImage } from "@/server/notice/notice-domain";
@@ -86,6 +87,13 @@ function RenderedNoticeBody({ document, locale, adminPreview = false, operatorCh
     extensions: noticeExtensions,
     options: {
       nodeMapping: {
+        noticeMedia: ({ node }) => {
+          const media = noticeMedia(node.attrs.src);
+          if (!media) return null;
+          return media.kind === "youtube"
+            ? <iframe src={media.src} title="YouTube" allowFullScreen className={styles.youtube} />
+            : <video src={media.src} poster={noticePoster(node.attrs.poster) ?? undefined} controls muted playsInline preload="metadata" className={styles.video} />;
+        },
         image: ({ node }) => isPrivateNoticeImage(node.attrs.src)
           ? <RichIsland><ContentAssetImage asset={{ id: node.attrs.src.slice("/api/content-assets/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} adminPreview={adminPreview} operatorChannelId={operatorChannelId} /></RichIsland>
           : node.attrs.src.startsWith("/api/public/notice-media/") ? <RichIsland><ContentAssetImage noticeMedia adminPreview={adminPreview} asset={{ id: node.attrs.src.slice("/api/public/notice-media/".length), width: node.attrs.width || 960, height: node.attrs.height || 640 }} locale={locale} alt={node.attrs.alt || ""} /></RichIsland>

@@ -5,6 +5,8 @@ import { operatorEditor } from "@/i18n/catalogs/components__admin__operator-edit
 import Image from "@tiptap/extension-image";
 import { Archive, Bold, ImagePlus, Italic, Link2, List, ListOrdered, Pin, Save, Underline as UnderlineIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { noticeMedia, noticePoster } from "../notice/notice-media";
 import { noticeExtensions } from "../notice/tiptap-extensions";
 import { NoticeBody } from "../notice/notice-body";
 import { ContentAssetImage } from "@/features/content-safety/ui/content-asset";
@@ -134,6 +136,19 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
     editable: canEdit && !current?.archivedAt && current?.publicationStatus !== "published",
     onUpdate: ({ editor: active }) => setBodies((value) => ({ ...value, [language]: active.getJSON() })),
   }, [language, selectedId, canEdit, current?.archivedAt, current?.publicationStatus]);
+  function addMedia() {
+    const src = prompt(locale === "ko" ? "영상 주소" : "Video URL")?.trim();
+    if (!src) return;
+    const media = noticeMedia(src);
+    if (!media) {
+      if (/^https:\/\//i.test(src)) editor?.chain().focus().insertContent({ type: "paragraph", content: [{ type: "text", text: src, marks: [{ type: "link", attrs: { href: src } }] }] }).run();
+      else { setMessageIsError(true); setMessage(locale === "ko" ? "HTTPS 주소를 입력하세요." : "Enter an HTTPS URL."); }
+      return;
+    }
+    const poster = media.kind === "mp4" ? prompt(locale === "ko" ? "포스터 이미지 주소 (선택)" : "Poster URL (optional)")?.trim() : null;
+    if (poster && !noticePoster(poster)) { setMessageIsError(true); setMessage(locale === "ko" ? "꺄 공개 이미지 주소를 입력하세요." : "Enter a public KYAA image URL."); return; }
+    editor?.chain().focus().insertContent({ type: "noticeMedia", attrs: { src: media.src, poster: poster || null } }).run();
+  }
   useEffect(() => {
     editor?.setEditable(canEdit && !pending && !needsRefresh && !current?.archivedAt && current?.publicationStatus !== "published");
   }, [canEdit, current?.archivedAt, current?.publicationStatus, editor, needsRefresh, pending]);
@@ -299,6 +314,7 @@ export function NoticeManager({ celebrityId, celebrityName, role, locale, isBran
           <button type="button" disabled={toolbarDisabled} onClick={() => editor?.chain().focus().toggleOrderedList().run()} aria-label="Ordered list"><ListOrdered /></button>
           <button type="button" disabled={toolbarDisabled} onClick={addLink} aria-label="Link"><Link2 /></button>
           <button type="button" disabled={toolbarDisabled} onClick={() => fileRef.current?.click()} aria-label={locale === "ko" ? "이미지 업로드" : "Upload image"}><ImagePlus /></button>
+          <FanAction variant="text" size="sm" disabled={toolbarDisabled} onClick={addMedia}>{locale === "ko" ? "영상" : "Video"}</FanAction>
           <input ref={fileRef} hidden disabled={interactionLocked} type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void upload(file); event.target.value = ""; }} />
         </div>
         <EditorContent editor={editor} className={styles.body} />

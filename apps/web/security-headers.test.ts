@@ -110,7 +110,7 @@ describe("response security headers", () => {
   it("opens exactly the 57c922b24 Privy origins in privy mode (PRIVY-RESTORE-1115)", () => {
     const csp = awsStorageContentSecurityPolicy({ privy: true });
     expect(csp).toContain("child-src https://auth.privy.io https://verify.walletconnect.com https://verify.walletconnect.org;");
-    expect(csp).toContain("frame-src https://auth.privy.io https://verify.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com https://www.youtube.com https://www.tiktok.com;");
+    expect(csp).toContain("frame-src https://auth.privy.io https://verify.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com https://www.youtube.com https://www.youtube-nocookie.com https://www.tiktok.com;");
     expect(csp).toContain("connect-src 'self' https://auth.privy.io wss://relay.walletconnect.com wss://relay.walletconnect.org wss://www.walletlink.org https://*.rpc.privy.systems https://explorer-api.walletconnect.com https://*.tiktokcdn.com");
     expect(withPrivySignIn(awsStorageContentSecurityPolicy({}))).toBe(csp);
     expect(privySignInEnabled({ AUTH_PROVIDER: "privy" })).toBe(true);
