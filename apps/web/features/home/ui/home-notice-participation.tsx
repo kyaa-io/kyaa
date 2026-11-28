@@ -2,7 +2,6 @@
 
 import { useId, useRef, useState } from "react";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
-import { useRouter } from "next/navigation";
 import type { Route } from "next";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { useByUsSession } from "@/components/byus-session-provider";
@@ -27,12 +26,7 @@ const parseParticipation = (value: unknown) => homeNoticeParticipationSchema.par
 const parseComments = (value: unknown) => homeNoticeCommentPageSchema.parse(value);
 /** `returnPath`: where sign-in comes back to when the block sits outside the notice detail (the mission book on /follow).
  * `reactions={false}`: no like/dislike buttons (the mission book's like is the event like above); share and comments stay. */
-type Props = { slug: string; title: string; locale: AppLocale; returnPath?: string; reactions?: boolean; onCommentsChanged?: () => void; commentsFirst?: boolean };
-
-export function PdNoticeParticipation(props: Props) {
-  const router = useRouter();
-  return <HomeNoticeParticipation {...props} commentsFirst onCommentsChanged={() => router.refresh()} />;
-}
+type Props = { slug: string; title: string; locale: AppLocale; returnPath?: string; reactions?: boolean };
 
 export function HomeNoticeParticipation(props: Props) {
   const auth = useByUsAuth(), session = useByUsSession();
@@ -40,7 +34,7 @@ export function HomeNoticeParticipation(props: Props) {
   return <Participation key={scope} {...props} />;
 }
 
-function Participation({ slug, title, locale, returnPath, reactions = true, commentsFirst, onCommentsChanged }: Props) {
+function Participation({ slug, title, locale, returnPath, reactions = true }: Props) {
   const auth = useByUsAuth(), copy = contentCopy(locale), rc = postReactionCopy(locale), fieldId = useId();
   const base = `/api/notices/${encodeURIComponent(slug)}`;
   const [cursor, setCursor] = useState<string | null>(null);
@@ -55,7 +49,7 @@ function Participation({ slug, title, locale, returnPath, reactions = true, comm
   const loginHref: string = fanLoginHref(locale, returnTo);
   const data = participation.state.status === "ready" ? participation.state.data : null;
   const reaction = optimistic?.base === data ? optimistic.state : data;
-  const refresh = () => { participation.retry(); comments.retry(); onCommentsChanged?.(); };
+  const refresh = () => { participation.retry(); comments.retry(); };
 
   async function react(choice: PostReactionChoice) {
     if (!data || !reaction || mutation.busy) return;
@@ -85,7 +79,7 @@ function Participation({ slug, title, locale, returnPath, reactions = true, comm
       <PostShareAction title={title} locale={locale} contentType="notice" />
     </div>;
   return <section className={styles.participation} data-home-notice-participation="">
-    {!commentsFirst && actions}
+    {actions}
     {participation.state.status === "loading" ? <FanSkeletonRows rows={1} /> : participation.state.status === "error" || participation.refreshFailed ? <p role="status">{copy.failed} <FanAction variant="text" onClick={participation.retry}>{copy.retry}</FanAction></p> : null}
     {error && <p role="alert">{error}{mutation.failure === "auth" && <FanAction href={loginHref} variant="text">{copy.login}</FanAction>}</p>}
     <section id="comments" className={styles.comments} aria-labelledby={`${fieldId}-heading`}>
@@ -103,6 +97,5 @@ function Participation({ slug, title, locale, returnPath, reactions = true, comm
         {(cursor || comments.state.data.nextCursor) && <nav className={styles.pagination} aria-label={copy.comments}>{cursor && <FanAction variant="text" onClick={() => setCursor(null)}>{copy.newest}</FanAction>}{comments.state.data.nextCursor && <FanAction variant="text" onClick={() => setCursor(comments.state.status === "ready" ? comments.state.data.nextCursor : null)}>{copy.older}</FanAction>}</nav>}
       </>}
     </section>
-    {commentsFirst && actions}
   </section>;
 }
