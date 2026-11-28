@@ -84,6 +84,7 @@ export const homeBannerManagerDataSchema = z.object({
   celebrities: z.array(z.object({ id: z.uuid(), slug: z.string(), nameKo: z.string(), nameEn: z.string() }).strict()),
 }).strict();
 export const homeBannerSchema = z.object({
+  entrantCount: z.number().int().nonnegative().nullish(),
   ...bannerMetadata, ...popupSchedule, id: z.uuid(), kind: bannerKindSchema, celebrityId: z.uuid().nullable(),
   title: z.string().trim().min(1).max(160), description: copyFields.description,
   ctaLabel: z.string().trim().min(1).max(80), href: z.string().max(2048).refine(isBannerHref),
