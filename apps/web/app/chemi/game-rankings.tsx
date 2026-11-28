@@ -124,12 +124,7 @@ function RankCard({ game, weekLabel, mineLabel, vacantLabel, empty, mineEmpty, s
       ) : (
         <>
           <div className={styles.leaders} data-collapsed={!open || undefined}>
-            {Array.from({ length: Math.max(SLOTS, shown.length) }, (_, index) => {
-              const row = shown[index] ?? {
-                id: `empty-${index}`, place: index + 1, name: vacantLabel, vacant: true, change: 0, record: "",
-              };
-              return <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />;
-            })}
+            {shown.map((row) => <RankingRow vacantLabel={vacantLabel} key={row.id} row={row} />)}
           </div>
           <div className={styles.rankFooter}>
             {(more.length > 0 || game.leaders.length > SLOTS) && moreLabel && lessLabel && (

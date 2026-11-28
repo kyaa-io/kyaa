@@ -10,7 +10,7 @@ import { FanSectionLink } from "@/components/fan-ui/fan-section-link";
 import { FanText } from "@/components/fan-ui/fan-text";
 import { fill, type RunCopy } from "./copy";
 import { getMatchCopy } from "../match/copy";
-import { ART, drawScene, pixelScale, loadArt, type PropName, type POSE } from "./render";
+import { drawScene, pixelScale, loadArt, type PropName, type POSE } from "./render";
 import styles from "./run.module.css";
 
 export const characters = ["changha", "elina", "yuna"] as const;
@@ -54,18 +54,18 @@ export function Ranking({ rows, loaded, loading = false, copy, locale, names, ne
   const number = new Intl.NumberFormat(locale);
   const me = rows.find((row) => row.isMe);
   const limit = lobby ? 5 : 3;
-  const places = lobby && loaded ? [1, 2, 3, 4, 5].slice(0, Math.max(3, rows.length)) : [1, 2, 3];
+  const places = loaded ? rows.filter((row) => row.place <= limit).map((row) => row.place) : loading ? [1, 2, 3] : [];
   const around = me && me.place > limit ? rows.filter((row) => row.place > limit && Math.abs(row.place - me.place) <= 1) : [];
   const above = me && rows.find((row) => row.place === me.place - 1);
   const line = (row: Rank | undefined, key: string, slot?: "near", place?: number) => row ? (
     <li data-row="" key={key} data-me={row.isMe} data-slot={slot && !row.isMe ? "near" : undefined} data-top={row.place <= 3}>
       <FanText role="label" className={styles.place}>{row.place}</FanText>
-      <FanText role="label" className={styles.avatar} aria-hidden="true"><RankAvatar nickname={row.nickname} url={row.avatarUrl} /><img className={styles.characterBadge} src={`${ART}/face-${row.character}-v1.png`} alt="" /></FanText>
-      <FanText role="item" className={styles.who}>{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`}</FanText>
+      <FanText role="label" className={styles.avatar} aria-hidden="true"><RankAvatar nickname={row.nickname} url={row.avatarUrl} /></FanText>
+      <FanText role="item" className={styles.who}>{rankName(row.nickname, locale, row.place)}{row.isMe && ` (${copy.me})`}</FanText>
       <FanText role="meta">{names[row.character]}</FanText>
       <FanText role="item">{number.format(row.score)}</FanText>
     </li>
-  ) : <li data-row="" key={key} data-empty="true" data-slot={slot} aria-hidden={place ? undefined : true}>
+  ) : loaded ? null : <li data-row="" key={key} data-empty="true" data-slot={slot} aria-hidden={place ? undefined : true}>
     {place && <VacantRank place={place} label={getMatchCopy(locale).vacant} avatarClassName={styles.avatar} />}
     {!place && loading && <FanSkeleton className={styles.rowSkeleton} />}
   </li>;
@@ -84,7 +84,7 @@ export function Ranking({ rows, loaded, loading = false, copy, locale, names, ne
       </>}
     </ol>
     <footer>
-      {above && near && <FanText role="meta" className={styles.above}><span>{fill(copy.above, { name: rankName(above.nickname, locale) })}</span><b>{fill(copy.points, { n: number.format(above.score - me!.score) })}</b></FanText>}
+      {above && near && <FanText role="meta" className={styles.above}><span>{fill(copy.above, { name: rankName(above.nickname, locale, above.place) })}</span><b>{fill(copy.points, { n: number.format(above.score - me!.score) })}</b></FanText>}
       {footer && <FanText role="meta">{footer}</FanText>}
       {loaded && rows.length === 0 && <FanText role="meta">{getMatchCopy(locale).emptyRanking}</FanText>}
     </footer>
