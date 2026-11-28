@@ -1,3 +1,4 @@
+import { christmasAvailable } from "@/features/chemi/domain/christmas-season";
 import { notFound } from "next/navigation";
 import {
   FanAppFrame,
@@ -45,7 +46,7 @@ export default async function ChemiPage({
             },
           ]}
         />
-        <ChemiHome matchAvailable={Boolean(getMatchPhotos())} preview={preview} weeklyRankings={chemiWeeklyRankingsEnabled()} copy={copy} locale={locale} growth={growth} />
+        <ChemiHome christmas={christmasAvailable(preview)} matchAvailable={Boolean(getMatchPhotos())} preview={preview} weeklyRankings={chemiWeeklyRankingsEnabled()} copy={copy} locale={locale} growth={growth} />
       </FanContentContainer>
     </FanAppFrame>
   );

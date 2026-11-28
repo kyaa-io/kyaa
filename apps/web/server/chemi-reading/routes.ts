@@ -1,4 +1,6 @@
-import { chemiTopupEnabled } from "@/features/chemi/domain/availability";
+import { christmasAvailable } from "@/features/chemi/domain/christmas-season";
+import { computeChristmasReading } from "@/server/chemi-engine/christmas";
+import { chemiPreview, chemiTopupEnabled } from "@/features/chemi/domain/availability";
 import { dayCardKind } from "@/app/chemi/fortune/deep/copy";
 import { isFortuneResult } from "@/app/chemi/fortune/reading";
 import { shareSummary } from "./share-summary";
@@ -215,7 +217,7 @@ const statuses: Record<string, number> = {
   CHEMI_UNAVAILABLE: 503,
 };
 type Operation =
-  "fortuneDeep" | "tarotSpread" | "pointDate" | "datePrice" | "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
+  "christmas" | "fortuneDeep" | "tarotSpread" | "pointDate" | "datePrice" | "visit" | "createReading" | "list" | "detail" | "share" | "card" | "done";
 export async function rewardRoute(
   op: Operation,
   request: Request,
@@ -223,6 +225,7 @@ export async function rewardRoute(
 ) {
   const closed = chemiClosedResponse();
   if (closed) return closed;
+  if (op === "christmas" && !christmasAvailable(chemiPreview())) return new Response(null, { status: 404 });
   const headers = { "cache-control": "private, no-store" };
   try {
     const auth = request.headers.get("authorization");
@@ -252,6 +255,12 @@ export async function rewardRoute(
       if (op === "datePrice") return { price: z.number().int().nonnegative().parse(await deps.rpc("chemi_date_reading_price", {})) };
       if (op === "card") return deps.rpc("chemi_get_share", { p_share: id });
       const { appUserId: p_user } = await deps.authorize(auth);
+      if (op === "christmas") {
+        const profile = z.object({ birth: birth.nullable() }).parse(await deps.rpc("chemi_read_profile", { p_user }));
+        if (!profile.birth) return { birthRequired: true };
+        const chart = { ...calculateSaju(birthInput(profile.birth)), gender: profile.birth.gender ?? undefined };
+        return computeChristmasReading(chart, natalChart(profile.birth), new Date());
+      }
       if (op === "pointDate") {
         const input = z.object({ character, day: z.iso.date(), confirm: z.boolean() }).parse(body);
         const args = { p_user, p_character: input.character, p_day: input.day, p_version: FORTUNE_TABLE_VERSION };

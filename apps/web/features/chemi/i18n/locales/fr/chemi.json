@@ -15,7 +15,9 @@
     "gameHours": "Les parties gratuites reviennent dans {count} h",
     "gameMinutes": "Les parties gratuites reviennent dans {count} min"
   },
+  "christmas": {"grades": ["Noël de fan", "Entre amis", "Une chance sur deux", "Bien parti", "Romance en vue"], "lines": ["Passe Noël avec moi !", "Fais la fête entre amis.", "Prévois un rendez-vous un de tes jours de chance.", "Envoie le premier message.", "Tu auras de la compagnie à Noël."], "dates": "Jours propices aux rencontres", "rank": "Top {n} %", "birth": "Saisis ta date de naissance"},
   "home": {
+    "christmas": "Un rendez-vous à Noël ?",
     "mileageGuideTitle": "Utiliser ses miles",
     "datePricing": "Consulte ton horoscope pour une autre date pour {mileage10}. Les miles gagnés en participant sont utilisés en premier. Tu peux relire un horoscope débloqué. Le compteur de parties est remis à zéro à minuit en Corée.",
     "gamePricing": "Chaque jeu offre trois parties gratuites par jour. Les trois premières parties supplémentaires coûtent respectivement {mileage10}, {mileage30} et {mileage50}. Dès la quatrième, chaque partie coûte {mileage100}, sans limite quotidienne.",
@@ -579,6 +581,7 @@
     "amuletAlt": "Porte-bonheur de soutien de {name}, {date}",
     "saveCard": "Enregistrer la carte",
     "cardSaved": "Carte enregistrée",
+    "saveResultImage": "Enregistrer l’image",
     "cardSaveFailed": "Impossible d'enregistrer la carte. Réessaie.",
     "todayFortune": "Horoscope du jour",
     "cardDate": "Date",

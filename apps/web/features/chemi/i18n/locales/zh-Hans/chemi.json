@@ -15,7 +15,9 @@
     "gameHours": "{count}小时后重新开放免费局",
     "gameMinutes": "{count}分钟后重新开放免费局"
   },
+  "christmas": {"grades": ["和偶像过节", "和朋友过节", "一半一半", "很有希望", "脱单在望"], "lines": ["那就和我一起过吧！", "约朋友一起热闹过节吧。", "挑个幸运日约见面吧。", "试着主动发条消息吧。", "这个圣诞你可没空独处啦。"], "dates": "最有机会脱单的日子", "rank": "前{n}%", "birth": "输入生日"},
   "home": {
+    "christmas": "今年圣诞能脱单吗？",
     "mileageGuideTitle": "如何使用里程",
     "datePricing": "花{mileage10}即可查看其他日期的运势。优先使用活动赚取的里程，已解锁的运势可再次查看。游戏次数在韩国时间零点重置。",
     "gamePricing": "每款游戏每天可免费玩3局。额外的前三局依次为{mileage10}、{mileage30}、{mileage50}，从第4局起每局{mileage100}，不限次数。",
@@ -579,6 +581,7 @@
     "amuletAlt": "{name}的应援护身符，{date}",
     "saveCard": "保存卡片",
     "cardSaved": "卡片已保存",
+    "saveResultImage": "保存图片",
     "cardSaveFailed": "卡片保存失败，请再试一次。",
     "todayFortune": "今日运势",
     "cardDate": "日期",

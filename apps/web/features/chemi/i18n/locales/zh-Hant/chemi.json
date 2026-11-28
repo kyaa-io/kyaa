@@ -15,7 +15,9 @@
     "gameHours": "{count}小時後重新開放免費局",
     "gameMinutes": "{count}分鐘後重新開放免費局"
   },
+  "christmas": {"grades": ["和偶像過節", "和朋友過節", "一半一半", "很有希望", "脫單在望"], "lines": ["那就和我一起過吧！", "約朋友一起熱鬧過節吧。", "挑個幸運日約見面吧。", "試著主動傳則訊息吧。", "這個聖誕你可沒空獨處啦。"], "dates": "最有機會脫單的日子", "rank": "前{n}%", "birth": "輸入生日"},
   "home": {
+    "christmas": "今年聖誕能脫單嗎？",
     "mileageGuideTitle": "如何使用里程",
     "datePricing": "花{mileage10}即可查看其他日期的運勢。優先使用活動賺取的里程，已解鎖的運勢可再次查看。遊戲次數於韓國時間零點重設。",
     "gamePricing": "每款遊戲每天可免費玩3局。額外的前三局依序為{mileage10}、{mileage30}、{mileage50}，從第4局起每局{mileage100}，不限次數。",
@@ -579,6 +581,7 @@
     "amuletAlt": "{name}的應援護身符，{date}",
     "saveCard": "儲存卡片",
     "cardSaved": "卡片已儲存",
+    "saveResultImage": "儲存圖片",
     "cardSaveFailed": "卡片儲存失敗，請再試一次。",
     "todayFortune": "今日運勢",
     "cardDate": "日期",
