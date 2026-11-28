@@ -1,0 +1,13 @@
+{
+  "changes": [
+    "광고 카드에 광고를 보면 받을 마일리지가 표시되고, 받은 뒤에는 받은 마일리지가 표시돼요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/",
+  "images": [
+    "release-notes/images/2026-11-28-ad-reward-main-390.png",
+    "release-notes/images/2026-11-28-ad-reward-main-1440.png",
+    "release-notes/images/2026-11-28-ad-reward-received-390.png",
+    "release-notes/images/2026-11-28-ad-reward-received-1440.png"
+  ]
+}

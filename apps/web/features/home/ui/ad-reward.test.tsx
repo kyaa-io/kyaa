@@ -30,23 +30,23 @@ it("shows a signed-out viewer the +5 pill and lets the link open without asking 
   expect(state.request).not.toHaveBeenCalled();
 });
 
-it("pays a signed-in member's first click once and then hides the point offer", async () => {
-  state.authenticated = true; state.today = today([]);
-  state.post.mockResolvedValue({ points: 5, capped: false, reason: null, replayed: false });
+it("pays a signed-in member's first click once and then shows the paid amount", async () => {
+  state.authenticated = true; state.today = { ...today([]), points: 7 };
+  state.post.mockResolvedValue({ points: 8, capped: false, reason: null, replayed: false });
   const { container } = render(<ThinBanner banner={banner()} locale="ko" />);
-  await waitFor(() => expect(container.querySelector("[data-ad-reward=points]")).toBeInTheDocument());
+  await waitFor(() => expect(container.querySelector("[data-ad-reward=points]")).toHaveTextContent("광고 보고 +7 마일리지"));
   fireEvent.click(screen.getByRole("link"));
   fireEvent.click(screen.getByRole("link"));
   expect(posts()).toHaveLength(1);
   expect(state.request).toHaveBeenCalledWith("/api/me/dukjil/ad-reward", expect.objectContaining({ method: "POST", body: JSON.stringify({ bannerId: AD }), keepalive: true }));
-  await waitFor(() => expect(container.querySelector("[data-ad-reward]")).toBeNull());
+  await waitFor(() => expect(container.querySelector("[data-ad-reward=received]")).toHaveTextContent("+8 마일리지 받음"));
 });
 
-it("hides the point offer for a banner paid earlier today and nothing once the day's 10 are used", async () => {
-  state.authenticated = true; state.today = today([AD], 9);
+it("shows a previously paid banner even at the daily limit", async () => {
+  state.authenticated = true; state.today = today([AD], 0);
   const first = render(<ThinBanner banner={banner()} locale="ko" />);
   await waitFor(() => expect(state.request).toHaveBeenCalledTimes(1));
-  expect(first.container.querySelector("[data-ad-reward]")).toBeNull();
+  await waitFor(() => expect(first.container.querySelector("[data-ad-reward=received]")).toHaveTextContent("+5 마일리지 받음"));
   fireEvent.click(screen.getByRole("link"));
   expect(posts()).toHaveLength(0);
   first.unmount();

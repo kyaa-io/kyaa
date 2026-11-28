@@ -200,6 +200,7 @@ radius-scale: "pill / 16px / 12px / 8px / 50%"
 | `celebrateReward` · `FanRewardPop` | 포인트·스탬프 지급 연출(서버 확정 뒤 한 번) | `points` `stamps` `anchor` | 화면별 자체 연출 |
 | `EarnBadgeCorner` (`features/dukjil/ui/earn-badge.tsx`) | 포인트를 주는 모든 버튼의 오른쪽 위 노란 코인 배지(20) | `action` 또는 `points` | 같은 버튼 옆 `+NP` 글자 배지 |
 | `EarnBadge variant="inline"` (`features/dukjil/ui/earn-badge.tsx`) | 줄·카드 안의 받을/받은 포인트: 모서리 배지와 같은 노란 알약(20, 작게 16) | `points`, 세로 목록은 `slot`, 좁은 칸은 `size="sm"` | `+NP`·`N P` 글자, 동전 그림 직접 조합 |
+| 광고 보상 배지 | 공통 노란 코인 알약에 수령 전 행동과 금액(광고 보고 +N 마일리지), 수령 후 지급 금액(+N 마일리지 받음) | `AdRewardBadge`와 `EarnBadge`의 `pointLabel` | 체크 표시만으로 수령 상태 표시 |
 | `FanMissionRow` | 덕질 미션 한 줄(64) | — | `×N`·nudge |
 | `FanScrollRow` | 오른쪽 끝까지 찬 가로 스크롤 줄(숏폼·갤러리) | `onNearEnd`, `label` | — |
 | `MediaFill` · `CreatorAvatar` | 사진 여백 색 확장 / 원형 프로필 | `src` | — |
