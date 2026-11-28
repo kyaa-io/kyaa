@@ -1,4 +1,3 @@
-import { PD_NOTICE_SLUG } from "@/features/home/domain/pd-shorts-banner";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { FanAppFrame, FanContentContainer } from "@/components/fan-shell/fan-app-shell";
@@ -33,20 +32,6 @@ export default async function HomeNoticeDetailPage({ params, searchParams }: Pro
   const contentLocale = toContentLocale(locale);
   const [notice, recent] = await Promise.all([load(slug, contentLocale), createPublicHomeNoticeRepository().listPublished(contentLocale, { limit: 6 }).catch(() => null)]);
   if (!notice) notFound();
-  if (slug === PD_NOTICE_SLUG && recent) {
-    let page = recent;
-    while (true) {
-      const summary = page.items.find(item => item.slug === slug);
-      if (summary) {
-        Object.assign(notice, { viewCount: summary.viewCount, commentCount: summary.commentCount });
-        break;
-      }
-      if (!page.nextCursor) break;
-      const next = await createPublicHomeNoticeRepository().listPublished(contentLocale, { cursor: page.nextCursor, limit: 20 }).catch(() => null);
-      if (!next) break;
-      page = next;
-    }
-  }
   const others = (recent?.items ?? []).filter(item => item.slug !== slug).slice(0, 5);
   return <FanAppFrame locale={locale} currentPath="/notices" mainId="notice-main">
     <FanContentContainer as="main" id="notice-main" tabIndex={-1}>

@@ -18,7 +18,7 @@
 .body p,.body ul,.body ol,.body blockquote { margin:0 0 20px; }
 .body blockquote { padding-left:20px; border-left:3px solid var(--color-muted); color:var(--color-ink); }
 .body a { color:var(--color-accent-ink); text-decoration-thickness:1px; text-underline-offset:3px; }
-.body img { display:block; width:100%; height:auto; margin:32px 0; border-radius:16px; }
+.body img, .video { display:block; width:100%; height:auto; margin:32px 0; border-radius:16px; }
 .recent { min-width:0; align-self:start; padding-top:var(--space-4); border-top:1px solid var(--color-line); }
 .recent h2 { margin:0 0 12px; font-size:18px; letter-spacing:-.025em; }
 .recent a { display:grid; min-height:56px; align-content:center; gap:4px; border-top:1px solid var(--color-line-subtle); color:var(--color-ink); text-decoration:none; }
@@ -51,5 +51,7 @@
 .header > button { justify-self:start; }
 
 .youtube { width:100%; aspect-ratio:16/9; border:0; }
-.video { display:block; max-width:100%; max-height:70vh; margin:auto; }
+@media (min-width:48rem) {
+  .video { max-width:420px; }
+}
 .body:has(> .video, > .youtube) { --notice-body-size:var(--fan-body-size); --notice-body-leading:var(--fan-body-leading); }
