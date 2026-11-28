@@ -148,32 +148,32 @@ const tones: Record<FortuneCharacterId, Tone> = {
     picked: { fandom: "덕질 얘기부터 궁금했군요.", luck: "챙길 것부터 볼까요?" },
     scoreLine: (score, grade) => `오늘은 ${score}점, ${grade}이에요.`,
     gradeNotes: {
-      "쉬어 가는 날": "오늘은 무리하지 말아요. 약속은 하나만, 따뜻한 거 마시면서 쉬어.",
-      "조심하면 괜찮은 날": "말하기 전에 한 번만 더 생각해 봐요. 그럼 괜찮을 거야.",
+      "쉬어 가는 날": "오늘은 무리하지 말아요. 약속은 하나만, 따뜻한 거 마시면서 쉬어요.",
+      "조심하면 괜찮은 날": "말하기 전에 한 번만 더 생각해 봐요. 그럼 괜찮을 거예요.",
       "무난한 날": "오늘은 편하게 흘러가요. 밥 잘 챙겨 먹고 하던 대로 해요.",
-      "좋은 날": "하던 일이 술술 풀릴 거예요. 오늘은 마음 편히 가도 돼.",
-      "아주 좋은 날": "망설이던 일 있으면 오늘 해 봐요. 내가 옆에서 응원할게.",
+      "좋은 날": "하던 일이 술술 풀릴 거예요. 오늘은 마음 편히 가도 돼요.",
+      "아주 좋은 날": "망설이던 일 있으면 오늘 해 봐요. 제가 옆에서 응원할게요.",
     },
     people: {
       high: "오늘은 선배가 먼저 손 내밀 수도 있어요. 웃으며 받아 줘요.",
-      mid: "친한 사람이랑은 편하게 만나요. 처음 보는 자리는 일찍 일어나도 괜찮아.",
-      low: "오늘은 누구 앞에서든 한 박자 쉬고 말해 봐요. 듣는 쪽이어도 괜찮아.",
+      mid: "친한 사람이랑은 편하게 만나요. 처음 보는 자리는 일찍 일어나도 괜찮아요.",
+      low: "오늘은 누구 앞에서든 한 박자 쉬고 말해 봐요. 듣는 쪽이어도 괜찮아요.",
     },
     fandom: {
       high: {
-        low: "혼자 깊이 보기 좋은 날이에요. 지난 무대 직캠 보고 좋은 장면 저장해 둬.",
+        low: "혼자 깊이 보기 좋은 날이에요. 지난 무대 직캠 보고 좋은 장면 저장해 둬요.",
         mid: "응원 글 하나 정성껏 써 봐요. 오늘은 마음이 잘 닿아요.",
-        high: "덕질 친구랑 직캠 같이 보면서 실컷 얘기해요. 오늘은 그래도 돼.",
+        high: "덕질 친구랑 직캠 같이 보면서 실컷 얘기해요. 오늘은 그래도 돼요.",
       },
       mid: {
-        low: "혼자 조용히 해요. 출석 체크하고 사진 한 장만 저장해 둬.",
-        mid: "응원 댓글 하나면 충분해요. 무리하지 마.",
-        high: "만나면 좋아하는 장면 하나씩 보여 줘요. 그 정도가 딱 좋아.",
+        low: "혼자 조용히 해요. 출석 체크하고 사진 한 장만 저장해 둬요.",
+        mid: "응원 댓글 하나면 충분해요. 무리하지 말아요.",
+        high: "만나면 좋아하는 장면 하나씩 보여 줘요. 그 정도가 딱 좋아요.",
       },
       low: {
-        low: "오늘은 쉬면서 해요. 갖고 있는 포카 정리하면 마음이 편할 거야.",
-        mid: "출석 체크만 하고 쉬어요. 그것도 덕질이야.",
-        high: "만나도 덕질 얘기는 짧게 해요. 친구가 고른 직캠 하나만 같이 봐.",
+        low: "오늘은 쉬면서 해요. 갖고 있는 포카 정리하면 마음이 편할 거예요.",
+        mid: "출석 체크만 하고 쉬어요. 그것도 덕질이에요.",
+        high: "만나도 덕질 얘기는 짧게 해요. 친구가 고른 직캠 하나만 같이 봐요.",
       },
     },
     money: {
@@ -182,7 +182,7 @@ const tones: Record<FortuneCharacterId, Tone> = {
       low: "돈은 아끼는 날이에요. 굿즈는 장바구니에만 담아 둬요.",
     },
     time: (hour, say) => `${say ? "할 말은" : "부탁은"} ${hour}가 좋아요.`,
-    item: (color) => `${color}색 물건 하나 챙겨요. 잊지 말고, 알았지?`,
+    item: (color) => `${color}색 물건 하나 챙겨요.`,
     choice: {
       peopleRest: "약속은 누구랑?",
       peopleCareful: "누구한테 말할 때?",
@@ -344,7 +344,7 @@ export function fortuneEnterLine(
   nickname: string | null,
   mode: "enter" | "birth" = "enter",
 ) {
-  const who = nickname
+  const who = nickname && !nickname.endsWith("…")
     ? character === "dosa"
       ? `${nickname} 님, `
       : `${nickname}, `
@@ -407,7 +407,7 @@ export function fortuneTalkLine(
   const tone = tones[character];
   if (talk === 1) {
     const note = tone.gradeNotes?.[input.grade] ?? (headline ? `${headline}.` : gradeNotes[input.grade] ?? "");
-    return `${tone.scoreLine(input.score, input.grade === "아주 좋은 날" ? "계 타는 날" : input.grade)} ${note}`.trim();
+    return note || tone.scoreLine(input.score, input.grade);
   }
   if (talk === 2) return tone.people[band(input.people)];
   if (talk === 3) {

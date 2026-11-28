@@ -55,6 +55,9 @@ it("reads both lists with ten heart rows each, one under the other: no tabs, no 
   expect(urls(fetcher)).toContain("/api/rankings/home?kind=fans&metric=points&locale=ko&limit=10");
   expect(urls(fetcher)).toContain("/api/rankings/home?kind=creators&metric=likes&locale=ko&limit=10");
   expect(urls(fetcher).some((url) => url.includes("/api/rankings/fans") || url.includes("period="))).toBe(false);
+  expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(5);
+  expect(container.querySelectorAll("li[data-row='creator-rank']")).toHaveLength(5);
+  for (const toggle of screen.getAllByRole("button", { name: "더 보기" })) fireEvent.click(toggle);
   expect(container.querySelectorAll("li[data-row='fan-rank']")).toHaveLength(10);
   expect(container.querySelectorAll("li[data-row='creator-rank']")).toHaveLength(10);
   expect([...container.querySelectorAll("[data-column]")].map((n) => n.getAttribute("data-column"))).toEqual(["fans", "creators"]);
@@ -172,7 +175,7 @@ it("a short list keeps its place with rank numbers and empty rings only, and a f
   const { container } = render(<RankingBoard locale="ko" />);
   await inRow("하트팬1");
   const placeholders = [...container.querySelectorAll("[data-column='fans'] li[data-placeholder]")];
-  expect(placeholders.map((n) => n.textContent)).toEqual(["4", "5", "6", "7", "8", "9", "10"]);
+  expect(placeholders.map((n) => n.textContent)).toEqual([]);
   expect(container.querySelector("[data-column='fans'] [data-loading]")).toBeNull();
   expect(container.querySelector("[data-rank-highlight]")).toBeNull();
 });

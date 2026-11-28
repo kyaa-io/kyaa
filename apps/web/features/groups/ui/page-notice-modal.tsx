@@ -1,9 +1,11 @@
 "use client";
 import {useEffect,useId,useRef,useState,type ReactNode} from 'react';
 import {useGroupRequest} from './use-group-resource';
-import {ArrowRight,X} from 'lucide-react';
+import {ArrowRight,X} from '@/components/fan-ui/fan-icons';
 import {AccessibleOverlay} from '@/components/ui/overlay/accessible-overlay';
 import {FanAction} from '@/components/fan-ui/fan-action';
+import {FanIcon} from '@/components/fan-ui/fan-icon';
+import {FanIconButton} from '@/components/fan-ui/fan-icon-button';
 import {FanHeading} from '@/components/fan-ui/fan-heading';
 import {cheerEventCopy} from '@/features/fanpage/domain/cheer-event-copy';
 import type {AppLocale} from '@/i18n/locales';
@@ -13,7 +15,7 @@ const STORAGE_PREFIX='kyaa:page-notice:';
 function remembered(key:string){try{return window.localStorage.getItem(STORAGE_PREFIX+key)==='seen';}catch{return false;}}
 function remember(key:string){try{window.localStorage.setItem(STORAGE_PREFIX+key,'seen');}catch{/* Closing still works without storage. */}}
 
-export function pageNoticeBlocked(){return document.querySelector('[role="dialog"], [role="alertdialog"], [data-overlay-host]')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]');}
+export function pageNoticeBlocked(){return document.querySelector('[role="dialog"], [role="alertdialog"], [data-overlay-host], [data-analytics-consent-bar]')||document.activeElement?.matches('input,textarea,select,[contenteditable="true"]');}
 
 /** Closing by any route remembers this round; signed-in readers also sync with the server. */
 export function PageNoticeModal({locale,storageKey,title,description,actionLabel,actionHref,enabled=true}:{locale:AppLocale;storageKey:string;title:string;description?:string;actionLabel:string;actionHref:string;enabled?:boolean}){
@@ -65,7 +67,7 @@ export function PageNoticeDialog({open,onClose,locale,title,description,actionLa
 }){
  const titleId=useId(),copy=cheerEventCopy(locale,false);
  return <AccessibleOverlay open={open} trackHistory={!secondary} onClose={onClose} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={secondary ? `${styles.modal} ${styles.eventModal}` : styles.modal}>
-  <header className={styles.header}><FanHeading id={titleId}>{title}</FanHeading><span className={styles.closeSlot}><FanAction variant='text' className={styles.close} onClick={onClose} ariaLabel={copy.close} leadingIcon={<X size={20} aria-hidden='true'/>}/></span></header>
+  <header className={styles.header}><FanHeading id={titleId}>{title}</FanHeading><FanIconButton className={styles.close} onClick={onClose} aria-label={copy.close}><FanIcon icon={X} size={20}/></FanIconButton></header>
   {children}
   {description&&<p className={styles.description}>{description}</p>}
   <FanAction variant='primary' href={actionHref} onClick={onClose} trailingIcon={secondary ? undefined : <ArrowRight/>}>{actionLabel}</FanAction>

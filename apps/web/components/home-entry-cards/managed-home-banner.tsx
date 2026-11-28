@@ -13,7 +13,7 @@ import { ArrowRight } from "lucide-react";
 import { bannerCategoryLabel } from "@/features/home/domain/banner-category";
 import { isChemiPromoHref, isGuideBanner, localizedBannerHref, type HomeBanner } from "../../features/home/domain/home-banner";
 import { FIRST_STEPS_BANNER_ID } from "../../features/home/domain/first-steps-home-banner";
-import { PD_SHORTS_BANNER_ID } from "../../features/home/domain/pd-shorts-banner";
+import { PD_SHORTS_BANNER_ID, PD_NOTICE_SLUG, pdNoticeAction } from "../../features/home/domain/pd-shorts-banner";
 import { SIGNUP_RAFFLE_BANNER_ID } from "../../features/home/domain/signup-raffle-home-banner";
 import { MISSIONBOOK_BANNER_ID } from "../../features/home/domain/missionbook-home-banner";
 import { MissionbookLikeCount } from "../../features/home/ui/missionbook-like-count";
@@ -61,6 +61,7 @@ function BannerArtwork({ banner, priority, creatorWelcome, campaign }: { banner:
 }
 
 export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent = false }: { banner: HomeBanner; locale: AppLocale; priority?: boolean; liveEvent?: boolean }) {
+  const pd = banner.id === PD_SHORTS_BANNER_ID;
   const gggiCampaign = banner.id === "8bf2f180-cb32-4f00-93e2-e84b570ad450";
   const guideArt = isGuideBanner(banner);
   const chemi = guideArt && isChemiPromoHref(banner.href);
@@ -71,6 +72,6 @@ export function ManagedHomeBanner({ banner, locale, priority = false, liveEvent 
     <HomeHeroBanner imageBadge={liveEvent ? <span className={`${carouselStyles.carouselPill} ${styles.liveEvent} ${motionStyles.eventBlink}`} data-motion="home-live-event">{liveEventLabel(locale)}</span> : undefined} kind={banner.id === PD_SHORTS_BANNER_ID ? "photo" : chemi ? "chemi" : missionbook ? "missionbook" : ["/s/x", "/follow"].includes(banner.href.split("?")[0]) ? "mission" : gggiCampaign ? "campaign" : creatorWelcome ? "welcome" : guideArt ? "art" : "live"} image={creatorWelcome ? artwork : null} fullImage={creatorWelcome ? undefined : artwork}
       eyebrow={chemi ? (locale === "ko" ? "케미 베타" : "Chemi beta") : isAdminEventBanner(banner) ? <EventDayEyebrow locale={locale} /> : banner.category && ['event','group','fanpage','ad'].includes(banner.category) || guideArt ? bannerCategoryLabel(banner.category ?? "guide", locale) : gggiCampaign ? "GGGI × CHANGHA" : banner.kind === "regular_live" ? (locale === "ko" ? "정기 방송" : translate(locale, localizedMessages.me0d4dde550fa, "Regular LIVE")) : (locale === "ko" ? "kyaa 소식" : translate(locale, localizedMessages.m11331552a52b, "kyaa news"))}
       title={banner.title} description={missionbook ? <MissionbookLikeCount locale={locale} tone="banner" /> : banner.description}
-      action={<Link href={localizedBannerHref(banner.href, locale) as Route}><span>{banner.href.split(/[?#]/)[0] === "/s/raffle" ? growthSignupCopy[locale].enter : banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
+      action={<Link href={localizedBannerHref(pd ? `/notices/${PD_NOTICE_SLUG}` : banner.href, locale) as Route}><span>{pd ? pdNoticeAction[locale] : banner.href.split(/[?#]/)[0] === "/s/raffle" ? growthSignupCopy[locale].enter : banner.ctaLabel}</span><ArrowRight aria-hidden="true" /></Link>} />
   </div>;
 }

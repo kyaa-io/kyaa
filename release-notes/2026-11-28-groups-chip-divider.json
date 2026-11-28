@@ -1,0 +1,5 @@
+{
+  "changes": ["모임의 ‘페이지 둘러보기’에서 팬페이지와 취미 사이의 세로선을 없애고 필터 간격을 고르게 맞췄어요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-28-groups-chip-divider.png"]
+}

@@ -358,3 +358,19 @@
     padding-block: var(--space-2) 0;
   }
 }
+
+.footer .menuToggle { display: none; }
+
+@media (max-width: 47.999rem) {
+  .footer:not(.compact) { padding-top: var(--space-4); }
+  .inner { gap: var(--space-2); }
+  .brandColumn p { display: none; }
+  .footer .menuToggle { display: inline-flex; justify-self: start; }
+  .menuToggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .navigation[data-expanded="false"] { display: none; }
+  .navigation { row-gap: var(--space-3); }
+  .footer:not(.compact) .business { margin-top: var(--space-3); padding-top: var(--space-3); }
+  .businessInfo, .companyGroups { gap: var(--space-2); }
+  .legal { margin-top: var(--space-3); }
+  .legalLinks { column-gap: var(--space-3); }
+}

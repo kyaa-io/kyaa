@@ -139,6 +139,8 @@
   .frame > :has(+ [data-fan-site-footer]) { min-height: calc(100dvh - var(--fan-header-height)); grid-auto-rows: max-content; }
 }
 
+.frame > :has([data-reading-picker="fortune"]):has(+ [data-fan-site-footer]) { min-height: auto; flex-grow: 0; }
+
 /* R2: the favorite chip takes what the utilities leave and truncates first. */
 @media (max-width: 63.999rem) {
   .groupsNavigation .headerInner { grid-template-columns: 88px minmax(0,1fr); }

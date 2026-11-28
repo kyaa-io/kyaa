@@ -3,7 +3,7 @@ import type { AppLocale } from "../locales";
 /** 래플 상세 페이지의 짧은 이벤트 카피. 한국어·영어를 직접 쓰고 나머지 언어는 영어로 보인다(첫 화면 제목·응모 버튼은 아래 landingText). */
 const copy = {
   ko: {
-    headline: "K팝 팬 17명에게 US$400", period: "11월 10일 ~ 12월 13일", how: "참여 방법", required: "필수", ended: "응모가 마감됐어요", kst: "한국 시간",
+    headline: "신규가입자 17분에게 US$400", period: "11월 10일 ~ 12월 13일", how: "참여 방법", required: "필수", ended: "응모가 마감됐어요", kst: "한국 시간",
     closesAt: "12월 13일 23:59 마감", giftCard: "Visa 기프트카드", total: "총", totalWinners: "총 17명",
     enterCta: "무료로 응모하기", entered: "응모 완료", retry: "다시 시도",
     flowOnce: "1인 1응모",
@@ -26,7 +26,7 @@ const copy = {
     resultClaim: "가입 이메일로 수령 안내를 보내 드려요", resultClaimCta: "수령 안내 보기",
   },
   en: {
-    headline: "17 K-pop fans win US$400", period: "Nov 10 – Dec 13", how: "How to enter", required: "Required", ended: "This raffle has ended", kst: "Korea time",
+    headline: "17 new members win US$400", period: "Nov 10 – Dec 13", how: "How to enter", required: "Required", ended: "This raffle has ended", kst: "Korea time",
     closesAt: "Ends Dec 13, 23:59", giftCard: "Visa gift card", total: "Total", totalWinners: "17 winners",
     enterCta: "Enter free", entered: "You're in", retry: "Try again",
     flowOnce: "One entry per person",
@@ -60,17 +60,17 @@ const prizeRegionNotice: Partial<Record<AppLocale, string>> = {
 
 /** 첫 화면 제목·응모 버튼(광고 헤드라인 "Enter free · 17 fans win US$400"과 같은 말, 2026-11-26)은 13개 언어로 직접 쓴다. 금액·인원은 signupEvent.prizes 합계(시험으로 고정). */
 const landingText: Partial<Record<AppLocale, Record<"headline" | "enterCta" | "stepEnter", string>>> = {
-  ja: { headline: "K-POPファン17人にUS$400", enterCta: "無料で応募", stepEnter: "「無料で応募」を押す" },
-  "zh-Hans": { headline: "17位K-pop粉丝赢取US$400", enterCta: "免费报名", stepEnter: "点击“免费报名”" },
-  "zh-Hant": { headline: "17位K-pop粉絲贏得US$400", enterCta: "免費報名", stepEnter: "點擊「免費報名」" },
-  es: { headline: "17 fans del K-pop ganan US$400", enterCta: "Participa gratis", stepEnter: "Toca Participa gratis" },
-  id: { headline: "17 fans K-pop raih US$400", enterCta: "Ikut gratis", stepEnter: "Ketuk Ikut gratis" },
-  vi: { headline: "17 fan K-pop nhận US$400", enterCta: "Tham gia miễn phí", stepEnter: "Nhấn Tham gia miễn phí" },
-  th: { headline: "แฟน K-pop 17\u00a0คน รับ US$400", enterCta: "ร่วมฟรี", stepEnter: "แตะ ร่วมฟรี" },
-  pt: { headline: "17 fãs de K-pop ganham US$400", enterCta: "Participe grátis", stepEnter: "Toque em Participe grátis" },
-  fr: { headline: "17 fans K-pop gagnent US$400", enterCta: "Participer gratuitement", stepEnter: "Touchez Participer gratuitement" },
-  ru: { headline: "US$400 для 17 фанатов K-pop", enterCta: "Участвовать бесплатно", stepEnter: "Нажмите «Участвовать бесплатно»" },
-  mn: { headline: "K-pop-ын 17 фен US$400 хожно", enterCta: "Үнэгүй оролцох", stepEnter: "«Үнэгүй оролцох» дарах" },
+  ja: { headline: "新規登録者17人にUS$400", enterCta: "無料で応募", stepEnter: "「無料で応募」を押す" },
+  "zh-Hans": { headline: "17名新注册用户赢取US$400", enterCta: "免费报名", stepEnter: "点击“免费报名”" },
+  "zh-Hant": { headline: "17名新註冊用戶贏得US$400", enterCta: "免費報名", stepEnter: "點擊「免費報名」" },
+  es: { headline: "17 nuevos miembros ganan US$400", enterCta: "Participa gratis", stepEnter: "Toca Participa gratis" },
+  id: { headline: "17 anggota baru raih US$400", enterCta: "Ikut gratis", stepEnter: "Ketuk Ikut gratis" },
+  vi: { headline: "17 thành viên mới nhận US$400", enterCta: "Tham gia miễn phí", stepEnter: "Nhấn Tham gia miễn phí" },
+  th: { headline: "สมาชิกใหม่ 17 คน รับ US$400", enterCta: "ร่วมฟรี", stepEnter: "แตะ ร่วมฟรี" },
+  pt: { headline: "17 novos membros ganham US$400", enterCta: "Participe grátis", stepEnter: "Toque em Participe grátis" },
+  fr: { headline: "17 nouveaux inscrits gagnent US$400", enterCta: "Participer gratuitement", stepEnter: "Touchez Participer gratuitement" },
+  ru: { headline: "US$400 для 17 новых участников", enterCta: "Участвовать бесплатно", stepEnter: "Нажмите «Участвовать бесплатно»" },
+  mn: { headline: "Шинээр бүртгүүлсэн 17 хүн US$400 хожно", enterCta: "Үнэгүй оролцох", stepEnter: "«Үнэгүй оролцох» дарах" },
 };
 
 export type SignupRaffleLongformKey = keyof typeof copy.ko;
@@ -85,7 +85,7 @@ export function raffleLongformText(locale: AppLocale, key: SignupRaffleLongformK
   if (key === "notice8" && prizeRegionNotice[locale]) return prizeRegionNotice[locale];
   const landing = landingText[locale];
   // 제목의 "K-pop"은 줄 끝에서 "K-"와 "pop"으로 갈라지지 않게 붙인다(단어 결합 문자 U+2060)
-  if (key === "headline") return (landing?.headline ?? (locale === "ko" ? copy.ko : copy.en).headline).replace(/K-(pop|POP)/g, "K-\u2060$1");
+  if (key === "headline") return landing?.headline ?? (locale === "ko" ? copy.ko : copy.en).headline;
   if (landing && (key === "enterCta" || key === "stepEnter")) return landing[key];
   const table = locale === "ko" ? copy.ko : copy.en;
   return table[key].replace("{0}", String(count ?? ""));

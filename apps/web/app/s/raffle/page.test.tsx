@@ -13,20 +13,20 @@ it('matches approved prizes, steps and date without unconfirmed time or rewards'
   const view = render(await Page({ searchParams: Promise.resolve({ locale: 'ko' }) }));
   expect(screen.getByRole('link', { name: '공식 규칙' }).getAttribute('href')).toBe('#rules');
   expect(view.container.querySelector('#rules')?.textContent).toContain('무작위로 추첨');
-  expect(screen.getByRole('heading', { level: 1, name: 'KYAA 래플 K팝 팬 17명에게 US$400' })).toBeTruthy();
+  expect(screen.getByRole('heading', { level: 1, name: 'KYAA 래플 신규가입자 17분에게 US$400' })).toBeTruthy();
   for (const text of ['11월 10일 ~ 12월 13일', 'Visa 기프트카드', '참여 방법', '필수', 'US$100', 'US$50', 'US$25', 'US$10', '1명', '2명', '4명', '10명', '공식 규칙', '하루 최대 3회', '당첨 확률 올리기', '선택']) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
   expect(screen.queryByText(/버튼 한 번이면 끝|팬 신분증|응모는 한 번|당첨 기회가 1번씩/)).toBeNull();
   expect(screen.queryByText(/상품 확정 전|당첨 기회 올리기/)).toBeNull();
   expect(screen.queryByText(/Amazon/)).toBeNull();
   // v5: 총액·총인원은 히어로에 한 번씩만(경품 구역에서 반복하지 않는다)
-  expect(screen.getAllByText('K팝 팬 17명에게 US$400')).toHaveLength(1);
+  expect(screen.getAllByText('신규가입자 17분에게 US$400')).toHaveLength(1);
   expect(screen.queryByText('총 US$400')).toBeNull();
   // v5.2: 총액·무엇을·몇 명·기간이 키 비주얼 한 덩어리에 있다(화면 결정 "히어로 총 US$400 + 총 17명 + 마감 한 덩어리")
   const hero = view.container.querySelector('header')!;
-  for (const text of ['US$400', 'Visa 기프트카드', '17명', '11월 10일 ~ 12월 13일']) expect(hero.textContent).toContain(text);
+  for (const text of ['US$400', 'Visa 기프트카드', '17분', '11월 10일 ~ 12월 13일']) expect(hero.textContent).toContain(text);
   expect(hero).toContainElement(screen.getByRole('button', { name: '무료로 응모하기' }));
   // 키 비주얼에서 줄을 시작하는 글자의 광학 정렬
-  expect([...hero.querySelectorAll('[data-fan-display-optical]')].map(node => node.textContent)).toEqual(['KYAA 래플', 'K팝 팬 17명에게 US$400', 'Visa 기프트카드']);
+  expect([...hero.querySelectorAll('[data-fan-display-optical]')].map(node => node.textContent)).toEqual(['KYAA 래플', '신규가입자 17분에게 US$400', 'Visa 기프트카드']);
   // 응모만 필수, 나머지는 기회(사용자 결정 2026-11-13 "여러개하면 래플권 여러개"): 당첨 확률 올리기에 기회가 붙는 행동 전부와 그 값
   const bonus = view.container.querySelector('[data-block="raffle-bonus"]')!;
   expect([...bonus.querySelectorAll('[data-row="raffle-bonus"]')].map(row => `${row.getAttribute('data-kind')} ${row.querySelector('[data-raffle-plus]')?.textContent}`)).toEqual(['passport +1', 'community +1', 'comment +1', 'attend +1', 'invite +3']);

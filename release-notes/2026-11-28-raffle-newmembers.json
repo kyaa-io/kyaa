@@ -1,0 +1,5 @@
+{
+  "changes": ["래플 제목에서 경품을 받을 대상을 13개 언어로 신규가입자라고 안내해요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/s/raffle",
+  "images": ["release-notes/images/2026-11-28-raffle-newmembers.png"]
+}

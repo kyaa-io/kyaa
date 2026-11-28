@@ -29,9 +29,8 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { useOwnedFanResource } from "../../../components/fan-ui/use-owned-fan-resource";
 import { fanLoginHref } from "@/components/login-href";
 import { FanSkeleton, FanSkeletonRows, FanSkeletonStatus } from "@/components/fan-ui/fan-skeleton";
-import { FanTag } from "@/components/fan-ui/fan-tag";
 import { myHomeText } from "./my-home-copy";
-import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton, passportTierName } from "./my-passport-card";
+import { MyGuestPassportCard, MyPassportCard, MyPassportCardSkeleton } from "./my-passport-card";
 import { GiftNavLink } from "@/features/gifts/ui/gift-nav-link";
 import { GiftNotice } from "@/features/gifts/ui/gift-notice";
 import { giftText } from "@/features/gifts/ui/gift-text";
@@ -200,7 +199,7 @@ function MyDashboardSkeleton({ locale }: { locale: FanLocale }) {
         <div className={styles.pencilProfileCopy}><FanSkeleton width={160} height={32} /></div>
         <ProfileNav locale={locale} label={t.settings} giftUnread={0} />
       </header>
-      <MyStats locale={locale} passport="loading" stamps="loading"/>
+      <MyStats locale={locale}/>
       <div className={styles.homeRow}>
         <MyPassportCardSkeleton title={t.myPassport} />
       </div>
@@ -318,11 +317,11 @@ function Dashboard({ summary, locale, avatarResource, refreshSummary, selectedSl
       <div className={styles.pencilSummary}>
         <header className={styles.pencilProfile}>
           <Link href={`/settings?locale=${locale}&section=profile` as Route} aria-label={t.avatarSettings}>{avatarResource.state.status === "ready" ? <Avatar avatar={avatarResource.state.avatar} imageUrl={avatarResource.state.imageUrl} label={t.avatarSettings} size={56}/> : <AvatarPlaceholder size={56}/>}</Link>
-          <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading>{selected?.passport ? <FanTag tone="fan">{passportTierName(locale, selected.passport)}</FanTag> : null}</div>
+          <div className={`${styles.pencilProfileCopy} ${styles.pencilName}`}><FanHeading as="h1">{identity}</FanHeading></div>
           <ProfileNav locale={locale} label={t.settings} giftUnread={summary.gifts?.unreadCount ?? 0} />
         </header>
         <GiftNotice locale={locale} unreadCount={summary.gifts?.unreadCount ?? 0} singleUnreadId={summary.gifts?.singleUnreadId ?? null} />
-        <MyStats locale={locale} passport={selected?.passport ?? null} stamps={communityStamps.state.status === "loading" ? "loading" : stampCount}/>
+        <MyStats locale={locale}/>
         <div id="my-passport" className={styles.homeRow}>
           <MyPassportCard creators={visibleCreators} selectedSlug={selectedSlug} onSelect={onSelectSlug} communityStamps={stamps} stampsError={communityStamps.state.status === "error"} retryStamps={communityStamps.retry} locale={locale} labels={labels}/>
         </div>

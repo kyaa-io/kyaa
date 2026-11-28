@@ -84,7 +84,7 @@ describe("fan app shell navigation", () => {
     expect(fanNavigationItems("ko", "/", true, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
     expect(fanNavigationItems("ko", "/", false, true).map((item) => item.id)).toEqual(["home", "community", "chemi", "favorites", "my"]);
     expect(fanNavigationItems("ko", "/chemi", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "케미", isCurrent: true });
-    expect(fanNavigationItems("ja", "/", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "케미", href: "/chemi?locale=ja" });
+    expect(fanNavigationItems("ja", "/", true, true).find((item) => item.id === "chemi")).toMatchObject({ label: "ケミ", href: "/chemi?locale=ja" });
   });
   it("marks only the chemi tab current on /chemi and keeps home out of it", () => {
     expect(activeFanSection("/chemi")).toBe("chemi");
@@ -102,7 +102,9 @@ describe("fan app shell navigation", () => {
       .toEqual(["HOME", "Groups", "Chemi", "FAVORITES", "MY"]);
   });
 
-  it("uses the same fixed desktop and mobile menu labels in every supported language", () => {
+  it("uses the same localized desktop and mobile menu labels in every supported language", () => {
+    const groups = { ko: "모임", en: "Groups", ja: "グループ", mn: "Groups", "zh-Hans": "群组",
+      "zh-Hant": "群組", es: "Grupos", id: "Grup", vi: "Nhóm", th: "กลุ่ม", pt: "Grupos", fr: "Groupes", ru: "Группы" };
     for (const locale of APP_LOCALES) {
       render(
         <GroupsReleaseProvider enabled>
@@ -114,7 +116,7 @@ describe("fan app shell navigation", () => {
       const menus = screen.getAllByRole("navigation").filter((menu) =>
         menu.querySelector("[data-fan-navigation-id]"),
       );
-      const expected = ["HOME", "모임", "케미", "덕질", "MY"];
+      const expected = ["HOME", groups[locale], { ko: "케미", ja: "ケミ" }[locale as "ko" | "ja"] ?? "Chemi", "덕질", "MY"];
       expect(menus.map((menu) => within(menu).getAllByRole("link").map((link) => link.textContent)), locale)
         .toEqual([expected, expected]);
       cleanup();

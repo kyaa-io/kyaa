@@ -3,6 +3,8 @@
 import { useRef, useState, type ReactNode } from "react";
 
 import { CreatorAvatar } from "@/components/fan-ui/creator-avatar";
+import { FanAction } from "@/components/fan-ui/fan-action";
+import { fanUiText } from "@/components/fan-ui/fan-ui-copy";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
 import { Avatar } from "@/features/profile/ui/avatar";
@@ -62,26 +64,30 @@ export function RankingBoard({ locale, scope = "home-ranking", heading }: { loca
 }
 
 function FanPanel({ locale, guest, scope, period }: { locale: AppLocale; guest: boolean; scope: string; period: HomeRankingPeriod }) {
+  const [expanded, setExpanded] = useState(false);
   const entryRef = useRef(false);
   const live = useLiveRanking(rankingUrl("fans", "points", locale, LIST_ROWS, period), parseFans);
   const data = live.state.status === "ready" ? live.state.data : null;
   return <>
     <MetricLine locale={locale} period={period} metric="points" computedAt={data?.computedAt ?? null} stale={data?.state === "stale"} />
     <div className={styles.board}>
-      <List locale={locale} live={live}>{(ranking) => <FanRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="points" scope={scope} guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
+      <List locale={locale} live={live}>{(ranking) => <FanRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="points" scope={scope} guest={guest} period={period} show={expanded ? LIST_ROWS : 5} />}</List>
+      {data && data.rows.length > 5 && <FanAction variant="text" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{fanUiText(locale, expanded ? "collapse" : "showMore")}</FanAction>}
       {!guest && data?.me ? <Foot><MyRank locale={locale} ranking={data} metric="points" /></Foot> : null}
     </div>
   </>;
 }
 
 function CreatorPanel({ locale, guest, scope, period }: { locale: AppLocale; guest: boolean; scope: string; period: HomeRankingPeriod }) {
+  const [expanded, setExpanded] = useState(false);
   const entryRef = useRef(false);
   const live = useLiveRanking(rankingUrl("creators", "likes", locale, LIST_ROWS, period), parseCreators);
   const data = live.state.status === "ready" ? live.state.data : null;
   return <>
     <MetricLine locale={locale} period={period} metric="likes" computedAt={data?.computedAt ?? null} stale={data?.state === "stale"} />
     <div className={styles.board}>
-      <List locale={locale} live={live}>{(ranking) => <CreatorRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="likes" scope={scope} challengeTag guest={guest} period={period} fill={guest || period !== "all" ? undefined : LIST_ROWS} />}</List>
+      <List locale={locale} live={live}>{(ranking) => <CreatorRows key={period} entryRef={entryRef} locale={locale} ranking={ranking} metric="likes" scope={scope} challengeTag guest={guest} period={period} show={expanded ? LIST_ROWS : 5} />}</List>
+      {data && data.rows.length > 5 && <FanAction variant="text" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>{fanUiText(locale, expanded ? "collapse" : "showMore")}</FanAction>}
     </div>
   </>;
 }

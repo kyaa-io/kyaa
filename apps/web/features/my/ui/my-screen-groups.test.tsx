@@ -57,13 +57,13 @@ const renderMy = (locale: 'ko' | 'en' | 'ru' | 'ja' = 'ko') => render(<GroupsRel
 const before = (a: Element, b: Element) => Boolean(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
 beforeEach(() => { window.localStorage.clear(); data.wallet = { points: 375, hearts: 4, tickets: 9, pointCost: 100 }; data.rewards = []; data.gifts = undefined; });
 
-it('puts the selected passport tier next to the name', () => {
+it('keeps the selected tier in the passport', () => {
   renderMy();
   const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
-  expect(within(name.parentElement as HTMLElement).getByText(/실버|Silver/)).toBeInTheDocument();
+  expect(within(name.parentElement as HTMLElement).queryByText(/실버|Silver/)).toBeNull();
 });
 
-it('shows points, stamps and tier in one read-only row between the profile and the passport', () => {
+it('shows points without repeating passport stamps and tier', () => {
   const { container } = renderMy();
   const stats = container.querySelector('[data-block="my-stats"]') as HTMLElement;
   const name = screen.getByRole('heading', { level: 1, name: '별빛님' });
@@ -72,17 +72,8 @@ it('shows points, stamps and tier in one read-only row between the profile and t
   expect(before(stats, passport)).toBe(true);
   const value = (label: string) => within(stats).getByText(label).closest('div')!.querySelector('dd')!.textContent;
   expect(value('포인트')).toBe('375');
-  expect(value('스탬프')).toBe('3/9');
-  expect(value('등급')).toBe('실버 1');
-  expect(within(stats).queryByText('하트')).toBeNull();
-  expect(within(stats).queryByText('응모권')).toBeNull();
-  expect(within(stats).queryByRole('link')).toBeNull();
-  // 등급 칸만 눌린다: 이름 옆 (i)와 같은 등급 안내 팝업을 연다.
-  const tier = within(stats).getByRole('button', { name: '실버 1' });
-  expect(within(stats).getAllByRole('button')).toHaveLength(1);
-  expect(screen.queryByRole('dialog', { name: '등급 체계를 알아볼까요?' })).toBeNull();
-  fireEvent.click(tier);
-  expect(screen.getByRole('dialog', { name: '등급 체계를 알아볼까요?' })).toBeInTheDocument();
+  expect(within(stats).queryByText('스탬프')).toBeNull();
+  expect(within(stats).queryByText('등급')).toBeNull();
 });
 
 it('orders the screen profile, notice, passport, shortcuts and shows stamps in one place', () => {
@@ -199,4 +190,3 @@ it('puts every shortcut in one grid', () => {
   expect(grid.lastElementChild).toBe(logout);
   expect(screen.getAllByRole('button', { name: '로그아웃' })).toHaveLength(1);
 });
-
