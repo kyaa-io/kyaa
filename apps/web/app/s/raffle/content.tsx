@@ -45,7 +45,7 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite, 
     </div>
 
     <div className={styles.body}>
-      {/* 참여 방법(필수)은 첫 화면 바로 아래 첫 구역. 응모 버튼은 첫 화면(RaffleHeroEnter)에 있고 여기는 두 걸음 + 친구 초대 + 마감까지 남은 시간 + 1인 1응모. 응모하면 이 자리에 도장이 찍힌다 */}
+      {/* 참여 방법(필수)은 첫 화면 바로 아래 첫 구역. 응모 버튼은 첫 화면(RaffleHeroEnter)에 있고 여기는 두 걸음 + 친구 초대 + 1인 1응모. 응모하면 이 자리에 도장이 찍힌다 */}
       <section className={styles.section} data-block="raffle-enter" aria-labelledby="raffle-enter">
         <div className={styles.sectionHead}>
           <FanHeading as="h2" id="raffle-enter"><FanDisplay role="heading">{t('how')}</FanDisplay></FanHeading>
@@ -68,7 +68,10 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite, 
 
       {/* 당첨 확률 올리기: 페이지에서 하나뿐인 옅은 분홍 면. 행마다 그 행동의 스탬프 그림 */}
       <FanSurface tone="focus" className={styles.bonus} data-block="raffle-bonus" aria-labelledby="raffle-bonus">
-        <FanHeading as="h2" id="raffle-bonus"><FanDisplay role="heading">{t('bonusTitle')}</FanDisplay></FanHeading>
+        <div className={styles.sectionHead}>
+          <FanHeading as="h2" id="raffle-bonus"><FanDisplay role="heading">{t('bonusTitle')}</FanDisplay></FanHeading>
+          <FanDisplay role="caption" as="p" className={styles.muted}>{t('optional')}</FanDisplay>
+        </div>
         <RaffleOdds />
         <ul className={styles.bonusRows}>{boosts.map(row => <li key={row.kind} data-row="raffle-bonus" data-kind={row.kind}>
           <FanActivityStamp kind={row.stamp} />
@@ -79,26 +82,6 @@ export function RaffleContent({ locale, closesAt, now, closed, preview, invite, 
           {row.kind === 'passport' || row.kind === 'community' ? <RaffleMoreAction kind={row.kind} short /> : <RaffleBoostAction kind={row.kind} />}
         </li>)}</ul>
       </FanSurface>
-
-      {/* 더 즐기기(선택): 면 없이 선으로만 나눈 낮은 두 행. 그림은 그 행동의 스탬프. 기회 값(+1)은 당첨 확률 올리기에만 둔다(같은 숫자 두 번 금지, 감독 2026-11-13) */}
-      <section className={styles.section} data-block="raffle-more" aria-labelledby="raffle-more">
-        <div className={styles.sectionHead}>
-          <FanHeading as="h2" id="raffle-more"><FanDisplay role="heading">{t('more')}</FanDisplay></FanHeading>
-          <FanDisplay role="caption" as="p" className={styles.muted}>{t('optional')}</FanDisplay>
-        </div>
-        <ul className={styles.more}>
-          <li data-row="raffle-more">
-            <FanActivityStamp kind="passport" size="lg" />
-            <FanDisplay role="strong" as="p">{t('passportTitle')}</FanDisplay>
-            <RaffleMoreAction kind="passport" />
-          </li>
-          <li data-row="raffle-more">
-            <FanActivityStamp kind="community" size="lg" />
-            <FanDisplay role="strong" as="p">{t('communityTitle')}</FanDisplay>
-            <RaffleMoreAction kind="community" />
-          </li>
-        </ul>
-      </section>
 
       <section id="rules" className={styles.foot} data-block="raffle-foot" aria-labelledby="raffle-notice">
         <div className={styles.sectionHead}>

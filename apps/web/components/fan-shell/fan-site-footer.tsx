@@ -3,6 +3,7 @@ import { useId, useState } from "react";
 import { FanAction } from "../fan-ui/fan-action";
 import { ChevronDown } from "../fan-ui/fan-icons";
 import { FanIcon } from "../fan-ui/fan-icon";
+import { useGoodsMenu } from "@/features/groups/goods-menu";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
@@ -264,6 +265,7 @@ function FanSiteFooterFull({ locale }: { locale: FanLocale }) {
   const groupsEnabled = useGroupsRelease();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = useId();
+  const goodsMenu = useGoodsMenu();
   return (
     <footer className={styles.footer} data-fan-site-footer>
       <FanContentContainer className={styles.inner}>
@@ -281,13 +283,13 @@ function FanSiteFooterFull({ locale }: { locale: FanLocale }) {
             <h2>{t.explore}</h2>
             <Link href={fanHref("/", locale)}>HOME</Link>
             <Link href={fanHref(groupsEnabled ? "/pages/groups" : "/pages/groups", locale)}>{groupsEnabled ? groupsCopy(locale).groups : communityCopy(locale).title}</Link>
-            <Link href={fanHref(groupsEnabled ? "/benefits" : "/celebrities", locale)}>{groupsEnabled ? groupBenefitsCopy(locale).title : t.favorites}</Link>
+            <Link href={fanHref(groupsEnabled ? "/benefits" : "/celebrities", locale)}>{groupsEnabled ? groupBenefitsCopy(locale, goodsMenu).title : t.favorites}</Link>
           </section>
           <section>
             <h2>{t.activity}</h2>
             <Link href={fanHref("/my", locale)}>MY</Link>
             <Link href={fanHref("/passports", locale)}>{t.passports}</Link>
-            <Link href={fanHref("/benefits", locale)}>{t.benefits}</Link>
+            {(!goodsMenu || !groupsEnabled) && <Link href={fanHref("/benefits", locale)}>{goodsMenu ? groupBenefitsCopy(locale, true).title : t.benefits}</Link>}
             <Link href={fanHref("/notifications", locale)}>{t.notifications}</Link>
           </section>
           <section>

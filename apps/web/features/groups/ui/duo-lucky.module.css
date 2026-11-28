@@ -52,7 +52,5 @@
 
 .archiveHeader { display:flex; align-items:center; justify-content:space-between; gap:var(--space-2); }
 .archiveRows { padding:0; margin:var(--space-2) 0 0; list-style:none; }
-@container (max-width: 27rem) {
- .archiveRows .pastCard { display:grid; grid-template-columns:56px minmax(0,1fr); }
- .archiveRows .pastCard > a { grid-column:2; justify-self:start; }
-}
+.archiveChevron { flex: none; width: var(--space-5); height: var(--space-5); }
+.archiveResultLabel { position: absolute; clip-path: inset(50%); width: 1px; height: 1px; overflow: hidden; white-space: nowrap; }

@@ -74,9 +74,9 @@ export function GroupBenefitsScreen({locale,initialHeart=null,signedOut=false,ba
  const goodsMenu=useGoodsMenu(),auth=useGroupRequest(),c=groupBenefitsCopy(locale,goodsMenu),bias=useStanBias(locale,initialHeart,signedOut);
  // 대표 11/14 01:53 (replaces 사용자 11/13 11:2x's login gate): signed out, the tab opens as it is — locked balances, public mission points, no 내역 — and each action (교환·받기·응모·덕질 행) leads to the login, which returns to /benefits.
  const guest=(!auth.ready&&signedOut)||(auth.ready&&!auth.authenticated)||bias.status==='guest';
- const sections=<><BenefitsLucky locale={locale} bias={bias} signedOut={signedOut} wallet={goodsMenu?<GoodsMileage key={auth.ownerKey} locale={locale}/>:<BenefitsWallet key={`${locale}:${auth.ownerKey}:tickets`} part='tickets' locale={locale} signedOut={signedOut} bias={bias}/>}/>{banner&&<div className={styles.pBanner} data-dukjil-banner-slot=''><ThinBanner banner={banner} locale={locale} size='mid'/></div>}{!goodsMenu&&<BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/>}</>;
+ const sections=<><BenefitsLucky locale={locale} title={c.title} bias={bias} signedOut={signedOut} wallet={goodsMenu?<GoodsMileage key={auth.ownerKey} locale={locale}/>:<BenefitsWallet key={`${locale}:${auth.ownerKey}:tickets`} part='tickets' locale={locale} signedOut={signedOut} bias={bias}/>}/>{banner&&<div className={styles.pBanner} data-dukjil-banner-slot=''><ThinBanner banner={banner} locale={locale} size='mid'/></div>}{!goodsMenu&&<BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/>}</>;
  return <FanAppFrame locale={locale} currentPath='/benefits' groupsEnabled mainId='benefits-main'><FanContentContainer as='main' id='benefits-main' className={styles.page} data-goods-menu={goodsMenu || undefined} data-dukjil-side={sideBanners.length?'':undefined}>
- <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>
+ {!goodsMenu && <header className={styles.srOnly}><FanHeading as='h1'>{c.title}</FanHeading></header>}
  <BenefitsAlerts><BenefitsSections><BenefitsAlertList/>
  <div className={styles.main} data-dukjil-banner={banner?'':undefined}>{sections}{!goodsMenu&&!guest&&<BenefitsHistory locale={locale}/>}</div>
  </BenefitsSections></BenefitsAlerts>
@@ -107,11 +107,11 @@ function useStanNumbers(bias:SelectedBias,signedOut:boolean){
  return {guest,stamps,hearts,passportId,stripSlots};
 }
 /** 럭키드로우 section (대표 11/13 09:39): its header, the points → ticket swap line, then the draw card and the past draws (StanLucky). */
-function BenefitsLucky({locale,bias,signedOut,wallet}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean;wallet:ReactNode}){
+function BenefitsLucky({locale,title,bias,signedOut,wallet}:{locale:AppLocale;title:string;bias:SelectedBias;signedOut:boolean;wallet:ReactNode}){
  const allFailed=Boolean(useContext(SectionContext)?.allFailed),{guest}=useStanNumbers(bias,signedOut),slug=guest?null:stanFavorite(bias)?.slug??null;
  const goodsMenu=useGoodsMenu();
  const heading=<FanSectionHeader title={groupBenefitsCopy(locale).lucky}/>;
- return <div className={`${styles.pLucky} ${styles.luckySection}`} hidden={allFailed} data-lucky-section=''>{goodsMenu?<header className={styles.goodsHeader}>{heading}{wallet}</header>:<>{heading}{wallet}</>}<StanLucky locale={locale} bias={bias} guest={guest} presentation='duo' paused={!CAPSULE_DRAW_OPEN}/></div>;
+ return <div className={`${styles.pLucky} ${styles.luckySection}`} hidden={allFailed} data-lucky-section=''>{goodsMenu?<header className={styles.goodsHeader}><FanHeading as='h1'>{title}</FanHeading>{wallet}</header>:<>{heading}{wallet}</>}<StanLucky locale={locale} bias={bias} guest={guest} presentation='duo' paused={!CAPSULE_DRAW_OPEN}/></div>;
 }
 /** 덕질 미션 section (대표 11/13 09:39): its header, the stamps → heart swap line, the mission book strip, then 오늘의 덕질 — every catalog
  *  activity for the viewer's favorite or first joined fan page; its rows lead to that page. Guests and viewers without a page see the same
