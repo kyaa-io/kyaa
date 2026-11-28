@@ -28,7 +28,7 @@ const photos = { a: await png('#f7b6c8'), b: await png('#9fd3c7'), c: await png(
 const catalog = JSON.parse(await readFile(path.join(here, 'dukjil-catalog.json'), 'utf8')), open3 = remaining => ({ count: 0, points: 0, remaining, stamped: false });
 const pid = '10000000-0000-4000-8000-000000000001', a1 = '20000000-0000-4000-8000-000000000001', a2 = '20000000-0000-4000-8000-000000000002', n1 = '30000000-0000-4000-8000-000000000001';
 const author = { nickname: '팬 A', avatarUrl: '/images/avatars/star-pink.webp' };
-const state = { reaction: null, likeCount: 3, noticeReaction: null, noticeLikes: 2 };
+const state = { reaction: null, likeCount: 3, postLikeRewarded: false, noticeReaction: null, noticeLikes: 2 };
 // A new object on every read, like the real API: the screen must not depend on the answer keeping its identity.
 const post = () => ({ id: pid, celebritySlug: 'elina', body: '오늘 산책 사진이에요\n날씨가 좋아서 한강에 다녀왔어요 사진 두 장 올려요', visibility: 'public', revision: 1, author, assets: [{ id: a1, width: 960, height: 640 }, { id: a2, width: 960, height: 640 }],
   createdAt: '2026-11-02T00:00:00Z', updatedAt: '2026-11-02T00:00:00Z', isOwner: false, likeCount: state.likeCount, liked: state.reaction === 'like', commentCount: 0, viewCount: 12, reaction: state.reaction, dislikeCount: null,
@@ -53,7 +53,7 @@ async function open(browser, screen, width) {
     if (p === '/api/me/dukjil/today') return json({ kstDate: '2026-11-12', policyActive: true, totalPoints: 0, actions: { reaction: open3(5), comment: open3(10), share: open3(3) }, attendance: null, hasPassport: true });
     if (p === `/api/posts/${pid}` && method === 'GET') return json({ post: post() });
     if (p === `/api/posts/${pid}/comments`) return json({ items: [], nextCursor: null });
-    if (p === `/api/posts/${pid}/like`) { const { reaction } = request.postDataJSON(), first = state.reaction === null && reaction !== 'none'; state.likeCount += (reaction === 'like') - (state.reaction === 'like'); state.reaction = reaction === 'none' ? null : reaction; return json({ reaction: state.reaction, dislikeCount: null, ...(first ? { reward: { points: 1, stamps: 0 } } : {}) }); }
+    if (p === `/api/posts/${pid}/like`) { const { reaction } = request.postDataJSON(), first = reaction === 'like' && !state.postLikeRewarded; state.postLikeRewarded ||= first; state.likeCount += (reaction === 'like') - (state.reaction === 'like'); state.reaction = reaction === 'none' ? null : reaction; return json({ reaction: state.reaction, dislikeCount: null, ...(first ? { reward: { points: 1, stamps: 0 } } : {}) }); }
     if (p === '/api/content-translations') return json({ targetType: 'fan_post', targetId: pid, targetLocale: 'en', sourceRevision: 1, cached: true, slots: { title: 'Photos from today\'s walk', article: 'The weather was lovely so I went to the Han River. Two photos.' } });
     if (p === '/api/display-translations') { const body = request.postDataJSON(), texts = body.texts ?? [body.text]; return json(body.texts ? { translatedTexts: texts.map(text => `EN ${text}`), cached: true } : { translatedText: `EN ${body.text}`, cached: true }); }
     if (p === '/api/celebrities/elina/notices/walk') return json(notice());
@@ -84,15 +84,15 @@ async function assertEventually(check, label, timeout = 8000) { const end = Date
 const browser = await chromium.launch({ headless: true }), evidence = [];
 try {
   for (const width of [390, 1440]) for (const screen of ['post', 'notice']) {
-    Object.assign(state, { reaction: null, likeCount: 3, noticeReaction: null, noticeLikes: 2 });
+    Object.assign(state, { reaction: null, likeCount: 3, postLikeRewarded: false, noticeReaction: null, noticeLikes: 2 });
     const { context, page, errors, media, reads, writes } = await open(browser, screen, width);
     const selector = screen === 'post' ? '[data-post-body] img' : 'article img[width="960"]', readPath = screen === 'post' ? `/api/posts/${pid}` : '/api/celebrities/elina/notices/walk';
     await page.waitForFunction(selector => { const nodes = [...document.querySelectorAll(selector)]; return nodes.length === 2 && nodes.every(node => node.complete && node.naturalWidth > 0); }, selector, { timeout: 30000 });
     // The translation arrives by itself for an English reader of Korean text.
     const control = page.locator('[data-translation-control]').first();
     await control.waitFor(); await assertEventually(async () => (await control.getAttribute('aria-pressed')) === 'true', 'the automatic translation');
-    // Like, dislike and the comment send button carry the one corner point badge on a notice as on a board post; the share badge is post-only (hotfix H1).
-    const badges = page.locator('[data-earn-badge="corner"]'), amounts = screen === 'post' ? ['+1', '+1', '+10', '+3'] : ['+1', '+1', '+3'];
+    // Board posts show point badges for like, share and comment. Notices show them for like, dislike and comment.
+    const badges = page.locator('[data-earn-badge="corner"]'), amounts = screen === 'post' ? ['+1', '+10', '+3'] : ['+1', '+1', '+3'];
     await assertEventually(async () => (await badges.count()) === amounts.length, `${screen} ${width}: ${amounts.length} point badges`);
     assert.deepEqual(await badges.allInnerTexts().then(texts => texts.map(text => text.match(/\+\d+/)?.[0])), amounts, `${screen} ${width}: badge amounts`);
     // A comment pays at any length (2026-11-12): no minimum-length note beside the send button.
