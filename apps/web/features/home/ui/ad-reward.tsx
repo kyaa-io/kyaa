@@ -67,23 +67,23 @@ export function useAdReward(banner: Pick<HomeBanner, "id" | "category" | "placem
 }
 
 const rewardLabels = {
-  ko: (amount) => [`광고 보고 ${amount}`, `${amount} 받음`],
-  en: (amount) => [`View ad · ${amount}`, `Received ${amount}`],
-  ja: (amount) => [`広告を見る · ${amount}`, `${amount} 獲得済み`],
-  "zh-Hans": (amount) => [`看广告 · ${amount}`, `已获 ${amount}`],
-  "zh-Hant": (amount) => [`看廣告 · ${amount}`, `已獲 ${amount}`],
-  es: (amount) => [`Ver anuncio · ${amount}`, `Has recibido ${amount}`],
-  id: (amount) => [`Lihat iklan · ${amount}`, `Diterima ${amount}`],
-  vi: (amount) => [`Xem quảng cáo · ${amount}`, `Đã nhận ${amount}`],
-  th: (amount) => [`ดูโฆษณา · ${amount}`, `ได้รับ ${amount} แล้ว`],
-  pt: (amount) => [`Ver anúncio · ${amount}`, `Você recebeu ${amount}`],
-  fr: (amount) => [`Voir la pub · ${amount}`, `${amount} reçus`],
-  ru: (amount) => [`Смотреть рекламу · ${amount}`, `Получено ${amount}`],
-  mn: (amount) => [`Зар үзэх · ${amount}`, `${amount} авсан`],
+  ko: (amount) => [`광고 ${amount}`, `${amount} 받음`],
+  en: (amount) => [`Ad ${amount}`, `Received ${amount}`],
+  ja: (amount) => [`広告 ${amount}`, `${amount} 獲得済み`],
+  "zh-Hans": (amount) => [`广告 ${amount}`, `已获 ${amount}`],
+  "zh-Hant": (amount) => [`廣告 ${amount}`, `已獲 ${amount}`],
+  es: (amount) => [`Anuncio ${amount}`, `Has recibido ${amount}`],
+  id: (amount) => [`Iklan ${amount}`, `Diterima ${amount}`],
+  vi: (amount) => [`QC ${amount}`, `Đã nhận ${amount}`],
+  th: (amount) => [`โฆษณา ${amount}`, `ได้รับ ${amount} แล้ว`],
+  pt: (amount) => [`Anúncio ${amount}`, `Você recebeu ${amount}`],
+  fr: (amount) => [`Pub ${amount}`, `${amount} reçus`],
+  ru: (amount) => [`Реклама ${amount}`, `Получено ${amount}`],
+  mn: (amount) => [`Зар ${amount}`, `${amount} авсан`],
 } satisfies Record<AppLocale, (amount: string) => [string, string]>;
 
 export function AdRewardBadge({ mark, locale }: { mark: AdRewardMark; locale: AppLocale }) {
   if (!mark) return null;
-  const [offer, received] = rewardLabels[locale](formatMileage(mark.points, locale, "always"));
+  const [offer, received] = rewardLabels[locale](locale === "en" ? formatMileage(mark.points, locale, "always") : new Intl.NumberFormat(locale, { signDisplay: "always" }).format(mark.points));
   return <span data-ad-reward={mark.kind} role="status"><EarnBadge variant="inline" locale={locale} points={mark.points} pointLabel={mark.kind === "received" ? received : offer} /></span>;
 }
