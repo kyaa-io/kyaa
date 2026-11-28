@@ -256,7 +256,7 @@
 /* Shared fan tabs keep identical tracks across lower-content views. */
 .pageNavigation[data-kind=fan]>.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));flex:0 1 600px;gap:0;overflow:visible}
 .pageNavigation[data-kind=fan]>.tabs>.tab{width:100%;justify-content:center;box-sizing:border-box;height:56px;min-height:56px;padding:0 12px;margin-bottom:-1px;white-space:normal;text-align:center;line-height:21px}
-.creatorFanGrade{order:1;position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1);min-height:28px;max-width:100%;width:fit-content;font-size:var(--fan-metadata-size);line-height:20px;color:var(--color-muted);text-decoration:none}
+.creatorFanGrade{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-1);min-height:28px;max-width:100%;width:fit-content;font-size:var(--fan-metadata-size);line-height:20px;color:var(--color-muted);text-decoration:none}
 .creatorFanGrade::after{content:"";position:absolute;inset:-8px 0}.creatorFanGrade img{flex:none}.creatorFanGrade>span{min-width:0;overflow-wrap:anywhere}
 @media(max-width:1023px){.pageNavigation[data-kind=fan]>.tabs.tabs{flex:auto;width:100%;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(max-content,1fr);overflow-x:auto;overflow-y:hidden;padding-bottom:1px;margin-bottom:-1px;scrollbar-width:none}.pageNavigation[data-kind=fan]>.tabs::-webkit-scrollbar{display:none}.pageNavigation[data-kind=fan]>.tabs>.tab{min-width:44px;padding-inline:8px;white-space:nowrap;overflow-wrap:normal;hyphens:none}.pageNavigation:is([data-kind=hobby],[data-kind=brand])>.tabs.tabs{flex:auto;width:100%;grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(max-content,1fr);overflow-x:auto;overflow-y:hidden;scrollbar-width:none}.pageNavigation:is([data-kind=hobby],[data-kind=brand])>.tabs::-webkit-scrollbar{display:none}.pageNavigation:is([data-kind=hobby],[data-kind=brand])>.tabs>.tab{min-width:44px;padding-inline:10px;white-space:nowrap;overflow-wrap:normal;hyphens:none}.pageNavigation:is([data-kind=fan],[data-kind=hobby],[data-kind=brand])>.tabs>.tab:focus-visible{outline-offset:-3px}}
 
@@ -369,3 +369,15 @@
   .discoveryLayout { padding-bottom: 0; }
   .discoveryAside { padding-top: var(--space-3); }
 }
+
+.fanMembersLink {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-muted);
+}
+.fanMembersLink::after { content: ""; position: absolute; inset: calc(-1 * var(--space-2)); }
+.fanMembersLink:hover, .fanMembersLink[aria-current="page"] { color: var(--color-accent-ink); }
+.fanMembersLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }

@@ -106,21 +106,20 @@ describe("EventLikeCard", () => {
 
   it("keeps the header chip and the card in one state with a single POST", async () => {
     const server = stubServer();
-    render(<><ReactionAction slug="elina" locale="ko" variant="header" /><EventLikeCard slug="elina" locale="ko" now={inWindow} /></>);
-    const buttons = await screen.findAllByRole("button", { name: "좋아요 남기기" });
-    expect(buttons).toHaveLength(2);
-    fireEvent.click(buttons[1]!);
-    fireEvent.click(buttons[0]!);
+    render(<><ReactionAction slug="elina" locale="ko" variant="header" likeCount={452} /><EventLikeCard slug="elina" locale="ko" now={inWindow} /></>);
+    const chip = await screen.findByRole("button", { name: "좋아요 452" });
+    fireEvent.click(await screen.findByRole("button", { name: "좋아요 남기기" }));
+    fireEvent.click(chip);
     await waitFor(() => expect(document.querySelectorAll('[data-reaction-complete="true"]')).toHaveLength(2));
-    expect(screen.getAllByText("좋아요 완료")).toHaveLength(2);
+    expect(screen.getByText("좋아요 완료 · 452")).toBeDisabled();
+    expect(screen.getByText("좋아요 완료")).toBeInTheDocument();
     expect(server.posts()).toHaveLength(1);
   });
 
   it("completes the card too when the chip is pressed first", async () => {
     const server = stubServer();
-    render(<><ReactionAction slug="elina" locale="ko" variant="header" /><EventLikeCard slug="elina" locale="ko" now={inWindow} /></>);
-    const [chip] = await screen.findAllByRole("button", { name: "좋아요 남기기" });
-    fireEvent.click(chip!);
+    render(<><ReactionAction slug="elina" locale="ko" variant="header" likeCount={452} /><EventLikeCard slug="elina" locale="ko" now={inWindow} /></>);
+    fireEvent.click(await screen.findByRole("button", { name: "좋아요 452" }));
     await waitFor(() => expect(document.querySelectorAll('[data-reaction-complete="true"]')).toHaveLength(2));
     expect(server.posts()).toHaveLength(1);
   });

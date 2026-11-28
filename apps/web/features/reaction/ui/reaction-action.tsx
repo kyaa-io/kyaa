@@ -16,6 +16,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { AuthIntentLink } from "../../../components/auth-intent-link";
 import { consumeAuthIntent, readAuthIntent } from "../../../components/auth-intent";
 import { notifyFanActivityUpdated, subscribeFanActivityUpdates } from "../../../components/fan-ui/fan-activity-updates";
+import { postReactionCopy } from "@/features/fan-posts/ui/post-reaction-copy";
 import { ArrowRight } from "../../../components/icons";
 import { Star } from "../../../components/fan-ui/fan-icons";
 import { FanAction, FanActionStatus, fanActionClassName } from "../../../components/fan-ui/fan-action";
@@ -48,14 +49,15 @@ type ActionState = "idle" | "working" | "done" | "error";
  * Each Privy owner and creator gets a separate stateful instance. This prevents
  * a completed CTA or an in-flight response from a prior account being reused.
  */
-export function ReactionAction({ slug, locale, variant = "card", showRewardDialog = true }: { slug: string; locale: AppLocale; variant?: "card" | "compact" | "header" | "event"; showRewardDialog?: boolean }) {
+export function ReactionAction({ slug, locale, variant = "card", likeCount, showRewardDialog = true }: { slug: string; locale: AppLocale; variant?: "card" | "compact" | "header" | "event"; showRewardDialog?: boolean; likeCount?: number }) {
   const { ready, authenticated, getAccessToken, user } = usePrivy();
   const ownerId = user?.id;
-  return <ReactionActionForOwner key={`${ready ? "ready" : "loading"}:${authenticated ? "authenticated" : "guest"}:${ownerId ?? "unknown"}:${slug}`} slug={slug} locale={locale} variant={variant} showRewardDialog={showRewardDialog} ready={ready} authenticated={authenticated} ownerId={ownerId} getAccessToken={getAccessToken} />;
+  return <ReactionActionForOwner key={`${ready ? "ready" : "loading"}:${authenticated ? "authenticated" : "guest"}:${ownerId ?? "unknown"}:${slug}`} slug={slug} locale={locale} variant={variant} likeCount={likeCount} showRewardDialog={showRewardDialog} ready={ready} authenticated={authenticated} ownerId={ownerId} getAccessToken={getAccessToken} />;
 }
 
-function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready, authenticated, ownerId, getAccessToken }: {
+function ReactionActionForOwner({ slug, locale, variant, likeCount, showRewardDialog, ready, authenticated, ownerId, getAccessToken }: {
   showRewardDialog: boolean;
+  likeCount?: number;
   variant: "card" | "compact" | "header" | "event";
   slug: string;
   locale: AppLocale;
@@ -217,15 +219,24 @@ function ReactionActionForOwner({ slug, locale, variant, showRewardDialog, ready
       {rewardModal}
     </div>;
   }
+  const actionLabel = variant === "header"
+    ? [locale === "mn" ? "Таалагдсан" : postReactionCopy(locale).like, likeCount?.toLocaleString(locale)].filter(Boolean).join(" ")
+    : t.action;
+  const completedState = variant === "header"
+    ? locale === "ko" ? "좋아요 완료" : locale === "mn" ? "Таалагдсанаа тэмдэглэсэн" : translate(locale, localizedMessages.reactionEventLiked, "Liked")
+    : variant !== "card" && locale === "ko" ? "좋아요 완료" : t.done;
+  const completedLabel = variant === "header" && likeCount !== undefined
+    ? `${completedState} · ${likeCount.toLocaleString(locale)}`
+    : completedState;
   return <section className={sectionClass} id="first-reaction" aria-label={sectionLabel} aria-labelledby={variant === "card" ? "first-reaction-title" : undefined} data-reaction-complete={actionState === "done" ? "true" : undefined}>
     {variant === "card" && <><span className={styles.icon} aria-hidden="true"><Star strokeWidth={1.5} /></span>
     <div className={styles.copy}><h2 id="first-reaction-title">{t.title}</h2><span>{t.body}</span></div></>}
     {!ready ? <button disabled><Star strokeWidth={1.5} />{t.working}</button>
-      : !authenticated ? <AuthIntentLink focusKey="first-reaction" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#first-reaction" }}><Star strokeWidth={1.5} />{t.action}<ArrowRight /></AuthIntentLink>
-      : checkState === "error" ? <button type="button" onClick={() => void readExisting()}><Star strokeWidth={1.5} />{t.retry}<ArrowRight /></button>
-      : <button type="button" onClick={() => void postReaction()} disabled={checking || working || actionState === "done"}><Star strokeWidth={1.5} />{checking ? t.checking : working ? t.working : actionState === "done" ? (variant !== "card" && locale === "ko" ? "좋아요 완료" : t.done) : t.action}<ArrowRight /></button>}
+      : !authenticated ? <AuthIntentLink focusKey="first-reaction" locale={locale} input={{ sourcePath: creatorHomeHref(slug), sourceQuery: `?locale=${locale}`, actionType: "CREATE_REACTION", targetType: "celebrity", targetId: slug, returnAnchor: "#first-reaction" }}><Star strokeWidth={1.5} />{actionLabel}<ArrowRight /></AuthIntentLink>
+      : checkState === "error" && actionState !== "done" ? <button type="button" onClick={() => void readExisting()}><Star strokeWidth={1.5} />{t.retry}<ArrowRight /></button>
+      : <button type="button" onClick={() => void postReaction()} disabled={checking || working || actionState === "done"}><Star strokeWidth={1.5} />{actionState === "done" ? completedLabel : checking ? t.checking : working ? t.working : actionLabel}<ArrowRight /></button>}
     {!showRewardDialog && <span role="status">{actionState === "done" ? t.done : ""}</span>}
-    {checkState === "error" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
+    {checkState === "error" && actionState !== "done" ? <p role="alert" className={styles.error}>{t.statusError}</p> : null}
     {actionState === "error" && checkState !== "error" ? <p role="alert" className={styles.error}>{t.error}</p> : null}
     {rewardModal}
   </section>;

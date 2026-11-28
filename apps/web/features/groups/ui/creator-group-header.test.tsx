@@ -79,7 +79,7 @@ it('keeps navigation context in the address family it came from',()=>{
  expect(screen.getByRole('link',{name:'채팅방'})).toHaveAttribute('href','/elina?locale=ko&tab=rooms&returnTo=%2Fmy&room=original-room');
  expect(screen.getByRole('link',{name:'캘린더'})).toHaveAttribute('href','/elina?locale=ko&tab=calendar&returnTo=%2Fmy&month=2026-12');
  expect(screen.getByRole('link',{name:'게시판'})).toHaveAttribute('href','/elina?locale=ko&tab=board&returnTo=%2Fmy&source=fans');
- expect(screen.queryByRole('link',{name:'팬·랭킹'})).toBeNull();first.unmount();
+ expect(screen.getByRole('link',{name:'팬·랭킹'})).toHaveAttribute('href','/elina?locale=ko&tab=members&returnTo=%2Fmy');first.unmount();
  // 팬페이지가 아닌 모임은 팬·랭킹 탭을 그대로 둔다.
  state.data={page:page({kind:'hobby',celebrityId:null}),membership:null};
  render(<CreatorGroupHeader celebrity={celebrity} locale='ko' tab='rooms' pageId='page-id'/>);

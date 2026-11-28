@@ -38,3 +38,11 @@ it.each([
   expect(screen.getByText("덕후인증")).toBeInTheDocument();
   expect(container.querySelector("[data-earn-badge]")).toBeNull();
 });
+
+it.each([[999, false], [1000, true], [1500, true]])("highlights a %i mileage reward only at or above 1000", async (points, highlighted) => {
+  catalog.body = { version: 2, rules: { proof: { points } }, missionBook: null };
+  const { container } = render(<ProofTabLabel label="덕후인증" locale="ko" />);
+  await waitFor(() => expect(container.querySelector('[data-earn-badge="corner"]')).not.toBeNull());
+  const host = container.querySelector('[data-earn-badge="corner"]')?.parentElement;
+  expect(host?.className.includes("highlight")).toBe(highlighted);
+});
