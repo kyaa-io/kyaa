@@ -19,7 +19,7 @@ const input = {
 
 it("builds the same line for the same input and keeps each character's tone", () => {
   expect(fortuneTalkLine("changha", 1, input)).toBe(
-    "하던 일이 술술 풀려. 오늘은 내가 응원 제대로 해 줄게.",
+    "하던 일이 술술 풀려. 어제 막힌 데부터 다시 손대 볼래?",
   );
   expect(fortuneTalkLine("changha", 1, input)).toBe(fortuneTalkLine("changha", 1, input));
   expect(fortuneTalkLine("dosa", 4, input)).toContain("9시에서 11시 사이");
@@ -29,7 +29,7 @@ it("builds the same line for the same input and keeps each character's tone", ()
 
 it("gives the same result a different line and choices for each creator", () => {
   const calm = { ...input, score: 74, grade: "무난한 날", fandom: 60 };
-  expect(fortuneTalkLine("changha", 1, calm, "원문 제목")).toBe("리허설 하던 대로만 해도 충분한 날이야. 알지?");
+  expect(fortuneTalkLine("changha", 1, calm, "원문 제목")).toBe("늘 하던 순서 있지? 오늘은 그게 제일 빨라.");
   expect(fortuneTalkLine("elina", 1, calm, "원문 제목")).toBe("오늘은 편하게 흘러가요. 밥 잘 챙겨 먹고 하던 대로 해요.");
   expect(fortuneTalkLine("yuna", 1, calm, "원문 제목")).toBe("특별한 건 없어. 하던 대로 하면 돼.");
   for (const talk of [1, 2, 3, 4] as const) {
@@ -38,7 +38,7 @@ it("gives the same result a different line and choices for each creator", () => 
   }
   expect(fortuneTalkLine("changha", 4, input)).toContain("초록색 물건도 하나 챙기고");
   expect(fortuneTalkLine("elina", 4, input)).toContain("초록색 물건 하나 챙겨요");
-  expect(fortuneTalkLine("yuna", 4, input)).toContain("초록색 물건 딱 하나만");
+  expect(fortuneTalkLine("yuna", 4, input)).toContain("초록색 물건을 챙겨.");
   expect(fortuneChoiceLabel("changha", 3, "next", { ...calm, money: 40 })).toBe("대신 뭘 챙겨?");
   expect(fortuneChoiceLabel("elina", 3, "next", { ...calm, money: 40 })).toBe("대신 뭘 챙길까?");
   expect(fortuneChoiceLabel("dosa", 2, "next", { ...calm, people: 40 })).toBe("혼자 덕질할까요?");
@@ -151,12 +151,12 @@ it("asks what follows from the line just said and answers it on the next page (C
 // 대표 제보 11/26: 앞 대사와 상관없이 붙는 선택지. 등급 한마디·사람 얘기·돈 얘기의 낱말을 받는 질문만 둔다.
 it("never asks about something the line just said nothing about (CHEMI-FORTUNE-CHOICE-CONTEXT-1126)", () => {
   const day = { ...input, score: 74, grade: "무난한 날", people: 45, fandom: 57, money: 61 };
-  // 쉬어 가는 날의 한마디는 '약속은 하나만'이라, 사람 점수와 상관없이 그 약속을 묻는다(전에는 낮으면 '누굴 조심해야 돼?').
+  // 쉬어 가는 날의 한마디는 '약속을 미루라는 말이라, 사람 점수와 상관없이 그 약속을 묻는다(전에는 낮으면 '누굴 조심해야 돼?').
   for (const people of bands) {
     const rest = { ...day, grade: "쉬어 가는 날", people };
     expect(fortuneChoiceLabel("changha", 1, "next", rest)).toBe("누구랑 잡지?");
     expect(fortuneChoiceLabel("elina", 1, "next", rest)).toBe("약속은 누구랑?");
-    expect(fortuneChoiceLabel("yuna", 1, "next", rest)).toBe("그 하나는 누구랑?");
+    expect(fortuneChoiceLabel("yuna", 1, "next", rest)).toBe("약속은 누구랑 잡아?");
   }
   // 조심하면 괜찮은 날의 한마디는 '말·답장 조심'이다. 사람 점수가 높으면 답이 '윗사람이 먼저 손 내민다'라 먼저 말 걸어도 되는지 묻는다.
   expect(fortuneChoiceLabel("changha", 1, "next", { ...day, grade: "조심하면 괜찮은 날", people: 70 })).toBe("누굴 조심해야 돼?");
@@ -189,7 +189,7 @@ it("reads fan life as one concrete fan activity per score band and company, neve
             const day = { ...input, grade, fandom, people, money };
             const line = fortuneTalkLine(character, 3, day);
             expect(line, `${character} ${fandom}/${people}/${money}`).not.toMatch(/영상|길이|긴 건|짧은 거/);
-            expect(line).toMatch(/직캠|응원 글|응원 댓글|출석|포카|장면/);
+            expect(line).toMatch(/직캠|무대|응원 글|댓글|출석|포카|장면/);
             expect(line).toMatch(/돈/);
             expect(line).not.toMatch(/부탁|청|결제|재물운|대박|반드시|것이오/);
             fandomLines.add(fortuneTalkLine(character, 3, { ...day, money: 70 }));
@@ -224,7 +224,7 @@ it("opens the fourth page with what the pressed choice asked for (CHEMI-FORTUNE-
   const openings = {
     changha: ["할 말은 9시에서 11시 사이에 해.", "부탁할 거 있으면 9시에서 11시 사이에 해.", "초록색 물건 하나 챙겨."],
     elina: ["할 말은 9시에서 11시 사이가 좋아요.", "부탁은 9시에서 11시 사이가 좋아요.", "초록색 물건 하나 챙겨요."],
-    yuna: ["할 말은 9시에서 11시 사이에 하면 돼.", "부탁은 9시에서 11시 사이에 하면 돼.", "초록색 물건 딱 하나만 챙겨."],
+    yuna: ["할 말은 9시에서 11시 사이에 하면 돼.", "부탁은 9시에서 11시 사이에 하면 돼.", "초록색 물건을 챙겨."],
     dosa: ["할 말은 9시에서 11시 사이에 하시오.", "9시에서 11시 사이가 청하기 좋소.", "초록빛 물건 하나를 챙기시오."],
   } as const;
   for (const character of characters) {

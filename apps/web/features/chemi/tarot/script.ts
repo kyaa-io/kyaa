@@ -63,18 +63,18 @@ export const TAROT_LINES: Record<TarotVoice, { hello: string; again: string; thi
  */
 const TAROT_OWN: Partial<Record<TarotCharacter, Partial<(typeof TAROT_LINES)[TarotVoice]>>> = {
   changha: {
-    shuffle: "천천히 섞을게. 좋은 카드 나오면 내 덕이다? 끌리는 걸로 골라.",
+    shuffle: "카드 섞는다. 눈이 자꾸 가는 게 있으면 그걸 골라 봐.",
     lock: "좋아, 네가 고른 카드로 간다. 결과는 같이 보자.",
   },
   elina: {
     hello: "왔네. 오늘 카드 한 장 뽑아 볼래요?",
-    shuffle: "천천히 섞을게요. 서두르지 말고, 끌리는 게 있으면 그걸로 골라.",
+    shuffle: "카드를 섞을게요. 마음에 드는 카드에서 손을 멈춰 봐요.",
     lock: "좋아요, 고른 카드로 볼게요. 마음 편히 들어요.",
   },
   yuna: {
     hello: "왔네. 오늘 카드, 내가 읽어 줄게.",
-    think: "궁금한 거 하나만 정해. 말 안 해도 돼.",
-    shuffle: "천천히 섞을게. 고민 길게 하지 말고 끌리는 걸로 골라.",
+    think: "카드에서 듣고 싶은 답을 생각해 둬. 말은 안 해도 돼.",
+    shuffle: "섞을게. 눈에 들어온 카드가 있으면 거기서 멈춰.",
     lock: "좋아, 네가 고른 카드부터 볼게.",
     drawn: (name, reversed) => `${name} 카드네. ${reversed ? "거꾸로" : "똑바로"} 나왔어.`,
   },
@@ -116,18 +116,18 @@ const TAROT_LINES_EN: typeof TAROT_LINES = {
 
 const TAROT_OWN_EN: typeof TAROT_OWN = {
   changha: {
-    shuffle: "Slowly, like a rehearsal before a shoot. If one calls to you, pick that one.",
+    shuffle: "I'll shuffle. Which card do you keep looking at? Try that one.",
     lock: "Okay, this scene goes with the card you picked.",
   },
   elina: {
     hello: "You're here. Shall we draw a card for today?",
-    shuffle: "Slowly, like the moment before a song starts. Choose the one that feels right.",
+    shuffle: "I'll shuffle the cards. Pause when you see one you like.",
     lock: "Lovely, your card opens the first verse.",
   },
   yuna: {
     hello: "You're here. I'll read today's card for you.",
-    think: "Just pick one question. You don't have to say it.",
-    shuffle: "I'll shuffle slowly, like picking a color. Choose the one you're drawn to.",
+    think: "Think about what you'd like the cards to answer. You can keep it to yourself.",
+    shuffle: "I'll shuffle. Stop when a card catches your eye.",
     lock: "Okay, let's start with the card you picked.",
     drawn: (name, reversed) => `It's ${name}. It came up ${reversed ? "reversed" : "upright"}.`,
   },
@@ -169,18 +169,18 @@ const TAROT_LINES_MN: typeof TAROT_LINES = {
 
 const TAROT_OWN_MN: typeof TAROT_OWN = {
   changha: {
-    shuffle: "Зураг авалтын өмнөх бэлтгэл шиг аажуухан. Татагдсан нь байвал тэрийг сонго.",
+    shuffle: "Хөзрөө холино оо. Харц чинь аль дээр нь тогтоно, тэрийг сонгоод үз.",
     lock: "За, энэ үзэгдэл чиний сонгосон хөзрөөр явна.",
   },
   elina: {
     hello: "Ирчихлээ. Өнөөдөр нэг хөзөр сугалах уу?",
-    shuffle: "Дуу эхлэхийн өмнөх мөч шиг аажуухан. Сэтгэлд нийцсэнээ сонгоорой.",
+    shuffle: "Хөзрөө хольё. Сэтгэлд нийцсэн хөзөр дээрээ түр зогсоорой.",
     lock: "Сайхан байна, таны хөзөр эхний бадгийг нээнэ.",
   },
   yuna: {
     hello: "Ирчихлээ. Өнөөдрийн хөзрийг би уншиж өгье.",
-    think: "Ганц асуулт л сонго. Хэлэх шаардлагагүй.",
-    shuffle: "Өнгө сонгох шиг аажуухан холино. Татагдсанаа сонго.",
+    think: "Хөзрөөс ямар хариулт авахыг хүсэж байгаагаа бодоорой. Хэлэх албагүй.",
+    shuffle: "Хөзрөө холино. Нүдэнд туссан хөзөр дээрээ зогсоорой.",
     lock: "За, чиний сонгосон хөзрөөс эхэлье.",
     drawn: (name, reversed) => `${name} байна. ${reversed ? "Урвуу" : "Цэх"} буулаа.`,
   },
