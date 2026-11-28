@@ -596,16 +596,22 @@ test('weekly rankings can be switched off in production runtime configuration', 
   assert.throws(() => validateConfig(production, template), /CHEMI_WEEKLY_RANKINGS/);
 });
 
-test('revamp preview switches turn on only in the dev web task; staging and production get no key', async () => {
+test('revamp switches default on in dev and prod web tasks and are omitted in staging', async () => {
   const template = await loadTemplate('environment');
   const keys = ['KYAA_GOODS_MENU', 'DONATION_VOTE_ENABLED'];
   const webEnv = (source) => Object.fromEntries(renderTemplate(source, template).Resources.TaskDefinition.Properties.ContainerDefinitions[0].Environment.map(({ Name, Value }) => [Name, Value]));
-  const dev = webEnv(config());
-  for (const key of keys) assert.equal(dev[key], 'true');
-  for (const environment of ['staging', 'prod']) {
+  for (const environment of ['dev', 'staging', 'prod']) {
     const env = webEnv(config('environment', environment));
-    for (const key of keys) assert.equal(env[key], undefined);
+    for (const key of keys) assert.equal(env[key], environment === 'staging' ? undefined : 'true');
   }
+  const prod = config('environment', 'prod');
+  const explicit = config('environment', 'prod');
+  for (const key of keys) explicit.runtimeEnvironment[key] = 'false';
+  const { KYAA_GOODS_MENU, DONATION_VOTE_ENABLED, ...otherProdEnv } = webEnv(prod);
+  const { KYAA_GOODS_MENU: goodsOff, DONATION_VOTE_ENABLED: voteOff, ...otherExplicitEnv } = webEnv(explicit);
+  assert.equal(goodsOff, 'false');
+  assert.equal(voteOff, 'false');
+  assert.deepEqual(otherProdEnv, otherExplicitEnv);
   for (const key of keys) {
     const off = config(); off.runtimeEnvironment[key] = 'false';
     assert.equal(webEnv(off)[key], 'false');

@@ -186,8 +186,8 @@ export function validateConfig(config, template) {
     const prod = config.environment === 'prod';
     config.runtimeEnvironment.KYAA_FEATURE_SIGNUP_RAFFLE ??= prod ? 'false' : 'true';
     config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN = config.runtimeEnvironment.KYAA_FEATURE_QUIZ_LEARN ?? 'true';
-    // 개편 확인용(REVAMP-DEV-FLAGS-1126): DEV 에서만 기본으로 켠다. 운영은 키를 넣지 않아 꺼진 그대로다.
-    if (config.environment === 'dev') for (const key of ['KYAA_GOODS_MENU', 'DONATION_VOTE_ENABLED']) config.runtimeEnvironment[key] ??= 'true';
+    // Default the revamp on for dev and production while preserving explicit overrides.
+    if (config.environment === 'dev' || prod) for (const key of ['KYAA_GOODS_MENU', 'DONATION_VOTE_ENABLED']) config.runtimeEnvironment[key] ??= 'true';
     if (config.runtimeEnvironment.BYUS_DATA_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('BYUS_DATA_ENVIRONMENT must match the environment');
     if (config.runtimeEnvironment.PRIVY_APP_ENVIRONMENT !== (prod ? 'production' : 'development')) fail('PRIVY_APP_ENVIRONMENT must match the environment');
     const rewardedUnit = config.runtimeEnvironment.KYAA_REWARDED_AD_UNIT, rewardedOn = config.runtimeEnvironment.KYAA_REWARDED_TICKET_EXCHANGE_ENABLED === 'true';
