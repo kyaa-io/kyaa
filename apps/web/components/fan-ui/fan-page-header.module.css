@@ -145,3 +145,11 @@
 .header[data-fan-page-header="fan"] .verified {
   flex: none;
 }
+
+.metrics { display:none; }
+@media (min-width:1024px) {
+ .body:has(> .metrics) { display:grid; grid-template-columns:minmax(0,1fr) auto; }
+ .body:has(> .metrics) > * { grid-column:1; grid-row:auto; }
+ .body:has(> .metrics) > .metrics { display:block; grid-area:2 / 2 / span 2; align-self:center; }
+ .body:has(> .metrics) > .headline { grid-column:1 / -1; }
+}

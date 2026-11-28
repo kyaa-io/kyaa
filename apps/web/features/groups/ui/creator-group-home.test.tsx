@@ -4,7 +4,7 @@ import {CreatorGroupHome} from './creator-group-home';
 import {legacyVisualCreator,legacyVisualFixture} from '../../../e2e/groups-local/legacy-visual-fixtures';
 import {feedPageSchema} from '@/features/fan-posts/domain/feed';
 const resource=vi.hoisted(()=>({read:vi.fn(),data:undefined as unknown}));
-vi.mock('./creator-group-home-aside',()=>({CreatorGroupHomeAside:()=>null}));
+vi.mock('./creator-group-home-aside',()=>({CreatorGroupHomeAside:({shortcuts}:{shortcuts?:React.ReactNode})=><aside>{shortcuts}</aside>}));
 vi.mock('@/features/media/ui/creator-media-panel',()=>({CreatorMediaPanel:()=>null}));
 vi.mock('@/features/fanpage/ui/use-community-resource',()=>({useCommunityResource:(url:string|null)=>{if(url)resource.read(url);const data=typeof resource.data==='function'?(resource.data as (url:string|null)=>unknown)(url):resource.data;return {state:data==='loading'?{status:'loading'}:{status:'ready',data},retry:()=>{}};}}));
 it('uses the existing creator feed and original detail URLs for the compact home, without copying group posts',async()=>{

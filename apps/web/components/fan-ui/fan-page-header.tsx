@@ -48,7 +48,7 @@ const unofficialLabels: Record<AppLocale, string> = {
   pt: "Página criada por fãs (não oficial)", fr: "Page créée par des fans (non officielle)", ru: "Страница от фанатов (неофициальная)",
 };
 
-export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", locale, description, descriptionLabels, descriptionAction, star, badge, verified = false, unofficial = false, grade, links = [], utility, menu, stats, visits, tabs, frameId }: Readonly<{
+export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", locale, description, descriptionLabels, descriptionAction, star, badge, verified = false, unofficial = false, grade, links = [], utility, menu, stats, visits, metrics, tabs, frameId }: Readonly<{
   image: FanPageImage;
   name: ReactNode;
   kind: FanPageKind;
@@ -75,6 +75,7 @@ export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", l
   /** 접속 한 줄. 값을 읽는 동안에도 같은 높이를 유지한다. */
   stats?: ReactNode;
   visits?: ReactNode;
+  metrics?: ReactNode;
   tabs?: ReactNode;
   /** 탭을 바꿔도 같은 노드로 남는지 검사할 때 쓰는 표식. */
   frameId?: string;
@@ -97,6 +98,7 @@ export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", l
         </div>
         {menu ? <div className={styles.menu}>{menu}</div> : null}
       </div>
+      {metrics && <div className={styles.metrics}>{metrics}</div>}
       {kind === "fan" && grade}
       {linkNav || stats ? <div className={styles.meta}>{linkNav}{stats ? <div className={styles.stats}>{stats}</div> : null}</div> : null}
       {actions ? <div className={styles.actions}>
