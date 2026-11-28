@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "패스포트 목록에서 전체 팬 패스포트 누적 발급 건수를 확인할 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/passports",
+  "images": [
+    "release-notes/images/2026-11-28-passport-count-1440.png"
+  ]
+}

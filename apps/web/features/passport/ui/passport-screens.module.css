@@ -995,3 +995,5 @@
 .stampGrid .stampSlot > span,.stampGrid .firstLikeDate { margin:0; color:var(--color-muted); font-size:var(--fan-metadata-size); font-variant-numeric:tabular-nums; white-space:nowrap; }
 .stampChevron { width:var(--space-4); height:var(--space-4); color:var(--color-muted); }
 @media (min-width:1024px) { .stampGrid .stampSlot { grid-template-columns:48px minmax(0,1fr) auto auto; } .stampGrid .stampArtwork { width:48px; height:48px; } }
+
+.collectionHeading .issuedCount { grid-column:1 / -1; grid-row:2; color:var(--color-muted); }
