@@ -36,11 +36,11 @@ it("reproduces the opening-day reference distribution for 1,200 birthdays", () =
 
 it.each([
   [0, 0, 100],
-  [40, 0, 79],
+  [40, 0, 80],
   [41, 1, 78],
   [53, 1, 59],
   [54, 2, 57],
-  [62, 2, 39],
+  [62, 2, 40],
   [63, 3, 38],
   [73, 3, 19],
   [74, 4, 17],

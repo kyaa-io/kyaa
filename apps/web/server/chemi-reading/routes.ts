@@ -259,7 +259,11 @@ export async function rewardRoute(
         const profile = z.object({ birth: birth.nullable() }).parse(await deps.rpc("chemi_read_profile", { p_user }));
         if (!profile.birth) return { birthRequired: true };
         const chart = { ...calculateSaju(birthInput(profile.birth)), gender: profile.birth.gender ?? undefined };
-        return computeChristmasReading(chart, natalChart(profile.birth), new Date());
+        const result = computeChristmasReading(chart, natalChart(profile.birth), new Date());
+        if (result.locked) return result;
+        const { character } = z.object({ character: z.enum(["changha", "elina", "yuna"]) }).parse(body);
+        await deps.rpc("chemi_christmas_affinity", { p_user, p_character: character });
+        return result;
       }
       if (op === "pointDate") {
         const input = z.object({ character, day: z.iso.date(), confirm: z.boolean() }).parse(body);

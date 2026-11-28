@@ -25,7 +25,14 @@ export function computeChristmasReading(
   if (eve!.fortune.locked || christmas!.fortune.locked) return { locked: true } as const;
   const bestFortune = eve!.fortune.fields.love >= christmas!.fortune.fields.love
     ? eve!.fortune : christmas!.fortune;
-  const stars = christmasSeason.holidayDates.map(date => ({ date, reading: scoreDay(natal, date) }));
+  // scoreDay hashes the input longitudes to break tied star ratings. Ephemeris
+  // rounding below a microdegree varies between JS runtimes and CPU architectures.
+  const longitudeKey = (longitude: number) => Number(longitude.toFixed(6));
+  const stableNatal = {
+    ...natal, ascendant: natal.ascendant === null ? null : longitudeKey(natal.ascendant),
+    planets: natal.planets.map(planet => ({ ...planet, longitude: longitudeKey(planet.longitude) })),
+  };
+  const stars = christmasSeason.holidayDates.map(date => ({ date, reading: scoreDay(stableNatal, date) }));
   const bestStar = stars[0]!.reading.stars.love >= stars[1]!.reading.stars.love ? stars[0]! : stars[1]!;
   const remaining = [];
   for (let day = 1; day <= 23; day++) {

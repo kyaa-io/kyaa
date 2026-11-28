@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from "vitest";
-import { GET } from "./route";
+import { POST } from "./route";
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/server/fanpage/dependencies", () => ({
@@ -7,9 +7,9 @@ vi.mock("@/server/fanpage/dependencies", () => ({
 }));
 afterEach(() => vi.unstubAllEnvs());
 
-it("keeps GET /christmas private while the tab is closed", async () => {
+it("keeps POST /christmas private while the tab is closed", async () => {
   vi.stubEnv("CHEMI_TAB", "false");
-  const response = await GET(new Request("http://localhost/api/chemi/christmas"));
+  const response = await POST(new Request("http://localhost/api/chemi/christmas"));
   expect(response.status).toBe(404);
   expect(response.headers.get("cache-control")).toBe("private, no-store");
   expect(await response.json()).toEqual({ error: { code: "CHEMI_NOT_FOUND" } });

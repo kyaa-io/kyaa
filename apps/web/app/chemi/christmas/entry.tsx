@@ -16,7 +16,7 @@ import styles from "../fortune/scene.module.css";
 type Catalog = typeof import("@/features/chemi/i18n/locales/ko/chemi.json");
 export function ChristmasEntry({ catalog, locale }: { catalog: Catalog; locale: AppLocale }) {
   const { getAccessToken, login } = useByUsAuth();
-  const [state, setState] = useState<"entry" | "empty" | "error" | "result">("entry");
+  const [state, setState] = useState<"entry" | "empty" | "locked" | "error" | "result">("entry");
   const [busy, setBusy] = useState(false);
   const [birthOpen, setBirthOpen] = useState(false);
   const [reading, setReading] = useState<Extract<ReturnType<typeof computeChristmasReading>, { locked: false }> | null>(null);
@@ -30,12 +30,15 @@ export function ChristmasEntry({ catalog, locale }: { catalog: Catalog; locale: 
       const token = await getAccessToken();
       if (birth) await saveBirth(token, birth);
       const response = await fetch("/api/chemi/christmas", {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        method: "POST",
+        headers: { "content-type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: JSON.stringify({ character: "changha" }),
       });
       if (response.status === 401) { login(); return; }
       if (!response.ok) throw new Error();
       const result = await response.json();
       if (result.birthRequired) setState("empty");
+      else if (result.locked) setState("locked");
       else if (typeof result.score === "number") {
         setReading(result);
         setState("result");
@@ -54,6 +57,7 @@ export function ChristmasEntry({ catalog, locale }: { catalog: Catalog; locale: 
         <FanHeading as="h1">{catalog.home.christmas}</FanHeading>
         {state === "entry" && <p>{catalog.home.saju} · {catalog.home.zodiac} · {formatDay("2026-12-24")} / {formatDay("2026-12-25")}</p>}
         {state === "empty" && <FanState kind="empty" title={catalog.christmas.birth} />}
+        {state === "locked" && <FanState inline kind="empty" title={catalog.readingUi.unlockTime} />}
         {state === "error" && <FanState inline kind="error" title={catalog.readingUi.fortuneFailure} />}
         {state === "result" && reading && <>
           <FanHeading>{grades[reading.grade]} · {reading.score}%</FanHeading>
@@ -63,8 +67,8 @@ export function ChristmasEntry({ catalog, locale }: { catalog: Catalog; locale: 
           <p>{luckValue(reading.fortune.luck.color, locale)} · {reading.fortune.luck.luckyHour && `${reading.fortune.luck.luckyHour.start}:00–${reading.fortune.luck.luckyHour.end}:00`} · {luckValue(reading.fortune.luck.direction, locale)}</p>
           <SaveResultImage frame primary title={grades[reading.grade] + " · " + reading.score + "%"} detail={detail} art="/chemi/christmas/result-9x16.webp" />
         </>}
-        {state !== "result" && <FanAction variant="primary" loading={busy} onClick={() => state === "empty" ? setBirthOpen(true) : void read()}>
-          {state === "empty" ? catalog.christmas.birth : state === "error" ? catalog.readingUi.retry : catalog.readingUi.seeReading}
+        {state !== "result" && <FanAction variant="primary" loading={busy} onClick={() => (state === "empty" || state === "locked") ? setBirthOpen(true) : void read()}>
+          {state === "locked" ? catalog.readingUi.birthTime : state === "empty" ? catalog.christmas.birth : state === "error" ? catalog.readingUi.retry : catalog.readingUi.seeReading}
         </FanAction>}
       </div>
     </div>
