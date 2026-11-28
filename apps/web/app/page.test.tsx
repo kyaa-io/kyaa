@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../server/signup-event/home-scale", () => ({ readHomeScale: async () => ({ members: 0, passports: null, asOf: "2026-11-27T00:00:00Z" }) }));
 vi.mock("server-only", () => ({}));
 
 const repositories = vi.hoisted(() => ({
@@ -37,7 +36,7 @@ describe("Home server content isolation", () => {
   });
 
   const props = (result: { props: { children: Array<{ props: Record<string, unknown> }> } }) => result.props.children[1].props as {
-    queries: Record<"homeBanners" | "homeSlots" | "homeNotices" | "homeGallery" | "homeShorts" | "scale", Promise<{ status: string; value?: unknown }>>;
+    queries: Record<"homeBanners" | "homeSlots" | "homeNotices" | "homeGallery" | "homeShorts", Promise<{ status: string; value?: unknown }>>;
     [key: string]: unknown;
   };
 
@@ -123,6 +122,6 @@ describe("Home server content isolation", () => {
 
   it("no longer reads the upcoming LIVE list, the retired Elina card data or the unlisted creator list", async () => {
     const result = await HomePage({ searchParams: Promise.resolve({}) });
-    expect(Object.keys(props(result).queries).sort()).toEqual(["homeBanners", "homeGallery", "homeNotices", "homeShorts", "homeSlots", "scale"]);
+    expect(Object.keys(props(result).queries).sort()).toEqual(["homeBanners", "homeGallery", "homeNotices", "homeShorts", "homeSlots"]);
   });
 });
