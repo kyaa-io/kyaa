@@ -114,7 +114,7 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest, onSucc
       <output aria-live="polite" aria-label={`${q.quantity} ${pending?.units ?? qty}`}>{unitsText(locale, pending?.units ?? qty)}</output>
       <FanIconButton aria-label={q.increase} disabled={locked || Boolean(pending) || qty >= maxQty} onClick={() => pick(qty + 1)}><FanIcon icon={Plus} /></FanIconButton>
     </div>
-    <FanAction variant="primary" className={styles.exchangeAction} loading={working} disabled={locked || (!pending && qty < 1)} onClick={() => { if (pending) void submit(pending); else void start(qty); }}>{pending ? w.recover : rewarded.action}</FanAction>
+    <FanAction variant="primary" className={styles.exchangeAction} loading={working} disabled={locked || (!pending && qty < 1)} onClick={() => { if (pending) void submit(pending); else void start(qty); }}>{pending ? w.recover : rewarded.adExchange}</FanAction>
   </div>;
 }
 
@@ -123,6 +123,6 @@ function StanExchangeContent({ locale, points, pointCost, pendingRequest, onSucc
 export function StanExchangeLoading({ locale }: { locale: AppLocale }) {
   return <div className={styles.exchange} aria-hidden="true" data-exchange-loading="">
     <span className={styles.stepper}><span className={styles.stepperSlot}><FanIcon icon={Minus} /></span><FanSkeleton width={32} height={20} /><span className={styles.stepperSlot}><FanIcon icon={Plus} /></span></span>
-    <span className={fanActionClassName("secondary", { className: styles.exchangeAction })} aria-disabled="true">{rewardedExchangeCopy(locale).action}</span>
+    <span className={fanActionClassName("secondary", { className: styles.exchangeAction })} aria-disabled="true">{rewardedExchangeCopy(locale).adExchange}</span>
   </div>;
 }

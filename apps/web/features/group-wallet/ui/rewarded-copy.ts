@@ -14,6 +14,8 @@ const copy:Record<AppLocale,readonly [string,string,string,string,string,string,
  fr:['Échanger','Regarder la publicité','Chargement de la publicité.','La publicité n’a pas été terminée. Aucun point n’a été déduit.','Aucune publicité disponible pour le moment. Aucun point n’a été déduit.','Les publicités sont en préparation, l’échange n’est pas encore possible','Vous ne pouvez plus échanger aujourd’hui. Aucun point n’a été déduit.','Trop de demandes. Réessayez dans un instant. Aucun point n’a été déduit.','La vérification de la publicité a expiré. Réessayez. Aucun point n’a été déduit.'],
  ru:['Обменять','Смотреть рекламу','Загружаем рекламу.','Реклама не досмотрена. Баллы не списаны.','Сейчас нет доступной рекламы. Баллы не списаны.','Реклама ещё готовится, поэтому обмен пока недоступен','Сегодня больше обменять нельзя. Баллы не списаны.','Слишком много запросов. Повторите чуть позже. Баллы не списаны.','Проверка рекламы истекла. Повторите попытку. Баллы не списаны.'],
 };
+/** 대표 11/28 195099: the exchange buttons say what a press does — watch an ad, then exchange. */
+const adExchangeLabels:Record<AppLocale,string>={ko:'광고보기 교환',en:'Exchange with ad',mn:'Зар үзээд солих',ja:'広告を見て交換','zh-Hans':'看广告兑换','zh-Hant':'看廣告兌換',es:'Canje con anuncio',id:'Tukar via iklan',vi:'Đổi qua quảng cáo',th:'ดูโฆษณาแล้วแลก',pt:'Trocar com anúncio',fr:'Échanger via pub',ru:'Обмен за рекламу'};
 const causes:Record<AppLocale,readonly [string,string,string]>={
  ko:['이 기기나 브라우저에서는 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.','광고를 불러오지 못했어요','지금은 광고를 볼 수 없어요. 포인트는 차감되지 않았어요.'],
  get mn() { return this.en; },
@@ -29,7 +31,7 @@ const causes:Record<AppLocale,readonly [string,string,string]>={
  fr:['Cet appareil ou ce navigateur ne peut pas afficher de publicité. Aucun point n’a été déduit.','La publicité n’a pas pu être chargée','Impossible de regarder une publicité pour le moment. Aucun point n’a été déduit.'],
  ru:['На этом устройстве или в этом браузере нельзя показать рекламу. Баллы не списаны.','Не удалось загрузить рекламу','Сейчас нельзя посмотреть рекламу. Баллы не списаны.'],
 };
-export function rewardedExchangeCopy(locale:AppLocale){const [action,watch,loading,incomplete,unavailable,adOff,dailyLimit,rateLimited,sessionExpired]=copy[locale];const [unsupported,failed,unconfigured]=causes[locale];return {action,watch,loading,incomplete,unavailable,unsupported,unconfigured,failed,adOff:unavailable,dailyLimit,rateLimited,sessionExpired};}
+export function rewardedExchangeCopy(locale:AppLocale){const [action,watch,loading,incomplete,unavailable,adOff,dailyLimit,rateLimited,sessionExpired]=copy[locale];const [unsupported,failed,unconfigured]=causes[locale];return {action,adExchange:adExchangeLabels[locale],watch,loading,incomplete,unavailable,unsupported,unconfigured,failed,adOff:unavailable,dailyLimit,rateLimited,sessionExpired};}
 
 /** Messages for failures that happen before an ad is requested (or when a session lapses); undefined falls back to the generic exchange error. */
 export function rewardedSessionError(locale:AppLocale,code:string):string|undefined{const c=rewardedExchangeCopy(locale);return code==='GROUP_WALLET_AD_DAILY_LIMIT'?c.dailyLimit:code==='GROUP_WALLET_AD_RATE_LIMITED'?c.rateLimited:code==='GROUP_WALLET_AD_SESSION_INVALID'?c.sessionExpired:code==='GROUP_WALLET_AD_GATE_CLOSED'||code==='GROUP_WALLET_AD_CONFIG_MISSING'?c.adOff:undefined;}

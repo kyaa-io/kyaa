@@ -46,7 +46,7 @@ it('keeps the raffle catalog closed and leaves conversion out of the Pencil over
  expect(within(catalog).getByRole('link',{name:/캡슐 럭키드로우/})).toHaveAttribute('href','/my/capsules?locale=ko');
  expect(screen.getAllByText('곧 안내해 드릴게요')).toHaveLength(1);
  expect(screen.queryByText('100 P')).not.toBeInTheDocument();
- expect(screen.queryByRole('button',{name:'교환'})).not.toBeInTheDocument();
+ expect(screen.queryByRole('button',{name:'광고보기 교환'})).not.toBeInTheDocument();
  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
  expect(screen.queryByRole('radio')).not.toBeInTheDocument();
  expect(screen.queryByRole('link',{name:'하트 보내기'})).not.toBeInTheDocument();

@@ -133,7 +133,7 @@ function raffleHref(slug: string, benefitId: string | null, locale: AppLocale): 
 function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raffle: Raffle; status: Raffle["status"]; slug: string; locale: AppLocale; entered: number | null; allowance: RaffleAllowance | null }) {
   const open = status === "open" && allowance !== null;
   const cost = !open ? null
-    : allowance.kind === "locked" ? <>{t(locale, "luckyCostGuest", [RAFFLE_TICKET_COST])} · <FanLockedValue locale={locale} /></>
+    : allowance.kind === "locked" ? <>{t(locale, "luckyCostGuest", [RAFFLE_TICKET_COST])}<FanLockedValue locale={locale} size="title" /></>
     : allowance.kind === "loading" ? <FanSkeleton width={160} height={20} />
     : allowance.kind === "count" ? t(locale, "luckyCost", [RAFFLE_TICKET_COST, allowance.count.toLocaleString(locale)])
     : allowance.kind === "passport" ? t(locale, "luckyNeedPassport")

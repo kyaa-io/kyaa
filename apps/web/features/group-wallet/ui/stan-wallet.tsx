@@ -73,26 +73,29 @@ export function StanWallet({ locale, state, stamps, links, className, favoritePi
   const ready = state.kind === "ready", affordable = ready && state.points >= pointCost;
   const n = (value: number) => value.toLocaleString(locale);
   const ko = locale === "ko";
-  /** 보유 N: the real balance (137P stays 137P past the cost), or the locked / loading mark in the same line. A balance that failed to load leaves the line empty (the section's own error and retry say so) — no dash. */
-  const held = (slot: StanSlot, text: string) => typeof slot === "number" ? s("stanHeld", [text]) : slot === "loading" ? <FanSkeleton width={64} height={16} /> : slot === "locked" ? <FanLockedValue locale={locale} /> : null;
-  /** The amount carries a word, not a sign (대표 11/13 20:36: −100P read as a loss): 포인트 100P 사용 → 응모권 1장 획득. */
-  const amount = (side: "spend" | "gain", value: number, unit?: string) => <span className={styles.amount}>
+  const lock = <FanLockedValue locale={locale} size="title" />;
+  /** 보유 N: the real balance (137P stays 137P past the cost) or the loading mark in the same line. A balance that failed to load leaves the line empty (the section's own error and retry say so) — no dash. A locked cell has no balance line: its lock sits on the name line. */
+  const held = (slot: StanSlot, text: string) => typeof slot === "number" ? s("stanHeld", [text]) : slot === "loading" ? <FanSkeleton width={64} height={16} /> : null;
+  /** The amount carries a word, not a sign (대표 11/13 20:36: −100P read as a loss): 포인트 100P 사용 → 응모권 1장 획득. Signed out, the lock stands right after that word. */
+  const amount = (side: "spend" | "gain", value: number, unit: string | undefined, slot: StanSlot) => <span className={styles.amount}>
     {side === "spend" ? <FanNumber size="lg" value={value} locale={locale} unit={formatMileage(value, locale, "auto", "unit")} /> : <FanNumber size="lg" value={value} unit={unit || undefined} locale={locale} />}
     <FanText role="meta" className={styles.amountLabel}>{s(side === "spend" ? "stanSpend" : "stanGain")}</FanText>
+    {slot === "locked" ? lock : null}
   </span>;
-  type Side = { cell: string; kind: keyof typeof WALLET_ASSETS; name: string; held: ReactNode; amount: ReactNode; flash: [boolean, (event: AnimationEvent) => void] };
-  /** Main line: name + amount + 사용/획득. Under it, smaller, the balance — what I have never competes with what moves. */
+  type Side = { cell: string; kind: keyof typeof WALLET_ASSETS; name: string; slot: StanSlot; held: ReactNode; amount: ReactNode; flash: [boolean, (event: AnimationEvent) => void] };
+  /** Main line: name + amount + 사용/획득. Under it, smaller, the balance — what I have never competes with what moves.
+   * Signed out (대표 11/28 195099) there is no second line: a small lock follows 사용/획득, so the lock adds no height. */
   const body = (side: Side) => <>
     <RewardIcon kind={side.kind === "coin" ? "point" : side.kind} size={40} className={styles.cellAsset} />
-    <span className={styles.cellText}><span className={styles.cellMain}><FanText role="item" className={styles.cellName}>{side.name}</FanText>{side.amount}</span><FanText role="meta" className={styles.cellHeld}><span className={styles.heldText}>{side.held}</span></FanText></span>
+    <span className={styles.cellText}><span className={styles.cellMain}><FanText role="item" className={styles.cellName}>{side.name}</FanText>{side.amount}</span>{side.slot === "locked" ? null : <FanText role="meta" className={styles.cellHeld}><span className={styles.heldText}>{side.held}</span></FanText>}</span>
   </>;
   /** One button per card, as wide as the cells. Both run behind the rewarded ad (the video icon says so); with no ad unit it is the gray 준비 중. */
   const action = (name: string, enabled: boolean, extra: { onClick: () => void } | { href: string } | null) => state.kind === "guest" ? (loginHref ? <FanAction variant="primary" className={styles.reward} href={loginHref} leadingIcon={<FanIcon icon={SquarePlay} size={20} />}>{name}</FanAction> : state.action) : <FanAction variant={enabled ? "primary" : "neutral"} className={styles.reward} {...(enabled && extra ? extra : { disabled: true })} leadingIcon={<FanIcon icon={SquarePlay} size={20} />}>{adReady || enabled ? name : s("stanPreparing")}</FanAction>;
   const swap = (column: "tickets" | "hearts", from: Side, to: Side, href: string, button: ReactNode) => <div className={styles.swap} data-column={column}>
     <div className={styles.cells}>
-      <div className={styles.cell} data-cell={from.cell} data-side="from" data-changed={from.flash[0] || undefined} onAnimationEnd={from.flash[1]}>{body(from)}</div>
+      <div className={styles.cell} data-cell={from.cell} data-side="from" data-locked={from.slot === "locked" || undefined} data-changed={from.flash[0] || undefined} onAnimationEnd={from.flash[1]}>{body(from)}</div>
       <span className={styles.joint} aria-hidden="true"><FanIcon icon={ArrowDown} size={16} /></span>
-      <Link className={styles.cell} data-cell={to.cell} data-side="to" data-changed={to.flash[0] || undefined} onAnimationEnd={to.flash[1]} href={(state.kind === "guest" && loginHref ? loginHref : href) as Route}>{body(to)}</Link>
+      <Link className={styles.cell} data-cell={to.cell} data-side="to" data-locked={to.slot === "locked" || undefined} data-changed={to.flash[0] || undefined} onAnimationEnd={to.flash[1]} href={(state.kind === "guest" && loginHref ? loginHref : href) as Route}>{body(to)}</Link>
     </div>
     {button}
   </div>;
@@ -100,13 +103,13 @@ export function StanWallet({ locale, state, stamps, links, className, favoritePi
   const show = (name: "tickets" | "hearts") => !part || part === name;
   return <section className={[styles.wallet, className].filter(Boolean).join(" ")} id={part ? `wallet-${part}` : "wallet"} aria-label={part === "tickets" ? `${w.points} → ${w.tickets}` : part === "hearts" ? s("stanFlowStamps") : s("stanWalletFlows")} data-wallet-card="stan" data-wallet-part={part}>
     {show("tickets") ? swap("tickets",
-      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, held: held(points, typeof points === "number" ? formatMileage(points, locale) : ""), amount: amount("spend", pointCost, undefined) },
-      { cell: "tickets", flash: flashes.tickets, kind: "ticket", name: w.tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("gain", 1, ko ? "장" : "") },
+      { cell: "points", flash: flashes.points, kind: "coin", name: w.points, slot: points, held: held(points, typeof points === "number" ? formatMileage(points, locale) : ""), amount: amount("spend", pointCost, undefined, points) },
+      { cell: "tickets", flash: flashes.tickets, kind: "ticket", name: w.tickets, slot: tickets, held: held(tickets, typeof tickets === "number" ? `${n(tickets)}${ko ? "장" : ""}` : ""), amount: amount("gain", 1, ko ? "장" : "", tickets) },
       `/my/raffles?locale=${locale}`,
-      action(ko ? "교환" : w.exchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })) : null}
+      action(rewardedExchangeCopy(locale).adExchange, ready && (Boolean(pendingRequest.pending) || (affordable && adReady)), { onClick: () => setOpen(true) })) : null}
     {show("hearts") ? favoritePicker ? <div className={`${styles.swap} ${styles.favoritePicker}`} data-cell="favorite-picker">{favoritePicker}</div> : <Link className={styles.cell} href={(state.kind === "guest" && loginHref ? loginHref : links.hearts) as Route}>
       <RewardIcon kind="stamp" size={40} className={styles.cellAsset} />
-      <span>{s("stanFlowStamps")} {held(stamps, typeof stamps === "number" ? n(stamps) : "")}</span>
+      <span>{s("stanFlowStamps")} {stamps === "locked" ? lock : held(stamps, typeof stamps === "number" ? n(stamps) : "")}</span>
     </Link> : null}
     {state.kind === "failed" && state.retry ? <FanAction onClick={state.retry}>{w.retry}</FanAction> : null}
     <Overlay open={open && ready} onClose={() => setOpen(false)} labelledBy={titleId} backdropClassName={styles.backdrop} contentClassName={styles.sheet}>

@@ -11,6 +11,14 @@
   flex: none;
 }
 
+/* 제목 옆: 줄 높이를 늘리지 않고 글줄 가운데에 선다. */
+.title {
+  flex: none;
+  align-self: center;
+  min-block-size: 0;
+  vertical-align: middle;
+}
+
 .rows {
   display: grid;
   gap: var(--space-4);
