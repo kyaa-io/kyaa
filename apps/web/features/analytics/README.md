@@ -81,3 +81,12 @@
 - 측정된 회원만 센다. 브라우저 저장소 제한, 차단 도구, 이벤트 API의 rate/오류 시 204 drop 때문에 누락될 수 있으며, 태그 없음은 유입이 없다는 뜻이 아니라 측정되지 않았다는 뜻이다. 좋아요 성공은 측정 실패와 무관하게 진행된다.
 
 beepio·chillsa 광고의 외부 클릭은 같은 이벤트에 등록된 광고 UUID(adId)와 광고주 코드(advertiser)를 함께 기록한다. 일반 링크는 기존 네 속성을 유지한다. ad_impression은 광고가 보이는 탭에서 면적의 절반 이상이 연속 1초 동안 보일 때 탭 세션별로 한 번 기록한다. 두 광고 속성은 UTM에 넣지 않는다. /admin/traffic의 광고 성과와 CSV는 한국 시간 기준으로 선택한 달을 집계한다.
+
+## 래플 응모 뒤 퍼널 (GROWTH-ONBOARD-RETAIN-1128, GA4 동의 뒤에만)
+
+가입(`sign_up`) → 응모(`raffle_enter`) → 당일 두 번째 행동(`raffle_next_step`) → 다음 날부터 재방문(`raffle_return`) 순서로 GA4에서 이어 본다. 모두 `GA4_EVENT_PARAMETERS`의 열거 값만 보내며 회원·글·크리에이터 식별자와 자유 문구는 없다.
+
+- `raffle_next_step`: 응모 직후 '오늘 기회 늘리기' 카드에서 단계 버튼을 눌렀을 때. `step`은 `pick`(최애 고르기)·`attend`(출석)·`invite`(친구 초대).
+- `raffle_return`: 응모한 회원이 응모한 날의 다음 날부터 래플 화면을 다시 열었을 때 화면당 한 번. `day`는 응모 뒤 지난 날 수를 1·2·3(3~6일)·7(7일 이후)로 묶은 값이다. 날짜는 서버가 이벤트 시간대(한국 시간)로 세어 내려 주는 `daysSinceEntry`이며 브라우저 시계로 계산하지 않는다. 동의 뒤 gtag가 뜰 때까지 최대 5초 기다리고 못 뜨면 보내지 않는다.
+- `raffle_notify`: 같은 카드의 이벤트 소식 메일 동의를 바꾼 결과(`choice`=on/off).
+- 자체 기록은 새 이벤트 없이 기존 서버 기록으로 센다: 응모(`signup_raffle_entries`), 당일 행동(`signup_raffle_actions` 출석·댓글·Fan Passport·모임·초대), 재방문(로그인 상태 `page_view`·출석 등). 앱 안 브라우저 이동은 기존 `inapp_external_open`(`method=copy`)으로 센다.

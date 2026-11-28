@@ -76,7 +76,7 @@
  * 행은 스탬프 32 · 이름+기회 · 오른쪽 버튼 또는 완료 표시. 아직인 첫 단계의 버튼만 primary. 아래 선 하나로 갈라 '내일'과 알림 동의 */
 .next { display: grid; gap: var(--space-3); width: 100%; max-width: var(--rail-wide); text-align: start; }
 .nextHead { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
-.nextCount { color: var(--color-accent-ink); font-variant-numeric: tabular-nums; }
+.nextCount { font-variant-numeric: tabular-nums; }
 .nextRows { list-style: none; padding: 0; display: grid; }
 .nextRows li { display: grid; grid-template-columns: auto minmax(0, 1fr) max-content; align-items: center; column-gap: var(--space-3); padding-block: var(--space-3); }
 .nextRows li:first-child { padding-top: 0; }
