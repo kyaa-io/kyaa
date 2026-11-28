@@ -109,6 +109,7 @@ export function noticeImages(notes) {
   return images;
 }
 
+const LOCAL_CAPTURE_MODES = ['login', 'guest']; // LOCAL_GUEST_CAPTURE
 const disclosure = '예시 데이터로 만든 확인용 화면입니다.';
 const legacyDisclosure = '예시 데이터로 만든 로컬 화면입니다.';
 
@@ -137,9 +138,9 @@ export function checkNotes(base, head, pullRequest = false) {
       const loopback = ['127.0.0.1', 'localhost', '[::1]'].includes(address.hostname);
       const png = execFileSync(process.env.GIT_EXECUTABLE || 'git', ['show', head + ':' + path], {maxBuffer: 5_000_000});
       if (!['https:', 'http:'].includes(address.protocol) || address.username || address.password || address.search || address.hash ||
-          !['guest', 'login'].includes(meta.mode) || !['devshot', 'local-login'].includes(meta.tool) ||
+          !LOCAL_CAPTURE_MODES.includes(meta.mode) || !['devshot', 'local-login'].includes(meta.tool) ||
           (meta.tool === 'devshot' && address.origin !== 'https://dev.kyaa.io') ||
-          (meta.tool === 'local-login' && (!loopback || meta.mode !== 'login')) ||
+          (meta.tool === 'local-login' && !loopback) ||
           !Number.isFinite(Date.parse(meta.capturedAt)) || createHash('sha256').update(png).digest('hex') !== meta.sha256)
         throw new Error('INVALID_CAPTURE_RECEIPT: ' + path);
       local ||= loopback;

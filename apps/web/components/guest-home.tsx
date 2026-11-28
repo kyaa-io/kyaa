@@ -41,24 +41,7 @@ import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import { HomeGallery, HomeGalleryPlaceholder, HomeNotices, HomeNoticesPlaceholder } from "@/features/home/ui/home-placeholder-blocks";
 import { ObservedLiveStrip } from "@/features/live/ui/observed-live-strip";
 import { homeGalleryPostPhotos } from "@/features/home/domain/home-gallery-order";
-import { formatHomeScaleCompact } from "@/features/home/domain/home-scale-format";
 import styles from "./guest-home.module.css";
-
-const scaleLabels: Record<AppLocale, [string, string, string, string, string]> = {
-  ko: ["누적", "가입자 {n}명", "패스포트 발급 {n}건", "가입자 {n}", "패스포트 발급 {n}"],
-  en: ["Total", "{n} members", "{n} passports issued", "{n} members", "{n} passports"],
-  ja: ["累計", "登録者{n}人", "パスポート発行{n}件", "登録者{n}", "パスポート発行{n}"],
-  "zh-Hans": ["累计", "注册用户{n}人", "发放护照{n}份", "注册{n}", "护照{n}"],
-  "zh-Hant": ["累計", "註冊用戶{n}人", "發放護照{n}份", "註冊{n}", "護照{n}"],
-  es: ["Total", "{n} miembros", "{n} pasaportes emitidos", "{n} miembros", "{n} pasaportes"],
-  id: ["Total", "{n} anggota", "{n} paspor diterbitkan", "{n} anggota", "{n} paspor"],
-  vi: ["Tổng cộng", "{n} thành viên", "{n} hộ chiếu đã cấp", "{n} thành viên", "{n} hộ chiếu"],
-  th: ["สะสม", "สมาชิก {n} คน", "ออกพาสปอร์ต {n} เล่ม", "สมาชิก {n}", "พาสปอร์ต {n}"],
-  pt: ["Total", "{n} membros", "{n} passaportes emitidos", "{n} membros", "{n} passaportes"],
-  fr: ["Total", "{n} membres", "{n} passeports délivrés", "{n} membres", "{n} passeports"],
-  ru: ["Всего", "{n} участников", "Выдано паспортов: {n}", "{n} участников", "{n} паспортов"],
-  mn: ["Нийт", "{n} гишүүн", "{n} паспорт олгосон", "{n} гишүүн", "{n} паспорт"],
-};
 
 const socialLabel = { youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", chzzk: "치지직" } as const;
 
@@ -117,34 +100,11 @@ function HomeContent({ locale, jjinfanGauge = false, heartDonation, homeTop = "d
   );
 }
 
-function ScaleNumbers({ query, locale }: { query: NonNullable<HomeQueries["scale"]>; locale: AppLocale }) {
-  const result = use(query);
-  if (result.status === "rejected") return null;
-  const { members, passports } = result.value;
-  if (members === null && passports === null) return null;
-  const [total, membersFull, passportsFull, membersShort, passportsShort] = scaleLabels[locale];
-  const metrics = [
-    { count: members, full: membersFull, short: membersShort },
-    { count: passports, full: passportsFull, short: passportsShort },
-  ];
-  return <span className={styles.scaleNumbers}>
-    <span className={styles.scaleCaption} aria-hidden="true">{total}</span>
-    <span className={styles.scaleItems}>{metrics.map(({ count, full, short }) => {
-      if (count === null) return null;
-      const fullLabel = `${total} ${full.replace("{n}", count.toLocaleString(locale))}`;
-      return <span key={full} className={styles.scaleItem}>
-        <span className={styles.scaleFull}>{fullLabel}</span>
-        <span className={styles.scaleShort} aria-hidden="true">{short.replace("{n}", formatHomeScaleCompact(count, locale))}</span>
-      </span>;
-    })}</span>
-  </span>;
-}
-
-function HomeHero({ scale, locale, homeBanners = [], celebrities, elinaRaffles, contentErrors = {}, elinaGuide, liveEventBannerIds }: GuestHomeProps & { scale?: ReactNode; elinaGuide?: ReactNode; liveEventBannerIds?: string[] }) {
+function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, contentErrors = {}, elinaGuide, liveEventBannerIds }: GuestHomeProps & { elinaGuide?: ReactNode; liveEventBannerIds?: string[] }) {
   const t = copy[locale];
   const localeQuery = `?locale=${locale}`;
   return (<>          <section className={styles.heroSection} aria-labelledby="live-heading">
-            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span>{scale}</span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
+            <FanSectionHeader variant="editorial" as="h1" id="live-heading" title={<span className={styles.brandTitle}>{t.liveHeading}{" "}<span className={styles.brandSlogan}>{t.liveSub}</span></span>} action={{ href: `/events${localeQuery}`, label: allEvents[locale] }} />
             {contentErrors.homeBanners ? <ContentLoadError locale={locale} /> : null}
             <LiveHeroCarousel elinaRaffles={elinaRaffles} elina={celebrities.find(celebrity => celebrity.slug === "elina")} homeBanners={homeBanners} liveEventBannerIds={liveEventBannerIds} locale={locale} elinaGuide={elinaGuide} />
           </section>
@@ -176,7 +136,7 @@ function ResolvedGuestHome({ queries, closedEventStrip, ...props }: StreamingHom
   ];
   return <HomeContent locale={props.locale} jjinfanGauge={props.jjinfanGauge} heartDonation={props.heartDonation} homeTop={props.homeTop}
     eventStrip={banner && banner.id !== closedEventStrip ? <HomeEventStrip key={banner.id} banner={banner} locale={props.locale} /> : null}
-    hero={<HomeHero {...props} scale={queries.scale && <Suspense fallback={null}><ScaleNumbers query={queries.scale} locale={props.locale} /></Suspense>} celebrities={[]} homeBanners={homeBanners}
+    hero={<HomeHero {...props} celebrities={[]} homeBanners={homeBanners}
       liveEventBannerIds={managed.filter(item => isLiveCampaignBanner(item, now)).map(item => item.id)}
       contentErrors={{ homeBanners: result.status === "rejected" }}
       elinaGuide={null} />}

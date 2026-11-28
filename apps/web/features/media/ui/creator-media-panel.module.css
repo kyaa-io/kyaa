@@ -107,11 +107,13 @@
 
 /* 홈 갤러리 한 줄 [19]: 사진과 영상이 한 구역이고 정사각 칸이다. 1024+ 4칸, 그 아래 2칸 + 가로 넘김. 전체 보기는 원본 비율 격자다. */
 .gallery { display:grid; gap:0; min-width:0; }
-.gallery .previewHeading { margin-bottom:var(--space-3); }
-.gallery .previewHeading [data-fan-section-header] { margin-bottom:0; }
-/* 팬페이지·모임 갤러리 한 줄: FanScrollRow(컨테이너 오른쪽 끝까지 채우고 가로 스크롤). 정사각 카드 132(768 이상 188). */
-.galleryRail li { width:132px; }
-@media(min-width:768px) { .galleryRail li { width:188px; } }
+.gallery .previewHeading { margin-bottom:var(--space-2); }
+.gallery .previewHeading [data-fan-section-header] { min-height:36px; margin-bottom:0; }
+/* 제목 줄 36px. 전체 보기 링크는 위아래 4px 밖으로 나가 누르는 영역 44를 지킨다. */
+.gallery .previewHeading [data-fan-section-header] a { margin-block:var(--fan-compact-row-bleed); }
+/* 팬페이지·모임 갤러리 한 줄: FanScrollRow(컨테이너 오른쪽 끝까지 채우고 가로 스크롤). 정사각 카드 96(768 이상 132, 1024 이상은 7칸 채움). */
+.galleryRail li { width:96px; }
+@media(min-width:768px) { .galleryRail li { width:132px; } }
 .galleryRail li { position:relative; aspect-ratio:1; overflow:hidden; border-radius:var(--radius-media); background:var(--color-soft); scroll-snap-align:start; }
 .galleryRail li > a, .galleryRail li > .play { display:block; width:100%; height:100%; padding:0; }
 .galleryRail li img { display:block; width:100%; height:100%; aspect-ratio:1 / 1 !important; object-fit:cover; object-position:50% 30%; border-radius:0; }
@@ -180,8 +182,8 @@ a:has(> [data-video-fallback]) > .playIcon,button:has(> [data-video-fallback]) >
   .galleryRail li:first-child:nth-last-child(2) + li { width:min(100%, 12rem); }
   .galleryRail li:nth-last-child(n+3),
   .galleryRail li:nth-last-child(n+3) ~ li {
-    min-width:132px;
+    min-width:104px;
     max-width:188px;
-    width:calc((100% - 5 * var(--space-2)) / 6);
+    width:calc((100% - 6 * var(--space-2)) / 7);
   }
 }

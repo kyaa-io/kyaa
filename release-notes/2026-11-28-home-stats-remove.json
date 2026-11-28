@@ -1,0 +1,5 @@
+{
+  "changes": ["홈 상단에서 누적 가입자 수와 패스포트 발급 수를 뺐어요. 전체 이벤트는 기존 위치에서 열 수 있어요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-28-home-stats-remove-390.png", "release-notes/images/2026-11-28-home-stats-remove-1440.png"]
+}

@@ -12,6 +12,14 @@ export const STATIC_PUBLIC_PATHS = [...CONTENT_PUBLIC_PATHS, ...TRANSLATED_PUBLI
 const SLUG = "[a-z0-9]+(?:-[a-z0-9]+)*";
 const DYNAMIC_PUBLIC_PATH = new RegExp(`^(?:/live/${SLUG}|/notices/${SLUG}|/c/${SLUG}/raffles(?:/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?)$`);
 
+export function isPublicationPath(path: string): boolean {
+  return !isPrivatePath(path) && !isRehearsalPath(path) && (
+    STATIC_PUBLIC_PATHS.includes(path) || path === "/celebrities" || path === "/pages/groups"
+    || (!path.startsWith("/c/") && creatorSlugFromHomePath(path) !== null)
+    || DYNAMIC_PUBLIC_PATH.test(path)
+  );
+}
+
 /** `directory` is the one creator directory address that renders: with pages and groups on, /celebrities only sends the reader to /pages/groups. */
 export function buildSitemap(content: readonly { path: string; locale: SeoLocale }[], directory: "/pages/groups" | "/celebrities" = "/pages/groups"): MetadataRoute.Sitemap {
   const paths = new Map<string, Set<SeoLocale>>();
@@ -21,10 +29,9 @@ export function buildSitemap(content: readonly { path: string; locale: SeoLocale
     ...content,
   ];
   for (const { path, locale } of all) {
-    if (isPrivatePath(path) || isRehearsalPath(path) || isNoContentPath(path)) continue;
+    if (!isPublicationPath(path) || isNoContentPath(path)) continue;
+    if ((path === "/celebrities" || path === "/pages/groups") && path !== directory) continue;
     if (path.startsWith("/notices/") && !isIndexableHomeNotice(path.slice("/notices/".length))) continue;
-    const creatorHome = !path.startsWith("/c/") && creatorSlugFromHomePath(path) !== null;
-    if (!STATIC_PUBLIC_PATHS.includes(path) && path !== directory && !creatorHome && !DYNAMIC_PUBLIC_PATH.test(path)) continue;
     const locales = paths.get(path) ?? new Set<SeoLocale>();
     locales.add(locale);
     paths.set(path, locales);

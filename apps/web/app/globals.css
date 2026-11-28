@@ -178,6 +178,8 @@
   --fan-surface-padding-compact: var(--space-4);
   --fan-row-gap-compact: 0px;
   --home-shorts-rail-width: 176px;
+  /* 36px 제목 줄의 전체 보기 링크가 위아래로 4px씩 나가 누르는 영역 44를 지킨다(밀도 조정, 대표 제보 194456). */
+  --fan-compact-row-bleed: calc(var(--space-1) * -1);
   --fan-metadata-size: 13px;
   --fan-metadata-leading: 1.4;
   --fan-badge-size: 12px;
