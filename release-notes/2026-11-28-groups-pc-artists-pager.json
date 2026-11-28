@@ -1,0 +1,8 @@
+{
+  "changes": [
+    "PC 모임 화면에서 내 아티스트를 오른쪽 출석 카드 위로 옮겼어요. Hot 게시글과 페이지 둘러보기 목록은 화살표로 넘기고 현재 몇 쪽인지 확인할 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/pages/groups",
+  "images": ["release-notes/images/2026-11-28-groups-pc-artists-pager.png"]
+}

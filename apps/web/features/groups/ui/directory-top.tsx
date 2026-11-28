@@ -116,12 +116,9 @@ const postHref = (post: PopularPost, locale: AppLocale) => post.source === "fan"
 const pageHref = (post: PopularPost, locale: AppLocale) => post.source === "fan" ? `/${post.pageRef}?locale=${locale}` : `/pages/groups/${post.pageRef}?locale=${locale}`;
 const firstLine = (title: string) => title.split("\n").map((line) => line.trim()).find(Boolean) ?? title;
 
-/** 다섯 줄 고정(0건이면 첫 줄이 "아직 Hot 게시글 없음"). 펼치면 받아 둔 열 줄까지, 새 요청은 없다. */
 export function HotPosts({ locale }: { locale: AppLocale }) {
   const c = directoryTopCopy(locale);
-  const [open, setOpen] = useState(false);
   const [page, setPage] = useState(0);
-  const mobile = useSyncExternalStore((notify) => { const media = window.matchMedia("(max-width: 767px)"); media.addEventListener("change", notify); return () => media.removeEventListener("change", notify); }, () => window.matchMedia("(max-width: 767px)").matches, () => false);
   const [sort, setSort] = useState<"likes" | "comments" | "views" | "latest">("likes");
   const [period, setPeriod] = useState<"today" | "week" | "month">("week");
   const url = `/api/public/popular-posts?locale=${toContentLocale(locale)}&page=1&sort=${sort}&period=${period}`;
@@ -132,19 +129,19 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   const { state, retry } = signedIn ? viewer : anonymous;
   const ready = state.status === "ready";
   const total = ready ? state.data.items.length : 0;
-  const items = ready ? state.data.items.slice(mobile ? page * ROWS : 0, mobile ? (page + 1) * ROWS : open ? 10 : ROWS) : [];
+  const items = ready ? state.data.items.slice(page * ROWS, (page + 1) * ROWS) : [];
   if (ready && total === 0 && period === "week" && sort === "likes") return null;
   return <section className={styles.hot} aria-labelledby="directory-hot-posts" data-directory-block="hot-posts">
     <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading><div className={styles.hotFilters}>
-      <FanSelectMenu label={c.periodLabel} value={period} align="end" onValueChange={value => { if (value === "today" || value === "week" || value === "month") { setPeriod(value); setOpen(false); setPage(0); } }} options={(["today", "week", "month"] as const).map(value => ({ value, label: c.period[value] }))} />
-      <FanSelectMenu label={c.hotTitle} accessibleName={c.hotSort[sort]} value={sort} align="end" onValueChange={value => { if (value === "likes" || value === "comments" || value === "views" || value === "latest") { setSort(value); setOpen(false); setPage(0); } }} options={(["likes", "comments", "views", "latest"] as const).map(value => ({ value, label: c.hotSort[value] }))} /></div></div>
+      <FanSelectMenu label={c.periodLabel} value={period} align="end" onValueChange={value => { if (value === "today" || value === "week" || value === "month") { setPeriod(value); setPage(0); } }} options={(["today", "week", "month"] as const).map(value => ({ value, label: c.period[value] }))} />
+      <FanSelectMenu label={c.hotTitle} accessibleName={c.hotSort[sort]} value={sort} align="end" onValueChange={value => { if (value === "likes" || value === "comments" || value === "views" || value === "latest") { setSort(value); setPage(0); } }} options={(["likes", "comments", "views", "latest"] as const).map(value => ({ value, label: c.hotSort[value] }))} /></div></div>
     {state.status === "error" ? <div className={styles.state}><FanState inline compact kind="error" title={c.hotError} actions={<FanAction variant="text" size="sm" onClick={retry}>{c.retry}</FanAction>} /></div>
       : <ul className={styles.posts}>{!ready ? Array.from({ length: ROWS }, (_, i) => <li key={i} className={styles.post} data-row="hot-loading" aria-hidden="true"><FanSkeleton shape="circle" width={32} height={32} /><FanSkeleton width="70%" height={16} /><FanSkeleton width="40%" height={12} /></li>)
         : <>{items.map((post) => <li key={`${post.source}:${post.id}`} className={styles.postItem} data-row="hot-post">
           <FanPostRow locale={locale} columns="compact" href={postHref(post, locale)} title={firstLine(post.title)} thumbnail={post.asset ? post.source === "group" ? `/api/groups/media/${post.asset.id}?variant=thumbnail` : `/api/content-assets/${post.asset.id}?size=thumbnail` : null} avatar={post.avatarUrl} pageImage={<PostAvatar post={post} />} commentCount={post.commentCount}
             source={{ label: post.pageName, href: pageHref(post, locale) }} author={post.nickname} time={post.createdAt} views={post.viewCount} likes={post.likeCount} />
         </li>)}{total === 0 ? <li data-row="hot-empty"><FanState kind="empty" title={c.hotEmpty} /></li> : null}</>}</ul>}
-    {state.status === "error" || (mobile && ready && total === 0) ? null : <div className={styles.more}>{mobile ? <nav aria-label={c.hotTitle}><FanIconButton aria-label={paginationCopy(locale).previous} disabled={page === 0} onClick={() => setPage(0)}><ChevronLeft /></FanIconButton><span aria-current="page">{page + 1} / {Math.max(1, Math.ceil(total / ROWS))}</span><FanIconButton aria-label={paginationCopy(locale).next} disabled={(page + 1) * ROWS >= total} onClick={() => setPage(1)}><ChevronRight /></FanIconButton></nav> : <FanAction variant="neutral" disabled={total <= ROWS} aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? c.collapse : c.expand}</FanAction>}</div>}
+    {state.status === "error" || (ready && total === 0) ? null : <div className={styles.more}><nav aria-label={c.hotTitle}><FanIconButton aria-label={paginationCopy(locale).previous} disabled={page === 0} onClick={() => setPage(page - 1)}><ChevronLeft /></FanIconButton><span aria-current="page">{page + 1} / {Math.max(1, Math.ceil(total / ROWS))}</span><FanIconButton aria-label={paginationCopy(locale).next} disabled={(page + 1) * ROWS >= total} onClick={() => setPage(page + 1)}><ChevronRight /></FanIconButton></nav></div>}
   </section>;
 }
 

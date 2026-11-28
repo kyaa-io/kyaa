@@ -8,11 +8,13 @@ import { liveEventLabel } from "@/features/home/domain/event-day";
 import { openPageLikeEvent, pageLikeEventWindows } from "@/features/reaction/domain/page-like-event";
 import { ThinBanner } from "@/features/home/ui/home-thin-banner";
 import type { HomeBanner } from "@/features/home/domain/home-banner";
-import { useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
+import { useSyncExternalStore, useEffect, useRef, useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import Link from "../../../components/fan-ui/hover-prefetch-link";
 import type { Route } from "next";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Search,CircleAlert } from "lucide-react";
+import { FanIconButton } from "@/components/fan-ui/fan-icon-button";
+import { paginationCopy } from "@/i18n/catalogs/common__pagination";
+import { ChevronLeft, ChevronRight, ArrowRight, Search,CircleAlert } from "lucide-react";
 import { ArrowDownUp } from "@/components/fan-ui/fan-icons";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanSelectMenu } from "@/components/fan-ui/fan-select-menu";
@@ -71,6 +73,12 @@ const parseList = (value:unknown)=>groupListSchema.parse(value);
 const SEARCH_DELAY_MS=300;
 const ROLE_FILTERS=['all','idol','creator','brand','underground_idol'] as const;
 const searchTabs:Record<AppLocale,{artists:string;posts:string}>={ko:{artists:'아티스트',posts:'게시글'},get mn() { return this.en; }, en:{artists:'Artists',posts:'Posts'},ja:{artists:'アーティスト',posts:'投稿'},'zh-Hans':{artists:'艺人',posts:'帖子'},'zh-Hant':{artists:'藝人',posts:'貼文'},es:{artists:'Artistas',posts:'Publicaciones'},id:{artists:'Artis',posts:'Postingan'},vi:{artists:'Nghệ sĩ',posts:'Bài viết'},th:{artists:'ศิลปิน',posts:'โพสต์'},pt:{artists:'Artistas',posts:'Publicações'},fr:{artists:'Artistes',posts:'Publications'},ru:{artists:'Артисты',posts:'Публикации'}};
+const desktopQuery = "(min-width: 1024px)";
+function subscribeDesktop(notify: () => void) {
+  const media = window.matchMedia(desktopQuery);
+  media.addEventListener("change", notify);
+  return () => media.removeEventListener("change", notify);
+}
 export function GroupDirectory({locale,initialOwned=false,banners=[],sidebarBanner,promoOrder=[],initialList}:{locale:AppLocale;banners?:HomeBanner[];sidebarBanner?:HomeBanner;promoOrder?:readonly string[];initialList?:GroupList;initialMine?:"joined"|"bookmarked";initialType?:"all"|"fan"|"hobby"|"brand";initialSearch?:string;initialSort?:"popular"|"recent";initialOwned?:boolean}) {
   const t=groupsCopy(locale),c=discoveryCopy(locale),w=walletCopy(locale);
  const [attendanceOpen,setAttendanceOpen]=useState(false);
@@ -95,10 +103,12 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],sidebarBann
   const [cursor,setCursor]=useState<string>(),[previous,setPrevious]=useState<{ownerKey:string;items:GroupList["items"]}>({ownerKey:"",items:[]});
   // A role filters fan pages, so choosing one on the all tab reads the fan list.
   const listType=type==='all'&&artistRole?'fan':type;
-  const listKey=[type,search,sort,mine,artistRole,initialOwned].join('|');
+  const desktop = useSyncExternalStore(subscribeDesktop, () => window.matchMedia(desktopQuery).matches, () => false);
+  const [priorCursors,setPriorCursors]=useState<(string|undefined)[]>([]);
+  const listKey=[type,search,sort,mine,artistRole,initialOwned,desktop].join('|');
   // Any change of the list, also from a link, starts again at its first page. The screen itself stays mounted.
   const [cursorKey,setCursorKey]=useState(listKey);
-  if(cursorKey!==listKey){setCursorKey(listKey);setCursor(undefined);setPrevious({ownerKey:"",items:[]});}
+  if(cursorKey!==listKey){setCursorKey(listKey);setPriorCursors([]);setCursor(undefined);setPrevious({ownerKey:"",items:[]});}
   const listQuery=groupApiQuery({type:listType,search,sort:mine||initialOwned||sort!=='recent'?sort:'discovery',mine,cursor,limit:'20',artistRole:listType==='fan'?artistRole:undefined,owned:initialOwned?"1":undefined});
   const resource=useGroupResource(listQuery,parseList);
   const filtersActive=Boolean(search||type!=='all'||mine||artistRole);
@@ -152,10 +162,11 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],sidebarBann
   const applyKind=nonFanType?'hobby':'fan';
   const applyLabel=nonFanType?t.apply:groupApplyText(locale,'fanPageApply');
   const attendanceAction=!resource.authenticated?<FanAction className={styles.discoveryAttendanceGuest} variant="neutral" href={directoryLogin}><span className={directoryStyles.attendanceIcon} aria-hidden="true"/><span className={directoryStyles.attendanceLabel}>{w.attendance}</span></FanAction>:<FanAction href={`/my/wallet?view=attendance&locale=${locale}`} onClick={event=>{if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey||event.currentTarget.target||event.currentTarget.hasAttribute('download'))return;event.preventDefault();attendanceTrigger.current=event.currentTarget;setAttendanceOpen(true);}} variant="primary"><span className={directoryStyles.attendanceIcon} aria-hidden="true"/><span className={directoryStyles.attendanceLabel}>{w.attendance}</span></FanAction>;
+  const artists = <MyArtists locale={locale} loginPath={`/pages/groups?${directoryLoginQuery}`}/>;
   return <GroupShell locale={locale}>
     <header className={styles.discoveryIntro}><FanHeading as="h1">{c.title}</FanHeading></header>
     <CreatorPromoBanners locale={locale} order={promoOrder}/>
-    <MyArtists locale={locale} loginPath={`/pages/groups?${directoryLoginQuery}`}/>
+    {!desktop && artists}
     <div className={`${styles.layout} ${styles.discoveryLayout}`}><section className={styles.main} aria-label={t.explore} id="directory-explore" data-directory-explore="" data-filtered={holdHeight||undefined}>
       <HotPosts locale={locale}/>
       <ThinCarousel banners={banners} locale={locale}/>
@@ -170,9 +181,15 @@ export function GroupDirectory({locale,initialOwned=false,banners=[],sidebarBann
       {searchTab==='users'&&search.trim()?<DirectorySearchUsers locale={locale} search={search}/>:searchTab==='posts'&&search.trim()?<DirectorySearchPosts locale={locale} search={search}/>:<>
       {mineRow&&<div className={styles.toolbar}><button className={styles.chip} aria-pressed={mine==="joined"} onClick={()=>setMine(mine==="joined"?undefined:"joined")}>{t.joinedPages}</button><button className={styles.chip} aria-pressed={mine==="bookmarked"} onClick={()=>setMine(mine==="bookmarked"?undefined:"bookmarked")}>{t.bookmark}</button></div>}
       {resource.error?<SourceStatePanel sourceId="J4WKn" className={stateStyles.fullWidth} title={locale==='ko'?'페이지 목록을 불러오지 못했어요':t.error} description={locale==='ko'?'목록을 다시 불러와 주세요.':t.error} icon={<CircleAlert size={24}/>} feedback="danger" role="alert" actions={[{label:t.retry,onClick:resource.retry,variant:'primary'}]}/>:resource.loading&&!listData&&!items.length?<DirectorySkeleton label={t.loading}/>:items.length?<div key="list" className={[directoryStyles.list,refreshing?directoryStyles.refreshing:''].filter(Boolean).join(' ')} data-directory-list aria-busy={refreshing||undefined}>{items.map(page=>pageCard(page))}</div>:<div key="empty" className={refreshing?directoryStyles.refreshing:undefined} aria-busy={refreshing||undefined}><SourceStatePanel className={stateStyles.fullWidth} sourceId={mine==='joined'?'C41qR2':'nHfwZ'} title={locale==='ko'?mine==='joined'?'아직 가입한 페이지가 없어요':'검색 결과가 없어요':t.empty} illustration={mine==='joined'?'page':'search'} role="status" actions={mine==='joined'?[{label:locale==='ko'?'전체 보기':t.all,href:`/pages/groups?locale=${locale}`,variant:'primary'}]:[...(filtersActive?[{label:resetFiltersLabel[locale],onClick:()=>{const url=new URL(window.location.href);for(const key of ['search','type','mine','artistRole'])url.searchParams.delete(key);window.history.replaceState(null,'',url.pathname+url.search+url.hash);setDraft('');},variant:'primary' as const}]:[]),{label:applyLabel,onClick:()=>setApplication({kind:applyKind,name:search||undefined}),...(filtersActive?{}:{variant:'primary' as const})}]} /></div>}
-      {resource.data?.nextCursor&&<FanAction className={styles.more} fullWidth onClick={()=>{setPrevious({ownerKey:resource.ownerKey,items});setCursor(resource.data?.nextCursor??undefined);}} trailingIcon={<ArrowRight/>}>{t.more}</FanAction>}
+      {desktop && (priorCursors.length > 0 || resource.data?.nextCursor) && <nav className={directoryStyles.listPager} aria-label={t.explore}>
+        <FanIconButton aria-label={paginationCopy(locale).previous} disabled={!priorCursors.length} onClick={() => {setCursor(priorCursors.at(-1));setPriorCursors(priorCursors.slice(0,-1));}}><ChevronLeft/></FanIconButton>
+        <span aria-current="page">{priorCursors.length + 1}{listData?.totalCount !== undefined && ` / ${Math.max(1, Math.ceil(listData.totalCount / 20))}`}</span>
+        <FanIconButton aria-label={paginationCopy(locale).next} disabled={!resource.data?.nextCursor} onClick={() => {setPriorCursors([...priorCursors,cursor]);setCursor(resource.data?.nextCursor ?? undefined);}}><ChevronRight/></FanIconButton>
+      </nav>}
+      {!desktop&&resource.data?.nextCursor&&<FanAction className={styles.more} fullWidth onClick={()=>{setPrevious({ownerKey:resource.ownerKey,items});setCursor(resource.data?.nextCursor??undefined);}} trailingIcon={<ArrowRight/>}>{t.more}</FanAction>}
       </>}
     </section><aside className={styles.discoveryAside}>
+      {desktop && artists}
       <section className={styles.discoveryAttendance}><div><h3>{c.attendance}</h3></div><DukjilProvider locale={locale}><CheckinCorner locale={locale}>{attendanceAction}</CheckinCorner></DukjilProvider></section>
       {sidebarBanner && <div className={directoryStyles.sidebarAd}><ThinBanner locale={locale} banner={sidebarBanner} sponsored size="sidebar-ad" /></div>}
       <div className={creationStyles.creation}>

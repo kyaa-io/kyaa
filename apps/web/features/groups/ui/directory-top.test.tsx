@@ -78,16 +78,17 @@ it("drags the artist rail with a mouse and swipes banners without following thei
   } finally { vi.unstubAllGlobals(); }
 });
 
-it("hot posts: five rows from ten answers, 펼치기 shows all ten from the same answer and 접기 goes back", () => {
+it("hot posts: five rows from ten answers, next shows the second five and previous goes back", () => {
   state.posts = Array.from({ length: 10 }, (_, i) => post(i + 1));
   const { container } = render(<HotPosts locale="ko" />);
   const rows = () => container.querySelectorAll("ul > li");
   expect(rows()).toHaveLength(5);
   expect(screen.getByRole("link", { name: "글 1" })).toBeInTheDocument();
   expect(screen.getByLabelText("좋아요 19")).toHaveTextContent("19");
-  fireEvent.click(screen.getByRole("button", { name: "펼치기" }));
-  expect(rows()).toHaveLength(10);
-  fireEvent.click(screen.getByRole("button", { name: "접기" }));
+  fireEvent.click(screen.getByRole("button", { name: "다음" }));
+  expect(rows()).toHaveLength(5);
+  expect(screen.getByText("글 6")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "이전" }));
   expect(rows()).toHaveLength(5);
 });
 
@@ -144,9 +145,9 @@ it("hot posts: six answers show only six real rows when opened, without filler",
   state.posts = Array.from({ length: 6 }, (_, i) => post(i + 1));
   const { container } = render(<HotPosts locale="ko" />);
   expect(container.querySelectorAll("ul > li")).toHaveLength(5);
-  fireEvent.click(screen.getByRole("button", { name: "펼치기" }));
-  expect(container.querySelectorAll("ul > li")).toHaveLength(6);
-  expect(container.querySelectorAll("ul > li[data-row=hot-post]")).toHaveLength(6);
+  fireEvent.click(screen.getByRole("button", { name: "다음" }));
+  expect(container.querySelectorAll("ul > li")).toHaveLength(1);
+  expect(container.querySelectorAll("ul > li[data-row=hot-post]")).toHaveLength(1);
   expect(container.querySelector("[data-row=hot-placeholder]")).toBeNull();
 });
 
@@ -155,7 +156,7 @@ it("hot posts: two answers show two rows, zero answers show one empty state, and
   const first = render(<HotPosts locale="ko" />);
   expect(first.container.querySelectorAll("ul > li")).toHaveLength(2);
   expect(first.container.querySelectorAll("ul > li[aria-hidden='true']")).toHaveLength(0);
-  expect(screen.getByRole("button", { name: "펼치기" })).toBeDisabled();
+  expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
   first.unmount();
   state.posts = [];
   const second = render(<HotPosts locale="ko" />);
