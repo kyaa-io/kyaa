@@ -381,3 +381,8 @@
 .fanMembersLink::after { content: ""; position: absolute; inset: calc(-1 * var(--space-2)); }
 .fanMembersLink:hover, .fanMembersLink[aria-current="page"] { color: var(--color-accent-ink); }
 .fanMembersLink:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+
+@media (min-width: 1024px) {
+  .discoveryAside { align-content: start; }
+  .discoveryAside [data-directory-block="my-artists"] { margin-bottom: 0; }
+}
