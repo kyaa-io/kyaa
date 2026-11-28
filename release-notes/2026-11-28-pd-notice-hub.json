@@ -1,0 +1,9 @@
+{
+  "changes": [
+    "홈에서 나영석 PD 배너를 누르면 공지가 열려요. 영상을 보고 바로 아래에 댓글을 남길 수 있어요.",
+    "공지 제목 아래에서 조회수와 댓글 수를 확인할 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/notices/kyaa-wave-na-pd-video-1117",
+  "images": ["release-notes/images/2026-11-28-pd-notice-hub.png"]
+}

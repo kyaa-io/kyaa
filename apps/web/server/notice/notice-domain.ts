@@ -1,3 +1,4 @@
+import { noticeMedia, noticePoster } from "../../components/notice/notice-media";
 import { z } from "zod";
 
 export const noticeLocaleSchema = z.enum(["ko", "en"]);
@@ -26,6 +27,7 @@ const allowedNodes = new Set([
   "image",
   "video",
   "externalVideo",
+  "noticeMedia",
   "text",
   "hardBreak",
 ]);
@@ -76,6 +78,10 @@ function validateNode(value: unknown, depth = 0, options: NoticeDocumentOptions 
     }
     if (options.privateImages === "reject" && isPrivateNoticeImage(attrs?.src)) throw new Error("Private Notice images are not allowed here");
   }
+  if (node.type === "noticeMedia") {
+    const attrs = node.attrs as Record<string, unknown> | undefined;
+    if (!noticeMedia(attrs?.src) || (attrs?.poster != null && !noticePoster(attrs.poster))) throw new Error("Invalid Notice media");
+  }
   if (node.type === "video") {
     const attrs = node.attrs as Record<string, unknown> | undefined;
     if (!isPublicOfficialMedia(attrs?.src) || !isPublicOfficialMedia(attrs?.poster, true)
@@ -114,7 +120,7 @@ function validateNode(value: unknown, depth = 0, options: NoticeDocumentOptions 
       }
     }
   }
-  let meaningful = node.type === "image" || node.type === "video" || node.type === "externalVideo";
+  let meaningful = node.type === "noticeMedia" || node.type === "image" || node.type === "video" || node.type === "externalVideo";
   if (node.type === "text" && typeof node.text === "string" && node.text.trim()) {
     meaningful = true;
   }

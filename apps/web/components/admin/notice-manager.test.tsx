@@ -4,6 +4,7 @@ import { NoticeManager } from "./notice-manager";
 
 const getAccessToken = vi.fn(async () => "token");
 const setImageRun = vi.fn();
+const insertContent = vi.fn(() => ({ run: vi.fn() }));
 const editor = {
   isEditable: true,
   setEditable: vi.fn(),
@@ -14,6 +15,7 @@ const editor = {
       toggleBold: () => ({ run: vi.fn() }), toggleItalic: () => ({ run: vi.fn() }),
       toggleUnderline: () => ({ run: vi.fn() }), toggleBulletList: () => ({ run: vi.fn() }),
       toggleOrderedList: () => ({ run: vi.fn() }), extendMarkRange: () => ({ setLink: () => ({ run: vi.fn() }) }),
+      insertContent,
       setImage: () => ({ run: setImageRun }),
     }),
   }),
@@ -36,6 +38,21 @@ const noticeRow = {
 };
 
 describe("notice manager mutations", () => {
+  it("inserts supported video URLs and keeps other HTTPS sources as links", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ notices: [] })));
+    render(<NoticeManager celebrityId="brand-1" celebrityName="브랜드" role="operator" locale="ko" />);
+    await screen.findByText("공지가 없습니다.");
+    const button = screen.getByRole("button", { name: "영상" });
+    const prompt = vi.spyOn(window, "prompt");
+    try {
+      prompt.mockReturnValueOnce("https://youtu.be/abcdefghijk");
+      fireEvent.click(button);
+      expect(insertContent).toHaveBeenLastCalledWith({ type: "noticeMedia", attrs: { src: "https://www.youtube-nocookie.com/embed/abcdefghijk", poster: null } });
+      prompt.mockReturnValueOnce("https://example.org/movie.mp4");
+      fireEvent.click(button);
+      expect(insertContent).toHaveBeenLastCalledWith({ type: "paragraph", content: [{ type: "text", text: "https://example.org/movie.mp4", marks: [{ type: "link", attrs: { href: "https://example.org/movie.mp4" } }] }] });
+    } finally { prompt.mockRestore(); }
+  });
   it("uses brand copy and offers public visibility only for brands", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => Response.json({ notices: [] })));
     render(<NoticeManager celebrityId="brand-1" celebrityName="브랜드" role="operator" locale="ko" isBrand />);

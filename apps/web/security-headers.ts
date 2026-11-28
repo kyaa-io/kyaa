@@ -18,7 +18,7 @@ const contentSecurityPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   // Sign-in is a top-level navigation to the Cognito Hosted UI (PRIVY-EXIT-0005): no auth frame or connection origin.
-  `frame-src ${["https://challenges.cloudflare.com", "https://www.youtube.com", "https://www.tiktok.com"].join(" ")}`,
+  `frame-src ${["https://challenges.cloudflare.com", "https://www.youtube.com", "https://www.youtube-nocookie.com", "https://www.tiktok.com"].join(" ")}`,
   [
     "connect-src 'self'",
     "https://*.tiktokcdn.com",
