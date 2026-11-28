@@ -4,6 +4,14 @@ import { scoreDay } from "../star/score";
 
 import { christmasSeason } from "@/features/chemi/domain/christmas-season";
 
+export function christmasRank(score: number) {
+  const higher = reference.histogram.slice(score + 1).reduce((sum, count) => sum + count, 0);
+  return {
+    grade: reference.cuts.filter(boundary => score > boundary).length,
+    topPercent: Math.min(100, Math.ceil((higher + 1) / 12)),
+  };
+}
+
 export function computeChristmasReading(
   chart: Parameters<typeof computeDailyFortune>[0],
   natal: Parameters<typeof scoreDay>[0],
@@ -35,8 +43,7 @@ export function computeChristmasReading(
   ));
   return {
     locked: false, score, opportunityCount,
-    grade: reference.cuts.filter(boundary => score > boundary).length,
-    topPercent: Math.min(100, Math.ceil((1 + reference.histogram.slice(score + 1).reduce((sum, n) => sum + n, 0)) / 12)),
+    ...christmasRank(score),
     fortuneDate: bestFortune === eve!.fortune ? eve!.date : christmas!.date,
     fortune: bestFortune, star: bestStar,
     opportunityDates: remaining.sort((a, b) => b.love - a.love).slice(0, 2).map(day => day.date),

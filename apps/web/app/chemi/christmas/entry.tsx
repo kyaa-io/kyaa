@@ -2,6 +2,8 @@
 
 import { SaveResultImage } from "@/features/chemi/ui/result/save-result-image";
 import type { computeChristmasReading } from "@/server/chemi-engine/christmas";
+import type { AppLocale } from "@/i18n/locales";
+import { luckValue } from "../fortune/deep/copy";
 import { useState } from "react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
@@ -12,7 +14,7 @@ import { saveBirth } from "../fortune/reading";
 import styles from "../fortune/scene.module.css";
 
 type Catalog = typeof import("@/features/chemi/i18n/locales/ko/chemi.json");
-export function ChristmasEntry({ catalog, locale }: { catalog: Catalog; locale: string }) {
+export function ChristmasEntry({ catalog, locale }: { catalog: Catalog; locale: AppLocale }) {
   const { getAccessToken, login } = useByUsAuth();
   const [state, setState] = useState<"entry" | "empty" | "error" | "result">("entry");
   const [busy, setBusy] = useState(false);
@@ -58,7 +60,7 @@ export function ChristmasEntry({ catalog, locale }: { catalog: Catalog; locale: 
           {detail.split("\n").map(line => <p key={line}>{line}</p>)}
           <p>{reading.fortuneDate} · {catalog.home.saju} · {catalog.readingUi.love} {reading.fortune.fields.love}</p>
           <p>{reading.star.date} · {catalog.home.zodiac} · {catalog.readingUi.love} {reading.star.reading.stars.love}/5</p>
-          <p>{reading.fortune.luck.color} · {reading.fortune.luck.luckyHour && `${reading.fortune.luck.luckyHour.start}:00–${reading.fortune.luck.luckyHour.end}:00`} · {reading.fortune.luck.direction}</p>
+          <p>{luckValue(reading.fortune.luck.color, locale)} · {reading.fortune.luck.luckyHour && `${reading.fortune.luck.luckyHour.start}:00–${reading.fortune.luck.luckyHour.end}:00`} · {luckValue(reading.fortune.luck.direction, locale)}</p>
           <SaveResultImage frame primary title={grades[reading.grade] + " · " + reading.score + "%"} detail={detail} art="/chemi/christmas/result-9x16.webp" />
         </>}
         {state !== "result" && <FanAction variant="primary" loading={busy} onClick={() => state === "empty" ? setBirthOpen(true) : void read()}>

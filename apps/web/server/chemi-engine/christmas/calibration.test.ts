@@ -2,7 +2,7 @@ import reference from "./reference.json";
 import { expect, it, vi } from "vitest";
 import { calculateSaju } from "../saju";
 import { calculateChart } from "../star/chart";
-import { computeChristmasReading } from "./index";
+import { christmasRank, computeChristmasReading } from "./index";
 
 vi.mock("server-only", () => ({}));
 // The holiday skies are identical for every birth in the reference population.
@@ -33,3 +33,18 @@ it("reproduces the opening-day reference distribution for 1,200 birthdays", () =
   const sorted = histogram.flatMap((count, score) => Array<number>(count).fill(score));
   expect([239, 479, 719, 959].map(index => sorted[index])).toEqual(reference.cuts);
 }, 240000);
+
+it.each([
+  [0, 0, 100],
+  [40, 0, 79],
+  [41, 1, 78],
+  [53, 1, 59],
+  [54, 2, 57],
+  [62, 2, 39],
+  [63, 3, 38],
+  [73, 3, 19],
+  [74, 4, 17],
+  [100, 4, 1]
+])("fixes score %i to grade %i and top %i percent", (score, grade, topPercent) => {
+  expect(christmasRank(score)).toEqual({ grade, topPercent });
+});
