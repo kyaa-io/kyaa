@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "크리에이터와 모임의 럭키드로우 상세에서 해당 추첨에 사용한 전체 응모권 수를 확인할 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/benefits",
+  "images": [
+    "release-notes/images/2026-11-28-raffle-count-1440.png"
+  ]
+}

@@ -8,6 +8,7 @@ export const raffleSchema = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
   imageUrl: z.union([z.string().url(), z.string().regex(/^\/(?!\/)[^\s@]+$/)]).nullable(),
+  totalTickets: z.number().int().nonnegative().nullish(),
   winnerQuantity: z.number().int().positive(),
   status: z.enum(["preparing", "open", "closed", "cancelled"]),
   entryOpensAt: z.string().datetime({ offset: true }).nullable(),

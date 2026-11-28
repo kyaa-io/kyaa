@@ -238,6 +238,11 @@ begin
   if result->>'replayed'<>'false' or (result->>'resultingBalance')::bigint<>before_balance-1 then
     raise exception 'verified fan entry invalid: %',result;
   end if;
+  public_result:=public.get_public_raffles('creator-raffle-owner','ko',now());
+  if not exists (select 1 from jsonb_array_elements(public_result->'raffles') r
+                 where r->>'benefitId'=benefit1::text and r->>'totalTickets'='1') then
+    raise exception 'Missing creator raffle ticket total';
+  end if;
   after_balance:=public.get_fan_ticket_balance(verified,creator);
   result:=public.enter_owned_benefit_v2(verified,benefit1,key1,1,'physical-v1',true,now());
   if result->>'replayed'<>'true' or public.get_fan_ticket_balance(verified,creator)<>after_balance then
