@@ -1,0 +1,11 @@
+{
+  "changes": [
+    "팬페이지에서 프로필 아래 여백과 출석·패스포트 칸을 줄였어요. 갤러리와 첫 게시글을 더 빨리 볼 수 있어요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/changha",
+  "images": [
+    "release-notes/images/2026-11-28-fanpage-density-390.png",
+    "release-notes/images/2026-11-28-fanpage-density-1440.png"
+  ]
+}
