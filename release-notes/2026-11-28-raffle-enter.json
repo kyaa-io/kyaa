@@ -1,0 +1,5 @@
+{
+  "changes": ["로그인 준비 중에도 무료 응모를 누르면 로그인 화면으로 이동할 수 있어요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/s/raffle",
+  "images": ["release-notes/images/2026-11-28-raffle-enter.png"]
+}
