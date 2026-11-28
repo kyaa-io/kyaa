@@ -106,7 +106,7 @@ describe("AuthIntentLink", () => {
     });
   });
 
-  it("does not navigate to login while Privy is still restoring the saved session", () => {
+  it("provides a native login link while Privy initializes without a known owner", () => {
     ready = false;
     render(
       <AuthIntentLink locale="ko" input={input}>
@@ -115,10 +115,8 @@ describe("AuthIntentLink", () => {
     );
 
     const link = screen.getByRole("link", { name: "팬 인증하기" });
-    expect(link).toHaveAttribute("aria-busy", "true");
-    expect(link).toHaveAttribute("aria-disabled", "true");
-    expect(link).not.toHaveAttribute("href");
-    fireEvent.click(link);
+    expect(link).not.toHaveAttribute("aria-disabled");
+    expect(link.getAttribute("href")).toMatch(/^\/login\?/);
     expect(push).not.toHaveBeenCalled();
     expect(sessionStorage).toHaveLength(0);
   });

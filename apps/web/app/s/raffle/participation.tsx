@@ -36,7 +36,7 @@ type Ctx = {
   inviteCode?: string; invited: boolean;
   /** 마감 뒤 내 결과(서버에 저장된 추첨이 있고 내가 응모했을 때만). 추첨 전·미응모·조회 실패는 없다. */
   result?: RaffleCapsuleResult;
-  enter: () => void; login: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
+  inviteCodeForEntry?: string; enter: () => void; login: () => void; t: (key: SignupRaffleLongformKey, count?: number) => string; s: (key: Parameters<typeof signupRaffleText>[1]) => string;
 };
 const RaffleContext = createContext<Ctx | null>(null);
 function useRaffle() { const value = useContext(RaffleContext); if (!value) throw new Error('RaffleProvider missing'); return value; }
@@ -190,7 +190,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
   }
   // 개발 미리보기 won·lost: 로그인·API 없이 결과 팝업만 본다(US$100 당첨 / 미당첨). 운영 빌드에는 preview 값이 오지 않는다.
   const shown = p === 'won' ? { state: 'won' as const, usd: 100 } : p === 'lost' ? { state: 'lost' as const } : result;
-  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, invited: !!raffleInviteCode(invite), chances, friends, totalChances, winChance, inviteCode, result: shown, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, inviteCodeForEntry: raffleInviteCode(invite), pending, ...view, invited: !!raffleInviteCode(invite), chances, friends, totalChances, winChance, inviteCode, result: shown, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -201,7 +201,14 @@ const communityHref = (locale: AppLocale) => `/pages/groups?locale=${locale}`;
 function RaffleEnterAction({ size }: { size?: 'lg' }) {
   const r = useRaffle();
   if (r.entered) return <FanActionStatus size={size} leadingIcon={<FanIcon icon={Check} className={styles.doneCheck} />}>{r.t('entered')}</FanActionStatus>;
-  return <FanAction type="button" variant="primary" size={size} fullWidth loading={r.pending} disabled={!r.ready} onClick={r.enter}>{r.t('enterCta')}</FanAction>;
+  const actionStyle = { variant: "primary", size, fullWidth: true } as const;
+  if (!r.ready && !r.signedIn) {
+    const query = new URLSearchParams({ locale: r.locale, enter: '1' });
+    if (r.inviteCodeForEntry) query.set('invite', r.inviteCodeForEntry);
+    const login = new URLSearchParams({ locale: r.locale, returnTo: `/s/raffle?${query}` });
+    return <FanAction href={`/login?${login}`} {...actionStyle}>{r.t('enterCta')}</FanAction>;
+  }
+  return <FanAction type="button" {...actionStyle} loading={r.pending} disabled={!r.ready} onClick={r.enter}>{r.t('enterCta')}</FanAction>;
 }
 
 /** 마감까지 남은 시간을 `D-17`과 `21:04:09`로 나눈다. 하루가 안 남으면 `D-DAY`. */

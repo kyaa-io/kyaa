@@ -87,7 +87,10 @@ export function AuthIntentLink({
   const session = useByUsSession();
   const sessionReady = ready && session.ready;
   const authState = { ready: sessionReady, authenticated };
-  const href = sessionReady ? resolveAuthIntentHref(input, locale, authState) : undefined;
+  const waitingForSession = !sessionReady && (ready || authenticated || !!session.ownerId);
+  const href = !sessionReady && !waitingForSession
+    ? fallbackHref(input, locale)
+    : resolveAuthIntentHref(input, locale, authState);
   const beginningRef = useRef(false);
   const beginningTimerRef = useRef<number | null>(null);
   useEffect(() => () => {
@@ -97,7 +100,7 @@ export function AuthIntentLink({
   function begin(event: MouseEvent<HTMLAnchorElement>) {
     if (event.defaultPrevented) return;
     if (!sessionReady) {
-      event.preventDefault();
+      if (waitingForSession) event.preventDefault();
       return;
     }
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -126,8 +129,8 @@ export function AuthIntentLink({
       role="link"
       aria-label={ariaLabel}
       aria-describedby={ariaDescribedBy}
-      aria-busy={!sessionReady || undefined}
-      aria-disabled={!sessionReady || undefined}
+      aria-busy={waitingForSession || undefined}
+      aria-disabled={waitingForSession || undefined}
       data-fan-action-emphasis={emphasis}
       data-overlay-focus-key={focusKey}
       onClick={begin}

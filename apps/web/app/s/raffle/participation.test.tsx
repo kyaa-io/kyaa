@@ -367,3 +367,17 @@ describe('in-app browser and entry intent in the address (?enter=1)', () => {
     expect(calls.filter(call => call.url.includes('/entry')).map(call => call.method)).toEqual(['GET', 'POST']);
   });
 });
+
+it('keeps entry navigable while authentication initializes', () => {
+  auth.ready = false;
+  try {
+    const invite = 'ABCDEF0123456789ABCDEF01';
+    render(<RaffleProvider locale="id" closed={false} closesAt={closesAt} now={now} invite={invite}><RaffleHeroEnter /></RaffleProvider>);
+    const href = (screen.getByRole('link', { name: 'Ikut gratis' }) as HTMLAnchorElement).href;
+    const login = new URL(href);
+    expect(login.pathname).toBe('/login');
+    expect(login.searchParams.get('returnTo')).toBe(`/s/raffle?locale=id&enter=1&invite=${invite}`);
+  } finally {
+    auth.ready = true;
+  }
+});
