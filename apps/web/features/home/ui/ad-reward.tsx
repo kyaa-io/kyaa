@@ -6,6 +6,8 @@ import { AD_REWARD_POINTS, adRewardResultSchema, adRewardTodaySchema, isRewarded
 import type { HomeBanner } from "@/features/home/domain/home-banner";
 import type { AppLocale } from "@/i18n/locales";
 
+import { formatMileage } from "@/i18n/format-mileage";
+
 const TODAY_PATH = "/api/me/dukjil/ad-reward";
 
 // One read of today's ad rewards per signed-in owner, shared by every ad banner on the page. It is never cancelled by one banner
@@ -22,8 +24,7 @@ function readToday(ownerKey: string, request: ReturnType<typeof useGroupRequest>
 /** Test hook. */
 export const resetAdRewardReads = () => todayReads.clear();
 
-/** "points": the +5 pill. "done": paid today. null: nothing (not an ad, the session or today's read is not known yet, or the 10 are used). */
-export type AdRewardMark = "points" | null;
+type AdRewardMark = { kind: "points" | "received"; points: number } | null;
 
 /**
  * The reward of one ad banner. `claim` is the banner link's click handler: a signed-in member's first click of the day asks the server
@@ -45,26 +46,44 @@ export function useAdReward(banner: Pick<HomeBanner, "id" | "category" | "placem
     return () => { live = false; };
   }, [authenticated, ownerKey, ready, request, rewarded]);
   const todayData = today?.ownerKey === ownerKey ? today.data : null;
-  const [paid, setPaid] = useState(false);
+  const [paid, setPaid] = useState<{ ownerKey: string; bannerId: string; points: number }>();
   const sending = useRef(false);
-  const done = paid || (todayData?.claimed.includes(banner.id) ?? false);
+  const received = paid?.ownerKey === ownerKey && paid.bannerId === banner.id
+    ? paid.points
+    : todayData?.claimed.includes(banner.id) ? todayData.points : null;
   const mark: AdRewardMark = !rewarded || !ready ? null
-    : !authenticated ? "points"
-      : done ? null
-        : todayData && todayData.remaining > 0 ? "points" : null;
+    : !authenticated ? { kind: "points", points: AD_REWARD_POINTS }
+      : received !== null ? { kind: "received", points: received }
+        : todayData && todayData.remaining > 0 ? { kind: "points", points: todayData.points } : null;
   const claim = useCallback(() => {
-    if (!rewarded || !ready || !authenticated || done || sending.current) return;
+    if (!rewarded || !ready || !authenticated || received !== null || sending.current) return;
     sending.current = true;
     void request(TODAY_PATH, { method: "POST", body: JSON.stringify({ bannerId: banner.id }), keepalive: true })
-      .then(value => { const result = adRewardResultSchema.safeParse(value); if (result.success && result.data.points > 0) { todayReads.delete(ownerKey); setPaid(true); } })
+      .then(value => { const result = adRewardResultSchema.safeParse(value); if (result.success && result.data.points > 0) { todayReads.delete(ownerKey); setPaid({ ownerKey, bannerId: banner.id, points: result.data.points }); } })
       .catch(() => undefined)
       .finally(() => { sending.current = false; });
-  }, [authenticated, banner.id, done, ownerKey, ready, request, rewarded]);
+  }, [authenticated, banner.id, received, ownerKey, ready, request, rewarded]);
   return { mark, claim };
 }
 
-/** Shows the point offer while an ad is eligible for a reward. */
+const rewardLabels = {
+  ko: (amount) => [`광고 보고 ${amount}`, `${amount} 받음`],
+  en: (amount) => [`View ad · ${amount}`, `Received ${amount}`],
+  ja: (amount) => [`広告を見る · ${amount}`, `${amount} 獲得済み`],
+  "zh-Hans": (amount) => [`看广告 · ${amount}`, `已获 ${amount}`],
+  "zh-Hant": (amount) => [`看廣告 · ${amount}`, `已獲 ${amount}`],
+  es: (amount) => [`Ver anuncio · ${amount}`, `Has recibido ${amount}`],
+  id: (amount) => [`Lihat iklan · ${amount}`, `Diterima ${amount}`],
+  vi: (amount) => [`Xem quảng cáo · ${amount}`, `Đã nhận ${amount}`],
+  th: (amount) => [`ดูโฆษณา · ${amount}`, `ได้รับ ${amount} แล้ว`],
+  pt: (amount) => [`Ver anúncio · ${amount}`, `Você recebeu ${amount}`],
+  fr: (amount) => [`Voir la pub · ${amount}`, `${amount} reçus`],
+  ru: (amount) => [`Смотреть рекламу · ${amount}`, `Получено ${amount}`],
+  mn: (amount) => [`Зар үзэх · ${amount}`, `${amount} авсан`],
+} satisfies Record<AppLocale, (amount: string) => [string, string]>;
+
 export function AdRewardBadge({ mark, locale }: { mark: AdRewardMark; locale: AppLocale }) {
   if (!mark) return null;
-  return <span data-ad-reward="points"><EarnBadge variant="inline" locale={locale} points={AD_REWARD_POINTS} /></span>;
+  const [offer, received] = rewardLabels[locale](formatMileage(mark.points, locale, "always"));
+  return <span data-ad-reward={mark.kind} role="status"><EarnBadge variant="inline" locale={locale} points={mark.points} pointLabel={mark.kind === "received" ? received : offer} /></span>;
 }

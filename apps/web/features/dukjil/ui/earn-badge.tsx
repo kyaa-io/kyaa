@@ -18,6 +18,8 @@ export type EarnBadgeProps = {
   variant: "inline" | "done" | "corner" | "balance";
   locale: AppLocale;
   points?: number;
+  /** Localized inline label that includes the formatted amount. */
+  pointLabel?: string;
   stamp?: boolean;
   /** Remaining count exactly as the `today` response returns it. S4: 배지에는 그리지 않는다(화면 판독기 이름에만).
    * 보이는 남은 횟수는 행 아래 `EarnRemaining`이나 `FanGauge`가 말한다. */
@@ -37,17 +39,17 @@ export type EarnBadgeProps = {
 export const POINT_COIN_SRC = REWARD_ICON_SRC.point;
 
 /** Point badge for buttons and tiles. State is carried by shape and text, never by colour alone; the hidden text names the points for screen readers. */
-export function EarnBadge({ variant, locale, points, stamp = false, remaining = null, remainingPer = "day", today = false, size, slot = false, className = "" }: EarnBadgeProps) {
+export function EarnBadge({ variant, locale, points, pointLabel, stamp = false, remaining = null, remainingPer = "day", today = false, size, slot = false, className = "" }: EarnBadgeProps) {
   const cls = `${styles.badge} ${styles[variant]} ${className}`;
   // 포인트 표시는 이 알약 하나다(노란 바탕 · 동전 · `+N`). 버튼 모서리에 걸칠 때만 위치(`corner`)가 붙는다.
-  const pill = (coin: number) => <><img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" /><span aria-hidden="true" data-point-value="">{size === "sm" || slot ? `+${(points ?? 0).toLocaleString(locale)}` : formatMileage(points ?? 0, locale, "always")}</span></>;
+  const pill = (coin: number) => <><img src={POINT_COIN_SRC} width={coin} height={coin} alt="" aria-hidden="true" /><span aria-hidden="true" data-point-value="">{pointLabel ?? (size === "sm" || slot ? `+${(points ?? 0).toLocaleString(locale)}` : formatMileage(points ?? 0, locale, "always"))}</span></>;
   const pillClass = [cornerStyles.pill, size === "sm" ? cornerStyles.small : "", slot ? cornerStyles.slot : ""].filter(Boolean).join(" ");
   // S4 규칙 3: 오늘 받은 포인트가 0이면 배지를 그리지 않는다.
   if (variant === "inline" && today && (points ?? 0) <= 0) return null;
   if (variant === "done") {
     return <span className={cls} data-earn-badge="done"><Check size={12} aria-hidden="true" /><span>{dukjilText(locale, "dukjilBadgeDone")}</span></span>;
   }
-  const label = points === undefined ? undefined : formatMileage(points, locale, "always");
+  const label = points === undefined ? undefined : pointLabel ?? formatMileage(points, locale, "always");
   if (variant === "corner") {
     return <span className={[cornerStyles.pill, cornerStyles.badge, className].filter(Boolean).join(" ")} data-earn-badge="corner"><img src={POINT_COIN_SRC} width={16} height={16} alt="" aria-hidden="true" />{points !== undefined && <span aria-hidden="true">+{points.toLocaleString(locale)}</span>}{label && <span className={styles.srOnly}>{label}</span>}</span>;
   }

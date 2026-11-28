@@ -232,5 +232,8 @@
   ],
   "operator-my-link-dev": [
     "release-notes/2026-11-27-operator-my-link.json"
+  ],
+  "ad-reward": [
+    "release-notes/2026-11-28-ad-reward-label.json"
   ]
 }
