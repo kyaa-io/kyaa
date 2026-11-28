@@ -38,22 +38,34 @@ export function HomeBanner({
   copy: HomeCopy;
 }) {
   const [paused, setPaused] = useState(false);
-  const [pointerInside, setPointerInside] = useState(false);
+  const [pointerInside, setPointerInside] = useState("");
   const [keyboardFocus, setKeyboardFocus] = useState(false);
   const resting = paused || pointerInside || keyboardFocus;
   const { id, href, type } = activities[index];
   useEffect(() => {
-    if (resting || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    const timer = window.setInterval(() => setIndex(value => (value + 1) % activities.length), 6000);
-    return () => window.clearInterval(timer);
+    if (resting) return;
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let timer: number;
+    const update = () => {
+      window.clearInterval(timer);
+      if (!motion.matches) {
+        timer = window.setInterval(() => setIndex(value => (value + 1) % activities.length), 6000);
+      }
+    };
+    update();
+    motion.addEventListener("change", update);
+    return () => {
+      window.clearInterval(timer);
+      motion.removeEventListener("change", update);
+    };
   }, [activities.length, index, resting, setIndex]);
   return (
     <section className={styles.banner} onFocus={event => setKeyboardFocus(event.target.matches(":focus-visible"))} onBlur={() => setKeyboardFocus(false)}
-      onPointerEnter={() => setPointerInside(true)} onPointerLeave={() => setPointerInside(false)}
-      onPointerUp={event => { if (event.pointerType !== "mouse") setPointerInside(false); }} onPointerCancel={() => setPointerInside(false)}>
+      onPointerEnter={event => setPointerInside(event.pointerType)} onPointerLeave={() => setPointerInside("")}
+      onPointerUp={event => { if (event.pointerType !== "mouse") setPointerInside(""); }} onPointerCancel={() => setPointerInside("")}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
-        {videoVersion[id] && <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={resting} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />}
+        {videoVersion[id] && <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={Boolean(pointerInside && pointerInside !== "mouse")} freezeFrame={paused} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />}
         <div className={styles.caption}>
           <div><span>{copy[type]}</span><div className={styles.faces}>{["changha", "elina", "yuna"].map(person => <img key={person} alt="" src={`/chemi/grow/face-${person}-v1.webp`} />)}</div><FanHeading as="h1">{copy[id]}</FanHeading></div>
           {href ? (

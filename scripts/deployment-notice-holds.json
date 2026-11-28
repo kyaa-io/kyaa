@@ -181,7 +181,8 @@
     "release-notes/2026-11-28-chemi-run-rank5.json",
     "release-notes/2026-11-28-chemi-game-limits.json",
     "release-notes/2026-11-28-mobile-common.json",
-    "release-notes/2026-11-28-chemi-fortune-picker.json"
+    "release-notes/2026-11-28-chemi-fortune-picker.json",
+    "release-notes/2026-11-28-chemi-carousel-hover-video.json"
   ],
   "telegram-certification": [
     "release-notes/2026-11-21-telegram-certification-summary.json",
