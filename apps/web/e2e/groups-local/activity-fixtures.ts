@@ -29,6 +29,6 @@ export function activityFixture(path:string,method:string,state:string|null,bran
  if(selectedMission)return {mission:selectedMission,submission:state==='pending'?{id,body:'오늘 함께 달렸어요.',status:'pending',reason:null,rewardPoints:0}:null,canSubmit:state!=='pending',canReview:manager};
  if(path===`${base}/missions/${id}/submissions`)return {items:[{id,appUserId:id,nickname:'별빛',avatarUrl:null,body:'함께 달린 기록이에요.',status:'pending',reason:null,rewardPoints:0}],nextCursor:null};
  if(path===`${base}/raffles`)return {raffles:empty?[]:[raffle]};
- if(path===`${base}/raffles/${id}`)return {raffle,enteredTickets:30,winner:null,canManage:manager,member:true,consentVersion:null,canEnter:true};
+ if(path===`${base}/raffles/${id}`)return {raffle,totalTickets:300,enteredTickets:30,winner:null,canManage:manager,member:true,consentVersion:null,canEnter:true};
  return undefined;
 }
