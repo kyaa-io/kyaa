@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, expect, it, vi } from "vitest";
@@ -69,3 +71,12 @@ it.each(["https://x.com/kyaa_app/status/2122644458340745250", "/assets/shorts.mp
     }, PD_SHORTS_BANNER_ID);
   },
 );
+
+it("keeps the 광고 가로 배너 tall enough to read the product: 390 358×160 (716/320, min 160), 768+ min 192, artwork anchored right", () => {
+  const css = readFileSync(resolve(__dirname, "home-thin-banner.module.css"), "utf8");
+  expect(css).toMatch(/\.stripAd \.link \{[^}]*aspect-ratio: 716 \/ 320; min-height: 160px;/);
+  expect(css).toMatch(/@media \(min-width: 48rem\) \{\s*\.stripAd \.link \{[^}]*min-height: 192px;/);
+  expect(css).toContain(".stripAd .link picture img { object-position: right center; }");
+  const { container } = render(<ThinBanner banner={banner({ category: "ad", placement: "home_below_board" })} locale="ko" size="below-ranking-ad" />);
+  expect(container.querySelector("[data-banner-size=below-ranking-ad]")).not.toBeNull();
+});
