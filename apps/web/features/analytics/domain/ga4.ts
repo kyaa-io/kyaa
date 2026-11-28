@@ -55,6 +55,10 @@ export const GA4_EVENT_PARAMETERS = {
   cheer: {},
   share: { method: ["native", "copy"], content_type: shareContent },
   raffle_enter: { campaign: ["raffle-1125"], method: ["direct", "invite"] },
+  // 응모 뒤 이어지는 행동(GROWTH-ONBOARD-RETAIN-1128): 가입(sign_up) → 응모(raffle_enter) → 당일 두 번째 행동(raffle_next_step) → 다음 날부터 재방문(raffle_return, 응모 후 1·2·3~6·7일 이후)
+  raffle_next_step: { step: ["pick", "attend", "invite"] },
+  raffle_return: { day: [1, 2, 3, 7] },
+  raffle_notify: { choice: ["on", "off"] },
   raffle_entry: { kind: ["claim", "application", "ticket"] },
   inapp_external_open: {
     app: ["instagram", "threads", "kakao", "facebook", "line", "tiktok", "telegram", "x", "webview"],

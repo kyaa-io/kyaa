@@ -1,6 +1,6 @@
 'use client';
 
-import { sendGa4Event } from '@/features/analytics/client/ga4-client';
+import { ga4Active, sendGa4Event } from '@/features/analytics/client/ga4-client';
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { FanPrintStamp } from '@/components/fan-ui/fan-print';
 import { Check, Link2, Share2, Ticket } from '@/components/fan-ui/fan-icons';
@@ -19,9 +19,12 @@ import { communityInviteSchema } from '@/features/community-stamps/domain/commun
 import { communityStampAction } from '@/features/community-stamps/ui/use-community-stamps';
 import { useByUsAuth } from '@/features/auth/client/cognito-auth';
 import { FanAction, FanActionStatus } from '@/components/fan-ui/fan-action';
-import { requiresGoogleBrowserHandoff } from '@/components/login-browser-policy';
+import { embeddedApp, requiresGoogleBrowserHandoff } from '@/components/login-browser-policy';
 import type { RaffleCapsuleResult } from '@/features/capsule-machine/raffle-result-capsule';
 import { RaffleResultEntry } from './result-entry';
+import { RaffleNextSteps, type RaffleNextStep } from './next-steps';
+import { InAppBrowserArt } from '@/components/in-app-browser-art';
+import { raffleNextStepsText } from '@/i18n/catalogs/raffle-next-steps';
 import { signupRaffleResultSchema } from '@/server/signup-event/result';
 import styles from './raffle.module.css';
 
@@ -37,6 +40,8 @@ type Ctx = {
   totalChances?: number;
   /** 추첨 방식대로 서버가 센 지금 내 당첨 확률(0~1). */
   winChance?: number;
+  /** 서버가 이벤트 시간대의 날짜로 센 값: 오늘 출석 횟수 · 이어서 출석한 날 수 · 다음 날이 열리는 시각(밀리초) · 응모한 날로부터 지난 날 수. 서버 값을 받기 전에는 없다. */
+  attendedToday?: number; streak?: number; nextDayAt?: number; daysSinceEntry?: number;
   /** 내 친구 초대 코드(로그인했을 때만). 공유 주소에 붙는다. */
   inviteCode?: string; invited: boolean;
   /** 초대 링크로 들어온 친구에게 보일 초대한 사람의 닉네임(서버가 읽은 값). 없으면 일반 문구. */
@@ -84,7 +89,7 @@ function RaffleEmailConsent({ locale }: { locale: AppLocale }) {
   async function update(value: boolean) {
     setPending(true);
     setFailed(false);
-    try { setConsent(await readOrUpdate(value)); }
+    try { const next = await readOrUpdate(value); setConsent(next); sendGa4Event('raffle_notify', { choice: next ? 'on' : 'off' }); }
     catch { setFailed(true); }
     finally { setPending(false); }
   }
@@ -114,7 +119,7 @@ const takeEnterFromAddress = () => {
 };
 const count = (value: unknown) => typeof value === 'number' && Number.isSafeInteger(value) && value >= 0 ? value : undefined;
 
-type EntryResult = { newEntry?: boolean; entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; invite?: 'registered' | 'refused' | 'pending' };
+type EntryResult = { newEntry?: boolean; entered?: boolean; passportReceived?: boolean; communityJoined?: boolean; chances?: number; friends?: number; totalChances?: number; winChance?: number; attendedToday?: number; streak?: number; nextDayAt?: number; daysSinceEntry?: number; invite?: 'registered' | 'refused' | 'pending' };
 
 export function RaffleProvider({ locale, closed, closesAt, now, preview, invite, inviterName, children }: { locale: AppLocale; closed: boolean; closesAt: number; now: number; preview?: RafflePreview; /** 주소의 ?invite= 로 받은 친구의 초대 코드 */ invite?: string; inviterName?: string; children: ReactNode }) {
   const auth = useByUsAuth(), { getAccessToken } = auth;
@@ -122,11 +127,13 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
   const [entered, setEntered] = useState(false), [passport, setPassport] = useState(false), [community, setCommunity] = useState(false), [error, setError] = useState(false);
   const [chances, setChances] = useState<number>(), [friends, setFriends] = useState<number>(), [totalChances, setTotalChances] = useState<number>(), [winChance, setWinChance] = useState<number>(), [inviteCode, setInviteCode] = useState<string>();
   const [result, setResult] = useState<RaffleCapsuleResult>();
+  const [daily, setDaily] = useState<Pick<Ctx, 'attendedToday' | 'streak' | 'nextDayAt' | 'daysSinceEntry'>>({});
   const received = useRef<string | undefined>(undefined);
   const p = preview;
   const apply = useCallback((result: EntryResult) => {
     setEntered(!!result.entered); setPassport(!!result.passportReceived); setCommunity(!!result.communityJoined);
     setChances(result.entered ? count(result.chances) : undefined); setFriends(count(result.friends)); setTotalChances(result.entered ? count(result.totalChances) : undefined); setWinChance(result.entered && typeof result.winChance === 'number' && result.winChance >= 0 && result.winChance <= 1 ? result.winChance : undefined);
+    setDaily(result.entered ? { attendedToday: count(result.attendedToday), streak: count(result.streak), nextDayAt: count(result.nextDayAt), daysSinceEntry: count(result.daysSinceEntry) } : {});
     // 등록됐거나 등록할 수 없는 코드는 다시 보내지 않는다. 잠시 뒤 다시(pending)만 남겨 둔다.
     if (result.invite && result.invite !== 'pending') { received.current = undefined; storeInvite(); }
   }, []);
@@ -183,6 +190,17 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
     })();
     return () => { live = false; };
   }, [p, closed, auth.ready, auth.authenticated, getAccessToken]);
+  // 응모한 다음 날부터 다시 열었을 때 한 번(리텐션 측정): 1일·2일·3~6일·7일 이후로 묶는다. 동의 뒤 gtag가 뜨는 걸 잠깐 기다린다.
+  const returnDay = daily.daysSinceEntry === undefined || daily.daysSinceEntry < 1 ? undefined : daily.daysSinceEntry >= 7 ? 7 : daily.daysSinceEntry >= 3 ? 3 : daily.daysSinceEntry;
+  useEffect(() => {
+    if (returnDay === undefined || closed) return;
+    let tries = 0;
+    const timer = window.setInterval(() => {
+      if (ga4Active()) { sendGa4Event('raffle_return', { day: returnDay }); window.clearInterval(timer); }
+      else if (++tries >= 10) window.clearInterval(timer);
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, [returnDay, closed]);
   const view = {
     signedIn: auth.authenticated || !!p,
     entered: entered || p === 'entered' || p === 'passport' || p === 'done',
@@ -202,7 +220,7 @@ export function RaffleProvider({ locale, closed, closesAt, now, preview, invite,
   }
   // 개발 미리보기 won·lost: 로그인·API 없이 결과 팝업만 본다(US$100 당첨 / 미당첨). 운영 빌드에는 preview 값이 오지 않는다.
   const shown = p === 'won' ? { state: 'won' as const, usd: 100 } : p === 'lost' ? { state: 'lost' as const } : result;
-  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, invited: !!raffleInviteCode(invite), inviterName, chances, friends, totalChances, winChance, inviteCode, result: shown, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
+  const value: Ctx = { locale, closed, closesAt, now, ready: auth.ready || !!p, pending, ...view, invited: !!raffleInviteCode(invite), inviterName, chances, friends, totalChances, winChance, ...daily, inviteCode, result: shown, enter, login: auth.login, t: (key, count) => raffleLongformText(locale, key, count), s: (key) => signupRaffleText(locale, key) };
   return <RaffleContext.Provider value={value}>{children}</RaffleContext.Provider>;
 }
 
@@ -263,15 +281,15 @@ export function RaffleEnterBlock() {
   const r = useRaffle();
   if (r.closed) return r.result ? <RaffleResultEntry locale={r.locale} result={r.result} /> : <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
   return <div className={styles.enter}>
-    {/* 두 걸음 ① 응모 누르기 ② 가입·로그인. 끝낸 걸음은 체크 */}
-    <div className={styles.enterActions}>
+    {/* 응모 전: 두 걸음 ① 응모 누르기 ② 가입·로그인(끝낸 걸음은 체크) + 친구 초대 카드. 응모한 뒤에는 둘 다 끝났으니 줄이고, 초대는 아래 '오늘 기회 늘리기'의 한 단계로 간다 */}
+    {!r.entered && <div className={styles.enterActions}>
       <ol className={styles.steps}>
         <RaffleStep order={1} done={r.entered} label={r.t('stepEnter')} />
         <RaffleStep order={2} done={r.signedIn} label={r.t(r.signedIn ? 'stepLoggedIn' : 'stepLogin')} />
       </ol>
-      {/* 응모 바로 아래 친구 초대 카드(사용자 11/25 "토스처럼 눈에 잘 띄게"). 응모 뒤에는 이 카드의 버튼이 화면의 다음 행동(primary)이 된다 */}
+      {/* 응모 바로 아래 친구 초대 카드(사용자 11/25 "토스처럼 눈에 잘 띄게") */}
       <RaffleInviteCard />
-    </div>
+    </div>}
     {r.error ? <p className={styles.enterError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
     {/* 응모 뒤의 주인공은 내 당첨 기회 수(서버가 센 값만: 기본 1 + Fan Passport·커뮤니티 + 댓글·출석 + 친구 초대). 도장은 이 칸 안 왼쪽에 40으로 한 번 찍힌다.
      * 값을 받기 전(또는 개발 미리보기)에는 숫자를 지어내지 않고 응모 1회만 말한다 */}
@@ -283,8 +301,27 @@ export function RaffleEnterBlock() {
             : <p className={styles.enterStatus} data-state="entered"><FanIcon icon={Ticket} size={16} /><FanDisplay role="caption">{r.t('myEntry')}</FanDisplay></p>}
         </div>
       : <p className={styles.enterStatus}><FanDisplay role="caption">{r.t('flowOnce')}</FanDisplay></p>}
-    {r.entered && <RaffleEmailConsent locale={r.locale} />}
+    {r.entered && <RaffleNextStepsBlock />}
   </div>;
+}
+
+/** 응모 직후: 오늘 기회 늘리기 3단계 + 내일 다시 오면(연속 출석·열리는 시각·D-day) + 알림 동의. 값은 모두 서버가 센 것이고 없으면 그 줄을 뺀다. */
+function RaffleNextStepsBlock() {
+  const r = useRaffle();
+  const share = useRaffleShare();
+  const text = raffleInviteText[r.locale];
+  const dday = raffleCountdown(r.closesAt - r.now).day;
+  return <RaffleNextSteps locale={r.locale} passport={r.passport} attendedToday={(r.attendedToday ?? 0) > 0} friends={r.friends} streak={r.streak} nextDayAt={r.nextDayAt} closesAt={r.closesAt} dday={dday}
+    hrefs={{ pick: passportHref(r.locale), attend: communityHref(r.locale) }}
+    onStep={step => sendGa4Event('raffle_next_step', { step })}
+    invite={{
+      onShare: () => share.share(), disabled: !r.ready,
+      label: share.copied ? raffleNextStepsText(r.locale, 'copied') : raffleNextStepsText(r.locale, 'inviteDo'),
+      status: r.friends ? text.progress.replace('{n}', String(r.friends)).replace('{c}', String(r.friends * 3)) : undefined,
+      error: share.failed ? r.s('error') : undefined,
+    }}>
+    <RaffleEmailConsent locale={r.locale} />
+  </RaffleNextSteps>;
 }
 
 /** 앱 안 브라우저(X·Instagram·Facebook·TikTok·카카오톡 등, 로그인 화면과 같은 판별)에서는 Google 로그인이 막히고 X는 Safari로 넘기기도 무시한다.
@@ -300,12 +337,14 @@ function RaffleInAppGuide() {
   if (!r.ready || r.signedIn || r.entered) return null;
   if (!inApp) return <FanDisplay role="caption" as="p" className={styles.signInHint}>{growthSignupCopy[r.locale].hint}</FanDisplay>;
   const href = () => raffleEnterHref(window.location.href);
+  // 그림(··· → 브라우저) + 한 줄 + 링크 복사. 글은 13개 언어 모두 직접 쓴 표를 쓴다(래플 긴 문구 표는 ko·en만 있다)
   return <div className={styles.inApp} data-raffle-inapp>
-    <FanDisplay role="body" as="p">{r.t('inAppGuide')}</FanDisplay>
+    <InAppBrowserArt />
+    <FanDisplay role="body" as="p">{raffleNextStepsText(r.locale, 'inApp')}</FanDisplay>
     <FanAction type="button" variant="secondary" size="sm" onClick={async () => {
-      try { await navigator.clipboard.writeText(href()); setCopy('copied'); } catch { setCopy('failed'); }
-    }}>{copy === 'copied' ? r.t('copied') : r.t('copyLink')}</FanAction>
-    {copy === 'failed' ? <input className={styles.inAppLink} aria-label={r.t('copyLink')} readOnly value={href()} onFocus={event => event.currentTarget.select()} /> : null}
+      try { await navigator.clipboard.writeText(href()); setCopy('copied'); sendGa4Event('inapp_external_open', { app: embeddedApp(navigator.userAgent), method: 'copy' }); } catch { setCopy('failed'); }
+    }}>{copy === 'copied' ? raffleNextStepsText(r.locale, 'copied') : raffleNextStepsText(r.locale, 'copyLink')}</FanAction>
+    {copy === 'failed' ? <input className={styles.inAppLink} aria-label={raffleNextStepsText(r.locale, 'copyLink')} readOnly value={href()} onFocus={event => event.currentTarget.select()} /> : null}
   </div>;
 }
 

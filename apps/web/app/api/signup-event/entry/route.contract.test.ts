@@ -20,7 +20,16 @@ it('uses the authenticated owner and ignores client eligibility claims',async()=
  vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:owner});mocks.client.mockReturnValue('read-only-client');mocks.refresh.mockResolvedValue('created');mocks.read.mockResolvedValue(snapshot());
  const response=await POST(new Request('http://localhost',{method:'POST',body:JSON.stringify({userId:'other',passportReceived:true,chances:99})}));
  expect(response.status).toBe(200);expect(mocks.refresh).toHaveBeenCalledWith('read-only-client',owner);expect(mocks.rpc).not.toHaveBeenCalled();
- expect(await response.json()).toEqual({entered:true,newEntry:true,passportReceived:false,communityJoined:true,chances:1,friends:0});
+ expect(await response.json()).toMatchObject({entered:true,newEntry:true,passportReceived:false,communityJoined:true,chances:1,friends:0});
+});
+it('adds today\'s attendance, the streak and when the next day opens for an entrant, and nothing for a visitor who has not entered',async()=>{
+ vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:owner});
+ vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-11-20T03:00:00Z'));
+ mocks.read.mockResolvedValue(snapshot([{userId:owner,kind:'attendance',sourceId:'a',occurredAt:'2026-11-20T01:00:00Z'}]));
+ const body=await (await GET(new Request('http://localhost'))).json();
+ expect(body).toMatchObject({entered:true,attendedToday:1,streak:1,daysSinceEntry:expect.any(Number)});expect(body.nextDayAt).toBe(Date.parse('2026-11-20T15:00:00Z'));vi.useRealTimers();
+ mocks.read.mockResolvedValue({users:[],entries:[],actions:[]});
+ const none=await (await GET(new Request('http://localhost'))).json();expect(none).toEqual({entered:false,passportReceived:false,communityJoined:false,chances:0,friends:0});
 });
 it('registers a friend invite code through the existing referral after the entry, without failing the entry',async()=>{
  vi.stubEnv('KYAA_FEATURE_SIGNUP_RAFFLE','true');mocks.authorize.mockResolvedValue({appUserId:owner});mocks.refresh.mockResolvedValue('created');mocks.read.mockResolvedValue(snapshot());
@@ -50,7 +59,7 @@ it('reads my chances from the server snapshot: 1 + community 1 + capped comments
  ]));
  const response=await GET(new Request('http://localhost'));
  expect(response.status).toBe(200);expect(mocks.read).toHaveBeenCalledWith(owner);expect(mocks.refresh).not.toHaveBeenCalled();
- expect(await response.json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:11,friends:2});
+ expect(await response.json()).toMatchObject({entered:true,passportReceived:false,communityJoined:true,chances:11,friends:2});
  mocks.read.mockResolvedValue({users:[],entries:[],actions:[]});
  expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:false,passportReceived:false,communityJoined:false,chances:0,friends:0});
  mocks.authorize.mockRejectedValue(new AuthError('AUTHENTICATION_REQUIRED',401,'required'));
@@ -68,11 +77,11 @@ it('adds everyone else\'s stored chances to my fresh count for the page total, a
  mocks.read.mockResolvedValue(snapshot([{userId:owner,kind:'comment',sourceId:'c1',occurredAt:'2026-11-11T02:00:00Z'}]));
  // 저장 값의 내 행은 아직 1회(오래됨): 합계에는 방금 센 내 값(2)을 쓴다. 다른 회원은 응모 1 + 커뮤니티 1 = 2
  mocks.stored.mockResolvedValue({users:[{id:owner,createdAt:enteredAt},{id:other,createdAt:enteredAt}],entries:[{userId:owner,enteredAt},{userId:other,enteredAt}],actions:[{userId:other,kind:'community',sourceId:'community:x',occurredAt:'2026-11-11T03:00:00Z'}]});
- expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0,totalChances:4,winChance:1});
+ expect(await (await GET(new Request('http://localhost'))).json()).toMatchObject({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0,totalChances:4,winChance:1});
  expect(mocks.stored).toHaveBeenCalledWith('stored-client');
  // 1분 안의 다음 요청은 저장 값을 다시 읽지 않는다
  await GET(new Request('http://localhost'));expect(mocks.stored).toHaveBeenCalledTimes(1);
  vi.setSystemTime(new Date('2026-11-20T00:02:00Z'));mocks.stored.mockRejectedValue(new Error('SIGNUP_RAFFLE_READ_FAILED'));
- expect(await (await GET(new Request('http://localhost'))).json()).toEqual({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0});
+ expect(await (await GET(new Request('http://localhost'))).json()).toMatchObject({entered:true,passportReceived:false,communityJoined:true,chances:2,friends:0});
  vi.useRealTimers();
 });
