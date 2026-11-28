@@ -15,7 +15,9 @@
     "gameHours": "Free plays reopen in {count} h",
     "gameMinutes": "Free plays reopen in {count} min"
   },
+  "christmas": {"grades": ["Fan Christmas", "Friends Christmas", "Fifty-fifty", "Looking good", "Love is in the air"], "lines": ["Spend it with me!", "Celebrate with your friends.", "Make plans for one of your lucky days.", "Send that first message.", "You’ll have company this Christmas."], "dates": "Best dates for romance", "rank": "Top {n}%", "birth": "Enter your birthday"},
   "home": {
+    "christmas": "A date this Christmas?",
     "mileageGuideTitle": "How to use miles",
     "datePricing": "Open a fortune for another date for {mileage10}. Miles earned through activities are used first. You can revisit unlocked readings. Game limits reset at midnight in Korea.",
     "gamePricing": "Each game has three free plays a day. Extra plays cost {mileage10}, {mileage30} and {mileage50} in order. From the fourth, each costs {mileage100} with no daily limit.",
@@ -587,6 +589,7 @@
     "amuletAlt": "{name}'s cheer charm, {date}",
     "saveCard": "Save card",
     "cardSaved": "Card saved",
+    "saveResultImage": "Save image",
     "cardSaveFailed": "Couldn't save the card. Please try again.",
     "todayFortune": "Today's fortune",
     "cardDate": "Date",

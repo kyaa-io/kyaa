@@ -15,7 +15,9 @@
     "gameHours": "Las partidas gratis vuelven en {count} h",
     "gameMinutes": "Las partidas gratis vuelven en {count} min"
   },
+  "christmas": {"grades": ["Navidad fan", "Con amigos", "Mitad y mitad", "Hay posibilidades", "Romance a la vista"], "lines": ["¡Pásala conmigo!", "Celebra con tus amigos.", "Haz planes para uno de tus días de suerte.", "Manda el primer mensaje.", "Esta Navidad tendrás compañía."], "dates": "Mejores días para el amor", "rank": "Top {n}%", "birth": "Introduce tu fecha de nacimiento"},
   "home": {
+    "christmas": "¿Una cita esta Navidad?",
     "mileageGuideTitle": "Cómo usar tus millas",
     "datePricing": "Consulta la fortuna de otra fecha por {mileage10}. Primero se usan las millas que ganas en actividades. Puedes volver a ver las lecturas desbloqueadas. Las partidas se renuevan a medianoche en Corea.",
     "gamePricing": "Cada juego incluye tres partidas gratis al día. Las tres primeras adicionales cuestan {mileage10}, {mileage30} y {mileage50}. A partir de la cuarta, cada partida cuesta {mileage100}, sin límite diario.",
@@ -579,6 +581,7 @@
     "amuletAlt": "Amuleto de ánimo de {name}, {date}",
     "saveCard": "Guardar tarjeta",
     "cardSaved": "Tarjeta guardada",
+    "saveResultImage": "Guardar imagen",
     "cardSaveFailed": "No se pudo guardar la tarjeta. Inténtalo de nuevo.",
     "todayFortune": "Suerte de hoy",
     "cardDate": "Fecha",

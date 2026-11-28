@@ -15,7 +15,9 @@
     "gameHours": "Main gratis dibuka lagi dalam {count} jam",
     "gameMinutes": "Main gratis dibuka lagi dalam {count} menit"
   },
+  "christmas": {"grades": ["Natal bareng idola", "Natal bareng teman", "Masih imbang", "Peluang besar", "Asmara menanti"], "lines": ["Rayakan bersamaku!", "Rayakan bersama teman-temanmu.", "Buat janji di hari keberuntunganmu.", "Coba kirim pesan duluan.", "Natal ini kamu punya teman spesial."], "dates": "Hari terbaik untuk kencan", "rank": "{n}% teratas", "birth": "Masukkan tanggal lahir"},
   "home": {
+    "christmas": "Ada teman kencan Natal ini?",
     "mileageGuideTitle": "Cara menggunakan mil",
     "datePricing": "Buka ramalan tanggal lain dengan {mileage10}. Mil dari aktivitas digunakan terlebih dahulu. Ramalan yang sudah dibuka bisa dilihat kembali. Batas permainan diatur ulang pada tengah malam waktu Korea.",
     "gamePricing": "Setiap game memberi tiga putaran gratis per hari. Tiga putaran tambahan pertama masing-masing seharga {mileage10}, {mileage30}, dan {mileage50}. Mulai putaran tambahan keempat, biayanya {mileage100} per putaran tanpa batas harian.",
@@ -579,6 +581,7 @@
     "amuletAlt": "Jimat penyemangat {name}, {date}",
     "saveCard": "Simpan kartu",
     "cardSaved": "Kartu tersimpan",
+    "saveResultImage": "Simpan gambar",
     "cardSaveFailed": "Kartu gagal disimpan. Coba lagi.",
     "todayFortune": "Ramalan hari ini",
     "cardDate": "Tanggal",

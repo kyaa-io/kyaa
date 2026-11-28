@@ -15,7 +15,9 @@
     "gameHours": "As partidas grátis voltam em {count} h",
     "gameMinutes": "As partidas grátis voltam em {count} min"
   },
+  "christmas": {"grades": ["Natal de fã", "Natal com amigos", "Meio a meio", "Boas chances", "Romance à vista"], "lines": ["Passe o Natal comigo!", "Comemore com seus amigos.", "Marque algo para um dos seus dias de sorte.", "Mande a primeira mensagem.", "Você terá companhia neste Natal."], "dates": "Melhores dias para um encontro", "rank": "Top {n}%", "birth": "Informe sua data de nascimento"},
   "home": {
+    "christmas": "Um encontro neste Natal?",
     "mileageGuideTitle": "Como usar suas milhas",
     "datePricing": "Veja a sorte de outra data por {mileage10}. As milhas ganhas em atividades são usadas primeiro. Você pode rever leituras desbloqueadas. O limite de partidas é renovado à meia-noite na Coreia.",
     "gamePricing": "Cada jogo oferece três partidas grátis por dia. As três primeiras extras custam {mileage10}, {mileage30} e {mileage50}, respectivamente. Da quarta em diante, cada partida custa {mileage100}, sem limite diário.",
@@ -579,6 +581,7 @@
     "amuletAlt": "Amuleto de apoio de {name}, {date}",
     "saveCard": "Salvar cartão",
     "cardSaved": "Cartão salvo",
+    "saveResultImage": "Salvar imagem",
     "cardSaveFailed": "Não foi possível salvar o cartão. Tente de novo.",
     "todayFortune": "Sorte de hoje",
     "cardDate": "Data",

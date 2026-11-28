@@ -15,7 +15,9 @@
     "gameHours": "Lượt chơi miễn phí mở lại sau {count} giờ",
     "gameMinutes": "Lượt chơi miễn phí mở lại sau {count} phút"
   },
+  "christmas": {"grades": ["Giáng sinh cùng thần tượng", "Giáng sinh cùng bạn bè", "Năm mươi năm mươi", "Nhiều triển vọng", "Tình yêu đang đến"], "lines": ["Đón lễ cùng mình nhé!", "Rủ bạn bè cùng đón lễ nhé.", "Hẹn gặp vào một ngày may mắn nhé.", "Thử nhắn tin trước xem sao.", "Giáng sinh này bạn sẽ có người bên cạnh."], "dates": "Ngày đẹp để hẹn hò", "rank": "Top {n}%", "birth": "Nhập ngày sinh"},
   "home": {
+    "christmas": "Giáng sinh này có hẹn không?",
     "mileageGuideTitle": "Cách dùng dặm",
     "datePricing": "Mở vận may của ngày khác với {mileage10}. Dặm kiếm được từ hoạt động sẽ được dùng trước. Bạn có thể xem lại nội dung đã mở. Lượt chơi được đặt lại lúc nửa đêm theo giờ Hàn Quốc.",
     "gamePricing": "Mỗi trò chơi có ba lượt miễn phí mỗi ngày. Ba lượt thêm đầu tiên lần lượt tốn {mileage10}, {mileage30} và {mileage50}. Từ lượt thêm thứ tư, mỗi lượt tốn {mileage100} và không giới hạn số lượt.",
@@ -579,6 +581,7 @@
     "amuletAlt": "Bùa tiếp sức của {name}, {date}",
     "saveCard": "Lưu thẻ",
     "cardSaved": "Đã lưu thẻ",
+    "saveResultImage": "Lưu hình ảnh",
     "cardSaveFailed": "Không lưu được thẻ. Hãy thử lại.",
     "todayFortune": "Vận hôm nay",
     "cardDate": "Ngày",

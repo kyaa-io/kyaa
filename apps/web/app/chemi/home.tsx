@@ -22,6 +22,7 @@ export function ChemiHome({
   locale,
   growth,
   preview,
+  christmas = preview,
   weeklyRankings,
   matchAvailable = false,
 }: {
@@ -29,6 +30,7 @@ export function ChemiHome({
   locale: string;
   growth: boolean;
   preview: boolean;
+  christmas?: boolean;
   weeklyRankings: boolean;
   matchAvailable?: boolean;
 }) {
@@ -44,7 +46,7 @@ export function ChemiHome({
     return <ChemiGrowth locale={locale} home={copy} matchAvailable={matchAvailable} />;
   return (
     <div className={styles.home} data-ranked={weeklyRankings} data-chemi-hide-dm="">
-      <HomeBanner copy={copy} activities={activities} index={activeIndex} setIndex={setActiveIndex} />
+      <HomeBanner copy={copy} activities={christmas ? [...activities, { id: "christmas", type: "readings", href: `/chemi/christmas?locale=${locale}` }] : activities} index={activeIndex} setIndex={setActiveIndex} />
       {weeklyRankings && <WeeklyRankings copy={copy} locale={locale} matchAvailable={matchAvailable} />}
       <section>
         <FanTabs
@@ -61,7 +63,7 @@ export function ChemiHome({
           {activities
             .filter(({ type, href }) => (preview || href) && (category === "all" || category === type))
             .map(({ id, href }) => {
-              const active = activities[activeIndex].id === id;
+              const active = activities[activeIndex]?.id === id;
               const saved = readings?.find(row => row.content === EARN[id][0] && row.kind === (id === "saju" ? "first" : "daily"));
               const destination = saved && href ? href + "&" + new URLSearchParams({ c: saved.character, step: "result", r: saved.readingId }) : href;
               const content = (

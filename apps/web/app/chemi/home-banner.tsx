@@ -12,19 +12,20 @@ import { Pause, Play } from "@/components/fan-ui/fan-icons";
 import styles from "./home.module.css";
 
 const images = {
+  christmas: "christmas/pc-27x8.webp",
   fortune: "fortune/fortune-elina-wide-v2.webp",
   saju: "saju/saju-changha-wide-v1.webp",
   zodiac: "star/hero-elina-l-v1.webp",
   tarot: "tarot/scene-yuna-l.webp",
   pair: "banner-match.webp",
   run: "banner-run.webp",
-} satisfies Record<(typeof entries)[number][0], string>;
+} satisfies Record<(typeof entries)[number][0] | "christmas", string>;
 
 /**
  * 배너 반복 영상 판(`chemi-banner-<id>-loop-<판>`). 첫·끝 프레임이 지금 배너 그림과 같은 판만 넣고, null 이면 그림만 보인다.
  * 운세·사주·타로·별자리 v3 = 수채·파스텔 새 원화(11/25 사용자 선택)로 만든 판. 그림을 바꾸면 영상도 함께 새 판으로 바꾼다.
  */
-const videoVersion = { fortune: "v3", saju: "v3", zodiac: "v3", tarot: "v3", pair: "v1", run: "v1" } satisfies Record<(typeof entries)[number][0], string | null>;
+const videoVersion = { christmas: null, fortune: "v3", saju: "v3", zodiac: "v3", tarot: "v3", pair: "v1", run: "v1" } satisfies Record<(typeof entries)[number][0] | "christmas", string | null>;
 
 export function HomeBanner({
   activities,
@@ -65,6 +66,7 @@ export function HomeBanner({
       onPointerUp={event => { if (event.pointerType !== "mouse") setPointerInside(""); }} onPointerCancel={() => setPointerInside("")}>
       <div className={styles.artwork} data-content={id}>
         <img src={`/chemi/${images[id]}`} alt="" />
+        {id === "christmas" && <SceneVideo src="/chemi/christmas/loop" paused={Boolean(pointerInside && pointerInside !== "mouse")} freezeFrame={paused} />}
         {videoVersion[id] && <SceneVideo src={`/public-assets/cms-assets/chemi/video/chemi-banner-${id}-loop-${videoVersion[id]}`} paused={Boolean(pointerInside && pointerInside !== "mouse")} freezeFrame={paused} objectPosition={id === "tarot" || id === "zodiac" ? "center top" : "center"} />}
         <div className={styles.caption}>
           <div><span>{copy[type]}</span><div className={styles.faces}>{["changha", "elina", "yuna"].map(person => <img key={person} alt="" src={`/chemi/grow/face-${person}-v1.webp`} />)}</div><FanHeading as="h1">{copy[id]}</FanHeading></div>
