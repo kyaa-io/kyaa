@@ -1,3 +1,5 @@
+import {FAN_TIERS} from '@/features/rewards/domain/reward-policy';
+import {GoodsMenuProvider} from '@/features/groups/goods-menu';
 import {createRoot} from 'react-dom/client';
 import {GroupBenefitsScreen} from '@/features/groups/ui/group-benefits-screen';
 import {CapsuleScreen} from '@/features/group-capsule/capsule-screen';
@@ -24,6 +26,25 @@ window.fetch=async(input,init)=>{
  if(state==='loading'&&(path.includes('/benefits')||path==='/api/me/wallet'||path==='/api/groups/capsules'||path.endsWith(`/raffles/${id}`)))return new Promise(resolve=>waiting.push(resolve));
  if(state==='error'&&(path.startsWith('/api/groups')||path==='/api/me/wallet'))return Response.json({error:{code:'SYNTHETIC_FAILURE'}},{status:503});
  if(path==='/api/me/wallet')return Response.json({...wallet(),...(state==='insufficient'?{tickets:0}:{})});
+ if(path==='/api/me/summary'&&q.get('goods')==='on'){
+  const celebrity={slug:'synthetic-creator',name:'예시 최애',image:'/images/dukjil-duo/glyph-ticket-160.webp',isPublic:true};
+  const favorite=q.get('favorite')==='on';
+  return Response.json({summary:{profile:{nickname:null},creators:favorite?[{celebrity,relationship:'passport',
+   passport:{id,tier:FAN_TIERS[0],score:0,remainingToNextTier:1},ticketBalance:0,firstReaction:null}]:[],
+   favorite:favorite?{slug:celebrity.slug,name:celebrity.name}:null,live:{upcoming:[],history:[]},
+   rewards:{availableCount:0,entries:0,items:[]},collection:{passportCount:0,stampCount:0,collectibleCount:0,recent:[]},unreadNotificationCount:0}});
+ }
+ if(path==='/api/celebrities/synthetic-creator/raffles'&&q.get('goods')==='on')return Response.json({raffles:[raffle]});
+ if(path==='/api/raffles/archive'){
+  if(state==='archive-error')return Response.json({error:{code:'SYNTHETIC_FAILURE'}},{status:503});
+  const page=Number(url.searchParams.get('page')??0);
+  const all=Array.from({length:13},(_,index)=>({
+   key:`fixture-${index}`,title:`예시 이벤트 ${index+1} · 지난 굿즈 추첨`,
+   closesAt:new Date(Date.UTC(2026,10,20-index)).toISOString(),image:null,
+   resultPath:index===0?'/notices/example-results':null,
+  }));
+  return Response.json({items:state==='archive-empty'?[]:page?all.slice((page-1)*12,page*12):all.slice(0,3),hasMore:state!=='archive-empty'&&page<2});
+ }
  if(path==='/api/raffles/recent')return Response.json({items:[1,2,3].map(n=>({raffle:{...raffle,id:`10000000-0000-4000-8000-00000000000${n}`,benefitId:`10000000-0000-4000-8000-00000000000${n}`,title:`지난 럭키드로우 선물 ${n}`,status:'closed',entryClosesAt:'2026-10-31T00:00:00Z',resultsPublishedAt:'2026-11-01T00:00:00Z'},creator:{slug:'synthetic-creator',name:'합성 크리에이터',image:null}}))});
  if(path==='/api/groups/benefits'){
   const kind=url.searchParams.get('kind'),cursor=url.searchParams.get('cursor');
@@ -55,4 +76,4 @@ window.fetch=async(input,init)=>{
 Object.assign(window,{benefitsHarness:{requests,locales:APP_LOCALES,transition,setState:(next:string)=>{state=next;},sessionSnapshot}});
 const path=location.pathname;
 const content=path.startsWith('/my/capsules')?<CapsuleScreen locale={locale} pageId={q.get('pageId')??undefined}/>:path.includes('/raffles/')?<GroupRaffleScreen pageId={id} raffleId={id} locale={locale}/>:path==='/benefits'?<GroupBenefitsScreen locale={locale}/>:<FanAppFrame locale={locale} groupsEnabled={q.get('gate')!=='off'}><main><h1>Synthetic legacy detail route</h1></main></FanAppFrame>;
-createRoot(document.getElementById('root')!).render(<LocaleProvider initialLocale={locale}><GroupsReleaseProvider enabled={q.get('gate')!=='off'}>{content}</GroupsReleaseProvider></LocaleProvider>);
+createRoot(document.getElementById('root')!).render(<LocaleProvider initialLocale={locale}><GroupsReleaseProvider enabled={q.get('gate')!=='off'}><GoodsMenuProvider enabled={q.get("goods")==="on"}>{content}</GoodsMenuProvider></GroupsReleaseProvider></LocaleProvider>);

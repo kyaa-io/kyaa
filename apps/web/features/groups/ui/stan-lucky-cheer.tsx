@@ -37,6 +37,8 @@ import { CapsuleMachineBlock } from "@/features/capsule-machine/capsule-machine-
 import { LuckyStage } from "@/features/capsule-machine/lucky-stage";
 import { capsuleMachineCopy } from "@/features/capsule-machine/copy";
 import styles from "./stan-lucky-cheer.module.css";
+import { PastDrawArchive } from "./past-draw-archive";
+import { useGoodsMenu } from "@/features/groups/goods-menu";
 import duoStyles from "./duo-lucky.module.css";
 
 type Raffle = RaffleList["raffles"][number];
@@ -156,8 +158,9 @@ function RaffleCard({ raffle, status, slug, locale, entered, allowance }: { raff
 export function StanLucky({ locale, bias, guest, presentation, paused = false }: { locale: AppLocale; bias: SelectedBias; guest: boolean; presentation?: "duo"; paused?: boolean }) {
   const favorite = guest ? null : stanFavorite(bias), slug = favorite?.slug ?? null;
   const raffles = useStanRaffles(locale, slug), title = groupBenefitsCopy(locale).lucky;
+  const goodsMenu = useGoodsMenu();
   const hasPast = raffles.items.some(item => item.status === "closed");
-  const recent = useGroupResource(presentation === "duo" && (!slug || (!raffles.loading && !raffles.error && !hasPast)) ? `/api/raffles/recent?locale=${toContentLocale(locale)}` : null, parseRecentRaffles);
+  const recent = useGroupResource(presentation === "duo" && !goodsMenu && (!slug || (!raffles.loading && !raffles.error && !hasPast)) ? `/api/raffles/recent?locale=${toContentLocale(locale)}` : null, parseRecentRaffles);
   const wallet = useGroupResource(!guest && slug ? "/api/me/wallet" : null, parseWallet);
   const entries = useStanEntries(locale, !guest ? slug : null);
   // F5: open and upcoming draws take the first place; closed ones only fill a separate 지난 럭키드로우 list when none is live.
@@ -178,7 +181,7 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
     const action = paused || (ready && item) || guest ? <FanAction className={duoStyles.action} variant="primary" {...(paused ? { disabled: true, helperText: capsuleMachineCopy(locale).text("soon") } : { href })}>
       {paused || guest || (item?.status === "open" && allowance?.kind !== "policy" && !passport) ? t(locale,"luckyEnter") : passport ? t(locale,"luckyGetPassport") : t(locale,"luckyDetails")}</FanAction> : null;
     const pastItems = hasPast && slug && favorite ? raffles.items.filter(row => row.status === "closed").slice(0, 3).map(({ raffle }) => ({ raffle, creator: { slug, name: favorite.name, image: (favorite as { image?: string | null }).image ?? null } })) : recent.data?.items ?? [];
-    return <div className={duoStyles.layout} data-has-past={pastItems.length ? "" : undefined}>
+    return <div className={duoStyles.layout} data-has-past={goodsMenu || pastItems.length ? "" : undefined}>
     <section className={duoStyles.card} id="stan-lucky" aria-label={title} data-duo-lucky data-lucky-module="" data-lucky-paused={paused ? "" : undefined} data-raffle-status={item?.status}>
       <LuckyStage className={duoStyles.stage} paused={paused} locale={locale} />
       <div className={duoStyles.copy}>
@@ -191,8 +194,9 @@ export function StanLucky({ locale, bias, guest, presentation, paused = false }:
       </div>
       {action ? <div className={duoStyles.actionBlock}>{action}</div> : null}
     </section>
-    {pastItems.length === 0 && slug ? <FanSectionLink className={duoStyles.past} href={creatorRafflesHref(slug, locale)}>{t(locale, "luckyPast")}</FanSectionLink> : null}
-    {pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
+    {goodsMenu ? <PastDrawArchive locale={locale} /> : null}
+    {!goodsMenu && pastItems.length === 0 && slug ? <FanSectionLink className={duoStyles.past} href={creatorRafflesHref(slug, locale)}>{t(locale, "luckyPast")}</FanSectionLink> : null}
+    {!goodsMenu && pastItems.length > 0 && <section className={duoStyles.pastList} aria-label={t(locale, "luckyPast")} data-lucky-past>
       <FanHeading>{t(locale, "luckyPast")}</FanHeading>
       <div className={duoStyles.pastRows}>{pastItems.slice(0, 3).map(({ raffle, creator }) => <Link key={raffle.id} href={raffleHref(creator.slug, raffle.benefitId, locale) as Route} className={duoStyles.pastCard}>
         {raffle.imageUrl || creator.image ? <img className={duoStyles.thumbnail} src={(raffle.imageUrl || creator.image)!} alt="" width={112} height={112} loading="lazy" /> : null}
