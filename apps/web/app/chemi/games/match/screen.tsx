@@ -2,7 +2,6 @@
 
 import { matchTitle } from "../titles";
 import { SpentPoints } from "@/features/chemi/games/spent-points";
-import { VacantRank } from "@/features/chemi/games/vacant-rank";
 
 import { ExtraPlayDialog } from "@/features/chemi/ui/extra-play-dialog";
 
@@ -344,11 +343,7 @@ function Rankings({
             {lobby ? <FanText role="item">{row.score?.toLocaleString() ?? clock(row.ticks)}</FanText> : <b>{row.score?.toLocaleString() ?? clock(row.ticks)}</b>}
           </li>
         ))}
-        {!full && Array.from({ length: Math.max(0, 3 - displayed.length) }, (_, index) => (
-          <li data-row="" data-vacant="" key={`vacant-${index}`}>
-            <VacantRank label={copy.vacant} place={displayed.length + index + 1} avatarClassName={styles.avatar} />
-          </li>
-        ))}
+
       </ol>
     </section>
   );

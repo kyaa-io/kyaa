@@ -18,8 +18,8 @@ export function ReadingCreatorPicker({ content, locale, onChoose }: {
   onChoose?: (creator: (typeof creators)[number]) => void;
 }) {
   return (
-    <section className={styles.picker}>
-      <FanHeading as="h1"><ReadingText id="favorite" /></FanHeading>
+    <section className={styles.picker} data-reading-picker={content}>
+      <FanHeading as="h1"><ReadingText id={content === "fortune" ? "todayFortune" : "favorite"} /></FanHeading>
       {creators.map((creator) => (
         <FanAction key={creator} variant="neutral" {...(onChoose ? { onClick: () => onChoose(creator) } : { href: `/chemi/${content}?locale=${locale}&c=${creator}` })}>
           <img src={`/chemi/grow/face-${creator}-v1.webp`} width={40} height={40} alt="" />

@@ -113,7 +113,6 @@
   border: 1px solid var(--color-line);
   border-radius: 50%;
 }
-.avatar .characterBadge { position: absolute; inset: auto -2px -2px auto; width: var(--space-4); height: var(--space-4); border-radius: 50%; image-rendering: pixelated; }
 .rank > footer { display: flex; flex-direction: column; justify-content: center; gap: var(--space-1); min-height: var(--space-10); padding: var(--space-2) var(--space-4); border-top: 1px solid var(--color-line-subtle); }
 .rank > footer b { color: var(--color-ink); }
 .above { display: flex; gap: var(--space-1); min-width: 0; }

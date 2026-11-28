@@ -117,7 +117,8 @@ function BenefitsLucky({locale,bias,signedOut,wallet}:{locale:AppLocale;bias:Sel
  *  activity for the viewer's favorite or first joined fan page; its rows lead to that page. Guests and viewers without a page see the same
  *  list and go to the login or the page directory. The header, swap line and strip stay when the attendance policy is off. */
 export function MyDailyMissions({locale,signedOut=false}:{locale:AppLocale;signedOut?:boolean}){
- const bias=useStanBias(locale,null,signedOut);
+ const live=useStanBias(locale,null,signedOut);
+ const bias={...live,selected:live.selected??live.options[0]??null};
  return <BenefitsDailyMissions locale={locale} bias={bias} signedOut={signedOut}/>;
 }
 function BenefitsDailyMissions({locale,bias,signedOut}:{locale:AppLocale;bias:SelectedBias;signedOut:boolean}){
@@ -142,7 +143,8 @@ function BenefitsHistory({locale}:{locale:AppLocale}){
  return <div className={styles.pHistory} hidden={allFailed}><WalletHistoryPanel key={auth.ownerKey} locale={locale} preview={{rows:5,moreLabel:seeAllLabel[locale],lessLabel:locale==='ko'?'접기':'Show less'}}/></div>;
 }
 export function MyHeartExchange({locale}:{locale:AppLocale}){
- const auth=useGroupRequest(),bias=useSelectedBias(locale);
+ const auth=useGroupRequest(),live=useSelectedBias(locale);
+ const bias={...live,selected:live.selected??live.options[0]??null};
  return <BenefitsWallet key={auth.ownerKey} locale={locale} part="hearts" bias={bias}/>;
 }
 /** Four wallet tiles; guests keep locked balances and use the profile login action. */

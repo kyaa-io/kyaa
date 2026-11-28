@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "오늘의 운세에서 최애를 고르는 화면의 빈 공간을 줄였어요. 게임 랭킹에는 참여 기록이 있는 순위만 표시해요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi/fortune",
+  "images": [
+    "release-notes/images/2026-11-28-fortune-picker.png"
+  ]
+}

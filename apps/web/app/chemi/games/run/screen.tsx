@@ -286,7 +286,7 @@ function Session({ locale, share, auth }: { locale: AppLocale; share: string | n
       <ol className={styles.allRanks}>
         {rows.map((row) => <li data-row="" key={row.place} data-me={row.isMe}>
           <FanText role="label">{row.place}</FanText>
-          <FanText role="item">{rankName(row.nickname, locale)}{row.isMe && ` (${copy.me})`} · {names[row.character]}</FanText>
+          <FanText role="item">{rankName(row.nickname, locale, row.place)}{row.isMe && ` (${copy.me})`} · {names[row.character]}</FanText>
           <FanText role="item">{number.format(row.score)}</FanText>
         </li>)}
       </ol>
