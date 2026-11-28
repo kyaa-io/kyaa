@@ -11,6 +11,6 @@ export async function GET(request: Request) {
   return createIndexNowHandler({
     secret: process.env.CRON_SECRET,
     production: process.env.VERCEL_ENV === "production" || (process.env.HOSTING_PROVIDER === "aws" && process.env.APP_ENV === "prod"),
-    execute: () => runIndexNow({ store: createIndexNowStoreFromEnvironment(), loadSnapshot: loadSearchPublicationSnapshot }),
+    execute: () => runIndexNow({ store: createIndexNowStoreFromEnvironment, loadSnapshot: loadSearchPublicationSnapshot }),
   })(request);
 }
