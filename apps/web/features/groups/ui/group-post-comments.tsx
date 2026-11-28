@@ -92,7 +92,7 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
   };
   return <section className={detailStyles.comments} data-post-comments="">
     <h3>{b.comments} {(commentCount ?? comments.length).toLocaleString(locale)}</h3>
-    {canWrite ? <form className={detailStyles.commentForm} data-filled={draft.length > 0 || undefined} onSubmit={submit}>
+    {canWrite ? <form className={detailStyles.commentForm} data-floating-dm-avoid="" data-filled={draft.length > 0 || undefined} onSubmit={submit}>
       <label className={detailStyles.srOnly} htmlFor={`${postId}-comment`}>{b.comments}</label>
       <textarea id={`${postId}-comment`} placeholder={postReactionCopy(locale).placeholder} value={draft} onChange={event => setDraft(event.target.value)} maxLength={2000} disabled={busy === "comment"} required rows={1} />
       <UploadProgressList items={upload.items.map(waveUploadRow)} locale={locale} removeDone onRetry={key => { const item = upload.items.find(row => row.key === key); if (item) upload.retry(item); }} onRemove={upload.remove} />
@@ -119,7 +119,7 @@ export function GroupPostComments({ pageId, postId, locale, commentCount, canWri
         {!comment.parentId && (canWrite || !r.authenticated) && <div className={detailStyles.commentActions}>
           {canWrite ? <FanAction variant="text" aria-expanded={reply?.parentId === comment.id} onClick={() => toggleReply(comment.id)}>{c.reply}</FanAction> : !r.authenticated && <a className={detailStyles.commentAction} href={fanLoginHref(locale, returnTo)}>{c.reply}</a>}
         </div>}
-        {reply?.parentId === comment.id && <form className={`${detailStyles.commentForm} ${detailStyles.replyForm}`} data-expanded="" data-filled={reply.draft.length > 0 || undefined} onSubmit={submitReply}>
+        {reply?.parentId === comment.id && <form className={`${detailStyles.commentForm} ${detailStyles.replyForm}`} data-expanded="" data-floating-dm-avoid="" data-filled={reply.draft.length > 0 || undefined} onSubmit={submitReply}>
           <label className={detailStyles.srOnly} htmlFor={`${comment.id}-reply`}>{k.replyTo.replace("{0}", comment.nickname)}</label>
           <textarea id={`${comment.id}-reply`} value={reply.draft} onChange={event => setReply({ parentId: comment.id, draft: event.target.value })} maxLength={2000} disabled={busy === "reply"} required rows={3} autoFocus />
           <div className={detailStyles.commentTools}>

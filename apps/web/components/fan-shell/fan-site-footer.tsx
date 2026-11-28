@@ -1,4 +1,8 @@
 "use client";
+import { useId, useState } from "react";
+import { FanAction } from "../fan-ui/fan-action";
+import { ChevronDown } from "../fan-ui/fan-icons";
+import { FanIcon } from "../fan-ui/fan-icon";
 import { useGroupsRelease } from "@/features/groups/ui/groups-release";
 import { groupsCopy } from "@/features/groups/ui/copy";
 import { groupBenefitsCopy } from "@/features/groups/ui/group-benefits-copy";
@@ -258,6 +262,8 @@ export function FanSiteFooter({ locale, variant = "full" }: { locale: FanLocale;
 function FanSiteFooterFull({ locale }: { locale: FanLocale }) {
   const t = copy[locale];
   const groupsEnabled = useGroupsRelease();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuId = useId();
   return (
     <footer className={styles.footer} data-fan-site-footer>
       <FanContentContainer className={styles.inner}>
@@ -268,7 +274,9 @@ function FanSiteFooterFull({ locale }: { locale: FanLocale }) {
           <p>{t.tagline}</p>
         </div>
 
-        <nav className={styles.navigation} aria-label={t.nav}>
+        <FanAction variant="text" className={styles.menuToggle} aria-expanded={menuOpen} aria-controls={menuId}
+          onClick={() => setMenuOpen(open => !open)} trailingIcon={<FanIcon icon={ChevronDown} size={16} />}>{t.nav}</FanAction>
+        <nav id={menuId} className={styles.navigation} aria-label={t.nav} data-expanded={menuOpen}>
           <section>
             <h2>{t.explore}</h2>
             <Link href={fanHref("/", locale)}>HOME</Link>
