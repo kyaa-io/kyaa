@@ -223,7 +223,7 @@ export function RaffleCountdown({ hero = false }: { hero?: boolean }) {
   if (r.closed || now > r.closesAt) return null;
   const left = raffleCountdown(r.closesAt - now);
   // 보조 기술에는 1초마다 읽히지 않게 마감 문구만 준다.
-  // hero: 키 비주얼 안의 큰 남은 시간(대표 2026-11-13 "타임어택"). 같은 시계라 하단 고정 줄과 1초도 어긋나지 않는다.
+  // hero: 키 비주얼 안의 큰 남은 시간(대표 2026-11-13 "타임어택"). 남은 시간은 여기에서만 보여 준다.
   const role = hero ? 'figure' : 'strong';
   return <p className={styles.countdown} role="timer" aria-live="off" aria-label={r.t('closesAt')} data-urgent={left.urgent} data-size={hero ? 'hero' : undefined} data-raffle-countdown>
     <FanDisplay role={role} optical={hero} aria-hidden="true">{left.day}</FanDisplay><FanDisplay role={role} aria-hidden="true" suppressHydrationWarning>{left.clock}</FanDisplay>
@@ -246,7 +246,7 @@ export function RaffleHeroEnter() {
   </div>;
 }
 
-/** 참여 방법 칸: 두 걸음 · 친구 초대 · 마감과 남은 시간 · 한 줄(1인 1응모 / 내 응모 1회 / 오류와 다시 시도) · 응모 뒤 도장. 응모 버튼은 첫 화면(RaffleHeroEnter). */
+/** 참여 방법 칸: 두 걸음 · 친구 초대 · 한 줄(1인 1응모 / 내 응모 1회 / 오류와 다시 시도) · 응모 뒤 도장. 응모 버튼은 첫 화면(RaffleHeroEnter). */
 export function RaffleEnterBlock() {
   const r = useRaffle();
   if (r.closed) return r.result ? <RaffleResultEntry locale={r.locale} result={r.result} /> : <FanDisplay role="strong" as="p" className={styles.enterEnded} data-state="closed">{r.t('ended')}</FanDisplay>;
@@ -259,10 +259,6 @@ export function RaffleEnterBlock() {
       </ol>
       {/* 응모 바로 옆(모바일은 바로 아래)의 보조 행동. 응모 뒤에는 이 칸에서 누를 수 있는 유일한 버튼이라 다음 행동이 된다 */}
       <RaffleShare />
-    </div>
-    <div className={styles.enterFacts}>
-      <p className={styles.enterDeadline}><FanDisplay role="strong">{r.t('closesAt')}</FanDisplay><FanDisplay role="caption" className={styles.muted}>{r.t('kst')}</FanDisplay></p>
-      <RaffleCountdown />
     </div>
     {r.error ? <p className={styles.enterError} role="alert"><FanDisplay role="caption">{r.s('error')}</FanDisplay><FanAction type="button" variant="text" size="sm" onClick={r.enter}>{r.t('retry')}</FanAction></p> : null}
     {/* 응모 뒤의 주인공은 내 당첨 기회 수(서버가 센 값만: 기본 1 + Fan Passport·커뮤니티 + 댓글·출석 + 친구 초대). 도장은 이 칸 안 왼쪽에 40으로 한 번 찍힌다.
@@ -343,7 +339,7 @@ export function RaffleMoreAction({ kind, short = false }: { kind: 'passport' | '
     : <FanAction href={communityHref(r.locale)} variant="neutral" size="sm">{short ? r.t('joinShort') : r.s('community')}</FanAction>;
 }
 
-/** 하단 고정 줄(모든 폭): 남은 시간 + 응모 전에는 응모(primary), 응모 뒤에는 출석(neutral). 마감 후에는 숨긴다. */
+/** 하단 고정 줄(모든 폭): 응모 전에는 응모(primary), 응모 뒤에는 출석(neutral). 마감 후에는 숨긴다. */
 export function RaffleStickyCta() {
   const r = useRaffle();
   // 참여 방법 칸의 같은 응모 버튼이 화면에 보이는 동안에는 숨겨 분홍 버튼이 두 개 겹쳐 보이지 않게 한다.
@@ -359,7 +355,6 @@ export function RaffleStickyCta() {
   const hidden = inlineInView;
   return <div className={styles.sticky} data-hidden={hidden} aria-hidden={hidden || undefined} inert={hidden || undefined}>
     <div className={styles.stickyRow}>
-      <RaffleCountdown />
       <div className={styles.stickyCta}>{r.entered
         ? <FanAction href={communityHref(r.locale)} variant="neutral" fullWidth>{r.t('checkIn')}</FanAction>
         : <RaffleEnterAction />}</div>

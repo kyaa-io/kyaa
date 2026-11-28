@@ -192,11 +192,15 @@ describe("FanPageHeader", () => {
     expect(screen.getByText("브랜드")).toHaveAttribute("data-fan-tag", "neutral");
     expect(screen.getByTestId("badge")).toBeInTheDocument();
   });
-  it("orders the head as name·grade, SNS with the stats line, actions, and the introduction last (대표 11/16 21:22)", () => {
+  it("orders the head as name, separate grade, SNS, actions, and introduction (194758)", () => {
     const { rerender } = render(<FanPageHeader image={{ src: "/a.png" }} name="엘리나" kind="fan" locale="ko" description="소개 원문" grade={<a href="/p" data-testid="grade">팬등급</a>} utility={<button type="button">좋아요 남기기</button>} links={[{ kind: "youtube", href: "https://y.test" }]} stats={<div data-testid="stats">팬 1</div>} />);
     const order = (node: Element, other: Element) => node.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING;
     const nav = screen.getByRole("link", { name: "youtube" }).closest("nav") as Element;
-    expect(screen.getByTestId("grade").parentElement).toBe(screen.getByRole("heading", { name: "엘리나" }).parentElement);
+    const grade = screen.getByTestId("grade");
+    const title = screen.getByRole("heading", { name: "엘리나" });
+    expect(grade.parentElement).not.toBe(title.parentElement);
+    expect(order(title, grade)).toBeTruthy();
+    expect(order(grade, nav)).toBeTruthy();
     expect(nav.parentElement).toBe(screen.getByTestId("stats").parentElement?.parentElement);
     expect(order(nav, screen.getByTestId("stats"))).toBeTruthy();
     expect(order(screen.getByTestId("stats"), screen.getByRole("button", { name: "좋아요 남기기" }))).toBeTruthy();

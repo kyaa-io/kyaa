@@ -111,11 +111,11 @@ function HomeHero({ locale, homeBanners = [], celebrities, elinaRaffles, content
 
 </>);
 }
-type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "jjinfanGauge" | "heartDonation" | "homeTop"> & { queries: HomeQueries; /** 이벤트 띠를 닫은 배너 id(쿠키). 같은 배너의 띠는 서버가 그리지 않는다. */ closedEventStrip?: string; /** 신규 가입 래플 배너를 첫 슬라이드로 둔다(서버 플래그가 켜진 환경만). */ signupRaffle?: boolean; /** 온보딩 첫 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘긴다. */ firstSteps?: boolean };
+type StreamingHomeProps = Pick<GuestHomeProps, "locale" | "jjinfanGauge" | "heartDonation" | "homeTop"> & { queries: HomeQueries; /** 이벤트 띠를 닫은 배너 id(쿠키). 같은 배너의 띠는 서버가 그리지 않는다. */ closedEventStrip?: string; /** 신규 가입 래플 배너를 첫 슬라이드로 둔다(서버 플래그가 켜진 환경만). */ signupRaffle?: boolean; entrantCount?: number | null; /** 온보딩 첫 배너(M1). 세 걸음을 마친 브라우저는 서버가 false로 넘긴다. */ firstSteps?: boolean };
 
 /** 코드로 둔 홈 배너: 신규 가입 래플(플래그 켜짐) → 덕질하는 법 → X 이벤트 → 첫 걸음(아직 안 마친 브라우저). 진행 중인 관리자 이벤트와의 배치는 orderHomeBanners가 정한다. */
-function pinnedHomeBanners(locale: AppLocale, firstSteps: boolean, signupRaffle: boolean) {
-  return [...(signupRaffle ? [signupRaffleHomeBanner(locale)] : []), missionbookHomeBanner(locale), xMissionHomeBanner(locale), ...(firstSteps ? [firstStepsHomeBanner(locale)] : [])];
+function pinnedHomeBanners(locale: AppLocale, firstSteps: boolean, signupRaffle: boolean, entrantCount?: number | null) {
+  return [...(signupRaffle ? [{ ...signupRaffleHomeBanner(locale), entrantCount }] : []), missionbookHomeBanner(locale), xMissionHomeBanner(locale), ...(firstSteps ? [firstStepsHomeBanner(locale)] : [])];
 }
 
 export function StreamingGuestHome({ queries, closedEventStrip, ...props }: StreamingHomeProps) {
@@ -127,7 +127,7 @@ function ResolvedGuestHome({ queries, closedEventStrip, ...props }: StreamingHom
   const managed = result.status === "fulfilled" ? result.value : [];
   const now = Date.now();
   const banner = adminEventBanners(managed, now)[0];
-  const pinned = pinnedHomeBanners(props.locale, props.firstSteps ?? false, props.signupRaffle ?? false);
+  const pinned = pinnedHomeBanners(props.locale, props.firstSteps ?? false, props.signupRaffle ?? false, props.entrantCount);
   const leadingCount = props.signupRaffle ? 2 : 0;
   const homeBanners = [
     ...managed.filter(item => item.id === PD_SHORTS_BANNER_ID),

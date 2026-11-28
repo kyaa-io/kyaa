@@ -1,3 +1,4 @@
+import { readEntrantCount } from "../server/signup-event/entrant-count";
 import { xMissionHomeBanner } from "../features/home/domain/x-mission-home-banner";
 import { toContentLocale } from "@/i18n/locales";
 import { parseAppLocale } from "@/i18n/locales";
@@ -59,7 +60,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       queries={queries}
       locale={locale}
       jjinfanGauge={jjinfanGaugeEnabled()}
-      signupRaffle={signupRaffleEnabled()}
+      signupRaffle={signupRaffleEnabled()} entrantCount={signupRaffleEnabled() ? await readEntrantCount() : null}
       heartDonation={heartDonationEvent()}
       homeTop={homeTopBanner()}
       firstSteps={!firstStepsDone}

@@ -1,0 +1,5 @@
+{
+  "changes": ["홈의 신규 가입 이벤트 배너 왼쪽 위에서 현재 응모자 수를 확인할 수 있어요.", "예시 데이터로 만든 확인용 화면입니다."],
+  "path": "/",
+  "images": ["release-notes/images/2026-11-28-home-entrants-390.png", "release-notes/images/2026-11-28-home-entrants-1440.png"]
+}

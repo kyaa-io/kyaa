@@ -14,7 +14,7 @@ it('matches approved prizes, steps and date without unconfirmed time or rewards'
   expect(screen.getByRole('link', { name: '공식 규칙' }).getAttribute('href')).toBe('#rules');
   expect(view.container.querySelector('#rules')?.textContent).toContain('무작위로 추첨');
   expect(screen.getByRole('heading', { level: 1, name: 'KYAA 래플 신규가입자 17분에게 US$400' })).toBeTruthy();
-  for (const text of ['11월 10일 ~ 12월 13일', 'Visa 기프트카드', '참여 방법', '필수', 'US$100', 'US$50', 'US$25', 'US$10', '1명', '2명', '4명', '10명', '공식 규칙', '하루 최대 3회', '당첨 확률 올리기', '선택']) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
+  for (const text of ['11월 10일 ~ 12월 13일', 'Visa 기프트카드', '참여 방법', '필수', 'US$100', 'US$50', 'US$25', 'US$10', '1명', '2명', '4명', '10명', '공식 규칙', '하루 최대 3회', '당첨 확률 올리기']) expect(screen.getAllByText(text).length).toBeGreaterThan(0);
   expect(screen.queryByText(/버튼 한 번이면 끝|팬 신분증|응모는 한 번|당첨 기회가 1번씩/)).toBeNull();
   expect(screen.queryByText(/상품 확정 전|당첨 기회 올리기/)).toBeNull();
   expect(screen.queryByText(/Amazon/)).toBeNull();
@@ -33,9 +33,7 @@ it('matches approved prizes, steps and date without unconfirmed time or rewards'
   expect([...bonus.querySelectorAll('[data-fan-activity-stamp]')].map(node => node.getAttribute('data-fan-activity-stamp'))).toEqual(['passport', 'community', 'comment', 'attendance', 'invite']);
   for (const text of ['커뮤니티 가입', '내 링크로 가입·응모한 친구 1명마다(인원 제한 없음)']) expect(bonus.textContent).toContain(text);
   expect(bonus.querySelectorAll('[data-row="raffle-bonus"]')[0]!.textContent).toContain('한 번');
-  // 같은 숫자 두 번 금지: 더 즐기기에는 +값이 없다
-  const more = view.container.querySelector('[data-block="raffle-more"]')!;
-  expect(more.querySelectorAll('[data-raffle-plus]')).toHaveLength(0);
+  expect(view.container.querySelector('[data-block="raffle-more"]')).toBeNull();
   // 안내 목록: 응모만 하면 추첨 대상, 기회 합산, 친구 초대 무제한
   expect(screen.getByText(/응모만 하면 추첨 대상/)).toBeTruthy();
   expect(screen.getByText(/Fan Passport \+1 \+ 커뮤니티 가입 \+1/)).toBeTruthy();

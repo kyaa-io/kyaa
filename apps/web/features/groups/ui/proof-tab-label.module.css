@@ -1,3 +1,18 @@
 /* 탭 글자 위쪽 바깥(탭 줄 위 여유 4px 안)에 배지를 둬 글자를 덮지 않는다. */
 .host { display: inline-flex; }
 .host [data-earn-badge="corner"] { top: -16px; right: -26px; }
+
+.highlight [data-earn-badge="corner"] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent-ink);
+  animation: proofRewardShine 3s var(--motion-easing) 1;
+}
+
+@keyframes proofRewardShine {
+  0%, 100% { background-color: var(--color-accent-soft); }
+  30% { background-color: var(--color-accent-line); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .highlight [data-earn-badge="corner"] { animation: none; }
+}

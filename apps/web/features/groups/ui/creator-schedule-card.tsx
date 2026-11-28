@@ -18,6 +18,6 @@ export function CreatorScheduleCard({celebrity,locale}:{celebrity:PublishedCeleb
  const card=creatorHomeCardCopy(locale);
  return <section className={styles.sourceHomeCard}>
   <header className={cardStyles.header}><h2>{card.schedule}</h2><FanSectionLink className={cardStyles.action} href={`/${celebrity.slug}?tab=calendar&locale=${locale}${month?`&month=${month}`:""}`}>{card.calendar}</FanSectionLink></header>
-  <CelebrityMiniCalendar celebrity={celebrity} locale={locale} upcomingLive={null} embedded attendanceDates={checkedDates} onMonthChange={setMonth}/>
+  <CelebrityMiniCalendar celebrity={celebrity} locale={locale} upcomingLive={null} embedded collapseEmpty attendanceDates={checkedDates} onMonthChange={setMonth}/>
  </section>;
 }

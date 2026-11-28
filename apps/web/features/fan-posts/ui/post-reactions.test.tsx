@@ -45,12 +45,12 @@ describe("PostReactions", () => {
     fireEvent.click(screen.getByRole("button", { name: "싫어요" }));
     expect(onJoin).toHaveBeenCalledOnce();
   });
-  it("puts the same point badge on both thumbs", () => {
+  it("shows the point badge only on like", () => {
     const { container } = render(<PostReactions reaction={null} likeCount={0} dislikeCount={null} locale="ko" reward onChange={() => undefined} />);
     const hosts = [...container.querySelectorAll("[data-earn]")];
-    expect(hosts).toHaveLength(2);
+    expect(hosts).toHaveLength(1);
     expect(hosts[0]).toHaveTextContent("좋아요 0");
-    expect(hosts[1].querySelector("button")).toHaveAccessibleName("싫어요");
+    expect(screen.getByRole("button", { name: "싫어요" }).closest("[data-earn]")).toBeNull();
   });
   it("draws no point badge without a reward", () => {
     const { container } = render(<PostReactions reaction={null} likeCount={0} dislikeCount={null} locale="ko" onChange={() => undefined} />);

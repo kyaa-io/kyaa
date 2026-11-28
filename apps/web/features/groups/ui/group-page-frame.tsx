@@ -1,7 +1,8 @@
 "use client";
 import { usesFanPageNavigation } from "./fan-page-navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { LockKeyhole } from "lucide-react";
+import Link from "@/components/fan-ui/hover-prefetch-link";
+import { LockKeyhole, UsersRound } from "lucide-react";
 import { FanAction } from "@/components/fan-ui/fan-action";
 import { subscribeFanActivityUpdates } from "@/components/fan-ui/fan-activity-updates";
 import { useByUsAuth } from "@/features/auth/client/cognito-auth";
@@ -26,7 +27,7 @@ import { ReactionAction } from "@/features/reaction/ui/reaction-action";
 import { GroupShell } from "./group-shell";
 import { groupTabItems } from "./group-tab-links";
 import { useChatUnread } from "./use-chat-unread";
-import { proofTab } from "./home-copy";
+import { membersAndRank, proofTab } from "./home-copy";
 import { ProofTabLabel } from "./proof-tab-label";
 import { SourceStatePanel } from "./source-state-panel";
 import styles from "./groups.module.css";
@@ -71,7 +72,8 @@ export function GroupPageHead() {
   // 팬페이지의 '팬 N'은 홈 랭킹 크리에이터 누적 하트와 같은 값(좋아요 남긴 사람 수). 그 밖의 페이지는 가입자 수.
   const memberCount = g.page?.kind === "fan" && g.page.likeCount !== undefined ? g.page.likeCount : g.page?.memberCount;
   const fanNavigation = usesFanPageNavigation(g.kind, g.routeSlug ?? g.page?.slug);
-  const stats = <GroupPresence linkMembers={fanNavigation} separateVisits={fanNavigation} pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
+  const combineLikes = g.kind === "fan" && Boolean(g.celebrity);
+  const stats = <GroupPresence combinedLikeCount={combineLikes} linkMembers={fanNavigation} separateVisits={fanNavigation} pageId={g.loading ? null : g.page?.id ?? null} locale={g.locale} member={Boolean(g.membership)} memberCount={memberCount} challengeSlug={g.kind === "fan" ? g.celebrity?.slug : undefined} />;
   const waitingForCreator = g.page?.kind === "fan" && !g.celebrity;
   if (!name || !g.kind || waitingForCreator) return <FanPageHeaderSkeleton stats={stats} tabs={tabs} />;
   const summary = g.celebrity ? <span ref={observeElement} lang={summaryTranslation.showing ? g.locale : undefined}>{summaryTranslation.texts[0]}</span> : g.page?.description;
@@ -82,7 +84,7 @@ export function GroupPageHead() {
     kind={g.kind}
     locale={g.locale}
     fanLayout={fanNavigation}
-    visits={fanNavigation ? <GroupVisitLine data={g.presence?.data} locale={g.locale}/> : undefined}
+    visits={fanNavigation ? <>{combineLikes && stats}<GroupVisitLine data={g.presence?.data} locale={g.locale}/></> : undefined}
     description={summary}
     descriptionLabels={pageHeadCopy(g.locale)}
     descriptionAction={g.celebrity ? <TranslationControl locale={g.locale} translation={summaryTranslation} /> : undefined}
@@ -92,9 +94,9 @@ export function GroupPageHead() {
     links={[...(g.celebrity?.websiteUrl && g.celebrity.roles.includes("brand") ? [{ kind: "website", href: g.celebrity.websiteUrl }] : []), ...(g.celebrity?.socialLinks.map((social) => ({ kind: social.platform, href: social.url })) ?? []), ...(g.page?.externalLinks ?? []).map((room) => ({ kind: room.kind, href: room.url }))]}
     grade={g.kind === "fan" && g.celebrity ? g.authenticated ? <CreatorFanGrade slug={g.celebrity.slug} locale={g.locale} resource={g.summary} /> : g.signedInHint && !g.ready ? <CreatorFanGradePlaceholder /> : undefined : undefined}
     // 페이지 좋아요(옛 히어로의 '좋아요 남기기'): 누르면 이 페이지의 좋아요 수가 오르고 홈 크리에이터 랭킹(좋아요 순)에 반영된다.
-    utility={g.kind === "fan" && g.celebrity ? <ReactionAction slug={g.celebrity.slug} locale={g.locale} variant="header" showRewardDialog={g.celebrity.slug !== "gggi"} /> : undefined}
+    utility={g.kind === "fan" && g.celebrity ? <><ReactionAction slug={g.celebrity.slug} locale={g.locale} variant="header" likeCount={memberCount} showRewardDialog={g.celebrity.slug !== "gggi"} /><Link className={styles.fanMembersLink} href={g.hrefFor("members")} scroll={false} aria-label={membersAndRank[g.locale]} title={membersAndRank[g.locale]} aria-current={g.activeTab === "members" ? "page" : undefined} onNavigate={() => g.selectTab("members")} onPointerEnter={() => g.preloadTab("members")}><UsersRound size={16} aria-hidden="true" /></Link></> : undefined}
     menu={g.detail?.membership ? <GroupPageMenu key={g.ownerKey} detail={g.detail} locale={g.locale} refresh={g.refresh} /> : g.reserveMenu ? <span aria-hidden="true" /> : undefined}
-    stats={stats}
+    stats={combineLikes ? undefined : stats}
     tabs={tabs}
   /></>;
 }

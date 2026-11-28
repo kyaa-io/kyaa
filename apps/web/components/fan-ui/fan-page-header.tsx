@@ -82,10 +82,11 @@ export function FanPageHeader({ image, name, kind, fanLayout = kind === "fan", l
           {verified ? <VerifiedMark className={styles.verified} /> : null}
           {kind === "fan" ? null : <FanTag tone={fanPageKindTone(kind)}>{fanPageKindLabel(locale, kind)}</FanTag>}
           {kind === "fan" ? null : badge}
-          {grade}
+          {kind !== "fan" && grade}
         </div>
         {menu ? <div className={styles.menu}>{menu}</div> : null}
       </div>
+      {kind === "fan" && grade}
       {linkNav || stats ? <div className={styles.meta}>{linkNav}{stats ? <div className={styles.stats}>{stats}</div> : null}</div> : null}
       {actions ? <div className={styles.actions}>
         {star && <FanStarAction {...star} className={styles.star} />}

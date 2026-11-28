@@ -119,6 +119,7 @@ it("hot sort offers 최신순 after 조회수순, requests sort=latest and keeps
 });
 
 it("hot period requests today, seven days, and month from the server", async () => {
+  state.posts = [post(1)];
   state.urls = [];
   render(<HotPosts locale="ko" />);
   expect(state.urls.at(-1)).toContain("period=week");
@@ -158,9 +159,7 @@ it("hot posts: two answers show two rows, zero answers show one empty state, and
   first.unmount();
   state.posts = [];
   const second = render(<HotPosts locale="ko" />);
-  expect(second.container.querySelectorAll("ul > li")).toHaveLength(1);
-  expect(screen.getByText("아직 Hot 게시글 없음")).toBeInTheDocument();
-  expect(second.container.querySelector("[data-row=hot-empty] [data-empty-state=section]")).toBeInTheDocument();
+  expect(second.container).toBeEmptyDOMElement();
 });
 
 it("hot posts: loading keeps five rows and an error says so with a retry", () => {

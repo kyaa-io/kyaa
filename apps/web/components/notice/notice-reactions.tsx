@@ -36,7 +36,7 @@ function ReactionsForOwner({ slug, noticeSlug, title, locale }: { slug: string; 
     resource.retry();
   }
   return <><div className={styles.bodyEnd} ref={row}>
-    <PostReactions reaction={state?.reaction ?? null} likeCount={state?.likeCount ?? 0} dislikeCount={state?.dislikeCount ?? null} locale={locale} busy={!auth.ready || !state || mutation.busy} loginHref={auth.ready && !auth.authenticated ? `/login?locale=${locale}&returnTo=${encodeURIComponent(href)}` : undefined} onChange={choice => void change(choice)} reward={auth.authenticated && state?.reaction === null} />
+    <PostReactions rewardDislike reaction={state?.reaction ?? null} likeCount={state?.likeCount ?? 0} dislikeCount={state?.dislikeCount ?? null} locale={locale} busy={!auth.ready || !state || mutation.busy} loginHref={auth.ready && !auth.authenticated ? `/login?locale=${locale}&returnTo=${encodeURIComponent(href)}` : undefined} onChange={choice => void change(choice)} reward={auth.authenticated && state?.reaction === null} />
     <PostShareAction title={title} locale={locale} contentType="notice" url={href} />
   </div>{mutation.error && <p role="alert">{mutation.error}</p>}</>;
 }

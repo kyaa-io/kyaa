@@ -133,6 +133,7 @@ export function HotPosts({ locale }: { locale: AppLocale }) {
   const ready = state.status === "ready";
   const total = ready ? state.data.items.length : 0;
   const items = ready ? state.data.items.slice(mobile ? page * ROWS : 0, mobile ? (page + 1) * ROWS : open ? 10 : ROWS) : [];
+  if (ready && total === 0 && period === "week" && sort === "likes") return null;
   return <section className={styles.hot} aria-labelledby="directory-hot-posts" data-directory-block="hot-posts">
     <div className={styles.hotHead}><FanHeading id="directory-hot-posts">{c.hotTitle}</FanHeading><div className={styles.hotFilters}>
       <FanSelectMenu label={c.periodLabel} value={period} align="end" onValueChange={value => { if (value === "today" || value === "week" || value === "month") { setPeriod(value); setOpen(false); setPage(0); } }} options={(["today", "week", "month"] as const).map(value => ({ value, label: c.period[value] }))} />

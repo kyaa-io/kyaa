@@ -63,3 +63,7 @@
   [data-fan-layout] .item.fanCount { height: 20px; }
   [data-fan-layout] .fanLink::after { inset-block: -12px; }
 }
+
+/* Once the count sits in the like button, only visible presence details need a row. */
+.line.withoutCount { grid-column: 1 / -1; }
+.line.withoutCount:not(:has(.artist, .error, [data-challenge-stat])) { display: none; }
