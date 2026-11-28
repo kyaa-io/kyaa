@@ -1,0 +1,10 @@
+{
+  "changes": [
+    "케미에서 짝 맞추기와 최애 런 순위를 펼치거나 접으면 각 카드가 표시된 순위만큼만 길어져요.",
+    "예시 데이터로 만든 확인용 화면입니다."
+  ],
+  "path": "/chemi",
+  "images": [
+    "release-notes/images/2026-11-28-chemi-rank-card-gap.png"
+  ]
+}

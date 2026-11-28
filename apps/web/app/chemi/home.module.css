@@ -108,6 +108,7 @@
 .rankings {
   --rank-mine: calc(var(--min-target) + var(--space-1));
   --rank-gap: var(--space-2);
+  align-items: start;
   display: flex;
   gap: var(--space-3);
   min-width: 0;
@@ -316,7 +317,6 @@
     grid-area: 1 / 2 / 3 / 3;
     align-self: start;
     display: grid;
-    grid-auto-rows: 1fr;
     overflow: visible;
   }
   .rankings .rankCard {
