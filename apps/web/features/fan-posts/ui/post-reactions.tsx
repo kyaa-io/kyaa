@@ -41,10 +41,11 @@ type Props = PostReactionState & {
   onChange: (choice: PostReactionChoice) => void;
   /** Show the point badge on the like action. */
   reward?: boolean;
+  rewardDislike?: boolean;
   compact?: boolean;
 };
 
-export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy = false, loginHref, join, onChange, reward = false, compact = false }: Props) {
+export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy = false, loginHref, join, onChange, reward = false, rewardDislike = false, compact = false }: Props) {
   const t = postReactionCopy(locale), likes = likeCount.toLocaleString(locale);
   const dislikeLabel = dislikeCount === null ? t.dislike : fill(t.dislikeCount, dislikeCount.toLocaleString(locale));
   const likeIcon = <ThumbsUp strokeWidth={1.75} />, dislikeIcon = <ThumbsDown strokeWidth={1.75} />;
@@ -66,5 +67,5 @@ export function PostReactions({ reaction, likeCount, dislikeCount, locale, busy 
     dislike = <FanAction {...dislikeProps} aria-pressed={reaction === "dislike"} disabled={busy} onClick={() => onChange(nextReaction(reaction, "dislike"))}>{dislikeNumber}</FanAction>;
   }
   const earn = (button: ReactNode) => reward ? <EarnBadgeCorner action="reaction" locale={locale}>{button}</EarnBadgeCorner> : button;
-  return <>{earn(like)}{dislike}</>;
+  return <>{earn(like)}{rewardDislike ? earn(dislike) : dislike}</>;
 }

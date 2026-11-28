@@ -109,6 +109,7 @@ export function CelebrityMiniCalendar({
   locale,
   upcomingLive,
   embedded = false,
+  collapseEmpty = false,
   onMonthChange,
   attendanceDates = [],
 }: {
@@ -116,6 +117,7 @@ export function CelebrityMiniCalendar({
   locale: AppLocale;
   upcomingLive: PublishedCelebrityLive | null;
   embedded?: boolean;
+  collapseEmpty?: boolean;
   attendanceDates?: readonly (string | undefined)[];
   onMonthChange?: (month: string) => void;
 }) {
@@ -221,7 +223,7 @@ export function CelebrityMiniCalendar({
     : upcomingEvents;
   const hasDisplayedReservation = displayedEvents.some((event) => event.reservationState === "reserved");
   const calendarId = useId();
-  if (embedded && month === initialMonth && state.status === "ready" && schedules.status === "ready" && upcomingEvents.length === 0) return <p>{participation.empty}</p>;
+  if (collapseEmpty && month === initialMonth && state.status === "ready" && schedules.status === "ready" && upcomingEvents.length === 0) return <p>{participation.empty}</p>;
   const calendarListId = `${calendarId}-events`;
 
   return (
