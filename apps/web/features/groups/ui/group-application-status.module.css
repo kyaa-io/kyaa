@@ -12,3 +12,9 @@
 .guest { display: grid; gap: var(--space-4); }
 @media (max-width: 767px) { .screen h1 { font-size:var(--fan-heading-size-wide); line-height: 32px; } .screen { padding-block: var(--space-4) var(--space-8); } }
 .item input:not([type="checkbox"]), .item textarea { font-weight: var(--fan-body-weight); }
+.summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); cursor: pointer; }
+.summary::-webkit-details-marker { display: none; }
+details[open] > .summary > svg { transform: rotate(180deg); }
+.detail { display: grid; gap: var(--space-3); padding-top: var(--space-3); overflow-wrap: anywhere; }
+.detail p { margin: 0; white-space: pre-wrap; }
+.detail img { max-width: 100%; max-height: 320px; object-fit: contain; }

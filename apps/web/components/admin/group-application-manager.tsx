@@ -10,7 +10,7 @@ import { BadgeCheck, Inbox, ChevronRight, Check } from "lucide-react";
 import { FanAction, fanActionClassName } from "@/components/fan-ui/fan-action";
 import { ActionFeedback, useParticipationAction } from "@/features/schedules/ui/participation-ui";
 import { ParticipationAdmin, useAdminPage, useParticipationCreators, CreatorSelect, AdminListState, styles } from "./participation-controls";
-const application = z.object({ applicant:z.object({id:z.uuid(),nickname:z.string().nullable(),joinedAt:z.string()}).nullish(), qualification:qualificationSchema.nullable().optional(),submissionRevision:z.number().int().min(1).default(1), id: z.uuid(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string(), description: z.string(), question: z.string().nullable(), status: z.enum(["submitted", "reviewing", "changes_requested", "approved", "rejected"]), reason: z.string().nullable(), created_at: z.string() });
+const application = z.object({ applicant:z.object({id:z.uuid(),nickname:z.string().nullable(),joinedAt:z.string()}).nullish(), qualification:qualificationSchema.nullable().optional(),submissionRevision:z.number().int().min(1).default(1), id: z.uuid(), kind: z.enum(["fan", "hobby", "brand"]), name: z.string(), description: z.string(), question: z.string().nullable(), status: z.enum(["submitted", "reviewing", "changes_requested", "approved", "rejected"]), reason: z.string().nullable(), applicant_edited_at:z.string().nullish(), created_at: z.string() });
 const parse = (value: unknown) => z.object({ items: z.array(application), nextCursor: z.string().nullable() }).parse(value);
 const reviewResult = z.object({ id: z.uuid(), status: z.string(), pageId: z.uuid().nullable() });
 const copy = {
@@ -62,6 +62,7 @@ function Review({ item, role, locale, creators, refresh,reloadCreators,presentat
  <div><dt>{ko?"신청 내용":"Application details"}</dt><dd>{item.description}</dd></div>
  <OperatingExperience item={item} locale={locale}/>
 
+ {item.applicant_edited_at&&<div><dt>{ko?"수정됨":"Edited"} · </dt><dd><time dateTime={item.applicant_edited_at}>{new Date(item.applicant_edited_at).toLocaleString(locale,{timeZone:"Asia/Seoul"})}</time></dd></div>}
  <div><dt>{ko?"신청일":"Submitted"}</dt><dd><time dateTime={item.created_at}>{new Date(item.created_at).toLocaleDateString(locale, { timeZone: "Asia/Seoul" })}</time></dd></div>
  {item.question&&<div><dt>{c.question}</dt><dd>{item.question}</dd></div>}{item.reason&&<div><dt>{c.reason}</dt><dd>{item.reason}</dd></div>}</dl>{presentation?.materialsHref&&<FanAction href={presentation.materialsHref} external>{ko?'제출 자료 보기':'View submitted materials'}</FanAction>}
  {["submitted", "reviewing", "changes_requested"].includes(item.status) && <form className={styles.form} onInput={event=>{const target=event.target;if(target instanceof HTMLTextAreaElement||target instanceof HTMLSelectElement)target.setCustomValidity("");}} onSubmit={async event => {

@@ -48,3 +48,12 @@ it('keeps the earlier form for an application saved in the earlier shape',()=>{
  fireEvent.click(screen.getByRole('button',{name:'보완하여 다시 신청'}));
  expect(screen.getByTestId('earlier-form')).toBeInTheDocument();
 });
+it.each(['submitted','reviewing','approved','rejected'])('opens the submitted details and limits editing for %s',async status=>{
+ state.items=[row({status,qualification:{hasExistingPage:false}})];
+ render(<GroupApplicationStatusScreen locale="ko"/>);
+ fireEvent.click(screen.getByText('아이유').closest('summary')!);
+ expect(await screen.findByText('소개')).toBeVisible();
+ const edit=screen.queryByRole('button',{name:'수정'});
+ if(status==='approved'||status==='rejected')expect(edit).toBeNull();
+ else expect(edit).toBeVisible();
+});
