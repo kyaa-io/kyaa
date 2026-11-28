@@ -1,5 +1,6 @@
 "use client";
 
+import { FanText } from "@/components/fan-ui/fan-text";
 import { toContentLocale } from "@/i18n/locales";
 import { FanHeading } from "@/components/fan-ui/fan-heading";
 import { FanNumUnit } from "@/components/fan-ui/fan-num-unit";
@@ -210,12 +211,23 @@ function RefreshNotice({ failed, retry, locale }: { failed: boolean; retry: () =
 }
 
 
-export function PassportCollectionScreen() {
+const issuedLabels = {
+  ko: "전체 팬 패스포트 누적 발급 {n}건", en: "Fan passports issued across kyaa: {n}",
+  ja: "ファンパスポート累計発行数 {n}件", "zh-Hans": "粉丝护照累计签发 {n} 本",
+  "zh-Hant": "粉絲護照累計核發 {n} 本", es: "Pasaportes de fans emitidos en total: {n}",
+  id: "Total paspor penggemar yang diterbitkan: {n}", vi: "Tổng số hộ chiếu người hâm mộ đã cấp: {n}",
+  th: "หนังสือเดินทางแฟนคลับที่ออกทั้งหมด {n} เล่ม", pt: "Total de passaportes de fãs emitidos: {n}",
+  fr: "Total des passeports de fans délivrés : {n}", ru: "Всего выдано паспортов фанатов: {n}",
+  mn: "Нийт олгосон фэний паспорт: {n}",
+};
+
+export function PassportCollectionScreen({ issuedCount }: { issuedCount?: number | null } = {}) {
   const locale = usePageLocale(); const c = copy[locale]; const auth = usePrivy();
   const fetcher = useOwnedFanResource(`/api/passports?locale=${toContentLocale(locale)}&tierStages=1&firstLikeStamp=1`, parseCollection, auth, collectionNeedsRefresh);
   const communityStamps = useCommunityStamps();
   return <Frame locale={locale} collection><div className={styles.collectionHeading}>
       <PageHeading title={c.passports} />
+      {issuedCount != null && <FanText role="meta" className={styles.issuedCount}>{issuedLabels[locale].replace("{n}", issuedCount.toLocaleString(locale))}</FanText>}
       {(fetcher.state.status === "ready" && fetcher.state.data.length > 0) || (fetcher.state.status === "error" && fetcher.state.kind === "auth") ? <Link className={styles.discoverLink} href={withLocale("/celebrities", locale)}>{c.discover}<ArrowRight aria-hidden="true" /></Link> : null}
     </div>
     <div id="collection" className={styles.collectionAnchor}>{fetcher.state.status === "loading" ? <Skeleton locale={locale} /> : fetcher.state.status === "error" ? <StateMessage locale={locale} kind={fetcher.state.kind} retry={fetcher.retry} returnTo={`/passports?locale=${locale}`} detail={false} /> : fetcher.state.data.length === 0 ? <section className={styles.empty} role="status"><BookOpen aria-hidden="true" /><h2>{c.emptyTitle}</h2><Link className={styles.primaryButton} href={withLocale("/celebrities", locale)}>{c.emptyAction}<ArrowRight aria-hidden="true" /></Link></section> : <>

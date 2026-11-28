@@ -20,6 +20,8 @@ do $$declare owner uuid:='e9400000-0000-4000-8000-000000000001';fan uuid:='e9400
  perform pg_temp.raffle_assert(public.group_raffle_dispatch('enter',fan,page,raffle,input)=result and public.group_wallet_balance(fan,'ticket')=7,'entry retry does not debit again');
  perform pg_temp.raffle_error(format('select public.group_raffle_dispatch(''enter'',%L,%L,%L,%L)',fan,page,raffle,jsonb_build_object('requestId',extensions.gen_random_uuid(),'amount',1)),'LIMIT');
  perform public.group_raffle_dispatch('enter',other,page,raffle,jsonb_build_object('requestId',extensions.gen_random_uuid(),'amount',1));
+ result:=public.group_raffle_dispatch('detail',fan,page,raffle);
+ perform pg_temp.raffle_assert(result->>'totalTickets'='4' and result->>'enteredTickets'='3','detail separates total ticket amount from personal entries');
  update public.group_raffles set opens_at=clock_timestamp()-interval '2 hours',closes_at=clock_timestamp()-interval '1 hour'where id=raffle;
  perform public.process_due_group_raffles();
  perform pg_temp.raffle_assert((select count(*)from public.group_raffle_candidates where raffle_id=raffle)=2 and (select count(*)from public.group_raffle_winners where raffle_id=raffle)=1,'deadline snapshots weighted entrants and one unique winner');
