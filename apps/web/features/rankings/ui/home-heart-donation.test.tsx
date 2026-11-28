@@ -49,7 +49,7 @@ it("fills by the hearts of the creator the settings name, not the first challeng
   const link = screen.getByRole("link");
   expect(link.textContent).toContain("37/100");
   expect(link.textContent).not.toContain("5/100");
-  expect(link.getAttribute("title")).toContain("하트 100개가 모이면 1개당 1,000원을 후원해요");
+  expect(link.textContent).toContain("하트 100개가 모이면 1개당 1,000원을 후원해요");
   expect(link.textContent).not.toContain("찐팬 100");
   expect(screen.getAllByRole("meter")).toHaveLength(1);
   expect(screen.getByRole("meter")).toHaveAttribute("aria-valuenow", "37");
