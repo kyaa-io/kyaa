@@ -1,3 +1,5 @@
+vi.mock("../server/signup-event/entrant-count", () => ({ readEntrantCount: async () => 1520 }));
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -57,7 +59,7 @@ describe("Home server content isolation", () => {
     expect(await off.queries.homeBanners).toEqual({ status: "fulfilled", value: [other] });
     vi.stubEnv("KYAA_FEATURE_SIGNUP_RAFFLE", "true");
     const on = props(await HomePage({ searchParams: Promise.resolve({}) }));
-    expect(await on.queries.homeBanners).toEqual({ status: "fulfilled", value: [raffle, other] });
+    expect(await on.queries.homeBanners).toEqual({ status: "fulfilled", value: [{ ...raffle, entrantCount: 1520 }, other] });
   });
 
   it("reads the thin banner slot with the page and keeps the page when the slot read fails", async () => {

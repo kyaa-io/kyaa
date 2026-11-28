@@ -7,6 +7,7 @@ import { contentPageMetadata, pageCopy } from "@/seo/metadata";
 import { homeStructuredData, serializeStructuredData } from "@/seo/structured-data";
 import { StreamingGuestHome } from "../components/guest-home";
 import { loadServerEnv } from "../server/config/env";
+import { readEntrantCount } from "../server/signup-event/entrant-count";
 import { SIGNUP_RAFFLE_BANNER_ID } from "../features/home/domain/signup-raffle-home-banner";
 import { signupRaffleEnabled, jjinfanGaugeEnabled } from "../server/config/feature-flags";
 import { heartDonationEvent, homeTopBanner } from "../server/config/heart-donation-event";
@@ -38,7 +39,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     homeBanners: settleHomeQuery(measureHomeQuery("homeBanners", async () => {
       const banners = await bannerRepository.list(toContentLocale(locale));
       // A raffle banner points at /s/raffle, which is closed while the server flag is off.
-      return signupRaffleEnabled() ? banners : banners.filter(banner => !signupRaffleBanner(banner));
+      if (!signupRaffleEnabled()) return banners.filter(banner => !signupRaffleBanner(banner));
+      if (!banners.some(signupRaffleBanner)) return banners;
+      const entrantCount = await readEntrantCount();
+      return banners.map(banner => signupRaffleBanner(banner) ? { ...banner, entrantCount } : banner);
     })),
     homeSlots: settleHomeQuery(measureHomeQuery("homeSlots", async () => {
       const slots = await bannerRepository.listSlots(toContentLocale(locale), "home");
